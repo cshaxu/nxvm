@@ -1962,6 +1962,7 @@ static C_INT core_machine_vadp_capture_high_res_graphics_snapshot(t_vadp *adapte
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
         CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
         adapter->data.captured_mode_control != adapter->data.mode_control ||
+        adapter->data.captured_color_select != adapter->data.color_select ||
         STD_MEMCMP(adapter->data.graphics_bytes, bytes, sizeof(bytes)) != 0;
     if (buffer_changed) STD_MEMCPY(adapter->data.graphics_bytes, bytes, sizeof(bytes));
     STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
@@ -1984,6 +1985,7 @@ static C_INT core_machine_vadp_capture_high_res_graphics_snapshot(t_vadp *adapte
     adapter->data.captured = TYPE_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
     adapter->data.captured_mode_control = adapter->data.mode_control;
+    adapter->data.captured_color_select = adapter->data.color_select;
     out_snapshot->buffer_changed = buffer_changed;
     out_snapshot->cursor_changed = TYPE_FALSE;
     return TYPE_TRUE;

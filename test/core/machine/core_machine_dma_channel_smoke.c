@@ -759,6 +759,7 @@ C_INT main(C_VOID)
      * and starve an unrelated unmasked secondary channel. */
     core_machine_dma_reset(&latch, &primary, &secondary);
     words[0] = 0u;
+    fixture.next = 0u;
     word_fixture.words[0] = 0xd357u;
     word_fixture.next = 0u;
     core_machine_dma_write_channel2(&port, 0x1a20u, 0u, 0u, 0x86u);

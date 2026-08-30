@@ -53,10 +53,10 @@ static C_INT core_machine_dma_refresh_follows_pit_channel_1(C_VOID)
         core_machine_bus_write(machine, 0x0041u, 0u) != TYPE_STATUS_OK ||
         core_machine_advance_time(machine, 3u) != TYPE_STATUS_OK ||
         core_machine_pit_get_output(&machine->shared_pit, 1u) ||
-        (machine->shared_dma_primary.data.request & VDMA_REQUEST_DRQ(0u)) == 0u ||
+        (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(0u)) == 0u ||
         core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
         !core_machine_pit_get_output(&machine->shared_pit, 1u) ||
-        (machine->shared_dma_primary.data.request & VDMA_REQUEST_DRQ(0u)) != 0u;
+        (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(0u)) != 0u;
     core_machine_destroy(machine);
     return failed;
 }

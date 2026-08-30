@@ -24,6 +24,8 @@ C_INT main(C_VOID)
     core_machine_port_initialize(&port);
     core_machine_memory_initialize(&memory);
     core_machine_vadp_initialize(&vadp, &port);
+    failed |= core_machine_vadp_configure_cga_memory(&vadp, &memory) !=
+        TYPE_STATUS_OK;
     failed |= core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) ||
         core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MODE) ||
         core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_COLOR) ||
@@ -83,11 +85,11 @@ C_INT main(C_VOID)
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
         snapshot.palette_rgb[0] != 0x000000u ||
-        snapshot.palette_rgb[1] != 0xffffffu;
+        snapshot.palette_rgb[1] != 0x000000u;
     core_machine_port_write(&port, 0x03d9u, 0x1fu);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.palette_rgb[0] != 0x000000u ||
-        snapshot.palette_rgb[1] != 0xffffffu || snapshot.buffer_changed;
+        snapshot.palette_rgb[1] != 0xffffffu || !snapshot.buffer_changed;
     core_machine_port_write(&port, 0x03dcu, 0u);
     failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
     core_machine_vadp_reset(&vadp);

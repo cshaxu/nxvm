@@ -169,7 +169,9 @@ C_INT main(C_VOID)
     failed |= core_machine_memory_query_physical(&memory, 0x000a0005u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
-        core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+        !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        snapshot.pixels[0] != 0u;
     core_machine_ega_graphics_write(&port, 5u, 0u);
 
     core_machine_port_write(&port, 0x03c4u, 0u);
@@ -179,14 +181,18 @@ C_INT main(C_VOID)
         core_machine_memory_query_physical(&memory, 0x000a0000u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != TYPE_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
-        core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+        !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        snapshot.pixels[0] != 0u;
     core_machine_port_write(&port, 0x03c5u, 0x01u);
     failed |= core_machine_port_read(&port, 0x03c5u) != 0x01u ||
         !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
         core_machine_memory_query_physical(&memory, 0x000a0000u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
-        core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+        !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        snapshot.pixels[0] != 0u;
     core_machine_port_write(&port, 0x03c5u, 0x03u);
     failed |= core_machine_port_read(&port, 0x03c5u) != 0x03u ||
         !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||

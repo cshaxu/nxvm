@@ -112,6 +112,9 @@ static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
     }
 }
 
+static C_VOID core_machine_dma_refresh_pit_output(C_VOID *owner,
+    type_bool asserted);
+
 static C_VOID core_machine_pc_at_refresh_timer_program(core_machine *machine)
 {
     type_unsigned_16 count;
@@ -258,6 +261,10 @@ C_VOID core_machine_board_set_xt_ppi_speaker(core_machine *machine,
 C_VOID core_machine_board_after_pit_reset(core_machine *machine)
 {
     if (machine == STD_NULL) return;
+    if (machine->dma_configured && !machine->d4_platform_configured) {
+        core_machine_pit_set_output(&machine->shared_pit, 1u,
+            core_machine_dma_refresh_pit_output, machine);
+    }
     if (machine->planar_parity_configured || machine->d4_platform_configured) {
         core_machine_pc_at_refresh_timer_program(machine);
     }

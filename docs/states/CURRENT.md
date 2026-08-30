@@ -2,7 +2,24 @@
 
 ## Current Work
 
-| T503 | Closed: controller signal-chain convergence accepted after S3--S11 source/code route audits, four-profile 27/27 focused replay, unit 312/312, integration 20/20 and stripped Release `0503` artifact. [History](../history/M5-T503-controller-signal-chain-convergence.md). |
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T504 S1. |
+| Admission And Approval | Owner approved solo execution of the queue-first Turbo L1 compatibility-escape task on 2026-08-29. This S admits only the complete inventory/classification stage; no timing claim, device-specific workaround, or external source import is approved. |
+| Objective | Freeze every reachable active Core L1 no-source-qualified-deadline wait, recording its owner, normal wake, reset/cancel, input/interrupt interaction, and disposition for the one shared Turbo compatibility rule; restore any directly discovered owner-path gate defect needed to establish that baseline. |
+| Non-goals | Do not implement the compatibility progression, change Standard pacing, inject host time, promote L1 evidence, add a scheduler, or guess controller timing. |
+| Reference Baseline | `b480f0d7` (T503 S11 accepted closure); current stripped Release artifact remains `0503`. |
+| Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
+| Files And ABI Surface | Audit `src/core/machine/machine_scheduler.c`, `machine.c`, Core controller wait owners, `src/vm/composition/session/{runner,waiting}.c`, their existing public copied time observation only, and focused tests/evidence. The discovered reset/VADP corrections remain private Core/test changes; no public ABI change is planned in S1. |
+| Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` sole Core owner and one-way VM observation; `CODING.md` minimal owner-local change; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable beyond confirming that no source is imported or derived. |
+| Verification | Static complete-owner sweep from every fast-advance block and waiting result through normal wake/reset/cancel/input/interrupt paths; run all focused inventory checks introduced or revised, then `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8` before S closure and the documentation governance gate. |
+| Expected Markers | `M5:T504:S1:L1-NO-DEADLINE-INVENTORY:OK`; full unit summary; documentation-governance pass. |
+| Asset Needs | None. S1 uses repository source and already recorded controller evidence only; no ROM, media, manual, emulator, or protected asset is imported. |
+| Reporting Requirements | Record the finite owner/disposition table in indexed evidence; distinguish source-qualified deadline, L1 causal-only owner, externally awakened wait, and blocker. P1 must state actual diff and unit result; P2 independently reviews each record against code. |
+| Stop Conditions | Stop and revise the packet if a candidate requires a new timing claim, a second owner/scheduler, an external asset, or cannot preserve normal lifecycle semantics under the shared rule. |
+| Exit Criteria | Every currently reachable blocked/no-deadline state has one code-backed disposition, no false L-level label remains in scope, evidence is indexed, full unit and docs gate pass, and the next S can define the smallest copied result boundary without reopening the inventory. |
+| Original Owner Request | Complete L1 Turbo efficiency in solo mode: make Turbo useful without violating Core ownership, Standard semantics, or the established L-level evidence discipline. |
+| Similar-Issue Sweep | Sweep all Core scheduler blocks, CPU wait publications, DMA/HDC/FDC/D4/PIC causal owners, controller deadline providers, and VM runner/waiting lifecycle callers; classify every reachable variant rather than repairing one observed stall. |
 
 ## Current Technical Baseline
 
