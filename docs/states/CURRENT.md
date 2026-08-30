@@ -68,6 +68,12 @@
 
 ## Recent Governance
 
+- **M5 Td S157 P1:** removes the obsolete Model-40 D4 refresh-hold candidate:
+  T419 already closes PIT1-to-D4-to-DMA ordering and T507 S14 publishes its
+  one next-Core-step L2 deadline. Physical D4 DRAM/ISA timing remains separate
+  debt; no duplicate task is admitted. See
+  [evidence](../etc/evidence/td-s157-d4-candidate-reconciliation.md).
+
 - **M5 Td S156 P1:** removes all Release post-build YAML copying. `build/output`
   configuration is user-managed and no executable build may overwrite it; no
   YAML restoration or mutation is attempted.

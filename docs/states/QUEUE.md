@@ -13,14 +13,14 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [M5 controller phase-consumer convergence](../proposals/m5-controller-phase-consumer-convergence.md) - audits every current controller's repeated ready/DRQ/result transition through its sole downstream consumer and repairs proven stale one-phase assumptions.
+The completed controller phase-consumer convergence and Model-40 D4
+refresh-hold receiver are retained below for traceability; neither is a
+candidate.
 
-The following three complete controller receivers precede the CPU re-audit.
-They retire the finite L1 no-deadline owners one controller at a time; each is
-source-first and may leave an unsupported timing relation explicit rather than
-infer it.
+The following ordered candidates follow the completed scheduler convergence.
+They preserve the current architecture and establish their complete source and
+current-code ledgers before any repair.
 
-1. [M5 Model-40 D4 refresh-hold deadline closure](../proposals/m5-model40-d4-refresh-hold-deadline-closure.md) - closes the selected DeskPro board refresh-hold timing relation in the existing D4 owner, without leaking board state into generic DMA or VM.
 1. [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md) - follows the active scheduler-convergence work; freezes the complete 8086, 8088, 80186, 80286 and 80386DX instruction/state/timing universe before any repair.
 1. [M5 external asset-bundle governance](../proposals/m5-external-asset-bundle-governance.md) - follows the five-CPU re-audit; owner-governed design and inventory of the external `nxvm-assets` bundle for machine firmware, CMOS defaults and integration media, without admitting protected bytes or machine-local paths into the repository.
 
@@ -73,7 +73,7 @@ earliest unit T but may not repair it.
 1. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md).
 1. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
-Retained non-candidate proposal index: [Core controller and device phase program](../proposals/m5-core-controller-device-phase-contracts.md), [prior four-profile CPU instruction timing program](../proposals/m5-core-cpu-instruction-timing-program.md), [withdrawn DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), [withdrawn generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md), [withdrawn separate 8088 CPU-profile closure](../proposals/m5-8088-cpu-profile.md), [withdrawn current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md), [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), and [PIC default-IR7 correction](../proposals/m5-pic-default-ir7-correction.md). These retained contexts remain outside candidate ordering and preserve planning and evidence links.
+Retained non-candidate proposal index: [controller phase-consumer convergence](../proposals/m5-controller-phase-consumer-convergence.md), [Model-40 D4 refresh-hold deadline closure](../proposals/m5-model40-d4-refresh-hold-deadline-closure.md) (superseded by prior closure evidence), [Core controller and device phase program](../proposals/m5-core-controller-device-phase-contracts.md), [prior four-profile CPU instruction timing program](../proposals/m5-core-cpu-instruction-timing-program.md), [withdrawn DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), [withdrawn generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md), [withdrawn separate 8088 CPU-profile closure](../proposals/m5-8088-cpu-profile.md), [withdrawn current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md), [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), and [PIC default-IR7 correction](../proposals/m5-pic-default-ir7-correction.md). These retained contexts remain outside candidate ordering and preserve planning and evidence links.
 
 Retained historical context: [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), the closed IBM PC/XT profile/capability audit, and the withdrawn profile-first admission remain outside candidate ordering. The closed 5170 root normalization is the first Core-axis profile consumer.
 
