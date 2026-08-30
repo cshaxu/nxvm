@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T511 S9 HDC-personality phase-consumer audit. |
-| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S8 find no PIC/DMA/PIT/RTC/KBC/XT keyboard-PPI/FDC hit. |
-| Objective | Prove that ATA, WD1003/ST-506, Compaq/WD and Xebec command/data/result, DRQ/DMA, IRQ and firmware consumers each observe their appropriate new HDC phase; repair any stale-observation class in its sole owner path. |
+| Identifier Mode | Continuation T511 S10 VADP phase-consumer audit. |
+| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S9 find no new PIC/DMA/PIT/RTC/KBC/XT keyboard-PPI/FDC/HDC hit; the sole ATA firmware hit is already repaired by T510. |
+| Objective | Prove that CGA/EGA port/VRAM state, retrace/display-enable edges and copied presentation consumers observe each appropriate new VADP frame/state phase; repair any stale-observation class in the sole VADP owner path. |
 | Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
-| Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing HDC personality ledgers and the current Core scheduler. |
+| Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing VADP ledgers and the current Core scheduler. |
 | Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
-| Files And ABI Surface | Existing Core HDC, personality firmware/DMA/PIC consumers and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
+| Files And ABI Surface | Existing Core VADP, its copied VM presentation consumer and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
 | Verification | Complete repository-only unit suite and documentation governance. Every later S repeats unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
-| Expected Markers | One row per ATA, WD1003, Compaq/WD and Xebec personality covering command/data/result, DRQ/DMA, IRQ and firmware consumer disposition. |
-| Asset Needs | Existing owner-managed controller and board sources only; no asset import. |
+| Expected Markers | One row each for VADP port/VRAM mutation, display-enable/retrace, frame snapshot and VM presentation consumer disposition. |
+| Asset Needs | Existing owner-managed IBM video sources only; no asset import. |
 | Reporting Requirements | Record the manual rule, every production consumer, no-hit rationale or repair, and focused proof. |
-| Stop Conditions | Stop if a selected HDC personality conflicts with its sources or a repair would require a second owner or undeclared profile policy. |
-| Exit Criteria | Every HDC personality consumer is classified and no ATA-style stale observation remains; S10 VADP is then admitted. |
+| Stop Conditions | Stop if the VADP topology conflicts with the selected sources or a repair would require a second owner or presentation-state mirror. |
+| Exit Criteria | Every VADP consumer is classified and no stale frame/state observation remains; S11 D4 board route is then admitted. |
 | Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
 | Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
 
