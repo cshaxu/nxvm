@@ -1,7 +1,7 @@
 # T437 S8 80386DX result closure
 
-S8 publishes the complete 1,410-key 80386DX result artifact from the accepted
-S3--S7 partitions.  The normal 1,409 keys are real classified CPU retirement
+S8 publishes the complete 1,413-key 80386DX result artifact from the accepted
+S3--S7 partitions.  The normal 1,412 keys are real classified CPU retirement
 observations.  `I386-ESC` is the one explicit non-CPU clock-domain record.
 
 The retained Intel *80386DX Microprocessor Programmer's Reference Manual*
@@ -20,10 +20,10 @@ existing 8086, 80186 and 80286 result artifacts; only `I386-ESC` may use the
 MCP-domain exception.
 
 ```text
-M5:T437:S2:I386-RESULT-PRODUCER:PASS:observed=1409:canonical=1410
-M5:T437:S8:I386-RESULT-CLOSURE:PASS:canonical=1410:cpu=1409:mcp=1
+M5:T437:S2:I386-RESULT-PRODUCER:PASS:observed=1412:canonical=1413
+M5:T437:S8:I386-RESULT-CLOSURE:PASS:canonical=1413:cpu=1412:mcp=1
 M5:T437:S3:I386-ESC-HANDOFF:PASS
-CPU timing results verified: conforming_keys=1410
+CPU timing results verified: conforming_keys=1413
 CPU timing results verified: conforming_keys=1053
 CPU timing results verified: conforming_keys=616
 CPU timing results verified: conforming_keys=771
@@ -47,6 +47,6 @@ source assertion.
 Fresh Debug configuration, T337, T344 (290 canonical targets plus its two
 auxiliary entries), T382, the full 292-test `current-gate`, the 80386 partition
 and decoder-ledger checks all pass. The cross-profile result verifier accepts
-the 80386, 8086, 80186 and 80286 artifacts at 1410, 1053, 616 and 771 records
+the 80386, 8086, 80186 and 80286 artifacts at 1413, 1053, 616 and 771 records
 respectively. These checks are task-closure evidence; no production CPU,
 board, ABI or device route changed.
