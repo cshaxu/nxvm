@@ -2,8 +2,24 @@
 
 ## Current Work
 
-No task is active. T504 is closed; the first queued receiver is the PIC
-cascade observable-progress closure.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T505 S1. |
+| Admission And Approval | Owner approved admission on 2026-08-29. This packet admits solo S1 only: freeze the complete selected PIC cascade observable-progress source and code ledger before any repair. |
+| Objective | Establish a durable List 1/List 2 convergence ledger for the selected 8259A slave-request-to-master-cascade-to-CPU wake route, determining whether its publication is immediate ordered Core work or has a source-qualified deadline. |
+| Non-goals | Do not change PIC/Core/VM code, add an interrupt path, infer a delay, promote causal order to L2/L3, import third-party source/firmware, or claim completion for unselected PIC topologies. |
+| Reference Baseline | `144de8cf` (closed T504); current stripped Release artifact is `0504`. |
+| Candidate Proposal | [M5 PIC cascade observable-progress closure](../proposals/m5-pic-cascade-observable-progress-closure.md). |
+| Files And ABI Surface | One indexed T505 List 1/List 2 evidence ledger and `docs/states/CURRENT.md`; no source, test, ABI, artifact or profile change in S1. |
+| Applicable Rules | `docs/rules/EXECUTION.md` coverage-ledger/P-review rules; `ARCHITECTURE.md` sole PIC/Core ownership and one-way VM boundary; `CODING.md` no duplicate path; `DOCUMENT.md` state/evidence boundaries; source policy governs manual and external-model research. |
+| Verification | Read/quality-check available Intel 8259A and selected XT/AT board material; inspect selected 86Box, MAME, PCjs, Bochs and QEMU implementations as non-normative corroboration; trace every frozen row through current PIC/Core/CPU code; run complete unit and documentation governance. |
+| Expected Markers | `M5:T505:S1:PIC-CASCADE-LEDGER:OK`; complete selected-row List 1/List 2 dispositions; full unit and documentation-governance pass. |
+| Asset Needs | Read-only owner-managed manuals and external source checkouts only; no asset, firmware, media, source text, hash catalog or machine-local path may enter the repository. |
+| Reporting Requirements | Record authority/provenance class, row disposition, exact owner route, reset/cancel/interrupt behavior, corroboration limits, and every transfer; report the next implementation batch only after all selected rows are exhausted or transferred. |
+| Stop Conditions | Stop and revise if Intel/board evidence contradicts the frozen candidate, the route requires a profile-side behavior change, a new source import is proposed, or the selected universe cannot be bounded. |
+| Exit Criteria | The complete selected cascade universe has one List 1/List 2 disposition per row and a code-owner mapping; every unsupported relation has an explicit receiver; no implementation has begun. |
+| Original Owner Request | Admit the next task after solo T504 L1 Turbo efficiency closure, retaining complete-unit controller planning and no additive workaround path. |
+| Similar-Issue Sweep | Include master/slave 8259A topologies in selected XT/AT consumers, masking, acknowledge, EOI, reset, withdrawal and CPU wake; distinguish direct immediate ordering from deadline publication. |
 
 ## Current Technical Baseline
 
