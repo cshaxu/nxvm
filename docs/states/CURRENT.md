@@ -4,28 +4,28 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T511 S12 full global phase-consumer closure. |
+| Identifier Mode | T511 closed; no successor packet is admitted. |
 | Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S11 find no new PIC/DMA/PIT/RTC/KBC/XT keyboard-PPI/FDC/HDC/VADP/D4 hit; the sole ATA firmware hit is already repaired by T510. |
-| Objective | Reconcile every audited owner/consumer result, rerun all required unit/integration gates and produce the stripped Release artifact only if the global no-tail audit remains consistent. |
+| Objective | T511 reconciled every audited owner/consumer result, passed all required gates and emitted the stripped Release artifact. |
 | Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
 | Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, T511 S1--S11 evidence and the current Core scheduler. |
 | Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
-| Files And ABI Surface | Evidence/history/status and release build metadata only if needed; no public ABI, VM state or new scheduler. |
+| Files And ABI Surface | T511 changed only evidence/history/status and Release artifact metadata; no public ABI, VM state or scheduler. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
 | Verification | Complete repository-only unit suite and documentation governance. Every later S repeats unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
-| Expected Markers | A finite whole-inventory disposition, complete unit/integration proof, documentation governance and a stripped Release result. |
+| Expected Markers | T511 closure evidence and history record the finite disposition, complete gates and Release result. |
 | Asset Needs | Existing owner-managed integration ROM/media only; no asset import. |
 | Reporting Requirements | Record the manual rule, every production consumer, no-hit rationale or repair, and focused proof. |
-| Stop Conditions | Stop if a gate reveals a production issue; repair it in this task before closure. |
-| Exit Criteria | All current owners are reconciled, all gates pass and no deferred discovered defect remains. |
+| Stop Conditions | A later task requires a separately admitted packet. |
+| Exit Criteria | Satisfied: all current owners reconciled, all gates pass and no discovered defect was deferred. |
 | Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
 | Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0508` emitted
-  `nxvm_0_5_0508.exe` in a stripped Release build, SHA-256
-  `6578166FB910433AE1BC78050E7756D8938ADCBF2859AB2E4ACCE151785360F0`.
+- **Current developer artifact:** CMake target `vm-0-5-0511` emitted
+  `nxvm_0_5_0511.exe` in a stripped Release build, SHA-256
+  `3A5F62DF4CF4F790829C6D26AEBA12DBF9D434129D9DC17855DEF9099DBEE1A4`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed

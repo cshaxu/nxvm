@@ -1,8 +1,11 @@
 # M5 T511: Controller Phase-Consumer Convergence
 
-## Active Task Record
+T511 globally audited the finite controller/device class exposed by the 0508
+ATA regression: a consumer must not treat one ready transition as permission
+to consume a later owner phase. The complete PIC, DMA, PIT, RTC, KBC, XT
+keyboard/PPI, FDC, HDC, VADP and D4 sweep found no further production hit.
 
-T511 is the finite corrective audit and repair of the controller-consumer
-transition class exposed by the 0508 ATA PIO multi-sector regression. The
-active packet in `states/CURRENT.md` owns scope, S contracts, gates and current
-status. This record retains completed evidence when T511 closes.
+The retained ATA repair waits for fresh BSY/ERR/DRQ status at every multi-sector
+PIO boundary. All owners retain single state and single consumer paths. Unit
+313/313, integration 20/20, governance and stripped Release 0511 pass; the
+artifact hash is recorded in the closure evidence.

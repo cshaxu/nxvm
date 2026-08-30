@@ -51,6 +51,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t511-s9-hdc-personality-phase-consumer-audit.md` | HDC owner | T511 S9's four-personality PIO/DMA/result/IRQ consumer audit; the sole ATA hit remains the already repaired firmware boundary. |
 | `evidence/t511-s10-vadp-phase-consumer-audit.md` | VADP owner | T511 S10's CGA/EGA port/VRAM/snapshot/presentation-consumer audit; no stale frame or parallel video state exists. |
 | `evidence/t511-s11-d4-phase-consumer-audit.md` | Model-40 D4 route | T511 S11's PIT-refresh/hold/DMA/transaction consumer audit; no stale board assertion exists. |
+| `evidence/t511-s12-global-phase-consumer-closure.md` | Whole controller sweep | T511's complete no-tail audit, all-gate result and stripped Release 0511 artifact record. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |
 | `evidence/t503-s11-cross-profile-closure.md` | Core route owner | T503 S11's four-profile controller-route matrix, complete unit/integration proof, corrected Release artifact and T-level route closure. |
 | `evidence/t504-s1-l1-no-deadline-inventory.md` | Core scheduler owner | T504 S1's finite blocked/no-deadline owner inventory, its normal wake/lifecycle paths, and the L1 versus already-due/deadline disposition for the Turbo compatibility receiver. |
