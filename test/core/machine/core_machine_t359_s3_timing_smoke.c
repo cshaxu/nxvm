@@ -403,7 +403,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
             19u, 15u, 11u, 8u, 5u, 6u, 2u)) return 1;
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80186,
-            15u, 13u, 10u, 10u, 5u, 5u, 2u)) return 2;
+            15u, 14u, 10u, 10u, 5u, 5u, 2u)) return 2;
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80286,
             8u, 8u, 3u, 5u, 4u, 4u, 2u)) return 3;
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80386,
@@ -420,7 +420,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (t359_s3_test_far_direct(CORE_MACHINE_CPU_PROFILE_8086, 28u, 15u)) {
         return 10;
     }
-    if (t359_s3_test_far_direct(CORE_MACHINE_CPU_PROFILE_80186, 23u, 13u)) {
+    if (t359_s3_test_far_direct(CORE_MACHINE_CPU_PROFILE_80186, 23u, 14u)) {
         return 11;
     }
     if (t359_s3_test_far_direct(CORE_MACHINE_CPU_PROFILE_80286, 14u, 12u)) {

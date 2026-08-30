@@ -567,12 +567,10 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(lock_add_memory, sizeof(lock_add_memory), 32u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
-        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, mul_al,
-            sizeof(mul_al), 0) ||
-        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, wait,
-            sizeof(wait), 0) ||
+        retirement_8088_primary_case(mul_al, sizeof(mul_al), 70u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
+        retirement_8088_primary_case(wait, sizeof(wait), 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(push_register, sizeof(push_register), 15u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_register, sizeof(pop_register), 12u,
