@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T511 closed; no successor packet is admitted. |
-| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S11 find no new PIC/DMA/PIT/RTC/KBC/XT keyboard-PPI/FDC/HDC/VADP/D4 hit; the sole ATA firmware hit is already repaired by T510. |
-| Objective | T511 reconciled every audited owner/consumer result, passed all required gates and emitted the stripped Release artifact. |
-| Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
-| Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, T511 S1--S11 evidence and the current Core scheduler. |
-| Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
-| Files And ABI Surface | T511 changed only evidence/history/status and Release artifact metadata; no public ABI, VM state or scheduler. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
-| Verification | Complete repository-only unit suite and documentation governance. Every later S repeats unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
-| Expected Markers | T511 closure evidence and history record the finite disposition, complete gates and Release result. |
-| Asset Needs | Existing owner-managed integration ROM/media only; no asset import. |
-| Reporting Requirements | Record the manual rule, every production consumer, no-hit rationale or repair, and focused proof. |
-| Stop Conditions | A later task requires a separately admitted packet. |
-| Exit Criteria | Satisfied: all current owners reconciled, all gates pass and no discovered defect was deferred. |
-| Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
-| Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
+| Identifier Mode | New T512; S1 is active. |
+| Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate. |
+| Objective | Re-establish a complete, source-backed conformance result for the supported 8086, 8088, 80186, 80286 and 80386DX profiles before any repair. |
+| Non-goals | Do not repair an isolated FLAGS symptom first, create profile-side CPU behavior, duplicate state/retirement paths, import third-party source, or change `build/output` YAML. |
+| Reference Baseline | Current Core decode/execution, existing per-CPU ledgers, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
+| Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
+| Files And ABI Surface | S1 is documentation/research only: it may add source provenance and cross-validation evidence, but changes no CPU, public ABI, VM profile or artifact. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
+| Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
+| Expected Markers | S1 records original-manual locators, edition/OCR quality and external-model agreement/conflict for each CPU. |
+| Asset Needs | Read-only owner-managed manuals under `O:\assets`; no manual, ROM, guest media or third-party source import. |
+| Reporting Requirements | Record each manual rule, complete current-code disposition, source tier and exact receiver for any nonconformance; undefined state must never receive a fabricated exact value. |
+| Stop Conditions | Stop before implementation until S1--S3 accept the whole coverage universe; stop and report any source/license conflict or missing normative manual. |
+| Exit Criteria | Every decoder-admitted row obtains a manual locator and current-code disposition; defects are repaired once at the Core owner, swept across profiles, and verified by full gates. |
+| Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
+| Similar-Issue Sweep | S1 covers all five profiles, Core decoder/execution/state/delivery/retirement paths, existing ledgers and repository tests; later repair S tasks sweep every equivalent form and profile. |
 
 ## Current Technical Baseline
 

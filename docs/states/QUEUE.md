@@ -8,6 +8,10 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
+[M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md)
+is governed by the active packet in `CURRENT.md`; it remains here only as the
+required proposal index while the task is open.
+
 The following bounded repairs are first. They preserve the current
 architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
@@ -21,7 +25,6 @@ The following ordered candidates follow the completed scheduler convergence.
 They preserve the current architecture and establish their complete source and
 current-code ledgers before any repair.
 
-1. [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md) - follows the active scheduler-convergence work; freezes the complete 8086, 8088, 80186, 80286 and 80386DX instruction/state/timing universe before any repair.
 1. [M5 external asset-bundle governance](../proposals/m5-external-asset-bundle-governance.md) - follows the five-CPU re-audit; owner-governed design and inventory of the external `nxvm-assets` bundle for machine firmware, CMOS defaults and integration media, without admitting protected bytes or machine-local paths into the repository.
 
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)
