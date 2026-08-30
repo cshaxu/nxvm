@@ -149,11 +149,16 @@ type_status vm_session_waiting_advance(vm_session *session,
         &observation);
     if (status != TYPE_STATUS_OK) return status;
     if (!observation.next_deadline_valid) {
-        if (session->speed != VM_SESSION_SPEED_TURBO ||
-            observation.progress_disposition !=
+        if (observation.progress_disposition !=
                 CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY) {
             return TYPE_STATUS_OK;
         }
+        /* Standard may pace only completed Core progress.  This does not
+         * request a guest duration; the following bounded quantum is wholly
+         * selected and advanced by Core. */
+        if (session->speed == VM_SESSION_SPEED_STANDARD &&
+            !vm_session_pacing_target_due(session, &observation,
+                observation.elapsed_ticks)) return TYPE_STATUS_OK;
         status = core_machine_advance_l1_compatibility(session->core_machine, &advanced);
         if (status == TYPE_STATUS_OK && advanced) *out_advanced = 1;
         return status;

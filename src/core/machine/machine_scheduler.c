@@ -166,21 +166,17 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
         out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
         return;
     }
+    if (core_machine_l1_compatibility_is_eligible(machine)) {
+        /* An unsourced owner may change before an unrelated deadline.  Its
+         * bounded Core progression therefore takes precedence without
+         * inventing a device duration or exposing controller state. */
+        out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY;
+        return;
+    }
     if (source_ticks != 0u) {
         out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_DEADLINE;
     }
-    if (core_machine_fast_advance_is_blocked(machine) &&
-        out_observation->progress_disposition == CORE_MACHINE_TIME_PROGRESS_IDLE) {
-        if (out_observation->progress_disposition == CORE_MACHINE_TIME_PROGRESS_IDLE &&
-            core_machine_l1_compatibility_is_eligible(machine)) {
-            out_observation->progress_disposition =
-                CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY;
-        }
-        /* An active causal owner intentionally blocks existing HLT fast
-         * advance.  The copied disposition explains why without fabricating
-         * a deadline or changing the current progression policy. */
-        return;
-    }
+    if (core_machine_fast_advance_is_blocked(machine)) return;
     if (source_ticks != 0u && source_ticks <= UINT64_MAX - machine->elapsed_ticks) {
         out_observation->next_deadline_tick = machine->elapsed_ticks + source_ticks;
         out_observation->next_deadline_valid = TYPE_TRUE;
@@ -387,7 +383,9 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
         type_unsigned_64 source_ticks;
 
         core_machine_capture_time_observation_private(machine, &observation);
-        if (observation.next_deadline_valid &&
+        if (core_machine_l1_compatibility_is_eligible(machine)) {
+            due_tick = machine->elapsed_ticks + 1u;
+        } else if (observation.next_deadline_valid &&
             observation.next_deadline_tick > machine->elapsed_ticks &&
             observation.next_deadline_tick < due_tick) {
             due_tick = observation.next_deadline_tick;

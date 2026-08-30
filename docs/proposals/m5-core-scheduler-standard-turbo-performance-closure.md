@@ -19,8 +19,8 @@ cannot know the next guest-visible change and must conservatively keep advancing
 and scanning at the source-tick granularity. T507 must account for every such
 blocker. It either gives the existing owner a source-qualified deadline, binds
 an already admitted L2 proportional/board receiver without pretending it is a
-physical value, or retains a named L1 no-deadline receiver under the existing
-bounded Turbo-only compatibility policy. An unclassified L1 blocker, a guessed
+physical value, or retains a named L1 no-deadline receiver with a bounded
+Core-owned compatibility quantum. An unclassified L1 blocker, a guessed
 duration, or a scheduler-side device-state mirror is not an exit.
 
 ## Audit Prerequisite
@@ -47,19 +47,30 @@ or newly expanded controller-function scope becomes its own proposed T.
 ## Required Outcome
 
 - Core remains the only guest-time writer and the only deadline composer.
+- VM selects only the host-pacing policy: Standard may wait against an
+  approved completed-guest-progress budget and Turbo does not. It never
+  supplies guest ticks, a fast-forward distance or a device deadline.
 - Each controller supplies only its own next observable state change through
   its established owner; it does not sleep, publish host time, or advance a
   private guest clock.
 - Core selects the earliest valid deadline, advances once to it, and processes
   only the owners due at that point in the established same-tick order.
+- Between observable deadlines, Core may batch CPU execution up to its existing
+  safe scheduler/yield boundary. On HLT it advances directly to the earliest
+  valid observable deadline; it does not return to a whole-controller
+  per-tick scan merely to discover that deadline.
 - Known sparse waits no longer execute every controller's maintenance path once
   per guest tick. Every active no-deadline blocker has a recorded owner,
   triggering state and disposition: source-qualified deadline, admitted L2
-  receiver, immediate action, or bounded Turbo-only L1 compatibility receiver.
-  No relation receives an invented duration.
+  receiver, immediate action, or a bounded Core-owned L1 compatibility
+  quantum. No relation receives an invented duration.
 - Standard and Turbo consume the same Core progression and event order.
   Standard may wait only when completed guest progress is ahead of its approved
   host pacing budget; Turbo removes that wall-clock wait and nothing else.
+- VM may request that Core yield for host responsiveness, input or stop work,
+  but that request is not a guest-time value and cannot cause Core to cross a
+  deadline. Turbo obtains throughput by immediately resuming the same Core
+  batch path after such a yield.
 
 ## Scope
 
@@ -72,8 +83,10 @@ scheduler change.
 The performance corpus covers the supported profile/CPU/media combinations,
 HLT wait paths, DOS boot/installer checkpoints and selected hard-disk I/O.  It
 records functional terminals, event order and host-cost measurements before and
-after each admitted batch; a workload reaching a terminal alone is not proof of
-deadline coverage.
+after each admitted batch. It also records Core-owned batch execution,
+deadline-directed HLT advances, retained L1 compatibility quanta and
+whole-controller per-tick scans, so a workload reaching a terminal alone is
+not proof of deadline coverage or performance closure.
 
 ## Non-goals
 
@@ -130,7 +143,10 @@ an explicit immediate action, or a named L1/L2 receiver, with no unresolved
 cross-owner defect deferred to S10. The final matrix accounts for every live L1
 no-deadline blocker and proves that no source-qualified or admitted-L2 event is
 hidden behind per-tick all-controller polling. Standard and Turbo have identical
-guest event ordering, distinct only in wall-clock waiting and the already
-bounded Turbo-only L1 compatibility receiver. Complete repository-only unit and
-owner-managed integration suites pass, and the performance corpus demonstrates
-the retained Core path rather than a parallel fast path.
+guest event ordering, distinct only in wall-clock waiting. Every retained L1
+receiver uses the same bounded Core-owned compatibility quantum in both modes;
+Turbo never skips, generates or reorders guest time. Complete repository-only
+unit and owner-managed integration suites pass, and the performance corpus
+demonstrates the retained Core path rather than a parallel fast path: it shows
+deadline-directed HLT advance and CPU batching where eligible, and identifies
+every remaining whole-controller per-tick scan with its owner and reason.

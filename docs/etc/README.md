@@ -28,6 +28,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t507-s9-vadp-cga-ega-reaudit.md` | Core VADP owner | T507 S9's rendered IBM CGA/EGA re-audit, local-reference comparison, Attribute output-gate repair, and copied-presentation boundary proof. |
 | `evidence/t507-s10-hdc-personality-reaudit.md` | Core HDC owner | T507 S10's selected ATA, WD1003, Compaq/WD and Xebec owner-route re-audit, including its common unsourced-service L1 boundary. |
 | `evidence/t507-s11-model40-d4-reaudit.md` | Model-40 D4 board owner | T507 S11's D4 refresh-hold source, owner and scheduler re-audit, retaining the explicit no-duration boundary. |
+| `evidence/t507-s12-core-scheduler-composition.md` | Core scheduler owner | T507 S12's earliest-deadline, immediate and bounded-L1 composition repair with its Core/VM boundary proof. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |
 | `evidence/t503-s11-cross-profile-closure.md` | Core route owner | T503 S11's four-profile controller-route matrix, complete unit/integration proof, corrected Release artifact and T-level route closure. |
 | `evidence/t504-s1-l1-no-deadline-inventory.md` | Core scheduler owner | T504 S1's finite blocked/no-deadline owner inventory, its normal wake/lifecycle paths, and the L1 versus already-due/deadline disposition for the Turbo compatibility receiver. |
