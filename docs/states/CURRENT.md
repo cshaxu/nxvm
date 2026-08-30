@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T507 S12. |
-| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S11 are accepted; this is the global Core deadline-composition batch. |
-| Objective | Compose every accepted controller deadline and immediate route through one earliest-event Core scheduler path; remove eligible per-tick whole-controller scans while retaining one bounded Core receiver for explicit L1 owners. |
-| Non-goals | Do not create a second time line/scheduler, let VM write guest time, invent duration for L1 owners, move controller state into the scheduler, create profile/firmware fast paths, or change same-tick source order. |
-| Reference Baseline | 709f98bd; T507 S1 progression matrix and accepted S3--S11 controller evidence. |
+| Identifier Mode | Continuation T507 S13. |
+| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S12 are accepted; this is the T507 product/performance closure batch. |
+| Objective | Verify the one Core progression path across Standard/Turbo and the selected profile/CPU/media corpus; establish functional event-order and host-cost evidence, run full unit/integration, and publish the stripped Release artifact. |
+| Non-goals | Do not add a parallel fast path, use host elapsed time to write guest ticks, claim physical pacing without a qualified axis, weaken integration terminals, suppress a failure, or remove the runtime debugger. |
+| Reference Baseline | ec49af11; T507 S1/S12 progression evidence and current integration corpus. |
 | Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
-| Files And ABI Surface | Core time observation, deadline composition, normal scheduler progression and owner-local tests/evidence/history only; no controller public ABI, VM time input or profile-specific scheduler. |
+| Files And ABI Surface | Existing Core/VM progression, performance observation and release composition only; no new scheduler/public ABI or product-debugger removal. |
 | Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one owner per topology and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
-| Verification | Reconcile accepted S1/S3--S11 rows against time observation, scheduler, waiting and direct VM consumers; prove earliest deadline, immediate order, L1 bounded receiver, reset/cancellation and no full-controller polling; add focused regression for each repair; run complete unit before S closure. |
-| Expected Markers | A T507 S12 scheduler evidence marker; every C1--C13/V1--V4 matrix row has one implemented route, same-tick order and regression or explicit L1/L2 boundary. |
+| Verification | Run focused Standard/Turbo, scheduler and supported profile/media probes; record terminal/event/host-cost observations; run complete unit plus external-asset integration; build/inspect a stripped Release executable; recheck the final C1--C13/V1--V4 matrix. |
+| Expected Markers | A T507 S13 product/performance marker, full test results, stripped Release name/hash/debug-section proof and T507 closure evidence. |
 | Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
 | Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
-| Stop Conditions | Stop and revise if a repair needs an unsourced delay, host-generated tick, unapproved public contract, controller-state mirror, profile/VM workaround, altered same-tick order or second scheduler. |
-| Exit Criteria | Every C1--C13/V1--V4 row is fixed or explicitly retained at its supported level; eligible polling is removed; one Core path owns deadline/immediate/L1 progression; direct consumers and full unit pass. |
+| Stop Conditions | Stop and revise if a result needs a synthetic terminal, unsourced timing, host-to-guest progression, altered profile contract, externally committed asset, hidden failure or duplicate execution path. |
+| Exit Criteria | Standard/Turbo have the same Core event ordering; every live L1 row is explicit; eligible polling is absent; full unit and integration pass; a stripped Release artifact retaining the runtime debugger is published with evidence. |
 | Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
-| Similar-Issue Sweep | elapsed-tick publication, timeline/PIT/RTC/DMA/FDC/HDC/KBC/XT/VADP/D4/provider routes, same-tick phase order, HLT waiting, Standard/Turbo boundary, reset and cancellation. |
+| Similar-Issue Sweep | profile/CPU/media terminals, HLT waiting, timeline/PIT/RTC/DMA/FDC/HDC/KBC/XT/VADP/D4/provider paths, Standard/Turbo host waits, build flags, runtime debugger and Release packaging. |
 
 ## Current Technical Baseline
 
