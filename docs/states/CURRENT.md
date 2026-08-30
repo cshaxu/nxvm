@@ -8,7 +8,7 @@
 | Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S4 P1 `28235d06` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits the required external ROM/DOS integration closure. |
 | Objective | Run the selected external-ROM/DOS workloads in Standard and Turbo, compare their same semantic terminal and record real elapsed-wall-clock evidence without converting host elapsed time into guest ticks. |
 | Non-goals | Do not import or commit ROM, guest media, traces, or protected data; do not claim physical pacing; do not change controller timing merely to improve a benchmark; do not make a terminal budget into success. |
-| Reference Baseline | `28235d06` (T504 S4 P1 mode/lifecycle evidence); current stripped Release artifact remains `0503`. |
+| Reference Baseline | `28235d06` (T504 S4 P1 mode/lifecycle evidence); current stripped Release artifact is `0504`. |
 | Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
 | Files And ABI Surface | `test/integration/` harnesses, ignored local logs, indexed evidence, and only an owner-local code repair if a reproducible integration failure proves one is required. |
 | Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` Core time/controller ownership and VM-to-Core command boundary; `CODING.md` one shared path/no device receiver; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable because no source is imported or derived. |
@@ -23,9 +23,9 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0503` emitted
-  `nxvm_0_5_0503.exe` in a stripped Release build, SHA-256
-  `3AF1408F5E1C3760CF2A3D38D0EA8B7A739122BD2F4B7FBB49A527566E7A8373`.
+- **Current developer artifact:** CMake target `vm-0-5-0504` emitted
+  `nxvm_0_5_0504.exe` in a stripped Release build, SHA-256
+  `6B4C9D047473488807242674DE479151B74BE1DD72625F0F9AC31F3378527443`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
