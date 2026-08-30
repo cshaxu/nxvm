@@ -97,6 +97,8 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
         resolved->values.core.configuration.time_axis.kind !=
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         resolved->values.core.configuration.time_axis.ticks_per_second != 8000000u ||
+        resolved->values.core.configuration.l1_compatibility_policy !=
+            CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         resolved->values.core.controller_timing_rules.pit_clock !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         resolved->values.core.controller_timing_rules.dma_service !=

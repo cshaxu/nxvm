@@ -148,7 +148,16 @@ type_status vm_session_waiting_advance(vm_session *session,
     status = core_machine_capture_time_observation(session->core_machine,
         &observation);
     if (status != TYPE_STATUS_OK) return status;
-    if (!observation.next_deadline_valid) return TYPE_STATUS_OK;
+    if (!observation.next_deadline_valid) {
+        if (session->speed != VM_SESSION_SPEED_TURBO ||
+            observation.progress_disposition !=
+                CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY) {
+            return TYPE_STATUS_OK;
+        }
+        status = core_machine_advance_l1_compatibility(session->core_machine, &advanced);
+        if (status == TYPE_STATUS_OK && advanced) *out_advanced = 1;
+        return status;
+    }
     if (session->speed == VM_SESSION_SPEED_STANDARD &&
         !vm_session_pacing_target_due(session, &observation,
             observation.next_deadline_tick)) {

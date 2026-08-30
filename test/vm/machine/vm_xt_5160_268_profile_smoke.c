@@ -40,6 +40,8 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.resolved.values.core.configuration.memory_bytes != 256u * 1024u ||
         profile.resolved.values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_8088 ||
+        profile.resolved.values.core.configuration.l1_compatibility_policy !=
+            CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         profile.topology.absent_memory_count != 3u ||
         profile.topology.absent_memory[0].physical_start != 0x00040000u ||
         profile.topology.absent_memory[0].bytes != 0x00060000u ||

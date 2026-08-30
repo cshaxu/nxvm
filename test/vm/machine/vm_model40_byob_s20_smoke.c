@@ -41,6 +41,8 @@ C_INT main(C_VOID)
         !session->model40_private || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
+        session->core_machine_config.l1_compatibility_policy !=
+            CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         session->core_machine_config.fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
         !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||

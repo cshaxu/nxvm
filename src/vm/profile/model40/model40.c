@@ -39,6 +39,7 @@ C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
         .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
         .kbc_serial_delivery_ticks = 1u,
         .clock_plan = {
             .dma = {1u, 1u, 0u},

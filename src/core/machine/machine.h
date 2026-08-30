@@ -189,6 +189,7 @@ struct core_machine {
     core_machine_clock_domain kbc_clock;
     core_machine_clock_domain provider_clock;
     core_machine_time_axis time_axis;
+    core_machine_l1_compatibility_policy l1_compatibility_policy;
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
@@ -355,7 +356,8 @@ typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,
     CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT,
     CORE_MACHINE_TIME_PUBLICATION_DEADLINE,
-    CORE_MACHINE_TIME_PUBLICATION_DETERMINISTIC_ADVANCE
+    CORE_MACHINE_TIME_PUBLICATION_DETERMINISTIC_ADVANCE,
+    CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY
 } core_machine_time_publication_origin;
 type_status core_machine_publish_elapsed_ticks(core_machine *machine,
     type_unsigned_64 elapsed_ticks, core_machine_time_publication_origin origin);

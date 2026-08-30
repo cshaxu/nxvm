@@ -368,6 +368,7 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
         .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .time_axis = contract->time_axis,
+        .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
         .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
         .kbc_command_response_ticks = contract->kbc_command_response_ticks

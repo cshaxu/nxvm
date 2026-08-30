@@ -3,6 +3,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/cpu_timing.h"
 
+#define CORE_MACHINE_L1_COMPATIBILITY_MAXIMUM_STEPS 16u
+
 _Static_assert(CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
     CORE_MACHINE_TIMING_CAPABILITY_COUNT,
     "timing capability count must match the frozen T433 universe");
@@ -405,6 +407,9 @@ static type_status core_machine_create_internal(
     if ((config->time_axis.kind != CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         config->time_axis.kind != CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
         config->time_axis.kind != CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL) ||
+        (config->l1_compatibility_policy != CORE_MACHINE_L1_COMPATIBILITY_DISABLED &&
+        config->l1_compatibility_policy !=
+            CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS) ||
         (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         config->time_axis.ticks_per_second != 0u) ||
         (config->time_axis.kind != CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
@@ -431,6 +436,7 @@ static type_status core_machine_create_internal(
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->transaction_contract = config->transaction_contract;
     machine->time_axis = config->time_axis;
+    machine->l1_compatibility_policy = config->l1_compatibility_policy;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
     machine->cpu_cycle_bus_ready = TYPE_TRUE;
     if (config->retirement_qualification != STD_NULL) {
@@ -1228,6 +1234,41 @@ type_status core_machine_advance_to_next_deadline(core_machine *machine,
         CORE_MACHINE_TIME_PUBLICATION_DEADLINE);
     if (status != TYPE_STATUS_OK) return status;
     *out_advanced = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_advance_l1_compatibility(core_machine *machine,
+    type_bool *out_advanced)
+{
+    core_machine_time_observation observation;
+    type_unsigned_8 step;
+
+    if (machine == STD_NULL || out_advanced == STD_NULL ||
+        !core_machine_mutable_operation_is_allowed(machine) ||
+        (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    *out_advanced = TYPE_FALSE;
+    if (machine->l1_compatibility_policy !=
+            CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
+        machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL) {
+        return TYPE_STATUS_OK;
+    }
+    /* This is a host-control bound, not an emulated duration. Each iteration
+     * follows the normal Core scheduler and reconsiders every known event. */
+    for (step = 0u; step < CORE_MACHINE_L1_COMPATIBILITY_MAXIMUM_STEPS; ++step) {
+        core_machine_capture_time_observation_private(machine, &observation);
+        if (observation.progress_disposition !=
+            CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY) {
+            return TYPE_STATUS_OK;
+        }
+        if (core_machine_publish_elapsed_ticks(machine, 1u,
+                CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY) != TYPE_STATUS_OK) {
+            return TYPE_STATUS_INVALID_STATE;
+        }
+        *out_advanced = TYPE_TRUE;
+    }
     return TYPE_STATUS_OK;
 }
 

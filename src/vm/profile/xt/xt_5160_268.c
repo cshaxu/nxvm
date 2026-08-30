@@ -39,6 +39,8 @@ type_status vm_profile_xt_5160_268_declaration_create(
      * qualified it as physical machine time. */
     declaration.values.core.configuration.time_axis =
         (core_machine_time_axis) {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 4772727u};
+    declaration.values.core.configuration.l1_compatibility_policy =
+        CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS;
     /* IBM derives the 8253 input (1.193182 MHz) as one quarter of the
      * 4.772727 MHz CPU board clock. This is frozen board data, not a
      * profile scheduler or another guest clock. */

@@ -73,6 +73,12 @@ typedef struct core_machine_time_axis {
     type_unsigned_64 ticks_per_second;
 } core_machine_time_axis;
 
+/* A construction-only compatibility policy. It is not a timing source. */
+typedef enum core_machine_l1_compatibility_policy {
+    CORE_MACHINE_L1_COMPATIBILITY_DISABLED = 0,
+    CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS
+} core_machine_l1_compatibility_policy;
+
 typedef enum core_machine_retirement_time_contract {
     CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC = 0,
     CORE_MACHINE_RETIREMENT_TIME_PHYSICAL = 1
@@ -177,6 +183,7 @@ typedef struct core_machine_config {
      * retained only for direct Core fixture compatibility and resolves to two. */
     type_unsigned_8 dma_controller_count;
     core_machine_time_axis time_axis;
+    core_machine_l1_compatibility_policy l1_compatibility_policy;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */
     core_machine_retirement_time_contract retirement_time_contract;
@@ -571,6 +578,10 @@ type_status core_machine_capture_time_observation(const core_machine *machine,
 /* Core selects and advances to its next valid guest-observable deadline.
  * A false result means an unqualified owner blocks safe fast advance. */
 type_status core_machine_advance_to_next_deadline(core_machine *machine,
+    type_bool *out_advanced);
+/* Turbo may request one bounded, Core-owned escape from a copied L1 state.
+ * The caller supplies neither a tick count nor a controller selection. */
+type_status core_machine_advance_l1_compatibility(core_machine *machine,
     type_bool *out_advanced);
 type_status core_machine_get_timeline_observation(const core_machine *machine,
     core_machine_timeline_observation *out_observation);

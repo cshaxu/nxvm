@@ -161,7 +161,8 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     if (source_ticks != 0u) {
         out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_DEADLINE;
     }
-    if (core_machine_fast_advance_is_blocked(machine)) {
+    if (core_machine_fast_advance_is_blocked(machine) &&
+        out_observation->progress_disposition == CORE_MACHINE_TIME_PROGRESS_IDLE) {
         if (out_observation->progress_disposition == CORE_MACHINE_TIME_PROGRESS_IDLE &&
             core_machine_l1_compatibility_is_eligible(machine)) {
             out_observation->progress_disposition =
