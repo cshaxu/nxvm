@@ -28,5 +28,5 @@ scheduler, controller alias, media cache or profile-specific Core branch.
 | Compiler debug sections | none reported by `objdump -h` for the produced executable |
 | Release artifact | `build/output/nxvm_0_5_0508.exe`, SHA-256 `1CD6A4ED85A4AC71EB3074274B487F7C6FBC93E4A832D20949079DAB50554550` |
 
-The release preserves the runtime debugger. “Stripped” concerns compiler
+The release preserves the runtime debugger. Stripped concerns compiler
 debug information only; it does not remove that product feature.
