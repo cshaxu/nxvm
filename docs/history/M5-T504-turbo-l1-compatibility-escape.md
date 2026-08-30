@@ -13,3 +13,13 @@ guest time from the host.
 
 No task result may promote causal-only timing to L2/L3, invent a controller
 deadline, add a parallel scheduler, or retain a device-specific workaround.
+
+## S1 accepted inventory and baseline
+
+S1 P1 `3a39c7a8` inventories the finite blocked/no-deadline universe in the
+[indexed evidence](../etc/evidence/t504-s1-l1-no-deadline-inventory.md).
+Coordinator P2 review accepts the four L1 candidates (DMA, HDC, D4 refresh,
+and unpublished slave-PIC cascade), separates already-due FDC work and external
+HLT, and confirms the owner-local baseline corrections. Focused 4/4, complete
+unit 312/312, and documentation governance pass. S2 owns only the copied Core
+disposition boundary.
