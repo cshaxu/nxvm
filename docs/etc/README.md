@@ -31,6 +31,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t507-s12-core-scheduler-composition.md` | Core scheduler owner | T507 S12's earliest-deadline, immediate and bounded-L1 composition repair with its Core/VM boundary proof. |
 | `evidence/t507-s13-product-performance-closure.md` | Product/release owner | T507 S13's Standard/Turbo one-path proof, unit/integration host-cost results and stripped Release 0507 artifact record. |
 | `evidence/t507-s14-l2-deadline-correction.md` | Core scheduler owner | Corrective T507 S14's source/reference matrix for DMA, FDC, HDC and D4 deadline correction, including its L2 boundary. |
+| `evidence/t508-s1-timing-input-qualification-ledger.md` | Core/profile timing owners | T508 S1's finite copied-input universe, source-grade dispositions, and source-neutral HDC input repair boundary. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |
 | `evidence/t503-s11-cross-profile-closure.md` | Core route owner | T503 S11's four-profile controller-route matrix, complete unit/integration proof, corrected Release artifact and T-level route closure. |
 | `evidence/t504-s1-l1-no-deadline-inventory.md` | Core scheduler owner | T504 S1's finite blocked/no-deadline owner inventory, its normal wake/lifecycle paths, and the L1 versus already-due/deadline disposition for the Turbo compatibility receiver. |

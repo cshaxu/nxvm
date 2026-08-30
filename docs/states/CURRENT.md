@@ -4,17 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active packet; corrective T507 S14 is closed. |
-| Admission And Approval | Owner rejected the prior T507 performance conclusion on 2026-08-29 after the literal DMA L1 predicate was found to contradict its qualified-deadline claim, and explicitly approved repairing that predicate plus all active L1/FDC-L2 scheduler blockers in this corrective S. |
-| Objective | No active implementation packet. |
-| Non-goals | Do not import external code; invent physical duration; create a host-to-Core tick route, second scheduler, controller mirror, profile-side controller, or a per-personality fast path. |
-| Reference Baseline | `bd668d1f`; [T507 history](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md), retained [proposal](../history/M5-T507-core-scheduler-standard-turbo-performance-closure-proposal.md), and the S8/S10/S11 evidence. |
-| Files And ABI Surface | Existing Core scheduler, DMA/FDC/HDC/D4 owners, copied timing-plan rules, owner-local tests and the existing 0507 artifact only. No public ABI is presumed necessary. |
-| Applicable Rules | EXECUTION.md corrective-S lifecycle, finite sweep and complete unit/T integration; ARCHITECTURE.md one owner/Core time writer; CODING.md direct owner-local consolidation; source policy before all manual or external-reference research; DOCUMENT.md evidence boundary. |
-| Verification | Freeze the active DMA/HDC/FDC/D4 cases; compare current owner logic with retained original sources and locally available 86Box, Bochs and PCjs plus MAME when available; add owner-local regressions; run focused tests, complete unit, external-asset integration and rebuild/inspect stripped 0507. |
-| Exit Criteria | Admit the next queued packet before implementation. |
-| Original Owner Request | Corrective T507 S14 closed: qualified DMA, FDC conversion, HDC deadline ownership and D4 deadline categorisation are reconciled. |
-| Similar-Issue Sweep | Closed T507 S14 swept scheduler eligibility/fast-advance guards, DMA variants, FDC pending phases and conversion cases, HDC personalities, Model-40 D4, profile construction, and Standard/Turbo waiting. |
+| Identifier Mode | Continuation T508 S2. |
+| Admission And Approval | Owner approved this new highest-priority implementation task on 2026-08-30: Core must accept sourced L3 inputs, built-in VM profiles must seek L2 or better, and L1 must remain only an explicit fallback. |
+| Objective | Remove the demonstrated L2-only naming impediment from the copied HDC service input while retaining one Core HDC owner and no provenance runtime branch. |
+| Non-goals | Do not import external code; invent physical duration; create host-to-Core tick injection, runtime controller setters, a second scheduler/guest clock, controller mirror, profile-side controller, provenance-dependent Core branch, or per-personality fast path. |
+| Reference Baseline | `67cd07a6`; [T508 proposal](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), [S1 ledger](../etc/evidence/t508-s1-timing-input-qualification-ledger.md), [T507 closure](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md), and its S14 deadline evidence. |
+| Candidate Proposal | [M5 T508 Core timing-input qualification closure](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), placed first in the candidate queue and immediately admitted by owner direction. |
+| Files And ABI Surface | Core HDC configuration declaration/owner, its VM profile construction call sites, direct owner-local tests, and timing evidence. No public ABI change is presumed. |
+| Applicable Rules | EXECUTION.md coverage-bearing ledger, S/T full-test and artifact lifecycle; ARCHITECTURE.md one Core time writer and opaque/copy boundary; CODING.md direct owner-local consolidation; source policy for manuals/external references; DOCUMENT.md evidence boundary. |
+| Verification | Update every in-repository initializer and assertion for the renamed copied input; run direct HDC/profile checks, complete unit, and documentation governance. |
+| Expected Markers | One source-neutral service input name appears at every HDC construction/consumption site; no L2-only name, compatibility shim, or duplicate field remains. |
+| Asset Needs | None beyond the accepted S1 ledger. |
+| Reporting Requirements | Report source/test line delta, every updated construction route, and confirmation that the HDC remains the sole deadline owner. |
+| Stop Conditions | Stop if the rename exposes a real distinct service semantic requiring a new config shape or public ABI; do not use a compatibility alias. |
+| Exit Criteria | S2 closes only after the obsolete L2-only term is absent, all construction routes use one copied field, direct checks and complete unit pass, and S3 receives the entire unqualified-axis class. |
+| Original Owner Request | Owner requires manual L3 or emulator-derived L2 inputs, explicit L1 fallback only, a Core seam capable of L3 values, and VM profile inputs that seek L2 or better; proposal, queue priority, and immediate implementation are approved. |
+| Similar-Issue Sweep | Update all Core, VM, test and documentation references to the HDC field; do not change FDC, DMA, D4 or generic-profile time qualification in this S. |
 
 ## Current Technical Baseline
 
