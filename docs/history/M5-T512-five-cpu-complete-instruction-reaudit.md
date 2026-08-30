@@ -35,3 +35,13 @@ the available 8086/8088, 80186 and 80386DX instruction-time tables. It also
 corrects a material provenance error: the previously cited 80286 Appendix B is
 an encoding dictionary, not an instruction-time table. No CPU behavior changes
 in S1; S2 must carry that timing-source boundary into every 80286 row.
+
+## S2: Complete List 1
+
+Freeze a finite List 1 that maps every decoder-admitted instruction form and
+applicable state/delivery context across all five profiles to its Intel manual
+locator. The ledger must separately classify opcode/prefix legality, operands,
+defined and undefined FLAGS, control/system state, success/fault/trap/abort/
+interrupt/NMI delivery, and instruction-time fact or explicit absence. It must
+not replace a missing 80286 instruction-time source with the previous
+Appendix-B claim or an external emulator literal. S2 changes no production code.

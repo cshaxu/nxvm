@@ -4,19 +4,19 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T512; S1 is active. |
+| Identifier Mode | New T512; S1 accepted, S2 is active. |
 | Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate. |
 | Objective | Re-establish a complete, source-backed conformance result for the supported 8086, 8088, 80186, 80286 and 80386DX profiles before any repair. |
 | Non-goals | Do not repair an isolated FLAGS symptom first, create profile-side CPU behavior, duplicate state/retirement paths, import third-party source, or change `build/output` YAML. |
 | Reference Baseline | Current Core decode/execution, existing per-CPU ledgers, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
 | Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
-| Files And ABI Surface | S1 is documentation/research only: it may add source provenance and cross-validation evidence, but changes no CPU, public ABI, VM profile or artifact. |
+| Files And ABI Surface | S2 is documentation/ledger only: it may add the complete List 1 and source dispositions, but changes no CPU, public ABI, VM profile or artifact. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
 | Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
-| Expected Markers | S1 records original-manual locators, edition/OCR quality and external-model agreement/conflict for each CPU. |
+| Expected Markers | S2 records one complete opcode/form, state, delivery and timing List 1 for all five profiles, including the corrected 80286 timing-source disposition. |
 | Asset Needs | Read-only owner-managed manuals under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
 | Reporting Requirements | Record each manual rule, complete current-code disposition, source tier and exact receiver for any nonconformance; undefined state must never receive a fabricated exact value. |
-| Stop Conditions | Stop before implementation until S1--S3 accept the whole coverage universe; stop and report any source/license conflict or missing normative manual. |
+| Stop Conditions | Stop before implementation until S2--S3 accept the whole coverage universe; stop and report any source/license conflict or missing normative manual. |
 | Exit Criteria | Every decoder-admitted row obtains a manual locator and current-code disposition; defects are repaired once at the Core owner, swept across profiles, and verified by full gates. |
 | Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
 | Similar-Issue Sweep | S1 covers all five profiles, Core decoder/execution/state/delivery/retirement paths, existing ledgers and repository tests; later repair S tasks sweep every equivalent form and profile. |
