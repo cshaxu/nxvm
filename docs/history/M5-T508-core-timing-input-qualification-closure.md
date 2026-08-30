@@ -11,6 +11,7 @@ construction plan and never mutate controller timing at runtime.
 | --- | --- |
 | S1 | Accepted: the complete four-profile copied-input ledger finds no active built-in L1 route, one source-neutral HDC naming repair, and one inseparable unqualified generic/profile axis class for S3. |
 | S2 | Accepted: `service_ticks` is one provenance-neutral copied HDC input at every Core, VM and test call site; the former L2-only term and compatibility alias are removed. |
+| S3 | Accepted: ATA-3 and external models provide no portable default-PC/AT service duration, and the current Model-40 elapsed axis is not a CPU-cycle axis; both retain one explicit unqualified boundary. |
 
 ## Completion Standard
 
