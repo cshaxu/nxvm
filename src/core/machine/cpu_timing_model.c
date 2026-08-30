@@ -3209,12 +3209,12 @@ C_INT core_machine_control_stack_source_instruction_cost(
                     machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 5u :
                     6u) : (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                     8u : machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
-                    15u : 18u);
+                    16u : 18u);
         } else {
             if (opcode == 0xe2u) {
                 *out_ticks = taken ? (machine->cpu_profile ==
                     CORE_MACHINE_CPU_PROFILE_80286 ? 8u :
-                    machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 15u :
+                    machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 16u :
                     17u) : (machine->cpu_profile ==
                     CORE_MACHINE_CPU_PROFILE_80286 ? 4u : 5u);
             } else if (opcode == 0xe1u) {
