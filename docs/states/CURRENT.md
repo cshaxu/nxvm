@@ -2,10 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T507 S1 freezes the progression matrix, S2 removes idle
-FDC/HDC settlement work, and accepted S3 completes the source/List 1/List 2
-PIC re-audit and removes the obsolete scheduler-side cascade L1 fallback. The
-next controller batch is S4 DMA.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T507 S4. |
+| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S3 are accepted; this is the selected 8237A controller batch. |
+| Objective | Re-audit the selected 8237A request, arbitration, service, clock, refresh, FDC DMA2 and Xebec DMA3 progression surface, then repair every confirmed DMA-owner or direct downstream defect without creating a scheduler fallback. |
+| Non-goals | Do not invent a DMA duration, change PIC/PIT/FDC/HDC/KBC/VADP/D4 ownership, inject host ticks, add a speed mode, or make a VM/profile DMA path. |
+| Reference Baseline | 2602bcbf; T506 DMA ledger/closure and T507 S1 progression matrix. |
+| Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
+| Files And ABI Surface | DMA owner, existing Core request/service consumers and DMA owner-local tests/evidence/history only; no VM/profile DMA state, public raw-device pointer or second scheduler. |
+| Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one Core DMA state and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
+| Verification | Render/read applicable Intel/IBM source; inspect current DMA and direct consumers; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
+| Expected Markers | A T507 S4 DMA evidence marker; every finite DMA row has a manual-L3/other-L3/L2/L1 disposition, code owner, direct consumer and regression or explicit receiver. |
+| Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
+| Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
+| Stop Conditions | Stop and revise if a repair needs unsourced DMA timing, an unapproved public contract, mutable state outside Core, a profile/VM workaround, or a second dispatcher. |
+| Exit Criteria | Every frozen DMA function/publication/timing row is fixed or explicitly retained at its supported level; no duplicate or late service/publication remains; direct consumers and full unit pass. |
+| Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
+| Similar-Issue Sweep | Command/mode/mask/request state, primary/secondary cascade, arbitration/priority, memory transfer, terminal count/EOP, refresh DREQ0, FDC DMA2, Xebec DMA3, reset and all scheduler/CPU/PIC consumers. |
 
 ## Current Technical Baseline
 

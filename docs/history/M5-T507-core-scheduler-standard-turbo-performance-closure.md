@@ -12,6 +12,7 @@ Core progress; Turbo removes that wait and nothing else.
 | S1 | Accepted: freezes C1--C13 and V1--V4, including same-tick order, cancellation and explicit L1/L2 receivers. Documentation governance and unit 312/312 pass. |
 | S2 | Accepted: idle unconfigured FDC and idle HDC no longer receive scheduler work or trace records; active controller order remains Core-owned. Focused regressions and unit 312/312 pass. |
 | S3 | Accepted: complete 8259A source/List 1/List 2 audit removes the obsolete scheduler-side slave-cascade L1 fallback. Focused PIC 6/6, full unit 312/312 and documentation governance pass. |
+| S4 | In review: complete Intel 8237A/List 1/List 2 re-audit confirms one DMA owner and scheduler observation path for request, arbitration, phase, refresh, FDC DMA2 and Xebec DMA3. No new DMA defect is confirmed. |
 
 The next implementation batch may consume only this finite matrix. It must
 not create a VM/profile scheduler, device-local queue, host-to-Core tick
