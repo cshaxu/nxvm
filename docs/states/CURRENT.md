@@ -2,10 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T505 is closed; its PIC owner immediately publishes or
-withdraws the single derived cascade request after a source or command
-transition. The first candidate is the DMA service/arbitration deadline
-closure.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T506 S1. |
+| Admission And Approval | Owner authorized continuous single-role execution of the ordered queue on 2026-08-29; this packet admits the DMA source/List-1/List-2 convergence ledger before repair. |
+| Objective | Freeze the complete selected 8237A request, arbitration and service universe for PIT1 refresh, FDC DMA2 and XT Xebec DMA3, with a source-quality and current-owner disposition for every row. |
+| Non-goals | Do not change DMA, scheduler, controllers, VM, profiles, deadlines or timing ratios; do not import external code or infer a service duration. |
+| Reference Baseline | `3a51a00e`; [DMA service and arbitration proposal](../proposals/m5-dma-service-arbitration-deadline-closure.md) and retained T504 L1 inventory. |
+| Candidate Proposal | [M5 DMA service and arbitration deadline closure](../proposals/m5-dma-service-arbitration-deadline-closure.md). |
+| Files And ABI Surface | One indexed T506 List 1/List 2 evidence ledger and this current packet; no source, test, ABI, artifact or profile change. |
+| Applicable Rules | `EXECUTION.md` coverage ledger and review lifecycle; `ARCHITECTURE.md` sole DMA/Core ownership; `DOCUMENT.md` evidence/state boundaries; source policy for manuals and read-only external-model research. |
+| Verification | Quality-check Intel 8237A and selected XT/AT board material; cross-check 86Box, MAME, PCjs, Bochs and QEMU where available; trace every selected row to code and run complete unit plus documentation governance. |
+| Expected Markers | `M5:T506:S1:DMA-SERVICE-LEDGER:OK`; finite List 1/List 2 dispositions for every selected route; full unit and documentation-governance pass. |
+| Asset Needs | Read-only owner-managed manuals and external source checkouts only; no firmware, media, external source text, hashes or machine-local paths enter the repository. |
+| Reporting Requirements | Record source class/quality, row disposition, exact owner route, request cancellation/reset/consumer order, external corroboration limits and every transfer. |
+| Stop Conditions | Stop and revise if a source requires a profile board change, the selected universe cannot be bounded, or repair would require a guessed delay or non-DMA owner. |
+| Exit Criteria | Every selected DMA service relation has one List 1/List 2 disposition and code-owner mapping; each unsupported relation has an explicit receiver; no implementation has begun. |
+| Original Owner Request | Continue the queue in single-role mode through PIC, DMA, HDC, Model-40 D4 and the five CPU profile re-audit, using source-first complete hardware tasks rather than additive fixes. |
+| Similar-Issue Sweep | Primary/secondary DMA, DRQ/DACK, PIT1 refresh, FDC DMA2, Xebec DMA3, mask/cascade/mode, terminal count/EOP, reset/cancel, HLT observation and all selected XT/AT topologies. |
 
 ## Current Technical Baseline
 
@@ -42,8 +56,8 @@ closure.
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | --- | --- |
+| T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
 | T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
 | T501 | Closed: all frozen four-profile media rows have their recorded terminal or external boundary; the Model-40 80386/1.2-MB row reaches `A:\>` through its sole Core/firmware path. [History](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
