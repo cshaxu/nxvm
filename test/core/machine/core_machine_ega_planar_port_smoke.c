@@ -72,6 +72,25 @@ C_INT main(C_VOID)
         &sequencer) != TYPE_STATUS_OK;
     failed |= core_machine_vadp_configure_ega_controllers(&vadp,
         &controllers) != TYPE_STATUS_OK;
+
+    /* EGA text fallback and planar graphics share the Attribute Controller's
+       display-enable state; it is not a renderer-local visibility flag. */
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_MODE, 0x09u);
+    value = 'T';
+    failed |= !core_machine_ega_planar_write(&memory, CORE_MACHINE_VADP_TEXT_BASE,
+        value);
+    value = 0x1fu;
+    failed |= !core_machine_ega_planar_write(&memory,
+        CORE_MACHINE_VADP_TEXT_BASE + 1u, value);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT || snapshot.characters[0] != 'T';
+    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT || snapshot.characters[0] != 0x20u ||
+        snapshot.attributes[0] != 0u;
+    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x20u);
     core_machine_ega_planar_select_mode_d(&port);
 
     status_first = core_machine_port_read(&port, 0x03dau);

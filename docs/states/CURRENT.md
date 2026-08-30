@@ -17,7 +17,7 @@
 | Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
 | Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
 | Stop Conditions | Stop and revise if a repair needs an unsourced delay, host input time, unapproved public contract, mutable state outside Core, profile/VM workaround, topology merge or second scheduler. |
-| Exit Criteria | Every frozen FDC/controller-publication/timing row is fixed or explicitly retained at its supported level; no duplicate or late DRQ/TC/IRQ6/reset/deadline route remains; direct consumers and full unit pass. |
+| Exit Criteria | Every frozen VADP/video-publication row is fixed or explicitly retained at its supported level; no duplicate port, VRAM, snapshot or presentation route remains; direct consumers and full unit pass. |
 | Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
 | Similar-Issue Sweep | CGA/EGA port and memory maps, CRTC geometry, mode/enable state, planar access, text fallback, copied snapshot lifetime, presentation, reset/finalize and direct VM consumers. |
 
