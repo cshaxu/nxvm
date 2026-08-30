@@ -202,7 +202,7 @@ static C_INT rtc_cmos_s3_test_phase_and_divider(C_VOID)
         CORE_MACHINE_RTC_REG_A_UIP) == 0u;
     core_machine_rtc_reset(&fixture.rtc);
     failed |= (rtc_cmos_s3_read(&fixture.rtc, CORE_MACHINE_RTC_REG_A) &
-        CORE_MACHINE_RTC_REG_A_UIP) != 0u;
+        CORE_MACHINE_RTC_REG_A_UIP) == 0u;
     core_machine_rtc_advance(&fixture.rtc, 32768u);
     failed |=
         fixture.rtc.calendar.second != 1u ||

@@ -249,7 +249,7 @@ C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
 C_VOID core_machine_rtc_reset(core_machine_rtc *rtc)
 {
     if (rtc == STD_NULL) return;
-    rtc->calendar.second_ticks = 0u;
+    /* RESET clears delivery state but does not stop the clock/calendar phase. */
     rtc->registers[CORE_MACHINE_RTC_REG_B] &= CORE_MACHINE_RTC_REG_B_SET |
         CORE_MACHINE_RTC_REG_B_DM | CORE_MACHINE_RTC_REG_B_24H | 0x01u;
     rtc->registers[CORE_MACHINE_RTC_REG_C] = 0u;
