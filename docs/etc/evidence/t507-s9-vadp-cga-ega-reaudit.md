@@ -1,6 +1,6 @@
 # T507 S9 VADP CGA/EGA Re-Audit
 
-`M5:T507:S9:VADP-CGA-EGA:P1`
+`M5:T507:S9:VADP-CGA-EGA:P2`
 
 ## Source And Method
 
@@ -58,5 +58,16 @@ Status-1/3C0h sequence, and proves that capture changes to blank text before
 re-enabling the same state for the existing planar proof.  The repair is one
 additional condition around the existing capture loop; it adds no state,
 port, callback, video mode, VM branch, renderer cache or deadline.  The
-focused owner test passes.  The required complete repository-only unit replay
-is recorded at P2.
+focused owner test passes.  The complete repository-only unit replay passes
+312/312 in 16.28 seconds.
+
+## P2 Actual-Diff Review
+
+P1 `e704100f` changes two production lines and adds nineteen owner-local test
+lines.  It reuses the existing `core_machine_vadp_ega_output_active()`
+predicate, which already governs the recognized planar blank route.  The
+review finds no new state owner, public ABI, device deadline, profile input,
+VM special case, renderer cache, second snapshot route or unsourced timing.
+The evidence/status delta is limited to the S9 source, List 1/List 2,
+verification and corrected packet exit wording.  The unrelated working-tree
+proposal change was neither staged nor reviewed as S9 work.
