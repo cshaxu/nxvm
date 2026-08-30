@@ -6,13 +6,13 @@
 | --- | --- |
 | Identifier Mode | Continuation T510 S3 corrective closure. |
 | Admission And Approval | Owner-approved T510 remains open after the reported current-HDD `EWIN31\\SETUP.EXE` freeze exposed a missing integration checkpoint. S1 `09a83060`/`ce4d685b` froze the ledger; S2 `53698062`/`0eb318eb` implements and accepts the owner-local batch. |
-| Objective | Reproduce the reported HDD Windows Setup freeze through the selected current configuration, locate its sole failing owner/transition, repair the full proven class, and rerun all T510 closure gates. |
+| Objective | Reproduce the reported HDD Windows Setup freeze through the selected current configuration, locate its sole failing owner/transition, repair the full proven class, and rerun all T510 closure gates. The ATA PIO firmware consumer repair is implemented and awaits independent acceptance. |
 | Non-goals | Do not reintroduce immediate controller completion, a profile-specific Core branch, VM scheduler, controller copy, mutable runtime timing setter, or an unproven physical-media duration. |
 | Reference Baseline | T510 S1 List 1/List 2, S2 implementation evidence, provisional S3 verification `148e9f46`/`ddfe094f`, and the owner-reported HDD path. |
 | Candidate Proposal | [HDC personality service-deadline proposal](../proposals/m5-hdc-personality-service-deadline-closure.md). |
 | Files And ABI Surface | HDC, its existing consumer and selected external-asset integration harness only if the reproduced trace proves a defect; no public mutable ABI. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core remains the sole HDC/time owner; VM consumes observations only. |
-| Verification | A deterministic external-HDD Setup checkpoint that distinguishes entry, progress and completion/terminal fault; focused owner regression; complete unit, integration, governance and current stripped Release after any repair. |
+| Verification | The external-HDD Setup-entry checkpoint reaches `Welcome to Setup.`; the focused two-sector owner regression, complete unit and integration gates, and stripped Release have passed. Documentation governance remains required for acceptance. |
 | Expected Markers | The reported command either reaches its defined Setup checkpoint or produces a bounded evidence trace identifying a non-HDC owner. No HDC phase may be assumed complete without its sole deadline path. |
 | Asset Needs | Owner-provided current `hdd.img` only through the existing external-asset policy; no source, firmware or guest-media import. |
 | Reporting Requirements | Record the exact selected configuration, checkpoint/trace, owner-path disposition, every repair and the final complete gate result. |
@@ -25,7 +25,7 @@
 
 - **Current developer artifact:** CMake target `vm-0-5-0508` emitted
   `nxvm_0_5_0508.exe` in a stripped Release build, SHA-256
-  `1CD6A4ED85A4AC71EB3074274B487F7C6FBC93E4A832D20949079DAB50554550`.
+  `6578166FB910433AE1BC78050E7756D8938ADCBF2859AB2E4ACCE151785360F0`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed

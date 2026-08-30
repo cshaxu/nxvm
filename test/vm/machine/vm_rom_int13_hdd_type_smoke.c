@@ -69,15 +69,16 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         0xa3u, 0x1eu, 0x05u,                  /* mov [051Eh],ax */
         0xb8u, 0x00u, 0x00u, 0x8eu, 0xc0u,    /* ES=0000 */
         0xc7u, 0x06u, 0x00u, 0x06u, 0xa5u, 0x5au, /* [0600]=5AA5 */
+        0xc7u, 0x06u, 0x00u, 0x08u, 0x5au, 0xa5u, /* [0800]=A55A */
         0xbbu, 0x00u, 0x06u,                  /* BX=0600 */
-        0xb8u, 0x01u, 0x03u,                  /* AH=03, AL=01 */
+        0xb8u, 0x02u, 0x03u,                  /* AH=03, AL=02 */
         0xb9u, 0x01u, 0x00u,                  /* CHS 0/0/1 */
         0xbau, 0x80u, 0x00u,                  /* DH=0, DL=80 */
         0xcdu, 0x13u,                         /* int 13h */
         0xa3u, 0x22u, 0x05u,                  /* mov [0522h],ax */
         0x9cu, 0x58u, 0xa3u, 0x24u, 0x05u,      /* pushf; pop [0524h] */
-        0xbbu, 0x00u, 0x08u,                  /* BX=0800 */
-        0xb8u, 0x01u, 0x02u,                  /* AH=02, AL=01 */
+        0xbbu, 0x00u, 0x0au,                  /* BX=0A00 */
+        0xb8u, 0x02u, 0x02u,                  /* AH=02, AL=02 */
         0xb9u, 0x01u, 0x00u,                  /* CHS 0/0/1 */
         0xbau, 0x80u, 0x00u,                  /* DH=0, DL=80 */
         0xfdu,                                 /* std: INT 13h must not depend on DF */
@@ -85,12 +86,14 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         0xfcu,                                 /* cld */
         0xa3u, 0x26u, 0x05u,                  /* mov [0526h],ax */
         0x9cu, 0x58u, 0xa3u, 0x28u, 0x05u,      /* pushf; pop [0528h] */
-        0xa1u, 0x00u, 0x08u,                  /* mov ax,[0800h] */
+        0xa1u, 0x00u, 0x0au,                  /* mov ax,[0A00h] */
         0xa3u, 0x2au, 0x05u,                  /* mov [052Ah],ax */
+        0xa1u, 0x00u, 0x0cu,                  /* mov ax,[0C00h] */
+        0xa3u, 0x2cu, 0x05u,                  /* mov [052Ch],ax */
         0xc7u, 0x06u, 0x20u, 0x05u, 0x5au, 0xa5u, /* mov word [0520h],A55Ah */
         0xf4u, 0xebu, 0xfeu                   /* hlt; jmp $ */
     };
-    type_unsigned_8 hdd_sector[512] = {0};
+    type_unsigned_8 hdd_sector[1024] = {0};
     STD_FILE *file;
     DWORD length;
 
@@ -116,6 +119,8 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         return 0;
     }
     STD_FCLOSE(file);
+    hdd_sector[512u] = 0x34u;
+    hdd_sector[513u] = 0x12u;
     file = STD_FOPEN(hdd_path, "wb");
     if (file == STD_NULL || STD_FWRITE(hdd_sector, 1u, sizeof(hdd_sector), file) !=
             sizeof(hdd_sector)) {
@@ -164,6 +169,7 @@ C_INT main(C_VOID)
     type_unsigned_16 read_ax = 0u;
     type_unsigned_16 read_flags = 0u;
     type_unsigned_16 read_word = 0u;
+    type_unsigned_16 read_second_word = 0u;
     type_unsigned_16 completed = 0u;
     type_unsigned_32 instruction;
     C_INT passed = 0;
@@ -227,6 +233,8 @@ C_INT main(C_VOID)
                 session->core_machine, 0x0528u, &read_flags, sizeof(read_flags)) !=
                 TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
                 0x052au, &read_word, sizeof(read_word)) != TYPE_STATUS_OK ||
+            core_machine_memory_read(session->core_machine, 0x052cu,
+                &read_second_word, sizeof(read_second_word)) != TYPE_STATUS_OK ||
             core_machine_memory_read(session->core_machine, 0x0520u, &completed,
                 sizeof(completed)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x0475u, &hdd_count, sizeof(hdd_count)) !=
@@ -248,7 +256,7 @@ C_INT main(C_VOID)
             (initial_status_flags & 1u) == 0u &&
             (write_ax & 0xff00u) == 0u && (write_flags & 1u) == 0u &&
             (read_ax & 0xff00u) == 0u && (read_flags & 1u) == 0u &&
-            read_word == 0x5aa5u &&
+            read_word == 0x5aa5u && read_second_word == 0xa55au &&
             hdd_count == 1u;
         break;
     }
