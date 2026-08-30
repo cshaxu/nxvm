@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T504 S3. |
-| Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S2 P1 `548fe25b` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits the one Core-owned Turbo compatibility progression and its immutable profile construction policy. |
-| Objective | Implement one bounded Core progression request for S1's L1 candidates: it must settle already-due work and known deadlines first, then make only normal owner transitions under frozen profile policy, and return a copied outcome to Turbo without accepting ticks from VM. |
-| Non-goals | Do not change Standard pacing, inject host time, promote L1 evidence, expose controller state, add a scheduler, add device-specific VM/BIOS paths, use arbitrary large tick batches, or clear a wait outside its normal owner transition. |
-| Reference Baseline | `548fe25b` (T504 S2 P1 copied disposition boundary); current stripped Release artifact remains `0503`. |
+| Identifier Mode | Continuation T504 S4. |
+| Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S3 P1 `2c19117d` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits mode and lifecycle verification only. |
+| Objective | Prove Standard never requests the compatibility progression while Turbo may request it only from the copied L1 disposition, and prove reset, stop/pause, debugger, input, interrupt, immediate work, and known deadlines retain their existing Core boundaries. |
+| Non-goals | Do not widen the S3 Core policy, inject host time, promote L1 evidence, add lifecycle-specific device paths, add a scheduler, or use an external ROM/media workload before S5. |
+| Reference Baseline | `2c19117d` (T504 S3 P1 Core-owned compatibility progression); current stripped Release artifact remains `0503`. |
 | Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
-| Files And ABI Surface | Core config/plan freeze path, `machine_interface.h`, `machine.c`, `machine_scheduler.c`, and VM `waiting.c` only; profile declarations/resolver carry immutable policy. The request accepts no tick count and returns only a copied progressed/not-progressed result. |
+| Files And ABI Surface | Focused VM session waiting/runner tests and Core lifecycle observation tests only. Runtime code may change solely if a demonstrated S3 lifecycle defect needs the same existing Core/VM boundary. |
 | Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` Core time/controller ownership and VM-to-Core command boundary; `CODING.md` one shared path/no device receiver; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable because no source is imported or derived. |
-| Verification | Prove known-deadline and immediate precedence, all four S1 L1 owners through one Core path, profile freeze/rejection, Standard non-use, Turbo-only invocation, reset/stop/pause/input/interrupt boundaries, then run full `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8` and documentation governance. |
-| Expected Markers | `M5:T504:S3:CORE-L1-COMPATIBILITY:OK`; full unit summary; documentation-governance pass. |
-| Asset Needs | None. S3 uses repository source and T504 evidence only; no ROM, media, manual, emulator, or protected asset is imported. |
-| Reporting Requirements | Record the frozen-policy provenance, exact bounded transition condition, known-work precedence, per-owner result, and Standard/Turbo call distinction in indexed evidence. P1 states actual implementation and full-unit result; P2 independently verifies no tick injection, duplicated scheduler, or device-specific VM path. |
-| Stop Conditions | Stop and revise the packet if one shared Core action cannot preserve any candidate's normal lifecycle, needs an unbounded batch or guessed timing, requires a second owner/scheduler, an external asset, or VM mutation of Core state. |
-| Exit Criteria | Turbo can request one bounded Core-owned compatibility progression only when S2 reports eligibility; known/immediate work wins, Standard never invokes it, every candidate preserves normal owner lifecycle, immutable profile policy is enforced, evidence is indexed, and full unit/docs gates pass. |
+| Verification | Exercise Standard and Turbo against copied observations; prove Core rejects invalid lifecycle/policy calls and preserves immediate/deadline priority, then run full `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8` and documentation governance. |
+| Expected Markers | `M5:T504:S4:MODE-LIFECYCLE:OK`; full unit summary; documentation-governance pass. |
+| Asset Needs | None. S4 uses repository source and T504 evidence only; no ROM, media, manual, emulator, or protected asset is imported. |
+| Reporting Requirements | Record exact mode/lifecycle cases, result, and any owner-local repair in indexed evidence. P1 states actual results; P2 independently verifies Standard has no new progression path and Turbo uses no direct time input. |
+| Stop Conditions | Stop and revise the packet if verification requires VM controller access, host-to-guest time injection, a second scheduler, a guessed timing value, or an external workload before S5. |
+| Exit Criteria | Standard never requests compatibility progress; Turbo only requests it from a copied L1 condition; lifecycle, input, interrupt, immediate and deadline boundaries are preserved; evidence is indexed and full unit/docs gates pass. |
 | Original Owner Request | Complete L1 Turbo efficiency in solo mode: make Turbo useful without violating Core ownership, Standard semantics, or the established L-level evidence discipline. |
-| Similar-Issue Sweep | Sweep all profile declaration/resolver construction paths, every VM waiting caller, Core progression public entry point, and each S1 owner; consolidate them into one action rather than separate DMA/HDC/D4/PIC Turbo paths. |
+| Similar-Issue Sweep | Sweep every VM waiting mode branch and Core compatibility entry precondition, plus reset/stop/pause/debug/input/interrupt callers; retain one S3 action rather than lifecycle-specific alternatives. |
 
 ## Current Technical Baseline
 
@@ -81,6 +81,14 @@
   tick input, runner change, or scheduler change. Focused 4/4, full unit
   312/312, and documentation governance pass. S3 is admitted for one
   Core-owned Turbo progression under immutable profile policy.
+
+- **M5 T504 S3 P2:** coordinator actual-diff review accepts `2c19117d`:
+  one construction-frozen policy permits a value-only Turbo request to one
+  Core-owned bounded progression action. Core reconsiders known work before
+  each normal owner transition; no VM tick, controller choice, pointer,
+  host-time injection, duplicate scheduler, or device shim was introduced.
+  Focused proof, full unit 312/312, and documentation governance pass. S4 is
+  admitted for mode/lifecycle verification.
 
 - **M5 T503 S7 P1:** direct IBM/ATA/code/external reconciliation removes the
   inert Xebec `323h` mask cache: one existing HDC owner now gates its existing
