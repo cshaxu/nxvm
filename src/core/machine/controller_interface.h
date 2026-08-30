@@ -43,10 +43,10 @@ typedef struct core_machine_fdc_config {
     /* Frozen board READY inputs, one bit per controller drive select.  They
      * are mechanical wiring facts, never inferred from inserted media. */
     type_unsigned_8 ready_mask;
-    /* Frozen conversion into the Core virtual axis.  Zero explicitly retains
-     * the no-delay L2 fallback; a selected source-qualified plan supplies the
-     * nonzero value used by the 8272A timing formulas. */
-    type_unsigned_32 ticks_per_microsecond;
+    /* Frozen conversion into the Core virtual axis.  This is an L2 macro
+     * ratio unless a selected board source qualifies it; Core uses it only to
+     * convert the 8272A's own microsecond formulas into its elapsed axis. */
+    type_unsigned_32 clock_ticks_per_second;
 } core_machine_fdc_config;
 
 typedef struct core_machine_fdc_drive_bindings {
@@ -113,6 +113,9 @@ typedef struct core_machine_hdc_xebec_config {
 typedef struct core_machine_hdc_config {
     core_machine_hdc_protocol protocol;
     type_unsigned_8 irq;
+    /* Frozen reference-derived macro service quantum in Core elapsed ticks.
+     * Zero publishes the owner's immediate deadline without inventing a duration. */
+    type_unsigned_32 l2_service_ticks;
     union {
         core_machine_hdc_task_file_config task_file;
         core_machine_hdc_xebec_config xebec;

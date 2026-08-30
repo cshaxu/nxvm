@@ -9,30 +9,6 @@ static C_INT machine_time_expect(type_status status)
     return status == TYPE_STATUS_OK ? 0 : 1;
 }
 
-static C_INT machine_time_l1_compatibility(C_VOID)
-{
-    core_machine_config config = {0};
-    core_machine_time_observation observation;
-    core_machine *machine = STD_NULL;
-    type_bool advanced = TYPE_FALSE;
-    C_INT failed = 0;
-
-    config.l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS;
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
-    failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
-        0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
-    if (!failed) machine->d4_refresh_hold_pending = TYPE_TRUE;
-    failed |= !failed && (core_machine_capture_time_observation(machine, &observation) !=
-        TYPE_STATUS_OK || observation.next_deadline_valid ||
-        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY);
-    failed |= !failed && (core_machine_advance_l1_compatibility(machine, &advanced) !=
-        TYPE_STATUS_OK || !advanced || machine->d4_refresh_hold_pending);
-    core_machine_destroy(machine);
-    return failed;
-}
-
 static C_VOID machine_time_timeline_callback(C_VOID *context,
     type_unsigned_64 due_tick)
 {
@@ -42,7 +18,7 @@ static C_VOID machine_time_timeline_callback(C_VOID *context,
     if (count != STD_NULL) ++*count;
 }
 
-static C_INT machine_time_l1_precedes_unrelated_deadline(C_VOID)
+static C_INT machine_time_d4_l2_precedes_unrelated_deadline(C_VOID)
 {
     core_machine_config config = {0};
     core_machine_time_observation observation;
@@ -52,7 +28,6 @@ static C_INT machine_time_l1_precedes_unrelated_deadline(C_VOID)
     core_machine_timeline_token token;
     C_INT failed = 0;
 
-    config.l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -64,9 +39,10 @@ static C_INT machine_time_l1_precedes_unrelated_deadline(C_VOID)
             machine_time_timeline_callback, &timeline_count, &token) != TYPE_STATUS_OK;
     }
     failed |= !failed && (core_machine_capture_time_observation(machine, &observation) !=
-        TYPE_STATUS_OK || observation.next_deadline_valid ||
-        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY);
-    failed |= !failed && (core_machine_advance_l1_compatibility(machine, &advanced) !=
+        TYPE_STATUS_OK || !observation.next_deadline_valid ||
+        observation.next_deadline_tick != 1u ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
+    failed |= !failed && (core_machine_advance_to_next_deadline(machine, &advanced) !=
         TYPE_STATUS_OK || !advanced || machine->d4_refresh_hold_pending ||
         machine->elapsed_ticks != 1u || timeline_count != 0u);
     failed |= !failed && (core_machine_advance_to_next_deadline(machine, &advanced) !=
@@ -131,8 +107,7 @@ C_INT main(C_VOID)
         time_observation.pacing_ticks_per_second != 8000000u ||
         !time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 8000000u;
-    failed |= machine_time_l1_compatibility();
-    failed |= machine_time_l1_precedes_unrelated_deadline();
+    failed |= machine_time_d4_l2_precedes_unrelated_deadline();
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, sizeof(nop)) !=
         TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff1u, &nop, sizeof(nop)) !=

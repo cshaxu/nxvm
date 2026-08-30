@@ -48,3 +48,29 @@ the runtime debugger, and has SHA-256
 T507 is closed.  The next candidate is the independent HDC personality
 service-deadline closure; it consumes the explicit HDC L1 receiver rather than
 reopening this convergence matrix.
+
+## Corrective Reopening
+
+The owner rejected that conclusion after the literal scheduler predicate was
+reviewed: it classifies every pending DMA request as L1 even when the copied
+plan qualifies a DMA deadline.  Corrective S14 is therefore active.  It owns
+the finite DMA/HDC/FDC/D4 blocker sweep, including source/reference-backed L2
+conversions where possible; it must rebuild the existing 0507 artifact and
+close the task again before any queued task starts.
+
+## Corrective S14 Closure
+
+S14 removes the false all-DMA L1 predicate: any copied DMA clock ratio now
+publishes its normal next-unit deadline, while only a genuinely ratio-less
+configuration remains eligible for the existing bounded escape.  The FDC now
+converts its manual microsecond formulas from one copied ticks-per-second ratio
+instead of an XT-incompatible whole-microsecond field.  HDC owns its pending
+service deadline; 5170 and Model-40 use their frozen 8-MHz Other-L2 quanta,
+and the unqualified default profile retains an immediate owner deadline rather
+than a fabricated duration.  D4 is likewise one ordered next-Core-step
+deadline, not a L1 blocker.  No VM time writer, controller mirror or parallel
+scheduler was added.
+
+Focused regressions, unit 312/312, integration 20/20 and documentation
+governance pass.  The rebuilt stripped `nxvm_0_5_0507.exe` has SHA-256
+`DB2A9B7F23A3EC88E91F873CAC4C4B1299BF8BC5FDDE0C0DB8B716C6B1C433F9`.

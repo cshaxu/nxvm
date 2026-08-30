@@ -84,6 +84,8 @@ typedef struct core_machine_hdc_data {
     type_unsigned_8 pending_drive_head;
     type_unsigned_16 sectors_remaining;
     type_unsigned_32 command_count;
+    type_unsigned_64 elapsed_ticks;
+    type_unsigned_64 next_service_tick;
     core_machine_hdc_phase phase;
     type_unsigned_16 data_index;
     type_unsigned_8 data[512];
@@ -121,7 +123,13 @@ C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
         const core_machine_dma_request_binding *binding), C_VOID *owner);
 C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_reset(core_machine_hdc *hdc);
+/* Owner-local immediate service helper for direct controller clients.  The
+ * production scheduler advances the same owner only through elapsed ticks. */
 C_VOID core_machine_hdc_advance(core_machine_hdc *hdc);
+C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
+    type_unsigned_64 elapsed_ticks);
+type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
+    type_unsigned_64 *out_due_tick);
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc);
 const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID);
 const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID);

@@ -200,13 +200,16 @@ static C_VOID core_machine_fdc_request_assert(core_machine_fdc *fdc)
 static type_unsigned_64 core_machine_fdc_timing_ticks(const core_machine_fdc *fdc,
     type_unsigned_64 microseconds)
 {
-    type_unsigned_64 ticks_per_microsecond;
+    type_unsigned_64 ticks_per_second;
 
     if (fdc == STD_NULL) return 0u;
-    ticks_per_microsecond = fdc->connect.config.ticks_per_microsecond;
-    if (ticks_per_microsecond == 0u || microseconds > UINT64_MAX /
-        ticks_per_microsecond) return 0u;
-    return microseconds * ticks_per_microsecond;
+    ticks_per_second = fdc->connect.config.clock_ticks_per_second;
+    if (ticks_per_second == 0u || microseconds > UINT64_MAX / ticks_per_second) {
+        return 0u;
+    }
+    /* Round upward: a controller byte gate must not become visible before
+     * the selected macro-axis duration has elapsed. */
+    return (microseconds * ticks_per_second + 999999u) / 1000000u;
 }
 
 static type_unsigned_64 core_machine_fdc_dma_byte_ticks(const core_machine_fdc *fdc)

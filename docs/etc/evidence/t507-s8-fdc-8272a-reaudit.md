@@ -46,7 +46,7 @@ approved local corpus.  No external source was imported.
 | G3 | The former `CCR == 0` path scheduled every byte at 16 us, including FM commands.  This contradicted the Intel 31-us FM / 15-us MFM service limits. | **Repaired:** the one existing byte-gate formula now selects 31 or 15 us from the command MFM bit; no state or clock path was added. |
 | G4 | Reset cancellation clears DRQ, pending byte gates and execution before the preserved Specify fields are restored.  TC completes through the same result/IRQ owner. | Retained Manual-L3 causal path. |
 | G5 | The logical image path intentionally accepts only its declared 512-byte media grammar and does not claim raw floppy encoding, rotational position, CRC or mechanical timing. | Explicit L2 boundary, not a false L3 claim. |
-| G6 | A zero `ticks_per_microsecond` has no source-qualified physical conversion.  It retains the Core's next-progression logical handoff rather than inventing a duration. | Explicit L2 fallback. |
+| G6 | A zero `clock_ticks_per_second` has no source-qualified conversion and retains the Core's next-progression handoff.  A frozen nonzero macro ratio uses ceiling conversion of the manual microsecond values, without claiming physical board timing. | Explicit L2 fallback / L2 conversion. |
 
 ## Proof and Simplicity
 

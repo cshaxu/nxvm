@@ -4,9 +4,17 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active packet. |
-| Last Closure | T507 closed at S13 P2: one Core progression path serves Standard and Turbo; focused 4/4, unit 312/312, integration 20/20 and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
-| Next Candidate | HDC personality service-deadline closure, admitted only on owner direction. |
+| Identifier Mode | No active packet; corrective T507 S14 is closed. |
+| Admission And Approval | Owner rejected the prior T507 performance conclusion on 2026-08-29 after the literal DMA L1 predicate was found to contradict its qualified-deadline claim, and explicitly approved repairing that predicate plus all active L1/FDC-L2 scheduler blockers in this corrective S. |
+| Objective | No active implementation packet. |
+| Non-goals | Do not import external code; invent physical duration; create a host-to-Core tick route, second scheduler, controller mirror, profile-side controller, or a per-personality fast path. |
+| Reference Baseline | `bd668d1f`; [T507 history](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md), retained [proposal](../history/M5-T507-core-scheduler-standard-turbo-performance-closure-proposal.md), and the S8/S10/S11 evidence. |
+| Files And ABI Surface | Existing Core scheduler, DMA/FDC/HDC/D4 owners, copied timing-plan rules, owner-local tests and the existing 0507 artifact only. No public ABI is presumed necessary. |
+| Applicable Rules | EXECUTION.md corrective-S lifecycle, finite sweep and complete unit/T integration; ARCHITECTURE.md one owner/Core time writer; CODING.md direct owner-local consolidation; source policy before all manual or external-reference research; DOCUMENT.md evidence boundary. |
+| Verification | Freeze the active DMA/HDC/FDC/D4 cases; compare current owner logic with retained original sources and locally available 86Box, Bochs and PCjs plus MAME when available; add owner-local regressions; run focused tests, complete unit, external-asset integration and rebuild/inspect stripped 0507. |
+| Exit Criteria | Admit the next queued packet before implementation. |
+| Original Owner Request | Corrective T507 S14 closed: qualified DMA, FDC conversion, HDC deadline ownership and D4 deadline categorisation are reconciled. |
+| Similar-Issue Sweep | Closed T507 S14 swept scheduler eligibility/fast-advance guards, DMA variants, FDC pending phases and conversion cases, HDC personalities, Model-40 D4, profile construction, and Standard/Turbo waiting. |
 
 ## Current Technical Baseline
 
@@ -44,7 +52,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T507 | Closed: all C1--C13/V1--V4 scheduler rows have an immediate, deadline or explicit L1/L2 disposition; Standard/Turbo share one Core path. Unit 312/312, integration 20/20 and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
+| T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
 | T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
@@ -54,6 +62,15 @@
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 
 ## Recent Governance
+
+- **M5 T507 S14 P2:** corrective closure accepts the finite DMA/FDC/HDC/D4
+  sweep after independent diff review: unit 312/312, integration 20/20,
+  documentation governance and stripped Release 0507 pass.
+
+- **M5 T507 S14:** owner-approved corrective reopening after review found the
+  literal pending-DMA L1 predicate also supersedes a qualified DMA deadline.
+  This S consumes the complete active DMA/HDC/FDC/D4 blocker sweep before any
+  later queue candidate may be admitted.
 
 - **M5 T507 S13 P2:** coordinator actual-diff review accepts `a3574918` and
   closes T507.  The complete C1--C13/V1--V4 matrix, the Core-only L1/deadline

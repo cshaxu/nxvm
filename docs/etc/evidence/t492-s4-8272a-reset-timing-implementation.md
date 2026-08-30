@@ -6,7 +6,7 @@
 
 `core_machine_fdc` remains the only owner of FDC command phase, DOR reset,
 deadline, DRQ and IRQ state.  A profile supplies the copied
-`core_machine_fdc_config.ticks_per_microsecond` value during plan construction;
+`core_machine_fdc_config.clock_ticks_per_second` value during plan construction;
 the FDC owns every later conversion and transition.  No VM callback, host
 clock, media mirror or second controller state was added.
 
@@ -20,10 +20,11 @@ clock, media mirror or second controller state was added.
 - The prior fixed three-ms seek and 128-tick byte constants are deleted.
   The FDC derives Specify SRT as `(16 - SRT) * 1 ms` and CCR=0 byte cadence as
   16 us through the frozen conversion value.
-- A zero conversion explicitly preserves the documented L2 no-delay fallback.
-  The selected IBM 5160 profile copies zero; it does not claim a physical time
-  axis.  Focused fixtures inject eight ticks per microsecond solely to prove
-  the owner-local manual formulas.
+- A zero conversion explicitly preserves the documented L2 next-progression
+  fallback.  The selected IBM 5160 profile instead copies its frozen
+  4,772,727-Hz macro ratio; that enables integer deadline conversion without
+  claiming a physical time axis.  Focused fixtures use 8,000,000 ticks per
+  second solely to prove the owner-local manual formulas.
 - HLT/HUT have no present Core head signal, rotation owner or external timing
   input to govern.  They remain an explicit external L3 board/media boundary,
   not a guessed delay.

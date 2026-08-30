@@ -20,7 +20,7 @@ unchanged and T3 belongs to the existing `Specify` timing obligation.
 | F21--F22 | Core FDC plus immutable media registry owns MFM/logical geometry, sectors, CHRN, format and address-mark semantics. | Complete logical route |
 | F23 | DOR remains the sole reset owner. Reset release queues the controller's four ordered Sense Interrupt reports and publishes IRQ after the configured 1.024-ms deadline; the NEC READY condition governs whether the interrupt is produced. Zero conversion is the explicit immediate L2 fallback. T503 S6 reconciles the earlier ready-sampling claim. | Complete controller route; selected reset-report cardinality is Other L3 |
 | T1, T7--T8 | Physical electrical/mechanical and host-file behavior are outside the logical controller owner. | Retained L4/external boundary |
-| T2--T3, T5--T6 | The sole FDC owner receives one copied `ticks_per_microsecond` value. A nonzero source-qualified value converts reset (1.024 ms), Specify SRT (1--16 ms per step) and the 500-kbit/s CCR=0 byte interval (16 us) into Core deadlines; zero is explicit L2 no-delay fallback. No controller, profile callback or host clock owns a second time axis. | L3-capable interface; selected XT explicitly remains L2 |
+| T2--T3, T5--T6 | The sole FDC owner receives one copied `clock_ticks_per_second` ratio. It converts reset (1.024 ms), Specify SRT (1--16 ms per step) and the 500-kbit/s CCR=0 byte interval (16 us) into Core deadlines with an integer ceiling; zero retains the next-progression fallback. No controller, profile callback or host clock owns a second time axis. | L3-capable interface; a macro ratio is L2 until its selected board source qualifies it |
 | T4 | HLT/HUT fields remain command state, but current logical-media FDC has no head-load/unload signal or media rotation state to which their manual intervals could attach. They are an explicit external L3 board/media-provider boundary, not an invented controller delay. | External-input L3 boundary |
 
 ## One coherent implementation batch
@@ -43,5 +43,5 @@ or host-file policy is eligible for this batch.
 CTest passes `core-machine-fdc-smoke`, `core-machine-fdc-topology-port-smoke`,
 `core-machine-fdc-media-change-port-smoke` and `vm-xt-5160-268-profile-smoke`
 (4/4). The first two inject the frozen nonzero conversion and prove reset/SRT/
-byte deadlines; the XT smoke proves the selected production profile copies zero
-and therefore retains the declared L2 no-delay fallback.
+byte deadlines; the XT smoke proves the selected production profile copies its
+4,772,727-Hz macro ratio without claiming physical board timing.

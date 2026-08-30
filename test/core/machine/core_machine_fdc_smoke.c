@@ -222,7 +222,8 @@ C_INT main(C_VOID)
     const core_machine_fdc_config fdc_config = {
         .dor_port = 0x03f2u, .status_port = 0x03f4u, .data_port = 0x03f5u,
         .direction_port = 0x03f7u, .control_port = 0x03f7u,
-        .irq = 6u, .dma_channel = 2u, .ready_mask = 0x0fu, .ticks_per_microsecond = 8u
+        .irq = 6u, .dma_channel = 2u, .ready_mask = 0x0fu,
+        .clock_ticks_per_second = 8000000u
     };
     const core_machine_fdc_drive_bindings drives = {
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
@@ -605,7 +606,7 @@ C_INT main(C_VOID)
                         &machine->executor_memory, 1u);
                     if (index + 1u < sizeof(scan_dma)) {
                         core_machine_fdc_advance_at(fdc,
-                        fdc->data.elapsed_ticks + fdc_config.ticks_per_microsecond * 31u);
+                        fdc->data.elapsed_ticks + 8u * 31u);
                     }
                 }
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
@@ -660,7 +661,7 @@ C_INT main(C_VOID)
                     fixture.read_count != 1u || !fdc->data.ndma_byte_gate_pending;
                 ndma_gate_tick = fdc->data.next_ndma_byte_tick;
                 failed |= ndma_gate_tick != fdc->data.elapsed_ticks +
-                    fdc_config.ticks_per_microsecond * 15u;
+                    8u * 15u;
                 core_machine_fdc_advance_at(fdc, ndma_gate_tick - 1u);
                 failed |= (core_machine_port_read(port, fdc_config.status_port) & VFDC_MSR_RQM) != 0u ||
                     fixture.read_count != 1u;
@@ -693,7 +694,7 @@ C_INT main(C_VOID)
                 ndma_gate_tick = fdc->data.next_ndma_byte_tick;
                 failed |= !fdc->data.ndma_byte_gate_pending ||
                     ndma_gate_tick != fdc->data.elapsed_ticks +
-                    fdc_config.ticks_per_microsecond * 31u;
+                    8u * 31u;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
                     fdc->data.ndma_byte_gate_pending;
@@ -701,7 +702,7 @@ C_INT main(C_VOID)
                 /* An unqualified service-time conversion is still a complete
                    logical DRQ/DACK handshake: single-mode DMA may consume
                    successive bytes without a fabricated delay. */
-                fdc->connect.config.ticks_per_microsecond = 0u;
+                fdc->connect.config.clock_ticks_per_second = 0u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_command(fdc, port,
                     (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);

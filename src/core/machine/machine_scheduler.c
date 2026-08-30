@@ -2,13 +2,19 @@
 
 #include "core/machine/machine.h"
 
+static C_INT core_machine_dma_deadline_is_available(const core_machine *machine)
+{
+    return machine != STD_NULL && machine->timing_plan_copied &&
+        machine->timing_plan.configuration.clock_plan.dma.numerator != 0u &&
+        machine->timing_plan.configuration.clock_plan.dma.denominator != 0u;
+}
+
 static C_INT core_machine_deadline_is_blocked(const core_machine *machine)
 {
     if (machine == STD_NULL ||
-        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) ||
-        machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-        machine->d4_refresh_hold_pending) {
+        (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) &&
+         !core_machine_dma_deadline_is_available(machine))) {
         return 1;
     }
     return machine->fdc.data.phase == core_machine_fdc_PHASE_PENDING_COMMAND ||
@@ -23,20 +29,9 @@ static C_INT core_machine_fast_advance_is_blocked(const core_machine *machine)
 static C_INT core_machine_l1_compatibility_is_eligible(const core_machine *machine)
 {
     return machine != STD_NULL &&
-        (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) ||
-        machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-        machine->d4_refresh_hold_pending);
-}
-
-static C_INT core_machine_dma_deadline_is_qualified(const core_machine *machine)
-{
-    return machine != STD_NULL && machine->timing_plan_copied &&
-        machine->timing_plan.controller_timing.dma_clock ==
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
-        machine->timing_plan.controller_timing.dma_service ==
-            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES &&
-        machine->transaction_contract.dma_cycle_wait_quanta == 0u;
+        ((core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) &&
+          !core_machine_dma_deadline_is_available(machine)));
 }
 
 static type_bool core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
@@ -94,6 +89,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     type_unsigned_64 source_ticks = 0u;
     type_unsigned_64 device_ticks;
     type_unsigned_64 fdc_due_tick;
+    type_unsigned_64 hdc_due_tick;
     type_unsigned_64 timeline_due_tick;
     type_bool immediate_due = TYPE_FALSE;
 
@@ -140,7 +136,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     }
     if (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) &&
-        core_machine_dma_deadline_is_qualified(machine)) {
+        core_machine_dma_deadline_is_available(machine)) {
         if (core_machine_deadline_consider_clock(&machine->dma_clock, 1u,
                 &source_ticks)) immediate_due = TYPE_TRUE;
     }
@@ -148,6 +144,16 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
         TYPE_STATUS_OK) {
         if (core_machine_deadline_consider_absolute(machine, fdc_due_tick,
                 &source_ticks)) immediate_due = TYPE_TRUE;
+    }
+    if (core_machine_hdc_next_due_tick(&machine->hdc, &hdc_due_tick) ==
+        TYPE_STATUS_OK) {
+        if (core_machine_deadline_consider_absolute(machine, hdc_due_tick,
+                &source_ticks)) immediate_due = TYPE_TRUE;
+    }
+    if (machine->d4_refresh_hold_pending &&
+        core_machine_deadline_consider_absolute(machine,
+            machine->elapsed_ticks + 1u, &source_ticks)) {
+        immediate_due = TYPE_TRUE;
     }
     if (core_machine_kbc_ticks_until_event(&machine->shared_kbc, &device_ticks) ==
         TYPE_STATUS_OK) {
@@ -325,9 +331,8 @@ static C_VOID core_machine_readiness_advance(core_machine *machine,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_FDC_ADVANCE,
             0u, 0u, 0u);
     }
-    if (machine->hdc_configured &&
-        machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_IDLE) {
-        core_machine_hdc_advance(&machine->hdc);
+    if (machine->hdc_configured) {
+        core_machine_hdc_advance_elapsed(&machine->hdc, source_ticks);
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_HDC_ADVANCE,
             0u, 0u, 0u);
     }

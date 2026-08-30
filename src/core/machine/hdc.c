@@ -190,6 +190,7 @@ static C_VOID core_machine_hdc_complete(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
+    hdc->data.next_service_tick = 0u;
     hdc->data.data_index = 0u;
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
     core_machine_hdc_raise_irq(hdc);
@@ -200,6 +201,7 @@ static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, type_unsigned_8 error
     if (hdc == STD_NULL) return;
     hdc->data.error = error;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
+    hdc->data.next_service_tick = 0u;
     hdc->data.data_index = 0u;
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR;
     core_machine_hdc_raise_irq(hdc);
@@ -426,6 +428,16 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
+static C_VOID core_machine_hdc_schedule_service(core_machine_hdc *hdc)
+{
+    type_unsigned_64 service_ticks;
+
+    if (hdc == STD_NULL) return;
+    service_ticks = hdc->connect.config.l2_service_ticks;
+    hdc->data.next_service_tick = service_ticks == 0u ? hdc->data.elapsed_ticks :
+        hdc->data.elapsed_ticks + service_ticks;
+}
+
 static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
     type_unsigned_8 command)
 {
@@ -442,6 +454,7 @@ static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
     core_machine_hdc_clear_irq(hdc);
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_COMMAND;
     hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
+    core_machine_hdc_schedule_service(hdc);
 }
 
 static C_VOID core_machine_hdc_begin_read(core_machine_hdc *hdc)
@@ -853,6 +866,7 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR;
             hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
+            core_machine_hdc_schedule_service(hdc);
         }
         return TYPE_STATUS_OK;
     }
@@ -901,6 +915,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR;
             hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
+            core_machine_hdc_schedule_service(hdc);
         }
         return TYPE_STATUS_OK;
     }
@@ -1089,9 +1104,15 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
 }
 
-C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
+C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
+    type_unsigned_64 elapsed_ticks)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == STD_NULL || elapsed_ticks == 0u || UINT64_MAX -
+        hdc->data.elapsed_ticks < elapsed_ticks) return;
+    hdc->data.elapsed_ticks += elapsed_ticks;
+    if (hdc->data.next_service_tick != 0u &&
+        hdc->data.elapsed_ticks < hdc->data.next_service_tick) return;
+    hdc->data.next_service_tick = 0u;
     if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_PENDING_COMMAND) {
         hdc->data.features = hdc->data.pending_features;
         hdc->data.sector_count = hdc->data.pending_sector_count;
@@ -1105,6 +1126,27 @@ C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
     } else if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR) {
         core_machine_hdc_next_write_sector(hdc);
     }
+}
+
+C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
+{
+    type_unsigned_64 ticks = 1u;
+
+    if (hdc == STD_NULL) return;
+    if (hdc->data.next_service_tick > hdc->data.elapsed_ticks) {
+        ticks = hdc->data.next_service_tick - hdc->data.elapsed_ticks;
+    }
+    core_machine_hdc_advance_elapsed(hdc, ticks);
+}
+
+type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
+    type_unsigned_64 *out_due_tick)
+{
+    if (hdc == STD_NULL || out_due_tick == STD_NULL ||
+        hdc->data.phase == CORE_MACHINE_HDC_PHASE_IDLE ||
+        hdc->data.next_service_tick == 0u) return TYPE_STATUS_INVALID_STATE;
+    *out_due_tick = hdc->data.next_service_tick;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)

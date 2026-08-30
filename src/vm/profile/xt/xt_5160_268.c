@@ -46,6 +46,8 @@ type_status vm_profile_xt_5160_268_declaration_create(
      * profile scheduler or another guest clock. */
     declaration.values.core.configuration.clock_plan.pit =
         (core_machine_clock_ratio) {1u, 4u, 0u};
+    declaration.values.core.configuration.clock_plan.dma =
+        (core_machine_clock_ratio) {1u, 1u, 0u};
     declaration.values.core.controller_timing_rules =
         (core_machine_controller_timing_rules) {
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
@@ -113,19 +115,20 @@ type_status vm_profile_xt_5160_268_resolve(
         CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
         {40u, 0u, 0u, 0u}, 0u};
     out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
-        0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC, 0x0fu, 0u};
+        0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC, 0x0fu,
+        4772727u};
     out_profile->topology.hdc_present = TYPE_TRUE;
     out_profile->topology.hdc_media_id = VM_PROFILE_XT_5160_268_HDD_MEDIA_ID;
     out_profile->topology.hdc_slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID;
     out_profile->topology.hdc = (core_machine_hdc_config) {
-        CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT, 5u,
-        {.xebec = {0x0320u, 0x0321u, 0x0322u, 0x0323u, 3u,
+        .protocol = CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT, .irq = 5u,
+        .bus.xebec = {0x0320u, 0x0321u, 0x0322u, 0x0323u, 3u,
             CORE_MACHINE_XEBEC_DRIVE_TYPE_2,
             {CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
              CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR,
              CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
              CORE_MACHINE_XEBEC_TYPE_2_HEADS,
-             CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}}}};
+             CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}}};
     return TYPE_STATUS_OK;
 }
 

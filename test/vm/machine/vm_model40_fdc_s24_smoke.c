@@ -100,7 +100,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         failed |= fdc->connect.config.irq != 6u || fdc->connect.config.dma_channel != 2u ||
             fdc->connect.config.unready_read_policy !=
                 CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE ||
-            fdc->connect.config.ticks_per_microsecond != 8u ||
+            fdc->connect.config.clock_ticks_per_second != 8000000u ||
             fdc->connect.drives.installed_mask != 0x03u ||
             fdc->connect.drives.track_zero_active_low_mask != 0x03u ||
             session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K;
