@@ -22,8 +22,8 @@ transition therefore publish no invented instruction clocks here.
 | --- | ---: | ---: | ---: | ---: |
 | near CALL direct/register/memory | 19 / 16 / `21+EA` | 14 / 13 / `19+EA` | 7 / 7 / 11, plus next byte | `7+m` / `7+m` / `10+m` |
 | far CALL direct/memory, same privilege only | 28 / `37+EA` | 23 / `38+EA` | real 13/16, protected 26/29, plus next byte | real `17+m`/`22+m`, protected `34+m`/`38+m` |
-| near JMP direct/register/memory | 15 / 11 / `18+EA` | 13 / 11 / `17+EA` | 7 / 7 / 11, plus next byte | `7+m` / `7+m` / `10+m` |
-| far JMP direct/memory, same privilege only | 15 / `24+EA` | 13 / `26+EA` | real 11/15, protected 23/26, plus next byte | real `12+m`/`17+m`, protected `27+m`/`31+m` |
+| near JMP direct/register/memory | 15 / 11 / `18+EA` | 14 / 11 / `17+EA` | 7 / 7 / 11, plus next byte | `7+m` / `7+m` / `10+m` |
+| far JMP direct/memory, same privilege only | 15 / `24+EA` | 14 / `26+EA` | real 11/15, protected 23/26, plus next byte | real `12+m`/`17+m`, protected `27+m`/`31+m` |
 | near RET / immediate | 8 / 12 | 16 / 18 | 11 / 11, plus next byte | `10+m` / `10+m` |
 | PUSH register/memory/immediate; POP register/memory | 11/`16+EA`/n/a; 8/`17+EA` | 10/`16+EA`/10; 10/`20+EA` | 3/5/3; 4/5 | 2/5/2; 4/5 |
 | PUSHA / POPA / PUSHF / POPF | n/a / n/a / 10 / 8 | 36 / 51 / 9 / 8 | 17 / 19 / 3 / 5 | 18 / 24 / 4 / 5 |

@@ -27,7 +27,7 @@ the selected result for each affected form.
 | key family | old S1/S2 basis | re-read result | S2 consequence |
 | --- | --- | --- | --- |
 | `PUSH-IMM16`, `PUSH-IMM8` | 14, inherited from Table 1-16 parenthetical column | Table 2-9: 10, 10 | L3 target corrected; current route remains unproven |
-| `CALL-NEAR`; `JMP-{SHORT,NEAR,FAR}` | 14; 13 | Table 2-9: 15; 14 | L3 target corrected; a later per-key source scan must mark the old 80186 selector values wrong where selected |
+| `CALL-NEAR`; `JMP-{SHORT,NEAR,FAR}` | 14; 13 | Table 2-9: 15; 14 | all four L3 scalars corrected at the existing selector |
 | `IMUL-IMM8` | range 22--24, midpoint 23 | Table 2-9 range 22--25, midpoint 24 | L2 target corrected |
 | `BOUND` | scalar L3 35 | Table 2-9 exact 35 | retained as an exact L3 key |
 | `LAHF` | 4 due to transposed Table 1-16 reading | Table 2-9 and Table 1-16 parenthetical: 2 | L3 target corrected |
