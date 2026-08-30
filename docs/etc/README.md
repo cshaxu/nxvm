@@ -49,6 +49,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t511-s7-xt-keyboard-ppi-phase-consumer-audit.md` | XT keyboard/PPI owner | T511 S7's IBM-led XT serial, reset/BAT, PPI acknowledgement and IRQ1 consumer audit; no stale transition observation exists. |
 | `evidence/t511-s8-fdc-phase-consumer-audit.md` | 8272A FDC owner | T511 S8's manual-led command, DRQ/DMA, non-DMA, result/IRQ6 and reset-consumer audit; no stale transition observation exists. |
 | `evidence/t511-s9-hdc-personality-phase-consumer-audit.md` | HDC owner | T511 S9's four-personality PIO/DMA/result/IRQ consumer audit; the sole ATA hit remains the already repaired firmware boundary. |
+| `evidence/t511-s10-vadp-phase-consumer-audit.md` | VADP owner | T511 S10's CGA/EGA port/VRAM/snapshot/presentation-consumer audit; no stale frame or parallel video state exists. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |
 | `evidence/t503-s11-cross-profile-closure.md` | Core route owner | T503 S11's four-profile controller-route matrix, complete unit/integration proof, corrected Release artifact and T-level route closure. |
 | `evidence/t504-s1-l1-no-deadline-inventory.md` | Core scheduler owner | T504 S1's finite blocked/no-deadline owner inventory, its normal wake/lifecycle paths, and the L1 versus already-due/deadline disposition for the Turbo compatibility receiver. |
