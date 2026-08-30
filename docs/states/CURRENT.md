@@ -54,10 +54,10 @@ next controller batch is S4 DMA.
 
 ## Recent Governance
 
-- **M5 T507 S3 P2:** coordinator actual-diff review accepted e48125b0, but
-  its subsequent documentation gate exposed mojibake in the expanded T507
-  proposal. P3 corrects that governance-only defect before the acceptance
-  record can be treated as final.
+- **M5 T507 S3 P4:** coordinator accepts e48125b0 after the P3
+  governance-only mojibake correction. The complete Intel 8259A surface maps
+  to the sole PIC owner or its electrical L2 boundary; focused PIC 6/6, full
+  unit 312/312 and documentation governance pass.
 
 - **M5 T506 S3 P2:** coordinator actual-diff review accepts `7d197d3f` and
   closes T506. All selected D1--D10 rows map to the sole DMA/Core path or their
