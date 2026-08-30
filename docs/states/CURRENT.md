@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T504 S4. |
-| Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S3 P1 `2c19117d` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits mode and lifecycle verification only. |
-| Objective | Prove Standard never requests the compatibility progression while Turbo may request it only from the copied L1 disposition, and prove reset, stop/pause, debugger, input, interrupt, immediate work, and known deadlines retain their existing Core boundaries. |
-| Non-goals | Do not widen the S3 Core policy, inject host time, promote L1 evidence, add lifecycle-specific device paths, add a scheduler, or use an external ROM/media workload before S5. |
-| Reference Baseline | `2c19117d` (T504 S3 P1 Core-owned compatibility progression); current stripped Release artifact remains `0503`. |
+| Identifier Mode | Continuation T504 S5. |
+| Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S4 P1 `28235d06` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits the required external ROM/DOS integration closure. |
+| Objective | Run the selected external-ROM/DOS workloads in Standard and Turbo, compare their same semantic terminal and record real elapsed-wall-clock evidence without converting host elapsed time into guest ticks. |
+| Non-goals | Do not import or commit ROM, guest media, traces, or protected data; do not claim physical pacing; do not change controller timing merely to improve a benchmark; do not make a terminal budget into success. |
+| Reference Baseline | `28235d06` (T504 S4 P1 mode/lifecycle evidence); current stripped Release artifact remains `0503`. |
 | Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
-| Files And ABI Surface | Focused VM session waiting/runner tests and Core lifecycle observation tests only. Runtime code may change solely if a demonstrated S3 lifecycle defect needs the same existing Core/VM boundary. |
+| Files And ABI Surface | `test/integration/` harnesses, ignored local logs, indexed evidence, and only an owner-local code repair if a reproducible integration failure proves one is required. |
 | Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` Core time/controller ownership and VM-to-Core command boundary; `CODING.md` one shared path/no device receiver; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable because no source is imported or derived. |
-| Verification | Exercise Standard and Turbo against copied observations; prove Core rejects invalid lifecycle/policy calls and preserves immediate/deadline priority, then run full `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8` and documentation governance. |
-| Expected Markers | `M5:T504:S4:MODE-LIFECYCLE:OK`; full unit summary; documentation-governance pass. |
-| Asset Needs | None. S4 uses repository source and T504 evidence only; no ROM, media, manual, emulator, or protected asset is imported. |
-| Reporting Requirements | Record exact mode/lifecycle cases, result, and any owner-local repair in indexed evidence. P1 states actual results; P2 independently verifies Standard has no new progression path and Turbo uses no direct time input. |
-| Stop Conditions | Stop and revise the packet if verification requires VM controller access, host-to-guest time injection, a second scheduler, a guessed timing value, or an external workload before S5. |
-| Exit Criteria | Standard never requests compatibility progress; Turbo only requests it from a copied L1 condition; lifecycle, input, interrupt, immediate and deadline boundaries are preserved; evidence is indexed and full unit/docs gates pass. |
+| Verification | Execute the registered external integration probe in both modes with identical allowed assets and semantic terminal; record invocation, terminal, duration, and cleanup; then run unit, integration, and documentation gates. |
+| Expected Markers | `M5:T504:S5:INTEGRATION:OK`; full unit/integration summaries; documentation-governance pass. |
+| Asset Needs | Owner-managed local BYOB ROM and DOS media only; read source policy before access and never copy them into repository or evidence. |
+| Reporting Requirements | Record asset class rather than machine-local path, both-mode terminal/duration, source-policy handling, and any failure disposition in indexed evidence. P1 states actual replay result; P2 independently verifies no asset/log crossed the repository boundary. |
+| Stop Conditions | Stop and revise the packet if no registered compatible external workload exists, a protected asset would be committed, the two modes reach different semantics, a trace exceeds its approved containment, or repair needs a new timing claim. |
+| Exit Criteria | At least one selected external ROM/DOS workload reaches the same semantic terminal in Standard and Turbo; Turbo has measured no host waiting on its Core deadline path; assets/logs are contained; unit/integration/docs gates pass. |
 | Original Owner Request | Complete L1 Turbo efficiency in solo mode: make Turbo useful without violating Core ownership, Standard semantics, or the established L-level evidence discipline. |
-| Similar-Issue Sweep | Sweep every VM waiting mode branch and Core compatibility entry precondition, plus reset/stop/pause/debug/input/interrupt callers; retain one S3 action rather than lifecycle-specific alternatives. |
+| Similar-Issue Sweep | Sweep registered DOS/ROM integration probes and all speed selectors they expose; run both modes with one immutable asset set and retain no benchmark-only product path. |
 
 ## Current Technical Baseline
 
@@ -89,6 +89,13 @@
   host-time injection, duplicate scheduler, or device shim was introduced.
   Focused proof, full unit 312/312, and documentation governance pass. S4 is
   admitted for mode/lifecycle verification.
+
+- **M5 T504 S4 P2:** coordinator actual-diff review accepts `28235d06`:
+  supported profiles correctly retain sourced PIT deadlines over an L1
+  compatibility classification, while the Core-only source-less fixture proves
+  the bounded action's normal owner transition. Standard and Turbo retain one
+  waiting boundary with no host-to-guest tick input. Full unit 312/312 and
+  documentation governance pass. S5 is admitted for external integration.
 
 - **M5 T503 S7 P1:** direct IBM/ATA/code/external reconciliation removes the
   inert Xebec `323h` mask cache: one existing HDC owner now gates its existing
