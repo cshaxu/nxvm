@@ -1,6 +1,6 @@
 # T507 S12 Core Scheduler Composition
 
-`M5:T507:S12:CORE-SCHEDULER:P1`
+`M5:T507:S12:CORE-SCHEDULER:P2`
 
 ## Frozen Composition
 
@@ -45,3 +45,13 @@ condition; it reuses the existing observation, bounded compatibility API and
 pacing helper.  It adds no controller field, callback, deadline value, public
 ABI, profile path, host-to-guest tick, second scheduler or renderer/firmware
 workaround.
+
+## P2 Actual-Diff Review
+
+P1 `41254f67` changes only the ordering of existing time-observation outcomes,
+the existing VM waiting policy, one owner-local regression and the matching
+proposal/evidence.  The L1 path cannot cross a real deadline because it uses
+the normal one-tick Core scheduler path; after the owner clears, the existing
+minimum deadline composition resumes.  There is no new timing constant,
+controller state, public ABI, profile branch, host tick publication or second
+scheduler.  The complete repository-only unit replay is green.

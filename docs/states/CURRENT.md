@@ -68,6 +68,11 @@
 
 ## Recent Governance
 
+- **M5 T507 S12 P2:** coordinator actual-diff review accepts `41254f67`.
+  Core now gives explicit L1 owners the existing bounded progression before an
+  unrelated deadline, while Standard/Turbo share that Core path and differ
+  only in host waiting; focused 4/4 and full unit 312/312 pass.
+
 - **M5 T507 S11 P2:** coordinator actual-diff review accepts `bbe134aa`.
   Model-40 D4 refresh-hold remains one board request and one Core transaction
   before DMA, with its no-duration L1 boundary explicit; focused 5/5 and full
