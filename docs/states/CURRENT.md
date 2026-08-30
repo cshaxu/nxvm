@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T511 S1 phase-consumer inventory. |
-| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508: a consumer must not reuse one ready/DRQ/result observation across a subsequent owner phase. |
-| Objective | Freeze the complete current controller/device owner inventory and consumer matrix before the controller-local audit/repair S sequence begins. |
+| Identifier Mode | Continuation T511 S3 DMA phase-consumer audit. |
+| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2 finds no PIC hit. |
+| Objective | Prove that each DMA request, arbitration, DACK, transfer, terminal-count and refresh consumer observes its own owner phase; repair any stale-observation class at the DMA owner or its sole device consumer. |
 | Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
 | Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing controller ledgers and the current Core scheduler. |
 | Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
-| Files And ABI Surface | Task records and owner/consumer evidence only in S1; later S work stays at the existing Core controller, firmware, DMA, IRQ or VADP owner. |
+| Files And ABI Surface | Existing Core DMA, DMA-device wiring and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
-| Verification | S1 runs documentation governance and the complete repository-only unit suite. Every later S runs complete unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
-| Expected Markers | One exhaustive matrix row per owner/consumer pair, each classed as repeated-phase, single-phase, internal-owner consumption, or no asynchronous transition. |
-| Asset Needs | No external asset is needed for S1. Later integration uses only owner-managed inputs under the source policy. |
-| Reporting Requirements | Record exact search scope, every production hit and disposition, focused two-phase proof for each repair, and any lower-tier transfer. |
-| Stop Conditions | Stop an affected S if a required manual/source is unavailable, a valid external model conflicts with the manual, or the repair would require a second owner or undeclared profile policy. |
-| Exit Criteria | The complete finite owner set has an accepted matrix and every later controller S has a bounded consumer path and regression contract. |
+| Verification | Complete repository-only unit suite and documentation governance. Every later S repeats unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
+| Expected Markers | One DMA row for request/hold/arbitration, DACK/transfer, terminal count/EOP, refresh and every FDC/Xebec downstream consumer, each with a manual/code/test disposition. |
+| Asset Needs | Existing owner-managed Intel 8237A manual only; no asset import. |
+| Reporting Requirements | Record the manual rule, every production consumer, no-hit rationale or repair, and focused proof. |
+| Stop Conditions | Stop if the DMA model conflicts with the manual or a repair would require a second owner or undeclared profile policy. |
+| Exit Criteria | Every DMA consumer is classified and no ATA-style stale observation remains; S4 PIT is then admitted. |
 | Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
 | Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
 
