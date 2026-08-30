@@ -4,23 +4,23 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T512; S1--S6 accepted, S7 is active. |
+| Identifier Mode | Continuation T512; S1--S7 accepted, S8 is active. |
 | Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate. |
-| Objective | Reconcile every decoder-admitted 80286 form, legal prefix, protected-mode state/delivery effect and source-backed timing row at its existing sole Core owner. |
-| Non-goals | Do not alter 8086/8088/80186 or 80386 semantics, add profile-side CPU behavior, assert a value for undefined state, import third-party source, or change `build/output` YAML. |
-| Reference Baseline | S6 80186 closure evidence, current Core decode/execution, existing 80286 ledger/result material, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
+| Objective | Reconcile every decoder-admitted 80386DX form, legal prefix, 32-bit/VM86/paging/debug/system-state effect and source-backed timing row at its existing sole Core owner. |
+| Non-goals | Do not alter 8086/8088/80186/80286 semantics, add profile-side CPU behavior, assert a value for undefined state, import third-party source, or change `build/output` YAML. |
+| Reference Baseline | S7 80286 closure evidence, current Core decode/execution, existing 80386 ledger/result material, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
 | Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
-| Files And ABI Surface | Decoder, execution, protected-mode descriptor/gate/task/stack delivery, retirement and timing-selector owners reached by the finite 80286 List-2 rows, plus their owner-local test modules. No public ABI, VM profile, legacy CPU or 80386 path or artifact-template change. |
+| Files And ABI Surface | Decoder, execution, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing-selector owners reached by the finite 80386 List-2 rows, plus their owner-local test modules. No public ABI, VM profile, legacy CPU path or artifact-template change. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
 | Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
-| Expected Markers | Every 80286 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; shared protected-mode behavior stays one Core path. |
-| Asset Needs | Read-only owner-managed Intel 80286 manual under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
+| Expected Markers | Every 80386 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; 32-bit and VM86 behavior stays one Core path. |
+| Asset Needs | Read-only owner-managed Intel 80386 manual under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
 | Reporting Requirements | Record each source locator, exact row/owner sweep, any removed duplicate path, source/test code-size delta and full unit result. |
 | T-Wide Tier Rule | Each CPU-profile S inventories all L1 rows and upgrades every source-supported one to Manual-L3 or External-L2. An unupgradeable L1, or any proposed L3-to-lower or L2-to-L1 reclassification, stops for owner review unless the earlier tier is proven false. |
-| Stop Conditions | Stop if a source-distinct 80286 behavior lacks a represented Core owner, a discovered L1 cannot be upgraded, a tier downgrade is proposed, or a candidate repair crosses a CPU-generation boundary; revise the S brief rather than infer or broaden it. |
-| Exit Criteria | All 80286 List-2 rows are reconciled against source and current owners; no L1 row remains without an owner-reviewed block; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
+| Stop Conditions | Stop if a source-distinct 80386 behavior lacks a represented Core owner, a discovered L1 cannot be upgraded, a tier downgrade is proposed, or a candidate repair crosses a CPU-generation boundary; revise the S brief rather than infer or broaden it. |
+| Exit Criteria | All 80386 List-2 rows are reconciled against source and current owners; no L1 row remains without an owner-reviewed block; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
 | Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
-| Similar-Issue Sweep | Sweep every 80286 decoder-admitted form and its prefix, descriptor/state/frame, delivery, retirement and timing selector owner; trace shared owners once and distinguish generation-specific behavior from the shared protected-mode path. |
+| Similar-Issue Sweep | Sweep every 80386 decoder-admitted form and its prefix, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing selector owner; trace shared owners once and distinguish generation-specific behavior from shared protected-mode paths. |
 
 ## Current Technical Baseline
 
