@@ -219,11 +219,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (argc < 3 || !vm_profile_floppy_boot_validate() ||
         (row = vm_profile_floppy_boot_row_find(argv[1])) == STD_NULL) return 1;
-    if (!vm_profile_floppy_boot_configure(row, argc, argv, &config)) return 1;
     if (!vm_profile_floppy_boot_inputs_are_present(row, argc, argv)) {
         STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:UNAVAILABLE\n", row->id);
         return VM_PROFILE_FLOPPY_UNAVAILABLE;
     }
+    if (!vm_profile_floppy_boot_configure(row, argc, argv, &config)) return 1;
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL) {
         STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:SESSION-CREATE-FAILED\n", row->id);
         return 1;

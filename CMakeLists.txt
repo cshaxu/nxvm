@@ -2649,12 +2649,15 @@ set(PROJECT_INTEGRATION_FDD_HDD_TARGETS
     vm-windows31-int13-trace-probe)
 set(PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS vm-ata-pio-dos-smoke)
 set(PROJECT_INTEGRATION_HDD_TARGETS vm-hdc-hdd-boot-smoke)
+set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
+    vm-profile-floppy-boot-matrix)
 set(PROJECT_INTEGRATION_TEST_TARGETS
     ${PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS}
     ${PROJECT_INTEGRATION_FDD_TARGETS}
     ${PROJECT_INTEGRATION_HDD_TARGETS}
     ${PROJECT_INTEGRATION_FDD_HDD_TARGETS}
-    ${PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS})
+    ${PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS}
+    ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
 
 # T344 keeps the current gate as one canonical partition.  A duplicate is a
 # registration defect, not an aggregate-list cleanup opportunity.
@@ -2680,7 +2683,8 @@ function(project_t344_verify_unit_test_partition)
             PROJECT_INTEGRATION_FDD_TARGETS
             PROJECT_INTEGRATION_FDD_HDD_TARGETS
             PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS
-            PROJECT_INTEGRATION_HDD_TARGETS)
+            PROJECT_INTEGRATION_HDD_TARGETS
+            PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS)
         foreach(project_t344_target IN LISTS ${project_t344_list})
             if(NOT TARGET ${project_t344_target})
                 message(FATAL_ERROR
@@ -2731,6 +2735,30 @@ set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd.img" CACHE FILEPATH
     "Owner-provided HDD image for current runtime smoke coverage")
 set(PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE "" CACHE FILEPATH
     "Owner-supplied local HDD image for the opt-in Windows readiness checkpoint")
+set(PROJECT_T513_DOS_360K_IMAGE "" CACHE FILEPATH
+    "Owner-supplied 360K DOS image for the T513 profile/floppy matrix")
+set(PROJECT_T513_DOS_720K_IMAGE "" CACHE FILEPATH
+    "Owner-supplied 720K DOS image for the T513 profile/floppy matrix")
+set(PROJECT_T513_DOS_1200K_IMAGE "" CACHE FILEPATH
+    "Owner-supplied 1.2M DOS image for the T513 profile/floppy matrix")
+set(PROJECT_T513_DOS_1440K_IMAGE "" CACHE FILEPATH
+    "Owner-supplied 1.44M DOS image for the T513 profile/floppy matrix")
+set(PROJECT_T513_XT_SYSTEM_ROM "" CACHE FILEPATH
+    "Owner-supplied XT system ROM for the T513 matrix")
+set(PROJECT_T513_XT_SYSTEM_ROM_SHA256 "" CACHE STRING
+    "Owner-supplied SHA-256 for the T513 XT system ROM")
+set(PROJECT_T513_XT_XEBEC_ROM "" CACHE FILEPATH
+    "Owner-supplied XT Xebec ROM for the T513 matrix")
+set(PROJECT_T513_XT_XEBEC_ROM_SHA256 "" CACHE STRING
+    "Owner-supplied SHA-256 for the T513 XT Xebec ROM")
+set(PROJECT_T513_MODEL40_EVEN_ROM "" CACHE FILEPATH
+    "Owner-supplied Model-40 even ROM for the T513 matrix")
+set(PROJECT_T513_MODEL40_EVEN_ROM_SHA256 "" CACHE STRING
+    "Owner-supplied SHA-256 for the T513 Model-40 even ROM")
+set(PROJECT_T513_MODEL40_ODD_ROM "" CACHE FILEPATH
+    "Owner-supplied Model-40 odd ROM for the T513 matrix")
+set(PROJECT_T513_MODEL40_ODD_ROM_SHA256 "" CACHE STRING
+    "Owner-supplied SHA-256 for the T513 Model-40 odd ROM")
 
 # T355 S2 keeps the retained Windows HDD/INT13 observation explicitly outside
 # the current gate.  The runner validates this opt-in input before it can
@@ -2761,6 +2789,30 @@ function(project_add_test target route)
     set_tests_properties("${route}.${target}" PROPERTIES
         LABELS "${route}"
         TIMEOUT 30)
+endfunction()
+
+function(project_add_t513_profile_floppy_case row image)
+    set(project_t513_test_suffix "vm-profile-floppy-boot-matrix.${row}")
+    set(project_t513_test "integration.${project_t513_test_suffix}")
+    get_property(project_t513_registered_cases GLOBAL
+        PROPERTY PROJECT_T513_PROFILE_FLOPPY_REGISTERED_CASES)
+    list(FIND project_t513_registered_cases "${project_t513_test_suffix}"
+        project_t513_registered_index)
+    if(NOT project_t513_registered_index EQUAL -1)
+        message(FATAL_ERROR "T513 profile/floppy row is registered twice: ${row}")
+    endif()
+    set_property(GLOBAL APPEND PROPERTY PROJECT_T513_PROFILE_FLOPPY_REGISTERED_CASES
+        "${project_t513_test_suffix}")
+    set(project_t513_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t513_test}")
+    file(MAKE_DIRECTORY "${project_t513_workspace}")
+    add_test(NAME "${project_t513_test}"
+        COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>" "${row}" "${image}"
+            ${ARGN})
+    set_tests_properties("${project_t513_test}" PROPERTIES
+        LABELS integration
+        SKIP_RETURN_CODE 77
+        TIMEOUT 70
+        WORKING_DIRECTORY "${project_t513_workspace}")
 endfunction()
 
 foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
@@ -2847,6 +2899,27 @@ foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
         "${PROJECT_HDD_SMOKE_IMAGE}")
 endforeach()
 
+project_add_t513_profile_floppy_case(ibm-5160-8088-360k
+    "${PROJECT_T513_DOS_360K_IMAGE}"
+    "${PROJECT_T513_XT_SYSTEM_ROM}" "${PROJECT_T513_XT_SYSTEM_ROM_SHA256}"
+    "${PROJECT_T513_XT_XEBEC_ROM}" "${PROJECT_T513_XT_XEBEC_ROM_SHA256}")
+project_add_t513_profile_floppy_case(ibm-5170-80286-360k
+    "${PROJECT_T513_DOS_360K_IMAGE}")
+project_add_t513_profile_floppy_case(ibm-5170-80286-1200k
+    "${PROJECT_T513_DOS_1200K_IMAGE}")
+foreach(project_t513_cpu IN ITEMS 8086 80186 80286 80386)
+    foreach(project_t513_format IN ITEMS 360k 720k 1200k 1440k)
+        string(TOUPPER "${project_t513_format}" project_t513_format_key)
+        project_add_t513_profile_floppy_case(
+            "default-at-${project_t513_cpu}-${project_t513_format}"
+            "${PROJECT_T513_DOS_${project_t513_format_key}_IMAGE}")
+    endforeach()
+endforeach()
+project_add_t513_profile_floppy_case(model40-80386-1200k
+    "${PROJECT_T513_DOS_1200K_IMAGE}"
+    "${PROJECT_T513_MODEL40_EVEN_ROM}" "${PROJECT_T513_MODEL40_EVEN_ROM_SHA256}"
+    "${PROJECT_T513_MODEL40_ODD_ROM}" "${PROJECT_T513_MODEL40_ODD_ROM_SHA256}")
+
 set_tests_properties("integration.vm-windows31-checkpoint" PROPERTIES
     TIMEOUT 130)
 set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
@@ -2854,7 +2927,10 @@ set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
 
 get_property(project_t344_registered_targets GLOBAL
     PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
-foreach(project_t344_target IN LISTS PROJECT_ALL_TEST_TARGETS)
+set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
+list(REMOVE_ITEM project_t344_single_test_targets
+    ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
+foreach(project_t344_target IN LISTS project_t344_single_test_targets)
     list(FIND project_t344_registered_targets "${project_t344_target}"
         project_t344_registered_index)
     if(project_t344_registered_index EQUAL -1)
@@ -2862,29 +2938,40 @@ foreach(project_t344_target IN LISTS PROJECT_ALL_TEST_TARGETS)
             "T344 canonical unit target is not registered: ${project_t344_target}")
     endif()
 endforeach()
-list(LENGTH PROJECT_ALL_TEST_TARGETS project_t344_expected_current_count)
+list(LENGTH project_t344_single_test_targets project_t344_expected_current_count)
 list(LENGTH project_t344_registered_targets project_t344_registered_current_count)
 if(NOT project_t344_expected_current_count EQUAL project_t344_registered_current_count)
     message(FATAL_ERROR
         "T344 unit registration has an unexpected target.")
 endif()
+get_property(project_t513_registered_cases GLOBAL
+    PROPERTY PROJECT_T513_PROFILE_FLOPPY_REGISTERED_CASES)
+list(LENGTH project_t513_registered_cases project_t513_registered_case_count)
+if(NOT project_t513_registered_case_count EQUAL 20)
+    message(FATAL_ERROR "T513 profile/floppy matrix must register exactly 20 cases.")
+endif()
 set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS)
 if(POWERSHELL_EXECUTABLE)
     list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
         core-machine-8086-timing-results-s5
+        core-machine-8088-timing-results-s5
         core-machine-8086-decoder-ledger-s5)
 endif()
 file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t344-unit-targets.txt"
-    CONTENT "$<JOIN:${PROJECT_ALL_TEST_TARGETS},\n>\n")
+    CONTENT "$<JOIN:${project_t344_single_test_targets},\n>\n")
 file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t344-unit-auxiliary-tests.txt"
     CONTENT "$<JOIN:${PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS},\n>\n")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t513-profile-floppy-matrix-tests.txt"
+    CONTENT "$<JOIN:${project_t513_registered_cases},\n>\n")
 add_custom_target(verify-t344-unit-registration
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T344_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-unit-targets.txt
         -DPROJECT_T344_CURRENT_AUXILIARY_TESTS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-unit-auxiliary-tests.txt
         -DPROJECT_T344_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+        -DPROJECT_T513_MATRIX_CASES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t513-profile-floppy-matrix-tests.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_unit_test_registration.cmake"
     COMMENT "Verifying T344 unit registration integrity"
     VERBATIM)
