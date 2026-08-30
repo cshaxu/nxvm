@@ -2,10 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T507 S1 fixes the full progression matrix; accepted S2 removes
-idle FDC/HDC scheduler and trace work while retaining the sole Core time path. S3 will
-measure and repair the VM-side Standard/Turbo host-quantum cost without changing
-guest-time ownership.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T507 S3. |
+| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1/S2 are accepted scheduler inventory/idle-owner work; this is the first controller batch. |
+| Objective | Re-audit the complete 8259A source/command/EOI/cascade observable-progress surface, then repair every confirmed PIC-owner or direct downstream defect without creating a scheduler fallback. |
+| Non-goals | Do not invent a PIC delay, change DMA/PIT/FDC/HDC/KBC/VADP/D4 ownership, inject host ticks, add a speed mode, suppress the runtime debugger, or make a VM/profile PIC path. |
+| Reference Baseline | `3811473a`; T507 S1 matrix V1--V4, T472 one-pacing-path evidence and T504 Turbo L1 boundary. |
+| Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
+| Files And ABI Surface | PIC owner, its existing Core signal consumers and PIC owner-local tests/evidence/history only; no VM/profile PIC state, public raw-device pointer or second scheduler. |
+| Applicable Rules | `EXECUTION.md` complete finite batch/review; `ARCHITECTURE.md` one Core PIC state and publication route; `CODING.md` direct owner-local repair; source policy before manual/external research; `DOCUMENT.md` evidence boundary. |
+| Verification | Render/read the applicable Intel/IBM source; inspect current PIC and every direct consumer; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
+| Expected Markers | A T507 S3 PIC evidence marker; every finite PIC row has a manual-L3/other-L3/L2/L1 disposition, code owner, direct consumer and regression or explicit receiver. |
+| Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
+| Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
+| Stop Conditions | Stop and revise if a repair needs unsourced PIC timing, an unapproved public contract, mutable state outside Core, a profile/VM workaround, or a second dispatcher. |
+| Exit Criteria | Every frozen PIC function/publication/timing row is fixed or explicitly retained at its supported level; no duplicate or late cascade publication remains; direct consumers and full unit pass. |
+| Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
+| Similar-Issue Sweep | ICW/OCW, IRR/ISR/IMR, priority/rotation, EOI, mask/unmask, cascade assertion/withdrawal, spurious/interrupt acknowledge, reset and every Core scheduler/CPU/DMA/PIT consumer. |
 
 ## Current Technical Baseline
 

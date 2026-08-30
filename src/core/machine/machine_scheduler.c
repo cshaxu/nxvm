@@ -15,16 +15,9 @@ static C_INT core_machine_deadline_is_blocked(const core_machine *machine)
         machine->fdc.data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE;
 }
 
-static C_INT core_machine_slave_irq_publication_is_pending(const core_machine *machine)
-{
-    return machine != STD_NULL && machine->shared_pic_slave.data.irr != 0u &&
-        machine->shared_pic_master.data.cascade_irr == 0u;
-}
-
 static C_INT core_machine_fast_advance_is_blocked(const core_machine *machine)
 {
-    return core_machine_deadline_is_blocked(machine) ||
-        core_machine_slave_irq_publication_is_pending(machine);
+    return core_machine_deadline_is_blocked(machine);
 }
 
 static C_INT core_machine_l1_compatibility_is_eligible(const core_machine *machine)
@@ -33,8 +26,7 @@ static C_INT core_machine_l1_compatibility_is_eligible(const core_machine *machi
         (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) ||
         machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-        machine->d4_refresh_hold_pending ||
-        core_machine_slave_irq_publication_is_pending(machine));
+        machine->d4_refresh_hold_pending);
 }
 
 static C_INT core_machine_dma_deadline_is_qualified(const core_machine *machine)
