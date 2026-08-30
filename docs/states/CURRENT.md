@@ -2,24 +2,12 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New T506 S1. |
-| Admission And Approval | Owner authorized continuous single-role execution of the ordered queue on 2026-08-29; this packet admits the DMA source/List-1/List-2 convergence ledger before repair. |
-| Objective | Freeze the complete selected 8237A request, arbitration and service universe for PIT1 refresh, FDC DMA2 and XT Xebec DMA3, with a source-quality and current-owner disposition for every row. |
-| Non-goals | Do not change DMA, scheduler, controllers, VM, profiles, deadlines or timing ratios; do not import external code or infer a service duration. |
-| Reference Baseline | `3a51a00e`; [DMA service and arbitration proposal](../proposals/m5-dma-service-arbitration-deadline-closure.md) and retained T504 L1 inventory. |
-| Candidate Proposal | [M5 DMA service and arbitration deadline closure](../proposals/m5-dma-service-arbitration-deadline-closure.md). |
-| Files And ABI Surface | One indexed T506 List 1/List 2 evidence ledger and this current packet; no source, test, ABI, artifact or profile change. |
-| Applicable Rules | `EXECUTION.md` coverage ledger and review lifecycle; `ARCHITECTURE.md` sole DMA/Core ownership; `DOCUMENT.md` evidence/state boundaries; source policy for manuals and read-only external-model research. |
-| Verification | Quality-check Intel 8237A and selected XT/AT board material; cross-check 86Box, MAME, PCjs, Bochs and QEMU where available; trace every selected row to code and run complete unit plus documentation governance. |
-| Expected Markers | `M5:T506:S1:DMA-SERVICE-LEDGER:OK`; finite List 1/List 2 dispositions for every selected route; full unit and documentation-governance pass. |
-| Asset Needs | Read-only owner-managed manuals and external source checkouts only; no firmware, media, external source text, hashes or machine-local paths enter the repository. |
-| Reporting Requirements | Record source class/quality, row disposition, exact owner route, request cancellation/reset/consumer order, external corroboration limits and every transfer. |
-| Stop Conditions | Stop and revise if a source requires a profile board change, the selected universe cannot be bounded, or repair would require a guessed delay or non-DMA owner. |
-| Exit Criteria | Every selected DMA service relation has one List 1/List 2 disposition and code-owner mapping; each unsupported relation has an explicit receiver; no implementation has begun. |
-| Original Owner Request | Continue the queue in single-role mode through PIC, DMA, HDC, Model-40 D4 and the five CPU profile re-audit, using source-first complete hardware tasks rather than additive fixes. |
-| Similar-Issue Sweep | Primary/secondary DMA, DRQ/DACK, PIT1 refresh, FDC DMA2, Xebec DMA3, mask/cascade/mode, terminal count/EOP, reset/cancel, HLT observation and all selected XT/AT topologies. |
+No subtask is active. T506 S1 has accepted the finite selected 8237A
+request/arbitration/service ledger: PIT1 refresh, FDC DMA2, XT Xebec DMA3 and
+the selected cascade topology. D1--D9 are sourced owner relations; D10 is the
+single unqualified service-deadline receiver. S2 must evaluate that whole
+receiver through the existing DMA/Core clock and deadline owners without
+inventing a service duration or a provider-local timer.
 
 ## Current Technical Baseline
 
@@ -67,6 +55,12 @@
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 
 ## Recent Governance
+
+- **M5 T506 S1 P2:** coordinator actual-diff review accepts `9905ff39`.
+  Intel/IBM material and available-local 86Box/Bochs/PCjs corroboration bound
+  D1--D11, retaining exactly D10 for a whole-owner deadline evaluation; no
+  source, timing value, external code, VM/profile path, or second DMA owner
+  was added. Complete unit 312/312 and documentation governance pass.
 
 - **M5 T505 S2 P2:** coordinator actual-diff review accepts `afc1d540` and
   closes T505. The sole PIC owner refreshes the existing derived cascade state
