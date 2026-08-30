@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T507 S11. |
-| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S10 are accepted; this is the Model-40 D4 refresh-hold board-boundary batch. |
-| Objective | Re-audit the selected Model-40 D4 refresh-hold request, bus hold, completion, reset and scheduler-consumer route; repair every confirmed defect inside the existing board owner. |
-| Non-goals | Do not place Model-40 state in generic DMA, invent DRAM electrical refresh duration, add a second transaction owner, expose raw board state, or create VM/profile/firmware hold paths. |
-| Reference Baseline | 0a97508a; selected Model-40 D4 source and T499 scheduler evidence. |
+| Identifier Mode | Continuation T507 S12. |
+| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S11 are accepted; this is the global Core deadline-composition batch. |
+| Objective | Compose every accepted controller deadline and immediate route through one earliest-event Core scheduler path; remove eligible per-tick whole-controller scans while retaining one bounded Core receiver for explicit L1 owners. |
+| Non-goals | Do not create a second time line/scheduler, let VM write guest time, invent duration for L1 owners, move controller state into the scheduler, create profile/firmware fast paths, or change same-tick source order. |
+| Reference Baseline | 709f98bd; T507 S1 progression matrix and accepted S3--S11 controller evidence. |
 | Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
-| Files And ABI Surface | Model-40 D4 board state, existing transaction hold and scheduler observation, owner-local tests/evidence/history only; no generic-DMA state or VM/profile mirror. |
+| Files And ABI Surface | Core time observation, deadline composition, normal scheduler progression and owner-local tests/evidence/history only; no controller public ABI, VM time input or profile-specific scheduler. |
 | Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one owner per topology and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
-| Verification | Render/read selected Model-40 board sources; inspect D4/transaction/DMA/scheduler and direct consumers; cross-check available references where applicable; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
-| Expected Markers | A T507 S11 D4 evidence marker; every refresh-hold/request/bus/reset/deadline row has a Manual-L3/Other-L3/L2/L1 disposition, owner, receiver and regression or explicit boundary. |
+| Verification | Reconcile accepted S1/S3--S11 rows against time observation, scheduler, waiting and direct VM consumers; prove earliest deadline, immediate order, L1 bounded receiver, reset/cancellation and no full-controller polling; add focused regression for each repair; run complete unit before S closure. |
+| Expected Markers | A T507 S12 scheduler evidence marker; every C1--C13/V1--V4 matrix row has one implemented route, same-tick order and regression or explicit L1/L2 boundary. |
 | Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
 | Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
-| Stop Conditions | Stop and revise if a repair needs an unsourced delay, host input time, unapproved public contract, mutable state outside the board owner, generic-DMA workaround or second scheduler. |
-| Exit Criteria | Every frozen D4 refresh-hold/publication/timing row is fixed or explicitly retained at its supported level; no duplicate request, hold, transaction, reset or deadline route remains; direct consumers and full unit pass. |
+| Stop Conditions | Stop and revise if a repair needs an unsourced delay, host-generated tick, unapproved public contract, controller-state mirror, profile/VM workaround, altered same-tick order or second scheduler. |
+| Exit Criteria | Every C1--C13/V1--V4 row is fixed or explicitly retained at its supported level; eligible polling is removed; one Core path owns deadline/immediate/L1 progression; direct consumers and full unit pass. |
 | Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
-| Similar-Issue Sweep | D4 hold request/clear, transaction owner, DMA interaction, scheduler observation, reset/finalize and direct Model-40 consumers. |
+| Similar-Issue Sweep | elapsed-tick publication, timeline/PIT/RTC/DMA/FDC/HDC/KBC/XT/VADP/D4/provider routes, same-tick phase order, HLT waiting, Standard/Turbo boundary, reset and cancellation. |
 
 ## Current Technical Baseline
 
