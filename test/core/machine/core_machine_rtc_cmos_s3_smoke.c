@@ -229,6 +229,29 @@ static C_INT rtc_cmos_s3_test_phase_and_divider(C_VOID)
     return failed;
 }
 
+static C_INT rtc_cmos_s3_test_alarm_deadline(C_VOID)
+{
+    rtc_cmos_s3_fixture fixture;
+    type_unsigned_64 ticks = 0u;
+    C_INT failed = 0;
+
+    rtc_cmos_s3_initialize(&fixture);
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_REG_B,
+        CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_AIE);
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_SECOND_ALARM, 0x02u);
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_MINUTE_ALARM, 0x00u);
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_HOUR_ALARM, 0x00u);
+    failed |= core_machine_rtc_ticks_until_irq(&fixture.rtc, &ticks) !=
+        TYPE_STATUS_OK || ticks != 8u;
+    core_machine_rtc_advance(&fixture.rtc, ticks);
+    failed |= (fixture.rtc.registers[CORE_MACHINE_RTC_REG_C] &
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_AF)) !=
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_AF) ||
+        !fixture.rtc.irq_source.asserted;
+    rtc_cmos_s3_finalize(&fixture);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     C_INT failed = 0;
@@ -237,6 +260,7 @@ C_INT main(C_VOID)
     failed |= rtc_cmos_s3_test_calendar_and_reset();
     failed |= rtc_cmos_s3_test_cmos_adapter();
     failed |= rtc_cmos_s3_test_phase_and_divider();
+    failed |= rtc_cmos_s3_test_alarm_deadline();
     if (failed != 0) return 1;
     STD_PRINTF("M5:T350:S3:RTC-CMOS:OK\n");
     return 0;

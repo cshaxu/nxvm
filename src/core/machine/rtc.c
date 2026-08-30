@@ -132,6 +132,31 @@ static type_bool rtc_alarm_matches(const core_machine_rtc *rtc)
         ((hour & 0xc0u) == 0xc0u || hour == rtc_hour_encode(rtc));
 }
 
+static type_status rtc_ticks_until_alarm(const core_machine_rtc *rtc,
+    type_unsigned_64 *out_ticks)
+{
+    core_machine_rtc candidate;
+    type_unsigned_64 second;
+    type_unsigned_64 ticks;
+
+    if (rtc == STD_NULL || out_ticks == STD_NULL || rtc->ticks_per_second == 0u ||
+        rtc->calendar.second_ticks >= rtc->ticks_per_second) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    candidate = *rtc;
+    for (second = 1u; second <= 86400u; ++second) {
+        rtc_increment_second(&candidate);
+        if (!rtc_alarm_matches(&candidate)) continue;
+        ticks = rtc->ticks_per_second - rtc->calendar.second_ticks;
+        if (second - 1u > (UINT64_MAX - ticks) / rtc->ticks_per_second) {
+            return TYPE_STATUS_INVALID_STATE;
+        }
+        *out_ticks = ticks + (second - 1u) * rtc->ticks_per_second;
+        return TYPE_STATUS_OK;
+    }
+    return TYPE_STATUS_INVALID_STATE;
+}
+
 static type_bool rtc_uip_active(const core_machine_rtc *rtc)
 {
     type_unsigned_64 window = (type_unsigned_64)rtc->uip_lead_ticks + rtc->update_ticks;
@@ -279,6 +304,7 @@ type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
 {
     type_unsigned_32 periodic_hz;
     type_unsigned_64 ticks = UINT64_MAX;
+    type_unsigned_64 update;
     type_unsigned_8 enable;
 
     if (rtc == STD_NULL || out_ticks == STD_NULL || !rtc_divider_running(rtc)) {
@@ -295,9 +321,14 @@ type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
     }
     if ((enable & CORE_MACHINE_RTC_REG_B_UIE) != 0u &&
         (enable & CORE_MACHINE_RTC_REG_B_SET) == 0u) {
-        type_unsigned_64 update = rtc->ticks_per_second - rtc->calendar.second_ticks;
+        update = rtc->ticks_per_second - rtc->calendar.second_ticks;
 
         if (update < ticks) ticks = update;
+    }
+    if ((enable & CORE_MACHINE_RTC_REG_B_AIE) != 0u &&
+        (enable & CORE_MACHINE_RTC_REG_B_SET) == 0u &&
+        rtc_ticks_until_alarm(rtc, &update) == TYPE_STATUS_OK && update < ticks) {
+        ticks = update;
     }
     if (ticks == UINT64_MAX || ticks == 0u) return TYPE_STATUS_INVALID_STATE;
     *out_ticks = ticks;

@@ -8,7 +8,7 @@
 | Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S8 consumes the selected RTC/CMOS -> PIC/NMI/firmware route; normal commits and non-force pushes are permanently approved. |
 | Objective | Directly read the selected RTC/CMOS sources, trace periodic/alarm/update/CMOS/NMI/IRQ8 observation and firmware consumption, cross-check local external emulator logic, then repair the complete RTC-route gap batch. |
 | Non-goals | No host-clock injection, profile/firmware/VM workaround, polling loop, second RTC/CMOS state or parallel scheduler. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
-| Reference Baseline | `85726225` (`M5 T503 S7 P1 reconcile HDC firmware routes`); S1/S2 remain preliminary route inventory only. |
+| Reference Baseline | `0019a65d` (`M5 T503 S7 P2 accept HDC route audit`); S1/S2 remain preliminary route inventory only. |
 | Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific RTC/CMOS route S. |
 | Files And ABI Surface | Expected `src/core/machine/rtc.[ch]`, immutable RTC/CMOS/PIC/NMI board bindings, owner-local `test/core/` paths and evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable CMOS state or mutable layout crosses owners. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
@@ -78,6 +78,14 @@
   and external reconciliation repairs the only HDC-route defect in its sole
   owner, with no ATA alias, second controller/media state or extra scheduler.
   S8 is admitted for the complete RTC/CMOS-to-PIC/NMI/firmware route.
+
+- **M5 T503 S8 P1:** direct Motorola/IBM and 86Box/PCjs/Bochs reconciliation
+  finds one real RTC-route defect: AIE-only alarms asserted AF/IRQ8 in the
+  owner but were omitted from its existing deadline query.  The RTC owner now
+  calculates that one alarm deadline through its existing calendar predicate;
+  no second calendar, scheduler, NMI route, profile workaround or host clock
+  path is added.  The rebuilt RTC-focused cohort passes 4/4 and the complete
+  repository-only unit replay passes 312/312; independent acceptance follows.
 
 - **M5 T503 S6 P2:** coordinator review accepts `8aac1fb0`: direct
   NEC/IBM/code/external reconciliation adds the sole frozen READY-board input,
