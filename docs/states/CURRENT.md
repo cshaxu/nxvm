@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation `T503 S7`; S6 is accepted after direct 8272A-to-DMA2/PIC/firmware reconciliation and a 312/312 complete unit replay. |
-| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S7 consumes the selected HDC -> media/PIC/firmware route; normal commits and non-force pushes are permanently approved. |
-| Objective | Directly read the selected HDC sources, trace command/DRQ or PIO/result/IRQ/firmware consumption, cross-check local external emulator logic, then repair the complete HDC-route gap batch. |
-| Non-goals | No ATA universalization, profile/firmware/VM workaround, polling loop, second HDC/media state or parallel scheduler. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
-| Reference Baseline | `8aac1fb0` (`M5 T503 S6 P1 reconcile FDC firmware routes`); S1/S2 remain preliminary route inventory only. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific HDC route S. |
-| Files And ABI Surface | Expected `src/core/machine/hdc.[ch]`, immutable HDC/media/PIC board bindings, owner-local `test/core/` paths and evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable media state or mutable layout crosses owners. |
+| Identifier Mode | Continuation `T503 S8`; S7 is accepted after direct IBM/ATA-to-media/DMA/PIC/firmware reconciliation and a 312/312 complete unit replay. |
+| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S8 consumes the selected RTC/CMOS -> PIC/NMI/firmware route; normal commits and non-force pushes are permanently approved. |
+| Objective | Directly read the selected RTC/CMOS sources, trace periodic/alarm/update/CMOS/NMI/IRQ8 observation and firmware consumption, cross-check local external emulator logic, then repair the complete RTC-route gap batch. |
+| Non-goals | No host-clock injection, profile/firmware/VM workaround, polling loop, second RTC/CMOS state or parallel scheduler. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
+| Reference Baseline | `85726225` (`M5 T503 S7 P1 reconcile HDC firmware routes`); S1/S2 remain preliminary route inventory only. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific RTC/CMOS route S. |
+| Files And ABI Surface | Expected `src/core/machine/rtc.[ch]`, immutable RTC/CMOS/PIC/NMI board bindings, owner-local `test/core/` paths and evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable CMOS state or mutable layout crosses owners. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
-| Verification | Visually inspect and cite applicable IBM/ATA pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU HDC logic where available; trace each selected personality's command, DRQ or PIO/DMA, result/IRQ acknowledgement, reset, error/no-media and firmware-consumption forms; run focused owner-local and complete repository-only unit tests. |
-| Expected Markers | `T503-S7-HDC-FIRMWARE-ROUTE`; every selected HDC completion has one Core state owner, one stated DMA/PIO/IRQ consumer route and a source-qualified timing disposition. |
+| Verification | Visually inspect and cite applicable Motorola/IBM pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU RTC logic where available; trace periodic, alarm and update transitions, register-C IRQ acknowledgement, port-70 NMI mask, reset, CMOS reads/writes and firmware-visible forms; run focused owner-local and complete repository-only unit tests. |
+| Expected Markers | `T503-S8-RTC-FIRMWARE-ROUTE`; every selected RTC/CMOS observable has one Core state owner, one stated PIC/NMI/firmware consumer route and a source-qualified timing disposition. |
 | Asset Needs | Existing primary-source ledgers and read-only external emulator source only if a board edge remains ambiguous; no external bytes enter the repository. |
-| Reporting Requirements | Record every selected HDC personality/form's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
-| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify an HDC connection, or a gap independent of the HDC route; do not improvise a workaround. |
-| Exit Criteria | Every selected personality's command/DRQ-or-PIO/DMA/result/IRQ/reset/error/media form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S7 or explicitly shown independent and transferred. |
+| Reporting Requirements | Record every selected RTC/CMOS form's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
+| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify an RTC/CMOS connection, or a gap independent of the RTC route; do not improvise a workaround. |
+| Exit Criteria | Every selected periodic/alarm/update/CMOS/NMI/IRQ8/reset form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S8 or explicitly shown independent and transferred. |
 | Original Owner Request | Each S owns one controller audit and repair, but must also repair affected controllers/devices in the same S; no known causal tail remains. |
-| Similar-Issue Sweep | ATA PIO, Compaq WD 40MB, IBM WD1003/ST-506 and Xebec-XT command/result forms; selected PIO versus DMA3 routes; status/alternate-status IRQ acknowledgement; reset, nIEN/AEN/mask, no-media/error, terminal count, option-ROM observation and deadline/HLT behavior across 5160, 5170, Model-40 and default-at. |
+| Similar-Issue Sweep | MC146818A register A/B/C/D forms, periodic/alarm/update IRQ flags, port `70h` NMI mask and `71h` CMOS data path, IRQ8 and PIC acknowledgement, reset, invalid CMOS/RAM access, no-host-clock startup and deadline/HLT behavior across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
 
@@ -73,6 +73,11 @@
   DMA3 request and IRQ5 completion publication, and result consumption clears
   the same IRQ source. The four selected personalities retain separate PIO or
   DMA semantics; focused 7/7 and complete repository-only unit 312/312 pass.
+
+- **M5 T503 S7 P2:** coordinator review accepts `85726225`: direct primary
+  and external reconciliation repairs the only HDC-route defect in its sole
+  owner, with no ATA alias, second controller/media state or extra scheduler.
+  S8 is admitted for the complete RTC/CMOS-to-PIC/NMI/firmware route.
 
 - **M5 T503 S6 P2:** coordinator review accepts `8aac1fb0`: direct
   NEC/IBM/code/external reconciliation adds the sole frozen READY-board input,
