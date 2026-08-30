@@ -59,6 +59,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t512-s5-8086-8088-current-owner-audit.md` | CPU conformance owner | T512 S5's manual-first 8086/8088 sole-owner audit and one table-driven complete-retirement verification receiver. |
 | `evidence/t513-s1-profile-cpu-floppy-list-1.md` | Integration-matrix owner | T513 S1's finite 20-row supported profile/CPU/FDD boot universe, construction rejections, source owners and external-input boundary. |
 | `evidence/t513-s1-profile-cpu-floppy-list-2.md` | Integration-matrix owner | T513 S1's matching existing-test inventory and all-row receiver map, including the Model-40 silent-format-selection repair. |
+| `evidence/t513-s2-matrix-runner-consolidation.md` | Integration-matrix owner | T513 S2's one normal external-asset matrix-runner contract, input availability disposition and retained diagnostic-probe boundary. |
 | `evidence/td-s157-d4-candidate-reconciliation.md` | Governance owner | Td S157 reconciles the obsolete D4 refresh-hold candidate with T419 and T507 S14 closure evidence; physical D4 timing remains separately deferred. |
 | `evidence/td-s156-output-yaml-preservation.md` | Output boundary | Td S156 removes Release-build YAML copying so `build/output` configuration remains user-managed. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |

@@ -1700,6 +1700,10 @@ add_executable(vm-byob-dos-boot-probe
     test/integration/dos/vm_byob_dos_boot_probe.c
 )
 target_link_libraries(vm-byob-dos-boot-probe PRIVATE vm-composition)
+add_executable(vm-profile-floppy-boot-matrix
+    test/integration/dos/vm_profile_floppy_boot_matrix.c
+)
+target_link_libraries(vm-profile-floppy-boot-matrix PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-fdc-dma-boundary-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
