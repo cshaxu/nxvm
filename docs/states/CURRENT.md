@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T511 S8 FDC phase-consumer audit. |
-| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S7 find no PIC/DMA/PIT/RTC/KBC/XT keyboard-PPI hit. |
-| Objective | Prove that every 8272A command, data, result, DMA/DRQ, IRQ6, reset and firmware consumer observes its appropriate new FDC phase; repair any stale-observation class in that sole owner path. |
+| Identifier Mode | Continuation T511 S9 HDC-personality phase-consumer audit. |
+| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S8 find no PIC/DMA/PIT/RTC/KBC/XT keyboard-PPI/FDC hit. |
+| Objective | Prove that ATA, WD1003/ST-506, Compaq/WD and Xebec command/data/result, DRQ/DMA, IRQ and firmware consumers each observe their appropriate new HDC phase; repair any stale-observation class in its sole owner path. |
 | Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
-| Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing FDC ledger and the current Core scheduler. |
+| Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing HDC personality ledgers and the current Core scheduler. |
 | Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
-| Files And ABI Surface | Existing Core 8272A FDC, its firmware/DMA/PIC consumers and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
+| Files And ABI Surface | Existing Core HDC, personality firmware/DMA/PIC consumers and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
 | Verification | Complete repository-only unit suite and documentation governance. Every later S repeats unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
-| Expected Markers | One FDC row for command/data/result phases, DRQ/DMA, IRQ6, reset and firmware consumer, each with a manual/code/test disposition. |
-| Asset Needs | Existing owner-managed 8272A and IBM board sources only; no asset import. |
+| Expected Markers | One row per ATA, WD1003, Compaq/WD and Xebec personality covering command/data/result, DRQ/DMA, IRQ and firmware consumer disposition. |
+| Asset Needs | Existing owner-managed controller and board sources only; no asset import. |
 | Reporting Requirements | Record the manual rule, every production consumer, no-hit rationale or repair, and focused proof. |
-| Stop Conditions | Stop if the FDC topology conflicts with the selected sources or a repair would require a second owner or undeclared profile policy. |
-| Exit Criteria | Every FDC consumer is classified and no ATA-style stale observation remains; S9 HDC personalities are then admitted. |
+| Stop Conditions | Stop if a selected HDC personality conflicts with its sources or a repair would require a second owner or undeclared profile policy. |
+| Exit Criteria | Every HDC personality consumer is classified and no ATA-style stale observation remains; S10 VADP is then admitted. |
 | Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
 | Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
 
