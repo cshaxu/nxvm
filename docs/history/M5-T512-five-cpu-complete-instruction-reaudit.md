@@ -45,3 +45,14 @@ defined and undefined FLAGS, control/system state, success/fault/trap/abort/
 interrupt/NMI delivery, and instruction-time fact or explicit absence. It must
 not replace a missing 80286 instruction-time source with the previous
 Appendix-B claim or an external emulator literal. S2 changes no production code.
+
+## S2 Result
+
+S2 accepts the finite five-CPU List 1 in
+[its evidence](../etc/evidence/t512-s2-five-cpu-function-state-timing-list-1.md).
+The decoder-inventory producers are the exact opcode/ModR/M expansion, while
+the ledger assigns every expansion a manual form, prefix, state/delivery and
+timing-source category. It corrects the old 80286 provenance claim: semantics
+remain Manual-L3, but each per-instruction timing field is source-unavailable
+until a valid original Intel timing source is admitted. S3 must make every
+List-1 expansion's current Core disposition explicit before repair begins.
