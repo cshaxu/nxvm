@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30; T512 is closed and the queued profile/CPU/floppy matrix is the next candidate. |
-| Objective | Freeze the complete supported profile x CPU identity x FDD geometry x owner-provided DOS-image matrix from live contracts, including every explicit rejection; do not yet add a runner or alter production behavior. |
-| Non-goals | Do not add test scenarios before the finite matrix is admitted, alter profile/FDC/CPU behavior, import or catalogue ROM/DOS bytes, commit machine-local asset paths, or modify `build/output` YAML. |
-| Reference Baseline | T512 closure, current profile descriptors and FDD media parser, existing external-asset integration tests, and the candidate matrix proposal. |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30. S1 was accepted at `73a0505d`; this S2 consumes its finite 20-row ledger under the approved T513 proposal. |
+| Objective | Replace the diagnostic-only BYOB DOS boot probe policy with one table-driven normal integration runner that owns T513 row lookup, public session configuration, terminal recognition and concise diagnostics without recreating profile, FDD or BIOS logic. |
+| Non-goals | Do not register CTest rows yet, change production CPU/profile/FDC behavior, execute or catalogue external images/firmware, retain trace-heavy diagnostic policy in the normal runner, import protected material, or modify `build/output` YAML. |
+| Reference Baseline | T513 S1 List 1/List 2, the existing session/BYOB composition APIs, current normal DOS component integration tests, and the diagnostic-only BYOB boot probe. |
 | Candidate Proposal | [M5 profile/CPU/floppy integration matrix](../proposals/m5-profile-cpu-floppy-integration-matrix.md). |
-| Files And ABI Surface | `docs/etc/evidence/` matrix ledger and owner-local profile/FDD/test inventories only. No production source, public ABI, CTest registration or profile contract changes in S1. |
-| Applicable Rules | Task Reading Set; execution, documentation, source-policy, architecture and coding authorities. External BIOS/ROM/DOS inputs remain owner-managed and never enter the repository. |
-| Verification | S1 runs the current complete repository-only unit suite and documentation governance. It verifies each declared row directly against live profile/FDD/parser code and records unavailable external inputs without a synthetic pass. |
-| Expected Markers | One finite List 1 names each supported boot row, its expected terminal and input geometry; List 2 maps every row to its current integration owner or an explicit missing-test disposition; each forbidden profile/FDD pairing has a named rejection. |
+| Files And ABI Surface | New owner-local source beneath `test/integration/dos/` and its CMake executable declaration; T513 history/evidence. No production/public ABI, CTest registration, profile contract, session-construction or media-owner change. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. The runner calls the public session/Core route only; external BIOS/ROM/DOS inputs remain owner-managed and never enter the repository. |
+| Verification | Compile the runner, exercise its no-asset table validation path, run the complete repository-only Debug unit suite and documentation governance. Actual external rows begin in S3/S4 only. |
+| Expected Markers | One finite descriptor table covers S1's 20 rows; one public configuration factory consumes each descriptor; terminal recognition observes only copied display/session results; invalid row/configuration errors are concise; no trace provider, private Core layout or duplicate profile/FDD selector appears. |
 | Asset Needs | Read-only owner-managed firmware and DOS images; no bytes, hashes or machine-local paths are committed. |
-| Reporting Requirements | Record the coverage count, profile contract source, media geometry/parser source, existing test reuse candidate, rejection list, asset availability boundary and zero-code delta. |
-| Stop Conditions | Stop for owner direction if a profile's allowed CPU/FDD set is ambiguous, an external image must be copied or catalogued to continue, or S1 reveals an unsupported combination whose correct product contract requires a production change. |
-| Exit Criteria | Every current supported profile/CPU/FDD choice and expected rejection is finite, sourced and mapped to an existing test owner or a later S receiver; no scenario has been invented from asset availability alone. |
+| Reporting Requirements | Record retained execution owner, removed diagnostic duplication, source/test code-size delta, descriptor count, validation output, full-unit result and any configuration mismatch discovered before external execution. |
+| Stop Conditions | Stop for owner direction if one of the 20 rows cannot be represented through the public session configuration without recreating a profile/BYOB parser, terminal recognition requires a private Core pointer, or a requested contract change exceeds the identified Model-40 rejection repair. |
+| Exit Criteria | A single normal runner is compiled and validates all 20 S1 descriptors without external files; it has one public session construction route and one display-terminal observer, while CTest registration/external execution remain explicitly deferred to S3/S4. |
 | Original Owner Request | Single-person dual-role implementation of the complete integration test suite. |
-| Similar-Issue Sweep | Search all tracked profile descriptors, FDD geometry/parser paths, CTest integration registrations and BYOB boot probes; record each production/test route as matrix input, existing reuse, rejection or later-S receiver. |
+| Similar-Issue Sweep | Inspect every existing integration DOS/boot probe for duplicate profile parsing, private Core access, trace-only state or separate terminal detection. Retain distinct diagnostic probes only if they remain unregistered diagnosis, not normal matrix policy. |
 
 ## Current Technical Baseline
 
