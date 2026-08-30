@@ -2,24 +2,11 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New T510 S1. |
-| Admission And Approval | Owner approved single-session implementation of complete HDC personality coverage in this thread on 2026-08-30. |
-| Objective | Freeze source-qualified List 1 and current-owner List 2 for ATA PIO, IBM WD1003/ST-506, Compaq/WD 40 MB and IBM Xebec XT before their one-owner implementation batch. |
-| Non-goals | Do not import third-party source, conflate personalities, invent physical timing, add an HDC/VM scheduler, or mutate controller timing at runtime. |
-| Reference Baseline | T508 S5 `7ab748d8`, T509 `0d39508f`, retained T479/494/503/507 HDC evidence, ATA-3 and local IBM/Compaq material plus available local emulator references. |
-| Candidate Proposal | [HDC personality service-deadline proposal](../proposals/m5-hdc-personality-service-deadline-closure.md). |
-| Files And ABI Surface | HDC source, scheduler receiver, frozen VM profile composition and HDC-focused tests/evidence only. No public mutable ABI. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. Core owns HDC state/phase/DRQ/IRQ/deadline; VM selects one frozen personality only. |
-| Verification | Durable complete List 1/List 2, exact source/reference paths and level disposition for each row; focused HDC owner tests; complete unit after S closure. |
-| Expected Markers | Every selected personality has separate command/data/IRQ/reset/cancel/DMA-or-PIO/deadline rows and one Core owner route; unsupported physical media timing remains explicit. |
-| Asset Needs | Read-only local manuals and emulator trees; no source or media import. |
-| Reporting Requirements | Record source confidence, external corroboration, code owner/path, complete row disposition and implementation batch or explicit transfer. |
-| Stop Conditions | Stop if a required personality lacks enough source to distinguish its semantics, or if a repair needs a second controller/media owner; record the exact boundary rather than guess. |
-| Exit Criteria | List 1 and List 2 exhaust all four personalities and identify one coherent owner-local implementation batch for the next S. |
-| Original Owner Request | Owner requested single-session implementation of complete HDC personality coverage. |
-| Similar-Issue Sweep | ATA, WD1003, Compaq/WD and Xebec; all command, data, IRQ/result, reset/cancel, media and scheduler consumers. |
+No active packet. T510 S1 accepted its four-personality List 1/List 2 at
+`09a83060`: ATA's existing L2 deadline is retained; WD1003's command and
+inter-sector durations must be separated; Model-40's unqualified duration must
+be removed; and Xebec must enter the existing HDC deadline path before it
+publishes DMA or a result. The next S consumes that one owner-local batch.
 
 ## Current Technical Baseline
 
@@ -67,6 +54,13 @@
 | T501 | Closed: all frozen four-profile media rows have their recorded terminal or external boundary; the Model-40 80386/1.2-MB row reaches `A:\>` through its sole Core/firmware path. [History](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
 
 ## Recent Governance
+
+- **M5 T510 S1 P2:** coordinator actual-diff review accepts `09a83060`.
+  The finite ATA/WD1003/Compaq/Xebec ledger uses original sources for each
+  host-visible contract, confines 86Box timing to explicitly labelled Other-L2
+  observations, and identifies one Core-HDC batch with no second owner,
+  scheduler or profile-side state. Documentation governance and unit 313/313
+  pass.
 
 - **M5 T509 S1 P2:** coordinator actual-diff review accepts `21dc1c3a`.
   The finite 33-runner ledger retains one Core deadline owner and one VM
