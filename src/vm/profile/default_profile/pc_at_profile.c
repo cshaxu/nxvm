@@ -96,6 +96,16 @@ static const vm_profile_default_pc_at_route default_pc_at_routes[] = {
     { VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2, 6u, 2u }
 };
 
+static const vm_profile_default_pc_at_route ibm_5170_model_339_routes[] = {
+    { VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0, 0u,
+        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
+    { VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_KEYBOARD_IRQ1, 1u,
+        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
+    { VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8, 8u,
+        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
+    { VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2, 6u, 2u }
+};
+
 static const vm_profile_default_pc_at_firmware_service
 default_pc_at_firmware_services[] = {
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10, 0x10u },
@@ -240,8 +250,8 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     { 0x21u, 0x0200u, 0x20u, 0x30u, 0x00u, 0u, 0x80u },
     default_pc_at_port_leaves,
     sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
-    default_pc_at_routes,
-    sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
+    ibm_5170_model_339_routes,
+    sizeof(ibm_5170_model_339_routes) / sizeof(ibm_5170_model_339_routes[0]),
     { .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506, .irq = 14u,
         .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
@@ -369,6 +379,8 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .time_axis = contract->time_axis,
         .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
+        .kbc_aux_absent = descriptor->firmware_slot ==
+            VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
         .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
         .kbc_command_response_ticks = contract->kbc_command_response_ticks
@@ -842,22 +854,31 @@ const vm_profile_default_pc_at_route *vm_profile_default_pc_at_route_find(
 C_INT vm_profile_default_pc_at_descriptor_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor)
 {
+    const vm_profile_default_pc_at_route *expected_routes;
+    STD_SIZE_T expected_route_count;
     STD_SIZE_T index;
 
     if (descriptor == STD_NULL || !vm_profile_default_pc_at_fdc_bounce_is_valid(descriptor) ||
         descriptor->port_leaves == STD_NULL ||
         descriptor->routes == STD_NULL || descriptor->port_leaf_count !=
         sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]) ||
-        descriptor->route_count != sizeof(default_pc_at_routes) /
-        sizeof(default_pc_at_routes[0])) return 0;
+        descriptor->route_count == 0u) return 0;
+    expected_routes = descriptor->firmware_slot ==
+        VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT ?
+        ibm_5170_model_339_routes : default_pc_at_routes;
+    expected_route_count = descriptor->firmware_slot ==
+        VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT ?
+        sizeof(ibm_5170_model_339_routes) / sizeof(ibm_5170_model_339_routes[0]) :
+        sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]);
+    if (descriptor->route_count != expected_route_count) return 0;
     for (index = 0u; index < descriptor->port_leaf_count; ++index) {
         if (STD_MEMCMP(&descriptor->port_leaves[index],
                 &default_pc_at_port_leaves[index],
                 sizeof(default_pc_at_port_leaves[index])) != 0) return 0;
     }
     for (index = 0u; index < descriptor->route_count; ++index) {
-        if (STD_MEMCMP(&descriptor->routes[index], &default_pc_at_routes[index],
-                sizeof(default_pc_at_routes[index])) != 0) return 0;
+        if (STD_MEMCMP(&descriptor->routes[index], &expected_routes[index],
+                sizeof(expected_routes[index])) != 0) return 0;
     }
     if (descriptor->firmware_slot ==
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT) {

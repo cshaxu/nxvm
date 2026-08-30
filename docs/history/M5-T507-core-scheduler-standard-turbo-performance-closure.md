@@ -15,6 +15,7 @@ Core progress; Turbo removes that wait and nothing else.
 | S4 | Accepted: complete Intel/IBM/List 1/List 2 re-audit confirms one DMA owner and scheduler observation path for request, arbitration, phase, refresh, FDC DMA2 and Xebec DMA3. No new DMA defect is confirmed; focused 5/5, full unit 312/312 and documentation governance pass. |
 | S5 | Accepted: complete 8253/8254/List 1/List 2 re-audit confirms one PIT owner and direct IRQ0, DMA0-refresh, speaker and D4-consumer route. No new PIT defect is confirmed; focused 9/9, full unit 312/312 and documentation governance pass. |
 | S6 | Accepted: MC146818A RESET retains the sole calendar/divider phase instead of moving the next update deadline; focused RTC 9/9, full unit 312/312 and documentation governance pass. |
+| S7 | In review: rendered Intel/IBM and external-reference reconciliation retains distinct 8042 and XT PPI owners, and removes the false IBM 5170 AUX/IRQ12 profile route. |
 
 The next implementation batch may consume only this finite matrix. It must
 not create a VM/profile scheduler, device-local queue, host-to-Core tick

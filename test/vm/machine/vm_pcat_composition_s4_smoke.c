@@ -43,13 +43,13 @@ static C_INT vm_pcat_s4_topology_matches(
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
     fdc_route = vm_profile_default_pc_at_route_find(profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
-    failed |= pit_route == STD_NULL || keyboard_route == STD_NULL ||
-        aux_route == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL ||
+    failed |= pit_route == STD_NULL || keyboard_route == STD_NULL || aux_route == STD_NULL ||
+        cmos_route == STD_NULL || fdc_route == STD_NULL ||
         session->core_machine->shared_pit_irq0_source.irq != pit_route->irq ||
         session->core_machine->shared_kbc.connect.irq1_source.irq !=
             keyboard_route->irq ||
-        session->core_machine->shared_kbc.connect.irq12_source.irq !=
-            aux_route->irq ||
+        !session->core_machine->shared_kbc.connect.aux_present ||
+        session->core_machine->shared_kbc.connect.irq12_source.irq != aux_route->irq ||
         session->core_machine->rtc_cmos_config.irq != cmos_route->irq ||
         session->core_machine->rtc_cmos_config.timing.provenance !=
             CORE_MACHINE_RTC_TIMING_L2_RATIO ||

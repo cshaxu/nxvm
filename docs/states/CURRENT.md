@@ -2,10 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T507 S1 freezes the progression matrix, S2 removes idle
-FDC/HDC settlement work, accepted S3--S5 reconcile PIC, DMA and PIT ownership,
-and accepted S6 corrects the MC146818A RESET phase rule without a second
-calendar or timing route. The next controller batch is S7 KBC/XT PPI keyboard.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T507 S7. |
+| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S6 are accepted; this is the selected 8042 and XT PPI keyboard batch. |
+| Objective | Re-audit AT 8042 and XT PPI/keyboard command, serial/BAT, typematic, IRQ1, A20/reset and deadline/cancellation paths; repair every confirmed owner or direct-receiver defect without aliasing the two topologies. |
+| Non-goals | Do not create a host-input clock, merge XT PPI and AT 8042 state, alter PIC/DMA/PIT/RTC/FDC/HDC/VADP/D4 ownership, expose raw controller state, or create a VM/profile keyboard scheduler. |
+| Reference Baseline | ae8e5fc9; T503 S9 keyboard-route evidence and T507 S1 progression matrix. |
+| Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
+| Files And ABI Surface | KBC, XT PPI/keyboard owners, their existing Core consumers, owner-local tests/evidence/history only; no VM/profile timing state, raw-device pointer or parallel delayed-delivery path. |
+| Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one owner per topology and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
+| Verification | Render/read Intel 8042 and applicable IBM XT/AT board sources; inspect KBC, XT PPI/keyboard and every direct consumer; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
+| Expected Markers | A T507 S7 keyboard evidence marker; every finite command/serial/typematic/A20/reset/IRQ/deadline row has a Manual-L3/Other-L3/L2/L1 disposition, owner, receiver and regression or explicit boundary. |
+| Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
+| Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
+| Stop Conditions | Stop and revise if a repair needs an unsourced delay, host input time, unapproved public contract, mutable state outside Core, profile/VM workaround, topology merge or second scheduler. |
+| Exit Criteria | Every frozen keyboard controller/publication/timing row is fixed or explicitly retained at its supported level; no duplicate or late IRQ1/A20/reset/deadline route remains; direct consumers and full unit pass. |
+| Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
+| Similar-Issue Sweep | KBC status/data/command ports, command response, keyboard/mouse output, serial/BAT/typematic, XT PPI port lines and queue, IRQ1, A20, reset request, cancellation/reset/finalize and scheduler/CPU/PIC consumers. |
 
 ## Current Technical Baseline
 

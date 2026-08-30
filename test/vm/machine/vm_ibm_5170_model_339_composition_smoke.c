@@ -75,6 +75,10 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         0x04u) != TYPE_STATUS_OK;
     failed |= core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
         TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286;
+    failed |= session->core_machine->shared_kbc.connect.aux_present ||
+        session->core_machine->shared_kbc.data.aux_enabled ||
+        (session->core_machine->shared_kbc.data.command_byte &
+            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
     failed |= core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
         TYPE_STATUS_OK || memory_bytes != 512u * 1024u;
     failed |= core_machine_get_planar_parity_observation(session->core_machine,
@@ -175,6 +179,7 @@ static C_INT vm_default_profile_remains_ata(C_VOID)
     if (!failed) failed |= session->profile == vm_profile_default_pc_at_descriptor_get() ||
         STD_STRCMP(session->profile->identity, "default-at") != 0 ||
         !session->profile->hdc_present ||
+        !session->core_machine->shared_kbc.connect.aux_present ||
         !core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u);
     vm_session_destroy(session);

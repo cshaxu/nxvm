@@ -14,6 +14,15 @@ only after reconciling them with original hardware sources and NXVM's ownership
 rules; no external source code, compatibility shortcut, or second scheduler is
 imported.
 
+Its primary performance defect is any live **L1 no-deadline owner**: Core then
+cannot know the next guest-visible change and must conservatively keep advancing
+and scanning at the source-tick granularity. T507 must account for every such
+blocker. It either gives the existing owner a source-qualified deadline, binds
+an already admitted L2 proportional/board receiver without pretending it is a
+physical value, or retains a named L1 no-deadline receiver under the existing
+bounded Turbo-only compatibility policy. An unclassified L1 blocker, a guessed
+duration, or a scheduler-side device-state mirror is not an exit.
+
 ## Audit Prerequisite
 
 Earlier controller closures are inputs to this task, not proof that the current
@@ -29,6 +38,12 @@ source and command mutations must publish cascade state immediately, and the
 task either removes an obsolete scheduler cascade fallback or traces one real
 remaining mutation source to that publication path.
 
+These controller batches do not reopen their completed functional T tasks or
+create replacement controllers. They are a finite integration audit of each
+owner's current deadline, immediate-action, reset/cancellation and downstream
+publication route. A discovered defect is repaired at that owner; an unrelated
+or newly expanded controller-function scope becomes its own proposed T.
+
 ## Required Outcome
 
 - Core remains the only guest-time writer and the only deadline composer.
@@ -38,8 +53,10 @@ remaining mutation source to that publication path.
 - Core selects the earliest valid deadline, advances once to it, and processes
   only the owners due at that point in the established same-tick order.
 - Known sparse waits no longer execute every controller's maintenance path once
-  per guest tick.  Unknown or lower-tier relations remain labelled L1/L2 and
-  use the existing bounded policy rather than an invented duration.
+  per guest tick. Every active no-deadline blocker has a recorded owner,
+  triggering state and disposition: source-qualified deadline, admitted L2
+  receiver, immediate action, or bounded Turbo-only L1 compatibility receiver.
+  No relation receives an invented duration.
 - Standard and Turbo consume the same Core progression and event order.
   Standard may wait only when completed guest progress is ahead of its approved
   host pacing budget; Turbo removes that wall-clock wait and nothing else.
@@ -110,8 +127,10 @@ or retains each unsupported relation with a truthful L1/L2 receiver.
 
 All S3--S11 controller-owner rows have an implemented source-qualified deadline,
 an explicit immediate action, or a named L1/L2 receiver, with no unresolved
-cross-owner defect deferred to S10. No known eligible deadline is hidden behind
-per-tick all-controller polling. Standard and Turbo have identical guest event
-ordering, distinct only in wall-clock waiting. Complete repository-only unit
-and owner-managed integration suites pass, and the performance corpus
-demonstrates the retained Core path rather than a parallel fast path.
+cross-owner defect deferred to S10. The final matrix accounts for every live L1
+no-deadline blocker and proves that no source-qualified or admitted-L2 event is
+hidden behind per-tick all-controller polling. Standard and Turbo have identical
+guest event ordering, distinct only in wall-clock waiting and the already
+bounded Turbo-only L1 compatibility receiver. Complete repository-only unit and
+owner-managed integration suites pass, and the performance corpus demonstrates
+the retained Core path rather than a parallel fast path.

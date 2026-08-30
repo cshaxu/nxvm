@@ -99,6 +99,7 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
         resolved->values.core.configuration.time_axis.ticks_per_second != 8000000u ||
         resolved->values.core.configuration.l1_compatibility_policy !=
             CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
+        !resolved->values.core.configuration.kbc_aux_absent ||
         resolved->values.core.controller_timing_rules.pit_clock !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         resolved->values.core.controller_timing_rules.dma_service !=
@@ -128,7 +129,7 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
         resolved->values.memory_window_count != 1u ||
         resolved->values.memory_windows[0].first != 0x000b8000u ||
         resolved->values.memory_windows[0].last != 0x000bffffu ||
-        resolved->values.irq_route_count != 5u ||
+        resolved->values.irq_route_count != 4u ||
         resolved->values.drq_route_count != 1u ||
         resolved->values.firmware_policy != VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BUILTIN ||
         resolved->values.media_policy != VM_PROFILE_RESOLVER_MEDIA_POLICY_SESSION ||
@@ -330,6 +331,7 @@ static C_INT vm_default_at_80286_selection_keeps_generic_topology(C_VOID)
         resolved.descriptor.cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
         resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_80287 ||
         resolved.descriptor.firmware_slot != VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC ||
+        resolved.resolved.values.core.configuration.kbc_aux_absent ||
         !resolved.topology.display_present || !resolved.topology.display.ega_present ||
         !resolved.topology.rtc_cmos_present) return 1;
     return !vm_profile_default_pc_at_descriptor_is_valid(&resolved.descriptor);

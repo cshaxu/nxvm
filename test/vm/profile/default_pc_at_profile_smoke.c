@@ -13,6 +13,8 @@ C_INT main(C_VOID)
     const vm_profile_default_pc_at_route *fdc_route;
     const vm_profile_default_pc_at_route *aux_route;
     vm_profile_default_pc_at_cpu_contract contract;
+    core_machine_config configuration;
+    core_machine_controller_timing_rules timing_rules;
 
     if (profile == STD_NULL ||
         STD_STRCMP(profile->identity, "default-pc-at") != 0 ||
@@ -55,7 +57,7 @@ C_INT main(C_VOID)
         profile->cmos.base_memory_kib != 0x027fu ||
         profile->cmos.fixed_disk_type != 0xf0u ||
         profile->cmos.fixed_disk_type_extended_0 != 0x2fu ||
-        profile->firmware_service_count != 14u ||
+        profile->route_count != 5u || profile->firmware_service_count != 14u ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile)) return 1;
 
     if (!vm_profile_default_pc_at_cpu_contract_select(profile,
@@ -102,7 +104,9 @@ C_INT main(C_VOID)
         fdc_route == STD_NULL || fdc_route->irq != 6u ||
         fdc_route->dma_channel != 2u || aux_route == STD_NULL ||
         aux_route->irq != 12u || aux_route->dma_channel !=
-        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL) return 1;
+        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL ||
+        !vm_profile_default_pc_at_core_config_materialize(profile, &contract,
+            &configuration, &timing_rules) || configuration.kbc_aux_absent) return 1;
 
     puts("M5:T208:S2:DEFAULT-PC-AT-PROFILE:OK");
     return 0;
