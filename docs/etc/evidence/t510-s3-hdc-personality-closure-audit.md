@@ -31,6 +31,7 @@ scheduler, controller alias, media cache or profile-specific Core branch.
 The release preserves the runtime debugger. Stripped concerns compiler
 debug information only; it does not remove that product feature.
 
-This evidence does not cover the owner-reported current-HDD
-`EWIN31\\SETUP.EXE` path. Its reported freeze keeps T510 open; the next
-reproduction/repair result supersedes this incomplete closure attempt.
+This pre-Setup result did not cover the owner-reported current-HDD
+`EWIN31\\SETUP.EXE` path. Its follow-up repair and successful Setup-entry
+checkpoint are recorded in
+[the S3 regression evidence](t510-s3-ata-pio-setup-regression-repair.md).

@@ -4,22 +4,8 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T510 S3 corrective closure. |
-| Admission And Approval | Owner-approved T510 remains open after the reported current-HDD `EWIN31\\SETUP.EXE` freeze exposed a missing integration checkpoint. S1 `09a83060`/`ce4d685b` froze the ledger; S2 `53698062`/`0eb318eb` implements and accepts the owner-local batch. |
-| Objective | Reproduce the reported HDD Windows Setup freeze through the selected current configuration, locate its sole failing owner/transition, repair the full proven class, and rerun all T510 closure gates. The ATA PIO firmware consumer repair is implemented and awaits independent acceptance. |
-| Non-goals | Do not reintroduce immediate controller completion, a profile-specific Core branch, VM scheduler, controller copy, mutable runtime timing setter, or an unproven physical-media duration. |
-| Reference Baseline | T510 S1 List 1/List 2, S2 implementation evidence, provisional S3 verification `148e9f46`/`ddfe094f`, and the owner-reported HDD path. |
-| Candidate Proposal | [HDC personality service-deadline proposal](../proposals/m5-hdc-personality-service-deadline-closure.md). |
-| Files And ABI Surface | HDC, its existing consumer and selected external-asset integration harness only if the reproduced trace proves a defect; no public mutable ABI. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core remains the sole HDC/time owner; VM consumes observations only. |
-| Verification | The external-HDD Setup-entry checkpoint reaches `Welcome to Setup.`; the focused two-sector owner regression, complete unit and integration gates, and stripped Release have passed. Documentation governance remains required for acceptance. |
-| Expected Markers | The reported command either reaches its defined Setup checkpoint or produces a bounded evidence trace identifying a non-HDC owner. No HDC phase may be assumed complete without its sole deadline path. |
-| Asset Needs | Owner-provided current `hdd.img` only through the existing external-asset policy; no source, firmware or guest-media import. |
-| Reporting Requirements | Record the exact selected configuration, checkpoint/trace, owner-path disposition, every repair and the final complete gate result. |
-| Stop Conditions | Stop if the supplied image/configuration cannot be identified, reproduction needs an unapproved external asset route, or the fault proves outside T510's HDC-consumer boundary; record the evidence and transfer it explicitly. |
-| Exit Criteria | The reported HDD Setup path has a reproducible terminal disposition; all four personality routes retain their List-2 disposition with one deadline owner; all T-level gates pass. |
-| Original Owner Request | Owner requested single-session complete HDC personality coverage, now including the reported HDD Setup usability regression. |
-| Similar-Issue Sweep | Every HDC completion phase and consumer on the reproduced path, all four profile constructions, the current HDD integration route and the existing Windows checkpoints. |
+No active packet. T510 closed after its complete four-personality HDC ledger
+sweep and the repaired ATA PIO multi-sector firmware consumer path.
 
 ## Current Technical Baseline
 
@@ -57,6 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
 | T508 | Reclosed: Core accepts one provenance-neutral copied timing plan; default ATA has an Other-L2 controller quantum and Model-40 an Other-L2 macro pacing axis. The four-profile matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
 | T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
@@ -64,9 +51,15 @@
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
 | T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
-| T501 | Closed: all frozen four-profile media rows have their recorded terminal or external boundary; the Model-40 80386/1.2-MB row reaches `A:\>` through its sole Core/firmware path. [History](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
 
 ## Recent Governance
+
+- **M5 T510 S3 P5:** coordinator actual-diff review accepts `5182e2c6` and
+  closes T510. The 0508 regression was a sole firmware multi-sector PIO
+  consumer defect, not an HDC timing defect: every sector now observes the
+  same Core-owned BSY/ERR/DRQ transition. The two-sector read/write proof,
+  actual Setup-entry checkpoint, unit 313/313, integration 20/20,
+  documentation governance and stripped Release 0508 all pass.
 
 - **M5 T510 S2 P2:** coordinator actual-diff review accepts `53698062`.
   The generic two-transition HDC input eliminates the misleading shared scalar;
