@@ -192,7 +192,7 @@ static C_VOID core_machine_vadp_high_res_palette(const t_vadp *adapter,
     if (adapter == STD_NULL || palette == STD_NULL) return;
     palette[0] = 0u;
     palette[1] = (adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) != 0u ?
-        0xffffffu : 0u;
+        core_machine_vadp_rgbi_color(adapter->data.color_select & 0x0fu) : 0u;
 }
 
 static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
@@ -1195,7 +1195,10 @@ static C_VOID core_machine_vadp_write_attribute(t_port *port,
     value = port->data.ioByte;
     if (!adapter->data.attribute_data_phase) {
         adapter->data.attribute_index = value & 0x1fu;
-        adapter->data.attribute_display_enabled = (value & 0x20u) != 0u;
+        if (adapter->data.attribute_display_enabled != ((value & 0x20u) != 0u)) {
+            adapter->data.attribute_display_enabled = (value & 0x20u) != 0u;
+            core_machine_vadp_mark_dirty(adapter);
+        }
         adapter->data.attribute_data_phase = TYPE_TRUE;
         return;
     }
@@ -2086,12 +2089,35 @@ static C_INT core_machine_vadp_capture_vga_mode13_snapshot(t_vadp *adapter,
     return TYPE_TRUE;
 }
 
+static C_INT core_machine_vadp_capture_blank_ega_snapshot(t_vadp *adapter,
+    core_machine_display_snapshot *out_snapshot)
+{
+    core_machine_display_kind kind;
+
+    if (adapter == STD_NULL || out_snapshot == STD_NULL ||
+        !core_machine_vadp_ega_display_kind(adapter, &kind)) return TYPE_FALSE;
+    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    out_snapshot->kind = kind;
+    out_snapshot->pixel_width = kind == CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ?
+        CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH : CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH;
+    out_snapshot->pixel_height = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
+        CORE_MACHINE_DISPLAY_EGA_HIGH_RES_HEIGHT : CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
+    out_snapshot->buffer_changed = !adapter->data.captured ||
+        adapter->data.captured_kind != kind ||
+        adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
+    out_snapshot->cursor_changed = TYPE_FALSE;
+    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured_kind = kind;
+    adapter->data.captured_ega_dirty_generation = adapter->data.dirty_generation;
+    return TYPE_TRUE;
+}
+
 C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
     if (adapter != STD_NULL && adapter->data.ega_planar_enabled &&
         !core_machine_vadp_ega_output_active(adapter)) {
-        return TYPE_FALSE;
+        return core_machine_vadp_capture_blank_ega_snapshot(adapter, out_snapshot);
     }
     if (core_machine_vadp_vga_mode13_active(adapter)) {
         return core_machine_vadp_capture_vga_mode13_snapshot(adapter, out_snapshot);

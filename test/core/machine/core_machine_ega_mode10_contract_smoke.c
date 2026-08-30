@@ -98,6 +98,15 @@ C_INT main(C_VOID)
         snapshot.pixels[(T285_EGA_MODE10_HEIGHT - 1u) * T285_EGA_MODE10_WIDTH] != 15u ||
         snapshot.palette_rgb[15] != 0xff5555u;
 
+    (C_VOID)core_machine_port_read(&port, 0x03dau);
+    core_machine_port_write(&port, 0x03c0u, 0x0fu);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ||
+        snapshot.pixel_width != T285_EGA_MODE10_WIDTH ||
+        snapshot.pixel_height != T285_EGA_MODE10_HEIGHT || !snapshot.buffer_changed ||
+        snapshot.pixels[0] != 0u ||
+        snapshot.pixels[(T285_EGA_MODE10_HEIGHT - 1u) * T285_EGA_MODE10_WIDTH] != 0u;
+
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
