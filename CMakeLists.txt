@@ -251,6 +251,9 @@ target_link_libraries(vm-session-media-lifecycle-s3-smoke PRIVATE vm-composition
 add_executable(vm-session-speed-policy-smoke
     test/vm/machine/vm_session_speed_policy_smoke.c)
 target_link_libraries(vm-session-speed-policy-smoke PRIVATE vm-composition)
+add_executable(vm-timing-qualification-smoke
+    test/vm/machine/vm_timing_qualification_smoke.c)
+target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-composition)
 add_executable(vm-profile-resolver-smoke
     test/vm/machine/vm_profile_resolver_smoke.c)
 target_link_libraries(vm-profile-resolver-smoke PRIVATE vm-profile)
@@ -2359,6 +2362,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-session-reconfigure-smoke
     vm-session-media-lifecycle-s3-smoke
     vm-session-speed-policy-smoke
+    vm-timing-qualification-smoke
     vm-profile-resolver-smoke
     vm-ibm-5170-root-resolver-smoke
     vm-xt-5160-268-profile-smoke
@@ -2964,8 +2968,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0507)
-add_current_vm_artifact(vm-0-5-0507 "0.5.0507")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0508)
+add_current_vm_artifact(vm-0-5-0508 "0.5.0508")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

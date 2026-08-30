@@ -2,30 +2,16 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T508 S4. |
-| Admission And Approval | Owner approved this new highest-priority implementation task on 2026-08-30: Core must accept sourced L3 inputs, built-in VM profiles must seek L2 or better, and L1 must remain only an explicit fallback. |
-| Objective | Prove the finite four-profile waiting matrix remains outside the bounded L1 compatibility disposition, then run T508 full product closure. |
-| Non-goals | Do not import external code; invent physical duration; create host-to-Core tick injection, runtime controller setters, a second scheduler/guest clock, controller mirror, profile-side controller, provenance-dependent Core branch, or per-personality fast path. |
-| Reference Baseline | `365c467b`; [T508 proposal](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), [S1 ledger](../etc/evidence/t508-s1-timing-input-qualification-ledger.md), [S3 disposition](../etc/evidence/t508-s3-unqualified-axis-disposition.md), and [T507 closure](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
-| Candidate Proposal | [M5 T508 Core timing-input qualification closure](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), placed first in the candidate queue and immediately admitted by owner direction. |
-| Files And ABI Surface | Existing profile construction, Core scheduler observation, owner-local matrix test, timing evidence, release CMake target and ignored output artifact. No public ABI change is presumed. |
-| Applicable Rules | EXECUTION.md coverage-bearing ledger, S/T full-test and artifact lifecycle; ARCHITECTURE.md one Core time writer and opaque/copy boundary; CODING.md direct owner-local consolidation; source policy for manuals/external references; DOCUMENT.md evidence boundary. |
-| Verification | Add or extend one owner-local four-profile matrix proof; run focused matrix tests, complete unit, external-asset integration, documentation governance, and build/inspect stripped Release 0508. |
-| Expected Markers | Every supported profile configuration has an explicit DMA ratio and a no-L1 scheduler observation under a pending DMA request; output confirms Standard/Turbo share Core progression. |
-| Asset Needs | Existing owner-managed integration assets only; no asset is committed. |
-| Reporting Requirements | Report finite matrix results, code/test line delta, complete unit/integration results, stripped artifact hash, and all retained unqualified boundaries. |
-| Stop Conditions | Stop for any profile that enters L1 compatibility, an integration regression, a release artifact with compiler debug information, or a newly discovered time owner; repair within T508 or transfer the whole affected class. |
-| Exit Criteria | T508 closes only after the matrix, complete unit/integration, governance and stripped release pass; history records the sole Core input path, code-size result and every deliberate unqualified boundary. |
-| Original Owner Request | Owner requires manual L3 or emulator-derived L2 inputs, explicit L1 fallback only, a Core seam capable of L3 values, and VM profile inputs that seek L2 or better; proposal, queue priority, and immediate implementation are approved. |
-| Similar-Issue Sweep | Exercise XT, Model 339, Model 40 and default-PC/AT plan construction plus the scheduler's pending-DMA decision; no controller-local delay is introduced. |
+No active packet. T508 closed after its four-profile Core plan-copy matrix,
+complete unit/integration suite, documentation governance and stripped Release
+0508 verification. Its history and indexed evidence record the remaining
+unqualified ATA and Model-40 axis boundaries.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0507` emitted
-  `nxvm_0_5_0507.exe` in a stripped Release build, SHA-256
-  `5975E348032644A29C3876EA072B7C3DB5D7A9ED438842DBA4797CE6FC5CEFDF`.
+- **Current developer artifact:** CMake target `vm-0-5-0508` emitted
+  `nxvm_0_5_0508.exe` in a stripped Release build, SHA-256
+  `98B8BAE5DD009E1A2954A7698545C37E044365999C023440B52E79A1CE65E9D8`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
@@ -57,6 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T508 | Closed: Core accepts one provenance-neutral copied timing plan; the four-profile pending-DMA matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
 | T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
 | T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
@@ -64,7 +51,6 @@
 | T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
 | T501 | Closed: all frozen four-profile media rows have their recorded terminal or external boundary; the Model-40 80386/1.2-MB row reaches `A:\>` through its sole Core/firmware path. [History](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
-| T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 
 ## Recent Governance
 
