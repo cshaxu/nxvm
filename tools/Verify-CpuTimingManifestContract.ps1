@@ -1,6 +1,7 @@
 param(
     [string[]]$ManifestPath = @(
         "docs/etc/cpu-timing/t435-s2-8086-timing-manifest.json",
+        "docs/etc/cpu-timing/t512-s5-8088-timing-manifest.json",
         "docs/etc/cpu-timing/t435-s2-80186-timing-manifest.json",
         "docs/etc/cpu-timing/t435-s2-80286-timing-manifest.json",
         "docs/etc/cpu-timing/t435-s2-80386-timing-manifest.json"
@@ -54,9 +55,20 @@ function New-CanonicalRecord {
 }
 
 $allRecords = @()
+$derivedManifests = @()
 foreach ($path in $ManifestPath) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Manifest not found: $path" }
     $manifest = Get-Content -Raw -LiteralPath $path | ConvertFrom-Json
+    if ($manifest.schema -eq "nxvm.cpu-timing-derived-manifest.v1") {
+        if ([string]::IsNullOrWhiteSpace([string]$manifest.profile) -or
+            [string]::IsNullOrWhiteSpace([string]$manifest.base_profile) -or
+            [string]::IsNullOrWhiteSpace([string]$manifest.key_prefix_from) -or
+            [string]::IsNullOrWhiteSpace([string]$manifest.key_prefix_to)) {
+            throw "Unexpected derived manifest: $path"
+        }
+        $derivedManifests += $manifest
+        continue
+    }
     if ($manifest.schema -ne "nxvm.cpu-timing-manifest.v1" -or [string]::IsNullOrWhiteSpace([string]$manifest.profile)) { throw "Unexpected manifest: $path" }
     $profileRecords = @()
     $base = @{}
@@ -112,6 +124,46 @@ foreach ($path in $ManifestPath) {
     $expectedTotal = [int]$manifest.expected.base + [int]$manifest.expected.contexts + [int]$manifest.expected.combinations
     if ($profileRecords.Count -ne $expectedTotal) {
         throw "$($manifest.profile) canonical count mismatch: actual=$($profileRecords.Count) expected=$expectedTotal"
+    }
+}
+
+foreach ($manifest in $derivedManifests) {
+    $parentRecords = @($allRecords | Where-Object { $_.profile -eq $manifest.base_profile })
+    $expectedTotal = [int]$manifest.expected.base + [int]$manifest.expected.contexts +
+        [int]$manifest.expected.combinations
+
+    if ($parentRecords.Count -ne $expectedTotal) {
+        throw "$($manifest.profile) parent corpus mismatch: actual=$($parentRecords.Count) expected=$expectedTotal"
+    }
+    foreach ($parent in $parentRecords) {
+        $key = [string]$parent.key_id
+        if (-not $key.StartsWith([string]$manifest.key_prefix_from,
+                [System.StringComparison]::Ordinal)) {
+            throw "$($manifest.profile) key does not have the derived prefix: $key"
+        }
+        $status = [string]$parent.status
+        foreach ($override in @($manifest.status_overrides)) {
+            if ($key -match [string]$override.key_pattern) {
+                $status = [string]$override.status
+                break
+            }
+        }
+        $allRecords += [pscustomobject]@{
+            key_id = ([string]$manifest.key_prefix_to) + $key.Substring(
+                ([string]$manifest.key_prefix_from).Length)
+            profile = [string]$manifest.profile
+            level = [string]$parent.level
+            encoding = [string]$parent.encoding
+            context = [string]$parent.context
+            source_rule = [string]$parent.source_rule
+            current_route = [string]$parent.current_route
+            current_ticks = "not-observed"
+            source_timing_unallocated = ($status -eq "unallocated")
+            implementation_batch = [string]$parent.implementation_batch
+            regression_id = ([string]$parent.regression_id).Replace(
+                [string]$manifest.key_prefix_from, [string]$manifest.key_prefix_to)
+            status = $status
+        }
     }
 }
 

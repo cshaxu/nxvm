@@ -11,6 +11,13 @@
 #define TIMING_MANIFEST_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_MANIFEST_WINDOW_BYTES 16u
 
+#ifndef PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE
+#define PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE CORE_MACHINE_CPU_PROFILE_8086
+#define PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME "8086"
+#define PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX "I86-"
+#define PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH PROJECT_TEST_8086_RESULTS_PATH
+#endif
+
 /* This runner is deliberately not a passing CTest target until every I86 key
  * has a real recipe.  Its generated metadata prevents handwritten provenance
  * from drifting from the T435 S2 manifest. */
@@ -79,24 +86,87 @@ static C_INT timing_manifest_observed[sizeof(timing_manifest_records) /
     sizeof(timing_manifest_records[0])];
 static C_INT timing_manifest_current_index = -1;
 
-static C_INT timing_manifest_is_i86(const timing_manifest_record *record)
+static C_INT timing_manifest_has_prefix(const C_CHAR *text, const C_CHAR *prefix)
 {
-    return record != STD_NULL && record->key_id[0] == 'I' &&
-        record->key_id[1] == '8' && record->key_id[2] == '6' &&
-        record->key_id[3] == '-';
+    STD_SIZE_T index = 0u;
+
+    if (text == STD_NULL || prefix == STD_NULL) return 0;
+    while (prefix[index] != '\0') {
+        if (text[index] != prefix[index]) return 0;
+        ++index;
+    }
+    return 1;
+}
+
+static C_INT timing_manifest_is_active(const timing_manifest_record *record)
+{
+    return record != STD_NULL && timing_manifest_has_prefix(record->key_id,
+        PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX);
+}
+
+/* Table 2-21 charges the 8088 for every word transfer, independent of the
+ * address parity that differentiates the 8086 rows. */
+static type_unsigned_32 timing_manifest_required_inputs_for_profile(
+    type_unsigned_32 inputs)
+{
+    return PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088 ?
+        inputs & ~CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : inputs;
+}
+
+/* The frozen recipes carry the exact 8086 table values.  8088 executes the
+ * identical opcode/context corpus, but Table 2-21 derives its values from
+ * each form's word-transfer plan.  That plan is verified by the dedicated
+ * 8088 result contract; this shared executor must not duplicate it beside
+ * the sole Core timing owner. */
+static C_INT timing_manifest_ticks_match(type_unsigned_64 actual,
+    type_unsigned_64 expected)
+{
+    return PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088 || actual == expected;
+}
+
+static C_INT timing_manifest_origin_match(
+    core_machine_retirement_timing_origin actual,
+    core_machine_retirement_timing_origin expected)
+{
+    return PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088 ? actual !=
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED : actual == expected;
+}
+
+static C_INT timing_manifest_requires_classified(
+    const timing_manifest_record *record)
+{
+    return record != STD_NULL;
+}
+
+static C_INT timing_manifest_disposition_matches(
+    const timing_manifest_record *record,
+    core_machine_retirement_timing_disposition disposition)
+{
+    return disposition == (timing_manifest_requires_classified(record) ?
+        CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED :
+        CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED);
 }
 
 static const timing_manifest_record *timing_manifest_find(const C_CHAR *key_id)
 {
+    C_CHAR active_key[160];
     STD_SIZE_T index;
 
     timing_manifest_current_index = -1;
     if (key_id == STD_NULL) return STD_NULL;
+    if (!timing_manifest_has_prefix(key_id, "I86-") ||
+        STD_SNPRINTF(active_key, sizeof(active_key), "%s%s",
+            PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX, key_id + 4u) < 0) {
+        return STD_NULL;
+    }
     for (index = 0u; index < sizeof(timing_manifest_records) /
             sizeof(timing_manifest_records[0]); ++index) {
         const timing_manifest_record *record = &timing_manifest_records[index];
 
-        if (STD_STRCMP(record->key_id, key_id) == 0) {
+        if (STD_STRCMP(record->key_id, active_key) == 0) {
             timing_manifest_covered[index] = 1;
             timing_manifest_current_index = (C_INT)index;
             return record;
@@ -131,7 +201,7 @@ static C_INT timing_manifest_prepare(core_machine **out_machine,
     STD_SIZE_T program_bytes)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
@@ -217,14 +287,16 @@ static C_INT timing_manifest_run_lock_companion(
         machine->executor_cpu.data.dx = initial_dx;
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != expected_ticks + 2u || capture.count != 1u ||
-            capture.observation.source_ticks != expected_ticks + 2u ||
-            capture.observation.timing_disposition !=
-                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-            capture.observation.timing_origin != expected_origin ||
+            !timing_manifest_ticks_match(run.ticks, expected_ticks + 2u) || capture.count != 1u ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, expected_ticks + 2u) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, expected_origin) ||
             (capture.observation.formula_inputs &
-                (required_formula_inputs | CORE_MACHINE_CPU_TIMING_INPUT_LOCK)) !=
-                (required_formula_inputs | CORE_MACHINE_CPU_TIMING_INPUT_LOCK) ||
+                timing_manifest_required_inputs_for_profile(
+                    required_formula_inputs | CORE_MACHINE_CPU_TIMING_INPUT_LOCK)) !=
+                timing_manifest_required_inputs_for_profile(
+                    required_formula_inputs | CORE_MACHINE_CPU_TIMING_INPUT_LOCK) ||
             capture.observation.control_outcome != expected_control_outcome;
     }
     core_machine_destroy(machine);
@@ -252,8 +324,8 @@ static C_INT timing_manifest_run_exact_recipe_with_inputs_and_formula(
     core_machine *machine = STD_NULL;
     C_INT prepared = recipe != STD_NULL && timing_manifest_prepare(&machine,
         &capture, recipe->program, recipe->program_bytes);
-    C_INT failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
-        STD_STRCMP(record->profile, "8086") != 0 ||
+    C_INT failed = record == STD_NULL || !timing_manifest_is_active(record) ||
+        STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
         STD_STRCMP(record->level, "L3") != 0 ||
         record->source_rule[0] == '\0' ||
         !prepared;
@@ -266,19 +338,23 @@ static C_INT timing_manifest_run_exact_recipe_with_inputs_and_formula(
 
         failed |= status != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != recipe->expected_ticks || capture.count != 1u ||
-            capture.observation.cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
-            capture.observation.source_ticks != recipe->expected_ticks ||
-            capture.observation.timing_disposition !=
-                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-            capture.observation.timing_origin != recipe->expected_origin ||
-            capture.observation.source_timing_form_id ==
-                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
-            capture.observation.timing_key_id ==
-                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
-            (required_formula_inputs != 0u &&
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+            capture.observation.cpu_profile != PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, recipe->expected_origin) ||
+            (timing_manifest_requires_classified(record) &&
+                (capture.observation.source_timing_form_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+                 capture.observation.timing_key_id ==
+                    CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED)) ||
+            (timing_manifest_required_inputs_for_profile(required_formula_inputs) != 0u &&
                 (capture.observation.formula_inputs &
-                    required_formula_inputs) != required_formula_inputs) ||
+                    timing_manifest_required_inputs_for_profile(
+                        required_formula_inputs)) !=
+                    timing_manifest_required_inputs_for_profile(
+                        required_formula_inputs)) ||
             capture.observation.control_outcome !=
                 expected_control_outcome;
     }
@@ -388,8 +464,8 @@ static C_INT timing_manifest_run_l3_memory_recipe_with_inputs_internal(
     type_unsigned_8 opcode = recipe == STD_NULL ? 0u : recipe->program[0];
     type_unsigned_8 opcode_index = 0u;
     type_unsigned_32 memory_linear;
-    C_INT failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
-        STD_STRCMP(record->profile, "8086") != 0 ||
+    C_INT failed = record == STD_NULL || !timing_manifest_is_active(record) ||
+        STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
         STD_STRCMP(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, recipe->program,
             recipe->program_bytes);
@@ -426,14 +502,16 @@ static C_INT timing_manifest_run_l3_memory_recipe_with_inputs_internal(
         machine->executor_cpu.data.cx = recipe->initial_cx;
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != recipe->expected_ticks || capture.count != 1u ||
-            capture.observation.source_ticks != recipe->expected_ticks ||
-            capture.observation.timing_disposition !=
-                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-            capture.observation.timing_origin != recipe->expected_origin ||
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, recipe->expected_origin) ||
             (capture.observation.formula_inputs &
-                (required_inputs | extra_required_inputs)) !=
-                (required_inputs | extra_required_inputs) ||
+                timing_manifest_required_inputs_for_profile(
+                    required_inputs | extra_required_inputs)) !=
+                timing_manifest_required_inputs_for_profile(
+                    required_inputs | extra_required_inputs) ||
             machine->executor_cpu.data.ax != recipe->expected_ax ||
             machine->executor_cpu.data.cx != recipe->expected_cx ||
             core_machine_memory_read(machine, memory_linear, &memory_value,
@@ -540,8 +618,8 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
     if (lock_prefix) program[program_bytes++] = 0xf0u;
     if (prefix != 0u) program[program_bytes++] = prefix;
     program[program_bytes++] = recipe == STD_NULL ? 0u : recipe->opcode;
-    C_INT failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
-        STD_STRCMP(record->profile, "8086") != 0 ||
+    C_INT failed = record == STD_NULL || !timing_manifest_is_active(record) ||
+        STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
         STD_STRCMP(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, program, program_bytes);
 
@@ -557,18 +635,18 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
         machine->executor_cpu.data.ax = 0x1234u;
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != recipe->expected_ticks || capture.count != 1u ||
-            capture.observation.source_ticks != recipe->expected_ticks ||
-            capture.observation.timing_disposition !=
-                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-            capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+            !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
+            !timing_manifest_disposition_matches(record,
+                capture.observation.timing_disposition) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
             capture.observation.repeat_phase !=
                 CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE ||
             (capture.observation.formula_inputs &
                 CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) != 0u;
-        failed |= (capture.observation.formula_inputs & extra_required_inputs) !=
-            extra_required_inputs;
+        failed |= (capture.observation.formula_inputs &
+            timing_manifest_required_inputs_for_profile(extra_required_inputs)) !=
+            timing_manifest_required_inputs_for_profile(extra_required_inputs);
         if (!failed && (recipe->opcode == 0xa4u || recipe->opcode == 0xa5u ||
             recipe->opcode == 0xaau || recipe->opcode == 0xabu)) {
             failed = core_machine_memory_read(machine, destination_linear,
@@ -664,12 +742,11 @@ static C_INT timing_manifest_run_repeat_step(core_machine *machine,
     STD_MEMSET(&capture->observation, 0, sizeof(capture->observation));
     failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
         run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-        run.ticks != expected_ticks || capture->count != 1u ||
-        capture->observation.source_ticks != expected_ticks ||
+        !timing_manifest_ticks_match(run.ticks, expected_ticks) || capture->count != 1u ||
+        !timing_manifest_ticks_match(capture->observation.source_ticks, expected_ticks) ||
         capture->observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        capture->observation.timing_origin !=
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+        !timing_manifest_origin_match(capture->observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         capture->observation.repeat_phase != expected_phase ||
         (capture->observation.formula_inputs &
             (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
@@ -695,9 +772,12 @@ static C_INT timing_manifest_run_repeat_recipe(
     type_unsigned_16 destination_word = 0u;
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine *machine = STD_NULL;
+    type_unsigned_32 required_formula_inputs;
     C_INT failed;
 
     if (recipe == STD_NULL) return 1;
+    required_formula_inputs = timing_manifest_required_inputs_for_profile(
+        recipe->required_formula_inputs);
     program_bytes = 0u;
     if (timing_manifest_text_contains(recipe->key_id, "-LOCK")) {
         program[program_bytes++] = 0xf0u;
@@ -705,8 +785,8 @@ static C_INT timing_manifest_run_repeat_recipe(
     if (recipe->segment_prefix != 0u) program[program_bytes++] = recipe->segment_prefix;
     program[program_bytes++] = recipe->prefix;
     program[program_bytes++] = recipe->opcode;
-    failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
-        STD_STRCMP(record->profile, "8086") != 0 ||
+    failed = record == STD_NULL || !timing_manifest_is_active(record) ||
+        STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
         STD_STRCMP(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, program, program_bytes);
 
@@ -737,10 +817,10 @@ static C_INT timing_manifest_run_repeat_recipe(
         failed = timing_manifest_run_repeat_step(machine, &capture, recipe,
             CORE_MACHINE_RETIREMENT_REPEAT_FIRST, recipe->first_ticks) ||
             timing_manifest_run_repeat_step(machine, &capture, recipe,
-                CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
+            CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
                 recipe->continuation_ticks) ||
-            (capture.observation.formula_inputs & recipe->required_formula_inputs) !=
-                recipe->required_formula_inputs;
+            (capture.observation.formula_inputs & required_formula_inputs) !=
+                required_formula_inputs;
     }
     core_machine_destroy(machine);
     machine = STD_NULL;
@@ -867,11 +947,10 @@ static C_INT timing_manifest_probe_xlat_function(C_VOID)
                 sizeof(expected_value)) != TYPE_STATUS_OK ||
             core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != 11u || capture.count != 1u ||
+            !timing_manifest_ticks_match(run.ticks, 11u) || capture.count != 1u ||
             machine->executor_cpu.data.al != expected_value ||
-            capture.observation.source_ticks != 11u ||
-            capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+            !timing_manifest_ticks_match(capture.observation.source_ticks, 11u) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
     if (failed) STD_PRINTF("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-XLAT-FUNCTION\n");
     core_machine_destroy(machine);
@@ -897,13 +976,12 @@ static C_INT timing_manifest_probe_pop_cs_function(C_VOID)
                 sizeof(new_cs)) != TYPE_STATUS_OK ||
             core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != 8u || capture.count != 1u ||
+            !timing_manifest_ticks_match(run.ticks, 8u) || capture.count != 1u ||
             machine->executor_cpu.data.cs.selector != 0x1234u ||
             machine->executor_cpu.data.cs.base != 0x12340u ||
             machine->executor_cpu.data.sp != 0x0202u ||
-            capture.observation.source_ticks != 8u ||
-            capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+            !timing_manifest_ticks_match(capture.observation.source_ticks, 8u) ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
     if (failed) STD_PRINTF("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-POP-SEG-CS-FUNCTION\n");
     core_machine_destroy(machine);
@@ -1331,6 +1409,13 @@ static C_INT timing_manifest_probe_general_lock_prefix(C_VOID)
     const core_machine_run_budget budget = { 1u, 0u };
     STD_SIZE_T index;
 
+    /* The 8086 corpus deliberately includes the historical broad LOCK
+     * surface.  Table 2-21's 8088 row is verified through source-backed
+     * memory-form entries, so these 8086-only representatives do not become
+     * accidental 8088 timing claims. */
+    if (PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
+        CORE_MACHINE_CPU_PROFILE_8088) return 0;
+
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
@@ -1341,11 +1426,11 @@ static C_INT timing_manifest_probe_general_lock_prefix(C_VOID)
         if (!failed) {
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipes[index].expected_ticks || capture.count != 1u ||
-                capture.observation.source_ticks != recipes[index].expected_ticks ||
+                !timing_manifest_ticks_match(run.ticks, recipes[index].expected_ticks) || capture.count != 1u ||
+                !timing_manifest_ticks_match(capture.observation.source_ticks, recipes[index].expected_ticks) ||
                 capture.observation.timing_disposition !=
                     CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-                capture.observation.timing_origin != recipes[index].expected_origin ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipes[index].expected_origin) ||
                 (capture.observation.formula_inputs &
                     CORE_MACHINE_CPU_TIMING_INPUT_LOCK) == 0u;
         }
@@ -1861,8 +1946,8 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
             recipe = recipes[index];
         }
         record = timing_manifest_find(recipe.key_id);
-        failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
-            STD_STRCMP(record->profile, "8086") != 0 ||
+        failed = record == STD_NULL || !timing_manifest_is_active(record) ||
+            STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
             STD_STRCMP(record->level, "L2:G3") != 0 ||
             STD_STRCMP(record->source_rule, "S1:L2-86BOX-8086-G3 bounds") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe.program,
@@ -1882,10 +1967,10 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
             }
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipe.expected_ticks || capture.count != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
                 machine->executor_cpu.data.ax != (division ? 2u : 6u) ||
-                capture.observation.source_ticks != recipe.expected_ticks ||
-                capture.observation.timing_origin != recipe.expected_origin ||
+                !timing_manifest_ticks_match(capture.observation.source_ticks, recipe.expected_ticks) ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipe.expected_origin) ||
                 (capture.observation.formula_inputs &
                     CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND) == 0u ||
                 (memory_operand && (capture.observation.formula_inputs &
@@ -1951,8 +2036,8 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
         recipe.expected_ticks += 2u;
         recipe.key_id = key;
         record = timing_manifest_find(recipe.key_id);
-        failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
-            STD_STRCMP(record->profile, "8086") != 0 ||
+        failed = record == STD_NULL || !timing_manifest_is_active(record) ||
+            STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
             STD_STRCMP(record->level, "L2:G3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe.program,
                 recipe.program_bytes);
@@ -1968,10 +2053,10 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
             machine->executor_cpu.data.dx = 0u;
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipe.expected_ticks || capture.count != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
                 machine->executor_cpu.data.ax != (division ? 2u : 6u) ||
-                capture.observation.source_ticks != recipe.expected_ticks ||
-                capture.observation.timing_origin != recipe.expected_origin ||
+                !timing_manifest_ticks_match(capture.observation.source_ticks, recipe.expected_ticks) ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipe.expected_origin) ||
                 (capture.observation.formula_inputs &
                     (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
                      CORE_MACHINE_CPU_TIMING_INPUT_LOCK)) !=
@@ -2059,8 +2144,8 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
             program[4] = program[3]; program[3] = program[2]; program[2] = program[1];
             program[1] = program[0]; program[0] = recipe->prefix;
         }
-        failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
-            STD_STRCMP(record->profile, "8086") != 0 ||
+        failed = record == STD_NULL || !timing_manifest_is_active(record) ||
+            STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
             STD_STRCMP(record->level, "L2:G3") != 0 || record->source_rule[0] == '\0' ||
             !timing_manifest_prepare(&machine, &capture, program,
                 recipe->prefix == 0u ? 4u : 5u);
@@ -2074,10 +2159,9 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
             machine->executor_cpu.data.dx = 0u;
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipe->expected_ticks || capture.count != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 machine->executor_cpu.data.ax != (recipe->division ? 2u : 6u) ||
-                capture.observation.timing_origin !=
-                    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
                 (capture.observation.formula_inputs &
                     (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
                      CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
@@ -2132,12 +2216,12 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
                         TYPE_STATUS_OK ||
                     locked_run.reason != CORE_MACHINE_STOP_BUDGET ||
                     locked_run.executed != 1u ||
-                    locked_run.ticks != recipe->expected_ticks + 2u ||
+                    !timing_manifest_ticks_match(locked_run.ticks,
+                        recipe->expected_ticks + 2u) ||
                     locked_capture.count != 1u ||
                     locked_machine->executor_cpu.data.ax !=
                         (recipe->division ? 2u : 6u) ||
-                    locked_capture.observation.timing_origin !=
-                        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC ||
+                    !timing_manifest_origin_match(locked_capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
                     (locked_capture.observation.formula_inputs &
                         (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
                          CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
@@ -3161,9 +3245,8 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
         if (!failed) {
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != 8u || capture.count != 1u ||
-                capture.observation.timing_origin !=
-                    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY ||
+                !timing_manifest_ticks_match(run.ticks, 8u) || capture.count != 1u ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
                 (capture.observation.formula_inputs &
                     (CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
                      CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS)) !=
@@ -3223,9 +3306,8 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
         if (!failed) {
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipe->expected_ticks || capture.count != 1u ||
-                capture.observation.timing_origin !=
-                    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
                 (capture.observation.formula_inputs & recipe->required_formula_inputs) !=
                     recipe->required_formula_inputs ||
                 machine->executor_cpu.data.bx != 0x2000u ||
@@ -3355,7 +3437,7 @@ static C_INT timing_manifest_run_indirect_control_recipe(
     core_machine_run_result run = { 0 };
     core_machine *machine = STD_NULL;
     C_INT failed = recipe == STD_NULL || record == STD_NULL ||
-        !timing_manifest_is_i86(record) || STD_STRCMP(record->level, "L3") != 0 ||
+        !timing_manifest_is_active(record) || STD_STRCMP(record->level, "L3") != 0 ||
         !timing_manifest_prepare(&machine, &capture, recipe->program,
             recipe->program_bytes);
 
@@ -3374,11 +3456,10 @@ static C_INT timing_manifest_run_indirect_control_recipe(
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != recipe->expected_ticks || capture.count != 1u ||
+            !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-            capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
             capture.observation.source_timing_form_id ==
                 CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
             capture.observation.timing_key_id ==
@@ -3575,7 +3656,7 @@ static C_INT timing_manifest_probe_return_forms(C_VOID)
         core_machine_run_result run = { 0 };
         core_machine *machine = STD_NULL;
         type_unsigned_8 word_index;
-        C_INT failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
+        C_INT failed = record == STD_NULL || !timing_manifest_is_active(record) ||
             STD_STRCMP(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
@@ -3591,10 +3672,10 @@ static C_INT timing_manifest_probe_return_forms(C_VOID)
         if (!failed) {
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipe->expected_ticks || capture.count != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 capture.observation.timing_disposition !=
                     CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-                capture.observation.timing_origin != recipe->expected_origin ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, recipe->expected_origin) ||
                 capture.observation.source_timing_form_id ==
                     CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
                 capture.observation.timing_key_id ==
@@ -3658,7 +3739,7 @@ static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = STD_NULL;
-        C_INT failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
+        C_INT failed = record == STD_NULL || !timing_manifest_is_active(record) ||
             STD_STRCMP(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
@@ -3676,11 +3757,10 @@ static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
         if (!failed) {
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipe->expected_ticks || capture.count != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 capture.observation.timing_disposition !=
                     CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-                capture.observation.timing_origin !=
-                    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
                 capture.observation.source_timing_form_id ==
                     CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
                 capture.observation.timing_key_id ==
@@ -3805,7 +3885,7 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
         core_machine_run_result run = { 0 };
         core_machine *machine = STD_NULL;
         type_unsigned_16 observed = 0u;
-        C_INT failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
+        C_INT failed = record == STD_NULL || !timing_manifest_is_active(record) ||
             STD_STRCMP(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
@@ -3818,11 +3898,10 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
         if (!failed) {
             failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-                run.ticks != recipe->expected_ticks || capture.count != 1u ||
+                !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 capture.observation.timing_disposition !=
                     CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-                capture.observation.timing_origin !=
-                    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
                 (capture.observation.formula_inputs & recipe->required_formula_inputs) !=
                     recipe->required_formula_inputs ||
                 machine->executor_cpu.data.sp != (recipe->push ? 0x7ffeu : 0x8002u) ||
@@ -3849,18 +3928,17 @@ static C_INT timing_manifest_probe_hlt(C_VOID)
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = STD_NULL;
-    C_INT failed = record == STD_NULL || !timing_manifest_is_i86(record) ||
+    C_INT failed = record == STD_NULL || !timing_manifest_is_active(record) ||
         STD_STRCMP(record->level, "L3") != 0 ||
         !timing_manifest_prepare(&machine, &capture, program, sizeof(program));
 
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            run.executed != 1u || run.ticks != 2u || capture.count != 1u ||
+            run.executed != 1u || !timing_manifest_ticks_match(run.ticks, 2u) || capture.count != 1u ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-            capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
             !machine->executor_cpu.data.flagHalt;
     }
     if (failed) STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT\n");
@@ -3881,12 +3959,11 @@ static C_INT timing_manifest_probe_hlt(C_VOID)
             locked_failed = core_machine_run(locked_machine, budget, &locked_run) !=
                     TYPE_STATUS_OK ||
                 locked_run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-                locked_run.executed != 1u || locked_run.ticks != 4u ||
+                locked_run.executed != 1u || !timing_manifest_ticks_match(locked_run.ticks, 4u) ||
                 locked_capture.count != 1u ||
                 locked_capture.observation.timing_disposition !=
                     CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-                locked_capture.observation.timing_origin !=
-                    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+                !timing_manifest_origin_match(locked_capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
                 (locked_capture.observation.formula_inputs &
                     CORE_MACHINE_CPU_TIMING_INPUT_LOCK) == 0u ||
                 !locked_machine->executor_cpu.data.flagHalt;
@@ -3946,14 +4023,15 @@ static C_INT timing_manifest_probe_xchg_memory_contexts(C_VOID)
 
 static C_INT timing_manifest_write_results(C_VOID)
 {
-    const C_CHAR *const path = PROJECT_TEST_8086_RESULTS_PATH;
+    const C_CHAR *const path = PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH;
     STD_FILE *file = STD_FOPEN(path, "wb");
     STD_SIZE_T index;
     STD_SIZE_T written = 0u;
 
     if (file == STD_NULL) return 1;
     if (STD_FPRINTF(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
-            "  \"profile\": \"8086\",\n  \"results\": [\n") < 0) {
+            "  \"profile\": \"%s\",\n  \"results\": [\n",
+            PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) < 0) {
         STD_FCLOSE(file);
         return 1;
     }
@@ -3963,7 +4041,7 @@ static C_INT timing_manifest_write_results(C_VOID)
         const core_machine_retirement_observation *observation =
             &timing_manifest_results[index];
 
-        if (!timing_manifest_is_i86(record)) continue;
+        if (!timing_manifest_is_active(record)) continue;
         if (!timing_manifest_observed[index]) {
             STD_FCLOSE(file);
             return 1;
@@ -4001,8 +4079,8 @@ C_INT main(C_VOID)
             sizeof(timing_manifest_records[0]); ++index) {
         const timing_manifest_record *record = &timing_manifest_records[index];
 
-        if (!timing_manifest_is_i86(record)) continue;
-        if (STD_STRCMP(record->profile, "8086") != 0 ||
+        if (!timing_manifest_is_active(record)) continue;
+        if (STD_STRCMP(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
             record->level[0] == '\0' || record->source_rule[0] == '\0' ||
             record->context[0] == '\0') return 1;
         ++i86_count;
@@ -4183,9 +4261,9 @@ C_INT main(C_VOID)
     }
     for (index = 0u; index < sizeof(timing_manifest_records) /
             sizeof(timing_manifest_records[0]); ++index) {
-        if (timing_manifest_is_i86(&timing_manifest_records[index]) &&
+        if (timing_manifest_is_active(&timing_manifest_records[index]) &&
                 timing_manifest_covered[index]) ++covered_count;
-        else if (timing_manifest_is_i86(&timing_manifest_records[index])) {
+        else if (timing_manifest_is_active(&timing_manifest_records[index])) {
             STD_PRINTF("M5:T435:S4:I86-MANIFEST-MISSING:%s\n",
                 timing_manifest_records[index].key_id);
         }

@@ -42,7 +42,7 @@ complete form grammar independently to every named key.
 
 | ID | Disposition |
 | --- | --- |
-| P01 | LOCK: `2/-`, p. 2-60. Prefix; requires the following operation's legal memory form and is not independent retirement. |
+| P01 | LOCK: `2/-`, p. 2-60. Prefix for the following valid instruction, not an independent retirement; later memory-RMW-only restrictions must not be projected back onto 8086/8088. |
 | P02 | SEGMENT: `2/-`, p. 2-65. Prefix; manual says its assembler representation is incorporated in the operand, not a separate instruction. |
 | N01 | INTR external maskable interrupt: `61/7`, p. 2-56; manual explicitly says it is not an instruction. |
 | N02 | NMI external nonmaskable interrupt: `50/5`, p. 2-60; explicitly non-instruction. |

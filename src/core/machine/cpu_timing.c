@@ -28,8 +28,8 @@ static C_INT core_machine_cpu_timing_string_odd_word(
 }
 
 _Static_assert(sizeof(core_machine_cpu_timing_manifest_keys) /
-    sizeof(core_machine_cpu_timing_manifest_keys[0]) == 3853u,
-    "T435 S2 canonical manifest count drifted");
+    sizeof(core_machine_cpu_timing_manifest_keys[0]) == 4906u,
+    "CPU timing canonical manifest count drifted");
 
 STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID)
 {
@@ -239,6 +239,9 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
         if (!core_machine_cpu_timing_try(machine, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
                 core_machine_string_io_source_instruction_cost) &&
+            !core_machine_cpu_timing_try(machine, &result,
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
+                core_machine_l2_dynamic_arithmetic_model_cost) &&
             !core_machine_cpu_timing_try(machine, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
                 core_machine_primary_source_instruction_cost) &&

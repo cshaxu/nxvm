@@ -16,8 +16,9 @@
 | Expected Markers | Every 8086/8088 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; shared real-mode behavior stays one Core path and 8088 bus/timing remains source-distinct. |
 | Asset Needs | Read-only owner-managed Intel 8086 and 8088 manuals under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
 | Reporting Requirements | Record each source locator, exact row/owner sweep, any removed duplicate path, source/test code-size delta and full unit result. |
-| Stop Conditions | Stop if a source-distinct 8088 timing/bus behavior lacks a represented Core owner, or a candidate repair crosses an 80186-or-later boundary; revise the S brief rather than infer or broaden it. |
-| Exit Criteria | All 8086/8088 List-2 rows are reconciled against source and current owners; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
+| T-Wide Tier Rule | Each CPU-profile S inventories all L1 rows and upgrades every source-supported one to Manual-L3 or External-L2. An unupgradeable L1, or any proposed L3-to-lower or L2-to-L1 reclassification, stops for owner review unless the earlier tier is proven false. |
+| Stop Conditions | Stop if a source-distinct 8088 timing/bus behavior lacks a represented Core owner, a discovered L1 cannot be upgraded, a tier downgrade is proposed, or a candidate repair crosses an 80186-or-later boundary; revise the S brief rather than infer or broaden it. |
+| Exit Criteria | All 8086/8088 List-2 rows are reconciled against source and current owners; no L1 row remains without an owner-reviewed block; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
 | Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
 | Similar-Issue Sweep | Sweep every 8086/8088 decoder-admitted form and its prefix, state/frame, delivery, retirement and timing selector owner; trace shared owners once and distinguish the 8088 bus/timing rule from the 8086 rule. |
 

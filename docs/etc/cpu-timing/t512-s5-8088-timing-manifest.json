@@ -1,0 +1,8 @@
+{
+  "schema": "nxvm.cpu-timing-derived-manifest.v1",
+  "profile": "8088",
+  "base_profile": "8086",
+  "key_prefix_from": "I86-",
+  "key_prefix_to": "I88-",
+  "expected": {"base":246,"contexts":406,"combinations":401}
+}

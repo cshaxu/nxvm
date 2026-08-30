@@ -1493,6 +1493,7 @@ C_INT core_machine_l2_dynamic_arithmetic_model_cost(
 
     if (machine == STD_NULL || out_ticks == STD_NULL ||
         (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8088 &&
             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186)) {
         return 0;
     }
@@ -1508,13 +1509,16 @@ C_INT core_machine_l2_dynamic_arithmetic_model_cost(
     if (prefixes != 0u && !segment_override && !lock_prefix) return 0;
     opcode = data->opcodes[prefixes];
 
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
         ticks = core_machine_8086_group3_model_cost(shape.form, shape.word,
             shape.memory, data->opr1, data->opr2);
         if (ticks == 0u) return 0;
         if (shape.memory) {
             ticks += core_machine_8086_timing_effective_address(data, prefixes);
-            if (shape.word) ticks += core_machine_8086_timing_odd_word(data);
+            if (shape.word) ticks += machine->cpu_profile ==
+                CORE_MACHINE_CPU_PROFILE_8088 ? CORE_MACHINE_8086_ODD_WORD_TICKS :
+                core_machine_8086_timing_odd_word(data);
             if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
         }
         machine->source_timing_form_id = (type_unsigned_32)shape.form;
@@ -1926,7 +1930,10 @@ C_INT core_machine_primary_source_instruction_cost(
         return 0;
     }
     opcode = data->opcodes[prefixes];
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 && prefixes == 0u) {
+    /* The 8088 fixed-cost rows remain owned here when LOCK prefixes a valid
+     * instruction.  The selector owns LOCK's separate two-clock term. */
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 &&
+        (prefixes == 0u || segment_override || lock_prefix)) {
         switch (opcode) {
         case 0x90u:
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_NOP;
@@ -1967,6 +1974,19 @@ C_INT core_machine_primary_source_instruction_cost(
         case 0x9fu:
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_LAHF;
             *out_ticks = 4u;
+            return 1;
+        case 0x9bu:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_WAIT;
+            *out_ticks = 3u + (type_unsigned_64)5u *
+                core_machine_fpu_last_wait_iterations(&machine->fpu);
+            return 1;
+        case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
+            machine->source_timing_form_id = opcode == 0xa0u || opcode == 0xa1u ?
+                CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ :
+                CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE;
+            *out_ticks = 10u + ((opcode & 1u) != 0u ?
+                CORE_MACHINE_8086_ODD_WORD_TICKS : 0u) +
+                (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
             return 1;
         default:
             break;
@@ -2205,6 +2225,15 @@ C_INT core_machine_primary_source_instruction_cost(
             break;
         case CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE:
             ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER:
+            ticks = 9u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM:
+            ticks = 8u;
             break;
         case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
             ticks = shape.memory ? 10u : 4u;

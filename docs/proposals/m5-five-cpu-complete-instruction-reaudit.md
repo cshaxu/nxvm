@@ -51,6 +51,15 @@ state/commit/delivery mechanism at its owning Core boundary; no per-opcode
 compatibility patches, profile-side emulation, duplicate FLAGS image, second
 retirement path or external-model runtime dependency is permitted.
 
+## Timing-Tier Closure Rule
+
+For every CPU profile, the audit must enumerate every L1 disposition and
+repair it to Manual-L3 or External-L2 whenever the admitted sources support
+that result. A row that cannot be upgraded is a stop-and-report item, not a
+closure exception. A Manual-L3 row must not be lowered, nor an External-L2 row
+to L1, unless the prior classification is demonstrated false and the owner
+approves that correction before it is made.
+
 ## S Decomposition
 
 1. **S1 - source admission and cross-validation.** Locate and quality-check
@@ -82,8 +91,9 @@ No implementation S may begin before S1-S3 accept the whole coverage universe.
 ## Exit Criteria
 
 Every in-scope row has a manual locator and one current-code disposition; every
-proven defect is repaired at its sole Core owner and swept across equivalent
-forms; undefined state is not overclaimed; no decoder-admitted row remains
-unclassified; focused and cross-profile regressions plus the complete configured
-gate are green.  Any unavailable physical timing or unsupported later-CPU
-feature is explicitly labelled with its receiver rather than estimated.
+L1 row has been upgraded or reported as blocked; every proven defect is repaired
+at its sole Core owner and swept across equivalent forms; undefined state is not
+overclaimed; no decoder-admitted row remains unclassified; focused and
+cross-profile regressions plus the complete configured gate are green. Any
+unavailable physical timing or unsupported later-CPU feature is explicitly
+labelled with its receiver rather than estimated.

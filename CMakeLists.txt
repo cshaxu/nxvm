@@ -55,6 +55,7 @@ add_custom_command(
     DEPENDS tools/Export-CpuTimingManifestCatalog.ps1
         tools/Verify-CpuTimingManifestContract.ps1
         docs/etc/cpu-timing/t435-s2-8086-timing-manifest.json
+        docs/etc/cpu-timing/t512-s5-8088-timing-manifest.json
         docs/etc/cpu-timing/t435-s2-80186-timing-manifest.json
         docs/etc/cpu-timing/t435-s2-80286-timing-manifest.json
         docs/etc/cpu-timing/t435-s2-80386-timing-manifest.json
@@ -425,6 +426,25 @@ add_dependencies(core-machine-8086-timing-manifest-runner
     cpu-timing-manifest-catalog)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-8086-timing-manifest-runner PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+# T512 S5 reuses the one I86 recipe executor for the 8088 source row. The
+# target is admitted as a unit test only once its independent Table-2-21
+# transfer verifier consumes its result artifact.
+add_executable(core-machine-8088-timing-manifest-runner
+    test/core/machine/core_machine_8086_timing_manifest_runner.c)
+target_link_libraries(core-machine-8088-timing-manifest-runner PRIVATE
+    core-machine)
+target_compile_definitions(core-machine-8088-timing-manifest-runner PRIVATE
+    PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=CORE_MACHINE_CPU_PROFILE_8088
+    PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME="8088"
+    PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX="I88-"
+    PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json")
+add_dependencies(core-machine-8088-timing-manifest-runner
+    cpu-timing-manifest-catalog)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-8088-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -2141,6 +2161,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-t359-s6-timing-smoke
     core-machine-8086-instruction-timing-ledger-smoke
     core-machine-8086-timing-manifest-runner
+    core-machine-8088-timing-manifest-runner
     core-machine-80186-instruction-timing-ledger-smoke
     core-machine-legacy-timing-normalization-s2-smoke
     core-machine-80286-instruction-timing-ledger-smoke
@@ -2763,6 +2784,8 @@ endforeach()
 
 set_tests_properties("unit.core-machine-8086-timing-manifest-runner" PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+set_tests_properties("unit.core-machine-8088-timing-manifest-runner" PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 if(POWERSHELL_EXECUTABLE)
     add_test(NAME "unit.core-machine-8086-timing-results-s5"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -2771,6 +2794,18 @@ if(POWERSHELL_EXECUTABLE)
             "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
     set_tests_properties("unit.core-machine-8086-timing-results-s5" PROPERTIES
         DEPENDS "unit.core-machine-8086-timing-manifest-runner"
+        LABELS "unit"
+        TIMEOUT 30
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    add_test(NAME "unit.core-machine-8088-timing-results-s5"
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-8088TimingResults.ps1"
+            -BaseResultPath
+            "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
+            -ResultPath
+            "${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json")
+    set_tests_properties("unit.core-machine-8088-timing-results-s5" PROPERTIES
+        DEPENDS "unit.core-machine-8086-timing-manifest-runner;unit.core-machine-8088-timing-manifest-runner"
         LABELS "unit"
         TIMEOUT 30
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
