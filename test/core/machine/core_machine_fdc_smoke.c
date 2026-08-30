@@ -541,8 +541,8 @@ C_INT main(C_VOID)
                 core_machine_fdc_refresh(fdc);
                 failed |= (core_machine_port_read(port, fdc_config.direction_port) & VFDC_DIR_DC) == 0u;
 
-                /* A 500-kbit/s DMA transfer exposes one byte, withdraws DRQ,
-                   and cannot expose the next byte before its 128-tick gate. */
+                /* MFM data service exposes one byte, withdraws DRQ, and cannot
+                   expose the next byte before the 15-us (120-tick) gate. */
                 fixture.read_count = 0u;
                 core_machine_port_write(port, fdc_config.control_port, 0u);
                 core_machine_fdc_command(fdc, port,
@@ -558,10 +558,10 @@ C_INT main(C_VOID)
                 failed |= fixture.read_count != 1u ||
                     core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                         &machine->shared_dma_secondary);
-                core_machine_fdc_advance_at(fdc, 227u);
+                core_machine_fdc_advance_at(fdc, 219u);
                 failed |= core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary);
-                core_machine_fdc_advance_at(fdc, 228u);
+                core_machine_fdc_advance_at(fdc, 220u);
                 failed |= !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary);
                 core_machine_dma_advance(&machine->shared_dma_latch,
@@ -605,7 +605,7 @@ C_INT main(C_VOID)
                         &machine->executor_memory, 1u);
                     if (index + 1u < sizeof(scan_dma)) {
                         core_machine_fdc_advance_at(fdc,
-                        fdc->data.elapsed_ticks + fdc_config.ticks_per_microsecond * 16u);
+                        fdc->data.elapsed_ticks + fdc_config.ticks_per_microsecond * 31u);
                     }
                 }
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
@@ -647,7 +647,7 @@ C_INT main(C_VOID)
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x04u) == 0u;
 
-                /* The same 500-kbit/s byte interval applies when the host
+                /* The same MFM byte-service interval applies when the host
                    services 3F5h directly rather than through DMA2. */
                 fixture.present = TYPE_TRUE;
                 fixture.read_count = 0u;
@@ -659,6 +659,8 @@ C_INT main(C_VOID)
                 failed |= core_machine_port_read(port, fdc_config.data_port) != 0xa5u ||
                     fixture.read_count != 1u || !fdc->data.ndma_byte_gate_pending;
                 ndma_gate_tick = fdc->data.next_ndma_byte_tick;
+                failed |= ndma_gate_tick != fdc->data.elapsed_ticks +
+                    fdc_config.ticks_per_microsecond * 15u;
                 core_machine_fdc_advance_at(fdc, ndma_gate_tick - 1u);
                 failed |= (core_machine_port_read(port, fdc_config.status_port) & VFDC_MSR_RQM) != 0u ||
                     fixture.read_count != 1u;
@@ -671,8 +673,8 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= fdc->data.ndma_byte_gate_pending;
 
-                /* Scan is host-to-controller execution too: its first byte
-                   establishes the same byte gate, and DOR reset cancels it. */
+                /* Scan is host-to-controller execution too.  This FM command
+                   uses the 31-us byte gate, and DOR reset cancels it. */
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 for (type_unsigned_8 reset_drive = 0u;
@@ -691,7 +693,7 @@ C_INT main(C_VOID)
                 ndma_gate_tick = fdc->data.next_ndma_byte_tick;
                 failed |= !fdc->data.ndma_byte_gate_pending ||
                     ndma_gate_tick != fdc->data.elapsed_ticks +
-                    fdc_config.ticks_per_microsecond * 16u;
+                    fdc_config.ticks_per_microsecond * 31u;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
                     fdc->data.ndma_byte_gate_pending;

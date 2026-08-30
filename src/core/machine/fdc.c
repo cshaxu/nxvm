@@ -212,7 +212,8 @@ static type_unsigned_64 core_machine_fdc_timing_ticks(const core_machine_fdc *fd
 static type_unsigned_64 core_machine_fdc_dma_byte_ticks(const core_machine_fdc *fdc)
 {
     if (fdc == STD_NULL) return 0u;
-    if (fdc->data.ccr == 0u) return core_machine_fdc_timing_ticks(fdc, 16u);
+    if (fdc->data.ccr == 0u) return core_machine_fdc_timing_ticks(fdc,
+        (fdc->data.cmd[0] & 0x40u) != 0u ? 15u : 31u);
     return 0u;
 }
 

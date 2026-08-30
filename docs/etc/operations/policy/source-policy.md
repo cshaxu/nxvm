@@ -42,6 +42,15 @@ design and behavior references unless a separate license review authorizes
 copying. Important observed behavior becomes a project requirement only when a
 probe, documentation source, or reproducible reference test validates it.
 
+## Hardware Manuals
+
+The owner-managed external `assets/manuals` archive is the canonical location
+for every acquired original hardware-manual copy. PDFs, scans, OCR sidecars,
+and derived renderings do not enter this repository or its release artifacts.
+A repository evidence record names the source, edition/order number,
+acquisition date, and SHA-256 so that the archived original remains
+independently verifiable.
+
 ## Historical NTVDM Research
 
 Historical third-party NTVDM implementations may inform research leads,
