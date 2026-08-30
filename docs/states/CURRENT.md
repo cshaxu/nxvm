@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation `T503 S4`; S3 is accepted after direct 8259A-to-CPU reconciliation and a 312/312 complete unit replay. |
-| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S4 consumes 8253/8254 PIT -> PIC/DMA/speaker consumers; normal commits and non-force pushes are permanently approved. |
-| Objective | Directly read the selected Intel 8253/8254 and applicable board sources, trace all selected PIT channel/gate/output routes, cross-check external emulator logic, then repair the complete PIT-to-consumer gap batch. |
-| Non-goals | No guessed physical oscillator or wall-clock pacing, profile/firmware/VM workaround, polling loop, second PIT state or parallel time path. A genuinely independent controller fault transfers only after its causal boundary is proved. |
-| Reference Baseline | `4dc68983` (`M5 T503 S3 P2 reconcile PIC CPU route`); S1/S2 remain preliminary route inventory only. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific S4. |
-| Files And ABI Surface | Expected `src/core/machine/pit.[ch]`, PIC/DMA/speaker consumers and owner-local `test/core/` paths, plus evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer or mutable layout crosses owners. |
+| Identifier Mode | Continuation `T503 S5`; S4 is accepted after direct 8253/8254-to-consumer reconciliation and a 312/312 complete unit replay. |
+| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S5 consumes 8237A DMA -> bound providers/memory, including refresh, FDC and every selected HDC personality; normal commits and non-force pushes are permanently approved. |
+| Objective | Directly read the selected Intel 8237A and applicable board/controller sources, trace DREQ/DACK, service, verify, terminal/EOP, cascade, reset and provider completion through Core memory/firmware consumers, cross-check external emulator logic, then repair the complete DMA-route gap batch. |
+| Non-goals | No FDC/HDC command-set or physical-media invention, profile/firmware/VM workaround, polling loop, second DMA state or parallel scheduler. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
+| Reference Baseline | `f04a6a4d` (`M5 T503 S4 P1 reconcile PIT consumer routes`); S1/S2 remain preliminary route inventory only. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific DMA route S. |
+| Files And ABI Surface | Expected `src/core/machine/dma.[ch]`, `machine_scheduler.c`, immutable provider bindings and owner-local `test/core/` paths, plus evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable media state or mutable layout crosses owners. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
-| Verification | Visually inspect and cite applicable Intel/board pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU PIT logic where available; trace channel 0 IRQ0, channel 1 refresh and every selected channel-2 consumer with reset/gate/output/HLT behavior; run focused owner-local and complete repository-only unit tests. |
-| Expected Markers | `T503-S4-PIT-CONSUMER-ROUTE`; every selected PIT output has one Core producer, one stated consumer route and a source-qualified timing disposition. |
+| Verification | Visually inspect and cite applicable Intel/board/controller pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU DMA logic where available; trace normal/masked/request polarity/verify/terminal/EOP/cascade/reset forms for refresh, FDC and ATA/Compaq/WD1003/Xebec consumers; run focused owner-local and complete repository-only unit tests. |
+| Expected Markers | `T503-S5-DMA-PROVIDER-ROUTE`; every selected DMA request has one Core producer, one DMA service path, one bounded provider completion route and a source-qualified timing disposition. |
 | Asset Needs | Existing primary-source ledgers and read-only external emulator source only if a board edge remains ambiguous; no external bytes enter the repository. |
-| Reporting Requirements | Record every selected PIT row's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
-| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify a PIT connection, or a gap independent of the PIT route; do not improvise a workaround. |
-| Exit Criteria | Every selected channel/gate/output/reset form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S4 or explicitly shown independent and transferred. |
+| Reporting Requirements | Record every selected DMA form's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
+| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify a DMA connection, or a gap independent of the DMA route; do not improvise a workaround. |
+| Exit Criteria | Every selected request/polarity/mode/terminal/cascade/reset/provider-completion form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S5 or explicitly shown independent and transferred. |
 | Original Owner Request | Each S owns one controller audit and repair, but must also repair affected controllers/devices in the same S; no known causal tail remains. |
-| Similar-Issue Sweep | 8253/8254 personalities; channels 0--2; counter modes, read/write/latch/read-back where selected, reset/gates/outputs, IRQ0, refresh, speaker/NMI consumers and HLT wake-up across 5160, 5170, Model-40 and default-at. |
+| Similar-Issue Sweep | Primary/secondary 8237A forms; request polarity, all selected channels, mask/priority/mode/verify, terminal count/EOP, cascade, reset, refresh, FDC DMA2, XT Xebec DMA3 and every configured ATA/Compaq/WD1003 route across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
 
@@ -67,6 +67,12 @@
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 
 ## Recent Governance
+
+- **M5 T503 S4 P2:** coordinator review accepts `f04a6a4d`: direct
+  8253/8254/IBM/code/external reconciliation removes the false OUT-consumer to
+  GATE mutation and adds the missing PIT1-to-DMA0 transition proof; focused
+  8/8 and complete repository-only unit 312/312 pass. S5 is admitted for the
+  complete 8237A-to-provider route under the same no-tail rule.
 
 - **M5 T503 S3 P3:** coordinator review accepts `4dc68983`: the direct Intel
   8259A/IBM/code/external reconciliation retains one PIC-to-CPU path; the
