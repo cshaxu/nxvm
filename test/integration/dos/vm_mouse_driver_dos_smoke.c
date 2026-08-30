@@ -5,6 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 #include "core/platform/input_interface.h"
 #include "vm/platform/vm_request_transport.h"
 
@@ -301,6 +302,12 @@ static C_INT vm_mouse_dos_run_until(vm_session *session, type_unsigned_32 limit,
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != TYPE_STATUS_OK) return 0;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) return 0;
+        }
         if (wanted == 0u ? vm_mouse_dos_has_prompt(&snapshot) :
             snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
             snapshot.characters[VM_MOUSE_DOS_MARKER_CELL] == wanted) return 1;
@@ -323,6 +330,12 @@ static C_INT vm_mouse_dos_run_until_packet(vm_session *session,
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_memory_read(session->core_machine, buffer_address,
                 actual, sizeof(actual)) != TYPE_STATUS_OK) return 0;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) return 0;
+        }
         if (STD_MEMCMP(actual, expected, sizeof(actual)) == 0) return 1;
     }
     return 0;

@@ -5,6 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 
 #define VM_EGA_DOS_BOOT_BUDGET 800000u
 #define VM_EGA_DOS_RUN_BUDGET 400000u
@@ -194,6 +195,12 @@ static C_INT vm_ega_dos_run_until(vm_session *session, type_unsigned_32 limit,
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != TYPE_STATUS_OK) return 0;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) return 0;
+        }
         if (!want_graphics && vm_ega_dos_has_prompt(&snapshot)) return 1;
         if (want_graphics && snapshot.kind == CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 &&
             snapshot.pixels[0] == 15u && snapshot.pixels[1] == 0u &&

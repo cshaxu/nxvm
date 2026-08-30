@@ -5,6 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 
 #define VM_INT15_MEMORY_BOOT_BUDGET 100000u
 
@@ -129,6 +130,12 @@ static C_INT vm_int15_memory_run(vm_session_profile_kind profile_kind,
     for (step = 0u; step < VM_INT15_MEMORY_BOOT_BUDGET; ++step) {
         if (core_machine_run(session->core_machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) goto done;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) goto done;
+        }
         if (core_machine_memory_read(session->core_machine, 0x0500u, &kib,
                 sizeof(kib)) != TYPE_STATUS_OK || kib != expected_kib) continue;
         if (core_machine_memory_read(session->core_machine, 0x0502u, &flags,
@@ -193,6 +200,12 @@ static C_INT vm_int15_move_run(vm_session_profile_kind profile_kind,
     for (step = 0u; step < VM_INT15_MEMORY_BOOT_BUDGET; ++step) {
         if (core_machine_run(session->core_machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) goto done;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) goto done;
+        }
         if (core_machine_memory_read(session->core_machine, 0x0500u, &ax,
                 sizeof(ax)) != TYPE_STATUS_OK || ax == 0xffffu) continue;
         if (expected_success && target_physical < 0x00100000u &&

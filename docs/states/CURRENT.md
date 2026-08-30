@@ -2,9 +2,24 @@
 
 ## Current Work
 
-No active packet. Corrective T508 S5 is awaiting only its coordinator closure
-commit after full verification; it adds no live timing setter or profile branch
-to Core.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T509 S1. |
+| Admission And Approval | Owner approved the global audit and complete repair in this thread on 2026-08-30. |
+| Objective | Close every session-backed runner that can bypass a published Core deadline or assume immediate asynchronous completion. |
+| Non-goals | Do not modify Core time ownership, restore immediate controller completion, add a VM tick writer, live timing setters, a test scheduler, or third-party source. |
+| Reference Baseline | T508 S5 closure `7ab748d8`; the 33-source session-runner inventory and production `runner.c`. |
+| Candidate Proposal | [T509 proposal](../proposals/m5-session-deadline-consumer-convergence.md). |
+| Files And ABI Surface | VM waiting/runner only if a shared owner defect is found; covered VM and integration tests; T509 evidence, proposal, queue, status and history. No public ABI. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding and documentation authorities. Core remains the sole time/deadline owner; VM consumes observations only. |
+| Verification | Line-addressed ledger for the full frozen universe; focused repaired tests; complete unit and integration suites; documentation governance; current stripped Release build/hash. |
+| Expected Markers | Every covered runner either invokes `vm_session_waiting_advance` after HLT or has a named proof that its bounded subject cannot wait; no local tick injection exists. |
+| Asset Needs | None; this is repository-only source/test work. |
+| Reporting Requirements | Record each disposition, changed owner path, code-size delta, full gates, and every residual transfer. |
+| Stop Conditions | Stop if repair would require a second scheduler, a Core semantic change, or an unbounded scenario claim; record and request a new task instead. |
+| Exit Criteria | The complete ledger is exhausted, all actual violations are repaired through the existing session boundary, and T-level gates pass. |
+| Original Owner Request | Owner request: globally audit this violation class and repair it completely. |
+| Similar-Issue Sweep | Every session-backed test/integration runner and the sole production runner, not merely ATA consumers. |
 
 ## Current Technical Baseline
 

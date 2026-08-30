@@ -4,6 +4,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
 /* DeskPro firmware performs a complete multi-pass RAM verification before its
@@ -1330,6 +1331,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         elapsed_before_terminal = result.elapsed_ticks;
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            status = vm_session_waiting_advance(session, &result, &advanced);
+            if (status != TYPE_STATUS_OK || !advanced) break;
+        }
         if (capture.last_software_interrupt_valid &&
             !capture.last_software_interrupt_target_stopped_read) {
             capture.last_software_interrupt_target_stopped_read =

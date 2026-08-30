@@ -7,6 +7,7 @@
 #include "core/machine/machine.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 
 #define VM_T287_PROBE_FDD_BYTES (1440u * 1024u)
 #define VM_T287_PROBE_BUDGET 500000u
@@ -168,6 +169,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
             result.reason == CORE_MACHINE_STOP_FAULT || core_machine_debug_read_memory(
                 session->core_machine, VM_T287_PROBE_RESULT, values,
                 sizeof(values)) != TYPE_STATUS_OK) goto done;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) goto done;
+        }
         if (values[10] != 0u && first_command_count == 0u) {
             first_sector_number = session->core_machine->hdc.data.sector_number;
             first_cylinder_low = session->core_machine->hdc.data.cylinder_low;

@@ -5,6 +5,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 #include "vm/machine/fdd.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
@@ -70,6 +71,15 @@ C_INT main(C_INT argc, C_CHAR **argv)
             result.reason == CORE_MACHINE_STOP_FAULT) {
             failed = 1;
             break;
+        }
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) {
+                failed = 1;
+                break;
+            }
         }
         /* The prompt is persistent.  Preserve per-instruction INT observation,
          * but avoid copying a complete display frame after every instruction. */
