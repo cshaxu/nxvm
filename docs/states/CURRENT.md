@@ -4,8 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-No active packet. T510 closed after its complete four-personality HDC ledger
-sweep and the repaired ATA PIO multi-sector firmware consumer path.
+| Identifier Mode | New T511 S1 phase-consumer inventory. |
+| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508: a consumer must not reuse one ready/DRQ/result observation across a subsequent owner phase. |
+| Objective | Freeze the complete current controller/device owner inventory and consumer matrix before the controller-local audit/repair S sequence begins. |
+| Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
+| Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing controller ledgers and the current Core scheduler. |
+| Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
+| Files And ABI Surface | Task records and owner/consumer evidence only in S1; later S work stays at the existing Core controller, firmware, DMA, IRQ or VADP owner. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
+| Verification | S1 runs documentation governance and the complete repository-only unit suite. Every later S runs complete unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
+| Expected Markers | One exhaustive matrix row per owner/consumer pair, each classed as repeated-phase, single-phase, internal-owner consumption, or no asynchronous transition. |
+| Asset Needs | No external asset is needed for S1. Later integration uses only owner-managed inputs under the source policy. |
+| Reporting Requirements | Record exact search scope, every production hit and disposition, focused two-phase proof for each repair, and any lower-tier transfer. |
+| Stop Conditions | Stop an affected S if a required manual/source is unavailable, a valid external model conflicts with the manual, or the repair would require a second owner or undeclared profile policy. |
+| Exit Criteria | The complete finite owner set has an accepted matrix and every later controller S has a bounded consumer path and regression contract. |
+| Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
+| Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
 
 ## Current Technical Baseline
 

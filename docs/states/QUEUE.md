@@ -13,6 +13,8 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
+1. [M5 controller phase-consumer convergence](../proposals/m5-controller-phase-consumer-convergence.md) - audits every current controller's repeated ready/DRQ/result transition through its sole downstream consumer and repairs proven stale one-phase assumptions.
+
 The following three complete controller receivers precede the CPU re-audit.
 They retire the finite L1 no-deadline owners one controller at a time; each is
 source-first and may leave an unsupported timing relation explicit rather than
