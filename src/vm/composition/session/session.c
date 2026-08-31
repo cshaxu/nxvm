@@ -401,12 +401,28 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->core_machine_plan = STD_NULL;
 }
 
-static C_VOID vm_session_initialize_model40_configuration(vm_session *session)
+static type_status vm_session_initialize_model40_configuration(vm_session *session,
+    const vm_session_config *config)
 {
-    if (session == STD_NULL) return;
+    const vm_session_floppy_format format = config == STD_NULL ?
+        VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT : config->floppy_format;
+
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     session->model40_private = 1;
     session->firmware_kind = VM_SESSION_FIRMWARE_MODEL40_BYOB;
     session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
+    if (format == VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT ||
+        format == VM_SESSION_FLOPPY_FORMAT_1200K) {
+        session->fdd_media_kind = VM_PROFILE_FLOPPY_525_1200K;
+        return TYPE_STATUS_OK;
+    }
+    if (format == VM_SESSION_FLOPPY_FORMAT_360K) {
+        /* A 1.2MB drive remains the sole physical drive; this selects only
+           compatible 48-TPI media for its one removable-media provider. */
+        session->fdd_media_kind = VM_PROFILE_FLOPPY_525_360K;
+        return TYPE_STATUS_OK;
+    }
+    return TYPE_STATUS_INVALID_ARGUMENT;
 }
 
 static type_status vm_session_create_xt_byob(const vm_session_config *config,
@@ -416,7 +432,7 @@ static type_status vm_session_create_xt_byob(const vm_session_config *config,
     type_status status;
 
     if (config == STD_NULL || out_session == STD_NULL || config->memory_bytes != 0u ||
-        config->hdd_slave_image != STD_NULL || config->create_fdd ||
+        config->create_fdd ||
         config->create_hdd_cylinders != 0u || config->boot_hdd ||
         config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
         config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
@@ -487,7 +503,11 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    vm_session_initialize_model40_configuration(session);
+    status = vm_session_initialize_model40_configuration(session, config);
+    if (status != TYPE_STATUS_OK) {
+        STD_FREE(session);
+        return status;
+    }
     if (vm_profile_model40_child_resolve(&session->model40_resolved) !=
         TYPE_STATUS_OK) {
         STD_FREE(session);
@@ -498,7 +518,8 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     session->controller_timing_rules =
         session->model40_resolved.values.core.controller_timing_rules;
     status = vm_profile_model40_byob_manifest_load(&config->model40_firmware,
-        session->model40_even_rom, session->model40_odd_rom, &session->model40_rom);
+        session->model40_even_rom, session->model40_odd_rom,
+        session->model40_video_rom, &session->model40_rom);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
     session->retained_config = *config;
     STD_MEMSET(&session->retained_config.model40_firmware, 0,
@@ -506,9 +527,8 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
     if ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session, config->fdd_image)) ||
-        (config->hdd_image != STD_NULL && vm_session_model40_insert_hdd_at_startup(session, config->hdd_image)) ||
-        (config->hdd_slave_image != STD_NULL &&
-            vm_session_model40_insert_hdd_slave_at_startup(session, config->hdd_slave_image))) {
+        (config->hdd_image != STD_NULL &&
+            vm_session_model40_insert_hdd_at_startup(session, config->hdd_image))) {
         vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }

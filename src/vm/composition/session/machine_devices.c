@@ -13,7 +13,8 @@ type_status vm_session_machine_devices_initialize_media(vm_session *session)
 {
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_machine_fdd_initialize_with_geometry(&session->fdd,
-            vm_profile_floppy_geometry_get(session->floppy_kind))) return TYPE_STATUS_FAULT;
+            vm_profile_floppy_geometry_get(session->model40_private ?
+                session->fdd_media_kind : session->floppy_kind))) return TYPE_STATUS_FAULT;
     if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_initialize(&session->hdd);

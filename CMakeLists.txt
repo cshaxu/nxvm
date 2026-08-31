@@ -128,6 +128,9 @@ target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-composi
 add_executable(vm-model40-private-composition-s7-smoke
     test/vm/machine/vm_model40_private_composition_s7_smoke.c)
 target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-composition)
+add_executable(vm-model40-cmos-seed-smoke
+    test/vm/machine/vm_model40_cmos_seed_smoke.c)
+target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-composition)
 add_executable(vm-model40-integration-s8-smoke
     test/vm/machine/vm_model40_integration_s8_smoke.c)
 target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-composition)
@@ -2107,6 +2110,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-pcat-composition-s4-smoke
     vm-ibm-5170-model-339-composition-smoke
     vm-model40-private-composition-s7-smoke
+    vm-model40-cmos-seed-smoke
     vm-model40-integration-s8-smoke
     vm-model40-cecg-s9-smoke
     vm-model40-cecg-s10-smoke
@@ -2759,6 +2763,12 @@ set(PROJECT_T513_MODEL40_ODD_ROM "" CACHE FILEPATH
     "Owner-supplied Model-40 odd ROM for the T513 matrix")
 set(PROJECT_T513_MODEL40_ODD_ROM_SHA256 "" CACHE STRING
     "Owner-supplied SHA-256 for the T513 Model-40 odd ROM")
+set(PROJECT_T513_MODEL40_VIDEO_ROM "" CACHE FILEPATH
+    "Owner-supplied Model-40 EGA option ROM for the T513 matrix")
+set(PROJECT_T513_MODEL40_VIDEO_ROM_SHA256 "" CACHE STRING
+    "Owner-supplied SHA-256 for the T513 Model-40 EGA option ROM")
+set(PROJECT_T513_MODEL40_HDD_IMAGE "" CACHE FILEPATH
+    "Owner-supplied 40MB Model-40 disk image for the T513 matrix")
 
 # T355 S2 keeps the retained Windows HDD/INT13 observation explicitly outside
 # the current gate.  The runner validates this opt-in input before it can
@@ -2794,6 +2804,10 @@ endfunction()
 function(project_add_t513_profile_floppy_case row image)
     set(project_t513_test_suffix "vm-profile-floppy-boot-matrix.${row}")
     set(project_t513_test "integration.${project_t513_test_suffix}")
+    set(project_t513_timeout 70)
+    if(row STREQUAL "model40-80386-1200k")
+        set(project_t513_timeout 190)
+    endif()
     get_property(project_t513_registered_cases GLOBAL
         PROPERTY PROJECT_T513_PROFILE_FLOPPY_REGISTERED_CASES)
     list(FIND project_t513_registered_cases "${project_t513_test_suffix}"
@@ -2811,7 +2825,7 @@ function(project_add_t513_profile_floppy_case row image)
     set_tests_properties("${project_t513_test}" PROPERTIES
         LABELS integration
         SKIP_RETURN_CODE 77
-        TIMEOUT 70
+        TIMEOUT ${project_t513_timeout}
         WORKING_DIRECTORY "${project_t513_workspace}")
 endfunction()
 
@@ -2901,8 +2915,7 @@ endforeach()
 
 project_add_t513_profile_floppy_case(ibm-5160-8088-360k
     "${PROJECT_T513_DOS_360K_IMAGE}"
-    "${PROJECT_T513_XT_SYSTEM_ROM}" "${PROJECT_T513_XT_SYSTEM_ROM_SHA256}"
-    "${PROJECT_T513_XT_XEBEC_ROM}" "${PROJECT_T513_XT_XEBEC_ROM_SHA256}")
+    "${PROJECT_T513_XT_SYSTEM_ROM}" "${PROJECT_T513_XT_SYSTEM_ROM_SHA256}")
 project_add_t513_profile_floppy_case(ibm-5170-80286-360k
     "${PROJECT_T513_DOS_360K_IMAGE}")
 project_add_t513_profile_floppy_case(ibm-5170-80286-1200k
@@ -2915,10 +2928,26 @@ foreach(project_t513_cpu IN ITEMS 8086 80186 80286 80386)
             "${PROJECT_T513_DOS_${project_t513_format_key}_IMAGE}")
     endforeach()
 endforeach()
-project_add_t513_profile_floppy_case(model40-80386-1200k
-    "${PROJECT_T513_DOS_1200K_IMAGE}"
+if(PROJECT_T513_MODEL40_VIDEO_ROM STREQUAL "")
+    if(NOT PROJECT_T513_MODEL40_VIDEO_ROM_SHA256 STREQUAL "")
+        message(FATAL_ERROR "T513 Model-40 video ROM requires both path and SHA-256")
+    endif()
+elseif(PROJECT_T513_MODEL40_VIDEO_ROM_SHA256 STREQUAL "")
+    message(FATAL_ERROR "T513 Model-40 video ROM requires both path and SHA-256")
+endif()
+set(project_t513_model40_inputs
     "${PROJECT_T513_MODEL40_EVEN_ROM}" "${PROJECT_T513_MODEL40_EVEN_ROM_SHA256}"
     "${PROJECT_T513_MODEL40_ODD_ROM}" "${PROJECT_T513_MODEL40_ODD_ROM_SHA256}")
+if(NOT PROJECT_T513_MODEL40_VIDEO_ROM STREQUAL "")
+    list(APPEND project_t513_model40_inputs
+        "${PROJECT_T513_MODEL40_VIDEO_ROM}"
+        "${PROJECT_T513_MODEL40_VIDEO_ROM_SHA256}")
+endif()
+if(NOT PROJECT_T513_MODEL40_HDD_IMAGE STREQUAL "")
+    list(APPEND project_t513_model40_inputs "${PROJECT_T513_MODEL40_HDD_IMAGE}")
+endif()
+project_add_t513_profile_floppy_case(model40-80386-1200k
+    "${PROJECT_T513_DOS_1200K_IMAGE}" ${project_t513_model40_inputs})
 
 set_tests_properties("integration.vm-windows31-checkpoint" PROPERTIES
     TIMEOUT 130)

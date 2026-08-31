@@ -1055,7 +1055,8 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = argv[6];
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        argv[1], argv[2], argv[3], argv[4], argv[5] };
+        .even_path = argv[1], .even_sha256 = argv[2],
+        .odd_path = argv[3], .odd_sha256 = argv[4], .provenance = argv[5] };
     return vm_session_create(&config, out_session) == TYPE_STATUS_OK &&
         *out_session != STD_NULL;
 }

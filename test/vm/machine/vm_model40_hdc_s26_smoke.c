@@ -80,6 +80,8 @@ static C_INT read_first_sector(vm_session *session, type_unsigned_8 drive_head,
         CORE_MACHINE_HDC_DEVICE_CONTROL_SRST);
     core_machine_port_write(&session->core_machine->executor_port, 0x03f6u, 0u);
     return !core_machine_hdc_irq_pending(hdc) &&
+        core_machine_port_read(&session->core_machine->executor_port, 0x01f1u) ==
+            CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK &&
         core_machine_port_read(&session->core_machine->executor_port, 0x03f6u) ==
             (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
 }
@@ -95,28 +97,31 @@ C_INT main(C_VOID)
     if (!write_chip("t386-s26-even.bin", 0u)) { failed = 1; }
     if (!write_chip("t386-s26-odd.bin", 1u)) { failed = 1; }
     if (!write_hdd("t386-s26-hdd.img", 0xa5u, 0x5au)) { failed = 1; }
-    if (!write_hdd("t430-s1-hdd-slave.img", 0x34u, 0x12u)) { failed = 1; }
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.hdd_image = "t386-s26-hdd.img";
-    config.hdd_slave_image = "t430-s1-hdd-slave.img";
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        "t386-s26-even.bin", even_sha256, "t386-s26-odd.bin", odd_sha256,
-        "project-owned synthetic test input" };
+        .even_path = "t386-s26-even.bin", .even_sha256 = even_sha256,
+        .odd_path = "t386-s26-odd.bin", .odd_sha256 = odd_sha256,
+        .provenance = "project-owned synthetic test input" };
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL);
     failed |= !failed && (session == STD_NULL || !session->hdd.connect.flagDiskExist ||
         session->core_machine->hdc.connect.config.service.command_ticks != 0u ||
         session->core_machine->hdc.connect.config.service.next_sector_ticks != 0u ||
         session->hdd.data.ncyl != 925u || session->hdd.data.nhead != 5u ||
         session->hdd.data.nsector != 17u || session->hdd.data.nbyte != 512u ||
-        !session->hdd_slave.connect.flagDiskExist ||
-        session->core_machine->hdc.connect.slave_media_id != VM_SESSION_MEDIA_HDD_SLAVE_ID ||
+        session->core_machine->hdc.connect.slave_media_id != CORE_MACHINE_MEDIA_ID_INVALID ||
         vm_session_insert_hdd(session, "t386-s26-hdd.img") == 0 ||
         !read_first_sector(session, 0x20u, 0x5aa5u) ||
-        !read_first_sector(session, 0x30u, 0x1234u));
+        !read_first_sector(session, 0xa0u, 0x5aa5u));
+    if (!failed) core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, 0x20u);
+    failed |= !failed && core_machine_port_read(&session->core_machine->executor_port, 0x03f6u) !=
+        (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
+    if (!failed) core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, 0x00u);
+    failed |= !failed && core_machine_port_read(&session->core_machine->executor_port, 0x03f6u) !=
+        (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
     vm_session_destroy(session);
     session = STD_NULL;
     config.hdd_image = STD_NULL;
-    config.hdd_slave_image = STD_NULL;
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL);
     if (!failed) core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, 0x20u);
@@ -131,12 +136,10 @@ C_INT main(C_VOID)
     (C_VOID)STD_REMOVE("t386-s26-even.bin");
     (C_VOID)STD_REMOVE("t386-s26-odd.bin");
     (C_VOID)STD_REMOVE("t386-s26-hdd.img");
-    (C_VOID)STD_REMOVE("t430-s1-hdd-slave.img");
     (C_VOID)STD_REMOVE("t386-s26-bad-hdd.img");
     if (!failed) {
         STD_PRINTF("M5:T386:S26:MODEL40-HDC-STARTUP:OK\n");
         STD_PRINTF("M5:T386:S26:MODEL40-HDC-FIXED-MEDIA:OK\n");
-        STD_PRINTF("M5:T430:S1:MODEL40-HDC-DUAL-DRIVE:OK\n");
     }
     return failed;
 }

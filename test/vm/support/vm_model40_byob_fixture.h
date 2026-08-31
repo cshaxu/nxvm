@@ -14,10 +14,12 @@ static inline C_INT vm_model40_fixture_write_bytes(const C_CHAR *path,
         VM_PROFILE_MODEL40_ROM_CHIP_BYTES && STD_FCLOSE(file) == 0;
 }
 
-static inline type_status vm_model40_fixture_create_bytes(const C_CHAR *even_path,
+static inline type_status vm_model40_fixture_create_bytes_with_floppy_format(
+    const C_CHAR *even_path,
     const type_unsigned_8 *even_bytes, const C_CHAR *even_sha256,
     const C_CHAR *odd_path, const type_unsigned_8 *odd_bytes,
-    const C_CHAR *odd_sha256, vm_session **out_session)
+    const C_CHAR *odd_sha256, vm_session_floppy_format floppy_format,
+    vm_session **out_session)
 {
     vm_session_config config = {0};
 
@@ -26,8 +28,20 @@ static inline type_status vm_model40_fixture_create_bytes(const C_CHAR *even_pat
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
         even_path, even_sha256, odd_path, odd_sha256,
+        STD_NULL, STD_NULL,
         "project-owned synthetic test input" };
+    config.floppy_format = floppy_format;
     return (type_status)vm_session_create(&config, out_session);
+}
+
+static inline type_status vm_model40_fixture_create_bytes(const C_CHAR *even_path,
+    const type_unsigned_8 *even_bytes, const C_CHAR *even_sha256,
+    const C_CHAR *odd_path, const type_unsigned_8 *odd_bytes,
+    const C_CHAR *odd_sha256, vm_session **out_session)
+{
+    return vm_model40_fixture_create_bytes_with_floppy_format(even_path, even_bytes,
+        even_sha256, odd_path, odd_bytes, odd_sha256,
+        VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT, out_session);
 }
 
 static inline type_status vm_model40_fixture_create(const C_CHAR *even_path,

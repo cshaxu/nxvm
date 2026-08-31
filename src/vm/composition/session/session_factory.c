@@ -120,6 +120,7 @@ static type_status vm_session_provider_request_configure(
          request->xt_xebec_path[0] != '\0' || request->xt_xebec_sha256[0] != '\0' ||
          request->xt_provenance[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind != VM_SESSION_PROFILE_DEFAULT_PC_AT &&
+        config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         (config->memory_bytes != 0u || request->cpu[0] != '\0' ||
          request->fpu[0] != '\0' || request->floppy_format[0] != '\0')) {
         return TYPE_STATUS_INVALID_STATE;

@@ -41,8 +41,8 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         model_339->kbc_typematic_initial_ticks != 4000000u ||
         model_339->kbc_typematic_repeat_ticks != 800000u ||
         model_339->kbc_command_response_ticks != 0u ||
-        generic->clock_plan.pit.numerator != 1u ||
-        generic->clock_plan.pit.denominator != 4u ||
+        generic->clock_plan.pit.numerator != 596591u ||
+        generic->clock_plan.pit.denominator != 4000000u ||
         generic->clock_plan.rtc.numerator != 1u ||
         generic->clock_plan.rtc.denominator != 1u ||
         generic->rtc_ticks_per_second != 50000u;

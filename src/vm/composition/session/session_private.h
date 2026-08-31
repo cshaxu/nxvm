@@ -58,7 +58,6 @@ struct vm_session {
     core_machine_dma_request_binding fdc_dma_request;
     t_fdd fdd;
     t_hdd hdd;
-    t_hdd hdd_slave;
     t_debug debug;
     t_bios default_bios;
     vm_profile_default_context default_profile_context;
@@ -89,9 +88,11 @@ struct vm_session {
     C_INT model40_private;
     C_INT xt_private;
     vm_profile_floppy_kind floppy_kind;
+    vm_profile_floppy_kind fdd_media_kind;
     vm_profile_model40_external_rom model40_rom;
     type_unsigned_8 model40_even_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     type_unsigned_8 model40_odd_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    type_unsigned_8 model40_video_rom[VM_PROFILE_MODEL40_VIDEO_ROM_BYTES];
     vm_profile_xt_5160_268_resolved_profile xt_resolved;
     vm_profile_xt_5160_268_external_rom xt_rom;
     type_unsigned_8 *xt_system_rom;
@@ -100,7 +101,6 @@ struct vm_session {
     type_bool model40_fdc_terminal_observation_valid;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];
-    C_CHAR hdd_slave_image_path[1024];
 };
 
 type_status vm_session_storage_initialize(vm_session *machine);

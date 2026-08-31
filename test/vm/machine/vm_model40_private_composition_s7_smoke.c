@@ -58,6 +58,14 @@ C_INT main(C_VOID)
         session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled != TYPE_TRUE ||
         session->core_machine->transaction_contract.external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
+        session->core_machine->dma_clock.numerator != 1u ||
+        session->core_machine->dma_clock.denominator != 1u ||
+        session->core_machine->pit_clock.numerator != 1u ||
+        session->core_machine->pit_clock.denominator != 1u ||
+        session->core_machine->auxiliary_pit_clock.numerator != 5u ||
+        session->core_machine->auxiliary_pit_clock.denominator != 16u ||
+        session->core_machine->rtc_clock.numerator != 1u ||
+        session->core_machine->rtc_clock.denominator != 1u ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=

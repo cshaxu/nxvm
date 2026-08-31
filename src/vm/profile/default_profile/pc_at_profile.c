@@ -151,7 +151,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
         {{0}}, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
-    { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u },
+    { { 1u, 1u, 0u }, { 596591u, 4000000u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u } },
     { CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u },

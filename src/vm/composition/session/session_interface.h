@@ -40,7 +40,6 @@ typedef struct vm_session_config {
     const C_CHAR *fdd_image;
     vm_session_floppy_format floppy_format;
     const C_CHAR *hdd_image;
-    const C_CHAR *hdd_slave_image;
     C_INT create_fdd;
     type_unsigned_16 create_hdd_cylinders;
     C_INT boot_hdd;

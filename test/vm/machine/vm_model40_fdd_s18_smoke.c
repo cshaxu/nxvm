@@ -8,12 +8,14 @@
 #include "../support/vm_model40_byob_fixture.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
+#define MODEL40_COMPATIBLE_MEDIA_BYTES (40u * 2u * 9u * 512u)
 
 C_INT main(C_VOID)
 {
     static type_unsigned_8 image[MODEL40_FDD_BYTES];
     vm_session_config model339_config = {0};
     vm_session *model40 = STD_NULL;
+    vm_session *model40_360k = STD_NULL;
     vm_session *default_session = STD_NULL;
     vm_session *model339 = STD_NULL;
     core_machine_media_info info;
@@ -47,6 +49,30 @@ C_INT main(C_VOID)
         goto done;
     }
 
+    {
+        static const C_CHAR even_sha256[] =
+            "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe";
+        static const C_CHAR odd_sha256[] =
+            "111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f";
+        type_unsigned_8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
+        type_unsigned_8 odd_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+        static type_unsigned_8 compatible_media[MODEL40_COMPATIBLE_MEDIA_BYTES];
+
+        STD_MEMSET(odd_bytes, 1, sizeof(odd_bytes));
+        if (vm_model40_fixture_create_bytes_with_floppy_format("t386-s18-360-even.bin",
+                even_bytes, even_sha256, "t386-s18-360-odd.bin", odd_bytes,
+                odd_sha256, VM_SESSION_FLOPPY_FORMAT_360K, &model40_360k) !=
+                TYPE_STATUS_OK || model40_360k == STD_NULL ||
+            model40_360k->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+            model40_360k->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
+            model40_360k->fdd.data.ncyl != 40u ||
+            vm_machine_fdd_replace_bytes(&model40_360k->fdd, compatible_media,
+                sizeof(compatible_media)) != TYPE_FALSE) {
+            failed = 1;
+            goto done;
+        }
+    }
+
     model339_config.profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339;
     if (vm_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK ||
         vm_session_create(&model339_config, &model339) != TYPE_STATUS_OK ||
@@ -56,10 +82,12 @@ C_INT main(C_VOID)
     }
 
 done:
+    vm_session_destroy(model40_360k);
     vm_session_destroy(model339);
     vm_session_destroy(default_session);
     vm_session_destroy(model40);
     vm_model40_fixture_remove("t386-s18-even.bin", "t386-s18-odd.bin");
+    vm_model40_fixture_remove("t386-s18-360-even.bin", "t386-s18-360-odd.bin");
     if (failed) return 1;
     STD_PRINTF("M5:T386:S18:MODEL40-FDD-GEOMETRY:OK\n");
     STD_PRINTF("M5:T386:S18:MODEL40-FDD-MEDIA:OK\n");

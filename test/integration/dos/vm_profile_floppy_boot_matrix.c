@@ -6,9 +6,10 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-
-#define VM_PROFILE_FLOPPY_BOOT_TIMEOUT_MILLISECONDS 60000u
+#include "vm/platform/platform.h"
+#define VM_PROFILE_FLOPPY_BOOT_TIMEOUT_MILLISECONDS 180000u
 #define VM_PROFILE_FLOPPY_BOOT_POLL_MILLISECONDS 10u
+#define VM_PROFILE_FLOPPY_BOOT_STARTUP_SETTLE_MILLISECONDS 10000u
 #define VM_PROFILE_FLOPPY_TEXT_CELLS (80u * 25u)
 #define VM_PROFILE_FLOPPY_UNAVAILABLE 77
 
@@ -120,6 +121,42 @@ static vm_profile_floppy_boot_terminal vm_profile_floppy_boot_terminal_get(
         VM_PROFILE_FLOPPY_BOOT_TERMINAL_INSTALLER : VM_PROFILE_FLOPPY_BOOT_TERMINAL_NONE;
 }
 
+static C_INT vm_profile_floppy_boot_text_memory_has(const vm_session *session,
+    const C_CHAR *text)
+{
+    type_unsigned_8 memory[VM_PROFILE_FLOPPY_TEXT_CELLS * 2u];
+    STD_SIZE_T index;
+    const STD_SIZE_T length = text == STD_NULL ? 0u : STD_STRLEN(text);
+
+    if (session == STD_NULL || text == STD_NULL || length == 0u ||
+        length > VM_PROFILE_FLOPPY_TEXT_CELLS || core_machine_memory_read(
+            session->core_machine, 0x000b8000u, memory, sizeof(memory)) !=
+            TYPE_STATUS_OK) return 0;
+    for (index = 0u; index + length <= VM_PROFILE_FLOPPY_TEXT_CELLS; ++index) {
+        STD_SIZE_T character;
+
+        for (character = 0u; character < length; ++character) {
+            if (memory[(index + character) * 2u] != (type_unsigned_8)text[character]) {
+                break;
+            }
+        }
+        if (character == length) return 1;
+    }
+    return 0;
+}
+
+static C_INT vm_profile_floppy_boot_send_f1(vm_session *session, C_INT pressed)
+{
+    core_platform_input_event event = {0};
+
+    if (session == STD_NULL) return 0;
+    event.kind = CORE_PLATFORM_INPUT_KEY;
+    event.data.key.scan_code = 0x3bu;
+    event.data.key.virtual_key = 0x70u;
+    event.data.key.pressed = pressed != 0;
+    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+}
+
 static const C_CHAR *vm_profile_floppy_boot_terminal_name(
     vm_profile_floppy_boot_terminal terminal)
 {
@@ -154,15 +191,22 @@ static C_INT vm_profile_floppy_boot_configure(const vm_profile_floppy_boot_row *
         out_config->floppy_format = row->floppy_format;
         return 1;
     }
-    if (argc != 7) return 0;
     if (row->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
+        if (argc != 5 && argc != 7) return 0;
         out_config->xt_firmware = (vm_profile_xt_5160_268_byob_manifest) {
-            argv[3], argv[4], argv[5], argv[6], "owner-provided integration input"};
+            argv[3], argv[4], argc == 7 ? argv[5] : STD_NULL,
+            argc == 7 ? argv[6] : STD_NULL, "owner-provided integration input"};
         return 1;
     }
     if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+        if (argc != 7 && argc != 8 && argc != 9 && argc != 10) return 0;
         out_config->model40_firmware = (vm_profile_model40_byob_manifest) {
-            argv[3], argv[4], argv[5], argv[6], "owner-provided integration input"};
+            .even_path = argv[3], .even_sha256 = argv[4],
+            .odd_path = argv[5], .odd_sha256 = argv[6],
+            .video_path = argc >= 9 ? argv[7] : STD_NULL,
+            .video_sha256 = argc >= 9 ? argv[8] : STD_NULL,
+            .provenance = "owner-provided integration input"};
+        out_config->hdd_image = argc == 8 ? argv[7] : argc == 10 ? argv[9] : STD_NULL;
         return 1;
     }
     return 0;
@@ -177,11 +221,16 @@ static C_INT vm_profile_floppy_boot_inputs_are_present(
         GetFileAttributesA(argv[2]) == INVALID_FILE_ATTRIBUTES) return 0;
     if (row->profile_kind != VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
         row->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) return 1;
-    if (argc != 7) return 0;
-    for (index = 3; index < 7; index += 2) {
+    if (row->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 && argc == 5) {
+        return GetFileAttributesA(argv[3]) != INVALID_FILE_ATTRIBUTES;
+    }
+    if (argc != 7 && argc != 8 && argc != 9 && argc != 10) return 0;
+    for (index = 3; index < (argc >= 9 ? 9 : 7); index += 2) {
         if (GetFileAttributesA(argv[index]) == INVALID_FILE_ATTRIBUTES) return 0;
     }
-    return 1;
+    return row->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 ||
+        (argc != 8 && argc != 10) ||
+        GetFileAttributesA(argv[argc - 1]) != INVALID_FILE_ATTRIBUTES;
 }
 
 static C_INT vm_profile_floppy_boot_validate(C_VOID)
@@ -209,7 +258,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     vm_profile_floppy_boot_terminal terminal = VM_PROFILE_FLOPPY_BOOT_TERMINAL_NONE;
-    DWORD elapsed;
+    static const C_CHAR model40_hdd_scratch[] = "t513-model40-hdd.img";
+    ULONGLONG started;
+    ULONGLONG timeout;
+    ULONGLONG model40_resume_at = 0u;
+    ULONGLONG model40_f1_make_at = 0u;
+    C_INT model40_hdd_scratch_created = 0;
+    C_INT model40_f1_sent = 0;
     C_INT result = 1;
 
     if (argc == 2 && !STD_STRCMP(argv[1], "--validate")) {
@@ -224,17 +279,78 @@ C_INT main(C_INT argc, C_CHAR **argv)
         return VM_PROFILE_FLOPPY_UNAVAILABLE;
     }
     if (!vm_profile_floppy_boot_configure(row, argc, argv, &config)) return 1;
+    if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+        config.hdd_image != STD_NULL) {
+        if (!CopyFileA(config.hdd_image, model40_hdd_scratch, FALSE)) return 1;
+        config.hdd_image = model40_hdd_scratch;
+        model40_hdd_scratch_created = 1;
+    }
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL) {
         STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:SESSION-CREATE-FAILED\n", row->id);
-        return 1;
+        goto done;
+    }
+    if (config.model40_firmware.video_path != STD_NULL) {
+        /* The supplied option ROM deliberately selects an EGA graphics mode.
+         * The integration host observes its copied frame through the existing
+         * window presentation contract; it does not alter guest video state. */
+        vm_platform_run_context_set_window_display(session->platform_run_context, 1);
+    }
+    /* The matrix checks a guest-visible boot terminal, not wall-clock pacing.
+     * Turbo retains the same Core-owned instruction and controller deadlines
+     * while avoiding a host-time-limited firmware memory test. */
+    if (vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK) {
+        goto done;
     }
     thread = CreateThread(STD_NULL, 0u, vm_profile_floppy_boot_start, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto done;
-    for (elapsed = 0u; elapsed < VM_PROFILE_FLOPPY_BOOT_TIMEOUT_MILLISECONDS;
-            elapsed += VM_PROFILE_FLOPPY_BOOT_POLL_MILLISECONDS) {
+    timeout = VM_PROFILE_FLOPPY_BOOT_TIMEOUT_MILLISECONDS;
+    started = GetTickCount64();
+    while (GetTickCount64() - started < timeout) {
+        ULONGLONG now = GetTickCount64();
+
+        if (now - started >= VM_PROFILE_FLOPPY_BOOT_STARTUP_SETTLE_MILLISECONDS &&
+            WaitForSingleObject(thread, 0u) == WAIT_OBJECT_0 &&
+            !vm_session_control_is_running(&session->control)) {
+            STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:START-STOPPED:status=%u\n",
+                row->id, (unsigned int)session->start_outcome.status);
+            break;
+        }
         terminal = vm_profile_floppy_boot_terminal_get(session);
         if (terminal != VM_PROFILE_FLOPPY_BOOT_TERMINAL_NONE) break;
+        /* This is failure diagnosis only, never a terminal: once the guest
+         * has reached a known text screen but VADP has not published it,
+         * pause immediately and report the owner boundary. */
+        if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+            vm_profile_floppy_boot_text_memory_has(session, "ENTER=Continue")) break;
+        if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+            !model40_f1_sent && model40_resume_at == 0u &&
+            vm_profile_floppy_boot_text_memory_has(session, "RESUME")) {
+            model40_resume_at = now;
+        }
+        if (model40_resume_at != 0u && !model40_f1_sent &&
+            now - model40_resume_at >= 100u) {
+            if (!vm_profile_floppy_boot_send_f1(session, 1)) goto done;
+            model40_f1_sent = 1;
+            model40_f1_make_at = now;
+            STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:resume-f1\n", row->id);
+        }
+        if (model40_f1_make_at != 0u &&
+            now - model40_f1_make_at >= 25u) {
+            if (!vm_profile_floppy_boot_send_f1(session, 0)) goto done;
+            model40_f1_make_at = 0u;
+        }
         Sleep(VM_PROFILE_FLOPPY_BOOT_POLL_MILLISECONDS);
+    }
+    if (terminal == VM_PROFILE_FLOPPY_BOOT_TERMINAL_NONE) {
+        vm_session_control_request_pause(&session->control,
+            VM_SESSION_PAUSE_EXPLICIT);
+        if (!vm_session_control_wait_for_pause(&session->control, 2000u)) {
+            STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:PAUSE-TIMEOUT\n");
+        }
+        /* The runner publishes its final copied VADP frame before it
+         * acknowledges pause.  Observe that frame before requesting stop;
+         * stop is not a guest-display terminal and may reset the session. */
+        terminal = vm_profile_floppy_boot_terminal_get(session);
     }
     vm_session_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) {
@@ -255,5 +371,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
 done:
     if (thread != STD_NULL) CloseHandle(thread);
     vm_session_destroy(session);
+    if (model40_hdd_scratch_created) (C_VOID)DeleteFileA(model40_hdd_scratch);
     return result;
 }

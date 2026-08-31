@@ -24,6 +24,7 @@ C_INT main(C_VOID)
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_session *session = STD_NULL;
+    core_machine_d4_platform_observation d4;
     type_unsigned_32 port_value = 0u;
     C_INT failed = 0;
 
@@ -59,6 +60,21 @@ C_INT main(C_VOID)
             VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START + 1u, 0x22u));
         CHECK(read_byte(session->core_machine, 0x00f40000u, 0xffu));
         CHECK(read_byte(session->core_machine, 0x00f80000u, 0xffu));
+        /* The DeskPro ROM POST tests the relocated C0000h--EFFFFh RAM through
+         * FC0000h--FEFFFFh.  Prove the complete bidirectional decode here:
+         * these are aliases into Core's single backing, not a firmware-only
+         * reset route or a second profile-owned RAM image. */
+        CHECK(write_byte(session->core_machine, 0x00fc1234u, 0x3cu,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x000c1234u, 0x3cu));
+        CHECK(write_byte(session->core_machine, 0x000d5678u, 0xa5u,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00fd5678u, 0xa5u));
+        CHECK(write_byte(session->core_machine, 0x00fe9abcu, 0x5au,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x000e9abcu, 0x5au));
+        CHECK(core_machine_get_d4_platform_observation(session->core_machine,
+            &d4) == TYPE_STATUS_OK && !d4.iochk_latched && !d4.failsafe_latched);
         CHECK(write_byte(session->core_machine, 0x00fa0000u, 0x3cu,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00fa0000u, 0x3cu));

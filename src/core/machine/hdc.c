@@ -45,9 +45,7 @@ static C_INT core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
 
 static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && (core_machine_hdc_is_compaq_wd_40mb(hdc) ?
-        (hdc->data.drive_head & 0x20u) != 0u :
-        (hdc->data.drive_head & 0x10u) == 0u);
+    return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) == 0u;
 }
 
 static type_unsigned_8 core_machine_hdc_current_head(const core_machine_hdc *hdc)
@@ -488,7 +486,8 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
     if (hdc == STD_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
-    if (!core_machine_hdc_selected_master(hdc) ||
+    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) &&
+            !core_machine_hdc_selected_master(hdc)) ||
         (!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_is_ibm_wd1003(hdc) &&
             (hdc->data.drive_head & 0x40u) != 0u &&
             !hdc->connect.config.bus.task_file.lba28_supported)) {
@@ -1103,11 +1102,9 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
     if (core_machine_hdc_is_xebec_xt(hdc)) core_machine_xebec_reset(hdc);
     core_machine_hdc_clear_irq(hdc);
-    if (!core_machine_hdc_is_compaq_wd_40mb(hdc)) {
-        hdc->data.error = CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
-        hdc->data.sector_count = 1u;
-        hdc->data.sector_number = 1u;
-    }
+    hdc->data.error = CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
+    hdc->data.sector_count = 1u;
+    hdc->data.sector_number = 1u;
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
 }
 

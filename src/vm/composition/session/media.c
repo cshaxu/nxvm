@@ -25,13 +25,6 @@ type_status vm_session_bind_media(vm_session *machine)
                 VM_SESSION_MEDIA_HDD_ID, &machine->hdd,
                 vm_machine_hdd_media_provider());
         if (status != TYPE_STATUS_OK) return status;
-        if (machine->model40_private &&
-            machine->retained_config.hdd_slave_image != STD_NULL) {
-            status = core_machine_media_registry_bind(machine->media_registry,
-                    VM_SESSION_MEDIA_HDD_SLAVE_ID, &machine->hdd_slave,
-                    vm_machine_hdd_media_provider());
-            if (status != TYPE_STATUS_OK) return status;
-        }
     }
     return core_machine_media_registry_freeze(machine->media_registry);
 }

@@ -17,6 +17,7 @@
  * not a second guest clock or a timing conversion.  Single-step remains
  * exactly one instruction and is therefore not cut short by that ceiling. */
 #define VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS 256u
+#define VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS 4096u
 
 C_VOID vm_session_runner_run(vm_session *session)
 {
@@ -54,8 +55,12 @@ C_VOID vm_session_runner_run(vm_session *session)
         vm_session_execution_context_debug_refresh(&control->execution_context);
         if (STD_ATOMIC_LOAD(&control->pauseRequested)) continue;
         budget.instructions = STD_ATOMIC_LOAD(&control->stepRequested) ? 1u :
+            session->speed == VM_SESSION_SPEED_TURBO ?
+            VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
         budget.ticks = STD_ATOMIC_LOAD(&control->stepRequested) ? 0u :
+            session->speed == VM_SESSION_SPEED_TURBO ?
+            VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
         {
             type_status run_status = core_machine_run(session->core_machine,

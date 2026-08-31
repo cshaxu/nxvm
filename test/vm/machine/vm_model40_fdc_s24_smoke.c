@@ -109,6 +109,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         core_machine_port_write(port, 0x0070u, 0x10u);
         failed |= core_machine_port_read(port, 0x0071u) != 0x22u;
         core_machine_port_write(port, 0x0070u, 0x12u);
+        failed |= core_machine_port_read(port, 0x0071u) != 0x80u;
+        core_machine_port_write(port, 0x0070u, 0x19u);
         failed |= core_machine_port_read(port, 0x0071u) != 0u;
         core_machine_port_write(port, 0x0070u, 0x17u);
         failed |= core_machine_port_read(port, 0x0071u) != 0u;
@@ -129,8 +131,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
             result[0] != (core_machine_fdc_ST0_READY_CHANGE | 3u);
-        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x04u, 0x01u}, 2u);
-        failed |= !model40_fdc_result(fdc, port, result, 1u) || result[0] != 0x29u;
+        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x04u, 0x00u}, 2u);
+        failed |= !model40_fdc_result(fdc, port, result, 1u) || result[0] != 0x28u;
         core_machine_port_write(port, 0x03f7u, 0u);
         model40_fdc_command(fdc, port, specify, sizeof(specify));
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));

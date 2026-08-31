@@ -17,10 +17,25 @@ static C_INT write_chip(const C_CHAR *path, type_unsigned_8 value)
         STD_FCLOSE(file) == 0;
 }
 
+static C_INT write_video_rom(const C_CHAR *path)
+{
+    type_unsigned_8 bytes[VM_PROFILE_MODEL40_VIDEO_ROM_BYTES] = {0};
+    STD_FILE *file;
+
+    bytes[0u] = 0x55u;
+    bytes[1u] = 0xaau;
+    bytes[2u] = 0x20u;
+    bytes[sizeof(bytes) - 1u] = 0xe1u;
+    file = STD_FOPEN(path, "wb");
+    return file != STD_NULL && STD_FWRITE(bytes, 1u, sizeof(bytes), file) ==
+        sizeof(bytes) && STD_FCLOSE(file) == 0;
+}
+
 C_INT main(C_VOID)
 {
     static const C_CHAR even_sha256[] = "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe";
     static const C_CHAR odd_sha256[] = "111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f";
+    static const C_CHAR video_sha256[] = "a78e2f3536f04d7c4b9b8a729659bce3242ca1ddc1da93820271ebd4781030a5";
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
     vm_session_reset_vector reset_vector = {0};
@@ -32,11 +47,14 @@ C_INT main(C_VOID)
     type_unsigned_8 observed_memory = 0u;
     C_INT failed = 0;
 
-    if (!write_chip("t386-s20-even.bin", 0u) || !write_chip("t386-s20-odd.bin", 1u)) failed = 1;
+    if (!write_chip("t386-s20-even.bin", 0u) || !write_chip("t386-s20-odd.bin", 1u) ||
+        !write_video_rom("t386-s20-video.bin")) failed = 1;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        "t386-s20-even.bin", even_sha256, "t386-s20-odd.bin", odd_sha256,
-        "project-owned synthetic test input" };
+        .even_path = "t386-s20-even.bin", .even_sha256 = even_sha256,
+        .odd_path = "t386-s20-odd.bin", .odd_sha256 = odd_sha256,
+        .video_path = "t386-s20-video.bin", .video_sha256 = video_sha256,
+        .provenance = "project-owned synthetic test input" };
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !session->model40_private || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
@@ -51,7 +69,12 @@ C_INT main(C_VOID)
         time_observation.pacing_ticks_per_second != 16000000u || time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u ||
         session->fdd.data.nsector != 15u || session->model40_rom.even_bytes[0] != 0u ||
-        session->model40_rom.odd_bytes[0] != 1u;
+        session->model40_rom.odd_bytes[0] != 1u ||
+        session->model40_rom.video_bytes == STD_NULL ||
+        session->model40_rom.video_bytes[0u] != 0x55u ||
+        core_machine_memory_read(session->core_machine,
+            VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, &observed_memory,
+            sizeof(observed_memory)) != TYPE_STATUS_OK || observed_memory != 0x55u;
     failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     retained_memory_bytes = session->retained_config.memory_bytes;
@@ -94,6 +117,7 @@ C_INT main(C_VOID)
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_FAULT || session != STD_NULL;
     (C_VOID)STD_REMOVE("t386-s20-even.bin");
     (C_VOID)STD_REMOVE("t386-s20-odd.bin");
+    (C_VOID)STD_REMOVE("t386-s20-video.bin");
     if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\nM5:T440:S1:MODEL40-IMMUTABLE-CONFIGURATION:OK\n");
     return failed;
 }

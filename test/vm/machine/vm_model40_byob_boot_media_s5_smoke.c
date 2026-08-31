@@ -49,8 +49,9 @@ C_INT main(C_VOID)
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = "t390-s5-floppy.img";
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        "t390-s5-even.bin", even_sha256, "t390-s5-odd.bin", odd_sha256,
-        "project-owned synthetic test input" };
+        .even_path = "t390-s5-even.bin", .even_sha256 = even_sha256,
+        .odd_path = "t390-s5-odd.bin", .odd_sha256 = odd_sha256,
+        .provenance = "project-owned synthetic test input" };
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->fdd.connect.flagDiskExist ||
         session->retained_config.fdd_image == STD_NULL ||

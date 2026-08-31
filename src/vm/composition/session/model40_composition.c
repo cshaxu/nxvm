@@ -13,7 +13,6 @@ static C_VOID vm_session_model40_capture_fdc_terminal(C_VOID *opaque,
     session->model40_fdc_terminal_observation = *observation;
     session->model40_fdc_terminal_observation_valid = TYPE_TRUE;
 }
-
 static C_VOID vm_session_model40_storage_rollback(vm_session *session)
 {
     if (session == STD_NULL) return;
@@ -37,6 +36,8 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
     const core_machine_fdc_drive_bindings drives = {
         .media_id = { VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID },
+        /* The selected Model 40 topology has two 1.2 MiB mechanisms.
+         * A: may be the only drive with inserted media. */
         .installed_mask = 0x03u,
         .double_sided_mask = 0x03u,
         .track_zero_active_low_mask = 0x03u,
@@ -67,8 +68,7 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     return core_machine_plan_configure_hdc(plan, VM_SESSION_MEDIA_HDD_ID,
-        session->retained_config.hdd_slave_image == STD_NULL ?
-            CORE_MACHINE_MEDIA_ID_INVALID : VM_SESSION_MEDIA_HDD_SLAVE_ID, &hdc);
+        CORE_MACHINE_MEDIA_ID_INVALID, &hdc);
 }
 
 type_status vm_session_model40_storage_initialize(vm_session *session)
@@ -134,18 +134,7 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     rtc.ticks_per_second = 32768u;
     rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,
         CORE_MACHINE_RTC_TIMING_L3_SOURCE};
-    rtc.defaults[0] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FLOPPY, 0x22u };
-    rtc.defaults[1] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FIXED,
-        session->retained_config.hdd_image == STD_NULL ? 0u : 0x2fu };
-    rtc.defaults[2] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0, 0u };
-    /* The selected board has two 1.2 MiB mechanisms; only A: is initially
-     * supplied with media. Presence remains solely an FDC concern. */
-    rtc.defaults[3] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_EQUIPMENT, 0x41u };
-    rtc.defaults[4] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_LSB, 0x80u };
-    rtc.defaults[5] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_MSB, 0x02u };
-    rtc.defaults[6] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_EXTMEM_LSB, 0u };
-    rtc.defaults[7] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_EXTMEM_MSB, 0x04u };
-    rtc.default_count = CORE_MACHINE_RTC_DEFAULT_CAPACITY;
+    vm_profile_model40_cmos_seed_materialize(&rtc);
     topology.d4_platform_present = TYPE_TRUE;
     topology.d4_platform = d4;
     /* The selected D4 setup has 640 KiB conventional RAM and relocates the
@@ -217,24 +206,5 @@ C_INT vm_session_model40_insert_hdd_at_startup(vm_session *session, const C_CHAR
         return -1;
     }
     session->retained_config.hdd_image = session->hdd_image_path;
-    return 0;
-}
-
-C_INT vm_session_model40_insert_hdd_slave_at_startup(vm_session *session, const C_CHAR *path)
-{
-    const STD_SIZE_T expected_bytes = 925u * 5u * 17u * 512u;
-    STD_SIZE_T path_length;
-
-    if (session == STD_NULL || !session->model40_private || path == STD_NULL ||
-        vm_machine_hdd_has_media(&session->hdd_slave) ||
-        vm_machine_hdd_insert(&session->hdd_slave, path) != 0 ||
-        vm_machine_hdd_raw_byte_count(&session->hdd_slave) != expected_bytes) return -1;
-    path_length = STD_STRLEN(path);
-    if (path_length >= sizeof(session->hdd_slave_image_path)) return -1;
-    STD_MEMCPY(session->hdd_slave_image_path, path, path_length + 1u);
-    if (vm_machine_hdd_set_geometry(&session->hdd_slave, 925u, 5u, 17u) != TYPE_FALSE) {
-        return -1;
-    }
-    session->retained_config.hdd_slave_image = session->hdd_slave_image_path;
     return 0;
 }

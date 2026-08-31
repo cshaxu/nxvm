@@ -16,7 +16,7 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
     const core_machine_run_budget budget = {100u, 0u};
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     type_unsigned_32 port_b;
     type_unsigned_32 next_port_b;
     type_unsigned_32 tick;
@@ -53,7 +53,7 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
         vm_session_destroy(session);
         return 0;
     }
-    for (tick = 0u; tick < 100u; ++tick) {
+    for (tick = 0u; tick < 200u; ++tick) {
         if (core_machine_advance_time(session->core_machine, 1u) != TYPE_STATUS_OK ||
             core_machine_bus_read(session->core_machine, 0x0061u, &next_port_b) !=
                 TYPE_STATUS_OK) {
@@ -62,7 +62,7 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
         }
         if ((port_b & 0x10u) != (next_port_b & 0x10u)) break;
     }
-    if (tick == 100u) {
+    if (tick == 200u) {
         vm_session_destroy(session);
         return 0;
     }
@@ -90,6 +90,57 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
     }
     vm_session_destroy(session);
     return 1;
+}
+
+static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
+{
+    static const type_unsigned_8 program[] = {
+        0xb4u, 0x10u, 0xe4u, 0x61u, 0x24u, 0x10u,
+        0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
+    };
+    vm_session_config config = {
+        .profile_kind = VM_SESSION_PROFILE_DEFAULT_PC_AT,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186
+    };
+    vm_session *session = STD_NULL;
+    core_machine_run_result result = {0};
+    type_unsigned_32 port_b;
+    type_unsigned_32 tick;
+    C_INT failed = 0;
+
+    if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL) {
+        return 0;
+    }
+    for (tick = 0u; tick < 200u; ++tick) {
+        if (core_machine_bus_read(session->core_machine, 0x0061u, &port_b) !=
+                TYPE_STATUS_OK || (port_b & 0x10u) == 0u) break;
+        if (core_machine_advance_time(session->core_machine, 1u) != TYPE_STATUS_OK) {
+            failed = 1;
+            break;
+        }
+    }
+    if (!failed && (tick == 200u || core_machine_memory_write(session->core_machine,
+            0x0500u, program, sizeof(program)) != TYPE_STATUS_OK)) {
+        failed = 1;
+    }
+    if (!failed) {
+        session->core_machine->executor_cpu.data.cs.selector = 0u;
+        session->core_machine->executor_cpu.data.cs.base = 0u;
+        session->core_machine->executor_cpu.data.ds.selector = 0u;
+        session->core_machine->executor_cpu.data.ds.base = 0u;
+        session->core_machine->executor_cpu.data.es.selector = 0u;
+        session->core_machine->executor_cpu.data.es.base = 0u;
+        session->core_machine->executor_cpu.data.ss.selector = 0u;
+        session->core_machine->executor_cpu.data.ss.base = 0u;
+        session->core_machine->executor_cpu.data.eip = 0x0500u;
+        session->core_machine->executor_cpu.data.sp = 0xfffeu;
+        session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+        failed = core_machine_run(session->core_machine,
+            (core_machine_run_budget) {1000u, 0u}, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    }
+    vm_session_destroy(session);
+    return !failed;
 }
 
 C_INT main(C_VOID)
@@ -127,6 +178,7 @@ C_INT main(C_VOID)
             80u, 18u, 0x40u)) {
         return 1;
     }
+    if (!vm_default_pc_at_80186_refresh_polling_is_live()) return 1;
     puts("M5:T208:S3:DEFAULT-PC-AT-APPLY:OK");
     return 0;
 }

@@ -11,10 +11,11 @@
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
 
-#define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 60000u
+#define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 90000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u
 #define VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS 16u
 #define VM_BYOB_FDC_PORT_HISTORY 256u
+#define VM_BYOB_HDC_PORT_HISTORY 64u
 #define VM_BYOB_NEAR_UD_HISTORY 16u
 #define VM_BYOB_CMOS_BYTES 128u
 
@@ -35,6 +36,8 @@ typedef struct vm_byob_boot_trace {
     type_unsigned_64 rom_memory_reads;
     type_unsigned_64 fdc_port_accesses;
     vm_byob_fdc_port_event fdc_port_history[VM_BYOB_FDC_PORT_HISTORY];
+    type_unsigned_64 hdc_port_accesses;
+    vm_byob_fdc_port_event hdc_port_history[VM_BYOB_HDC_PORT_HISTORY];
     type_unsigned_8 cmos_index;
     type_unsigned_64 cmos_reads[VM_BYOB_CMOS_BYTES];
     type_unsigned_64 cmos_writes[VM_BYOB_CMOS_BYTES];
@@ -91,6 +94,8 @@ typedef struct vm_byob_boot_trace {
     core_machine_fdc_terminal_observation last_fdc_terminal;
 } vm_byob_boot_trace;
 
+static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text);
+
 static C_VOID vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
     const core_machine_trace_event *event)
 {
@@ -100,6 +105,21 @@ static C_VOID vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
     if (trace == STD_NULL || event == STD_NULL) return;
     index = (STD_SIZE_T)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
     record = &trace->fdc_port_history[index];
+    record->linear_pc = event->linear_pc;
+    record->port = (type_unsigned_16)event->address;
+    record->value = (type_unsigned_8)event->value;
+    record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
+}
+
+static C_VOID vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
+    const core_machine_trace_event *event)
+{
+    vm_byob_fdc_port_event *record;
+    STD_SIZE_T index;
+
+    if (trace == STD_NULL || event == STD_NULL) return;
+    index = (STD_SIZE_T)(trace->hdc_port_accesses % VM_BYOB_HDC_PORT_HISTORY);
+    record = &trace->hdc_port_history[index];
     record->linear_pc = event->linear_pc;
     record->port = (type_unsigned_16)event->address;
     record->value = (type_unsigned_8)event->value;
@@ -301,6 +321,18 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         ++trace->fdc_port_accesses;
         return;
     }
+    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        ((event->detail >> 8u) & 0xffu) ==
+            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
+        event->address >= 0x01f0u && event->address <= 0x01f7u) {
+        core_machine_trace_event write = *event;
+
+        write.type = CORE_MACHINE_TRACE_PORT_WRITE;
+        vm_byob_hdc_port_record(trace, &write);
+        ++trace->hdc_port_accesses;
+        return;
+    }
     if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
         (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         ((event->detail >> 8u) & 0xffu) ==
@@ -313,11 +345,26 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         ++trace->fdc_port_accesses;
         return;
     }
+    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        ((event->detail >> 8u) & 0xffu) ==
+            CORE_MACHINE_TRANSACTION_CPU_PORT_READ &&
+        event->address >= 0x01f0u && event->address <= 0x01f7u) {
+        core_machine_trace_event read = *event;
+
+        read.type = CORE_MACHINE_TRACE_PORT_READ;
+        vm_byob_hdc_port_record(trace, &read);
+        ++trace->hdc_port_accesses;
+        return;
+    }
     if (event->type != CORE_MACHINE_TRACE_PORT_READ &&
         event->type != CORE_MACHINE_TRACE_PORT_WRITE) return;
     if (event->address >= 0x03f0u && event->address <= 0x03f7u) {
         vm_byob_fdc_port_record(trace, event);
         ++trace->fdc_port_accesses;
+    } else if (event->address >= 0x01f0u && event->address <= 0x01f7u) {
+        vm_byob_hdc_port_record(trace, event);
+        ++trace->hdc_port_accesses;
     } else if (event->address >= 0x0060u && event->address <= 0x0063u) {
         ++trace->xt_ppi_port_accesses;
     } else if (event->address >= 0x0020u && event->address <= 0x0021u) {
@@ -361,30 +408,22 @@ static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *sn
     return 0;
 }
 
-static C_INT vm_byob_send_f1(core_machine *machine, C_INT pressed,
+static C_INT vm_byob_send_f1(vm_session *session, C_INT pressed,
     type_unsigned_8 *out_scan_set)
 {
-    static const type_unsigned_8 f1_set_1_make[] = {0x3bu};
-    static const type_unsigned_8 f1_set_1_break[] = {0xbbu};
-    static const type_unsigned_8 f1_set_2_make[] = {0x05u};
-    static const type_unsigned_8 f1_set_2_break[] = {0xf0u,0x05u};
-    const type_unsigned_8 *f1 = STD_NULL;
-    STD_SIZE_T f1_bytes = 0u;
+    core_platform_input_event event = {0};
     type_unsigned_8 scan_set = 0u;
 
-    if (machine == STD_NULL || out_scan_set == STD_NULL ||
-        core_machine_keyboard_get_native_scan_set(machine, &scan_set) !=
+    if (session == STD_NULL || session->core_machine == STD_NULL ||
+        out_scan_set == STD_NULL || core_machine_keyboard_get_native_scan_set(
+            session->core_machine, &scan_set) !=
             TYPE_STATUS_OK) return 0;
-    if (scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1) {
-        f1 = pressed ? f1_set_1_make : f1_set_1_break;
-        f1_bytes = pressed ? sizeof(f1_set_1_make) : sizeof(f1_set_1_break);
-    } else if (scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2) {
-        f1 = pressed ? f1_set_2_make : f1_set_2_break;
-        f1_bytes = pressed ? sizeof(f1_set_2_make) : sizeof(f1_set_2_break);
-    } else return 0;
     *out_scan_set = scan_set;
-    return core_machine_keyboard_receive_native_bytes(machine, f1, f1_bytes) ==
-        TYPE_STATUS_OK;
+    event.kind = CORE_PLATFORM_INPUT_KEY;
+    event.data.key.scan_code = 0x3bu;
+    event.data.key.virtual_key = 0x70u;
+    event.data.key.pressed = pressed != 0;
+    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
 }
 
 static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
@@ -537,10 +576,18 @@ static C_INT vm_byob_configure(C_INT argc, C_CHAR **argv, vm_session_config *con
             vm_byob_parse_ibm_5170_memory(argv[4], &config->memory_bytes);
     }
     if (!STD_STRCMP(argv[1], "compaq-deskpro-386-model-40")) {
-        if (argc != 7) return 0;
+        if (argc != 7 && argc != 8 && argc != 9 && argc != 10) return 0;
         config->profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
         config->model40_firmware = (vm_profile_model40_byob_manifest) {
-            argv[3], argv[4], argv[5], argv[6], "owner-authorized external BYOB probe"};
+            .even_path = argv[3], .even_sha256 = argv[4],
+            .odd_path = argv[5], .odd_sha256 = argv[6],
+            .video_path = argc >= 9 ? argv[7] : STD_NULL,
+            .video_sha256 = argc >= 9 ? argv[8] : STD_NULL,
+            .provenance = "owner-authorized external BYOB probe"};
+        if (argc == 8) return vm_byob_parse_floppy_format(argv[7],
+            &config->floppy_format);
+        if (argc == 10) return vm_byob_parse_floppy_format(argv[9],
+            &config->floppy_format);
         return 1;
     }
     if (!STD_STRCMP(argv[1], "default-pc-at")) {
@@ -593,6 +640,7 @@ int main(C_INT argc, C_CHAR **argv)
     type_unsigned_32 no_progress_limit = VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS;
     ULONGLONG resume_f1_prompt_at = 0u;
     ULONGLONG resume_f1_make_at = 0u;
+    ULONGLONG next_text_memory_scan;
     C_INT have_checksum = 0;
     C_INT have_linear_pc = 0;
     C_INT waiting_for_interrupt = 0;
@@ -736,6 +784,7 @@ int main(C_INT argc, C_CHAR **argv)
     started = GetTickCount64();
     progress = started;
     next_display_capture = started;
+    next_text_memory_scan = started;
     while (GetTickCount64() - started < wall_limit) {
         core_machine_run_budget run_budget = budget;
         type_unsigned_32 current;
@@ -752,6 +801,11 @@ int main(C_INT argc, C_CHAR **argv)
             trace.int6_pre_fault_snapshot_valid = TYPE_TRUE;
             run_budget.instructions = 1u;
         }
+        /* This probe drives Core directly, so it explicitly executes the
+         * production runner's command boundary before each Core quantum.
+         * Host input stays ordered and Core remains the only state mutator. */
+        vm_session_execution_context_run_command_boundary(
+            &session->control.execution_context);
         if (core_machine_run(session->core_machine, run_budget, &result) != TYPE_STATUS_OK) {
             type_unsigned_8 fault_bytes[4] = {0u};
             type_unsigned_8 far_pointer[6] = {0u};
@@ -865,6 +919,10 @@ int main(C_INT argc, C_CHAR **argv)
         }
         else waiting_for_interrupt = 0;
         now = GetTickCount64();
+        /* REP string instructions may correctly retire thousands of units at
+         * one linear PC during firmware memory tests.  A changing PC is useful
+         * diagnostic context, but it is not the definition of guest progress. */
+        if (result.executed != 0u || result.ticks != 0u) progress = now;
         if (now >= next_display_capture) {
             type_status display_status = core_machine_capture_display_snapshot(
                 session->core_machine, &snapshot);
@@ -875,9 +933,23 @@ int main(C_INT argc, C_CHAR **argv)
                     (unsigned int)display_status);
                 goto done;
             }
-            if (press_resume_f1 && !resume_f1_sent && resume_f1_prompt_at == 0u &&
-                vm_byob_text_memory_has(session->core_machine, "RESUME")) {
-                resume_f1_prompt_at = now;
+            if (now >= next_text_memory_scan) {
+                const C_INT resume_visible = vm_byob_text_memory_has(
+                    session->core_machine, "RESUME");
+                const C_INT installer_visible = resume_f1_sent &&
+                    vm_byob_text_memory_has(session->core_machine, "ENTER=Continue");
+
+                next_text_memory_scan = now + 250u;
+                if (press_resume_f1 && !resume_f1_sent &&
+                    resume_f1_prompt_at == 0u && resume_visible) {
+                    resume_f1_prompt_at = now;
+                }
+                post_resume_required |= resume_visible;
+                if (installer_visible) {
+                    STD_PRINTF("BOOT-PROBE=installer-ready\n");
+                    exit_code = 0;
+                    goto done;
+                }
             }
             if (display_status == TYPE_STATUS_OK) {
                 if (vm_byob_snapshot_has_prompt(&snapshot)) {
@@ -899,8 +971,7 @@ int main(C_INT argc, C_CHAR **argv)
                 post_memory_failure |= vm_byob_snapshot_has(&snapshot, "201");
                 post_keyboard_failure |= vm_byob_snapshot_has(&snapshot, "301");
                 post_floppy_failure |= vm_byob_snapshot_has(&snapshot, "601");
-                post_resume_required |= vm_byob_snapshot_has(&snapshot, "RESUME") ||
-                    vm_byob_text_memory_has(session->core_machine, "RESUME");
+                post_resume_required |= vm_byob_snapshot_has(&snapshot, "RESUME");
                 if (!have_checksum || current != checksum) {
                     checksum = current;
                     have_checksum = 1;
@@ -912,7 +983,7 @@ int main(C_INT argc, C_CHAR **argv)
             now - resume_f1_prompt_at >= 100u) {
             type_unsigned_8 scan_set = 0u;
 
-            if (!vm_byob_send_f1(session->core_machine, 1, &scan_set)) {
+            if (!vm_byob_send_f1(session, 1, &scan_set)) {
                 STD_PRINTF("BOOT-PROBE=resume-f1-input-failed\n");
                 goto done;
             }
@@ -927,7 +998,7 @@ int main(C_INT argc, C_CHAR **argv)
             now - resume_f1_make_at >= 25u) {
             type_unsigned_8 scan_set = 0u;
 
-            if (!vm_byob_send_f1(session->core_machine, 0, &scan_set)) {
+            if (!vm_byob_send_f1(session, 0, &scan_set)) {
                 STD_PRINTF("BOOT-PROBE=resume-f1-release-failed\n");
                 goto done;
             }
@@ -936,7 +1007,6 @@ int main(C_INT argc, C_CHAR **argv)
         if (!have_linear_pc || result.linear_pc != linear_pc) {
             linear_pc = result.linear_pc;
             have_linear_pc = 1;
-            progress = now;
         }
         if (GetTickCount64() - progress >= no_progress_limit) {
             if (waiting_for_interrupt) {
@@ -1241,6 +1311,16 @@ done:
             (unsigned int)trace.last_fdc_terminal.result[0u],
             (unsigned int)trace.last_fdc_terminal.result[1u],
             (unsigned int)trace.last_fdc_terminal.result[2u]);
+        STD_PRINTF("BOOT-PROBE=hdc-phase=%u-status=%02X-error=%02X-command=%02X-count=%u-sector=%u-cylinder=%02X%02X-drive-head=%02X\n",
+            (unsigned int)session->core_machine->hdc.data.phase,
+            (unsigned int)session->core_machine->hdc.data.status,
+            (unsigned int)session->core_machine->hdc.data.error,
+            (unsigned int)session->core_machine->hdc.data.last_command,
+            (unsigned int)session->core_machine->hdc.data.command_count,
+            (unsigned int)session->core_machine->hdc.data.sector_number,
+            (unsigned int)session->core_machine->hdc.data.cylinder_high,
+            (unsigned int)session->core_machine->hdc.data.cylinder_low,
+            (unsigned int)session->core_machine->hdc.data.drive_head);
         if (trace.fdc_port_accesses != 0u) {
             const type_unsigned_64 history = trace.fdc_port_accesses <
                 VM_BYOB_FDC_PORT_HISTORY ? trace.fdc_port_accesses :
@@ -1256,6 +1336,22 @@ done:
                     (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
                     (unsigned int)record->port,
                     (unsigned int)record->value);
+            }
+        }
+        if (trace.hdc_port_accesses != 0u) {
+            const type_unsigned_64 history = trace.hdc_port_accesses <
+                VM_BYOB_HDC_PORT_HISTORY ? trace.hdc_port_accesses :
+                VM_BYOB_HDC_PORT_HISTORY;
+            type_unsigned_64 entry;
+
+            for (entry = 0u; entry < history; ++entry) {
+                const STD_SIZE_T index = (STD_SIZE_T)((trace.hdc_port_accesses - history +
+                    entry) % VM_BYOB_HDC_PORT_HISTORY);
+                const vm_byob_fdc_port_event *record = &trace.hdc_port_history[index];
+
+                STD_PRINTF("BOOT-PROBE=hdc-port-%05X-%c-%04X-%02X\n",
+                    (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
+                    (unsigned int)record->port, (unsigned int)record->value);
             }
         }
         {

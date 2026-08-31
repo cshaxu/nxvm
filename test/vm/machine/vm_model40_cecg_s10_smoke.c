@@ -11,10 +11,19 @@
 C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
+    core_machine_display_snapshot snapshot;
+    static const type_unsigned_8 text[] = { 'O', 0x07u, 'K', 0x07u };
     C_INT failed = 0;
 
     failed |= vm_model40_fixture_create("t386-s10-even.bin", "t386-s10-odd.bin", &session) !=
         TYPE_STATUS_OK || session == STD_NULL;
+    if (!failed) {
+        failed |= core_machine_memory_write(session->core_machine,
+            CORE_MACHINE_VADP_TEXT_BASE, text, sizeof(text)) != TYPE_STATUS_OK ||
+            core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+                TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+            snapshot.characters[0] != 'O' || snapshot.characters[1] != 'K';
+    }
     if (!failed) {
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL, 0x03u);

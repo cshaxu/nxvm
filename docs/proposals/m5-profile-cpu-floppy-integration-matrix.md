@@ -38,6 +38,13 @@ logical external input label and reached terminal.  It uses independently
 owned per-row scratch locations when persistence is needed, so rows may run in
 parallel unless a concrete shared host resource requires serialization.
 
+For a profile whose firmware requires initialized NVRAM, the profile provides
+an immutable, source-backed default CMOS seed to the existing Core RTC/CMOS
+configuration path.  Core copies that seed once into each session's writable
+RTC state and owns its checksum; ordinary reset preserves the writable state.
+The runner, VM startup, and firmware adapter do not synthesize CMOS writes or
+acknowledge setup prompts.
+
 ## S Decomposition
 
 1. **S1 - matrix admission.** Audit current profile CPU/FDD contracts and
@@ -52,9 +59,9 @@ parallel unless a concrete shared host resource requires serialization.
    registration if one exists.
 4. **S4 - matrix execution and repair.** Run every available row against the
    owner-provided ROM/media corpus, repair any discovered Core/VM/controller
-   defect at its sole owner, and rerun the whole matrix.  A missing external
-   asset is reported as an unavailable row, never converted to a synthetic
-   pass.
+   defect at its sole owner, including any documented profile CMOS seed needed
+   for first boot, and rerun the whole matrix.  A missing external asset is
+   reported as an unavailable row, never converted to a synthetic pass.
 5. **S5 - closure.** Audit the registered matrix against S1, run complete
    unit plus integration gates, and build the task's stripped Release artifact
    without modifying `build/output` YAML.

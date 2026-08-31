@@ -180,9 +180,10 @@ static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
         (intensified ? 8u : 0u));
     palette[3] = core_machine_vadp_rgbi_color((alternate ? 7u : 6u) |
         (intensified ? 8u : 0u));
-    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u ||
-        (adapter->data.ega_controller_configured &&
-        !core_machine_vadp_ega_output_active(adapter))) {
+    if ((adapter->data.ega_controller_configured &&
+        !core_machine_vadp_ega_output_active(adapter)) ||
+        (!adapter->data.ega_controller_configured &&
+        (adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u)) {
         palette[0] = 0u;
         palette[1] = 0u;
         palette[2] = 0u;
@@ -1836,9 +1837,10 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
             visible_bytes - first_bytes) != TYPE_STATUS_OK)) {
         return TYPE_FALSE;
     }
-    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u ||
-        (adapter->data.ega_controller_configured &&
-        !core_machine_vadp_ega_output_active(adapter))) {
+    if ((adapter->data.ega_controller_configured &&
+        !core_machine_vadp_ega_output_active(adapter)) ||
+        (!adapter->data.ega_controller_configured &&
+        (adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u)) {
         for (row = 0u; row < visible_bytes; row += 2u) {
             cells[row] = 0x20u;
             cells[row + 1u] = 0u;
