@@ -12,8 +12,6 @@ is retained separately so this queue remains a short ordering surface.
 is governed by the active packet in `CURRENT.md`; it remains here only as the
 required proposal index while the task is open.
 
-1. [M5 profile/CPU/floppy integration matrix](../proposals/m5-profile-cpu-floppy-integration-matrix.md) - follows the active five-CPU re-audit; makes every supported profile CPU identity and FDD/media geometry an external-asset DOS boot integration row without copying profile or media logic.
-
 The following bounded repairs are first. They preserve the current
 architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite

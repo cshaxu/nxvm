@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration suite on 2026-08-30. S4 is independently accepted at `d0340c35`; this final S5 consumes the same approved finite T513 matrix and its complete replay evidence. |
-| Objective | Close T513 by auditing the accepted 20-row matrix against S1, confirming the repaired sole-owner routes have no residual duplicate path, running required gates, and emitting the task's stripped Release artifact without modifying user-managed YAML. |
-| Non-goals | Do not expand matrix coverage, embed asset paths/hashes/media, modify `build/output` YAML, add product behavior, recover a second profile/FDD/CMOS/HDC/video owner, or turn an asset unavailable row into a synthetic pass. |
-| Reference Baseline | Accepted T513 S1--S4 records, especially the S4 evidence at `d0340c35`; the existing profile/session/controller ownership rules; and the current 0512 artifact baseline. |
-| Candidate Proposal | [M5 profile/CPU/floppy integration matrix](../proposals/m5-profile-cpu-floppy-integration-matrix.md). |
-| Files And ABI Surface | Artifact identity/CMake target, active T513 Status/history/evidence and existing runner registration only as audit subjects. No new source, ABI, asset, profile/controller or YAML surface. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. CMake remains the sole registry/artifact declaration; runner remains sole matrix/configuration/terminal owner; Model 40 profile owns immutable seed material and Core owns writable CMOS/checksum. |
-| Verification | Review the actual S4 diff and complete ledger; rebuild stripped Release `0513`; rerun repository-only Debug unit and owner-managed Release integration suites; run documentation governance and record artifact identity/hash without tracking any external asset. |
-| Expected Markers | All 20 available rows retain their declared terminal; no row is synthetic or serialised; Debug unit and Release integration pass; the artifact retains the runtime debugger but no compiler debug information; `build/output` YAML is unchanged. |
-| Asset Needs | Read-only owner-managed firmware and DOS images; no bytes, hashes or machine-local paths are committed. |
-| Reporting Requirements | Record S4 acceptance, final matrix/gate results, tracked source/test line accounting, retained owner paths, artifact identity/hash and any explicit transfer, without recording local asset paths or hashes. |
-| Stop Conditions | Stop for owner direction if closure finds an unresolved row, a duplicate owner, an artifact/YAML boundary conflict, a required external asset cannot be used read-only, or material outside T513 must change. |
-| Exit Criteria | The complete S1 matrix and every S4 repair are accepted against actual code/evidence; all available rows reach their declared terminal; Debug unit, Release integration and documentation gates pass; stripped 0513 artifact is recorded; T513 history closes with no unclassified in-scope residual. |
+| Identifier Mode | T513 closed after S1--S5 acceptance. |
+| Admission And Approval | Owner approved the finite profile/CPU/FDD external integration suite and its Model 40 sole-owner repair scope; S5 implementation `155dc348` is accepted after actual-diff review. |
+| Objective | Closed: every S1 matrix row is registered and, when available, reaches its declared DOS or installer terminal through the one scenario runner. |
+| Non-goals | No external asset, YAML, second profile/FDD/CMOS/HDC/video owner, synthetic terminal, or unclassified in-scope residual was introduced. |
+| Reference Baseline | T513 S1--S5 [history](../history/M5-T513-profile-cpu-floppy-integration-matrix.md) and [closure audit](../etc/evidence/t513-s5-closure-audit.md). |
+| Candidate Proposal | [Retained T513 proposal](../history/M5-T513-profile-cpu-floppy-integration-matrix-proposal.md). |
+| Files And ABI Surface | One table-driven integration runner; profile-owned Model 40 seed; existing Core RTC/FDC/VADP/HDC owners; and the 0513 artifact declaration. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. |
+| Verification | Debug unit 316/316, Release integration 40/40, documentation governance and stripped Release 0513 pass. |
+| Expected Markers | Met: all 20 available rows reached `date-input` or `installer-ready`, with no synthetic success or forced serialization. |
+| Asset Needs | Owner-managed ROM/media remained read-only external inputs; no bytes, paths or hashes are tracked. |
+| Reporting Requirements | Acceptance, retained owners, line accounting and artifact identity are recorded in the indexed closure audit. |
+| Stop Conditions | None reached. |
+| Exit Criteria | Met: finite matrix exhausted; sole-owner repairs accepted; gates and artifact complete. |
 | Original Owner Request | Single-person dual-role implementation of the complete integration test suite. |
-| Similar-Issue Sweep | Inspect every existing multi-case runner, integration registration, cache asset variable and resource/working-directory declaration for an equivalent one-target/many-cases assumption or hidden shared writable input. |
+| Similar-Issue Sweep | Completed across all matrix registrations, cache inputs, scratch directories and repaired owner routes; no unclassified in-scope hit remains. |
 
 ## Current Technical Baseline
 
@@ -57,6 +57,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 | T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |
 | T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
@@ -64,9 +65,12 @@
 | T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
 | T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
-| T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
 
 ## Recent Governance
+
+- **M5 T513 S5 P4:** coordinator actual-diff review accepts `155dc348` and
+  closes T513. The 20-row ledger, retained sole-owner routes, full gates and
+  stripped 0513 artifact are recorded in the indexed closure audit.
 
 - **M5 T513 S4 P2:** coordinator actual-diff review accepts `d0340c35`.
   The complete external matrix reaches only declared terminals; Model 40 retains
