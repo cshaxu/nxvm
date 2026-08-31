@@ -23,9 +23,9 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0512` emitted
-  `nxvm_0_5_0512.exe` in a stripped Release build, SHA-256
-  `45CA2B2167F64342B65371294BB2CF05DF11C167A79F666B925510FFE1049D14`.
+- **Current developer artifact:** CMake target `vm-0-5-0513` emitted
+  `nxvm_0_5_0513.exe` in a stripped Release build, SHA-256
+  `27231D63A1FB8DD9ADB370B794FD4406760D8BE28F90A52C29E2B16CF0E829E0`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed

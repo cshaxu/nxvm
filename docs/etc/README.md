@@ -61,6 +61,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t513-s1-profile-cpu-floppy-list-2.md` | Integration-matrix owner | T513 S1's matching existing-test inventory and all-row receiver map, including the Model-40 silent-format-selection repair. |
 | `evidence/t513-s2-matrix-runner-consolidation.md` | Integration-matrix owner | T513 S2's one normal external-asset matrix-runner contract, input availability disposition and retained diagnostic-probe boundary. |
 | `evidence/t513-s4-matrix-execution-and-model40-repair.md` | Integration-matrix owner | T513 S4's complete external matrix replay, Model 40 profile-seed and WD1003 owner corrections, and full gate result. |
+| `evidence/t513-s5-closure-audit.md` | Verification owner | T513's complete matrix closure audit, retained sole-owner paths, line accounting, all-gate result and stripped Release 0513 artifact. |
 | `evidence/td-s157-d4-candidate-reconciliation.md` | Governance owner | Td S157 reconciles the obsolete D4 refresh-hold candidate with T419 and T507 S14 closure evidence; physical D4 timing remains separately deferred. |
 | `evidence/td-s156-output-yaml-preservation.md` | Output boundary | Td S156 removes Release-build YAML copying so `build/output` configuration remains user-managed. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |
