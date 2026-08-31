@@ -5,19 +5,19 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30 and explicitly approved the Model 40 default CMOS-seed repair on 2026-08-30. S3 was independently accepted at `b7627cac`; this S4 consumes the same 20-row ledger under the approved T513 proposal. |
-| Objective | Execute every available T513 row against owner-managed ROM/media, repair any discovered sole-owner defect, and make Model 40 first boot consume its documented profile CMOS seed through the existing Core RTC owner before rerunning the complete matrix. |
-| Non-goals | Do not embed asset paths/hashes/media, create a second profile/FDD/terminal owner, add synthetic passes, modify `build/output` YAML, use a runtime CMOS dump or VM/start-script injection, or change a product interface unless a reproduced row requires its sole-owner repair. |
-| Reference Baseline | T513 S1 list, S2 normal runner at `d0c5c684`, S3 isolated registration at `b7627cac`, and the existing profile/session/controller ownership rules. |
+| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration suite on 2026-08-30. S4 is independently accepted at `d0340c35`; this final S5 consumes the same approved finite T513 matrix and its complete replay evidence. |
+| Objective | Close T513 by auditing the accepted 20-row matrix against S1, confirming the repaired sole-owner routes have no residual duplicate path, running required gates, and emitting the task's stripped Release artifact without modifying user-managed YAML. |
+| Non-goals | Do not expand matrix coverage, embed asset paths/hashes/media, modify `build/output` YAML, add product behavior, recover a second profile/FDD/CMOS/HDC/video owner, or turn an asset unavailable row into a synthetic pass. |
+| Reference Baseline | Accepted T513 S1--S4 records, especially the S4 evidence at `d0340c35`; the existing profile/session/controller ownership rules; and the current 0512 artifact baseline. |
 | Candidate Proposal | [M5 profile/CPU/floppy integration matrix](../proposals/m5-profile-cpu-floppy-integration-matrix.md). |
-| Files And ABI Surface | The S2 runner, its CTest cache wiring, `vm/profile/model40`, Model 40 composition, and the sole Core RTC/CMOS configuration owner of any reproduced defect; T513 history/evidence. No asset bytes, path, hash or new parallel session/profile/controller state. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. CMake remains the sole registry; runner remains sole matrix/configuration/terminal owner; Model 40 profile owns an immutable evidence-based seed, Core RTC owns each writable session copy and checksum, and BIOS remains the only guest reader/writer. |
-| Verification | Configure with owner-local cache values; prove seed-copy, checksum and same-session reset persistence through repository-only tests; run all 20 matrix cases, classify terminal/unavailable/failure, apply owner-local repairs, then rerun the whole matrix and complete Debug unit plus documentation governance. |
-| Expected Markers | Every available row reaches `dos-prompt`, `date-input` or `installer-ready`; Model 40 reaches its terminal without `162-System Options` or a synthetic F1 path; missing inputs only skip 77; the 20 cases retain isolated workspaces and no artificial serialization. |
+| Files And ABI Surface | Artifact identity/CMake target, active T513 Status/history/evidence and existing runner registration only as audit subjects. No new source, ABI, asset, profile/controller or YAML surface. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. CMake remains the sole registry/artifact declaration; runner remains sole matrix/configuration/terminal owner; Model 40 profile owns immutable seed material and Core owns writable CMOS/checksum. |
+| Verification | Review the actual S4 diff and complete ledger; rebuild stripped Release `0513`; rerun repository-only Debug unit and owner-managed Release integration suites; run documentation governance and record artifact identity/hash without tracking any external asset. |
+| Expected Markers | All 20 available rows retain their declared terminal; no row is synthetic or serialised; Debug unit and Release integration pass; the artifact retains the runtime debugger but no compiler debug information; `build/output` YAML is unchanged. |
 | Asset Needs | Read-only owner-managed firmware and DOS images; no bytes, hashes or machine-local paths are committed. |
-| Reporting Requirements | Record row IDs, image/firmware class, terminal or unavailable disposition, owner of each repair and before/after complete-matrix results, without recording local paths or hashes. |
-| Stop Conditions | Stop for owner direction if a required input cannot be safely used read-only, a repair would require duplicating profile/FDD/controller state, or external material would need to enter version control. |
-| Exit Criteria | Every available row is actually exercised and reaches a declared terminal; Model 40 seed is profile-derived rather than a captured dump, initializes a valid Core-owned CMOS image once per session, and preserves BIOS writes across normal reset; unavailable rows name their missing input class; any defect is repaired at its sole owner; complete rerun, unit and documentation gates pass. |
+| Reporting Requirements | Record S4 acceptance, final matrix/gate results, tracked source/test line accounting, retained owner paths, artifact identity/hash and any explicit transfer, without recording local asset paths or hashes. |
+| Stop Conditions | Stop for owner direction if closure finds an unresolved row, a duplicate owner, an artifact/YAML boundary conflict, a required external asset cannot be used read-only, or material outside T513 must change. |
+| Exit Criteria | The complete S1 matrix and every S4 repair are accepted against actual code/evidence; all available rows reach their declared terminal; Debug unit, Release integration and documentation gates pass; stripped 0513 artifact is recorded; T513 history closes with no unclassified in-scope residual. |
 | Original Owner Request | Single-person dual-role implementation of the complete integration test suite. |
 | Similar-Issue Sweep | Inspect every existing multi-case runner, integration registration, cache asset variable and resource/working-directory declaration for an equivalent one-target/many-cases assumption or hidden shared writable input. |
 
@@ -67,6 +67,14 @@
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
 
 ## Recent Governance
+
+- **M5 T513 S4 P2:** coordinator actual-diff review accepts `d0340c35`.
+  The complete external matrix reaches only declared terminals; Model 40 retains
+  profile-owned seed material, Core-owned writable CMOS/checksum, two physical
+  1.2 MB drives with independent media, one VADP output predicate and one HDC
+  state machine. Debug unit 316/316, Release integration 40/40 and
+  documentation governance pass. S5 is admitted only for final audit and the
+  required stripped 0513 artifact.
 
 - **M5 T512 S8 P2:** independent actual-diff review accepts the global
   `WAIT`/FPU sweep: the two false 80386 Manual-L3 timing claims are External-L2,
