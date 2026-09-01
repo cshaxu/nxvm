@@ -10,13 +10,13 @@
 #include "../support/vm_model40_byob_fixture.h"
 
 static C_INT t386_s11_session_route(const vm_session *session,
-    core_machine_memory_route expected)
+    type_unsigned_32 physical, core_machine_memory_route expected)
 {
     core_machine_memory_route route;
 
     return core_machine_memory_query_physical(&session->core_machine->executor_memory,
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route) == TYPE_STATUS_OK && route == expected;
+        physical, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) == TYPE_STATUS_OK &&
+        route == expected;
 }
 
 C_INT main(C_VOID)
@@ -31,10 +31,40 @@ C_INT main(C_VOID)
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-        failed |= !t386_s11_session_route(session, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+        failed |= !t386_s11_session_route(session, 0x000a0000u,
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+        failed |= !t386_s11_session_route(session, 0x000b0000u,
+            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+        /* Display enable suppresses presentation, not the CPU's mapped EGA
+         * aperture.  Firmware clears text VRAM before it enables output. */
+        (C_VOID)core_machine_port_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_STATUS);
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
+        failed |= !t386_s11_session_route(session, 0x000a0000u,
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+        (C_VOID)core_machine_port_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_STATUS);
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x20u);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
-        failed |= !t386_s11_session_route(session, CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+        failed |= !t386_s11_session_route(session, 0x000a0000u,
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x00u);
+        failed |= !t386_s11_session_route(session, 0x000a0000u,
+            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x09u);
+        failed |= !t386_s11_session_route(session, 0x000a0000u,
+            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+        failed |= !t386_s11_session_route(session, 0x000b0000u,
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     }
     if (!failed) {
         vm_session_reset(session);
@@ -42,7 +72,8 @@ C_INT main(C_VOID)
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-        failed |= !t386_s11_session_route(session, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+        failed |= !t386_s11_session_route(session, 0x000a0000u,
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     }
     vm_session_destroy(session);
     vm_model40_fixture_remove("t386-s11-even.bin", "t386-s11-odd.bin");

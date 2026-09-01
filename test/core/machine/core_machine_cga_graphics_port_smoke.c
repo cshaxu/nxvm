@@ -18,6 +18,8 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
+    core_machine_display_snapshot_observation observation;
+    type_unsigned_64 generation;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -68,6 +70,14 @@ C_INT main(C_VOID)
         snapshot.palette_rgb[1] != 0x00aa00u ||
         snapshot.palette_rgb[2] != 0xaa0000u ||
         snapshot.palette_rgb[3] != 0xaa5500u || !snapshot.buffer_changed;
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_FALSE, 0u, &observation);
+    generation = observation.generation;
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_TRUE, generation, &observation);
+    failed |= !observation.generation_reliable || observation.capture_required;
+    failed |= !core_machine_cga_graphics_write_byte(&memory, 0u, 0xe4u);
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_TRUE, generation, &observation);
+    failed |= !observation.generation_reliable || !observation.capture_required ||
+        observation.generation == generation;
 
     core_machine_port_write(&port, 0x03d9u, 0x20u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
@@ -97,6 +107,10 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x03d8u, 0x0du);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_FALSE, 0u, &observation);
+    generation = observation.generation;
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_TRUE, generation, &observation);
+    failed |= !observation.generation_reliable || observation.capture_required;
     core_machine_port_write(&port, 0x03d8u, 0x05u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.characters[0] != 0x20u || snapshot.attributes[0] != 0u;

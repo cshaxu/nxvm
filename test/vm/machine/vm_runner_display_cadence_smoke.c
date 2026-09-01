@@ -34,6 +34,7 @@ C_INT main(C_VOID)
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         vm_session_control_reset(&session->control) != TYPE_STATUS_OK ||
+        vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK ||
         core_machine_memory_write(session->core_machine, 0xffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK) {
         failed = 1;

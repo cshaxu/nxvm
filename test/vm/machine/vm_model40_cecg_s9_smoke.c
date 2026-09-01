@@ -25,9 +25,13 @@ C_INT main(C_VOID)
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET, 0u);
         failed |= core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x5fu ||
+            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x7fu ||
             (core_machine_port_read(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_STATUS) & 0x06u) != 0x06u;
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, 0xa5u);
+        failed |= core_machine_port_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0xa5u;
     }
     if (!failed) {
         vm_session_reset(session);

@@ -42,6 +42,7 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     C_INT force)
 {
     core_platform_display_frame frame;
+    core_machine_display_snapshot_observation observation;
     type_unsigned_16 row;
     type_unsigned_16 column;
     C_INT buffer_changed;
@@ -51,6 +52,13 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
 
     if (machine == STD_NULL) return CORE_MACHINE_DISPLAY_KIND_TEXT;
     if (!vm_session_display_publish_is_due(machine, force)) return machine->display_kind;
+    if (!force && core_machine_observe_display_snapshot(machine->core_machine,
+            machine->display_snapshot_generation_valid,
+            machine->display_snapshot_generation, &observation) == TYPE_STATUS_OK &&
+        !observation.capture_required) {
+        return machine->display_kind;
+    }
+    STD_MEMSET(&observation, 0, sizeof(observation));
     if (!core_machine_display_capture_snapshot_from(machine->display_provider,
         &snapshot)) return machine->display_kind;
     machine->display_kind = snapshot.kind;
@@ -95,6 +103,14 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     if (core_platform_presentation_mailbox_publish(machine->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return snapshot.kind;
     machine->display_generation = frame.generation;
+    if (core_machine_observe_display_snapshot(machine->core_machine,
+            TYPE_FALSE, 0u, &observation) == TYPE_STATUS_OK &&
+        observation.generation_reliable) {
+        machine->display_snapshot_generation = observation.generation;
+        machine->display_snapshot_generation_valid = TYPE_TRUE;
+    } else {
+        machine->display_snapshot_generation_valid = TYPE_FALSE;
+    }
     return snapshot.kind;
 }
 

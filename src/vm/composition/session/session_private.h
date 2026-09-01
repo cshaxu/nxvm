@@ -72,6 +72,8 @@ struct vm_session {
     vm_session_start_outcome start_outcome;
     core_product_debugger *debugger;
     type_unsigned_64 display_generation;
+    type_unsigned_64 display_snapshot_generation;
+    type_bool display_snapshot_generation_valid;
     type_unsigned_64 last_display_publish_milliseconds;
     core_machine_display_kind display_kind;
     core_product_debug_target *debug_target;

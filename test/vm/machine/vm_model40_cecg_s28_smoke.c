@@ -41,6 +41,7 @@ C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
     core_machine_display_snapshot snapshot;
+    core_machine_display_snapshot_observation observation;
     C_INT failed = 0;
 
     failed |= vm_model40_fixture_create("t386-s28-even.bin", "t386-s28-odd.bin", &session) !=
@@ -58,7 +59,18 @@ C_INT main(C_VOID)
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x20u);
         failed |= !t386_s28_session_write(session, 0x00u) ||
             !core_machine_display_capture_snapshot_from(session->display_provider,
-            &snapshot) || snapshot.pixels[0] != 0u;
+            &snapshot) || snapshot.pixels[0] != 0u ||
+            core_machine_observe_display_snapshot(session->core_machine,
+                TYPE_FALSE, 0u, &observation) != TYPE_STATUS_OK ||
+            !observation.generation_reliable;
+        if (!failed) {
+            failed |= core_machine_memory_write(session->core_machine,
+                CORE_MACHINE_VADP_EGA_APERTURE_BASE, &(type_unsigned_8){0x5au},
+                sizeof(type_unsigned_8)) != TYPE_STATUS_OK ||
+                core_machine_observe_display_snapshot(session->core_machine,
+                    TYPE_TRUE, observation.generation, &observation) != TYPE_STATUS_OK ||
+                !observation.generation_reliable || observation.capture_required;
+        }
     }
     if (!failed) {
         vm_session_reset(session);

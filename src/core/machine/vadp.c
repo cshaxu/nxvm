@@ -200,6 +200,9 @@ static C_VOID core_machine_vadp_high_res_palette(const t_vadp *adapter,
         core_machine_vadp_rgbi_color(adapter->data.color_select & 0x0fu) : 0u;
 }
 
+static C_VOID core_machine_vadp_active_ega_aperture(const t_vadp *adapter,
+    type_unsigned_32 *out_base, type_unsigned_32 *out_bytes);
+
 static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
 {
     return adapter != STD_NULL && adapter->data.ega_planar_enabled &&
@@ -211,16 +214,36 @@ static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
         adapter->data.attribute_display_enabled;
 }
 
+/* CPU access to the EGA aperture is a mapping decision, not a presentation
+ * decision.  In particular, firmware may clear text memory while display
+ * output is disabled.  Letting that access fall through to ordinary RAM
+ * creates a second owner for video state and corrupts board aliases which
+ * legitimately reuse the conventional video-hole backing. */
+static C_INT core_machine_vadp_ega_aperture_mapped(const t_vadp *adapter)
+{
+    return adapter != STD_NULL && adapter->data.ega_planar_enabled &&
+        adapter->data.ega_planar_vram != 0u && adapter->data.ega_sequencer_configured &&
+        (adapter->data.sequencer[0] & 0x03u) == 0x03u &&
+        adapter->data.ega_controller_configured;
+}
+
+static C_INT core_machine_vadp_ega_cpu_aperture_active(const t_vadp *adapter)
+{
+    return core_machine_vadp_ega_aperture_mapped(adapter) &&
+        (adapter->data.ega_personality !=
+            CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
+         !adapter->data.compaq_cpu_video_memory_disabled);
+}
+
 static C_INT core_machine_vadp_ega_planar_active(const t_vadp *adapter)
 {
     return core_machine_vadp_ega_output_active(adapter) &&
-        (adapter->data.graphics[6] & 0x0cu) == 0x04u &&
         (adapter->data.attribute[16] & 0x01u) != 0u;
 }
 
 static C_INT core_machine_vadp_vga_chain4_active(const t_vadp *adapter)
 {
-    return core_machine_vadp_ega_planar_active(adapter) &&
+    return core_machine_vadp_ega_cpu_aperture_active(adapter) &&
         adapter->data.vga_configured && (adapter->data.sequencer[4] & 0x08u) != 0u;
 }
 
@@ -295,7 +318,15 @@ static C_INT core_machine_vadp_compaq_odd_even_page_active(const t_vadp *adapter
 static type_unsigned_32 core_machine_vadp_ega_planar_offset(const t_vadp *adapter,
     type_unsigned_32 physical)
 {
-    type_unsigned_32 offset = physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE;
+    type_unsigned_32 aperture_base;
+    type_unsigned_32 aperture_bytes;
+    type_unsigned_32 offset;
+
+    core_machine_vadp_active_ega_aperture(adapter, &aperture_base, &aperture_bytes);
+    offset = physical - aperture_base;
+    if (aperture_bytes == 0x00020000u) offset &= 0x0000ffffu;
+    else if (aperture_bytes == 0x00008000u) offset &= 0x00007fffu;
+    if ((adapter->data.sequencer[4] & 0x02u) == 0u) offset &= 0x00003fffu;
 
     if (core_machine_vadp_compaq_odd_even_page_active(adapter)) {
         return ((offset >> 1u) & (CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES - 1u)) |
@@ -303,6 +334,13 @@ static type_unsigned_32 core_machine_vadp_ega_planar_offset(const t_vadp *adapte
             CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES : 0u);
     }
     return offset;
+}
+
+static C_INT core_machine_vadp_ega_cpu_aperture_contains(const t_vadp *adapter,
+    type_unsigned_32 physical, type_native_unsigned bytes)
+{
+    return core_machine_vadp_ega_cpu_aperture_active(adapter) &&
+        core_machine_vadp_ega_aperture_contains(adapter, physical, bytes);
 }
 
 static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
@@ -314,18 +352,16 @@ static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
     type_unsigned_8 *out = (type_unsigned_8 *)destination;
 
     if (adapter == STD_NULL || destination == 0u ||
-        !core_machine_vadp_ega_planar_active(adapter)) {
+        !core_machine_vadp_ega_aperture_mapped(adapter)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
-    if (physical < CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
-        (type_unsigned_64)physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + bytes >
-            CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
+    if (!core_machine_vadp_ega_cpu_aperture_contains(adapter, physical, bytes)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
     for (index = 0u; index < bytes; ++index) {
         type_unsigned_32 address = physical + (type_unsigned_32)index;
         type_unsigned_32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
-            (address - CORE_MACHINE_VADP_EGA_APERTURE_BASE) >> 2u :
+            core_machine_vadp_ega_planar_offset(adapter, address) >> 2u :
             core_machine_vadp_ega_planar_offset(adapter, address);
         type_unsigned_8 plane;
 
@@ -355,12 +391,10 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
     type_native_unsigned index;
 
     if (adapter == STD_NULL || source == 0u ||
-        !core_machine_vadp_ega_planar_active(adapter)) {
+        !core_machine_vadp_ega_aperture_mapped(adapter)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
-    if (physical < CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
-        (type_unsigned_64)physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + bytes >
-            CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
+    if (!core_machine_vadp_ega_cpu_aperture_contains(adapter, physical, bytes)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
     if ((adapter->data.graphics[5] & 0x03u) == 0x03u) {
@@ -369,7 +403,7 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
     for (index = 0u; index < bytes; ++index) {
         type_unsigned_32 address = physical + (type_unsigned_32)index;
         type_unsigned_32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
-            (address - CORE_MACHINE_VADP_EGA_APERTURE_BASE) >> 2u :
+            core_machine_vadp_ega_planar_offset(adapter, address) >> 2u :
             core_machine_vadp_ega_planar_offset(adapter, address);
         type_unsigned_8 plane;
 
@@ -403,15 +437,10 @@ static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (adapter == STD_NULL || !core_machine_vadp_ega_planar_active(adapter) ||
-        (adapter->data.ega_personality ==
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
-        adapter->data.compaq_cpu_video_memory_disabled) ||
+    if (adapter == STD_NULL ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
          access != CORE_MACHINE_MEMORY_ACCESS_WRITE) ||
-        physical < CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
-        (type_unsigned_64)physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + bytes >
-            CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
+        !core_machine_vadp_ega_cpu_aperture_contains(adapter, physical, bytes)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
     return TYPE_STATUS_OK;
@@ -707,7 +736,7 @@ static C_VOID core_machine_vadp_ega_write_observer(C_VOID *owner,
     type_unsigned_64 write_end;
     type_unsigned_64 aperture_end;
 
-    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured ||
+    if (adapter == STD_NULL || !core_machine_vadp_ega_cpu_aperture_active(adapter) ||
         bytes == 0u) return;
     write_end = (type_unsigned_64)physical + bytes;
     {
@@ -998,7 +1027,7 @@ static C_VOID core_machine_vadp_write_compaq_control_mode(t_port *port,
 
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
-    value = port->data.ioByte & 0xdfu;
+    value = port->data.ioByte;
     if (adapter->data.compaq_control_mode != value) {
         adapter->data.compaq_control_mode = value;
         core_machine_vadp_mark_dirty(adapter);
@@ -1012,8 +1041,10 @@ static C_VOID core_machine_vadp_write_compaq_miscellaneous_output(t_port *port,
 
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
+    /* Compaq EGA miscellaneous-output bit 1 gates the CPU aperture.  When
+     * clear, query declines the window and the board RAM decoder owns it. */
     adapter->data.compaq_cpu_video_memory_disabled =
-        (port->data.ioByte & 0x02u) != 0u;
+        (port->data.ioByte & 0x02u) == 0u;
     adapter->data.compaq_color_io_base = (port->data.ioByte & 0x01u) != 0u;
     adapter->data.compaq_clock_switch_select = (port->data.ioByte >> 2u) & 0x03u;
     if (adapter->data.compaq_odd_even_high_page !=
@@ -1583,6 +1614,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     type_bool ega_external_configured;
     type_bool ega_planar_enabled;
     type_bool vga_configured;
+    type_bool cga_memory_configured;
     type_virtual_address ega_planar_vram;
 
     if (adapter == STD_NULL) return;
@@ -1601,6 +1633,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     ega_controller_configured = adapter->data.ega_controller_configured;
     ega_planar_enabled = adapter->data.ega_planar_enabled;
     vga_configured = adapter->data.vga_configured;
+    cga_memory_configured = adapter->data.cga_memory_configured;
     ega_planar_vram = adapter->data.ega_planar_vram;
     crtc_initialized = adapter->data.crtc_initialized;
     STD_MEMCPY(crtc, adapter->data.crtc, sizeof(crtc));
@@ -1640,6 +1673,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     core_machine_vadp_reset_ega_controllers(adapter);
     adapter->data.ega_planar_enabled = ega_planar_enabled;
     adapter->data.vga_configured = vga_configured;
+    adapter->data.cga_memory_configured = cga_memory_configured;
     if (vga_configured) adapter->data.vga_dac_mask = 0xffu;
     adapter->data.ega_planar_vram = ega_planar_vram;
     if (core_machine_vadp_cga_logical_raster_active(adapter)) {
@@ -1717,11 +1751,17 @@ type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
 
 type_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memory)
 {
-    return adapter == STD_NULL || memory == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
-        core_machine_memory_register_device_provider(memory,
-            CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
-            core_machine_vadp_cga_read, core_machine_vadp_cga_write,
-            core_machine_vadp_cga_query, adapter);
+    type_status status;
+
+    if (adapter == STD_NULL || memory == STD_NULL || adapter->data.cga_memory_configured) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_memory_register_device_provider(memory,
+        CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
+        core_machine_vadp_cga_read, core_machine_vadp_cga_write,
+        core_machine_vadp_cga_query, adapter);
+    if (status == TYPE_STATUS_OK) adapter->data.cga_memory_configured = TYPE_TRUE;
+    return status;
 }
 
 type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
@@ -1742,7 +1782,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
         if (planar_vram == 0u) return TYPE_STATUS_NO_MEMORY;
         status = core_machine_memory_register_device_provider_and_write_observer(memory,
             CORE_MACHINE_VADP_EGA_APERTURE_BASE,
-            CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
+            CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES,
             core_machine_vadp_ega_planar_read, core_machine_vadp_ega_planar_write,
             core_machine_vadp_ega_planar_query, adapter,
             core_machine_vadp_ega_write_observer);
@@ -1899,6 +1939,34 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     out_snapshot->buffer_changed = buffer_changed;
     out_snapshot->cursor_changed = cursor_changed;
     return TYPE_TRUE;
+}
+
+C_VOID core_machine_vadp_observe_snapshot(const t_vadp *adapter,
+    type_bool acknowledged_generation_valid,
+    type_unsigned_64 acknowledged_generation,
+    core_machine_display_snapshot_observation *out_observation)
+{
+    C_INT reliable;
+
+    if (out_observation == STD_NULL) return;
+    STD_MEMSET(out_observation, 0, sizeof(*out_observation));
+    if (adapter == STD_NULL) {
+        out_observation->capture_required = TYPE_TRUE;
+        return;
+    }
+    reliable = adapter->data.cga_memory_configured ||
+        (adapter->data.ega_planar_enabled &&
+        !core_machine_vadp_ega_output_active(adapter)) ||
+        core_machine_vadp_vga_mode13_active(adapter) ||
+        core_machine_vadp_ega_planar_display_active(adapter);
+    if (!reliable) {
+        out_observation->capture_required = TYPE_TRUE;
+        return;
+    }
+    out_observation->generation = adapter->data.dirty_generation;
+    out_observation->generation_reliable = TYPE_TRUE;
+    out_observation->capture_required = !acknowledged_generation_valid ||
+        acknowledged_generation != out_observation->generation;
 }
 
 static C_INT core_machine_vadp_capture_graphics_snapshot(t_vadp *adapter,

@@ -93,6 +93,16 @@ typedef struct core_machine_display_snapshot {
     type_unsigned_32 palette_rgb[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES];
 } core_machine_display_snapshot;
 
+/* A copied-frame consumer may acknowledge this opaque generation only after a
+ * successful publish.  VADP offers it only when it owns and observes every
+ * input to the selected frame (CGA/text VRAM, EGA planar, or VGA chain-4).
+ * Other display paths retain normal capture. */
+typedef struct core_machine_display_snapshot_observation {
+    type_unsigned_64 generation;
+    type_bool generation_reliable;
+    type_bool capture_required;
+} core_machine_display_snapshot_observation;
+
 typedef C_INT (*core_machine_display_snapshot_provider)(C_VOID *context,
     core_machine_display_snapshot *out_snapshot);
 

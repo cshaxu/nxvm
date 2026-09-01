@@ -625,6 +625,10 @@ type_status core_machine_mouse_receive_relative(core_machine *machine,
 
 type_status core_machine_capture_display_snapshot(const core_machine *machine,
     core_machine_display_snapshot *out_snapshot);
+type_status core_machine_observe_display_snapshot(const core_machine *machine,
+    type_bool acknowledged_generation_valid,
+    type_unsigned_64 acknowledged_generation,
+    core_machine_display_snapshot_observation *out_observation);
 
 type_status core_machine_configure_display(core_machine *machine,
     const core_machine_display_config *config);

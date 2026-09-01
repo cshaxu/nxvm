@@ -19,6 +19,23 @@ type_status core_machine_capture_display_snapshot(const core_machine *machine,
         TYPE_STATUS_UNSUPPORTED;
 }
 
+type_status core_machine_observe_display_snapshot(const core_machine *machine,
+    type_bool acknowledged_generation_valid,
+    type_unsigned_64 acknowledged_generation,
+    core_machine_display_snapshot_observation *out_observation)
+{
+    if (machine == STD_NULL || out_observation == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    core_machine_vadp_observe_snapshot(&machine->shared_vadp,
+        acknowledged_generation_valid, acknowledged_generation, out_observation);
+    return TYPE_STATUS_OK;
+}
+
 static C_INT core_machine_display_ports_are_vadp(
     const core_machine_display_config *config)
 {

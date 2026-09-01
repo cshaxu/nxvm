@@ -34,7 +34,9 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
+    core_machine_display_snapshot_observation observation;
     const type_unsigned_8 chain4_bytes[] = { 0x10u, 0x11u, 0x12u, 0x13u };
+    type_unsigned_64 vga_generation;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -110,6 +112,14 @@ C_INT main(C_VOID)
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 0x10u || snapshot.pixels[1] != 0x11u ||
         snapshot.pixels[2] != 0x12u || snapshot.pixels[3] != 0x13u;
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_FALSE, 0u, &observation);
+    vga_generation = observation.generation;
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_TRUE, vga_generation, &observation);
+    failed |= !observation.generation_reliable || observation.capture_required;
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x1fu);
+    core_machine_vadp_observe_snapshot(&vadp, TYPE_TRUE, vga_generation, &observation);
+    failed |= !observation.generation_reliable || !observation.capture_required ||
+        observation.generation == vga_generation;
 
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
     failed |= !vadp.data.attribute_data_phase;

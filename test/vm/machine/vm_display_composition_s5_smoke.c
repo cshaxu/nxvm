@@ -49,12 +49,14 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     core_platform_display_frame frame;
     core_machine_display_snapshot snapshot;
+    core_machine_display_snapshot_observation observation;
     core_machine_timeline_observation timeline;
     type_unsigned_8 cga_even = 0x1bu;
     type_unsigned_8 cga_odd = 0xe4u;
     type_unsigned_8 ega_pixel = 0xa5u;
     type_unsigned_64 text_generation;
     type_unsigned_64 cga_generation;
+    type_unsigned_64 ega_snapshot_generation;
     C_INT failed = 0;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
@@ -100,6 +102,33 @@ C_INT main(C_VOID)
         frame.pixels[0] != 15u || frame.pixels[1] != 0u ||
         frame.pixels[2] != 15u || frame.palette_rgb[15] != 0xffffffu ||
         frame.generation <= cga_generation;
+    ega_snapshot_generation = session->display_snapshot_generation;
+    failed |= !session->display_snapshot_generation_valid ||
+        core_machine_observe_display_snapshot(session->core_machine, TYPE_TRUE,
+            ega_snapshot_generation, &observation) != TYPE_STATUS_OK ||
+        !observation.generation_reliable || observation.capture_required ||
+        observation.generation != ega_snapshot_generation;
+    session->last_display_publish_milliseconds = 0u;
+    failed |= vm_session_publish_display(session, TYPE_FALSE) !=
+        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
+            &frame) != TYPE_STATUS_OK || frame.generation <= cga_generation ||
+        session->display_snapshot_generation != ega_snapshot_generation;
+    ega_pixel = 0x5au;
+    failed |= core_machine_memory_write(session->core_machine,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
+        sizeof(ega_pixel)) != TYPE_STATUS_OK ||
+        core_machine_observe_display_snapshot(session->core_machine, TYPE_TRUE,
+            ega_snapshot_generation, &observation) != TYPE_STATUS_OK ||
+        !observation.generation_reliable || !observation.capture_required ||
+        observation.generation == ega_snapshot_generation;
+    session->last_display_publish_milliseconds = 0u;
+    failed |= vm_session_publish_display(session, TYPE_FALSE) !=
+        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
+            &frame) != TYPE_STATUS_OK || frame.generation <= cga_generation ||
+        frame.pixels[0] != 0u || session->display_snapshot_generation !=
+        observation.generation;
 
     vm_session_reset(session);
     failed |= core_machine_get_timeline_observation(session->core_machine,

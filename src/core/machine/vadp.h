@@ -21,6 +21,9 @@ extern "C" {
     (CORE_MACHINE_VADP_CRTC_EGA_LAST + 1u)
 #define CORE_MACHINE_VADP_EGA_APERTURE_BASE 0x000a0000u
 #define CORE_MACHINE_VADP_EGA_APERTURE_BYTES 0x00010000u
+/* Register the full EGA CPU-decode span.  Graphics Controller register 6
+ * selects a smaller active window inside this span. */
+#define CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES 0x00020000u
 #define CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT 5u
 #define CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT \
     CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT
@@ -124,6 +127,7 @@ typedef struct t_vadp_data {
         CORE_MACHINE_DISPLAY_MAX_ROWS * 2u];
     type_unsigned_8 graphics_bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
     type_unsigned_8 cga_vram[CORE_MACHINE_VADP_VIDEO_BYTES];
+    type_bool cga_memory_configured;
     type_unsigned_8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
         CORE_MACHINE_DISPLAY_MAX_ROWS];
     type_unsigned_8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
@@ -167,6 +171,10 @@ C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
     type_unsigned_32 physical, STD_SIZE_T bytes);
 C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot);
+C_VOID core_machine_vadp_observe_snapshot(const t_vadp *adapter,
+    type_bool acknowledged_generation_valid,
+    type_unsigned_64 acknowledged_generation,
+    core_machine_display_snapshot_observation *out_observation);
 C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot);
 
