@@ -29,8 +29,7 @@ typedef struct win32app_run_handle {
     volatile LONG display_ready;
     volatile LONG display_failed;
     volatile LONG stop_requested;
-    core_platform_win32_keyboard_utf16 keyboard_utf16;
-    type_unsigned_16 recovered_virtual_key;
+    core_platform_win32_keyboard_normalizer keyboard_normalizer;
 } win32app_run_handle;
 
 static type_unsigned_8 win32app_mouse_buttons(WPARAM w_param)
@@ -157,9 +156,8 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_SYSKEYDOWN:
         scan_code = vm_platform_win32app_decode_scan_code(lParam);
         virtual_key = (type_unsigned_16)(wParam & 0xffff);
-        if (scan_code == 0u && core_platform_win32_keyboard_resolve_scan(virtual_key) != 0u) {
-            handle->recovered_virtual_key = virtual_key;
-        }
+        if (scan_code == 0u) core_platform_win32_keyboard_note_recovered_key(
+            &handle->keyboard_normalizer, virtual_key);
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 1);
         return 0;
@@ -167,6 +165,8 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_SYSKEYUP:
         scan_code = vm_platform_win32app_decode_scan_code(lParam);
         virtual_key = (type_unsigned_16)(wParam & 0xffff);
+        if (scan_code == 0u) core_platform_win32_keyboard_release_recovered_key(
+            &handle->keyboard_normalizer, virtual_key);
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 0);
         return 0;
@@ -175,15 +175,11 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
          * physical key was already sent above; RDP soft keyboards may supply
          * only a character and therefore leave that field clear. */
         if (((type_unsigned_32)lParam >> 16u & 0xffu) == 0u) {
-            if (handle->recovered_virtual_key != 0u &&
-                core_platform_win32_keyboard_character_matches_virtual_key(
-                    (type_unsigned_16)(wParam & 0xffffu),
-                    handle->recovered_virtual_key)) {
-                handle->recovered_virtual_key = 0u;
+            if (core_platform_win32_keyboard_consume_duplicate_character(
+                    &handle->keyboard_normalizer, (type_unsigned_16)(wParam & 0xffffu))) {
                 return 0;
             }
-            handle->recovered_virtual_key = 0u;
-            vm_platform_win32_keyboard_make_utf16_for(&handle->keyboard_utf16,
+            vm_platform_win32_keyboard_make_utf16_for(&handle->keyboard_normalizer,
                 handle->platform, (type_unsigned_16)(wParam & 0xffffu));
         }
         return 0;

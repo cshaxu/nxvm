@@ -17,7 +17,7 @@ typedef struct win32con_run_handle {
     HANDLE output;
     HANDLE kernel_thread;
     HANDLE display_thread;
-    core_platform_win32_keyboard_utf16 keyboard_utf16;
+    core_platform_win32_keyboard_normalizer keyboard_normalizer;
 } win32con_run_handle;
 
 static vm_platform_host_surface_lease win32_console_lease = {
@@ -59,7 +59,7 @@ static C_VOID win32con_process_input(win32con_run_handle *handle)
         virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
         if (scan_code == 0u && input.Event.KeyEvent.bKeyDown != 0 &&
             input.Event.KeyEvent.uChar.UnicodeChar != L'\0') {
-            vm_platform_win32_keyboard_make_utf16_for(&handle->keyboard_utf16,
+            vm_platform_win32_keyboard_make_utf16_for(&handle->keyboard_normalizer,
                 handle->platform, input.Event.KeyEvent.uChar.UnicodeChar);
         } else vm_platform_win32_keyboard_make_key_for(handle->platform, handle->owner,
             scan_code, virtual_key, input.Event.KeyEvent.bKeyDown != 0);

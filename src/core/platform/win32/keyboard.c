@@ -52,6 +52,34 @@ type_status core_platform_win32_keyboard_submit_key(C_VOID *context,
         context, submit, scan, virtual_key, pressed);
 }
 
+C_VOID core_platform_win32_keyboard_note_recovered_key(
+    core_platform_win32_keyboard_normalizer *state, type_unsigned_16 virtual_key)
+{
+    if (state != STD_NULL) state->recovered_virtual_key =
+        core_platform_win32_keyboard_resolve_scan(virtual_key) == 0u ? 0u : virtual_key;
+}
+
+C_VOID core_platform_win32_keyboard_release_recovered_key(
+    core_platform_win32_keyboard_normalizer *state, type_unsigned_16 virtual_key)
+{
+    if (state != STD_NULL && state->recovered_virtual_key == virtual_key) {
+        state->recovered_virtual_key = 0u;
+    }
+}
+
+C_INT core_platform_win32_keyboard_consume_duplicate_character(
+    core_platform_win32_keyboard_normalizer *state, type_unsigned_16 code_unit)
+{
+    C_INT duplicate;
+
+    if (state == STD_NULL) return 0;
+    duplicate = state->recovered_virtual_key != 0u &&
+        core_platform_win32_keyboard_character_matches_virtual_key(code_unit,
+            state->recovered_virtual_key);
+    state->recovered_virtual_key = 0u;
+    return duplicate;
+}
+
 type_status core_platform_win32_keyboard_submit_character(C_VOID *context,
     core_platform_win32_keyboard_submit submit, type_unsigned_32 scalar)
 {
@@ -90,7 +118,7 @@ type_status core_platform_win32_keyboard_submit_character(C_VOID *context,
 }
 
 type_status core_platform_win32_keyboard_submit_utf16(
-    core_platform_win32_keyboard_utf16 *state, C_VOID *context,
+    core_platform_win32_keyboard_normalizer *state, C_VOID *context,
     core_platform_win32_keyboard_submit submit, type_unsigned_16 code_unit)
 {
     type_unsigned_32 scalar;
