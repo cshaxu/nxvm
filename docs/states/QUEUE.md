@@ -8,6 +8,10 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
+[M5 Win32 Unicode guest-keyboard ingress](../proposals/m5-win32-unicode-guest-keyboard-ingress.md)
+is governed by the active packet in `CURRENT.md`; it remains here only as the
+required proposal index while that task is open.
+
 [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md)
 is governed by the active packet in `CURRENT.md`; it remains here only as the
 required proposal index while the task is open.
@@ -17,8 +21,7 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [M5 Win32 Unicode guest-keyboard ingress](../proposals/m5-win32-unicode-guest-keyboard-ingress.md) - immediately follows the active corrective Model-40 work; converges Console, Window and RDP soft-keyboard input through one physical-key normalization boundary.
-2. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md) - follows guest-keyboard ingress; provides a bounded external Bochs comparison harness through copied Core instruction snapshots, never a Bochs product dependency or source import.
+1. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md) - follows guest-keyboard ingress; provides a bounded external Bochs comparison harness through copied Core instruction snapshots, never a Bochs product dependency or source import.
 
 The completed controller phase-consumer convergence and Model-40 D4
 refresh-hold receiver are retained below for traceability; neither is a

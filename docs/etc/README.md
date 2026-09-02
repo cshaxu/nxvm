@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t503-s1-controller-signal-chain-ledger.md` | Core route owner | T503 S1's finite controller-to-consumer route/state matrix, current sole-owner trace, and S2--S5 repair partition. |
 | `evidence/t503-s2-clock-route-reconciliation.md` | Core route owner | T503 S2's PIT/PIC/refresh/HLT route reconciliation, focused proof and no-duplicate-path disposition. |
 | `evidence/t503-s3-pic-cpu-direct-audit.md` | Core PIC owner | T503 S3's fresh 8259A-to-CPU manual, code and external-reference reconciliation; it records the complete route matrix and any retained timing boundary. |
