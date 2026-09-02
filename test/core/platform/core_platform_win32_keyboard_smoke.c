@@ -24,7 +24,10 @@ C_INT main(C_VOID)
     keyboard_capture capture = {0};
     core_platform_win32_keyboard_utf16 utf16 = {0};
 
-    if (core_platform_win32_keyboard_submit_character(&capture,
+    if (core_platform_win32_keyboard_submit_key(&capture, keyboard_capture_submit,
+            0u, 0x70u, TYPE_TRUE) != TYPE_STATUS_OK || capture.count != 1u ||
+        !capture.events[0].data.key.pressed ||
+        core_platform_win32_keyboard_submit_character(&capture,
             keyboard_capture_submit, 'a') != TYPE_STATUS_OK || capture.count < 2u ||
         !capture.events[capture.count - 2u].data.key.pressed ||
         capture.events[capture.count - 1u].data.key.pressed ||

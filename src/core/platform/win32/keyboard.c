@@ -42,6 +42,16 @@ C_INT core_platform_win32_keyboard_character_matches_virtual_key(
     return mapped != -1 && (type_unsigned_16)(mapped & 0xffu) == virtual_key;
 }
 
+type_status core_platform_win32_keyboard_submit_key(C_VOID *context,
+    core_platform_win32_keyboard_submit submit, type_unsigned_16 scan,
+    type_unsigned_16 virtual_key, C_INT pressed)
+{
+    if (submit == STD_NULL || virtual_key == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (scan == 0u) scan = core_platform_win32_keyboard_resolve_scan(virtual_key);
+    return scan == 0u ? TYPE_STATUS_UNSUPPORTED : core_platform_win32_keyboard_emit(
+        context, submit, scan, virtual_key, pressed);
+}
+
 type_status core_platform_win32_keyboard_submit_character(C_VOID *context,
     core_platform_win32_keyboard_submit submit, type_unsigned_32 scalar)
 {

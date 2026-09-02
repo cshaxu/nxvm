@@ -16,27 +16,6 @@
 
 #include "vm/platform/platform_internal.h"
 
-C_VOID vm_platform_win32_keyboard_make_key_for(
-    const vm_platform_run_context *context, vm_platform_run_handle *owner,
-    type_unsigned_16 scanCode, type_unsigned_16 virtualKey, C_INT pressed)
-{
-    core_platform_input_event event;
-
-    if (context == STD_NULL) return;
-    if (scanCode == 0u) scanCode = core_platform_win32_keyboard_resolve_scan(virtualKey);
-    if (scanCode == 0u) return;
-    if (pressed && virtualKey == VK_F9) {
-        vm_platform_run_handle_report(owner,
-            VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
-        return;
-    }
-    event.kind = CORE_PLATFORM_INPUT_KEY;
-    event.data.key.scan_code = scanCode;
-    event.data.key.virtual_key = virtualKey;
-    event.data.key.pressed = pressed;
-    (C_VOID)vm_platform_host_input_sink_submit(&context->input_sink, &event);
-}
-
 static type_status vm_platform_win32_keyboard_submit(C_VOID *context,
     const core_platform_input_event *event)
 {
@@ -44,6 +23,20 @@ static type_status vm_platform_win32_keyboard_submit(C_VOID *context,
 
     return run_context == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
         vm_platform_host_input_sink_submit(&run_context->input_sink, event);
+}
+
+C_VOID vm_platform_win32_keyboard_make_key_for(
+    const vm_platform_run_context *context, vm_platform_run_handle *owner,
+    type_unsigned_16 scanCode, type_unsigned_16 virtualKey, C_INT pressed)
+{
+    if (context == STD_NULL) return;
+    if (pressed && virtualKey == VK_F9) {
+        vm_platform_run_handle_report(owner,
+            VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
+        return;
+    }
+    (C_VOID)core_platform_win32_keyboard_submit_key((C_VOID *)context,
+        vm_platform_win32_keyboard_submit, scanCode, virtualKey, pressed);
 }
 
 C_VOID vm_platform_win32_keyboard_make_character_for(const vm_platform_run_context *context,

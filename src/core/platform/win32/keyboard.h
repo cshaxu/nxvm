@@ -20,6 +20,11 @@ type_unsigned_16 core_platform_win32_keyboard_resolve_scan(
 C_INT core_platform_win32_keyboard_character_matches_virtual_key(
     type_unsigned_16 code_unit, type_unsigned_16 virtual_key);
 
+/* Publishes a native/recovered physical transition through the caller's sink. */
+type_status core_platform_win32_keyboard_submit_key(C_VOID *context,
+    core_platform_win32_keyboard_submit submit, type_unsigned_16 scan,
+    type_unsigned_16 virtual_key, C_INT pressed);
+
 /* Converts one Windows Unicode scalar to the physical key sequence selected by
  * the active host layout.  It never owns guest state or text input. */
 type_status core_platform_win32_keyboard_submit_character(C_VOID *context,
