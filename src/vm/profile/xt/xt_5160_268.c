@@ -137,11 +137,11 @@ C_INT vm_profile_xt_5160_268_byob_manifest_is_valid(
     const vm_profile_xt_5160_268_byob_manifest *manifest)
 {
     return manifest != STD_NULL && manifest->system_path != STD_NULL &&
-        manifest->system_path[0] != '\0' && manifest->system_sha256 != STD_NULL &&
-        manifest->provenance != STD_NULL && manifest->provenance[0] != '\0' &&
+        manifest->system_path[0] != '\0' &&
+        ((manifest->system_sha256 == STD_NULL) || manifest->system_sha256[0] != '\0') &&
         ((manifest->xebec_path == STD_NULL && manifest->xebec_sha256 == STD_NULL) ||
          (manifest->xebec_path != STD_NULL && manifest->xebec_path[0] != '\0' &&
-          manifest->xebec_sha256 != STD_NULL));
+          (manifest->xebec_sha256 == STD_NULL || manifest->xebec_sha256[0] != '\0')));
 }
 
 type_status vm_profile_xt_5160_268_byob_manifest_load(

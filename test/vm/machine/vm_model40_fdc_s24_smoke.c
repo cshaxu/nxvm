@@ -48,13 +48,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static type_unsigned_8 image[MODEL40_FDC_BYTES];
     const vm_session_config byob_config = {
         .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
-        .model40_firmware = {
-            .even_path = argc == 6 ? argv[1] : STD_NULL,
-            .even_sha256 = argc == 6 ? argv[2] : STD_NULL,
-            .odd_path = argc == 6 ? argv[3] : STD_NULL,
-            .odd_sha256 = argc == 6 ? argv[4] : STD_NULL,
-            .provenance = argc == 6 ? argv[5] : STD_NULL
-        }
+        .bios_path = { argc == 6 ? argv[1] : STD_NULL,
+            argc == 6 ? argv[3] : STD_NULL },
+        .bios_count = argc == 6 ? 2u : 0u
     };
     static const type_unsigned_8 specify[] = {0x03u, 0xdfu, 0x03u};
     static const type_unsigned_8 specify_dma[] = {0x03u, 0xdfu, 0x02u};

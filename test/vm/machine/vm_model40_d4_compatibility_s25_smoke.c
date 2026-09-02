@@ -53,7 +53,9 @@ C_INT main(C_VOID)
         core_machine_memory_write(session->core_machine,
             VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, &write,
             sizeof(write)) != TYPE_STATUS_OK ||
-        !vm_model40_d4_read(session->core_machine, 0x000f0000u, 0x00u) ||
+        /* Immutable firmware accepts the bus write but retains its sole ROM
+         * byte; the companion mapping test covers the same property. */
+        !vm_model40_d4_read(session->core_machine, 0x000f0000u, 0x11u) ||
         core_machine_set_a20(session->core_machine, TYPE_TRUE) != TYPE_STATUS_OK ||
         core_machine_reset(session->core_machine) != TYPE_STATUS_OK ||
         core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,

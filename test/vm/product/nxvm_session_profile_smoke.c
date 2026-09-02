@@ -61,7 +61,7 @@ C_INT main(C_VOID)
     vm_product_session_request model_339_memory = model_339;
     vm_product_session_request model_339_disk = model_339;
     vm_product_session_request model_339_cpu = model_339;
-    vm_product_session_request default_at_firmware = default_at;
+    vm_product_session_request default_at_video_rom = default_at;
     const vm_product_session_request invalid_display = {
         .profile = "default-pc-at", .display = "telepathy", .boot = "rom"
     };
@@ -103,7 +103,7 @@ C_INT main(C_VOID)
         { "model-339-memory", &model_339_memory, STD_NULL },
         { "model-339-disk", &model_339_disk, STD_NULL },
         { "model-339-cpu", &model_339_cpu, STD_NULL },
-        { "default-at-firmware", &default_at_firmware, STD_NULL },
+        { "default-at-video-rom", &default_at_video_rom, STD_NULL },
         { "invalid-display", &invalid_display, STD_NULL },
         { "invalid-boot", &invalid_boot, STD_NULL },
         { "missing-boot-media", &missing_boot_media, STD_NULL },
@@ -115,9 +115,10 @@ C_INT main(C_VOID)
     STD_SIZE_T index;
 
     model_339_memory.memory_bytes = 1024u;
-    STD_STRCPY(model_339_disk.hard_disk, "disk.img");
+    STD_STRCPY(model_339_disk.fixed_disk[0], "disk.img");
+    model_339_disk.fixed_disk_count = 1u;
     STD_STRCPY(model_339_cpu.cpu, "80386");
-    STD_STRCPY(default_at_firmware.model40_provenance, "not allowed");
+    STD_STRCPY(default_at_video_rom.video, "video.rom");
     vm_session_provider_initialize(&provider);
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK)
         goto fail;

@@ -56,10 +56,12 @@ struct vm_session {
     vm_resolved_profile model40_resolved;
     core_machine *core_machine;
     core_machine_dma_request_binding fdc_dma_request;
-    t_fdd fdd;
-    t_hdd hdd;
+    union { t_fdd fdd; t_fdd floppy[VM_SESSION_FLOPPY_SLOT_COUNT]; };
+    union { t_hdd hdd; t_hdd fixed_disk[VM_SESSION_FIXED_DISK_SLOT_COUNT]; };
     t_debug debug;
     t_bios default_bios;
+    type_unsigned_8 pc_at_rom[VM_SESSION_PC_AT_ROM_BYTES];
+    type_bool pc_at_rom_external;
     vm_profile_default_context default_profile_context;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
@@ -85,6 +87,8 @@ struct vm_session {
     type_unsigned_64 pacing_core_origin_ticks;
     type_bool pacing_origin_valid;
     vm_session_config retained_config;
+    type_unsigned_8 cmos_seed[VM_SESSION_CMOS_SEED_BYTES];
+    type_bool cmos_seed_present;
     vm_session_boot_preference boot_preference;
     vm_session_firmware_kind firmware_kind;
     C_INT model40_private;
@@ -101,11 +105,18 @@ struct vm_session {
     type_unsigned_8 *xt_xebec_rom;
     core_machine_fdc_terminal_observation model40_fdc_terminal_observation;
     type_bool model40_fdc_terminal_observation_valid;
-    C_CHAR fdd_image_path[1024];
-    C_CHAR hdd_image_path[1024];
+    union { C_CHAR fdd_image_path[1024];
+        C_CHAR floppy_image_path[VM_SESSION_FLOPPY_SLOT_COUNT][1024]; };
+    union { C_CHAR hdd_image_path[1024];
+        C_CHAR fixed_disk_image_path[VM_SESSION_FIXED_DISK_SLOT_COUNT][1024]; };
+    /* Catalog/request storage is transient; the session owns this resolved
+       presentation-resource path for the lifetime of its platform context. */
+    C_CHAR font_path[1024];
 };
 
 type_status vm_session_storage_initialize(vm_session *machine);
+type_status vm_session_apply_cmos_seed(const vm_session *session,
+    core_machine_plan_topology *topology);
 C_VOID vm_session_storage_finalize(vm_session *machine);
 C_VOID vm_session_apply_boot_preference(vm_session *session);
 C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled);

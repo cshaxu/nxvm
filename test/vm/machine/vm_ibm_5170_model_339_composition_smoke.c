@@ -188,11 +188,48 @@ static C_INT vm_default_profile_remains_ata(C_VOID)
     return failed;
 }
 
+static C_INT vm_model_339_external_rom_route(C_VOID)
+{
+    static const C_CHAR even_path[] = "t515-5170-even.bin";
+    static const C_CHAR odd_path[] = "t515-5170-odd.bin";
+    type_unsigned_8 even[VM_SESSION_PC_AT_ROM_CHIP_BYTES] = {0};
+    type_unsigned_8 odd[VM_SESSION_PC_AT_ROM_CHIP_BYTES] = {0};
+    const vm_session_config config = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339,
+        .bios_path = { even_path, odd_path }, .bios_count = 2u
+    };
+    vm_session *session = STD_NULL;
+    type_unsigned_8 observed[2] = {0};
+    STD_FILE *file;
+    C_INT failed;
+
+    even[0u] = 0x12u;
+    odd[0u] = 0x34u;
+    file = STD_FOPEN(even_path, "wb");
+    if (file == STD_NULL || STD_FWRITE(even, 1u, sizeof(even), file) !=
+        sizeof(even) || STD_FCLOSE(file) != 0) return 1;
+    file = STD_FOPEN(odd_path, "wb");
+    if (file == STD_NULL || STD_FWRITE(odd, 1u, sizeof(odd), file) !=
+        sizeof(odd) || STD_FCLOSE(file) != 0) {
+        (C_VOID)STD_REMOVE(even_path);
+        return 1;
+    }
+    failed = vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL || !session->pc_at_rom_external ||
+        core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
+            sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x12u ||
+        observed[1u] != 0x34u;
+    vm_session_destroy(session);
+    (C_VOID)STD_REMOVE(even_path);
+    (C_VOID)STD_REMOVE(odd_path);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     if (vm_model_339_selected_contract() || vm_model_339_floppy_contract() ||
         vm_model_339_accepts_hdd_boot() ||
-        vm_default_profile_remains_ata()) return 1;
+        vm_default_profile_remains_ata() || vm_model_339_external_rom_route()) return 1;
     STD_PRINTF("M5:T366:S5:MODEL339-COMPOSITION:OK\n");
     STD_PRINTF("M5:T380:S2:MODEL339-NO-XMS-PROBE:OK\n");
     STD_PRINTF("M5:T421:S1:IBM5170-SHARED-SPEAKER:OK\n");
@@ -200,5 +237,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T478:S3:DEFAULT-AT-SESSION-CUTOVER:OK\n");
     STD_PRINTF("M5:T479:S5:IBM5170-PROFILE:OK\n");
     STD_PRINTF("M5:T497:S4:IBM5170-FLOPPY:OK\n");
+    STD_PRINTF("M5:T515:S1:IBM5170-EXTERNAL-ROM:OK\n");
     return 0;
 }

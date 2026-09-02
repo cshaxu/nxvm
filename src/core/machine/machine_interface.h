@@ -307,7 +307,7 @@ typedef struct core_machine_display_config {
 } core_machine_display_config;
 
 #define CORE_MACHINE_RTC_DEFAULT_COUNT 6u
-#define CORE_MACHINE_RTC_DEFAULT_CAPACITY 8u
+#define CORE_MACHINE_RTC_DEFAULT_CAPACITY 30u
 
 /* Board composition supplies a copied RTC phase scale.  L3 means the values
  * are a direct selected-board conversion; L2 means a board ratio estimate.

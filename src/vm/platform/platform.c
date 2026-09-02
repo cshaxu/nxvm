@@ -14,7 +14,8 @@ type_status vm_platform_run_context_create(
     const vm_platform_execution_transport *execution,
     const vm_platform_host_input_sink *input_sink,
     const core_platform_presentation_mailbox *presentation,
-    const core_utils_wait_scope *wait_scope, vm_platform_run_context **out_context)
+    const core_utils_wait_scope *wait_scope, const C_CHAR *font_path,
+    vm_platform_run_context **out_context)
 {
     vm_platform_run_context *context;
 
@@ -27,6 +28,7 @@ type_status vm_platform_run_context_create(
         (vm_platform_host_input_sink){0} : *input_sink;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
+    context->font_path = font_path;
     vm_platform_host_surface_context_initialize(&context->console_surface,
         VM_PLATFORM_HOST_SURFACE_CONSOLE, STD_NULL);
     vm_platform_host_surface_context_initialize(&context->window_surface,

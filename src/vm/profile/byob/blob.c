@@ -95,7 +95,7 @@ static C_INT vm_profile_byob_sha256_matches(const type_unsigned_8 digest[32], co
 C_INT vm_profile_byob_blob_is_valid(const vm_profile_byob_blob *blob)
 {
     return blob != STD_NULL && blob->path != STD_NULL && blob->path[0] != '\0' &&
-        blob->sha256 != STD_NULL && STD_STRLEN(blob->sha256) == 64u && blob->bytes != 0u;
+        (blob->sha256 == STD_NULL || STD_STRLEN(blob->sha256) == 64u) && blob->bytes != 0u;
 }
 
 type_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
@@ -110,6 +110,7 @@ type_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
         count != blob->bytes) { STD_FREE(loaded); return TYPE_STATUS_FAULT; }
     STD_MEMCPY(out_bytes, loaded, count);
     STD_FREE(loaded);
+    if (blob->sha256 == STD_NULL) return TYPE_STATUS_OK;
     vm_profile_byob_sha256(out_bytes, blob->bytes, digest);
     return vm_profile_byob_sha256_matches(digest, blob->sha256) ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }

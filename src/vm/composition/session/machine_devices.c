@@ -15,6 +15,9 @@ type_status vm_session_machine_devices_initialize_media(vm_session *session)
     if (vm_machine_fdd_initialize_with_geometry(&session->fdd,
             vm_profile_floppy_geometry_get(session->model40_private ?
                 session->fdd_media_kind : session->floppy_kind))) return TYPE_STATUS_FAULT;
+    if (session->model40_private && vm_machine_fdd_initialize_with_geometry(
+            &session->floppy[1u], vm_profile_floppy_geometry_get(
+                session->fdd_media_kind))) return TYPE_STATUS_FAULT;
     if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_initialize(&session->hdd);
@@ -105,6 +108,7 @@ C_VOID vm_session_machine_devices_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_reset(&session->fdd);
+    if (session->model40_private) vm_machine_fdd_reset(&session->floppy[1u]);
     if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_reset(&session->hdd);
@@ -115,6 +119,7 @@ C_VOID vm_session_machine_devices_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_finalize(&session->fdd);
+    if (session->model40_private) vm_machine_fdd_finalize(&session->floppy[1u]);
     if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_finalize(&session->hdd);

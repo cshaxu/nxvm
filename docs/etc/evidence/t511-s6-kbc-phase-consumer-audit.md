@@ -6,7 +6,7 @@
 
 Intel *UPI-41A/41AH/42/42AH User's Manual*, order 231318-006 (October 1993),
 owner-managed copy
-`assets/manuals/controllers/intel/231318-006_UPI-41A_42AH_Users_Manual_Oct1993.pdf`,
+`../../../../nxvm-assets/manuals/kbc/intel-upi-41a-42ah-users-manual-oct1993.pdf`,
 defines the host input/output-buffer separation and OBF clear-on-read.
 IBM AT material fixes the 60h/64h, IRQ1, A20 and reset routes.  86Box and
 Bochs corroborate separate queue/IRQ ownership as Other-L2 references only;

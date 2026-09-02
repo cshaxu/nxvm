@@ -32,7 +32,7 @@ C_INT main(C_VOID)
         failed = 1;
         goto done;
     }
-    w32adispInit(context, window, mailbox);
+    w32adispInit(context, window, mailbox, "default-cp437-8x16.bin");
     dc = GetDC(window);
     if (dc == STD_NULL || GetPixel(dc, 0, 0) != expected_background) failed = 1;
 

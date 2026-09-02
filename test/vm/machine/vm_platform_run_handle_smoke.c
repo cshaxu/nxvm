@@ -42,6 +42,8 @@ int main(void)
 
     session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
     if (session == STD_NULL) return 1;
+    STD_STRCPY(session->font_path, "default-cp437-8x16.bin");
+    session->retained_config.font_path = session->font_path;
     vm_session_initialize(session);
     if (!session->active) goto fail;
     vm_platform_run_context_set_window_display(session->platform_run_context, 1);

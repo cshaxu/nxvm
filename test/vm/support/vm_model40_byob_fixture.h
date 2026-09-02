@@ -25,11 +25,12 @@ static inline type_status vm_model40_fixture_create_bytes_with_floppy_format(
 
     if (!vm_model40_fixture_write_bytes(even_path, even_bytes) ||
         !vm_model40_fixture_write_bytes(odd_path, odd_bytes)) return TYPE_STATUS_FAULT;
+    (C_VOID)even_sha256;
+    (C_VOID)odd_sha256;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
-    config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        even_path, even_sha256, odd_path, odd_sha256,
-        STD_NULL, STD_NULL,
-        "project-owned synthetic test input" };
+    config.bios_path[0u] = even_path;
+    config.bios_path[1u] = odd_path;
+    config.bios_count = 2u;
     config.floppy_format = floppy_format;
     return (type_status)vm_session_create(&config, out_session);
 }

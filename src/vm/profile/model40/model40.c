@@ -167,12 +167,12 @@ C_INT vm_profile_model40_byob_manifest_is_valid(
 {
     return manifest != STD_NULL && manifest->even_path != STD_NULL && manifest->odd_path != STD_NULL &&
         manifest->even_path[0] != '\0' && manifest->odd_path[0] != '\0' &&
-        manifest->provenance != STD_NULL && manifest->provenance[0] != '\0' &&
-        manifest->even_sha256 != STD_NULL && manifest->odd_sha256 != STD_NULL &&
-        STD_STRLEN(manifest->even_sha256) == 64u && STD_STRLEN(manifest->odd_sha256) == 64u &&
+        ((manifest->even_sha256 == STD_NULL && manifest->odd_sha256 == STD_NULL) ||
+         (manifest->even_sha256 != STD_NULL && manifest->odd_sha256 != STD_NULL &&
+          manifest->even_sha256[0] != '\0' && manifest->odd_sha256[0] != '\0')) &&
         ((manifest->video_path == STD_NULL && manifest->video_sha256 == STD_NULL) ||
-         (manifest->video_path != STD_NULL && manifest->video_sha256 != STD_NULL &&
-          manifest->video_path[0] != '\0' && STD_STRLEN(manifest->video_sha256) == 64u));
+         (manifest->video_path != STD_NULL && manifest->video_path[0] != '\0' &&
+          (manifest->video_sha256 == STD_NULL || manifest->video_sha256[0] != '\0')));
 }
 
 type_status vm_profile_model40_byob_manifest_load(

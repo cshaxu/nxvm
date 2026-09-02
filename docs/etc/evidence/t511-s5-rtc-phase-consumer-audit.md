@@ -5,7 +5,7 @@
 ## Sources
 
 Motorola *MC146818A Real-Time Clock Plus RAM*, owner-managed copy
-`assets/manuals/controllers/motorola/MC146818A_Real_Time_Clock_Plus_RAM.pdf`,
+`../../../../nxvm-assets/manuals/rtc/motorola-mc146818a-real-time-clock-ram.pdf`,
 defines the calendar/update, periodic and alarm flag sources, Register-C
 acknowledgement and IRQ output.  IBM AT material supplies the separate
 70h/71h index/data, NMI-mask and IRQ8 board route.  Existing direct review

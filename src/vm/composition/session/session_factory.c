@@ -93,61 +93,54 @@ static type_status vm_session_provider_request_configure(
         !vm_session_provider_parse_floppy_format(request->floppy_format,
             &config->floppy_format)) return TYPE_STATUS_INVALID_ARGUMENT;
     config->memory_bytes = request->memory_bytes;
-    config->fdd_image = request->floppy[0] == '\0' ? STD_NULL : request->floppy;
-    config->hdd_image = request->hard_disk[0] == '\0' ? STD_NULL : request->hard_disk;
+    config->floppy_image[0u] = request->floppy_count == 0u ? STD_NULL : request->floppy[0u];
+    config->floppy_image[1u] = request->floppy_count < 2u ? STD_NULL : request->floppy[1u];
+    config->fixed_disk_image[0u] = request->fixed_disk_count == 0u ? STD_NULL :
+        request->fixed_disk[0u];
+    config->fixed_disk_image[1u] = request->fixed_disk_count < 2u ? STD_NULL :
+        request->fixed_disk[1u];
+    config->cmos_seed = request->cmos[0] == '\0' ? STD_NULL : request->cmos;
+    config->font_path = request->font[0] == '\0' ? STD_NULL : request->font;
+    config->bios_count = request->bios_count;
+    config->bios_path[0u] = request->bios_count == 0u ? STD_NULL : request->bios[0u];
+    config->bios_path[1u] = request->bios_count < 2u ? STD_NULL : request->bios[1u];
+    config->video_path = request->video[0] == '\0' ? STD_NULL : request->video;
     config->boot_hdd = !STD_STRCMP(request->boot, "hard_disk");
-    if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
-        config->model40_firmware.even_path = request->model40_even_path;
-        config->model40_firmware.even_sha256 = request->model40_even_sha256;
-        config->model40_firmware.odd_path = request->model40_odd_path;
-        config->model40_firmware.odd_sha256 = request->model40_odd_sha256;
-        config->model40_firmware.provenance = request->model40_provenance;
-    } else if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
-        config->xt_firmware.system_path = request->xt_system_path;
-        config->xt_firmware.system_sha256 = request->xt_system_sha256;
-        config->xt_firmware.xebec_path = request->xt_xebec_path[0] == '\0' ?
-            STD_NULL : request->xt_xebec_path;
-        config->xt_firmware.xebec_sha256 = request->xt_xebec_sha256[0] == '\0' ?
-            STD_NULL : request->xt_xebec_sha256;
-        config->xt_firmware.provenance = request->xt_provenance;
+    if (request->fixed_disk_count > 1u ||
+        request->floppy_count > (config->profile_kind ==
+            VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 ? 2u : 1u)) {
+        return TYPE_STATUS_INVALID_STATE;
     }
+    if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
+        config->cmos_seed != STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    /* Video option ROM mapping is presently a Model-40 board capability.
+       Reject, rather than parse-and-ignore, a request on the other boards. */
     if (config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-        (request->model40_even_path[0] != '\0' || request->model40_even_sha256[0] != '\0' ||
-         request->model40_odd_path[0] != '\0' || request->model40_odd_sha256[0] != '\0' ||
-         request->model40_provenance[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
-    if (config->profile_kind != VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
-        (request->xt_system_path[0] != '\0' || request->xt_system_sha256[0] != '\0' ||
-         request->xt_xebec_path[0] != '\0' || request->xt_xebec_sha256[0] != '\0' ||
-         request->xt_provenance[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
+        config->video_path != STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
+        config->bios_count != 0u && config->bios_count != 2u) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if ((config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+         config->bios_count != 2u) ||
+        (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
+         (config->bios_count == 0u || config->bios_count > 2u))) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
     if (config->profile_kind != VM_SESSION_PROFILE_DEFAULT_PC_AT &&
         config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         (config->memory_bytes != 0u || request->cpu[0] != '\0' ||
-         request->fpu[0] != '\0' || request->floppy_format[0] != '\0')) {
+         request->fpu[0] != '\0')) {
         return TYPE_STATUS_INVALID_STATE;
     }
     if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
-        (STD_STRCMP(request->boot, "rom") || !vm_profile_xt_5160_268_byob_manifest_is_valid(
-            &config->xt_firmware))) return TYPE_STATUS_INVALID_STATE;
-    if ((!STD_STRCMP(request->boot, "floppy") && config->fdd_image == STD_NULL) ||
-        (!STD_STRCMP(request->boot, "hard_disk") && config->hdd_image == STD_NULL) ||
+        STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
+    if ((!STD_STRCMP(request->boot, "floppy") && config->floppy_image[0u] == STD_NULL) ||
+        (!STD_STRCMP(request->boot, "hard_disk") && config->fixed_disk_image[0u] == STD_NULL) ||
         (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
-         config->hdd_image != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
-    if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-        !vm_profile_model40_byob_manifest_is_valid(&config->model40_firmware)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    if (config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-        (config->model40_firmware.even_path != STD_NULL ||
-         config->model40_firmware.even_sha256 != STD_NULL ||
-         config->model40_firmware.odd_path != STD_NULL ||
-         config->model40_firmware.odd_sha256 != STD_NULL ||
-         config->model40_firmware.provenance != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
-    if (config->profile_kind != VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
-        (config->xt_firmware.system_path != STD_NULL || config->xt_firmware.system_sha256 != STD_NULL ||
-         config->xt_firmware.xebec_path != STD_NULL || config->xt_firmware.xebec_sha256 != STD_NULL ||
-         config->xt_firmware.provenance != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
+         config->fixed_disk_image[0u] != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
     return TYPE_STATUS_OK;
 }
 

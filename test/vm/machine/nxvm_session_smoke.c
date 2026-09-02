@@ -8,8 +8,8 @@
 static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {
     vm_session_config config = {
-        .fdd_image = fdd,
-        .hdd_image = hdd,
+        .floppy_image = { fdd },
+        .fixed_disk_image = { hdd },
         .boot_hdd = boot_hdd,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
@@ -91,12 +91,25 @@ static C_INT verify_initialize_once(C_VOID)
     return 0;
 }
 
+static C_INT verify_rejects_unattached_media_slots(C_VOID)
+{
+    vm_session_config second_disk = { .fixed_disk_image = { STD_NULL, "disk.img" } };
+    vm_session_config second_floppy = { .floppy_image = { STD_NULL, "disk.img" } };
+    vm_session *session = STD_NULL;
+
+    if (vm_session_create(&second_disk, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+        session != STD_NULL || vm_session_create(&second_floppy, &session) !=
+        TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL) return 1;
+    return 0;
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3 || verify(argv[1], argv[2], 0) != 0 ||
         verify(argv[1], argv[2], 1) != 0 || verify_created() != 0 ||
         verify_selected_cpu_uses_the_resolved_topology() != 0 ||
-        verify_initialize_once() != 0) return 1;
+        verify_initialize_once() != 0 || verify_rejects_unattached_media_slots() != 0)
+        return 1;
     puts("M5:T7:S1:NXVM-SESSION:OK");
     return 0;
 }

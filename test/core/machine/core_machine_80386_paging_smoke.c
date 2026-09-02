@@ -593,7 +593,7 @@ static C_INT paging_test_cr0_mutable_controls(C_VOID)
         failed |= diagnostic.first_fault.valid || cpu.data.cr0 != mutable ||
             cpu.data.eax != mutable || cpu.data.ecx != mutable ||
             cpu.data.eip != sizeof(write_mutable) || cpu.data.eflags != 0x02u ||
-            cpu.data.ebx != 0u || cpu.data.edx != 0u || cpu.data.esp != 0u ||
+            cpu.data.ebx != 0u || cpu.data.edx != 0x00000300u || cpu.data.esp != 0u ||
             cpu.data.ebp != 0u || cpu.data.esi != 0u || cpu.data.edi != 0u ||
             STD_MEMCMP(&cpu.data.es, &before.data.es, sizeof(cpu.data.es)) != 0 ||
             STD_MEMCMP(&cpu.data.cs, &before.data.cs, sizeof(cpu.data.cs)) != 0 ||
@@ -712,7 +712,7 @@ static C_INT paging_test_no_stale_translation(C_VOID)
                 state.machine, &diagnostic) != TYPE_STATUS_OK;
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid || cpu.data.eax != first_value ||
-            cpu.data.eip != 4u || cpu.data.edx != 0u || cpu.data.cr3 !=
+            cpu.data.eip != 4u || cpu.data.edx != 0x00000300u || cpu.data.cr3 !=
             TEST_PAGE_DIRECTORY || cpu.data.eflags != 0x00000002u;
     }
     if (!failed) {

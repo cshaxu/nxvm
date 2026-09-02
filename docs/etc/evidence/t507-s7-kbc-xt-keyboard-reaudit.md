@@ -7,16 +7,16 @@
 The source authority was read from rendered pages, not OCR alone:
 
 - Intel *UPI-41A/41AH/42/42AH User's Manual* (October 1993), pp. 55--57,
-  `assets/manuals/controllers/intel/231318-006_UPI-41A_42AH_Users_Manual_Oct1993.pdf`.
+  `../../../../nxvm-assets/manuals/kbc/intel-upi-41a-42ah-users-manual-oct1993.pdf`.
   The rendered bus-interface page confirms the DBBIN/DBBOUT separation, OBF
   clear-on-read, IBF on host write, and command/data selection.
 - IBM *Personal Computer AT Technical Reference* (March 1984), System Board
-  pp. 1-37--1-42, `assets/manuals/controllers/ibm/IBM_5170_Technical_Reference_1502243_Mar1984.pdf`.
+  pp. 1-37--1-42, `../../../../nxvm-assets/manuals/platform/ibm-5170-technical-reference-mar1984.pdf`.
   The rendered p. 1-38 diagram confirms the 8042's single system-side
   input/output buffers, keyboard wires, System Reset, and Gate A20.
 - IBM *Personal Computer XT Technical Reference* (April 1983), System Board
   and keyboard pp. 1-5, 1-28, 1-65--1-67,
-  `assets/manuals/controllers/ibm/IBM_5160_Technical_Reference_APR83.pdf`.
+  `../../../../nxvm-assets/manuals/platform/ibm-5160-technical-reference-apr1983.pdf`.
   It is the authority for the separate 8255/PPI, port-B keyboard lines,
   IRQ1, serial frame and reset/BAT relations.
 

@@ -98,11 +98,11 @@ C_INT main(C_VOID)
     if (!write_chip("t386-s26-odd.bin", 1u)) { failed = 1; }
     if (!write_hdd("t386-s26-hdd.img", 0xa5u, 0x5au)) { failed = 1; }
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
-    config.hdd_image = "t386-s26-hdd.img";
-    config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        .even_path = "t386-s26-even.bin", .even_sha256 = even_sha256,
-        .odd_path = "t386-s26-odd.bin", .odd_sha256 = odd_sha256,
-        .provenance = "project-owned synthetic test input" };
+    config.fixed_disk_image[0u] = "t386-s26-hdd.img";
+    (C_VOID)even_sha256; (C_VOID)odd_sha256;
+    config.bios_path[0u] = "t386-s26-even.bin";
+    config.bios_path[1u] = "t386-s26-odd.bin";
+    config.bios_count = 2u;
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL);
     failed |= !failed && (session == STD_NULL || !session->hdd.connect.flagDiskExist ||
         session->core_machine->hdc.connect.config.service.command_ticks != 0u ||
@@ -121,16 +121,16 @@ C_INT main(C_VOID)
         (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
     vm_session_destroy(session);
     session = STD_NULL;
-    config.hdd_image = STD_NULL;
+    config.fixed_disk_image[0u] = STD_NULL;
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL);
     if (!failed) core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, 0x20u);
-    failed |= !failed && (
-        core_machine_port_read(&session->core_machine->executor_port, 0x03f6u) != 0u);
+    failed |= !failed && core_machine_port_read(&session->core_machine->executor_port, 0x03f6u) !=
+        (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
     vm_session_destroy(session);
     session = STD_NULL;
     if (!write_short_hdd("t386-s26-bad-hdd.img")) failed = 1;
-    config.hdd_image = "t386-s26-bad-hdd.img";
+    config.fixed_disk_image[0u] = "t386-s26-bad-hdd.img";
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_FAULT ||
         session != STD_NULL);
     (C_VOID)STD_REMOVE("t386-s26-even.bin");

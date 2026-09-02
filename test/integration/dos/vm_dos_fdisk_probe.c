@@ -66,8 +66,8 @@ static C_INT vm_t287_fdisk_submit(const vm_session *session, const type_unsigned
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     const vm_session_config config = {
-        .fdd_image = argc == 3 ? argv[1] : STD_NULL,
-        .hdd_image = argc == 3 ? argv[2] : STD_NULL,
+        .floppy_image = { argc == 3 ? argv[1] : STD_NULL },
+        .fixed_disk_image = { argc == 3 ? argv[2] : STD_NULL },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };

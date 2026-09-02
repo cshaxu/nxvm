@@ -328,14 +328,24 @@ type_status vm_session_profile_firmware_initialize(vm_session *session)
     return TYPE_STATUS_OK;
 }
 
+C_INT vm_session_profile_firmware_is_external(const vm_session *session)
+{
+    return session != STD_NULL &&
+        session->default_profile_context.external_rom != STD_NULL;
+}
+
 static type_status vm_session_profile_firmware_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     vm_profile_default_context *context = (vm_profile_default_context *)opaque;
 
-    return context == STD_NULL || context->bios == STD_NULL ||
-        !vm_profile_default_bios_materialize(context->bios, firmware) ?
-        TYPE_STATUS_FAULT : TYPE_STATUS_OK;
+    if (context == STD_NULL || context->bios == STD_NULL) return TYPE_STATUS_FAULT;
+    if (context->external_rom != STD_NULL) {
+        return core_machine_firmware_register_immutable_rom(firmware, 0x000f0000u,
+            context->external_rom, VM_SESSION_PC_AT_ROM_BYTES);
+    }
+    return vm_profile_default_bios_materialize(context->bios, firmware) ?
+        TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
 static type_status vm_session_profile_firmware_reset_callback(C_VOID *opaque,
@@ -344,6 +354,7 @@ static type_status vm_session_profile_firmware_reset_callback(C_VOID *opaque,
     vm_profile_default_context *context = (vm_profile_default_context *)opaque;
 
     if (context == STD_NULL || context->bios == STD_NULL) return TYPE_STATUS_FAULT;
+    if (context->external_rom != STD_NULL) return TYPE_STATUS_OK;
     vm_profile_default_bios_reset(context->bios, firmware, context->media_registry,
         context->fdd_media_id, context->hdd_media_id);
     vm_profile_default_cga_reset(context, firmware);
@@ -356,6 +367,7 @@ static type_status vm_session_profile_firmware_after_run(C_VOID *opaque,
     vm_profile_default_context *context = (vm_profile_default_context *)opaque;
 
     if (context == STD_NULL || context->bios == STD_NULL) return TYPE_STATUS_FAULT;
+    if (context->external_rom != STD_NULL) return TYPE_STATUS_OK;
     return vm_profile_default_bios_take_boot_failure_report(firmware) ?
         core_machine_firmware_request_stop(firmware) : TYPE_STATUS_OK;
 }
@@ -370,7 +382,8 @@ static type_status vm_session_profile_firmware_software_interrupt(C_VOID *opaque
 
     if (out_handled == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_handled = TYPE_FALSE;
-    if (context == STD_NULL || context->bios == STD_NULL || vector != 0x15u) {
+    if (context == STD_NULL || context->bios == STD_NULL ||
+        context->external_rom != STD_NULL || vector != 0x15u) {
         return TYPE_STATUS_OK;
     }
     *out_handled = vm_profile_default_bios_handle_int15_block_move(context->bios,

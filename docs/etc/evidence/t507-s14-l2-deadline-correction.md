@@ -5,7 +5,7 @@
 ## Source And Reference Boundary
 
 Intel 8237A order `231466-005` and Intel 8272A order `210608-001` are archived
-under `assets/manuals/controllers/intel`.  The latter states the FDC's
+under `../../../../nxvm-assets/manuals/fdc`.  The latter states the FDC's
 15-us MFM and 31-us FM service bounds.  Visual source review is primary; OCR
 was used only to locate pages.  Read-only comparison covered local 86Box,
 Bochs and PCjs sources.  86Box uses controller-owned timers (IDE base 10 us,

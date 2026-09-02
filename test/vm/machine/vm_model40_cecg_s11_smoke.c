@@ -33,8 +33,10 @@ C_INT main(C_VOID)
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
         failed |= !t386_s11_session_route(session, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+        /* Model 40's low B0000h page is an unpopulated D4 decode.  It is not
+         * ordinary RAM merely because the current EGA map selects A0000h. */
         failed |= !t386_s11_session_route(session, 0x000b0000u,
-            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
         /* Display enable suppresses presentation, not the CPU's mapped EGA
          * aperture.  Firmware clears text VRAM before it enables output. */
         (C_VOID)core_machine_port_read(&session->core_machine->executor_port,
@@ -50,11 +52,11 @@ C_INT main(C_VOID)
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
         failed |= !t386_s11_session_route(session, 0x000a0000u,
-            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x00u);
         failed |= !t386_s11_session_route(session, 0x000a0000u,
-            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
         core_machine_port_write(&session->core_machine->executor_port,

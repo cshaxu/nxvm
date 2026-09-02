@@ -15,6 +15,33 @@
 #define TEST_FDC_SERVICE_PHYSICAL (0x000f0000u + VBIOS_ADDR_FDC_SERVICE)
 #define TEST_VIDEO_SERVICE_PHYSICAL (0x000f0000u + VBIOS_ADDR_VIDEO_SERVICE)
 
+static C_INT test_external_rom_route(C_VOID)
+{
+    static const C_CHAR path[] = "t515-default-pc-at.bin";
+    type_unsigned_8 image[VM_SESSION_PC_AT_ROM_BYTES] = {0};
+    const vm_session_config config = {
+        .bios_path = {path, STD_NULL}, .bios_count = 1u
+    };
+    vm_session *session = STD_NULL;
+    type_unsigned_8 observed[2] = {0};
+    STD_FILE *file;
+    C_INT failed;
+
+    image[0u] = 0x56u;
+    image[1u] = 0x78u;
+    file = STD_FOPEN(path, "wb");
+    if (file == STD_NULL || STD_FWRITE(image, 1u, sizeof(image), file) !=
+        sizeof(image) || STD_FCLOSE(file) != 0) return 1;
+    failed = vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL || !session->pc_at_rom_external ||
+        core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
+            sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x56u ||
+        observed[1u] != 0x78u;
+    vm_session_destroy(session);
+    (C_VOID)STD_REMOVE(path);
+    return failed;
+}
+
 int main(C_VOID)
 {
     vm_session *session = STD_NULL;
@@ -89,7 +116,7 @@ int main(C_VOID)
             bda_mode != 3u;
     }
     vm_session_destroy(session);
-    if (failed) return 1;
+    if (failed || test_external_rom_route()) return 1;
     STD_PRINTF("M5:T289:S2:DEFAULT-ROM-MATERIALIZATION:OK\n");
     return 0;
 }

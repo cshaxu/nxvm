@@ -1,0 +1,15 @@
+schema: nxvm-session
+profile: ibm-5160-model-268
+display: console
+boot: rom
+floppy_format: 360k
+firmware:
+  bios:
+    - path: ../../../nxvm-assets/profiles/ibm-5160/firmware/ibm-5160-16aug82-logical-f0000-fffff.bin
+  video: null
+  cmos: null
+  font: ../default-cp437-8x16.bin
+media:
+  floppy:
+    - path: ../../../nxvm-assets/media/fdd_360k_msdos_500.img
+  fixed_disk: []

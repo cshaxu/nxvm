@@ -6,7 +6,7 @@
 
 The selected-controller authority is Intel *8272A Floppy Disk Controller,
 Preliminary*, order `210608-001` (1982).  Its scanned original is archived as
-`assets/manuals/controllers/intel/210608-001_8272A_Floppy_Disk_Controller_1982.pdf`;
+`../../../../nxvm-assets/manuals/fdc/intel-8272a-floppy-disk-controller-1982.pdf`;
 acquired 2026-08-29; SHA-256
 `C03A1FABE42FE43BB47FBD84042840F7B78B1DDD03E8A117FC7059C3453CC398`.
 Rendered pp. 2, 3, 9, and 11 were read visually; OCR located pages only.  The

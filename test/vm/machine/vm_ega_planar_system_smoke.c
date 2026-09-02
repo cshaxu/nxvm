@@ -73,7 +73,7 @@ static C_INT vm_ega_planar_write_fixture(C_CHAR path[MAX_PATH])
 C_INT main(C_VOID)
 {
     const vm_session_config config = {
-        .fdd_image = "",
+        .floppy_image = { "" },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
@@ -88,7 +88,7 @@ C_INT main(C_VOID)
     if (!vm_ega_planar_write_fixture(path)) goto done;
     {
         vm_session_config fixture_config = config;
-        fixture_config.fdd_image = path;
+        fixture_config.floppy_image[0u] = path;
         if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
             session == STD_NULL) goto done;
     }

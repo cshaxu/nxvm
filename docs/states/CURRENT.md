@@ -2,15 +2,14 @@
 
 ## Current Work
 
-No numeric implementation task is active. The next candidate is selected only
-from [Queue](QUEUE.md).
+**Idle.**
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0514` emits
-  `nxvm_0_5_0514.exe` in a stripped Release build.
+- **Current developer artifact:** CMake target `vm-0-5-0515` emits
+  `nxvm_0_5_0515.exe` in a stripped Release build.
   It retains the runtime debugger and contains no compiler debug information.
-  SHA-256: `DB7971DD1B0218C8D437A6EA77D0A9C701EC53BEE732E80EEE6890AB7687279A`.
+  SHA-256: `855F02436193F5EF4599FB18E0D035FF668441D48DC64BEC4A1206C74C514E1B`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -41,6 +40,7 @@ from [Queue](QUEUE.md).
 
 | Task | Compact result |
 | --- | --- |
+| T515 | Closed: one YAML-relative firmware/media request grammar replaces singular/profile-specific parsing; all seven copied-template release opens pass. Unit 317/317, integration 20 pass/20 owner-media skips, governance and stripped Release 0515 pass. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 | T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
 | T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 | T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |
@@ -48,7 +48,6 @@ from [Queue](QUEUE.md).
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
 | T508 | Reclosed: Core accepts one provenance-neutral copied timing plan; default ATA has an Other-L2 controller quantum and Model-40 an Other-L2 macro pacing axis. The four-profile matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
 | T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
-| T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 
 ## Recent Governance
 

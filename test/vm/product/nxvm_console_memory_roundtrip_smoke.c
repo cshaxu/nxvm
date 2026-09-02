@@ -93,7 +93,7 @@ C_INT main(C_VOID)
     configured_provider.context = &probe;
     machine_provider.set_display_mode = console_memory_set_display;
     if (profile == STD_NULL || input == STD_NULL ||
-        STD_FPUTS("schema: nxvm-session\nprofile: default-pc-at\ncpu: 8086\nfpu: 8087\nmemory_kib: 4294967296\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n", profile) < 0 ||
+        STD_FPUTS("schema: nxvm-session\nprofile: default-pc-at\ncpu: 8086\nfpu: 8087\nmemory_kib: 4294967296\ndisplay: console\nboot: rom\nmedia:\n  floppy: []\n  fixed_disk: []\n", profile) < 0 ||
         STD_FCLOSE(profile) != 0 || STD_FPUTS("1\nexit\n", input) < 0 ||
         fflush(input) != 0 || STD_FSEEK(input, 0L, STD_SEEK_SET) != 0 ||
         core_product_session_manager_create(&configured_provider, &manager) !=

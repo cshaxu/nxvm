@@ -6,7 +6,7 @@
 
 The primary source is Intel *8237A High Performance Programmable DMA
 Controller*, order 231466-005 (September 1993), owner-managed copy
-`assets/manuals/controllers/intel/231466-005_8237A_High_Performance_Programmable_DMA_Controller_Sep1993.pdf`.
+`../../../../nxvm-assets/manuals/dma/intel-8237a-dma-controller-sep1993.pdf`.
 It defines DREQ as held through its corresponding DACK, one transfer's
 S1--S4 service, terminal-count/EOP termination, and the distinct Demand,
 Single and Block transfer rules.  In particular, Block mode permits a held

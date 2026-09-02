@@ -175,8 +175,8 @@ C_INT main(C_VOID)
     C_INT passed = 0;
 
     if (!vm_int13_hdd_write_fixture(fdd_path, hdd_path)) goto done;
-    fixture_config.fdd_image = fdd_path;
-    fixture_config.hdd_image = hdd_path;
+    fixture_config.floppy_image[0u] = fdd_path;
+    fixture_config.fixed_disk_image[0u] = hdd_path;
     if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto done;
     for (instruction = 0u; instruction < VM_INT13_HDD_BOOT_BUDGET; ++instruction) {

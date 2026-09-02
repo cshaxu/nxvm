@@ -1479,12 +1479,12 @@ static C_INT vm_byob_configure(C_INT argc, C_CHAR **argv, vm_session_config *con
 {
     if (argc < 3 || argv == STD_NULL || config == STD_NULL) return 0;
     STD_MEMSET(config, 0, sizeof(*config));
-    config->fdd_image = argv[2];
+    config->floppy_image[0u] = argv[2];
     if (!STD_STRCMP(argv[1], "ibm-5160-model-268")) {
         if (argc != 5) return 0;
         config->profile_kind = VM_SESSION_PROFILE_IBM_5160_MODEL_268;
-        config->xt_firmware = (vm_profile_xt_5160_268_byob_manifest) {
-            argv[3], argv[4], STD_NULL, STD_NULL, "owner-authorized external BYOB probe"};
+        config->bios_path[0u] = argv[3];
+        config->bios_count = 1u;
         return 1;
     }
     if (!STD_STRCMP(argv[1], "ibm-5170-model-339")) {
@@ -1498,12 +1498,10 @@ static C_INT vm_byob_configure(C_INT argc, C_CHAR **argv, vm_session_config *con
     if (!STD_STRCMP(argv[1], "compaq-deskpro-386-model-40")) {
         if (argc != 7 && argc != 8 && argc != 9 && argc != 10) return 0;
         config->profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
-        config->model40_firmware = (vm_profile_model40_byob_manifest) {
-            .even_path = argv[3], .even_sha256 = argv[4],
-            .odd_path = argv[5], .odd_sha256 = argv[6],
-            .video_path = argc >= 9 ? argv[7] : STD_NULL,
-            .video_sha256 = argc >= 9 ? argv[8] : STD_NULL,
-            .provenance = "owner-authorized external BYOB probe"};
+        config->bios_path[0u] = argv[3];
+        config->bios_path[1u] = argv[5];
+        config->bios_count = 2u;
+        config->video_path = argc >= 9 ? argv[7] : STD_NULL;
         if (argc == 8) return vm_byob_parse_floppy_format(argv[7],
             &config->floppy_format);
         if (argc == 10) return vm_byob_parse_floppy_format(argv[9],
@@ -1614,7 +1612,7 @@ int main(C_INT argc, C_CHAR **argv)
         STD_PRINTF("BOOT-PROBE=invalid-arguments\n");
         goto done;
     }
-    config.hdd_image = hdd_image;
+    config.fixed_disk_image[0u] = hdd_image;
     status = vm_session_create(&config, &session);
     if (status != TYPE_STATUS_OK || session == STD_NULL) {
         STD_PRINTF("BOOT-PROBE=session-create-failed-status=%u\n",

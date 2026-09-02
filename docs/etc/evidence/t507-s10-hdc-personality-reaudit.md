@@ -14,9 +14,9 @@ and the selected Compaq route ledger
 [`t386-s5-deskpro-storage-controller.md`](t386-s5-deskpro-storage-controller.md).
 The IBM source is the visually checked archival scan SHA-256
 `B5BF24EA3E63082D5C637DB8B08469C6D4929B4B9F6B7B24C7A211338B42A15F` in
-`assets/manuals/controllers/ibm`; ATA-3 is the born-digital source SHA-256
+`../../../../nxvm-assets/manuals/platform`; ATA-3 is the born-digital source SHA-256
 `FC9D1C42B0B3EF916C790BAFED05E96D9EBA3B221C0E0D3E914E6F948DDD0237` in
-`assets/manuals/controllers/ata`.  The existing Compaq scan remains an
+`../../../../nxvm-assets/manuals/ata`.  The existing Compaq scan remains an
 owner-managed research asset; it establishes the selected port/IRQ route, not
 a drive-service duration.
 

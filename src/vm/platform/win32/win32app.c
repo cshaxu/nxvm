@@ -269,7 +269,7 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
         return 1;
     }
     w32adispInit((w32adisp_context *)platform->window_renderer, handle->window,
-        platform->presentation);
+        platform->presentation, platform->font_path);
     InterlockedExchange((volatile LONG *)&handle->display_ready, 1);
     while (!win32app_atomic_read(&handle->stop_requested) && handle->initial_flip ==
             vm_platform_execution_get_flip_for(handle->platform->execution)) {

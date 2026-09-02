@@ -2,6 +2,83 @@
 
 #include "vm/composition/session/session_private.h"
 
+#include "vm/profile/byob/blob.h"
+
+static type_status vm_session_cmos_seed_load(vm_session *session,
+    const C_CHAR *path)
+{
+    const vm_profile_byob_blob seed = { path, STD_NULL, VM_SESSION_CMOS_SEED_BYTES };
+
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (path == STD_NULL) return TYPE_STATUS_OK;
+    if (vm_profile_byob_blob_load(&seed, session->cmos_seed) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_FAULT;
+    }
+    session->cmos_seed_present = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
+static type_status vm_session_pc_at_rom_load(vm_session *session,
+    const vm_session_config *config)
+{
+    type_status status;
+    STD_SIZE_T index;
+
+    if (session == STD_NULL || config == STD_NULL || config->bios_count == 0u) {
+        return TYPE_STATUS_OK;
+    }
+    if (config->bios_count == 1u) {
+        status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
+            config->bios_path[0u], STD_NULL, VM_SESSION_PC_AT_ROM_BYTES },
+            session->pc_at_rom);
+    } else if (config->bios_count == 2u) {
+        type_unsigned_8 even[VM_SESSION_PC_AT_ROM_CHIP_BYTES];
+        type_unsigned_8 odd[VM_SESSION_PC_AT_ROM_CHIP_BYTES];
+
+        status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
+            config->bios_path[0u], STD_NULL, VM_SESSION_PC_AT_ROM_CHIP_BYTES }, even);
+        if (status == TYPE_STATUS_OK) status = vm_profile_byob_blob_load(
+            &(vm_profile_byob_blob) { config->bios_path[1u], STD_NULL,
+                VM_SESSION_PC_AT_ROM_CHIP_BYTES }, odd);
+        if (status == TYPE_STATUS_OK) {
+            for (index = 0u; index < VM_SESSION_PC_AT_ROM_CHIP_BYTES; ++index) {
+                session->pc_at_rom[index * 2u] = even[index];
+                session->pc_at_rom[index * 2u + 1u] = odd[index];
+            }
+        }
+    } else {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (status != TYPE_STATUS_OK) return status;
+    session->pc_at_rom_external = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
+static const vm_profile_model40_byob_manifest *
+vm_session_model40_firmware(const vm_session_config *config,
+    vm_profile_model40_byob_manifest *out_manifest)
+{
+    if (config == STD_NULL || out_manifest == STD_NULL) return STD_NULL;
+    if (config->bios_count != 2u) return STD_NULL;
+    *out_manifest = (vm_profile_model40_byob_manifest) {
+        config->bios_path[0u], STD_NULL, config->bios_path[1u], STD_NULL,
+        config->video_path, STD_NULL, STD_NULL };
+    return out_manifest;
+}
+
+static const vm_profile_xt_5160_268_byob_manifest *
+vm_session_xt_firmware(const vm_session_config *config,
+    vm_profile_xt_5160_268_byob_manifest *out_manifest)
+{
+    if (config == STD_NULL || out_manifest == STD_NULL) return STD_NULL;
+    if (config->bios_count == 0u || config->bios_count > 2u) return STD_NULL;
+    *out_manifest = (vm_profile_xt_5160_268_byob_manifest) {
+        config->bios_path[0u], STD_NULL,
+        config->bios_count == 2u ? config->bios_path[1u] : STD_NULL,
+        STD_NULL, STD_NULL };
+    return out_manifest;
+}
+
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
@@ -76,6 +153,16 @@ static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     return 1;
 }
 
+static type_status vm_session_retain_font_path(vm_session *session,
+    const C_CHAR *path)
+{
+    if (session == STD_NULL || !vm_session_copy_path(session->font_path,
+            sizeof(session->font_path), path)) return TYPE_STATUS_INVALID_ARGUMENT;
+    session->retained_config.font_path = path == STD_NULL ? STD_NULL :
+        session->font_path;
+    return TYPE_STATUS_OK;
+}
+
 type_status vm_session_submit_host_input(vm_session *session,
     const core_platform_input_event *event)
 {
@@ -85,6 +172,36 @@ type_status vm_session_submit_host_input(vm_session *session,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     return core_platform_input_source_submit(session->input_source, event);
+}
+
+static const C_CHAR *vm_session_config_floppy(const vm_session_config *config,
+    STD_SIZE_T slot)
+{
+    if (config == STD_NULL || slot >= VM_SESSION_FLOPPY_SLOT_COUNT) return STD_NULL;
+    return config->floppy_image[slot];
+}
+
+static const C_CHAR *vm_session_config_fixed_disk(const vm_session_config *config,
+    STD_SIZE_T slot)
+{
+    if (config == STD_NULL || slot >= VM_SESSION_FIXED_DISK_SLOT_COUNT) return STD_NULL;
+    return config->fixed_disk_image[slot];
+}
+
+type_status vm_session_apply_cmos_seed(const vm_session *session,
+    core_machine_plan_topology *topology)
+{
+    STD_SIZE_T index;
+
+    if (session == STD_NULL || topology == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (!session->cmos_seed_present) return TYPE_STATUS_OK;
+    if (!topology->rtc_cmos_present) return TYPE_STATUS_INVALID_STATE;
+    for (index = 0u; index < CORE_MACHINE_RTC_DEFAULT_CAPACITY; ++index) {
+        topology->rtc_cmos.defaults[index] = (core_machine_rtc_default_byte) {
+            (type_unsigned_8)(0x10u + index), session->cmos_seed[0x10u + index] };
+    }
+    topology->rtc_cmos.default_count = CORE_MACHINE_RTC_DEFAULT_CAPACITY;
+    return TYPE_STATUS_OK;
 }
 
 type_status vm_session_get_speed(const vm_session *session,
@@ -214,26 +331,33 @@ static C_VOID vm_session_storage_rollback(vm_session *machine)
     machine->core_machine_plan = STD_NULL;
 }
 
-C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
+static C_INT vm_session_insert_floppy_at(vm_session *session, STD_SIZE_T slot,
+    const C_CHAR *path)
 {
-    C_CHAR candidate[sizeof(session->fdd_image_path)];
+    C_CHAR candidate[sizeof(session->floppy_image_path[slot])];
 
-    if (session == STD_NULL || vm_session_control_is_running(&session->control) ||
+    if (session == STD_NULL || slot >= VM_SESSION_FLOPPY_SLOT_COUNT ||
+        (slot != 0u && !session->model40_private) ||
+        vm_session_control_is_running(&session->control) ||
         !vm_session_copy_path(candidate, sizeof(candidate), path) ||
-        vm_machine_fdd_insert_for(&session->fdd, candidate) != 0 ||
-        !vm_session_copy_path(session->fdd_image_path, sizeof(session->fdd_image_path),
+        vm_machine_fdd_insert_for(&session->floppy[slot], candidate) != 0 ||
+        !vm_session_copy_path(session->floppy_image_path[slot],
+            sizeof(session->floppy_image_path[slot]),
             candidate)) return -1;
-    session->retained_config.fdd_image = session->fdd_image_path;
+    session->retained_config.floppy_image[slot] = session->floppy_image_path[slot];
     vm_session_apply_boot_preference(session);
     return 0;
 }
+
+C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
+{ return vm_session_insert_floppy_at(session, 0u, path); }
 
 C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path)
 {
     if (session == STD_NULL || vm_session_control_is_running(&session->control) ||
         vm_machine_fdd_remove_for(&session->fdd, path) != 0) return -1;
     session->fdd_image_path[0] = '\0';
-    session->retained_config.fdd_image = STD_NULL;
+    session->retained_config.floppy_image[0u] = STD_NULL;
     vm_session_apply_boot_preference(session);
     return 0;
 }
@@ -248,7 +372,7 @@ static C_INT vm_session_insert_hdd_at_startup(vm_session *session,
             sizeof(candidate), path) || vm_machine_hdd_insert(&session->hdd, candidate) != 0 ||
         !vm_session_copy_path(session->hdd_image_path, sizeof(session->hdd_image_path),
             candidate)) return -1;
-    session->retained_config.hdd_image = session->hdd_image_path;
+    session->retained_config.fixed_disk_image[0u] = session->hdd_image_path;
     vm_session_apply_boot_preference(session);
     return 0;
 }
@@ -335,6 +459,8 @@ type_status vm_session_storage_initialize(vm_session *machine)
             return status;
         }
     }
+    status = vm_session_apply_cmos_seed(machine, &topology);
+    if (status != TYPE_STATUS_OK) { vm_session_storage_rollback(machine); return status; }
     status = core_machine_plan_set_topology(machine->core_machine_plan, &topology);
     if (status == TYPE_STATUS_OK) {
         status = core_machine_plan_bind_media_registry(machine->core_machine_plan,
@@ -368,7 +494,8 @@ type_status vm_session_storage_initialize(vm_session *machine)
         vm_profile_default_context_initialize(&machine->default_profile_context,
             &machine->default_bios, machine->media_registry, VM_SESSION_MEDIA_FDD_ID,
             VM_SESSION_MEDIA_HDD_ID,
-            machine->profile->firmware_slot);
+            machine->profile->firmware_slot, machine->pc_at_rom_external ?
+            machine->pc_at_rom : STD_NULL);
     }
     if (core_platform_presentation_mailbox_create(&machine->presentation_mailbox) !=
         TYPE_STATUS_OK) {
@@ -429,14 +556,20 @@ static type_status vm_session_create_xt_byob(const vm_session_config *config,
     vm_session **out_session)
 {
     vm_session *session;
+    vm_profile_xt_5160_268_byob_manifest firmware;
+    const vm_profile_xt_5160_268_byob_manifest *selected_firmware;
     type_status status;
 
-    if (config == STD_NULL || out_session == STD_NULL || config->memory_bytes != 0u ||
+    selected_firmware = vm_session_xt_firmware(config, &firmware);
+    if (config == STD_NULL || out_session == STD_NULL || config->cmos_seed != STD_NULL ||
+        config->memory_bytes != 0u ||
+        (config->floppy_format != VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT &&
+         config->floppy_format != VM_SESSION_FLOPPY_FORMAT_360K) ||
         config->create_fdd ||
         config->create_hdd_cylinders != 0u || config->boot_hdd ||
         config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
         config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
-        !vm_profile_xt_5160_268_byob_manifest_is_valid(&config->xt_firmware)) {
+        !vm_profile_xt_5160_268_byob_manifest_is_valid(selected_firmware)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_session = STD_NULL;
@@ -446,7 +579,7 @@ static type_status vm_session_create_xt_byob(const vm_session_config *config,
     session->firmware_kind = VM_SESSION_FIRMWARE_XT_BYOB;
     session->floppy_kind = VM_PROFILE_FLOPPY_525_360K;
     if (vm_profile_xt_5160_268_resolve(&session->xt_resolved,
-            config->xt_firmware.xebec_path != STD_NULL) != TYPE_STATUS_OK) {
+            selected_firmware->xebec_path != STD_NULL) != TYPE_STATUS_OK) {
         STD_FREE(session);
         return TYPE_STATUS_FAULT;
     }
@@ -464,7 +597,7 @@ static type_status vm_session_create_xt_byob(const vm_session_config *config,
         STD_FREE(session);
         return TYPE_STATUS_NO_MEMORY;
     }
-    status = vm_profile_xt_5160_268_byob_manifest_load(&config->xt_firmware,
+    status = vm_profile_xt_5160_268_byob_manifest_load(selected_firmware,
         session->xt_system_rom, session->xt_xebec_rom, &session->xt_rom);
     if (status != TYPE_STATUS_OK) {
         STD_FREE(session->xt_system_rom);
@@ -473,13 +606,19 @@ static type_status vm_session_create_xt_byob(const vm_session_config *config,
         return status;
     }
     session->retained_config = *config;
-    STD_MEMSET(&session->retained_config.xt_firmware, 0,
-        sizeof(session->retained_config.xt_firmware));
+    if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
+        STD_FREE(session->xt_system_rom);
+        STD_FREE(session->xt_xebec_rom);
+        STD_FREE(session);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
-    if ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session, config->fdd_image)) ||
-        (config->hdd_image != STD_NULL && vm_session_insert_hdd_at_startup(session,
-            config->hdd_image))) {
+    if ((vm_session_config_floppy(config, 0u) != STD_NULL && vm_session_insert_fdd(session,
+            vm_session_config_floppy(config, 0u))) ||
+        (vm_session_config_fixed_disk(config, 0u) != STD_NULL &&
+            vm_session_insert_hdd_at_startup(session,
+                vm_session_config_fixed_disk(config, 0u)))) {
         vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }
@@ -493,11 +632,14 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     vm_session **out_session)
 {
     vm_session *session;
+    vm_profile_model40_byob_manifest firmware;
+    const vm_profile_model40_byob_manifest *selected_firmware;
     type_status status;
 
+    selected_firmware = vm_session_model40_firmware(config, &firmware);
     if (config == STD_NULL || out_session == STD_NULL ||
         (config->memory_bytes != 0u && config->memory_bytes != 1024u * 1024u) ||
-        !vm_profile_model40_byob_manifest_is_valid(&config->model40_firmware)) {
+        !vm_profile_model40_byob_manifest_is_valid(selected_firmware)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_session = STD_NULL;
@@ -517,18 +659,27 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
         session->model40_resolved.values.core.configuration;
     session->controller_timing_rules =
         session->model40_resolved.values.core.controller_timing_rules;
-    status = vm_profile_model40_byob_manifest_load(&config->model40_firmware,
+    status = vm_profile_model40_byob_manifest_load(selected_firmware,
         session->model40_even_rom, session->model40_odd_rom,
         session->model40_video_rom, &session->model40_rom);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
     session->retained_config = *config;
-    STD_MEMSET(&session->retained_config.model40_firmware, 0,
-        sizeof(session->retained_config.model40_firmware));
+    if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
+        STD_FREE(session);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    status = vm_session_cmos_seed_load(session, config->cmos_seed);
+    if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
+    session->retained_config.cmos_seed = STD_NULL;
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
-    if ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session, config->fdd_image)) ||
-        (config->hdd_image != STD_NULL &&
-            vm_session_model40_insert_hdd_at_startup(session, config->hdd_image))) {
+    if ((vm_session_config_floppy(config, 0u) != STD_NULL && vm_session_insert_fdd(session,
+            vm_session_config_floppy(config, 0u))) ||
+        (vm_session_config_floppy(config, 1u) != STD_NULL &&
+            vm_session_insert_floppy_at(session, 1u, vm_session_config_floppy(config, 1u))) ||
+        (vm_session_config_fixed_disk(config, 0u) != STD_NULL &&
+            vm_session_model40_insert_hdd_at_startup(session,
+                vm_session_config_fixed_disk(config, 0u)))) {
         vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }
@@ -548,6 +699,12 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     const vm_session_profile_kind profile_kind = config == STD_NULL ?
         VM_SESSION_PROFILE_DEFAULT_PC_AT : config->profile_kind;
 
+    if (config != STD_NULL &&
+        (vm_session_config_fixed_disk(config, 1u) != STD_NULL ||
+         (config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+          vm_session_config_floppy(config, 1u) != STD_NULL))) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     if (config != STD_NULL && config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
         return vm_session_create_model40_byob(config, out_session);
     }
@@ -583,7 +740,21 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     }
     if (config != STD_NULL) {
         session->retained_config = *config;
-        if (!session->profile->hdc_present && (config->hdd_image != STD_NULL ||
+        if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
+            STD_FREE(session);
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        if (vm_session_cmos_seed_load(session, config->cmos_seed) != TYPE_STATUS_OK) {
+            STD_FREE(session);
+            return TYPE_STATUS_FAULT;
+        }
+        session->retained_config.cmos_seed = STD_NULL;
+        if (vm_session_pc_at_rom_load(session, config) != TYPE_STATUS_OK) {
+            STD_FREE(session);
+            return TYPE_STATUS_FAULT;
+        }
+        if (!session->profile->hdc_present &&
+            (vm_session_config_fixed_disk(config, 0u) != STD_NULL ||
             config->create_hdd_cylinders != 0u || config->boot_hdd)) {
             STD_FREE(session);
             return TYPE_STATUS_INVALID_ARGUMENT;
@@ -602,9 +773,11 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         return TYPE_STATUS_FAULT;
     }
     if (config != STD_NULL &&
-        ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session,
-            config->fdd_image)) ||
-         (config->hdd_image != STD_NULL && vm_session_insert_hdd_at_startup(session, config->hdd_image)))) {
+        ((vm_session_config_floppy(config, 0u) != STD_NULL && vm_session_insert_fdd(session,
+            vm_session_config_floppy(config, 0u))) ||
+         (vm_session_config_fixed_disk(config, 0u) != STD_NULL &&
+            vm_session_insert_hdd_at_startup(session,
+                vm_session_config_fixed_disk(config, 0u))))) {
         vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }

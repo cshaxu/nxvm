@@ -6,7 +6,7 @@
 
 The primary source is Intel *8259A Programmable Interrupt Controller*, order
 231468-003 (December 1988), owner-managed copy
-`assets/manuals/controllers/intel/231468-003_8259A_Programmable_Interrupt_Controller_Dec1988.pdf`.
+`../../../../nxvm-assets/manuals/pic/intel-8259a-interrupt-controller-dec1988.pdf`.
 Its 8086 interrupt sequence states that the first INTA selects the highest
 request, sets its ISR bit and clears its IRR bit; the second supplies the
 vector. A later request is a fresh IRR event, not a continuation of the first

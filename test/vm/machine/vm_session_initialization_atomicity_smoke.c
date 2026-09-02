@@ -269,8 +269,8 @@ static C_INT verify_image_failure(
         .memory_bytes = profile->default_memory_bytes,
         .cpu_profile = profile->cpu_profile,
         .fpu_profile = profile->fpu_profile,
-        .fdd_image = fdd_image,
-        .hdd_image = hdd_image
+        .floppy_image = { fdd_image },
+        .fixed_disk_image = { hdd_image }
     };
     vm_session *session = STD_NULL;
 

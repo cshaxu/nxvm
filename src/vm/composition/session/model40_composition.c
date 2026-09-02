@@ -34,7 +34,7 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
     core_machine_plan *plan)
 {
     const core_machine_fdc_drive_bindings drives = {
-        .media_id = { VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
+        .media_id = { VM_SESSION_MEDIA_FDD_ID, VM_SESSION_MEDIA_FDD_SECONDARY_ID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID },
         /* The selected Model 40 topology has two 1.2 MiB mechanisms.
          * A: may be the only drive with inserted media. */
@@ -148,17 +148,27 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
         0x00fa0000u, 0x000a0000u, 0x00060000u };
     /* D4 decodes the installed 1 MiB upgrade through 1FFFFFh; the option
      * board range and the unselected F00000h--F9FFFFh bank decode open bus. */
-    topology.absent_memory_count = 2u;
+    topology.absent_memory_count = 3u;
     topology.absent_memory[0] = (core_machine_absent_memory_config) {
         0x00200000u, 0x00800000u, 0xffu };
     topology.absent_memory[1] = (core_machine_absent_memory_config) {
         0x00f00000u, 0x000a0000u, 0xffu };
+    /* The board relocates this B0000h window into the selected FB0000h
+     * backing.  Keep the low unpopulated decode open while the high alias
+     * continues to win as its own selected physical mapping. */
+    topology.absent_memory[2] = (core_machine_absent_memory_config) {
+        0x000b0000u, 0x00008000u, 0xffu };
     topology.display_present = TYPE_TRUE;
     topology.display = display;
     topology.dma_present = TYPE_TRUE;
     topology.dma = dma;
     topology.rtc_cmos_present = TYPE_TRUE;
     topology.rtc_cmos = rtc;
+    status = vm_session_apply_cmos_seed(session, &topology);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_model40_storage_rollback(session);
+        return status;
+    }
     status = core_machine_plan_set_topology(session->core_machine_plan, &topology);
     if (status == TYPE_STATUS_OK) {
         status = core_machine_plan_bind_media_registry(session->core_machine_plan,
@@ -207,6 +217,6 @@ C_INT vm_session_model40_insert_hdd_at_startup(vm_session *session, const C_CHAR
     if (vm_machine_hdd_set_geometry(&session->hdd, 925u, 5u, 17u) != TYPE_FALSE) {
         return -1;
     }
-    session->retained_config.hdd_image = session->hdd_image_path;
+    session->retained_config.fixed_disk_image[0u] = session->hdd_image_path;
     return 0;
 }

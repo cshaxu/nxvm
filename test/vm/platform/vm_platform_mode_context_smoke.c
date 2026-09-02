@@ -9,9 +9,9 @@ C_INT main(C_VOID)
     vm_platform_run_context *first = STD_NULL;
     vm_platform_run_context *second = STD_NULL;
 
-    if (vm_platform_run_context_create(STD_NULL, STD_NULL, STD_NULL, STD_NULL,
+    if (vm_platform_run_context_create(STD_NULL, STD_NULL, STD_NULL, STD_NULL, STD_NULL,
             &first) != TYPE_STATUS_OK || vm_platform_run_context_create(STD_NULL,
-            STD_NULL, STD_NULL, STD_NULL, &second) != TYPE_STATUS_OK) goto fail;
+            STD_NULL, STD_NULL, STD_NULL, STD_NULL, &second) != TYPE_STATUS_OK) goto fail;
     vm_platform_run_context_set_window_display(first, 1);
     if (!vm_platform_run_context_get_window_display(first) ||
         vm_platform_run_context_get_window_display(second)) goto fail;

@@ -17,6 +17,7 @@ struct vm_platform_run_context {
     vm_platform_host_input_sink input_sink;
     const core_platform_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;
+    const C_CHAR *font_path;
     vm_platform_host_surface_context console_surface;
     vm_platform_host_surface_context window_surface;
     C_VOID *console_renderer;

@@ -47,14 +47,14 @@ C_INT main(C_VOID)
         !write_chip("t390-s5-odd.bin", 1u) ||
         !write_floppy("t390-s5-floppy.img")) failed = 1;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
-    config.fdd_image = "t390-s5-floppy.img";
-    config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        .even_path = "t390-s5-even.bin", .even_sha256 = even_sha256,
-        .odd_path = "t390-s5-odd.bin", .odd_sha256 = odd_sha256,
-        .provenance = "project-owned synthetic test input" };
+    config.floppy_image[0u] = "t390-s5-floppy.img";
+    (C_VOID)even_sha256; (C_VOID)odd_sha256;
+    config.bios_path[0u] = "t390-s5-even.bin";
+    config.bios_path[1u] = "t390-s5-odd.bin";
+    config.bios_count = 2u;
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->fdd.connect.flagDiskExist ||
-        session->retained_config.fdd_image == STD_NULL ||
+        session->retained_config.floppy_image[0u] == STD_NULL ||
         session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 15u || session->fdd.data.nbyte != 512u ||
         core_machine_media_query(session->media_registry, VM_SESSION_MEDIA_FDD_ID,

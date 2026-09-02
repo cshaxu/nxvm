@@ -1,7 +1,0 @@
-schema: nxvm-session
-profile: default-pc-at
-display: console
-boot: rom
-media:
-  floppy: null
-  hard_disk: null

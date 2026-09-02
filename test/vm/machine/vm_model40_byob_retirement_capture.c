@@ -1053,10 +1053,10 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
         STD_STRCMP(argv[7], "--d4-memory-diagnostic") &&
         STD_STRCMP(argv[7], "--warm-reset-diagnostic"))))) return 0;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
-    config.fdd_image = argv[6];
-    config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        .even_path = argv[1], .even_sha256 = argv[2],
-        .odd_path = argv[3], .odd_sha256 = argv[4], .provenance = argv[5] };
+    config.floppy_image[0u] = argv[6];
+    config.bios_path[0u] = argv[1];
+    config.bios_path[1u] = argv[3];
+    config.bios_count = 2u;
     return vm_session_create(&config, out_session) == TYPE_STATUS_OK &&
         *out_session != STD_NULL;
 }

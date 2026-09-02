@@ -20,7 +20,8 @@ type_status vm_session_provider_lifecycle_initialize(vm_session *session)
 
     status = vm_session_machine_devices_initialize_media(session);
     if (status != TYPE_STATUS_OK) return status;
-    if (session->firmware_kind != VM_SESSION_FIRMWARE_DEFAULT_PC_AT) {
+    if (session->firmware_kind != VM_SESSION_FIRMWARE_DEFAULT_PC_AT ||
+        vm_session_profile_firmware_is_external(session)) {
         return vm_session_bind_media(session);
     }
     status = vm_session_profile_firmware_initialize(session);

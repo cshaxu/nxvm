@@ -4,7 +4,7 @@
 
 - Normative source: Intel *iAPX 86, 88, 186 and 188 User's Manual* (1985),
   order no. 210912-001, Table 2-9, PDF page 183 / printed page 2-17.
-- Asset: owner-managed `assets/manuals/intel/80186/210912-001_iAPX_86_88_186_188_Users_Manual_1985.pdf`.
+- Asset: owner-managed `../../../../nxvm-assets/manuals/cpu/intel-8086-8088-80186-80188-users-manual-1985.pdf`.
 - SHA-256: `2516D66CC75076D9AC9EE048E8420C09C35655FB25ED34DDA6351A3EA4E0AFFF`.
 
 The table gives `BOUND` a **33--35 clock range**. The prior P1 conclusion that

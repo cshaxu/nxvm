@@ -367,7 +367,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (argc != 2 || !vm_mouse_dos_copy_image(argv[1], path, &image, &image_size) ||
         !vm_mouse_dos_install_program(image, image_size, path, &bytes_offset)) goto done;
     stage = 2;
-    config.fdd_image = path;
+    config.floppy_image[0u] = path;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL) goto done;

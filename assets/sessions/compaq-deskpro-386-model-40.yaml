@@ -1,0 +1,17 @@
+schema: nxvm-session
+profile: compaq-deskpro-386-model-40
+display: console
+boot: rom
+floppy_format: 1200k
+firmware:
+  bios:
+    - path: ../../../nxvm-assets/profiles/deskpro-386-model-40/firmware/compaq_deskpro_386_16_rev_e_1986-08-19_even_108285-001.bin
+    - path: ../../../nxvm-assets/profiles/deskpro-386-model-40/firmware/compaq_deskpro_386_16_rev_e_1986-08-19_odd_108284-001.bin
+  video: null
+  cmos: ../../../nxvm-assets/profiles/deskpro-386-model-40/cmos/deskpro-386-model-40-default.cmos
+  font: ../default-cp437-8x16.bin
+media:
+  floppy:
+    - path: ../../../nxvm-assets/media/fdd_1200k_msdos_500a_01.img
+  fixed_disk:
+    - path: ../../../nxvm-assets/media/hdd_40m_deskpro_386_blank.img

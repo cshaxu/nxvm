@@ -217,16 +217,11 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
     static const C_CHAR option_path[] = "t484-s21-xt-option.bin";
     static const C_CHAR fdd_path[] = "t484-s21-xt-fdd.img";
     static const C_CHAR hdd_path[] = "t484-s21-xt-type2.img";
-    static const C_CHAR base_sha256[] =
-        "de2f256064a0af797747c2b97505dc0b9f3df0de4f489eac731c23ae9ca9cc31";
-    static const C_CHAR option_sha256[] =
-        "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47";
     vm_session_config config = {
         .profile_kind = VM_SESSION_PROFILE_IBM_5160_MODEL_268,
-        .fdd_image = fdd_path,
-        .hdd_image = hdd_path,
-        .xt_firmware = {base_path, base_sha256, STD_NULL, STD_NULL,
-            "project-owned synthetic test input"}
+        .floppy_image = { fdd_path },
+        .fixed_disk_image = { hdd_path },
+        .bios_path = {base_path, STD_NULL}, .bios_count = 1u
     };
     vm_session *session = STD_NULL;
     vm_session_reset_vector vector;
@@ -246,14 +241,11 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
     failed |= !failed && vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK;
     vm_session_destroy(session);
     session = STD_NULL;
-    config.xt_firmware.xebec_path = option_path;
-    config.xt_firmware.xebec_sha256 = option_sha256;
+    config.bios_path[1u] = option_path;
+    config.bios_count = 2u;
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
     vm_session_destroy(session);
     session = STD_NULL;
-    config.xt_firmware.system_sha256 = "invalid";
-    failed |= vm_session_create(&config, &session) != TYPE_STATUS_FAULT || session != STD_NULL;
-    config.xt_firmware.system_sha256 = base_sha256;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT;
     (C_VOID)STD_REMOVE(base_path);
@@ -266,8 +258,6 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
 static C_INT vm_xt_5160_268_request_is_fixed(C_VOID)
 {
     static const C_CHAR base_path[] = "t484-s21-xt-request.bin";
-    static const C_CHAR base_sha256[] =
-        "de2f256064a0af797747c2b97505dc0b9f3df0de4f489eac731c23ae9ca9cc31";
     vm_product_session_request request = {
         .profile = "ibm-5160-model-268", .display = "console", .boot = "rom"
     };
@@ -280,9 +270,8 @@ static C_INT vm_xt_5160_268_request_is_fixed(C_VOID)
 
     if (!vm_xt_5160_268_write_blob(base_path,
             VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES)) return 1;
-    STD_STRCPY(request.xt_system_path, base_path);
-    STD_STRCPY(request.xt_system_sha256, base_sha256);
-    STD_STRCPY(request.xt_provenance, "project-owned synthetic test input");
+    STD_STRCPY(request.bios[0], base_path);
+    request.bios_count = 1u;
     vm_session_provider_initialize(&provider);
     failed |= provider.open(provider.context, 0u, &options, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;

@@ -18,7 +18,6 @@ C_INT main(C_VOID)
     };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    const core_machine_cpu_execution_point *last;
     STD_SIZE_T index;
 
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
@@ -36,8 +35,9 @@ C_INT main(C_VOID)
     if (
         core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
         core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK) goto fail;
-    last = &diagnostic.recent[diagnostic.recent_count - 1u];
-    if (diagnostic.recent_count != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+    /* Development instruction history is compiled out of the product; fault
+     * snapshots remain the stable diagnostic contract in every build. */
+    if (diagnostic.recent_count != 0u ||
         result.reason != CORE_MACHINE_STOP_FAULT ||
         result.detail != VCPUINS_EXCEPT_UD ||
         !diagnostic.first_fault.valid ||
@@ -46,9 +46,7 @@ C_INT main(C_VOID)
         diagnostic.first_fault.point.linear_pc !=
             CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
         diagnostic.first_fault.point.bytes[0] != 0xd6u ||
-        diagnostic.first_fault.point.bytes[1] != 0x90u ||
-        last->linear_pc != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
-        last->bytes[0] != 0xd6u || last->bytes[1] != 0x90u) goto fail;
+        diagnostic.first_fault.point.bytes[1] != 0x90u) goto fail;
     core_machine_destroy(machine);
     STD_PRINTF("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
     return 0;

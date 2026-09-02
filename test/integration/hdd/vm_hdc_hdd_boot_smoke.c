@@ -80,7 +80,7 @@ done:
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     const vm_session_config config = {
-        .hdd_image = argc == 2 ? argv[1] : STD_NULL,
+        .fixed_disk_image = { argc == 2 ? argv[1] : STD_NULL },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };

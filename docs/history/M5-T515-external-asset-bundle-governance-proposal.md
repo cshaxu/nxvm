@@ -19,11 +19,11 @@ approves its retention policy.  The proposed logical shape is deliberately
 small:
 
 ```
+nxvm/assets/sessions/              # copyable YAML templates
 nxvm-assets/
-  firmware/<machine-or-board>/<logical-slot>/
-  configuration/<machine>/
-  media/<test-purpose>/
-  manifests/
+  profiles/<profile>/              # ROM, CMOS and profile manifest
+  media/                           # FDD/HDD inputs and manifest
+  manuals/                         # original manuals only
 ```
 
 The root itself is owner-managed and is never written into tracked source,
@@ -33,6 +33,31 @@ SHA-256, intended machine/test purpose, and an owner provenance statement;
 it contains no redistributable bytes, credentials, downloaded-source recipe,
 or absolute path.  ROM slots describe only the mapping role required by a
 machine; they never create a firmware catalogue or default runtime dependency.
+
+## Session YAML boundary
+
+Each copyable session file is the sole request authority.  Its accepted asset
+surface is intentionally only:
+
+```yaml
+firmware:
+  bios:
+    - path: ../nxvm-assets/profiles/<profile>/firmware/<rom>
+  video: null
+  cmos: ../nxvm-assets/profiles/<profile>/cmos/<seed>
+  font: default-cp437-8x16.bin
+media:
+  floppy:
+    - path: ../nxvm-assets/media/<image>
+  fixed_disk:
+    - path: ../nxvm-assets/media/<image>
+```
+
+Paths are YAML-relative unless absolute.  Array order is physical attachment
+order, never guest drive-letter or partition meaning.  YAML neither discovers
+assets nor embeds size/hash validation.  The VM validates only whether the
+frozen profile has the declared physical slots; Core owns live devices and
+media state.
 
 ## Frozen scope
 

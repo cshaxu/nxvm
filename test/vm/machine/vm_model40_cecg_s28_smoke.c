@@ -64,12 +64,14 @@ C_INT main(C_VOID)
                 TYPE_FALSE, 0u, &observation) != TYPE_STATUS_OK ||
             !observation.generation_reliable;
         if (!failed) {
+            /* The selected high page remains VADP-owned, so a Core write must
+             * publish a fresh copied-frame generation. */
             failed |= core_machine_memory_write(session->core_machine,
                 CORE_MACHINE_VADP_EGA_APERTURE_BASE, &(type_unsigned_8){0x5au},
                 sizeof(type_unsigned_8)) != TYPE_STATUS_OK ||
                 core_machine_observe_display_snapshot(session->core_machine,
                     TYPE_TRUE, observation.generation, &observation) != TYPE_STATUS_OK ||
-                !observation.generation_reliable || observation.capture_required;
+                !observation.generation_reliable || !observation.capture_required;
         }
     }
     if (!failed) {

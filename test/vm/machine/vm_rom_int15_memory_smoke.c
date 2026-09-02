@@ -124,7 +124,7 @@ static C_INT vm_int15_memory_run(vm_session_profile_kind profile_kind,
     if (!vm_int15_memory_write_fixture(path, image_bytes)) goto done;
     config.profile_kind = profile_kind;
     config.floppy_format = format;
-    config.fdd_image = path;
+    config.floppy_image[0u] = path;
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto done;
     for (step = 0u; step < VM_INT15_MEMORY_BOOT_BUDGET; ++step) {
@@ -180,7 +180,7 @@ static C_INT vm_int15_move_run(vm_session_profile_kind profile_kind,
     table[0x1cu] = TYPE_MASK_UNSIGNED_8(target_physical >> 16u);
     config.profile_kind = profile_kind;
     config.floppy_format = format;
-    config.fdd_image = path;
+    config.floppy_image[0u] = path;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         core_machine_memory_write(session->core_machine, 0x0600u, table,

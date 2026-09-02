@@ -230,6 +230,7 @@ static C_INT core_machine_vadp_ega_aperture_mapped(const t_vadp *adapter)
 static C_INT core_machine_vadp_ega_cpu_aperture_active(const t_vadp *adapter)
 {
     return core_machine_vadp_ega_aperture_mapped(adapter) &&
+        (adapter->data.graphics[5] & 0x04u) == 0u &&
         (adapter->data.ega_personality !=
             CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
          !adapter->data.compaq_cpu_video_memory_disabled);
@@ -757,8 +758,13 @@ static C_VOID core_machine_vadp_ega_write_observer(C_VOID *owner,
     type_unsigned_64 write_end;
     type_unsigned_64 aperture_end;
 
-    if (adapter == STD_NULL || !core_machine_vadp_ega_cpu_aperture_active(adapter) ||
-        bytes == 0u) return;
+    /* This observer owns presentation freshness for both planar EGA and the
+     * non-planar memory-backed EGA configuration.  CPU mapping still belongs
+     * to the planar provider when present; requiring that provider here made
+     * the non-planar path silently miss real writes. */
+    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured ||
+        bytes == 0u || !core_machine_vadp_ega_aperture_contains(adapter,
+            physical, bytes)) return;
     if (core_machine_vadp_compaq_b000_compatibility_contains(adapter, physical, bytes)) {
         core_machine_vadp_mark_dirty(adapter);
         return;
@@ -1066,10 +1072,10 @@ static C_VOID core_machine_vadp_write_compaq_miscellaneous_output(t_port *port,
 
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
-    /* Compaq EGA miscellaneous-output bit 1 gates the CPU aperture.  When
-     * clear, query declines the window and the board RAM decoder owns it. */
+    /* Compaq EGA miscellaneous-output bit 1 disables the CPU aperture.  The
+     * clear state leaves the window decoded by the VADP provider. */
     adapter->data.compaq_cpu_video_memory_disabled =
-        (port->data.ioByte & 0x02u) == 0u;
+        (port->data.ioByte & 0x02u) != 0u;
     adapter->data.compaq_color_io_base = (port->data.ioByte & 0x01u) != 0u;
     adapter->data.compaq_clock_switch_select = (port->data.ioByte >> 2u) & 0x03u;
     if (adapter->data.compaq_odd_even_high_page !=

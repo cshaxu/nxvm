@@ -12,8 +12,8 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {
     vm_session_config config = {
         .memory_bytes = 16384u * 1024u,
-        .fdd_image = fdd,
-        .hdd_image = hdd,
+        .floppy_image = { fdd },
+        .fixed_disk_image = { hdd },
         .boot_hdd = boot_hdd,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE

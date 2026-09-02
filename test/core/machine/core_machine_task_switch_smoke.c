@@ -542,7 +542,9 @@ static C_INT task_switch_expect_task_gate_rejection(
                     profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                         VCPUINS_EXCEPT_NP : VCPUINS_EXCEPT_DF))) ||
             after.data.tr.selector != 0x28u || after.data.eax != 0x1111u ||
-            after.data.ecx != 0u || after.data.edx != 0u || after.data.ebx != 0u ||
+            after.data.ecx != 0u || after.data.edx !=
+                (profile == CORE_MACHINE_CPU_PROFILE_80386 ? 0x00000300u : 0u) ||
+            after.data.ebx != 0u ||
             after.data.esi != 0u || after.data.edi != 0u;
     }
     core_machine_destroy(fixture.machine);

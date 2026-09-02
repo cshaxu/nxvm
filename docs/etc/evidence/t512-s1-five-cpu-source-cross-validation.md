@@ -4,7 +4,7 @@
 
 ## Method And Evidence Boundary
 
-Every original source below is owner-managed under `assets/manuals`. The
+Every original source below is owner-managed under `../../../../nxvm-assets/manuals`. The
 PDF metadata reports Adobe Paper Capture for every selected copy. Extracted
 text is therefore navigation only; cover, section-heading and representative
 instruction-table pages were rendered and visually checked. The scans are

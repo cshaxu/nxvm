@@ -8,7 +8,7 @@ The selected primary source is IBM, *Technical Reference: Options and
 Adapters, Volume 2*, revised April 1984, SHA-256
 `B5BF24EA3E63082D5C637DB8B08469C6D4929B4B9F6B7B24C7A211338B42A15F`.
 Its owner-managed scan is archived as
-`assets/manuals/controllers/ibm/IBM_Technical_Reference_Options_and_Adapters_Volume_2_Apr1984.pdf`.
+`../../../../nxvm-assets/manuals/platform/ibm-pc-options-adapters-technical-reference-vol2-apr1984.pdf`.
 Rendered CGA pp. 1 and 15--25 and EGA pp. 1, 12--68 were read visually; OCR
 located pages only.  The existing complete CGA List 1
 [`t467-s1-cga-function-timing-checklist.md`](../research/t467-s1-cga-function-timing-checklist.md)

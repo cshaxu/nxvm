@@ -11,10 +11,13 @@ C_INT main(C_VOID)
 {
     vm_session *first = STD_NULL;
     vm_session *second = STD_NULL;
+    const vm_session_config config = {
+        .font_path = "default-cp437-8x16.bin"
+    };
     C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &first) != TYPE_STATUS_OK ||
-        vm_session_create(STD_NULL, &second) != TYPE_STATUS_OK) goto done;
+    if (vm_session_create(&config, &first) != TYPE_STATUS_OK ||
+        vm_session_create(&config, &second) != TYPE_STATUS_OK) goto done;
     vm_platform_run_context_set_window_display(first->platform_run_context, 1);
     vm_platform_run_context_set_window_display(second->platform_run_context, 1);
     vm_session_start(first);

@@ -166,7 +166,7 @@ static C_INT vm_profile_floppy_boot_configure(const vm_profile_floppy_boot_row *
     if (row == STD_NULL || argv == STD_NULL || out_config == STD_NULL) return 0;
     *out_config = (vm_session_config) {0};
     out_config->profile_kind = row->profile_kind;
-    out_config->fdd_image = argv[2];
+    out_config->floppy_image[0u] = argv[2];
     if (row->profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
         if (argc != 3) return 0;
         out_config->cpu_profile = row->cpu_profile;
@@ -181,20 +181,19 @@ static C_INT vm_profile_floppy_boot_configure(const vm_profile_floppy_boot_row *
     }
     if (row->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
         if (argc != 5 && argc != 7) return 0;
-        out_config->xt_firmware = (vm_profile_xt_5160_268_byob_manifest) {
-            argv[3], argv[4], argc == 7 ? argv[5] : STD_NULL,
-            argc == 7 ? argv[6] : STD_NULL, "owner-provided integration input"};
+        out_config->bios_path[0u] = argv[3];
+        out_config->bios_path[1u] = argc == 7 ? argv[5] : STD_NULL;
+        out_config->bios_count = argc == 7 ? 2u : 1u;
         return 1;
     }
     if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
         if (argc != 7 && argc != 8 && argc != 9 && argc != 10) return 0;
-        out_config->model40_firmware = (vm_profile_model40_byob_manifest) {
-            .even_path = argv[3], .even_sha256 = argv[4],
-            .odd_path = argv[5], .odd_sha256 = argv[6],
-            .video_path = argc >= 9 ? argv[7] : STD_NULL,
-            .video_sha256 = argc >= 9 ? argv[8] : STD_NULL,
-            .provenance = "owner-provided integration input"};
-        out_config->hdd_image = argc == 8 ? argv[7] : argc == 10 ? argv[9] : STD_NULL;
+        out_config->bios_path[0u] = argv[3];
+        out_config->bios_path[1u] = argv[5];
+        out_config->bios_count = 2u;
+        out_config->video_path = argc >= 9 ? argv[7] : STD_NULL;
+        out_config->fixed_disk_image[0u] = argc == 8 ? argv[7] :
+            argc == 10 ? argv[9] : STD_NULL;
         return 1;
     }
     return 0;
@@ -265,16 +264,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (!vm_profile_floppy_boot_configure(row, argc, argv, &config)) return 1;
     if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-        config.hdd_image != STD_NULL) {
-        if (!CopyFileA(config.hdd_image, model40_hdd_scratch, FALSE)) return 1;
-        config.hdd_image = model40_hdd_scratch;
+        config.fixed_disk_image[0u] != STD_NULL) {
+        if (!CopyFileA(config.fixed_disk_image[0u], model40_hdd_scratch, FALSE)) return 1;
+        config.fixed_disk_image[0u] = model40_hdd_scratch;
         model40_hdd_scratch_created = 1;
     }
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL) {
         STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:SESSION-CREATE-FAILED\n", row->id);
         goto done;
     }
-    if (config.model40_firmware.video_path != STD_NULL) {
+    if (config.video_path != STD_NULL) {
         /* The supplied option ROM deliberately selects an EGA graphics mode.
          * The integration host observes its copied frame through the existing
          * window presentation contract; it does not alter guest video state. */

@@ -363,8 +363,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !vm_ata253_install(fdd_image, fdd_size, fdd_path) ||
         !vm_ata253_clone(argv[2], hdd_path, &hdd_image, &hdd_size) ||
         !vm_ata253_zero_image(hdd_image, hdd_size, hdd_path)) goto done;
-    config.fdd_image = fdd_path;
-    config.hdd_image = hdd_path;
+    config.floppy_image[0u] = fdd_path;
+    config.fixed_disk_image[0u] = hdd_path;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||

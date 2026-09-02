@@ -71,7 +71,7 @@ C_INT main(C_VOID)
         0x42u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x12u, 0x1bu, 0xffu
     };
     const vm_session_config config = {
-        .fdd_image = "",
+        .floppy_image = { "" },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
@@ -95,7 +95,7 @@ C_INT main(C_VOID)
     if (!vm_fdc_t242_write_boot_loop(path)) goto done;
     {
         vm_session_config fixture_config = config;
-        fixture_config.fdd_image = path;
+        fixture_config.floppy_image[0u] = path;
         if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
             session == STD_NULL) goto done;
     }

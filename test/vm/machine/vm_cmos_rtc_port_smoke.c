@@ -39,6 +39,41 @@ static C_VOID advance_cmos(core_machine_rtc *cmos, type_unsigned_64 elapsed_tick
         cmos->irq_source.slave);
 }
 
+static C_INT default_at_cmos_seed_is_loaded(C_VOID)
+{
+    const C_CHAR path[] = "t515-default-at.cmos";
+    type_unsigned_8 seed[VM_SESSION_CMOS_SEED_BYTES] = {0};
+    vm_session_config config = {0};
+    vm_session *session = STD_NULL;
+    STD_FILE *file;
+    type_unsigned_16 checksum = 0u;
+    STD_SIZE_T index;
+    C_INT failed = 0;
+
+    seed[CORE_MACHINE_RTC_EQUIPMENT] = 0x5au;
+    seed[0x2eu] = 0xffu;
+    seed[0x2fu] = 0xffu;
+    file = STD_FOPEN(path, "wb");
+    if (file == STD_NULL || STD_FWRITE(seed, 1u, sizeof(seed), file) != sizeof(seed) ||
+        STD_FCLOSE(file) != 0) return 1;
+    config.profile_kind = VM_SESSION_PROFILE_DEFAULT_PC_AT;
+    config.cmos_seed = path;
+    failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
+    if (!failed) {
+        t_port *port = &session->core_machine->executor_port;
+
+        failed |= cmos_read(port, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au;
+        for (index = 0x10u; index < 0x2eu; ++index) {
+            checksum = (type_unsigned_16)(checksum + cmos_read(port, (type_unsigned_8)index));
+        }
+        failed |= cmos_read(port, 0x2eu) != TYPE_MASK_UNSIGNED_8(checksum >> 8u) ||
+            cmos_read(port, 0x2fu) != TYPE_MASK_UNSIGNED_8(checksum);
+    }
+    vm_session_destroy(session);
+    (C_VOID)STD_REMOVE(path);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     vm_session *session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
@@ -116,6 +151,7 @@ C_INT main(C_VOID)
     if (cmos_read(port, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed |= 0x2000;
     if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x59u) failed |= 0x4000;
 
+    failed |= default_at_cmos_seed_is_loaded();
     if (failed) {
         STD_PRINTF("RTC probe failed=%04x: second=%u hour=%u C=%02x B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,
             session->core_machine->shared_rtc.calendar.second,

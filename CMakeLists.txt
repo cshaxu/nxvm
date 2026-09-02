@@ -250,6 +250,8 @@ target_link_libraries(vm-product-console-memory-roundtrip-smoke PRIVATE
 add_executable(vm-product-session-catalog-smoke
     test/vm/product/nxvm_session_catalog_smoke.c)
 target_link_libraries(vm-product-session-catalog-smoke PRIVATE vm-product)
+target_compile_definitions(vm-product-session-catalog-smoke PRIVATE
+    PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 add_executable(vm-product-session-smoke test/vm/machine/nxvm_session_smoke.c)
 target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
 add_executable(vm-session-initialization-atomicity-smoke
@@ -2751,13 +2753,13 @@ if(NOT PROJECT_UNIT_TEST_DEADLINE_SECONDS MATCHES "^[1-9][0-9]*$")
     message(FATAL_ERROR
         "PROJECT_UNIT_TEST_DEADLINE_SECONDS must be a positive integer, got: ${PROJECT_UNIT_TEST_DEADLINE_SECONDS}")
 endif()
-set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../../assets" CACHE PATH
+set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../nxvm-assets/media" CACHE PATH
     "Owner-provided local asset root for current runtime smoke coverage")
-set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd.img" CACHE FILEPATH
+set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd_1440k_msdos_500.img" CACHE FILEPATH
     "Owner-provided FDD image for current runtime smoke coverage")
-set(PROJECT_M1_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd-msdos500.img" CACHE FILEPATH
+set(PROJECT_M1_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd_1440k_msdos_500.img" CACHE FILEPATH
     "Owner-provided historical M1 DOS 5 FDD image for legacy smoke coverage")
-set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd.img" CACHE FILEPATH
+set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd_50m_win31.img" CACHE FILEPATH
     "Owner-provided HDD image for current runtime smoke coverage")
 set(PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE "" CACHE FILEPATH
     "Owner-supplied local HDD image for the opt-in Windows readiness checkpoint")
@@ -2878,6 +2880,19 @@ set_tests_properties("unit.core-machine-8086-timing-manifest-runner" PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 set_tests_properties("unit.core-machine-8088-timing-manifest-runner" PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+if(WIN32)
+function(project_deploy_default_font target)
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_SOURCE_DIR}/assets/default-cp437-8x16.bin"
+            "$<TARGET_FILE_DIR:${target}>/default-cp437-8x16.bin")
+endfunction()
+foreach(target IN LISTS PROJECT_ALL_TEST_TARGETS)
+    project_deploy_default_font(${target})
+endforeach()
+project_deploy_default_font(core-platform-win32-keyboard-smoke)
+endif()
+
 if(POWERSHELL_EXECUTABLE)
     add_test(NAME "unit.core-machine-8086-timing-results-s5"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -3037,7 +3052,8 @@ if(POWERSHELL_EXECUTABLE)
             -DeadlineSeconds "${PROJECT_UNIT_TEST_DEADLINE_SECONDS}"
         COMMENT "Building and executing repository-only unit tests"
         VERBATIM)
-    add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS})
+    add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS}
+        core-platform-win32-keyboard-smoke)
 
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -3133,8 +3149,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0514)
-add_current_vm_artifact(vm-0-5-0514 "0.5.0514")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0515)
+add_current_vm_artifact(vm-0-5-0515 "0.5.0515")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

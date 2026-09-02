@@ -34,7 +34,7 @@ static C_INT write_chip(const C_CHAR *path, type_unsigned_8 value)
 
 C_INT main(C_VOID)
 {
-    static const C_CHAR yaml[] = "schema: nxvm-session\nprofile: compaq-deskpro-386-model-40\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: t386-s20-console-even.bin\n    bytes: 16384\n    sha256: 4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: t386-s20-console-odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n";
+    static const C_CHAR yaml[] = "schema: nxvm-session\nprofile: compaq-deskpro-386-model-40\ndisplay: console\nboot: rom\nmedia:\n  floppy: []\n  fixed_disk: []\nfirmware:\n  bios:\n    - path: t386-s20-console-even.bin\n    - path: t386-s20-console-odd.bin\n  video: null\n  cmos: null\n";
     core_product_session_provider provider;
     core_product_session_manager *manager = STD_NULL;
     vm_session_machine_provider machine_provider;

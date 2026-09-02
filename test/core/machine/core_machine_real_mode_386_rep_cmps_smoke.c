@@ -60,7 +60,7 @@ int main(C_VOID)
     static const type_unsigned_8 segment_program[] = {
         0xb8u, 0x00u, 0x10u, 0x8eu, 0xd8u,
         0x31u, 0xc0u, 0x8eu, 0xc0u,
-        0x66u, 0xbeu, 0u, 0u, 0x01u, 0u,
+        0x66u, 0xbeu, 0u, 0x10u, 0u, 0u,
         0x66u, 0xbfu, 0u, 0u, 0x03u, 0u,
         0x66u, 0xb9u, 0x01u, 0u, 0u, 0u,
         0xfcu, 0x2eu, 0xf3u, 0x67u, 0xa6u, 0xf4u
@@ -109,9 +109,12 @@ int main(C_VOID)
         failed |= !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, segment_program,
                 sizeof(segment_program)) != TYPE_STATUS_OK ||
-            core_machine_memory_write(machine, 0x00010000u, segment_source,
+            /* 80386 real mode still limits every segment offset to FFFFh.
+             * Keep the CS override inside that architectural bound while
+             * retaining a distinct DS default address. */
+            core_machine_memory_write(machine, 0x00001000u, segment_source,
                 sizeof(segment_source)) != TYPE_STATUS_OK ||
-            core_machine_memory_write(machine, 0x00020000u, segment_default,
+            core_machine_memory_write(machine, 0x00011000u, segment_default,
                 sizeof(segment_default)) != TYPE_STATUS_OK ||
             core_machine_memory_write(machine, T292_DESTINATION, segment_destination,
                 sizeof(segment_destination)) != TYPE_STATUS_OK ||
@@ -119,7 +122,7 @@ int main(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
             diagnostic.first_fault.valid || machine->executor_cpu.data.ecx != 0u ||
-            machine->executor_cpu.data.esi != 0x00010001u ||
+            machine->executor_cpu.data.esi != 0x00001001u ||
             machine->executor_cpu.data.edi != T292_DESTINATION + 1u ||
             (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
     }

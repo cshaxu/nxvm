@@ -44,7 +44,8 @@ type_status vm_platform_run_context_create(
     const vm_platform_execution_transport *execution,
     const vm_platform_host_input_sink *input_sink,
     const core_platform_presentation_mailbox *presentation,
-    const core_utils_wait_scope *wait_scope, vm_platform_run_context **out_context);
+    const core_utils_wait_scope *wait_scope, const C_CHAR *font_path,
+    vm_platform_run_context **out_context);
 C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context);
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,

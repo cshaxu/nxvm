@@ -158,8 +158,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         CloseHandle(file);
     }
-    probe_config.fdd_image = fdd_path;
-    probe_config.hdd_image = argv[1];
+    probe_config.floppy_image[0u] = fdd_path;
+    probe_config.fixed_disk_image[0u] = argv[1];
     if (vm_session_create(&probe_config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto done;
     if (core_machine_debug_read_memory(session->core_machine, 0x004cu, int13_vector,

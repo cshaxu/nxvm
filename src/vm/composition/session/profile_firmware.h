@@ -8,6 +8,7 @@
 typedef struct vm_session vm_session;
 
 type_status vm_session_profile_firmware_initialize(vm_session *session);
+C_INT vm_session_profile_firmware_is_external(const vm_session *session);
 C_VOID vm_session_profile_firmware_register_cmos(vm_session *session);
 C_VOID vm_session_profile_firmware_register_keyboard(vm_session *session);
 C_VOID vm_session_profile_firmware_register_dma(vm_session *session);

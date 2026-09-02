@@ -103,7 +103,7 @@ static C_INT vm_kbc_aux_run_until_count(vm_session *session, type_unsigned_16 ex
 C_INT main(C_VOID)
 {
     const vm_session_config config = {
-        .fdd_image = "",
+        .floppy_image = { "" },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
@@ -115,7 +115,7 @@ C_INT main(C_VOID)
     C_INT passed = 0;
 
     if (!vm_kbc_aux_write_fixture(path)) goto done;
-    fixture_config.fdd_image = path;
+    fixture_config.floppy_image[0u] = path;
     if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto done;
 

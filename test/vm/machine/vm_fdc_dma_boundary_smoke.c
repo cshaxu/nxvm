@@ -104,7 +104,7 @@ C_INT main(C_VOID)
 
     if (!vm_fdc_boundary_write_fixture(path)) goto done;
     stage = 1;
-    fixture_config.fdd_image = path;
+    fixture_config.floppy_image[0u] = path;
     if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto done;
     for (instruction = 0u; instruction < VM_FDC_BOUNDARY_RUN_LIMIT;
@@ -126,7 +126,7 @@ C_INT main(C_VOID)
     session = STD_NULL;
     if (!passed) goto done;
     fixture_config = model_339_config;
-    fixture_config.fdd_image = path;
+    fixture_config.floppy_image[0u] = path;
     result_byte = 0u;
     conventional_kb = 0u;
     if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||

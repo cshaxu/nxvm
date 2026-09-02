@@ -238,7 +238,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     if (argc != 2 || !vm_fdc242_clone(argv[1], path, &image, &size) ||
         !vm_fdc242_install(image, size, path)) goto done;
-    STD_MEMCPY(expected, image, sizeof(expected)); config.fdd_image = path;
+    STD_MEMCPY(expected, image, sizeof(expected)); config.floppy_image[0u] = path;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     config.floppy_format = VM_SESSION_FLOPPY_FORMAT_1440K;

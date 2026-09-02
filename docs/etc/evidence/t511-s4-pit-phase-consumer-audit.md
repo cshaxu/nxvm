@@ -6,7 +6,7 @@
 
 Intel *8254 Programmable Interval Timer*, order 231164-005 (September 1993),
 owner-managed copy
-`assets/manuals/controllers/intel/231164-005_8254_Programmable_Interval_Timer_Sep1993.pdf`,
+`../../../../nxvm-assets/manuals/pit/intel-8254-interval-timer-sep1993.pdf`,
 defines three independent counters, control/count-to-CE loading, GATE-triggered
 and periodic output transitions, and the read-back latches.  The XT 8253
 personality is separately bounded by Intel 231306-001.  The selected output

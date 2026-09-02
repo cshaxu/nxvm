@@ -5,6 +5,8 @@
 
 #define VM_PRODUCT_SESSION_CATALOG_MAX 64u
 #define VM_PRODUCT_SESSION_CATALOG_PATH_MAX 1024u
+#define VM_PRODUCT_SESSION_MEDIA_SLOT_COUNT 2u
+#define VM_PRODUCT_SESSION_BIOS_SLOT_COUNT 2u
 
 typedef struct vm_product_session_request {
     C_CHAR file_name[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
@@ -14,18 +16,15 @@ typedef struct vm_product_session_request {
     C_CHAR display[16];
     C_CHAR boot[16];
     C_CHAR floppy_format[16];
-    C_CHAR floppy[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    C_CHAR hard_disk[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    C_CHAR model40_even_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    C_CHAR model40_even_sha256[65];
-    C_CHAR model40_odd_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    C_CHAR model40_odd_sha256[65];
-    C_CHAR model40_provenance[256];
-    C_CHAR xt_system_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    C_CHAR xt_system_sha256[65];
-    C_CHAR xt_xebec_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    C_CHAR xt_xebec_sha256[65];
-    C_CHAR xt_provenance[256];
+    C_CHAR floppy[VM_PRODUCT_SESSION_MEDIA_SLOT_COUNT][VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR fixed_disk[VM_PRODUCT_SESSION_MEDIA_SLOT_COUNT][VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    STD_SIZE_T floppy_count;
+    STD_SIZE_T fixed_disk_count;
+    C_CHAR bios[VM_PRODUCT_SESSION_BIOS_SLOT_COUNT][VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    STD_SIZE_T bios_count;
+    C_CHAR video[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR cmos[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR font[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     STD_SIZE_T memory_bytes;
 } vm_product_session_request;
 

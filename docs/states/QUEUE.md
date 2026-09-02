@@ -5,15 +5,14 @@ reserve a numeric task identifier, or define a technical baseline.
 
 ## M5 Candidates
 
-1. [M5 external asset-bundle governance](../proposals/m5-external-asset-bundle-governance.md)
-2. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
-3. [M5 specification-driven unit-test matrix coverage](../proposals/m5-specification-unit-test-matrix-coverage.md)
-4. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md)
-5. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md)
-6. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md)
-7. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md)
-8. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md)
-9. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md)
+1. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
+2. [M5 specification-driven unit-test matrix coverage](../proposals/m5-specification-unit-test-matrix-coverage.md)
+3. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md)
+4. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md)
+5. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md)
+6. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md)
+7. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md)
+8. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md)
 
 Shared M5 admission context:
 [Four-profile CPU completeness](../proposals/m5-four-profile-cpu-completeness-program.md),

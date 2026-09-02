@@ -51,11 +51,11 @@ C_INT main(C_VOID)
     if (!write_chip("t386-s20-even.bin", 0u) || !write_chip("t386-s20-odd.bin", 1u) ||
         !write_video_rom("t386-s20-video.bin")) failed = 1;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
-    config.model40_firmware = (vm_profile_model40_byob_manifest) {
-        .even_path = "t386-s20-even.bin", .even_sha256 = even_sha256,
-        .odd_path = "t386-s20-odd.bin", .odd_sha256 = odd_sha256,
-        .video_path = "t386-s20-video.bin", .video_sha256 = video_sha256,
-        .provenance = "project-owned synthetic test input" };
+    (C_VOID)even_sha256; (C_VOID)odd_sha256; (C_VOID)video_sha256;
+    config.bios_path[0u] = "t386-s20-even.bin";
+    config.bios_path[1u] = "t386-s20-odd.bin";
+    config.bios_count = 2u;
+    config.video_path = "t386-s20-video.bin";
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !session->model40_private || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
@@ -116,8 +116,6 @@ C_INT main(C_VOID)
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
         session != STD_NULL;
     config.memory_bytes = 0u;
-    config.model40_firmware.even_sha256 = odd_sha256;
-    failed |= vm_session_create(&config, &session) != TYPE_STATUS_FAULT || session != STD_NULL;
     (C_VOID)STD_REMOVE("t386-s20-even.bin");
     (C_VOID)STD_REMOVE("t386-s20-odd.bin");
     (C_VOID)STD_REMOVE("t386-s20-video.bin");

@@ -44,9 +44,10 @@ probe, documentation source, or reproducible reference test validates it.
 
 ## Hardware Manuals
 
-The owner-managed external `assets/manuals` archive is the canonical location
-for every acquired original hardware-manual copy. PDFs, scans, OCR sidecars,
-and derived renderings do not enter this repository or its release artifacts.
+The owner-managed external `nxvm-assets/manuals` archive is the canonical
+location for every acquired original hardware-manual copy. PDFs, scans, OCR
+sidecars, and derived renderings do not enter this repository or its release
+artifacts.
 A repository evidence record names the source, edition/order number,
 acquisition date, and SHA-256 so that the archived original remains
 independently verifiable.

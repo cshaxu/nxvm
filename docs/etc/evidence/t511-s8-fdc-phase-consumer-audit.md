@@ -5,7 +5,7 @@
 ## Sources
 
 Intel *8272A Floppy Disk Controller* (order 210608-001, 1982), owner-managed
-copy `assets/manuals/controllers/intel/210608-001_8272A_Floppy_Disk_Controller_1982.pdf`,
+copy `../../../../nxvm-assets/manuals/fdc/intel-8272a-floppy-disk-controller-1982.pdf`,
 defines command, execution and result phases; MSR RQM/DIO/NDM observation;
 non-DMA byte handshakes; DMA DRQ; interrupt/result acknowledgement; and reset
 Sense Interrupt results.  The local NEC uPD765A manual corroborates the family

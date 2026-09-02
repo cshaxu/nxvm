@@ -95,19 +95,19 @@ C_INT main(C_VOID)
         value != 0x80u || !core_machine_vadp_capture_snapshot(&vadp, &memory,
         &snapshot) || snapshot.pixels[0] != 15u;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
-        0x22u);
+        0x20u);
     failed |= !t386_s28_write(&memory, 0x00u) || !t386_s28_read(&memory, &value) ||
         value != 0x00u || !core_machine_vadp_capture_snapshot(&vadp, &memory,
         &snapshot) || snapshot.pixels[0] != 0u || !snapshot.buffer_changed;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
-        0x02u);
+        0x00u);
     failed |= !t386_s28_read(&memory, &value) || value != 0x80u ||
         !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.pixels[0] != 15u || !snapshot.buffer_changed;
     /* DeskPro POST writes B0000h while its primary CECG route is 3Dx/B8000h.
      * Both addresses must reach the one VADP planar store, never ordinary RAM. */
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
-        0x03u);
+        0x01u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x0eu);
     failed |= !t386_s28_write_at(&memory, 0x000b0000u, 0x11u) ||

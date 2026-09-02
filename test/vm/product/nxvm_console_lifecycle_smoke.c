@@ -51,7 +51,7 @@ C_INT main(C_VOID)
     profile = STD_FOPEN(configuration, "wb");
     input = tmpfile();
     if (profile == STD_NULL || input == STD_NULL ||
-        STD_FPUTS("schema: nxvm-session\nprofile: ibm-5170-model-339\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n", profile) < 0 ||
+        STD_FPUTS("schema: nxvm-session\nprofile: ibm-5170-model-339\ndisplay: console\nboot: rom\nmedia:\n  floppy: []\n  fixed_disk: []\n", profile) < 0 ||
         STD_FCLOSE(profile) != 0 ||
         STD_FPUTS("1\nspeed turbo\nsession list\nhelp\ninfo\nexit\n", input) < 0 ||
         fflush(input) != 0 ||

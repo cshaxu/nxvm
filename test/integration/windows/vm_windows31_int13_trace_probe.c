@@ -12,8 +12,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     const core_machine_run_budget budget = {1u, 0u};
     const vm_session_config config = {
-        .fdd_image = argc == 3 ? argv[1] : STD_NULL,
-        .hdd_image = argc == 3 ? argv[2] : STD_NULL,
+        .floppy_image = { argc == 3 ? argv[1] : STD_NULL },
+        .fixed_disk_image = { argc == 3 ? argv[2] : STD_NULL },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };

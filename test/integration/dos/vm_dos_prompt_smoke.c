@@ -63,7 +63,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (argc != 2 && argc != 3) return 1;
     if (argc == 3 && !STD_STRCMP(argv[2], "8086")) {
         const vm_session_config config = {
-            .fdd_image = argv[1],
+            .floppy_image = { argv[1] },
             .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
             .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
         };

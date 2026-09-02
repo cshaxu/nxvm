@@ -72,7 +72,9 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
                 "Invalid session options." :
                 status == TYPE_STATUS_INVALID_STATE ?
                 "Requested session configuration is unavailable." :
-                "Unable to open session.");
+                status == TYPE_STATUS_NO_MEMORY ?
+                "Unable to open session: insufficient host memory." :
+                "Unable to open session: selected assets could not be read or the machine could not be created.");
             return 0;
         }
         if (core_product_session_manager_select(manager, id) != TYPE_STATUS_OK) {

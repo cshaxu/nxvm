@@ -5,7 +5,7 @@
 ## Sources
 
 IBM *Personal Computer XT Technical Reference* (April 1983), owner-managed
-copy `assets/manuals/controllers/ibm/IBM_5160_Technical_Reference_APR83.pdf`,
+copy `../../../../nxvm-assets/manuals/platform/ibm-5160-technical-reference-apr1983.pdf`,
 defines the separate 8255/PPI ports, PB6 clock hold, PB7 keyboard clear, PA
 data, IRQ1, keyboard reset/BAT and serial delivery relations.  Its ranges are
 retained as Manual-L3 inputs; Core's sourced macro-axis conversion is L2, not
