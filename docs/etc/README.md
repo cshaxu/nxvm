@@ -17,6 +17,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |
+| `evidence/t514-s4-win32-rdp-frontend-closure.md` | Core platform / VM input owners | T514 S4's real RDP observation, task gates and 0514 artifact closure. |
 | `evidence/t503-s1-controller-signal-chain-ledger.md` | Core route owner | T503 S1's finite controller-to-consumer route/state matrix, current sole-owner trace, and S2--S5 repair partition. |
 | `evidence/t503-s2-clock-route-reconciliation.md` | Core route owner | T503 S2's PIT/PIC/refresh/HLT route reconciliation, focused proof and no-duplicate-path disposition. |
 | `evidence/t503-s3-pic-cpu-direct-audit.md` | Core PIC owner | T503 S3's fresh 8259A-to-CPU manual, code and external-reference reconciliation; it records the complete route matrix and any retained timing boundary. |
