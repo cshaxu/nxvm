@@ -8,14 +8,6 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
-[M5 Win32 Unicode guest-keyboard ingress](../proposals/m5-win32-unicode-guest-keyboard-ingress.md)
-is governed by the active packet in `CURRENT.md`; it remains here only as the
-required proposal index while that task is open.
-
-[M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md)
-is governed by the active packet in `CURRENT.md`; it remains here only as the
-required proposal index while the task is open.
-
 The following bounded repairs are first. They preserve the current
 architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite

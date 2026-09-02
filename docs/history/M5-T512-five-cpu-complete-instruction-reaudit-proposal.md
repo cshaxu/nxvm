@@ -1,5 +1,7 @@
 # M5 Five-CPU Complete Instruction Re-audit And Repair
 
+> Retained proposal for the completed T512 task.
+
 ## Purpose
 
 Re-establish a source-backed, complete instruction and architectural-state

@@ -2,30 +2,15 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T514 S4 |
-| Admission And Approval | Owner approved T514 completion on 2026-09-01 and reported the repaired RDP soft keyboard succeeds; this continuation performs the proposal's frontend proof and final task closure. |
-| Objective | Record the real RDP result, verify the unchanged VM-to-KBC route and run all task-level gates before closing T514. |
-| Non-goals | No KBC/BIOS/text shortcut, second keyboard state or queue, source/table import, profile-specific keyboard path, `build/output` YAML modification, or unrelated product change. |
-| Reference Baseline | Accepted T514 S3 implementation `3bb85fb4`; [T514 proposal](../proposals/m5-win32-unicode-guest-keyboard-ingress.md), [S2 evidence](../etc/evidence/t514-s2-win32-keyboard-normalizer.md) and [S3 matrix](../etc/evidence/t514-s3-win32-keyboard-regression-matrix.md). |
-| Candidate Proposal | [M5 Win32 Unicode guest-keyboard ingress](../proposals/m5-win32-unicode-guest-keyboard-ingress.md). |
-| Files And ABI Surface | No new production ABI; Core-platform normalizer, Window/Console adapters, existing VM sink/KBC route, task evidence and history. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy rules. Core platform owns normalization; VM binds sink; Core machine owns KBC. |
-| Verification | Re-run complete unit and owner-managed integration suites; inspect actual S1--S3 diff and verify stripped 0514 artifact; documentation governance; record owner-reported RDP result. |
-| Expected Markers | Real RDP soft-keyboard success, unchanged VM-to-KBC path, all unit/integration gates pass, and no uncommitted T514 change remains. |
-| Asset Needs | Existing owner-managed integration ROM/media only; no asset is copied, committed, discovered or retained. |
-| Reporting Requirements | Record frontend observation, task gates, artifact hash, source/test line accounting, retained owner and all deferred boundaries. |
-| Stop Conditions | Stop if integration requires a new asset, source import, guest-text injection, VM-side normalizer or a new product path. |
-| Exit Criteria | Proposal exit criteria, full unit, full integration, governance and artifact verification all pass; history records one task-level closure and `CURRENT.md` no longer contains an active T514 packet. |
-| Original Owner Request | Repair Windows RDP keyboard input. |
-| Similar-Issue Sweep | Console and Window, physical and character packets, enhanced keys, duplicates, UTF-16 validity, layout recovery, modifier ordering, VM sink, KBC route and task artifacts. |
+No numeric implementation task is active. The next candidate is selected only
+from [Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0514` emits
   `nxvm_0_5_0514.exe` in a stripped Release build.
   It retains the runtime debugger and contains no compiler debug information.
+  SHA-256: `DB7971DD1B0218C8D437A6EA77D0A9C701EC53BEE732E80EEE6890AB7687279A`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -56,6 +41,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
 | T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 | T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |
 | T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
@@ -63,7 +49,6 @@
 | T508 | Reclosed: Core accepts one provenance-neutral copied timing plan; default ATA has an Other-L2 controller quantum and Model-40 an Other-L2 macro pacing axis. The four-profile matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
 | T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
 | T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
-| T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 
 ## Recent Governance
 

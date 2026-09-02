@@ -2,6 +2,8 @@
 
 T512 closes the five-profile instruction, architectural-state and timing
 re-audit without adding a profile-side CPU path.
+Its [retained proposal](M5-T512-five-cpu-complete-instruction-reaudit-proposal.md)
+records the admitted scope.
 
 ## Accepted Result
 
