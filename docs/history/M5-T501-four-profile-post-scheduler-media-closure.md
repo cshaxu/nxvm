@@ -25,5 +25,5 @@ Evidence: [S1 matrix](../etc/evidence/t501-s1-release-matrix-baseline.md),
 [Model-40 List 2](../etc/evidence/t501-s2-model40-diagnostic-list-2.md), and
 [S4 closure](../etc/evidence/t501-s4-release-matrix-closure.md), and
 [S5 boot universe](../etc/evidence/t501-s5-model40-boot-universe.md). The retained
-[proposal](../proposals/m5-four-profile-post-scheduler-media-closure.md)
+[proposal](M5-T501-four-profile-post-scheduler-media-closure-proposal.md)
 preserves the admitted scope.

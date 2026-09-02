@@ -14,7 +14,7 @@
 | S10 | Accepted: isolated debugger-recording and XT fixed-write fixtures with the existing CTest workspace owner, removed the Windows checkpoint's direct Core-input bypass, and passed unit 312/312 plus integration 20/20. P1 `8f5e372d`. |
 | S11 | Accepted: re-opened narrowly after measured speed audit; removed seven unjustified integration-wide serial marks, repaired two test-local startup waits, retained the deliberate wall-clock cadence exception, and passed unit 312/312 plus integration 20/20. P1 `368e3be9`. |
 
-The active [proposal](../proposals/m5-current-gate-execution-tiering.md)
+The retained [proposal](M5-T500-unit-and-integration-test-convergence-proposal.md)
 defines the complete test inventory, component-owned test design, migration and
 parallel-isolation sequence. T500 may not weaken coverage, retain a second
 test tree or runner, or turn owner-managed external media into unit input.

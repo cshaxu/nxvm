@@ -52,6 +52,11 @@ from [Queue](QUEUE.md).
 
 ## Recent Governance
 
+- **M5 Td S158 P1:** reduced Queue to its ordered candidate surface, placing
+  external asset governance, the Bochs bridge, the specification-driven unit
+  matrix, and DOS/386 extender corpus first. Seven completed proposals moved
+  beside their numbered histories; documentation governance passes.
+
 - **M5 T513 S5 P4:** coordinator actual-diff review accepts `155dc348` and
   closes T513. The 20-row ledger, retained sole-owner routes, full gates and
   stripped 0513 artifact are recorded in the indexed closure audit.
