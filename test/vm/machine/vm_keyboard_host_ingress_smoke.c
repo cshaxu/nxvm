@@ -21,6 +21,8 @@ C_INT main(C_VOID)
     vm_platform_request request;
     type_unsigned_8 before;
     type_unsigned_8 after;
+    C_INT saw_a_press = 0;
+    C_INT saw_a_release = 0;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         !vm_keyboard_host_ingress_read_byte(session,
@@ -44,6 +46,22 @@ C_INT main(C_VOID)
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
+    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        session->platform_run_handle, 0u, 0x70u, TYPE_TRUE);
+    if (vm_platform_request_transport_dequeue_ingress(session->request_transport,
+            &request) != TYPE_STATUS_OK ||
+        request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
+        request.data.key_event.scan_code != 0x3bu ||
+        !request.data.key_event.pressed) goto fail;
+    vm_platform_win32_keyboard_make_character_for(session->platform_run_context, 'a');
+    while (vm_platform_request_transport_dequeue_ingress(session->request_transport,
+            &request) == TYPE_STATUS_OK) {
+        if (request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
+            request.data.key_event.virtual_key != 'A') continue;
+        if (request.data.key_event.pressed) saw_a_press = 1;
+        else saw_a_release = 1;
+    }
+    if (!saw_a_press || !saw_a_release) goto fail;
     event.kind = (core_platform_input_kind)2;
     if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_INVALID_ARGUMENT ||
         vm_platform_request_transport_dequeue_ingress(session->request_transport,

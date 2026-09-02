@@ -13,6 +13,8 @@ duplicate the same guest key while an unrelated character remains deliverable.
 Existing physical-key handling and VM F9 command policy remain unchanged.
 
 Focused owner-local coverage verifies layout recovery, complete release,
-surrogate rejection and virtual-key matching.  A rebuilt stripped Release
-`nxvm_0_5_0514.exe` and complete repository-only unit suite pass: 317/317,
-2026-09-01.  Real RDP soft-keyboard observation remains the S4 frontend proof.
+surrogate rejection, virtual-key matching, and the existing VM request route
+for both recovered virtual keys and recovered characters.  A rebuilt stripped
+Release `nxvm_0_5_0514.exe` and complete repository-only unit suite pass:
+317/317, 2026-09-01.  Real RDP soft-keyboard observation remains the S4
+frontend proof.
