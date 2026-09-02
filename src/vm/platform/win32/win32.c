@@ -23,6 +23,8 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
     core_platform_input_event event;
 
     if (context == STD_NULL) return;
+    if (scanCode == 0u) scanCode = core_platform_win32_keyboard_resolve_scan(virtualKey);
+    if (scanCode == 0u) return;
     if (pressed && virtualKey == VK_F9) {
         vm_platform_run_handle_report(owner,
             VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
@@ -49,6 +51,14 @@ C_VOID vm_platform_win32_keyboard_make_character_for(const vm_platform_run_conte
 {
     (C_VOID)core_platform_win32_keyboard_submit_character((C_VOID *)context,
         vm_platform_win32_keyboard_submit, scalar);
+}
+
+C_VOID vm_platform_win32_keyboard_make_utf16_for(
+    core_platform_win32_keyboard_utf16 *state, const vm_platform_run_context *context,
+    type_unsigned_16 code_unit)
+{
+    (C_VOID)core_platform_win32_keyboard_submit_utf16(state, (C_VOID *)context,
+        vm_platform_win32_keyboard_submit, code_unit);
 }
 
 C_VOID vm_platform_win32_mouse_relative_for(

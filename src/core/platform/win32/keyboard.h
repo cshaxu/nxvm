@@ -7,9 +7,28 @@
 typedef type_status (*core_platform_win32_keyboard_submit)(C_VOID *context,
     const core_platform_input_event *event);
 
+typedef struct core_platform_win32_keyboard_utf16 {
+    type_unsigned_16 pending_high_surrogate;
+} core_platform_win32_keyboard_utf16;
+
+/* Resolves a Windows virtual key to the matching PC scan code for the active
+ * host layout.  A zero result means the key has no physical representation. */
+type_unsigned_16 core_platform_win32_keyboard_resolve_scan(
+    type_unsigned_16 virtual_key);
+
+/* Identifies the text result of a recovered virtual key without emitting it. */
+C_INT core_platform_win32_keyboard_character_matches_virtual_key(
+    type_unsigned_16 code_unit, type_unsigned_16 virtual_key);
+
 /* Converts one Windows Unicode scalar to the physical key sequence selected by
  * the active host layout.  It never owns guest state or text input. */
 type_status core_platform_win32_keyboard_submit_character(C_VOID *context,
     core_platform_win32_keyboard_submit submit, type_unsigned_32 scalar);
+
+/* Accepts one UTF-16 code unit without truncating surrogate pairs.  Valid
+ * scalars that lack a physical host-layout sequence return UNSUPPORTED. */
+type_status core_platform_win32_keyboard_submit_utf16(
+    core_platform_win32_keyboard_utf16 *state, C_VOID *context,
+    core_platform_win32_keyboard_submit submit, type_unsigned_16 code_unit);
 
 #endif

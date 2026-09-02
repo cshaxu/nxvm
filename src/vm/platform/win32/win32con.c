@@ -17,6 +17,7 @@ typedef struct win32con_run_handle {
     HANDLE output;
     HANDLE kernel_thread;
     HANDLE display_thread;
+    core_platform_win32_keyboard_utf16 keyboard_utf16;
 } win32con_run_handle;
 
 static vm_platform_host_surface_lease win32_console_lease = {
@@ -41,7 +42,7 @@ static C_INT win32con_display_wait_cancelled(C_VOID *context)
         handle->platform->execution);
 }
 
-static C_VOID win32con_process_input(const win32con_run_handle *handle)
+static C_VOID win32con_process_input(win32con_run_handle *handle)
 {
     DWORD count;
     INPUT_RECORD input;
@@ -58,8 +59,8 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
         virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
         if (scan_code == 0u && input.Event.KeyEvent.bKeyDown != 0 &&
             input.Event.KeyEvent.uChar.UnicodeChar != L'\0') {
-            vm_platform_win32_keyboard_make_character_for(handle->platform,
-                input.Event.KeyEvent.uChar.UnicodeChar);
+            vm_platform_win32_keyboard_make_utf16_for(&handle->keyboard_utf16,
+                handle->platform, input.Event.KeyEvent.uChar.UnicodeChar);
         } else vm_platform_win32_keyboard_make_key_for(handle->platform, handle->owner,
             scan_code, virtual_key, input.Event.KeyEvent.bKeyDown != 0);
         break;

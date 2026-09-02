@@ -23,6 +23,25 @@ static type_status core_platform_win32_keyboard_emit(C_VOID *context,
     return submit(context, &event);
 }
 
+type_unsigned_16 core_platform_win32_keyboard_resolve_scan(
+    type_unsigned_16 virtual_key)
+{
+    HKL layout = GetKeyboardLayout(0u);
+
+    return core_platform_win32_keyboard_scan((WORD)MapVirtualKeyExW(virtual_key,
+        MAPVK_VK_TO_VSC_EX, layout));
+}
+
+C_INT core_platform_win32_keyboard_character_matches_virtual_key(
+    type_unsigned_16 code_unit, type_unsigned_16 virtual_key)
+{
+    SHORT mapped;
+
+    if (code_unit == 0u || (code_unit >= 0xd800u && code_unit <= 0xdfffu)) return 0;
+    mapped = VkKeyScanExW((WCHAR)code_unit, GetKeyboardLayout(0u));
+    return mapped != -1 && (type_unsigned_16)(mapped & 0xffu) == virtual_key;
+}
+
 type_status core_platform_win32_keyboard_submit_character(C_VOID *context,
     core_platform_win32_keyboard_submit submit, type_unsigned_32 scalar)
 {
@@ -58,4 +77,30 @@ type_status core_platform_win32_keyboard_submit_character(C_VOID *context,
     if ((modifiers & 2u) != 0u) (C_VOID)core_platform_win32_keyboard_emit(context,
         submit, 0x001du, VK_CONTROL, TYPE_FALSE);
     return TYPE_STATUS_OK;
+}
+
+type_status core_platform_win32_keyboard_submit_utf16(
+    core_platform_win32_keyboard_utf16 *state, C_VOID *context,
+    core_platform_win32_keyboard_submit submit, type_unsigned_16 code_unit)
+{
+    type_unsigned_32 scalar;
+
+    if (state == STD_NULL || submit == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (code_unit >= 0xd800u && code_unit <= 0xdbffu) {
+        if (state->pending_high_surrogate != 0u) return TYPE_STATUS_UNSUPPORTED;
+        state->pending_high_surrogate = code_unit;
+        return TYPE_STATUS_OK;
+    }
+    if (code_unit >= 0xdc00u && code_unit <= 0xdfffu) {
+        if (state->pending_high_surrogate == 0u) return TYPE_STATUS_UNSUPPORTED;
+        scalar = 0x10000u + (((type_unsigned_32)state->pending_high_surrogate -
+            0xd800u) << 10u) + ((type_unsigned_32)code_unit - 0xdc00u);
+        state->pending_high_surrogate = 0u;
+        return core_platform_win32_keyboard_submit_character(context, submit, scalar);
+    }
+    if (state->pending_high_surrogate != 0u) {
+        state->pending_high_surrogate = 0u;
+        return TYPE_STATUS_UNSUPPORTED;
+    }
+    return core_platform_win32_keyboard_submit_character(context, submit, code_unit);
 }
