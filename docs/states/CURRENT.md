@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T514 S2 |
-| Admission And Approval | Owner approved the next queued repair on 2026-09-01, after T513 S6 P2 was pushed: fix Windows Remote Desktop keyboard input. |
-| Objective | Replace Console and Window scan-only submission with one Core-platform Win32 normalizer that recovers layout-supported RDP character input as physical guest key sequences. |
-| Non-goals | No KBC/BIOS/text shortcut, second keyboard state or queue, source/table import, profile-specific keyboard path, or `build/output` YAML modification. |
-| Reference Baseline | T513 at `f07edd0b`; current Win32 frontend and VM input routes; [T514 proposal](../proposals/m5-win32-unicode-guest-keyboard-ingress.md). |
+| Identifier Mode | Continuation T514 S3 |
+| Admission And Approval | Owner approved T514 completion on 2026-09-01 after successful real RDP soft-keyboard observation; this continuation closes the proposal's owner-local regression matrix. |
+| Objective | Move the remaining Window duplicate-character correlation into the Core-platform Win32 normalizer and prove every finite packet disposition with repository-only tests. |
+| Non-goals | No KBC/BIOS/text shortcut, second keyboard state or queue, source/table import, profile-specific keyboard path, `build/output` YAML modification, or new product behavior. |
+| Reference Baseline | Accepted T514 S2 implementation `93324876`; [T514 proposal](../proposals/m5-win32-unicode-guest-keyboard-ingress.md) and [S2 evidence](../etc/evidence/t514-s2-win32-keyboard-normalizer.md). |
 | Candidate Proposal | [M5 Win32 Unicode guest-keyboard ingress](../proposals/m5-win32-unicode-guest-keyboard-ingress.md). |
-| Files And ABI Surface | Core-platform Win32 normalizer and owner-local test; existing Win32 Console/Window adapters and VM F9 product command boundary. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation, UI and source-policy. Core platform normalizes copied host events; VM binds sink; Core machine owns KBC/guest keyboard. |
-| Verification | Exercise physical, character-only, duplicate, UTF-16, unsupported and modifier-release cases; then complete unit and documentation governance. |
-| Expected Markers | Layout-supported RDP character input reaches the existing VM sink as one complete physical sequence; malformed/unsupported input leaves guest state unchanged. |
-| Asset Needs | Local Windows/RDP observation only where available; no external source, binary, trace, path or guest asset is retained. |
-| Reporting Requirements | Record retained sole owner, deleted duplicate route, line accounting, focused cases and complete-unit result. |
-| Stop Conditions | Stop if recovery requires guest text injection, a VM-side normalizer, or third-party source/table import. |
-| Exit Criteria | Both frontends call one normalizer; character-only RDP input works where the host layout maps it; no duplicate/stuck modifier path remains; unit and governance pass. |
+| Files And ABI Surface | Core-platform Win32 normalizer state and owner-local test; existing thin Window/Console adapters, VM sink binding and F9 product-command boundary. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding and documentation rules. Core platform owns copied host-packet normalization state; VM binds sink; Core machine owns KBC/guest keyboard. |
+| Verification | Focused table covers native/enhanced, zero-scan virtual key, character-only, matching/nonmatching duplicate, shifted modifier release, BMP, valid and malformed surrogate, and unsupported scalar cases; then full unit and documentation governance. |
+| Expected Markers | All duplicate correlation is Core-platform state; adapters retain no keyboard normalization state; every unsupported/malformed input has no sink mutation. |
+| Asset Needs | No external asset, source, binary, trace or path. The owner-reported RDP result is retained only as compact task evidence. |
+| Reporting Requirements | Record finite test dispositions, retained owner/path, line accounting, focused and complete-unit results. |
+| Stop Conditions | Stop if a packet requires guest text injection, a VM-side normalizer, new host state outside Core platform, or source/table import. |
+| Exit Criteria | The finite S3 matrix is owner-local and passing; Core platform is the only normalizer-state owner; all relevant existing unit tests and governance pass. |
 | Original Owner Request | Repair Windows RDP keyboard input. |
-| Similar-Issue Sweep | Console and Window, physical and character packets, enhanced keys, duplicates, UTF-16 validity, layout recovery and all current VM keyboard receivers. |
+| Similar-Issue Sweep | Console and Window, physical and character packets, enhanced keys, duplicates, UTF-16 validity, layout recovery, modifier ordering and all current VM keyboard receivers. |
 
 ## Current Technical Baseline
 
