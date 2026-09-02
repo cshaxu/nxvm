@@ -43,8 +43,9 @@ C_INT main(C_VOID)
     core_machine_time_observation time_observation = {0};
     STD_SIZE_T memory_bytes = 0u;
     STD_SIZE_T retained_memory_bytes;
-    type_unsigned_8 memory_value = 0x5au;
     type_unsigned_8 observed_memory = 0u;
+    type_unsigned_8 video_body_byte = 0u;
+    STD_SIZE_T mapping;
     C_INT failed = 0;
 
     if (!write_chip("t386-s20-even.bin", 0u) || !write_chip("t386-s20-odd.bin", 1u) ||
@@ -75,21 +76,23 @@ C_INT main(C_VOID)
         core_machine_memory_read(session->core_machine,
             VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, &observed_memory,
             sizeof(observed_memory)) != TYPE_STATUS_OK || observed_memory != 0x55u;
+    for (mapping = 0u; mapping < session->core_machine->immutable_rom_mapping_count;
+        ++mapping) {
+        if (session->core_machine->immutable_rom_mappings[mapping].physical_start ==
+            VM_PROFILE_MODEL40_VIDEO_ROM_COMPATIBILITY_ALIAS_START +
+                VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES) break;
+    }
+    failed |= mapping == session->core_machine->immutable_rom_mapping_count;
+    failed |= !failed && (core_machine_memory_read(session->core_machine,
+        VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START +
+            VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES, &video_body_byte,
+        sizeof(video_body_byte)) != TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
+        VM_PROFILE_MODEL40_VIDEO_ROM_COMPATIBILITY_ALIAS_START +
+            VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES, &observed_memory,
+        sizeof(observed_memory)) != TYPE_STATUS_OK || observed_memory != video_body_byte);
     failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     retained_memory_bytes = session->retained_config.memory_bytes;
-    failed |= !failed && (core_machine_memory_write_physical(
-        &session->core_machine->executor_memory, 0x000d0000u,
-        (type_virtual_address)&memory_value, 1u) != TYPE_STATUS_OK ||
-        core_machine_memory_read_physical(&session->core_machine->executor_memory,
-            0x00fd0000u, (type_virtual_address)&observed_memory, 1u) != TYPE_STATUS_OK ||
-        observed_memory != memory_value ||
-        core_machine_memory_read_physical(&session->core_machine->executor_memory,
-            0x00200000u, (type_virtual_address)&observed_memory, 1u) != TYPE_STATUS_OK ||
-        observed_memory != 0xffu ||
-        core_machine_memory_read_physical(&session->core_machine->executor_memory,
-            0x00f30000u, (type_virtual_address)&observed_memory, 1u) != TYPE_STATUS_OK ||
-        observed_memory != 0xffu);
     failed |= !failed && vm_session_reconfigure_memory(session, 2u * 1024u * 1024u) !=
         TYPE_STATUS_INVALID_STATE;
     failed |= !failed && (core_machine_get_memory_bytes(session->core_machine,

@@ -69,7 +69,7 @@ C_INT main(C_VOID)
 
     core_machine_port_write(&port, 0x0064u, 0x20u);
     failed |= (read_port(&port, 0x0064u) & VKBC_STATUS_AUX) != 0u;
-    failed |= read_port(&port, 0x0060u) != 0x47u;
+    failed |= read_port(&port, 0x0060u) != 0x43u;
     core_machine_port_write(&port, 0x0064u, 0xa9u);
     failed |= (read_port(&port, 0x0064u) & VKBC_STATUS_AUX) != 0u;
     failed |= core_machine_pic_scan_interrupt(&master, &slave);

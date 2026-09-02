@@ -26,7 +26,9 @@ static C_INT cpu_execution_context_reset_case(
     core_machine_cpu_state_reset(context);
     return cpu->data.cs.selector != 0xf000u || cpu->data.eip != 0x0000fff0u ||
         cpu->data.cs.base != test_case->code_base ||
-        cpu->data.cs.base + cpu->data.eip != test_case->first_fetch;
+        cpu->data.cs.base + cpu->data.eip != test_case->first_fetch ||
+        (test_case->profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+         cpu->data.edx != 0x00000300u);
 }
 
 C_INT main(C_VOID)

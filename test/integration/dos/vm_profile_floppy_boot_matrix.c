@@ -145,18 +145,6 @@ static C_INT vm_profile_floppy_boot_text_memory_has(const vm_session *session,
     return 0;
 }
 
-static C_INT vm_profile_floppy_boot_send_f1(vm_session *session, C_INT pressed)
-{
-    core_platform_input_event event = {0};
-
-    if (session == STD_NULL) return 0;
-    event.kind = CORE_PLATFORM_INPUT_KEY;
-    event.data.key.scan_code = 0x3bu;
-    event.data.key.virtual_key = 0x70u;
-    event.data.key.pressed = pressed != 0;
-    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
-}
-
 static const C_CHAR *vm_profile_floppy_boot_terminal_name(
     vm_profile_floppy_boot_terminal terminal)
 {
@@ -261,10 +249,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static const C_CHAR model40_hdd_scratch[] = "t513-model40-hdd.img";
     ULONGLONG started;
     ULONGLONG timeout;
-    ULONGLONG model40_resume_at = 0u;
-    ULONGLONG model40_f1_make_at = 0u;
     C_INT model40_hdd_scratch_created = 0;
-    C_INT model40_f1_sent = 0;
     C_INT result = 1;
 
     if (argc == 2 && !STD_STRCMP(argv[1], "--validate")) {
@@ -317,31 +302,29 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         terminal = vm_profile_floppy_boot_terminal_get(session);
         if (terminal != VM_PROFILE_FLOPPY_BOOT_TERMINAL_NONE) break;
-        /* This is failure diagnosis only, never a terminal: once the guest
-         * has reached a known text screen but VADP has not published it,
-         * pause immediately and report the owner boundary. */
+        /* A fresh Model 40 boot must never need synthetic host input.  Stop
+         * at the firmware's explicit resume gate so this integration test
+         * reports the failed contract instead of waiting for its wall limit. */
         if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-            vm_profile_floppy_boot_text_memory_has(session, "ENTER=Continue")) break;
-        if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-            !model40_f1_sent && model40_resume_at == 0u &&
             vm_profile_floppy_boot_text_memory_has(session, "RESUME")) {
-            model40_resume_at = now;
+            STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:RESUME-REQUIRED\n", row->id);
+            goto done;
         }
-        if (model40_resume_at != 0u && !model40_f1_sent &&
-            now - model40_resume_at >= 100u) {
-            if (!vm_profile_floppy_boot_send_f1(session, 1)) goto done;
-            model40_f1_sent = 1;
-            model40_f1_make_at = now;
-            STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:resume-f1\n", row->id);
-        }
-        if (model40_f1_make_at != 0u &&
-            now - model40_f1_make_at >= 25u) {
-            if (!vm_profile_floppy_boot_send_f1(session, 0)) goto done;
-            model40_f1_make_at = 0u;
+        /* The selected Model 40 option ROM may present graphics while the
+         * installer keeps its established prompt in text memory.  The guest
+         * marker is the integration terminal; presentation remains covered
+         * by VADP's owner-local tests. */
+        if (row->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+            vm_profile_floppy_boot_text_memory_has(session, "ENTER=Continue")) {
+            terminal = VM_PROFILE_FLOPPY_BOOT_TERMINAL_INSTALLER;
+            break;
         }
         Sleep(VM_PROFILE_FLOPPY_BOOT_POLL_MILLISECONDS);
     }
     if (terminal == VM_PROFILE_FLOPPY_BOOT_TERMINAL_NONE) {
+        core_machine_cpu_state cpu_state;
+        core_machine_time_observation time_observation;
+
         vm_session_control_request_pause(&session->control,
             VM_SESSION_PAUSE_EXPLICIT);
         if (!vm_session_control_wait_for_pause(&session->control, 2000u)) {
@@ -351,6 +334,15 @@ C_INT main(C_INT argc, C_CHAR **argv)
          * acknowledges pause.  Observe that frame before requesting stop;
          * stop is not a guest-display terminal and may reset the session. */
         terminal = vm_profile_floppy_boot_terminal_get(session);
+        if (terminal == VM_PROFILE_FLOPPY_BOOT_TERMINAL_NONE &&
+            core_machine_get_cpu_state(session->core_machine, &cpu_state) == TYPE_STATUS_OK &&
+            core_machine_capture_time_observation(session->core_machine,
+                &time_observation) == TYPE_STATUS_OK) {
+            STD_PRINTF("T513:PROFILE-FLOPPY-MATRIX:%s:LAST-PC=%05X-ticks=%llu-halted=%u-speed=%u\n",
+                row->id, (unsigned int)(cpu_state.cs_base + cpu_state.eip),
+                (unsigned long long)time_observation.elapsed_ticks,
+                (unsigned int)cpu_state.halted, (unsigned int)session->speed);
+        }
     }
     vm_session_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) {

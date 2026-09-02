@@ -4,7 +4,6 @@
 #define CORE_MACHINE_D4_CONTROL_WINDOW_BYTES 4096u
 #define CORE_MACHINE_D4_SETUP_BANK_START 0x00100000u
 #define CORE_MACHINE_D4_SETUP_BANK_BYTES 0x00e00000u
-
 /* In the selected D4 setup, low nibble 1 disconnects every extension-RAM
  * bank below F00000h.  This is an External-L2 board relation, cross-checked
  * against the selected DeskPro reference model; it deliberately does not

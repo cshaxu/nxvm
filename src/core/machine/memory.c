@@ -90,6 +90,21 @@ static type_status core_machine_memory_route_resolve(const t_ram *ram,
         if (status != TYPE_STATUS_UNSUPPORTED) return status;
     }
     wrapped = core_machine_memory_wrap_a20(ram, physical);
+    /* A frozen board RAM alias is a selected physical decode, not an ordinary
+     * backing fallback.  It therefore wins over any lower ordinary device
+     * route while preserving the raw pre-A20 reset route above. */
+    for (index = 0u; index < ram->connect.mapping_count; ++index) {
+        const core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
+
+        if (!mapping->selected || physical < mapping->physical_start ||
+            (type_unsigned_64)physical - mapping->physical_start + bytes >
+                mapping->bytes) continue;
+        *out_offset = (STD_SIZE_T)mapping->backing_start +
+            (STD_SIZE_T)((type_unsigned_64)physical - mapping->physical_start);
+        *out_provider = STD_NULL;
+        *out_provider_physical = wrapped;
+        return TYPE_STATUS_OK;
+    }
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
@@ -109,7 +124,26 @@ static type_status core_machine_memory_route_resolve(const t_ram *ram,
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
 
-        if (provider->replacement || wrapped < provider->physical_start ||
+        if (provider->replacement || provider->fallback ||
+            wrapped < provider->physical_start ||
+            (type_unsigned_64)wrapped - provider->physical_start + bytes >
+                provider->bytes) continue;
+        status = provider->query(provider->owner, wrapped, bytes, access);
+        if (status == TYPE_STATUS_OK) {
+            *out_provider = provider;
+            *out_provider_physical = wrapped;
+            return TYPE_STATUS_OK;
+        }
+        if (status != TYPE_STATUS_UNSUPPORTED) return status;
+    }
+    /* An unpopulated board window is an explicit fallback: an installed
+     * device or ROM alias has first claim. */
+    for (index = 0u; index < ram->connect.device_provider_count; ++index) {
+        const core_machine_memory_device_provider *provider =
+            &ram->connect.device_providers[index];
+
+        if (provider->replacement || !provider->fallback ||
+            wrapped < provider->physical_start ||
             (type_unsigned_64)wrapped - provider->physical_start + bytes >
                 provider->bytes) continue;
         status = provider->query(provider->owner, wrapped, bytes, access);
@@ -148,7 +182,8 @@ static type_status core_machine_memory_reset_provider_resolve(const t_ram *ram,
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
 
-        if (!provider->overlay || physical < provider->physical_start ||
+        if (provider->fallback || !provider->overlay ||
+            physical < provider->physical_start ||
             (type_unsigned_64)physical - provider->physical_start + bytes >
                 provider->bytes) continue;
         status = provider->query(provider->owner, physical, bytes,
@@ -163,7 +198,8 @@ static type_status core_machine_memory_reset_provider_resolve(const t_ram *ram,
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
 
-        if (provider->overlay || physical < provider->physical_start ||
+        if (provider->fallback || provider->overlay ||
+            physical < provider->physical_start ||
             (type_unsigned_64)physical - provider->physical_start + bytes >
                 provider->bytes) continue;
         status = provider->query(provider->owner, physical, bytes,
@@ -227,11 +263,12 @@ type_status core_machine_memory_enable_parity(t_ram *ram, STD_SIZE_T bytes,
 
 type_status core_machine_memory_register_mapping(t_ram *ram,
     type_unsigned_32 physical_start,
-    type_unsigned_32 backing_start, STD_SIZE_T bytes)
+    type_unsigned_32 backing_start, STD_SIZE_T bytes, type_bool selected)
 {
     core_machine_memory_mapping *mapping;
 
-    if (ram == STD_NULL || ram->connect.mappings_frozen || bytes == 0u ||
+    if (ram == STD_NULL || ram->connect.mappings_frozen ||
+        (selected != TYPE_FALSE && selected != TYPE_TRUE) || bytes == 0u ||
         backing_start > ram->connect.installed_bytes ||
         bytes > ram->connect.installed_bytes - backing_start ||
         (type_unsigned_64)physical_start + bytes >
@@ -245,6 +282,7 @@ type_status core_machine_memory_register_mapping(t_ram *ram,
     mapping->physical_start = physical_start;
     mapping->backing_start = backing_start;
     mapping->bytes = bytes;
+    mapping->selected = selected;
     return TYPE_STATUS_OK;
 }
 
@@ -346,7 +384,7 @@ static C_VOID core_machine_memory_append_device_provider(t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner, type_bool overlay,
-    type_bool pre_a20, type_bool replacement)
+    type_bool pre_a20, type_bool replacement, type_bool fallback)
 {
     core_machine_memory_device_provider *provider =
         &ram->connect.device_providers[ram->connect.device_provider_count++];
@@ -360,6 +398,7 @@ static C_VOID core_machine_memory_append_device_provider(t_ram *ram,
     provider->overlay = overlay;
     provider->pre_a20 = pre_a20;
     provider->replacement = replacement;
+    provider->fallback = fallback;
 }
 
 type_status core_machine_memory_register_write_observer(t_ram *ram,
@@ -385,7 +424,7 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE);
+        write, query, owner, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE);
     return TYPE_STATUS_OK;
 }
 
@@ -401,7 +440,7 @@ type_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_TRUE, TYPE_FALSE, TYPE_FALSE);
+        write, query, owner, TYPE_TRUE, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE);
     return TYPE_STATUS_OK;
 }
 
@@ -417,7 +456,7 @@ type_status core_machine_memory_register_pre_a20_overlay_device_provider(t_ram *
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_TRUE, TYPE_TRUE, TYPE_FALSE);
+        write, query, owner, TYPE_TRUE, TYPE_TRUE, TYPE_FALSE, TYPE_FALSE);
     return TYPE_STATUS_OK;
 }
 
@@ -433,7 +472,23 @@ type_status core_machine_memory_register_replacement_device_provider(t_ram *ram,
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE);
+        write, query, owner, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE, TYPE_FALSE);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_memory_register_fallback_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner)
+{
+    type_status status = core_machine_memory_validate_device_provider(ram,
+        physical_start, bytes, read, write, query, owner, TYPE_TRUE);
+
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_memory_reserve_device_provider(ram);
+    if (status != TYPE_STATUS_OK) return status;
+    core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
+        write, query, owner, TYPE_TRUE, TYPE_FALSE, TYPE_FALSE, TYPE_TRUE);
     return TYPE_STATUS_OK;
 }
 
@@ -452,7 +507,7 @@ type_status core_machine_memory_register_device_provider_and_write_observer(
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE);
+        write, query, owner, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE);
     core_machine_memory_append_write_observer(ram, callback, owner);
     return TYPE_STATUS_OK;
 }

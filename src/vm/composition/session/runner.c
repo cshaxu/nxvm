@@ -58,9 +58,12 @@ C_VOID vm_session_runner_run(vm_session *session)
             session->speed == VM_SESSION_SPEED_TURBO ?
             VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
-        budget.ticks = STD_ATOMIC_LOAD(&control->stepRequested) ? 0u :
-            session->speed == VM_SESSION_SPEED_TURBO ?
-            VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
+        /* Turbo remains bounded by instructions so control and presentation
+         * stay responsive, but it must not impose a second tick throttle.
+         * Core still advances every retired instruction and every device
+         * deadline on its one guest-time axis. */
+        budget.ticks = STD_ATOMIC_LOAD(&control->stepRequested) ||
+            session->speed == VM_SESSION_SPEED_TURBO ? 0u :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
         {
             type_status run_status = core_machine_run(session->core_machine,

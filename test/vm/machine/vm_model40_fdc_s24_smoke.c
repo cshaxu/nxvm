@@ -102,7 +102,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE ||
             fdc->connect.config.clock_ticks_per_second != 8000000u ||
             fdc->connect.drives.installed_mask != 0x03u ||
-            fdc->connect.drives.track_zero_active_low_mask != 0x03u ||
+            fdc->connect.drives.track_zero_active_low_mask != 0u ||
             session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K;
         core_machine_port_write(port, 0x0070u, 0x14u);
         failed |= core_machine_port_read(port, 0x0071u) != 0x41u;
@@ -132,7 +132,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
             result[0] != (core_machine_fdc_ST0_READY_CHANGE | 3u);
         model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x04u, 0x00u}, 2u);
-        failed |= !model40_fdc_result(fdc, port, result, 1u) || result[0] != 0x28u;
+        failed |= !model40_fdc_result(fdc, port, result, 1u) || result[0] != 0x38u;
         core_machine_port_write(port, 0x03f7u, 0u);
         model40_fdc_command(fdc, port, specify, sizeof(specify));
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));

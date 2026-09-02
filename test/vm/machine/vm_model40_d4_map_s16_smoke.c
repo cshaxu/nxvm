@@ -19,6 +19,22 @@ static C_INT write_byte(core_machine *machine, type_unsigned_32 physical,
     return core_machine_memory_write(machine, physical, &value, sizeof(value)) == expected;
 }
 
+static C_INT write_word(core_machine *machine, type_unsigned_32 physical,
+    type_unsigned_16 value)
+{
+    return core_machine_memory_write(machine, physical, &value, sizeof(value)) ==
+        TYPE_STATUS_OK;
+}
+
+static C_INT read_word(core_machine *machine, type_unsigned_32 physical,
+    type_unsigned_16 expected)
+{
+    type_unsigned_16 observed = 0u;
+
+    return core_machine_memory_read(machine, physical, &observed,
+        sizeof(observed)) == TYPE_STATUS_OK && observed == expected;
+}
+
 C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -60,24 +76,44 @@ C_INT main(C_VOID)
             VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START + 1u, 0x22u));
         CHECK(read_byte(session->core_machine, 0x00f40000u, 0xffu));
         CHECK(read_byte(session->core_machine, 0x00f80000u, 0xffu));
-        /* The DeskPro ROM POST tests the relocated C0000h--EFFFFh RAM through
-         * FC0000h--FEFFFFh.  Prove the complete bidirectional decode here:
-         * these are aliases into Core's single backing, not a firmware-only
-         * reset route or a second profile-owned RAM image. */
+        /* The DeskPro ROM POST tests its relocated C0000h--EFFFFh RAM at
+         * FC0000h--FEFFFFh. These are Core's one backing through the selected
+         * board decode; the low C0000h--EFFFFh hole remains ROM/open bus. */
         CHECK(write_byte(session->core_machine, 0x00fc1234u, 0x3cu,
             TYPE_STATUS_OK));
-        CHECK(read_byte(session->core_machine, 0x000c1234u, 0x3cu));
-        CHECK(write_byte(session->core_machine, 0x000d5678u, 0xa5u,
+        CHECK(read_byte(session->core_machine, 0x00fc1234u, 0x3cu));
+        CHECK(write_byte(session->core_machine, 0x00fd5678u, 0xa5u,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00fd5678u, 0xa5u));
         CHECK(write_byte(session->core_machine, 0x00fe9abcu, 0x5au,
             TYPE_STATUS_OK));
-        CHECK(read_byte(session->core_machine, 0x000e9abcu, 0x5au));
+        CHECK(read_byte(session->core_machine, 0x00fe9abcu, 0x5au));
+        /* FF0000h is also selected RAM, despite the ordinary F0000h BIOS ROM
+         * route underneath it.  The alias must win for this board decode. */
+        CHECK(write_byte(session->core_machine, 0x00ff1234u, 0x73u,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00ff1234u, 0x73u));
         CHECK(core_machine_get_d4_platform_observation(session->core_machine,
             &d4) == TYPE_STATUS_OK && !d4.iochk_latched && !d4.failsafe_latched);
         CHECK(write_byte(session->core_machine, 0x00fa0000u, 0x3cu,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00fa0000u, 0x3cu));
+        /* POST also probes the relocated B0000h page through FB0000h. */
+        CHECK(write_byte(session->core_machine, 0x00fb1234u, 0x96u,
+            TYPE_STATUS_OK));
+        /* B0000h is an unpopulated low-memory window while B8000h is the
+         * selected EGA aperture.  It must not silently fall through into the
+         * same Core backing as the relocated FB0000h RAM page. */
+        CHECK(write_byte(session->core_machine, 0x000b1234u, 0x69u,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x000b1234u, 0xffu));
+        CHECK(read_byte(session->core_machine, 0x00fb1234u, 0x96u));
+        /* The 64 KiB board-bank seam is one contiguous RAM decode. */
+        CHECK(write_word(session->core_machine, 0x00fbffffu, 0xffffu));
+        CHECK(read_word(session->core_machine, 0x00fbffffu, 0xffffu));
+        CHECK(write_byte(session->core_machine, 0x000b5678u, 0x69u,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x000b5678u, 0xffu));
         CHECK(write_byte(session->core_machine,
             VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, 0x5au,
             TYPE_STATUS_OK));
@@ -104,7 +140,7 @@ C_INT main(C_VOID)
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             0x8fu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
-            0xc1u));
+            0xfdu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x42u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,
@@ -140,7 +176,7 @@ C_INT main(C_VOID)
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             0x8fu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
-            0xc1u));
+            0xfdu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x42u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,

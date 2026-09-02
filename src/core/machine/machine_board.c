@@ -775,7 +775,10 @@ type_status core_machine_configure_absent_memory(core_machine *machine,
     if (absent == STD_NULL) return TYPE_STATUS_INVALID_STATE;
     absent->config = *config;
     absent->configured = TYPE_TRUE;
-    status = core_machine_memory_register_device_provider(&machine->executor_memory,
+    /* An unpopulated board window is a fallback, not an installed device:
+     * a dynamically decoded video aperture may own part of the same physical
+     * range while the remaining addresses still read as open bus. */
+    status = core_machine_memory_register_fallback_device_provider(&machine->executor_memory,
         config->physical_start, config->bytes, core_machine_absent_memory_read,
         core_machine_absent_memory_write, core_machine_absent_memory_query,
         absent);

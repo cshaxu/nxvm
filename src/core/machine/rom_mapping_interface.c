@@ -34,8 +34,10 @@ static type_status core_machine_rom_mapping_write(C_VOID *owner,
     if (offset > mapping->bytes || bytes > mapping->bytes - offset) {
         return TYPE_STATUS_FAULT;
     }
-    /* Physical ROM accepts the bus write but retains its immutable backing. */
-    return TYPE_STATUS_OK;
+    /* ROM owns reads, not the RAM decode below it.  Declining a write preserves
+     * immutable reads while allowing a selected board alias to expose the
+     * underlying RAM, as on the DeskPro 386 memory relocation path. */
+    return TYPE_STATUS_UNSUPPORTED;
 }
 
 static type_status core_machine_rom_mapping_query(C_VOID *owner,

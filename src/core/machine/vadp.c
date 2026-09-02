@@ -315,6 +315,23 @@ static C_INT core_machine_vadp_compaq_odd_even_page_active(const t_vadp *adapter
         (adapter->data.graphics[6] & 0x02u) != 0u;
 }
 
+/* The selected Compaq primary/only CECG route is 3Dx/B800h.  Its firmware
+ * nevertheless uses B0000h for POST output while GDC map 3 is selected.
+ * On the real board that compatibility write is still video memory, never
+ * ordinary system RAM.  Keep it in the one planar store by canonically
+ * routing the B0000h compatibility window to the selected B8000h window. */
+static C_INT core_machine_vadp_compaq_b000_compatibility_contains(
+    const t_vadp *adapter, type_unsigned_32 physical, type_native_unsigned bytes)
+{
+    type_unsigned_64 request_end = (type_unsigned_64)physical + bytes;
+
+    return adapter != STD_NULL && bytes != 0u && adapter->data.ega_personality ==
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
+        core_machine_vadp_ega_cpu_aperture_active(adapter) &&
+        ((adapter->data.graphics[6] >> 2u) & 0x03u) == 3u &&
+        physical >= 0x000b0000u && request_end <= 0x000b8000u;
+}
+
 static type_unsigned_32 core_machine_vadp_ega_planar_offset(const t_vadp *adapter,
     type_unsigned_32 physical)
 {
@@ -322,6 +339,9 @@ static type_unsigned_32 core_machine_vadp_ega_planar_offset(const t_vadp *adapte
     type_unsigned_32 aperture_bytes;
     type_unsigned_32 offset;
 
+    if (core_machine_vadp_compaq_b000_compatibility_contains(adapter, physical, 1u)) {
+        physical += 0x00008000u;
+    }
     core_machine_vadp_active_ega_aperture(adapter, &aperture_base, &aperture_bytes);
     offset = physical - aperture_base;
     if (aperture_bytes == 0x00020000u) offset &= 0x0000ffffu;
@@ -340,7 +360,8 @@ static C_INT core_machine_vadp_ega_cpu_aperture_contains(const t_vadp *adapter,
     type_unsigned_32 physical, type_native_unsigned bytes)
 {
     return core_machine_vadp_ega_cpu_aperture_active(adapter) &&
-        core_machine_vadp_ega_aperture_contains(adapter, physical, bytes);
+        (core_machine_vadp_ega_aperture_contains(adapter, physical, bytes) ||
+        core_machine_vadp_compaq_b000_compatibility_contains(adapter, physical, bytes));
 }
 
 static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
@@ -738,6 +759,10 @@ static C_VOID core_machine_vadp_ega_write_observer(C_VOID *owner,
 
     if (adapter == STD_NULL || !core_machine_vadp_ega_cpu_aperture_active(adapter) ||
         bytes == 0u) return;
+    if (core_machine_vadp_compaq_b000_compatibility_contains(adapter, physical, bytes)) {
+        core_machine_vadp_mark_dirty(adapter);
+        return;
+    }
     write_end = (type_unsigned_64)physical + bytes;
     {
         type_unsigned_32 aperture_base;
@@ -1695,18 +1720,31 @@ C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
 
         period = core_machine_vadp_cga_logical_raster_period(adapter);
         if (period == 0u) return;
-        phase = adapter->data.raster_phase % period;
+        phase = adapter->data.raster_phase;
+        if (phase >= period) phase %= period;
         if (!adapter->data.cga_logical_raster_started && elapsed_ticks >=
             period - phase) {
             adapter->data.cga_logical_raster_started = TYPE_TRUE;
         }
-        adapter->data.raster_phase = (type_unsigned_32)((phase + elapsed_ticks % period) % period);
+        if (elapsed_ticks >= period) elapsed_ticks %= period;
+        if ((type_unsigned_32)elapsed_ticks >= period - phase) {
+            adapter->data.raster_phase = (type_unsigned_32)elapsed_ticks -
+                (period - phase);
+        } else {
+            adapter->data.raster_phase = phase + (type_unsigned_32)elapsed_ticks;
+        }
         return;
     }
     period = core_machine_vadp_raster_period(&adapter->data.text_timing);
     if (period == 0u) return;
-    adapter->data.raster_phase = (type_unsigned_32)((adapter->data.raster_phase +
-        elapsed_ticks % period) % period);
+    if (adapter->data.raster_phase >= period) adapter->data.raster_phase %= period;
+    if (elapsed_ticks >= period) elapsed_ticks %= period;
+    if ((type_unsigned_32)elapsed_ticks >= period - adapter->data.raster_phase) {
+        adapter->data.raster_phase = (type_unsigned_32)elapsed_ticks -
+            (period - adapter->data.raster_phase);
+    } else {
+        adapter->data.raster_phase += (type_unsigned_32)elapsed_ticks;
+    }
 }
 
 C_VOID core_machine_vadp_finalize(t_vadp *adapter)

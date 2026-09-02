@@ -248,7 +248,7 @@ type_status core_machine_plan_apply_topology(core_machine *machine,
             &topology->memory_alias[index];
 
         status = core_machine_memory_register_mapping(&machine->executor_memory,
-            alias->physical_start, alias->backing_start, alias->bytes);
+            alias->physical_start, alias->backing_start, alias->bytes, TYPE_TRUE);
         if (status != TYPE_STATUS_OK) return status;
     }
     for (index = 0u; index < topology->absent_memory_count; ++index) {

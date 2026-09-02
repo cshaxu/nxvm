@@ -61,6 +61,8 @@ typedef struct core_machine_cpu_fault_snapshot {
     type_unsigned_32 edx;
     type_unsigned_32 cr2;
     type_unsigned_32 esp;
+    type_unsigned_16 ss;
+    type_unsigned_32 ss_base;
     type_unsigned_32 ebp;
     type_unsigned_32 esi;
     type_unsigned_32 edi;

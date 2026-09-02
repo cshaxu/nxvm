@@ -147,12 +147,19 @@ C_INT main(C_VOID)
 
     if (!failed) {
         core_machine_run_result result;
+        type_unsigned_64 elapsed_before_shutdown;
+
+        elapsed_before_shutdown = machine->elapsed_ticks;
         core_machine_cpu_execution_request_shutdown(&machine->executor_cpu_execution);
         machine->executor_cpu.data.flagHalt = TYPE_TRUE;
         failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
             &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||
-            machine->executor_cpu.data.eip != 0x0000fff0u;
+            machine->executor_cpu.data.eip != 0x0000fff0u ||
+            machine->elapsed_ticks != elapsed_before_shutdown ||
+            core_machine_get_d4_platform_observation(machine, &observation) !=
+                TYPE_STATUS_OK || !observation.failsafe_enabled ||
+            !observation.failsafe_latched;
     }
     if (!failed) failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_get_d4_platform_observation(machine, &observation) !=

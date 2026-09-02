@@ -1,9 +1,14 @@
 #include "type.h"
 
+#include "core/machine/debug_interface.h"
 #include <windows.h>
+#ifdef exception_code
+#undef exception_code
+#endif
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
+#include "core/machine/memory.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "core/machine/trace_interface.h"
 #include "vm/composition/session/control.h"
@@ -16,8 +21,21 @@
 #define VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS 16u
 #define VM_BYOB_FDC_PORT_HISTORY 256u
 #define VM_BYOB_HDC_PORT_HISTORY 64u
+#define VM_BYOB_MODEL40_VIDEO_PORT_HISTORY 64u
+#define VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY 32u
 #define VM_BYOB_NEAR_UD_HISTORY 16u
 #define VM_BYOB_CMOS_BYTES 128u
+#define VM_BYOB_MODEL40_POST_LATCH_PATHS 5u
+#define VM_BYOB_MODEL40_POST_STATUS_WRITERS 12u
+#define VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY 4u
+#define VM_BYOB_MODEL40_MEMORY_BASE_HISTORY 32u
+#define VM_BYOB_MODEL40_POST_STATUS_58_HISTORY 16u
+#define VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL 0x0001c058u
+#define VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY 16u
+#define VM_BYOB_MODEL40_HIGH_B_PAGE_BYTES 16u
+#define VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY 32u
+#define VM_BYOB_MODEL40_INT10_VECTOR_HISTORY 16u
+#define VM_BYOB_MODEL40_ES_HISTORY 32u
 
 typedef struct vm_byob_fdc_port_event {
     type_unsigned_32 linear_pc;
@@ -38,6 +56,17 @@ typedef struct vm_byob_boot_trace {
     vm_byob_fdc_port_event fdc_port_history[VM_BYOB_FDC_PORT_HISTORY];
     type_unsigned_64 hdc_port_accesses;
     vm_byob_fdc_port_event hdc_port_history[VM_BYOB_HDC_PORT_HISTORY];
+    type_unsigned_64 model40_video_port_accesses;
+    vm_byob_fdc_port_event
+        model40_video_port_history[VM_BYOB_MODEL40_VIDEO_PORT_HISTORY];
+    type_unsigned_64 model40_video_special_accesses[5u];
+    type_unsigned_8 model40_video_special_last_values[5u];
+    type_unsigned_64 model40_video_error_writes;
+    type_unsigned_8 model40_video_error_last_value;
+    type_unsigned_32 model40_video_error_last_pc;
+    vm_byob_fdc_port_event
+        model40_video_special_history[VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY];
+    type_unsigned_64 model40_video_special_history_count;
     type_unsigned_8 cmos_index;
     type_unsigned_64 cmos_reads[VM_BYOB_CMOS_BYTES];
     type_unsigned_64 cmos_writes[VM_BYOB_CMOS_BYTES];
@@ -92,6 +121,232 @@ typedef struct vm_byob_boot_trace {
     type_unsigned_64 fdc_terminal_count;
     type_unsigned_64 fdc_failed_terminal_count;
     core_machine_fdc_terminal_observation last_fdc_terminal;
+    type_bool model40_invalid_entry_observed;
+    core_machine_cpu_execution_point model40_invalid_entry_source;
+    type_unsigned_16 model40_invalid_entry_ss;
+    type_unsigned_16 model40_invalid_entry_sp;
+    type_bool model40_int10_vector_write_observed;
+    type_unsigned_64 model40_int10_vector_write_count;
+    type_unsigned_32 model40_int10_vector_write_pc;
+    type_unsigned_16 model40_int10_vector_write_cs;
+    type_unsigned_16 model40_int10_vector_offset;
+    type_unsigned_16 model40_int10_vector_segment;
+    type_unsigned_32 model40_int10_vector_history_pc[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    type_unsigned_16 model40_int10_vector_history_cs[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    type_unsigned_16 model40_int10_vector_history_offset[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    type_unsigned_16 model40_int10_vector_history_segment[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    type_unsigned_64 model40_int42_vector_write_count;
+    type_unsigned_32 model40_int42_vector_write_pc[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    type_unsigned_16 model40_int42_vector_history_offset[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    type_unsigned_16 model40_int42_vector_history_segment[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    type_unsigned_64 model40_int10_entry_count;
+    type_unsigned_32 model40_int10_entry_predecessor;
+    type_unsigned_16 model40_int10_entry_ss;
+    type_unsigned_16 model40_int10_entry_sp;
+    type_bool model40_int10_iret_frame_observed;
+    type_unsigned_64 model40_int10_iret_frame_count;
+    type_unsigned_32 model40_int10_iret_frame_pc;
+    type_unsigned_16 model40_int10_iret_ss;
+    type_unsigned_16 model40_int10_iret_sp;
+    type_unsigned_32 model40_int10_iret_esp;
+    type_unsigned_32 model40_int10_iret_ss_base;
+    type_unsigned_32 model40_int10_iret_ss_limit;
+    type_bool model40_int10_iret_ss_big;
+    type_bool model40_int10_iret_cs_default_32;
+    type_unsigned_16 model40_int10_iret_words[4u];
+    type_bool model40_bios_iret_frame_observed;
+    type_unsigned_16 model40_bios_iret_ss;
+    type_unsigned_16 model40_bios_iret_sp;
+    type_unsigned_16 model40_bios_iret_words[4u];
+    type_unsigned_64 model40_video_rom_entries;
+    type_unsigned_32 model40_video_rom_first_pc;
+    type_unsigned_64 kbc_write_count;
+    type_unsigned_16 kbc_last_write_port;
+    type_unsigned_8 kbc_last_write_value;
+    type_unsigned_32 kbc_last_write_pc;
+    type_unsigned_64 model40_resume_entries;
+    type_unsigned_32 model40_resume_predecessor;
+    type_unsigned_16 model40_resume_ax;
+    type_unsigned_64 model40_reset_vector_target_entries;
+    type_unsigned_32 model40_reset_vector_target_predecessor;
+    type_bool model40_shutdown_diagnostic_valid;
+    core_machine_cpu_diagnostic model40_shutdown_diagnostic;
+    type_bool model40_protected_transition_observed;
+    type_unsigned_8 model40_gdt[32];
+    type_unsigned_8 model40_gdtr_pointer[6];
+    type_unsigned_64 model40_post_setup_entries;
+    type_unsigned_32 model40_post_setup_predecessor;
+    type_unsigned_64 model40_video_clear_entries;
+    type_unsigned_64 model40_video_delay_entries;
+    type_unsigned_32 model40_video_delay_predecessor;
+    type_unsigned_64 model40_post_latch_writes;
+    type_unsigned_32 model40_post_latch_last_pc;
+    type_unsigned_8 model40_post_latch_last_value;
+    type_unsigned_64 model40_post_latch_path_entries[VM_BYOB_MODEL40_POST_LATCH_PATHS];
+    type_unsigned_32 model40_post_latch_path_predecessors[VM_BYOB_MODEL40_POST_LATCH_PATHS];
+    type_unsigned_64 model40_resume_prompt_entries;
+    type_unsigned_32 model40_resume_prompt_predecessor;
+    type_unsigned_64 model40_resume_wait_entries;
+    type_unsigned_32 model40_resume_wait_predecessor;
+    type_unsigned_64 model40_post_status_helper_entries;
+    type_unsigned_32 model40_post_status_helper_predecessor;
+    type_unsigned_32 model40_post_status_helper_predecessors[
+        VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY];
+    type_unsigned_64 model40_post_status_writer_entries[VM_BYOB_MODEL40_POST_STATUS_WRITERS];
+    type_unsigned_32 model40_post_status_writer_predecessors[VM_BYOB_MODEL40_POST_STATUS_WRITERS];
+    type_unsigned_8 model40_post_status_value;
+    type_unsigned_64 model40_memory_address_error_entries;
+    type_unsigned_32 model40_memory_address_error_predecessor;
+    type_unsigned_16 model40_memory_address_error_ds;
+    type_unsigned_32 model40_memory_address_error_ds_base;
+    type_unsigned_16 model40_memory_address_error_status;
+    type_unsigned_64 model40_memory_address_test_entries;
+    type_unsigned_32 model40_memory_address_test_eflags;
+    type_unsigned_16 model40_memory_address_test_status;
+    type_unsigned_64 model40_memory_compare_failures;
+    type_unsigned_64 model40_memory_compare_branch_taken;
+    type_unsigned_64 model40_memory_scas_entries;
+    type_unsigned_16 model40_memory_scas_ax;
+    type_unsigned_16 model40_memory_scas_di;
+    type_unsigned_16 model40_memory_scas_es;
+    type_unsigned_32 model40_memory_scas_es_base;
+    type_unsigned_32 model40_memory_scas_eflags;
+    type_unsigned_64 model40_memory_mismatch_entries;
+    type_unsigned_16 model40_memory_mismatch_ax;
+    type_unsigned_16 model40_memory_mismatch_di;
+    type_unsigned_16 model40_memory_mismatch_es;
+    type_unsigned_32 model40_memory_mismatch_es_base;
+    type_unsigned_16 model40_memory_mismatch_value;
+    type_unsigned_64 model40_memory_test_return_entries;
+    type_unsigned_16 model40_memory_test_return_ax;
+    type_unsigned_64 model40_memory_test_entries;
+    type_unsigned_16 model40_memory_test_dx;
+    type_unsigned_16 model40_memory_test_ax_entry;
+    type_bool model40_memory_status_test_active;
+    type_unsigned_16 model40_memory_status_test_ax_entry;
+    type_unsigned_64 model40_memory_status_test_mismatches;
+    type_unsigned_16 model40_memory_status_test_expected;
+    type_unsigned_16 model40_memory_status_test_actual;
+    type_unsigned_16 model40_memory_status_test_offset;
+    type_unsigned_16 model40_memory_status_test_es;
+    type_unsigned_32 model40_memory_status_test_es_base;
+    type_unsigned_32 model40_memory_status_test_gdtr_base;
+    type_unsigned_16 model40_memory_status_test_gdtr_limit;
+    type_unsigned_8 model40_memory_status_test_descriptor[8u];
+    type_unsigned_32 model40_memory_status_test_cr0;
+    type_bool model40_memory_status_test_video_memory_disabled;
+    type_unsigned_8 model40_memory_status_test_graphics_6;
+    type_unsigned_8 model40_memory_status_test_sequencer_0;
+    type_unsigned_8 model40_memory_status_test_high_b_page[
+        VM_BYOB_MODEL40_HIGH_B_PAGE_BYTES];
+    type_unsigned_64 model40_memory_high_b_page_writes;
+    type_unsigned_32 model40_memory_high_b_page_first_pc;
+    type_unsigned_32 model40_memory_high_b_page_last_pc;
+    type_bool model40_memory_pattern_producer_active;
+    type_unsigned_64 model40_memory_pattern_producer_entries;
+    type_unsigned_64 model40_memory_pattern_producer_high_b_writes;
+    type_unsigned_32 model40_memory_high_b_write_pcs[
+        VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY];
+    type_unsigned_8 model40_memory_high_b_write_producer[
+        VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY];
+    type_unsigned_8 model40_memory_high_b_write_pages[
+        VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY][VM_BYOB_MODEL40_HIGH_B_PAGE_BYTES];
+    type_unsigned_64 model40_post_status_58_writes;
+    type_unsigned_32 model40_post_status_58_last_pc;
+    type_unsigned_16 model40_post_status_58_last_value;
+    type_unsigned_64 model40_post_status_58_observer_writes;
+    type_unsigned_32 model40_post_status_58_observer_last_pc;
+    type_unsigned_8 model40_post_status_58_observer_last_value;
+    type_unsigned_32 model40_post_status_58_observer_pcs[
+        VM_BYOB_MODEL40_POST_STATUS_58_HISTORY];
+    type_unsigned_8 model40_post_status_58_observer_values[
+        VM_BYOB_MODEL40_POST_STATUS_58_HISTORY];
+    type_unsigned_64 model40_post_private_status_writes;
+    type_unsigned_32 model40_post_private_status_last_pc;
+    type_unsigned_16 model40_post_private_status_last_value;
+    type_unsigned_32 model40_post_private_status_pcs[
+        VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY];
+    type_unsigned_16 model40_post_private_status_values[
+        VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY];
+    type_unsigned_64 model40_port61_reads;
+    type_unsigned_32 model40_port61_last_pc;
+    type_unsigned_8 model40_port61_last_value;
+    type_unsigned_64 model40_memory_compare_error_branches;
+    type_unsigned_64 model40_memory_parity_error_branches;
+    type_unsigned_64 model40_memory_parity_test_reads;
+    type_unsigned_8 model40_memory_parity_test_last_value;
+    type_unsigned_64 model40_memory_error_exit_entries;
+    type_unsigned_32 model40_memory_error_exit_predecessor;
+    type_unsigned_16 model40_memory_error_es;
+    type_unsigned_16 model40_memory_error_di;
+    type_unsigned_16 model40_memory_error_ax;
+    type_unsigned_32 model40_memory_compare_eax;
+    type_unsigned_32 model40_memory_compare_edi;
+    type_unsigned_32 model40_memory_compare_es_base;
+    type_unsigned_16 model40_memory_compare_es_selector;
+    type_unsigned_64 model40_memory_address_failures;
+    type_unsigned_16 model40_memory_address_failure_ds;
+    type_unsigned_16 model40_memory_address_failure_si;
+    type_unsigned_32 model40_memory_address_failure_eax;
+    type_unsigned_32 model40_memory_address_failure_ebx;
+    type_unsigned_32 model40_memory_address_failure_ebp;
+    type_unsigned_32 model40_memory_address_failure_eflags;
+    type_unsigned_32 model40_memory_compare_cr0;
+    type_unsigned_32 model40_memory_compare_gdtr_base;
+    type_unsigned_32 model40_memory_compare_gdtr_limit;
+    type_unsigned_8 model40_memory_compare_descriptor[8];
+    type_unsigned_16 model40_memory_compare_value;
+    type_unsigned_64 model40_memory_pattern_entries;
+    type_unsigned_64 model40_ram_post_entries;
+    type_unsigned_64 model40_ram_post_returns;
+    type_unsigned_64 model40_ram_post_failures;
+    type_unsigned_32 model40_memory_pattern_es_base;
+    type_unsigned_16 model40_memory_pattern_es_selector;
+    type_unsigned_32 model40_memory_pattern_after_es_base;
+    type_unsigned_16 model40_memory_pattern_after_value;
+    type_unsigned_32 model40_memory_pattern_after_eax;
+    type_unsigned_32 model40_memory_pattern_after_edi;
+    type_unsigned_32 model40_memory_pattern_bases[VM_BYOB_MODEL40_MEMORY_BASE_HISTORY];
+    type_unsigned_32 model40_memory_compare_bases[VM_BYOB_MODEL40_MEMORY_BASE_HISTORY];
+    type_unsigned_64 model40_memory_1e_writes;
+    type_unsigned_32 model40_memory_1e_last_pc;
+    type_unsigned_8 model40_memory_1e_last_value;
+    type_unsigned_64 model40_memory_high_writes;
+    type_unsigned_32 model40_memory_high_first_address;
+    type_unsigned_32 model40_memory_high_last_address;
+    type_unsigned_32 model40_memory_high_last_pc;
+    type_unsigned_8 model40_memory_high_first_value;
+    type_unsigned_8 model40_memory_high_last_value;
+    type_unsigned_64 model40_memory_b_window_writes;
+    type_unsigned_32 model40_memory_b_window_first_pc;
+    type_unsigned_32 model40_memory_b_window_last_pc;
+    type_unsigned_64 model40_memory_b_window_writes_at_mismatch;
+    type_unsigned_32 model40_memory_b_window_last_pc_at_mismatch;
+    type_unsigned_64 model40_memory_b_first_word_writes;
+    type_unsigned_32 model40_memory_b_first_word_last_pc;
+    type_unsigned_16 model40_memory_b_first_word_last_value;
+    type_unsigned_8 model40_memory_b_first_word_graphics_6;
+    type_unsigned_8 model40_memory_b_first_word_sequencer_0;
+    type_bool model40_memory_b_first_word_video_memory_disabled;
+    type_unsigned_64 model40_retirements;
+    type_unsigned_16 model40_last_es_selector;
+    type_unsigned_32 model40_last_es_base;
+    type_unsigned_64 model40_es_change_count;
+    type_unsigned_32 model40_es_change_pcs[VM_BYOB_MODEL40_ES_HISTORY];
+    type_unsigned_16 model40_es_change_selectors[VM_BYOB_MODEL40_ES_HISTORY];
+    type_unsigned_32 model40_es_change_bases[VM_BYOB_MODEL40_ES_HISTORY];
+    type_unsigned_32 model40_es_change_cr0[VM_BYOB_MODEL40_ES_HISTORY];
+    type_unsigned_64 model40_memory_b_first_word_retirements;
+    type_unsigned_64 model40_memory_fb_first_word_retirements;
+    type_unsigned_64 model40_memory_fb_page_writes;
+    type_unsigned_32 model40_memory_fb_page_first_pc;
+    type_unsigned_32 model40_memory_fb_page_last_pc;
+    type_unsigned_64 model40_memory_fb_first_word_writes;
+    type_unsigned_32 model40_memory_fb_first_word_last_pc;
+    type_unsigned_16 model40_memory_fb_first_word_last_value;
+    type_unsigned_64 model40_memory_pattern_write_count;
+    type_unsigned_32 model40_memory_pattern_write_first_address;
+    type_unsigned_32 model40_memory_pattern_write_last_address;
 } vm_byob_boot_trace;
 
 static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text);
@@ -126,6 +381,18 @@ static C_VOID vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
     record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
 }
 
+static C_VOID vm_byob_kbc_port_record(vm_byob_boot_trace *trace,
+    const core_machine_trace_event *event)
+{
+    if (trace == STD_NULL || event == STD_NULL ||
+        event->type != CORE_MACHINE_TRACE_PORT_WRITE ||
+        (event->address != 0x0060u && event->address != 0x0064u)) return;
+    ++trace->kbc_write_count;
+    trace->kbc_last_write_port = (type_unsigned_16)event->address;
+    trace->kbc_last_write_value = (type_unsigned_8)event->value;
+    trace->kbc_last_write_pc = event->linear_pc;
+}
+
 static C_VOID vm_byob_fdc_terminal_observe(C_VOID *context,
     const core_machine_fdc_terminal_observation *observation)
 {
@@ -135,6 +402,20 @@ static C_VOID vm_byob_fdc_terminal_observe(C_VOID *context,
     ++trace->fdc_terminal_count;
     if (!observation->successful) ++trace->fdc_failed_terminal_count;
     trace->last_fdc_terminal = *observation;
+}
+
+static C_VOID vm_byob_model40_vector_write_observe(C_VOID *context,
+    type_unsigned_32 physical, type_native_unsigned bytes)
+{
+    vm_byob_boot_trace *trace = context;
+
+    if (trace == STD_NULL || trace->machine == STD_NULL ||
+        trace->model40_int10_vector_write_observed || physical > 0x0042u ||
+        physical + bytes <= 0x0040u) return;
+    trace->model40_int10_vector_write_observed = TYPE_TRUE;
+    trace->model40_int10_vector_write_pc = trace->machine->executor_cpu.data.cs.base +
+        trace->machine->executor_cpu.data.eip;
+    trace->model40_int10_vector_write_cs = trace->machine->executor_cpu.data.cs.selector;
 }
 
 static C_VOID vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
@@ -154,6 +435,53 @@ static C_VOID vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
     record->value = (type_unsigned_8)observation->io_value;
     record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
     ++trace->fdc_port_accesses;
+}
+
+static C_VOID vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
+    const core_machine_retirement_observation *observation)
+{
+    vm_byob_fdc_port_event *record;
+    STD_SIZE_T index;
+
+    if (trace == STD_NULL || observation == STD_NULL ||
+        observation->point.linear_pc < 0x000c0000u ||
+        observation->point.linear_pc >= 0x000c4000u ||
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
+    if (observation->io_port == 0x0084u &&
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
+        ++trace->model40_video_error_writes;
+        trace->model40_video_error_last_value = (type_unsigned_8)observation->io_value;
+        trace->model40_video_error_last_pc = observation->point.linear_pc;
+    }
+    if (observation->io_port < 0x03b0u || observation->io_port > 0x0fc6u) return;
+    index = (STD_SIZE_T)(trace->model40_video_port_accesses %
+        VM_BYOB_MODEL40_VIDEO_PORT_HISTORY);
+    record = &trace->model40_video_port_history[index];
+    record->linear_pc = observation->point.linear_pc;
+    record->port = observation->io_port;
+    record->value = (type_unsigned_8)observation->io_value;
+    record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
+    ++trace->model40_video_port_accesses;
+    {
+        const type_unsigned_16 ports[5u] = { 0x03c2u, 0x03c6u, 0x07c6u,
+            0x0bc6u, 0x0fc6u };
+        STD_SIZE_T special;
+
+        for (special = 0u; special < 5u; ++special) {
+            if (observation->io_port == ports[special]) {
+                const STD_SIZE_T special_index = (STD_SIZE_T)(
+                    trace->model40_video_special_history_count %
+                    VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY);
+
+                ++trace->model40_video_special_accesses[special];
+                trace->model40_video_special_last_values[special] =
+                    (type_unsigned_8)observation->io_value;
+                trace->model40_video_special_history[special_index] = *record;
+                ++trace->model40_video_special_history_count;
+                break;
+            }
+        }
+    }
 }
 
 static C_VOID vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
@@ -185,8 +513,408 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
     vm_byob_boot_trace *trace = context;
 
     if (trace == STD_NULL || observation == STD_NULL) return;
+    if (trace->machine != STD_NULL) {
+        const t_cpu_data_sreg *es = &trace->machine->executor_cpu.data.es;
+
+        ++trace->model40_retirements;
+        if (es->selector != trace->model40_last_es_selector ||
+            es->base != trace->model40_last_es_base) {
+            const STD_SIZE_T index = (STD_SIZE_T)(trace->model40_es_change_count %
+                VM_BYOB_MODEL40_ES_HISTORY);
+
+            trace->model40_es_change_pcs[index] = observation->point.linear_pc;
+            trace->model40_es_change_selectors[index] = es->selector;
+            trace->model40_es_change_bases[index] = es->base;
+            trace->model40_es_change_cr0[index] = trace->machine->executor_cpu.data.cr0;
+            ++trace->model40_es_change_count;
+            trace->model40_last_es_selector = es->selector;
+            trace->model40_last_es_base = es->base;
+        }
+    }
+    if (observation->point.linear_pc == 0x000c0cd7u && trace->machine != STD_NULL) {
+        ++trace->model40_int10_entry_count;
+        trace->model40_int10_entry_predecessor = trace->last_linear_pc;
+        trace->model40_int10_entry_ss = trace->machine->executor_cpu.data.ss.selector;
+        trace->model40_int10_entry_sp = (type_unsigned_16)
+            trace->machine->executor_cpu.data.esp;
+    }
+    if ((observation->point.linear_pc == 0x000c0d2du ||
+         observation->point.linear_pc == 0x000c0d30u) && trace->machine != STD_NULL) {
+        trace->model40_int10_iret_frame_observed = TYPE_TRUE;
+        ++trace->model40_int10_iret_frame_count;
+        trace->model40_int10_iret_frame_pc = observation->point.linear_pc;
+        trace->model40_int10_iret_ss = trace->machine->executor_cpu.data.ss.selector;
+        trace->model40_int10_iret_sp = (type_unsigned_16)
+            trace->machine->executor_cpu.data.esp;
+        trace->model40_int10_iret_esp = trace->machine->executor_cpu.data.esp;
+        trace->model40_int10_iret_ss_base = trace->machine->executor_cpu.data.ss.base;
+        trace->model40_int10_iret_ss_limit = trace->machine->executor_cpu.data.ss.limit;
+        trace->model40_int10_iret_ss_big = trace->machine->executor_cpu.data.ss.seg.data.big;
+        trace->model40_int10_iret_cs_default_32 =
+            trace->machine->executor_cpu.data.cs.seg.exec.defsize;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            trace->machine->executor_cpu.data.ss.base + trace->model40_int10_iret_sp,
+            (type_virtual_address)trace->model40_int10_iret_words,
+            sizeof(trace->model40_int10_iret_words));
+    }
+    if (observation->point.linear_pc == 0x000fd7a6u && trace->machine != STD_NULL) {
+        trace->model40_bios_iret_frame_observed = TYPE_TRUE;
+        trace->model40_bios_iret_ss = trace->machine->executor_cpu.data.ss.selector;
+        trace->model40_bios_iret_sp = (type_unsigned_16)trace->machine->executor_cpu.data.esp;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            trace->machine->executor_cpu.data.ss.base +
+                (type_unsigned_16)(trace->model40_bios_iret_sp - 6u),
+            (type_virtual_address)trace->model40_bios_iret_words,
+            sizeof(trace->model40_bios_iret_words));
+    }
+    if (!trace->model40_invalid_entry_observed && trace->machine != STD_NULL &&
+        trace->machine->executor_cpu.data.cs.base + trace->machine->executor_cpu.data.eip ==
+            0x000e0cd7u) {
+        trace->model40_invalid_entry_observed = TYPE_TRUE;
+        trace->model40_invalid_entry_source = observation->point;
+        trace->model40_invalid_entry_ss = trace->machine->executor_cpu.data.ss.selector;
+        trace->model40_invalid_entry_sp = (type_unsigned_16)
+            trace->machine->executor_cpu.data.esp;
+    }
+    if (observation->point.linear_pc >= 0x000c0000u &&
+        observation->point.linear_pc < 0x000c4000u) {
+        if (trace->model40_video_rom_entries == 0u)
+            trace->model40_video_rom_first_pc = observation->point.linear_pc;
+        ++trace->model40_video_rom_entries;
+    }
     vm_byob_fdc_retirement_record(trace, observation);
+    vm_byob_model40_video_retirement_record(trace, observation);
     vm_byob_cmos_retirement_record(trace, observation);
+    if (observation->point.byte_count >= 3u &&
+        observation->point.bytes[0u] == 0x0fu &&
+        observation->point.bytes[1u] == 0x22u &&
+        observation->point.bytes[2u] == 0x00u && trace->machine != STD_NULL) {
+        trace->model40_protected_transition_observed =
+            core_machine_memory_read(trace->machine, 0x0009f300u,
+                trace->model40_gdt, sizeof(trace->model40_gdt)) == TYPE_STATUS_OK;
+        (C_VOID)core_machine_memory_read(trace->machine, 0x000f0a13u,
+            trace->model40_gdtr_pointer, sizeof(trace->model40_gdtr_pointer));
+    }
+    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE &&
+        (observation->io_port == 0x0060u || observation->io_port == 0x0064u)) {
+        ++trace->kbc_write_count;
+        trace->kbc_last_write_port = observation->io_port;
+        trace->kbc_last_write_value = (type_unsigned_8)observation->io_value;
+        trace->kbc_last_write_pc = observation->point.linear_pc;
+    }
+    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
+        observation->io_port == 0x0061u) {
+        ++trace->model40_port61_reads;
+        trace->model40_port61_last_pc = observation->point.linear_pc;
+        trace->model40_port61_last_value = (type_unsigned_8)observation->io_value;
+        if (observation->point.linear_pc == 0x000fd1b1u) {
+            ++trace->model40_memory_parity_test_reads;
+            trace->model40_memory_parity_test_last_value =
+                (type_unsigned_8)observation->io_value;
+        }
+    }
+    if (observation->point.linear_pc == 0x000fd1abu &&
+        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
+        ++trace->model40_memory_compare_error_branches;
+    }
+    if (observation->point.linear_pc == 0x000fd1b7u &&
+        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
+        ++trace->model40_memory_parity_error_branches;
+    }
+    if (observation->point.linear_pc == 0x000fc2d0u && trace->machine != STD_NULL) {
+        trace->model40_memory_error_es = trace->machine->executor_cpu.data.es.selector;
+        trace->model40_memory_error_di = (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_error_ax = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+    }
+    if (observation->point.linear_pc == 0x000fc1a9u && trace->machine != STD_NULL) {
+        ++trace->model40_memory_test_entries;
+        trace->model40_memory_test_dx = (type_unsigned_16)trace->machine->executor_cpu.data.edx;
+        trace->model40_memory_test_ax_entry = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+    }
+    if (observation->point.linear_pc == 0x000fc101u) {
+        ++trace->model40_memory_pattern_producer_entries;
+        trace->model40_memory_pattern_producer_active = TYPE_TRUE;
+    }
+    if (observation->point.linear_pc == 0x000fc1c8u) {
+        trace->model40_memory_pattern_producer_active = TYPE_FALSE;
+    }
+    if (observation->point.linear_pc == 0x000fbe83u && trace->machine != STD_NULL) {
+        trace->model40_memory_status_test_active = TYPE_TRUE;
+        trace->model40_memory_status_test_ax_entry =
+            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_status_test_video_memory_disabled =
+            trace->machine->shared_vadp.data.compaq_cpu_video_memory_disabled;
+        trace->model40_memory_status_test_graphics_6 =
+            trace->machine->shared_vadp.data.graphics[6u];
+        trace->model40_memory_status_test_sequencer_0 =
+            trace->machine->shared_vadp.data.sequencer[0u];
+        trace->model40_memory_status_test_gdtr_base =
+            trace->machine->executor_cpu.data.gdtr.base;
+        trace->model40_memory_status_test_gdtr_limit =
+            trace->machine->executor_cpu.data.gdtr.limit;
+        (C_VOID)core_machine_memory_read(trace->machine,
+            trace->model40_memory_status_test_gdtr_base + 0x48u,
+            trace->model40_memory_status_test_descriptor,
+            sizeof(trace->model40_memory_status_test_descriptor));
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00fb0000u,
+            (type_virtual_address)trace->model40_memory_status_test_high_b_page,
+            sizeof(trace->model40_memory_status_test_high_b_page));
+    }
+    if (observation->point.linear_pc == 0x000fbe86u) {
+        trace->model40_memory_status_test_active = TYPE_FALSE;
+    }
+    if (observation->point.linear_pc == 0x000fc2d2u) {
+        ++trace->model40_memory_error_exit_entries;
+        trace->model40_memory_error_exit_predecessor = trace->last_linear_pc;
+    }
+    if (observation->point.linear_pc == 0x000fd1eau && trace->machine != STD_NULL) {
+        const t_cpu *cpu = &trace->machine->executor_cpu;
+
+        ++trace->model40_memory_address_failures;
+        trace->model40_memory_address_failure_ds = cpu->data.ds.selector;
+        trace->model40_memory_address_failure_si = (type_unsigned_16)cpu->data.esi;
+        trace->model40_memory_address_failure_eax = cpu->data.eax;
+        trace->model40_memory_address_failure_ebx = cpu->data.ebx;
+        trace->model40_memory_address_failure_ebp = cpu->data.ebp;
+        trace->model40_memory_address_failure_eflags = cpu->data.eflags;
+    }
+    if (observation->point.linear_pc == 0x000fd14cu) {
+        ++trace->model40_ram_post_entries;
+    } else if (observation->point.linear_pc == 0x000fd1ddu) {
+        ++trace->model40_ram_post_returns;
+    } else if (observation->point.linear_pc == 0x000fd1eau) {
+        ++trace->model40_ram_post_failures;
+    }
+    if (observation->point.linear_pc == 0x000fa660u) {
+        ++trace->model40_resume_entries;
+        trace->model40_resume_predecessor = trace->last_linear_pc;
+        trace->model40_resume_ax = trace->machine == STD_NULL ? 0u :
+            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+    } else if (observation->point.linear_pc == 0x000fb8deu) {
+        ++trace->model40_post_setup_entries;
+        trace->model40_post_setup_predecessor = trace->last_linear_pc;
+    } else if (observation->point.linear_pc == 0x000fb9b5u) {
+        ++trace->model40_video_clear_entries;
+    } else if (observation->point.linear_pc == 0x000fb9d5u) {
+        ++trace->model40_video_delay_entries;
+        trace->model40_video_delay_predecessor = trace->last_linear_pc;
+    } else if (observation->point.linear_pc >= 0x000fd41du &&
+        observation->point.linear_pc <= 0x000fd49eu) {
+        STD_SIZE_T post_latch_index = VM_BYOB_MODEL40_POST_LATCH_PATHS;
+
+        switch (observation->point.linear_pc) {
+        case 0x000fd41du: post_latch_index = 0u; break;
+        case 0x000fd434u: post_latch_index = 1u; break;
+        case 0x000fd44cu: post_latch_index = 2u; break;
+        case 0x000fd461u: post_latch_index = 3u; break;
+        case 0x000fd49eu: post_latch_index = 4u; break;
+        }
+        if (post_latch_index < VM_BYOB_MODEL40_POST_LATCH_PATHS) {
+            ++trace->model40_post_latch_path_entries[post_latch_index];
+            trace->model40_post_latch_path_predecessors[post_latch_index] =
+                trace->last_linear_pc;
+        }
+    } else if (observation->point.linear_pc == 0x000fd4b4u) {
+        ++trace->model40_resume_prompt_entries;
+        trace->model40_resume_prompt_predecessor = trace->last_linear_pc;
+    } else if (observation->point.linear_pc == 0x000fd501u) {
+        ++trace->model40_resume_wait_entries;
+        trace->model40_resume_wait_predecessor = trace->last_linear_pc;
+    }
+    if (observation->point.linear_pc == 0x000fc7fbu) {
+        const STD_SIZE_T helper_index = (STD_SIZE_T)(
+            trace->model40_post_status_helper_entries %
+            VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY);
+
+        trace->model40_post_status_helper_predecessors[helper_index] =
+            trace->last_linear_pc;
+        ++trace->model40_post_status_helper_entries;
+        trace->model40_post_status_helper_predecessor = trace->last_linear_pc;
+    } else if (observation->point.linear_pc == 0x000fc043u && trace->machine != STD_NULL) {
+        ++trace->model40_memory_address_test_entries;
+        trace->model40_memory_address_test_eflags = trace->machine->executor_cpu.data.eflags;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            trace->machine->executor_cpu.data.ds.base + 0x58u,
+            (type_virtual_address)&trace->model40_memory_address_test_status,
+            sizeof(trace->model40_memory_address_test_status));
+    } else if (observation->point.linear_pc == 0x000fc04bu && trace->machine != STD_NULL) {
+        ++trace->model40_memory_address_error_entries;
+        trace->model40_memory_address_error_predecessor = trace->last_linear_pc;
+        trace->model40_memory_address_error_ds = trace->machine->executor_cpu.data.ds.selector;
+        trace->model40_memory_address_error_ds_base = trace->machine->executor_cpu.data.ds.base;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            trace->model40_memory_address_error_ds_base + 0x58u,
+            (type_virtual_address)&trace->model40_memory_address_error_status,
+            sizeof(trace->model40_memory_address_error_status));
+    } else if (observation->point.linear_pc == 0x000f8720u && trace->machine != STD_NULL) {
+        const STD_SIZE_T history_index = (STD_SIZE_T)(
+            trace->model40_memory_pattern_entries % VM_BYOB_MODEL40_MEMORY_BASE_HISTORY);
+
+        trace->model40_memory_pattern_bases[history_index] =
+            trace->machine->executor_cpu.data.es.base;
+        if (trace->model40_memory_pattern_entries == 0u) {
+            trace->model40_memory_pattern_es_base = trace->machine->executor_cpu.data.es.base;
+            trace->model40_memory_pattern_es_selector =
+                trace->machine->executor_cpu.data.es.selector;
+        }
+        ++trace->model40_memory_pattern_entries;
+    } else if (observation->point.linear_pc == 0x000f8738u && trace->machine != STD_NULL &&
+        trace->model40_memory_pattern_after_edi == 0u) {
+        trace->model40_memory_pattern_after_es_base =
+            trace->machine->executor_cpu.data.es.base;
+        trace->model40_memory_pattern_after_eax = trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_pattern_after_edi = trace->machine->executor_cpu.data.edi;
+        {
+            const type_unsigned_32 physical =
+                trace->model40_memory_pattern_after_es_base +
+                (type_unsigned_16)((trace->model40_memory_pattern_after_edi - 4u) & 0xffffu);
+
+            if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
+                (C_VOID)core_machine_memory_read_physical(
+                    &trace->machine->executor_memory, physical,
+                    (type_virtual_address)&trace->model40_memory_pattern_after_value,
+                    sizeof(trace->model40_memory_pattern_after_value));
+            }
+        }
+    } else if (observation->point.linear_pc == 0x000fc1cbu && trace->machine != STD_NULL) {
+        type_unsigned_32 physical = trace->machine->executor_cpu.data.es.base +
+            (type_unsigned_16)((trace->machine->executor_cpu.data.edi - 2u) & 0xffffu);
+        const STD_SIZE_T history_index = (STD_SIZE_T)(
+            trace->model40_memory_compare_failures % VM_BYOB_MODEL40_MEMORY_BASE_HISTORY);
+
+        trace->model40_memory_compare_bases[history_index] =
+            trace->machine->executor_cpu.data.es.base;
+        ++trace->model40_memory_compare_failures;
+        trace->model40_memory_compare_eax = trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_compare_edi = trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_compare_es_base = trace->machine->executor_cpu.data.es.base;
+        trace->model40_memory_compare_es_selector =
+            trace->machine->executor_cpu.data.es.selector;
+        trace->model40_memory_compare_cr0 = trace->machine->executor_cpu.data.cr0;
+        trace->model40_memory_compare_gdtr_base = trace->machine->executor_cpu.data.gdtr.base;
+        trace->model40_memory_compare_gdtr_limit = trace->machine->executor_cpu.data.gdtr.limit;
+        (C_VOID)core_machine_memory_read(trace->machine,
+            trace->model40_memory_compare_gdtr_base + 0x48u,
+            trace->model40_memory_compare_descriptor,
+            sizeof(trace->model40_memory_compare_descriptor));
+        if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
+            (C_VOID)core_machine_memory_read_physical(
+                &trace->machine->executor_memory, physical,
+                (type_virtual_address)&trace->model40_memory_compare_value,
+                sizeof(trace->model40_memory_compare_value));
+        }
+        ++trace->model40_memory_scas_entries;
+        trace->model40_memory_scas_ax = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_scas_di = (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_scas_es = trace->machine->executor_cpu.data.es.selector;
+        trace->model40_memory_scas_es_base = trace->machine->executor_cpu.data.es.base;
+        trace->model40_memory_scas_eflags = trace->machine->executor_cpu.data.eflags;
+    } else if (observation->point.linear_pc == 0x000fc1ccu &&
+        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
+        trace->machine != STD_NULL) {
+        ++trace->model40_memory_compare_branch_taken;
+        trace->model40_memory_compare_eax = trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_compare_edi = trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_compare_es_selector =
+            trace->machine->executor_cpu.data.es.selector;
+        trace->model40_memory_compare_es_base = trace->machine->executor_cpu.data.es.base;
+        {
+            const type_unsigned_32 physical = trace->model40_memory_compare_es_base +
+                (type_unsigned_16)((trace->model40_memory_compare_edi - 2u) & 0xffffu);
+
+            if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
+                (C_VOID)core_machine_memory_read_physical(
+                    &trace->machine->executor_memory, physical,
+                    (type_virtual_address)&trace->model40_memory_compare_value,
+                    sizeof(trace->model40_memory_compare_value));
+            }
+        }
+    } else if (observation->point.linear_pc == 0x000fc207u &&
+        trace->machine != STD_NULL) {
+        const type_unsigned_32 physical = trace->machine->executor_cpu.data.es.base +
+            (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+
+        ++trace->model40_memory_mismatch_entries;
+        trace->model40_memory_mismatch_ax = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_mismatch_di = (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_mismatch_es = trace->machine->executor_cpu.data.es.selector;
+        trace->model40_memory_mismatch_es_base = trace->machine->executor_cpu.data.es.base;
+        trace->model40_memory_b_window_writes_at_mismatch =
+            trace->model40_memory_b_window_writes;
+        trace->model40_memory_b_window_last_pc_at_mismatch =
+            trace->model40_memory_b_window_last_pc;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory, physical,
+            (type_virtual_address)&trace->model40_memory_mismatch_value,
+            sizeof(trace->model40_memory_mismatch_value));
+        if (trace->model40_memory_status_test_active) {
+            ++trace->model40_memory_status_test_mismatches;
+            trace->model40_memory_status_test_expected =
+                (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+            trace->model40_memory_status_test_offset =
+                (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+            trace->model40_memory_status_test_es =
+                trace->machine->executor_cpu.data.es.selector;
+            trace->model40_memory_status_test_es_base =
+                trace->machine->executor_cpu.data.es.base;
+            trace->model40_memory_status_test_cr0 =
+                trace->machine->executor_cpu.data.cr0;
+            (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+                trace->model40_memory_status_test_es_base +
+                    trace->model40_memory_status_test_offset,
+                (type_virtual_address)&trace->model40_memory_status_test_actual,
+                sizeof(trace->model40_memory_status_test_actual));
+        }
+    } else if ((observation->point.linear_pc == 0x000fbe62u ||
+        observation->point.linear_pc == 0x000fbe86u) &&
+        trace->machine != STD_NULL) {
+        ++trace->model40_memory_test_return_entries;
+        trace->model40_memory_test_return_ax =
+            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+    } else if ((observation->point.linear_pc == 0x000f85b4u ||
+        observation->point.linear_pc == 0x000fbc8au ||
+        observation->point.linear_pc == 0x000fbcf3u ||
+        observation->point.linear_pc == 0x000fbd51u ||
+        observation->point.linear_pc == 0x000fbd9bu ||
+        observation->point.linear_pc == 0x000fbdd4u ||
+        observation->point.linear_pc == 0x000fbe09u ||
+        observation->point.linear_pc == 0x000fbe38u ||
+        observation->point.linear_pc == 0x000fbe67u ||
+        observation->point.linear_pc == 0x000fbe8bu ||
+        observation->point.linear_pc == 0x000fc084u ||
+        observation->point.linear_pc == 0x000fc0acu) && trace->machine != STD_NULL) {
+        ++trace->model40_post_status_58_writes;
+        trace->model40_post_status_58_last_pc = observation->point.linear_pc;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00000458u, (type_virtual_address)&trace->model40_post_status_58_last_value,
+            sizeof(trace->model40_post_status_58_last_value));
+    } else {
+        STD_SIZE_T post_status_index = VM_BYOB_MODEL40_POST_STATUS_WRITERS;
+
+        switch (observation->point.linear_pc) {
+        case 0x000f8324u: post_status_index = 0u; break;
+        case 0x000fbbd1u: post_status_index = 1u; break;
+        case 0x000fc801u: post_status_index = 2u; break;
+        case 0x000fd30cu: post_status_index = 3u; break;
+        case 0x000fd323u: post_status_index = 4u; break;
+        case 0x000fd41du: post_status_index = 5u; break;
+        case 0x000fd434u: post_status_index = 6u; break;
+        case 0x000fd44cu: post_status_index = 7u; break;
+        case 0x000fd461u: post_status_index = 8u; break;
+        case 0x000fd49eu: post_status_index = 9u; break;
+        case 0x000ff4e2u: post_status_index = 10u; break;
+        case 0x000ff54du: post_status_index = 11u; break;
+        }
+        if (post_status_index < VM_BYOB_MODEL40_POST_STATUS_WRITERS) {
+            ++trace->model40_post_status_writer_entries[post_status_index];
+            trace->model40_post_status_writer_predecessors[post_status_index] =
+                trace->last_linear_pc;
+        }
+        if (observation->point.linear_pc == 0x000fc801u) {
+            (C_VOID)core_machine_memory_read(trace->machine, 0x00000412u,
+                &trace->model40_post_status_value, 1u);
+        }
+    }
     if (!trace->real_286_high_flags_observed && trace->machine != STD_NULL &&
         trace->machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         (trace->machine->executor_cpu.data.cr0 & VCPU_CR0_PE) == 0u &&
@@ -280,6 +1008,16 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         ++trace->reset_events;
         return;
     }
+    if (event->type == CORE_MACHINE_TRACE_STOP &&
+        event->detail == CORE_MACHINE_STOP_RESET_REQUESTED && trace->machine != STD_NULL) {
+        trace->model40_shutdown_diagnostic_valid =
+            core_machine_get_cpu_diagnostic(trace->machine,
+                &trace->model40_shutdown_diagnostic) == TYPE_STATUS_OK;
+        trace->model40_protected_transition_observed =
+            core_machine_memory_read(trace->machine, 0x0009f300u,
+                trace->model40_gdt, sizeof(trace->model40_gdt)) == TYPE_STATUS_OK;
+    }
+    vm_byob_kbc_port_record(trace, event);
     if (event->type == CORE_MACHINE_TRACE_MEMORY_READ &&
         event->address >= 0x000f0000u && event->address < 0x00100000u) {
         ++trace->rom_memory_reads;
@@ -291,6 +1029,19 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         return;
     }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+        event->address == 0x00000412u) {
+        ++trace->model40_post_latch_writes;
+        trace->model40_post_latch_last_pc = event->linear_pc;
+        trace->model40_post_latch_last_value = (type_unsigned_8)event->value;
+        return;
+    }
+    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+        event->address >= 0x001e0000u && event->address < 0x001e0010u) {
+        ++trace->model40_memory_1e_writes;
+        trace->model40_memory_1e_last_pc = event->linear_pc;
+        trace->model40_memory_1e_last_value = (type_unsigned_8)event->value;
+    }
+    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x0018u && event->address < 0x001cu) {
         const type_unsigned_8 index = (type_unsigned_8)(event->address - 0x0018u);
 
@@ -299,6 +1050,10 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         return;
     }
     if (event->type == CORE_MACHINE_TRACE_CPU_RETIRE) {
+        if (event->linear_pc == 0x000fa5d3u) {
+            ++trace->model40_reset_vector_target_entries;
+            trace->model40_reset_vector_target_predecessor = trace->last_linear_pc;
+        }
         ++trace->cpu_retires;
         trace->last_linear_pc = event->linear_pc;
         if (event->linear_pc >= 0x000fe360u && event->linear_pc < 0x000fe37cu)
@@ -319,6 +1074,17 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         write.type = CORE_MACHINE_TRACE_PORT_WRITE;
         vm_byob_fdc_port_record(trace, &write);
         ++trace->fdc_port_accesses;
+        return;
+    }
+    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        ((event->detail >> 8u) & 0xffu) ==
+            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
+        (event->address == 0x0060u || event->address == 0x0064u)) {
+        core_machine_trace_event write = *event;
+
+        write.type = CORE_MACHINE_TRACE_PORT_WRITE;
+        vm_byob_kbc_port_record(trace, &write);
         return;
     }
     if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
@@ -359,6 +1125,11 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
     }
     if (event->type != CORE_MACHINE_TRACE_PORT_READ &&
         event->type != CORE_MACHINE_TRACE_PORT_WRITE) return;
+    if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0084u) {
+        ++trace->model40_video_error_writes;
+        trace->model40_video_error_last_value = (type_unsigned_8)event->value;
+        trace->model40_video_error_last_pc = event->linear_pc;
+    }
     if (event->address >= 0x03f0u && event->address <= 0x03f7u) {
         vm_byob_fdc_port_record(trace, event);
         ++trace->fdc_port_accesses;
@@ -373,6 +1144,155 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         ++trace->pit_port_accesses;
     } else if (event->address >= 0x03d0u && event->address <= 0x03dfu) {
         ++trace->cga_port_accesses;
+    }
+}
+
+static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
+    type_unsigned_32 physical, type_native_unsigned bytes)
+{
+    vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
+    type_unsigned_32 pc;
+
+    if (trace == STD_NULL) return;
+    pc = trace->machine == STD_NULL ? 0u : trace->machine->executor_cpu.data.cs.base +
+        trace->machine->executor_cpu.data.eip;
+    if (physical <= 0x00000042u &&
+        (type_unsigned_64)physical + bytes > 0x00000040u) {
+        const STD_SIZE_T index = (STD_SIZE_T)(trace->model40_int10_vector_write_count %
+            VM_BYOB_MODEL40_INT10_VECTOR_HISTORY);
+
+        trace->model40_int10_vector_write_observed = TYPE_TRUE;
+        ++trace->model40_int10_vector_write_count;
+        trace->model40_int10_vector_write_pc = pc;
+        trace->model40_int10_vector_write_cs =
+            trace->machine->executor_cpu.data.cs.selector;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00000040u,
+            (type_virtual_address)&trace->model40_int10_vector_offset,
+            sizeof(trace->model40_int10_vector_offset));
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00000042u,
+            (type_virtual_address)&trace->model40_int10_vector_segment,
+            sizeof(trace->model40_int10_vector_segment));
+        trace->model40_int10_vector_history_pc[index] = pc;
+        trace->model40_int10_vector_history_cs[index] =
+            trace->machine->executor_cpu.data.cs.selector;
+        trace->model40_int10_vector_history_offset[index] =
+            trace->model40_int10_vector_offset;
+        trace->model40_int10_vector_history_segment[index] =
+            trace->model40_int10_vector_segment;
+    }
+    if (physical <= 0x0000010au &&
+        (type_unsigned_64)physical + bytes > 0x00000108u) {
+        const STD_SIZE_T index = (STD_SIZE_T)(trace->model40_int42_vector_write_count %
+            VM_BYOB_MODEL40_INT10_VECTOR_HISTORY);
+
+        ++trace->model40_int42_vector_write_count;
+        trace->model40_int42_vector_write_pc[index] = pc;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00000108u, (type_virtual_address)&trace->model40_int42_vector_history_offset[index],
+            sizeof(trace->model40_int42_vector_history_offset[index]));
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x0000010au, (type_virtual_address)&trace->model40_int42_vector_history_segment[index],
+            sizeof(trace->model40_int42_vector_history_segment[index]));
+    }
+    if (physical <= 0x00000458u && (type_unsigned_64)physical + bytes > 0x00000458u) {
+        const STD_SIZE_T index = (STD_SIZE_T)(
+            trace->model40_post_status_58_observer_writes %
+            VM_BYOB_MODEL40_POST_STATUS_58_HISTORY);
+
+        ++trace->model40_post_status_58_observer_writes;
+        trace->model40_post_status_58_observer_last_pc = pc;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00000458u,
+            (type_virtual_address)&trace->model40_post_status_58_observer_last_value,
+            sizeof(trace->model40_post_status_58_observer_last_value));
+        trace->model40_post_status_58_observer_pcs[index] = pc;
+        trace->model40_post_status_58_observer_values[index] =
+            trace->model40_post_status_58_observer_last_value;
+    }
+    if (physical <= VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL &&
+        (type_unsigned_64)physical + bytes > VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL) {
+        const STD_SIZE_T index = (STD_SIZE_T)(
+            trace->model40_post_private_status_writes %
+            VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY);
+
+        ++trace->model40_post_private_status_writes;
+        trace->model40_post_private_status_last_pc = pc;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL,
+            (type_virtual_address)&trace->model40_post_private_status_last_value,
+            sizeof(trace->model40_post_private_status_last_value));
+        trace->model40_post_private_status_pcs[index] = pc;
+        trace->model40_post_private_status_values[index] =
+            trace->model40_post_private_status_last_value;
+    }
+    if (physical >= 0x000b0000u && physical < 0x000c0000u) {
+        if (trace->model40_memory_b_window_writes == 0u)
+            trace->model40_memory_b_window_first_pc = pc;
+        ++trace->model40_memory_b_window_writes;
+        trace->model40_memory_b_window_last_pc = pc;
+    }
+    if (physical < 0x000b0002u && (type_unsigned_64)physical + bytes > 0x000b0000u) {
+        ++trace->model40_memory_b_first_word_writes;
+        trace->model40_memory_b_first_word_retirements = trace->model40_retirements;
+        trace->model40_memory_b_first_word_last_pc = pc;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x000b0000u, (type_virtual_address)&trace->model40_memory_b_first_word_last_value,
+            sizeof(trace->model40_memory_b_first_word_last_value));
+        trace->model40_memory_b_first_word_graphics_6 =
+            trace->machine->shared_vadp.data.graphics[6u];
+        trace->model40_memory_b_first_word_sequencer_0 =
+            trace->machine->shared_vadp.data.sequencer[0u];
+        trace->model40_memory_b_first_word_video_memory_disabled =
+            trace->machine->shared_vadp.data.compaq_cpu_video_memory_disabled;
+    }
+    if (physical >= 0x00fb0000u && physical < 0x00fc0000u) {
+        if (trace->model40_memory_fb_page_writes == 0u)
+            trace->model40_memory_fb_page_first_pc = pc;
+        ++trace->model40_memory_fb_page_writes;
+        trace->model40_memory_fb_page_last_pc = pc;
+    }
+    if (physical < 0x00fb0010u && (type_unsigned_64)physical + bytes > 0x00fb0000u) {
+        const STD_SIZE_T history = (STD_SIZE_T)(trace->model40_memory_high_b_page_writes %
+            VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY);
+
+        if (trace->model40_memory_high_b_page_writes == 0u)
+            trace->model40_memory_high_b_page_first_pc = pc;
+        ++trace->model40_memory_high_b_page_writes;
+        trace->model40_memory_high_b_page_last_pc = pc;
+        trace->model40_memory_high_b_write_pcs[history] = pc;
+        trace->model40_memory_high_b_write_producer[history] =
+            trace->model40_memory_pattern_producer_active;
+        if (trace->model40_memory_pattern_producer_active)
+            ++trace->model40_memory_pattern_producer_high_b_writes;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00fb0000u,
+            (type_virtual_address)trace->model40_memory_high_b_write_pages[history],
+            sizeof(trace->model40_memory_high_b_write_pages[history]));
+    }
+    if (physical < 0x00fb0002u && (type_unsigned_64)physical + bytes > 0x00fb0000u) {
+        ++trace->model40_memory_fb_first_word_writes;
+        trace->model40_memory_fb_first_word_retirements = trace->model40_retirements;
+        trace->model40_memory_fb_first_word_last_pc = pc;
+        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00fb0000u, (type_virtual_address)&trace->model40_memory_fb_first_word_last_value,
+            sizeof(trace->model40_memory_fb_first_word_last_value));
+    }
+    if (physical < 0x00fa0000u || physical >= 0x01000000u) return;
+    if (trace->model40_memory_high_writes == 0u) {
+        trace->model40_memory_high_first_address = physical;
+        trace->model40_memory_high_first_value = (type_unsigned_8)bytes;
+    }
+    ++trace->model40_memory_high_writes;
+    trace->model40_memory_high_last_address = physical;
+    trace->model40_memory_high_last_pc = pc;
+    trace->model40_memory_high_last_value = (type_unsigned_8)bytes;
+    if (trace->model40_memory_high_last_pc == 0x000f8738u) {
+        if (trace->model40_memory_pattern_write_count == 0u)
+            trace->model40_memory_pattern_write_first_address = physical;
+        ++trace->model40_memory_pattern_write_count;
+        trace->model40_memory_pattern_write_last_address = physical;
     }
 }
 
@@ -737,6 +1657,21 @@ int main(C_INT argc, C_CHAR **argv)
         }
     }
     trace.machine = session->core_machine;
+    if (config.profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+        t_ram *memory = &session->core_machine->executor_memory;
+
+        if (memory->connect.write_observer_count <
+            CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY) {
+            memory->connect.write_observers[memory->connect.write_observer_count++] =
+                (core_machine_memory_write_observer_slot) {
+                    vm_byob_model40_memory_write_observe, &trace };
+        } else {
+            STD_PRINTF("BOOT-PROBE=setup-failed\n");
+            goto done;
+        }
+        (C_VOID)core_machine_debug_set_watchpoint(session->core_machine,
+            CORE_MACHINE_DEBUG_WATCH_WRITE, 0x00fe0000u);
+    }
     {
         type_unsigned_16 offset = 0u;
         type_unsigned_16 segment = 0u;
@@ -754,10 +1689,11 @@ int main(C_INT argc, C_CHAR **argv)
     }
     if (turbo) {
         /* The probe has no interactive command/display loop.  A larger,
-         * equally bounded instruction/tick quantum avoids redundant host
-         * re-entry while Core still performs every instruction and deadline. */
+         * instruction-only quantum matches the production Turbo runner:
+         * Core still performs every instruction and deadline, but an
+         * unrelated tick ceiling cannot turn this diagnostic into Standard. */
         budget.instructions = 4096u;
-        budget.ticks = 4096u;
+        budget.ticks = 0u;
     }
     if (!no_retirement_observation &&
         core_machine_set_retirement_observation_provider(session->core_machine,
@@ -766,6 +1702,8 @@ int main(C_INT argc, C_CHAR **argv)
         STD_PRINTF("BOOT-PROBE=setup-failed\n");
         goto done;
     }
+    (C_VOID)core_machine_register_memory_write_observer(session->core_machine,
+        vm_byob_model40_vector_write_observe, &trace);
     /* This is probe-only observability after construction; the FDC retains the
        sole terminal event path and no guest-visible state is changed. */
     session->core_machine->fdc.connect.observation_provider =
@@ -1126,11 +2064,16 @@ int main(C_INT argc, C_CHAR **argv)
         (unsigned int)last_detail,
         (unsigned int)session->core_machine->executor_cpu.data.cs.base,
         (unsigned int)session->core_machine->executor_cpu.data.eip);
+    STD_PRINTF("BOOT-PROBE=last-retired-pc=%05X\n",
+        (unsigned int)trace.last_linear_pc);
     if (diagnostic.last_delivered_exception.valid) {
         STD_PRINTF("BOOT-PROBE=delivered-exceptions=%u-last-mask=%08X-last-code=%08X\n",
             (unsigned int)diagnostic.delivered_exception_count,
             (unsigned int)diagnostic.last_delivered_exception.exception_mask,
             (unsigned int)diagnostic.last_delivered_exception.exception_code);
+        STD_PRINTF("BOOT-PROBE=first-exception-pc=%05X-last-exception-pc=%05X\n",
+            (unsigned int)diagnostic.first_delivered_exception.point.linear_pc,
+            (unsigned int)diagnostic.last_delivered_exception.point.linear_pc);
     }
     if (trace.reset_events != 0u) STD_PRINTF("BOOT-PROBE=trace-reset\n");
     if (trace.rom_memory_reads != 0u) STD_PRINTF("BOOT-PROBE=trace-rom-read\n");
@@ -1161,12 +2104,18 @@ done:
         type_unsigned_16 bda_keyboard_head = 0u;
         type_unsigned_16 bda_keyboard_tail = 0u;
         type_unsigned_8 bda_wait_state[16] = {0};
+        type_unsigned_16 bda_memory_kib = 0u;
         type_unsigned_16 stack_words[8] = {0};
         type_unsigned_8 bda_post_status = 0u;
         type_unsigned_8 bda_diskette_status = 0u;
+        type_unsigned_8 bda_motor_wait = 0u;
         type_unsigned_8 bda_motor_status = 0u;
         type_unsigned_16 int13_offset = 0u;
         type_unsigned_16 int13_segment = 0u;
+        type_unsigned_16 int1e_offset = 0u;
+        type_unsigned_16 int1e_segment = 0u;
+        type_unsigned_16 irq6_offset = 0u;
+        type_unsigned_16 irq6_segment = 0u;
         type_unsigned_16 int15_offset = 0u;
         type_unsigned_16 int15_segment = 0u;
         type_unsigned_8 int13_state[5] = {0u};
@@ -1193,6 +2142,145 @@ done:
                 (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
                 (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
                 (unsigned int)point->bytes[3u]);
+        }
+        if (trace.model40_invalid_entry_observed) {
+            const core_machine_cpu_execution_point *point =
+                &trace.model40_invalid_entry_source;
+
+            STD_PRINTF("BOOT-PROBE=model40-invalid-entry-source=%05X-bytes=%02X,%02X,%02X,%02X-ss=%04X-sp=%04X\n",
+                (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
+                (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
+                (unsigned int)point->bytes[3u], (unsigned int)trace.model40_invalid_entry_ss,
+                (unsigned int)trace.model40_invalid_entry_sp);
+        }
+        if (trace.model40_int10_vector_write_observed) {
+            type_unsigned_64 entry;
+            const type_unsigned_64 count = trace.model40_int10_vector_write_count <
+                VM_BYOB_MODEL40_INT10_VECTOR_HISTORY ?
+                trace.model40_int10_vector_write_count :
+                VM_BYOB_MODEL40_INT10_VECTOR_HISTORY;
+
+            STD_PRINTF("BOOT-PROBE=model40-int10-vector-writer=%llu-%05X-cs=%04X-vector=%04X:%04X\n",
+                (unsigned long long)trace.model40_int10_vector_write_count,
+                (unsigned int)trace.model40_int10_vector_write_pc,
+                (unsigned int)trace.model40_int10_vector_write_cs,
+                (unsigned int)trace.model40_int10_vector_segment,
+                (unsigned int)trace.model40_int10_vector_offset);
+            for (entry = 0u; entry < count; ++entry) {
+                const STD_SIZE_T index = (STD_SIZE_T)(
+                    (trace.model40_int10_vector_write_count - count + entry) %
+                    VM_BYOB_MODEL40_INT10_VECTOR_HISTORY);
+
+                STD_PRINTF("BOOT-PROBE=model40-int10-vector-write-%05X-cs=%04X=%04X:%04X\n",
+                    (unsigned int)trace.model40_int10_vector_history_pc[index],
+                    (unsigned int)trace.model40_int10_vector_history_cs[index],
+                    (unsigned int)trace.model40_int10_vector_history_segment[index],
+                    (unsigned int)trace.model40_int10_vector_history_offset[index]);
+            }
+        }
+        {
+            type_unsigned_16 int42_offset = 0u;
+            type_unsigned_16 int42_segment = 0u;
+            type_unsigned_64 entry;
+
+            (C_VOID)core_machine_memory_read(session->core_machine, 0x0108u,
+                &int42_offset, sizeof(int42_offset));
+            (C_VOID)core_machine_memory_read(session->core_machine, 0x010au,
+                &int42_segment, sizeof(int42_segment));
+            STD_PRINTF("BOOT-PROBE=model40-int42-vector=%04X:%04X\n",
+                (unsigned int)int42_segment, (unsigned int)int42_offset);
+            for (entry = 0u; entry < trace.model40_int42_vector_write_count &&
+                    entry < VM_BYOB_MODEL40_INT10_VECTOR_HISTORY; ++entry) {
+                STD_PRINTF("BOOT-PROBE=model40-int42-vector-write-%05X=%04X:%04X\n",
+                    (unsigned int)trace.model40_int42_vector_write_pc[entry],
+                    (unsigned int)trace.model40_int42_vector_history_segment[entry],
+                    (unsigned int)trace.model40_int42_vector_history_offset[entry]);
+            }
+        }
+        if (trace.model40_int10_entry_count != 0u) {
+            STD_PRINTF("BOOT-PROBE=model40-int10-entry=%llu-predecessor=%05X-ss=%04X-sp=%04X\n",
+                (unsigned long long)trace.model40_int10_entry_count,
+                (unsigned int)trace.model40_int10_entry_predecessor,
+                (unsigned int)trace.model40_int10_entry_ss,
+                (unsigned int)trace.model40_int10_entry_sp);
+        }
+        if (trace.model40_int10_iret_frame_observed) {
+            STD_PRINTF("BOOT-PROBE=model40-int10-iret-frame=%llu-pc:%05X-cs-default-32:%u-ss:%04X-base:%08X-limit:%08X-big:%u-esp:%08X-words:%04X,%04X,%04X,%04X\n",
+                (unsigned long long)trace.model40_int10_iret_frame_count,
+                (unsigned int)trace.model40_int10_iret_frame_pc,
+                (unsigned int)trace.model40_int10_iret_cs_default_32,
+                (unsigned int)trace.model40_int10_iret_ss,
+                (unsigned int)trace.model40_int10_iret_ss_base,
+                (unsigned int)trace.model40_int10_iret_ss_limit,
+                (unsigned int)trace.model40_int10_iret_ss_big,
+                (unsigned int)trace.model40_int10_iret_esp,
+                (unsigned int)trace.model40_int10_iret_words[0u],
+                (unsigned int)trace.model40_int10_iret_words[1u],
+                (unsigned int)trace.model40_int10_iret_words[2u],
+                (unsigned int)trace.model40_int10_iret_words[3u]);
+        }
+        if (trace.model40_bios_iret_frame_observed) {
+            STD_PRINTF("BOOT-PROBE=model40-bios-iret-frame=ss:%04X-sp:%04X-words:%04X,%04X,%04X,%04X\n",
+                (unsigned int)trace.model40_bios_iret_ss,
+                (unsigned int)trace.model40_bios_iret_sp,
+                (unsigned int)trace.model40_bios_iret_words[0u],
+                (unsigned int)trace.model40_bios_iret_words[1u],
+                (unsigned int)trace.model40_bios_iret_words[2u],
+                (unsigned int)trace.model40_bios_iret_words[3u]);
+        }
+        STD_PRINTF("BOOT-PROBE=model40-video-rom-entries=%llu-first=%05X\n",
+            (unsigned long long)trace.model40_video_rom_entries,
+            (unsigned int)trace.model40_video_rom_first_pc);
+        STD_PRINTF("BOOT-PROBE=model40-video-special=3C2:%llu/%02X-3C6:%llu/%02X-7C6:%llu/%02X-BC6:%llu/%02X-FC6:%llu/%02X\n",
+            (unsigned long long)trace.model40_video_special_accesses[0u],
+            (unsigned int)trace.model40_video_special_last_values[0u],
+            (unsigned long long)trace.model40_video_special_accesses[1u],
+            (unsigned int)trace.model40_video_special_last_values[1u],
+            (unsigned long long)trace.model40_video_special_accesses[2u],
+            (unsigned int)trace.model40_video_special_last_values[2u],
+            (unsigned long long)trace.model40_video_special_accesses[3u],
+            (unsigned int)trace.model40_video_special_last_values[3u],
+            (unsigned long long)trace.model40_video_special_accesses[4u],
+            (unsigned int)trace.model40_video_special_last_values[4u]);
+        STD_PRINTF("BOOT-PROBE=model40-video-error-port-84=%llu/%02X-at-%05X\n",
+            (unsigned long long)trace.model40_video_error_writes,
+            (unsigned int)trace.model40_video_error_last_value,
+            (unsigned int)trace.model40_video_error_last_pc);
+        {
+            type_unsigned_64 entry;
+            const type_unsigned_64 count = trace.model40_video_special_history_count <
+                VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY ?
+                trace.model40_video_special_history_count :
+                VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY;
+
+            for (entry = 0u; entry < count; ++entry) {
+                const STD_SIZE_T index = (STD_SIZE_T)(
+                    (trace.model40_video_special_history_count - count + entry) %
+                    VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY);
+                const vm_byob_fdc_port_event *record =
+                    &trace.model40_video_special_history[index];
+
+                STD_PRINTF("BOOT-PROBE=model40-video-special-port-%05X-%c-%04X-%02X\n",
+                    (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
+                    (unsigned int)record->port, (unsigned int)record->value);
+            }
+        }
+        if (trace.model40_video_port_accesses != 0u) {
+            type_unsigned_64 entry;
+            const type_unsigned_64 count = trace.model40_video_port_accesses <
+                VM_BYOB_MODEL40_VIDEO_PORT_HISTORY ? trace.model40_video_port_accesses :
+                VM_BYOB_MODEL40_VIDEO_PORT_HISTORY;
+
+            for (entry = 0u; entry < count; ++entry) {
+                const STD_SIZE_T index = (STD_SIZE_T)((trace.model40_video_port_accesses -
+                    count + entry) % VM_BYOB_MODEL40_VIDEO_PORT_HISTORY);
+                const vm_byob_fdc_port_event *record =
+                    &trace.model40_video_port_history[index];
+
+                STD_PRINTF("BOOT-PROBE=model40-video-port-%05X-%c-%04X-%02X\n",
+                    (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
+                    (unsigned int)record->port, (unsigned int)record->value);
+            }
         }
         if (diagnostic.first_delivered_exception.valid) {
             const core_machine_cpu_execution_point *point =
@@ -1274,6 +2362,17 @@ done:
             (unsigned int)session->core_machine->executor_cpu.data.es.selector,
             (unsigned int)(session->core_machine->executor_cpu.data.eax & 0xffffu),
             (unsigned int)(session->core_machine->executor_cpu.data.ebp & 0xffffu));
+        /* Temporary Model 40 firmware diagnosis: the BIOS's F90CCh delay
+           latches PIT0 twice.  Report the owner-local state so the probe can
+           distinguish a changing counter from a stuck latch without changing
+           guest-visible behavior. */
+        STD_PRINTF("BOOT-PROBE=pit0-count=%04X-latch=%04X-remaining=%u-latched=%u-active=%u-read=%u\n",
+            (unsigned int)session->core_machine->shared_pit.data.count[0u],
+            (unsigned int)session->core_machine->shared_pit.data.latch[0u],
+            (unsigned int)session->core_machine->shared_pit.data.remaining[0u],
+            (unsigned int)session->core_machine->shared_pit.data.flagLatch[0u],
+            (unsigned int)session->core_machine->shared_pit.data.flagActive[0u],
+            (unsigned int)session->core_machine->shared_pit.data.flagRead[0u]);
         STD_PRINTF("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
             (unsigned int)session->core_machine->fdc.data.phase,
             (unsigned int)session->core_machine->fdc.data.dor,
@@ -1311,6 +2410,384 @@ done:
             (unsigned int)trace.last_fdc_terminal.result[0u],
             (unsigned int)trace.last_fdc_terminal.result[1u],
             (unsigned int)trace.last_fdc_terminal.result[2u]);
+        STD_PRINTF("BOOT-PROBE=model40-resume=%llu-resume-predecessor=%05X-resume-ax=%04X-post-setup=%llu-post-predecessor=%05X-video-clear=%llu-delay=%llu-delay-predecessor=%05X\n",
+            (unsigned long long)trace.model40_resume_entries,
+            (unsigned int)trace.model40_resume_predecessor,
+            (unsigned int)trace.model40_resume_ax,
+            (unsigned long long)trace.model40_post_setup_entries,
+            (unsigned int)trace.model40_post_setup_predecessor,
+            (unsigned long long)trace.model40_video_clear_entries,
+            (unsigned long long)trace.model40_video_delay_entries,
+            (unsigned int)trace.model40_video_delay_predecessor);
+        STD_PRINTF("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
+            (unsigned int)session->core_machine->d4_memory.control,
+            (unsigned int)session->core_machine->d4_memory.ram_setup);
+        STD_PRINTF("BOOT-PROBE=model40-reset-vector-target=%llu-predecessor=%05X\n",
+            (unsigned long long)trace.model40_reset_vector_target_entries,
+            (unsigned int)trace.model40_reset_vector_target_predecessor);
+        STD_PRINTF("BOOT-PROBE=model40-post-latch-writes=%llu-last=%05X-%02X\n",
+            (unsigned long long)trace.model40_post_latch_writes,
+            (unsigned int)trace.model40_post_latch_last_pc,
+            (unsigned int)trace.model40_post_latch_last_value);
+        STD_PRINTF("BOOT-PROBE=model40-post-latch-paths=FD41D:%llu/%05X-FD434:%llu/%05X-FD44C:%llu/%05X-FD461:%llu/%05X-FD49E:%llu/%05X\n",
+            (unsigned long long)trace.model40_post_latch_path_entries[0u],
+            (unsigned int)trace.model40_post_latch_path_predecessors[0u],
+            (unsigned long long)trace.model40_post_latch_path_entries[1u],
+            (unsigned int)trace.model40_post_latch_path_predecessors[1u],
+            (unsigned long long)trace.model40_post_latch_path_entries[2u],
+            (unsigned int)trace.model40_post_latch_path_predecessors[2u],
+            (unsigned long long)trace.model40_post_latch_path_entries[3u],
+            (unsigned int)trace.model40_post_latch_path_predecessors[3u],
+            (unsigned long long)trace.model40_post_latch_path_entries[4u],
+            (unsigned int)trace.model40_post_latch_path_predecessors[4u]);
+        STD_PRINTF("BOOT-PROBE=model40-resume-prompt=%llu/%05X-wait=%llu/%05X\n",
+            (unsigned long long)trace.model40_resume_prompt_entries,
+            (unsigned int)trace.model40_resume_prompt_predecessor,
+            (unsigned long long)trace.model40_resume_wait_entries,
+            (unsigned int)trace.model40_resume_wait_predecessor);
+        STD_PRINTF("BOOT-PROBE=model40-post-status-helper=%llu/%05X-value=%02X\n",
+            (unsigned long long)trace.model40_post_status_helper_entries,
+            (unsigned int)trace.model40_post_status_helper_predecessor,
+            (unsigned int)trace.model40_post_status_value);
+        STD_PRINTF("BOOT-PROBE=model40-memory-address-error=%llu/%05X-ds=%04X/%08X-status=%04X\n",
+            (unsigned long long)trace.model40_memory_address_error_entries,
+            (unsigned int)trace.model40_memory_address_error_predecessor,
+            (unsigned int)trace.model40_memory_address_error_ds,
+            (unsigned int)trace.model40_memory_address_error_ds_base,
+            (unsigned int)trace.model40_memory_address_error_status);
+        STD_PRINTF("BOOT-PROBE=model40-memory-address-test=%llu-flags=%08X-status=%04X\n",
+            (unsigned long long)trace.model40_memory_address_test_entries,
+            (unsigned int)trace.model40_memory_address_test_eflags,
+            (unsigned int)trace.model40_memory_address_test_status);
+        STD_PRINTF("BOOT-PROBE=model40-memory-pattern=%llu-es=%04X/%08X-after=%08X-eax=%08X-edi=%08X-value=%04X\n",
+            (unsigned long long)trace.model40_memory_pattern_entries,
+            (unsigned int)trace.model40_memory_pattern_es_selector,
+            (unsigned int)trace.model40_memory_pattern_es_base,
+            (unsigned int)trace.model40_memory_pattern_after_es_base,
+            (unsigned int)trace.model40_memory_pattern_after_eax,
+            (unsigned int)trace.model40_memory_pattern_after_edi,
+            (unsigned int)trace.model40_memory_pattern_after_value);
+        STD_PRINTF("BOOT-PROBE=model40-ram-post=entry:%llu-return:%llu-failure:%llu\n",
+            (unsigned long long)trace.model40_ram_post_entries,
+            (unsigned long long)trace.model40_ram_post_returns,
+            (unsigned long long)trace.model40_ram_post_failures);
+        if (trace.model40_memory_pattern_entries != 0u ||
+            trace.model40_memory_compare_failures != 0u) {
+            STD_SIZE_T index;
+
+            STD_PRINTF("BOOT-PROBE=model40-memory-bases=");
+            for (index = 0u; index < VM_BYOB_MODEL40_MEMORY_BASE_HISTORY; ++index)
+                STD_PRINTF("%08X/%08X%s",
+                    (unsigned int)trace.model40_memory_pattern_bases[index],
+                    (unsigned int)trace.model40_memory_compare_bases[index],
+                    index + 1u == VM_BYOB_MODEL40_MEMORY_BASE_HISTORY ? "\n" : ",");
+        }
+        STD_PRINTF("BOOT-PROBE=model40-memory-1e-writes=%llu-pc=%05X-value=%02X\n",
+            (unsigned long long)trace.model40_memory_1e_writes,
+            (unsigned int)trace.model40_memory_1e_last_pc,
+            (unsigned int)trace.model40_memory_1e_last_value);
+    STD_PRINTF("BOOT-PROBE=model40-memory-high-write-cycles=%llu-first=%05X/%02X-last=%05X/%05X/%02X\n",
+            (unsigned long long)trace.model40_memory_high_writes,
+            (unsigned int)trace.model40_memory_high_first_address,
+            (unsigned int)trace.model40_memory_high_first_value,
+            (unsigned int)trace.model40_memory_high_last_address,
+            (unsigned int)trace.model40_memory_high_last_pc,
+            (unsigned int)trace.model40_memory_high_last_value);
+        STD_PRINTF("BOOT-PROBE=model40-memory-b-window-writes=%llu-first=%05X-last=%05X-at-mismatch=%llu/%05X\n",
+            (unsigned long long)trace.model40_memory_b_window_writes,
+            (unsigned int)trace.model40_memory_b_window_first_pc,
+            (unsigned int)trace.model40_memory_b_window_last_pc,
+            (unsigned long long)trace.model40_memory_b_window_writes_at_mismatch,
+            (unsigned int)trace.model40_memory_b_window_last_pc_at_mismatch);
+        STD_PRINTF("BOOT-PROBE=model40-memory-b-first-word-writes=%llu-last=%05X/%04X-retirements=%llu-video-disabled=%u-gdc6=%02X-seq0=%02X\n",
+            (unsigned long long)trace.model40_memory_b_first_word_writes,
+            (unsigned int)trace.model40_memory_b_first_word_last_pc,
+            (unsigned int)trace.model40_memory_b_first_word_last_value,
+            (unsigned long long)trace.model40_memory_b_first_word_retirements,
+            (unsigned int)trace.model40_memory_b_first_word_video_memory_disabled,
+            (unsigned int)trace.model40_memory_b_first_word_graphics_6,
+            (unsigned int)trace.model40_memory_b_first_word_sequencer_0);
+        STD_PRINTF("BOOT-PROBE=model40-memory-fb-page-writes=%llu-first=%05X-last=%05X\n",
+            (unsigned long long)trace.model40_memory_fb_page_writes,
+            (unsigned int)trace.model40_memory_fb_page_first_pc,
+            (unsigned int)trace.model40_memory_fb_page_last_pc);
+        STD_PRINTF("BOOT-PROBE=model40-memory-fb-first-word-writes=%llu-last=%05X/%04X-retirements=%llu\n",
+            (unsigned long long)trace.model40_memory_fb_first_word_writes,
+            (unsigned int)trace.model40_memory_fb_first_word_last_pc,
+            (unsigned int)trace.model40_memory_fb_first_word_last_value,
+            (unsigned long long)trace.model40_memory_fb_first_word_retirements);
+        {
+            const STD_SIZE_T count = trace.model40_es_change_count <
+                VM_BYOB_MODEL40_ES_HISTORY ?
+                (STD_SIZE_T)trace.model40_es_change_count : VM_BYOB_MODEL40_ES_HISTORY;
+            const STD_SIZE_T first = trace.model40_es_change_count > count ?
+                (STD_SIZE_T)(trace.model40_es_change_count % VM_BYOB_MODEL40_ES_HISTORY) : 0u;
+            STD_SIZE_T index;
+
+            for (index = 0u; index < count; ++index) {
+                const STD_SIZE_T slot = (first + index) % VM_BYOB_MODEL40_ES_HISTORY;
+
+                STD_PRINTF("BOOT-PROBE=model40-es-change-%u=%05X-%04X/%08X-cr0=%08X\n",
+                    (unsigned int)index,
+                    (unsigned int)trace.model40_es_change_pcs[slot],
+                    (unsigned int)trace.model40_es_change_selectors[slot],
+                    (unsigned int)trace.model40_es_change_bases[slot],
+                    (unsigned int)trace.model40_es_change_cr0[slot]);
+            }
+        }
+        STD_PRINTF("BOOT-PROBE=model40-memory-pattern-writes=%llu-first=%05X-last=%05X\n",
+            (unsigned long long)trace.model40_memory_pattern_write_count,
+            (unsigned int)trace.model40_memory_pattern_write_first_address,
+            (unsigned int)trace.model40_memory_pattern_write_last_address);
+        STD_PRINTF("BOOT-PROBE=model40-memory-compare-failures=%llu-branches=%llu-eax=%08X-edi=%08X-es=%04X/%08X-cr0=%08X-gdtr=%08X/%08X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-value=%04X\n",
+            (unsigned long long)trace.model40_memory_compare_failures,
+            (unsigned long long)trace.model40_memory_compare_branch_taken,
+            (unsigned int)trace.model40_memory_compare_eax,
+            (unsigned int)trace.model40_memory_compare_edi,
+            (unsigned int)trace.model40_memory_compare_es_selector,
+            (unsigned int)trace.model40_memory_compare_es_base,
+            (unsigned int)trace.model40_memory_compare_cr0,
+            (unsigned int)trace.model40_memory_compare_gdtr_base,
+            (unsigned int)trace.model40_memory_compare_gdtr_limit,
+            (unsigned int)trace.model40_memory_compare_descriptor[0u],
+            (unsigned int)trace.model40_memory_compare_descriptor[1u],
+            (unsigned int)trace.model40_memory_compare_descriptor[2u],
+            (unsigned int)trace.model40_memory_compare_descriptor[3u],
+            (unsigned int)trace.model40_memory_compare_descriptor[4u],
+            (unsigned int)trace.model40_memory_compare_descriptor[5u],
+            (unsigned int)trace.model40_memory_compare_descriptor[6u],
+            (unsigned int)trace.model40_memory_compare_descriptor[7u],
+            (unsigned int)trace.model40_memory_compare_value);
+        STD_PRINTF("BOOT-PROBE=model40-memory-address-failures=%llu-ds=%04X-si=%04X-eax=%08X-ebx=%08X-ebp=%08X-flags=%08X\n",
+            (unsigned long long)trace.model40_memory_address_failures,
+            (unsigned int)trace.model40_memory_address_failure_ds,
+            (unsigned int)trace.model40_memory_address_failure_si,
+            (unsigned int)trace.model40_memory_address_failure_eax,
+            (unsigned int)trace.model40_memory_address_failure_ebx,
+            (unsigned int)trace.model40_memory_address_failure_ebp,
+            (unsigned int)trace.model40_memory_address_failure_eflags);
+        STD_PRINTF("BOOT-PROBE=model40-memory-scas=%llu-ax=%04X-di=%04X-es=%04X/%08X-flags=%08X\n",
+            (unsigned long long)trace.model40_memory_scas_entries,
+            (unsigned int)trace.model40_memory_scas_ax,
+            (unsigned int)trace.model40_memory_scas_di,
+            (unsigned int)trace.model40_memory_scas_es,
+            (unsigned int)trace.model40_memory_scas_es_base,
+            (unsigned int)trace.model40_memory_scas_eflags);
+        STD_PRINTF("BOOT-PROBE=model40-memory-mismatch=%llu-ax=%04X-di=%04X-es=%04X/%08X-value=%04X\n",
+            (unsigned long long)trace.model40_memory_mismatch_entries,
+            (unsigned int)trace.model40_memory_mismatch_ax,
+            (unsigned int)trace.model40_memory_mismatch_di,
+            (unsigned int)trace.model40_memory_mismatch_es,
+            (unsigned int)trace.model40_memory_mismatch_es_base,
+            (unsigned int)trace.model40_memory_mismatch_value);
+        STD_PRINTF("BOOT-PROBE=model40-memory-test-return=%llu-ax=%04X\n",
+            (unsigned long long)trace.model40_memory_test_return_entries,
+            (unsigned int)trace.model40_memory_test_return_ax);
+        STD_PRINTF("BOOT-PROBE=model40-memory-test-entry=%llu-dx=%04X-ax=%04X\n",
+            (unsigned long long)trace.model40_memory_test_entries,
+            (unsigned int)trace.model40_memory_test_dx,
+            (unsigned int)trace.model40_memory_test_ax_entry);
+        STD_PRINTF("BOOT-PROBE=model40-memory-status-test=ax=%04X-mismatches=%llu-expected=%04X-actual=%04X-offset=%04X-es=%04X/%08X-cr0=%08X-gdtr=%08X/%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-video-disabled=%u-gdc6=%02X-seq0=%02X\n",
+            (unsigned int)trace.model40_memory_status_test_ax_entry,
+            (unsigned long long)trace.model40_memory_status_test_mismatches,
+            (unsigned int)trace.model40_memory_status_test_expected,
+            (unsigned int)trace.model40_memory_status_test_actual,
+            (unsigned int)trace.model40_memory_status_test_offset,
+            (unsigned int)trace.model40_memory_status_test_es,
+            (unsigned int)trace.model40_memory_status_test_es_base,
+            (unsigned int)trace.model40_memory_status_test_cr0,
+            (unsigned int)trace.model40_memory_status_test_gdtr_base,
+            (unsigned int)trace.model40_memory_status_test_gdtr_limit,
+            (unsigned int)trace.model40_memory_status_test_descriptor[0u],
+            (unsigned int)trace.model40_memory_status_test_descriptor[1u],
+            (unsigned int)trace.model40_memory_status_test_descriptor[2u],
+            (unsigned int)trace.model40_memory_status_test_descriptor[3u],
+            (unsigned int)trace.model40_memory_status_test_descriptor[4u],
+            (unsigned int)trace.model40_memory_status_test_descriptor[5u],
+            (unsigned int)trace.model40_memory_status_test_descriptor[6u],
+            (unsigned int)trace.model40_memory_status_test_descriptor[7u],
+            (unsigned int)trace.model40_memory_status_test_video_memory_disabled,
+            (unsigned int)trace.model40_memory_status_test_graphics_6,
+            (unsigned int)trace.model40_memory_status_test_sequencer_0);
+        STD_PRINTF("BOOT-PROBE=model40-memory-status-high-b=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-writes=%llu/%05X/%05X\n",
+            (unsigned int)trace.model40_memory_status_test_high_b_page[0u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[1u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[2u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[3u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[4u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[5u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[6u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[7u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[8u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[9u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[10u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[11u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[12u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[13u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[14u],
+            (unsigned int)trace.model40_memory_status_test_high_b_page[15u],
+            (unsigned long long)trace.model40_memory_high_b_page_writes,
+            (unsigned int)trace.model40_memory_high_b_page_first_pc,
+            (unsigned int)trace.model40_memory_high_b_page_last_pc);
+        STD_PRINTF("BOOT-PROBE=model40-memory-pattern-producer=entries:%llu-high-b-writes:%llu\n",
+            (unsigned long long)trace.model40_memory_pattern_producer_entries,
+            (unsigned long long)trace.model40_memory_pattern_producer_high_b_writes);
+        {
+            const STD_SIZE_T count = trace.model40_memory_high_b_page_writes <
+                VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY ?
+                (STD_SIZE_T)trace.model40_memory_high_b_page_writes :
+                VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY;
+            STD_SIZE_T index;
+
+            for (index = 0u; index < count; ++index) {
+                STD_PRINTF("BOOT-PROBE=model40-high-b-write-%u=%05X-producer=%u-page=%02X,%02X,%02X,%02X\n",
+                    (unsigned int)index,
+                    (unsigned int)trace.model40_memory_high_b_write_pcs[index],
+                    (unsigned int)trace.model40_memory_high_b_write_producer[index],
+                    (unsigned int)trace.model40_memory_high_b_write_pages[index][0u],
+                    (unsigned int)trace.model40_memory_high_b_write_pages[index][1u],
+                    (unsigned int)trace.model40_memory_high_b_write_pages[index][2u],
+                    (unsigned int)trace.model40_memory_high_b_write_pages[index][3u]);
+            }
+        }
+        STD_PRINTF("BOOT-PROBE=model40-post-status-58-writes=%llu-last=%05X-value=%04X\n",
+            (unsigned long long)trace.model40_post_status_58_writes,
+            (unsigned int)trace.model40_post_status_58_last_pc,
+            (unsigned int)trace.model40_post_status_58_last_value);
+        STD_PRINTF("BOOT-PROBE=model40-post-status-58-observer=%llu-last=%05X-value=%02X\n",
+            (unsigned long long)trace.model40_post_status_58_observer_writes,
+            (unsigned int)trace.model40_post_status_58_observer_last_pc,
+            (unsigned int)trace.model40_post_status_58_observer_last_value);
+        STD_PRINTF("BOOT-PROBE=model40-post-private-status=%llu-last=%05X-value=%04X\n",
+            (unsigned long long)trace.model40_post_private_status_writes,
+            (unsigned int)trace.model40_post_private_status_last_pc,
+            (unsigned int)trace.model40_post_private_status_last_value);
+        {
+            const STD_SIZE_T count = trace.model40_post_private_status_writes <
+                VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY ?
+                (STD_SIZE_T)trace.model40_post_private_status_writes :
+                VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY;
+            STD_SIZE_T index;
+
+            for (index = 0u; index < count; ++index) {
+                STD_PRINTF("BOOT-PROBE=model40-post-private-status-write-%u=%05X/%04X\n",
+                    (unsigned int)index,
+                    (unsigned int)trace.model40_post_private_status_pcs[index],
+                    (unsigned int)trace.model40_post_private_status_values[index]);
+            }
+        }
+        {
+            const STD_SIZE_T count = trace.model40_post_status_58_observer_writes <
+                VM_BYOB_MODEL40_POST_STATUS_58_HISTORY ?
+                (STD_SIZE_T)trace.model40_post_status_58_observer_writes :
+                VM_BYOB_MODEL40_POST_STATUS_58_HISTORY;
+            STD_SIZE_T index;
+
+            for (index = 0u; index < count; ++index) {
+                STD_PRINTF("BOOT-PROBE=model40-post-status-58-write-%u=%05X/%02X\n",
+                    (unsigned int)index,
+                    (unsigned int)trace.model40_post_status_58_observer_pcs[index],
+                    (unsigned int)trace.model40_post_status_58_observer_values[index]);
+            }
+        }
+        STD_PRINTF("BOOT-PROBE=model40-port61-reads=%llu-last=%05X/%02X\n",
+            (unsigned long long)trace.model40_port61_reads,
+            (unsigned int)trace.model40_port61_last_pc,
+            (unsigned int)trace.model40_port61_last_value);
+        STD_PRINTF("BOOT-PROBE=model40-memory-test-error-branches=compare:%llu-parity:%llu-port61:%llu/%02X\n",
+            (unsigned long long)trace.model40_memory_compare_error_branches,
+            (unsigned long long)trace.model40_memory_parity_error_branches,
+            (unsigned long long)trace.model40_memory_parity_test_reads,
+            (unsigned int)trace.model40_memory_parity_test_last_value);
+        STD_PRINTF("BOOT-PROBE=model40-memory-error-exit=%llu-predecessor=%05X-es=%04X-di=%04X-ax=%04X\n",
+            (unsigned long long)trace.model40_memory_error_exit_entries,
+            (unsigned int)trace.model40_memory_error_exit_predecessor,
+            (unsigned int)trace.model40_memory_error_es,
+            (unsigned int)trace.model40_memory_error_di,
+            (unsigned int)trace.model40_memory_error_ax);
+        {
+            STD_SIZE_T helper_index;
+            const STD_SIZE_T helper_count = trace.model40_post_status_helper_entries <
+                VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY ?
+                (STD_SIZE_T)trace.model40_post_status_helper_entries :
+                VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY;
+
+            for (helper_index = 0u; helper_index < helper_count; ++helper_index) {
+                STD_PRINTF("BOOT-PROBE=model40-post-status-helper-caller-%u=%05X\n",
+                    (unsigned int)helper_index,
+                    (unsigned int)trace.model40_post_status_helper_predecessors[helper_index]);
+            }
+        }
+        {
+            static const type_unsigned_32 writer_pcs[VM_BYOB_MODEL40_POST_STATUS_WRITERS] = {
+                0x000f8324u, 0x000fbbd1u, 0x000fc801u, 0x000fd30cu,
+                0x000fd323u, 0x000fd41du, 0x000fd434u, 0x000fd44cu,
+                0x000fd461u, 0x000fd49eu, 0x000ff4e2u, 0x000ff54du
+            };
+            STD_SIZE_T writer_index;
+
+            for (writer_index = 0u;
+                    writer_index < VM_BYOB_MODEL40_POST_STATUS_WRITERS;
+                    ++writer_index) {
+                if (trace.model40_post_status_writer_entries[writer_index] == 0u) continue;
+                STD_PRINTF("BOOT-PROBE=model40-post-status-writer=%05X:%llu/%05X\n",
+                    (unsigned int)writer_pcs[writer_index],
+                    (unsigned long long)trace.model40_post_status_writer_entries[writer_index],
+                    (unsigned int)trace.model40_post_status_writer_predecessors[writer_index]);
+            }
+        }
+        if (trace.model40_shutdown_diagnostic_valid) {
+            STD_SIZE_T shutdown_index;
+
+            STD_PRINTF("BOOT-PROBE=model40-shutdown-exceptions=%llu-first=%u/%u-last=%u/%u\n",
+                (unsigned long long)trace.model40_shutdown_diagnostic.delivered_exception_count,
+                (unsigned int)trace.model40_shutdown_diagnostic.first_delivered_exception.exception_mask,
+                (unsigned int)trace.model40_shutdown_diagnostic.first_delivered_exception.exception_code,
+                (unsigned int)trace.model40_shutdown_diagnostic.last_delivered_exception.exception_mask,
+                (unsigned int)trace.model40_shutdown_diagnostic.last_delivered_exception.exception_code);
+            for (shutdown_index = 0u;
+                    shutdown_index < trace.model40_shutdown_diagnostic.recent_count;
+                    ++shutdown_index) {
+                const core_machine_cpu_execution_point *point =
+                    &trace.model40_shutdown_diagnostic.recent[shutdown_index];
+
+                STD_PRINTF("BOOT-PROBE=model40-shutdown-recent-%u=%05X-%02X,%02X,%02X,%02X\n",
+                    (unsigned int)shutdown_index, (unsigned int)point->linear_pc,
+                    (unsigned int)point->bytes[0u], (unsigned int)point->bytes[1u],
+                    (unsigned int)point->bytes[2u], (unsigned int)point->bytes[3u]);
+            }
+        }
+        if (trace.model40_protected_transition_observed) {
+            STD_PRINTF("BOOT-PROBE=model40-gdtr-pointer=%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned int)trace.model40_gdtr_pointer[0u],
+                (unsigned int)trace.model40_gdtr_pointer[1u],
+                (unsigned int)trace.model40_gdtr_pointer[2u],
+                (unsigned int)trace.model40_gdtr_pointer[3u],
+                (unsigned int)trace.model40_gdtr_pointer[4u],
+                (unsigned int)trace.model40_gdtr_pointer[5u]);
+            STD_PRINTF("BOOT-PROBE=model40-gdt=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned int)trace.model40_gdt[0u], (unsigned int)trace.model40_gdt[1u],
+                (unsigned int)trace.model40_gdt[2u], (unsigned int)trace.model40_gdt[3u],
+                (unsigned int)trace.model40_gdt[4u], (unsigned int)trace.model40_gdt[5u],
+                (unsigned int)trace.model40_gdt[6u], (unsigned int)trace.model40_gdt[7u],
+                (unsigned int)trace.model40_gdt[8u], (unsigned int)trace.model40_gdt[9u],
+                (unsigned int)trace.model40_gdt[10u], (unsigned int)trace.model40_gdt[11u],
+                (unsigned int)trace.model40_gdt[12u], (unsigned int)trace.model40_gdt[13u],
+                (unsigned int)trace.model40_gdt[14u], (unsigned int)trace.model40_gdt[15u],
+                (unsigned int)trace.model40_gdt[16u], (unsigned int)trace.model40_gdt[17u],
+                (unsigned int)trace.model40_gdt[18u], (unsigned int)trace.model40_gdt[19u],
+                (unsigned int)trace.model40_gdt[20u], (unsigned int)trace.model40_gdt[21u],
+                (unsigned int)trace.model40_gdt[22u], (unsigned int)trace.model40_gdt[23u],
+                (unsigned int)trace.model40_gdt[24u], (unsigned int)trace.model40_gdt[25u],
+                (unsigned int)trace.model40_gdt[26u], (unsigned int)trace.model40_gdt[27u],
+                (unsigned int)trace.model40_gdt[28u], (unsigned int)trace.model40_gdt[29u],
+                (unsigned int)trace.model40_gdt[30u], (unsigned int)trace.model40_gdt[31u]);
+        }
+        STD_PRINTF("BOOT-PROBE=kbc-writes=%llu-last=%05X-%04X-%02X\n",
+            (unsigned long long)trace.kbc_write_count,
+            (unsigned int)trace.kbc_last_write_pc,
+            (unsigned int)trace.kbc_last_write_port,
+            (unsigned int)trace.kbc_last_write_value);
         STD_PRINTF("BOOT-PROBE=hdc-phase=%u-status=%02X-error=%02X-command=%02X-count=%u-sector=%u-cylinder=%02X%02X-drive-head=%02X\n",
             (unsigned int)session->core_machine->hdc.data.phase,
             (unsigned int)session->core_machine->hdc.data.status,
@@ -1386,10 +2863,13 @@ done:
             (unsigned int)bda_keyboard_head, (unsigned int)bda_keyboard_tail);
         (C_VOID)core_machine_memory_read(session->core_machine, 0x0441u,
             &bda_diskette_status, sizeof(bda_diskette_status));
+        (C_VOID)core_machine_memory_read(session->core_machine, 0x043eu,
+            &bda_motor_wait, sizeof(bda_motor_wait));
         (C_VOID)core_machine_memory_read(session->core_machine, 0x043fu,
             &bda_motor_status, sizeof(bda_motor_status));
-        STD_PRINTF("BOOT-PROBE=bda-diskette-status=%02X-motor-status=%02X\n",
-            (unsigned int)bda_diskette_status, (unsigned int)bda_motor_status);
+        STD_PRINTF("BOOT-PROBE=bda-diskette-status=%02X-motor-wait=%02X-motor-status=%02X\n",
+            (unsigned int)bda_diskette_status, (unsigned int)bda_motor_wait,
+            (unsigned int)bda_motor_status);
         if (core_machine_memory_read(session->core_machine, 0x0480u,
                 bda_wait_state, sizeof(bda_wait_state)) == TYPE_STATUS_OK) {
             STD_PRINTF("BOOT-PROBE=bda-80=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,"
@@ -1416,6 +2896,31 @@ done:
             STD_PRINTF("BOOT-PROBE=int13-vector=%04X:%04X\n",
                 (unsigned int)int13_segment, (unsigned int)int13_offset);
         }
+        if (core_machine_memory_read(session->core_machine, 0x0413u, &bda_memory_kib,
+                sizeof(bda_memory_kib)) == TYPE_STATUS_OK) {
+            STD_PRINTF("BOOT-PROBE=bda-memory-kib=%u\n", (unsigned int)bda_memory_kib);
+        }
+        if (core_machine_memory_read(session->core_machine, 0x0078u, &int1e_offset,
+                sizeof(int1e_offset)) == TYPE_STATUS_OK &&
+            core_machine_memory_read(session->core_machine, 0x007au, &int1e_segment,
+                sizeof(int1e_segment)) == TYPE_STATUS_OK) {
+            type_unsigned_8 int1e_bytes[4] = {0u};
+
+            (C_VOID)core_machine_memory_read(session->core_machine,
+                (type_unsigned_32)int1e_segment * 16u + int1e_offset,
+                int1e_bytes, sizeof(int1e_bytes));
+            STD_PRINTF("BOOT-PROBE=int1e-vector=%04X:%04X-bytes=%02X,%02X,%02X,%02X\n",
+                (unsigned int)int1e_segment, (unsigned int)int1e_offset,
+                (unsigned int)int1e_bytes[0u], (unsigned int)int1e_bytes[1u],
+                (unsigned int)int1e_bytes[2u], (unsigned int)int1e_bytes[3u]);
+        }
+        if (core_machine_memory_read(session->core_machine, 0x0038u, &irq6_offset,
+                sizeof(irq6_offset)) == TYPE_STATUS_OK &&
+            core_machine_memory_read(session->core_machine, 0x003au, &irq6_segment,
+                sizeof(irq6_segment)) == TYPE_STATUS_OK) {
+            STD_PRINTF("BOOT-PROBE=irq6-vector=%04X:%04X\n",
+                (unsigned int)irq6_segment, (unsigned int)irq6_offset);
+        }
         if (core_machine_memory_read(session->core_machine, 0x0054u, &int15_offset,
                 sizeof(int15_offset)) == TYPE_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0056u, &int15_segment,
@@ -1438,10 +2943,10 @@ done:
                 (unsigned int)int13_state[4u]);
         }
         }
-        if (core_machine_memory_read(session->core_machine,
+        if (core_machine_memory_read_physical(&session->core_machine->executor_memory,
                 session->core_machine->executor_cpu.data.ss.base +
                     (session->core_machine->executor_cpu.data.esp & 0xffffu),
-                stack_words, sizeof(stack_words)) == TYPE_STATUS_OK) {
+                (type_virtual_address)stack_words, sizeof(stack_words)) == TYPE_STATUS_OK) {
             STD_PRINTF("BOOT-PROBE=stack-ss=%04X-sp=%04X-words=%04X,%04X,%04X,%04X,%04X,%04X,%04X,%04X\n",
                 (unsigned int)session->core_machine->executor_cpu.data.ss.selector,
                 (unsigned int)(session->core_machine->executor_cpu.data.esp & 0xffffu),
@@ -1539,7 +3044,18 @@ done:
                 (unsigned int)diagnostic.delivered_exception_count,
                 (unsigned int)diagnostic.last_delivered_exception.exception_mask,
                 (unsigned int)diagnostic.last_delivered_exception.exception_code);
+            STD_PRINTF("BOOT-PROBE=first-exception-pc=%05X-last-exception-pc=%05X\n",
+                (unsigned int)diagnostic.first_delivered_exception.point.linear_pc,
+                (unsigned int)diagnostic.last_delivered_exception.point.linear_pc);
+            STD_PRINTF("BOOT-PROBE=first-exception-ss=%04X/%08X-esp=%08X-eax=%08X-eflags=%08X\n",
+                (unsigned int)diagnostic.first_delivered_exception.ss,
+                (unsigned int)diagnostic.first_delivered_exception.ss_base,
+                (unsigned int)diagnostic.first_delivered_exception.esp,
+                (unsigned int)diagnostic.first_delivered_exception.eax,
+                (unsigned int)diagnostic.first_delivered_exception.eflags);
         }
+        STD_PRINTF("BOOT-PROBE=last-retired-pc=%05X\n",
+            (unsigned int)trace.last_linear_pc);
     }
     if (session != STD_NULL && session->core_machine != STD_NULL) {
         (C_VOID)core_machine_set_trace_provider(session->core_machine, STD_NULL);

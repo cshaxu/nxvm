@@ -520,7 +520,10 @@ static type_status core_machine_create_internal(
     core_machine_cpu_execution_context_bind_transaction(
         &machine->executor_cpu_execution, &machine->transaction);
     core_machine_cpu_execution_context_bind_diagnostic_provider(
-        &machine->executor_cpu_execution, &core_machine_cpu_diagnostic_provider,
+        &machine->executor_cpu_execution,
+        machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ?
+            &core_machine_cpu_diagnostic_provider :
+            &core_machine_cpu_fault_diagnostic_provider,
         machine);
     core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
     core_machine_port_initialize(&machine->executor_port);
@@ -549,7 +552,7 @@ static type_status core_machine_create_internal(
         core_machine_memory_register_mapping(&machine->executor_memory,
             machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                 0x00ff0000u : 0xffff0000u,
-            0x000f0000u, 0x00010000u) != TYPE_STATUS_OK) {
+            0x000f0000u, 0x00010000u, TYPE_FALSE) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -966,6 +969,20 @@ type_status core_machine_run(
                 result->detail = machine->fault_detail;
                 return TYPE_STATUS_FAULT;
             }
+            /* DeskPro D3PE consumes processor shutdown as a CPU-reset pulse.
+             * It must win over the legacy stop marker carried with that CPU
+             * event, or the generic stop path would incorrectly cold-reset
+             * the board before D4 can consume the event. */
+            if (machine->d4_platform_configured &&
+                core_machine_cpu_execution_consume_shutdown_request(
+                    &machine->executor_cpu_execution)) {
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                core_machine_processor_reset(machine);
+                machine->lifecycle = CORE_MACHINE_STOPPED;
+                result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
+                result->linear_pc = core_machine_linear_pc(machine);
+                return TYPE_STATUS_OK;
+            }
             if (STD_ATOMIC_LOAD(&machine->stop_requested) ||
                 core_machine_cpu_execution_consume_stop_request(
                     &machine->executor_cpu_execution)) {
@@ -1083,17 +1100,6 @@ type_status core_machine_run(
                  * external-cycle overlap into the next CPU refresh. */
                 core_machine_external_cycle_invalidate(machine);
                 core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
-                if (machine->d4_platform_configured &&
-                    core_machine_cpu_execution_consume_shutdown_request(
-                        &machine->executor_cpu_execution)) {
-                    machine->lifecycle = CORE_MACHINE_PAUSED;
-                    if (core_machine_cold_reset(machine) != TYPE_STATUS_OK) {
-                        return TYPE_STATUS_FAULT;
-                    }
-                    result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
-                    result->linear_pc = core_machine_linear_pc(machine);
-                    return TYPE_STATUS_OK;
-                }
                 if (machine->lifecycle == CORE_MACHINE_FAULTED) {
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);

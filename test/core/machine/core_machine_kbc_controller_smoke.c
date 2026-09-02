@@ -68,7 +68,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x01u ||
         kbc.data.irq1_asserted || kbc.data.irq12_asserted ||
         (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_AUX) != 0u ||
-        core_machine_kbc_read_byte(&port, 0x0060u) != 0x47u;
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x43u;
 
     core_machine_kbc_set_command_response_timing(&kbc, 2u);
     core_machine_port_write(&port, 0x0064u, 0x20u);
@@ -78,7 +78,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x47u;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x43u;
     core_machine_kbc_set_command_response_timing(&kbc, 0u);
 
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 0u) != TYPE_STATUS_OK;
@@ -207,7 +207,7 @@ C_INT main(C_VOID)
     failed |= translation_failed;
     failed |= typematic_break_failed;
 
-    failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x14u;
+    failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x10u;
     core_machine_kbc_set_input_port(&kbc, 0x80u);
     core_machine_kbc_set_test_inputs(&kbc, 0x03u);
     core_machine_port_write(&port, 0x0064u, 0xc0u);
@@ -263,7 +263,8 @@ C_INT main(C_VOID)
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
     core_machine_port_write(&port, 0x0064u, 0xaau);
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u ||
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_SYS) == 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u ||
         kbc.data.keyboard_enabled ||
         (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=

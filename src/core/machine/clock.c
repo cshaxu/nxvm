@@ -46,6 +46,14 @@ type_unsigned_64 core_machine_clock_domain_advance(core_machine_clock_domain *do
     type_unsigned_64 converted;
 
     if (domain == STD_NULL || domain->denominator == 0u) return 0u;
+    /* Equal numerator/denominator is an exact identity domain, including a
+     * nonzero frozen phase. Avoiding the general division path preserves the
+     * same delivered ticks and phase for the overwhelmingly common 1:1
+     * controller clocks. */
+    if (domain->numerator == domain->denominator) {
+        domain->delivered_ticks += elapsed_ticks;
+        return elapsed_ticks;
+    }
     ticks = (elapsed_ticks / domain->denominator) * domain->numerator;
     remainder = (elapsed_ticks % domain->denominator) * domain->numerator +
         domain->phase;

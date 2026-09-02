@@ -16,6 +16,20 @@ static C_INT t386_s28_read(t_ram *memory, type_unsigned_8 *value)
         (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
 }
 
+static C_INT t386_s28_write_at(t_ram *memory, type_unsigned_32 physical,
+    type_unsigned_8 value)
+{
+    return core_machine_memory_write_physical(memory, physical,
+        (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
+}
+
+static C_INT t386_s28_read_at(t_ram *memory, type_unsigned_32 physical,
+    type_unsigned_8 *value)
+{
+    return core_machine_memory_read_physical(memory, physical,
+        (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
+}
+
 static C_VOID t386_s28_select_ega_320(t_port *port)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
@@ -81,15 +95,24 @@ C_INT main(C_VOID)
         value != 0x80u || !core_machine_vadp_capture_snapshot(&vadp, &memory,
         &snapshot) || snapshot.pixels[0] != 15u;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
-        0x20u);
+        0x22u);
     failed |= !t386_s28_write(&memory, 0x00u) || !t386_s28_read(&memory, &value) ||
         value != 0x00u || !core_machine_vadp_capture_snapshot(&vadp, &memory,
         &snapshot) || snapshot.pixels[0] != 0u || !snapshot.buffer_changed;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
-        0x00u);
+        0x02u);
     failed |= !t386_s28_read(&memory, &value) || value != 0x80u ||
         !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.pixels[0] != 15u || !snapshot.buffer_changed;
+    /* DeskPro POST writes B0000h while its primary CECG route is 3Dx/B8000h.
+     * Both addresses must reach the one VADP planar store, never ordinary RAM. */
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
+        0x03u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x0eu);
+    failed |= !t386_s28_write_at(&memory, 0x000b0000u, 0x11u) ||
+        !t386_s28_write_at(&memory, 0x000b8000u, 0x22u) ||
+        !t386_s28_read_at(&memory, 0x000b0000u, &value) || value != 0x22u;
     core_machine_vadp_reset(&vadp);
     t386_s28_select_ega_320(&port);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);

@@ -54,12 +54,12 @@ C_INT main(C_VOID)
         (type_virtual_address)&observed, 1u) != TYPE_STATUS_OK;
     result |= observed != value;
     result |= core_machine_memory_register_mapping(&first_memory, 0xfffffff0u,
-        0x000ffff0u, 16u) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u, TYPE_FALSE) != TYPE_STATUS_OK;
     {
         const type_native_unsigned mapping_count = first_memory.connect.mapping_count;
 
         result |= core_machine_memory_register_mapping(&first_memory, 0xfffffff0u,
-            0x000ffff0u, 17u) != TYPE_STATUS_INVALID_ARGUMENT;
+            0x000ffff0u, 17u, TYPE_FALSE) != TYPE_STATUS_INVALID_ARGUMENT;
         result |= first_memory.connect.mapping_count != mapping_count;
     }
     value = 0xebu;
@@ -71,7 +71,7 @@ C_INT main(C_VOID)
     result |= observed != value;
     core_machine_memory_freeze_mappings(&first_memory);
     result |= core_machine_memory_register_mapping(&first_memory, 0xfff00000u,
-        0x000f0000u, 16u) != TYPE_STATUS_INVALID_ARGUMENT;
+        0x000f0000u, 16u, TYPE_FALSE) != TYPE_STATUS_INVALID_ARGUMENT;
 
     core_machine_port_write(first_port, 0xffffu, 0xa5a55a5au);
     result |= first_port->data.ioDWord != 0xa5a55a5au;

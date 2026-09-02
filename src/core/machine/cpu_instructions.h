@@ -316,6 +316,10 @@ type_bool core_machine_cpu_execution_preview_lexeme(
 
 #define VCPUINS_EXCEPT_FPU_UNSUPPORTED 0x40000000 /* internal FPU model stop */
 
+/* 80386 real-address stack-limit wrap is an architectural shutdown, not an
+ * interrupt-deliverable exception. */
+#define VCPUINS_EXCEPT_SHUTDOWN 0x20000000
+
 #define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
 
 #ifdef __cplusplus

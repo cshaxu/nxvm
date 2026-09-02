@@ -100,7 +100,9 @@ C_INT main(C_VOID)
     core_machine_compaq_hdc_media slave_media = {{0}};
     core_machine_media_registry *registry = STD_NULL;
     core_machine_hdc hdc = {0};
+    core_machine_hdc empty_hdc = {0};
     t_port port = {0};
+    t_port empty_port = {0};
     t_pic master = {0};
     t_pic slave = {0};
     type_unsigned_32 value;
@@ -189,6 +191,21 @@ C_INT main(C_VOID)
             failed |= core_machine_hdc_irq_pending(&hdc) ||
                 core_machine_port_read(&port, 0x03f6u) !=
                     (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
+
+            /* A fitted Compaq controller remains reset-ready with no mounted
+             * image.  Firmware may probe it before deciding to boot the FDD;
+             * only a sector command is allowed to report absent media. */
+            core_machine_port_initialize(&empty_port);
+            core_machine_hdc_connect(&empty_hdc, registry, 3u,
+                CORE_MACHINE_MEDIA_ID_INVALID, &master, &slave, &config);
+            core_machine_hdc_initialize(&empty_hdc);
+            if (!core_machine_compaq_hdc_install(&empty_port, &empty_hdc)) {
+                failed |= 0x04;
+            } else {
+                core_machine_port_write(&empty_port, 0x01f6u, 0xa0u);
+                failed |= core_machine_port_read(&empty_port, 0x03f6u) !=
+                    (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
+            }
         }
     }
     if (failed) {
@@ -198,6 +215,8 @@ C_INT main(C_VOID)
         core_machine_port_finalize(&port);
         return 1;
     }
+    core_machine_hdc_finalize(&empty_hdc);
+    core_machine_port_finalize(&empty_port);
     core_machine_hdc_finalize(&hdc);
     core_machine_media_registry_destroy(registry);
     core_machine_port_finalize(&port);

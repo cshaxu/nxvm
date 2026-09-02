@@ -24,6 +24,7 @@ typedef struct {
     type_unsigned_32 physical_start;
     type_unsigned_32 backing_start;
     type_native_unsigned bytes;
+    type_bool selected;
 } core_machine_memory_mapping;
 
 typedef struct {
@@ -49,6 +50,9 @@ typedef struct {
     type_bool pre_a20;
     /* A selected board decode that replaces an otherwise valid lower route. */
     type_bool replacement;
+    /* An open-bus board window used only when no installed device decodes the
+     * access. It is never a reset-ROM source. */
+    type_bool fallback;
 } core_machine_memory_device_provider;
 
 typedef struct {
@@ -116,7 +120,7 @@ type_status core_machine_memory_enable_parity(t_ram *ram, STD_SIZE_T bytes,
     core_machine_memory_parity_fault_observer fault, C_VOID *owner);
 type_status core_machine_memory_register_mapping(t_ram *ram,
     type_unsigned_32 physical_start,
-    type_unsigned_32 backing_start, STD_SIZE_T bytes);
+    type_unsigned_32 backing_start, STD_SIZE_T bytes, type_bool selected);
 type_status core_machine_memory_register_write_observer(t_ram *ram,
     core_machine_memory_write_observer callback, C_VOID *owner);
 type_status core_machine_memory_register_device_provider(t_ram *ram,
@@ -132,6 +136,10 @@ type_status core_machine_memory_register_pre_a20_overlay_device_provider(t_ram *
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
 type_status core_machine_memory_register_replacement_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner);
+type_status core_machine_memory_register_fallback_device_provider(t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);

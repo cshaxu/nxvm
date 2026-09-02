@@ -7,7 +7,10 @@
 static const type_unsigned_32 vm_profile_model40_contract_ids[] = {1u};
 
 /* D3PE identifies the battery-backed MC146818; the Model-40 standard
- * configuration has two 1.2 MiB drives and one 40 MiB fixed disk.
+ * configuration has two 1.2 MiB drives, one 40 MiB fixed disk, 640 KiB of
+ * conventional memory, and 1 MiB of extended memory. The relocated 384 KiB
+ * of Compaq built-in memory is intentionally not reported through standard
+ * CMOS size bytes.
  * Core owns each session's writable copy and derives its checksum. */
 static const core_machine_rtc_default_byte vm_profile_model40_cmos_seed[] = {
     { CORE_MACHINE_RTC_TYPE_DISK_FLOPPY, 0x22u },
@@ -242,6 +245,18 @@ static type_status vm_profile_model40_firmware_configure(C_VOID *opaque,
         status = core_machine_firmware_register_immutable_rom(firmware,
             VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, rom->video_bytes,
             rom->video_byte_count);
+        if (status != TYPE_STATUS_OK) return status;
+        /* The BIOS scans the option ROM at C000h, then installs an INT 10h
+         * entry at E000:0CD7.  The E000h compatibility window must not expose
+         * a second 55AAh header: that would make the BIOS execute the same
+         * initialization twice and replace its saved INT 42h vector with INT
+         * 10h itself.  It aliases the executable ROM body only. */
+        status = core_machine_firmware_register_immutable_rom_alias(firmware,
+            VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START +
+                VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES,
+            VM_PROFILE_MODEL40_VIDEO_ROM_COMPATIBILITY_ALIAS_START +
+                VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES,
+            rom->video_byte_count - VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES);
         if (status != TYPE_STATUS_OK) return status;
     }
     status = core_machine_firmware_register_immutable_rom_alias(firmware,

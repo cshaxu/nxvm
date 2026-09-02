@@ -225,6 +225,7 @@ type_status vm_session_finish_reset(vm_session *machine, type_status status)
     if (status != TYPE_STATUS_OK) return vm_session_start_outcome_record(machine,
         status);
     vm_session_pacing_reset(machine);
+    machine->display_snapshot_generation_valid = TYPE_FALSE;
     machine->model40_fdc_terminal_observation_valid = TYPE_FALSE;
     vm_session_start_outcome_clear(machine);
     if (!vm_session_control_is_running(&machine->control)) {

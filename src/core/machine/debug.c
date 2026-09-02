@@ -402,6 +402,8 @@ static C_VOID core_machine_cpu_diagnostic_record_snapshot(
     snapshot->edx = cpu->data.edx;
     snapshot->cr2 = cpu->data.cr2;
     snapshot->esp = cpu->data.esp;
+    snapshot->ss = cpu->data.ss.selector;
+    snapshot->ss_base = cpu->data.ss.base;
     snapshot->ebp = cpu->data.ebp;
     snapshot->esi = cpu->data.esi;
     snapshot->edi = cpu->data.edi;
@@ -475,6 +477,13 @@ static C_VOID core_machine_cpu_diagnostic_record_delivered_exception(
 const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_diagnostic_provider = {
         core_machine_cpu_diagnostic_record_instruction,
+        core_machine_cpu_diagnostic_record_delivered_exception,
+        core_machine_cpu_diagnostic_record_fault
+    };
+
+const core_machine_cpu_execution_diagnostic_provider
+    core_machine_cpu_fault_diagnostic_provider = {
+        STD_NULL,
         core_machine_cpu_diagnostic_record_delivered_exception,
         core_machine_cpu_diagnostic_record_fault
     };

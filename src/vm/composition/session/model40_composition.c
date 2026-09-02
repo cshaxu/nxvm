@@ -40,7 +40,7 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
          * A: may be the only drive with inserted media. */
         .installed_mask = 0x03u,
         .double_sided_mask = 0x03u,
-        .track_zero_active_low_mask = 0x03u,
+        .track_zero_active_low_mask = 0u,
         .cylinder_count = {80u, 80u, 0u, 0u}
     };
     core_machine_fdc_config fdc = {0};
@@ -102,7 +102,9 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
         vm_session_model40_storage_rollback(session);
         return status;
     }
-    d4_memory = (core_machine_d4_memory_config) { TYPE_TRUE, 0x8fu, 0xc1u, 0xfc42u };
+    /* The selected 2 MiB board reports 8Fh/FDh diagnostics.  Its setup
+     * register is 42h: selector 2 plus the documented enabled cache bit. */
+    d4_memory = (core_machine_d4_memory_config) { TYPE_TRUE, 0x8fu, 0xfdu, 0xfc42u };
     status = core_machine_plan_configure_d4_memory(session->core_machine_plan,
         &d4_memory);
     if (status != TYPE_STATUS_OK) {

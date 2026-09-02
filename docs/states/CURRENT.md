@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T513 closed after S1--S5 acceptance. |
-| Admission And Approval | Owner approved the finite profile/CPU/FDD external integration suite and its Model 40 sole-owner repair scope; S5 implementation `155dc348` is accepted after actual-diff review. |
-| Objective | Closed: every S1 matrix row is registered and, when available, reaches its declared DOS or installer terminal through the one scenario runner. |
-| Non-goals | No external asset, YAML, second profile/FDD/CMOS/HDC/video owner, synthetic terminal, or unclassified in-scope residual was introduced. |
-| Reference Baseline | T513 S1--S5 [history](../history/M5-T513-profile-cpu-floppy-integration-matrix.md) and [closure audit](../etc/evidence/t513-s5-closure-audit.md). |
+| Identifier Mode | Corrective T513 S6 |
+| Admission And Approval | Owner explicitly directed this corrective repair on 2026-08-31: load the appropriate Model 40 CMOS state so DeskPro firmware proceeds without an F1 test hack. T513 is the immediately preceding closed numeric task and owns the Model 40 external boot path. |
+| Objective | Identify the actual firmware condition behind the Model 40 `RESUME` prompt, then repair the sole Core-owned route so a fresh session reaches its boot terminal without host F1 injection. The owner approved one production VADP frame-freshness capability: unchanged reliable planar frames must not be rasterized again. |
+| Non-goals | Do not synthesize F1 in product code or tests, bypass/patch firmware, persist a captured runtime CMOS dump, modify `build/output` YAML, add a VM-side CMOS owner, alter external ROM/media, or conceal a remaining prompt with a timeout. Do not treat a CMOS seed as the cause unless the ROM reaches a real CMOS diagnostic. |
+| Reference Baseline | T513 S1--S5 [history](../history/M5-T513-profile-cpu-floppy-integration-matrix.md), S4 replay evidence, the retained Model 40 ROM/media inputs, existing Core RTC/CMOS contract and current 0513 artifact baseline. |
 | Candidate Proposal | [Retained T513 proposal](../history/M5-T513-profile-cpu-floppy-integration-matrix-proposal.md). |
-| Files And ABI Surface | One table-driven integration runner; profile-owned Model 40 seed; existing Core RTC/FDC/VADP/HDC owners; and the 0513 artifact declaration. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. |
-| Verification | Debug unit 316/316, Release integration 40/40, documentation governance and stripped Release 0513 pass. |
-| Expected Markers | Met: all 20 available rows reached `date-input` or `installer-ready`, with no synthetic success or forced serialization. |
-| Asset Needs | Owner-managed ROM/media remained read-only external inputs; no bytes, paths or hashes are tracked. |
-| Reporting Requirements | Acceptance, retained owners, line accounting and artifact identity are recorded in the indexed closure audit. |
-| Stop Conditions | None reached. |
-| Exit Criteria | Met: finite matrix exhausted; sole-owner repairs accepted; gates and artifact complete. |
-| Original Owner Request | Single-person dual-role implementation of the complete integration test suite. |
-| Similar-Issue Sweep | Completed across all matrix registrations, cache inputs, scratch directories and repaired owner routes; no unclassified in-scope hit remains. |
+| Files And ABI Surface | Model 40 profile CMOS seed material, existing Core RTC initialization/checksum route, one bounded Core display-freshness observation, its VM copied-frame acknowledgement token, the external matrix runner and owner-local tests/evidence. The observation exposes neither video state nor memory and cannot select a profile. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. Profile owns immutable evidence-backed defaults; Core RTC owns writable session CMOS/checksum; firmware remains the only guest reader/writer. |
+| Verification | Reproduce boot without F1; trace the ROM's first POST diagnostic and its D4-selected physical address through the existing owner-local test seam; establish source/ROM evidence for every changed D4 decode; prove that unchanged EGA/VGA planar frames skip rasterization while a state change requires one copied frame; remove F1 injection from the Model 40 matrix row; then run complete Debug unit, Release integration and documentation governance. |
+| Expected Markers | Fresh Model 40 session reaches `installer-ready` without `RESUME`, `203-Memory Address Error`, host F1 or a synthetic pass; non-Model-40 matrix rows remain unchanged. |
+| Asset Needs | Read-only owner-managed Model 40 firmware/video ROM and DOS media for diagnosis only; no asset bytes, paths or hashes enter tracked sources. |
+| Reporting Requirements | Record the BIOS-observed condition, every seed-byte source/disposition, retained sole-owner route, similar-issue sweep, line accounting and before/after real boot result without local asset paths/hashes. |
+| Stop Conditions | Stop for owner direction if the required BIOS state cannot be represented by the existing Core RTC contract, source evidence would require a captured dump, removing F1 requires firmware/VM bypass rather than a profile default, or the VADP capability would require a second video-state owner. |
+| Exit Criteria | Model 40 first boot no longer requires F1; the test contains no automatic F1 path; all changed CMOS bytes have source-backed dispositions; every available T513 matrix row reaches its terminal; complete unit/integration/governance pass and a rebuilt T513 artifact is recorded. |
+| Original Owner Request | Automatically load the appropriate CMOS settings and eliminate the DeskPro 386 F1 workaround. |
+| Similar-Issue Sweep | Audit every Model 40 firmware boot runner/probe and all profile-provided RTC default material for an equivalent host-input or captured-state workaround. |
 
 ## Current Technical Baseline
 

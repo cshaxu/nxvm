@@ -47,7 +47,7 @@ static type_unsigned_32 iret_s51_real_flags_load(
 }
 
 static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
-    const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes)
+    const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes, type_bool wrap_stack)
 {
     static const type_unsigned_8 hlt = 0xf4u;
     const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
@@ -55,14 +55,16 @@ static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
         0x8002u;
     const type_unsigned_32 expected_flags = iret_s51_real_flags_load(profile, flags);
     const C_INT wide = prefix_bytes != 0u && prefix[0] == 0x66u;
+    const type_unsigned_16 return_ip = wrap_stack ? 0x0200u : 0x0100u;
+    const type_unsigned_32 code_offset = wrap_stack ? 0x0100u : 0u;
     cli_sti_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
     type_unsigned_8 code[3] = { 0u, 0u, 0u };
-    type_unsigned_16 frame16[] = { 0x0100u, 0x0000u, (type_unsigned_16)flags };
-    type_unsigned_32 frame32[] = { 0x00000100u, 0x00000000u, flags };
+    type_unsigned_16 frame16[] = { return_ip, 0x0000u, (type_unsigned_16)flags };
+    type_unsigned_32 frame32[] = { return_ip, 0x00000000u, flags };
     type_unsigned_8 unselected_before[12] = {
         0xd1u, 0xd2u, 0xd3u, 0xd4u, 0xd5u, 0xd6u,
         0xd7u, 0xd8u, 0xd9u, 0xdau, 0xdbu, 0xdcu
@@ -74,19 +76,31 @@ static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
         STD_MEMCPY(code, prefix, prefix_bytes);
         code[prefix_bytes] = 0xcfu;
         failed = !test_core_machine_fixture_prepare_real_mode_execution(
-            state.machine, 0u);
-        failed |= core_machine_memory_write(state.machine, 0u, code,
+            state.machine, code_offset);
+        failed |= core_machine_memory_write(state.machine, code_offset, code,
             prefix_bytes + 1u) != TYPE_STATUS_OK;
-        failed |= core_machine_memory_write(state.machine, 0x0100u, &hlt,
+        failed |= core_machine_memory_write(state.machine, return_ip, &hlt,
             sizeof(hlt)) != TYPE_STATUS_OK;
-        failed |= core_machine_memory_write(state.machine, 0x8000u,
-            wide ? (const C_VOID *)frame32 : (const C_VOID *)frame16,
-            wide ? sizeof(frame32) : sizeof(frame16)) != TYPE_STATUS_OK;
+        if (wrap_stack) {
+            const type_unsigned_32 stack_base = state.machine->executor_cpu.data.ss.base;
+
+            failed |= wide || core_machine_memory_write(state.machine,
+                stack_base + 0xfffeu, frame16, sizeof(frame16[0u])) != TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine, stack_base,
+                frame16 + 1u, sizeof(frame16[0u])) != TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine, stack_base + 2u,
+                frame16 + 2u, sizeof(frame16[0u])) != TYPE_STATUS_OK;
+        } else {
+            failed |= core_machine_memory_write(state.machine, 0x8000u,
+                wide ? (const C_VOID *)frame32 : (const C_VOID *)frame16,
+                wide ? sizeof(frame32) : sizeof(frame16)) != TYPE_STATUS_OK;
+        }
         failed |= core_machine_memory_write(state.machine, 0x18000u,
             unselected_before, sizeof(unselected_before)) != TYPE_STATUS_OK;
     }
     if (!failed) {
         iret_s51_seed(&state, flags);
+        if (wrap_stack) state.machine->executor_cpu.data.sp = 0xfffeu;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK;
@@ -95,9 +109,10 @@ static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
             TYPE_STATUS_OK;
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= diagnostic.first_fault.valid;
-        failed |= after.data.eip != 0x0101u;
+        failed |= after.data.eip != return_ip + 1u;
         failed |= !after.data.flagHalt;
-        failed |= after.data.esp != before.data.esp + (wide ? 12u : 6u);
+        failed |= wrap_stack ? after.data.sp != 0x0004u :
+            after.data.esp != before.data.esp + (wide ? 12u : 6u);
         failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u;
         failed |= after.data.cs.limit != before.data.cs.limit;
         failed |= after.data.cs.flagValid != before.data.cs.flagValid;
@@ -142,7 +157,12 @@ static C_INT iret_s51_test_real(C_VOID)
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
         if (!iret_s51_real_case(profiles[profile], (const type_unsigned_8[]){ 0u },
-                0u))
+                0u, TYPE_FALSE))
+            return 0;
+    }
+    for (profile = 0u; profile != 4u; ++profile) {
+        if (!iret_s51_real_case(profiles[profile], (const type_unsigned_8[]){ 0u },
+                0u, TYPE_TRUE))
             return 0;
     }
     for (profile = 0u; profile != sizeof(prefixes) / sizeof(prefixes[0]);
@@ -150,10 +170,47 @@ static C_INT iret_s51_test_real(C_VOID)
         type_unsigned_8 bytes = profile == 2u ? 2u : 1u;
 
         if (!iret_s51_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-                prefixes[profile], bytes))
+                prefixes[profile], bytes, TYPE_FALSE))
             return 0;
     }
     return 1;
+}
+
+static C_INT iret_s51_test_80286_stack_boundary(C_VOID)
+{
+    static const type_unsigned_8 code[] = { 0xcfu };
+    cli_sti_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
+
+    if (!failed) {
+        failed = !test_core_machine_fixture_prepare_real_mode_execution(
+            state.machine, 0u);
+        failed |= core_machine_memory_write(state.machine, 0u, code,
+            sizeof(code)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        iret_s51_seed(&state, VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
+        state.machine->executor_cpu.data.sp = 0xffffu;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            TYPE_STATUS_OK;
+        failed |= result.reason != CORE_MACHINE_STOP_FAULT;
+        failed |= !diagnostic.first_fault.valid;
+        failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            VCPUINS_EXCEPT_GP);
+        failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
 }
 
 static C_INT iret_s51_expect_ud(core_machine_cpu_profile profile,
@@ -337,7 +394,8 @@ static C_INT iret_s51_test_pic(C_VOID)
 
 C_INT main(C_VOID)
 {
-    if (!iret_s51_test_real() || !iret_s51_test_rejections() ||
+    if (!iret_s51_test_real() || !iret_s51_test_80286_stack_boundary() ||
+        !iret_s51_test_rejections() ||
         !iret_s51_test_protected() || !iret_s51_test_pic())
         return 1;
     STD_PRINTF("M5:T316:S51:IRET:OK\n");

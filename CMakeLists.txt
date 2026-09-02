@@ -106,6 +106,21 @@ else()
         CORE_MACHINE_RUNTIME_TRACE_ENABLED=0)
 endif()
 
+# Release artifacts omit development trace recording. A small set of unit
+# tests verifies that recording contract itself, so those tests link the same
+# Core sources in an observable test-only library rather than changing the
+# production library's build definition.
+get_target_property(PROJECT_CORE_MACHINE_SOURCES core-machine SOURCES)
+add_library(core-machine-observable STATIC ${PROJECT_CORE_MACHINE_SOURCES})
+add_dependencies(core-machine-observable cpu-timing-manifest-catalog)
+target_include_directories(core-machine-observable PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_BINARY_DIR}/generated"
+)
+target_link_libraries(core-machine-observable PUBLIC core-machine-executor)
+target_compile_definitions(core-machine-observable PUBLIC
+    CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+
 add_executable(core-machine-contract-smoke
     test/core/core_contract_smoke.c
 )
@@ -306,26 +321,26 @@ target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
 
 add_executable(core-machine-transaction-s2-smoke
     test/core/machine_transaction_s2_smoke.c)
-target_link_libraries(core-machine-transaction-s2-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-transaction-s2-smoke PRIVATE core-machine-observable)
 add_executable(core-machine-prefetch-locality-smoke
     test/core/machine_prefetch_locality_smoke.c)
 target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE core-machine)
 
 add_executable(core-machine-competition-s3-smoke
     test/core/machine_competition_s3_smoke.c)
-target_link_libraries(core-machine-competition-s3-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-competition-s3-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
     test/core/machine_d4_refresh_hold_smoke.c)
-target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-competition-80386-s1-smoke
     test/core/machine_competition_80386_s1_smoke.c)
-target_link_libraries(core-machine-competition-80386-s1-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-competition-80386-s1-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-transaction-lifecycle-s4-smoke
     test/core/machine_transaction_lifecycle_s4_smoke.c)
-target_link_libraries(core-machine-transaction-lifecycle-s4-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-transaction-lifecycle-s4-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-rational-clock-smoke
     test/core/machine_rational_clock_smoke.c)
@@ -337,15 +352,15 @@ target_link_libraries(core-machine-timeline-s2-smoke PRIVATE core-machine)
 
 add_executable(core-machine-arbitration-s3-smoke
     test/core/machine_arbitration_s3_smoke.c)
-target_link_libraries(core-machine-arbitration-s3-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-arbitration-s3-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-rtc-storage-s4-smoke
     test/core/machine_rtc_storage_s4_smoke.c)
-target_link_libraries(core-machine-rtc-storage-s4-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-rtc-storage-s4-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-input-display-s5-smoke
     test/core/machine_input_display_s5_smoke.c)
-target_link_libraries(core-machine-input-display-s5-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-input-display-s5-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-real-mode-tick-smoke
     test/core/machine/core_machine_real_mode_tick_smoke.c)
@@ -818,7 +833,7 @@ target_link_libraries(core-machine-segment-selector-smoke PRIVATE core-machine)
 
 add_executable(core-machine-80386-paging-smoke
     test/core/machine/core_machine_80386_paging_smoke.c)
-target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine-observable)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-80386-paging-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -918,7 +933,7 @@ target_link_libraries(core-machine-port-ownership-smoke PRIVATE core-machine)
 add_executable(core-machine-trace-smoke
     test/core/machine_trace_smoke.c
 )
-target_link_libraries(core-machine-trace-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-trace-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-retirement-observation-s3-smoke
     test/core/machine_retirement_observation_s3_smoke.c
@@ -927,7 +942,7 @@ target_link_libraries(core-machine-retirement-observation-s3-smoke PRIVATE core-
 add_executable(core-machine-external-time-trace-s18-smoke
     test/core/machine_external_time_trace_s18_smoke.c
 )
-target_link_libraries(core-machine-external-time-trace-s18-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-external-time-trace-s18-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-debug-smoke
     test/core/machine_debug_smoke.c
@@ -1568,7 +1583,7 @@ add_executable(core-machine-cpu-fault-diagnostic-smoke
     test/core/machine/cpu_fault_diagnostic_smoke.c
 )
 target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
-    core-machine
+    core-machine-observable
 )
 
 add_executable(core-machine-ram-port-context-smoke
@@ -1626,7 +1641,7 @@ add_executable(core-machine-pic-lifecycle-s4-smoke
 target_link_libraries(core-machine-pic-lifecycle-s4-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-phase-s2-smoke
     test/core/machine/core_machine_pic_phase_s2_smoke.c)
-target_link_libraries(core-machine-pic-phase-s2-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-pic-phase-s2-smoke PRIVATE core-machine-observable)
 add_executable(core-machine-kbc-controller-smoke
     test/core/machine/core_machine_kbc_controller_smoke.c
 )

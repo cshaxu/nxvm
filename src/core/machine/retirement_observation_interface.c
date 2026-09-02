@@ -44,6 +44,13 @@ type_status core_machine_set_retirement_observation_provider(
         sizeof(machine->retirement_observation.provider));
     if (provider != STD_NULL) machine->retirement_observation.provider = *provider;
     machine->retirement_observation.pending = TYPE_FALSE;
+    core_machine_cpu_execution_context_bind_diagnostic_provider(
+        &machine->executor_cpu_execution,
+        (provider != STD_NULL || machine->retirement_time_contract ==
+            CORE_MACHINE_RETIREMENT_TIME_PHYSICAL) ?
+            &core_machine_cpu_diagnostic_provider :
+            &core_machine_cpu_fault_diagnostic_provider,
+        machine);
     return TYPE_STATUS_OK;
 }
 

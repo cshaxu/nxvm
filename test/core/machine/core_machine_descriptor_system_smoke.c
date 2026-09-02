@@ -1017,21 +1017,51 @@ static C_INT dt_test_c7_segment_override_real_mode(C_VOID)
     core_machine_destroy(state.machine);
     return !failed;
 }
+static C_INT dt_real_data_cache(const t_cpu_data_sreg *sreg,
+    type_unsigned_16 selector, t_cpu_data_sreg_type type)
+{
+    return sreg->flagValid && sreg->selector == selector &&
+        sreg->base == (type_unsigned_32)selector << 4u &&
+        sreg->limit == 0xffffu && sreg->dpl == 0u &&
+        sreg->sregtype == type && sreg->seg.accessed &&
+        !sreg->seg.executable && sreg->seg.data.writable &&
+        !sreg->seg.data.big && !sreg->seg.data.expdown;
+}
 static C_INT dt_test_leave_protected_mode(C_VOID)
 {
     static const type_unsigned_8 code[] = {
-        0x0fu, 0x22u, 0xc0u, 0xeau, 0x08u, 0x00u, 0x00u, 0x00u, 0xf4u
+        0x0fu, 0x22u, 0xc0u, 0xeau, 0x0au, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xbbu, 0x48u, 0x00u, 0x8eu, 0xc3u, 0x8eu,
+        0xd3u, 0x8eu, 0xdbu, 0xf4u
     };
     descriptor_system_machine state;
     C_INT failed = !dt_prepare(&state);
 
     if (!failed) {
         dt_enter_protected(&state, 0u);
+        state.machine->executor_cpu.data.cs.seg.exec.defsize = TYPE_TRUE;
+        state.machine->executor_cpu.data.ds.seg.data.big = TYPE_TRUE;
+        state.machine->executor_cpu.data.es.seg.data.big = TYPE_TRUE;
+        state.machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
         state.machine->executor_cpu.data.eax = 0u;
         failed = !dt_run(&state, code, sizeof(code), 0, 0u) ||
             state.machine->executor_cpu.data.cr0 != 0u ||
             state.machine->executor_cpu.data.cs.selector != 0u ||
-            state.machine->executor_cpu.data.cs.base != 0u;
+            state.machine->executor_cpu.data.cs.base != 0u ||
+            state.machine->executor_cpu.data.cs.limit != 0xffffu ||
+            !state.machine->executor_cpu.data.cs.flagValid ||
+            !state.machine->executor_cpu.data.cs.seg.accessed ||
+            !state.machine->executor_cpu.data.cs.seg.executable ||
+            state.machine->executor_cpu.data.cs.seg.exec.defsize ||
+            state.machine->executor_cpu.data.cs.seg.exec.conform ||
+            !state.machine->executor_cpu.data.cs.seg.exec.readable ||
+            state.machine->executor_cpu.data.ebx != 0x00000048u ||
+            !dt_real_data_cache(&state.machine->executor_cpu.data.es, 0x0048u,
+                SREG_DATA) ||
+            !dt_real_data_cache(&state.machine->executor_cpu.data.ss, 0x0048u,
+                SREG_STACK) ||
+            !dt_real_data_cache(&state.machine->executor_cpu.data.ds, 0x0048u,
+                SREG_DATA);
     }
     core_machine_destroy(state.machine);
     return !failed;

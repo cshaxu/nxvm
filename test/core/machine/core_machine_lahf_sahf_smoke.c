@@ -485,6 +485,42 @@ static C_INT lahf_sahf_test_irq(C_VOID)
     return lahf_sahf_irq_case(0) && lahf_sahf_irq_case(1);
 }
 
+/* Compaq's 386 POST carries CF through a 32-bit checksum rotation by using
+ * SAHF/LAHF around RCL.  Keep that real-mode sequence at the sole FLAGS owner
+ * boundary: RCL changes only CF/OF, and LAHF must expose the resulting CF. */
+static C_INT lahf_sahf_test_386_checksum_sequence(C_VOID)
+{
+    static const type_unsigned_8 code[] = {0x9eu,0x66u,0xd1u,0xd3u,0x9fu};
+    lahf_sahf_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_run_result result;
+    t_cpu after;
+    C_INT failed = !lahf_sahf_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0u, code,
+            sizeof(code)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        lahf_sahf_seed(&state);
+        state.machine->executor_cpu.data.eax = 0x00000300u;
+        state.machine->executor_cpu.data.ebx = 0x80000000u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){3u,0u}, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
+            after.data.eax != 0x00000300u || after.data.ebx != 1u ||
+            after.data.eflags != (VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
+                VCPU_EFLAGS_OF);
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     if (!lahf_sahf_test_default()) {
@@ -509,6 +545,10 @@ C_INT main(C_VOID)
     }
     if (!lahf_sahf_test_irq()) {
         STD_PRINTF("LAHF-SAHF stage=irq\n");
+        return 1;
+    }
+    if (!lahf_sahf_test_386_checksum_sequence()) {
+        STD_PRINTF("LAHF-SAHF stage=386-checksum-sequence\n");
         return 1;
     }
     STD_PRINTF("M5:T316:S39:LAHF-SAHF:OK\n");

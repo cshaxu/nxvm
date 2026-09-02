@@ -346,6 +346,11 @@ C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
 C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_diagnostic_provider;
+/* Production always retains fault and delivered-exception snapshots for the
+ * runtime debugger.  Per-retirement capture is installed only when an
+ * observer or a physical retirement contract actually needs it. */
+extern const core_machine_cpu_execution_diagnostic_provider
+    core_machine_cpu_fault_diagnostic_provider;
 C_VOID core_machine_board_cold_reset(core_machine *machine);
 C_VOID core_machine_board_after_pit_reset(core_machine *machine);
 C_VOID core_machine_board_refresh_nmi(core_machine *machine);

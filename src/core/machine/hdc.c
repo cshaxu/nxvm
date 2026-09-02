@@ -168,13 +168,14 @@ static C_INT core_machine_hdc_media_info(const core_machine_hdc *hdc,
 
 static C_VOID core_machine_hdc_refresh_compaq_selection_status(core_machine_hdc *hdc)
 {
-    core_machine_media_info info;
-    core_machine_media_result result;
-
     if (!core_machine_hdc_is_compaq_wd_40mb(hdc) ||
         hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE) return;
-    hdc->data.status = core_machine_hdc_media_info(hdc, &info, &result) ?
-        CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC : 0u;
+    /* Selecting a task-file drive is a controller operation, not media
+     * insertion.  The Compaq firmware probes a fitted controller before it
+     * knows whether a fixed disk is attached; keep its reset-ready state
+     * visible here and let a command needing sectors fail through the sole
+     * media route. */
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
 }
 
 static STD_SIZE_T core_machine_hdc_sector_capacity(

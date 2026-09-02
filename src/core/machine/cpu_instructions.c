@@ -578,7 +578,14 @@ static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *
         {
         case SREG_STACK:
             TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_STACK)");
-            TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_SS(0));
+            if (!_IsProtected &&
+                context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386)
+                TYPE_TRACE_CHECK_RETURN_ZERO(core_machine_cpu_execution_raise_exception(
+                    context, VCPUINS_EXCEPT_SHUTDOWN, 0u));
+            else if (!_IsProtected &&
+                context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286)
+                TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+            else TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_SS(0));
             TYPE_TRACE_BLOCK_END;
             break;
         case SREG_TR:
@@ -675,12 +682,33 @@ static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, typ
     }
     TYPE_TRACE_CALL_END;
 }
+static type_bool _kma_real_legacy_segment_wrap(
+    core_machine_cpu_execution_context *context, type_unsigned_32 offset,
+    type_unsigned_8 byte)
+{
+    return context != STD_NULL && !_GetCR0_PE &&
+        (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+         context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 ||
+         context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) &&
+        offset <= 0x0000ffffu && byte != 0u &&
+        (type_unsigned_32)(byte - 1u) > 0x0000ffffu - offset;
+}
 /* read content from logical */
 static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte, type_unsigned_8 vpl, type_bool force)
 {
     /* type_native_unsigned i; */
     type_unsigned_32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
+    if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
+        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+
+        TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, rsreg, offset,
+            rdata, first, vpl, force));
+        TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, rsreg, 0u,
+            rdata + first, byte - first, vpl, force));
+        TYPE_TRACE_CALL_END;
+        return;
+    }
     TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 0, vpl, force));
     TYPE_TRACE_CHECK_RETURN(_kma_read_linear(context, linear, rdata, byte, vpl, force));
     if (!force && instruction_state.data.msize <
@@ -722,6 +750,16 @@ static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_
     /* type_native_unsigned i; */
     type_unsigned_32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_write_logical");
+    if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
+        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+
+        TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, rsreg, offset,
+            rdata, first, vpl, force));
+        TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, rsreg, 0u,
+            rdata + first, byte - first, vpl, force));
+        TYPE_TRACE_CALL_END;
+        return;
+    }
     TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 1, vpl, force));
     TYPE_TRACE_CHECK_RETURN(_kma_write_linear(context, linear, rdata, byte, vpl, force));
     if (!force && instruction_state.data.msize <
@@ -797,6 +835,16 @@ static C_VOID _kma_test_logical(core_machine_cpu_execution_context *context, t_c
 {
     type_unsigned_32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_test_logical");
+    if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
+        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+
+        TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, rsreg, offset,
+            first, write, vpl, force));
+        TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, rsreg, 0u,
+            byte - first, write, vpl, force));
+        TYPE_TRACE_CALL_END;
+        return;
+    }
     TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
     TYPE_TRACE_CALL_END;
 }
@@ -804,6 +852,16 @@ static C_VOID _kma_test_access(core_machine_cpu_execution_context *context, t_cp
 {
     type_unsigned_32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_test_access");
+    if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
+        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+
+        TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, rsreg, offset,
+            first, write, vpl, force));
+        TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, rsreg, 0u,
+            byte - first, write, vpl, force));
+        TYPE_TRACE_CALL_END;
+        return;
+    }
     TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
     TYPE_TRACE_CHECK_RETURN(_kma_test_linear(context, linear, byte, write, vpl, force));
     TYPE_TRACE_CALL_END;
@@ -1085,6 +1143,29 @@ static C_VOID _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *contex
     *rdescriptor = descriptor;
     TYPE_TRACE_CALL_END;
 }
+/* Clearing PE deliberately retains protected caches.  A later real-address
+ * segment reload, including the far transfer which reloads CS, replaces the
+ * selected cache with real-address attributes. */
+static C_VOID _ksa_load_real_sreg(t_cpu_data_sreg *rsreg,
+    type_unsigned_16 selector, type_bool vm86)
+{
+    rsreg->flagValid = TYPE_TRUE;
+    rsreg->selector = selector;
+    rsreg->base = (type_unsigned_32)selector << 4u;
+    rsreg->limit = 0x0000ffffu;
+    rsreg->dpl = vm86 ? 3u : 0u;
+    rsreg->seg.accessed = TYPE_TRUE;
+    rsreg->seg.executable = rsreg->sregtype == SREG_CODE;
+    if (rsreg->sregtype == SREG_CODE) {
+        rsreg->seg.exec.defsize = TYPE_FALSE;
+        rsreg->seg.exec.conform = TYPE_FALSE;
+        rsreg->seg.exec.readable = TYPE_TRUE;
+    } else {
+        rsreg->seg.data.big = TYPE_FALSE;
+        rsreg->seg.data.expdown = TYPE_FALSE;
+        rsreg->seg.data.writable = TYPE_TRUE;
+    }
+}
 static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_16 selector)
 {
     type_unsigned_64 descriptor;
@@ -1134,14 +1215,8 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("!Protected");
-            rsreg->flagValid = TYPE_TRUE;
-            rsreg->base = (selector << 4);
-            rsreg->selector = selector;
-            if (_GetCR0_PE && _GetEFLAGS_VM)
-            {
-                rsreg->dpl = 0x03;
-                rsreg->limit = 0x0000ffff;
-            }
+            _ksa_load_real_sreg(rsreg, selector,
+                _GetCR0_PE && _GetEFLAGS_VM);
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -1214,14 +1289,8 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("!Protected");
-            rsreg->flagValid = TYPE_TRUE;
-            rsreg->selector = selector;
-            rsreg->base = (selector << 4);
-            if (_GetCR0_PE && _GetEFLAGS_VM)
-            {
-                rsreg->dpl = 0x03;
-                rsreg->limit = 0x0000ffff;
-            }
+            _ksa_load_real_sreg(rsreg, selector,
+                _GetCR0_PE && _GetEFLAGS_VM);
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -1279,14 +1348,8 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("!Protected");
-            rsreg->flagValid = TYPE_TRUE;
-            rsreg->selector = selector;
-            rsreg->base = (selector << 4);
-            if (_GetCR0_PE && _GetEFLAGS_VM)
-            {
-                rsreg->dpl = 0x03;
-                rsreg->limit = 0x0000ffff;
-            }
+            _ksa_load_real_sreg(rsreg, selector,
+                _GetCR0_PE && _GetEFLAGS_VM);
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -1625,6 +1688,21 @@ static C_VOID _s_test_ss_pop(core_machine_cpu_execution_context *context, type_u
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
+    }
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _s_test_ss_iret_pop_286(core_machine_cpu_execution_context *context)
+{
+    type_unsigned_8 offset;
+
+    TYPE_TRACE_CALL_BEGIN("_s_test_ss_iret_pop_286");
+    /* Intel's 80286 IRET real-mode exception is tied to an individual pop
+     * beginning at FFFFh.  Its three words may therefore start at FFFEh,
+     * 0000h, and 0002h.  RET and other stack instructions retain their own
+     * documented boundary rules through the general frame preflight. */
+    for (offset = 0u; offset < 6u; offset += 2u) {
+        TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss,
+            TYPE_MASK_UNSIGNED_16(cpu_state.data.sp + offset), 2u, 0));
     }
     TYPE_TRACE_CALL_END;
 }
@@ -5446,7 +5524,9 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
         {
         case 2:
             TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-            TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 6));
+            if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286)
+                TYPE_TRACE_CHECK_RETURN(_s_test_ss_iret_pop_286(context));
+            else TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 6));
             TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(neweip), 2));
             TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 2));
             newcs = TYPE_MASK_UNSIGNED_16(xs_sel);
@@ -18375,6 +18455,19 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
     if (instruction_state.data.except)
     {
         fault_cpu = instruction_state.data.oldcpu;
+        if (instruction_state.data.except == VCPUINS_EXCEPT_SHUTDOWN) {
+            cpu_state = fault_cpu;
+            if (context->diagnostic_provider != STD_NULL &&
+                context->diagnostic_provider->record_delivered_exception != STD_NULL) {
+                context->diagnostic_provider->record_delivered_exception(
+                    context->diagnostic_context, &fault_cpu, &instruction_state);
+            }
+            core_machine_cpu_execution_request_shutdown(context);
+            core_machine_cpu_execution_request_stop(context);
+            if (context->instruction_in_progress)
+                context->instruction_fault_delivered = TYPE_TRUE;
+            return;
+        }
         if (instruction_state.data.except == VCPUINS_EXCEPT_DB) {
             fault_cpu.data.dr6 = cpu_state.data.dr6;
             fault_cpu.data.eflags |= VCPU_EFLAGS_RF;
