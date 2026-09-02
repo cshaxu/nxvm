@@ -9,3 +9,4 @@ the complete outcome; `CURRENT.md` owns the active S contract.
 
 | Subtask | Result | Implementation P |
 | --- | --- | --- |
+| S1 | Frozen the Windows Console/Window/RDP packet ledger, source basis and one-normalizer replacement boundary; unit and documentation governance pass. | `196bfb79` |

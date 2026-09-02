@@ -14,6 +14,8 @@ extern "C" {
 C_VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *context,
     vm_platform_run_handle *owner, type_unsigned_16 scanCode, type_unsigned_16 virtualKey,
     C_INT pressed);
+C_VOID vm_platform_win32_keyboard_make_character_for(const vm_platform_run_context *context,
+    type_unsigned_32 scalar);
 C_VOID vm_platform_win32_mouse_relative_for(const vm_platform_run_context *context,
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);
 

@@ -56,7 +56,11 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
             input.Event.KeyEvent.wVirtualScanCode,
             input.Event.KeyEvent.dwControlKeyState);
         virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
-        vm_platform_win32_keyboard_make_key_for(handle->platform, handle->owner,
+        if (scan_code == 0u && input.Event.KeyEvent.bKeyDown != 0 &&
+            input.Event.KeyEvent.uChar.UnicodeChar != L'\0') {
+            vm_platform_win32_keyboard_make_character_for(handle->platform,
+                input.Event.KeyEvent.uChar.UnicodeChar);
+        } else vm_platform_win32_keyboard_make_key_for(handle->platform, handle->owner,
             scan_code, virtual_key, input.Event.KeyEvent.bKeyDown != 0);
         break;
     case FOCUS_EVENT:

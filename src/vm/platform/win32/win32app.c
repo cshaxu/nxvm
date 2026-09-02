@@ -165,6 +165,19 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 0);
         return 0;
+    case WM_CHAR:
+        /* TranslateMessage carries the originating scan in WM_CHAR. A normal
+         * physical key was already sent above; RDP soft keyboards may supply
+         * only a character and therefore leave that field clear. */
+        if (((type_unsigned_32)lParam >> 16u & 0xffu) == 0u) {
+            vm_platform_win32_keyboard_make_character_for(handle->platform,
+                (type_unsigned_16)(wParam & 0xffffu));
+        }
+        return 0;
+    case WM_UNICHAR:
+        if (wParam != UNICODE_NOCHAR) vm_platform_win32_keyboard_make_character_for(
+            handle->platform, (type_unsigned_32)wParam);
+        return TRUE;
     case WM_MOUSEMOVE:
         win32app_submit_mouse_event(handle, wParam, lParam, 0);
         return 0;

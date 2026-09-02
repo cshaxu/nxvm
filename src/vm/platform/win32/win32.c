@@ -5,6 +5,7 @@
 #include "type.h"
 
 #include "core/platform/input_interface.h"
+#include "core/platform/win32/keyboard.h"
 
 
 #include "vm/platform/win32/win32con.h"
@@ -32,6 +33,22 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
     event.data.key.virtual_key = virtualKey;
     event.data.key.pressed = pressed;
     (C_VOID)vm_platform_host_input_sink_submit(&context->input_sink, &event);
+}
+
+static type_status vm_platform_win32_keyboard_submit(C_VOID *context,
+    const core_platform_input_event *event)
+{
+    const vm_platform_run_context *run_context = context;
+
+    return run_context == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        vm_platform_host_input_sink_submit(&run_context->input_sink, event);
+}
+
+C_VOID vm_platform_win32_keyboard_make_character_for(const vm_platform_run_context *context,
+    type_unsigned_32 scalar)
+{
+    (C_VOID)core_platform_win32_keyboard_submit_character((C_VOID *)context,
+        vm_platform_win32_keyboard_submit, scalar);
 }
 
 C_VOID vm_platform_win32_mouse_relative_for(

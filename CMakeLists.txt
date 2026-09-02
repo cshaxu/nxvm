@@ -1217,7 +1217,14 @@ add_library(core-platform STATIC
     src/core/platform/wait.c)
 if(WIN32)
     target_sources(core-platform PRIVATE
+        src/core/platform/win32/keyboard.c
         src/core/platform/win32/sleep.c)
+    add_executable(core-platform-win32-keyboard-smoke
+        test/core/platform/core_platform_win32_keyboard_smoke.c)
+    target_link_libraries(core-platform-win32-keyboard-smoke PRIVATE core-platform)
+    add_test(NAME unit.core-platform-win32-keyboard-smoke
+        COMMAND core-platform-win32-keyboard-smoke)
+    set_tests_properties(unit.core-platform-win32-keyboard-smoke PROPERTIES LABELS unit)
 else()
     target_sources(core-platform PRIVATE
         src/core/platform/linux/sleep.c)

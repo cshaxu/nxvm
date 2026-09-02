@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T514 S1 |
+| Identifier Mode | Continuation T514 S2 |
 | Admission And Approval | Owner approved the next queued repair on 2026-09-01, after T513 S6 P2 was pushed: fix Windows Remote Desktop keyboard input. |
-| Objective | Freeze the complete Console, Window and RDP character/physical event ledger and current ingress routes before replacing them with one Core-platform normalizer. |
-| Non-goals | No S1 runtime behavior change, KBC/BIOS/text shortcut, second keyboard state or queue, source/table import, or `build/output` YAML modification. |
+| Objective | Replace Console and Window scan-only submission with one Core-platform Win32 normalizer that recovers layout-supported RDP character input as physical guest key sequences. |
+| Non-goals | No KBC/BIOS/text shortcut, second keyboard state or queue, source/table import, profile-specific keyboard path, or `build/output` YAML modification. |
 | Reference Baseline | T513 at `f07edd0b`; current Win32 frontend and VM input routes; [T514 proposal](../proposals/m5-win32-unicode-guest-keyboard-ingress.md). |
 | Candidate Proposal | [M5 Win32 Unicode guest-keyboard ingress](../proposals/m5-win32-unicode-guest-keyboard-ingress.md). |
-| Files And ABI Surface | S1 evidence only: Core platform input, Win32 Console/Window adapters, VM request transport and current owner-local tests. No runtime ABI change. |
+| Files And ABI Surface | Core-platform Win32 normalizer and owner-local test; existing Win32 Console/Window adapters and VM F9 product command boundary. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, documentation, UI and source-policy. Core platform normalizes copied host events; VM binds sink; Core machine owns KBC/guest keyboard. |
-| Verification | Reconcile `KEY_EVENT_RECORD`, `WM_KEY*`, `WM_CHAR`, `WM_UNICHAR` and UTF-16 cases; identify duplicate and unsupported dispositions; run unit and documentation governance. |
-| Expected Markers | One finite ledger, one S2 replacement boundary, and no changed runtime path in S1. |
+| Verification | Exercise physical, character-only, duplicate, UTF-16, unsupported and modifier-release cases; then complete unit and documentation governance. |
+| Expected Markers | Layout-supported RDP character input reaches the existing VM sink as one complete physical sequence; malformed/unsupported input leaves guest state unchanged. |
 | Asset Needs | Local Windows/RDP observation only where available; no external source, binary, trace, path or guest asset is retained. |
-| Reporting Requirements | Record source basis, coverage universe, current routes, duplicate/unsupported outcomes, S2 deletion target and any blocker. |
+| Reporting Requirements | Record retained sole owner, deleted duplicate route, line accounting, focused cases and complete-unit result. |
 | Stop Conditions | Stop if recovery requires guest text injection, a VM-side normalizer, or third-party source/table import. |
-| Exit Criteria | Every packet class has an owner/disposition, S2 has one bounded normalizer/deletion target, and unit plus documentation governance pass. |
+| Exit Criteria | Both frontends call one normalizer; character-only RDP input works where the host layout maps it; no duplicate/stuck modifier path remains; unit and governance pass. |
 | Original Owner Request | Repair Windows RDP keyboard input. |
 | Similar-Issue Sweep | Console and Window, physical and character packets, enhanced keys, duplicates, UTF-16 validity, layout recovery and all current VM keyboard receivers. |
 
