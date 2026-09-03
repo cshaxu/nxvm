@@ -32,13 +32,4 @@ foreach(required "core_machine_configure_hdc")
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/hdc.h"
-    hdc_firmware)
-foreach(required "out dx, al" "in ax, dx")
-    string(FIND "${hdc_firmware}" "${required}" position)
-    if(position EQUAL -1)
-        message(FATAL_ERROR "T213 ROM ATA PIO path missing: ${required}")
-    endif()
-endforeach()
-
-message(STATUS "M5 T213 HDC portal closure verified")
+message(STATUS "M5 T213 HDC Core portal closure verified")

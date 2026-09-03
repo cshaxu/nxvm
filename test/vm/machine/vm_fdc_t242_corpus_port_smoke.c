@@ -1,7 +1,5 @@
 #include "type.h"
 
-#include <windows.h>
-
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
 #include "core/machine/memory_interface.h"
@@ -10,34 +8,19 @@
 #include "vm/composition/session/session_private.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
+#include "../support/rom/session_assets.h"
 
 #define VM_FDC_T242_IMAGE_BYTES (1440u * 1024u)
 
 static type_unsigned_8 vm_fdc_t242_image[VM_FDC_T242_IMAGE_BYTES];
 
-static C_INT vm_fdc_t242_write_boot_loop(C_CHAR path[MAX_PATH])
+static C_VOID vm_fdc_t242_boot_loop(C_VOID)
 {
-    STD_FILE *file;
-    DWORD length;
-
-    length = GetTempPathA(MAX_PATH, path);
-    if (length == 0u || length >= MAX_PATH ||
-        GetTempFileNameA(path, "n64", 0u, path) == 0u) return 0;
     STD_MEMSET(vm_fdc_t242_image, 0, sizeof(vm_fdc_t242_image));
     vm_fdc_t242_image[0] = 0xebu;
     vm_fdc_t242_image[1] = 0xfeu;
     vm_fdc_t242_image[510u] = 0x55u;
     vm_fdc_t242_image[511u] = 0xaau;
-    file = STD_FOPEN(path, "wb");
-    if (file == STD_NULL) return 0;
-    if (STD_FWRITE(vm_fdc_t242_image, 1u, sizeof(vm_fdc_t242_image), file) !=
-        sizeof(vm_fdc_t242_image)) {
-        STD_FCLOSE(file);
-        DeleteFileA(path);
-        return 0;
-    }
-    STD_FCLOSE(file);
-    return 1;
 }
 
 static C_VOID vm_fdc_t242_write_dma2(t_port *port)
@@ -71,38 +54,31 @@ C_INT main(C_VOID)
         0x42u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x12u, 0x1bu, 0xffu
     };
     const vm_session_config config = {
-        .floppy_image = { "" },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
     vm_session *session = STD_NULL;
     t_port *port;
-    core_machine_run_budget boot_budget = {100000u, 0u};
-    core_machine_run_budget transfer_budget = {12000u, 0u};
     core_machine_run_result run = {0};
     type_unsigned_8 expected[512u * 18u];
     type_unsigned_8 actual[sizeof(expected)] = {0};
     type_unsigned_8 untouched[sizeof(actual)] = {0};
     type_unsigned_8 result[7] = {0};
-    C_CHAR path[MAX_PATH] = {0};
     STD_SIZE_T index;
     C_CHAR stage = '0';
     C_INT final_intr = 0;
     C_INT final_phase = 0;
     C_INT failed = 0;
+    type_bool advanced = TYPE_FALSE;
 
     stage = '1';
-    if (!vm_fdc_t242_write_boot_loop(path)) goto done;
+    vm_fdc_t242_boot_loop();
     {
         vm_session_config fixture_config = config;
-        fixture_config.floppy_image[0u] = path;
-        if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
+        if (vm_test_default_pc_at_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
             session == STD_NULL) goto done;
-    }
-    stage = '2';
-    if (core_machine_run(session->core_machine, boot_budget, &run) !=
-            TYPE_STATUS_OK || run.reason == CORE_MACHINE_STOP_FAULT) {
-        goto done;
+        if (vm_machine_fdd_replace_bytes(&session->fdd, vm_fdc_t242_image,
+                sizeof(vm_fdc_t242_image)) != 0) goto done;
     }
     port = session->core_machine->fdc.connect.port;
     stage = '3';
@@ -149,8 +125,12 @@ C_INT main(C_VOID)
     vm_fdc_t242_write_dma2(port);
     vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
     stage = '5';
-    if (core_machine_run(session->core_machine, transfer_budget, &run) !=
-            TYPE_STATUS_OK || run.reason == CORE_MACHINE_STOP_FAULT ||
+    for (index = 0u; index < 1024u && !session->core_machine->fdc.data.flagINTR;
+            ++index) {
+        if (core_machine_advance_to_next_deadline(session->core_machine,
+                &advanced) != TYPE_STATUS_OK || !advanced) goto done;
+    }
+    if (!session->core_machine->fdc.data.flagINTR ||
         core_machine_memory_read(session->core_machine, 0x0500u, actual,
             sizeof(actual)) != TYPE_STATUS_OK) {
         goto done;
@@ -194,7 +174,6 @@ done:
         final_phase = session->core_machine->fdc.data.phase;
     }
     vm_session_destroy(session);
-    if (path[0] != '\0') DeleteFileA(path);
     if (failed || session == STD_NULL) {
         STD_FPRINTF(STD_STDERR,
             "T242 read-track failed at %c, reason=%d, executed=%llu data=%02x/%02x result=%02x %02x %02x %02x %02x %02x %02x intr=%d phase=%d\n",

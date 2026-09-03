@@ -144,6 +144,21 @@ C_INT main(C_VOID)
     failed |= core_machine_pit_waveform_expect(
         core_machine_pit_get_output(&pit, 0u), TYPE_TRUE);
 
+    /* An LSB-only mode-0 count is complete at its single write, so a rewrite
+     * must also restart OUT low before its new terminal transition. */
+    core_machine_pit_reset(&pit);
+    core_machine_port_write(&port, 0x0043u, 0x10u);
+    core_machine_port_write(&port, 0x0040u, 2u);
+    core_machine_pit_advance(&pit, 3u);
+    failed |= core_machine_pit_waveform_expect(
+        core_machine_pit_get_output(&pit, 0u), TYPE_TRUE);
+    core_machine_port_write(&port, 0x0040u, 2u);
+    failed |= core_machine_pit_waveform_expect(
+        core_machine_pit_get_output(&pit, 0u), TYPE_FALSE);
+    core_machine_pit_advance(&pit, 3u);
+    failed |= core_machine_pit_waveform_expect(
+        core_machine_pit_get_output(&pit, 0u), TYPE_TRUE);
+
     /* Mode 1 only starts on a rising GATE and supports retrigger. */
     core_machine_pit_set_gate(&pit, 0u, TYPE_FALSE);
     core_machine_pit_waveform_write(&pit, &port, 0x32u, 3u);

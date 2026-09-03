@@ -34,10 +34,10 @@ static type_status core_machine_rom_mapping_write(C_VOID *owner,
     if (offset > mapping->bytes || bytes > mapping->bytes - offset) {
         return TYPE_STATUS_FAULT;
     }
-    /* ROM owns reads, not the RAM decode below it.  Declining a write preserves
-     * immutable reads while allowing a selected board alias to expose the
-     * underlying RAM, as on the DeskPro 386 memory relocation path. */
-    return TYPE_STATUS_UNSUPPORTED;
+    /* A selected board RAM mapping has already won route selection before this
+     * ordinary ROM provider.  Otherwise a decoded ROM consumes a write on the
+     * bus without changing its immutable bytes. */
+    return TYPE_STATUS_OK;
 }
 
 static type_status core_machine_rom_mapping_query(C_VOID *owner,

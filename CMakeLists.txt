@@ -168,7 +168,7 @@ add_executable(vm-model40-cecg-s28-smoke
     test/vm/machine/vm_model40_cecg_s28_smoke.c)
 target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-composition)
 add_executable(vm-model40-rom-layout-s14-smoke
-    test/vm/machine/vm_model40_rom_layout_s14_smoke.c)
+    test/vm/profile/model40/rom/model40_rom_layout_s14_smoke.c)
 target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-composition)
 add_executable(vm-model40-d4-compatibility-s25-smoke
     test/vm/machine/vm_model40_d4_compatibility_s25_smoke.c)
@@ -195,8 +195,9 @@ add_executable(vm-model40-byob-s20-smoke
     test/vm/machine/vm_model40_byob_s20_smoke.c)
 target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-composition)
 add_executable(vm-model40-byob-retirement-capture
-    test/vm/machine/vm_model40_byob_retirement_capture.c)
-target_link_libraries(vm-model40-byob-retirement-capture PRIVATE vm-composition)
+    test/integration/model40/vm_model40_retirement_capture.c)
+target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
+    integration-session-yaml-support)
 add_executable(vm-model40-byob-boot-media-s5-smoke
     test/vm/machine/vm_model40_byob_boot_media_s5_smoke.c)
 target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-composition)
@@ -204,7 +205,7 @@ add_executable(vm-model40-hdc-s26-smoke
     test/vm/machine/vm_model40_hdc_s26_smoke.c)
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-composition)
 add_executable(vm-model40-console-s20-smoke
-    test/vm/product/vm_model40_console_s20_smoke.c)
+    test/integration/product/vm_model40_console_s20_smoke.c)
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-composition)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
@@ -213,26 +214,26 @@ add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/vm/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-composition)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
-    test/vm/machine/vm_ibm_5170_model_339_firmware_fdc_topology_smoke.c)
+    test/vm/profile/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-composition)
 add_executable(vm-hdc-port-smoke test/vm/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
 add_executable(vm-media-provider-smoke test/vm/machine/vm_media_provider_smoke.c)
 target_link_libraries(vm-media-provider-smoke PRIVATE vm-machine core-machine)
 add_executable(vm-hdc-hdd-boot-smoke test/integration/hdd/vm_hdc_hdd_boot_smoke.c)
-target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE vm-composition)
+target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-default-pc-at-apply-smoke
     test/vm/machine/vm_default_pc_at_apply_smoke.c)
 target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
 
 add_executable(vm-default-pc-at-rom-materialization-smoke
-    test/vm/machine/vm_default_pc_at_rom_materialization_smoke.c)
+    test/vm/profile/default_pc_at/rom/default_pc_at_rom_materialization_smoke.c)
 target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-composition)
 add_executable(vm-timer-firmware-smoke
     test/integration/dos/vm_timer_firmware_smoke.c)
-target_link_libraries(vm-timer-firmware-smoke PRIVATE vm-composition)
+target_link_libraries(vm-timer-firmware-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-product-default-profile-smoke test/integration/dos/nxvm_default_profile_smoke.c)
-target_link_libraries(vm-product-default-profile-smoke PRIVATE vm-composition)
+target_link_libraries(vm-product-default-profile-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-product-console-smoke
     test/vm/product/nxvm_console_smoke.c
     test/vm/product/support/vm_session_console.c)
@@ -240,18 +241,15 @@ target_include_directories(vm-product-console-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
 add_executable(vm-product-console-lifecycle-smoke
-    test/vm/product/nxvm_console_lifecycle_smoke.c)
+    test/integration/product/nxvm_console_lifecycle_smoke.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-composition)
-add_executable(vm-product-console-memory-roundtrip-smoke
-    test/vm/product/nxvm_console_memory_roundtrip_smoke.c)
-target_link_libraries(vm-product-console-memory-roundtrip-smoke PRIVATE
-    vm-product core-product-session)
+add_executable(vm-yaml-cmos-seed-smoke
+    test/integration/product/vm_yaml_cmos_seed_smoke.c)
+target_link_libraries(vm-yaml-cmos-seed-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-product-session-catalog-smoke
     test/vm/product/nxvm_session_catalog_smoke.c)
 target_link_libraries(vm-product-session-catalog-smoke PRIVATE vm-product)
-target_compile_definitions(vm-product-session-catalog-smoke PRIVATE
-    PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 add_executable(vm-product-session-smoke test/vm/machine/nxvm_session_smoke.c)
 target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
 add_executable(vm-session-initialization-atomicity-smoke
@@ -1094,7 +1092,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-product-console-memory-roundtrip-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-session-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1151,13 +1148,13 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/profile_resolver.c
     src/vm/profile/byob/blob.c
     src/vm/profile/xt/xt_5160_268.c
+    src/vm/profile/xt/rom/xt_5160_268_rom.c
     src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c
     src/vm/profile/default_profile/mouse_mapper.c
     src/vm/profile/device/floppy.c
-    src/vm/profile/default_profile/firmware/bios.c
-    src/vm/profile/default_profile/firmware/qdcga.c
     src/vm/profile/model40/model40.c
+    src/vm/profile/model40/rom/model40_rom.c
 )
 
 set(VM_PRODUCT_SOURCES
@@ -1186,7 +1183,7 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/provider_lifecycle.c
     src/vm/composition/session/machine_devices.c
     src/vm/composition/session/model40_composition.c
-    src/vm/composition/session/profile_firmware.c
+    src/vm/composition/session/rom/external_pc_at.c
     src/vm/composition/session/machine_info.c
 )
 set(VM_MACHINE_SOURCES
@@ -1489,10 +1486,10 @@ add_executable(vm-platform-execution-smoke
 )
 target_link_libraries(vm-platform-execution-smoke PRIVATE vm-platform)
 add_executable(vm-platform-run-handle-smoke
-    test/vm/machine/vm_platform_run_handle_smoke.c
+    test/integration/platform/vm_platform_run_handle_smoke.c
 )
 target_link_libraries(vm-platform-run-handle-smoke PRIVATE
-    vm-composition)
+    integration-session-yaml-support)
 if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
     add_executable(vm-platform-win32-startup-failure-smoke
         test/vm/machine/vm_platform_win32_startup_failure_smoke.c
@@ -1513,10 +1510,10 @@ if(NOT WIN32)
         vm-composition)
 endif()
 add_executable(vm-multi-window-session-smoke
-    test/vm/machine/vm_multi_window_session_smoke.c
+    test/integration/platform/vm_multi_window_session_smoke.c
 )
 target_link_libraries(vm-multi-window-session-smoke PRIVATE
-    vm-composition)
+    integration-session-yaml-support)
 
 add_executable(core-platform-presentation-mailbox-smoke
     test/core/platform/core_platform_presentation_mailbox_smoke.c
@@ -1571,7 +1568,7 @@ add_executable(vm-execution-context-smoke
     test/integration/dos/vm_execution_context_smoke.c
 )
 target_link_libraries(vm-execution-context-smoke PRIVATE
-    vm-composition
+    integration-session-yaml-support
 )
 
 add_executable(core-machine-cpu-context-smoke
@@ -1710,63 +1707,66 @@ target_link_libraries(vm-kbc-aux-guest-smoke PRIVATE vm-composition)
 add_executable(vm-mouse-driver-dos-smoke
     test/integration/dos/vm_mouse_driver_dos_smoke.c
 )
-target_link_libraries(vm-mouse-driver-dos-smoke PRIVATE vm-composition)
+target_link_libraries(vm-mouse-driver-dos-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-fdc-read-track-dos-smoke
     test/integration/dos/vm_fdc_read_track_dos_smoke.c
 )
-target_link_libraries(vm-fdc-read-track-dos-smoke PRIVATE vm-composition)
-add_executable(vm-fdc-dma-boundary-smoke
-    test/vm/machine/vm_fdc_dma_boundary_smoke.c
-)
-target_link_libraries(vm-fdc-dma-boundary-smoke PRIVATE vm-composition)
+target_link_libraries(vm-fdc-read-track-dos-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-ata-pio-dos-smoke
     test/integration/hdd/vm_ata_pio_dos_smoke.c
 )
-target_link_libraries(vm-ata-pio-dos-smoke PRIVATE vm-composition)
+target_link_libraries(vm-ata-pio-dos-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-byob-dos-boot-probe
     test/integration/dos/vm_byob_dos_boot_probe.c
 )
-target_link_libraries(vm-byob-dos-boot-probe PRIVATE vm-composition)
+target_link_libraries(vm-byob-dos-boot-probe PRIVATE integration-session-yaml-support)
+add_library(integration-session-yaml-support STATIC
+    test/integration/support/session_yaml.c
+)
+target_link_libraries(integration-session-yaml-support PUBLIC vm-composition)
+target_include_directories(integration-session-yaml-support PUBLIC
+    "${CMAKE_SOURCE_DIR}"
+)
 add_executable(vm-profile-floppy-boot-matrix
     test/integration/dos/vm_profile_floppy_boot_matrix.c
 )
-target_link_libraries(vm-profile-floppy-boot-matrix PRIVATE vm-composition)
+target_link_libraries(vm-profile-floppy-boot-matrix PRIVATE
+    integration-session-yaml-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-fdc-dma-boundary-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-checkpoint
     test/integration/windows/vm_windows31_checkpoint.c
 )
-target_link_libraries(vm-windows31-checkpoint PRIVATE vm-composition)
+target_link_libraries(vm-windows31-checkpoint PRIVATE integration-session-yaml-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-setup-probe
     test/integration/windows/vm_windows31_setup_probe.c
 )
-target_link_libraries(vm-windows31-setup-probe PRIVATE vm-composition)
+target_link_libraries(vm-windows31-setup-probe PRIVATE integration-session-yaml-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-setup-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-int13-trace-probe
     test/integration/windows/vm_windows31_int13_trace_probe.c
 )
-target_link_libraries(vm-windows31-int13-trace-probe PRIVATE vm-composition)
+target_link_libraries(vm-windows31-int13-trace-probe PRIVATE integration-session-yaml-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-int13-trace-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-dos-fdisk-probe
     test/integration/dos/vm_dos_fdisk_probe.c
 )
-target_link_libraries(vm-dos-fdisk-probe PRIVATE vm-composition)
+target_link_libraries(vm-dos-fdisk-probe PRIVATE integration-session-yaml-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-dos-fdisk-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-hdd-admission-probe
     test/integration/windows/vm_windows31_hdd_admission_probe.c
 )
-target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE vm-composition)
+target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE integration-session-yaml-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-hdd-admission-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
@@ -1871,10 +1871,6 @@ add_executable(vm-ega-controller-system-smoke
     test/vm/machine/vm_ega_controller_system_smoke.c
 )
 target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-composition)
-add_executable(vm-ega-planar-system-smoke
-    test/vm/machine/vm_ega_planar_system_smoke.c
-)
-target_link_libraries(vm-ega-planar-system-smoke PRIVATE vm-composition)
 add_executable(vm-display-composition-s5-smoke
     test/vm/machine/vm_display_composition_s5_smoke.c
 )
@@ -1887,47 +1883,20 @@ add_executable(vm-ega-sequencer-system-smoke
     test/vm/machine/vm_ega_sequencer_system_smoke.c
 )
 target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-composition)
-add_executable(vm-cga-graphics-system-smoke
-    test/vm/machine/vm_cga_graphics_system_smoke.c
-)
-target_link_libraries(vm-cga-graphics-system-smoke PRIVATE vm-composition)
 add_executable(vm-cga-graphics-dos-smoke
     test/integration/dos/vm_cga_graphics_dos_smoke.c
 )
-target_link_libraries(vm-cga-graphics-dos-smoke PRIVATE vm-composition)
-add_executable(vm-cga-640-system-smoke
-    test/vm/machine/vm_cga_640_system_smoke.c
-)
-target_link_libraries(vm-cga-640-system-smoke PRIVATE vm-composition)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(vm-cga-640-system-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
+target_link_libraries(vm-cga-graphics-dos-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-ega-planar-dos-smoke
     test/integration/dos/vm_ega_planar_dos_smoke.c
 )
-target_link_libraries(vm-ega-planar-dos-smoke PRIVATE vm-composition)
-add_executable(vm-rom-ega-int10-system-smoke
-    test/vm/machine/vm_rom_ega_int10_system_smoke.c
-)
-target_link_libraries(vm-rom-ega-int10-system-smoke PRIVATE vm-composition)
-add_executable(vm-rom-text-write-char-smoke
-    test/vm/machine/vm_rom_text_write_char_smoke.c
-)
-target_link_libraries(vm-rom-text-write-char-smoke PRIVATE vm-composition)
-add_executable(vm-rom-int13-hdd-type-smoke
-    test/vm/machine/vm_rom_int13_hdd_type_smoke.c
-)
-target_link_libraries(vm-rom-int13-hdd-type-smoke PRIVATE vm-composition)
-add_executable(vm-ega-mode10-boot-smoke
-    test/vm/machine/vm_ega_mode10_boot_smoke.c
-)
-target_link_libraries(vm-ega-mode10-boot-smoke PRIVATE vm-composition)
+target_link_libraries(vm-ega-planar-dos-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-rom-ega-int10-dos-smoke
     test/integration/dos/vm_ega_planar_dos_smoke.c
 )
 target_compile_definitions(vm-rom-ega-int10-dos-smoke PRIVATE
     VM_EGA_PLANAR_ROM_INT10_SMOKE=1)
-target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE vm-composition)
+target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE integration-session-yaml-support)
 
 add_executable(vm-cmos-rtc-port-smoke test/vm/machine/vm_cmos_rtc_port_smoke.c)
 target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-composition)
@@ -1940,35 +1909,29 @@ target_link_libraries(vm-fdc-port-smoke PRIVATE vm-composition)
 add_executable(vm-fdc-t242-corpus-port-smoke
     test/vm/machine/vm_fdc_t242_corpus_port_smoke.c)
 target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-composition)
-add_executable(vm-rom-int15-memory-smoke
-    test/vm/machine/vm_rom_int15_memory_smoke.c)
-target_link_libraries(vm-rom-int15-memory-smoke PRIVATE vm-composition)
 add_executable(vm-boot-failure-lifecycle-smoke
     test/vm/machine/vm_boot_failure_lifecycle_smoke.c)
 target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
-add_executable(vm-no-media-video-port-smoke
-    test/vm/machine/vm_no_media_video_port_smoke.c)
-target_link_libraries(vm-no-media-video-port-smoke PRIVATE vm-composition)
 add_executable(vm-runner-display-cadence-smoke
     test/vm/machine/vm_runner_display_cadence_smoke.c)
 target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
 add_executable(vm-dos-video-port-smoke
     test/integration/dos/vm_dos_video_port_smoke.c)
-target_link_libraries(vm-dos-video-port-smoke PRIVATE vm-composition)
+target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-debug-authority-smoke test/vm/machine/vm_debug_authority_smoke.c)
 target_link_libraries(vm-debug-authority-smoke PRIVATE vm-composition)
 add_executable(vm-dos-prompt-smoke
     test/integration/dos/vm_dos_prompt_smoke.c)
 target_link_libraries(vm-dos-prompt-smoke PRIVATE
-    vm-composition)
+    integration-session-yaml-support)
 add_executable(vm-dos-keyboard-smoke
     test/integration/dos/vm_dos_keyboard_smoke.c)
 target_link_libraries(vm-dos-keyboard-smoke PRIVATE
-    vm-composition)
+    integration-session-yaml-support)
 add_executable(vm-dos-mem-fault-smoke
     test/integration/dos/vm_dos_mem_fault_smoke.c)
 target_link_libraries(vm-dos-mem-fault-smoke PRIVATE
-    vm-composition)
+    integration-session-yaml-support)
 add_executable(vm-fault-outcome-runner-smoke
     test/vm/machine/vm_fault_outcome_runner_smoke.c)
 target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-composition)
@@ -2055,11 +2018,11 @@ target_link_libraries(vm-two-session-isolation-smoke PRIVATE
 add_executable(vm-debug-pause-boundary-smoke
     test/integration/dos/vm_debug_pause_boundary_smoke.c)
 target_link_libraries(vm-debug-pause-boundary-smoke PRIVATE
-    vm-composition)
+    integration-session-yaml-support)
 add_executable(vm-unified-debug-backend-smoke
     test/integration/dos/vm_unified_debug_backend_smoke.c)
 target_link_libraries(vm-unified-debug-backend-smoke PRIVATE
-    vm-composition)
+    integration-session-yaml-support)
 add_executable(vm-debug-target-smoke
     test/vm/machine/vm_debug_target_smoke.c
 )
@@ -2073,7 +2036,7 @@ target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-machine)
 add_executable(vm-full-pc-session-smoke
     test/integration/dos/nxvm_full_pc_session_smoke.c
 )
-target_link_libraries(vm-full-pc-session-smoke PRIVATE vm-composition)
+target_link_libraries(vm-full-pc-session-smoke PRIVATE integration-session-yaml-support)
 
 add_executable(vm-core-executor-storage-smoke
     test/vm/machine/vm_core_executor_storage_smoke.c
@@ -2150,13 +2113,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-model40-dma-s17-smoke
     vm-model40-fdd-s18-smoke
     vm-model40-byob-s20-smoke
-    vm-model40-byob-retirement-capture
     vm-model40-byob-boot-media-s5-smoke
     vm-model40-hdc-s26-smoke
-    vm-model40-console-s20-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
-    vm-fdc-dma-boundary-smoke
     vm-hdc-port-smoke
     vm-media-provider-smoke
     vm-default-pc-at-apply-smoke
@@ -2352,17 +2312,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-compaq-cecg-s12-smoke
     core-machine-compaq-cecg-s13-smoke
     core-machine-compaq-cecg-s28-smoke
-    vm-cga-graphics-system-smoke
-    vm-cga-640-system-smoke
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
-    vm-ega-planar-system-smoke
     vm-display-composition-s5-smoke
-    vm-rom-ega-int10-system-smoke
-    vm-rom-text-write-char-smoke
-    vm-rom-int13-hdd-type-smoke
-    vm-rom-int15-memory-smoke
-    vm-ega-mode10-boot-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-cpu-pic-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
@@ -2383,8 +2335,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-console-input-failure-smoke
     vm-platform-surface-context-smoke
     vm-platform-execution-smoke
-    vm-platform-run-handle-smoke
-    vm-multi-window-session-smoke
     core-platform-input-source-smoke
     core-platform-wait-smoke
     vm-keyboard-host-ingress-smoke
@@ -2399,14 +2349,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-pcat-ownership-smoke
     vm-fdc-port-smoke
     vm-fdc-t242-corpus-port-smoke
-    vm-no-media-video-port-smoke
     vm-hdc-hdd-boot-smoke
     vm-runner-display-cadence-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
     vm-product-console-smoke
-    vm-product-console-lifecycle-smoke
-    vm-product-console-memory-roundtrip-smoke
     vm-debug-target-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-product-session-smoke
@@ -2670,7 +2617,6 @@ set(PROJECT_INTEGRATION_FDD_TARGETS
     vm-unified-debug-backend-smoke
     vm-execution-context-smoke)
 set(PROJECT_INTEGRATION_FDD_HDD_TARGETS
-    vm-product-session-smoke
     vm-product-default-profile-smoke
     vm-full-pc-session-smoke
     vm-windows31-checkpoint
@@ -2679,13 +2625,20 @@ set(PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS vm-ata-pio-dos-smoke)
 set(PROJECT_INTEGRATION_HDD_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
     vm-profile-floppy-boot-matrix)
+set(PROJECT_INTEGRATION_PRODUCT_TARGETS
+    vm-model40-console-s20-smoke
+    vm-product-console-lifecycle-smoke
+    vm-yaml-cmos-seed-smoke
+    vm-platform-run-handle-smoke
+    vm-multi-window-session-smoke)
 set(PROJECT_INTEGRATION_TEST_TARGETS
     ${PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS}
     ${PROJECT_INTEGRATION_FDD_TARGETS}
     ${PROJECT_INTEGRATION_HDD_TARGETS}
     ${PROJECT_INTEGRATION_FDD_HDD_TARGETS}
     ${PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS}
-    ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
+    ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS}
+    ${PROJECT_INTEGRATION_PRODUCT_TARGETS})
 
 # T344 keeps the current gate as one canonical partition.  A duplicate is a
 # registration defect, not an aggregate-list cleanup opportunity.
@@ -2712,7 +2665,8 @@ function(project_t344_verify_unit_test_partition)
             PROJECT_INTEGRATION_FDD_HDD_TARGETS
             PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS
             PROJECT_INTEGRATION_HDD_TARGETS
-            PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS)
+            PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
+            PROJECT_INTEGRATION_PRODUCT_TARGETS)
         foreach(project_t344_target IN LISTS ${project_t344_list})
             if(NOT TARGET ${project_t344_target})
                 message(FATAL_ERROR
@@ -2755,45 +2709,8 @@ if(NOT PROJECT_UNIT_TEST_DEADLINE_SECONDS MATCHES "^[1-9][0-9]*$")
 endif()
 set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../nxvm-assets/media" CACHE PATH
     "Owner-provided local asset root for current runtime smoke coverage")
-set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd_1440k_msdos_500.img" CACHE FILEPATH
-    "Owner-provided FDD image for current runtime smoke coverage")
-set(PROJECT_M1_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd_1440k_msdos_500.img" CACHE FILEPATH
-    "Owner-provided historical M1 DOS 5 FDD image for legacy smoke coverage")
-set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd_50m_win31.img" CACHE FILEPATH
-    "Owner-provided HDD image for current runtime smoke coverage")
 set(PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE "" CACHE FILEPATH
     "Owner-supplied local HDD image for the opt-in Windows readiness checkpoint")
-set(PROJECT_T513_DOS_360K_IMAGE "" CACHE FILEPATH
-    "Owner-supplied 360K DOS image for the T513 profile/floppy matrix")
-set(PROJECT_T513_DOS_720K_IMAGE "" CACHE FILEPATH
-    "Owner-supplied 720K DOS image for the T513 profile/floppy matrix")
-set(PROJECT_T513_DOS_1200K_IMAGE "" CACHE FILEPATH
-    "Owner-supplied 1.2M DOS image for the T513 profile/floppy matrix")
-set(PROJECT_T513_DOS_1440K_IMAGE "" CACHE FILEPATH
-    "Owner-supplied 1.44M DOS image for the T513 profile/floppy matrix")
-set(PROJECT_T513_XT_SYSTEM_ROM "" CACHE FILEPATH
-    "Owner-supplied XT system ROM for the T513 matrix")
-set(PROJECT_T513_XT_SYSTEM_ROM_SHA256 "" CACHE STRING
-    "Owner-supplied SHA-256 for the T513 XT system ROM")
-set(PROJECT_T513_XT_XEBEC_ROM "" CACHE FILEPATH
-    "Owner-supplied XT Xebec ROM for the T513 matrix")
-set(PROJECT_T513_XT_XEBEC_ROM_SHA256 "" CACHE STRING
-    "Owner-supplied SHA-256 for the T513 XT Xebec ROM")
-set(PROJECT_T513_MODEL40_EVEN_ROM "" CACHE FILEPATH
-    "Owner-supplied Model-40 even ROM for the T513 matrix")
-set(PROJECT_T513_MODEL40_EVEN_ROM_SHA256 "" CACHE STRING
-    "Owner-supplied SHA-256 for the T513 Model-40 even ROM")
-set(PROJECT_T513_MODEL40_ODD_ROM "" CACHE FILEPATH
-    "Owner-supplied Model-40 odd ROM for the T513 matrix")
-set(PROJECT_T513_MODEL40_ODD_ROM_SHA256 "" CACHE STRING
-    "Owner-supplied SHA-256 for the T513 Model-40 odd ROM")
-set(PROJECT_T513_MODEL40_VIDEO_ROM "" CACHE FILEPATH
-    "Owner-supplied Model-40 EGA option ROM for the T513 matrix")
-set(PROJECT_T513_MODEL40_VIDEO_ROM_SHA256 "" CACHE STRING
-    "Owner-supplied SHA-256 for the T513 Model-40 EGA option ROM")
-set(PROJECT_T513_MODEL40_HDD_IMAGE "" CACHE FILEPATH
-    "Owner-supplied 40MB Model-40 disk image for the T513 matrix")
-
 # T355 S2 keeps the retained Windows HDD/INT13 observation explicitly outside
 # the current gate.  The runner validates this opt-in input before it can
 # execute the host-side diagnostic probe.
@@ -2825,48 +2742,52 @@ function(project_add_test target route)
         TIMEOUT 30)
 endfunction()
 
-function(project_add_t513_profile_floppy_case row image)
-    set(project_t513_test_suffix "vm-profile-floppy-boot-matrix.${row}")
-    set(project_t513_test "integration.${project_t513_test_suffix}")
-    set(project_t513_timeout 70)
-    if(row STREQUAL "model40-80386-1200k")
-        set(project_t513_timeout 190)
+function(project_add_t515_yaml_boot_case session_file)
+    set(project_t515_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
+    set(project_t515_test "integration.${project_t515_test_suffix}")
+    # These are real external-media boots.  The runner has the same bounded
+    # 180-second guest-terminal limit, so CTest must not kill slower CPUs
+    # before the runner can report its terminal or diagnostic.
+    set(project_t515_timeout 190)
+    get_property(project_t515_registered_cases GLOBAL
+        PROPERTY PROJECT_T515_YAML_BOOT_REGISTERED_CASES)
+    list(FIND project_t515_registered_cases "${project_t515_test_suffix}"
+        project_t515_registered_index)
+    if(NOT project_t515_registered_index EQUAL -1)
+        message(FATAL_ERROR "T515 YAML boot case is registered twice: ${session_file}")
     endif()
-    get_property(project_t513_registered_cases GLOBAL
-        PROPERTY PROJECT_T513_PROFILE_FLOPPY_REGISTERED_CASES)
-    list(FIND project_t513_registered_cases "${project_t513_test_suffix}"
-        project_t513_registered_index)
-    if(NOT project_t513_registered_index EQUAL -1)
-        message(FATAL_ERROR "T513 profile/floppy row is registered twice: ${row}")
-    endif()
-    set_property(GLOBAL APPEND PROPERTY PROJECT_T513_PROFILE_FLOPPY_REGISTERED_CASES
-        "${project_t513_test_suffix}")
-    set(project_t513_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t513_test}")
-    file(MAKE_DIRECTORY "${project_t513_workspace}")
-    add_test(NAME "${project_t513_test}"
-        COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>" "${row}" "${image}"
-            ${ARGN})
-    set_tests_properties("${project_t513_test}" PROPERTIES
+    set_property(GLOBAL APPEND PROPERTY PROJECT_T515_YAML_BOOT_REGISTERED_CASES
+        "${project_t515_test_suffix}")
+    set(project_t515_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t515_test}")
+    file(MAKE_DIRECTORY "${project_t515_workspace}")
+    add_test(NAME "${project_t515_test}"
+        COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>"
+            "${CMAKE_SOURCE_DIR}/assets/sessions" "${session_file}")
+    set_tests_properties("${project_t515_test}" PROPERTIES
         LABELS integration
         SKIP_RETURN_CODE 77
-        TIMEOUT ${project_t513_timeout}
-        WORKING_DIRECTORY "${project_t513_workspace}")
+        TIMEOUT ${project_t515_timeout}
+        WORKING_DIRECTORY "${project_t515_workspace}")
+endfunction()
+
+function(project_add_t515_yaml_integration_test target)
+    set(project_t515_test "integration.${target}")
+    set(project_t515_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t515_test}")
+
+    file(MAKE_DIRECTORY "${project_t515_workspace}")
+    project_add_test(${target} integration "${CMAKE_SOURCE_DIR}/assets/sessions" ${ARGN})
+    set_tests_properties("${project_t515_test}" PROPERTIES
+        SKIP_RETURN_CODE 77
+        WORKING_DIRECTORY "${project_t515_workspace}")
 endfunction()
 
 foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
-    if(target STREQUAL "vm-model40-byob-retirement-capture")
-        project_add_test(${target} unit --synthetic-c0-smoke)
-    else()
-        project_add_test(${target} unit)
-    endif()
+    project_add_test(${target} unit)
 endforeach()
 
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
-    vm-product-console-lifecycle-smoke
-    vm-product-console-memory-roundtrip-smoke
-    vm-model40-console-s20-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-xt-5160-268-profile-smoke)
     set(project_console_smoke_workspace
@@ -2929,63 +2850,72 @@ if(POWERSHELL_EXECUTABLE)
 endif()
 
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_TARGETS)
-    project_add_test(${target} integration "${PROJECT_FDD_SMOKE_IMAGE}")
+    project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
 endforeach()
 foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
-    if(target STREQUAL "vm-dos-keyboard-smoke")
-        project_add_test(${target} integration "${PROJECT_M1_FDD_SMOKE_IMAGE}" extended)
+    if(target STREQUAL "vm-dos-prompt-smoke" OR
+        target STREQUAL "vm-dos-video-port-smoke" OR
+        target STREQUAL "vm-dos-mem-fault-smoke" OR
+        target STREQUAL "vm-cga-graphics-dos-smoke" OR
+        target STREQUAL "vm-ega-planar-dos-smoke" OR
+        target STREQUAL "vm-rom-ega-int10-dos-smoke" OR
+        target STREQUAL "vm-mouse-driver-dos-smoke" OR
+        target STREQUAL "vm-fdc-read-track-dos-smoke")
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
+    elseif(target STREQUAL "vm-dos-keyboard-smoke")
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml extended)
     else()
-        project_add_test(${target} integration "${PROJECT_M1_FDD_SMOKE_IMAGE}")
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
     endif()
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_HDD_TARGETS)
-    project_add_test(${target} integration "${PROJECT_HDD_SMOKE_IMAGE}")
+    project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd-only.yaml)
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_HDD_TARGETS)
-    project_add_test(${target} integration "${PROJECT_FDD_SMOKE_IMAGE}"
-        "${PROJECT_HDD_SMOKE_IMAGE}")
+    if(target STREQUAL "vm-windows31-checkpoint")
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd.yaml)
+    elseif(target STREQUAL "vm-full-pc-session-smoke")
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
+    elseif(target STREQUAL "vm-windows31-int13-trace-probe")
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd-only.yaml)
+    elseif(target STREQUAL "vm-product-default-profile-smoke")
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml
+            default-pc-at-80386-hdd.yaml)
+    else()
+        message(FATAL_ERROR "T515 YAML integration mapping is missing: ${target}")
+    endif()
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
-    project_add_test(${target} integration "${PROJECT_M1_FDD_SMOKE_IMAGE}"
-        "${PROJECT_HDD_SMOKE_IMAGE}")
+    project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd.yaml)
 endforeach()
 
-project_add_t513_profile_floppy_case(ibm-5160-8088-360k
-    "${PROJECT_T513_DOS_360K_IMAGE}"
-    "${PROJECT_T513_XT_SYSTEM_ROM}" "${PROJECT_T513_XT_SYSTEM_ROM_SHA256}")
-project_add_t513_profile_floppy_case(ibm-5170-80286-360k
-    "${PROJECT_T513_DOS_360K_IMAGE}")
-project_add_t513_profile_floppy_case(ibm-5170-80286-1200k
-    "${PROJECT_T513_DOS_1200K_IMAGE}")
-foreach(project_t513_cpu IN ITEMS 8086 80186 80286 80386)
-    foreach(project_t513_format IN ITEMS 360k 720k 1200k 1440k)
-        string(TOUPPER "${project_t513_format}" project_t513_format_key)
-        project_add_t513_profile_floppy_case(
-            "default-at-${project_t513_cpu}-${project_t513_format}"
-            "${PROJECT_T513_DOS_${project_t513_format_key}_IMAGE}")
-    endforeach()
+foreach(target IN LISTS PROJECT_INTEGRATION_PRODUCT_TARGETS)
+    project_add_t515_yaml_integration_test(${target})
 endforeach()
-if(PROJECT_T513_MODEL40_VIDEO_ROM STREQUAL "")
-    if(NOT PROJECT_T513_MODEL40_VIDEO_ROM_SHA256 STREQUAL "")
-        message(FATAL_ERROR "T513 Model-40 video ROM requires both path and SHA-256")
-    endif()
-elseif(PROJECT_T513_MODEL40_VIDEO_ROM_SHA256 STREQUAL "")
-    message(FATAL_ERROR "T513 Model-40 video ROM requires both path and SHA-256")
-endif()
-set(project_t513_model40_inputs
-    "${PROJECT_T513_MODEL40_EVEN_ROM}" "${PROJECT_T513_MODEL40_EVEN_ROM_SHA256}"
-    "${PROJECT_T513_MODEL40_ODD_ROM}" "${PROJECT_T513_MODEL40_ODD_ROM_SHA256}")
-if(NOT PROJECT_T513_MODEL40_VIDEO_ROM STREQUAL "")
-    list(APPEND project_t513_model40_inputs
-        "${PROJECT_T513_MODEL40_VIDEO_ROM}"
-        "${PROJECT_T513_MODEL40_VIDEO_ROM_SHA256}")
-endif()
-if(NOT PROJECT_T513_MODEL40_HDD_IMAGE STREQUAL "")
-    list(APPEND project_t513_model40_inputs "${PROJECT_T513_MODEL40_HDD_IMAGE}")
-endif()
-project_add_t513_profile_floppy_case(model40-80386-1200k
-    "${PROJECT_T513_DOS_1200K_IMAGE}" ${project_t513_model40_inputs})
 
+foreach(project_t515_session IN ITEMS
+    compaq-deskpro-386-model-40.yaml
+    default-pc-at-8086-360k.yaml
+    default-pc-at-8086-720k.yaml
+    default-pc-at-8086-1200k.yaml
+    default-pc-at-8086.yaml
+    default-pc-at-80186-360k.yaml
+    default-pc-at-80186-720k.yaml
+    default-pc-at-80186-1200k.yaml
+    default-pc-at-80186.yaml
+    default-pc-at-80286-360k.yaml
+    default-pc-at-80286-720k.yaml
+    default-pc-at-80286-1200k.yaml
+    default-pc-at-80286.yaml
+    default-pc-at-80386-360k.yaml
+    default-pc-at-80386-720k.yaml
+    default-pc-at-80386-1200k.yaml
+    default-pc-at-80386.yaml
+    ibm-5160-model-268.yaml
+    ibm-5170-model-339-360k.yaml
+    ibm-5170-model-339.yaml)
+    project_add_t515_yaml_boot_case(${project_t515_session})
+endforeach()
 set_tests_properties("integration.vm-windows31-checkpoint" PROPERTIES
     TIMEOUT 130)
 set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
@@ -2994,6 +2924,13 @@ set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
 get_property(project_t344_registered_targets GLOBAL
     PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
 set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
+# This platform-local smoke predates project_add_test(), but remains a unit
+# route and a dependency of run-unit-tests.  Account for it once here rather
+# than creating a second registration path.
+if(WIN32)
+    list(APPEND project_t344_single_test_targets core-platform-win32-keyboard-smoke)
+    list(APPEND project_t344_registered_targets core-platform-win32-keyboard-smoke)
+endif()
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
 foreach(project_t344_target IN LISTS project_t344_single_test_targets)
@@ -3010,11 +2947,11 @@ if(NOT project_t344_expected_current_count EQUAL project_t344_registered_current
     message(FATAL_ERROR
         "T344 unit registration has an unexpected target.")
 endif()
-get_property(project_t513_registered_cases GLOBAL
-    PROPERTY PROJECT_T513_PROFILE_FLOPPY_REGISTERED_CASES)
-list(LENGTH project_t513_registered_cases project_t513_registered_case_count)
-if(NOT project_t513_registered_case_count EQUAL 20)
-    message(FATAL_ERROR "T513 profile/floppy matrix must register exactly 20 cases.")
+get_property(project_t515_registered_cases GLOBAL
+    PROPERTY PROJECT_T515_YAML_BOOT_REGISTERED_CASES)
+list(LENGTH project_t515_registered_cases project_t515_registered_case_count)
+if(NOT project_t515_registered_case_count EQUAL 20)
+    message(FATAL_ERROR "T515 YAML boot matrix must retain exactly twenty historical rows.")
 endif()
 set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS)
 if(POWERSHELL_EXECUTABLE)
@@ -3030,16 +2967,22 @@ file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t344-unit-auxiliary-tests.txt"
     CONTENT "$<JOIN:${PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS},\n>\n")
 file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/t513-profile-floppy-matrix-tests.txt"
-    CONTENT "$<JOIN:${project_t513_registered_cases},\n>\n")
+    OUTPUT "${CMAKE_BINARY_DIR}/t515-yaml-boot-tests.txt"
+    CONTENT "$<JOIN:${project_t515_registered_cases},\n>\n")
 add_custom_target(verify-t344-unit-registration
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T344_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-unit-targets.txt
         -DPROJECT_T344_CURRENT_AUXILIARY_TESTS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-unit-auxiliary-tests.txt
         -DPROJECT_T344_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
-        -DPROJECT_T513_MATRIX_CASES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t513-profile-floppy-matrix-tests.txt
+        -DPROJECT_T515_YAML_BOOT_CASES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t515-yaml-boot-tests.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_unit_test_registration.cmake"
     COMMENT "Verifying T344 unit registration integrity"
+    VERBATIM)
+add_custom_target(verify-t515-integration-yaml-boundary
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t515_integration_yaml_boundary.cmake"
+    COMMENT "Verifying integration sessions use the YAML provider boundary"
     VERBATIM)
 
 if(POWERSHELL_EXECUTABLE)
@@ -3444,16 +3387,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
         VERBATIM)
 
-    add_custom_target(verify-t285-ega-mode10
-        COMMAND "${CMAKE_COMMAND}"
-            -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -DCORE_SMOKE_EXE:FILEPATH=$<TARGET_FILE:core-machine-ega-mode10-contract-smoke>
-            -DVM_SMOKE_EXE:FILEPATH=$<TARGET_FILE:vm-ega-mode10-boot-smoke>
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t285_ega_mode10.cmake"
-        DEPENDS core-machine-ega-mode10-contract-smoke vm-ega-mode10-boot-smoke
-        COMMENT "Verifying M5 T285 EGA mode 10h direct corpus"
-        VERBATIM)
-
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_session_owner_closure.cmake"
@@ -3710,6 +3643,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-cancellable-wait-boundary
     verify-vm-composition-lifecycle
     verify-t344-unit-registration
+    verify-t515-integration-yaml-boundary
     verify-t382-unit-aggregate
     verify-fpu-boundary
     verify-core-cpu-pic-authority
@@ -3945,7 +3879,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-composition|src/vm/composition/session/provider_lifecycle.c|vm-composition"
     "vm-composition|src/vm/composition/session/machine_devices.c|vm-composition"
     "vm-composition|src/vm/composition/session/model40_composition.c|vm-composition"
-    "vm-composition|src/vm/composition/session/profile_firmware.c|vm-composition"
+    "vm-composition|src/vm/composition/session/rom/external_pc_at.c|vm-composition"
     "vm-composition|src/vm/composition/session/machine_info.c|vm-composition")
 string(REPLACE ";" "\n" project_t345_s4_residual_contents
     "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")

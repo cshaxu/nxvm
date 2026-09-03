@@ -5,8 +5,8 @@
 #include "core/platform/presentation_mailbox_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "test/integration/support/session_yaml.h"
 
 #define VM_T287_FDISK_CELLS (80u * 25u)
 
@@ -65,12 +65,7 @@ static C_INT vm_t287_fdisk_submit(const vm_session *session, const type_unsigned
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    const vm_session_config config = {
-        .floppy_image = { argc == 3 ? argv[1] : STD_NULL },
-        .fixed_disk_image = { argc == 3 ? argv[2] : STD_NULL },
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
-    };
+    integration_yaml_session yaml_session;
     const type_unsigned_8 enter[] = {0x5au};
     const type_unsigned_8 four_make[] = {0x25u};
     const type_unsigned_8 four_break[] = {0xf0u, 0x25u};
@@ -80,8 +75,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session *session = STD_NULL;
     C_INT passed = 0;
 
-    if (argc != 3 || vm_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || (thread = CreateThread(STD_NULL, 0u,
+    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
+            &yaml_session) != TYPE_STATUS_OK) return 77;
+    session = yaml_session.session;
+    if ((thread = CreateThread(STD_NULL, 0u,
             vm_t287_fdisk_run, session, 0u, STD_NULL)) == STD_NULL) goto done;
     if (!vm_t287_fdisk_wait(session, "Enter new date", 60000u) ||
         !vm_t287_fdisk_submit(session, enter, sizeof(enter)) ||
@@ -108,7 +105,7 @@ done:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     if (!passed) return 1;
     STD_PRINTF("M5:T287:S21:FDISK:OPTION4:EXTERNAL:OK\n");
     return 0;

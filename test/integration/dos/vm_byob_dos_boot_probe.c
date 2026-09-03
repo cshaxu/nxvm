@@ -11,7 +11,9 @@
 #include "core/machine/memory.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "core/machine/trace_interface.h"
+#include "test/integration/support/session_yaml.h"
 #include "vm/composition/session/control.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
@@ -24,7 +26,7 @@
 #define VM_BYOB_MODEL40_VIDEO_PORT_HISTORY 64u
 #define VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY 32u
 #define VM_BYOB_NEAR_UD_HISTORY 16u
-#define VM_BYOB_CMOS_BYTES 128u
+#define VM_BYOB_KBC_WRITE_HISTORY 16u
 #define VM_BYOB_MODEL40_POST_LATCH_PATHS 5u
 #define VM_BYOB_MODEL40_POST_STATUS_WRITERS 12u
 #define VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY 4u
@@ -68,10 +70,10 @@ typedef struct vm_byob_boot_trace {
         model40_video_special_history[VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY];
     type_unsigned_64 model40_video_special_history_count;
     type_unsigned_8 cmos_index;
-    type_unsigned_64 cmos_reads[VM_BYOB_CMOS_BYTES];
-    type_unsigned_64 cmos_writes[VM_BYOB_CMOS_BYTES];
-    type_unsigned_8 cmos_last_values[VM_BYOB_CMOS_BYTES];
-    type_unsigned_32 cmos_last_write_pc[VM_BYOB_CMOS_BYTES];
+    type_unsigned_64 cmos_reads[VM_SESSION_CMOS_SEED_BYTES];
+    type_unsigned_64 cmos_writes[VM_SESSION_CMOS_SEED_BYTES];
+    type_unsigned_8 cmos_last_values[VM_SESSION_CMOS_SEED_BYTES];
+    type_unsigned_32 cmos_last_write_pc[VM_SESSION_CMOS_SEED_BYTES];
     type_unsigned_64 xt_ppi_port_accesses;
     type_unsigned_64 pic_port_accesses;
     type_unsigned_64 pit_port_accesses;
@@ -121,6 +123,15 @@ typedef struct vm_byob_boot_trace {
     type_unsigned_64 fdc_terminal_count;
     type_unsigned_64 fdc_failed_terminal_count;
     core_machine_fdc_terminal_observation last_fdc_terminal;
+    type_unsigned_64 ibm5170_gdt_writes;
+    type_unsigned_32 ibm5170_gdt_last_address;
+    type_unsigned_8 ibm5170_gdt_last_value;
+    type_unsigned_64 ibm5170_rep_stos_entries;
+    type_unsigned_16 ibm5170_rep_stos_es;
+    type_unsigned_32 ibm5170_rep_stos_es_base;
+    type_unsigned_16 ibm5170_rep_stos_di;
+    type_unsigned_16 ibm5170_rep_stos_cx;
+    type_unsigned_16 ibm5170_rep_stos_ax;
     type_bool model40_invalid_entry_observed;
     core_machine_cpu_execution_point model40_invalid_entry_source;
     type_unsigned_16 model40_invalid_entry_ss;
@@ -160,10 +171,52 @@ typedef struct vm_byob_boot_trace {
     type_unsigned_16 model40_bios_iret_words[4u];
     type_unsigned_64 model40_video_rom_entries;
     type_unsigned_32 model40_video_rom_first_pc;
+    type_unsigned_64 kbc_port_accesses;
+    type_unsigned_16 kbc_last_port;
+    type_unsigned_8 kbc_last_value;
+    type_unsigned_32 kbc_last_pc;
+    vm_byob_fdc_port_event kbc_port_history[VM_BYOB_KBC_WRITE_HISTORY];
     type_unsigned_64 kbc_write_count;
-    type_unsigned_16 kbc_last_write_port;
-    type_unsigned_8 kbc_last_write_value;
-    type_unsigned_32 kbc_last_write_pc;
+    vm_byob_fdc_port_event kbc_write_history[VM_BYOB_KBC_WRITE_HISTORY];
+    type_unsigned_8 kbc_after_self_test_fifo;
+    type_unsigned_8 kbc_after_self_test_delayed;
+    type_unsigned_8 kbc_after_self_test_polls;
+    type_unsigned_8 kbc_first_self_test_status;
+    type_unsigned_8 kbc_first_self_test_fifo;
+    type_unsigned_8 kbc_first_self_test_delayed;
+    type_unsigned_16 kbc_self_test_after_input_ax;
+    type_unsigned_32 kbc_self_test_after_input_flags;
+    type_unsigned_16 kbc_self_test_after_compare_ax;
+    type_unsigned_32 kbc_self_test_after_compare_flags;
+    type_unsigned_8 kbc_self_test_input_values[4u];
+    type_unsigned_8 kbc_self_test_input_count;
+    type_unsigned_8 kbc_self_test_jne_outcomes[4u];
+    type_unsigned_8 kbc_self_test_jne_count;
+    type_bool kbc_keyboard_reset_seen;
+    type_unsigned_8 kbc_keyboard_reset_read_count;
+    vm_byob_fdc_port_event kbc_keyboard_reset_reads[4u];
+    type_unsigned_8 kbc_reset_xmit_status_count;
+    type_unsigned_8 kbc_reset_xmit_status_values[4u];
+    type_unsigned_8 kbc_reset_xmit_input_full;
+    type_unsigned_8 kbc_reset_xmit_pending_write;
+    type_unsigned_64 kbc_line_enable_writes;
+    type_unsigned_32 kbc_line_enable_pc;
+    type_unsigned_8 kbc_line_enable_fifo;
+    type_unsigned_8 kbc_line_enable_bat_pending;
+    type_unsigned_8 kbc_line_enable_irq_pending;
+    type_unsigned_16 kbc_reset_loop_cx;
+    type_unsigned_16 kbc_reset_jcxz_cx;
+    type_unsigned_8 kbc_reset_loop_outcome;
+    type_unsigned_8 kbc_reset_jcxz_outcome;
+    type_bool kbc_reset_xmit_output_seen;
+    type_unsigned_8 kbc_reset_xmit_output;
+    type_unsigned_8 kbc_reset_xmit_path_count;
+    type_unsigned_32 kbc_reset_xmit_path[8u];
+    type_unsigned_8 kbc_reset_xmit_transaction_count;
+    core_machine_trace_event kbc_reset_xmit_transactions[4u];
+    type_unsigned_64 a20_port_write_count;
+    type_unsigned_8 a20_port_last_value;
+    type_unsigned_32 a20_port_last_pc;
     type_unsigned_64 model40_resume_entries;
     type_unsigned_32 model40_resume_predecessor;
     type_unsigned_16 model40_resume_ax;
@@ -269,8 +322,20 @@ typedef struct vm_byob_boot_trace {
     type_unsigned_16 model40_post_private_status_values[
         VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY];
     type_unsigned_64 model40_port61_reads;
+    type_unsigned_64 model40_port61_refresh_low_reads;
+    type_unsigned_64 model40_port61_refresh_low_wait_reads;
     type_unsigned_32 model40_port61_last_pc;
     type_unsigned_8 model40_port61_last_value;
+    type_unsigned_64 ibm5170_refresh_diagnostic_reads;
+    type_unsigned_64 ibm5170_refresh_diagnostic_low_reads;
+    type_unsigned_64 ibm5170_refresh_diagnostic_in_ticks;
+    type_unsigned_64 ibm5170_refresh_diagnostic_test_ticks;
+    type_unsigned_64 ibm5170_refresh_diagnostic_loop_ticks;
+    type_unsigned_64 ibm5170_refresh_diagnostic_loop_taken;
+    type_unsigned_64 ibm5170_refresh_diagnostic_loop_not_taken;
+    type_unsigned_64 ibm5170_refresh_diagnostic_error_branch_taken;
+    type_unsigned_16 ibm5170_refresh_diagnostic_count;
+    C_INT ibm5170_refresh_diagnostic_count_valid;
     type_unsigned_64 model40_memory_compare_error_branches;
     type_unsigned_64 model40_memory_parity_error_branches;
     type_unsigned_64 model40_memory_parity_test_reads;
@@ -379,18 +444,6 @@ static C_VOID vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
     record->port = (type_unsigned_16)event->address;
     record->value = (type_unsigned_8)event->value;
     record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
-}
-
-static C_VOID vm_byob_kbc_port_record(vm_byob_boot_trace *trace,
-    const core_machine_trace_event *event)
-{
-    if (trace == STD_NULL || event == STD_NULL ||
-        event->type != CORE_MACHINE_TRACE_PORT_WRITE ||
-        (event->address != 0x0060u && event->address != 0x0064u)) return;
-    ++trace->kbc_write_count;
-    trace->kbc_last_write_port = (type_unsigned_16)event->address;
-    trace->kbc_last_write_value = (type_unsigned_8)event->value;
-    trace->kbc_last_write_pc = event->linear_pc;
 }
 
 static C_VOID vm_byob_fdc_terminal_observe(C_VOID *context,
@@ -513,10 +566,51 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
     vm_byob_boot_trace *trace = context;
 
     if (trace == STD_NULL || observation == STD_NULL) return;
+    if (observation->point.linear_pc == 0xf0368u) {
+        if (trace->kbc_self_test_input_count < sizeof(trace->kbc_self_test_input_values)) {
+            trace->kbc_self_test_input_values[trace->kbc_self_test_input_count++] =
+                (type_unsigned_8)observation->io_value;
+        }
+        trace->kbc_self_test_after_input_ax =
+            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->kbc_self_test_after_input_flags = trace->machine->executor_cpu.data.eflags;
+    } else if (observation->point.linear_pc == 0xf036au) {
+        trace->kbc_self_test_after_compare_ax =
+            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->kbc_self_test_after_compare_flags = trace->machine->executor_cpu.data.eflags;
+    } else if (observation->point.linear_pc == 0xf0370u &&
+        trace->kbc_self_test_jne_count < sizeof(trace->kbc_self_test_jne_outcomes)) {
+            trace->kbc_self_test_jne_outcomes[trace->kbc_self_test_jne_count++] =
+                (type_unsigned_8)observation->control_outcome;
+    }
+    if (trace->machine != STD_NULL && observation->point.linear_pc == 0xf1fefu) {
+        trace->kbc_reset_loop_cx = trace->machine->executor_cpu.data.cx;
+        trace->kbc_reset_loop_outcome = (type_unsigned_8)observation->control_outcome;
+    } else if (trace->machine != STD_NULL && observation->point.linear_pc == 0xf1ff1u) {
+        trace->kbc_reset_jcxz_cx = trace->machine->executor_cpu.data.cx;
+        trace->kbc_reset_jcxz_outcome = (type_unsigned_8)observation->control_outcome;
+    }
+    if (observation->point.linear_pc >= 0xf1ff0u && observation->point.linear_pc < 0xf2028u &&
+        trace->kbc_reset_xmit_path_count < sizeof(trace->kbc_reset_xmit_path) /
+            sizeof(trace->kbc_reset_xmit_path[0u])) {
+        trace->kbc_reset_xmit_path[trace->kbc_reset_xmit_path_count++] =
+            observation->point.linear_pc;
+    }
     if (trace->machine != STD_NULL) {
         const t_cpu_data_sreg *es = &trace->machine->executor_cpu.data.es;
 
         ++trace->model40_retirements;
+        if (observation->point.linear_pc == 0x000f08f8u) {
+            ++trace->ibm5170_rep_stos_entries;
+            trace->ibm5170_rep_stos_es = es->selector;
+            trace->ibm5170_rep_stos_es_base = es->base;
+            trace->ibm5170_rep_stos_di = (type_unsigned_16)
+                trace->machine->executor_cpu.data.edi;
+            trace->ibm5170_rep_stos_cx = (type_unsigned_16)
+                trace->machine->executor_cpu.data.ecx;
+            trace->ibm5170_rep_stos_ax = (type_unsigned_16)
+                trace->machine->executor_cpu.data.eax;
+        }
         if (es->selector != trace->model40_last_es_selector ||
             es->base != trace->model40_last_es_base) {
             const STD_SIZE_T index = (STD_SIZE_T)(trace->model40_es_change_count %
@@ -595,23 +689,118 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         (C_VOID)core_machine_memory_read(trace->machine, 0x000f0a13u,
             trace->model40_gdtr_pointer, sizeof(trace->model40_gdtr_pointer));
     }
-    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE &&
+    if ((observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ ||
+         observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) &&
         (observation->io_port == 0x0060u || observation->io_port == 0x0064u)) {
-        ++trace->kbc_write_count;
-        trace->kbc_last_write_port = observation->io_port;
-        trace->kbc_last_write_value = (type_unsigned_8)observation->io_value;
-        trace->kbc_last_write_pc = observation->point.linear_pc;
+        const STD_SIZE_T index = (STD_SIZE_T)(trace->kbc_port_accesses %
+            VM_BYOB_KBC_WRITE_HISTORY);
+
+        trace->kbc_port_history[index] = (vm_byob_fdc_port_event) {
+            observation->point.linear_pc, observation->io_port,
+            (type_unsigned_8)observation->io_value,
+            observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE };
+        ++trace->kbc_port_accesses;
+        trace->kbc_last_port = observation->io_port;
+        trace->kbc_last_value = (type_unsigned_8)observation->io_value;
+        trace->kbc_last_pc = observation->point.linear_pc;
+        if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
+            observation->point.linear_pc == 0xf1febu && observation->io_port == 0x0064u) {
+            if (trace->kbc_reset_xmit_status_count < sizeof(trace->kbc_reset_xmit_status_values)) {
+                trace->kbc_reset_xmit_status_values[trace->kbc_reset_xmit_status_count++] =
+                    (type_unsigned_8)observation->io_value;
+            }
+            trace->kbc_reset_xmit_input_full = trace->machine->shared_kbc.data.input_buffer_full;
+            trace->kbc_reset_xmit_pending_write = trace->machine->shared_kbc.data.pending_write;
+        }
+        if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE &&
+            observation->point.linear_pc >= 0xf1fe0u && observation->point.linear_pc < 0xf2028u &&
+            observation->io_port == 0x0060u) {
+            trace->kbc_reset_xmit_output_seen = TYPE_TRUE;
+            trace->kbc_reset_xmit_output = (type_unsigned_8)observation->io_value;
+        }
+        if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
+            trace->kbc_write_history[trace->kbc_write_count %
+                VM_BYOB_KBC_WRITE_HISTORY] = trace->kbc_port_history[index];
+            ++trace->kbc_write_count;
+            if (observation->point.linear_pc == 0xf0397u &&
+                observation->io_port == 0x0064u && observation->io_value == 0xaau) {
+                trace->kbc_after_self_test_fifo = trace->machine->shared_kbc.data.fifo_count;
+                trace->kbc_after_self_test_delayed =
+                    trace->machine->shared_kbc.data.delayed_response_count;
+                trace->kbc_after_self_test_polls =
+                    trace->machine->shared_kbc.data.response_status_polls_remaining;
+            }
+            if (observation->io_port == 0x0060u && observation->io_value == 0xffu) {
+                trace->kbc_keyboard_reset_seen = TYPE_TRUE;
+                trace->kbc_keyboard_reset_read_count = 0u;
+            }
+            if (observation->io_port == 0x0060u && observation->io_value == 0x4du &&
+                trace->machine->shared_kbc.data.command_byte == 0x4du) {
+                ++trace->kbc_line_enable_writes;
+                trace->kbc_line_enable_pc = observation->point.linear_pc;
+                trace->kbc_line_enable_fifo = trace->machine->shared_kbc.data.fifo_count;
+                trace->kbc_line_enable_bat_pending =
+                    trace->machine->shared_kbc.data.keyboard_bat_pending;
+                trace->kbc_line_enable_irq_pending =
+                    TYPE_FALSE;
+            }
+        } else if (trace->kbc_keyboard_reset_seen && observation->io_port == 0x0060u &&
+            trace->kbc_keyboard_reset_read_count <
+                sizeof(trace->kbc_keyboard_reset_reads) /
+                    sizeof(trace->kbc_keyboard_reset_reads[0u])) {
+            trace->kbc_keyboard_reset_reads[trace->kbc_keyboard_reset_read_count++] =
+                trace->kbc_port_history[index];
+        } else if (observation->point.linear_pc == 0xf03a6u &&
+            observation->io_port == 0x0064u && trace->kbc_first_self_test_status == 0u) {
+            trace->kbc_first_self_test_status = (type_unsigned_8)observation->io_value;
+            trace->kbc_first_self_test_fifo = trace->machine->shared_kbc.data.fifo_count;
+            trace->kbc_first_self_test_delayed =
+                trace->machine->shared_kbc.data.delayed_response_count;
+        }
     }
     if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
         observation->io_port == 0x0061u) {
         ++trace->model40_port61_reads;
+        if ((observation->io_value & 0x10u) == 0u) {
+            ++trace->model40_port61_refresh_low_reads;
+            if (observation->point.linear_pc == 0x000f1a3bu) {
+                ++trace->model40_port61_refresh_low_wait_reads;
+            }
+        }
         trace->model40_port61_last_pc = observation->point.linear_pc;
         trace->model40_port61_last_value = (type_unsigned_8)observation->io_value;
+        if (observation->point.linear_pc == 0x000f05a8u ||
+            observation->point.linear_pc == 0x000f05aeu) {
+            ++trace->ibm5170_refresh_diagnostic_reads;
+            trace->ibm5170_refresh_diagnostic_in_ticks += observation->source_ticks;
+            if ((observation->io_value & 0x10u) == 0u)
+                ++trace->ibm5170_refresh_diagnostic_low_reads;
+        }
         if (observation->point.linear_pc == 0x000fd1b1u) {
             ++trace->model40_memory_parity_test_reads;
             trace->model40_memory_parity_test_last_value =
                 (type_unsigned_8)observation->io_value;
         }
+    }
+    if (observation->point.linear_pc == 0x000f05acu ||
+        observation->point.linear_pc == 0x000f05b2u) {
+        trace->ibm5170_refresh_diagnostic_loop_ticks += observation->source_ticks;
+        if (observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)
+            ++trace->ibm5170_refresh_diagnostic_loop_taken;
+        else if (observation->control_outcome ==
+            CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH)
+            ++trace->ibm5170_refresh_diagnostic_loop_not_taken;
+    }
+    if (observation->point.linear_pc == 0x000f05aau ||
+        observation->point.linear_pc == 0x000f05b0u)
+        trace->ibm5170_refresh_diagnostic_test_ticks += observation->source_ticks;
+    if (observation->point.linear_pc == 0x000f05c9u &&
+        observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)
+        ++trace->ibm5170_refresh_diagnostic_error_branch_taken;
+    if (observation->point.linear_pc == 0x000f05b8u && trace->machine != STD_NULL) {
+        trace->ibm5170_refresh_diagnostic_count =
+            (type_unsigned_16)trace->machine->executor_cpu.data.ecx;
+        trace->ibm5170_refresh_diagnostic_count_valid = 1;
     }
     if (observation->point.linear_pc == 0x000fd1abu &&
         observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
@@ -1004,6 +1193,16 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
 
     if (trace == STD_NULL || event == STD_NULL) return;
+    if ((event->type == CORE_MACHINE_TRACE_PORT_WRITE ||
+         event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN ||
+         event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT ||
+         event->type == CORE_MACHINE_TRACE_TRANSACTION_CANCEL) && event->address == 0x0060u &&
+        event->linear_pc >= 0x000f1fe0u && event->linear_pc < 0x000f2028u &&
+        trace->kbc_reset_xmit_transaction_count <
+            sizeof(trace->kbc_reset_xmit_transactions) /
+            sizeof(trace->kbc_reset_xmit_transactions[0u])) {
+        trace->kbc_reset_xmit_transactions[trace->kbc_reset_xmit_transaction_count++] = *event;
+    }
     if (event->type == CORE_MACHINE_TRACE_RESET) {
         ++trace->reset_events;
         return;
@@ -1017,7 +1216,11 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
             core_machine_memory_read(trace->machine, 0x0009f300u,
                 trace->model40_gdt, sizeof(trace->model40_gdt)) == TYPE_STATUS_OK;
     }
-    vm_byob_kbc_port_record(trace, event);
+    if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0092u) {
+        ++trace->a20_port_write_count;
+        trace->a20_port_last_value = (type_unsigned_8)event->value;
+        trace->a20_port_last_pc = event->linear_pc;
+    }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_READ &&
         event->address >= 0x000f0000u && event->address < 0x00100000u) {
         ++trace->rom_memory_reads;
@@ -1040,6 +1243,12 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         ++trace->model40_memory_1e_writes;
         trace->model40_memory_1e_last_pc = event->linear_pc;
         trace->model40_memory_1e_last_value = (type_unsigned_8)event->value;
+    }
+    if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
+        event->address >= 0x0000d8a0u && event->address < 0x0000d930u) {
+        ++trace->ibm5170_gdt_writes;
+        trace->ibm5170_gdt_last_address = event->address;
+        trace->ibm5170_gdt_last_value = (type_unsigned_8)event->value;
     }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x0018u && event->address < 0x001cu) {
@@ -1079,12 +1288,10 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
     if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
         (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         ((event->detail >> 8u) & 0xffu) ==
-            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
-        (event->address == 0x0060u || event->address == 0x0064u)) {
-        core_machine_trace_event write = *event;
-
-        write.type = CORE_MACHINE_TRACE_PORT_WRITE;
-        vm_byob_kbc_port_record(trace, &write);
+            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE && event->address == 0x0092u) {
+        ++trace->a20_port_write_count;
+        trace->a20_port_last_value = (type_unsigned_8)event->value;
+        trace->a20_port_last_pc = event->linear_pc;
         return;
     }
     if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
@@ -1436,93 +1643,12 @@ static type_unsigned_32 vm_byob_snapshot_checksum(
     return checksum;
 }
 
-static C_INT vm_byob_parse_cpu(const C_CHAR *text,
-    core_machine_cpu_profile *out_profile)
-{
-    if (text == STD_NULL || out_profile == STD_NULL) return 0;
-    if (!STD_STRCMP(text, "8086")) *out_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    else if (!STD_STRCMP(text, "8088")) *out_profile = CORE_MACHINE_CPU_PROFILE_8088;
-    else if (!STD_STRCMP(text, "80186")) *out_profile = CORE_MACHINE_CPU_PROFILE_80186;
-    else if (!STD_STRCMP(text, "80286")) *out_profile = CORE_MACHINE_CPU_PROFILE_80286;
-    else if (!STD_STRCMP(text, "80386")) *out_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    else return 0;
-    return 1;
-}
-
-static C_INT vm_byob_parse_floppy_format(const C_CHAR *text,
-    vm_session_floppy_format *out_format)
-{
-    if (text == STD_NULL || out_format == STD_NULL) return 0;
-    if (!STD_STRCMP(text, "360k")) *out_format = VM_SESSION_FLOPPY_FORMAT_360K;
-    else if (!STD_STRCMP(text, "720k")) *out_format = VM_SESSION_FLOPPY_FORMAT_720K;
-    else if (!STD_STRCMP(text, "1200k")) *out_format = VM_SESSION_FLOPPY_FORMAT_1200K;
-    else if (!STD_STRCMP(text, "1440k")) *out_format = VM_SESSION_FLOPPY_FORMAT_1440K;
-    else return 0;
-    return 1;
-}
-
-static C_INT vm_byob_parse_ibm_5170_memory(const C_CHAR *text,
-    STD_SIZE_T *out_memory_bytes)
-{
-    if (text == STD_NULL || out_memory_bytes == STD_NULL) return 0;
-    if (!STD_STRCMP(text, "512k")) *out_memory_bytes = 512u * 1024u;
-    else if (!STD_STRCMP(text, "640k")) *out_memory_bytes = 640u * 1024u;
-    else if (!STD_STRCMP(text, "1536k")) *out_memory_bytes = 1536u * 1024u;
-    else if (!STD_STRCMP(text, "2048k")) *out_memory_bytes = 2048u * 1024u;
-    else if (!STD_STRCMP(text, "2560k")) *out_memory_bytes = 2560u * 1024u;
-    else if (!STD_STRCMP(text, "3072k")) *out_memory_bytes = 3072u * 1024u;
-    else return 0;
-    return 1;
-}
-
-static C_INT vm_byob_configure(C_INT argc, C_CHAR **argv, vm_session_config *config)
-{
-    if (argc < 3 || argv == STD_NULL || config == STD_NULL) return 0;
-    STD_MEMSET(config, 0, sizeof(*config));
-    config->floppy_image[0u] = argv[2];
-    if (!STD_STRCMP(argv[1], "ibm-5160-model-268")) {
-        if (argc != 5) return 0;
-        config->profile_kind = VM_SESSION_PROFILE_IBM_5160_MODEL_268;
-        config->bios_path[0u] = argv[3];
-        config->bios_count = 1u;
-        return 1;
-    }
-    if (!STD_STRCMP(argv[1], "ibm-5170-model-339")) {
-        config->profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339;
-        if (argc == 3) return 1;
-        if (argc == 4) return vm_byob_parse_floppy_format(argv[3], &config->floppy_format) ||
-            vm_byob_parse_ibm_5170_memory(argv[3], &config->memory_bytes);
-        return argc == 5 && vm_byob_parse_floppy_format(argv[3], &config->floppy_format) &&
-            vm_byob_parse_ibm_5170_memory(argv[4], &config->memory_bytes);
-    }
-    if (!STD_STRCMP(argv[1], "compaq-deskpro-386-model-40")) {
-        if (argc != 7 && argc != 8 && argc != 9 && argc != 10) return 0;
-        config->profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
-        config->bios_path[0u] = argv[3];
-        config->bios_path[1u] = argv[5];
-        config->bios_count = 2u;
-        config->video_path = argc >= 9 ? argv[7] : STD_NULL;
-        if (argc == 8) return vm_byob_parse_floppy_format(argv[7],
-            &config->floppy_format);
-        if (argc == 10) return vm_byob_parse_floppy_format(argv[9],
-            &config->floppy_format);
-        return 1;
-    }
-    if (!STD_STRCMP(argv[1], "default-pc-at")) {
-        config->profile_kind = VM_SESSION_PROFILE_DEFAULT_PC_AT;
-        if (argc != 4 && argc != 5) return 0;
-        if (!vm_byob_parse_cpu(argv[3], &config->cpu_profile)) return 0;
-        return argc == 4 || vm_byob_parse_floppy_format(argv[4], &config->floppy_format);
-    }
-    return 0;
-}
-
 int main(C_INT argc, C_CHAR **argv)
 {
     /* Keep the host-side diagnostic wall-clock budget observable even when a
        guest instruction is stalled behind an unbounded Core wait path. */
     core_machine_run_budget budget = {256u, 256u};
-    vm_session_config config;
+    integration_yaml_session yaml_session = {0};
     vm_session *session = STD_NULL;
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
@@ -1534,8 +1660,9 @@ int main(C_INT argc, C_CHAR **argv)
     ULONGLONG next_display_capture;
     type_unsigned_32 checksum = 0u;
     type_unsigned_32 linear_pc = 0u;
+    type_unsigned_32 port_61 = 0u;
+    type_unsigned_32 port_87 = 0u;
     type_unsigned_32 waiting_linear_pc = 0u;
-    type_status status;
     type_unsigned_16 post_caller_offset = 0u;
     type_unsigned_16 int6_offset = 0u;
     type_unsigned_16 int6_segment = 0u;
@@ -1577,7 +1704,6 @@ int main(C_INT argc, C_CHAR **argv)
     C_INT turbo;
     C_INT no_retirement_observation;
     C_INT press_resume_f1;
-    const C_CHAR *hdd_image = STD_NULL;
     C_INT exit_code = 1;
 
     stop_at_first_exception = 0;
@@ -1589,12 +1715,7 @@ int main(C_INT argc, C_CHAR **argv)
     while (argc > 1) {
         const C_CHAR *option = argv[argc - 1];
 
-        if (argc > 2 && !STD_STRCMP(argv[argc - 2], "--hdd")) {
-            hdd_image = option;
-            argc -= 2;
-            continue;
-        }
-        else if (!STD_STRCMP(option, "--first-exception")) stop_at_first_exception = 1;
+        if (!STD_STRCMP(option, "--first-exception")) stop_at_first_exception = 1;
         else if (!STD_STRCMP(option, "--short")) short_budget = 1;
         else if (!STD_STRCMP(option, "--trace")) trace_enabled = 1;
         else if (!STD_STRCMP(option, "--no-retirement-observation"))
@@ -1608,15 +1729,20 @@ int main(C_INT argc, C_CHAR **argv)
         wall_limit = 25000u;
         no_progress_limit = 7500u;
     }
-    if (!vm_byob_configure(argc, argv, &config)) {
+    if (argc != 3) {
         STD_PRINTF("BOOT-PROBE=invalid-arguments\n");
         goto done;
     }
-    config.fixed_disk_image[0u] = hdd_image;
-    status = vm_session_create(&config, &session);
-    if (status != TYPE_STATUS_OK || session == STD_NULL) {
-        STD_PRINTF("BOOT-PROBE=session-create-failed-status=%u\n",
-            (type_unsigned_32)status);
+    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) != TYPE_STATUS_OK)
+        return 77;
+    session = yaml_session.session;
+    if (session == STD_NULL) goto done;
+    /* A diagnostic must begin at the same reset boundary as the delivery
+       runner.  Construction performs an initial Core reset, but
+       vm_session_start() deliberately performs another full session reset
+       before it runs guest code. */
+    if (vm_session_reset(session) != TYPE_STATUS_OK) {
+        STD_PRINTF("BOOT-PROBE=reset-failed\n");
         goto done;
     }
     {
@@ -1655,7 +1781,7 @@ int main(C_INT argc, C_CHAR **argv)
         }
     }
     trace.machine = session->core_machine;
-    if (config.profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+    if (!STD_STRCMP(yaml_session.request.profile, "compaq-deskpro-386-model-40")) {
         t_ram *memory = &session->core_machine->executor_memory;
 
         if (memory->connect.write_observer_count <
@@ -2073,7 +2199,7 @@ int main(C_INT argc, C_CHAR **argv)
             (unsigned int)diagnostic.first_delivered_exception.point.linear_pc,
             (unsigned int)diagnostic.last_delivered_exception.point.linear_pc);
     }
-    if (trace.reset_events != 0u) STD_PRINTF("BOOT-PROBE=trace-reset\n");
+        if (trace.reset_events != 0u) STD_PRINTF("BOOT-PROBE=trace-reset\n");
     if (trace.rom_memory_reads != 0u) STD_PRINTF("BOOT-PROBE=trace-rom-read\n");
     if (trace.xt_ppi_port_accesses != 0u) STD_PRINTF("BOOT-PROBE=trace-xt-ppi\n");
     if (trace.pic_port_accesses != 0u) STD_PRINTF("BOOT-PROBE=trace-pic\n");
@@ -2099,6 +2225,7 @@ int main(C_INT argc, C_CHAR **argv)
 done:
     if (session != STD_NULL && session->core_machine != STD_NULL) {
         type_unsigned_16 bda_equipment = 0u;
+        type_unsigned_8 low_memory_12 = 0u;
         type_unsigned_16 bda_keyboard_head = 0u;
         type_unsigned_16 bda_keyboard_tail = 0u;
         type_unsigned_8 bda_wait_state[16] = {0};
@@ -2124,6 +2251,13 @@ done:
         if (diagnostic.first_fault.valid) {
             const core_machine_cpu_execution_point *point =
                 &diagnostic.first_fault.point;
+            type_unsigned_8 descriptor[8] = {0u};
+            type_unsigned_8 idt_descriptor[8] = {0u};
+            const type_unsigned_32 descriptor_linear =
+                session->core_machine->executor_cpu.data.gdtr.base +
+                (diagnostic.first_fault.exception_code & 0xfff8u);
+            const type_unsigned_32 idt_linear =
+                session->core_machine->executor_cpu.data.idtr.base + 0x68u;
 
             STD_PRINTF("BOOT-PROBE=first-fault-mask=%08X-code=%08X-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)diagnostic.first_fault.exception_mask,
@@ -2131,6 +2265,44 @@ done:
                 (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
                 (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
                 (unsigned int)point->bytes[3u]);
+            (C_VOID)core_machine_memory_read(session->core_machine, descriptor_linear,
+                descriptor, sizeof(descriptor));
+            (C_VOID)core_machine_memory_read(session->core_machine, idt_linear,
+                idt_descriptor, sizeof(idt_descriptor));
+            STD_PRINTF("BOOT-PROBE=first-fault-gdtr=%05X/%04X-selector=%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned int)session->core_machine->executor_cpu.data.gdtr.base,
+                (unsigned int)session->core_machine->executor_cpu.data.gdtr.limit,
+                (unsigned int)(diagnostic.first_fault.exception_code & 0xffffu),
+                (unsigned int)descriptor[0u], (unsigned int)descriptor[1u],
+                (unsigned int)descriptor[2u], (unsigned int)descriptor[3u],
+                (unsigned int)descriptor[4u], (unsigned int)descriptor[5u],
+                (unsigned int)descriptor[6u], (unsigned int)descriptor[7u]);
+            STD_PRINTF("BOOT-PROBE=first-fault-idtr=%05X/%04X-vector13=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned int)session->core_machine->executor_cpu.data.idtr.base,
+                (unsigned int)session->core_machine->executor_cpu.data.idtr.limit,
+                (unsigned int)idt_descriptor[0u], (unsigned int)idt_descriptor[1u],
+                (unsigned int)idt_descriptor[2u], (unsigned int)idt_descriptor[3u],
+                (unsigned int)idt_descriptor[4u], (unsigned int)idt_descriptor[5u],
+                (unsigned int)idt_descriptor[6u], (unsigned int)idt_descriptor[7u]);
+            (C_VOID)core_machine_memory_read(session->core_machine,
+                session->core_machine->executor_cpu.data.gdtr.base + 0x30u,
+                descriptor, sizeof(descriptor));
+            STD_PRINTF("BOOT-PROBE=debug-gdt-30=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned int)descriptor[0u], (unsigned int)descriptor[1u],
+                (unsigned int)descriptor[2u], (unsigned int)descriptor[3u],
+                (unsigned int)descriptor[4u], (unsigned int)descriptor[5u],
+                (unsigned int)descriptor[6u], (unsigned int)descriptor[7u]);
+            STD_PRINTF("BOOT-PROBE=ibm5170-gdt-writes=%llu-last=%05X/%02X\n",
+                (unsigned long long)trace.ibm5170_gdt_writes,
+                (unsigned int)trace.ibm5170_gdt_last_address,
+                (unsigned int)trace.ibm5170_gdt_last_value);
+            STD_PRINTF("BOOT-PROBE=ibm5170-rep-stos=entries:%llu-es:%04X/%05X-di:%04X-cx:%04X-ax:%04X\n",
+                (unsigned long long)trace.ibm5170_rep_stos_entries,
+                (unsigned int)trace.ibm5170_rep_stos_es,
+                (unsigned int)trace.ibm5170_rep_stos_es_base,
+                (unsigned int)trace.ibm5170_rep_stos_di,
+                (unsigned int)trace.ibm5170_rep_stos_cx,
+                (unsigned int)trace.ibm5170_rep_stos_ax);
         }
         if (diagnostic.last_delivered_exception.valid) {
             const core_machine_cpu_execution_point *point =
@@ -2360,17 +2532,20 @@ done:
             (unsigned int)session->core_machine->executor_cpu.data.es.selector,
             (unsigned int)(session->core_machine->executor_cpu.data.eax & 0xffffu),
             (unsigned int)(session->core_machine->executor_cpu.data.ebp & 0xffffu));
-        /* Temporary Model 40 firmware diagnosis: the BIOS's F90CCh delay
-           latches PIT0 twice.  Report the owner-local state so the probe can
-           distinguish a changing counter from a stuck latch without changing
-           guest-visible behavior. */
-        STD_PRINTF("BOOT-PROBE=pit0-count=%04X-latch=%04X-remaining=%u-latched=%u-active=%u-read=%u\n",
+        STD_PRINTF("BOOT-PROBE=pit0-count=%04X-latch=%04X-remaining=%u-latched=%u-active=%u-read=%u"
+            "-pit1-count=%04X-remaining=%u-active=%u-output=%u-clock=%u/%llu\n",
             (unsigned int)session->core_machine->shared_pit.data.count[0u],
             (unsigned int)session->core_machine->shared_pit.data.latch[0u],
             (unsigned int)session->core_machine->shared_pit.data.remaining[0u],
             (unsigned int)session->core_machine->shared_pit.data.flagLatch[0u],
             (unsigned int)session->core_machine->shared_pit.data.flagActive[0u],
-            (unsigned int)session->core_machine->shared_pit.data.flagRead[0u]);
+            (unsigned int)session->core_machine->shared_pit.data.flagRead[0u],
+            (unsigned int)session->core_machine->shared_pit.data.count[1u],
+            (unsigned int)session->core_machine->shared_pit.data.remaining[1u],
+            (unsigned int)session->core_machine->shared_pit.data.flagActive[1u],
+            (unsigned int)session->core_machine->shared_pit.data.flagOutput[1u],
+            (unsigned int)session->core_machine->pit_clock.phase,
+            (unsigned long long)session->core_machine->pit_clock.delivered_ticks);
         STD_PRINTF("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
             (unsigned int)session->core_machine->fdc.data.phase,
             (unsigned int)session->core_machine->fdc.data.dor,
@@ -2688,10 +2863,23 @@ done:
                     (unsigned int)trace.model40_post_status_58_observer_values[index]);
             }
         }
-        STD_PRINTF("BOOT-PROBE=model40-port61-reads=%llu-last=%05X/%02X\n",
+        STD_PRINTF("BOOT-PROBE=model40-port61-reads=%llu-refresh-low=%llu-wait-low=%llu-last=%05X/%02X\n",
             (unsigned long long)trace.model40_port61_reads,
+            (unsigned long long)trace.model40_port61_refresh_low_reads,
+            (unsigned long long)trace.model40_port61_refresh_low_wait_reads,
             (unsigned int)trace.model40_port61_last_pc,
             (unsigned int)trace.model40_port61_last_value);
+        STD_PRINTF("BOOT-PROBE=ibm5170-refresh-test=reads:%llu-low:%llu-in-ticks:%llu-test-ticks:%llu-loop-ticks:%llu-loop-taken:%llu-loop-not-taken:%llu-count:%04X-valid:%u-error:%llu\n",
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_reads,
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_low_reads,
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_in_ticks,
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_test_ticks,
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_loop_ticks,
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_loop_taken,
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_loop_not_taken,
+            (unsigned int)trace.ibm5170_refresh_diagnostic_count,
+            (unsigned int)trace.ibm5170_refresh_diagnostic_count_valid,
+            (unsigned long long)trace.ibm5170_refresh_diagnostic_error_branch_taken);
         STD_PRINTF("BOOT-PROBE=model40-memory-test-error-branches=compare:%llu-parity:%llu-port61:%llu/%02X\n",
             (unsigned long long)trace.model40_memory_compare_error_branches,
             (unsigned long long)trace.model40_memory_parity_error_branches,
@@ -2781,11 +2969,141 @@ done:
                 (unsigned int)trace.model40_gdt[28u], (unsigned int)trace.model40_gdt[29u],
                 (unsigned int)trace.model40_gdt[30u], (unsigned int)trace.model40_gdt[31u]);
         }
-        STD_PRINTF("BOOT-PROBE=kbc-writes=%llu-last=%05X-%04X-%02X\n",
-            (unsigned long long)trace.kbc_write_count,
-            (unsigned int)trace.kbc_last_write_pc,
-            (unsigned int)trace.kbc_last_write_port,
-            (unsigned int)trace.kbc_last_write_value);
+        STD_PRINTF("BOOT-PROBE=kbc-ports=%llu-last=%05X-%04X-%02X\n",
+            (unsigned long long)trace.kbc_port_accesses,
+            (unsigned int)trace.kbc_last_pc,
+            (unsigned int)trace.kbc_last_port,
+            (unsigned int)trace.kbc_last_value);
+        {
+            type_unsigned_64 index;
+            const type_unsigned_64 first = trace.kbc_port_accesses >
+                VM_BYOB_KBC_WRITE_HISTORY ? trace.kbc_port_accesses -
+                VM_BYOB_KBC_WRITE_HISTORY : 0u;
+
+            for (index = first; index < trace.kbc_port_accesses; ++index) {
+                const vm_byob_fdc_port_event *access = &trace.kbc_port_history[
+                    index % VM_BYOB_KBC_WRITE_HISTORY];
+
+                STD_PRINTF("BOOT-PROBE=kbc-port-%llu=%c-%05X-%04X-%02X\n",
+                    (unsigned long long)index, access->write ? 'W' : 'R',
+                    (unsigned int)access->linear_pc, (unsigned int)access->port,
+                    (unsigned int)access->value);
+            }
+        }
+        {
+            type_unsigned_64 index;
+            const type_unsigned_64 first = trace.kbc_write_count >
+                VM_BYOB_KBC_WRITE_HISTORY ? trace.kbc_write_count -
+                VM_BYOB_KBC_WRITE_HISTORY : 0u;
+
+            for (index = first; index < trace.kbc_write_count; ++index) {
+                const vm_byob_fdc_port_event *access = &trace.kbc_write_history[
+                    index % VM_BYOB_KBC_WRITE_HISTORY];
+
+                STD_PRINTF("BOOT-PROBE=kbc-write-%llu=%05X-%04X-%02X\n",
+                    (unsigned long long)index, (unsigned int)access->linear_pc,
+                    (unsigned int)access->port, (unsigned int)access->value);
+            }
+        }
+        STD_PRINTF("BOOT-PROBE=a20-port-writes=%llu-last=%05X-%02X-kbc-output=%02X\n",
+            (unsigned long long)trace.a20_port_write_count,
+            (unsigned int)trace.a20_port_last_pc,
+            (unsigned int)trace.a20_port_last_value,
+            (unsigned int)session->core_machine->shared_kbc.data.output_port);
+        STD_PRINTF("BOOT-PROBE=kbc-queue=fifo:%u-delayed:%u/%u-response:%llu-polls:%u-config:%u-bat:%u-command:%02X-enabled:%u\n",
+            (unsigned int)session->core_machine->shared_kbc.data.fifo_count,
+            (unsigned int)session->core_machine->shared_kbc.data.delayed_response_index,
+            (unsigned int)session->core_machine->shared_kbc.data.delayed_response_count,
+            (unsigned long long)session->core_machine->shared_kbc.data.response_remaining_ticks,
+            (unsigned int)session->core_machine->shared_kbc.data.response_status_polls_remaining,
+            (unsigned int)session->core_machine->shared_kbc.data.command_response_ticks,
+            (unsigned int)session->core_machine->shared_kbc.data.keyboard_bat_pending,
+            (unsigned int)session->core_machine->shared_kbc.data.command_byte,
+            (unsigned int)session->core_machine->shared_kbc.data.keyboard_enabled);
+        STD_PRINTF("BOOT-PROBE=kbc-line-enable=%llu/%05X-fifo:%u-bat:%u-irq-pending:%u\n",
+            (unsigned long long)trace.kbc_line_enable_writes,
+            (unsigned int)trace.kbc_line_enable_pc,
+            (unsigned int)trace.kbc_line_enable_fifo,
+            (unsigned int)trace.kbc_line_enable_bat_pending,
+            (unsigned int)trace.kbc_line_enable_irq_pending);
+        STD_PRINTF("BOOT-PROBE=kbc-self-test=after:%u/%u/%u-first-status:%02X-state:%u/%u\n",
+            (unsigned int)trace.kbc_after_self_test_fifo,
+            (unsigned int)trace.kbc_after_self_test_delayed,
+            (unsigned int)trace.kbc_after_self_test_polls,
+            (unsigned int)trace.kbc_first_self_test_status,
+            (unsigned int)trace.kbc_first_self_test_fifo,
+            (unsigned int)trace.kbc_first_self_test_delayed);
+        STD_PRINTF("BOOT-PROBE=kbc-self-test-cpu=input:%04X/%08X-compare:%04X/%08X\n",
+            (unsigned int)trace.kbc_self_test_after_input_ax,
+            (unsigned int)trace.kbc_self_test_after_input_flags,
+            (unsigned int)trace.kbc_self_test_after_compare_ax,
+            (unsigned int)trace.kbc_self_test_after_compare_flags);
+        STD_PRINTF("BOOT-PROBE=kbc-self-test-flow=input:%u/%02X,%02X,%02X,%02X-jne:%u/%u,%u,%u,%u\n",
+            (unsigned int)trace.kbc_self_test_input_count,
+            (unsigned int)trace.kbc_self_test_input_values[0u],
+            (unsigned int)trace.kbc_self_test_input_values[1u],
+            (unsigned int)trace.kbc_self_test_input_values[2u],
+            (unsigned int)trace.kbc_self_test_input_values[3u],
+            (unsigned int)trace.kbc_self_test_jne_count,
+            (unsigned int)trace.kbc_self_test_jne_outcomes[0u],
+            (unsigned int)trace.kbc_self_test_jne_outcomes[1u],
+            (unsigned int)trace.kbc_self_test_jne_outcomes[2u],
+            (unsigned int)trace.kbc_self_test_jne_outcomes[3u]);
+        STD_PRINTF("BOOT-PROBE=kbc-reset=seen:%u-reads:%u/%04X:%02X,%04X:%02X,%04X:%02X,%04X:%02X\n",
+            (unsigned int)trace.kbc_keyboard_reset_seen,
+            (unsigned int)trace.kbc_keyboard_reset_read_count,
+            (unsigned int)trace.kbc_keyboard_reset_reads[0u].linear_pc,
+            (unsigned int)trace.kbc_keyboard_reset_reads[0u].value,
+            (unsigned int)trace.kbc_keyboard_reset_reads[1u].linear_pc,
+            (unsigned int)trace.kbc_keyboard_reset_reads[1u].value,
+            (unsigned int)trace.kbc_keyboard_reset_reads[2u].linear_pc,
+            (unsigned int)trace.kbc_keyboard_reset_reads[2u].value,
+            (unsigned int)trace.kbc_keyboard_reset_reads[3u].linear_pc,
+            (unsigned int)trace.kbc_keyboard_reset_reads[3u].value);
+        STD_PRINTF("BOOT-PROBE=kbc-reset-xmit=status:%u/%02X,%02X,%02X,%02X-core:%u/%u\n",
+            (unsigned int)trace.kbc_reset_xmit_status_count,
+            (unsigned int)trace.kbc_reset_xmit_status_values[0u],
+            (unsigned int)trace.kbc_reset_xmit_status_values[1u],
+            (unsigned int)trace.kbc_reset_xmit_status_values[2u],
+            (unsigned int)trace.kbc_reset_xmit_status_values[3u],
+            (unsigned int)trace.kbc_reset_xmit_input_full,
+            (unsigned int)trace.kbc_reset_xmit_pending_write);
+        STD_PRINTF("BOOT-PROBE=kbc-reset-flow=loop:%04X/%u-jcxz:%04X/%u\n",
+            (unsigned int)trace.kbc_reset_loop_cx,
+            (unsigned int)trace.kbc_reset_loop_outcome,
+            (unsigned int)trace.kbc_reset_jcxz_cx,
+            (unsigned int)trace.kbc_reset_jcxz_outcome);
+        STD_PRINTF("BOOT-PROBE=kbc-reset-out=%u/%02X\n",
+            (unsigned int)trace.kbc_reset_xmit_output_seen,
+            (unsigned int)trace.kbc_reset_xmit_output);
+        STD_PRINTF("BOOT-PROBE=kbc-reset-path=%u/%05X,%05X,%05X,%05X,%05X,%05X,%05X,%05X\n",
+            (unsigned int)trace.kbc_reset_xmit_path_count,
+            (unsigned int)trace.kbc_reset_xmit_path[0u],
+            (unsigned int)trace.kbc_reset_xmit_path[1u],
+            (unsigned int)trace.kbc_reset_xmit_path[2u],
+            (unsigned int)trace.kbc_reset_xmit_path[3u],
+            (unsigned int)trace.kbc_reset_xmit_path[4u],
+            (unsigned int)trace.kbc_reset_xmit_path[5u],
+            (unsigned int)trace.kbc_reset_xmit_path[6u],
+            (unsigned int)trace.kbc_reset_xmit_path[7u]);
+        STD_PRINTF("BOOT-PROBE=kbc-reset-transactions=%u/%u-%05X-%04X-%02X,%u-%05X-%04X-%02X,%u-%05X-%04X-%02X,%u-%05X-%04X-%02X\n",
+            (unsigned int)trace.kbc_reset_xmit_transaction_count,
+            (unsigned int)trace.kbc_reset_xmit_transactions[0u].type,
+            (unsigned int)trace.kbc_reset_xmit_transactions[0u].linear_pc,
+            (unsigned int)trace.kbc_reset_xmit_transactions[0u].address,
+            (unsigned int)trace.kbc_reset_xmit_transactions[0u].value,
+            (unsigned int)trace.kbc_reset_xmit_transactions[1u].type,
+            (unsigned int)trace.kbc_reset_xmit_transactions[1u].linear_pc,
+            (unsigned int)trace.kbc_reset_xmit_transactions[1u].address,
+            (unsigned int)trace.kbc_reset_xmit_transactions[1u].value,
+            (unsigned int)trace.kbc_reset_xmit_transactions[2u].type,
+            (unsigned int)trace.kbc_reset_xmit_transactions[2u].linear_pc,
+            (unsigned int)trace.kbc_reset_xmit_transactions[2u].address,
+            (unsigned int)trace.kbc_reset_xmit_transactions[2u].value,
+            (unsigned int)trace.kbc_reset_xmit_transactions[3u].type,
+            (unsigned int)trace.kbc_reset_xmit_transactions[3u].linear_pc,
+            (unsigned int)trace.kbc_reset_xmit_transactions[3u].address,
+            (unsigned int)trace.kbc_reset_xmit_transactions[3u].value);
         STD_PRINTF("BOOT-PROBE=hdc-phase=%u-status=%02X-error=%02X-command=%02X-count=%u-sector=%u-cylinder=%02X%02X-drive-head=%02X\n",
             (unsigned int)session->core_machine->hdc.data.phase,
             (unsigned int)session->core_machine->hdc.data.status,
@@ -2832,7 +3150,7 @@ done:
         {
             type_unsigned_8 index;
 
-            for (index = 0u; index < VM_BYOB_CMOS_BYTES; ++index) {
+            for (index = 0u; index < VM_SESSION_CMOS_SEED_BYTES; ++index) {
                 if (trace.cmos_reads[index] != 0u || trace.cmos_writes[index] != 0u) {
                     STD_PRINTF("BOOT-PROBE=cmos-%02X-r=%llu-w=%llu-last=%02X-write-pc=%05X\n",
                         (unsigned int)index,
@@ -2856,8 +3174,11 @@ done:
                 &bda_keyboard_head, sizeof(bda_keyboard_head)) == TYPE_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x041cu,
                 &bda_keyboard_tail, sizeof(bda_keyboard_tail)) == TYPE_STATUS_OK) {
-        STD_PRINTF("BOOT-PROBE=bda-equipment=%04X-post-status=%02X-kbd-head=%04X-kbd-tail=%04X\n",
+        (C_VOID)core_machine_memory_read(session->core_machine, 0x0012u,
+            &low_memory_12, sizeof(low_memory_12));
+        STD_PRINTF("BOOT-PROBE=bda-equipment=%04X-post-status=%02X-low12=%02X-kbd-head=%04X-kbd-tail=%04X\n",
             (unsigned int)bda_equipment, (unsigned int)bda_post_status,
+            (unsigned int)low_memory_12,
             (unsigned int)bda_keyboard_head, (unsigned int)bda_keyboard_tail);
         (C_VOID)core_machine_memory_read(session->core_machine, 0x0441u,
             &bda_diskette_status, sizeof(bda_diskette_status));
@@ -3054,10 +3375,17 @@ done:
         }
         STD_PRINTF("BOOT-PROBE=last-retired-pc=%05X\n",
             (unsigned int)trace.last_linear_pc);
+        if (core_machine_bus_read(session->core_machine, 0x0061u, &port_61) ==
+                TYPE_STATUS_OK &&
+            core_machine_bus_read(session->core_machine, 0x0087u, &port_87) ==
+                TYPE_STATUS_OK) {
+            STD_PRINTF("BOOT-PROBE=post-port-61=%02X-87=%02X\n",
+                (unsigned int)port_61, (unsigned int)port_87);
+        }
     }
     if (session != STD_NULL && session->core_machine != STD_NULL) {
         (C_VOID)core_machine_set_trace_provider(session->core_machine, STD_NULL);
     }
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return exit_code;
 }

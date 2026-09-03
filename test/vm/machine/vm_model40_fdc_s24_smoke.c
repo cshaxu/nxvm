@@ -7,7 +7,7 @@
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/machine/fdd.h"
-#include "../support/vm_model40_byob_fixture.h"
+#include "../support/rom/model40_session_assets.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
 static C_VOID model40_fdc_command(core_machine_fdc *fdc, t_port *port,
@@ -41,17 +41,11 @@ static C_VOID model40_fdc_write_dma2(t_port *port, type_unsigned_16 address,
     core_machine_port_write(port, 0x000bu, 0x46u);
     core_machine_port_write(port, 0x000au, 0x02u);
 }
-C_INT main(C_INT argc, C_CHAR **argv)
+C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 image[MODEL40_FDC_BYTES];
-    const vm_session_config byob_config = {
-        .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
-        .bios_path = { argc == 6 ? argv[1] : STD_NULL,
-            argc == 6 ? argv[3] : STD_NULL },
-        .bios_count = argc == 6 ? 2u : 0u
-    };
     static const type_unsigned_8 specify[] = {0x03u, 0xdfu, 0x03u};
     static const type_unsigned_8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
     static const type_unsigned_8 read_last[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
@@ -61,10 +55,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     t_port *port = STD_NULL;
     type_unsigned_8 result[7] = {0};
     type_unsigned_32 index;
-    core_machine_run_result run;
     type_status create_status;
-    type_unsigned_8 bios_marker = 0u;
-    C_INT failed = argc != 1 && argc != 6;
+    C_INT failed = 0;
 
 
     static const type_unsigned_8 boot_code[] = {
@@ -76,15 +68,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     image[510u] = 0x55u;
     image[511u] = 0xaau;
     image[(15u - 1u) * 512u] = 0xa5u;
-    if (argc == 6) {
-        create_status = (type_status)vm_session_create(&byob_config, &session);
-    } else {
-        create_status = vm_model40_fixture_create_bytes("t386-s24-even.bin", even,
-            "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe",
-            "t386-s24-odd.bin", odd,
-            "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe",
-            &session);
-    }
+    create_status = vm_model40_fixture_create_bytes(even, odd, &session);
     failed |= create_status != TYPE_STATUS_OK || session == STD_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
         sizeof(image)) != TYPE_FALSE;
     if (!failed) {
@@ -201,23 +185,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
             result[0] != 0x80u || fdc->connect.irq_source.asserted;
-        if (argc == 6) {
-            for (index = 0u; index < 400000u && bios_marker == 0u; index += 64u) {
-                failed |= core_machine_run(session->core_machine,
-                    (core_machine_run_budget){64u, 0u}, &run) != TYPE_STATUS_OK ||
-                    run.reason == CORE_MACHINE_STOP_FAULT || core_machine_memory_read(
-                        session->core_machine, 0x0500u, &bios_marker,
-                        sizeof(bios_marker)) != TYPE_STATUS_OK;
-                if (failed) break;
-            }
-            failed |= bios_marker != 0xa5u;
-        }
-    }
-    if (failed && argc == 6) {
-        STD_PRINTF("M5:T386:S25:BYOB-CONSUMER:NOT-REACHED\n");
     }
     vm_session_destroy(session);
-    if (argc != 6) vm_model40_fixture_remove("t386-s24-even.bin", "t386-s24-odd.bin");
     if (failed) return 1;
     STD_PRINTF("M5:T386:S24:FDC-12MB-LOGICAL:OK\n");
     STD_PRINTF("M5:T386:S24:FDC-DMA2-IRQ6:OK\n");

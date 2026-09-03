@@ -15,10 +15,8 @@
 
 #include "vm/composition/session/control.h"
 
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-
-#include "vm/machine/fdd.h"
+#include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
@@ -56,29 +54,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD result;
     DWORD elapsed;
     C_INT prompt_seen = 0;
-    vm_session *session = STD_NULL;
-    C_INT owns_session = 0;
+    integration_yaml_session yaml_session;
+    vm_session *session;
     C_INT turbo = 0;
 
-    if (argc != 2 && argc != 3) return 1;
-    if (argc == 3 && !STD_STRCMP(argv[2], "8086")) {
-        const vm_session_config config = {
-            .floppy_image = { argv[1] },
-            .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-            .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
-        };
-
-        if (vm_session_create(&config, &session) != TYPE_STATUS_OK) return 1;
-        owns_session = 1;
-    } else if ((argc == 2 || !STD_STRCMP(argv[2], "turbo")) &&
-        vm_session_create(STD_NULL, &session) == TYPE_STATUS_OK) {
-        turbo = argc == 3;
-        owns_session = 1;
-        if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0 ||
-            (turbo && vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) !=
-                TYPE_STATUS_OK)) goto fail;
-    } else {
-        return 1;
+    if ((argc != 3 && argc != 4) || integration_yaml_session_open(argv[1], argv[2],
+            &yaml_session) != TYPE_STATUS_OK) return 77;
+    session = yaml_session.session;
+    turbo = argc == 4;
+    if ((turbo && STD_STRCMP(argv[3], "turbo")) ||
+        (turbo && vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK)) {
+        goto fail;
     }
     thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -105,15 +91,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
-    if (owns_session) vm_session_destroy(session);
-    puts(argc == 3 && !turbo ? "M5:T209:S3:DOS-PROMPT-8086:OK" :
-        turbo ? "M5:T459:S1:DOS-PROMPT-TURBO:OK" : "M5:T70:S2:DOS-PROMPT:OK");
+    integration_yaml_session_close(&yaml_session);
+    puts(turbo ? "M5:T459:S1:DOS-PROMPT-TURBO:OK" : "M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
     if (session != STD_NULL) dump_first_fault(session->core_machine);
     vm_session_stop(session);
-    if (owns_session) vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 1;
 }
 static C_INT has_dos_prompt(const vm_session *session)

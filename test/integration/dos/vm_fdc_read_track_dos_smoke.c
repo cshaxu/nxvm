@@ -6,9 +6,9 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
+#include "test/integration/support/session_yaml.h"
 
 #define VM_FDC242_BOOT_BUDGET 6000000u
 #define VM_FDC242_RUN_BUDGET 400000u
@@ -37,10 +37,10 @@ static C_VOID vm_fdc242_fat_set(type_unsigned_8 *fat, type_unsigned_16 cluster, 
     fat[offset + 1u] = (type_unsigned_8)(pair >> 8u);
 }
 
-static C_INT vm_fdc242_clone(const C_CHAR *source, C_CHAR path[MAX_PATH],
-    type_unsigned_8 **out_image, DWORD *out_size)
+static C_INT vm_fdc242_read_image(const C_CHAR *source, type_unsigned_8 **out_image,
+    DWORD *out_size)
 {
-    HANDLE input = INVALID_HANDLE_VALUE, output = INVALID_HANDLE_VALUE;
+    HANDLE input = INVALID_HANDLE_VALUE;
     LARGE_INTEGER size;
     type_unsigned_8 *image = STD_NULL;
     DWORD count;
@@ -52,19 +52,12 @@ static C_INT vm_fdc242_clone(const C_CHAR *source, C_CHAR path[MAX_PATH],
         size.QuadPart > MAXDWORD) goto fail;
     image = STD_MALLOC((STD_SIZE_T)size.QuadPart);
     if (image == STD_NULL || !ReadFile(input, image, (DWORD)size.QuadPart,
-        &count, STD_NULL) || count != (DWORD)size.QuadPart ||
-        GetTempPathA(MAX_PATH, path) == 0u || GetTempFileNameA(path, "n64", 0u,
-        path) == 0u || (output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL,
-        CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY, STD_NULL)) == INVALID_HANDLE_VALUE ||
-        !WriteFile(output, image, (DWORD)size.QuadPart, &count, STD_NULL) ||
-        count != (DWORD)size.QuadPart) goto fail;
-    CloseHandle(output); CloseHandle(input);
+        &count, STD_NULL) || count != (DWORD)size.QuadPart) goto fail;
+    CloseHandle(input);
     *out_image = image; *out_size = (DWORD)size.QuadPart;
     return 1;
 fail:
-    if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
     if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
-    if (path[0] != '\0') DeleteFileA(path);
     STD_FREE(image);
     return 0;
 }
@@ -149,6 +142,22 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size, const C_CHAR 
     CloseHandle(output); return 1;
 }
 
+static type_status vm_fdc242_install_on_copied_media(
+    vm_product_session_request *request, C_VOID *opaque)
+{
+    type_unsigned_8 *image = STD_NULL;
+    type_unsigned_8 *expected = (type_unsigned_8 *)opaque;
+    DWORD size = 0u;
+    C_INT installed;
+
+    if (request == STD_NULL || expected == STD_NULL || request->floppy_count != 1u ||
+        !vm_fdc242_read_image(request->floppy[0u], &image, &size)) return TYPE_STATUS_FAULT;
+    installed = vm_fdc242_install(image, size, request->floppy[0u]);
+    if (installed) STD_MEMCPY(expected, image, VM_FDC242_TRACK_BYTES);
+    STD_FREE(image);
+    return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+}
+
 static C_INT vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
 {
     STD_SIZE_T index;
@@ -196,7 +205,7 @@ typedef struct vm_fdc242_result {
     type_unsigned_8 off_result[9];
 } vm_fdc242_result;
 
-static C_INT vm_fdc242_run_case(const vm_session_config *config,
+static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
     type_unsigned_32 quantum, vm_fdc242_result *out_result)
 {
     static const type_unsigned_8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
@@ -205,8 +214,9 @@ static C_INT vm_fdc242_run_case(const vm_session_config *config,
     STD_SIZE_T index;
     C_INT ok = 0;
 
-    if (config == STD_NULL || out_result == STD_NULL || quantum == 0u ||
-        vm_session_create(config, &session) != TYPE_STATUS_OK || session == STD_NULL) goto done;
+    if (yaml_session == STD_NULL || out_result == STD_NULL || quantum == 0u ||
+        integration_yaml_session_restart(yaml_session) != TYPE_STATUS_OK) goto done;
+    session = yaml_session->session;
     STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
     if (!vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
@@ -223,27 +233,24 @@ static C_INT vm_fdc242_run_case(const vm_session_config *config,
     ok = 1;
 done:
     if (session != STD_NULL) STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);
-    vm_session_destroy(session);
     return ok;
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session_config config = {0}; type_unsigned_8 *image = STD_NULL;
+    integration_yaml_session yaml_session;
     type_unsigned_8 expected[VM_FDC242_TRACK_BYTES];
     vm_fdc242_result one_instruction = {0};
     vm_fdc242_result short_quantum = {0};
-    DWORD size = 0u; C_CHAR path[MAX_PATH] = {0}; C_INT passed = 0;
+    C_INT passed = 0;
     STD_SIZE_T first_mismatch = sizeof(expected);
 
-    if (argc != 2 || !vm_fdc242_clone(argv[1], path, &image, &size) ||
-        !vm_fdc242_install(image, size, path)) goto done;
-    STD_MEMCPY(expected, image, sizeof(expected)); config.floppy_image[0u] = path;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
-    config.floppy_format = VM_SESSION_FLOPPY_FORMAT_1440K;
-    passed = vm_fdc242_run_case(&config, 1u, &one_instruction) &&
-        vm_fdc242_run_case(&config, 128u, &short_quantum) &&
+    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
+            vm_fdc242_install_on_copied_media, expected, &yaml_session) != TYPE_STATUS_OK) {
+        return 77;
+    }
+    passed = vm_fdc242_run_case(&yaml_session, 1u, &one_instruction) &&
+        vm_fdc242_run_case(&yaml_session, 128u, &short_quantum) &&
         STD_MEMCMP(expected, one_instruction.bytes, sizeof(expected)) == 0 &&
         STD_MEMCMP(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0 &&
         one_instruction.result[0] == 1u && one_instruction.result[1] == 0x20u &&
@@ -254,7 +261,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
         one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
         0x80u;
-done:
     if (!passed) {
         for (STD_SIZE_T index = 0u; index < sizeof(expected); ++index) {
             if (expected[index] != one_instruction.bytes[index]) {
@@ -281,9 +287,9 @@ done:
             one_instruction.off_result[4], one_instruction.off_result[5],
             one_instruction.off_result[6], one_instruction.off_result[7],
             one_instruction.off_result[8]);
-        DeleteFileA(path); STD_FREE(image); return 1;
+        integration_yaml_session_close(&yaml_session); return 1;
     }
-    DeleteFileA(path); STD_FREE(image);
+    integration_yaml_session_close(&yaml_session);
     STD_PRINTF("M5:T268:S3:FDC-MOTOR:DOS:OK\n");
     STD_PRINTF("M5:T269:S3:DMA-GRANT:DOS:OK\n");
     STD_PRINTF("M5:T290:S3:FDC:DOS:OK\n");

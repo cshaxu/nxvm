@@ -3,11 +3,10 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
-#include "vm/machine/fdd.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
+#include "test/integration/support/session_yaml.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u
 #define VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM 256u
@@ -29,9 +28,10 @@ static C_INT vm_dos_video_has_prompt(const core_machine_display_snapshot *snapsh
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session *session = STD_NULL;
+    integration_yaml_session yaml_session;
+    vm_session *session;
     core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
     t_cpu cpu;
@@ -43,11 +43,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT prompt_seen = 0;
     C_INT failed = 0;
 
-    if (argc != 2) return 1;
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    if (!session->active || vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) {
-        goto fail;
-    }
+    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
+            &yaml_session) != TYPE_STATUS_OK) return 77;
+    session = yaml_session.session;
+    if (!session->active) goto fail;
     vm_session_reset(session);
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
@@ -97,13 +96,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (functions[instruction]) STD_PRINTF("%02X", (C_UINT)instruction);
     }
     STD_PRINTF("\n");
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 0;
 
 fail:
     STD_FPRINTF(STD_STDERR,
         "M5:T212:S2:VIDEO:DOS:FAIL INT10=%u F2=%u PROMPT=%d STOP=%d\n",
         int10_count, f2_count, prompt_seen, (C_INT)result.reason);
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 1;
 }

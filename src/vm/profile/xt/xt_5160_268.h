@@ -22,6 +22,8 @@ typedef struct vm_profile_xt_5160_268_byob_manifest {
 typedef struct vm_profile_xt_5160_268_external_rom {
     const type_unsigned_8 *system_bytes;
     const type_unsigned_8 *xebec_bytes;
+    const type_unsigned_8 *video_bytes;
+    STD_SIZE_T video_byte_count;
     type_bool xebec_present;
 } vm_profile_xt_5160_268_external_rom;
 
@@ -43,6 +45,11 @@ C_INT vm_profile_xt_5160_268_byob_manifest_is_valid(
 type_status vm_profile_xt_5160_268_byob_manifest_load(
     const vm_profile_xt_5160_268_byob_manifest *manifest,
     type_unsigned_8 *system_bytes, type_unsigned_8 *xebec_bytes,
+    vm_profile_xt_5160_268_external_rom *out_rom);
+type_status vm_profile_xt_5160_268_external_rom_create(
+    const type_unsigned_8 *system, STD_SIZE_T system_bytes,
+    const type_unsigned_8 *xebec, STD_SIZE_T xebec_bytes,
+    const type_unsigned_8 *video, STD_SIZE_T video_bytes,
     vm_profile_xt_5160_268_external_rom *out_rom);
 const core_machine_firmware_provider *vm_profile_xt_5160_268_firmware_provider(C_VOID);
 

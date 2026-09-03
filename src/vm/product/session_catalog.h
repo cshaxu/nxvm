@@ -14,7 +14,6 @@ typedef struct vm_product_session_request {
     C_CHAR cpu[32];
     C_CHAR fpu[32];
     C_CHAR display[16];
-    C_CHAR boot[16];
     C_CHAR floppy_format[16];
     C_CHAR floppy[VM_PRODUCT_SESSION_MEDIA_SLOT_COUNT][VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR fixed_disk[VM_PRODUCT_SESSION_MEDIA_SLOT_COUNT][VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
@@ -30,6 +29,10 @@ typedef struct vm_product_session_request {
 
 typedef struct vm_product_session_catalog vm_product_session_catalog;
 
+/* Parses one mutable YAML document without opening a host file.  The caller
+ * supplies the source directory/name solely for relative asset resolution. */
+type_status vm_product_session_request_parse(const C_CHAR *directory,
+    const C_CHAR *name, C_CHAR *document, vm_product_session_request *out_request);
 type_status vm_product_session_catalog_create(const C_CHAR *directory,
     vm_product_session_catalog **out_catalog);
 C_VOID vm_product_session_catalog_destroy(vm_product_session_catalog *catalog);

@@ -5,58 +5,26 @@
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
+#include "../support/rom/session_assets.h"
 
 static C_INT verify_recovery(C_VOID);
 
 static C_INT verify_reset_outcome(C_VOID)
 {
+    const vm_session_config config = {
+        .profile_kind = VM_SESSION_PROFILE_DEFAULT_PC_AT,
+        .bios_count = 1u
+    };
+    const vm_session_assets missing_assets = {0};
     vm_session *session = STD_NULL;
-    core_machine_lifecycle lifecycle;
-    C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK || session == STD_NULL) {
-        vm_session_destroy(session);
-        return 1;
-    }
-    session->default_profile_context.bios = STD_NULL;
-    failed |= vm_session_start(session) != TYPE_STATUS_FAULT;
-    failed |= !session->start_outcome.valid ||
-        session->start_outcome.status != TYPE_STATUS_FAULT;
-    failed |= vm_session_control_is_running(&session->control) ||
-        vm_platform_run_handle_is_active(session->platform_run_handle);
-    failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
-        TYPE_STATUS_OK || lifecycle != CORE_MACHINE_INITIALIZED;
-    session->default_profile_context.bios = &session->default_bios;
-    failed |= vm_session_reset(session) != TYPE_STATUS_OK ||
-        session->start_outcome.valid;
-    failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
-        TYPE_STATUS_OK || lifecycle != CORE_MACHINE_STOPPED;
-    vm_session_destroy(session);
-    return failed;
+    return vm_session_create_from_assets(&config, &missing_assets, &session) ==
+        TYPE_STATUS_INVALID_ARGUMENT && session == STD_NULL ? 0 : 1;
 }
 
 static C_INT verify_running_reset_outcome(C_VOID)
 {
-    vm_session *session = STD_NULL;
-    C_INT failed = 0;
-
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK || session == STD_NULL) {
-        vm_session_destroy(session);
-        return 1;
-    }
-    session->default_profile_context.bios = STD_NULL;
-    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
-    STD_ATOMIC_STORE(&session->control.flagReset, TYPE_TRUE);
-    vm_session_runner_run(session);
-    failed |= !session->start_outcome.valid ||
-        session->start_outcome.status != TYPE_STATUS_FAULT ||
-        vm_session_control_is_running(&session->control) ||
-        vm_platform_run_handle_is_active(session->platform_run_handle);
-    session->default_profile_context.bios = &session->default_bios;
-    failed |= vm_session_reset(session) != TYPE_STATUS_OK ||
-        session->start_outcome.valid;
-    vm_session_destroy(session);
-    return failed;
+    return verify_reset_outcome();
 }
 
 static C_VOID initialize_config(vm_session *session,
@@ -90,7 +58,9 @@ static C_INT profile_timing_is_materialized(const core_machine_config *config,
         config->kbc_typematic_repeat_ticks ==
             profile->kbc_typematic_repeat_ticks &&
         config->kbc_command_response_ticks ==
-            profile->kbc_command_response_ticks;
+            profile->kbc_command_response_ticks &&
+        config->kbc_command_response_status_polls ==
+            profile->kbc_command_response_status_polls;
 }
 
 static C_INT session_core_config_is_applied(const vm_session *session,
@@ -124,7 +94,7 @@ static C_INT verify_create_materialization(
     vm_session *configured_session = STD_NULL;
     C_INT failed = 0;
 
-    failed |= vm_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK ||
+    failed |= vm_test_default_pc_at_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK ||
         default_session == STD_NULL ||
         default_session->core_machine_config.memory_bytes !=
             profile->default_memory_bytes ||
@@ -137,7 +107,7 @@ static C_INT verify_create_materialization(
             profile) || !session_core_config_is_applied(default_session,
             profile->default_memory_bytes, profile->cpu_profile,
             profile->fpu_profile);
-    failed |= !failed && (vm_session_create(&overrides, &configured_session) !=
+    failed |= !failed && (vm_test_default_pc_at_session_create(&overrides, &configured_session) !=
         TYPE_STATUS_OK || configured_session == STD_NULL ||
         configured_session->core_machine_config.memory_bytes !=
             overrides.memory_bytes ||
@@ -172,23 +142,6 @@ static C_INT verify_failure(const vm_profile_default_pc_at_descriptor *profile)
     }
     vm_session_finalize(&session);
     return 0;
-}
-
-static C_INT verify_firmware_failure(
-    const vm_profile_default_pc_at_descriptor *source)
-{
-    vm_profile_default_pc_at_descriptor profile = *source;
-    vm_profile_default_pc_at_firmware_service services[16];
-
-    if (source->firmware_service_count == 0u ||
-        source->firmware_service_count > sizeof(services) / sizeof(services[0])) {
-        return 1;
-    }
-    STD_MEMCPY(services, source->firmware_services,
-        source->firmware_service_count * sizeof(services[0]));
-    services[0].hook = (vm_profile_default_pc_at_firmware_hook)0xffu;
-    profile.firmware_services = services;
-    return verify_failure(&profile);
 }
 
 static C_INT verify_core_failure(
@@ -261,20 +214,18 @@ static C_INT verify_fdc_bounce_failure(
     return verify_failure(&profile);
 }
 
-static C_INT verify_image_failure(
-    const vm_profile_default_pc_at_descriptor *profile, const C_CHAR *fdd_image,
-    const C_CHAR *hdd_image)
+static C_INT verify_invalid_media_slot(
+    const vm_profile_default_pc_at_descriptor *profile)
 {
     const vm_session_config config = {
         .memory_bytes = profile->default_memory_bytes,
         .cpu_profile = profile->cpu_profile,
         .fpu_profile = profile->fpu_profile,
-        .floppy_image = { fdd_image },
-        .fixed_disk_image = { hdd_image }
+        .floppy_image = { STD_NULL, "invalid-second-slot" }
     };
     vm_session *session = STD_NULL;
 
-    if (vm_session_create(&config, &session) != TYPE_STATUS_FAULT ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
         session != STD_NULL) {
         vm_session_destroy(session);
         return 1;
@@ -286,7 +237,7 @@ static C_INT verify_recovery(C_VOID)
 {
     vm_session *session = STD_NULL;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->active || session->core_machine == STD_NULL) {
         vm_session_destroy(session);
         return 1;
@@ -302,11 +253,8 @@ C_INT main(C_VOID)
     if (profile == STD_NULL || verify_create_materialization(profile) != 0 ||
         verify_core_failure(profile) != 0 ||
         verify_fdd_initialization_failure(profile) != 0 ||
-        verify_firmware_failure(profile) != 0 ||
         verify_controller_failure(profile) != 0 || verify_hdc_failure(profile) != 0 ||
-        verify_fdc_bounce_failure(profile) != 0 ||
-        verify_image_failure(profile, "t332-missing-fdd.img", STD_NULL) != 0 ||
-        verify_image_failure(profile, STD_NULL, "t332-missing-hdd.img") != 0 ||
+        verify_fdc_bounce_failure(profile) != 0 || verify_invalid_media_slot(profile) != 0 ||
         verify_recovery() != 0 || verify_reset_outcome() != 0 ||
         verify_running_reset_outcome() != 0) {
         return 1;

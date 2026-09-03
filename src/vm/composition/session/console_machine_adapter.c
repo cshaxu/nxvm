@@ -14,7 +14,6 @@
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd.h"
 #include "vm/platform/platform.h"
-#include "vm/profile/default_profile/firmware/bios.h"
 
 typedef type_status (*vm_session_machine_selected_operation)(
     vm_session *session, C_VOID *context);
@@ -124,7 +123,10 @@ static type_status vm_session_machine_print_bios_selected(vm_session *session,
     C_VOID *context)
 {
     (C_VOID)context;
-    vm_profile_default_bios_print(&session->default_bios);
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    STD_PRINTF("BIOS: %s\n", session->firmware_kind ==
+        VM_SESSION_FIRMWARE_EXTERNAL_PC_AT_ROM && session->pc_at_rom_external ?
+        "external ROM mapped at F0000h" : "profile ROM mapped");
     return TYPE_STATUS_OK;
 }
 

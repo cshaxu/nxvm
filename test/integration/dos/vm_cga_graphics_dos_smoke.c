@@ -3,9 +3,9 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
+#include "test/integration/support/session_yaml.h"
 
 #define VM_CGA_DOS_BOOT_BUDGET 800000u
 #define VM_CGA_DOS_RUN_BUDGET 400000u
@@ -29,16 +29,13 @@ static C_VOID vm_cga_dos_fat12_set(type_unsigned_8 *fat, type_unsigned_16 cluste
     fat[offset + 1u] = (type_unsigned_8)(pair >> 8);
 }
 
-static C_INT vm_cga_dos_copy_file(const C_CHAR *source, C_CHAR path[MAX_PATH],
-    type_unsigned_8 **out_image, DWORD *out_size)
+static C_INT vm_cga_dos_read_file(const C_CHAR *source, type_unsigned_8 **out_image,
+    DWORD *out_size)
 {
     HANDLE input = INVALID_HANDLE_VALUE;
-    HANDLE output = INVALID_HANDLE_VALUE;
     LARGE_INTEGER size;
     type_unsigned_8 *image = STD_NULL;
     DWORD read_count;
-    DWORD write_count;
-    DWORD length;
 
     if (source == STD_NULL || out_image == STD_NULL || out_size == STD_NULL) return 0;
     input = CreateFileA(source, GENERIC_READ, FILE_SHARE_READ, STD_NULL,
@@ -48,24 +45,13 @@ static C_INT vm_cga_dos_copy_file(const C_CHAR *source, C_CHAR path[MAX_PATH],
     image = STD_MALLOC((STD_SIZE_T)size.QuadPart);
     if (image == STD_NULL || !ReadFile(input, image, (DWORD)size.QuadPart,
             &read_count, STD_NULL) || read_count != (DWORD)size.QuadPart) goto fail;
-    length = GetTempPathA(MAX_PATH, path);
-    if (length == 0u || length >= MAX_PATH ||
-        GetTempFileNameA(path, "n64", 0u, path) == 0u) goto fail;
-    output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL, CREATE_ALWAYS,
-        FILE_ATTRIBUTE_TEMPORARY, STD_NULL);
-    if (output == INVALID_HANDLE_VALUE || !WriteFile(output, image,
-            (DWORD)size.QuadPart, &write_count, STD_NULL) ||
-        write_count != (DWORD)size.QuadPart) goto fail;
-    CloseHandle(output);
     CloseHandle(input);
     *out_image = image;
     *out_size = (DWORD)size.QuadPart;
     return 1;
 
 fail:
-    if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
     if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
-    if (path[0] != '\0') DeleteFileA(path);
     STD_FREE(image);
     return 0;
 }
@@ -150,6 +136,23 @@ static C_INT vm_cga_dos_install_program(type_unsigned_8 *image, DWORD image_size
     return 1;
 }
 
+static type_status vm_cga_dos_install_on_copied_media(
+    vm_product_session_request *request, C_VOID *opaque)
+{
+    type_unsigned_8 *image = STD_NULL;
+    DWORD image_size = 0u;
+    C_INT installed;
+
+    (C_VOID)opaque;
+    if (request == STD_NULL || request->floppy_count != 1u ||
+        !vm_cga_dos_read_file(request->floppy[0u], &image, &image_size)) {
+        return TYPE_STATUS_FAULT;
+    }
+    installed = vm_cga_dos_install_program(image, image_size, request->floppy[0u]);
+    STD_FREE(image);
+    return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+}
+
 static C_INT vm_cga_dos_has_prompt(const core_machine_display_snapshot *snapshot)
 {
     STD_SIZE_T cell;
@@ -200,20 +203,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     static const type_unsigned_8 command[] = { 0x21u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
         0x1eu, 0x3eu, 0x5au };
-    vm_session_config config = {0};
-    vm_session *session = STD_NULL;
-    type_unsigned_8 *image = STD_NULL;
-    DWORD image_size = 0u;
-    C_CHAR path[MAX_PATH] = {0};
+    integration_yaml_session yaml_session;
+    vm_session *session;
     STD_SIZE_T index;
     C_INT passed = 0;
 
-    if (argc != 2 || !vm_cga_dos_copy_file(argv[1], path, &image, &image_size) ||
-        !vm_cga_dos_install_program(image, image_size, path)) goto done;
-    config.floppy_image[0u] = path;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
-    if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
+            vm_cga_dos_install_on_copied_media, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+        return 77;
+    }
+    session = yaml_session.session;
+    if (
         !vm_cga_dos_run_until(session, VM_CGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
@@ -222,9 +222,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     passed = vm_cga_dos_run_until(session, VM_CGA_DOS_RUN_BUDGET, 1);
 
 done:
-    vm_session_destroy(session);
-    if (path[0] != '\0') DeleteFileA(path);
-    STD_FREE(image);
+    integration_yaml_session_close(&yaml_session);
     if (!passed) return 1;
     STD_PRINTF("M5:T228:S3:CGA:DOS:OK\n");
     return 0;

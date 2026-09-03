@@ -65,13 +65,12 @@ static C_INT vm_product_session_catalog_parse_value(C_CHAR *line,
     return 1;
 }
 
-static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
-    const C_CHAR *name, vm_product_session_request *entry)
+static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
+    const C_CHAR *name, C_CHAR *document, vm_product_session_request *entry)
 {
-    C_CHAR path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    C_CHAR line[512];
+    C_CHAR *cursor;
+    C_CHAR *line;
     C_CHAR *value;
-    core_platform_file_reader *file = STD_NULL;
     C_INT section = 0;
     C_INT media = 0;
     C_INT firmware = 0;
@@ -86,15 +85,18 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_INT fpu = 0;
     C_INT memory = 0;
     C_INT display = 0;
-    C_INT boot = 0;
     C_INT floppy_format = 0;
     C_INT floppy = 0;
     C_INT hard_disk = 0;
 
-    if (!vm_product_session_catalog_path(path, sizeof(path), directory, name) ||
-        core_platform_file_reader_open(path, &file) != TYPE_STATUS_OK) return 0;
+    if (directory == STD_NULL || name == STD_NULL || document == STD_NULL ||
+        entry == STD_NULL) return 0;
     STD_MEMSET(entry, 0, sizeof(*entry));
-    while (core_platform_file_reader_next(file, line, sizeof(line))) {
+    cursor = document;
+    while (*cursor != '\0') {
+        line = cursor;
+        while (*cursor != '\0' && *cursor != '\n') ++cursor;
+        if (*cursor == '\n') *cursor++ = '\0';
         C_CHAR *text = vm_product_session_catalog_trim(line);
         if (*text == '\0' || *text == '#') continue;
         if (!STD_STRCMP(text, "media:")) {
@@ -137,10 +139,6 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         if (section == 0 && vm_product_session_catalog_parse_value(text, "display", &value)) {
             if (display || !vm_product_session_catalog_copy(entry->display, sizeof(entry->display), value)) break;
             display = 1; continue;
-        }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "boot", &value)) {
-            if (boot || !vm_product_session_catalog_copy(entry->boot, sizeof(entry->boot), value)) break;
-            boot = 1; continue;
         }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "floppy_format", &value)) {
             if (floppy_format || !vm_product_session_catalog_copy(entry->floppy_format,
@@ -206,8 +204,7 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         }
         break;
     }
-    core_platform_file_reader_close(file);
-    if (!schema || !profile || !display || !boot || !media_section || !floppy ||
+    if (!schema || !profile || !display || !media_section || !floppy ||
         !hard_disk || (media != 0 && media != 1 && media != 2)) return 0;
     if (firmware && !STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
         entry->bios_count != 2u) return 0;
@@ -215,6 +212,36 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         (entry->bios_count == 0u || entry->bios_count > 2u)) return 0;
     if (!vm_product_session_catalog_copy(entry->file_name, sizeof(entry->file_name), name)) return 0;
     return 1;
+}
+
+type_status vm_product_session_request_parse(const C_CHAR *directory,
+    const C_CHAR *name, C_CHAR *document, vm_product_session_request *out_request)
+{
+    return vm_product_session_catalog_parse_document(directory, name, document,
+        out_request) ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_ARGUMENT;
+}
+
+static C_INT vm_product_session_catalog_parse_file(const C_CHAR *directory,
+    const C_CHAR *name, vm_product_session_request *entry)
+{
+    C_CHAR path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR *document;
+    C_VOID *loaded = STD_NULL;
+    STD_SIZE_T bytes = 0u;
+    C_INT parsed;
+
+    if (!vm_product_session_catalog_path(path, sizeof(path), directory, name) ||
+        core_platform_file_read_all(path, 64u * 1024u, &loaded, &bytes) != TYPE_FALSE ||
+        (document = (C_CHAR *)STD_MALLOC(bytes + 1u)) == STD_NULL) {
+        STD_FREE(loaded);
+        return 0;
+    }
+    if (bytes != 0u) STD_MEMCPY(document, loaded, bytes);
+    document[bytes] = '\0';
+    STD_FREE(loaded);
+    parsed = vm_product_session_catalog_parse_document(directory, name, document, entry);
+    STD_FREE(document);
+    return parsed;
 }
 
 static C_INT vm_product_session_catalog_compare(const C_VOID *left, const C_VOID *right)
@@ -248,7 +275,7 @@ type_status vm_product_session_catalog_create(const C_CHAR *directory,
         extension = item->d_name + length - 5u;
         if (STD_STRCMP(extension, ".yaml") &&
             (length < 4u || STD_STRCMP(item->d_name + length - 4u, ".yml"))) continue;
-        if (vm_product_session_catalog_parse(directory, item->d_name, &entry)) {
+        if (vm_product_session_catalog_parse_file(directory, item->d_name, &entry)) {
             catalog->entries[catalog->count++] = entry;
         } else {
             ++catalog->rejected;

@@ -47,6 +47,13 @@ struct t_port {
 
 type_status core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id);
 type_status core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id);
+/* CPU IN/OUT widths are one bus transaction at the addressed port.  The
+ * provider remains the sole owner of the register value and receives one
+ * read/write callback regardless of the CPU transfer width. */
+type_status core_machine_port_execute_read_width(t_port *port,
+    type_unsigned_16 port_id, type_unsigned_8 bytes);
+type_status core_machine_port_execute_write_width(t_port *port,
+    type_unsigned_16 port_id, type_unsigned_8 bytes);
 type_status core_machine_port_add_read(t_port *port, type_unsigned_16 port_id,
     core_machine_port_handler handler, C_VOID *owner);
 type_status core_machine_port_add_write(t_port *port, type_unsigned_16 port_id,

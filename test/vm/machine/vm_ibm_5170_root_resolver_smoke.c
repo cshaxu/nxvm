@@ -106,10 +106,10 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         root.topology.absent_memory_count != 3u ||
         root.topology.absent_memory[1].physical_start != 0x00080000u ||
-        root.topology.absent_memory[1].bytes != 0x00020000u ||
+        root.topology.absent_memory[1].bytes != 0x00038000u ||
         root.topology.absent_memory[1].read_value != 0xffu ||
-        root.topology.absent_memory[2].physical_start != 0x000b0000u ||
-        root.topology.absent_memory[2].bytes != 0x00008000u ||
+        root.topology.absent_memory[2].physical_start != 0x000c0000u ||
+        root.topology.absent_memory[2].bytes != 0x00030000u ||
         root.topology.absent_memory[2].read_value != 0xffu ||
         !root.topology.planar_parity_present ||
         !root.topology.display_present || root.topology.display.ega_present ||
@@ -195,8 +195,8 @@ static C_INT vm_ibm_5170_expansion_is_frozen_and_bounded(C_VOID)
         expanded.descriptor.cmos.base_memory_kib != 0x0280u ||
         expanded.descriptor.unpopulated_extended_memory ||
         expanded.topology.absent_memory_count != 1u ||
-        expanded.topology.absent_memory[0].physical_start != 0x000b0000u ||
-        expanded.topology.absent_memory[0].bytes != 0x00008000u ||
+        expanded.topology.absent_memory[0].physical_start != 0x000c0000u ||
+        expanded.topology.absent_memory[0].bytes != 0x00030000u ||
         expanded.resolved.values.allowed_session_options !=
             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) {
         return 1;
@@ -288,7 +288,11 @@ static C_INT vm_default_at_child_resolves_copy(C_VOID)
         resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_80387 ||
         resolved.descriptor.default_memory_bytes != 32u * 1024u * 1024u ||
         !resolved.descriptor.hdc_present || !resolved.descriptor.ega_present ||
-        resolved.topology.absent_memory_count != 1u ||
+        resolved.topology.absent_memory_count != 2u ||
+        resolved.topology.absent_memory[0].physical_start != 0x00100000u ||
+        resolved.topology.absent_memory[0].bytes != 0x00f00000u ||
+        resolved.topology.absent_memory[1].physical_start != 0x000c0000u ||
+        resolved.topology.absent_memory[1].bytes != 0x00030000u ||
         !resolved.topology.planar_parity_present ||
         resolved.topology.planar_parity.memory_bytes != 0u ||
         !resolved.topology.display_present || !resolved.topology.display.ega_present ||

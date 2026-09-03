@@ -194,6 +194,7 @@ C_INT main(C_VOID)
     type_unsigned_8 zeroes[2] = {0};
     type_unsigned_16 words[2] = {0};
     type_unsigned_8 channel;
+    type_unsigned_16 page_port;
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
@@ -466,8 +467,8 @@ C_INT main(C_VOID)
         failed = 1;
     }
 
-    /* PC/AT page ports select their documented primary/secondary channels;
-     * word-controller page bit zero is not an address bit. */
+    /* PC/AT page ports retain their complete readable latch; the word
+     * controller ignores page bit zero only while it forms its address. */
     core_machine_port_write(&port, 0x0081u, 0x11u);
     core_machine_port_write(&port, 0x0082u, 0x12u);
     core_machine_port_write(&port, 0x0083u, 0x13u);
@@ -480,11 +481,19 @@ C_INT main(C_VOID)
         core_machine_port_read(&port, 0x0082u) != 0x12u ||
         core_machine_port_read(&port, 0x0083u) != 0x13u ||
         core_machine_port_read(&port, 0x0087u) != 0x17u ||
-        core_machine_port_read(&port, 0x0089u) != 0x18u ||
+        core_machine_port_read(&port, 0x0089u) != 0x19u ||
         core_machine_port_read(&port, 0x008au) != 0x1au ||
-        core_machine_port_read(&port, 0x008bu) != 0x1au ||
-        core_machine_port_read(&port, 0x008fu) != 0x1eu) {
+        core_machine_port_read(&port, 0x008bu) != 0x1bu ||
+        core_machine_port_read(&port, 0x008fu) != 0x1fu) {
         failed = 1;
+    }
+    /* IBM 5170 POST writes and immediately reads the whole page-register
+     * block.  Every decoded latch must preserve all eight written bits. */
+    for (page_port = 0x0080u; page_port <= 0x008fu; ++page_port) {
+        type_unsigned_8 value = (type_unsigned_8)(page_port - 0x0080u);
+
+        core_machine_port_write(&port, page_port, value);
+        if (core_machine_port_read(&port, page_port) != value) failed = 1;
     }
 
     core_machine_dma_write_primary_channel(&port, 0u, 0x1234u, 0x5678u,

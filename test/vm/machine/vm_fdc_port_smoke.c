@@ -8,6 +8,7 @@
 #include "vm/composition/session/session_private.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
+#include "../support/rom/session_assets.h"
 
 static C_VOID fdc_command(core_machine_fdc *fdc, t_port *port,
     const type_unsigned_8 *bytes, STD_SIZE_T count)
@@ -49,11 +50,9 @@ C_INT main(C_VOID)
     type_unsigned_8 format_id[] = { 0x00u, 0x00u, 0x01u, 0x02u };
     C_INT failed = 0;
 
-    session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
-    if (session == STD_NULL) return 1;
-    vm_session_initialize(session);
-    port = session->core_machine->fdc.connect.port;
-    if (!session->active || port == STD_NULL) failed = 1;
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL || !session->active ||
+        (port = session->core_machine->fdc.connect.port) == STD_NULL) return 1;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
@@ -107,8 +106,7 @@ C_INT main(C_VOID)
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= result[0] != core_machine_fdc_ST0_NORMAL;
 
-    vm_session_finalize(session);
-    STD_FREE(session);
+    vm_session_destroy(session);
     if (failed) return 1;
     puts("M5:T231:S3:FDC-PORT:OK");
     return 0;

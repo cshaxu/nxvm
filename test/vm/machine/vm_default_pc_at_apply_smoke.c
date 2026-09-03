@@ -4,47 +4,44 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/profile/default_profile/firmware/bios.h"
 #include "core/machine/rtc.h"
+#include "../support/rom/session_assets.h"
 
 static C_INT vm_default_pc_at_fdd_format_is_valid(
     vm_session_floppy_format format, type_unsigned_16 cylinders,
     type_unsigned_16 sectors, type_unsigned_8 cmos_type)
 {
-    static const type_unsigned_8 program[] = { 0xb4u, 0x08u, 0xb2u, 0x00u,
-        0xcdu, 0x13u, 0xf4u };
-    const core_machine_run_budget budget = {100u, 0u};
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
-    core_machine_run_result result = {0};
     type_unsigned_32 port_b;
     type_unsigned_32 next_port_b;
     type_unsigned_32 tick;
-    type_unsigned_8 bda_sectors;
-    type_unsigned_8 bda_max_cylinder;
+    type_unsigned_16 checksum = 0u;
+    type_unsigned_8 index;
 
     config.profile_kind = VM_SESSION_PROFILE_DEFAULT_PC_AT;
     config.floppy_format = format;
-    if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL ||
         session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != sectors || session->fdd.data.nbyte != 512u ||
-        core_machine_memory_read(session->core_machine, VBIOS_ADDR_FDD_SECTORS_PER_TRACK,
-            &bda_sectors, sizeof(bda_sectors)) != TYPE_STATUS_OK ||
-        core_machine_memory_read(session->core_machine, VBIOS_ADDR_FDD_MAX_CYLINDER,
-            &bda_max_cylinder, sizeof(bda_max_cylinder)) != TYPE_STATUS_OK ||
-        bda_sectors != sectors || bda_max_cylinder != cylinders - 1u ||
         session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY] !=
             cmos_type) {
-        STD_PRINTF("FDD setup format=%u bda=%u/%u cmos=%02x expected=%02x\n",
-            (unsigned int)format, (unsigned int)bda_max_cylinder,
-            (unsigned int)bda_sectors, (unsigned int)session->core_machine->
+        STD_PRINTF("FDD setup format=%u cmos=%02x expected=%02x\n",
+            (unsigned int)format, (unsigned int)session->core_machine->
             shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY],
             (unsigned int)cmos_type);
         vm_session_destroy(session);
         return 0;
     }
-    if (core_machine_memory_write(session->core_machine, 0x0500u, program,
-            sizeof(program)) != TYPE_STATUS_OK) {
+    for (index = 0x10u; index < 0x2eu; ++index) {
+        checksum = (type_unsigned_16)(checksum +
+            session->core_machine->shared_rtc.registers[index]);
+    }
+    if (session->core_machine->shared_rtc.registers[0x2eu] !=
+            (type_unsigned_8)(checksum >> 8u) ||
+        session->core_machine->shared_rtc.registers[0x2fu] !=
+            (type_unsigned_8)checksum) {
         vm_session_destroy(session);
         return 0;
     }
@@ -63,28 +60,6 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
         if ((port_b & 0x10u) != (next_port_b & 0x10u)) break;
     }
     if (tick == 200u) {
-        vm_session_destroy(session);
-        return 0;
-    }
-    session->core_machine->executor_cpu.data.cs.selector = 0u;
-    session->core_machine->executor_cpu.data.cs.base = 0u;
-    session->core_machine->executor_cpu.data.ds.selector = 0u;
-    session->core_machine->executor_cpu.data.ds.base = 0u;
-    session->core_machine->executor_cpu.data.es.selector = 0u;
-    session->core_machine->executor_cpu.data.es.base = 0u;
-    session->core_machine->executor_cpu.data.ss.selector = 0u;
-    session->core_machine->executor_cpu.data.ss.base = 0u;
-    session->core_machine->executor_cpu.data.eip = 0x0500u;
-    session->core_machine->executor_cpu.data.sp = 0xfffeu;
-    session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
-    if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        session->core_machine->executor_cpu.data.cx !=
-            (type_unsigned_16)((cylinders - 1u) << 8u | sectors)) {
-        STD_PRINTF("FDD firmware format=%u reason=%u cx=%04x expected=%04x\n",
-            (unsigned int)format, (unsigned int)result.reason,
-            (unsigned int)session->core_machine->executor_cpu.data.cx,
-            (unsigned int)((cylinders - 1u) << 8u | sectors));
         vm_session_destroy(session);
         return 0;
     }
@@ -108,7 +83,8 @@ static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
     type_unsigned_32 tick;
     C_INT failed = 0;
 
-    if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL) {
+    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL) {
         return 0;
     }
     for (tick = 0u; tick < 200u; ++tick) {
@@ -146,7 +122,7 @@ static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
 C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     if (!session->active || session->profile == STD_NULL ||
         session->core_machine->fdc.connect.config.dor_port != 0x03f2u ||
         session->core_machine->fdc.connect.config.status_port != 0x03f4u ||

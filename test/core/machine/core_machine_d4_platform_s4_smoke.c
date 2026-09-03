@@ -9,8 +9,12 @@
 static C_INT core_machine_port_b_exclusivity(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine_planar_parity_config planar = {CORE_MACHINE_PC_AT_PORT_B,
-        512u * 1024u};
+    core_machine_planar_parity_config planar = {
+        .port = CORE_MACHINE_PC_AT_PORT_B,
+        .memory_bytes = 512u * 1024u,
+        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
+        .refresh_status_toggle_ticks = 0u
+    };
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine *machine = STD_NULL;
     type_unsigned_32 value = 0u;

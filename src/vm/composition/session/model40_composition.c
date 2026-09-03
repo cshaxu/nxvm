@@ -136,7 +136,6 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     rtc.ticks_per_second = 32768u;
     rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,
         CORE_MACHINE_RTC_TIMING_L3_SOURCE};
-    vm_profile_model40_cmos_seed_materialize(&rtc);
     topology.d4_platform_present = TYPE_TRUE;
     topology.d4_platform = d4;
     /* The selected D4 setup has 640 KiB conventional RAM and relocates the

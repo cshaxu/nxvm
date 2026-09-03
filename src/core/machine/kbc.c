@@ -46,6 +46,17 @@ static C_VOID core_machine_kbc_deassert_irq12(t_kbc *controller)
     controller->data.irq12_asserted = TYPE_FALSE;
 }
 
+/* The AT command byte controls the keyboard's two serial lines: bit 4 holds
+ * clock low and bit 3 overrides the data-line inhibit.  A keyboard BAT is a
+ * device response to their joint transition to usable, not a BIOS/profile
+ * special case. */
+static type_bool core_machine_kbc_keyboard_lines_enabled(type_unsigned_8 command_byte)
+{
+    return (command_byte & (CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD |
+        CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE)) ==
+        CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE;
+}
+
 static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller)
 {
     core_machine_kbc_output_origin origin;
@@ -58,7 +69,10 @@ static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller)
     origin = controller->data.fifo_origin[controller->data.fifo_head];
     if (origin == CORE_MACHINE_KBC_OUTPUT_KEYBOARD) {
         core_machine_kbc_deassert_irq12(controller);
-        if (!controller->data.irq1_asserted && controller->data.keyboard_enabled &&
+        /* ADh inhibits new keyboard serial input.  It does not suppress an
+         * already-generated keyboard-controller reply: IBM's POST sends ADh,
+         * resets the keyboard, then waits for BAT AAh through IRQ1. */
+        if (!controller->data.irq1_asserted &&
             (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_IRQ1) != 0u) {
             core_machine_pic_irq_source_assert(&controller->connect.irq1_source);
             controller->data.irq1_asserted = TYPE_TRUE;
@@ -120,12 +134,20 @@ static C_VOID core_machine_kbc_schedule_response(t_kbc *controller,
     controller->data.delayed_response_origin = origin;
     controller->data.response_remaining_ticks =
         controller->data.command_response_ticks;
+    /* The POST-required status-poll delay belongs to 8042 controller replies
+     * such as AAh self-test. Keyboard serial replies are sampled directly by
+     * the 5170 ROM while interrupts are disabled (FFh: FAh then AAh), so they
+     * must not inherit that controller-only delay. */
+    controller->data.response_status_polls_remaining = origin ==
+        CORE_MACHINE_KBC_OUTPUT_CONTROLLER ?
+        controller->data.command_response_status_polls : 0u;
 
     /* The response bytes remain KBC-owned until the guest-visible FIFO has
      * room.  A full rapid-typeahead FIFO must delay a command reply, never
      * silently discard it.  A zero delay still drains synchronously for
      * controller commands that are observed in the same I/O sequence. */
-    if (controller->data.command_response_ticks == 0u) {
+    if (controller->data.command_response_ticks == 0u &&
+        controller->data.response_status_polls_remaining == 0u) {
         core_machine_kbc_advance(controller, 0u);
     }
 }
@@ -329,6 +351,10 @@ static type_unsigned_8 core_machine_kbc_dequeue(t_kbc *controller)
         core_machine_kbc_deassert_irq12(controller);
     }
     core_machine_kbc_refresh_current_irq(controller);
+    /* Command responses are immediately eligible for the now-empty output
+     * buffer.  Keyboard reset BAT is separately released by the next Core
+     * time callback, after firmware has consumed ACK and armed IRQ1. */
+    core_machine_kbc_advance(controller, 0u);
     core_machine_kbc_drain_keyboard_serial(controller);
     return value;
 }
@@ -393,8 +419,9 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
 
     switch (command) {
     case 0xffu:
-        core_machine_kbc_schedule_response(controller, reset_ok, sizeof(reset_ok),
+        core_machine_kbc_schedule_response_byte(controller, reset_ok[0u],
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
+        controller->data.keyboard_bat_pending = TYPE_TRUE;
         core_machine_kbc_set_defaults(controller);
         controller->data.scanning_enabled = TYPE_TRUE;
         break;
@@ -608,8 +635,20 @@ static C_VOID core_machine_kbc_read_data(t_port *port, type_unsigned_16 port_id,
 static C_VOID core_machine_kbc_read_status(t_port *port, type_unsigned_16 port_id,
     C_VOID *owner)
 {
+    t_kbc *controller = (t_kbc *)owner;
+    type_unsigned_8 status;
+
     (C_VOID)port_id;
-    port->data.ioByte = core_machine_kbc_status((const t_kbc *)owner);
+    status = core_machine_kbc_status(controller);
+    if (controller != STD_NULL && controller->data.delayed_response_count != 0u &&
+        controller->data.response_remaining_ticks == 0u &&
+        controller->data.response_status_polls_remaining != 0u) {
+        --controller->data.response_status_polls_remaining;
+        if (controller->data.response_status_polls_remaining == 0u) {
+            core_machine_kbc_advance(controller, 0u);
+        }
+    }
+    port->data.ioByte = status;
 }
 
 static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id,
@@ -624,6 +663,10 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
     controller->data.last_write_command = TYPE_FALSE;
     switch (controller->data.pending_write) {
     case CORE_MACHINE_KBC_PENDING_COMMAND_BYTE:
+    {
+        const type_bool keyboard_lines_were_enabled =
+            core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte);
+
         controller->data.command_byte = value & 0x7du;
         if (controller->connect.aux_present) {
             controller->data.command_byte |= value & CORE_MACHINE_KBC_COMMAND_IRQ12;
@@ -636,8 +679,14 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
             controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
         }
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
+        if (!keyboard_lines_were_enabled &&
+            core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte)) {
+            controller->data.keyboard_bat_pending = TYPE_TRUE;
+            core_machine_kbc_advance(controller, 0u);
+        }
         core_machine_kbc_refresh_current_irq(controller);
         break;
+    }
     case CORE_MACHINE_KBC_PENDING_OUTPUT_PORT:
         core_machine_kbc_apply_output_port(controller, value);
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
@@ -799,6 +848,7 @@ C_VOID core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
     if (controller == STD_NULL || port == STD_NULL) return;
     STD_MEMSET(controller, TYPE_ZERO_8, sizeof(*controller));
     controller->connect.aux_present = TYPE_TRUE;
+    controller->connect.reset_output_port = CORE_MACHINE_KBC_OUTPUT_RESET;
     core_machine_kbc_register_ports(controller, port);
     core_machine_kbc_reset(controller);
 }
@@ -821,22 +871,34 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
         core_machine_kbc_deassert_irq12(controller);
     }
 }
+C_VOID core_machine_kbc_set_reset_output_port(t_kbc *controller,
+    type_unsigned_8 value)
+{
+    if (controller == STD_NULL) return;
+    controller->connect.reset_output_port = value;
+    core_machine_kbc_apply_output_port(controller, value);
+}
 C_VOID core_machine_kbc_reset(t_kbc *controller)
 {
     type_unsigned_32 typematic_nominal_initial_ticks;
     type_unsigned_32 typematic_nominal_repeat_ticks;
     type_unsigned_32 command_response_ticks;
+    type_unsigned_8 command_response_status_polls;
     type_unsigned_32 serial_delivery_ticks;
 
     if (controller == STD_NULL) return;
     typematic_nominal_initial_ticks = controller->data.typematic_nominal_initial_ticks;
     typematic_nominal_repeat_ticks = controller->data.typematic_nominal_repeat_ticks;
     command_response_ticks = controller->data.command_response_ticks;
+    command_response_status_polls =
+        controller->data.command_response_status_polls;
     serial_delivery_ticks = controller->data.serial_delivery_ticks;
     STD_MEMSET(&controller->data, TYPE_ZERO_8, sizeof(controller->data));
     controller->data.typematic_nominal_initial_ticks = typematic_nominal_initial_ticks;
     controller->data.typematic_nominal_repeat_ticks = typematic_nominal_repeat_ticks;
     controller->data.command_response_ticks = command_response_ticks;
+    controller->data.command_response_status_polls =
+        command_response_status_polls;
     controller->data.serial_delivery_ticks = serial_delivery_ticks;
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     core_machine_pic_irq_source_deassert(&controller->connect.irq12_source);
@@ -844,7 +906,7 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
         (controller->connect.aux_present ? CORE_MACHINE_KBC_COMMAND_IRQ12 :
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) |
         CORE_MACHINE_KBC_COMMAND_TRANSLATION;
-    controller->data.output_port = CORE_MACHINE_KBC_OUTPUT_RESET;
+    controller->data.output_port = controller->connect.reset_output_port;
     controller->data.keyboard_enabled = TYPE_TRUE;
     controller->data.aux_enabled = controller->connect.aux_present;
     core_machine_kbc_set_defaults(controller);
@@ -862,7 +924,14 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_tick
         controller->data.serial_delivery_remaining_ticks -= elapsed_ticks;
     }
     core_machine_kbc_drain_keyboard_serial(controller);
-    if (controller->data.delayed_response_count != 0u) {
+    if (controller->data.keyboard_bat_pending && controller->data.fifo_count == 0u &&
+        controller->data.delayed_response_count == 0u) {
+        controller->data.keyboard_bat_pending = TYPE_FALSE;
+        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_BAT_OK,
+            CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
+    }
+    if (controller->data.delayed_response_count != 0u &&
+        controller->data.response_status_polls_remaining == 0u) {
         if (elapsed_ticks < controller->data.response_remaining_ticks) {
             controller->data.response_remaining_ticks -= elapsed_ticks;
         } else {
@@ -915,7 +984,12 @@ type_status core_machine_kbc_ticks_until_event(const t_kbc *controller,
     if (controller->data.serial_delivery_remaining_ticks != 0u) {
         ticks = controller->data.serial_delivery_remaining_ticks;
     }
-    if (controller->data.delayed_response_count != 0u &&
+    if (controller->data.keyboard_bat_pending && controller->data.fifo_count == 0u &&
+        controller->data.delayed_response_count == 0u) {
+        ticks = 0u;
+    }
+    if (controller->data.delayed_response_count != 0u && controller->data.fifo_count == 0u &&
+        controller->data.response_status_polls_remaining == 0u &&
         controller->data.response_remaining_ticks < ticks) {
         ticks = controller->data.response_remaining_ticks;
     }
@@ -942,6 +1016,12 @@ C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
 {
     if (controller == STD_NULL) return;
     controller->data.command_response_ticks = response_ticks;
+}
+C_VOID core_machine_kbc_set_command_response_status_polls(t_kbc *controller,
+    type_unsigned_8 status_polls)
+{
+    if (controller == STD_NULL) return;
+    controller->data.command_response_status_polls = status_polls;
 }
 C_VOID core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
     type_unsigned_32 delivery_ticks)

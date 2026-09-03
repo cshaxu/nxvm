@@ -6,14 +6,9 @@
 
 
 #include "vm/composition/session/control.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-
-#include "vm/machine/fdd.h"
-
-#include "vm/profile/default_profile/firmware/bios.h"
-
 #include "vm/composition/session/execution.h"
+#include "test/integration/support/session_yaml.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
 {
@@ -24,22 +19,21 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
     DWORD result;
-    vm_session *session = STD_NULL;
+    integration_yaml_session yaml_session;
+    vm_session *session;
 
-    if (argc != 2) {
+    if (argc != 3) {
         return 1;
     }
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) {
-        vm_session_destroy(session);
-        return 1;
+    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) != TYPE_STATUS_OK) {
+        return 77;
     }
-    vm_profile_default_bios_set_boot_hdd(&session->default_bios, 0);
+    session = yaml_session.session;
     vm_session_control_reset(&session->control);
     thread = CreateThread(STD_NULL, 0u, run_device, &session->control, 0u, STD_NULL);
     if (thread == STD_NULL) {
         STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", STD_STDERR);
-        vm_session_destroy(session);
+        integration_yaml_session_close(&yaml_session);
         return 1;
     }
 
@@ -49,7 +43,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         vm_session_control_stop(&session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        vm_session_destroy(session);
+        integration_yaml_session_close(&yaml_session);
         return 1;
     }
     vm_session_control_reset(&session->control);
@@ -57,7 +51,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_control_stop(&session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
 
     if (result != WAIT_OBJECT_0) {
         STD_FPRINTF(STD_STDERR,

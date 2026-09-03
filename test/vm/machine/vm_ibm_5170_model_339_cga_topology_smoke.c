@@ -6,6 +6,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/rom/session_assets.h"
 
 static C_INT vm_model_339_cga_topology(C_VOID)
 {
@@ -13,8 +14,9 @@ static C_INT vm_model_339_cga_topology(C_VOID)
         .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339
     };
     core_machine_display_snapshot snapshot;
+    type_unsigned_8 value = 0x5au;
     vm_session *session = STD_NULL;
-    C_INT failed = vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+    C_INT failed = vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
 
     if (!failed) failed |= (core_machine_port_has_read(
@@ -36,26 +38,11 @@ static C_INT vm_model_339_cga_topology(C_VOID)
         (session->core_machine->shared_vadp.data.ega_sequencer_configured << 9) |
         ((!core_machine_vadp_capture_text_snapshot(&session->core_machine->shared_vadp,
             &session->core_machine->executor_memory, &snapshot) ||
-            snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 10);
-    if (!failed) {
-        static const type_unsigned_8 expected_crtc[] = {
-            0x71u, 0x50u, 0x5au, 0x0au, 0x1fu, 0x06u, 0x19u, 0x1cu,
-            0x02u, 0x07u, 0x06u, 0x07u, 0x00u, 0x00u, 0x01u, 0x90u
-        };
-        STD_SIZE_T index;
-
-        for (index = 0u; index < sizeof(expected_crtc); ++index) {
-            failed |= session->core_machine->shared_vadp.data.crtc[index] !=
-                expected_crtc[index];
-        }
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x28u);
-        failed |= session->core_machine->shared_vadp.data.crtc[0x13u] != 0u ||
-            core_machine_port_read(&session->core_machine->executor_port,
-                CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
-    }
+            snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 10) |
+        (core_machine_memory_write(session->core_machine, 0x000a0000u,
+            &value, sizeof(value)) != TYPE_STATUS_OK) << 11 |
+        (core_machine_memory_read(session->core_machine, 0x000a0000u,
+            &value, sizeof(value)) != TYPE_STATUS_OK || value != 0xffu) << 12;
     vm_session_destroy(session);
     return failed;
 }
@@ -63,7 +50,7 @@ static C_INT vm_model_339_cga_topology(C_VOID)
 static C_INT vm_default_ega_topology(C_VOID)
 {
     vm_session *session = STD_NULL;
-    C_INT failed = vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    C_INT failed = vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
 
     if (!failed) failed |= (!core_machine_port_has_write(

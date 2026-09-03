@@ -7,6 +7,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/platform/presentation_mailbox_interface.h"
+#include "test/integration/support/session_yaml.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
@@ -213,23 +214,21 @@ static C_VOID vm_t287_report_fault(vm_session *session, const C_CHAR *stage)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    const vm_session_config config = {
-        .fixed_disk_image = { argc >= 2 ? argv[1] : STD_NULL },
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
-    };
+    integration_yaml_session yaml_session = {0};
     const type_unsigned_8 enter[] = {0x5au};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
     const C_CHAR *stage = "create";
     C_INT observed_setup_inf = 0;
     C_INT passed = 0;
-    C_INT advance_steps = argc == 3 ? argv[2][0] - '0' : 0;
+    C_INT advance_steps = argc == 4 ? argv[3][0] - '0' : 0;
     C_INT date_prompt = 0;
     DWORD elapsed;
 
-    if ((argc != 2 && argc != 3) || vm_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) goto fail;
+    if ((argc != 3 && argc != 4) || integration_yaml_session_open(argv[1], argv[2],
+            &yaml_session) != TYPE_STATUS_OK) return 77;
+    session = yaml_session.session;
+    if (session == STD_NULL) goto fail;
     thread = CreateThread(STD_NULL, 0u, vm_t287_run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     stage = "boot";
@@ -303,7 +302,7 @@ done:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return passed ? 0 : 1;
 
 fail:

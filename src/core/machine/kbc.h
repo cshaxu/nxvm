@@ -98,11 +98,13 @@ typedef struct t_kbc_data {
     type_unsigned_8 last_keyboard_output_byte;
     type_unsigned_8 previous_keyboard_output_byte;
     type_bool keyboard_has_output;
+    type_bool keyboard_bat_pending;
     type_unsigned_8 typematic_scan_code;
     type_unsigned_8 delayed_response[CORE_MACHINE_KBC_RESPONSE_CAPACITY];
     core_machine_kbc_output_origin delayed_response_origin;
     type_unsigned_8 delayed_response_count;
     type_unsigned_8 delayed_response_index;
+    type_unsigned_8 response_status_polls_remaining;
     type_unsigned_64 typematic_remaining_ticks;
     type_unsigned_64 response_remaining_ticks;
     type_unsigned_64 serial_delivery_remaining_ticks;
@@ -112,6 +114,7 @@ typedef struct t_kbc_data {
     type_unsigned_32 typematic_repeat_ticks;
     type_unsigned_32 command_response_ticks;
     type_unsigned_32 serial_delivery_ticks;
+    type_unsigned_8 command_response_status_polls;
     type_bool typematic_active;
 } t_kbc_data;
 
@@ -123,6 +126,7 @@ typedef struct t_kbc_connect {
     core_machine_cpu_execution_context *execution;
     core_machine_kbc_output_port_provider output_port;
     C_VOID *output_port_owner;
+    type_unsigned_8 reset_output_port;
 } t_kbc_connect;
 
 typedef struct t_kbc {
@@ -138,6 +142,8 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
 C_INT core_machine_kbc_bind_output_port(t_kbc *controller,
     core_machine_kbc_output_port_provider provider, C_VOID *owner);
 C_VOID core_machine_kbc_set_input_port(t_kbc *controller, type_unsigned_8 value);
+C_VOID core_machine_kbc_set_reset_output_port(t_kbc *controller,
+    type_unsigned_8 value);
 C_VOID core_machine_kbc_set_test_inputs(t_kbc *controller, type_unsigned_8 value);
 C_VOID core_machine_kbc_reset(t_kbc *controller);
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks);
@@ -147,6 +153,8 @@ C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
     type_unsigned_32 initial_ticks, type_unsigned_32 repeat_ticks);
 C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
     type_unsigned_32 response_ticks);
+C_VOID core_machine_kbc_set_command_response_status_polls(t_kbc *controller,
+    type_unsigned_8 status_polls);
 C_VOID core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
     type_unsigned_32 delivery_ticks);
 C_VOID core_machine_kbc_finalize(t_kbc *controller);

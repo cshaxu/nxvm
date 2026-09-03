@@ -13,7 +13,6 @@
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/platform/platform.h"
-#include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/product/session_catalog.h"
 
 static C_INT vm_session_provider_parse_cpu(const C_CHAR *value,
@@ -73,12 +72,11 @@ static type_status vm_session_provider_request_configure(
     if (request == STD_NULL || config == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if ((STD_STRCMP(request->display, "console") &&
-         STD_STRCMP(request->display, "window") &&
-         STD_STRCMP(request->display, "auto")) ||
-        (STD_STRCMP(request->boot, "floppy") &&
-         STD_STRCMP(request->boot, "hard_disk") &&
-         STD_STRCMP(request->boot, "rom"))) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (STD_STRCMP(request->display, "console") &&
+        STD_STRCMP(request->display, "window") &&
+        STD_STRCMP(request->display, "auto")) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     STD_MEMSET(config, 0, sizeof(*config));
     if (!vm_session_provider_parse_profile(request->profile, &config->profile_kind)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -105,7 +103,6 @@ static type_status vm_session_provider_request_configure(
     config->bios_path[0u] = request->bios_count == 0u ? STD_NULL : request->bios[0u];
     config->bios_path[1u] = request->bios_count < 2u ? STD_NULL : request->bios[1u];
     config->video_path = request->video[0] == '\0' ? STD_NULL : request->video;
-    config->boot_hdd = !STD_STRCMP(request->boot, "hard_disk");
     if (request->fixed_disk_count > 1u ||
         request->floppy_count > (config->profile_kind ==
             VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 ? 2u : 1u)) {
@@ -113,15 +110,24 @@ static type_status vm_session_provider_request_configure(
     }
     if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
         config->cmos_seed != STD_NULL) return TYPE_STATUS_INVALID_STATE;
-    /* Video option ROM mapping is presently a Model-40 board capability.
-       Reject, rather than parse-and-ignore, a request on the other boards. */
-    if (config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-        config->video_path != STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    /* Product YAML must name every firmware-owned binary it requires.  The
+     * factory owns file-backed request resolution; unit composition supplies
+     * immutable bytes directly and never reaches this path. */
+    if ((config->profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT ||
+         config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 ||
+         config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) &&
+        config->cmos_seed == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+        config->video_path == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    /* Model 339 is the fixed IBM CGA configuration.  CGA has no adapter
+     * option ROM, so an option image would describe a different machine. */
     if (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
-        config->bios_count != 0u && config->bios_count != 2u) {
+        (config->bios_count != 2u || config->video_path != STD_NULL)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if ((config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+    if ((config->profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT &&
+         config->bios_count == 0u) ||
+        (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
          config->bios_count != 2u) ||
         (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
          (config->bios_count == 0u || config->bios_count > 2u))) {
@@ -133,14 +139,8 @@ static type_status vm_session_provider_request_configure(
          request->fpu[0] != '\0')) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-        STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
-    if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
-        STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
-    if ((!STD_STRCMP(request->boot, "floppy") && config->floppy_image[0u] == STD_NULL) ||
-        (!STD_STRCMP(request->boot, "hard_disk") && config->fixed_disk_image[0u] == STD_NULL) ||
-        (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
-         config->fixed_disk_image[0u] != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
+         config->fixed_disk_image[0u] != STD_NULL) return TYPE_STATUS_INVALID_STATE;
     return TYPE_STATUS_OK;
 }
 

@@ -5,15 +5,15 @@
 #include "core/machine/machine.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/waiting.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "test/integration/support/session_yaml.h"
 
 #define VM_HDC_HDD_BOOT_ADDRESS 0x00007c00u
 #define VM_HDC_HDD_BOOT_BYTES 512u
 #define VM_HDC_HDD_PARTITION_TABLE_OFFSET 446u
 #define VM_HDC_HDD_PARTITION_LBA_OFFSET 8u
-#define VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET 500000u
-#define VM_HDC_HDD_BOOT_QUANTUM 1u
+#define VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET 6000000u
+#define VM_HDC_HDD_BOOT_QUANTUM 128u
 
 static type_unsigned_32 vm_hdc_hdd_boot_partition_lba(const vm_session *session)
 {
@@ -57,33 +57,9 @@ static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_session *session)
     return boot_sector[510] == 0x55u && boot_sector[511] == 0xaau;
 }
 
-static C_INT vm_hdc_hdd_boot_preference_overrides(const vm_session_config *config)
-{
-    vm_session *session = STD_NULL;
-    C_INT passed = 0;
-
-    if (config == STD_NULL || vm_session_create(config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) goto done;
-    vm_session_set_boot_hdd(session, 0);
-    vm_session_reset(session);
-    if (vm_profile_default_bios_get_boot_hdd(&session->default_bios)) goto done;
-    vm_session_set_boot_hdd(session, 1);
-    vm_session_reset(session);
-    if (!vm_profile_default_bios_get_boot_hdd(&session->default_bios)) goto done;
-    passed = 1;
-
-done:
-    vm_session_destroy(session);
-    return passed;
-}
-
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    const vm_session_config config = {
-        .fixed_disk_image = { argc == 2 ? argv[1] : STD_NULL },
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
-    };
+    integration_yaml_session yaml_session;
     const core_machine_run_budget budget = {
         VM_HDC_HDD_BOOT_QUANTUM, 0u
     };
@@ -94,9 +70,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_unsigned_32 executed = 0u;
     C_INT loaded = 0;
 
-    if (argc != 2 || !vm_hdc_hdd_boot_preference_overrides(&config) ||
-        vm_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || !session->hdd.connect.flagDiskExist) goto fail;
+    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
+            &yaml_session) != TYPE_STATUS_OK) return 77;
+    session = yaml_session.session;
+    if (!session->hdd.connect.flagDiskExist) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {
         run_status = core_machine_run(session->core_machine, budget, &result);
         if (run_status != TYPE_STATUS_OK ||
@@ -122,7 +99,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) goto fail;
         }
-        executed += VM_HDC_HDD_BOOT_QUANTUM;
+        executed += result.executed;
         if (session->core_machine->hdc.data.command_count >= 2u &&
             session->core_machine->hdc.data.last_command == 0x20u &&
             vm_hdc_hdd_boot_matches_partition_vbr(session)) {
@@ -152,10 +129,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     STD_PRINTF("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
         session->core_machine->hdc.data.command_count, executed);
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 0;
 
 fail:
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 1;
 }

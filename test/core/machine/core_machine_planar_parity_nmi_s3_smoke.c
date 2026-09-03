@@ -8,7 +8,12 @@
 static C_INT planar_parity_s4_shared_memory(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine_planar_parity_config parity = {CORE_MACHINE_PC_AT_PORT_B, 512u * 1024u};
+    core_machine_planar_parity_config parity = {
+        .port = CORE_MACHINE_PC_AT_PORT_B,
+        .memory_bytes = 512u * 1024u,
+        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
+        .refresh_status_toggle_ticks = 0u
+    };
     core_machine_planar_parity_observation observation;
     core_machine *machine = STD_NULL;
     type_unsigned_8 written = 0x5au;
@@ -51,7 +56,12 @@ static C_INT planar_parity_s4_unbound_reconfigure(C_VOID)
 C_INT main(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine_planar_parity_config parity = {CORE_MACHINE_PC_AT_PORT_B, 512u * 1024u};
+    core_machine_planar_parity_config parity = {
+        .port = CORE_MACHINE_PC_AT_PORT_B,
+        .memory_bytes = 512u * 1024u,
+        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
+        .refresh_status_toggle_ticks = 0u
+    };
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_planar_parity_observation observation;
     core_machine *machine = STD_NULL;
@@ -86,6 +96,9 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK || !observation.nmi_signaled ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
         (value & 0x84u) != 0x84u ||
+        core_machine_bus_write(machine, 0x0061u, 0xc4u) != TYPE_STATUS_OK ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
+        (value & 0xc0u) != 0x80u ||
         core_machine_bus_write(machine, 0x0061u, 0u) != TYPE_STATUS_OK ||
         core_machine_bus_write(machine, 0x0061u, 0x04u) != TYPE_STATUS_OK ||
         core_machine_get_planar_parity_observation(machine, &observation) !=

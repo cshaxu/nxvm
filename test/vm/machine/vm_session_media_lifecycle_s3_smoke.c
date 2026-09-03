@@ -3,6 +3,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/rom/session_assets.h"
 
 C_INT main(C_VOID)
 {
@@ -15,7 +16,8 @@ C_INT main(C_VOID)
     type_unsigned_64 hdd_generation;
     C_INT failed = 0;
 
-    if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL)
+    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL)
         return 1;
     fdd_generation = session->fdd.connect.media_generation;
     hdd_generation = session->hdd.connect.media_generation;

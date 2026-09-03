@@ -193,6 +193,7 @@ struct core_machine {
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
+    type_unsigned_8 kbc_command_response_status_polls;
     type_unsigned_32 kbc_serial_delivery_ticks;
     type_bool kbc_input_port_configured;
     type_unsigned_8 kbc_input_port;

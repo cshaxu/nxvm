@@ -7,10 +7,9 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/machine/fdd.h"
 #include "vm/platform/win32/win32.h"
+#include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
@@ -158,19 +157,20 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
+    integration_yaml_session yaml_session;
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
     const C_UCHAR scan_codes[] = { 0x12u, 0x20u, 0x17u, 0x14u, 0x1cu };
     const C_UCHAR virtual_keys[] = { 'E', 'D', 'I', 'T', VK_RETURN };
     STD_SIZE_T index;
-    DWORD prompt_timeout = argc == 3 ? 20000u : 3000u;
-    DWORD edit_timeout = argc == 3 ? 20000u : 5000u;
+    DWORD prompt_timeout = argc == 4 ? 20000u : 3000u;
+    DWORD edit_timeout = argc == 4 ? 20000u : 5000u;
     C_INT display_ok = 0;
 
-    if ((argc != 2 && argc != 3) ||
-        vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    if ((argc != 3 && argc != 4) || integration_yaml_session_open(argv[1], argv[2],
+            &yaml_session) != TYPE_STATUS_OK) return 77;
+    session = yaml_session.session;
     thread = CreateThread(STD_NULL, 0u, run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
@@ -269,7 +269,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_stop(session);
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     if (elapsed == edit_timeout || !display_ok) return 1;
     STD_PRINTF("M5:T216:S5:EDIT:DOS:OK\n");
     return 0;
@@ -280,6 +280,6 @@ fail:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 1;
 }

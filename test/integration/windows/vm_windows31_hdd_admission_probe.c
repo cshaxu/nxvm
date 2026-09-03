@@ -5,6 +5,7 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
+#include "test/integration/support/session_yaml.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
@@ -17,7 +18,7 @@
 
 static type_unsigned_8 vm_t287_probe_fdd[VM_T287_PROBE_FDD_BYTES];
 
-static C_INT vm_t287_probe_write_fdd(C_CHAR path[MAX_PATH])
+static C_INT vm_t287_probe_write_fdd(const C_CHAR *path)
 {
     static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u,                         /* xor ax,ax */
@@ -57,11 +58,8 @@ static C_INT vm_t287_probe_write_fdd(C_CHAR path[MAX_PATH])
         0xf4u, 0xebu, 0xfeu                   /* hlt; jmp $ */
     };
     STD_FILE *file;
-    DWORD length;
 
-    length = GetTempPathA(MAX_PATH, path);
-    if (length == 0u || length >= MAX_PATH ||
-        GetTempFileNameA(path, "n64", 0u, path) == 0u) return 0;
+    if (path == STD_NULL) return 0;
     STD_MEMSET(vm_t287_probe_fdd, 0, sizeof(vm_t287_probe_fdd));
     STD_MEMCPY(vm_t287_probe_fdd, boot_code, sizeof(boot_code));
     vm_t287_probe_fdd[510u] = 0x55u;
@@ -70,11 +68,18 @@ static C_INT vm_t287_probe_write_fdd(C_CHAR path[MAX_PATH])
     if (file == STD_NULL || STD_FWRITE(vm_t287_probe_fdd, 1u,
             sizeof(vm_t287_probe_fdd), file) != sizeof(vm_t287_probe_fdd)) {
         if (file != STD_NULL) STD_FCLOSE(file);
-        DeleteFileA(path);
         return 0;
     }
     STD_FCLOSE(file);
     return 1;
+}
+
+static type_status vm_t287_probe_install_boot_media(
+    vm_product_session_request *request, C_VOID *opaque)
+{
+    (C_VOID)opaque;
+    return request != STD_NULL && request->floppy_count == 1u &&
+        vm_t287_probe_write_fdd(request->floppy[0u]) ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
 static C_INT vm_t287_probe_read_file(const C_CHAR *path, type_unsigned_8 *bytes,
@@ -104,15 +109,10 @@ static type_unsigned_32 vm_t287_probe_lba(const type_unsigned_8 *entry)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     const core_machine_run_budget budget = {1u, 0u};
-    const vm_session_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
-    };
-    vm_session_config probe_config = config;
+    integration_yaml_session yaml_session = {0};
     core_machine_run_result result;
     core_machine_cpu_state cpu = {0};
     vm_session *session = STD_NULL;
-    C_CHAR fdd_path[MAX_PATH] = {0};
     type_unsigned_8 host_mbr[512] = {0};
     type_unsigned_8 host_vbr[512] = {0};
     type_unsigned_8 guest_mbr[512] = {0};
@@ -136,14 +136,21 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_SIZE_T mbr_mismatch = sizeof(guest_mbr);
     STD_SIZE_T vbr_mismatch = sizeof(guest_vbr);
 
-    if (argc != 2 || !vm_t287_probe_write_fdd(fdd_path) ||
-        !vm_t287_probe_read_file(argv[1], host_mbr, sizeof(host_mbr))) goto done;
+    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
+            vm_t287_probe_install_boot_media, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+        return 77;
+    }
+    session = yaml_session.session;
+    if (session == STD_NULL || yaml_session.request.fixed_disk_count != 1u ||
+        !vm_t287_probe_read_file(yaml_session.request.fixed_disk[0u], host_mbr,
+            sizeof(host_mbr))) goto done;
     entry = host_mbr + 446u;
     lba = vm_t287_probe_lba(entry);
-    if (lba == 0u || lba > (MAXDWORD / 512u) || !vm_t287_probe_read_file(argv[1],
+    if (lba == 0u || lba > (MAXDWORD / 512u) || !vm_t287_probe_read_file(
+            yaml_session.request.fixed_disk[0u],
             host_vbr, sizeof(host_vbr))) goto done;
     {
-        HANDLE file = CreateFileA(argv[1], GENERIC_READ, FILE_SHARE_READ, STD_NULL,
+        HANDLE file = CreateFileA(yaml_session.request.fixed_disk[0u], GENERIC_READ, FILE_SHARE_READ, STD_NULL,
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, STD_NULL);
         DWORD read = 0u;
         LARGE_INTEGER offset;
@@ -158,10 +165,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         CloseHandle(file);
     }
-    probe_config.floppy_image[0u] = fdd_path;
-    probe_config.fixed_disk_image[0u] = argv[1];
-    if (vm_session_create(&probe_config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) goto done;
     if (core_machine_debug_read_memory(session->core_machine, 0x004cu, int13_vector,
             sizeof(int13_vector)) != TYPE_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_T287_PROBE_BUDGET; ++instruction) {
@@ -218,11 +221,11 @@ done:
         STD_FPRINTF(STD_STDERR,
             "M5:T287:S16:HDD-ADMISSION:FAIL done=%04X ah08=%04X/%04X/%04X/%04X "
             "mbr=%04X/%04X vbr=%04X/%04X lba=%u chs=%u/%u/%u type=%02X "
-            "mismatch=%u/%u int13=%04X:%04X rom_end=%04X bx=%04X first=%04X/%04X task=%02X/%02X%02X/%02X reads=%u bytes=%02X%02X%02X%02X/%02X%02X%02X%02X/%02X%02X%02X%02X cpu=%04X:%08X halt=%u reason=%u hdc=%u/%u/%02X reads=%u\n", values[8], values[0], values[1], values[2],
+            "mismatch=%u/%u int13=%04X:%04X external_rom=%04X bx=%04X first=%04X/%04X task=%02X/%02X%02X/%02X reads=%u bytes=%02X%02X%02X%02X/%02X%02X%02X%02X/%02X%02X%02X%02X cpu=%04X:%08X halt=%u reason=%u hdc=%u/%u/%02X reads=%u\n", values[8], values[0], values[1], values[2],
             values[3], values[4], values[5], values[6], values[7], lba, cylinder,
             head, sector, entry == STD_NULL ? 0u : entry[4], (C_UINT)mbr_mismatch,
             (C_UINT)vbr_mismatch, int13_vector[1], int13_vector[0],
-            session == STD_NULL ? 0u : session->default_bios.data.buildIP, values[9],
+            session == STD_NULL ? 0u : (C_UINT)session->pc_at_rom_external, values[9],
             values[10], values[11], first_sector_number,
             first_cylinder_low, first_cylinder_high, first_drive_head, first_command_count,
             guest_mbr[0], guest_mbr[1], guest_mbr[2], guest_mbr[3],
@@ -233,7 +236,6 @@ done:
             session == STD_NULL ? 0u : session->core_machine->hdc.data.status,
             session == STD_NULL ? 0u : session->core_machine->hdc.data.command_count);
     }
-    vm_session_destroy(session);
-    if (fdd_path[0] != '\0') DeleteFileA(fdd_path);
+    integration_yaml_session_close(&yaml_session);
     return passed ? 0 : 1;
 }

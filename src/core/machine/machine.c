@@ -491,6 +491,8 @@ static type_status core_machine_create_internal(
     machine->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
     machine->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
     machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
+    machine->kbc_command_response_status_polls =
+        config->kbc_command_response_status_polls;
     machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
     machine->kbc_input_port_configured = config->kbc_input_port_configured;
     machine->kbc_input_port = config->kbc_input_port;
@@ -609,11 +611,17 @@ static type_status core_machine_create_internal(
             &machine->shared_pic_master, &machine->shared_pic_slave,
             &machine->executor_memory, &machine->executor_cpu_execution,
             !config->kbc_aux_absent);
+        if (config->kbc_reset_output_port_configured) {
+            core_machine_kbc_set_reset_output_port(&machine->shared_kbc,
+                config->kbc_reset_output_port);
+        }
         core_machine_kbc_set_typematic_timing(&machine->shared_kbc,
             machine->kbc_typematic_initial_ticks,
             machine->kbc_typematic_repeat_ticks);
         core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
             machine->kbc_command_response_ticks);
+        core_machine_kbc_set_command_response_status_polls(&machine->shared_kbc,
+            machine->kbc_command_response_status_polls);
         core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
             machine->kbc_serial_delivery_ticks);
     }

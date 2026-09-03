@@ -124,6 +124,24 @@ type_status core_machine_port_execute_write(t_port *port, type_unsigned_16 port_
     }
     return TYPE_STATUS_OK;
 }
+type_status core_machine_port_execute_read_width(t_port *port,
+    type_unsigned_16 port_id, type_unsigned_8 bytes)
+{
+    if (port == STD_NULL || (bytes != 1u && bytes != 2u && bytes != 4u) ||
+        (type_unsigned_32)port_id + bytes > VPORT_MAX_PORT_COUNT) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return core_machine_port_execute_read(port, port_id);
+}
+type_status core_machine_port_execute_write_width(t_port *port,
+    type_unsigned_16 port_id, type_unsigned_8 bytes)
+{
+    if (port == STD_NULL || (bytes != 1u && bytes != 2u && bytes != 4u) ||
+        (type_unsigned_32)port_id + bytes > VPORT_MAX_PORT_COUNT) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return core_machine_port_execute_write(port, port_id);
+}
 
 type_status core_machine_port_add_read(t_port *port, type_unsigned_16 port_id,
     core_machine_port_handler handler, C_VOID *owner)

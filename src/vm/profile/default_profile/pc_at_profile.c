@@ -163,6 +163,11 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     0u,
     0u,
     0u,
+    0u,
+    TYPE_FALSE,
+    0u,
+    TYPE_FALSE,
+    0u,
     50000u,
     { 48u, 8u, 8u },
     { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
@@ -174,8 +179,11 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     16u * 1024u * 1024u,
     TYPE_TRUE,
     0x9fc0u,
+    0x01u,
     TYPE_TRUE,
     TYPE_FALSE,
+    CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
+    0u,
     TYPE_TRUE,
     TYPE_FALSE,
     TYPE_FALSE,
@@ -233,6 +241,18 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     4000000u,
     800000u,
     0u,
+    1u,
+    /* The 5170 8042 comes out of reset with reset deasserted and A20 enabled.
+     * The Rev-3 ROM's early 60h/5Dh pair writes its command byte, not D1h's
+     * output port; leaving the output port at the generic 01h aliases its
+     * protected-mode 1 MiB probe over the GDT.  This is immutable board input
+     * (PCjs's IBM AT 8042 model corroborates 03h), not a firmware shortcut. */
+    TYPE_TRUE,
+    0x03u,
+    /* 5170: 512 KiB planar RAM, color primary, no manufacturing loop,
+     * keyboard unlocked.  The BIOS obtains these board straps with 8042 C0h. */
+    TYPE_TRUE,
+    0xb0u,
     32768u,
     { 48u, 8u, 8u },
     { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
@@ -244,8 +264,14 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     512u * 1024u,
     TYPE_TRUE,
     0x7000u,
+    0x01u,
     TYPE_TRUE,
     TYPE_TRUE,
+    /* IBM 5170 System Board pp. 1-8--1-9 wires counter 1 OUT to both
+     * refresh and port 61h bit 4.  The one PIT output therefore remains the
+     * sole observable source; do not create a CPU-tick-derived shadow. */
+    CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
+    0u,
     TYPE_FALSE,
     TYPE_TRUE,
     TYPE_TRUE,
@@ -268,7 +294,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
             .lba28_supported = TYPE_FALSE, .clock_ticks_per_second = 8000000u }},
     ibm_5170_model_339_firmware_services,
     sizeof(ibm_5170_model_339_firmware_services) /
-        sizeof(ibm_5170_model_339_firmware_services[0])
+        sizeof(ibm_5170_model_339_firmware_services[0]),
 };
 
 static const type_unsigned_32 ibm_5170_root_contract_ids[] = {1u};
@@ -359,7 +385,8 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
         descriptor->controller_timing_rules,
         descriptor->kbc_typematic_initial_ticks,
         descriptor->kbc_typematic_repeat_ticks,
-        descriptor->kbc_command_response_ticks
+        descriptor->kbc_command_response_ticks,
+        descriptor->kbc_command_response_status_polls
     };
     return 1;
 }
@@ -389,7 +416,14 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
             VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
         .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
-        .kbc_command_response_ticks = contract->kbc_command_response_ticks
+        .kbc_command_response_ticks = contract->kbc_command_response_ticks,
+        .kbc_command_response_status_polls =
+            contract->kbc_command_response_status_polls,
+        .kbc_reset_output_port_configured =
+            descriptor->kbc_reset_output_port_configured,
+        .kbc_reset_output_port = descriptor->kbc_reset_output_port,
+        .kbc_input_port_configured = descriptor->kbc_input_port_configured,
+        .kbc_input_port = descriptor->kbc_input_port
     };
     *out_timing_rules = contract->controller_timing_rules;
     return 1;
@@ -413,6 +447,7 @@ type_status vm_profile_default_pc_at_topology_materialize(
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
     core_machine_plan_topology topology = {0};
+    type_unsigned_32 first_expansion_decode;
 
     if (descriptor == STD_NULL || timing_rules == STD_NULL || out_topology == STD_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) {
@@ -455,10 +490,16 @@ type_status vm_profile_default_pc_at_topology_materialize(
         topology.absent_memory[0] =
             (core_machine_absent_memory_config) { 0x00100000u, 0x00f00000u, 0xffu };
     }
-    if (descriptor->default_memory_bytes < 0x000a0000u) {
+    /* Below C0000h, an uninstalled video aperture is decoded as open bus, not
+     * as missing Core memory.  A present EGA provider wins over this fallback;
+     * CGA owns B8000h when selected.  IBM's 5170 BIOS deliberately probes
+     * A0000h/B0000h/B8000h while it discovers the installed adapter. */
+    first_expansion_decode = descriptor->ega_present ? 0x000a0000u :
+        (descriptor->cga_vram_present ? 0x000b8000u : 0x000c0000u);
+    if (descriptor->default_memory_bytes < first_expansion_decode) {
         topology.absent_memory[topology.absent_memory_count++] =
             (core_machine_absent_memory_config) { descriptor->default_memory_bytes,
-                0x000a0000u - descriptor->default_memory_bytes, 0xffu };
+                first_expansion_decode - descriptor->default_memory_bytes, 0xffu };
     }
     /* Every PC/AT descriptor owns system-board Port B. Parity is an optional
      * producer on that one port; generic Default PC/AT retains the port's
@@ -466,7 +507,9 @@ type_status vm_profile_default_pc_at_topology_materialize(
     topology.planar_parity_present = TYPE_TRUE;
     topology.planar_parity = (core_machine_planar_parity_config) {
         CORE_MACHINE_PC_AT_PORT_B,
-        descriptor->planar_parity_present ? descriptor->default_memory_bytes : 0u };
+        descriptor->planar_parity_present ? descriptor->default_memory_bytes : 0u,
+        descriptor->refresh_status_source,
+        descriptor->refresh_status_toggle_ticks };
     topology.display_present = TYPE_TRUE;
     topology.display = (core_machine_display_config) {
         .text_timing = descriptor->cga_text_timing,
@@ -485,10 +528,16 @@ type_status vm_profile_default_pc_at_topology_materialize(
             .crtc_last = crtc_last->port
         }
     };
-    if (descriptor->monochrome_aperture_absent) {
+    if (descriptor->monochrome_aperture_absent &&
+        first_expansion_decode <= 0x000b0000u) {
         topology.absent_memory[topology.absent_memory_count++] =
             (core_machine_absent_memory_config) { 0x000b0000u, 0x00008000u, 0xffu };
     }
+    /* PC/AT adapter ROM space is socket-decoded, not installed RAM.  An
+     * external option/video ROM mapping wins over this fallback; without one,
+     * firmware must observe the open bus and decide that no adapter ROM exists. */
+    topology.absent_memory[topology.absent_memory_count++] =
+        (core_machine_absent_memory_config) { 0x000c0000u, 0x00030000u, 0xffu };
     topology.dma_present = TYPE_TRUE;
     topology.dma = (core_machine_dma_wiring) {
         fdc_route->dma_channel, CORE_MACHINE_DMA_CONTROLLER_COUNT,
@@ -515,7 +564,8 @@ type_status vm_profile_default_pc_at_topology_materialize(
             { CORE_MACHINE_RTC_BASEMEM_MSB,
                 TYPE_MASK_UNSIGNED_8(descriptor->cmos.base_memory_kib >> 8) }
         },
-        .default_count = CORE_MACHINE_RTC_DEFAULT_COUNT
+        .default_count = CORE_MACHINE_RTC_DEFAULT_COUNT,
+        .derive_configuration_checksum = TYPE_TRUE
     };
     *out_topology = topology;
     return TYPE_STATUS_OK;
@@ -900,6 +950,10 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
                     descriptor->cmos.base_memory_kib == 0x0280u)) &&
             descriptor->fdc_bounce_segment == 0x7000u &&
             descriptor->hdc_present && descriptor->planar_parity_present &&
+            descriptor->kbc_input_port_configured && descriptor->kbc_input_port == 0xb0u &&
+            descriptor->refresh_status_source ==
+                CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&
+            descriptor->refresh_status_toggle_ticks == 0u &&
             !descriptor->ega_present && descriptor->cga_vram_present &&
             descriptor->monochrome_aperture_absent &&
             descriptor->firmware_slot ==
@@ -932,6 +986,10 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         vm_profile_default_pc_at_cpu_profile_is_valid(descriptor->cpu_profile) &&
         vm_profile_default_pc_at_fpu_profile_is_valid(descriptor->fpu_profile) &&
         descriptor->hdc_present && !descriptor->planar_parity_present &&
+        !descriptor->kbc_input_port_configured && descriptor->kbc_input_port == 0u &&
+        descriptor->refresh_status_source ==
+            CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&
+        descriptor->refresh_status_toggle_ticks == 0u &&
         descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         descriptor->time_axis.ticks_per_second == 0u &&
         descriptor->ega_present && !descriptor->cga_vram_present &&

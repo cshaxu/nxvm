@@ -98,6 +98,21 @@ C_INT vm_profile_byob_blob_is_valid(const vm_profile_byob_blob *blob)
         (blob->sha256 == STD_NULL || STD_STRLEN(blob->sha256) == 64u) && blob->bytes != 0u;
 }
 
+C_INT vm_profile_byob_option_rom_is_valid(const type_unsigned_8 *bytes,
+    STD_SIZE_T byte_count, STD_SIZE_T maximum_bytes)
+{
+    type_unsigned_8 checksum = 0u;
+    STD_SIZE_T index;
+
+    if (bytes == STD_NULL || byte_count < 3u || byte_count > maximum_bytes ||
+        bytes[0u] != 0x55u || bytes[1u] != 0xaau ||
+        (STD_SIZE_T)bytes[2u] * 512u != byte_count) return 0;
+    for (index = 0u; index < byte_count; ++index) {
+        checksum = (type_unsigned_8)(checksum + bytes[index]);
+    }
+    return checksum == 0u;
+}
+
 type_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
     type_unsigned_8 *out_bytes)
 {

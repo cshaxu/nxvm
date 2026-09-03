@@ -145,7 +145,11 @@ C_INT main(C_VOID)
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-ORDER\n");
+        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-ORDER:fifo=%u:delayed=%u/%u:bat=%u\n",
+            (unsigned int)kbc.data.fifo_count,
+            (unsigned int)kbc.data.delayed_response_count,
+            (unsigned int)kbc.data.delayed_response_index,
+            (unsigned int)kbc.data.keyboard_bat_pending);
         return 1;
     }
     stage = 4;

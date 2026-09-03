@@ -3,8 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE vm_firmware_sources
-    "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/*.[ch]"
-    "${PROJECT_SOURCE_DIR}/src/vm/composition/session/*.[ch]")
+    "${PROJECT_SOURCE_DIR}/src/vm/composition/session/rom/*.[ch]")
 foreach(source IN LISTS vm_firmware_sources)
     file(READ "${source}" contents)
     foreach(forbidden "core_machine_profile_binding" "context_memory"

@@ -105,6 +105,7 @@ typedef struct vm_profile_default_pc_at_cpu_contract {
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
+    type_unsigned_8 kbc_command_response_status_polls;
 } vm_profile_default_pc_at_cpu_contract;
 
 typedef struct vm_profile_default_pc_at_descriptor {
@@ -121,6 +122,12 @@ typedef struct vm_profile_default_pc_at_descriptor {
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
+    type_unsigned_8 kbc_command_response_status_polls;
+    type_bool kbc_reset_output_port_configured;
+    type_unsigned_8 kbc_reset_output_port;
+    /* 8042 C0h is a frozen system-board jumper input, not keyboard state. */
+    type_bool kbc_input_port_configured;
+    type_unsigned_8 kbc_input_port;
     type_unsigned_32 rtc_ticks_per_second;
     core_machine_vadp_text_timing cga_text_timing;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
@@ -129,8 +136,14 @@ typedef struct vm_profile_default_pc_at_descriptor {
     type_bool unpopulated_extended_memory;
     /* 8237A boundary-transfer workspace, expressed as a real-mode segment. */
     type_unsigned_16 fdc_bounce_segment;
+    /* Frozen board READY inputs, one bit per physically fitted FDC drive. */
+    type_unsigned_8 fdc_ready_mask;
     type_bool hdc_present;
     type_bool planar_parity_present;
+    /* Port 61h bit 4 is a frozen board input.  It is independent of PIT1's
+     * DMA-refresh request path, which remains owned by Core. */
+    core_machine_planar_parity_refresh_status_source refresh_status_source;
+    type_unsigned_32 refresh_status_toggle_ticks;
     type_bool ega_present;
     type_bool cga_vram_present;
     type_bool monochrome_aperture_absent;

@@ -5,6 +5,7 @@
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
+#include "../support/rom/session_assets.h"
 
 static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
 {
@@ -20,7 +21,7 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     C_INT failed = 0;
 
     if (model_339 == STD_NULL || generic == STD_NULL ||
-        vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) {
         vm_session_destroy(session);
         return 1;

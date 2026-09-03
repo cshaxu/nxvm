@@ -5,6 +5,7 @@
 #include "core/machine/port.h"
 #include "core/product/session/session_provider.h"
 #include "vm/composition/session/session_interface.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/provider.h"
 #include "vm/product/session_catalog.h"
 #include "vm/profile/xt/xt_5160_268.h"
@@ -194,95 +195,41 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     return failed;
 }
 
-static C_INT vm_xt_5160_268_write_blob(const C_CHAR *path, STD_SIZE_T bytes)
-{
-    type_unsigned_8 zeroes[512] = {0};
-    STD_FILE *file = STD_FOPEN(path, "wb");
-
-    if (file == STD_NULL) return 0;
-    while (bytes != 0u) {
-        STD_SIZE_T chunk = bytes < sizeof(zeroes) ? bytes : sizeof(zeroes);
-        if (STD_FWRITE(zeroes, 1u, chunk, file) != chunk) {
-            STD_FCLOSE(file);
-            return 0;
-        }
-        bytes -= chunk;
-    }
-    return STD_FCLOSE(file) == 0;
-}
-
 static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
 {
-    static const C_CHAR base_path[] = "t484-s21-xt-base.bin";
-    static const C_CHAR option_path[] = "t484-s21-xt-option.bin";
-    static const C_CHAR fdd_path[] = "t484-s21-xt-fdd.img";
-    static const C_CHAR hdd_path[] = "t484-s21-xt-type2.img";
+    static type_unsigned_8 system[VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES];
+    static type_unsigned_8 xebec[VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES];
+    static type_unsigned_8 video[512] = {0x55u, 0xaau, 1u};
     vm_session_config config = {
         .profile_kind = VM_SESSION_PROFILE_IBM_5160_MODEL_268,
-        .floppy_image = { fdd_path },
-        .fixed_disk_image = { hdd_path },
-        .bios_path = {base_path, STD_NULL}, .bios_count = 1u
+        .bios_count = 1u
     };
+    vm_session_assets assets = { .bios = {
+        { system, sizeof(system) }, { xebec, sizeof(xebec) }
+    }, .video = { video, sizeof(video) } };
     vm_session *session = STD_NULL;
     vm_session_reset_vector vector;
+    type_unsigned_8 observed[2] = {0};
     C_INT failed = 0;
 
-    if (!vm_xt_5160_268_write_blob(base_path,
-            VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES) ||
-        !vm_xt_5160_268_write_blob(option_path,
-            VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES) ||
-        !vm_xt_5160_268_write_blob(fdd_path, 360u * 1024u) ||
-        !vm_xt_5160_268_write_blob(hdd_path,
-            CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT *
-                CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR)) return 1;
     failed |= STD_STRCMP(vm_session_profile_name(config.profile_kind),
         "ibm-5160-model-268") != 0;
-    failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
+    failed |= vm_session_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL;
     failed |= !failed && vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK;
+    failed |= !failed && (core_machine_memory_read(session->core_machine, 0x000c0000u,
+        observed, sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x55u ||
+        observed[1u] != 0xaau);
     vm_session_destroy(session);
     session = STD_NULL;
-    config.bios_path[1u] = option_path;
     config.bios_count = 2u;
-    failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
+    failed |= vm_session_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL;
     vm_session_destroy(session);
     session = STD_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    failed |= vm_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT;
-    (C_VOID)STD_REMOVE(base_path);
-    (C_VOID)STD_REMOVE(option_path);
-    (C_VOID)STD_REMOVE(fdd_path);
-    (C_VOID)STD_REMOVE(hdd_path);
-    return failed;
-}
-
-static C_INT vm_xt_5160_268_request_is_fixed(C_VOID)
-{
-    static const C_CHAR base_path[] = "t484-s21-xt-request.bin";
-    vm_product_session_request request = {
-        .profile = "ibm-5160-model-268", .display = "console", .boot = "rom"
-    };
-    const core_product_session_open_options options = {
-        0u, STD_NULL, &request, sizeof(request)
-    };
-    core_product_session_provider provider;
-    C_VOID *session = STD_NULL;
-    C_INT failed = 0;
-
-    if (!vm_xt_5160_268_write_blob(base_path,
-            VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES)) return 1;
-    STD_STRCPY(request.bios[0], base_path);
-    request.bios_count = 1u;
-    vm_session_provider_initialize(&provider);
-    failed |= provider.open(provider.context, 0u, &options, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
-    if (session != STD_NULL) {
-        failed |= provider.close(provider.context, session) != TYPE_STATUS_OK;
-        session = STD_NULL;
-    }
-    STD_STRCPY(request.cpu, "8086");
-    failed |= provider.open(provider.context, 0u, &options, &session) !=
-        TYPE_STATUS_INVALID_STATE;
-    (C_VOID)STD_REMOVE(base_path);
+    failed |= vm_session_create_from_assets(&config, &assets, &session) !=
+        TYPE_STATUS_INVALID_ARGUMENT;
     return failed;
 }
 
@@ -290,8 +237,7 @@ int main(void)
 {
     if (vm_xt_5160_268_declaration_is_fixed() ||
         vm_xt_5160_268_topology_constructs_one_xt_route() ||
-        vm_xt_5160_268_byob_session_uses_one_xt_route() ||
-        vm_xt_5160_268_request_is_fixed()) return 1;
+        vm_xt_5160_268_byob_session_uses_one_xt_route()) return 1;
     STD_PRINTF("M5:T484:S3:XT-FIXED-PROFILE:OK\n");
     STD_PRINTF("M5:T484:S5:XT-B2-SHARED-TOPOLOGY:OK\n");
     STD_PRINTF("M5:T484:S10:XT-FDC-PLAN:OK\n");

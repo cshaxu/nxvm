@@ -219,6 +219,15 @@ static C_VOID core_machine_pit_write(t_pit *pit, t_port *port,
         pit->data.flagWrite[id] = VPIT_STATUS_RW_READY;
         pit->data.flagReady[id] = TYPE_FALSE;
         pit->data.flagLoadPending[id] = TYPE_TRUE;
+        /* 8254 mode 0 holds OUT high after terminal count only until a new
+         * count is written.  The new count restarts the mode with OUT low;
+         * this applies equally to an LSB-only count and to the completed
+         * second byte of an LSB/MSB count. */
+        if (core_machine_pit_mode(pit, id) == 0u) {
+            pit->data.flagActive[id] = TYPE_FALSE;
+            pit->data.flagPulseLow[id] = TYPE_FALSE;
+            core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+        }
     }
 }
 

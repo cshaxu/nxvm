@@ -12,15 +12,15 @@
 #include "vm/composition/session/lifecycle.h"
 
 #include "core/machine/fdc.h"
+#include "../support/rom/session_assets.h"
 
 C_INT main(C_VOID)
 {
     vm_session *session;
     const vm_session *machine;
 
-    session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
-    if (session == STD_NULL) return 1;
-    vm_session_initialize(session);
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL) return 1;
     machine = session;
     if (machine == STD_NULL ||
         machine->media_registry == STD_NULL ||
@@ -33,12 +33,10 @@ C_INT main(C_VOID)
         machine->core_machine->fdc.connect.irq_source.master == STD_NULL ||
         machine->core_machine->fdc.connect.irq_source.slave == STD_NULL ||
         machine->core_machine->fdc.connect.port == STD_NULL) {
-        vm_session_finalize(session);
-        STD_FREE(session);
+        vm_session_destroy(session);
         return 1;
     }
-    vm_session_finalize(session);
-    STD_FREE(session);
+    vm_session_destroy(session);
     puts("M5:T230:S3:FDC-DMA-BINDING:OK");
     puts("M5:T290:S2:FDC-TOPOLOGY:VM:OK");
     return 0;

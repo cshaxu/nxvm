@@ -7,6 +7,7 @@
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "core/machine/rtc.h"
+#include "../support/rom/session_assets.h"
 
 static C_VOID cmos_write(t_port *port, type_unsigned_8 reg, type_unsigned_8 value)
 {
@@ -41,47 +42,51 @@ static C_VOID advance_cmos(core_machine_rtc *cmos, type_unsigned_64 elapsed_tick
 
 static C_INT default_at_cmos_seed_is_loaded(C_VOID)
 {
-    const C_CHAR path[] = "t515-default-at.cmos";
     type_unsigned_8 seed[VM_SESSION_CMOS_SEED_BYTES] = {0};
     vm_session_config config = {0};
+    vm_session_assets assets;
     vm_session *session = STD_NULL;
-    STD_FILE *file;
     type_unsigned_16 checksum = 0u;
     STD_SIZE_T index;
     C_INT failed = 0;
 
-    seed[CORE_MACHINE_RTC_EQUIPMENT] = 0x5au;
-    seed[0x2eu] = 0xffu;
-    seed[0x2fu] = 0xffu;
-    file = STD_FOPEN(path, "wb");
-    if (file == STD_NULL || STD_FWRITE(seed, 1u, sizeof(seed), file) != sizeof(seed) ||
-        STD_FCLOSE(file) != 0) return 1;
+    for (index = 0x0eu; index < VM_SESSION_CMOS_SEED_BYTES; ++index) {
+        seed[index] = (type_unsigned_8)(0xa5u ^ index);
+    }
+    /* A session seed owns the whole board-NVRAM image, not just vendor bytes.
+     * Supply a valid AT checksum exactly as an external .cmos asset would. */
+    for (index = 0x10u; index < 0x2eu; ++index) {
+        checksum = (type_unsigned_16)(checksum + seed[index]);
+    }
+    seed[0x2eu] = TYPE_MASK_UNSIGNED_8(checksum >> 8u);
+    seed[0x2fu] = TYPE_MASK_UNSIGNED_8(checksum);
+    vm_test_default_pc_at_assets(&assets,
+        (type_unsigned_8[VM_SESSION_PC_AT_ROM_BYTES]) {0});
+    /* The helper's ROM array must outlive composition only; session copies it. */
+    assets.cmos_seed = (vm_session_asset_bytes) { seed, sizeof(seed) };
     config.profile_kind = VM_SESSION_PROFILE_DEFAULT_PC_AT;
-    config.cmos_seed = path;
-    failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
+    config.bios_count = 1u;
+    failed |= vm_session_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL;
     if (!failed) {
         t_port *port = &session->core_machine->executor_port;
 
-        failed |= cmos_read(port, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au;
-        for (index = 0x10u; index < 0x2eu; ++index) {
-            checksum = (type_unsigned_16)(checksum + cmos_read(port, (type_unsigned_8)index));
+        for (index = 0x0eu; index < VM_SESSION_CMOS_SEED_BYTES; ++index) {
+            failed |= cmos_read(port, (type_unsigned_8)index) != seed[index];
         }
-        failed |= cmos_read(port, 0x2eu) != TYPE_MASK_UNSIGNED_8(checksum >> 8u) ||
-            cmos_read(port, 0x2fu) != TYPE_MASK_UNSIGNED_8(checksum);
     }
     vm_session_destroy(session);
-    (C_VOID)STD_REMOVE(path);
     return failed;
 }
 
 C_INT main(C_VOID)
 {
-    vm_session *session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
+    vm_session *session = STD_NULL;
     t_port *port;
     C_INT failed = 0;
 
-    if (session == STD_NULL) return 1;
-    vm_session_initialize(session);
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL) return 1;
     port = session->core_machine->fdc.connect.port;
     if (!session->active || port == STD_NULL) failed = 1;
     initialize_pic(port);
@@ -163,8 +168,7 @@ C_INT main(C_VOID)
             session->core_machine->shared_rtc.irq_source.master->data.isr,
             session->core_machine->shared_rtc.irq_source.slave->data.isr);
     }
-    vm_session_finalize(session);
-    STD_FREE(session);
+    vm_session_destroy(session);
     if (failed) return 1;
     puts("M5:T232:S1:CMOS-RTC-PORT:OK");
     return 0;

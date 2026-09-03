@@ -5,6 +5,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "../support/rom/session_assets.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
@@ -45,7 +46,7 @@ C_INT main(C_VOID)
     C_INT failed = 0;
     t_cpu cpu;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     if (!session->active || session->core_machine == STD_NULL) goto fail;
     vm_session_reset(session);
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;

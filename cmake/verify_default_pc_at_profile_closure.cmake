@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/profile_firmware.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/rom/external_pc_at.c"
     firmware_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     devices_source)
@@ -16,8 +16,7 @@ foreach(required IN ITEMS
     "0xfffffff0u"
     "0x000ffff0u"
     "VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS"
-    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC"
-    "VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT13")
+    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC")
     string(FIND "${profile_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Default PC/AT descriptor is missing ${required}")

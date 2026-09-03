@@ -14,26 +14,19 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/model40_composition.h"
+#include "vm/composition/session/rom/external_pc_at.h"
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd_private.h"
 #include "vm/machine/hdd_private.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/vm_request_transport.h"
-#include "vm/profile/default_profile/firmware/bios.h"
-#include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "vm/profile/device/floppy.h"
 #include "vm/profile/model40/model40_private.h"
 #include "vm/profile/xt/xt_5160_268.h"
 
-typedef enum vm_session_boot_preference {
-    VM_SESSION_BOOT_PREFERENCE_AUTO,
-    VM_SESSION_BOOT_PREFERENCE_FDD,
-    VM_SESSION_BOOT_PREFERENCE_HDD
-} vm_session_boot_preference;
-
 typedef enum vm_session_firmware_kind {
-    VM_SESSION_FIRMWARE_DEFAULT_PC_AT,
+    VM_SESSION_FIRMWARE_EXTERNAL_PC_AT_ROM,
     VM_SESSION_FIRMWARE_MODEL40_BYOB,
     VM_SESSION_FIRMWARE_XT_BYOB
 } vm_session_firmware_kind;
@@ -59,10 +52,11 @@ struct vm_session {
     union { t_fdd fdd; t_fdd floppy[VM_SESSION_FLOPPY_SLOT_COUNT]; };
     union { t_hdd hdd; t_hdd fixed_disk[VM_SESSION_FIXED_DISK_SLOT_COUNT]; };
     t_debug debug;
-    t_bios default_bios;
     type_unsigned_8 pc_at_rom[VM_SESSION_PC_AT_ROM_BYTES];
+    type_unsigned_8 pc_at_video_rom[VM_SESSION_PC_AT_VIDEO_ROM_MAX_BYTES];
+    STD_SIZE_T pc_at_video_rom_bytes;
     type_bool pc_at_rom_external;
-    vm_profile_default_context default_profile_context;
+    vm_session_external_pc_at_rom_context pc_at_rom_context;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
     core_platform_presentation_mailbox *presentation_mailbox;
@@ -89,7 +83,6 @@ struct vm_session {
     vm_session_config retained_config;
     type_unsigned_8 cmos_seed[VM_SESSION_CMOS_SEED_BYTES];
     type_bool cmos_seed_present;
-    vm_session_boot_preference boot_preference;
     vm_session_firmware_kind firmware_kind;
     C_INT model40_private;
     C_INT xt_private;
@@ -103,6 +96,7 @@ struct vm_session {
     vm_profile_xt_5160_268_external_rom xt_rom;
     type_unsigned_8 *xt_system_rom;
     type_unsigned_8 *xt_xebec_rom;
+    type_unsigned_8 *xt_video_rom;
     core_machine_fdc_terminal_observation model40_fdc_terminal_observation;
     type_bool model40_fdc_terminal_observation_valid;
     union { C_CHAR fdd_image_path[1024];
@@ -118,8 +112,6 @@ type_status vm_session_storage_initialize(vm_session *machine);
 type_status vm_session_apply_cmos_seed(const vm_session *session,
     core_machine_plan_topology *topology);
 C_VOID vm_session_storage_finalize(vm_session *machine);
-C_VOID vm_session_apply_boot_preference(vm_session *session);
-C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled);
 C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path);
 C_VOID vm_session_consume_request(C_VOID *opaque,
     const vm_platform_request *request);

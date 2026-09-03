@@ -4,6 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/hdc.h"
+#include "test/integration/support/session_yaml.h"
 #include "vm/composition/session/waiting.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
@@ -170,16 +171,15 @@ static C_VOID vm_ata253_fat12_set(type_unsigned_8 *fat, type_unsigned_16 cluster
     fat[offset + 1u] = (type_unsigned_8)(pair >> 8u);
 }
 
-static C_INT vm_ata253_clone(const C_CHAR *source, C_CHAR path[MAX_PATH],
-    type_unsigned_8 **out_image, DWORD *out_size)
+static C_INT vm_ata253_read_image(const C_CHAR *source, type_unsigned_8 **out_image,
+    DWORD *out_size)
 {
     HANDLE input = INVALID_HANDLE_VALUE;
-    HANDLE output = INVALID_HANDLE_VALUE;
     LARGE_INTEGER size;
     type_unsigned_8 *image = STD_NULL;
     DWORD count;
 
-    if (source == STD_NULL || path == STD_NULL || out_image == STD_NULL ||
+    if (source == STD_NULL || out_image == STD_NULL ||
         out_size == STD_NULL) return 0;
     input = CreateFileA(source, GENERIC_READ, FILE_SHARE_READ, STD_NULL,
         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, STD_NULL);
@@ -187,27 +187,46 @@ static C_INT vm_ata253_clone(const C_CHAR *source, C_CHAR path[MAX_PATH],
         size.QuadPart <= 0 || size.QuadPart > MAXDWORD) goto fail;
     image = STD_MALLOC((STD_SIZE_T)size.QuadPart);
     if (image == STD_NULL || !ReadFile(input, image, (DWORD)size.QuadPart,
-            &count, STD_NULL) || count != (DWORD)size.QuadPart ||
-        GetTempPathA(MAX_PATH, path) == 0u || GetTempFileNameA(path, "n64", 0u,
-            path) == 0u) goto fail;
-    output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL, CREATE_ALWAYS,
-        FILE_ATTRIBUTE_TEMPORARY, STD_NULL);
-    if (output == INVALID_HANDLE_VALUE || !WriteFile(output, image,
-            (DWORD)size.QuadPart, &count, STD_NULL) || count != (DWORD)size.QuadPart) {
-        goto fail;
-    }
-    CloseHandle(output);
+            &count, STD_NULL) || count != (DWORD)size.QuadPart) goto fail;
     CloseHandle(input);
     *out_image = image;
     *out_size = (DWORD)size.QuadPart;
     return 1;
 
 fail:
-    if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
     if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
-    if (path[0] != '\0') DeleteFileA(path);
     STD_FREE(image);
     return 0;
+}
+
+static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size,
+    const C_CHAR *path);
+static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size,
+    const C_CHAR *path);
+
+static type_status vm_ata253_install_on_copied_media(
+    vm_product_session_request *request, C_VOID *opaque)
+{
+    type_unsigned_8 *fdd_image = STD_NULL;
+    type_unsigned_8 *hdd_image = STD_NULL;
+    DWORD fdd_size = 0u;
+    DWORD hdd_size = 0u;
+    C_INT ok;
+
+    (C_VOID)opaque;
+    if (request == STD_NULL || request->floppy_count != 1u ||
+        request->fixed_disk_count != 1u || !vm_ata253_read_image(
+            request->floppy[0u], &fdd_image, &fdd_size) || !vm_ata253_install(
+            fdd_image, fdd_size, request->floppy[0u]) || !vm_ata253_read_image(
+            request->fixed_disk[0u], &hdd_image, &hdd_size)) {
+        STD_FREE(fdd_image);
+        STD_FREE(hdd_image);
+        return TYPE_STATUS_FAULT;
+    }
+    ok = vm_ata253_zero_image(hdd_image, hdd_size, request->fixed_disk[0u]);
+    STD_FREE(fdd_image);
+    STD_FREE(hdd_image);
+    return ok ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
 static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size,
@@ -348,26 +367,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     static const type_unsigned_8 command[] = { 0x1cu, 0x2cu, 0x1cu, 0x1eu, 0x2eu,
         0x26u, 0x5au };
-    vm_session_config config = {0};
+    integration_yaml_session yaml_session;
     vm_session *session = STD_NULL;
-    type_unsigned_8 *fdd_image = STD_NULL;
-    type_unsigned_8 *hdd_image = STD_NULL;
-    DWORD fdd_size = 0u;
-    DWORD hdd_size = 0u;
-    C_CHAR fdd_path[MAX_PATH] = {0};
-    C_CHAR hdd_path[MAX_PATH] = {0};
     STD_SIZE_T index;
     C_INT passed = 0;
 
-    if (argc != 3 || !vm_ata253_clone(argv[1], fdd_path, &fdd_image, &fdd_size) ||
-        !vm_ata253_install(fdd_image, fdd_size, fdd_path) ||
-        !vm_ata253_clone(argv[2], hdd_path, &hdd_image, &hdd_size) ||
-        !vm_ata253_zero_image(hdd_image, hdd_size, hdd_path)) goto done;
-    config.floppy_image[0u] = fdd_path;
-    config.fixed_disk_image[0u] = hdd_path;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
-    if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
+            vm_ata253_install_on_copied_media, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+        return 77;
+    }
+    session = yaml_session.session;
+    if (session == STD_NULL ||
         !vm_ata253_run_until(session, VM_ATA253_BOOT_BUDGET, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
@@ -376,11 +386,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     passed = vm_ata253_run_until(session, VM_ATA253_RUN_BUDGET, 'O');
 
 done:
-    vm_session_destroy(session);
-    if (fdd_path[0] != '\0') DeleteFileA(fdd_path);
-    if (hdd_path[0] != '\0') DeleteFileA(hdd_path);
-    STD_FREE(fdd_image);
-    STD_FREE(hdd_image);
+    integration_yaml_session_close(&yaml_session);
     if (!passed) return 1;
     STD_PRINTF("M5:T286:S3:ATA-NIEN:DOS:OK\n");
     STD_PRINTF("M5:T253:S3:ATA-PIO:DOS:OK\n");

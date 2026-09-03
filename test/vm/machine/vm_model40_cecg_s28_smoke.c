@@ -8,7 +8,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
-#include "../support/vm_model40_byob_fixture.h"
+#include "../support/rom/model40_session_assets.h"
 
 static C_INT t386_s28_session_write(vm_session *session, type_unsigned_8 value)
 {
@@ -44,7 +44,7 @@ C_INT main(C_VOID)
     core_machine_display_snapshot_observation observation;
     C_INT failed = 0;
 
-    failed |= vm_model40_fixture_create("t386-s28-even.bin", "t386-s28-odd.bin", &session) !=
+    failed |= vm_model40_fixture_create(&session) !=
         TYPE_STATUS_OK || session == STD_NULL;
     if (!failed) {
         t386_s28_select_ega_320(session);
@@ -85,7 +85,6 @@ C_INT main(C_VOID)
             &snapshot) || snapshot.pixels[0] != 0u;
     }
     vm_session_destroy(session);
-    vm_model40_fixture_remove("t386-s28-even.bin", "t386-s28-odd.bin");
     if (failed) {
         STD_FPRINTF(STD_STDERR, "M5:T386:S28:MODEL40-CECG-ODD-EVEN:FAIL\n");
         return 1;

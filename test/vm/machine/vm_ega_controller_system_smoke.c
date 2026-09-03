@@ -4,6 +4,7 @@
 #include "core/machine/debug_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/rom/session_assets.h"
 #include "vm/composition/session/session_private.h"
 
 C_INT main(C_VOID)
@@ -14,7 +15,7 @@ C_INT main(C_VOID)
     type_unsigned_32 port_value = 0u;
     C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->active || session->core_machine == STD_NULL) {
         return 1;
     }

@@ -5,7 +5,7 @@ endif()
 set(session_dir "${PROJECT_SOURCE_DIR}/src/vm/composition/session")
 set(coordinator "${session_dir}/provider_lifecycle.c")
 set(devices "${session_dir}/machine_devices.c")
-set(firmware "${session_dir}/profile_firmware.c")
+set(firmware "${session_dir}/rom/external_pc_at.c")
 set(info "${session_dir}/machine_info.c")
 set(factory "${session_dir}/session_factory.c")
 

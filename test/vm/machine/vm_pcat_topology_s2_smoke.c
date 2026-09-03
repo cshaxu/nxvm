@@ -7,6 +7,8 @@
 #include "vm/composition/session/session_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
+#include "../support/rom/session_assets.h"
+
 static C_INT pcat_topology_registry_matches_profile(
     const vm_profile_default_pc_at_descriptor *profile)
 {
@@ -19,7 +21,7 @@ static C_INT pcat_topology_registry_matches_profile(
     STD_SIZE_T index;
     C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || session->core_machine == STD_NULL) {
         vm_session_destroy(session);
         return 1;

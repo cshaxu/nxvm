@@ -206,8 +206,10 @@ static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *own
     }
     if (port_id >= 0x0081u && port_id <= 0x008fu) {
         dma = dma_controller(primary, port_id);
-        dma->data.page[dma_page_channel(port_id)] = port->data.ioByte &
-            (port_id < 0x0089u ? TYPE_MAX_UNSIGNED_8 : 0xfeu);
+        /* The AT page-register latch is readable as written.  The secondary
+         * controller's word address ignores page bit zero only when it forms
+         * a physical address; discarding it here breaks board POST readback. */
+        dma->data.page[dma_page_channel(port_id)] = port->data.ioByte;
         return;
     }
     dma = port_id >= 0x00c0u ? primary->connect.peer : primary;
@@ -285,7 +287,11 @@ static C_VOID DecreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
 static type_unsigned_32 dma_physical_address(const t_dma *dma,
     type_unsigned_8 channel, type_bool word)
 {
-    type_unsigned_32 address = (type_unsigned_32)dma->data.page[channel] << 16u;
+    type_unsigned_8 page = dma->data.page[channel];
+    type_unsigned_32 address;
+
+    if (word) page &= 0xfeu;
+    address = (type_unsigned_32)page << 16u;
 
     address += word ? (type_unsigned_32)dma->data.currAddr[channel] << 1u :
         dma->data.currAddr[channel];

@@ -5,6 +5,7 @@
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/rom/session_assets.h"
 #include "vm/composition/session/session_private.h"
 
 static C_VOID vm_display_s5_port_write(vm_session *session, type_unsigned_16 port,
@@ -59,7 +60,7 @@ C_INT main(C_VOID)
     type_unsigned_64 ega_snapshot_generation;
     C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) {
         return 1;
     }

@@ -2,6 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/rom/session_assets.h"
 #include "vm/composition/session/session_private.h"
 
 C_INT main(C_VOID)
@@ -17,7 +18,7 @@ C_INT main(C_VOID)
     STD_SIZE_T bytes = 0u;
     C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     identity = session;
     core_identity = session->core_machine;
     fdd_identity = &session->fdd;

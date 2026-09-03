@@ -2,7 +2,10 @@
 
 ## Current Work
 
-**Idle.**
+No numeric implementation task is active. T515 is closed at the owner's
+redefined asset-boundary completion standard; its three observed real-ROM boot
+timeouts are retained as explicit debt in its history, not reported as passes.
+The next candidate is selected only from [Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
@@ -40,7 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T515 | Closed: one YAML-relative firmware/media request grammar replaces singular/profile-specific parsing; all seven copied-template release opens pass. Unit 317/317, integration 20 pass/20 owner-media skips, governance and stripped Release 0515 pass. [History](../history/M5-T515-external-asset-bundle-governance.md). |
+| T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 | T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
 | T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 | T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |

@@ -6,10 +6,9 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/machine/fdd.h"
 #include "vm/platform/win32/win32.h"
+#include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
@@ -56,6 +55,7 @@ static C_VOID vm_dos_mem_fault_print(const core_machine_cpu_diagnostic *diagnost
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
+    integration_yaml_session yaml_session;
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
@@ -66,11 +66,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     const C_CHAR *stage = "argument validation";
     STD_SIZE_T index;
 
-    if (argc != 2) goto fail;
+    if (argc != 3) goto fail;
     stage = "session creation";
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) goto fail;
-    stage = "FDD insertion";
-    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) != TYPE_STATUS_OK) {
+        return 77;
+    }
+    session = yaml_session.session;
     stage = "machine thread creation";
     thread = CreateThread(STD_NULL, 0u, vm_dos_mem_fault_run_machine, session,
         0u, STD_NULL);
@@ -108,7 +109,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     STD_PRINTF("M5:T156:S1:DOS-MEM-FNINIT-PASSED:OK\n");
     return 0;
 
@@ -124,6 +125,6 @@ fail:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 1;
 }

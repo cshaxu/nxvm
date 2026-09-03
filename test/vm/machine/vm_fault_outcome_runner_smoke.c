@@ -10,6 +10,7 @@
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/rom/session_assets.h"
 #include "vm/composition/session/session_private.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
@@ -36,7 +37,7 @@ C_INT main(C_VOID)
     const core_product_debug_target *target;
     C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         !vm_fault_outcome_prepare(session)) goto fail;
     vm_session_control_start(&session->control);
     target = vm_session_debug_target(session);

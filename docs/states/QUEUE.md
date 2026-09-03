@@ -5,14 +5,16 @@ reserve a numeric task identifier, or define a technical baseline.
 
 ## M5 Candidates
 
-1. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
-2. [M5 specification-driven unit-test matrix coverage](../proposals/m5-specification-unit-test-matrix-coverage.md)
-3. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md)
-4. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md)
-5. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md)
-6. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md)
-7. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md)
-8. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md)
+1. [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md)
+2. [M5 YAML asset and read-only CMOS seed contract](../proposals/m5-yaml-image-load-mode-contract.md)
+3. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
+4. [M5 specification-driven unit-test matrix coverage](../proposals/m5-specification-unit-test-matrix-coverage.md)
+5. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md)
+6. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md)
+7. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md)
+8. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md)
+9. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md)
+10. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md)
 
 Shared M5 admission context:
 [Four-profile CPU completeness](../proposals/m5-four-profile-cpu-completeness-program.md),

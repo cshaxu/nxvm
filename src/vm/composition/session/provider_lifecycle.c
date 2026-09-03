@@ -8,7 +8,6 @@
 
 #include "vm/composition/session/media.h"
 #include "vm/composition/session/machine_devices.h"
-#include "vm/composition/session/profile_firmware.h"
 #include "vm/composition/session/provider_lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 
@@ -20,21 +19,7 @@ type_status vm_session_provider_lifecycle_initialize(vm_session *session)
 
     status = vm_session_machine_devices_initialize_media(session);
     if (status != TYPE_STATUS_OK) return status;
-    if (session->firmware_kind != VM_SESSION_FIRMWARE_DEFAULT_PC_AT ||
-        vm_session_profile_firmware_is_external(session)) {
-        return vm_session_bind_media(session);
-    }
-    status = vm_session_profile_firmware_initialize(session);
-    if (status != TYPE_STATUS_OK) return status;
-    vm_session_profile_firmware_register_cmos(session);
-    vm_session_profile_firmware_register_keyboard(session);
-    vm_session_profile_firmware_register_dma(session);
-    status = vm_session_bind_media(session);
-    if (status != TYPE_STATUS_OK) return status;
-    vm_session_profile_firmware_register_fdc(session);
-    vm_session_profile_firmware_register_hdc(session);
-    vm_session_profile_firmware_register_core_posts(session);
-    return TYPE_STATUS_OK;
+    return vm_session_bind_media(session);
 }
 
 C_VOID vm_session_provider_lifecycle_reset(vm_session *session)
@@ -46,8 +31,5 @@ C_VOID vm_session_provider_lifecycle_reset(vm_session *session)
 C_VOID vm_session_provider_lifecycle_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
-    if (session->firmware_kind == VM_SESSION_FIRMWARE_DEFAULT_PC_AT) {
-        vm_session_profile_firmware_finalize(session);
-    }
     vm_session_machine_devices_finalize(session);
 }

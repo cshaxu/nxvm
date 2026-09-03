@@ -2016,7 +2016,8 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
             portid, byte, TYPE_FALSE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
-    if (core_machine_port_execute_read(context->port, portid) != TYPE_STATUS_OK) {
+    if (core_machine_port_execute_read_width(context->port, portid, byte) !=
+            TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
         _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
             portid, byte, TYPE_FALSE);
@@ -2100,7 +2101,8 @@ static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsign
             portid, byte, TYPE_TRUE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
-    if (core_machine_port_execute_write(context->port, portid) != TYPE_STATUS_OK) {
+    if (core_machine_port_execute_write_width(context->port, portid, byte) !=
+            TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
         _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
             portid, byte, TYPE_TRUE);

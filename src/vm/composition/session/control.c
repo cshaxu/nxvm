@@ -33,7 +33,6 @@ static type_status vm_session_execution_context_reset_callback(vm_session *machi
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     vm_machine_debug_reset(&machine->debug);
-    vm_session_apply_boot_preference(machine);
     status = core_machine_reset(machine->core_machine);
     if (status != TYPE_STATUS_OK) {
         vm_session_control_stop(&machine->control);

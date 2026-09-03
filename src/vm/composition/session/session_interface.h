@@ -6,6 +6,7 @@
 #include "core/machine/cpu_interface.h"
 #include "core/machine/fpu_interface.h"
 #include "core/platform/input_interface.h"
+#include "vm/profile/byob/blob.h"
 
 typedef enum vm_session_profile_kind {
     VM_SESSION_PROFILE_DEFAULT_PC_AT,
@@ -35,6 +36,7 @@ typedef enum vm_session_floppy_format {
 #define VM_SESSION_CMOS_SEED_BYTES 64u
 #define VM_SESSION_PC_AT_ROM_BYTES (64u * 1024u)
 #define VM_SESSION_PC_AT_ROM_CHIP_BYTES (32u * 1024u)
+#define VM_SESSION_PC_AT_VIDEO_ROM_MAX_BYTES VM_PROFILE_BYOB_OPTION_ROM_MAX_BYTES
 
 const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind);
 
@@ -55,10 +57,23 @@ typedef struct vm_session_config {
     vm_session_floppy_format floppy_format;
     C_INT create_fdd;
     type_unsigned_16 create_hdd_cylinders;
-    C_INT boot_hdd;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
 } vm_session_config;
+
+/* Immutable bytes resolved before session composition.  Product YAML/file
+ * loading creates this bundle; repository-only unit tests may supply literal
+ * bytes.  Composition never opens an asset path. */
+typedef struct vm_session_asset_bytes {
+    const type_unsigned_8 *data;
+    STD_SIZE_T bytes;
+} vm_session_asset_bytes;
+
+typedef struct vm_session_assets {
+    vm_session_asset_bytes bios[2];
+    vm_session_asset_bytes video;
+    vm_session_asset_bytes cmos_seed;
+} vm_session_assets;
 
 typedef struct vm_session vm_session;
 
@@ -68,6 +83,8 @@ typedef struct vm_session_reset_vector {
 } vm_session_reset_vector;
 
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session);
+type_status vm_session_create_from_assets(const vm_session_config *config,
+    const vm_session_assets *assets, vm_session **out_session);
 C_VOID vm_session_destroy(vm_session *session);
 type_status vm_session_reconfigure_memory(vm_session *session,
     STD_SIZE_T memory_bytes);

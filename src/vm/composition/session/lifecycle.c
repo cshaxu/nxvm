@@ -5,7 +5,7 @@
 #include "type.h"
 
 #include "vm/composition/session/session_private.h"
-#include "vm/composition/session/profile_firmware.h"
+#include "vm/composition/session/rom/external_pc_at.h"
 
 #include "vm/composition/session/control.h"
 
@@ -23,11 +23,6 @@
 #include "vm/composition/session/debug_target.h"
 
 #include "vm/machine/debug.h"
-
-#include "vm/profile/default_profile/firmware/qdcga.h"
-
-#include "vm/profile/default_profile/firmware/qdkeyb.h"
-
 
 #include "core/machine/machine_interface.h"
 
@@ -110,8 +105,8 @@ type_status vm_session_bind_execution_provider(vm_session *machine)
         firmware_provider = vm_profile_xt_5160_268_firmware_provider();
         firmware_context = &machine->xt_rom;
     } else {
-        firmware_provider = vm_session_profile_firmware_provider();
-        firmware_context = &machine->default_profile_context;
+        firmware_provider = vm_session_external_pc_at_rom_provider();
+        firmware_context = &machine->pc_at_rom_context;
     }
     status = core_machine_bind_firmware_provider(machine->core_machine,
         firmware_provider, firmware_context);

@@ -86,7 +86,14 @@ static type_unsigned_8 core_machine_pc_at_port_b_timer_status(
     type_unsigned_8 value = 0u;
 
     if (machine == STD_NULL) return 0u;
-    if (core_machine_pit_get_output(&machine->shared_pit, 1u)) value |= 0x10u;
+    if (machine->planar_parity_configured &&
+        machine->planar_parity_config.refresh_status_source ==
+            CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE) {
+        if (((machine->elapsed_ticks /
+                machine->planar_parity_config.refresh_status_toggle_ticks) & 1u) != 0u) {
+            value |= 0x10u;
+        }
+    } else if (core_machine_pit_get_output(&machine->shared_pit, 1u)) value |= 0x10u;
     if (core_machine_pit_get_output(&machine->shared_pit, 2u)) value |= 0x20u;
     return value;
 }
@@ -181,7 +188,7 @@ static type_status core_machine_planar_parity_port_read(C_VOID *owner,
 
     if (machine == STD_NULL || out_value == STD_NULL || !machine->planar_parity_configured ||
         port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_value = (type_unsigned_32)(machine->planar_parity_port_b & 0x4fu) |
+    *out_value = (type_unsigned_32)(machine->planar_parity_port_b & 0x0fu) |
         core_machine_pc_at_port_b_timer_status(machine) |
         (machine->planar_parity_latched ? 0x80u : 0u);
     return TYPE_STATUS_OK;
@@ -194,7 +201,7 @@ static type_status core_machine_planar_parity_port_write(C_VOID *owner,
 
     if (machine == STD_NULL || !machine->planar_parity_configured ||
         port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
-    machine->planar_parity_port_b = (type_unsigned_8)value;
+    machine->planar_parity_port_b = (type_unsigned_8)value & 0x0fu;
     core_machine_speaker_set_gate(machine, machine->planar_parity_port_b);
     if ((machine->planar_parity_port_b & 0x04u) == 0u) {
         machine->planar_parity_latched = TYPE_FALSE;
@@ -544,7 +551,7 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
         core_machine_rtc_write_nvram(&machine->shared_rtc,
             config->defaults[index].index, config->defaults[index].value);
     }
-    {
+    if (config->derive_configuration_checksum) {
         type_unsigned_16 checksum = 0u;
 
         /* The selected board owns a frozen CMOS image.  MC146818-compatible
@@ -582,6 +589,13 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) || machine->planar_parity_configured)
         return TYPE_STATUS_INVALID_STATE;
     if (config == STD_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
+        (config->refresh_status_source !=
+                CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&
+            config->refresh_status_source !=
+                CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE) ||
+        (config->refresh_status_source ==
+                CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE &&
+            config->refresh_status_toggle_ticks == 0u) ||
         (config->memory_bytes != 0u && config->memory_bytes >
             machine->executor_memory.connect.installed_bytes) ||
         core_machine_port_has_read(&machine->executor_port,

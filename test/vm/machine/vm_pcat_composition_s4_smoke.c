@@ -9,6 +9,7 @@
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 #include "../../core/support/core_machine_cpu_fixture.h"
+#include "../support/rom/session_assets.h"
 
 static C_INT vm_pcat_s4_topology_matches(
     const vm_session *session,
@@ -142,7 +143,7 @@ C_INT main(C_VOID)
 
     if (profile == STD_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
-        vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+        vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) {
         vm_session_destroy(session);
         return 1;

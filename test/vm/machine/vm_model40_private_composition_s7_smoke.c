@@ -5,7 +5,7 @@
 #include "core/machine/kbc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "../support/vm_model40_byob_fixture.h"
+#include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)
 {
@@ -14,6 +14,7 @@ C_INT main(C_VOID)
     vm_session_config invalid_config = {
         .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
     };
+    vm_session_assets missing_assets = {0};
     vm_session *session = STD_NULL;
     core_machine_cpu_profile cpu_profile;
     STD_SIZE_T memory_bytes;
@@ -29,13 +30,9 @@ C_INT main(C_VOID)
     even[0x3ff8u] = 0x26u;
     odd[0x3ff8u] = 0x90u;
 
-    failed |= vm_session_create(&invalid_config, &session) !=
+    failed |= vm_session_create_from_assets(&invalid_config, &missing_assets, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
-    if (!failed) failed |= vm_model40_fixture_create_bytes("t386-s7-even.bin", even,
-        "dad19e3a911b717b0600bc2ed413d8070e46f4a9327556528c4bebcaf8bdcb89",
-        "t386-s7-odd.bin", odd,
-        "5e25cbc9cfc872eaff7a3426c04308a7b9f3dbb03ea130e38a017626b6d8208e",
-        &session) !=
+    if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
         TYPE_STATUS_OK || session == STD_NULL || !session->model40_private ||
         session->profile != STD_NULL ||
         session->core_machine->retirement_time_contract !=
@@ -145,6 +142,5 @@ C_INT main(C_VOID)
     if (!failed) STD_PRINTF("M5:T390:S34:MODEL40-DETERMINISTIC-CONTRACT:OK\n");
     if (!failed) STD_PRINTF("M5:T477:S3:DESKPRO-SESSION-CUTOVER:OK\n");
     vm_session_destroy(session);
-    vm_model40_fixture_remove("t386-s7-even.bin", "t386-s7-odd.bin");
     return failed ? 1 : 0;
 }

@@ -2,12 +2,12 @@ schema: nxvm-session
 profile: default-pc-at
 cpu: 80286
 display: console
-boot: rom
 floppy_format: 1440k
 firmware:
-  bios: []
+  bios:
+    - path: ../../../nxvm-assets/profiles/default-pc-at/firmware/default-pc-at-1440k.rom
   video: null
-  cmos: ../../../nxvm-assets/profiles/default-pc-at/cmos/default-pc-at-default.cmos
+  cmos: ../../../nxvm-assets/profiles/default-pc-at/cmos/default-pc-at-1440k.cmos
   font: ../default-cp437-8x16.bin
 media:
   floppy:

@@ -193,6 +193,9 @@ typedef struct core_machine_config {
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
+    /* Optional board-provided response visibility phase.  A nonzero value
+     * holds a completed KBC command reply through this many status reads. */
+    type_unsigned_8 kbc_command_response_status_polls;
     type_unsigned_32 kbc_serial_delivery_ticks;
     /* Optional product-selected 8254 topology; no output consumer is implied. */
     type_bool auxiliary_pit_present;
@@ -203,6 +206,10 @@ typedef struct core_machine_config {
      * C0h.  Unconfigured machines retain the controller's AT default. */
     type_bool kbc_input_port_configured;
     type_unsigned_8 kbc_input_port;
+    /* Frozen board output-pin state applied whenever the selected 8042 resets.
+     * It is an electrical input to the generic controller, not a profile name. */
+    type_bool kbc_reset_output_port_configured;
+    type_unsigned_8 kbc_reset_output_port;
     core_machine_keyboard_topology keyboard_topology;
     core_machine_xt_ppi_keyboard_config xt_ppi_keyboard;
 } core_machine_config;
@@ -307,7 +314,9 @@ typedef struct core_machine_display_config {
 } core_machine_display_config;
 
 #define CORE_MACHINE_RTC_DEFAULT_COUNT 6u
-#define CORE_MACHINE_RTC_DEFAULT_CAPACITY 30u
+/* A board seed contributes the MC146818 NVRAM window 0Eh--3Fh. Calendar and
+ * status registers remain Core-owned. */
+#define CORE_MACHINE_RTC_DEFAULT_CAPACITY 50u
 
 /* Board composition supplies a copied RTC phase scale.  L3 means the values
  * are a direct selected-board conversion; L2 means a board ratio estimate.
@@ -337,13 +346,29 @@ typedef struct core_machine_rtc_cmos_config {
     core_machine_rtc_timing_plan timing;
     core_machine_rtc_default_byte defaults[CORE_MACHINE_RTC_DEFAULT_CAPACITY];
     STD_SIZE_T default_count;
+    /* Unit-only synthetic board defaults may ask Core to derive the AT
+     * configuration checksum.  A session-provided board seed owns its
+     * complete NVRAM image, including 2Eh/2Fh, and clears this flag. */
+    type_bool derive_configuration_checksum;
 } core_machine_rtc_cmos_config;
+
+typedef enum core_machine_planar_parity_refresh_status_source {
+    /* Port B reflects the directly wired PIT counter 1 output. */
+    CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 = 0,
+    /* A board-provided period derives the readable refresh signal from the
+     * sole Core elapsed-tick axis. This is a board signal model, not a second
+     * clock or a writable runtime policy. */
+    CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE
+} core_machine_planar_parity_refresh_status_source;
 
 typedef struct core_machine_planar_parity_config {
     /* IBM PC/AT system-board port B; zero memory_bytes selects its timer and
      * speaker wiring without claiming a parity-memory producer. */
     type_unsigned_16 port;
     STD_SIZE_T memory_bytes;
+    core_machine_planar_parity_refresh_status_source refresh_status_source;
+    /* Required only for ELAPSED_TICK_TOGGLE: ticks between output edges. */
+    type_unsigned_32 refresh_status_toggle_ticks;
 } core_machine_planar_parity_config;
 
 typedef struct core_machine_planar_parity_observation {

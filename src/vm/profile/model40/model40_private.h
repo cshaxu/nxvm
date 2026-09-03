@@ -31,8 +31,12 @@ typedef struct vm_profile_model40_external_rom {
 
 C_INT vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom);
+type_status vm_profile_model40_external_rom_create(
+    const type_unsigned_8 *even, STD_SIZE_T even_bytes,
+    const type_unsigned_8 *odd, STD_SIZE_T odd_bytes,
+    const type_unsigned_8 *video, STD_SIZE_T video_bytes,
+    vm_profile_model40_external_rom *out_rom);
 C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config);
-C_VOID vm_profile_model40_cmos_seed_materialize(core_machine_rtc_cmos_config *out_cmos);
 type_status vm_profile_model40_child_declaration_create(
     const vm_profile_resolver_declaration *parent,
     vm_profile_resolver_declaration *out_declaration);

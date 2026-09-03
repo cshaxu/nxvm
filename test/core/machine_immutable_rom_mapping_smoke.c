@@ -9,6 +9,7 @@
 C_INT main(C_VOID)
 {
     static const type_unsigned_8 image[] = { 0xf4u, 0x90u, 0x90u };
+    static const type_unsigned_8 high_image[] = { 0x5au };
     static const type_unsigned_8 reset_jump[] = { 0xeau, 0x00u, 0x10u, 0x00u, 0x00u };
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -31,6 +32,8 @@ C_INT main(C_VOID)
             RESET_PHYSICAL, 16u) != TYPE_STATUS_OK;
         failed |= core_machine_register_immutable_rom_mapping(machine, 0x1000u,
             image, sizeof(image)) != TYPE_STATUS_OK;
+        failed |= core_machine_register_immutable_rom_mapping(machine, 0xf0000u,
+            high_image, sizeof(high_image)) != TYPE_STATUS_OK;
         failed |= core_machine_register_immutable_rom_mapping(machine, 0x1001u,
             image, 1u) != TYPE_STATUS_INVALID_ARGUMENT;
         failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
@@ -51,6 +54,10 @@ C_INT main(C_VOID)
         failed |= core_machine_memory_read(machine, 0x1000u, observed,
             sizeof(observed)) != TYPE_STATUS_OK ||
             STD_MEMCMP(image, observed, sizeof(image)) != 0;
+        failed |= core_machine_memory_write(machine, 0xf0000u, &overwrite, 1u) !=
+            TYPE_STATUS_OK;
+        failed |= core_machine_memory_read(machine, 0xf0000u, observed, 1u) !=
+            TYPE_STATUS_OK || observed[0u] != high_image[0u];
         failed |= core_machine_memory_write(machine, RESET_LINEAR, reset_jump,
             sizeof(reset_jump)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||

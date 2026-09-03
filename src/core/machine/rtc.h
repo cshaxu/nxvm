@@ -7,6 +7,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/pic.h"
 
+/* MC146818-compatible RTC/CMOS registers occupy 00h--3Fh. */
 #define CORE_MACHINE_RTC_REGISTER_COUNT 0x40u
 
 #define CORE_MACHINE_RTC_SECOND       0x00u

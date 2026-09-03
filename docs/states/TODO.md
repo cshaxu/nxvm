@@ -15,6 +15,16 @@ adopts them.
 
 ## Hardware And Compatibility Debt
 
+- [ ] **External-ROM Model-40 and IBM 5170 boot-chain repair (`TODO(High)`).**
+  T515 verifies one YAML-relative external asset path and complete unit
+  coverage, but its full integration run records three real-ROM timeouts:
+  DeskPro Model 40 with its declared Compaq EGA/CMOS/1.2 MB media, and IBM 5170
+  with declared 1.2 MB and 360 KB media. Re-admit only as a source-led board,
+  CPU, timer, controller and firmware checkpoint audit. Preserve T515's sole
+  YAML asset request, Core device ownership and external ROM/CMOS mapping; do
+  not bypass POST, synthesize F1/input, relax the terminal predicate, alter
+  `build/output` YAML, or replace a real ROM with generated firmware.
+
 - [ ] **XT/AT PIC topology and profile composition (`TODO(High)`).** T456
   implements the 8259A chip contract, not every machine wiring personality.
   A later task may add one immutable machine-composition declaration selecting

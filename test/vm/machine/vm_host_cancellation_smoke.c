@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "vm/composition/session/session_interface.h"
+#include "../support/rom/session_assets.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
@@ -13,7 +14,7 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     vm_platform_request request;
 
-    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) goto fail;
+    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) goto fail;
     vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
         session->platform_run_handle, VM_HOST_CANCELLATION_F9_SCAN_CODE,
         VM_HOST_CANCELLATION_F9_VIRTUAL_KEY, 1);

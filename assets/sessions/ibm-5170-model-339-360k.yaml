@@ -1,0 +1,15 @@
+schema: nxvm-session
+profile: ibm-5170-model-339
+display: console
+floppy_format: 360k
+firmware:
+  bios:
+    - path: ../../../nxvm-assets/profiles/ibm-5170-model-339/firmware/ibm-5170-15nov85-u27-61x9266.rom
+    - path: ../../../nxvm-assets/profiles/ibm-5170-model-339/firmware/ibm-5170-15nov85-u47-61x9265.rom
+  video: null
+  cmos: ../../../nxvm-assets/profiles/ibm-5170-model-339/cmos/ibm-5170-model-339-default.cmos
+  font: ../default-cp437-8x16.bin
+media:
+  floppy:
+    - path: ../../../nxvm-assets/media/fdd_360k_msdos_500.img
+  fixed_disk: []

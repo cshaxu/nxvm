@@ -7,10 +7,9 @@
 #include "core/machine/memory.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/machine/fdd.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
+#include "test/integration/support/session_yaml.h"
 
 #define VM_TIMER_BDA_TICKS 0x046cu
 #define VM_TIMER_BDA_ROLLOVER 0x0470u
@@ -24,6 +23,7 @@ static DWORD WINAPI vm_timer_run(C_VOID *opaque)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
+    integration_yaml_session yaml_session;
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
@@ -35,7 +35,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_unsigned_32 rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
     type_unsigned_8 rollover_byte = 0u;
     core_machine_run_budget budget = { 512u, 0u };
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     t_cpu cpu;
     C_INT stage = 0;
     static const type_unsigned_8 int1a_program[] = { 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u };
@@ -44,8 +44,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     };
 
     stage = 1;
-    if (argc != 2 || vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    if (argc != 3) goto fail;
+    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) != TYPE_STATUS_OK) {
+        return 77;
+    }
+    session = yaml_session.session;
     stage = 2;
     thread = CreateThread(STD_NULL, 0u, vm_timer_run, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -111,7 +114,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     STD_PRINTF("M5:T225:S4:IRQ0-BDA-INT1A-ROLLOVER:DOS:OK\n");
     return 0;
 
@@ -123,6 +126,6 @@ fail:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    vm_session_destroy(session);
+    integration_yaml_session_close(&yaml_session);
     return 1;
 }

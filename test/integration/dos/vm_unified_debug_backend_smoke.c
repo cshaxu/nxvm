@@ -15,7 +15,7 @@
 
 #include "vm/composition/session/lifecycle.h"
 
-#include "vm/machine/fdd.h"
+#include "test/integration/support/session_yaml.h"
 
 static DWORD WINAPI run_full_pc(C_VOID *opaque)
 {
@@ -38,14 +38,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
     DWORD result;
+    integration_yaml_session yaml_session;
     vm_session *session;
     const core_product_debug_target *target;
 
-    if (argc != 2) return 1;
-    session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
-    if (session == STD_NULL) return 1;
-    vm_session_initialize(session);
-    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
+            &yaml_session) != TYPE_STATUS_OK) return 77;
+    session = yaml_session.session;
     target = vm_session_debug_target(session);
     if (target == STD_NULL) goto fail;
     vm_session_control_reset(&session->control);
@@ -70,8 +69,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_control_stop(&session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    vm_session_finalize(session);
-    STD_FREE(session);
+    integration_yaml_session_close(&yaml_session);
     if (result != WAIT_OBJECT_0) return 1;
     puts("M5:T46:S1:UNIFIED-DEBUG-BACKEND:OK");
     return 0;
@@ -81,7 +79,6 @@ fail_thread:
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
 fail:
-    vm_session_finalize(session);
-    STD_FREE(session);
+    integration_yaml_session_close(&yaml_session);
     return 1;
 }

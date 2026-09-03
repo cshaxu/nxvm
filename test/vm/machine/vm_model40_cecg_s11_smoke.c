@@ -7,7 +7,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
-#include "../support/vm_model40_byob_fixture.h"
+#include "../support/rom/model40_session_assets.h"
 
 static C_INT t386_s11_session_route(const vm_session *session,
     type_unsigned_32 physical, core_machine_memory_route expected)
@@ -24,7 +24,7 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     C_INT failed = 0;
 
-    failed |= vm_model40_fixture_create("t386-s11-even.bin", "t386-s11-odd.bin", &session) !=
+    failed |= vm_model40_fixture_create(&session) !=
         TYPE_STATUS_OK || session == STD_NULL;
     if (!failed) {
         core_machine_port_write(&session->core_machine->executor_port,
@@ -78,7 +78,6 @@ C_INT main(C_VOID)
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     }
     vm_session_destroy(session);
-    vm_model40_fixture_remove("t386-s11-even.bin", "t386-s11-odd.bin");
     if (!failed) {
         STD_PRINTF("M5:T386:S11:MODEL40-CPU-VIDEO-GATE:OK\n");
         return 0;

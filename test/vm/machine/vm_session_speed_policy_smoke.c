@@ -4,6 +4,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
+#include "../support/rom/session_assets.h"
 
 static C_INT verify_ratio_compare(void)
 {
@@ -63,7 +64,7 @@ int main(void)
     vm_session_speed speed;
     C_INT failed = 0;
 
-    if (vm_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK) {
+    if (vm_test_default_pc_at_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK) {
         vm_session_destroy(default_session);
         return 1;
     }

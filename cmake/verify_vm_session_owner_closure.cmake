@@ -10,7 +10,6 @@ foreach(forbidden IN ITEMS
     "core_machine_hdc hdc;"
     "t_hdd *hdd;"
     "t_debug *debug;"
-    "t_bios *default_bios;"
     "vm_session_control_state *control;")
     string(FIND "${session_header}" "${forbidden}" position)
     if(NOT position EQUAL -1)

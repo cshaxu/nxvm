@@ -3,7 +3,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "../support/vm_model40_byob_fixture.h"
+#include "../support/rom/model40_session_assets.h"
 
 static C_INT read_byte(core_machine *machine, type_unsigned_32 physical,
     type_unsigned_8 *out_value)
@@ -33,11 +33,7 @@ C_INT main(C_VOID)
     C_INT step = 0;
 
 #define CHECK(expression) do { ++step; if (!(expression)) failed = step; } while (0)
-    CHECK(vm_model40_fixture_create_bytes("t386-s22-even.bin", even,
-        "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe",
-        "t386-s22-odd.bin", odd,
-        "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe",
-        &session) == TYPE_STATUS_OK &&
+    CHECK(vm_model40_fixture_create_bytes(even, odd, &session) == TYPE_STATUS_OK &&
         session != STD_NULL);
     if (!failed) {
         CHECK(read_byte(session->core_machine,
@@ -86,7 +82,6 @@ C_INT main(C_VOID)
     }
 #undef CHECK
     vm_session_destroy(session);
-    vm_model40_fixture_remove("t386-s22-even.bin", "t386-s22-odd.bin");
     if (failed) {
         STD_PRINTF("M5:T386:S22:D4-PARITY-DIAGNOSTIC:STEP-%u\n", (unsigned int)failed);
         return 1;

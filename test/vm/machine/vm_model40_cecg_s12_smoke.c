@@ -6,7 +6,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
-#include "../support/vm_model40_byob_fixture.h"
+#include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)
 {
@@ -14,7 +14,7 @@ C_INT main(C_VOID)
     t_port *port;
     C_INT failed = 0;
 
-    failed |= vm_model40_fixture_create("t386-s12-even.bin", "t386-s12-odd.bin", &session) !=
+    failed |= vm_model40_fixture_create(&session) !=
         TYPE_STATUS_OK || session == STD_NULL;
     if (!failed) {
         port = &session->core_machine->executor_port;
@@ -41,7 +41,6 @@ C_INT main(C_VOID)
             core_machine_port_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT) != 0x00u;
     }
     vm_session_destroy(session);
-    vm_model40_fixture_remove("t386-s12-even.bin", "t386-s12-odd.bin");
     if (!failed) {
         STD_PRINTF("M5:T386:S12:MODEL40-IO-BASE:OK\n");
         return 0;

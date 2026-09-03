@@ -7,6 +7,7 @@
 #include "vm/composition/session/session_private.h"
 #include "core/machine/hdc.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
+#include "../support/rom/session_assets.h"
 
 #define HDC_DATA_PORT 0x01f0u
 #define HDC_ERROR_PORT 0x01f1u
@@ -158,7 +159,7 @@ C_INT main(C_VOID)
 
     config.create_hdd_cylinders = 2u;
     if (!vm_hdc_profile_contract_is_valid() ||
-        vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || session->core_machine == STD_NULL) goto fail;
     invalid_lba = (type_unsigned_32)session->hdd.data.ncyl * session->hdd.data.nhead *
         session->hdd.data.nsector;
@@ -271,7 +272,7 @@ C_INT main(C_VOID)
     vm_session_destroy(session);
     session = STD_NULL;
 
-    if (failed || vm_session_create(STD_NULL, &no_media) != TYPE_STATUS_OK ||
+    if (failed || vm_test_default_pc_at_session_create(STD_NULL, &no_media) != TYPE_STATUS_OK ||
         no_media == STD_NULL || !vm_hdc_program_chs(no_media) ||
         !vm_hdc_write(no_media->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         !vm_hdc_complete_command(no_media->core_machine) ||
