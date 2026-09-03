@@ -18,7 +18,7 @@
 
 static type_unsigned_8 vm_t287_probe_fdd[VM_T287_PROBE_FDD_BYTES];
 
-static C_INT vm_t287_probe_write_fdd(const C_CHAR *path)
+static C_INT vm_t287_probe_build_fdd(type_unsigned_8 **out_bytes, STD_SIZE_T *out_count)
 {
     static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u,                         /* xor ax,ax */
@@ -57,47 +57,26 @@ static C_INT vm_t287_probe_write_fdd(const C_CHAR *path)
         0xc7u, 0x06u, 0x10u, 0x05u, 0x5au, 0xa5u, /* [0510]=A55A */
         0xf4u, 0xebu, 0xfeu                   /* hlt; jmp $ */
     };
-    STD_FILE *file;
-
-    if (path == STD_NULL) return 0;
+    if (out_bytes == STD_NULL || out_count == STD_NULL) return 0;
     STD_MEMSET(vm_t287_probe_fdd, 0, sizeof(vm_t287_probe_fdd));
     STD_MEMCPY(vm_t287_probe_fdd, boot_code, sizeof(boot_code));
     vm_t287_probe_fdd[510u] = 0x55u;
     vm_t287_probe_fdd[511u] = 0xaau;
-    file = STD_FOPEN(path, "wb");
-    if (file == STD_NULL || STD_FWRITE(vm_t287_probe_fdd, 1u,
-            sizeof(vm_t287_probe_fdd), file) != sizeof(vm_t287_probe_fdd)) {
-        if (file != STD_NULL) STD_FCLOSE(file);
-        return 0;
-    }
-    STD_FCLOSE(file);
+    *out_bytes = vm_t287_probe_fdd;
+    *out_count = sizeof(vm_t287_probe_fdd);
     return 1;
 }
 
-static type_status vm_t287_probe_install_boot_media(
-    vm_product_session_request *request, C_VOID *opaque)
+static type_status vm_t287_probe_install_boot_overlay(
+    integration_yaml_session *yaml_session, C_VOID *opaque)
 {
+    type_unsigned_8 *bytes;
+    STD_SIZE_T count;
+
     (C_VOID)opaque;
-    return request != STD_NULL && request->floppy_count == 1u &&
-        vm_t287_probe_write_fdd(request->floppy[0u]) ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
-}
-
-static C_INT vm_t287_probe_read_file(const C_CHAR *path, type_unsigned_8 *bytes,
-    DWORD count)
-{
-    HANDLE file;
-    DWORD read = 0u;
-
-    if (path == STD_NULL || bytes == STD_NULL || count == 0u) return 0;
-    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, STD_NULL, OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL, STD_NULL);
-    if (file == INVALID_HANDLE_VALUE) return 0;
-    if (!ReadFile(file, bytes, count, &read, STD_NULL) || read != count) {
-        CloseHandle(file);
-        return 0;
-    }
-    CloseHandle(file);
-    return 1;
+    return yaml_session != STD_NULL && vm_t287_probe_build_fdd(&bytes, &count) &&
+        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+            bytes, count) == TYPE_STATUS_OK ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
 static type_unsigned_32 vm_t287_probe_lba(const type_unsigned_8 *entry)
@@ -117,6 +96,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_unsigned_8 host_vbr[512] = {0};
     type_unsigned_8 guest_mbr[512] = {0};
     type_unsigned_8 guest_vbr[512] = {0};
+    type_unsigned_8 *hdd_overlay = STD_NULL;
+    STD_SIZE_T hdd_overlay_count = 0u;
     type_unsigned_16 values[12] = {0};
     type_unsigned_16 int13_vector[2] = {0};
     const type_unsigned_8 *entry = STD_NULL;
@@ -136,35 +117,20 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_SIZE_T mbr_mismatch = sizeof(guest_mbr);
     STD_SIZE_T vbr_mismatch = sizeof(guest_vbr);
 
-    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
-            vm_t287_probe_install_boot_media, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_t287_probe_install_boot_overlay, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
         return 77;
     }
     session = yaml_session.session;
-    if (session == STD_NULL || yaml_session.request.fixed_disk_count != 1u ||
-        !vm_t287_probe_read_file(yaml_session.request.fixed_disk[0u], host_mbr,
-            sizeof(host_mbr))) goto done;
+    if (session == STD_NULL || integration_yaml_session_overlay_read(&yaml_session,
+            VM_SESSION_MEDIA_HDD_ID, (C_VOID **)&hdd_overlay, &hdd_overlay_count) !=
+            TYPE_STATUS_OK || hdd_overlay_count < 1024u * 1024u) goto done;
+    STD_MEMCPY(host_mbr, hdd_overlay, sizeof(host_mbr));
     entry = host_mbr + 446u;
     lba = vm_t287_probe_lba(entry);
-    if (lba == 0u || lba > (MAXDWORD / 512u) || !vm_t287_probe_read_file(
-            yaml_session.request.fixed_disk[0u],
-            host_vbr, sizeof(host_vbr))) goto done;
-    {
-        HANDLE file = CreateFileA(yaml_session.request.fixed_disk[0u], GENERIC_READ, FILE_SHARE_READ, STD_NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, STD_NULL);
-        DWORD read = 0u;
-        LARGE_INTEGER offset;
-
-        if (file == INVALID_HANDLE_VALUE) goto done;
-        offset.QuadPart = (LONGLONG)lba * 512ll;
-        if (!SetFilePointerEx(file, offset, STD_NULL, FILE_BEGIN) ||
-            !ReadFile(file, host_vbr, sizeof(host_vbr), &read, STD_NULL) ||
-            read != sizeof(host_vbr)) {
-            CloseHandle(file);
-            goto done;
-        }
-        CloseHandle(file);
-    }
+    if (lba == 0u || lba > (MAXDWORD / 512u) || (STD_SIZE_T)lba * 512u +
+            sizeof(host_vbr) > hdd_overlay_count) goto done;
+    STD_MEMCPY(host_vbr, hdd_overlay + (STD_SIZE_T)lba * 512u, sizeof(host_vbr));
     if (core_machine_debug_read_memory(session->core_machine, 0x004cu, int13_vector,
             sizeof(int13_vector)) != TYPE_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_T287_PROBE_BUDGET; ++instruction) {
@@ -211,6 +177,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 sizeof(guest_vbr)) == 0;
 
 done:
+    STD_FREE(hdd_overlay);
     if (session != STD_NULL) (C_VOID)core_machine_get_cpu_state(session->core_machine,
         &cpu);
     if (passed) {

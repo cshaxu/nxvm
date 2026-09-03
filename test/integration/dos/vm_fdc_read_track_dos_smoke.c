@@ -37,32 +37,7 @@ static C_VOID vm_fdc242_fat_set(type_unsigned_8 *fat, type_unsigned_16 cluster, 
     fat[offset + 1u] = (type_unsigned_8)(pair >> 8u);
 }
 
-static C_INT vm_fdc242_read_image(const C_CHAR *source, type_unsigned_8 **out_image,
-    DWORD *out_size)
-{
-    HANDLE input = INVALID_HANDLE_VALUE;
-    LARGE_INTEGER size;
-    type_unsigned_8 *image = STD_NULL;
-    DWORD count;
-
-    if (source == STD_NULL || out_image == STD_NULL || out_size == STD_NULL ||
-        (input = CreateFileA(source, GENERIC_READ, FILE_SHARE_READ, STD_NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, STD_NULL)) == INVALID_HANDLE_VALUE ||
-        !GetFileSizeEx(input, &size) || size.QuadPart < VM_FDC242_TRACK_BYTES ||
-        size.QuadPart > MAXDWORD) goto fail;
-    image = STD_MALLOC((STD_SIZE_T)size.QuadPart);
-    if (image == STD_NULL || !ReadFile(input, image, (DWORD)size.QuadPart,
-        &count, STD_NULL) || count != (DWORD)size.QuadPart) goto fail;
-    CloseHandle(input);
-    *out_image = image; *out_size = (DWORD)size.QuadPart;
-    return 1;
-fail:
-    if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
-    STD_FREE(image);
-    return 0;
-}
-
-static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size, const C_CHAR *path)
+static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size)
 {
     static const type_unsigned_8 program[] = {
         0x1e,0x31,0xc0,0x8e,0xd8,0xb8,0x80,0x02,0xa3,0x38,0x00,
@@ -107,10 +82,7 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size, const C_CHAR 
     type_unsigned_32 bps, spc, reserved, fats, roots, spf, root_start, root_bytes,
         data_start, clusters, cluster, root;
     type_unsigned_8 *entry = STD_NULL;
-    HANDLE output;
-    DWORD written;
-
-    if (image == STD_NULL || path == STD_NULL || size < 512u) return 0;
+    if (image == STD_NULL || size < 512u) return 0;
     bps = image[11u] | ((type_unsigned_32)image[12u] << 8u); spc = image[13u];
     reserved = image[14u] | ((type_unsigned_32)image[15u] << 8u); fats = image[16u];
     roots = image[17u] | ((type_unsigned_32)image[18u] << 8u);
@@ -135,24 +107,23 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size, const C_CHAR 
     for (root = 0u; root < fats; ++root) vm_fdc242_fat_set(image +
         (reserved + root * spf) * bps, (type_unsigned_16)cluster, 0x0fffu);
     STD_MEMCPY(image + data_start + (cluster - 2u) * bps * spc, program, sizeof(program));
-    output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL, CREATE_ALWAYS,
-        FILE_ATTRIBUTE_TEMPORARY, STD_NULL);
-    if (output == INVALID_HANDLE_VALUE || !WriteFile(output, image, size, &written,
-        STD_NULL) || written != size) { if (output != INVALID_HANDLE_VALUE) CloseHandle(output); return 0; }
-    CloseHandle(output); return 1;
+    return 1;
 }
 
-static type_status vm_fdc242_install_on_copied_media(
-    vm_product_session_request *request, C_VOID *opaque)
+static type_status vm_fdc242_install_on_overlay(
+    integration_yaml_session *yaml_session, C_VOID *opaque)
 {
     type_unsigned_8 *image = STD_NULL;
     type_unsigned_8 *expected = (type_unsigned_8 *)opaque;
-    DWORD size = 0u;
+    STD_SIZE_T size = 0u;
     C_INT installed;
 
-    if (request == STD_NULL || expected == STD_NULL || request->floppy_count != 1u ||
-        !vm_fdc242_read_image(request->floppy[0u], &image, &size)) return TYPE_STATUS_FAULT;
-    installed = vm_fdc242_install(image, size, request->floppy[0u]);
+    if (yaml_session == STD_NULL || expected == STD_NULL ||
+        integration_yaml_session_overlay_read(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+            (C_VOID **)&image, &size) != TYPE_STATUS_OK || size > MAXDWORD) return TYPE_STATUS_FAULT;
+    installed = vm_fdc242_install(image, (DWORD)size) &&
+        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+            image, size) == TYPE_STATUS_OK;
     if (installed) STD_MEMCPY(expected, image, VM_FDC242_TRACK_BYTES);
     STD_FREE(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
@@ -245,8 +216,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT passed = 0;
     STD_SIZE_T first_mismatch = sizeof(expected);
 
-    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
-            vm_fdc242_install_on_copied_media, expected, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_fdc242_install_on_overlay, expected, &yaml_session) != TYPE_STATUS_OK) {
         return 77;
     }
     passed = vm_fdc242_run_case(&yaml_session, 1u, &one_instruction) &&

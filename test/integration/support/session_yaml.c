@@ -4,6 +4,7 @@
 
 #include "test/integration/support/session_yaml.h"
 #include "vm/composition/session/provider.h"
+#include "vm/composition/session/session_private.h"
 
 static C_INT integration_yaml_session_find(const C_CHAR *directory,
     const C_CHAR *file_name, vm_product_session_request *out_request)
@@ -48,22 +49,6 @@ C_INT integration_yaml_session_assets_present(
             INVALID_FILE_ATTRIBUTES);
 }
 
-static C_INT integration_yaml_session_copy_media(C_CHAR *path,
-    STD_SIZE_T capacity, const C_CHAR *name)
-{
-    C_CHAR sidecar[80];
-
-    if (path == STD_NULL || name == STD_NULL || path[0] == '\0' ||
-        STD_STRLEN(name) + 1u > capacity ||
-        STD_SNPRINTF(sidecar, sizeof(sidecar), "%s.nxvm-fdd.json", name) < 0) return 0;
-    /* The FDD adapter owns this derived sidecar.  A test-owned media copy
-     * must not inherit its geometry/address marks from an earlier case. */
-    (C_VOID)DeleteFileA(sidecar);
-    if (!CopyFileA(path, name, FALSE)) return 0;
-    STD_MEMCPY(path, name, STD_STRLEN(name) + 1u);
-    return 1;
-}
-
 type_status integration_yaml_session_restart(integration_yaml_session *session)
 {
     type_status status;
@@ -76,22 +61,27 @@ type_status integration_yaml_session_restart(integration_yaml_session *session)
     status = session->provider.open(session->provider.context, 1u,
         &(core_product_session_open_options) {0u, STD_NULL, &session->request,
             sizeof(session->request)}, (C_VOID **)&session->session);
-    return status == TYPE_STATUS_OK && session->session != STD_NULL ?
-        TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+    if (status != TYPE_STATUS_OK || session->session == STD_NULL) return TYPE_STATUS_FAULT;
+    if (session->transform != STD_NULL && session->transform(session,
+            session->transform_opaque) != TYPE_STATUS_OK) {
+        (C_VOID)session->provider.close(session->provider.context, session->session);
+        session->session = STD_NULL;
+        return TYPE_STATUS_FAULT;
+    }
+    return TYPE_STATUS_OK;
 }
 
 type_status integration_yaml_session_open(const C_CHAR *directory,
     const C_CHAR *file_name, integration_yaml_session *out_session)
 {
-    return integration_yaml_session_open_with_media_transform(directory, file_name,
+    return integration_yaml_session_open_with_overlay_transform(directory, file_name,
         STD_NULL, STD_NULL, out_session);
 }
 
-type_status integration_yaml_session_open_with_media_transform(const C_CHAR *directory,
-    const C_CHAR *file_name, integration_yaml_session_media_transform transform,
+type_status integration_yaml_session_open_with_overlay_transform(const C_CHAR *directory,
+    const C_CHAR *file_name, integration_yaml_session_overlay_transform transform,
     C_VOID *opaque, integration_yaml_session *out_session)
 {
-    STD_SIZE_T index;
     type_status status;
 
     if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -106,29 +96,9 @@ type_status integration_yaml_session_open_with_media_transform(const C_CHAR *dir
             file_name);
         return TYPE_STATUS_UNSUPPORTED;
     }
-    for (index = 0u; index < out_session->request.floppy_count; ++index) {
-        C_CHAR name[64];
-
-        if (STD_SNPRINTF(name, sizeof(name), "session-floppy-%u.img",
-                (unsigned int)index) < 0 || !integration_yaml_session_copy_media(
-                out_session->request.floppy[index],
-                sizeof(out_session->request.floppy[index]), name)) return TYPE_STATUS_FAULT;
-        ++out_session->copied_floppy_count;
-    }
-    for (index = 0u; index < out_session->request.fixed_disk_count; ++index) {
-        C_CHAR name[64];
-
-        if (STD_SNPRINTF(name, sizeof(name), "session-fixed-disk-%u.img",
-                (unsigned int)index) < 0 || !integration_yaml_session_copy_media(
-                out_session->request.fixed_disk[index],
-                sizeof(out_session->request.fixed_disk[index]), name)) return TYPE_STATUS_FAULT;
-        ++out_session->copied_fixed_disk_count;
-    }
-    if (transform != STD_NULL && transform(&out_session->request, opaque) != TYPE_STATUS_OK) {
-        integration_yaml_session_close(out_session);
-        return TYPE_STATUS_FAULT;
-    }
     vm_session_provider_initialize(&out_session->provider);
+    out_session->transform = transform;
+    out_session->transform_opaque = opaque;
     status = integration_yaml_session_restart(out_session);
     if (status != TYPE_STATUS_OK || out_session->session == STD_NULL) {
         STD_FPRINTF(STD_STDERR, "T515:YAML-SESSION:%s:OPEN-FAILED:%d\n",
@@ -139,23 +109,52 @@ type_status integration_yaml_session_open_with_media_transform(const C_CHAR *dir
     return TYPE_STATUS_OK;
 }
 
+type_status integration_yaml_session_overlay_read(const integration_yaml_session *session,
+    core_machine_media_id id, C_VOID **out_bytes, STD_SIZE_T *out_count)
+{
+    core_machine_media_info info;
+    core_machine_media_result result;
+    STD_SIZE_T count;
+    C_VOID *bytes;
+
+    if (session == STD_NULL || session->session == STD_NULL || out_bytes == STD_NULL ||
+        out_count == STD_NULL || core_machine_media_query(session->session->media_registry,
+            id, &info, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        info.geometry.bytes_per_sector == 0u ||
+        info.geometry.logical_sector_count > (STD_SIZE_T)-1 / info.geometry.bytes_per_sector) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    count = (STD_SIZE_T)info.geometry.logical_sector_count * info.geometry.bytes_per_sector;
+    if (count == 0u || count > TYPE_MAX_UNSIGNED_32) return TYPE_STATUS_INVALID_ARGUMENT;
+    bytes = STD_MALLOC(count);
+    if (bytes == STD_NULL || core_machine_media_read_bytes(session->session->media_registry,
+            id, 0u, bytes, (type_unsigned_32)count, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        STD_FREE(bytes);
+        return TYPE_STATUS_FAULT;
+    }
+    *out_bytes = bytes;
+    *out_count = count;
+    return TYPE_STATUS_OK;
+}
+
+type_status integration_yaml_session_overlay_write(integration_yaml_session *session,
+    core_machine_media_id id, const C_VOID *bytes, STD_SIZE_T byte_count)
+{
+    core_machine_media_result result;
+
+    if (session == STD_NULL || session->session == STD_NULL || bytes == STD_NULL ||
+        byte_count > TYPE_MAX_UNSIGNED_32 || core_machine_media_write_bytes(
+            session->session->media_registry, id, 0u, bytes,
+            (type_unsigned_32)byte_count, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK) return TYPE_STATUS_INVALID_ARGUMENT;
+    return TYPE_STATUS_OK;
+}
+
 C_VOID integration_yaml_session_close(integration_yaml_session *session)
 {
-    STD_SIZE_T index;
-
     if (session == STD_NULL) return;
     if (session->session != STD_NULL) (C_VOID)session->provider.close(
         session->provider.context, session->session);
-    if (session->copied_floppy_count != 0u || session->copied_fixed_disk_count != 0u) {
-        for (index = 0u; index < session->copied_floppy_count; ++index) {
-            C_CHAR sidecar[80];
-
-            if (STD_SNPRINTF(sidecar, sizeof(sidecar), "%s.nxvm-fdd.json",
-                    session->request.floppy[index]) >= 0) (C_VOID)DeleteFileA(sidecar);
-            (C_VOID)DeleteFileA(session->request.floppy[index]);
-        }
-        for (index = 0u; index < session->copied_fixed_disk_count; ++index)
-            (C_VOID)DeleteFileA(session->request.fixed_disk[index]);
-    }
     STD_MEMSET(session, 0, sizeof(*session));
 }

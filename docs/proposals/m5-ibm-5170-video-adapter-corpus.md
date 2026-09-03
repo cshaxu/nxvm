@@ -12,13 +12,13 @@ does not call an arbitrary VGA ROM an original 5170 configuration.
 
 The task creates two durable ledgers.
 
-1. **List 1 — source configuration corpus.** For original 5170 + MDA/CGA,
+1. **List 1 - source configuration corpus.** For original 5170 + MDA/CGA,
    IBM EGA, and a later ISA VGA expansion, record board/adaptor identity,
    ports, aperture, option-ROM expectation, BIOS/INT 10 ownership, font
    source, manual identity and whether the original PDF is text/OCR/ambiguous.
    IBM system-board and adapter manuals are archived only in
    `../nxvm-assets/manuals`; the ledger records their hashes and locators.
-2. **List 2 — current product gap map.** Map every List-1 row to VADP,
+2. **List 2 - current product gap map.** Map every List-1 row to VADP,
    firmware mapping, session YAML, manifest and integration-test owners. Each
    row is Manual-L3 only where the manual supplies a usable value/formula;
    source-supported reference behavior is labelled Other-L2; an unsupported
@@ -87,7 +87,7 @@ programmable-font support, or an IBM adapter-specific L3 state.
 
 ## SoftPC Research Boundary
 
-`O:\repos.hobby\softpc\firmware\roms\v7vga.rom` is a V7 VGA ROM, not evidence
+A locally available V7 VGA ROM is not evidence
 of an IBM 5170 original adapter.  S1 may inspect its size, hash, provenance and
 licensing record as a read-only research lead. It may become an external,
 owner-managed later-VGA input only if the owner confirms its provenance and the
@@ -105,22 +105,22 @@ assume a fixed ROM offset.
 
 ## Planned Subtasks
 
-1. **S1 — manual and firmware provenance corpus.** Acquire/index qualifying
+1. **S1 - manual and firmware provenance corpus.** Acquire/index qualifying
    original IBM 5170, CGA and EGA documentation; audit the available external
    assets and the SoftPC V7 candidate without importing bytes; produce List 1.
-2. **S2 — VADP/firmware/font gap audit.** Cross-check List 1 against NXVM
+2. **S2 - VADP/firmware/font gap audit.** Cross-check List 1 against NXVM
    VADP, generic external option-ROM mapping, the in-code INT 10h hook,
    session grammar and the renderer glyph loader; produce List 2 and one finite
    supported-configuration matrix with an explicit disposition for every one
    of those paths.
-3. **S3 — selected configuration implementation.** Repair the sole
+3. **S3 - selected configuration implementation.** Repair the sole
    Core/VM/VADP owner path needed by every admitted matrix row, removing any
    duplicate or implicit ROM/font route; make a source-qualified
    character-generator ROM an external, manifest-recorded, reusable adapter
    asset consumed only by VADP; prove that the presentation adapter consumes a
    VADP snapshot rather than a guest-font substitute; add repository-only unit
    tests.
-4. **S4 — YAML integration and closure.** Add only source-qualified external
+4. **S4 - YAML integration and closure.** Add only source-qualified external
    YAML/manifest rows, run the complete integration corpus and prove the
    selected ROM/font/adapter disposition. Unsupported rows are transferred
    explicitly, not hidden behind `null` or an in-code fallback.

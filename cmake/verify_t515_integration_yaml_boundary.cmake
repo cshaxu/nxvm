@@ -7,6 +7,10 @@ file(GLOB_RECURSE integration_sources
     "${PROJECT_SOURCE_DIR}/test/integration/*.h")
 foreach(source IN LISTS integration_sources)
     file(READ "${source}" text)
+    if(text MATCHES "CopyFileA|session-floppy-[^\"]*\\.img|session-fixed-disk-[^\"]*\\.img|open_with_media_transform")
+        message(FATAL_ERROR
+            "T516 integration must use the YAML-declared VM media overlay, not copied media: ${source}")
+    endif()
     if(text MATCHES "vm_session_create[ \t\r\n]*\\(")
         message(FATAL_ERROR "T515 integration must open only through session YAML: ${source}")
     endif()

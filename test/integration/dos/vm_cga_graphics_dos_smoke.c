@@ -29,35 +29,7 @@ static C_VOID vm_cga_dos_fat12_set(type_unsigned_8 *fat, type_unsigned_16 cluste
     fat[offset + 1u] = (type_unsigned_8)(pair >> 8);
 }
 
-static C_INT vm_cga_dos_read_file(const C_CHAR *source, type_unsigned_8 **out_image,
-    DWORD *out_size)
-{
-    HANDLE input = INVALID_HANDLE_VALUE;
-    LARGE_INTEGER size;
-    type_unsigned_8 *image = STD_NULL;
-    DWORD read_count;
-
-    if (source == STD_NULL || out_image == STD_NULL || out_size == STD_NULL) return 0;
-    input = CreateFileA(source, GENERIC_READ, FILE_SHARE_READ, STD_NULL,
-        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, STD_NULL);
-    if (input == INVALID_HANDLE_VALUE || !GetFileSizeEx(input, &size) ||
-        size.QuadPart <= 0 || size.QuadPart > MAXDWORD) goto fail;
-    image = STD_MALLOC((STD_SIZE_T)size.QuadPart);
-    if (image == STD_NULL || !ReadFile(input, image, (DWORD)size.QuadPart,
-            &read_count, STD_NULL) || read_count != (DWORD)size.QuadPart) goto fail;
-    CloseHandle(input);
-    *out_image = image;
-    *out_size = (DWORD)size.QuadPart;
-    return 1;
-
-fail:
-    if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
-    STD_FREE(image);
-    return 0;
-}
-
-static C_INT vm_cga_dos_install_program(type_unsigned_8 *image, DWORD image_size,
-    const C_CHAR *path)
+static C_INT vm_cga_dos_install_program(type_unsigned_8 *image, DWORD image_size)
 {
     static const type_unsigned_8 program[] = {
         0xbau, 0xd8u, 0x03u, 0xb0u, 0x0au, 0xeeu,
@@ -79,10 +51,7 @@ static C_INT vm_cga_dos_install_program(type_unsigned_8 *image, DWORD image_size
     type_unsigned_32 cluster;
     type_unsigned_32 root;
     type_unsigned_8 *entry = STD_NULL;
-    HANDLE output;
-    DWORD written;
-
-    if (image == STD_NULL || image_size < 512u || path == STD_NULL) return 0;
+    if (image == STD_NULL || image_size < 512u) return 0;
     bytes_per_sector = image[11u] | ((type_unsigned_32)image[12u] << 8);
     sectors_per_cluster = image[13u];
     reserved_sectors = image[14u] | ((type_unsigned_32)image[15u] << 8);
@@ -124,31 +93,24 @@ static C_INT vm_cga_dos_install_program(type_unsigned_8 *image, DWORD image_size
     }
     STD_MEMCPY(image + data_start + (cluster - 2u) * bytes_per_sector *
         sectors_per_cluster, program, sizeof(program));
-    output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL, CREATE_ALWAYS,
-        FILE_ATTRIBUTE_TEMPORARY, STD_NULL);
-    if (output == INVALID_HANDLE_VALUE) return 0;
-    if (!WriteFile(output, image, image_size, &written, STD_NULL) ||
-        written != image_size) {
-        CloseHandle(output);
-        return 0;
-    }
-    CloseHandle(output);
     return 1;
 }
 
-static type_status vm_cga_dos_install_on_copied_media(
-    vm_product_session_request *request, C_VOID *opaque)
+static type_status vm_cga_dos_install_on_overlay(integration_yaml_session *session,
+    C_VOID *opaque)
 {
     type_unsigned_8 *image = STD_NULL;
-    DWORD image_size = 0u;
+    STD_SIZE_T image_size = 0u;
     C_INT installed;
 
     (C_VOID)opaque;
-    if (request == STD_NULL || request->floppy_count != 1u ||
-        !vm_cga_dos_read_file(request->floppy[0u], &image, &image_size)) {
+    if (integration_yaml_session_overlay_read(session, VM_SESSION_MEDIA_FDD_ID,
+            (C_VOID **)&image, &image_size) != TYPE_STATUS_OK || image_size > MAXDWORD) {
         return TYPE_STATUS_FAULT;
     }
-    installed = vm_cga_dos_install_program(image, image_size, request->floppy[0u]);
+    installed = vm_cga_dos_install_program(image, (DWORD)image_size) &&
+        integration_yaml_session_overlay_write(session, VM_SESSION_MEDIA_FDD_ID,
+            image, image_size) == TYPE_STATUS_OK;
     STD_FREE(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
@@ -208,8 +170,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_SIZE_T index;
     C_INT passed = 0;
 
-    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
-            vm_cga_dos_install_on_copied_media, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_cga_dos_install_on_overlay, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
         return 77;
     }
     session = yaml_session.session;

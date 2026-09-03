@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t516-s1-yaml-overlay-baseline.md` | Integration/boot-contract owner | T516 S1 freezes the five YAML-driven external boot inputs, removes copied-media request rewriting in favor of the VM-owned overlay, and records the initial 5170/DeskPro divergence. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

@@ -40,13 +40,17 @@ chosen repair.
 
 ## Planned Subtasks
 
-1. **S1 - frozen corpus and shared boot-contract ledger.** Record the five
-   profile rows, all asset identities, common checkpoints, known terminal
-   states and the complete owner/caller inventory.  Establish a bounded
-   recorder with time, no-progress and byte limits; it is diagnostic evidence,
-   not product behavior.  Resolve whether each observed divergence is CPU,
-   Core controller, firmware interaction or immutable board composition before
-   code changes.
+1. **S1 - frozen corpus, YAML-overlay route and shared boot-contract ledger.**
+   Record the five profile rows, all asset identities, common checkpoints,
+   known terminal states and the complete owner/caller inventory. Replace the
+   integration helper's copied-media/re-written-request path with the existing
+   product YAML route selecting an in-memory overlay backing for every
+   integration media item. The external path remains the input identity; VM
+   owns the one overlay backing and Core owns its device state. Establish a
+   bounded recorder with time, no-progress and byte limits; it is diagnostic
+   evidence, not product behavior. Resolve whether each observed divergence is
+   CPU, Core controller, firmware interaction or immutable board composition
+   before any 5170 or DeskPro correction.
 2. **S2 - IBM 5170 repair.** Use original IBM/controller material and
    repository code, with externally observed emulator behavior only as labelled
    corroboration, to repair the first faulty owner mechanism for both 360 KB
@@ -72,6 +76,9 @@ chosen repair.
   following video-corpus candidate.
 - Do not add a VM clock, a profile-side controller state mirror, firmware
   service fallback or BIOS-specific generic-Core compatibility branch.
+- Do not retain test-local media copying, request-path rewriting or a second
+  session/media construction path after YAML overlay is available. Test staging
+  may only alter the VM-owned overlay after that session has opened.
 
 ## Completion Standard
 

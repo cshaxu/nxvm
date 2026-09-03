@@ -2,10 +2,26 @@
 
 ## Current Work
 
-No numeric implementation task is active. T515 is closed at the owner's
-redefined asset-boundary completion standard; its three observed real-ROM boot
-timeouts are retained as explicit debt in its history, not reported as passes.
-The next candidate is selected only from [Queue](QUEUE.md).
+## M5 T516 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T516 S1 is the next numeric implementation task after closed T515. |
+| Admission And Approval | Owner approved this Queue-first candidate on 2026-09-03 for single-session dual-role execution and explicitly approved removing integration media copies in favor of YAML-declared VM overlay backing; S1 remains limited to that shared asset route and the frozen boot-contract baseline. |
+| Objective | Establish one evidence-backed, five-row reset-to-boot contract ledger and replace integration's copied-media/request-rewrite path with the one YAML-declared VM overlay backing before any IBM 5170 or DeskPro repair. |
+| Non-goals | No BIOS-specific patch, F1/input synthesis, timeout relaxation, external asset mutation, `build/output` YAML change, generated firmware, profile-side controller mirror, source import, or test-local media file. |
+| Reference Baseline | `2b3f89bc`; T515 asset boundary is closed at 302/302 unit and 41/44 integration, with the exact three external-ROM timeout rows retained in [T515 history](../history/M5-T515-external-asset-bundle-governance.md). |
+| Candidate Proposal | [M5 external-ROM boot-contract baseline and repair](../proposals/m5-external-rom-boot-contract-repair.md). |
+| Files And ABI Surface | S1 may change YAML request parsing, frozen VM image/media request and backing composition, session templates, integration support and their tests/evidence. Core receives the same one device backing and gains no host path or profile knowledge; no unrelated production ABI or controller contract change. |
+| Applicable Rules | Execution lifecycle, coverage ledger and similar-issue sweep; documentation authority boundaries; Core sole ownership and VM-to-Core direction; C11/test external-asset boundaries; external firmware/media source policy. |
+| Verification | Resolve every declared asset path and record size/SHA-256; prove each integration session retains its YAML asset path while selecting in-memory overlay backing; run the five selected YAML profile rows under declared recorder budgets; run their focused observer proof; run complete repository-only unit suite before S1 closure; run documentation governance and `git diff --check`. |
+| Expected Markers | A finite ledger records default PC/AT, IBM 5160, IBM 5170 360 KB, IBM 5170 1.2 MB and Model 40 inputs, checkpoints, terminal dispositions and owner/caller inventory. Integration has no `CopyFileA` or request-path rewrite; any test staging operates only through the VM-owned overlay. No protected bytes enter the repository. |
+| Asset Needs | Read-only owner-managed `../nxvm-assets` firmware, CMOS and media already named by YAML. No acquisition, copying, manifests or source import. |
+| Reporting Requirements | Report the frozen corpus, every observed divergence, the proposed owner disposition and any material scope objection before S2; record exact commands and results in indexed evidence. |
+| Stop Conditions | Stop for missing/changed protected input, need to alter a vendor asset, need to invent a hardware relation, or evidence requiring a new Core/profile public contract; request owner direction before scope expansion. |
+| Exit Criteria | The five-row coverage ledger is complete, every checkpoint has one source owner or explicit next receiver, all integration media backing comes from its unchanged YAML external path through one VM overlay factory, all S1 verification passes, and a complete S1 P is reviewed and pushed. |
+| Original Owner Request | Establish the highest-priority Queue task to solve IBM 5170 and DeskPro startup failures, with IBM 5170 first; first construct the common boot-contract baseline rather than patching BIOS symptoms. Owner additionally requires media to stay external and use overlay rather than be copied into a test directory. |
+| Similar-Issue Sweep | Search all tracked `src`, `test`, CMake and task records for profile-specific boot injections, duplicate controller timers, duplicated KBC output routes, direct non-YAML external session construction, and copied/re-written integration media requests; ledger each production hit or defer it with a bounded receiver. |
 
 ## Current Technical Baseline
 

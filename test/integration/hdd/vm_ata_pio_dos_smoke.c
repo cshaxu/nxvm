@@ -171,85 +171,46 @@ static C_VOID vm_ata253_fat12_set(type_unsigned_8 *fat, type_unsigned_16 cluster
     fat[offset + 1u] = (type_unsigned_8)(pair >> 8u);
 }
 
-static C_INT vm_ata253_read_image(const C_CHAR *source, type_unsigned_8 **out_image,
-    DWORD *out_size)
-{
-    HANDLE input = INVALID_HANDLE_VALUE;
-    LARGE_INTEGER size;
-    type_unsigned_8 *image = STD_NULL;
-    DWORD count;
+static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size);
+static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size);
 
-    if (source == STD_NULL || out_image == STD_NULL ||
-        out_size == STD_NULL) return 0;
-    input = CreateFileA(source, GENERIC_READ, FILE_SHARE_READ, STD_NULL,
-        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, STD_NULL);
-    if (input == INVALID_HANDLE_VALUE || !GetFileSizeEx(input, &size) ||
-        size.QuadPart <= 0 || size.QuadPart > MAXDWORD) goto fail;
-    image = STD_MALLOC((STD_SIZE_T)size.QuadPart);
-    if (image == STD_NULL || !ReadFile(input, image, (DWORD)size.QuadPart,
-            &count, STD_NULL) || count != (DWORD)size.QuadPart) goto fail;
-    CloseHandle(input);
-    *out_image = image;
-    *out_size = (DWORD)size.QuadPart;
-    return 1;
-
-fail:
-    if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
-    STD_FREE(image);
-    return 0;
-}
-
-static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size,
-    const C_CHAR *path);
-static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size,
-    const C_CHAR *path);
-
-static type_status vm_ata253_install_on_copied_media(
-    vm_product_session_request *request, C_VOID *opaque)
+static type_status vm_ata253_install_on_overlay(
+    integration_yaml_session *yaml_session, C_VOID *opaque)
 {
     type_unsigned_8 *fdd_image = STD_NULL;
     type_unsigned_8 *hdd_image = STD_NULL;
-    DWORD fdd_size = 0u;
-    DWORD hdd_size = 0u;
+    STD_SIZE_T fdd_size = 0u;
+    STD_SIZE_T hdd_size = 0u;
     C_INT ok;
 
     (C_VOID)opaque;
-    if (request == STD_NULL || request->floppy_count != 1u ||
-        request->fixed_disk_count != 1u || !vm_ata253_read_image(
-            request->floppy[0u], &fdd_image, &fdd_size) || !vm_ata253_install(
-            fdd_image, fdd_size, request->floppy[0u]) || !vm_ata253_read_image(
-            request->fixed_disk[0u], &hdd_image, &hdd_size)) {
+    if (yaml_session == STD_NULL || integration_yaml_session_overlay_read(yaml_session,
+            VM_SESSION_MEDIA_FDD_ID, (C_VOID **)&fdd_image, &fdd_size) != TYPE_STATUS_OK ||
+        integration_yaml_session_overlay_read(yaml_session, VM_SESSION_MEDIA_HDD_ID,
+            (C_VOID **)&hdd_image, &hdd_size) != TYPE_STATUS_OK || fdd_size > MAXDWORD ||
+        hdd_size > MAXDWORD || !vm_ata253_install(fdd_image, (DWORD)fdd_size) ||
+        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+            fdd_image, fdd_size) != TYPE_STATUS_OK) {
         STD_FREE(fdd_image);
         STD_FREE(hdd_image);
         return TYPE_STATUS_FAULT;
     }
-    ok = vm_ata253_zero_image(hdd_image, hdd_size, request->fixed_disk[0u]);
+    ok = vm_ata253_zero_image(hdd_image, (DWORD)hdd_size) &&
+        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_HDD_ID,
+            hdd_image, hdd_size) == TYPE_STATUS_OK;
     STD_FREE(fdd_image);
     STD_FREE(hdd_image);
     return ok ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
-static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size,
-    const C_CHAR *path)
+static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size)
 {
-    HANDLE output;
-    DWORD written;
-
-    if (image == STD_NULL || image_size == 0u || path == STD_NULL) return 0;
+    if (image == STD_NULL || image_size == 0u) return 0;
     STD_MEMSET(image, 0, image_size);
-    output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL, CREATE_ALWAYS,
-        FILE_ATTRIBUTE_TEMPORARY, STD_NULL);
-    if (output == INVALID_HANDLE_VALUE || !WriteFile(output, image, image_size,
-            &written, STD_NULL) || written != image_size) {
-        if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
-        return 0;
-    }
-    CloseHandle(output);
     return 1;
 }
 
-static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size,
-    const C_CHAR *path)
+static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size)
 {
     vm_ata253_program program;
     type_unsigned_32 bytes_per_sector;
@@ -265,11 +226,8 @@ static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size,
     type_unsigned_32 cluster;
     type_unsigned_32 root;
     type_unsigned_8 *entry = STD_NULL;
-    HANDLE output;
-    DWORD written;
-
     if (!vm_ata253_build_program(&program) || image == STD_NULL ||
-        image_size < 512u || path == STD_NULL) return 0;
+        image_size < 512u) return 0;
     bytes_per_sector = image[11u] | ((type_unsigned_32)image[12u] << 8u);
     sectors_per_cluster = image[13u];
     reserved_sectors = image[14u] | ((type_unsigned_32)image[15u] << 8u);
@@ -311,14 +269,6 @@ static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size,
     }
     STD_MEMCPY(image + data_start + (cluster - 2u) * bytes_per_sector *
         sectors_per_cluster, program.bytes, program.length);
-    output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL, CREATE_ALWAYS,
-        FILE_ATTRIBUTE_TEMPORARY, STD_NULL);
-    if (output == INVALID_HANDLE_VALUE || !WriteFile(output, image, image_size,
-            &written, STD_NULL) || written != image_size) {
-        if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
-        return 0;
-    }
-    CloseHandle(output);
     return 1;
 }
 
@@ -372,8 +322,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_SIZE_T index;
     C_INT passed = 0;
 
-    if (argc != 3 || integration_yaml_session_open_with_media_transform(argv[1], argv[2],
-            vm_ata253_install_on_copied_media, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_ata253_install_on_overlay, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
         return 77;
     }
     session = yaml_session.session;

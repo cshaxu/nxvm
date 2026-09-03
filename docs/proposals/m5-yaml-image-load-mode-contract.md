@@ -96,22 +96,22 @@ does not create, copy, replace, or transform that image.
 
 ## Subtask Plan
 
-1. **S1 — request grammar and CMOS collision ledger.** Audit all image loading
+1. **S1 - request grammar and CMOS collision ledger.** Audit all image loading
    routes and YAML templates; define the media mode table plus every
    profile/YAML topology field that maps to CMOS.  Record the one 5160
    no-CMOS disposition and direct diagnostics for missing or contradictory
    seeds.
-2. **S2 — one composition/backing implementation.** Implement the frozen
+2. **S2 - one composition/backing implementation.** Implement the frozen
    media backing factory and the sole immutable CMOS-seed copy/composer.
    Retire direct/overlay CMOS branches and profile-side post-load defaults
    while preserving Core's host-path-free boundary.
-3. **S3 — template and product migration.** Add explicit modes to every
+3. **S3 - template and product migration.** Add explicit modes to every
    supported media entry, use only `firmware.cmos: <path>` (or `null`), and
    migrate product/session callers to the one contract.  Confirm a cold start
    restores the immutable seed, BIOS Setup writes remain local, `readonly`
    never changes source bytes, `direct` persists changes, and `overlay`
    discards them.
-4. **S4 — direct-YAML integration migration and closure audit.** Make every
+4. **S4 - direct-YAML integration migration and closure audit.** Make every
    integration runner open its declared session YAML through the product
    catalog/provider route.  Delete runner-local media copying, transformation
    and parallel configuration.  Cover each legal role/mode pair,
