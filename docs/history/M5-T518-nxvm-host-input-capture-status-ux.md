@@ -9,7 +9,7 @@ accepted subtask outcomes and final closure evidence.
 | Subtask | Scope | State |
 | --- | --- | --- |
 | S1 | Converge one Console lease, console text-Window-text transitions, multi-Window lifecycle and Window-close pause. | Accepted: P1 `8be4223c` |
-| S2 | Converge host input and product action classification. | Planned |
+| S2 | Converge host input and product action classification. | Accepted: P1 `586735fa` |
 | S3 | Publish one lifecycle observation to platform presentation. | Planned |
 | S4 | Implement native Window capture, cursor and title behavior. | Planned |
 | S5 | Run full unit closure, manual host proof and developer artifact delivery. | Planned |
@@ -31,3 +31,22 @@ accepted subtask outcomes and final closure evidence.
 - Repository-only focused platform proof and the complete unit suite pass:
   302/302 in 19.13 seconds with `ctest --test-dir build/t518-s1 -L unit -j 4
   --output-on-failure`. Documentation governance and actual-diff review pass.
+
+### S2
+
+- One Win32 classifier now precedes the retained Core keyboard normalizer for
+  both Console and Window adapters. It leaves delivered F1/F9 on the ordinary
+  guest route and removes every F9-to-stop route, including the Linux Console
+  equivalent.
+- Ctrl+Alt+P, Ctrl+Alt+D and Ctrl+Alt+M each publish one bounded platform
+  request. The runner maps the debugger request to the existing session pause
+  boundary; capture release remains reserved for its native S4 owner.
+- Ctrl/Alt transitions are held until the following key establishes whether
+  they form a product chord. Reserved chords suppress their modifiers and
+  make/break transitions; ordinary Ctrl+Alt input is flushed in order through
+  the existing guest normalizer.
+- The owner-local action smoke covers F1/F9 delivery, all three actions,
+  reserved key-up suppression and ordinary Ctrl+Alt input. The prior
+  cancellation and session-run integration tests now assert the same F9
+  contract. Focused checks pass 3/3; repository-only unit passes 303/303 in
+  17.84 seconds; documentation governance and actual-diff review pass.
