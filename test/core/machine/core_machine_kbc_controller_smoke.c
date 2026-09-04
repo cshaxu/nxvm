@@ -100,6 +100,10 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
 
 static C_INT core_machine_kbc_set2_translation(C_VOID)
 {
+    static const type_unsigned_8 function_set2[] = { 0x05u, 0x06u, 0x04u,
+        0x0cu, 0x03u, 0x0bu, 0x83u, 0x0au, 0x01u, 0x09u, 0x78u, 0x07u };
+    static const type_unsigned_8 function_set1[] = { 0x3bu, 0x3cu, 0x3du,
+        0x3eu, 0x3fu, 0x40u, 0x41u, 0x42u, 0x43u, 0x44u, 0x57u, 0x58u };
     static const type_unsigned_8 pause_set2[] = { 0xe1u, 0x14u, 0x77u,
         0xe1u, 0xf0u, 0x14u, 0xf0u, 0x77u };
     static const type_unsigned_8 pause_set1[] = { 0xe1u, 0x1du, 0x45u,
@@ -116,6 +120,11 @@ static C_INT core_machine_kbc_set2_translation(C_VOID)
     failed |= (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x05u) != TYPE_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x3bu;
+    for (index = 0u; index < sizeof(function_set2); ++index) {
+        failed |= core_machine_kbc_submit_native_byte(&kbc, function_set2[index]) !=
+                TYPE_STATUS_OK ||
+            core_machine_kbc_read_byte(&port, 0x0060u) != function_set1[index];
+    }
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x01u);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
