@@ -2,26 +2,12 @@
 
 ## Current Work
 
-## M5 T518 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved T518's SoftPC-parity UX scope on 2026-09-03, including exact `NXVM (Running)` / `NXVM (Paused)` Window status and Window-close-pauses semantics. S2 is accepted at `586735fa`; the recorded external-ROM/media integration exception remains in effect. |
-| Objective | Publish one copied session lifecycle observation to native presentation so each Window title, pause visibility and paint/input eligibility derive from the session-control owner rather than Window-local state. |
-| Non-goals | Do not alter the one Console lease policy, Core execution/device/input state, product command parser, pointer-capture mechanics, YAML/profile/assets or build/output configuration. S4 owns click capture, cursor confinement and Ctrl+Alt+M consumption. |
-| Reference Baseline | S1 puts every fixed/optional Window behind one native presenter; S2 has one action classifier and pause request. `win32app.c` still infers pause acknowledgement from execution transport and owns `hidden_for_pause`/`pause_acknowledged`, while its title remains the legacy product string. |
-| Candidate Proposal | [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md). |
-| Files And ABI Surface | Expected: platform execution/context and Win32 presenter headers/source, session control only for one copied lifecycle observer if necessary, owner-local `test/vm/platform/` tests, CMake registration if needed, history and packet. No Core/session pointer may enter the native presenter. |
-| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Product UX](../design/UI.md), [Roadmap](../design/ROADMAP.md), and [Contributing](../../CONTRIBUTING.md). Evidence must retain `vm_session_control` as state owner, a copied platform observation as consumer, and one Window presenter. |
-| Verification | Focused repository-only tests cover Running/Paused publication, exact title selection, Window-close pause request, paused paint/input gating and independent observations for two handles. Run complete repository-only unit tests, documentation governance and static sweep before closure. No external-ROM/media integration suite is an acceptance gate by owner-approved exception. |
-| Expected Markers | Every native Window uses `NXVM (Running)` or `NXVM (Paused)`; it never decides session state from its own hidden flag; close requests pause only; paused Windows do not paint/submit guest input or recapture; resuming restores the same Window through the copied observation. |
-| Asset Needs | None. |
-| Reporting Requirements | Report the retained lifecycle owner, deleted native-state mirror, exact title/pause behavior, focused/full-unit results, actual-diff review, commit and push. |
-| Stop Conditions | Stop for owner direction if lifecycle publication requires exposing a session or Core pointer to platform code, if Console-session pause cannot retain the S1 lease rules, or if title state needs a second lifecycle owner. |
-| Exit Criteria | One copied lifecycle observation drives all native Window status behavior; title/pause/close behavior is verified for independent windows; no native lifecycle mirror survives; focused/full-unit/gate checks pass; S3 P is reviewed, committed and pushed. |
-| Original Owner Request | Windows show `NXVM (Running)` / `NXVM (Paused)` and a Window close pauses only its own session, while console/window multi-session behavior retains one ownership model. |
-| Similar-Issue Sweep | Search Win32 presenter, Console presenter, execution transport, lifecycle/control state, close/destroy/timer/paint/input and title paths plus owner-local tests/CMake. Each hit is converged, not applicable or explicitly transferred before S3 closes. |
+S3 of open M5 T518 is accepted at `e077de3e`: one opaque lifecycle
+observation drives exact Window status, paint and input gating, while Window
+close retains only a presentation-local restore transition. Focused proof,
+303/303 unit, documentation governance and actual-diff review pass. The next
+planned subtask is S4, pointer capture and focused-session UX. No S is active
+until its packet is admitted.
 
 ## Current Technical Baseline
 
@@ -61,7 +47,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T518 S2 | Accepted: Console and Window use one host-action classifier before the retained guest normalizer; F1/F9 are ordinary guest keys and Ctrl+Alt+P/D/M are bounded product actions. Reserved modifiers do not leak into guest input. Focused proof, 303/303 unit, governance and actual-diff review pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
+| T518 S3 | Accepted: one opaque lifecycle observation drives exact Window status, paint and input gating; native close retains only a presentation-local restore transition. Focused proof, 303/303 unit, governance and actual-diff review pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |

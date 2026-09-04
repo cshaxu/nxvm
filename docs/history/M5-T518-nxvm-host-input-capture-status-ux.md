@@ -10,7 +10,7 @@ accepted subtask outcomes and final closure evidence.
 | --- | --- | --- |
 | S1 | Converge one Console lease, console text-Window-text transitions, multi-Window lifecycle and Window-close pause. | Accepted: P1 `8be4223c` |
 | S2 | Converge host input and product action classification. | Accepted: P1 `586735fa` |
-| S3 | Publish one lifecycle observation to platform presentation. | Planned |
+| S3 | Publish one lifecycle observation to platform presentation. | Accepted: P1 `e077de3e` |
 | S4 | Implement native Window capture, cursor and title behavior. | Planned |
 | S5 | Run full unit closure, manual host proof and developer artifact delivery. | Planned |
 
@@ -50,3 +50,19 @@ accepted subtask outcomes and final closure evidence.
   cancellation and session-run integration tests now assert the same F9
   contract. Focused checks pass 3/3; repository-only unit passes 303/303 in
   17.84 seconds; documentation governance and actual-diff review pass.
+
+### S3
+
+- The session-control owner now exports one three-state lifecycle observation
+  through the opaque execution transport. The former parallel `is_running`
+  callback was removed; Running, Paused and Stopped have one disposition.
+- The shared Window presenter derives its exact `NXVM (Running)` or
+  `NXVM (Paused)` title, paint eligibility and all guest input eligibility
+  from that observation. It does not retain a native pause acknowledgement.
+- Window close retains only a presentation-local close-to-paused-to-resume
+  transition: it hides after issuing the existing pause request, waits for the
+  authoritative Paused observation, then shows again only after authoritative
+  Running. That state is not a second session lifecycle owner.
+- Focused lifecycle/title proof passes 2/2; repository-only unit passes
+  303/303 in 17.64 seconds; documentation governance and actual-diff review
+  pass.
