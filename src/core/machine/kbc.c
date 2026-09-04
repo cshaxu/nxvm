@@ -355,9 +355,16 @@ static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
     type_status status;
 
     if (controller == STD_NULL ||
-        controller->data.serial_delivery_remaining_ticks != 0u) return;
-    while (controller->data.keyboard_serial_count != 0u &&
-        controller->data.fifo_count < CORE_MACHINE_KBC_FIFO_CAPACITY) {
+        controller->data.serial_delivery_remaining_ticks != 0u ||
+        !controller->data.scanning_enabled ||
+        !core_machine_kbc_keyboard_lines_enabled(controller,
+            controller->data.command_byte)) return;
+    /* The keyboard serial stream may have private backlog, but only one
+     * scan byte may enter the controller output path at a time.  Firmware
+     * such as the 5170 POST disables the keyboard and clears one OBF byte;
+     * admitting a whole host key chord past that boundary is not hardware. */
+    if (controller->data.keyboard_serial_count != 0u &&
+        controller->data.fifo_count == 0u) {
         native_byte = controller->data.keyboard_serial[
             controller->data.keyboard_serial_head];
         status = core_machine_kbc_publish_native_byte(controller, native_byte);
@@ -369,7 +376,6 @@ static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
         if (controller->data.serial_delivery_ticks != 0u) {
             controller->data.serial_delivery_remaining_ticks =
                 controller->data.serial_delivery_ticks;
-            return;
         }
     }
 }
@@ -976,7 +982,11 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_tick
             controller->data.response_remaining_ticks -= elapsed_ticks;
         } else {
             controller->data.response_remaining_ticks = 0u;
-            if (controller->data.delayed_response_count <=
+            if ((controller->data.keyboard_serial_count == 0u ||
+                    !controller->data.scanning_enabled ||
+                    !core_machine_kbc_keyboard_lines_enabled(controller,
+                        controller->data.command_byte)) &&
+                controller->data.delayed_response_count <=
                 CORE_MACHINE_KBC_FIFO_CAPACITY - controller->data.fifo_count) {
                 while (controller->data.delayed_response_index <
                         controller->data.delayed_response_count) {

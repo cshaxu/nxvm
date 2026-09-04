@@ -294,6 +294,58 @@ static C_INT core_machine_kbc_reset_then_enable_has_one_bat(C_VOID)
     return failed;
 }
 
+/* IBM 5170 Rev-3 POST has one continuous 8042 contract: controller self-test
+ * inhibits the keyboard; the later 5Dh -> 4Dh command-byte edge supplies the
+ * power-on BAT; the fallback keyboard reset then has to leave ABh's interface
+ * result unpolluted.  Keep the ROM-visible ordering in one test rather than
+ * proving the pieces independently. */
+static C_INT core_machine_kbc_ibm_5170_post_contract(C_VOID)
+{
+    t_kbc kbc;
+    t_port port;
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    kbc.connect.aux_present = TYPE_FALSE;
+    core_machine_kbc_reset(&kbc);
+    core_machine_kbc_set_input_port(&kbc, 0xb0u);
+    core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
+
+    core_machine_port_write(&port, 0x0064u, 0xaau);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
+        (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u;
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x5du);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x4du);
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
+
+    core_machine_port_write(&port, 0x0064u, 0xadu);
+    (C_VOID)core_machine_kbc_read_byte(&port, 0x0060u);
+    core_machine_port_write(&port, 0x0064u, 0xe0u);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
+        (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0u;
+
+    core_machine_port_write(&port, 0x0060u, 0xffu);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
+    core_machine_port_write(&port, 0x0064u, 0xabu);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
+        (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0u;
+
+    core_machine_kbc_finalize(&kbc);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
 typedef struct core_machine_kbc_cpu_fixture {
     core_machine *machine;
 } core_machine_kbc_cpu_fixture;
@@ -384,6 +436,7 @@ C_INT main(C_VOID)
     C_INT controller_enable_bat_failed;
     C_INT self_test_enable_bat_failed;
     C_INT reset_enable_bat_failed;
+    C_INT ibm_5170_post_contract_failed;
     C_INT cpu_reset_irq1_failed;
     type_unsigned_8 index;
 
@@ -402,6 +455,7 @@ C_INT main(C_VOID)
     controller_enable_bat_failed = core_machine_kbc_controller_enable_is_not_a_second_bat();
     self_test_enable_bat_failed = core_machine_kbc_self_test_enable_releases_bat();
     reset_enable_bat_failed = core_machine_kbc_reset_then_enable_has_one_bat();
+    ibm_5170_post_contract_failed = core_machine_kbc_ibm_5170_post_contract();
     cpu_reset_irq1_failed = core_machine_kbc_cpu_reset_irq1();
     failed |= mixed_failed;
     failed |= translation_failed;
@@ -411,6 +465,7 @@ C_INT main(C_VOID)
     failed |= controller_enable_bat_failed;
     failed |= self_test_enable_bat_failed;
     failed |= reset_enable_bat_failed;
+    failed |= ibm_5170_post_contract_failed;
     failed |= cpu_reset_irq1_failed;
 
     failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x10u;
@@ -659,19 +714,19 @@ C_INT main(C_VOID)
         failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
             core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu ||
             !kbc.data.typematic_active;
-        for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY; ++index) {
+        for (index = 0u; index < 3u; ++index) {
             failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != TYPE_STATUS_OK;
         }
-        /* Full CPU output must not discard a complete Set-2 break; accepting
-         * it cancels typematic before the bytes become CPU-visible. */
+        /* A full physical OBF must not discard a complete Set-2 break;
+         * accepting it cancels typematic before the bytes become CPU-visible. */
         failed |= core_machine_kbc_submit_native_bytes(&kbc, enter_break,
             sizeof(enter_break)) != TYPE_STATUS_OK || kbc.data.keyboard_serial_count !=
-            sizeof(enter_break) || kbc.data.typematic_active;
+            4u || kbc.data.typematic_active;
     }
     /* A command reply behind rapid typeahead remains KBC-owned until the
-     * guest drains FIFO space; it is never lost merely because output is full. */
+     * guest drains the one physical output buffer; it is never lost. */
     core_machine_port_write(&port, 0x0060u, 0xf2u);
-    for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY; ++index) {
+    for (index = 0u; index < 3u; ++index) {
         failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xe0u;
         core_machine_kbc_advance(&kbc, 0u);
     }
@@ -687,10 +742,11 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&port);
     if (failed) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T464:S2:KBC:FAIL:mixed=%d:translation=%d:typematic=%d:line-bat=%d:enable-bat=%d:reset-enable-bat=%d:cpu-irq1=%d\n",
-            mixed_failed, translation_failed, typematic_break_failed,
-            line_bat_failed, controller_enable_bat_failed, reset_enable_bat_failed,
-            cpu_reset_irq1_failed);
+            "M5:T464:S2:KBC:FAIL:mixed=%d:translation=%d:self-flush=%d:typematic=%d:line-bat=%d:enable-bat=%d:self-enable-bat=%d:reset-enable-bat=%d:ibm-post=%d:cpu-irq1=%d\n",
+            mixed_failed, translation_failed, self_test_flush_failed,
+            typematic_break_failed, line_bat_failed, controller_enable_bat_failed,
+            self_test_enable_bat_failed, reset_enable_bat_failed,
+            ibm_5170_post_contract_failed, cpu_reset_irq1_failed);
         return 1;
     }
     STD_PRINTF("M5:T464:S2:KBC:OK\n");
