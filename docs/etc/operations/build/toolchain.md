@@ -20,12 +20,12 @@ The supported compiler contract is GCC with C11 support.
 The one supported current build route from the repository root is:
 
 ```powershell
-cmake --preset mingw-gcc-x64
+cmake --preset mingw-gcc-x64-release
 cmake --build --preset current-gcc
 ```
 
-The configure preset creates `build/mingw-gcc-x64`; the `current-gcc` build
-preset builds the current developer artifact. The top-level `build/` directory
+The configure preset creates `build/mingw-gcc-x64-release`; the `current-gcc`
+build preset builds the current developer artifact. The top-level `build/` directory
 is a container, not a build directory. Run current gates through the separate
 `current-gates-gcc` build preset. Other compilers or temporary build trees are
 task-specific verification inputs, not supported development commands.
@@ -33,3 +33,8 @@ task-specific verification inputs, not supported development commands.
 When `ccache` is installed, `mingw-gcc-x64-ccache` and `current-gcc-ccache`
 provide an opt-in isolated build tree. They are an acceleration aid only; the
 default route remains the supported route and never requires ccache.
+
+Every implementation-task closure also builds the same product target for
+32-bit Windows. Set `NXVM_I686_GCC` to an i686 MinGW-w64 `gcc.exe`, then use
+`mingw-gcc-x86-release` and `current-gcc-x86`. This is a second compiler
+configuration, not a second source or product route.

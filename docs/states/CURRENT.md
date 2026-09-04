@@ -2,17 +2,19 @@
 
 ## Current Work
 
-No numeric implementation task is active. T516 is closed: its YAML external-ROM
-boot corpus reaches the declared installer terminal through one VM media-overlay
-route, while every file-backed session retains its YAML-resolved font path. The
-next candidate is selected only from [Queue](QUEUE.md).
+No numeric implementation task is active. T517 is closed: one CMake product
+target now emits verified x64 and x86 stripped Release artifacts, while the
+full primary x64 regression suite and native x86 smoke pass. The next candidate
+is selected only from [Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0516` emits
-  `nxvm_0_5_0516.exe` in a stripped Release build.
-  It retains the runtime debugger and contains no compiler debug information.
-  SHA-256: `003DFC2870AFF84E5B241F8600EB50CEA444DA944F27814129A412A0F22202FA`.
+- **Current developer artifacts:** CMake target `vm-0-5-0517` emits
+  `nxvm_0_5_0517_x64.exe` and `nxvm_0_5_0517_x86.exe` in stripped Release
+  builds. They retain the runtime debugger and contain no compiler debug
+  information. SHA-256: x64
+  `7CF353BAB01EE59DF8C67081B6C9D8036CCCE926DC4A4A72ABC922BAEE4ECA07`;
+  x86 `C0170DC664D7E666091878AF38A81A96DC05D8B0BA0C984C3E2EDEC012ECAB70`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -43,6 +45,7 @@ next candidate is selected only from [Queue](QUEUE.md).
 
 | Task | Compact result |
 | --- | --- |
+| T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 | T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
@@ -50,7 +53,6 @@ next candidate is selected only from [Queue](QUEUE.md).
 | T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |
 | T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
-| T508 | Reclosed: Core accepts one provenance-neutral copied timing plan; default ATA has an Other-L2 controller quantum and Model-40 an Other-L2 macro pacing axis. The four-profile matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
 
 ## Recent Governance
 

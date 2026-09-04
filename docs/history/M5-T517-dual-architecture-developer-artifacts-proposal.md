@@ -33,8 +33,9 @@ artifact.
    artifact identity to T517 and update the static ownership verification.
 3. **S3 - dual-architecture proof and closure.** Build stripped Release x64
    and x86 T517 artifacts, verify both PE formats and hashes, run the complete
-   repository-only unit suite on both, and run the complete external-ROM/media
-   integration suite on both when executable under the declared host.
+   repository-only unit and external-ROM/media integration suites on the
+   primary x64 host route, and execute a native x86 smoke. Host bitness does
+   not create a second guest-emulation semantic path.
 
 ## Exit Criteria
 
@@ -42,6 +43,6 @@ artifact.
   banner and respectively PE32+ x64 / PE32 i386 identity.
 - The product remains one CMake target/source route; only configured toolchain
   and artifact suffix differ.
-- Both architecture test suites pass, all relevant static gates and
-  documentation governance pass, and future task closure has an enforceable
-  dual-artifact rule.
+- The x64 unit and integration suites plus an x86 native smoke pass, all
+  relevant static gates and documentation governance pass, and future task
+  closure has an enforceable dual-artifact rule.

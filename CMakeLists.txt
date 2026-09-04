@@ -35,6 +35,18 @@ if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "NXVM requires a 32-bit or 64-bit C toolchain.")
 endif()
 
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(project_artifact_architecture "x64")
+else()
+    set(project_artifact_architecture "x86")
+endif()
+if(DEFINED PROJECT_ARTIFACT_ARCHITECTURE AND
+   NOT PROJECT_ARTIFACT_ARCHITECTURE STREQUAL "${project_artifact_architecture}")
+    message(FATAL_ERROR
+        "PROJECT_ARTIFACT_ARCHITECTURE does not match the selected C toolchain.")
+endif()
+set(PROJECT_ARTIFACT_ARCHITECTURE "${project_artifact_architecture}")
+
 find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh)
 if(NOT WIN32)
     add_compile_definitions(_POSIX_C_SOURCE=200809L _DEFAULT_SOURCE=1)
@@ -3042,7 +3054,8 @@ add_custom_target(verify-t338-legacy-profile-metadata
 # source under their former task/version names.
 function(add_current_vm_artifact target version)
     string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
-        "nxvm_\\1_\\2_\\3.exe" task_artifact_filename "${version}")
+        "nxvm_\\1_\\2_\\3_${PROJECT_ARTIFACT_ARCHITECTURE}.exe"
+        task_artifact_filename "${version}")
     if(task_artifact_filename STREQUAL version)
         message(FATAL_ERROR "Invalid NXVM current artifact version: ${version}")
     endif()
@@ -3068,6 +3081,10 @@ function(add_current_vm_artifact target version)
                 -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_optimized.cmake"
             COMMENT "Verifying current NXVM artifact is optimized Release")
         add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND}
+                -DPROJECT_ARTIFACT_PATH:FILEPATH=$<TARGET_FILE:${target}>
+                -DPROJECT_ARTIFACT_ARCHITECTURE:STRING=${PROJECT_ARTIFACT_ARCHITECTURE}
+                -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_architecture.cmake"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_FILE:${target}>"
@@ -3079,8 +3096,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0516)
-add_current_vm_artifact(vm-0-5-0516 "0.5.0516")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0517)
+add_current_vm_artifact(vm-0-5-0517 "0.5.0517")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

@@ -1012,14 +1012,20 @@ $currentPreset = @($presets.buildPresets | Where-Object { $_.name -eq "current-g
 Require ($currentPreset.Count -eq 1) "CMakePresets.json must define exactly one current-gcc preset."
 $currentTarget = @($currentPreset[0].targets)[0]
 Require ($currentTarget -match '^vm-0-5-\d{4}$') "current-gcc must select one vm-0-5-NNNN target."
-$expectedArtifact = "nxvm_" + ($currentTarget.Substring(3) -replace '-', '_') + ".exe"
+$currentX86Preset = @($presets.buildPresets | Where-Object { $_.name -eq "current-gcc-x86" })
+Require ($currentX86Preset.Count -eq 1) "CMakePresets.json must define exactly one current-gcc-x86 preset."
+Require ((@($currentX86Preset[0].targets)[0]) -eq $currentTarget) `
+    "current-gcc-x86 must select the current GCC artifact target."
+$artifactStem = "nxvm_" + ($currentTarget.Substring(3) -replace '-', '_')
+$expectedArtifacts = @("${artifactStem}_x64.exe", "${artifactStem}_x86.exe")
 
 $statusTargets = @([regex]::Matches($status, '\bvm-0-5-\d{4}\b') | ForEach-Object Value | Select-Object -Unique)
-$statusArtifacts = @([regex]::Matches($status, '\bnxvm_0_5_\d{4}\.exe\b') | ForEach-Object Value | Select-Object -Unique)
+$statusArtifacts = @([regex]::Matches($status, '\bnxvm_0_5_\d{4}_(?:x64|x86)\.exe\b') | ForEach-Object Value | Select-Object -Unique)
 Require ($statusTargets.Count -eq 1 -and $statusTargets[0] -eq $currentTarget) `
     "CURRENT.md current target must match CMakePresets.json ($currentTarget)."
-Require ($statusArtifacts.Count -eq 1 -and $statusArtifacts[0] -eq $expectedArtifact) `
-    "CURRENT.md current artifact must match CMakePresets.json ($expectedArtifact)."
+Require ($statusArtifacts.Count -eq 2 -and
+    (@($statusArtifacts | Where-Object { $_ -notin $expectedArtifacts }).Count -eq 0)) `
+    "CURRENT.md current artifacts must match CMakePresets.json ($($expectedArtifacts -join ', '))."
 }
 
 if ($RunDocumentation) {

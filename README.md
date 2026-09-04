@@ -51,12 +51,14 @@ and Ninja on Windows. Ensure `gcc` and `ninja` are available on `PATH`, then
 from the repository root run:
 
 ```powershell
-cmake --preset mingw-gcc-x64
+cmake --preset mingw-gcc-x64-release
 cmake --build --preset current-gcc
 ```
 
-The current developer artifact is copied to `build/output/` after a successful
-build. Run the current project gates with:
+The current developer x64 artifact is copied to `build/output/` after a
+successful build. Task closure also emits the corresponding `_x86.exe` from
+the same source target using the documented x86 MinGW-w64 preset. Run the
+current project gates with:
 
 ```powershell
 cmake --build --preset current-gates-gcc
@@ -75,7 +77,8 @@ manual-project, Autotools, and Makefile instructions are retired.
 ## Quick Start
 
 1. Build NXVM using the commands above.
-2. Start the generated `nxvm_0_5_NNNN.exe` developer artifact from
+2. Start the generated `nxvm_0_5_NNNN_x64.exe` or `nxvm_0_5_NNNN_x86.exe`
+   developer artifact from
    `build/output/`.
 3. In the NXVM Console, use `help` to inspect available commands.
 4. Supply only your own legally obtained boot media when experimenting with a
