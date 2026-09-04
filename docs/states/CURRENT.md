@@ -10,6 +10,8 @@
 | Admission And Approval | The owner admitted T519 on 2026-09-04 and directed immediate repair of the default-PC/AT C: visibility defect. |
 | Objective | Restore BIOS-visible C: service for the declared default-PC/AT 50 MiB ATA image through correct external type-47 firmware assets and one existing HDC route. |
 | Candidate Proposal | [M5 default-PC/AT type-47 CMOS and fixed-disk boot contract](../proposals/m5-default-pc-at-type47-cmos-hdc-boot-contract.md). |
+| Reference Baseline | `63c6b414` (T518 closure): external default-PC/AT ROM and CMOS assets load through YAML; the declared 50 MiB image was present but DOS exposed no C:. |
+| Files And ABI Surface | `assets/sessions/default-pc-at-80386-{1440k-hdd,hdd-only}.yaml`, the external manifest/derived assets, CMake HDD-only integration mapping, and the Windows checkpoint only; no Core/VM ABI, controller API, or production code surface changes. |
 | Scope | Audit the external CMOS/ROM templates and manifest, correct source-provenance-compatible geometry, checksum, BDA and INT 41 table facts, repair the integration acceptance contract, and close all default-PC/AT fixed-disk consumers. |
 | Non-goals | Do not change no-disk YAMLs, add runtime geometry inference, add a Core/VM BIOS/BDA/INT13 compatibility branch, copy media, or change HDC ownership. |
 | Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), and the [source policy](../etc/operations/policy/source-policy.md). |
@@ -17,6 +19,7 @@
 | S1 Verification | Confirm image capacity/MBR/partition; inspect every seed, ROM template and manifest; cross-check the type-47 field map against the retained external implementation; run the existing checkpoint to record baseline failure. |
 | S2 Objective | Repair the 50 MiB seed and the matched external ROM boot template, then require DOS C: plus actual ATA work through the existing Core HDC path. |
 | S2 Verification | Run HDD-only handoff, INT 13 geometry/read, and DOS C:/DIR checkpoint integrations; run full unit and integration gates. |
+| Verification | S2 focused integrations and the 304-test unit suite pass; the full integration suite also exposes three pre-existing Console-control lifecycle failures that remain active work, not accepted closure. |
 | Task Exit Criteria | Declared default-PC/AT HDD sessions reach `C:\\>` with BIOS AH=08 geometry/drive count and HDC work; no seed has type-47 plus zero geometry; all unit/integration gates, governance, current x64/x86 artifacts and actual-diff review pass. |
 
 ## Current Technical Baseline
