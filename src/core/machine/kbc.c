@@ -185,15 +185,14 @@ static C_VOID core_machine_kbc_schedule_response(t_kbc *controller,
     controller->data.delayed_response_origin = origin;
     controller->data.response_remaining_ticks =
         controller->data.command_response_ticks;
-    /* The board-owned visibility phase applies to an 8042-generated reply
-     * (notably self-test 55h).  Keyboard and auxiliary device output must
-     * become observable as soon as the controller can present it; delaying an
-     * ACK can make firmware retry its parameter and turn that retry into
-     * RESEND.  All three origins still use this one KBC-owned output FIFO and
-     * IRQ path. */
-    controller->data.response_status_polls_remaining = origin ==
-        CORE_MACHINE_KBC_OUTPUT_CONTROLLER ?
-        controller->data.command_response_status_polls : 0u;
+    /* A response must not become visible until the host has observed the
+     * completed write.  The 5170 ROM's shared command routine deliberately
+     * flushes an already-full output buffer before it starts waiting for a
+     * reply; this applies to keyboard ACK as well as controller self-test
+     * output.  One configured status poll is the profile-owned L2 ordering
+     * contract, not a separate keyboard path. */
+    controller->data.response_status_polls_remaining =
+        controller->data.command_response_status_polls;
 
     /* The response bytes remain KBC-owned until the guest-visible FIFO has
      * room.  A full rapid-typeahead FIFO must delay a command reply, never
