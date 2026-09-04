@@ -5,9 +5,9 @@ display: console
 floppy_format: 1440k
 firmware:
   bios:
-    - path: ../../../nxvm-assets/profiles/default-pc-at/firmware/default-pc-at-1440k.rom
+    - path: ../../../nxvm-assets/profiles/default-pc-at/firmware/default-pc-at-1440k-hdd.rom
   video: null
-  cmos: ../../../nxvm-assets/profiles/default-pc-at/cmos/default-pc-at-1440k.cmos
+  cmos: ../../../nxvm-assets/profiles/default-pc-at/cmos/default-pc-at-1440k-hdd.cmos
   font: ../default-cp437-8x16.bin
 media:
   floppy:

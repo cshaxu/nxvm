@@ -58,6 +58,22 @@ static const C_CHAR *vm_t287_wait_for_text(const vm_session *session,
     return STD_NULL;
 }
 
+static C_INT vm_t287_wait_for_hdc_command(const vm_session *session,
+    DWORD timeout)
+{
+    DWORD elapsed;
+
+    if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
+    for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
+        if (session->core_machine->hdc.data.command_count != 0u) return 1;
+        if (elapsed >= 500u && !vm_session_control_is_running(&session->control)) {
+            return 0;
+        }
+        Sleep(10u);
+    }
+    return 0;
+}
+
 static C_VOID vm_t287_submit_key(const vm_session *session, type_unsigned_16 scan_code,
     type_unsigned_16 virtual_key)
 {
@@ -150,9 +166,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_unsigned_8 hdd_count = 0u;
     type_unsigned_8 hdd_bda[4] = {0};
     C_UINT ata_commands = 0u;
-    type_unsigned_8 last_command = 0u;
     C_INT c_present;
-    C_INT c_absent;
+    const C_CHAR *drive_result;
     const C_CHAR *boot_text;
     const C_CHAR *stage = "create";
 
@@ -183,40 +198,35 @@ C_INT main(C_INT argc, C_CHAR **argv)
             VM_T287_BOOT_TIMEOUT_MILLISECONDS) == STD_NULL) {
         goto fail;
     }
-    stage = "bda-hdd-count";
-    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
-    if (!vm_session_control_wait_for_pause(&session->control, 2000u) ||
-        core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
-            sizeof(hdd_bda)) != TYPE_STATUS_OK) goto fail;
-    hdd_count = hdd_bda[1];
-    vm_session_control_continue(&session->control);
     stage = "c-command";
     vm_t287_submit_key(session, 0x2eu, 'C');
     vm_t287_submit_colon(session);
     vm_t287_submit_key(session, 0x1cu, VK_RETURN);
     stage = "c-drive";
-    c_present = vm_t287_wait_for_text(session, "C:\\>", STD_NULL,
-        VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != STD_NULL;
-    c_absent = vm_t287_wait_for_text(session, "Invalid drive specification", STD_NULL,
-        VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != STD_NULL;
-    vm_t287_report_frame(session);
+    drive_result = vm_t287_wait_for_text(session, "C:\\>",
+        "Invalid drive specification", VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
+    c_present = drive_result != STD_NULL && !STD_STRCMP(drive_result, "C:\\>");
+    if (!c_present) goto fail;
+    stage = "c-dir";
+    vm_t287_submit_key(session, 0x20u, 'D');
+    vm_t287_submit_key(session, 0x17u, 'I');
+    vm_t287_submit_key(session, 0x13u, 'R');
+    vm_t287_submit_key(session, 0x1cu, VK_RETURN);
+    if (!vm_t287_wait_for_hdc_command(session,
+            VM_T287_COMMAND_TIMEOUT_MILLISECONDS)) goto fail;
+    stage = "bda-hdd-count";
+    if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
+            sizeof(hdd_bda)) == TYPE_STATUS_OK) hdd_count = hdd_bda[1];
     ata_commands = session->core_machine->hdc.data.command_count;
-    last_command = session->core_machine->hdc.data.last_command;
-    vm_session_stop(session);
+    vm_session_control_stop(&session->control);
     WaitForSingleObject(thread, 2000u);
+    vm_t287_report_frame(session);
     CloseHandle(thread);
-    if (c_present) {
+    thread = STD_NULL;
+    if (c_present && ata_commands != 0u) {
         STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-present "
-            "bda_hdd_count=%u ata_commands=%u\n", hdd_count,
+            "observed_bda_hdd_count=%u ata_commands=%u\n", hdd_count,
             ata_commands);
-        integration_yaml_session_close(&yaml_session);
-        return 0;
-    }
-    if (c_absent) {
-        STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-absent "
-            "category=bios-firmware bda_hdd=%02X/%02X/%02X/%02X ata_commands=%u last_command=%02X\n",
-            hdd_bda[0], hdd_count, hdd_bda[2], hdd_bda[3], ata_commands,
-            last_command);
         integration_yaml_session_close(&yaml_session);
         return 0;
     }
