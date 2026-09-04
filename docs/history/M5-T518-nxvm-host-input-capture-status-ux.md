@@ -11,7 +11,7 @@ accepted subtask outcomes and final closure evidence.
 | S1 | Converge one Console lease, console text-Window-text transitions, multi-Window lifecycle and Window-close pause. | Accepted: P1 `8be4223c` |
 | S2 | Converge host input and product action classification. | Accepted: P1 `586735fa` |
 | S3 | Publish one lifecycle observation to platform presentation. | Accepted: P1 `e077de3e` |
-| S4 | Implement native Window capture, cursor and title behavior. | Planned |
+| S4 | Implement Window-local native pointer capture and release behavior. | Accepted: P1 `960721de` |
 | S5 | Run full unit closure, manual host proof and developer artifact delivery. | Planned |
 
 ## Accepted Outcomes
@@ -66,3 +66,19 @@ accepted subtask outcomes and final closure evidence.
 - Focused lifecycle/title proof passes 2/2; repository-only unit passes
   303/303 in 17.64 seconds; documentation governance and actual-diff review
   pass.
+
+### S4
+
+- Each native Window presenter now solely owns its capture flag and native
+  capture handle. A button-down on a Running, uncaptured Window acquires host
+  capture; moves and buttons otherwise do not reach the existing Core mouse
+  route.
+- The presenter releases capture and clears relative-motion history on the
+  existing Ctrl+Alt+M report, any non-Running lifecycle, close, destruction,
+  capture loss or focus loss. The host action is consumed by that presenter's
+  existing run handle; no Core/session pointer state or global focused-session
+  registry exists.
+- The shared input-eligibility proof covers captured/uncaptured Running and
+  Paused states, while the existing host-action proof covers the release
+  report. The complete repository-only unit suite passes 303/303 in 18.30
+  seconds; documentation governance, static sweep and actual-diff review pass.

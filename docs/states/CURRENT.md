@@ -2,26 +2,13 @@
 
 ## Current Work
 
-## M5 T518 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved T518's SoftPC-parity UX scope on 2026-09-03: a Window captures only after click; Ctrl+Alt+M releases mouse; Ctrl+Alt+P freezes and releases; paused Windows reject input; multi-session input stays isolated. S3 is accepted at `e077de3e`; the external-ROM/media integration exception remains in effect. |
-| Objective | Make each native Window presenter the sole owner of its host pointer capture, with explicit click acquisition, release on Ctrl+Alt+M/pause/close/stop, and no routing of guest mouse input while uncaptured or paused. |
-| Non-goals | Do not add Core pointer/capture state, a session-global focused-session registry, a second mouse mapper, YAML/profile/assets changes, Console capture semantics, or build/output changes. Do not alter S1 Console lease or S3 lifecycle ownership. |
-| Reference Baseline | S2 classifies Ctrl+Alt+M as a bounded platform event but no presenter consumes it. S3 makes each Window's input eligibility depend on the one opaque lifecycle observation. `win32app.c` currently submits mouse events on every move/click without capture state. |
-| Candidate Proposal | [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md). |
-| Files And ABI Surface | Expected: platform run handle/context, Win32 shared Window presenter and owner-local `test/vm/platform/` tests, CMake only if a new test target is required, history and packet. Capture remains native and opaque: no HWND leaves the presenter. |
-| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Product UX](../design/UI.md), [Roadmap](../design/ROADMAP.md), and [Contributing](../../CONTRIBUTING.md). Evidence must show one Window-local capture owner, one existing Core mouse route and native-event-local routing, never a process-wide focused-session owner. |
-| Verification | Focused repository-only tests cover initially uncaptured suppression, click acquisition, captured delivery, Ctrl+Alt+M release, pause/close/stop release and two presenter isolation. Run complete repository-only unit tests, documentation governance and static sweep before closure. No external-ROM/media integration suite is an acceptance gate by owner-approved exception. |
-| Expected Markers | Mouse movement/buttons reach only a clicked, running Window; every release route is idempotent; no paused/uncaptured Window sends guest mouse input; Ctrl+Alt+M is consumed by the current presenter without a second route; another Window cannot observe or release this presenter's capture. |
-| Asset Needs | None. |
-| Reporting Requirements | Report capture owner/data flow, every release path, retired unconditional mouse route, focused/full-unit results, actual-diff review, commit and push. |
-| Stop Conditions | Stop for owner direction if correct capture requires a process-wide focus owner outside native Window routing, if a native handle would need to cross into Core/session state, or if Ctrl+Alt+M cannot be consumed by its existing bounded platform event. |
-| Exit Criteria | One clicked Window owns its capture; all specified release routes work; no uncaptured/paused cross-session mouse input remains; focused/full-unit/gate checks pass; S4 P is reviewed, committed and pushed. |
-| Original Owner Request | Window-mode mouse capture occurs only after click; Ctrl+Alt+M releases it; Ctrl+Alt+P/pause freezes and releases; multiple VM sessions remain independent. |
-| Similar-Issue Sweep | Search all Window mouse/button/move/focus/capture/close/timer/stop code, Ctrl+Alt+M report consumers, Console adapters and mouse tests/CMake. Each hit is converged, not applicable or explicitly transferred before S4 closes. |
+S4 of open M5 T518 is accepted at `960721de`: each Window presenter alone
+owns native pointer capture, requires an explicit click before submitting guest
+mouse input, and releases on Ctrl+Alt+M, lifecycle pause/stop, close,
+destruction and native focus/capture loss. It retains the existing single Core
+mouse route and no global focused-session registry. Focused proof, 303/303
+unit, documentation governance, static sweep and actual-diff review pass. The
+next planned subtask is S5 closure; no S is active until its packet is admitted.
 
 ## Current Technical Baseline
 
@@ -61,7 +48,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T518 S3 | Accepted: one opaque lifecycle observation drives exact Window status, paint and input gating; native close retains only a presentation-local restore transition. Focused proof, 303/303 unit, governance and actual-diff review pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
+| T518 S4 | Accepted: one Console lease and per-Window-native capture/presentation keep session state, host input and Core mouse routing single-owner. Unit 303/303, governance and actual-diff review pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
