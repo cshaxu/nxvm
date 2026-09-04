@@ -44,6 +44,19 @@ static C_INT win32con_display_wait_cancelled(C_VOID *context)
         handle->platform->execution);
 }
 
+static type_unsigned_8 win32con_modifiers(DWORD control_key_state)
+{
+    type_unsigned_8 modifiers = VM_PLATFORM_WIN32_MODIFIER_NONE;
+
+    if ((control_key_state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) != 0u) {
+        modifiers |= VM_PLATFORM_WIN32_MODIFIER_CONTROL;
+    }
+    if ((control_key_state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) != 0u) {
+        modifiers |= VM_PLATFORM_WIN32_MODIFIER_ALT;
+    }
+    return modifiers;
+}
+
 static C_VOID win32con_process_input(win32con_run_handle *handle)
 {
     DWORD count;
@@ -63,8 +76,10 @@ static C_VOID win32con_process_input(win32con_run_handle *handle)
             input.Event.KeyEvent.uChar.UnicodeChar != L'\0') {
             vm_platform_win32_keyboard_make_utf16_for(&handle->keyboard_normalizer,
                 handle->platform, input.Event.KeyEvent.uChar.UnicodeChar);
-        } else vm_platform_win32_keyboard_make_key_for(handle->platform, handle->owner,
-            scan_code, virtual_key, input.Event.KeyEvent.bKeyDown != 0);
+        } else vm_platform_win32_keyboard_make_key_with_modifiers_for(handle->platform,
+            handle->owner, scan_code, virtual_key,
+            win32con_modifiers(input.Event.KeyEvent.dwControlKeyState),
+            input.Event.KeyEvent.bKeyDown != 0);
         break;
     case FOCUS_EVENT:
         break;

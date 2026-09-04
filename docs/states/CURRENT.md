@@ -2,13 +2,26 @@
 
 ## Current Work
 
-S1 of open M5 T518 is accepted at `8be4223c`: one Console lease survives a Console session's
-text-to-Window-to-text transitions; fixed Window sessions and the optional
-Console graphics Window share one presenter; and Window close reports the
-existing session pause path. The focused platform test, full repository-only
-unit suite (302/302), documentation governance and actual-diff review pass.
-The next planned subtask is S2, host-event and product-action convergence.
-No S is active until its packet is admitted.
+## M5 T518 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T518's SoftPC-parity UX scope on 2026-09-03: delivered F1 must reach the guest, F9 is not a product stop key, and Ctrl+Alt+P/D/M are product actions. S1 is accepted at `8be4223c`; the owner-approved external-ROM/media integration exception remains in effect. |
+| Objective | Establish one host-action classifier before existing Win32 guest normalization, so Console and Window receive identical dispositions for delivered F1, ordinary F9 and reserved Ctrl+Alt actions. |
+| Non-goals | Do not add a Core dependency on host keys or modifiers; do not change guest scan-set mappings, runtime debugger command authority, title strings, pointer capture, YAML, profiles, external assets or build/output configuration. S2 reserves Ctrl+Alt+M but S4 owns native capture mechanics. |
+| Reference Baseline | T514 provides one normalized Console/Window keyboard ingress, but `vm_platform_win32_keyboard_make_key_for` still has an F9 stop special case and no shared product-action classification. S1 provides one session pause event path and one Console/Window presenter boundary. |
+| Candidate Proposal | [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md). |
+| Files And ABI Surface | Expected: `src/vm/platform/{platform.*,platform_internal.h,win32/win32.c,win32/win32con.c,win32/win32app.c}`, session runner/control only if a bounded platform event requires it, owner-local `test/vm/platform/` tests, CMake registration if needed, task history and this packet. The classifier may use an opaque run handle but exposes neither native handles nor Core/session pointers. |
+| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Product UX](../design/UI.md), [Roadmap](../design/ROADMAP.md), and [Contributing](../../CONTRIBUTING.md). Invariant evidence: one platform-owned classifier, one existing guest normalizer/request transport, and `vm_session_control` remains the only pause owner. |
+| Verification | Focused repository-only tests cover delivered F1 make/break, ordinary F9 make/break, every Ctrl+Alt action disposition, action key-up suppression, Console/Window shared routing and no stop report from F9. Run complete repository-only unit tests before closure, documentation governance and relevant static checks. No external-ROM/media integration suite is an acceptance gate by owner-approved exception. |
+| Expected Markers | F1 and F9 use the existing guest route; no F9 stop route remains; Ctrl+Alt+P requests the sole pause path; Ctrl+Alt+D requests the existing debugger-pause boundary; Ctrl+Alt+M is reserved for the later capture owner and never reaches the guest; no adapter has its own shortcut parser. |
+| Asset Needs | None. |
+| Reporting Requirements | Report the action matrix, any delayed/suppressed modifier handling needed to avoid guest chord injection, retired direct route, focused/full-unit results, actual-diff review, commit and push. Do not claim physical Fn delivery when Windows firmware does not expose F1. |
+| Stop Conditions | Stop for owner direction if the existing debugger cannot consume a bounded pause request without a second command authority, if a correct action classifier needs a native handle in a platform-neutral contract, or if a host only exposes Fn rather than an F1 key event. |
+| Exit Criteria | One classifier gives each Console/Window key row exactly one product or guest disposition; F1/F9 normal guest delivery and no F9 stop are proven; all reserved chords bypass guest input and use existing bounded routes; focused/full unit checks pass; the S2 P is reviewed, committed and pushed. |
+| Original Owner Request | Support externally delivered function keys including F1; remove F9 as a shortcut; implement Ctrl+Alt+P, Ctrl+Alt+D and Ctrl+Alt+M in the SoftPC-style UX without diverging Console and Window input paths. |
+| Similar-Issue Sweep | Search all native keyboard, Unicode/RDP recovery, F-key, modifier, stop-report, pause-report, debugger-entry and input-transport paths under `src/vm/`, plus owner-local tests and CMake registrations. Each hit is converged, not applicable or explicitly transferred before S2 closes. |
 
 ## Current Technical Baseline
 
@@ -48,6 +61,7 @@ No S is active until its packet is admitted.
 
 | Task | Compact result |
 | --- | --- |
+| T518 S1 | Accepted: one Console lease survives a Console session's text-to-Window-to-text transition; fixed Window sessions and the Console graphics Window share one presenter; Window close requests the existing session pause path. Focused proof, 302/302 unit, governance and actual-diff review pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |

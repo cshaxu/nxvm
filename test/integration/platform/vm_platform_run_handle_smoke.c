@@ -56,7 +56,9 @@ int main(C_INT argc, C_CHAR **argv)
     vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
         session->platform_run_handle, 0x43u, VK_F9, 1);
     core_platform_sleep_milliseconds(50u);
-    if (vm_session_control_is_running(&session->control)) goto fail;
+    if (!vm_session_control_is_running(&session->control) ||
+        vm_platform_run_handle_take_stop_report(session->platform_run_handle)) goto fail;
+    vm_session_stop(session);
     vm_session_reset(session);
     if (session->start_outcome.valid) goto fail;
     if (vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;

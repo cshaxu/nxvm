@@ -82,7 +82,7 @@ The classifier runs before guest mapping in both presentation forms.
 | --- | --- |
 | OS-delivered `F1` through native, virtual-key or RDP recovery input | One normal guest F1 make/break sequence for the focused running session. Laptop Fn itself is not an application-visible key and is never fabricated. |
 | F9 | Ordinary guest F9 make/break sequence. It is not a product stop action. |
-| `Ctrl+Alt+P` | Toggle only the focused session's existing pause/continue authority. A Console session pause releases its Console lease and returns NXVM command entry. A paused Window freezes guest display/cursor and rejects guest input. |
+| `Ctrl+Alt+P` | Pause only the focused session through its existing pause authority. A Console session pause releases its Console lease and returns NXVM command entry; its existing command path resumes it. A paused Window freezes guest display/cursor and rejects guest input. |
 | `Ctrl+Alt+D` | Request the focused session's existing runtime-debugger pause/entry boundary. |
 | `Ctrl+Alt+M` | Release only the focused Window's host pointer capture; idempotent when already released. |
 | Window close | Pause only that session via the same pause authority; never stop/reset Core or another session. |

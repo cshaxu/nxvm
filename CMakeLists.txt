@@ -1483,6 +1483,10 @@ if(WIN32)
         test/vm/platform/vm_platform_win32_keyboard_scan_smoke.c)
     target_link_libraries(vm-platform-win32-keyboard-scan-smoke PRIVATE
         vm-platform)
+    add_executable(vm-platform-win32-host-action-smoke
+        test/vm/platform/vm_platform_win32_host_action_smoke.c)
+    target_link_libraries(vm-platform-win32-host-action-smoke PRIVATE
+        vm-platform)
     add_executable(vm-w32-text-palette-smoke
         test/vm/platform/vm_w32_text_palette_smoke.c)
     target_link_libraries(vm-w32-text-palette-smoke PRIVATE vm-platform)
@@ -2608,7 +2612,8 @@ endif()
 
 if(WIN32)
     list(APPEND PROJECT_UNIT_TEST_TARGETS
-        vm-platform-win32-keyboard-scan-smoke)
+        vm-platform-win32-keyboard-scan-smoke
+        vm-platform-win32-host-action-smoke)
 endif()
 
 t337_verify_ud_unit_test_inventory()

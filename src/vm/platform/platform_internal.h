@@ -35,6 +35,13 @@ struct vm_platform_run_handle {
     STD_ATOMIC_INT last_event;
     STD_ATOMIC_BOOL stop_reported;
     STD_ATOMIC_BOOL pause_reported;
+    STD_ATOMIC_BOOL debug_reported;
+    STD_ATOMIC_BOOL mouse_release_reported;
+    STD_ATOMIC_INT reserved_virtual_key;
+    STD_ATOMIC_INT pending_modifier_keys;
+    STD_ATOMIC_INT suppressed_modifier_keys;
+    STD_ATOMIC_INT pending_control_scan_code;
+    STD_ATOMIC_INT pending_alt_scan_code;
     C_INT active;
     C_INT window_display;
 };

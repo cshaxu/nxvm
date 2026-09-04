@@ -56,6 +56,19 @@ static C_INT win32app_atomic_read(const volatile LONG *value)
     return (C_INT)InterlockedCompareExchange((volatile LONG *)value, 0, 0);
 }
 
+static type_unsigned_8 win32app_modifiers()
+{
+    type_unsigned_8 modifiers = VM_PLATFORM_WIN32_MODIFIER_NONE;
+
+    if ((GetKeyState(VK_CONTROL) & 0x8000) != 0) {
+        modifiers |= VM_PLATFORM_WIN32_MODIFIER_CONTROL;
+    }
+    if ((GetKeyState(VK_MENU) & 0x8000) != 0) {
+        modifiers |= VM_PLATFORM_WIN32_MODIFIER_ALT;
+    }
+    return modifiers;
+}
+
 static C_VOID win32app_submit_mouse_event(
     vm_platform_win32_window_presenter *presenter, WPARAM w_param,
     LPARAM l_param, C_INT force)
@@ -191,8 +204,8 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         virtual_key = (type_unsigned_16)(w_param & 0xffffu);
         if (scan_code == 0u) core_platform_win32_keyboard_note_recovered_key(
             &presenter->keyboard_normalizer, virtual_key);
-        vm_platform_win32_keyboard_make_key_for(presenter->platform,
-            presenter->owner, scan_code, virtual_key, 1);
+        vm_platform_win32_keyboard_make_key_with_modifiers_for(presenter->platform,
+            presenter->owner, scan_code, virtual_key, win32app_modifiers(), 1);
         return 0;
     case WM_KEYUP:
     case WM_SYSKEYUP:
@@ -200,8 +213,8 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         virtual_key = (type_unsigned_16)(w_param & 0xffffu);
         if (scan_code == 0u) core_platform_win32_keyboard_release_recovered_key(
             &presenter->keyboard_normalizer, virtual_key);
-        vm_platform_win32_keyboard_make_key_for(presenter->platform,
-            presenter->owner, scan_code, virtual_key, 0);
+        vm_platform_win32_keyboard_make_key_with_modifiers_for(presenter->platform,
+            presenter->owner, scan_code, virtual_key, win32app_modifiers(), 0);
         return 0;
     case WM_CHAR:
         if (((type_unsigned_32)l_param >> 16u & 0xffu) == 0u &&

@@ -304,11 +304,6 @@ static C_VOID vm_platform_linuxcon_make_key(linuxcon_run_handle *handle,
 {
     const vm_platform_run_context *context = handle->platform;
 
-    if (keyvalue == KEY_F(9)) {
-        vm_platform_run_handle_report(handle->owner,
-            VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
-        return;
-    }
     if (keyvalue < 0x001b) {
         switch (keyvalue) {
         case 0x000a:

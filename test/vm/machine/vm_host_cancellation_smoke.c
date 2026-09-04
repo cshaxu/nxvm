@@ -18,10 +18,16 @@ C_INT main(C_VOID)
     vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
         session->platform_run_handle, VM_HOST_CANCELLATION_F9_SCAN_CODE,
         VM_HOST_CANCELLATION_F9_VIRTUAL_KEY, 1);
-    if (!vm_platform_run_handle_take_stop_report(session->platform_run_handle) ||
-        vm_platform_run_handle_take_stop_report(session->platform_run_handle) ||
+    if (vm_platform_run_handle_take_stop_report(session->platform_run_handle) ||
         vm_platform_request_transport_dequeue_ingress(session->request_transport,
-            &request) == TYPE_STATUS_OK) goto fail;
+            &request) != TYPE_STATUS_OK ||
+        request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
+        request.data.key_event.virtual_key != VM_HOST_CANCELLATION_F9_VIRTUAL_KEY ||
+        !request.data.key_event.pressed) goto fail;
+    vm_platform_run_handle_report(session->platform_run_handle,
+        VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
+    if (!vm_platform_run_handle_take_stop_report(session->platform_run_handle) ||
+        vm_platform_run_handle_take_stop_report(session->platform_run_handle)) goto fail;
     vm_session_destroy(session);
     STD_PRINTF("M5:T201:S3:HOST-CANCELLATION:OK\n");
     return 0;

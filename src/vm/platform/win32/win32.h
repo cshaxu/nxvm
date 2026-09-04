@@ -12,9 +12,19 @@ extern "C" {
 #include "vm/platform/platform.h"
 #include "vm/platform/win32/win32_types.h"
 
+typedef enum vm_platform_win32_modifiers {
+    VM_PLATFORM_WIN32_MODIFIER_NONE = 0u,
+    VM_PLATFORM_WIN32_MODIFIER_CONTROL = 1u,
+    VM_PLATFORM_WIN32_MODIFIER_ALT = 2u
+} vm_platform_win32_modifiers;
+
 C_VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *context,
-    vm_platform_run_handle *owner, type_unsigned_16 scanCode, type_unsigned_16 virtualKey,
-    C_INT pressed);
+    vm_platform_run_handle *owner, type_unsigned_16 scanCode,
+    type_unsigned_16 virtualKey, C_INT pressed);
+C_VOID vm_platform_win32_keyboard_make_key_with_modifiers_for(
+    const vm_platform_run_context *context, vm_platform_run_handle *owner,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key,
+    type_unsigned_8 modifiers, C_INT pressed);
 C_VOID vm_platform_win32_keyboard_make_character_for(const vm_platform_run_context *context,
     type_unsigned_32 scalar);
 C_VOID vm_platform_win32_keyboard_make_utf16_for(
