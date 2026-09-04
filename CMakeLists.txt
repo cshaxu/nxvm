@@ -1409,6 +1409,21 @@ target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     type-facade
 )
 
+add_executable(vm-product-console-exit-smoke
+    test/vm/product/vm_product_console_exit_smoke.c
+    src/vm/product/console.c
+    src/vm/product/session_catalog.c
+)
+target_include_directories(vm-product-console-exit-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-product-console-exit-smoke PRIVATE
+    core-product-session
+    core-product-utils
+    core-platform
+    type-facade
+)
+
 add_executable(core-product-xasm-smoke
     test/core/product/core_product_xasm_smoke.c
 )
@@ -2349,6 +2364,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-product-debug-target-smoke
     core-product-debug-input-failure-smoke
     vm-product-console-input-failure-smoke
+    vm-product-console-exit-smoke
     vm-platform-surface-context-smoke
     vm-platform-execution-smoke
     core-platform-input-source-smoke
@@ -2816,6 +2832,7 @@ endforeach()
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
     vm-debugger-recording-lifecycle-smoke
+    vm-media-provider-smoke
     vm-xt-5160-268-profile-smoke)
     set(project_console_smoke_workspace
         "${CMAKE_CURRENT_BINARY_DIR}/test/${target}")
@@ -3111,8 +3128,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0517)
-add_current_vm_artifact(vm-0-5-0517 "0.5.0517")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0518)
+add_current_vm_artifact(vm-0-5-0518 "0.5.0518")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

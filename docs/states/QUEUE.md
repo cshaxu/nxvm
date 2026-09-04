@@ -3,9 +3,11 @@
 This is the ordered, unnumbered candidate queue. It does not activate work,
 reserve a numeric task identifier, or define a technical baseline.
 
+Current active package: [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md).
+
 ## M5 Candidates
 
-1. [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md)
+1. [M5 NXVM mechanism-reduction audit](../proposals/m5-mechanism-reduction-audit.md)
 2. [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md)
 3. [M5 YAML asset and read-only CMOS seed contract](../proposals/m5-yaml-image-load-mode-contract.md)
 4. [M5 PIC8259A manual and board-integration reclosure](../proposals/m5-pic-board-integration-reclosure.md)

@@ -35,7 +35,6 @@ struct vm_platform_run_handle {
     STD_ATOMIC_INT last_event;
     STD_ATOMIC_BOOL stop_reported;
     STD_ATOMIC_BOOL pause_reported;
-    STD_ATOMIC_BOOL debug_reported;
     STD_ATOMIC_BOOL mouse_release_reported;
     STD_ATOMIC_INT reserved_virtual_key;
     STD_ATOMIC_INT pending_modifier_keys;

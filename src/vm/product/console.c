@@ -96,7 +96,7 @@ static C_VOID doHelp(vm_product_console_context *context)
         }
         else if (!STD_STRCMP(argArray[1], "exit"))
         {
-            STD_PRINTF("Quit the console\n");
+            STD_PRINTF("Stop all sessions and quit the console\n");
             STD_PRINTF("\nEXIT\n");
             break;
         }
@@ -179,7 +179,7 @@ static C_VOID doHelp(vm_product_console_context *context)
         STD_PRINTF("VM Console Commands\n");
         STD_PRINTF("=====================\n");
         STD_PRINTF("HELP    Show help info\n");
-        STD_PRINTF("EXIT    Quit the console\n");
+        STD_PRINTF("EXIT    Stop all sessions and quit the console\n");
         STD_PRINTF("INFO    List all device info\n");
         STD_PRINTF("SESSION Manage sessions\n");
         STD_PRINTF("SPEED   Show or select selected-session speed\n");
@@ -202,36 +202,15 @@ static C_VOID doHelp(vm_product_console_context *context)
 /* Quits product. */
 static C_VOID doExit(vm_product_console_context *context)
 {
-    core_product_session_snapshot *snapshots;
-    STD_SIZE_T count;
-    STD_SIZE_T index;
-
     if (numArgs != 1)
     {
         GetHelp;
     }
-    if (core_product_session_manager_get_count(sessionManager, &count) !=
-        TYPE_STATUS_OK)
-        return;
-    snapshots = (core_product_session_snapshot *)STD_CALLOC(count, sizeof(*snapshots));
-    if (snapshots == STD_NULL || core_product_session_manager_list(sessionManager,
-                                                                   snapshots, count, &count) != TYPE_STATUS_OK)
-    {
-        STD_FREE(snapshots);
+    if (machineProvider->stop_all == STD_NULL ||
+        machineProvider->stop_all(machineProvider->context) != TYPE_STATUS_OK) {
+        STD_PRINTF("Unable to stop all sessions.\n");
         return;
     }
-    for (index = 0u; index < count; ++index)
-    {
-        if (snapshots[index].state == CORE_PRODUCT_SESSION_STATE_RUNNING ||
-            snapshots[index].state == CORE_PRODUCT_SESSION_STATE_PAUSED)
-        {
-            STD_PRINTF("Please stop session %u before exit.\n",
-                       (unsigned int)snapshots[index].id);
-            STD_FREE(snapshots);
-            return;
-        }
-    }
-    STD_FREE(snapshots);
     flagExit = 1;
 }
 

@@ -62,6 +62,7 @@ C_INT main(C_VOID)
     core_product_session_id id;
     STD_SIZE_T count;
     C_INT selected_count = 0;
+    C_INT all_count = 0;
     const C_CHAR *invalid_command[] = {"session"};
 
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
@@ -86,6 +87,8 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK || snapshots[0].id != 2u || !snapshots[0].selected ||
         core_product_session_manager_apply_selected(manager, count_selected,
             &selected_count) != TYPE_STATUS_OK || selected_count != 1 ||
+        core_product_session_manager_apply_all(manager, count_selected,
+            &all_count) != TYPE_STATUS_OK || all_count != 2 ||
         core_product_session_manager_list(manager, snapshots, 2u, &count) != TYPE_STATUS_OK ||
         count != 2u || snapshots[0].id != 0u || snapshots[0].selected ||
         snapshots[1].id != 2u || !snapshots[1].selected) {

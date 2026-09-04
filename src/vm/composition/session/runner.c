@@ -36,10 +36,6 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
             continue;
         }
-        if (vm_platform_run_handle_take_debug_report(session->platform_run_handle)) {
-            vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
-            continue;
-        }
         if (STD_ATOMIC_EXCHANGE(&control->flagReset, TYPE_FALSE)) {
             type_status reset_status = vm_session_execution_context_reset(
                 &control->execution_context);

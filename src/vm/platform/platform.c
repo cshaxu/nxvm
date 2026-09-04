@@ -164,7 +164,6 @@ C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
     STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE);
     STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE);
     STD_ATOMIC_INIT(&handle->pause_reported, TYPE_FALSE);
-    STD_ATOMIC_INIT(&handle->debug_reported, TYPE_FALSE);
     STD_ATOMIC_INIT(&handle->mouse_release_reported, TYPE_FALSE);
     STD_ATOMIC_INIT(&handle->reserved_virtual_key, 0);
     STD_ATOMIC_INIT(&handle->pending_modifier_keys, 0);
@@ -200,8 +199,6 @@ C_VOID vm_platform_run_handle_report(
         STD_ATOMIC_STORE(&handle->stop_reported, TYPE_TRUE);
     } else if (event == VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED) {
         STD_ATOMIC_STORE(&handle->pause_reported, TYPE_TRUE);
-    } else if (event == VM_PLATFORM_RUN_EVENT_DEBUG_REQUESTED) {
-        STD_ATOMIC_STORE(&handle->debug_reported, TYPE_TRUE);
     } else if (event == VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED) {
         STD_ATOMIC_STORE(&handle->mouse_release_reported, TYPE_TRUE);
     }
@@ -225,13 +222,6 @@ C_INT vm_platform_run_handle_take_pause_report(
     vm_platform_run_handle *handle)
 {
     return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->pause_reported,
-        TYPE_FALSE);
-}
-
-C_INT vm_platform_run_handle_take_debug_report(
-    vm_platform_run_handle *handle)
-{
-    return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->debug_reported,
         TYPE_FALSE);
 }
 

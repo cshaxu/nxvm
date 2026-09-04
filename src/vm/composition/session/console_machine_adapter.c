@@ -325,6 +325,17 @@ static C_VOID vm_session_machine_stop(C_VOID *context)
         STD_NULL);
 }
 
+static type_status vm_session_machine_stop_all(C_VOID *context)
+{
+    vm_session_machine_selected_call call = {vm_session_machine_stop_selected,
+        STD_NULL};
+    core_product_session_manager *manager = (core_product_session_manager *)context;
+
+    return manager == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        core_product_session_manager_apply_all(manager,
+            vm_session_machine_apply_selected, &call);
+}
+
 static type_status vm_session_machine_resume_selected(vm_session *session,
     C_VOID *context)
 {
@@ -355,6 +366,7 @@ static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_start,
     vm_session_machine_reset,
     vm_session_machine_stop,
+    vm_session_machine_stop_all,
     vm_session_machine_resume,
     STD_NULL
 };

@@ -33,7 +33,6 @@ typedef enum vm_platform_run_event {
     VM_PLATFORM_RUN_EVENT_NONE,
     VM_PLATFORM_RUN_EVENT_STOP_REQUESTED,
     VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED,
-    VM_PLATFORM_RUN_EVENT_DEBUG_REQUESTED,
     VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED,
     VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED,
     VM_PLATFORM_RUN_EVENT_DISPLAY_COMPLETED,
@@ -82,8 +81,6 @@ vm_platform_run_event vm_platform_run_handle_get_last_event(
 C_INT vm_platform_run_handle_take_stop_report(
     vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_take_pause_report(
-    vm_platform_run_handle *handle);
-C_INT vm_platform_run_handle_take_debug_report(
     vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_take_mouse_release_report(
     vm_platform_run_handle *handle);

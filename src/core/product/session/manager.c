@@ -216,6 +216,24 @@ type_status core_product_session_manager_apply_selected(
     return operation(context, manager->entries[index].session);
 }
 
+type_status core_product_session_manager_apply_all(
+    core_product_session_manager *manager,
+    core_product_session_selected_operation operation, C_VOID *context)
+{
+    STD_SIZE_T index;
+    type_status result = TYPE_STATUS_OK;
+
+    if (manager == STD_NULL || operation == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    for (index = 0u; index < manager->count; ++index) {
+        type_status status = operation(context, manager->entries[index].session);
+
+        if (result == TYPE_STATUS_OK && status != TYPE_STATUS_OK) result = status;
+    }
+    return result;
+}
+
 type_status core_product_session_manager_list(
     const core_product_session_manager *manager,
     core_product_session_snapshot *out_snapshots, STD_SIZE_T capacity,

@@ -7,7 +7,7 @@
 #include "vm/platform/win32/win32app.h"
 
 typedef struct host_action_capture {
-    core_platform_input_event events[12];
+    core_platform_input_event events[24];
     C_UINT count;
 } host_action_capture;
 
@@ -31,6 +31,14 @@ static C_INT host_action_capture_key(const host_action_capture *capture,
         capture->events[index].kind == CORE_PLATFORM_INPUT_KEY &&
         capture->events[index].data.key.virtual_key == virtual_key &&
         capture->events[index].data.key.pressed == pressed;
+}
+
+static C_INT host_action_capture_scan(const host_action_capture *capture,
+    C_UINT index, type_unsigned_16 scan_code)
+{
+    return capture != STD_NULL && index < capture->count &&
+        capture->events[index].kind == CORE_PLATFORM_INPUT_KEY &&
+        capture->events[index].data.key.scan_code == scan_code;
 }
 
 int main(C_INT argc, C_CHAR **argv)
@@ -100,8 +108,36 @@ int main(C_INT argc, C_CHAR **argv)
     vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
         0x0032u, 'M', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
         VM_PLATFORM_WIN32_MODIFIER_ALT, 0);
-    if (capture.count != 4u || !vm_platform_run_handle_take_debug_report(handle) ||
+    if (capture.count != 10u ||
+        !host_action_capture_key(&capture, 4u, VK_CONTROL, 1) ||
+        !host_action_capture_key(&capture, 5u, VK_MENU, 1) ||
+        !host_action_capture_key(&capture, 6u, VK_DELETE, 1) ||
+        !host_action_capture_key(&capture, 7u, VK_DELETE, 0) ||
+        !host_action_capture_key(&capture, 8u, VK_MENU, 0) ||
+        !host_action_capture_key(&capture, 9u, VK_CONTROL, 0) ||
+        !host_action_capture_scan(&capture, 4u, 0x001du) ||
+        !host_action_capture_scan(&capture, 5u, 0x0038u) ||
+        !host_action_capture_scan(&capture, 6u, 0x0153u) ||
+        !host_action_capture_scan(&capture, 7u, 0x0153u) ||
+        !host_action_capture_scan(&capture, 8u, 0x0038u) ||
+        !host_action_capture_scan(&capture, 9u, 0x001du) ||
         !vm_platform_run_handle_take_mouse_release_report(handle)) goto fail;
+
+    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
+        0x0021u, 'F', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
+        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
+    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
+        0x0021u, 'F', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
+        VM_PLATFORM_WIN32_MODIFIER_ALT, 0);
+    if (capture.count != 14u ||
+        !host_action_capture_key(&capture, 10u, VK_MENU, 1) ||
+        !host_action_capture_key(&capture, 11u, VK_RETURN, 1) ||
+        !host_action_capture_key(&capture, 12u, VK_RETURN, 0) ||
+        !host_action_capture_key(&capture, 13u, VK_MENU, 0) ||
+        !host_action_capture_scan(&capture, 10u, 0x0038u) ||
+        !host_action_capture_scan(&capture, 11u, 0x001cu) ||
+        !host_action_capture_scan(&capture, 12u, 0x001cu) ||
+        !host_action_capture_scan(&capture, 13u, 0x0038u)) goto fail;
 
     vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
         0x001du, VK_CONTROL, VM_PLATFORM_WIN32_MODIFIER_CONTROL, 1);
@@ -118,12 +154,12 @@ int main(C_INT argc, C_CHAR **argv)
         0x0038u, VK_MENU, VM_PLATFORM_WIN32_MODIFIER_CONTROL, 0);
     vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
         0x001du, VK_CONTROL, VM_PLATFORM_WIN32_MODIFIER_NONE, 0);
-    if (capture.count != 10u || !host_action_capture_key(&capture, 4u,
-            VK_CONTROL, 1) || !host_action_capture_key(&capture, 5u, VK_MENU, 1) ||
-        !host_action_capture_key(&capture, 6u, 'X', 1) ||
-        !host_action_capture_key(&capture, 7u, 'X', 0) ||
-        !host_action_capture_key(&capture, 8u, VK_MENU, 0) ||
-        !host_action_capture_key(&capture, 9u, VK_CONTROL, 0)) goto fail;
+    if (capture.count != 20u || !host_action_capture_key(&capture, 14u,
+            VK_CONTROL, 1) || !host_action_capture_key(&capture, 15u, VK_MENU, 1) ||
+        !host_action_capture_key(&capture, 16u, 'X', 1) ||
+        !host_action_capture_key(&capture, 17u, 'X', 0) ||
+        !host_action_capture_key(&capture, 18u, VK_MENU, 0) ||
+        !host_action_capture_key(&capture, 19u, VK_CONTROL, 0)) goto fail;
 
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);

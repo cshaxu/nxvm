@@ -2,22 +2,35 @@
 
 ## Current Work
 
-S4 of open M5 T518 is accepted at `960721de`: each Window presenter alone
-owns native pointer capture, requires an explicit click before submitting guest
-mouse input, and releases on Ctrl+Alt+M, lifecycle pause/stop, close,
-destruction and native focus/capture loss. It retains the existing single Core
-mouse route and no global focused-session registry. Focused proof, 303/303
-unit, documentation governance, static sweep and actual-diff review pass. The
-next planned subtask is S5 closure; no S is active until its packet is admitted.
+## M5 T518 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved the complete T518 SoftPC-parity UX scope on 2026-09-03, including its planned S5 closure. S4 is accepted at `960721de`; the owner-approved repository-only exception for external-ROM/media integration remains in effect. |
+| Objective | Close T518 with direct Windows-host proof of the one-Console/multi-Window contract and the required optimized, stripped 0518 x64/x86 developer artifacts. |
+| Non-goals | Do not change YAML/session assets, Core guest behavior, profile hardware, external media, or user-managed build/output configuration. Do not claim guest Windows compatibility or invent a second Console/session/control path to automate host proof. |
+| Reference Baseline | S1--S4 have accepted the Console lease, input classifier, one lifecycle observation and Window-local pointer capture. S5 advances the sole current artifact from 0517 to 0518; no parallel product target is admitted. |
+| Candidate Proposal | [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md). |
+| Files And ABI Surface | The bounded Core session-manager bulk-operation contract and VM composition `stop_all` capability let the retained Console request orderly process shutdown without enumerating session layouts. The current-artifact target/version declarations, repository-only smoke tests, execution/history/current records and generated ignored executable artifacts complete the surface. Native proof uses existing product APIs and no test-only host-control interface. |
+| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Product UX](../design/UI.md), [Roadmap](../design/ROADMAP.md), and [Contributing](../../CONTRIBUTING.md). Evidence must prove every T518 UX row through the existing one-owner routes. |
+| Verification | Re-run complete repository-only unit tests after the artifact declaration. On Windows host, prove Console text lease; Console-session graphics preserves its blank lease and opens only its Window; graphics-to-text preserves the running session; Window close/Ctrl+Alt+P pauses only that session; Ctrl+Alt+D delivers guest Ctrl+Alt+Delete and Ctrl+Alt+F delivers guest Alt+Enter only to their session; Ctrl+Alt+M releases only its Window pointer; `EXIT` stops every session before Console exit; delivered F1/F9 remain guest input; two Window sessions remain isolated. Configure and build optimized Release x64 and x86 0518 targets; verify stripped debug information and PE architecture; run the applicable repository gates and documentation governance. |
+| Expected Markers | The direct host proof has one Console holder, exact Running/Paused titles, no F9 stop, no cross-session pause/capture/input, and no return to NXVM command entry while a Console session remains running in graphics. Both emitted artifacts are named `nxvm_0_5_0518_x64.exe` and `nxvm_0_5_0518_x86.exe`. |
+| Asset Needs | Existing owner-managed local session YAML and external assets may be used only to run the product; no asset is copied, changed or committed. |
+| Reporting Requirements | Record the direct-host proof matrix, full-unit and build/architecture/strip results, code-size accounting, actual-diff review, known boundary, commit and push in the T history. |
+| Stop Conditions | Stop for owner direction if host input cannot be delivered to an existing Window/Console without adding a second production route, if the actual host behavior contradicts the approved Console lease model, or if either required architecture cannot build from the declared current-artifact path. |
+| Exit Criteria | Every proposal UX row has direct-host or repository proof, the two optimized stripped 0518 artifacts exist with verified architectures, all required repository-only gates pass, no obsolete 0517 current-target declaration remains, and T518 closure is reviewed, committed and pushed. |
+| Original Owner Request | Achieve SoftPC UX parity: independent session pause/stop, one Console lease, console/window presentation policies, host chords, RDP-delivered function keys, exact state title and click/release mouse behavior. |
+| Similar-Issue Sweep | Search every current artifact version/preset, Window/Console host event adapter, lifecycle/title/capture path and product test registration. Each hit is proven converged, explicitly not applicable or transferred before T closure. |
 
 ## Current Technical Baseline
 
-- **Current developer artifacts:** CMake target `vm-0-5-0517` emits
-  `nxvm_0_5_0517_x64.exe` and `nxvm_0_5_0517_x86.exe` in stripped Release
+- **Current developer artifacts:** CMake target `vm-0-5-0518` emits
+  `nxvm_0_5_0518_x64.exe` and `nxvm_0_5_0518_x86.exe` in stripped Release
   builds. They retain the runtime debugger and contain no compiler debug
   information. SHA-256: x64
-  `7CF353BAB01EE59DF8C67081B6C9D8036CCCE926DC4A4A72ABC922BAEE4ECA07`;
-  x86 `C0170DC664D7E666091878AF38A81A96DC05D8B0BA0C984C3E2EDEC012ECAB70`.
+  `46B27A9531F495A92933181A6503FE3819BF375DB866BF7DBD85DB76853E0213`;
+  x86 `538037537249DD1C651D5AFBC7A800B038F4C04A838C94A1CCE3DA28D1BB7BC2`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

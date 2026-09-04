@@ -77,6 +77,9 @@ type_status core_product_session_manager_get_count(
 type_status core_product_session_manager_apply_selected(
     core_product_session_manager *manager,
     core_product_session_selected_operation operation, C_VOID *context);
+type_status core_product_session_manager_apply_all(
+    core_product_session_manager *manager,
+    core_product_session_selected_operation operation, C_VOID *context);
 type_status core_product_session_manager_list(
     const core_product_session_manager *manager,
     core_product_session_snapshot *out_snapshots, STD_SIZE_T capacity,

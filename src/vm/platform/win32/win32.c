@@ -56,6 +56,26 @@ static C_VOID vm_platform_win32_keyboard_flush_pending_modifiers(
     }
 }
 
+static C_VOID vm_platform_win32_keyboard_submit_ctrl_alt_delete(
+    const vm_platform_run_context *context)
+{
+    vm_platform_win32_keyboard_submit_guest(context, 0x001du, VK_CONTROL, 1);
+    vm_platform_win32_keyboard_submit_guest(context, 0x0038u, VK_MENU, 1);
+    vm_platform_win32_keyboard_submit_guest(context, 0x0153u, VK_DELETE, 1);
+    vm_platform_win32_keyboard_submit_guest(context, 0x0153u, VK_DELETE, 0);
+    vm_platform_win32_keyboard_submit_guest(context, 0x0038u, VK_MENU, 0);
+    vm_platform_win32_keyboard_submit_guest(context, 0x001du, VK_CONTROL, 0);
+}
+
+static C_VOID vm_platform_win32_keyboard_submit_alt_enter(
+    const vm_platform_run_context *context)
+{
+    vm_platform_win32_keyboard_submit_guest(context, 0x0038u, VK_MENU, 1);
+    vm_platform_win32_keyboard_submit_guest(context, 0x001cu, VK_RETURN, 1);
+    vm_platform_win32_keyboard_submit_guest(context, 0x001cu, VK_RETURN, 0);
+    vm_platform_win32_keyboard_submit_guest(context, 0x0038u, VK_MENU, 0);
+}
+
 static C_INT vm_platform_win32_keyboard_classify(
     const vm_platform_run_context *context, vm_platform_run_handle *owner,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key,
@@ -107,9 +127,8 @@ static C_INT vm_platform_win32_keyboard_classify(
         return TYPE_FALSE;
     }
     if (virtual_key == 'P') event = VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED;
-    else if (virtual_key == 'D') event = VM_PLATFORM_RUN_EVENT_DEBUG_REQUESTED;
     else if (virtual_key == 'M') event = VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED;
-    else {
+    else if (virtual_key != 'D' && virtual_key != 'F') {
         vm_platform_win32_keyboard_flush_pending_modifiers(context, owner);
         return TYPE_FALSE;
     }
@@ -123,7 +142,11 @@ static C_INT vm_platform_win32_keyboard_classify(
         return TYPE_TRUE;
     }
     STD_ATOMIC_STORE(&owner->reserved_virtual_key, virtual_key);
-    vm_platform_run_handle_report(owner, event);
+    if (virtual_key == 'D') {
+        vm_platform_win32_keyboard_submit_ctrl_alt_delete(context);
+    } else if (virtual_key == 'F') {
+        vm_platform_win32_keyboard_submit_alt_enter(context);
+    } else vm_platform_run_handle_report(owner, event);
     return TYPE_TRUE;
 }
 

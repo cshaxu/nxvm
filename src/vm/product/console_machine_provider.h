@@ -30,6 +30,7 @@ typedef struct vm_session_machine_provider {
     type_status (*start)(C_VOID *context);
     C_VOID (*reset)(C_VOID *context);
     C_VOID (*stop)(C_VOID *context);
+    type_status (*stop_all)(C_VOID *context);
     type_status (*resume)(C_VOID *context);
     C_VOID *context;
 } vm_session_machine_provider;

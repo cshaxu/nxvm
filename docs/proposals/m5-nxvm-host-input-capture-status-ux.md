@@ -9,8 +9,10 @@ it runs, including after guest graphics creates its Window; a `window` session
 never owns that Console. Session pause, resume and stop remain session-local.
 
 The task also provides one host-input action boundary, OS-delivered function
-keys, `Ctrl+Alt+P/D/M`, exact `NXVM (Running)` / `NXVM (Paused)` titles, and
-click-to-capture pointer behavior. F9 is a normal guest function key.
+keys, `Ctrl+Alt+P/D/F/M`, exact `NXVM (Running)` / `NXVM (Paused)` titles, and
+click-to-capture pointer behavior. F9 is a normal guest function key. `EXIT`
+stops every session through the composition-owned stop route before the
+process leaves its command Console.
 
 ## Presentation Model
 
@@ -72,6 +74,9 @@ session-control state
 - Core remains the sole owner of guest keyboard, mouse, display state and time.
 - The NXVM command parser remains the only command authority. A released
   Console returns to that parser; no Window creates a command parser.
+- The command parser requests process shutdown once; the session manager
+  applies the composition-owned stop operation to every session. The parser
+  neither enumerates native handles nor reaches into Core/session layouts.
 
 `auto` is removed as a display name. Its former console-first promotion
 behavior is named `console` everywhere: YAML, session policy, platform enum,
@@ -86,12 +91,13 @@ The classifier runs before guest mapping in both presentation forms.
 | OS-delivered `F1` through native, virtual-key or RDP recovery input | One normal guest F1 make/break sequence for the running native presenter that received the event. Laptop Fn itself is not an application-visible key and is never fabricated. |
 | F9 | Ordinary guest F9 make/break sequence. It is not a product stop action. |
 | `Ctrl+Alt+P` | Pause only the session whose Console or Window received the chord, through its existing pause authority. A Console session pause releases its Console lease and returns NXVM command entry; its existing command path resumes it. A paused Window freezes guest display/cursor and rejects guest input. |
-| `Ctrl+Alt+D` | Request that presenter's existing runtime-debugger pause/entry boundary. |
+| `Ctrl+Alt+D` | Deliver one standard guest Ctrl+Alt+Delete sequence to that presenter's session. The runtime debugger remains available only through the explicit `DEBUG` command. |
+| `Ctrl+Alt+F` | Deliver one standard guest Alt+Enter sequence to that presenter's session. |
 | `Ctrl+Alt+M` | Release only that Window's host pointer capture; idempotent when already released. |
 | Window close | Pause only that session via the same pause authority; never stop/reset Core or another session. |
 
 Window capture is explicit: a running Window receives guest pointer input only
-after a click; `Ctrl+Alt+M`, pause, debugger pause, stop and close release it.
+after a click; `Ctrl+Alt+M`, pause, stop and close release it.
 While paused, a Window neither recaptures on click nor submits keyboard/mouse
 input, and its guest frame/cursor remain frozen. The host pointer remains free.
 
