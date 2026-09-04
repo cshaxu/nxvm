@@ -2801,19 +2801,6 @@ set_tests_properties("unit.core-machine-8086-timing-manifest-runner" PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 set_tests_properties("unit.core-machine-8088-timing-manifest-runner" PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-if(WIN32)
-function(project_deploy_default_font target)
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_SOURCE_DIR}/assets/default-cp437-8x16.bin"
-            "$<TARGET_FILE_DIR:${target}>/default-cp437-8x16.bin")
-endfunction()
-foreach(target IN LISTS PROJECT_ALL_TEST_TARGETS)
-    project_deploy_default_font(${target})
-endforeach()
-project_deploy_default_font(core-platform-win32-keyboard-smoke)
-endif()
-
 if(POWERSHELL_EXECUTABLE)
     add_test(NAME "unit.core-machine-8086-timing-results-s5"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass

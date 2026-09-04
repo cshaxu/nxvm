@@ -569,13 +569,13 @@ static type_status vm_session_create_xt_from_assets(const vm_session_config *con
     session->xt_rom.xebec_bytes = source_rom.xebec_present ? session->xt_xebec_rom : STD_NULL;
     session->xt_rom.video_bytes = source_rom.video_bytes == STD_NULL ? STD_NULL :
         session->xt_video_rom;
+    session->retained_config = *config;
+    session->retained_config.bios_path[0u] = STD_NULL;
+    session->retained_config.bios_path[1u] = STD_NULL;
     if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
         vm_session_destroy(session);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    session->retained_config = *config;
-    session->retained_config.bios_path[0u] = STD_NULL;
-    session->retained_config.bios_path[1u] = STD_NULL;
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
     if ((vm_session_config_floppy(config, 0u) != STD_NULL &&
@@ -636,8 +636,7 @@ static type_status vm_session_create_model40_from_assets(
         session->model40_rom.video_bytes = assets->video.data == STD_NULL ? STD_NULL :
             session->model40_video_rom;
     }
-    if (status != TYPE_STATUS_OK || vm_session_retain_font_path(session,
-            config->font_path) != TYPE_STATUS_OK || vm_session_cmos_seed_copy(session,
+    if (status != TYPE_STATUS_OK || vm_session_cmos_seed_copy(session,
             assets->cmos_seed) != TYPE_STATUS_OK) {
         STD_FREE(session);
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -647,6 +646,10 @@ static type_status vm_session_create_model40_from_assets(
     session->retained_config.bios_path[0u] = STD_NULL;
     session->retained_config.bios_path[1u] = STD_NULL;
     session->retained_config.video_path = STD_NULL;
+    if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
+        vm_session_destroy(session);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
     if ((vm_session_config_floppy(config, 0u) != STD_NULL &&
@@ -705,8 +708,7 @@ type_status vm_session_create_from_assets(const vm_session_config *config,
                 session->ibm_5170_root.resolved.values.core.controller_timing_rules;
         }
     }
-    if (status != TYPE_STATUS_OK || vm_session_retain_font_path(session,
-            config->font_path) != TYPE_STATUS_OK || vm_session_cmos_seed_copy(session,
+    if (status != TYPE_STATUS_OK || vm_session_cmos_seed_copy(session,
             assets->cmos_seed) != TYPE_STATUS_OK || vm_session_pc_at_rom_copy(session,
             config, assets) != TYPE_STATUS_OK || (!session->profile->hdc_present &&
             (vm_session_config_fixed_disk(config, 0u) != STD_NULL ||
@@ -719,6 +721,10 @@ type_status vm_session_create_from_assets(const vm_session_config *config,
     session->retained_config.cmos_seed = STD_NULL;
     session->retained_config.bios_path[0u] = STD_NULL;
     session->retained_config.bios_path[1u] = STD_NULL;
+    if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
+        vm_session_destroy(session);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
     if ((vm_session_config_floppy(config, 0u) != STD_NULL &&

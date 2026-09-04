@@ -64,6 +64,11 @@ chosen repair.
    suite and the complete YAML-driven external integration suite.  Review the
    actual source diff for duplicate state, mirrored controller paths, profile
    leakage into Core and any regression in the passing reference rows.
+5. **S5 - corrective presentation-resource retention.** A post-closure user
+   run found that a YAML-relative font existed but was rejected.  Repair the
+   shared session lifecycle so a transient catalog request cannot outlive its
+   storage; remove any executable-directory font deployment route and prove
+   the declared session-relative path is the only production input.
 
 ## Non-goals
 

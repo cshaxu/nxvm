@@ -3,16 +3,16 @@
 ## Current Work
 
 No numeric implementation task is active. T516 is closed: its YAML external-ROM
-boot corpus reaches the declared terminal through one VM media-overlay route;
-IBM 5170 and DeskPro Model 40 no longer retain a profile-specific boot repair.
-The next candidate is selected only from [Queue](QUEUE.md).
+boot corpus reaches the declared installer terminal through one VM media-overlay
+route, while every file-backed session retains its YAML-resolved font path. The
+next candidate is selected only from [Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0516` emits
   `nxvm_0_5_0516.exe` in a stripped Release build.
   It retains the runtime debugger and contains no compiler debug information.
-  SHA-256: `E1C948EF17BFFF1BEB86CC1396AFBF75D6BF2F450F68C7F57CBAB12F2047D84E`.
+  SHA-256: `003DFC2870AFF84E5B241F8600EB50CEA444DA944F27814129A412A0F22202FA`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

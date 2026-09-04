@@ -180,6 +180,10 @@ static C_INT boot_terminal(const vm_session *session, const C_CHAR **out_name)
     }
     if (boot_text_has(&frame, "Enter new date")) { *out_name = "date-input"; return 1; }
     if (boot_text_has(&frame, "ENTER=Continue")) { *out_name = "installer-ready"; return 1; }
+    if (boot_text_has(&frame, "Setup is determining your system configuration")) {
+        *out_name = "installer-running";
+        return 1;
+    }
     return 0;
 }
 

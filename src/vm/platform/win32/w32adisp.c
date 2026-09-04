@@ -232,8 +232,12 @@ C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
     /* fetch window and customer area size to decide window side */
     widthOffset = windowRect.right - windowRect.left - clientRect.right;
     heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;
-    MoveWindow(window, windowRect.left, windowRect.top, context->rows * FONT_WIDTH + widthOffset,
-               context->columns * FONT_HEIGHT + heightOffset, SWP_NOMOVE);
+    MoveWindow(window, windowRect.left, windowRect.top,
+        (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
+            frame.pixel_width : context->rows * FONT_WIDTH) + widthOffset,
+        (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
+            frame.pixel_height : context->columns * FONT_HEIGHT) + heightOffset,
+        SWP_NOMOVE);
     GetClientRect(window, &clientRect);
     context->client_height = clientRect.bottom - clientRect.top;
     context->client_width  = clientRect.right - clientRect.left;
@@ -272,26 +276,32 @@ static VOID DisplayCursor(w32adisp_context *context,
     DeleteObject(hBrush);
 }
 
-static COLORREF w32adisp_rgb(type_unsigned_32 rgb)
-{
-    return RGB((rgb >> 16) & 0xffu, (rgb >> 8) & 0xffu, rgb & 0xffu);
-}
-
 static C_VOID w32adisp_paint_indexed_pixels(w32adisp_context *context,
     const core_platform_display_frame *frame)
 {
-    type_unsigned_16 y;
-    type_unsigned_16 x;
+    struct {
+        BITMAPINFOHEADER header;
+        RGBQUAD palette[256];
+    } information = {0};
+    type_unsigned_16 index;
 
     if (context == STD_NULL || frame == STD_NULL ||
         frame->pixel_width == 0u || frame->pixel_height == 0u) return;
-    for (y = 0u; y < frame->pixel_height; ++y) {
-        for (x = 0u; x < frame->pixel_width; ++x) {
-            type_unsigned_8 index = frame->pixels[(type_unsigned_32)y * frame->pixel_width + x];
-            SetPixelV(context->buffer_dc, x, y,
-                w32adisp_rgb(frame->palette_rgb[index]));
-        }
+    information.header.biSize = sizeof(information.header);
+    information.header.biWidth = frame->pixel_width;
+    information.header.biHeight = -(LONG)frame->pixel_height;
+    information.header.biPlanes = 1u;
+    information.header.biBitCount = 8u;
+    information.header.biCompression = BI_RGB;
+    for (index = 0u; index < 256u; ++index) {
+        const type_unsigned_32 rgb = frame->palette_rgb[index];
+        information.palette[index].rgbRed = (BYTE)(rgb >> 16u);
+        information.palette[index].rgbGreen = (BYTE)(rgb >> 8u);
+        information.palette[index].rgbBlue = (BYTE)rgb;
     }
+    (C_VOID)StretchDIBits(context->window_dc, 0, 0, context->client_width,
+        context->client_height, 0, 0, frame->pixel_width, frame->pixel_height,
+        frame->pixels, (const BITMAPINFO *)&information, DIB_RGB_COLORS, SRCCOPY);
 }
 
 C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
@@ -306,34 +316,31 @@ C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
             &frame) != TYPE_STATUS_OK) return;
     context->flash_count = (context->flash_count + 1) % 10;
     changed = flagForce || frame.generation != context->displayed_generation;
-    if (changed) {
-        if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS) {
+    if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS) {
+        if (changed) {
             w32adisp_paint_indexed_pixels(context, &frame);
-        } else {
-            for (i = 0; i < context->columns; ++i) {
-                for (j = 0; j < context->rows; ++j) {
-                    index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;
-                    ch = frame.characters[index];
-                    prop = frame.attributes[index]; /* & 0x7f; */
-                    if (!context->font_character_exists[ch][prop]) {
-                        CreateBitmapFontChar(context, ch, prop);
-                    }
-                    BitBlt(context->buffer_dc, j * FONT_WIDTH, i * FONT_HEIGHT,
-                           FONT_WIDTH, FONT_HEIGHT, context->font_dc,
-                           ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
+            context->displayed_generation = frame.generation;
+        }
+        return;
+    }
+    if (changed) {
+        for (i = 0; i < context->columns; ++i) {
+            for (j = 0; j < context->rows; ++j) {
+                index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;
+                ch = frame.characters[index];
+                prop = frame.attributes[index]; /* & 0x7f; */
+                if (!context->font_character_exists[ch][prop]) {
+                    CreateBitmapFontChar(context, ch, prop);
                 }
+                BitBlt(context->buffer_dc, j * FONT_WIDTH, i * FONT_HEIGHT,
+                       FONT_WIDTH, FONT_HEIGHT, context->font_dc,
+                       ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
             }
         }
         context->displayed_generation = frame.generation;
     }
-    if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS) {
-        StretchBlt(context->window_dc, 0, 0, context->client_width,
-            context->client_height, context->buffer_dc, 0, 0, frame.pixel_width,
-            frame.pixel_height, SRCCOPY);
-    } else {
-        BitBlt(context->window_dc, 0, 0, context->client_width,
-               context->client_height, context->buffer_dc, 0, 0, SRCCOPY);
-    }
+    BitBlt(context->window_dc, 0, 0, context->client_width,
+           context->client_height, context->buffer_dc, 0, 0, SRCCOPY);
     if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_TEXT && frame.cursor_visible &&
         ((context->flash_count % 10) < context->flash_interval)) {
         DisplayCursor(context, &frame);

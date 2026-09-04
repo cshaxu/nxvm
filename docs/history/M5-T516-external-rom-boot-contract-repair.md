@@ -13,6 +13,7 @@ boundary.
 | S2 | Repair the source-qualified IBM 5170 owner mechanism. | Closed: FDC terminal-count repair; evidence `t516-s2-ibm5170-fdc-terminal-count.md` |
 | S3 | Repair the source-qualified DeskPro Model 40 owner mechanism. | Closed: single-BAT KBC repair and checked seed; evidence `t516-s3-deskpro-kbc-post.md` |
 | S4 | Run complete matrix, gates and closure audit. | Closed: unit 302/302; Release integration 44/44; documentation governance and diff check pass. |
+| S5 | Correct the YAML-relative font lifetime and external graphics presentation route. | Closed: all file-backed constructors retain the owned path; unit 302/302 and integration 44/44 pass. |
 
 ## Closure Audit
 
@@ -34,3 +35,29 @@ The complete repository-only Debug unit suite is 302/302.  `git diff --check`
 and documentation governance pass.  The stripped runnable artifact is
 `build/output/nxvm_0_5_0516.exe`, SHA-256
 `E1C948EF17BFFF1BEB86CC1396AFBF75D6BF2F450F68C7F57CBAB12F2047D84E`.
+
+## S5 Corrective Closure
+
+The session catalog had already resolved the YAML-relative font correctly.  The
+failure was a lifetime violation: each file-backed constructor retained the
+font string and then overwrote its copied configuration with the transient
+catalog request.  The XT, Model 40, default PC/AT and 5170 construction routes
+now copy and clear the transient configuration first, then retain the one
+owned font path.
+
+The same sweep removed the obsolete CMake executable-directory font deployment.
+The Win32 unit smoke writes its own deterministic local test font instead of
+depending on a deployed product asset.  The indexed graphics presenter also
+uses the native pixel geometry and one `StretchDIBits` transfer per changed
+frame, replacing the erroneous character-cell geometry and per-pixel GDI loop.
+That keeps YAML as the sole production font selector and lets the Model 40
+external session reach the accepted MS-DOS Setup configuration screen without
+a display-path workaround.
+
+The complete repository-only unit suite passes `302/302`.  The complete
+external-ROM/media integration suite passes `44/44`: IBM 5170 reaches its
+installer terminal with both 360 KB and 1.2 MB media, and DeskPro Model 40
+reaches the running MS-DOS Setup terminal.  Documentation governance, diff
+check and the rebuilt stripped 0516 artifact pass.  The rebuilt artifact is
+`build/output/nxvm_0_5_0516.exe`, SHA-256
+`003DFC2870AFF84E5B241F8600EB50CEA444DA944F27814129A412A0F22202FA`.
