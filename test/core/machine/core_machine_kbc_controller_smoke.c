@@ -208,6 +208,7 @@ static C_INT core_machine_kbc_bat_on_line_enable(C_VOID)
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
+    core_machine_kbc_set_input_port(&kbc, 0u);
     /* The 5170 can release only the serial-line override (45h -> 4Dh); its
        keyboard-disable bit need not change.  The clock/data enable edge, not
        a BIOS special case, releases BAT. */
@@ -230,6 +231,7 @@ static C_INT core_machine_kbc_controller_enable_is_not_a_second_bat(C_VOID)
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
+    core_machine_kbc_set_input_port(&kbc, 0u);
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x45u);
     core_machine_port_write(&port, 0x0064u, 0x60u);
@@ -238,6 +240,23 @@ static C_INT core_machine_kbc_controller_enable_is_not_a_second_bat(C_VOID)
     core_machine_port_write(&port, 0x0064u, 0xadu);
     core_machine_port_write(&port, 0x0064u, 0xaeu);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
+    core_machine_kbc_finalize(&kbc);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
+static C_INT core_machine_kbc_self_test_enable_releases_bat(C_VOID)
+{
+    t_kbc kbc;
+    t_port port;
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    core_machine_port_write(&port, 0x0064u, 0xaau);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u;
+    core_machine_port_write(&port, 0x0064u, 0xaeu);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
     core_machine_kbc_finalize(&kbc);
     core_machine_port_finalize(&port);
     return failed;
@@ -354,6 +373,7 @@ C_INT main(C_VOID)
     C_INT typematic_break_failed;
     C_INT line_bat_failed;
     C_INT controller_enable_bat_failed;
+    C_INT self_test_enable_bat_failed;
     C_INT reset_enable_bat_failed;
     C_INT cpu_reset_irq1_failed;
     type_unsigned_8 index;
@@ -371,6 +391,7 @@ C_INT main(C_VOID)
     typematic_break_failed = core_machine_kbc_set2_break_cancels_typematic();
     line_bat_failed = core_machine_kbc_bat_on_line_enable();
     controller_enable_bat_failed = core_machine_kbc_controller_enable_is_not_a_second_bat();
+    self_test_enable_bat_failed = core_machine_kbc_self_test_enable_releases_bat();
     reset_enable_bat_failed = core_machine_kbc_reset_then_enable_has_one_bat();
     cpu_reset_irq1_failed = core_machine_kbc_cpu_reset_irq1();
     failed |= mixed_failed;
@@ -379,6 +400,7 @@ C_INT main(C_VOID)
     failed |= typematic_break_failed;
     failed |= line_bat_failed;
     failed |= controller_enable_bat_failed;
+    failed |= self_test_enable_bat_failed;
     failed |= reset_enable_bat_failed;
     failed |= cpu_reset_irq1_failed;
 

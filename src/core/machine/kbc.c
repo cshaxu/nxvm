@@ -13,6 +13,7 @@
 
 #define CORE_MACHINE_KBC_COMMAND_IRQ1 0x01u
 #define CORE_MACHINE_KBC_COMMAND_SYSTEM 0x04u
+#define CORE_MACHINE_KBC_INPUT_INHIBIT_RELEASED 0x80u
 #define CORE_MACHINE_KBC_OUTPUT_RESET 0x01u
 #define CORE_MACHINE_KBC_OUTPUT_A20 0x02u
 
@@ -52,18 +53,21 @@ static C_VOID core_machine_kbc_deassert_irq12(t_kbc *controller)
  * clock low and bit 3 overrides the data-line inhibit.  A keyboard BAT is a
  * device response to their joint transition to usable, not a BIOS/profile
  * special case. */
-static type_bool core_machine_kbc_keyboard_lines_enabled(type_unsigned_8 command_byte)
+static type_bool core_machine_kbc_keyboard_lines_enabled(const t_kbc *controller,
+    type_unsigned_8 command_byte)
 {
-    return (command_byte & (CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD |
-        CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE)) ==
-        CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE;
+    return controller != STD_NULL &&
+        (command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u &&
+        ((command_byte & CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) != 0u ||
+        (controller->data.input_port & CORE_MACHINE_KBC_INPUT_INHIBIT_RELEASED) != 0u);
 }
 
 static C_VOID core_machine_kbc_set_command_byte(t_kbc *controller,
     type_unsigned_8 value)
 {
     const type_bool keyboard_lines_were_enabled =
-        core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte);
+        core_machine_kbc_keyboard_lines_enabled(controller,
+            controller->data.command_byte);
 
     controller->data.command_byte = value & 0x7du;
     if (controller->connect.aux_present) {
@@ -76,7 +80,8 @@ static C_VOID core_machine_kbc_set_command_byte(t_kbc *controller,
     controller->data.aux_enabled = controller->connect.aux_present &&
         (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
     if (!controller->data.keyboard_startup_released && !keyboard_lines_were_enabled &&
-        core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte)) {
+        core_machine_kbc_keyboard_lines_enabled(controller,
+            controller->data.command_byte)) {
         controller->data.keyboard_startup_released = TYPE_TRUE;
         controller->data.keyboard_bat_pending = TYPE_TRUE;
         core_machine_kbc_advance(controller, 0u);
