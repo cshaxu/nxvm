@@ -54,7 +54,8 @@ C_VOID vm_session_runner_run(vm_session *session)
              * thread releases that lease and START returns to the NXVM
              * command Console. A Window session keeps its presenter alive for
              * its paused frame and can resume in place. */
-            if (!vm_platform_run_handle_is_window_display(
+            if (vm_platform_run_handle_is_active(session->platform_run_handle) &&
+                !vm_platform_run_handle_is_window_display(
                     session->platform_run_handle)) {
                 STD_ATOMIC_STORE(&control->flagRun, TYPE_FALSE);
                 break;

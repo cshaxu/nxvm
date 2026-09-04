@@ -6,7 +6,8 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New implementation task |
+| Identifier Mode | New |
+| Original Owner Request | Repair the default-PC/AT HDD session so its declared `hdd_50m_win31.img` is visible as DOS C:, without an ad hoc Core/VM compatibility path. |
 | Admission And Approval | The owner admitted T519 on 2026-09-04 and directed immediate repair of the default-PC/AT C: visibility defect. |
 | Objective | Restore BIOS-visible C: service for the declared default-PC/AT 50 MiB ATA image through correct external type-47 firmware assets and one existing HDC route. |
 | Candidate Proposal | [M5 default-PC/AT type-47 CMOS and fixed-disk boot contract](../proposals/m5-default-pc-at-type47-cmos-hdc-boot-contract.md). |
@@ -23,7 +24,9 @@
 | Expected Markers | `HDD-ONLY-BOOT:OK`, `INT13:OK`, and `CHECKPOINT:OK result=c-drive-present`; no-disk sessions retain the generic no-drive ROM/CMOS pair. |
 | Asset Needs | Existing project-derived default-PC/AT ROM/CMOS assets and the already-declared 50 MiB test image only; no new protected firmware or guest media is acquired or committed. |
 | Reporting Requirements | Record ROM/CMOS manifest identities and focused test markers in the S evidence; report the three unrelated full-integration lifecycle failures until they are corrected, and do not claim T519 closure before the complete gate passes. |
+| Similar-Issue Sweep | Search all tracked session YAMLs, manifests, firmware templates, CMake integration registrations and fixed-disk tests for a type-47 declaration paired with zero geometry or a disk boot test using floppy-first media. The two default-PC/AT HDD consumers were repaired; generic no-disk pairs are intentional; the remaining Console lifecycle failures are a distinct test-control defect under this active task. |
 | Stop Conditions | Stop only for a new protected-asset need, an external ROM fact that cannot be established from the declared project-derived assets, or a failure that requires a new ownership decision. |
+| Exit Criteria | The focused HDD asset contract is accepted only when its no-disk counterpart remains explicit and the full repository gate is green; otherwise retain this packet as active. |
 | Task Exit Criteria | Declared default-PC/AT HDD sessions reach `C:\\>` with BIOS AH=08 geometry/drive count and HDC work; no seed has type-47 plus zero geometry; all unit/integration gates, governance, current x64/x86 artifacts and actual-diff review pass. |
 
 ## Current Technical Baseline

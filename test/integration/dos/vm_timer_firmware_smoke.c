@@ -17,7 +17,7 @@
 
 static DWORD WINAPI vm_timer_run(C_VOID *opaque)
 {
-    vm_session_start((vm_session *)opaque);
+    vm_session_control_start((vm_session_control_state *)opaque);
     return 0u;
 }
 
@@ -50,7 +50,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     session = yaml_session.session;
     stage = 2;
-    thread = CreateThread(STD_NULL, 0u, vm_timer_run, session, 0u, STD_NULL);
+    vm_session_control_reset(&session->control);
+    thread = CreateThread(STD_NULL, 0u, vm_timer_run, &session->control,
+        0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     stage = 3;
     /* Host time is only a bounded startup watchdog; guest time remains core-owned. */
