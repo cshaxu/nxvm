@@ -19,6 +19,8 @@ typedef struct vm_platform_win32_window_presenter
 type_unsigned_16 vm_platform_win32app_decode_scan_code(LPARAM l_param);
 LPCTSTR vm_platform_win32app_title_for_lifecycle(
     vm_platform_execution_lifecycle lifecycle);
+C_INT vm_platform_win32app_pointer_input_enabled(
+    vm_platform_execution_lifecycle lifecycle, C_INT captured);
 
 type_status vm_platform_win32_window_presenter_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner,

@@ -48,7 +48,13 @@ int main(C_INT argc, C_CHAR **argv)
     if (_tcscmp(vm_platform_win32app_title_for_lifecycle(
             VM_PLATFORM_EXECUTION_RUNNING), _T("NXVM (Running)")) != 0 ||
         _tcscmp(vm_platform_win32app_title_for_lifecycle(
-            VM_PLATFORM_EXECUTION_PAUSED), _T("NXVM (Paused)")) != 0) goto fail;
+            VM_PLATFORM_EXECUTION_PAUSED), _T("NXVM (Paused)")) != 0 ||
+        vm_platform_win32app_pointer_input_enabled(
+            VM_PLATFORM_EXECUTION_RUNNING, 0) ||
+        !vm_platform_win32app_pointer_input_enabled(
+            VM_PLATFORM_EXECUTION_RUNNING, 1) ||
+        vm_platform_win32app_pointer_input_enabled(
+            VM_PLATFORM_EXECUTION_PAUSED, 1)) goto fail;
 
     vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
         0x003bu, VK_F1, VM_PLATFORM_WIN32_MODIFIER_NONE, 1);

@@ -33,6 +33,7 @@ struct vm_platform_win32_window_presenter {
     volatile LONG display_failed;
     volatile LONG stop_requested;
     volatile LONG close_visibility;
+    volatile LONG pointer_captured;
     core_platform_win32_keyboard_normalizer keyboard_normalizer;
 };
 
@@ -78,6 +79,37 @@ LPCTSTR vm_platform_win32app_title_for_lifecycle(
         _T("NXVM (Running)") : _T("NXVM (Paused)");
 }
 
+C_INT vm_platform_win32app_pointer_input_enabled(
+    vm_platform_execution_lifecycle lifecycle, C_INT captured)
+{
+    return lifecycle == VM_PLATFORM_EXECUTION_RUNNING && captured;
+}
+
+static C_INT win32app_accepts_guest_input(
+    const vm_platform_win32_window_presenter *presenter);
+
+static C_VOID win32app_release_pointer(
+    vm_platform_win32_window_presenter *presenter)
+{
+    if (presenter == STD_NULL) return;
+    if (presenter->window != STD_NULL && GetCapture() == presenter->window) {
+        ReleaseCapture();
+    }
+    InterlockedExchange(&presenter->pointer_captured, 0);
+    presenter->mouse_position_valid = 0;
+}
+
+static C_VOID win32app_capture_pointer(
+    vm_platform_win32_window_presenter *presenter)
+{
+    if (presenter == STD_NULL || presenter->window == STD_NULL ||
+        !win32app_accepts_guest_input(presenter)) return;
+    SetCapture(presenter->window);
+    InterlockedExchange(&presenter->pointer_captured,
+        GetCapture() == presenter->window);
+    presenter->mouse_position_valid = 0;
+}
+
 static C_INT win32app_accepts_guest_input(
     const vm_platform_win32_window_presenter *presenter)
 {
@@ -93,6 +125,10 @@ static C_VOID win32app_sync_lifecycle(
     if (presenter == STD_NULL || presenter->window == STD_NULL) return;
     lifecycle = vm_platform_execution_get_lifecycle_for(
         presenter->platform->execution);
+    if (vm_platform_run_handle_take_mouse_release_report(presenter->owner) ||
+        lifecycle != VM_PLATFORM_EXECUTION_RUNNING) {
+        win32app_release_pointer(presenter);
+    }
     SetWindowText(presenter->window, vm_platform_win32app_title_for_lifecycle(
         lifecycle));
     if (win32app_atomic_read(&presenter->close_visibility) ==
@@ -119,7 +155,9 @@ static C_VOID win32app_submit_mouse_event(
     type_signed_16 delta_x = 0;
     type_signed_16 delta_y = 0;
 
-    if (presenter == STD_NULL) return;
+    if (presenter == STD_NULL || !vm_platform_win32app_pointer_input_enabled(
+            vm_platform_execution_get_lifecycle_for(presenter->platform->execution),
+            win32app_atomic_read(&presenter->pointer_captured))) return;
     x = (type_signed_16)(short)LOWORD(l_param);
     y = (type_signed_16)(short)HIWORD(l_param);
     if (presenter->mouse_position_valid) {
@@ -194,6 +232,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         SetTimer(window, TIMER_PAINT, 50u, STD_NULL);
         return 0;
     case WM_CLOSE:
+        win32app_release_pointer(presenter);
         if (win32app_atomic_read(&presenter->stop_requested)) {
             DestroyWindow(window);
         } else if (InterlockedCompareExchange(&presenter->close_visibility,
@@ -205,6 +244,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         }
         return 0;
     case WM_DESTROY:
+        win32app_release_pointer(presenter);
         if (!win32app_atomic_read(&presenter->stop_requested) &&
             vm_platform_run_handle_get_last_event(presenter->owner) !=
             VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED) {
@@ -275,7 +315,16 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_MBUTTONDOWN:
     case WM_MBUTTONUP:
         if (!win32app_accepts_guest_input(presenter)) return 0;
+        if (!win32app_atomic_read(&presenter->pointer_captured)) {
+            if (message == WM_LBUTTONUP || message == WM_RBUTTONUP ||
+                message == WM_MBUTTONUP) return 0;
+            win32app_capture_pointer(presenter);
+        }
         win32app_submit_mouse_event(presenter, w_param, l_param, 1);
+        return 0;
+    case WM_CAPTURECHANGED:
+    case WM_KILLFOCUS:
+        win32app_release_pointer(presenter);
         return 0;
     case WM_SYSCHAR:
     case WM_SYSDEADCHAR:

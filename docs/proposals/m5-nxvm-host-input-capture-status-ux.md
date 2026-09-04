@@ -18,7 +18,9 @@ There is one process-wide Console surface and any number of independent Window
 surfaces. The Console surface has two mutually exclusive uses: NXVM command
 entry when no running Console session holds its lease, or guest text/blank
 presentation while one Console session holds it. It is never a second
-command-Console mirror while leased to a guest.
+command-Console mirror while leased to a guest. A graphics Window belonging to
+that Console session is an additional presenter only: it neither returns the
+Console to NXVM nor changes the session's Console ownership.
 
 | Session policy and guest state | Console lease | Guest presenter | Command Console |
 | --- | --- | --- | --- |
@@ -63,9 +65,10 @@ session-control state
   stopped state. No Window, Console adapter or renderer invents another flag.
 - VM composition owns selection of the immutable `console`/`window` policy and
   binds it to the session's one platform run context.
-- The platform owns the one host Console lease and native mechanics. It reports
-  bounded pause/stop/presentation events; it never mutates Core or chooses a
-  session.
+- The platform owns the one host Console lease and each Window's native focus
+  and pointer capture mechanics. It reports bounded pause/stop/presentation
+  events; it never mutates Core, chooses a session, or maintains a process-wide
+  "focused session" registry.
 - Core remains the sole owner of guest keyboard, mouse, display state and time.
 - The NXVM command parser remains the only command authority. A released
   Console returns to that parser; no Window creates a command parser.
@@ -80,11 +83,11 @@ The classifier runs before guest mapping in both presentation forms.
 
 | Input | Required result |
 | --- | --- |
-| OS-delivered `F1` through native, virtual-key or RDP recovery input | One normal guest F1 make/break sequence for the focused running session. Laptop Fn itself is not an application-visible key and is never fabricated. |
+| OS-delivered `F1` through native, virtual-key or RDP recovery input | One normal guest F1 make/break sequence for the running native presenter that received the event. Laptop Fn itself is not an application-visible key and is never fabricated. |
 | F9 | Ordinary guest F9 make/break sequence. It is not a product stop action. |
-| `Ctrl+Alt+P` | Pause only the focused session through its existing pause authority. A Console session pause releases its Console lease and returns NXVM command entry; its existing command path resumes it. A paused Window freezes guest display/cursor and rejects guest input. |
-| `Ctrl+Alt+D` | Request the focused session's existing runtime-debugger pause/entry boundary. |
-| `Ctrl+Alt+M` | Release only the focused Window's host pointer capture; idempotent when already released. |
+| `Ctrl+Alt+P` | Pause only the session whose Console or Window received the chord, through its existing pause authority. A Console session pause releases its Console lease and returns NXVM command entry; its existing command path resumes it. A paused Window freezes guest display/cursor and rejects guest input. |
+| `Ctrl+Alt+D` | Request that presenter's existing runtime-debugger pause/entry boundary. |
+| `Ctrl+Alt+M` | Release only that Window's host pointer capture; idempotent when already released. |
 | Window close | Pause only that session via the same pause authority; never stop/reset Core or another session. |
 
 Window capture is explicit: a running Window receives guest pointer input only
@@ -109,9 +112,10 @@ input, and its guest frame/cursor remain frozen. The host pointer remains free.
    copied per-session lifecycle observation to platform adapters. Derive exact
    titles, Window-close pause, paused paint/input gating and Console command
    return from it without native-state mirrors.
-4. **S4 - pointer capture and focused-session UX.** Implement click capture,
-   release, cursor mechanics and `Ctrl+Alt+M` at the native Window owner;
-   verify focus cannot route product actions or guest input to another session.
+4. **S4 - Window-local pointer capture.** Implement click capture, release,
+   cursor mechanics and `Ctrl+Alt+M` at the native Window owner; verify native
+   event delivery cannot route product actions or guest input to another
+   session. There is no global focused-session state.
 5. **S5 - closure.** Run full repository-only unit tests after every S and at
    T closure, conduct Windows-host/RDP manual proof for delivered keys and
    multi-session behavior, perform the similar-issue sweep, and build the
