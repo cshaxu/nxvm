@@ -3884,6 +3884,8 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/session_catalog.c|console-input-failure"
+    "vm-product-console-exit-smoke|src/vm/product/console.c|console-exit"
+    "vm-product-console-exit-smoke|src/vm/product/session_catalog.c|console-exit"
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
     "vm-platform|src/vm/platform/platform.c|win32-platform"

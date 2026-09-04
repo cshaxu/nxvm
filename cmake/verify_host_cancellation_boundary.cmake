@@ -30,21 +30,20 @@ foreach(source_text IN ITEMS "${win32_source}" "${win32con_source}" "${win32app_
     endif()
 endforeach()
 
-string(FIND "${win32_source}" "virtualKey == VK_F9" win32_f9_position)
-string(FIND "${linuxcon_source}" "if (keyvalue == KEY_F(9))" linux_f9_position)
-if(win32_f9_position EQUAL -1 OR linux_f9_position EQUAL -1)
-    message(FATAL_ERROR "A platform F9 path does not report through the run handle")
+string(FIND "${win32_source}" "vm_platform_win32_keyboard_submit_guest(context, scan_code,"
+    win32_guest_ingress_position)
+string(FIND "${linuxcon_source}" "keyvalue - KEY_F0 + 0x3a"
+    linux_function_key_ingress_position)
+string(FIND "${win32_source}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
+    win32_keyboard_stop_position)
+string(FIND "${linuxcon_source}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
+    linux_keyboard_stop_position)
+if(win32_guest_ingress_position EQUAL -1 OR
+   linux_function_key_ingress_position EQUAL -1 OR
+   NOT win32_keyboard_stop_position EQUAL -1 OR
+   NOT linux_keyboard_stop_position EQUAL -1)
+    message(FATAL_ERROR "Platform F9 must retain the one guest-input route, not request stop")
 endif()
-string(SUBSTRING "${win32_source}" ${win32_f9_position} -1 win32_f9_block)
-string(SUBSTRING "${linuxcon_source}" ${linux_f9_position} -1 linux_f9_block)
-foreach(f9_block IN ITEMS "${win32_f9_block}" "${linux_f9_block}")
-    string(FIND "${f9_block}" "vm_platform_run_handle_report" report_call_position)
-    string(FIND "${f9_block}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
-        report_event_position)
-    if(report_call_position EQUAL -1 OR report_event_position EQUAL -1)
-        message(FATAL_ERROR "A platform F9 path does not report through the run handle")
-    endif()
-endforeach()
 
 foreach(required_source IN ITEMS "${win32con_source}" "${win32app_source}")
     string(FIND "${required_source}" "handle->owner" owner_position)

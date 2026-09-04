@@ -29,7 +29,6 @@ foreach(required
 endforeach()
 
 foreach(required
-    "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
     "VM_PLATFORM_RUN_EVENT_STARTUP_FAILED"
     "pthread_join"
     "vm_platform_linuxcon_run_handle_finalize")
@@ -38,6 +37,12 @@ foreach(required
         message(FATAL_ERROR "Linux run-handle contract is missing: ${required}")
     endif()
 endforeach()
+
+string(FIND "${linuxcon_source}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
+    keyboard_stop_position)
+if(NOT keyboard_stop_position EQUAL -1)
+    message(FATAL_ERROR "Linux keyboard platform must not own a lifecycle stop path")
+endif()
 
 string(REGEX MATCHALL "vm_platform_execution_stop_for" direct_stop_calls
     "${linuxcon_source}")

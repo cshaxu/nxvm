@@ -19,7 +19,6 @@ foreach(project_t447_consumer IN ITEMS
     "src/vm/machine/hdd.c"
     "src/vm/machine/media_save.c"
     "src/vm/machine/debug.c"
-    "src/vm/profile/model40/model40.c"
     "src/vm/product/session_catalog.c")
     file(READ "${PROJECT_SOURCE_DIR}/${project_t447_consumer}" project_t447_source)
     if(NOT project_t447_source MATCHES "core/platform/file.h")
