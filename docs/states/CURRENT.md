@@ -2,26 +2,13 @@
 
 ## Current Work
 
-## M5 T518 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved on 2026-09-03 the Queue-head UX task and explicitly added Console text-to-Window promotion, Window-only presentation, and Window-close-pauses semantics. The owner also approved the recorded external-ROM/media integration exception. |
-| Objective | Establish one Console lease plus multiple independent Window sessions: a running Console session owns the Console through text and graphics, where graphics adds its Window but leaves Console blank, and a text return removes only that Window. Window close pauses only its own session. |
-| Non-goals | Do not change Core guest execution, device state, keyboard mappings, YAML grammar, profile selection, external assets, build/output configuration, or runtime debugger authority. Do not implement Ctrl+Alt actions, title strings, or pointer capture before their separately admitted S work. |
-| Reference Baseline | T514 provides one normalized Win32 keyboard ingress; a Console run currently tears down/releases its Console before starting a graphics Window, so the one Console lease and Window presenter cannot coexist. Existing native Window close has stop-oriented reporting. `vm_session_control` is the sole session pause/continue authority. |
-| Candidate Proposal | [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md). |
-| Files And ABI Surface | Expected: `src/vm/platform/{platform.*,platform_internal.h,win32/win32app.c,win32/win32con.c}`, `src/vm/composition/session/{lifecycle.c,runner.c,control.*}`, owner-local `test/vm/` modules, CMake registration, `docs/history/M5-T518-nxvm-host-input-capture-status-ux.md`, and this packet. Any public contract extension must remain typed, bounded and host-neutral. |
-| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Product UX](../design/UI.md), [Roadmap](../design/ROADMAP.md), and [Contributing](../../CONTRIBUTING.md). Architecture evidence: one session-control owner, platform adapter reports through bounded events, and no Core dependency on host presentation. |
-| Verification | Focused transient tests cover Console text-to-Window-to-text presentation, Window-only start, close-to-paused state, no Core stop/reset, independent multi-Window sessions, and resume. Run the complete repository-only unit suite before S1 closure, documentation governance, and relevant static gates. Owner-approved exception: no external-ROM/media integration suite for this UX-only task. |
-| Expected Markers | A Console session retains the one Console lease as a blank host surface after graphics promotion and restores text on the reverse transition; `window` starts and remains in Window; multiple Window sessions remain independent; closing one Window pauses only its session; no `auto` display name remains. |
-| Asset Needs | None. |
-| Reporting Requirements | Report the lifecycle owner, every retired stop/presentation route, focused and full-unit results, diff review, commit and push. Do not claim Windows-guest compatibility evidence. |
-| Stop Conditions | Stop for owner direction if Window close cannot return to the retained Console without a second command authority, if a platform-neutral public interface would need a native handle, or if the needed pause event conflicts with debugger/stop semantics. |
-| Exit Criteria | One lifecycle owns Console-first promotion, fixed Window and close-to-pause behavior; no close path stops/resets Core; focused and full unit checks pass; the S1 P is reviewed, committed and pushed. |
-| Original Owner Request | Retain one Console and multi-session Windows. A Console session keeps its blank Console after promoting graphics to Window; a Window session always uses Window; the Console returns to NXVM only after its owning Console session is paused or stopped. |
-| Similar-Issue Sweep | Search all production display mode/parser, Console lease, Console promotion, Window creation/close, display completion, pause and stop-report paths under `src/vm/`, plus matching tests and CMake entries. Each hit is converged, not applicable, or explicitly transferred before S1 closes. |
+S1 of open M5 T518 is accepted at `8be4223c`: one Console lease survives a Console session's
+text-to-Window-to-text transitions; fixed Window sessions and the optional
+Console graphics Window share one presenter; and Window close reports the
+existing session pause path. The focused platform test, full repository-only
+unit suite (302/302), documentation governance and actual-diff review pass.
+The next planned subtask is S2, host-event and product-action convergence.
+No S is active until its packet is admitted.
 
 ## Current Technical Baseline
 
