@@ -1,7 +1,10 @@
 #include "type.h"
 
+#include <tchar.h>
+
 #include "vm/platform/platform.h"
 #include "vm/platform/win32/win32.h"
+#include "vm/platform/win32/win32app.h"
 
 typedef struct host_action_capture {
     core_platform_input_event events[12];
@@ -42,6 +45,10 @@ int main(C_INT argc, C_CHAR **argv)
     if (vm_platform_run_context_create(STD_NULL, &sink, STD_NULL, STD_NULL,
             STD_NULL, &context) != TYPE_STATUS_OK ||
         vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK) goto fail;
+    if (_tcscmp(vm_platform_win32app_title_for_lifecycle(
+            VM_PLATFORM_EXECUTION_RUNNING), _T("NXVM (Running)")) != 0 ||
+        _tcscmp(vm_platform_win32app_title_for_lifecycle(
+            VM_PLATFORM_EXECUTION_PAUSED), _T("NXVM (Paused)")) != 0) goto fail;
 
     vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
         0x003bu, VK_F1, VM_PLATFORM_WIN32_MODIFIER_NONE, 1);

@@ -2,13 +2,26 @@
 
 ## Current Work
 
-S2 of open M5 T518 is accepted at `586735fa`: Console and Window share one
-host-action classifier before the existing guest normalizer; F1/F9 are guest
-keys and Ctrl+Alt+P/D/M are bounded product actions. Reserved chords do not
-leak their modifier transitions into the guest. Focused proof, 303/303 unit,
-documentation governance and actual-diff review pass. The next planned
-subtask is S3, lifecycle publication and native Window binding. No S is active
-until its packet is admitted.
+## M5 T518 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved T518's SoftPC-parity UX scope on 2026-09-03, including exact `NXVM (Running)` / `NXVM (Paused)` Window status and Window-close-pauses semantics. S2 is accepted at `586735fa`; the recorded external-ROM/media integration exception remains in effect. |
+| Objective | Publish one copied session lifecycle observation to native presentation so each Window title, pause visibility and paint/input eligibility derive from the session-control owner rather than Window-local state. |
+| Non-goals | Do not alter the one Console lease policy, Core execution/device/input state, product command parser, pointer-capture mechanics, YAML/profile/assets or build/output configuration. S4 owns click capture, cursor confinement and Ctrl+Alt+M consumption. |
+| Reference Baseline | S1 puts every fixed/optional Window behind one native presenter; S2 has one action classifier and pause request. `win32app.c` still infers pause acknowledgement from execution transport and owns `hidden_for_pause`/`pause_acknowledged`, while its title remains the legacy product string. |
+| Candidate Proposal | [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md). |
+| Files And ABI Surface | Expected: platform execution/context and Win32 presenter headers/source, session control only for one copied lifecycle observer if necessary, owner-local `test/vm/platform/` tests, CMake registration if needed, history and packet. No Core/session pointer may enter the native presenter. |
+| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Product UX](../design/UI.md), [Roadmap](../design/ROADMAP.md), and [Contributing](../../CONTRIBUTING.md). Evidence must retain `vm_session_control` as state owner, a copied platform observation as consumer, and one Window presenter. |
+| Verification | Focused repository-only tests cover Running/Paused publication, exact title selection, Window-close pause request, paused paint/input gating and independent observations for two handles. Run complete repository-only unit tests, documentation governance and static sweep before closure. No external-ROM/media integration suite is an acceptance gate by owner-approved exception. |
+| Expected Markers | Every native Window uses `NXVM (Running)` or `NXVM (Paused)`; it never decides session state from its own hidden flag; close requests pause only; paused Windows do not paint/submit guest input or recapture; resuming restores the same Window through the copied observation. |
+| Asset Needs | None. |
+| Reporting Requirements | Report the retained lifecycle owner, deleted native-state mirror, exact title/pause behavior, focused/full-unit results, actual-diff review, commit and push. |
+| Stop Conditions | Stop for owner direction if lifecycle publication requires exposing a session or Core pointer to platform code, if Console-session pause cannot retain the S1 lease rules, or if title state needs a second lifecycle owner. |
+| Exit Criteria | One copied lifecycle observation drives all native Window status behavior; title/pause/close behavior is verified for independent windows; no native lifecycle mirror survives; focused/full-unit/gate checks pass; S3 P is reviewed, committed and pushed. |
+| Original Owner Request | Windows show `NXVM (Running)` / `NXVM (Paused)` and a Window close pauses only its own session, while console/window multi-session behavior retains one ownership model. |
+| Similar-Issue Sweep | Search Win32 presenter, Console presenter, execution transport, lifecycle/control state, close/destroy/timer/paint/input and title paths plus owner-local tests/CMake. Each hit is converged, not applicable or explicitly transferred before S3 closes. |
 
 ## Current Technical Baseline
 

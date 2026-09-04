@@ -14,6 +14,9 @@
 
 #define TIMER_PAINT 0
 #define WIN32APP_DISPLAY_READY_TIMEOUT_MILLISECONDS 5000u
+#define WIN32APP_CLOSE_VISIBLE 0
+#define WIN32APP_CLOSE_WAITING_FOR_PAUSE 1
+#define WIN32APP_CLOSE_PAUSED 2
 
 struct vm_platform_win32_window_presenter {
     vm_platform_run_handle *owner;
@@ -29,8 +32,7 @@ struct vm_platform_win32_window_presenter {
     volatile LONG display_ready;
     volatile LONG display_failed;
     volatile LONG stop_requested;
-    volatile LONG hidden_for_pause;
-    volatile LONG pause_acknowledged;
+    volatile LONG close_visibility;
     core_platform_win32_keyboard_normalizer keyboard_normalizer;
 };
 
@@ -67,6 +69,45 @@ static type_unsigned_8 win32app_modifiers()
         modifiers |= VM_PLATFORM_WIN32_MODIFIER_ALT;
     }
     return modifiers;
+}
+
+LPCTSTR vm_platform_win32app_title_for_lifecycle(
+    vm_platform_execution_lifecycle lifecycle)
+{
+    return lifecycle == VM_PLATFORM_EXECUTION_RUNNING ?
+        _T("NXVM (Running)") : _T("NXVM (Paused)");
+}
+
+static C_INT win32app_accepts_guest_input(
+    const vm_platform_win32_window_presenter *presenter)
+{
+    return presenter != STD_NULL && vm_platform_execution_get_lifecycle_for(
+        presenter->platform->execution) == VM_PLATFORM_EXECUTION_RUNNING;
+}
+
+static C_VOID win32app_sync_lifecycle(
+    vm_platform_win32_window_presenter *presenter)
+{
+    vm_platform_execution_lifecycle lifecycle;
+
+    if (presenter == STD_NULL || presenter->window == STD_NULL) return;
+    lifecycle = vm_platform_execution_get_lifecycle_for(
+        presenter->platform->execution);
+    SetWindowText(presenter->window, vm_platform_win32app_title_for_lifecycle(
+        lifecycle));
+    if (win32app_atomic_read(&presenter->close_visibility) ==
+            WIN32APP_CLOSE_WAITING_FOR_PAUSE && lifecycle ==
+            VM_PLATFORM_EXECUTION_PAUSED) {
+        InterlockedExchange(&presenter->close_visibility,
+            WIN32APP_CLOSE_PAUSED);
+    } else if (win32app_atomic_read(&presenter->close_visibility) ==
+            WIN32APP_CLOSE_PAUSED && lifecycle == VM_PLATFORM_EXECUTION_RUNNING) {
+        InterlockedExchange(&presenter->close_visibility, WIN32APP_CLOSE_VISIBLE);
+        ShowWindow(presenter->window, SW_SHOW);
+        UpdateWindow(presenter->window);
+        SetForegroundWindow(presenter->window);
+        SetFocus(presenter->window);
+    }
 }
 
 static C_VOID win32app_submit_mouse_event(
@@ -155,8 +196,9 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_CLOSE:
         if (win32app_atomic_read(&presenter->stop_requested)) {
             DestroyWindow(window);
-        } else if (!win32app_atomic_read(&presenter->hidden_for_pause)) {
-            InterlockedExchange(&presenter->hidden_for_pause, 1);
+        } else if (InterlockedCompareExchange(&presenter->close_visibility,
+                WIN32APP_CLOSE_WAITING_FOR_PAUSE, WIN32APP_CLOSE_VISIBLE) ==
+                WIN32APP_CLOSE_VISIBLE) {
             vm_platform_run_handle_report(presenter->owner,
                 VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
             ShowWindow(window, SW_HIDE);
@@ -172,27 +214,15 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         PostQuitMessage(0);
         return 0;
     case WM_TIMER:
-        if (win32app_atomic_read(&presenter->hidden_for_pause)) {
-            if (!vm_platform_execution_is_running_for(presenter->platform->execution)) {
-                InterlockedExchange(&presenter->pause_acknowledged, 1);
-            } else if (win32app_atomic_read(&presenter->pause_acknowledged)) {
-                InterlockedExchange(&presenter->hidden_for_pause, 0);
-                InterlockedExchange(&presenter->pause_acknowledged, 0);
-                ShowWindow(window, SW_SHOW);
-                UpdateWindow(window);
-                SetForegroundWindow(window);
-                SetFocus(window);
-            }
-        }
-        if (w_param == TIMER_PAINT && vm_platform_execution_is_running_for(
-                presenter->platform->execution)) {
+        win32app_sync_lifecycle(presenter);
+        if (w_param == TIMER_PAINT && win32app_accepts_guest_input(presenter)) {
             w32adispPaint((w32adisp_context *)presenter->platform->window_renderer,
                 window, presenter->platform->presentation, FALSE);
         }
         return 0;
     case WM_PAINT:
         BeginPaint(window, &paint);
-        if (vm_platform_execution_is_running_for(presenter->platform->execution)) {
+        if (win32app_accepts_guest_input(presenter)) {
             w32adispPaint((w32adisp_context *)presenter->platform->window_renderer,
                 window, presenter->platform->presentation, TRUE);
         }
@@ -200,6 +230,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         return 0;
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
+        if (!win32app_accepts_guest_input(presenter)) return 0;
         scan_code = vm_platform_win32app_decode_scan_code(l_param);
         virtual_key = (type_unsigned_16)(w_param & 0xffffu);
         if (scan_code == 0u) core_platform_win32_keyboard_note_recovered_key(
@@ -209,6 +240,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         return 0;
     case WM_KEYUP:
     case WM_SYSKEYUP:
+        if (!win32app_accepts_guest_input(presenter)) return 0;
         scan_code = vm_platform_win32app_decode_scan_code(l_param);
         virtual_key = (type_unsigned_16)(w_param & 0xffffu);
         if (scan_code == 0u) core_platform_win32_keyboard_release_recovered_key(
@@ -217,6 +249,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
             presenter->owner, scan_code, virtual_key, win32app_modifiers(), 0);
         return 0;
     case WM_CHAR:
+        if (!win32app_accepts_guest_input(presenter)) return 0;
         if (((type_unsigned_32)l_param >> 16u & 0xffu) == 0u &&
             !core_platform_win32_keyboard_consume_duplicate_character(
                 &presenter->keyboard_normalizer,
@@ -227,10 +260,12 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         }
         return 0;
     case WM_UNICHAR:
+        if (!win32app_accepts_guest_input(presenter)) return 0;
         if (w_param != UNICODE_NOCHAR) vm_platform_win32_keyboard_make_character_for(
             presenter->platform, (type_unsigned_32)w_param);
         return TRUE;
     case WM_MOUSEMOVE:
+        if (!win32app_accepts_guest_input(presenter)) return 0;
         win32app_submit_mouse_event(presenter, w_param, l_param, 0);
         return 0;
     case WM_LBUTTONDOWN:
@@ -239,6 +274,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_RBUTTONUP:
     case WM_MBUTTONDOWN:
     case WM_MBUTTONUP:
+        if (!win32app_accepts_guest_input(presenter)) return 0;
         win32app_submit_mouse_event(presenter, w_param, l_param, 1);
         return 0;
     case WM_SYSCHAR:
@@ -289,7 +325,8 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
         return 1;
     }
     presenter->window = win32app_test_should_fail(3) ? STD_NULL : CreateWindow(
-        _T("nxvm"), _T("Neko's x86 Virtual Machine"), style, CW_USEDEFAULT,
+        _T("nxvm"), vm_platform_win32app_title_for_lifecycle(
+        VM_PLATFORM_EXECUTION_PAUSED), style, CW_USEDEFAULT,
         0, 888, 484, STD_NULL, STD_NULL, presenter->instance, presenter);
     if (presenter->window == STD_NULL) {
         InterlockedExchange(&presenter->display_failed, 1);
@@ -309,6 +346,7 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
     }
     w32adispInit((w32adisp_context *)platform->window_renderer, presenter->window,
         platform->presentation, platform->font_path);
+    win32app_sync_lifecycle(presenter);
     InterlockedExchange(&presenter->display_ready, 1);
     if (presenter->wait_for_execution_start) {
         while (!win32app_atomic_read(&presenter->stop_requested) &&

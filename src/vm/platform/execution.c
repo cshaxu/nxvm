@@ -35,9 +35,17 @@ C_VOID vm_platform_execution_transport_destroy(
 C_INT vm_platform_execution_is_running_for(
     const vm_platform_execution_transport *transport)
 {
+    return vm_platform_execution_get_lifecycle_for(transport) ==
+        VM_PLATFORM_EXECUTION_RUNNING;
+}
+
+vm_platform_execution_lifecycle vm_platform_execution_get_lifecycle_for(
+    const vm_platform_execution_transport *transport)
+{
     return transport == STD_NULL || transport->sink == STD_NULL ||
-        transport->sink->is_running == STD_NULL ? 0 :
-        transport->sink->is_running(transport->context);
+        transport->sink->get_lifecycle == STD_NULL ?
+        VM_PLATFORM_EXECUTION_STOPPED :
+        transport->sink->get_lifecycle(transport->context);
 }
 
 C_INT vm_platform_execution_get_flip_for(

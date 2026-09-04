@@ -132,10 +132,14 @@ static const vm_platform_host_input_sink vm_session_host_input_sink = {
     STD_NULL
 };
 
-static C_INT vm_session_execution_is_running(C_VOID *context)
+static vm_platform_execution_lifecycle vm_session_execution_get_lifecycle(
+    C_VOID *context)
 {
-    return vm_session_control_is_running(
-        &((vm_session *)context)->control);
+    vm_session_control_state *control = &((vm_session *)context)->control;
+
+    return vm_session_control_is_running(control) ?
+        VM_PLATFORM_EXECUTION_RUNNING : vm_session_control_is_paused(control) ?
+        VM_PLATFORM_EXECUTION_PAUSED : VM_PLATFORM_EXECUTION_STOPPED;
 }
 
 static C_INT vm_session_execution_get_flip(C_VOID *context)
@@ -155,7 +159,7 @@ static C_VOID vm_session_execution_stop(C_VOID *context)
 }
 
 static const vm_platform_execution_sink vm_session_execution_sink = {
-    vm_session_execution_is_running,
+    vm_session_execution_get_lifecycle,
     vm_session_execution_get_flip,
     vm_session_execution_start,
     vm_session_execution_stop

@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "vm/platform/execution.h"
 #include "vm/platform/win32/win32_types.h"
 
 typedef struct vm_platform_run_context vm_platform_run_context;
@@ -16,6 +17,8 @@ typedef struct vm_platform_win32_window_presenter
     vm_platform_win32_window_presenter;
 
 type_unsigned_16 vm_platform_win32app_decode_scan_code(LPARAM l_param);
+LPCTSTR vm_platform_win32app_title_for_lifecycle(
+    vm_platform_execution_lifecycle lifecycle);
 
 type_status vm_platform_win32_window_presenter_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner,

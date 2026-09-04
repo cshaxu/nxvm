@@ -5,15 +5,16 @@
 #include "vm/platform/execution.h"
 
 typedef struct vm_platform_execution_smoke_state {
-    C_INT running;
+    vm_platform_execution_lifecycle lifecycle;
     C_INT flip;
     C_UINT starts;
     C_UINT stops;
 } vm_platform_execution_smoke_state;
 
-static C_INT vm_platform_execution_smoke_is_running(C_VOID *context)
+static vm_platform_execution_lifecycle vm_platform_execution_smoke_get_lifecycle(
+    C_VOID *context)
 {
-    return ((vm_platform_execution_smoke_state *)context)->running;
+    return ((vm_platform_execution_smoke_state *)context)->lifecycle;
 }
 
 static C_INT vm_platform_execution_smoke_get_flip(C_VOID *context)
@@ -26,7 +27,7 @@ static C_VOID vm_platform_execution_smoke_start(C_VOID *context)
     vm_platform_execution_smoke_state *state = context;
 
     state->starts += 1u;
-    state->running = 1;
+    state->lifecycle = VM_PLATFORM_EXECUTION_RUNNING;
     state->flip = 1;
 }
 
@@ -35,7 +36,7 @@ static C_VOID vm_platform_execution_smoke_stop(C_VOID *context)
     vm_platform_execution_smoke_state *state = context;
 
     state->stops += 1u;
-    state->running = 0;
+    state->lifecycle = VM_PLATFORM_EXECUTION_STOPPED;
 }
 
 C_INT main(C_VOID)
@@ -43,7 +44,7 @@ C_INT main(C_VOID)
     vm_platform_execution_smoke_state state = {0};
     vm_platform_execution_smoke_state second_state = {0};
     vm_platform_execution_sink sink = {
-        vm_platform_execution_smoke_is_running,
+        vm_platform_execution_smoke_get_lifecycle,
         vm_platform_execution_smoke_get_flip,
         vm_platform_execution_smoke_start,
         vm_platform_execution_smoke_stop
@@ -62,6 +63,12 @@ C_INT main(C_VOID)
         state.stops != 1u || second_state.starts != 1u) {
         goto fail;
     }
+    second_state.lifecycle = VM_PLATFORM_EXECUTION_PAUSED;
+    if (vm_platform_execution_is_running_for(second_transport) ||
+        vm_platform_execution_get_lifecycle_for(second_transport) !=
+            VM_PLATFORM_EXECUTION_PAUSED ||
+        vm_platform_execution_get_lifecycle_for(transport) !=
+            VM_PLATFORM_EXECUTION_STOPPED) goto fail;
 
     vm_platform_execution_transport_destroy(second_transport);
     vm_platform_execution_transport_destroy(transport);
