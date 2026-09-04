@@ -12,8 +12,21 @@ extern "C" {
 
 typedef struct vm_platform_run_context vm_platform_run_context;
 typedef struct vm_platform_run_handle vm_platform_run_handle;
+typedef struct vm_platform_win32_window_presenter
+    vm_platform_win32_window_presenter;
 
 type_unsigned_16 vm_platform_win32app_decode_scan_code(LPARAM l_param);
+
+type_status vm_platform_win32_window_presenter_start(
+    const vm_platform_run_context *context, vm_platform_run_handle *owner,
+    C_INT wait_for_execution_start,
+    vm_platform_win32_window_presenter **out_presenter);
+C_VOID vm_platform_win32_window_presenter_request_stop(
+    vm_platform_win32_window_presenter *presenter);
+C_VOID vm_platform_win32_window_presenter_join(
+    vm_platform_win32_window_presenter *presenter);
+C_VOID vm_platform_win32_window_presenter_destroy(
+    vm_platform_win32_window_presenter *presenter);
 
 C_VOID vm_platform_win32app_display_set_screen(const vm_platform_run_context *context);
 C_VOID vm_platform_win32app_display_paint(const vm_platform_run_context *context);

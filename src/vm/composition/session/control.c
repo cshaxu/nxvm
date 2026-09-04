@@ -99,17 +99,6 @@ C_VOID vm_session_control_stop(vm_session_control_state *control)  {
     STD_ATOMIC_STORE(&control->pauseRequested, TYPE_FALSE);
 }
 
-C_VOID vm_session_control_yield_for_display_transition(
-    vm_session_control_state *control)
-{
-    if (control == STD_NULL) return;
-    /* The current instruction has completed and core is paused at the run
-     * boundary. Unlike stop, this preserves guest state for the next presenter. */
-    STD_ATOMIC_STORE(&control->flagRun, TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->paused, TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->pauseRequested, TYPE_FALSE);
-}
-
 C_VOID vm_session_control_fault(vm_session_control_state *control)
 {
     if (control == STD_NULL) return;

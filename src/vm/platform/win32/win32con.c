@@ -6,6 +6,7 @@
 
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32cdisp.h"
+#include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/win32con.h"
 
 #include "vm/platform/platform_internal.h"
@@ -17,6 +18,7 @@ typedef struct win32con_run_handle {
     HANDLE output;
     HANDLE kernel_thread;
     HANDLE display_thread;
+    vm_platform_win32_window_presenter *window_presenter;
     core_platform_win32_keyboard_normalizer keyboard_normalizer;
 } win32con_run_handle;
 
@@ -71,6 +73,54 @@ static C_VOID win32con_process_input(win32con_run_handle *handle)
     }
 }
 
+static C_VOID win32con_clear_display(HANDLE output)
+{
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    DWORD written;
+    DWORD cells;
+    COORD origin = {0, 0};
+
+    if (output == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(output,
+            &info)) return;
+    cells = (DWORD)info.dwSize.X * (DWORD)info.dwSize.Y;
+    (C_VOID)FillConsoleOutputCharacter(output, ' ', cells, origin, &written);
+    (C_VOID)FillConsoleOutputAttribute(output, info.wAttributes, cells, origin,
+        &written);
+    SetConsoleCursorPosition(output, origin);
+}
+
+static C_VOID win32con_window_presenter_stop(win32con_run_handle *handle)
+{
+    if (handle == STD_NULL || handle->window_presenter == STD_NULL) return;
+    vm_platform_win32_window_presenter_request_stop(handle->window_presenter);
+    vm_platform_win32_window_presenter_join(handle->window_presenter);
+    vm_platform_win32_window_presenter_destroy(handle->window_presenter);
+    handle->window_presenter = STD_NULL;
+}
+
+static C_VOID win32con_apply_window_transition(win32con_run_handle *handle)
+{
+    type_status status;
+
+    if (handle == STD_NULL) return;
+    if (vm_platform_run_context_take_console_window_stop(
+            (vm_platform_run_context *)handle->platform)) {
+        win32con_window_presenter_stop(handle);
+    }
+    if (!vm_platform_run_context_take_console_window_start(
+            (vm_platform_run_context *)handle->platform) ||
+        handle->window_presenter != STD_NULL) return;
+    status = vm_platform_win32_window_presenter_start(handle->platform,
+        handle->owner, TYPE_FALSE, &handle->window_presenter);
+    if (status == TYPE_STATUS_OK) {
+        vm_platform_run_context_confirm_console_window_started(
+            (vm_platform_run_context *)handle->platform);
+    } else {
+        vm_platform_run_handle_report(handle->owner,
+            VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
+    }
+}
+
 type_unsigned_16 vm_platform_win32con_decode_scan_code(type_unsigned_16 raw_scan_code,
     DWORD control_key_state)
 {
@@ -81,16 +131,27 @@ type_unsigned_16 vm_platform_win32con_decode_scan_code(type_unsigned_16 raw_scan
 static DWORD WINAPI win32con_display_thread(LPVOID opaque)
 {
     win32con_run_handle *handle = opaque;
+    C_INT console_blank = 0;
 
     w32cdispInit((w32cdisp_context *)handle->platform->console_renderer,
         handle->output, handle->platform->presentation);
     while (vm_platform_execution_is_running_for(handle->platform->execution)) {
-        w32cdispPaint((w32cdisp_context *)handle->platform->console_renderer,
-            handle->output, handle->platform->presentation, FALSE);
-        win32con_process_input(handle);
+        win32con_apply_window_transition(handle);
+        if (vm_platform_run_context_get_window_display(handle->platform)) {
+            if (!console_blank) {
+                win32con_clear_display(handle->output);
+                console_blank = 1;
+            }
+        } else {
+            console_blank = 0;
+            w32cdispPaint((w32cdisp_context *)handle->platform->console_renderer,
+                handle->output, handle->platform->presentation, FALSE);
+            win32con_process_input(handle);
+        }
         (C_VOID)core_platform_wait_milliseconds(20u,
             win32con_display_wait_cancelled, handle);
     }
+    win32con_window_presenter_stop(handle);
     return 0;
 }
 
@@ -192,6 +253,7 @@ C_VOID vm_platform_win32con_run_handle_finalize(vm_platform_run_handle *owner)
     platform = (vm_platform_run_context *)handle->platform;
     if (handle->kernel_thread != STD_NULL) CloseHandle(handle->kernel_thread);
     if (handle->display_thread != STD_NULL) CloseHandle(handle->display_thread);
+    win32con_window_presenter_stop(handle);
     if (platform->console_renderer != STD_NULL) {
         w32cdispFinal((w32cdisp_context *)platform->console_renderer,
             handle->output);

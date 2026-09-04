@@ -24,8 +24,7 @@ typedef struct vm_platform_host_input_sink {
 
 typedef enum vm_platform_display_mode {
     VM_PLATFORM_DISPLAY_CONSOLE,
-    VM_PLATFORM_DISPLAY_WINDOW,
-    VM_PLATFORM_DISPLAY_AUTO
+    VM_PLATFORM_DISPLAY_WINDOW
 } vm_platform_display_mode;
 
 typedef struct vm_platform_run_context vm_platform_run_context;
@@ -33,6 +32,7 @@ typedef struct vm_platform_run_context vm_platform_run_context;
 typedef enum vm_platform_run_event {
     VM_PLATFORM_RUN_EVENT_NONE,
     VM_PLATFORM_RUN_EVENT_STOP_REQUESTED,
+    VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED,
     VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED,
     VM_PLATFORM_RUN_EVENT_DISPLAY_COMPLETED,
     VM_PLATFORM_RUN_EVENT_STARTUP_FAILED
@@ -58,9 +58,15 @@ C_VOID vm_platform_run_context_set_display_mode(
     vm_platform_run_context *context, vm_platform_display_mode mode);
 C_VOID vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled);
-C_INT vm_platform_run_context_request_graphics_promotion(
+C_INT vm_platform_run_context_request_console_window_start(
     vm_platform_run_context *context);
-C_INT vm_platform_run_context_take_auto_promotion(
+C_INT vm_platform_run_context_take_console_window_start(
+    vm_platform_run_context *context);
+C_VOID vm_platform_run_context_confirm_console_window_started(
+    vm_platform_run_context *context);
+C_INT vm_platform_run_context_request_console_window_stop(
+    vm_platform_run_context *context);
+C_INT vm_platform_run_context_take_console_window_stop(
     vm_platform_run_context *context);
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle);
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);
@@ -72,6 +78,8 @@ C_VOID vm_platform_run_handle_report(
 vm_platform_run_event vm_platform_run_handle_get_last_event(
     const vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_take_stop_report(
+    vm_platform_run_handle *handle);
+C_INT vm_platform_run_handle_take_pause_report(
     vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle);

@@ -531,7 +531,6 @@ int main(int argc, char **argv)
     }
     vm_platform_run_context_set_display_mode(session->platform_run_context,
         !STD_STRCMP(yaml_session.request.display, "window") ? VM_PLATFORM_DISPLAY_WINDOW :
-        !STD_STRCMP(yaml_session.request.display, "auto") ? VM_PLATFORM_DISPLAY_AUTO :
         VM_PLATFORM_DISPLAY_CONSOLE);
     if (vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK ||
         (thread = CreateThread(STD_NULL, 0u, boot_start, session, 0u, STD_NULL)) == STD_NULL) goto done;

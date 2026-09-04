@@ -5,8 +5,7 @@
 
 typedef enum vm_session_display_mode {
     VM_SESSION_DISPLAY_CONSOLE,
-    VM_SESSION_DISPLAY_WINDOW,
-    VM_SESSION_DISPLAY_AUTO
+    VM_SESSION_DISPLAY_WINDOW
 } vm_session_display_mode;
 
 typedef enum vm_product_console_speed {

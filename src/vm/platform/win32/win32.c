@@ -88,7 +88,8 @@ C_VOID vm_platform_win32_display_paint(WIN32_BOOL flagWindow,
 
 type_status vm_platform_win32_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *handle) {
-    if (vm_platform_run_context_get_window_display(context)) {
+    if (vm_platform_run_context_get_display_mode(context) ==
+        VM_PLATFORM_DISPLAY_WINDOW) {
         return vm_platform_win32app_run_handle_start(context, handle);
     }
     return vm_platform_win32con_run_handle_start(context, handle);

@@ -235,6 +235,7 @@ type_status vm_session_reset(vm_session *machine) {
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_platform_run_handle_is_active(machine->platform_run_handle) &&
         !vm_session_control_is_running(&machine->control)) {
+        vm_session_platform_request_stop(machine);
         vm_session_platform_join_and_finalize(machine);
     }
     status = vm_session_control_reset(&machine->control);
@@ -256,23 +257,24 @@ type_status vm_session_resume(vm_session *machine) {
     type_status status;
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_session_control_is_running(&machine->control)) {
+        return vm_session_start_outcome_record(machine, TYPE_STATUS_INVALID_STATE);
+    }
     if (vm_session_control_is_paused(&machine->control)) {
         vm_session_control_continue(&machine->control);
-        return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
-    } else {
-        do {
-            status = vm_platform_start(machine->platform_run_context,
-                machine->platform_run_handle);
-            if (status != TYPE_STATUS_OK) {
-                return vm_session_start_outcome_record(machine, status);
-            }
-            if (vm_platform_run_handle_is_window_display(
-                    machine->platform_run_handle)) {
-                break;
-            }
-            vm_session_platform_join_and_finalize(machine);
-        } while (vm_platform_run_context_take_auto_promotion(
-            machine->platform_run_context));
+        if (vm_platform_run_handle_is_window_display(machine->platform_run_handle) &&
+            vm_platform_run_handle_is_active(machine->platform_run_handle)) {
+            return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
+        }
+    }
+    status = vm_platform_start(machine->platform_run_context,
+        machine->platform_run_handle);
+    if (status != TYPE_STATUS_OK) {
+        return vm_session_start_outcome_record(machine, status);
+    }
+    if (!vm_platform_run_handle_is_window_display(
+            machine->platform_run_handle)) {
+        vm_session_platform_join_and_finalize(machine);
     }
     return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
 }

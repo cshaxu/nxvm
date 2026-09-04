@@ -37,8 +37,9 @@ type_status vm_platform_run_context_create(
     context->window_renderer = STD_NULL;
     context->terminal_displayed_generation = 0u;
     context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
-    context->auto_window_active = 0;
-    context->auto_promotion_pending = 0;
+    STD_ATOMIC_INIT(&context->console_window_active, TYPE_FALSE);
+    STD_ATOMIC_INIT(&context->console_window_start_pending, TYPE_FALSE);
+    STD_ATOMIC_INIT(&context->console_window_stop_pending, TYPE_FALSE);
     *out_context = context;
     return TYPE_STATUS_OK;
 }
@@ -63,7 +64,8 @@ C_INT vm_platform_run_context_get_window_display(
 {
     return context != STD_NULL && (context->display_mode ==
         VM_PLATFORM_DISPLAY_WINDOW || (context->display_mode ==
-        VM_PLATFORM_DISPLAY_AUTO && context->auto_window_active));
+        VM_PLATFORM_DISPLAY_CONSOLE && STD_ATOMIC_LOAD(
+        &context->console_window_active)));
 }
 
 C_INT vm_platform_run_context_get_display_mode(
@@ -77,10 +79,11 @@ C_VOID vm_platform_run_context_set_display_mode(
     vm_platform_run_context *context, vm_platform_display_mode mode)
 {
     if (context == STD_NULL || mode < VM_PLATFORM_DISPLAY_CONSOLE ||
-        mode > VM_PLATFORM_DISPLAY_AUTO) return;
+        mode > VM_PLATFORM_DISPLAY_WINDOW) return;
     context->display_mode = mode;
-    context->auto_window_active = 0;
-    context->auto_promotion_pending = 0;
+    STD_ATOMIC_STORE(&context->console_window_active, TYPE_FALSE);
+    STD_ATOMIC_STORE(&context->console_window_start_pending, TYPE_FALSE);
+    STD_ATOMIC_STORE(&context->console_window_stop_pending, TYPE_FALSE);
 }
 
 C_VOID vm_platform_run_context_set_window_display(
@@ -90,22 +93,55 @@ C_VOID vm_platform_run_context_set_window_display(
         VM_PLATFORM_DISPLAY_WINDOW : VM_PLATFORM_DISPLAY_CONSOLE);
 }
 
-C_INT vm_platform_run_context_request_graphics_promotion(
+C_INT vm_platform_run_context_request_console_window_start(
     vm_platform_run_context *context)
 {
-    if (context == STD_NULL || context->display_mode != VM_PLATFORM_DISPLAY_AUTO ||
-        context->auto_window_active) return TYPE_FALSE;
-    context->auto_window_active = TYPE_TRUE;
-    context->auto_promotion_pending = TYPE_TRUE;
+    if (context == STD_NULL || context->display_mode != VM_PLATFORM_DISPLAY_CONSOLE ||
+        STD_ATOMIC_LOAD(&context->console_window_active) ||
+        STD_ATOMIC_EXCHANGE(&context->console_window_start_pending, TYPE_TRUE)) {
+        return TYPE_FALSE;
+    }
+    STD_ATOMIC_STORE(&context->console_window_stop_pending, TYPE_FALSE);
     return TYPE_TRUE;
 }
 
-C_INT vm_platform_run_context_take_auto_promotion(
+C_INT vm_platform_run_context_take_console_window_start(
     vm_platform_run_context *context)
 {
-    if (context == STD_NULL || !context->auto_promotion_pending) return TYPE_FALSE;
-    context->auto_promotion_pending = TYPE_FALSE;
+    return context != STD_NULL && STD_ATOMIC_EXCHANGE(
+        &context->console_window_start_pending, TYPE_FALSE);
+}
+
+C_VOID vm_platform_run_context_confirm_console_window_started(
+    vm_platform_run_context *context)
+{
+    if (context != STD_NULL) STD_ATOMIC_STORE(&context->console_window_active,
+        TYPE_TRUE);
+}
+
+C_INT vm_platform_run_context_request_console_window_stop(
+    vm_platform_run_context *context)
+{
+    C_INT active;
+    C_INT pending;
+
+    if (context == STD_NULL || context->display_mode != VM_PLATFORM_DISPLAY_CONSOLE) {
+        return TYPE_FALSE;
+    }
+    active = STD_ATOMIC_EXCHANGE(&context->console_window_active, TYPE_FALSE);
+    pending = STD_ATOMIC_EXCHANGE(&context->console_window_start_pending,
+        TYPE_FALSE);
+    if (!active && !pending) return TYPE_FALSE;
+    if (active) STD_ATOMIC_STORE(&context->console_window_stop_pending,
+        TYPE_TRUE);
     return TYPE_TRUE;
+}
+
+C_INT vm_platform_run_context_take_console_window_stop(
+    vm_platform_run_context *context)
+{
+    return context != STD_NULL && STD_ATOMIC_EXCHANGE(
+        &context->console_window_stop_pending, TYPE_FALSE);
 }
 
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle)
@@ -127,6 +163,7 @@ C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
     STD_MEMSET(handle, 0, sizeof(*handle));
     STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE);
     STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE);
+    STD_ATOMIC_INIT(&handle->pause_reported, TYPE_FALSE);
 }
 
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle)
@@ -154,6 +191,8 @@ C_VOID vm_platform_run_handle_report(
     if (event == VM_PLATFORM_RUN_EVENT_STOP_REQUESTED ||
         event == VM_PLATFORM_RUN_EVENT_STARTUP_FAILED) {
         STD_ATOMIC_STORE(&handle->stop_reported, TYPE_TRUE);
+    } else if (event == VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED) {
+        STD_ATOMIC_STORE(&handle->pause_reported, TYPE_TRUE);
     }
 }
 
@@ -168,6 +207,13 @@ C_INT vm_platform_run_handle_take_stop_report(
     vm_platform_run_handle *handle)
 {
     return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->stop_reported,
+        TYPE_FALSE);
+}
+
+C_INT vm_platform_run_handle_take_pause_report(
+    vm_platform_run_handle *handle)
+{
+    return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->pause_reported,
         TYPE_FALSE);
 }
 

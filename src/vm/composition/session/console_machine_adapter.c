@@ -85,8 +85,7 @@ static type_status vm_session_machine_read_display_mode(vm_session *session,
         session->platform_run_context);
 
     *mode = platform_mode == VM_PLATFORM_DISPLAY_WINDOW ?
-        VM_SESSION_DISPLAY_WINDOW : platform_mode == VM_PLATFORM_DISPLAY_AUTO ?
-        VM_SESSION_DISPLAY_AUTO : VM_SESSION_DISPLAY_CONSOLE;
+        VM_SESSION_DISPLAY_WINDOW : VM_SESSION_DISPLAY_CONSOLE;
     return TYPE_STATUS_OK;
 }
 
@@ -104,8 +103,7 @@ static type_status vm_session_machine_write_display_mode(vm_session *session,
 {
     vm_session_display_mode mode = *(vm_session_display_mode *)context;
     vm_platform_display_mode platform_mode = mode == VM_SESSION_DISPLAY_WINDOW ?
-        VM_PLATFORM_DISPLAY_WINDOW : mode == VM_SESSION_DISPLAY_AUTO ?
-        VM_PLATFORM_DISPLAY_AUTO : VM_PLATFORM_DISPLAY_CONSOLE;
+        VM_PLATFORM_DISPLAY_WINDOW : VM_PLATFORM_DISPLAY_CONSOLE;
 
     vm_platform_run_context_set_display_mode(session->platform_run_context,
         platform_mode);

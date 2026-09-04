@@ -32,6 +32,10 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_stop(control);
             continue;
         }
+        if (vm_platform_run_handle_take_pause_report(session->platform_run_handle)) {
+            vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
+            continue;
+        }
         if (STD_ATOMIC_EXCHANGE(&control->flagReset, TYPE_FALSE)) {
             type_status reset_status = vm_session_execution_context_reset(
                 &control->execution_context);
@@ -45,6 +49,16 @@ C_VOID vm_session_runner_run(vm_session *session)
              * or presenter never observes a stale mailbox frame. */
             (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
             STD_ATOMIC_STORE(&control->paused, TYPE_TRUE);
+            /* A Console session owns the one process Console surface while
+             * running. End its runner at a paused boundary so the display
+             * thread releases that lease and START returns to the NXVM
+             * command Console. A Window session keeps its presenter alive for
+             * its paused frame and can resume in place. */
+            if (!vm_platform_run_handle_is_window_display(
+                    session->platform_run_handle)) {
+                STD_ATOMIC_STORE(&control->flagRun, TYPE_FALSE);
+                break;
+            }
         }
         while (STD_ATOMIC_LOAD(&control->flagRun) && STD_ATOMIC_LOAD(&control->paused)) {
             vm_session_execution_context_run_command_boundary(&control->execution_context);
@@ -86,19 +100,20 @@ C_VOID vm_session_runner_run(vm_session *session)
                 continue;
             }
         }
-        if (vm_session_publish_display(session, TYPE_FALSE) !=
-            CORE_MACHINE_DISPLAY_KIND_TEXT &&
-            !vm_platform_run_context_get_window_display(
-                session->platform_run_context)) {
-            if (vm_platform_run_context_request_graphics_promotion(
-                    session->platform_run_context)) {
-                vm_session_control_yield_for_display_transition(&session->control);
-                continue;
+        {
+            core_machine_display_kind display_kind = vm_session_publish_display(
+                session, TYPE_FALSE);
+
+            if (vm_platform_run_context_get_display_mode(
+                    session->platform_run_context) == VM_PLATFORM_DISPLAY_CONSOLE) {
+                if (display_kind == CORE_MACHINE_DISPLAY_KIND_TEXT) {
+                    (C_VOID)vm_platform_run_context_request_console_window_stop(
+                        session->platform_run_context);
+                } else {
+                    (C_VOID)vm_platform_run_context_request_console_window_start(
+                        session->platform_run_context);
+                }
             }
-            STD_FPRINTF(STD_STDERR,
-                "Guest graphics requires DEVICE display window or auto.\n");
-            vm_session_control_yield_for_display_transition(&session->control);
-            continue;
         }
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             /* Core reset the requested processor state before returning. */

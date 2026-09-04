@@ -24,8 +24,9 @@ struct vm_platform_run_context {
     C_VOID *window_renderer;
     type_unsigned_64 terminal_displayed_generation;
     vm_platform_display_mode display_mode;
-    C_INT auto_window_active;
-    C_INT auto_promotion_pending;
+    STD_ATOMIC_BOOL console_window_active;
+    STD_ATOMIC_BOOL console_window_start_pending;
+    STD_ATOMIC_BOOL console_window_stop_pending;
 };
 
 struct vm_platform_run_handle {
@@ -33,6 +34,7 @@ struct vm_platform_run_handle {
     C_VOID *backend;
     STD_ATOMIC_INT last_event;
     STD_ATOMIC_BOOL stop_reported;
+    STD_ATOMIC_BOOL pause_reported;
     C_INT active;
     C_INT window_display;
 };

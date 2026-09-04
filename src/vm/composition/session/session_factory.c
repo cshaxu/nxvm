@@ -73,8 +73,7 @@ static type_status vm_session_provider_request_configure(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (STD_STRCMP(request->display, "console") &&
-        STD_STRCMP(request->display, "window") &&
-        STD_STRCMP(request->display, "auto")) {
+        STD_STRCMP(request->display, "window")) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     STD_MEMSET(config, 0, sizeof(*config));
@@ -189,13 +188,13 @@ static type_status vm_session_provider_describe(C_VOID *context,
 
     (C_VOID)context;
     if (session == STD_NULL || snapshot == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    snapshot->state = vm_session_control_is_running(&session->control) ?
-        (vm_session_control_is_paused(&session->control) ?
-            CORE_PRODUCT_SESSION_STATE_PAUSED : CORE_PRODUCT_SESSION_STATE_RUNNING) :
-        CORE_PRODUCT_SESSION_STATE_STOPPED;
-    snapshot->display = vm_platform_run_context_get_window_display(
-        session->platform_run_context) ? CORE_PRODUCT_SESSION_DISPLAY_WINDOW :
-        CORE_PRODUCT_SESSION_DISPLAY_CONSOLE;
+    snapshot->state = vm_session_control_is_paused(&session->control) ?
+        CORE_PRODUCT_SESSION_STATE_PAUSED :
+        vm_session_control_is_running(&session->control) ?
+        CORE_PRODUCT_SESSION_STATE_RUNNING : CORE_PRODUCT_SESSION_STATE_STOPPED;
+    snapshot->display = vm_platform_run_context_get_display_mode(
+        session->platform_run_context) == VM_PLATFORM_DISPLAY_WINDOW ?
+        CORE_PRODUCT_SESSION_DISPLAY_WINDOW : CORE_PRODUCT_SESSION_DISPLAY_CONSOLE;
     STD_SNPRINTF(snapshot->details, sizeof(snapshot->details),
         "profile=%s cpu=%s fpu=%s",
         vm_session_profile_name(session->retained_config.profile_kind),

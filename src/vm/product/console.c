@@ -252,9 +252,6 @@ static C_VOID doInfo(vm_product_console_context *context)
     case VM_SESSION_DISPLAY_WINDOW:
         STD_PRINTF("Display Type: Window\n");
         break;
-    case VM_SESSION_DISPLAY_AUTO:
-        STD_PRINTF("Display Type: Auto\n");
-        break;
     default:
         STD_PRINTF("Display Type: Console\n");
         break;
@@ -427,7 +424,6 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
             arguments, &options, &output)) return;
     machineProvider->set_display_mode(machineProvider->context,
         !STD_STRCMP(entry->display, "window") ? VM_SESSION_DISPLAY_WINDOW :
-        !STD_STRCMP(entry->display, "auto") ? VM_SESSION_DISPLAY_AUTO :
         VM_SESSION_DISPLAY_CONSOLE);
 }
 
