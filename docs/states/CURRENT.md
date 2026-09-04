@@ -7,27 +7,25 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | New |
-| Original Owner Request | Repair the default-PC/AT HDD session so its declared `hdd_50m_win31.img` is visible as DOS C:, without an ad hoc Core/VM compatibility path. |
-| Admission And Approval | The owner admitted T519 on 2026-09-04 and directed immediate repair of the default-PC/AT C: visibility defect. |
-| Objective | Restore BIOS-visible C: service for the declared default-PC/AT 50 MiB ATA image through correct external type-47 firmware assets and one existing HDC route. |
-| Candidate Proposal | [M5 default-PC/AT type-47 CMOS and fixed-disk boot contract](../proposals/m5-default-pc-at-type47-cmos-hdc-boot-contract.md). |
-| Reference Baseline | `63c6b414` (T518 closure): external default-PC/AT ROM and CMOS assets load through YAML; the declared 50 MiB image was present but DOS exposed no C:. |
-| Files And ABI Surface | `assets/sessions/default-pc-at-80386-{1440k-hdd,hdd-only}.yaml`, the external manifest/derived assets, CMake HDD-only integration mapping, and the Windows checkpoint only; no Core/VM ABI, controller API, or production code surface changes. |
-| Scope | Audit the external CMOS/ROM templates and manifest, correct source-provenance-compatible geometry, checksum, BDA and INT 41 table facts, repair the integration acceptance contract, and close all default-PC/AT fixed-disk consumers. |
-| Non-goals | Do not change no-disk YAMLs, add runtime geometry inference, add a Core/VM BIOS/BDA/INT13 compatibility branch, copy media, or change HDC ownership. |
+| Original Owner Request | Repair the IBM 5170 startup failure: `301/303 Keyboard Or System Unit Error`, including the inert BIOS F1 recovery path, without a BIOS/profile workaround. |
+| Admission And Approval | The owner directed the 5170 repair during T519 and has continued to report the product failure after P8; this packet corrects the stale HDD description to the work actually admitted and implemented in P1--P8. |
+| Objective | Establish one Core-owned 8042/keyboard/IRQ1 state path that lets the external IBM 5170 Rev-3 ROM complete keyboard POST and boot both declared floppy sessions. |
+| Candidate Proposal | [M5 8042 keyboard-controller and board-integration reclosure](../proposals/m5-kbc-board-integration-reclosure.md). |
+| Reference Baseline | `63c6b414` (T518 closure): the 5170 external-ROM session could stop at `301`/`303`; host F1 was not proven end-to-end. |
+| Files And ABI Surface | Core KBC/keyboard state and its existing PIC IRQ1 boundary; Win32 Console/Window host-input adapters; focused Core and external-ROM integration tests. No ROM, CMOS, YAML or BIOS special case is permitted. |
+| Scope | Reproduce the external-ROM failure, audit command byte, output-buffer origin, line inhibition, keyboard BAT/replies and IRQ1 delivery, then repair the shared owner and verify both 360KB and 1.2MB 5170 sessions. |
+| Non-goals | Do not alter external session YAML, inject BIOS replies, add profile-specific KBC state, or retain a parallel host-key FIFO. |
 | Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), and the [source policy](../etc/operations/policy/source-policy.md). |
-| S1 Objective | Establish the finite media-to-type-47 firmware asset ledger for every default-PC/AT seed and identify all test paths that mask or fail to prove C:. |
-| S1 Verification | Confirm image capacity/MBR/partition; inspect every seed, ROM template and manifest; cross-check the type-47 field map against the retained external implementation; run the existing checkpoint to record baseline failure. |
-| S2 Objective | Repair the 50 MiB seed and the matched external ROM boot template, then require DOS C: plus actual ATA work through the existing Core HDC path. |
-| S2 Verification | Run HDD-only handoff, INT 13 geometry/read, and DOS C:/DIR checkpoint integrations; run full unit and integration gates. |
-| Verification | S2 focused integrations and the 304-test unit suite pass; the full integration suite also exposes three pre-existing Console-control lifecycle failures that remain active work, not accepted closure. |
-| Expected Markers | `HDD-ONLY-BOOT:OK`, `INT13:OK`, and `CHECKPOINT:OK result=c-drive-present`; no-disk sessions retain the generic no-drive ROM/CMOS pair. |
-| Asset Needs | Existing project-derived default-PC/AT ROM/CMOS assets and the already-declared 50 MiB test image only; no new protected firmware or guest media is acquired or committed. |
-| Reporting Requirements | Record ROM/CMOS manifest identities and focused test markers in the S evidence; report the three unrelated full-integration lifecycle failures until they are corrected, and do not claim T519 closure before the complete gate passes. |
-| Similar-Issue Sweep | Search all tracked session YAMLs, manifests, firmware templates, CMake integration registrations and fixed-disk tests for a type-47 declaration paired with zero geometry or a disk boot test using floppy-first media. The two default-PC/AT HDD consumers were repaired; generic no-disk pairs are intentional; the remaining Console lifecycle failures are a distinct test-control defect under this active task. |
-| Stop Conditions | Stop only for a new protected-asset need, an external ROM fact that cannot be established from the declared project-derived assets, or a failure that requires a new ownership decision. |
-| Exit Criteria | The focused HDD asset contract is accepted only when its no-disk counterpart remains explicit and the full repository gate is green; otherwise retain this packet as active. |
-| Task Exit Criteria | Declared default-PC/AT HDD sessions reach `C:\\>` with BIOS AH=08 geometry/drive count and HDC work; no seed has type-47 plus zero geometry; all unit/integration gates, governance, current x64/x86 artifacts and actual-diff review pass. |
+| S1 Objective | Recover the real keyboard POST contract from the IBM ROM and reconcile it with the KBC owner. P1--P8 have removed reply races and serialized host scan-byte publication; this S remains open because a product `303` report persists. |
+| S1 Verification | The external 360KB and 1.2MB sessions must each reach a DOS/installer terminal; a deliberately observed `301`/`303` state must expose command byte, line state, scan state, queued output origin and IRQ1 disposition; a native F1 event must be observed at the BIOS recovery boundary. |
+| Verification | Both matrix rows currently pass (`360KB`: 23.81 seconds; earlier `1.2MB` product runs reached DOS Setup), but that does not prove the reported intermittent product failure or Console F1 chain. |
+| Expected Markers | No `301`/`303`; `BOOT-PROBE=installer-ready` or matrix `dos-prompt`/`date-input`; if the BIOS recovery prompt is intentionally reached, a native F1 reaches INT 16 rather than being dropped. |
+| Asset Needs | The owner-managed external IBM 5170 ROM, CMOS and existing DOS media already declared by the two session YAMLs; no acquisition, import or asset mutation. |
+| Reporting Requirements | Record the exact external YAML, ROM/CMOS identity, KBC/PIC observations and host-event path. Do not claim closure from a Core-only injection or from one media row. |
+| Similar-Issue Sweep | Examine KBC command-byte writes, controller and keyboard output origins, delayed replies, native scan queues, Console and Window ingress, and every active AT-derived profile. Each production hit is repaired at its owner or explicitly ruled out by its distinct contract. |
+| Stop Conditions | Stop only for a missing external asset, an unresolvable ROM observation, or an owner decision required to change the product input boundary. |
+| Exit Criteria | This packet remains active until the two 5170 rows and actual product Console path are proven, the full applicable gate is green, and no shared KBC/input regression remains. |
+| Task Exit Criteria | The external IBM 5170 ROM boots both declared floppy sessions with no keyboard POST error; normal F1 input is delivered when BIOS requests it; all unit/integration gates, governance, current x64/x86 artifacts and actual-diff review pass. |
 
 ## Current Technical Baseline
 
@@ -35,8 +33,8 @@
   `nxvm_0_5_0519_x64.exe` and `nxvm_0_5_0519_x86.exe` in stripped Release
   builds. They retain the runtime debugger and contain no compiler debug
   information. SHA-256: x64
-  `AAFBF4E111DA8B99DF6F637666DFC8F3FBA664E46196D53BA67F2EDF5DFD303F`;
-  x86 `A2EB6359AD37BD57B2908E7C5FA18FFB813A363952A29D5DF36237521B633C5F`.
+  `39F657A98013BCF2445DE1730ECC28D903E3A36F2D2334D22674C3A2749665B8`;
+  x86 `F58B04D05A2A7AE9265FE3911CA007B22E78B4C284B03303AA89D3FDEF37E643`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
