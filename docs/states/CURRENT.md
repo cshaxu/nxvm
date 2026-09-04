@@ -54,6 +54,11 @@ next candidate is selected only from [Queue](QUEUE.md).
 
 ## Recent Governance
 
+- **M5 Td S159 P1:** makes dual x64/x86 optimized, stripped developer artifacts
+  a mandatory implementation-task closure condition. One CMake product target
+  and version declaration remains the only source route; T517 implements the
+  architecture-specific preset and PE verification.
+
 - **M5 Td S158 P1:** reduced Queue to its ordered candidate surface, placing
   external asset governance, the Bochs bridge, the specification-driven unit
   matrix, and DOS/386 extender corpus first. Seven completed proposals moved

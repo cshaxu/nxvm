@@ -442,18 +442,23 @@ results; compiling a smoke executable is build coverage only. Source-shape and
 inventory checks remain named static gates.
 
 Each completed implementation task that changes a runnable path compiles,
-verifies, and copies one usable local developer artifact to ignored
-`build/output/`. Its four-digit revision is the numeric task identifier
+verifies, and copies two usable local developer artifacts to ignored
+`build/output/`: one `x64` and one `x86` Windows executable. Its four-digit revision is the numeric task identifier
 (`T258` is `0.5.0258`): it is an identity, not sequencing, rule. All its
 subtasks rebuild that revision; source commit plus SHA-256 identify the build.
 Identifiers are never reused or allocated out of queue order.
 
-The executable is `nxvm_0_5_NNNN.exe` for the bootable VM or
-`nxvdm_0_5_NNNN.exe` for the DOS runner. Task records map identifier to
-revision; historical artifacts retain their names and banners but are evidence,
-never active CMake targets. The current-artifact target is the only admitted
-product artifact target. Record SHA-256, source commit, identity/banner, and
-baseline/developer/product kind. Smoke executables stay in the build tree;
+The executables are `nxvm_0_5_NNNN_x64.exe` and `nxvm_0_5_NNNN_x86.exe` for
+the bootable VM, or `nxvdm_0_5_NNNN_x64.exe` and `nxvdm_0_5_NNNN_x86.exe` for
+the DOS runner. Both derive from one source target and version declaration;
+the configured toolchain selects the architecture. Each is an optimized,
+stripped Release artifact and has its own recorded SHA-256 and PE architecture
+verification. A missing or failing required architecture toolchain blocks task
+closure rather than silently omitting that artifact. Task records map identifier
+to revision; historical artifacts retain their names and banners but are
+evidence, never active CMake targets. The current-artifact target is the only
+admitted product artifact target. Record source commit, identity/banner, and
+baseline/developer/product kind for both artifacts. Smoke executables stay in the build tree;
 design-only work creates none. Local artifacts are not release evidence, carry
 no protected media or Microsoft binaries, and are replaced only by a newly
 verified build of the same named task.

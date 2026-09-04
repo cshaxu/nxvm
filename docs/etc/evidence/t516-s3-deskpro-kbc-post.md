@@ -1,4 +1,4 @@
-# T516 S3 — DeskPro Model 40 POST keyboard closure
+# T516 S3: DeskPro Model 40 POST keyboard closure
 
 ## Observed ROM contract
 
@@ -15,7 +15,7 @@ The independent line-release BAT path remains for firmware that does not issue
 `FFh` (including the IBM 5170 contract).
 
 The external Model 40 seed also contained a zero configuration checksum.  Its
-`10h–2Dh` sum is `0169h`; the external seed now carries `2Eh=01h`, `2Fh=69h`
+`10h-2Dh` sum is `0169h`; the external seed now carries `2Eh=01h`, `2Fh=69h`
 and manifest SHA-256 `0bae7ec0f94a611fb6e705597870b1871437dc784b63d9b4b2695198ddd43f48`.
 
 ## Verification
