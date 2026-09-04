@@ -8,6 +8,7 @@
 #include "vm/platform/win32/w32cdisp.h"
 #include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/win32con.h"
+#include "vm/platform/input_flush.h"
 
 #include "vm/platform/platform_internal.h"
 
@@ -205,6 +206,9 @@ type_status vm_platform_win32con_run_handle_start(
     handle->platform = context;
     handle->input = GetStdHandle(STD_INPUT_HANDLE);
     handle->output = GetStdHandle(STD_OUTPUT_HANDLE);
+    /* The NXVM command Console owned input until this handoff.  Its command
+     * records must not become guest keystrokes during firmware POST. */
+    vm_platform_input_flush_console_input();
     platform = (vm_platform_run_context *)context;
     owner->context = context;
     owner->backend = handle;

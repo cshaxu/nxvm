@@ -515,7 +515,10 @@ int main(int argc, char **argv)
         STD_PRINTF("T515:YAML-BOOT:%s:UNAVAILABLE\n", argv[2]);
         return ASSET_UNAVAILABLE;
     }
-    if (yaml_session.session == STD_NULL) return 1;
+    if (yaml_session.session == STD_NULL) {
+        STD_FPRINTF(STD_STDERR, "T515:YAML-BOOT:%s:SESSION-OPEN-FAILED\n", argv[2]);
+        return 1;
+    }
     session = yaml_session.session;
     if (trace_enabled) {
         trace_probe.fdc = &session->core_machine->fdc;
@@ -526,7 +529,7 @@ int main(int argc, char **argv)
                 &trace_probe};
     }
     if (!boot_cmos_seed_matches(session, &yaml_session.request)) {
-        STD_PRINTF("T515:YAML-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
+        STD_FPRINTF(STD_STDERR, "T515:YAML-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
         goto done;
     }
     vm_platform_run_context_set_display_mode(session->platform_run_context,
