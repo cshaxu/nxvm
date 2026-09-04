@@ -20,6 +20,10 @@
 | S2 Objective | Repair the 50 MiB seed and the matched external ROM boot template, then require DOS C: plus actual ATA work through the existing Core HDC path. |
 | S2 Verification | Run HDD-only handoff, INT 13 geometry/read, and DOS C:/DIR checkpoint integrations; run full unit and integration gates. |
 | Verification | S2 focused integrations and the 304-test unit suite pass; the full integration suite also exposes three pre-existing Console-control lifecycle failures that remain active work, not accepted closure. |
+| Expected Markers | `HDD-ONLY-BOOT:OK`, `INT13:OK`, and `CHECKPOINT:OK result=c-drive-present`; no-disk sessions retain the generic no-drive ROM/CMOS pair. |
+| Asset Needs | Existing project-derived default-PC/AT ROM/CMOS assets and the already-declared 50 MiB test image only; no new protected firmware or guest media is acquired or committed. |
+| Reporting Requirements | Record ROM/CMOS manifest identities and focused test markers in the S evidence; report the three unrelated full-integration lifecycle failures until they are corrected, and do not claim T519 closure before the complete gate passes. |
+| Stop Conditions | Stop only for a new protected-asset need, an external ROM fact that cannot be established from the declared project-derived assets, or a failure that requires a new ownership decision. |
 | Task Exit Criteria | Declared default-PC/AT HDD sessions reach `C:\\>` with BIOS AH=08 geometry/drive count and HDC work; no seed has type-47 plus zero geometry; all unit/integration gates, governance, current x64/x86 artifacts and actual-diff review pass. |
 
 ## Current Technical Baseline
