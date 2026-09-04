@@ -5,17 +5,25 @@ reserve a numeric task identifier, or define a technical baseline.
 
 ## M5 Candidates
 
-1. [M5 external-ROM boot-contract baseline and repair](../proposals/m5-external-rom-boot-contract-repair.md)
+1. [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md)
 2. [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md)
 3. [M5 YAML asset and read-only CMOS seed contract](../proposals/m5-yaml-image-load-mode-contract.md)
-4. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
-5. [M5 specification-driven unit-test matrix coverage](../proposals/m5-specification-unit-test-matrix-coverage.md)
-6. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md)
-7. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md)
-8. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md)
-9. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md)
-10. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md)
-11. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md)
+4. [M5 PIC8259A manual and board-integration reclosure](../proposals/m5-pic-board-integration-reclosure.md)
+5. [M5 DMA8237A manual and board-integration reclosure](../proposals/m5-dma-board-integration-reclosure.md)
+6. [M5 PIT8253/8254 manual and board-integration reclosure](../proposals/m5-pit-board-integration-reclosure.md)
+7. [M5 RTC-CMOS manual and board-integration reclosure](../proposals/m5-rtc-cmos-board-integration-reclosure.md)
+8. [M5 8042 keyboard-controller and board-integration reclosure](../proposals/m5-kbc-board-integration-reclosure.md)
+9. [M5 8272A FDC and board-integration reclosure](../proposals/m5-fdc-board-integration-reclosure.md)
+10. [M5 VADP video-adapter and board-integration reclosure](../proposals/m5-vadp-board-integration-reclosure.md)
+11. [M5 fixed-disk controller and board-integration reclosure](../proposals/m5-hdc-board-integration-reclosure.md)
+12. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
+13. [M5 specification-driven unit-test matrix coverage](../proposals/m5-specification-unit-test-matrix-coverage.md)
+14. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md)
+15. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md)
+16. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md)
+17. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md)
+18. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md)
+19. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md)
 
 Shared M5 admission context:
 [Four-profile CPU completeness](../proposals/m5-four-profile-cpu-completeness-program.md),
@@ -28,6 +36,7 @@ Shared M5 admission context:
 [80386DX closure](../proposals/m5-80386dx-extended-state-closure.md),
 [DeskPro 386 baseline](../proposals/m5-80386-deskpro-386-l3-baseline.md),
 [controller/device phase program](../proposals/m5-core-controller-device-phase-contracts.md),
+[controller manual and board-integration reclosure program](../proposals/m5-controller-board-integration-reclosure-program.md),
 [CPU timing program](../proposals/m5-core-cpu-instruction-timing-program.md),
 [Core L3 integration](../proposals/m5-core-l3-integration-vm-contract-export.md),
 [cross-mode coherence](../proposals/m5-cross-mode-mechanism-coherence.md),

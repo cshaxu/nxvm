@@ -2,10 +2,10 @@
 
 ## Current Work
 
-No numeric implementation task is active. Td S160 reconciles the explicit
-profile/CPU/media session filenames across the CMake integration matrix and
-direct integration consumers; affected tests pass. The next candidate is
-selected only from [Queue](QUEUE.md).
+No numeric implementation task is active. Td S161 places the host-input,
+capture and status UX candidate at Queue head: it reserves Ctrl+Alt+P/D/M,
+returns F9 to the guest, and defines one Console/Window input, lifecycle and
+capture path. The next candidate is selected only from [Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
@@ -55,6 +55,13 @@ selected only from [Queue](QUEUE.md).
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
 
 ## Recent Governance
+
+- **M5 Td S161 P1:** places the host-input, capture and status UX candidate at
+  Queue head. It defines one host-action classifier before existing guest-key
+  normalization, delivered-F1 proof, ordinary-F9 delivery, exact
+  Running/Paused titles, and click-to-capture/release semantics. The
+  owner-approved task uses repository-only unit tests rather than an external
+  ROM/media integration claim.
 
 - **M5 Td S160 P1:** reconciles the owner-renamed `assets/sessions` YAML files
   without aliases: CMake now rejects a missing registered YAML and all live
