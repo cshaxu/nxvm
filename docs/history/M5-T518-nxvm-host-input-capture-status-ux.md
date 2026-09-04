@@ -1,8 +1,8 @@
 # M5 T518: NXVM Host-Input, Capture And Status UX
 
-The [active proposal](../proposals/m5-nxvm-host-input-capture-status-ux.md)
-defines the owner-approved UX contract. This record is updated only with
-accepted subtask outcomes and final closure evidence.
+The [retained proposal](M5-T518-nxvm-host-input-capture-status-ux-proposal.md)
+defines the owner-approved UX contract. This record retains the accepted
+subtask outcomes and final closure evidence.
 
 ## Task Record
 
@@ -12,7 +12,7 @@ accepted subtask outcomes and final closure evidence.
 | S2 | Converge host input and product action classification. | Accepted: P1 `586735fa` |
 | S3 | Publish one lifecycle observation to platform presentation. | Accepted: P1 `e077de3e` |
 | S4 | Implement Window-local native pointer capture and release behavior. | Accepted: P1 `960721de` |
-| S5 | Run full unit closure, manual host proof and developer artifact delivery. | Planned |
+| S5 | Run full unit closure, manual host proof and developer artifact delivery. | Accepted: P1 `ea4a07e1`, P2 `c1c2db28` |
 
 ## Accepted Outcomes
 
@@ -82,3 +82,37 @@ accepted subtask outcomes and final closure evidence.
   Paused states, while the existing host-action proof covers the release
   report. The complete repository-only unit suite passes 303/303 in 18.30
   seconds; documentation governance, static sweep and actual-diff review pass.
+
+### S5 and task closure
+
+- `Ctrl+Alt+D` and `Ctrl+Alt+F` now synthesize only their guest sequences
+  through the existing common classifier; `Ctrl+Alt+P` and `Ctrl+Alt+M` retain
+  their session-local lifecycle/capture dispositions. The obsolete host
+  debugger-request event is removed: `DEBUG` is the only debugger entry.
+  F1 and F9 remain ordinary guest input.
+- `EXIT` requests one composition-owned `stop_all` operation through the
+  Core session manager. The command parser neither enumerates sessions nor
+  accesses Core/session layouts.
+- The final similar-issue sweep corrected stale gate assumptions rather than
+  weakening product behavior: it removed the obsolete F9-stop expectation,
+  taught the CTest inventory checks their current quoted syntax, removed a
+  false Model-40 file-owner assertion, and registered the two real production
+  source owners compiled by the EXIT smoke.
+- Repository proof: full unit `304/304` passed in 17.73 seconds; specialized
+  gates, documentation governance and `git diff --check` passed. The stripped
+  Release artifacts are `nxvm_0_5_0518_x64.exe`
+  (`46B27A9531F495A92933181A6503FE3819BF375DB866BF7DBD85DB76853E0213`)
+  and `nxvm_0_5_0518_x86.exe`
+  (`538037537249DD1C651D5AFBC7A800B038F4C04A838C94A1CCE3DA28D1BB7BC2`).
+- Direct Windows-host acceptance: the owner ran the synchronized 0518 x64
+  executable from `assets/sessions`, confirmed session YAML discovery and
+  SoftPC UX parity. This accepts the proposal's one-Console/multi-Window,
+  host-chord, title, capture and orderly-EXIT matrix. The local executable
+  copy is generated and ignored; no YAML or external media/firmware asset was
+  changed.
+- Actual-diff review for the full task range `8be4223c^..c1c2db28` is
+  `+1532/-451` across 43 tracked files. The net increase is the native Window
+  presenter, bounded lifecycle/input adapters and their owner-local smoke
+  proofs; the old Console-promotion/restart, F9-stop and debugger-event paths
+  are deleted. No second session state, keyboard route, Console surface or
+  global focused-session registry remains.

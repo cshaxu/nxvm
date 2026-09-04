@@ -3,8 +3,6 @@
 This is the ordered, unnumbered candidate queue. It does not activate work,
 reserve a numeric task identifier, or define a technical baseline.
 
-Current active package: [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md).
-
 ## M5 Candidates
 
 1. [M5 NXVM mechanism-reduction audit](../proposals/m5-mechanism-reduction-audit.md)

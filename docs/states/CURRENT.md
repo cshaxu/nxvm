@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T518 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved the complete T518 SoftPC-parity UX scope on 2026-09-03, including its planned S5 closure. S4 is accepted at `960721de`; the owner-approved repository-only exception for external-ROM/media integration remains in effect. |
-| Objective | Close T518 with direct Windows-host proof of the one-Console/multi-Window contract and the required optimized, stripped 0518 x64/x86 developer artifacts. |
-| Non-goals | Do not change YAML/session assets, Core guest behavior, profile hardware, external media, or user-managed build/output configuration. Do not claim guest Windows compatibility or invent a second Console/session/control path to automate host proof. |
-| Reference Baseline | S1--S4 have accepted the Console lease, input classifier, one lifecycle observation and Window-local pointer capture. S5 advances the sole current artifact from 0517 to 0518; no parallel product target is admitted. |
-| Candidate Proposal | [M5 NXVM host-input, capture and status UX](../proposals/m5-nxvm-host-input-capture-status-ux.md). |
-| Files And ABI Surface | The bounded Core session-manager bulk-operation contract and VM composition `stop_all` capability let the retained Console request orderly process shutdown without enumerating session layouts. The current-artifact target/version declarations, repository-only smoke tests, execution/history/current records and generated ignored executable artifacts complete the surface. Native proof uses existing product APIs and no test-only host-control interface. |
-| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Product UX](../design/UI.md), [Roadmap](../design/ROADMAP.md), and [Contributing](../../CONTRIBUTING.md). Evidence must prove every T518 UX row through the existing one-owner routes. |
-| Verification | Re-run complete repository-only unit tests after the artifact declaration. On Windows host, prove Console text lease; Console-session graphics preserves its blank lease and opens only its Window; graphics-to-text preserves the running session; Window close/Ctrl+Alt+P pauses only that session; Ctrl+Alt+D delivers guest Ctrl+Alt+Delete and Ctrl+Alt+F delivers guest Alt+Enter only to their session; Ctrl+Alt+M releases only its Window pointer; `EXIT` stops every session before Console exit; delivered F1/F9 remain guest input; two Window sessions remain isolated. Configure and build optimized Release x64 and x86 0518 targets; verify stripped debug information and PE architecture; run the applicable repository gates and documentation governance. |
-| Expected Markers | The direct host proof has one Console holder, exact Running/Paused titles, no F9 stop, no cross-session pause/capture/input, and no return to NXVM command entry while a Console session remains running in graphics. Both emitted artifacts are named `nxvm_0_5_0518_x64.exe` and `nxvm_0_5_0518_x86.exe`. |
-| Asset Needs | Existing owner-managed local session YAML and external assets may be used only to run the product; no asset is copied, changed or committed. |
-| Reporting Requirements | Record the direct-host proof matrix, full-unit and build/architecture/strip results, code-size accounting, actual-diff review, known boundary, commit and push in the T history. |
-| Stop Conditions | Stop for owner direction if host input cannot be delivered to an existing Window/Console without adding a second production route, if the actual host behavior contradicts the approved Console lease model, or if either required architecture cannot build from the declared current-artifact path. |
-| Exit Criteria | Every proposal UX row has direct-host or repository proof, the two optimized stripped 0518 artifacts exist with verified architectures, all required repository-only gates pass, no obsolete 0517 current-target declaration remains, and T518 closure is reviewed, committed and pushed. |
-| Original Owner Request | Achieve SoftPC UX parity: independent session pause/stop, one Console lease, console/window presentation policies, host chords, RDP-delivered function keys, exact state title and click/release mouse behavior. |
-| Similar-Issue Sweep | Search every current artifact version/preset, Window/Console host event adapter, lifecycle/title/capture path and product test registration. Each hit is proven converged, explicitly not applicable or transferred before T closure. |
+No active task. The next admitted task must take its contract from the ordered
+[Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
@@ -61,7 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T518 S4 | Accepted: one Console lease and per-Window-native capture/presentation keep session state, host input and Core mouse routing single-owner. Unit 303/303, governance and actual-diff review pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
+| T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
@@ -69,7 +51,6 @@
 | T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 | T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |
 | T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
-| T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
 
 ## Recent Governance
 
