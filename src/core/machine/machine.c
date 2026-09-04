@@ -582,6 +582,8 @@ static type_status core_machine_create_internal(
         &machine->executor_port, dma_controller_count);
     core_machine_pic_initialize(&machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->executor_port, config->pic_topology);
+    core_machine_pic_set_irq_timing(&machine->shared_pic_master,
+        &machine->shared_pic_slave, &config->pic_irq_timing);
     core_machine_cpu_execution_context_bind_pic(&machine->executor_cpu_execution,
         &machine->shared_pic_master, &machine->shared_pic_slave);
     core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,

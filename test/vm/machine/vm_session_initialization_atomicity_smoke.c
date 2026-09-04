@@ -165,7 +165,7 @@ static C_INT verify_fdd_initialization_failure(
     vm_session session = {0};
 
     initialize_config(&session, profile);
-    session.floppy_kind = (vm_profile_floppy_kind)0xffu;
+    session.fdd_media_kind = (vm_profile_floppy_kind)0xffu;
     if (vm_session_initialize(&session) != TYPE_STATUS_FAULT || session.active ||
         session.core_machine != STD_NULL ||
         vm_platform_run_handle_is_active(session.platform_run_handle)) {

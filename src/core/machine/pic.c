@@ -70,7 +70,8 @@ static type_bool core_machine_pic_select_controller(const t_pic *pic,
     if (pic == STD_NULL || out_id == STD_NULL) return TYPE_FALSE;
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
         id = (type_unsigned_8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
-        if (TYPE_GET_BIT(core_machine_pic_pending_requests(pic) & ~pic->data.imr,
+        if (pic->data.unmask_remaining_ticks[id] == 0u &&
+            TYPE_GET_BIT(core_machine_pic_pending_requests(pic) & ~pic->data.imr,
                 VPIC_IRR_IRQ(id)) &&
             core_machine_pic_request_can_interrupt(pic, id)) {
             *out_id = id;
@@ -127,7 +128,8 @@ static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
         master_id = (type_unsigned_8)((master->data.irx + offset) %
             VPIC_MAX_IRQ_COUNT);
-        if (!TYPE_GET_BIT(core_machine_pic_pending_requests(master) &
+        if (master->data.unmask_remaining_ticks[master_id] != 0u ||
+            !TYPE_GET_BIT(core_machine_pic_pending_requests(master) &
                 ~master->data.imr,
                 VPIC_IRR_IRQ(master_id))) {
             continue;
@@ -391,6 +393,10 @@ static C_VOID io_read_00x1(t_pic *rpic, t_port *port) {
  * PIC get ICW2, ICW3, ICW4, OCW1 after ICW1
  */
 static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
+    type_unsigned_8 previous_imr;
+    type_unsigned_8 released;
+    type_unsigned_8 id;
+
     switch (rpic->data.status) {
     case ICW2:
         rpic->data.icw2 = port->data.ioByte & VPIC_ICW2_VALID;
@@ -444,12 +450,87 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
         rpic->data.status = OCW1;
         break;
     case OCW1:
+        previous_imr = rpic->data.imr;
         rpic->data.imr = port->data.ioByte;
+        released = previous_imr & ~rpic->data.imr &
+            core_machine_pic_pending_requests(rpic);
+        for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+            if (TYPE_GET_BIT(released, VPIC_IRR_IRQ(id))) {
+                rpic->data.unmask_remaining_ticks[id] =
+                    rpic->data.unmask_delivery_ticks[id];
+            }
+        }
         break;
     default:
         break;
     }
     core_machine_pic_refresh_bound(rpic);
+}
+
+C_VOID core_machine_pic_set_irq_timing(t_pic *master, t_pic *slave,
+    const core_machine_pic_irq_timing *timing)
+{
+    type_unsigned_8 id;
+
+    if (master == STD_NULL || slave == STD_NULL || timing == STD_NULL) return;
+    for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+        master->data.unmask_delivery_ticks[id] = timing->unmask_delivery_ticks[id];
+        slave->data.unmask_delivery_ticks[id] = timing->unmask_delivery_ticks[id + 8u];
+    }
+}
+
+static C_VOID core_machine_pic_advance_one(t_pic *pic, type_unsigned_64 elapsed_ticks)
+{
+    type_unsigned_8 id;
+
+    if (pic == STD_NULL || elapsed_ticks == 0u) return;
+    for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+        if (elapsed_ticks >= pic->data.unmask_remaining_ticks[id]) {
+            pic->data.unmask_remaining_ticks[id] = 0u;
+        } else {
+            pic->data.unmask_remaining_ticks[id] -= elapsed_ticks;
+        }
+    }
+}
+
+C_VOID core_machine_pic_advance(t_pic *master, t_pic *slave,
+    type_unsigned_64 elapsed_ticks)
+{
+    core_machine_pic_advance_one(master, elapsed_ticks);
+    core_machine_pic_advance_one(slave, elapsed_ticks);
+}
+
+static type_status core_machine_pic_ticks_until_one(const t_pic *pic,
+    type_unsigned_64 *io_ticks)
+{
+    type_unsigned_8 id;
+    type_unsigned_8 pending;
+
+    if (pic == STD_NULL || io_ticks == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    pending = core_machine_pic_pending_requests(pic) & ~pic->data.imr;
+    for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+        if (TYPE_GET_BIT(pending, VPIC_IRR_IRQ(id)) &&
+            pic->data.unmask_remaining_ticks[id] != 0u &&
+            pic->data.unmask_remaining_ticks[id] < *io_ticks) {
+            *io_ticks = pic->data.unmask_remaining_ticks[id];
+        }
+    }
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic *slave,
+    type_unsigned_64 *out_ticks)
+{
+    type_unsigned_64 ticks = UINT64_MAX;
+
+    if (master == STD_NULL || slave == STD_NULL || out_ticks == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    (C_VOID)core_machine_pic_ticks_until_one(master, &ticks);
+    (C_VOID)core_machine_pic_ticks_until_one(slave, &ticks);
+    if (ticks == UINT64_MAX) return TYPE_STATUS_INVALID_STATE;
+    *out_ticks = ticks;
+    return TYPE_STATUS_OK;
 }
 
 /* The provider owner is the composition-owned PIC selected for this port. */
@@ -602,9 +683,20 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
     }
 }
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
+    type_unsigned_32 master_timing[VPIC_MAX_IRQ_COUNT];
+    type_unsigned_32 slave_timing[VPIC_MAX_IRQ_COUNT];
+
     if (master == STD_NULL || slave == STD_NULL) return;
+    STD_MEMCPY(master_timing, master->data.unmask_delivery_ticks,
+        sizeof(master_timing));
+    STD_MEMCPY(slave_timing, slave->data.unmask_delivery_ticks,
+        sizeof(slave_timing));
     STD_MEMSET((C_VOID *)(&master->data), TYPE_ZERO_8, sizeof(t_pic_data));
     STD_MEMSET((C_VOID *)(&slave->data), TYPE_ZERO_8, sizeof(t_pic_data));
+    STD_MEMCPY(master->data.unmask_delivery_ticks, master_timing,
+        sizeof(master_timing));
+    STD_MEMCPY(slave->data.unmask_delivery_ticks, slave_timing,
+        sizeof(slave_timing));
     master->data.status = slave->data.status = ICW1;
     master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
 }

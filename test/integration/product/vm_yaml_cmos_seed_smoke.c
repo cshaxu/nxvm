@@ -29,6 +29,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !vm_yaml_cmos_seed_matches(argv[1],
             "compaq-deskpro-386-model-40.yaml", 0x33u, 0x80u) ||
         !vm_yaml_cmos_seed_matches(argv[1],
+            "compaq-deskpro-386-model-40.yaml", 0x2eu, 0x01u) ||
+        !vm_yaml_cmos_seed_matches(argv[1],
+            "compaq-deskpro-386-model-40.yaml", 0x2fu, 0x69u) ||
+        !vm_yaml_cmos_seed_matches(argv[1],
             "ibm-5170-model-339.yaml", 0x12u, 0x00u) ||
         !vm_yaml_cmos_seed_matches(argv[1],
             "ibm-5170-model-339.yaml", 0x2fu, 0x43u)) return 1;

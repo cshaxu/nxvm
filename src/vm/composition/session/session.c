@@ -270,6 +270,7 @@ static type_status vm_session_default_at_resolve(vm_session *session,
     if (vm_session_default_at_floppy_select(config, &session->floppy_kind) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    session->fdd_media_kind = session->floppy_kind;
     vm_session_default_at_request_create(config, session->floppy_kind, &request);
     if (vm_profile_default_at_child_resolve(&request, &session->default_at_resolved) !=
         TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -535,6 +536,7 @@ static type_status vm_session_create_xt_from_assets(const vm_session_config *con
     session->xt_private = 1;
     session->firmware_kind = VM_SESSION_FIRMWARE_XT_BYOB;
     session->floppy_kind = VM_PROFILE_FLOPPY_525_360K;
+    session->fdd_media_kind = VM_PROFILE_FLOPPY_525_360K;
     if (vm_profile_xt_5160_268_resolve(&session->xt_resolved,
             source_rom.xebec_present) != TYPE_STATUS_OK) {
         STD_FREE(session);
@@ -688,7 +690,10 @@ type_status vm_session_create_from_assets(const vm_session_config *config,
     if (config->profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
         status = vm_session_default_at_resolve(session, config);
     } else {
-        status = vm_session_ibm_5170_floppy_select(config, &session->floppy_kind);
+        status = vm_session_ibm_5170_floppy_select(config, &session->fdd_media_kind);
+        /* The 5170's 1.2 MB drive is an immutable board fact. The YAML
+         * format selects the removable medium only (including 360 KB). */
+        session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
         if (status == TYPE_STATUS_OK) status = vm_profile_ibm_5170_root_resolve_memory(
             config->memory_bytes, &session->ibm_5170_root);
         if (status == TYPE_STATUS_OK) {

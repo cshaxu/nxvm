@@ -13,8 +13,7 @@ type_status vm_session_machine_devices_initialize_media(vm_session *session)
 {
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_machine_fdd_initialize_with_geometry(&session->fdd,
-            vm_profile_floppy_geometry_get(session->model40_private ?
-                session->fdd_media_kind : session->floppy_kind))) return TYPE_STATUS_FAULT;
+            vm_profile_floppy_geometry_get(session->fdd_media_kind))) return TYPE_STATUS_FAULT;
     if (session->model40_private && vm_machine_fdd_initialize_with_geometry(
             &session->floppy[1u], vm_profile_floppy_geometry_get(
                 session->fdd_media_kind))) return TYPE_STATUS_FAULT;
@@ -33,7 +32,7 @@ static type_status vm_session_machine_devices_materialize_fdc(vm_session *sessio
     const vm_profile_default_pc_at_port_leaf *data_port;
     const vm_profile_default_pc_at_port_leaf *control_port;
     const vm_profile_default_pc_at_route *route;
-    const core_machine_fdc_drive_bindings drives = {
+    core_machine_fdc_drive_bindings drives = {
         {VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
         {0u, 0u, 0u, 0u}, 0u
@@ -66,6 +65,13 @@ static type_status vm_session_machine_devices_materialize_fdc(vm_session *sessio
     config.dma_channel = route->dma_channel;
     config.ready_mask = session->profile->fdc_ready_mask;
     config.clock_ticks_per_second = session->core_machine_config.time_axis.ticks_per_second;
+    drives.installed_mask = session->profile->fdc_installed_mask;
+    drives.double_sided_mask = session->profile->fdc_double_sided_mask;
+    STD_MEMCPY(drives.cylinder_count, session->profile->fdc_cylinder_count,
+        sizeof(drives.cylinder_count));
+    drives.track_zero_active_low_mask = session->profile->fdc_track_zero_active_low_mask;
+    config.diagnostic_port = session->profile->fdc_diagnostic_port;
+    config.diagnostic_read_value = session->profile->fdc_diagnostic_read_value;
     return core_machine_plan_configure_fdc(plan, &drives, &config);
 }
 

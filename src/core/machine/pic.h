@@ -25,6 +25,8 @@ typedef struct {
     type_unsigned_8 irx; /* id of current top potential ir */
     type_unsigned_8 asserted[VPIC_MAX_IRQ_COUNT]; /* source levels */
     type_unsigned_8 cascade_irr; /* paired slave's synthesized request */
+    type_unsigned_32 unmask_delivery_ticks[VPIC_MAX_IRQ_COUNT];
+    type_unsigned_64 unmask_remaining_ticks[VPIC_MAX_IRQ_COUNT];
 } t_pic_data;
 
 typedef struct t_pic {
@@ -113,6 +115,12 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
     core_machine_pic_topology topology);
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave);
+C_VOID core_machine_pic_set_irq_timing(t_pic *master, t_pic *slave,
+    const core_machine_pic_irq_timing *timing);
+C_VOID core_machine_pic_advance(t_pic *master, t_pic *slave,
+    type_unsigned_64 elapsed_ticks);
+type_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic *slave,
+    type_unsigned_64 *out_ticks);
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
     t_pic *master, t_pic *slave, type_unsigned_8 irq_id);

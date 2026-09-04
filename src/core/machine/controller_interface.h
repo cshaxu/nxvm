@@ -47,6 +47,10 @@ typedef struct core_machine_fdc_config {
      * ratio unless a selected board source qualifies it; Core uses it only to
      * convert the 8272A's own microsecond formulas into its elapsed axis. */
     type_unsigned_32 clock_ticks_per_second;
+    /* Optional board-owned FDC diagnostic endpoint. It is not an 8272A
+     * register: a selected board may expose a read-only capability code. */
+    type_unsigned_16 diagnostic_port;
+    type_unsigned_8 diagnostic_read_value;
 } core_machine_fdc_config;
 
 typedef struct core_machine_fdc_drive_bindings {

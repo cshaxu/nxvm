@@ -133,7 +133,8 @@ static type_unsigned_8 dma_page_spare_index(type_unsigned_16 port_id)
     }
 }
 
-static C_VOID dma_port_read(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID dma_port_read_byte(t_port *port, type_unsigned_16 port_id,
+    C_VOID *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
@@ -184,7 +185,8 @@ static C_VOID dma_port_read(t_port *port, type_unsigned_16 port_id, C_VOID *owne
     }
 }
 
-static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID dma_port_write_byte(t_port *port, type_unsigned_16 port_id,
+    C_VOID *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
@@ -240,6 +242,52 @@ static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *own
     case 0x000f: dma->data.mask = port->data.ioByte & VDMA_MASKAC_VALID; break;
     default: break;
     }
+}
+
+static C_INT dma_page_port_is_byte_lanes(const t_port *port,
+    type_unsigned_16 port_id)
+{
+    return port != STD_NULL && port->data.access_bytes > 1u &&
+        port_id >= 0x0080u && (type_unsigned_32)port_id +
+        port->data.access_bytes <= 0x0090u;
+}
+
+static C_VOID dma_port_read(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+{
+    type_unsigned_32 value = 0u;
+    type_unsigned_8 lane;
+
+    if (!dma_page_port_is_byte_lanes(port, port_id)) {
+        dma_port_read_byte(port, port_id, owner);
+        return;
+    }
+    /* These page latches are individual eight-bit system-board endpoints.
+     * A CPU word/dword transaction therefore reaches consecutive latches;
+     * native-width endpoints (notably the HDC data port) retain their one
+     * transaction route in the generic port owner. */
+    for (lane = 0u; lane < port->data.access_bytes; ++lane) {
+        port->data.ioDWord = 0u;
+        dma_port_read_byte(port, (type_unsigned_16)(port_id + lane), owner);
+        value |= (type_unsigned_32)port->data.ioByte << (lane * 8u);
+    }
+    port->data.ioDWord = value;
+}
+
+static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+{
+    type_unsigned_32 value;
+    type_unsigned_8 lane;
+
+    if (!dma_page_port_is_byte_lanes(port, port_id)) {
+        dma_port_write_byte(port, port_id, owner);
+        return;
+    }
+    value = port->data.ioDWord;
+    for (lane = 0u; lane < port->data.access_bytes; ++lane) {
+        port->data.ioDWord = value >> (lane * 8u);
+        dma_port_write_byte(port, (type_unsigned_16)(port_id + lane), owner);
+    }
+    port->data.ioDWord = value;
 }
 
 static type_unsigned_8 GetRegTopId(t_dma *rdma, type_unsigned_8 reg) {

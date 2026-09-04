@@ -117,7 +117,7 @@ typedef struct {
  * MSR: RQM | DIO | NDM | CB  | D3B | D2B | D1B | D0B
  * DIR: DC  | -   | -   | -   | -   | -   | -   | HD
  * DOR: ME3 | ME2 | ME1 | ME0 | -   | RST | DS1 | DS0
- * CCR: -   | -   | -   | -   | -   | -   | DRC | -
+ * CCR: -   | -   | -   | -   | -   | -   | DRS1| DRS0
  * DR:  ?
  * ST0: ?
  * ST1: ?
@@ -146,8 +146,12 @@ typedef struct {
 #define VFDC_DOR_NRS  0x04 /* fdc enable(1) or hold(0) fdc at reset */
 #define VFDC_DOR_ENRQ 0x08 /* dma and i/o interface enabled */
 
-/* configuration control register bits */
-#define VFDC_CCR_DRC 0x02 /* 0=500000 bps, 1=250000 bps */
+/* Configuration control register data-rate select.  The 8272A-compatible
+ * PC/AT route uses 500, 300 and 250 kbps; 1 Mbps is not admitted here. */
+#define VFDC_CCR_RATE_500 0x00u
+#define VFDC_CCR_RATE_300 0x01u
+#define VFDC_CCR_RATE_250 0x02u
+#define VFDC_CCR_RATE_MASK 0x03u
 
 /* status register 0 bits */
 #define VFDC_ST0_DS       0x03 /* drive select */

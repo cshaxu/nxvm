@@ -99,6 +99,10 @@ typedef struct t_kbc_data {
     type_unsigned_8 previous_keyboard_output_byte;
     type_bool keyboard_has_output;
     type_bool keyboard_bat_pending;
+    /* The first clock/data release after controller reset starts the attached
+     * keyboard.  ADh/AEh subsequently gate the interface; they are not
+     * additional keyboard power cycles. */
+    type_bool keyboard_startup_released;
     type_unsigned_8 typematic_scan_code;
     type_unsigned_8 delayed_response[CORE_MACHINE_KBC_RESPONSE_CAPACITY];
     core_machine_kbc_output_origin delayed_response_origin;

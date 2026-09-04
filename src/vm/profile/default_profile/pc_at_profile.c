@@ -160,6 +160,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK },
+    {{0u}},
     0u,
     0u,
     0u,
@@ -210,7 +211,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
             .lba28_supported = TYPE_TRUE }},
     default_pc_at_firmware_services,
     sizeof(default_pc_at_firmware_services) /
-        sizeof(default_pc_at_firmware_services[0])
+        sizeof(default_pc_at_firmware_services[0]),
+    0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0u, 0u
 };
 
 static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor = {
@@ -236,6 +238,10 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK },
+    /* PCjs's Rev-3 model retains a 120-instruction keyboard IRQ phase for
+     * this ROM.  The Core PIC owns the delayed IMR-release eligibility; this
+     * immutable board value is Other-L2, never a BIOS-side exception. */
+    {{0u, 120u}},
     /* IBM 6280099 Keyboard: default 500 ms delay and 10 cps typematic,
      * each with +/-20 percent tolerance. These are nominal Model-339 values. */
     4000000u,
@@ -267,11 +273,13 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     0x01u,
     TYPE_TRUE,
     TYPE_TRUE,
-    /* IBM 5170 System Board pp. 1-8--1-9 wires counter 1 OUT to both
-     * refresh and port 61h bit 4.  The one PIT output therefore remains the
-     * sole observable source; do not create a CPU-tick-derived shadow. */
-    CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
-    0u,
+    /* IBM specifies counter 1 as the refresh-request source, but not the
+     * readable port-61h waveform.  PCjs's Rev-3 model ties that observation
+     * to the 8 MHz cycle axis and documents a 64-cycle half period required
+     * by this ROM's two refresh POST checks.  Keep the physical PIT1-to-DMA
+     * route in Core; this frozen Other-L2 board observation owns only bit 4. */
+    CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
+    64u,
     TYPE_FALSE,
     TYPE_TRUE,
     TYPE_TRUE,
@@ -295,6 +303,12 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     ibm_5170_model_339_firmware_services,
     sizeof(ibm_5170_model_339_firmware_services) /
         sizeof(ibm_5170_model_339_firmware_services[0]),
+    /* IBM 5170 Technical Reference: A: is a 96-TPI, 80-cylinder 1.2 MB
+     * physical unit. A 360 KB disk changes only the mounted medium. */
+    /* PCjs corroborates that the Rev-3 ROM reads this D/S/P-board endpoint
+     * before enabling its 360 KB-in-1.2 MB compatibility path. It is an
+     * explicit Other-L2 board capability, never a firmware exception. */
+    0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0x03f1u, 0x50u
 };
 
 static const type_unsigned_32 ibm_5170_root_contract_ids[] = {1u};
@@ -383,6 +397,7 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
         descriptor->clock_plan,
         descriptor->time_axis,
         descriptor->controller_timing_rules,
+        descriptor->pic_irq_timing,
         descriptor->kbc_typematic_initial_ticks,
         descriptor->kbc_typematic_repeat_ticks,
         descriptor->kbc_command_response_ticks,
@@ -412,6 +427,7 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .time_axis = contract->time_axis,
         .l1_compatibility_policy = CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS,
+        .pic_irq_timing = contract->pic_irq_timing,
         .kbc_aux_absent = descriptor->firmware_slot ==
             VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
@@ -949,11 +965,17 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
                     !descriptor->unpopulated_extended_memory &&
                     descriptor->cmos.base_memory_kib == 0x0280u)) &&
             descriptor->fdc_bounce_segment == 0x7000u &&
+            descriptor->fdc_installed_mask == 0x01u &&
+            descriptor->fdc_double_sided_mask == 0x01u &&
+            descriptor->fdc_cylinder_count[0u] == 80u &&
+            descriptor->fdc_track_zero_active_low_mask == 0u &&
+            descriptor->fdc_diagnostic_port == 0x03f1u &&
+            descriptor->fdc_diagnostic_read_value == 0x50u &&
             descriptor->hdc_present && descriptor->planar_parity_present &&
             descriptor->kbc_input_port_configured && descriptor->kbc_input_port == 0xb0u &&
             descriptor->refresh_status_source ==
-                CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&
-            descriptor->refresh_status_toggle_ticks == 0u &&
+                CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE &&
+            descriptor->refresh_status_toggle_ticks == 64u &&
             !descriptor->ega_present && descriptor->cga_vram_present &&
             descriptor->monochrome_aperture_absent &&
             descriptor->firmware_slot ==
@@ -986,6 +1008,12 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         vm_profile_default_pc_at_cpu_profile_is_valid(descriptor->cpu_profile) &&
         vm_profile_default_pc_at_fpu_profile_is_valid(descriptor->fpu_profile) &&
         descriptor->hdc_present && !descriptor->planar_parity_present &&
+        descriptor->fdc_installed_mask == 0x01u &&
+        descriptor->fdc_double_sided_mask == 0x01u &&
+        descriptor->fdc_cylinder_count[0u] == 80u &&
+        descriptor->fdc_track_zero_active_low_mask == 0u &&
+        descriptor->fdc_diagnostic_port == 0u &&
+        descriptor->fdc_diagnostic_read_value == 0u &&
         !descriptor->kbc_input_port_configured && descriptor->kbc_input_port == 0u &&
         descriptor->refresh_status_source ==
             CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&

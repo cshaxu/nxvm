@@ -183,6 +183,7 @@ typedef struct core_machine_config {
      * retained only for direct Core fixture compatibility and resolves to two. */
     type_unsigned_8 dma_controller_count;
     core_machine_time_axis time_axis;
+    core_machine_pic_irq_timing pic_irq_timing;
     core_machine_l1_compatibility_policy l1_compatibility_policy;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */

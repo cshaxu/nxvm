@@ -188,6 +188,9 @@ C_INT main(C_VOID)
     static const type_unsigned_8 read_sector[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
+    static const type_unsigned_8 read_sector_dma_terminal[] = {
+        0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x0fu, 0x2au, 0xffu
+    };
     static const type_unsigned_8 write_sector[] = {
         0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
@@ -223,7 +226,8 @@ C_INT main(C_VOID)
         .dor_port = 0x03f2u, .status_port = 0x03f4u, .data_port = 0x03f5u,
         .direction_port = 0x03f7u, .control_port = 0x03f7u,
         .irq = 6u, .dma_channel = 2u, .ready_mask = 0x0fu,
-        .clock_ticks_per_second = 8000000u
+        .clock_ticks_per_second = 8000000u,
+        .diagnostic_port = 0x03f1u, .diagnostic_read_value = 0x50u
     };
     const core_machine_fdc_drive_bindings drives = {
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
@@ -275,6 +279,7 @@ C_INT main(C_VOID)
                 core_machine_reset(machine) != TYPE_STATUS_OK) {
                 failed |= 0x04;
             } else {
+                failed |= core_machine_port_read(port, fdc_config.diagnostic_port) != 0x50u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 failed |= fdc->connect.irq_source.asserted ||
                     !fdc->data.reset_pending || fdc->data.reset_due_tick != 8192u;
@@ -305,7 +310,7 @@ C_INT main(C_VOID)
                     result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u;
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
-                core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_DRC);
+                core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_RATE_250);
 
                 core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x10u}, 1u);
                 failed |= fdc->connect.irq_source.asserted ||
@@ -569,7 +574,8 @@ C_INT main(C_VOID)
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
                     &machine->executor_memory, 1u);
                 failed |= fixture.read_count != 2u || fdc->data.phase !=
-                    core_machine_fdc_PHASE_PENDING_COMPLETE || fdc->connect.irq_source.asserted;
+                    core_machine_fdc_PHASE_PENDING_COMPLETE || fdc->connect.irq_source.asserted ||
+                    fdc->data.dma_byte_gate_pending || fdc->data.next_dma_byte_tick != 0u;
                 core_machine_fdc_advance_at(fdc, 229u);
                 failed |= !fdc->connect.irq_source.asserted;
                 result[0] = (type_unsigned_8)core_machine_port_read(port,
@@ -616,6 +622,32 @@ C_INT main(C_VOID)
                     !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH)) !=
                         VFDC_ST2_SCAN_MATCH;
+
+                /* Intel 8272A transfers until DMA asserts TC.  EOT is the
+                   controller's sector-search limit, not an upfront medium
+                   geometry rejection: a one-sector DMA request remains
+                   successful even when firmware's provisional EOT exceeds
+                   the inserted medium's last sector. */
+                fixture.read_count = 0u;
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                core_machine_port_write(port, fdc_config.control_port,
+                    VFDC_CCR_RATE_300);
+                core_machine_fdc_write_dma2(port, 0x0600u, 511u);
+                core_machine_fdc_command(fdc, port, read_sector_dma_terminal,
+                    sizeof(read_sector_dma_terminal));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    core_machine_dma_advance(&machine->shared_dma_latch,
+                        &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                        &machine->executor_memory, 1u);
+                    if (index + 1u < 512u) core_machine_fdc_advance_at(fdc,
+                        fdc->data.elapsed_ticks + 8u * 25u);
+                }
+                core_machine_fdc_advance(fdc);
+                failed |= fixture.read_count != 512u ||
+                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    result[0] != core_machine_fdc_ST0_NORMAL;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
@@ -629,7 +661,7 @@ C_INT main(C_VOID)
                 }
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
-                core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_DRC);
+                core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_RATE_250);
 
                 fixture.forced_read_result = CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));

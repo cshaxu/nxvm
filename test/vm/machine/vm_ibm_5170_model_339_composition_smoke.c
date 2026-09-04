@@ -54,6 +54,7 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         !profile->monochrome_aperture_absent || profile->diskette_drive_a_field_upgrade ||
         profile->clock_plan.pit.numerator != 596591u ||
         profile->clock_plan.pit.denominator != 4000000u ||
+        profile->pic_irq_timing.unmask_delivery_ticks[1u] != 120u ||
         profile->cmos.floppy_type != 0x20u || profile->cmos.fixed_disk_type != 0x30u ||
         vm_profile_default_pc_at_port_leaf_find(profile,
             VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u) == STD_NULL ||
@@ -84,6 +85,8 @@ static C_INT vm_model_339_selected_contract(C_VOID)
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u) ? 0x0010 : 0;
     failed |= (session->core_machine->shared_kbc.data.output_port != 0x03u ||
         !session->core_machine->executor_memory.data.flagA20) ? 0x0011 : 0;
+    failed |= session->core_machine->shared_pic_master.data.unmask_delivery_ticks[1u] !=
+        120u ? 0x0012 : 0;
     failed |= (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
         TYPE_STATUS_OK || memory_bytes != 512u * 1024u) ? 0x0020 : 0;
     failed |= (core_machine_get_planar_parity_observation(session->core_machine,
@@ -103,6 +106,7 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         option_rom_probe != 0xffu) ? 0x0900 : 0;
     failed |= (!core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u) ||
+        core_machine_port_read(&session->core_machine->executor_port, 0x03f1u) != 0x50u ||
         session->core_machine->hdc.connect.config.service.command_ticks != 16000u ||
         session->core_machine->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
     vm_session_destroy(session);
@@ -131,9 +135,11 @@ static C_INT vm_model_339_floppy_contract(C_VOID)
     vm_session_destroy(session);
     session = STD_NULL;
     failed |= vm_test_create_5170(&compatible, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_360K ||
+        session == STD_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
         session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
-        session->fdd.data.nsector != 9u || session->profile->cmos.floppy_type != 0x20u;
+        session->fdd.data.nsector != 9u || session->profile->cmos.floppy_type != 0x20u ||
+        session->core_machine->fdc.connect.drives.cylinder_count[0u] != 80u;
     vm_session_destroy(session);
     session = STD_NULL;
     failed |= vm_test_create_5170(&rejected, &session) == TYPE_STATUS_OK || session != STD_NULL;
@@ -181,6 +187,86 @@ static C_INT vm_model_339_refresh_polling_is_live(C_VOID)
     return failed;
 }
 
+/* The IBM Rev-3 POST measures the same port-61h refresh waveform rather than
+ * merely waiting for one low sample.  Keep the public 80286 execution path
+ * and the copied 5170 board clock together: a direct PIT advance would evade
+ * the CPU/PIT ratio that this firmware test actually exercises. */
+static C_INT vm_model_339_refresh_post_loop_is_calibrated(C_VOID)
+{
+    static const type_unsigned_8 program[] = {
+        0x32u, 0xdbu, 0x33u, 0xc9u, 0x90u,
+        0xe4u, 0x61u, 0xa8u, 0x10u, 0xe1u, 0xfau,
+        0xe4u, 0x61u, 0xa8u, 0x10u, 0xe0u, 0xfau,
+        0xfeu, 0xcbu, 0x75u, 0xf0u, 0xf4u
+    };
+    const vm_session_config config = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
+    };
+    core_machine_run_result result = {0};
+    vm_session *session = STD_NULL;
+    C_INT failed = 0;
+
+    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+        core_machine_memory_write(session->core_machine, 0x0500u, program,
+            sizeof(program)) != TYPE_STATUS_OK) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    session->core_machine->executor_cpu.data.cs.selector = 0u;
+    session->core_machine->executor_cpu.data.cs.base = 0u;
+    session->core_machine->executor_cpu.data.ds.selector = 0u;
+    session->core_machine->executor_cpu.data.ds.base = 0u;
+    session->core_machine->executor_cpu.data.es.selector = 0u;
+    session->core_machine->executor_cpu.data.es.base = 0u;
+    session->core_machine->executor_cpu.data.ss.selector = 0u;
+    session->core_machine->executor_cpu.data.ss.base = 0u;
+    session->core_machine->executor_cpu.data.eip = 0x0500u;
+    session->core_machine->executor_cpu.data.sp = 0xfffeu;
+    session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+    failed = core_machine_run(session->core_machine,
+        (core_machine_run_budget) {200000u, 0u}, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        session->core_machine->executor_cpu.data.cx < 0xf600u;
+    if (failed) STD_PRINTF("M5:T516:S2:MODEL339-REFRESH:CX=%04X:EIP=%04X:reason=%u\n",
+        session->core_machine->executor_cpu.data.cx,
+        session->core_machine->executor_cpu.data.eip, result.reason);
+    vm_session_destroy(session);
+    return failed;
+}
+
+/* The IBM 5170 POST's 106 check writes AA55h to the adjacent byte-wide DMA
+ * page latches at 82h/83h, then reads them back as individual bytes.  This
+ * is a CPU-to-Core board path check, not a firmware shortcut. */
+static C_INT vm_model_339_dma_page_word_io_is_converted(C_VOID)
+{
+    static const type_unsigned_8 program[] = {
+        0xb8u, 0x55u, 0xaau, 0xe7u, 0x82u,
+        0xe4u, 0x82u, 0x86u, 0xc4u, 0xe4u, 0x83u, 0xf4u
+    };
+    const vm_session_config config = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
+    };
+    core_machine_run_result result = {0};
+    vm_session *session = STD_NULL;
+    C_INT failed = 0;
+
+    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+        core_machine_memory_write(session->core_machine, 0x0500u, program,
+            sizeof(program)) != TYPE_STATUS_OK) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    session->core_machine->executor_cpu.data.cs.selector = 0u;
+    session->core_machine->executor_cpu.data.cs.base = 0u;
+    session->core_machine->executor_cpu.data.eip = 0x0500u;
+    session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+    failed = core_machine_run(session->core_machine, (core_machine_run_budget) {64u, 0u},
+        &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        session->core_machine->executor_cpu.data.ax != 0x55aau;
+    vm_session_destroy(session);
+    return failed;
+}
+
 static C_INT vm_model_339_external_rom_route(C_VOID)
 {
     type_unsigned_8 even[VM_SESSION_PC_AT_ROM_CHIP_BYTES];
@@ -219,11 +305,13 @@ C_INT main(C_VOID)
     const C_INT selected = vm_model_339_selected_contract();
     const C_INT floppy = vm_model_339_floppy_contract();
     const C_INT refresh = vm_model_339_refresh_polling_is_live();
+    const C_INT refresh_post = vm_model_339_refresh_post_loop_is_calibrated();
+    const C_INT dma_word_io = vm_model_339_dma_page_word_io_is_converted();
     const C_INT rom = vm_model_339_external_rom_route();
     const C_INT default_create = vm_test_create_default(&default_config,
         &default_session) != TYPE_STATUS_OK || default_session == STD_NULL ||
         !default_session->profile->hdc_present;
-    C_INT failed = selected || floppy || refresh || rom || default_create;
+    C_INT failed = selected || floppy || refresh || refresh_post || dma_word_io || rom || default_create;
 
     vm_session_destroy(default_session);
     if (failed) return 1;

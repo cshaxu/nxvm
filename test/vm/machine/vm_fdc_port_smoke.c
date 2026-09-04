@@ -89,7 +89,9 @@ C_INT main(C_VOID)
     failed |= (result[1] & 0x02u) == 0u;
     session->fdd.connect.flagReadOnly = TYPE_FALSE;
 
-    core_machine_port_write(port, 0x03f7u, 0x01u);
+    /* 03h is the unsupported 1 Mbps encoding; 01h is the valid 300 kbps
+     * 8272A rate used by 360 KB media. */
+    core_machine_port_write(port, 0x03f7u, 0x03u);
     fdc_command(&session->core_machine->fdc, port, read_sector, sizeof(read_sector));
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= (result[1] & 0x04u) == 0u;

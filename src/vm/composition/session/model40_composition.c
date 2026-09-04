@@ -51,7 +51,7 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
     }
     fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
         0x03f7u, 0x03f7u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE,
-        0x0fu, 8000000u };
+        0x0fu, 8000000u, 0u, 0u };
     hdc = (core_machine_hdc_config) {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB,
         .irq = 14u, .service = {0u, 0u}, .bus.task_file = {

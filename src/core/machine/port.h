@@ -38,6 +38,9 @@ typedef struct {
         type_unsigned_16 ioWord;
         type_unsigned_32 ioDWord;
     };
+    /* Width of the CPU transfer currently delivered to the registered
+     * endpoint.  Ordinary debugger/bus access is one byte. */
+    type_unsigned_8 access_bytes;
 } t_port_data;
 
 struct t_port {

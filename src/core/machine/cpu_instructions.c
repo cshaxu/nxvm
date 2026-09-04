@@ -18691,6 +18691,7 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
         intr = core_machine_pic_get_interrupt(context->pic_master,
             context->pic_slave);
         if (context->transaction != STD_NULL) {
+            core_machine_transaction_set_value(context->transaction, intr);
             core_machine_transaction_commit(context->transaction);
         }
         ExecInit(context);

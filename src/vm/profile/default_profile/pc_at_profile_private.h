@@ -102,6 +102,7 @@ typedef struct vm_profile_default_pc_at_cpu_contract {
     core_machine_clock_plan clock_plan;
     core_machine_time_axis time_axis;
     core_machine_controller_timing_rules controller_timing_rules;
+    core_machine_pic_irq_timing pic_irq_timing;
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
@@ -119,6 +120,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_clock_plan clock_plan;
     core_machine_time_axis time_axis;
     core_machine_controller_timing_rules controller_timing_rules;
+    core_machine_pic_irq_timing pic_irq_timing;
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
@@ -158,6 +160,14 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_hdc_config hdc;
     const vm_profile_default_pc_at_firmware_service *firmware_services;
     STD_SIZE_T firmware_service_count;
+    /* Immutable mechanics and board inputs for the FDC's physical units.
+     * Mounted media is deliberately supplied later by the session provider. */
+    type_unsigned_8 fdc_installed_mask;
+    type_unsigned_8 fdc_double_sided_mask;
+    type_unsigned_16 fdc_cylinder_count[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_unsigned_8 fdc_track_zero_active_low_mask;
+    type_unsigned_16 fdc_diagnostic_port;
+    type_unsigned_8 fdc_diagnostic_read_value;
 } vm_profile_default_pc_at_descriptor;
 
 #define VM_PROFILE_DEFAULT_PC_AT_RESOLVED_PORT_LEAF_CAPACITY 96u

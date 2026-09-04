@@ -2,33 +2,17 @@
 
 ## Current Work
 
-## M5 T516 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T516 S1 is the next numeric implementation task after closed T515. |
-| Admission And Approval | Owner approved this Queue-first candidate on 2026-09-03 for single-session dual-role execution and explicitly approved removing integration media copies in favor of YAML-declared VM overlay backing; S1 remains limited to that shared asset route and the frozen boot-contract baseline. |
-| Objective | Establish one evidence-backed, five-row reset-to-boot contract ledger and replace integration's copied-media/request-rewrite path with the one YAML-declared VM overlay backing before any IBM 5170 or DeskPro repair. |
-| Non-goals | No BIOS-specific patch, F1/input synthesis, timeout relaxation, external asset mutation, `build/output` YAML change, generated firmware, profile-side controller mirror, source import, or test-local media file. |
-| Reference Baseline | `2b3f89bc`; T515 asset boundary is closed at 302/302 unit and 41/44 integration, with the exact three external-ROM timeout rows retained in [T515 history](../history/M5-T515-external-asset-bundle-governance.md). |
-| Candidate Proposal | [M5 external-ROM boot-contract baseline and repair](../proposals/m5-external-rom-boot-contract-repair.md). |
-| Files And ABI Surface | S1 may change YAML request parsing, frozen VM image/media request and backing composition, session templates, integration support and their tests/evidence. Core receives the same one device backing and gains no host path or profile knowledge; no unrelated production ABI or controller contract change. |
-| Applicable Rules | Execution lifecycle, coverage ledger and similar-issue sweep; documentation authority boundaries; Core sole ownership and VM-to-Core direction; C11/test external-asset boundaries; external firmware/media source policy. |
-| Verification | Resolve every declared asset path and record size/SHA-256; prove each integration session retains its YAML asset path while selecting in-memory overlay backing; run the five selected YAML profile rows under declared recorder budgets; run their focused observer proof; run complete repository-only unit suite before S1 closure; run documentation governance and `git diff --check`. |
-| Expected Markers | A finite ledger records default PC/AT, IBM 5160, IBM 5170 360 KB, IBM 5170 1.2 MB and Model 40 inputs, checkpoints, terminal dispositions and owner/caller inventory. Integration has no `CopyFileA` or request-path rewrite; any test staging operates only through the VM-owned overlay. No protected bytes enter the repository. |
-| Asset Needs | Read-only owner-managed `../nxvm-assets` firmware, CMOS and media already named by YAML. No acquisition, copying, manifests or source import. |
-| Reporting Requirements | Report the frozen corpus, every observed divergence, the proposed owner disposition and any material scope objection before S2; record exact commands and results in indexed evidence. |
-| Stop Conditions | Stop for missing/changed protected input, need to alter a vendor asset, need to invent a hardware relation, or evidence requiring a new Core/profile public contract; request owner direction before scope expansion. |
-| Exit Criteria | The five-row coverage ledger is complete, every checkpoint has one source owner or explicit next receiver, all integration media backing comes from its unchanged YAML external path through one VM overlay factory, all S1 verification passes, and a complete S1 P is reviewed and pushed. |
-| Original Owner Request | Establish the highest-priority Queue task to solve IBM 5170 and DeskPro startup failures, with IBM 5170 first; first construct the common boot-contract baseline rather than patching BIOS symptoms. Owner additionally requires media to stay external and use overlay rather than be copied into a test directory. |
-| Similar-Issue Sweep | Search all tracked `src`, `test`, CMake and task records for profile-specific boot injections, duplicate controller timers, duplicated KBC output routes, direct non-YAML external session construction, and copied/re-written integration media requests; ledger each production hit or defer it with a bounded receiver. |
+No numeric implementation task is active. T516 is closed: its YAML external-ROM
+boot corpus reaches the declared terminal through one VM media-overlay route;
+IBM 5170 and DeskPro Model 40 no longer retain a profile-specific boot repair.
+The next candidate is selected only from [Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0515` emits
-  `nxvm_0_5_0515.exe` in a stripped Release build.
+- **Current developer artifact:** CMake target `vm-0-5-0516` emits
+  `nxvm_0_5_0516.exe` in a stripped Release build.
   It retains the runtime debugger and contains no compiler debug information.
-  SHA-256: `855F02436193F5EF4599FB18E0D035FF668441D48DC64BEC4A1206C74C514E1B`.
+  SHA-256: `E1C948EF17BFFF1BEB86CC1396AFBF75D6BF2F450F68C7F57CBAB12F2047D84E`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -59,6 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 | T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
 | T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
@@ -66,7 +51,6 @@
 | T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
 | T508 | Reclosed: Core accepts one provenance-neutral copied timing plan; default ATA has an Other-L2 controller quantum and Model-40 an Other-L2 macro pacing axis. The four-profile matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
-| T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
 
 ## Recent Governance
 

@@ -75,7 +75,8 @@ static type_status core_machine_port_add_provider(t_port *port,
 }
 
 
-type_status core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id)
+static type_status core_machine_port_execute_read_current(t_port *port,
+    type_unsigned_16 port_id)
 {
     core_machine_port_provider_entry *provider;
     type_unsigned_32 value = 0u;
@@ -105,7 +106,8 @@ type_status core_machine_port_execute_read(t_port *port, type_unsigned_16 port_i
     port->data.ioDWord = value;
     return TYPE_STATUS_OK;
 }
-type_status core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id)
+static type_status core_machine_port_execute_write_current(t_port *port,
+    type_unsigned_16 port_id)
 {
     core_machine_port_provider_entry *provider;
 
@@ -131,7 +133,8 @@ type_status core_machine_port_execute_read_width(t_port *port,
         (type_unsigned_32)port_id + bytes > VPORT_MAX_PORT_COUNT) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return core_machine_port_execute_read(port, port_id);
+    port->data.access_bytes = bytes;
+    return core_machine_port_execute_read_current(port, port_id);
 }
 type_status core_machine_port_execute_write_width(t_port *port,
     type_unsigned_16 port_id, type_unsigned_8 bytes)
@@ -140,7 +143,22 @@ type_status core_machine_port_execute_write_width(t_port *port,
         (type_unsigned_32)port_id + bytes > VPORT_MAX_PORT_COUNT) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return core_machine_port_execute_write(port, port_id);
+    port->data.access_bytes = bytes;
+    return core_machine_port_execute_write_current(port, port_id);
+}
+
+type_status core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id)
+{
+    if (port == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    port->data.access_bytes = 1u;
+    return core_machine_port_execute_read_current(port, port_id);
+}
+
+type_status core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id)
+{
+    if (port == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    port->data.access_bytes = 1u;
+    return core_machine_port_execute_write_current(port, port_id);
 }
 
 type_status core_machine_port_add_read(t_port *port, type_unsigned_16 port_id,

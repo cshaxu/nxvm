@@ -182,6 +182,24 @@ static C_INT core_machine_kbc_set2_break_cancels_typematic(C_VOID)
     return failed;
 }
 
+static C_INT core_machine_kbc_self_test_flushes_keyboard_output(C_VOID)
+{
+    t_kbc kbc;
+    t_port port;
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        kbc.data.fifo_count != 1u;
+    core_machine_port_write(&port, 0x0064u, 0xaau);
+    failed |= kbc.data.fifo_count != 1u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u;
+    core_machine_kbc_finalize(&kbc);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
 static C_INT core_machine_kbc_bat_on_line_enable(C_VOID)
 {
     t_kbc kbc;
@@ -199,6 +217,50 @@ static C_INT core_machine_kbc_bat_on_line_enable(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0x4du);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
+    core_machine_kbc_finalize(&kbc);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
+static C_INT core_machine_kbc_controller_enable_is_not_a_second_bat(C_VOID)
+{
+    t_kbc kbc;
+    t_port port;
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x45u);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x4du);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
+    core_machine_port_write(&port, 0x0064u, 0xadu);
+    core_machine_port_write(&port, 0x0064u, 0xaeu);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
+    core_machine_kbc_finalize(&kbc);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
+/* A BIOS may reset the keyboard while its serial line is inhibited, consume
+ * FFh's FAh/AAh pair, and only then issue AEh.  The latter is an interface
+ * release, not a second device power-on. */
+static C_INT core_machine_kbc_reset_then_enable_has_one_bat(C_VOID)
+{
+    t_kbc kbc;
+    t_port port;
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x7du);
+    core_machine_port_write(&port, 0x0060u, 0xffu);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
+    core_machine_port_write(&port, 0x0064u, 0xaeu);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
     core_machine_kbc_finalize(&kbc);
     core_machine_port_finalize(&port);
     return failed;
@@ -288,8 +350,11 @@ C_INT main(C_VOID)
     C_INT failed = 0;
     C_INT mixed_failed;
     C_INT translation_failed;
+    C_INT self_test_flush_failed;
     C_INT typematic_break_failed;
     C_INT line_bat_failed;
+    C_INT controller_enable_bat_failed;
+    C_INT reset_enable_bat_failed;
     C_INT cpu_reset_irq1_failed;
     type_unsigned_8 index;
 
@@ -302,13 +367,19 @@ C_INT main(C_VOID)
 
     mixed_failed = core_machine_kbc_mixed_fifo_lifecycle();
     translation_failed = core_machine_kbc_set2_translation();
+    self_test_flush_failed = core_machine_kbc_self_test_flushes_keyboard_output();
     typematic_break_failed = core_machine_kbc_set2_break_cancels_typematic();
     line_bat_failed = core_machine_kbc_bat_on_line_enable();
+    controller_enable_bat_failed = core_machine_kbc_controller_enable_is_not_a_second_bat();
+    reset_enable_bat_failed = core_machine_kbc_reset_then_enable_has_one_bat();
     cpu_reset_irq1_failed = core_machine_kbc_cpu_reset_irq1();
     failed |= mixed_failed;
     failed |= translation_failed;
+    failed |= self_test_flush_failed;
     failed |= typematic_break_failed;
     failed |= line_bat_failed;
+    failed |= controller_enable_bat_failed;
+    failed |= reset_enable_bat_failed;
     failed |= cpu_reset_irq1_failed;
 
     failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x10u;
@@ -361,6 +432,17 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x30u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
 
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x41u);
+    core_machine_port_write(&port, 0x0060u, 0xf2u);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xabu ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x41u;
+    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
+    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x01u);
+
     core_machine_port_write(&port, 0x0060u, 0xf2u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xabu;
@@ -389,7 +471,8 @@ C_INT main(C_VOID)
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
     core_machine_port_write(&port, 0x0060u, 0xffu);
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
     core_machine_kbc_set_command_response_status_polls(&kbc, 0u);
     core_machine_port_write(&port, 0x0020u, 0x20u);
@@ -573,9 +656,10 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&port);
     if (failed) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T464:S2:KBC:FAIL:mixed=%d:translation=%d:typematic=%d:line-bat=%d:cpu-irq1=%d\n",
+            "M5:T464:S2:KBC:FAIL:mixed=%d:translation=%d:typematic=%d:line-bat=%d:enable-bat=%d:reset-enable-bat=%d:cpu-irq1=%d\n",
             mixed_failed, translation_failed, typematic_break_failed,
-            line_bat_failed, cpu_reset_irq1_failed);
+            line_bat_failed, controller_enable_bat_failed, reset_enable_bat_failed,
+            cpu_reset_irq1_failed);
         return 1;
     }
     STD_PRINTF("M5:T464:S2:KBC:OK\n");

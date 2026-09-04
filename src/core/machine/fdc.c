@@ -214,10 +214,26 @@ static type_unsigned_64 core_machine_fdc_timing_ticks(const core_machine_fdc *fd
 
 static type_unsigned_64 core_machine_fdc_dma_byte_ticks(const core_machine_fdc *fdc)
 {
+    type_unsigned_64 microseconds;
+
     if (fdc == STD_NULL) return 0u;
-    if (fdc->data.ccr == 0u) return core_machine_fdc_timing_ticks(fdc,
-        (fdc->data.cmd[0] & 0x40u) != 0u ? 15u : 31u);
-    return 0u;
+    microseconds = (fdc->data.cmd[0] & 0x40u) != 0u ? 15u : 31u;
+    switch (fdc->data.ccr) {
+    case VFDC_CCR_RATE_500: break;
+    case VFDC_CCR_RATE_300: microseconds = (microseconds * 5u + 2u) / 3u; break;
+    /* The existing 250-kbps route has no sourced byte cadence.  It remains
+     * an accepted logical transfer mode, whose next-Core-step gate is
+     * selected below, rather than inventing a physical duration. */
+    case VFDC_CCR_RATE_250: return 0u;
+    default: return 0u;
+    }
+    return core_machine_fdc_timing_ticks(fdc, microseconds);
+}
+
+static type_bool core_machine_fdc_rate_supported(const core_machine_fdc *fdc)
+{
+    return fdc != STD_NULL && (fdc->data.ccr == VFDC_CCR_RATE_500 ||
+        fdc->data.ccr == VFDC_CCR_RATE_300 || fdc->data.ccr == VFDC_CCR_RATE_250);
 }
 
 static C_VOID core_machine_fdc_schedule_dma_byte(core_machine_fdc *fdc)
@@ -359,6 +375,13 @@ static C_VOID core_machine_fdc_complete_transfer_with_status(core_machine_fdc *f
     type_unsigned_8 st0, type_unsigned_8 st1)
 {
     core_machine_fdc_deassert_dma(fdc);
+    /* A terminal DMA service may finish a command between byte gates.  The
+     * result phase owns no future byte transfer, so it must not retain the
+     * previous execution gate as a phantom deadline. */
+    fdc->data.dma_byte_gate_pending = TYPE_FALSE;
+    fdc->data.next_dma_byte_tick = 0u;
+    fdc->data.ndma_byte_gate_pending = TYPE_FALSE;
+    fdc->data.next_ndma_byte_tick = 0u;
     fdc->data.pending_st0 = st0;
     fdc->data.pending_st1 = st1;
     fdc->data.phase = core_machine_fdc_PHASE_PENDING_COMPLETE;
@@ -749,10 +772,10 @@ static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc,
         core_machine_fdc_complete_unready_read(fdc, phase);
         return;
     }
-    if (size != 2u || (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
+    if (size != 2u || !core_machine_fdc_rate_supported(fdc) ||
         !core_machine_fdc_media_info(fdc, &info, &result) ||
         fdc->data.head >= info.geometry.heads || fdc->data.sector == 0u ||
-        fdc->data.sector > fdc->data.eot || fdc->data.eot > info.geometry.sectors_per_track) {
+        fdc->data.sector > fdc->data.eot) {
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
         return;
     }
@@ -778,7 +801,7 @@ static C_VOID core_machine_fdc_start_read_track(core_machine_fdc *fdc)
     fdc->data.byte_offset = 0u;
     if (fdc->data.cmd[0] != 0x42u || fdc->data.flagNDMA ||
         core_machine_fdc_sector_size(fdc->data.cmd[5]) != 2u ||
-        (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
+        !core_machine_fdc_rate_supported(fdc) ||
         !core_machine_fdc_drive_ready(fdc) || fdc->data.selected_drive != 0u ||
         !core_machine_fdc_media_info(fdc, &info, &result) ||
         fdc->data.head >= info.geometry.heads ||
@@ -894,6 +917,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
             if (fdc->data.sector == 0u) fdc->data.sector = 1u;
             core_machine_fdc_set_result(fdc, core_machine_fdc_ST0_NORMAL, 0u, 0u);
             core_machine_fdc_result_phase(fdc, 7u);
+            core_machine_fdc_publish_terminal_result(fdc);
             core_machine_fdc_raise_irq(fdc);
         }
         break;
@@ -937,7 +961,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         fdc->data.format_id_index = 0u;
         media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
         if (core_machine_fdc_sector_size(fdc->data.cmd[2]) != 2u ||
-            (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
+            !core_machine_fdc_rate_supported(fdc) ||
             !core_machine_fdc_drive_ready(fdc) || fdc->data.eot == 0u ||
             !media_ok || fdc->data.eot > info.geometry.sectors_per_track) {
             core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
@@ -1107,7 +1131,17 @@ static C_VOID core_machine_fdc_write_control(t_port *port, type_unsigned_16 id,
     C_VOID *owner)
 {
     core_machine_fdc *fdc = owner; (C_VOID)port; (C_VOID)id;
-    fdc->data.ccr = fdc->connect.port->data.ioByte & 0x03u;
+    fdc->data.ccr = fdc->connect.port->data.ioByte & VFDC_CCR_RATE_MASK;
+}
+
+static C_VOID core_machine_fdc_read_diagnostic(t_port *port, type_unsigned_16 id,
+    C_VOID *owner)
+{
+    const core_machine_fdc *fdc = owner;
+
+    (C_VOID)id;
+    if (fdc == STD_NULL || fdc->connect.port == STD_NULL) return;
+    port->data.ioByte = fdc->connect.config.diagnostic_read_value;
 }
 
 C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
@@ -1142,7 +1176,7 @@ C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc)
 {
     if (fdc == STD_NULL || fdc->connect.port == STD_NULL) return;
     STD_MEMSET(&fdc->data, TYPE_ZERO_8, sizeof(fdc->data));
-    fdc->data.ccr = VFDC_CCR_DRC;
+    fdc->data.ccr = VFDC_CCR_RATE_250;
     core_machine_fdc_observe_all_drives(fdc);
     core_machine_fdc_sample_ready(fdc);
     fdc->data.initial_media_baseline_pending = TYPE_TRUE;
@@ -1155,6 +1189,10 @@ C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc)
     if (fdc->connect.config.direction_port != 0u) {
         core_machine_port_add_read(fdc->connect.port, fdc->connect.config.direction_port,
             core_machine_fdc_read_direction, fdc);
+    }
+    if (fdc->connect.config.diagnostic_port != 0u) {
+        core_machine_port_add_read(fdc->connect.port,
+            fdc->connect.config.diagnostic_port, core_machine_fdc_read_diagnostic, fdc);
     }
     core_machine_port_add_write(fdc->connect.port, fdc->connect.config.dor_port,
         core_machine_fdc_write_dor, fdc);

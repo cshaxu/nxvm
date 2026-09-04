@@ -20,6 +20,7 @@
 #define CORE_MACHINE_KBC_BAT_OK 0xaau
 #define CORE_MACHINE_KBC_IDENTIFY_0 0xabu
 #define CORE_MACHINE_KBC_IDENTIFY_1 0x83u
+#define CORE_MACHINE_KBC_IDENTIFY_1_TRANSLATED 0x41u
 #define CORE_MACHINE_KBC_RESEND 0xfeu
 #define CORE_MACHINE_KBC_ECHO 0xeeu
 #define CORE_MACHINE_KBC_DEFAULT_TYPEMATIC 0x2cu
@@ -31,6 +32,7 @@
 #define CORE_MACHINE_KBC_AUX_STATUS_SCALING_2_TO_1 0x10u
 
 static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller);
+static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller);
 
 static C_VOID core_machine_kbc_deassert_irq1(t_kbc *controller)
 {
@@ -55,6 +57,31 @@ static type_bool core_machine_kbc_keyboard_lines_enabled(type_unsigned_8 command
     return (command_byte & (CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD |
         CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE)) ==
         CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE;
+}
+
+static C_VOID core_machine_kbc_set_command_byte(t_kbc *controller,
+    type_unsigned_8 value)
+{
+    const type_bool keyboard_lines_were_enabled =
+        core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte);
+
+    controller->data.command_byte = value & 0x7du;
+    if (controller->connect.aux_present) {
+        controller->data.command_byte |= value & CORE_MACHINE_KBC_COMMAND_IRQ12;
+    } else {
+        controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
+    }
+    controller->data.keyboard_enabled =
+        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u;
+    controller->data.aux_enabled = controller->connect.aux_present &&
+        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
+    if (!controller->data.keyboard_startup_released && !keyboard_lines_were_enabled &&
+        core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte)) {
+        controller->data.keyboard_startup_released = TYPE_TRUE;
+        controller->data.keyboard_bat_pending = TYPE_TRUE;
+        core_machine_kbc_advance(controller, 0u);
+    }
+    core_machine_kbc_refresh_current_irq(controller);
 }
 
 static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller)
@@ -92,6 +119,25 @@ static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller)
     }
 }
 
+/* An 8042 self-test starts from an empty output path.  In particular, an
+ * older keyboard byte must not be mistaken for the command's 55h result. */
+static C_VOID core_machine_kbc_flush_output(t_kbc *controller)
+{
+    if (controller == STD_NULL) return;
+    controller->data.fifo_head = 0u;
+    controller->data.fifo_count = 0u;
+    controller->data.keyboard_serial_head = 0u;
+    controller->data.keyboard_serial_count = 0u;
+    controller->data.delayed_response_count = 0u;
+    controller->data.delayed_response_index = 0u;
+    controller->data.response_remaining_ticks = 0u;
+    controller->data.response_status_polls_remaining = 0u;
+    controller->data.serial_delivery_remaining_ticks = 0u;
+    controller->data.keyboard_bat_pending = TYPE_FALSE;
+    core_machine_kbc_deassert_irq1(controller);
+    core_machine_kbc_deassert_irq12(controller);
+}
+
 static type_status core_machine_kbc_enqueue(t_kbc *controller, type_unsigned_8 value,
     core_machine_kbc_output_origin origin)
 {
@@ -101,6 +147,7 @@ static type_status core_machine_kbc_enqueue(t_kbc *controller, type_unsigned_8 v
     if (controller->data.fifo_count >= CORE_MACHINE_KBC_FIFO_CAPACITY) {
         return TYPE_STATUS_INVALID_STATE;
     }
+    const type_bool output_was_empty = controller->data.fifo_count == 0u;
     tail = (type_unsigned_8)((controller->data.fifo_head +
         controller->data.fifo_count) % CORE_MACHINE_KBC_FIFO_CAPACITY);
     controller->data.fifo[tail] = value;
@@ -134,13 +181,14 @@ static C_VOID core_machine_kbc_schedule_response(t_kbc *controller,
     controller->data.delayed_response_origin = origin;
     controller->data.response_remaining_ticks =
         controller->data.command_response_ticks;
-    /* The POST-required status-poll delay belongs to 8042 controller replies
-     * such as AAh self-test. Keyboard serial replies are sampled directly by
-     * the 5170 ROM while interrupts are disabled (FFh: FAh then AAh), so they
-     * must not inherit that controller-only delay. */
-    controller->data.response_status_polls_remaining = origin ==
-        CORE_MACHINE_KBC_OUTPUT_CONTROLLER ?
-        controller->data.command_response_status_polls : 0u;
+    /* A response must not become visible until the host has observed the
+     * completed write.  The 5170 ROM's shared command routine deliberately
+     * flushes an already-full output buffer before it starts waiting for a
+     * reply; this applies to keyboard ACK as well as controller self-test
+     * output.  One configured status poll is the existing profile-owned L2
+     * ordering contract, not a separate keyboard path. */
+    controller->data.response_status_polls_remaining =
+        controller->data.command_response_status_polls;
 
     /* The response bytes remain KBC-owned until the guest-visible FIFO has
      * room.  A full rapid-typeahead FIFO must delay a command reply, never
@@ -408,10 +456,8 @@ C_INT core_machine_kbc_bind_output_port(t_kbc *controller,
 static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
     type_unsigned_8 command)
 {
-    static const type_unsigned_8 identify[] = {
-        CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_IDENTIFY_0,
-        CORE_MACHINE_KBC_IDENTIFY_1
-    };
+    type_unsigned_8 identify[] = { CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_IDENTIFY_0,
+        CORE_MACHINE_KBC_IDENTIFY_1 };
     static const type_unsigned_8 reset_ok[] = {
         CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_BAT_OK
     };
@@ -421,6 +467,11 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
     case 0xffu:
         core_machine_kbc_schedule_response_byte(controller, reset_ok[0u],
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
+        /* An explicit keyboard reset already owns its BAT completion.  Do not
+         * manufacture a second power-on BAT when firmware subsequently
+         * releases the controller line: Compaq's POST performs precisely
+         * that FFh/AEh sequence and treats an extra byte as a 301 failure. */
+        controller->data.keyboard_startup_released = TYPE_TRUE;
         controller->data.keyboard_bat_pending = TYPE_TRUE;
         core_machine_kbc_set_defaults(controller);
         controller->data.scanning_enabled = TYPE_TRUE;
@@ -463,6 +514,12 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         break;
     case 0xf2u:
+        /* The keyboard's native MF-II identity ends in 83h.  The 8042
+         * translation selection is also observable on this reply: AT BIOSes
+         * see 41h when translation is enabled. */
+        if ((controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u) {
+            identify[2u] = CORE_MACHINE_KBC_IDENTIFY_1_TRANSLATED;
+        }
         core_machine_kbc_schedule_response(controller, identify, sizeof(identify),
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         break;
@@ -664,27 +721,8 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
     switch (controller->data.pending_write) {
     case CORE_MACHINE_KBC_PENDING_COMMAND_BYTE:
     {
-        const type_bool keyboard_lines_were_enabled =
-            core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte);
-
-        controller->data.command_byte = value & 0x7du;
-        if (controller->connect.aux_present) {
-            controller->data.command_byte |= value & CORE_MACHINE_KBC_COMMAND_IRQ12;
-        }
-        controller->data.keyboard_enabled =
-            (value & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u;
-        controller->data.aux_enabled = controller->connect.aux_present &&
-            (value & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
-        if (!controller->connect.aux_present) {
-            controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
-        }
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
-        if (!keyboard_lines_were_enabled &&
-            core_machine_kbc_keyboard_lines_enabled(controller->data.command_byte)) {
-            controller->data.keyboard_bat_pending = TYPE_TRUE;
-            core_machine_kbc_advance(controller, 0u);
-        }
-        core_machine_kbc_refresh_current_irq(controller);
+        core_machine_kbc_set_command_byte(controller, value);
         break;
     }
     case CORE_MACHINE_KBC_PENDING_OUTPUT_PORT:
@@ -757,10 +795,10 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
         /* IBM PC/AT initialization specifies that a successful controller
          * self-test inhibits the keyboard interface before reporting 55h.
          * The host must explicitly re-enable it with AEh or a command byte. */
-        controller->data.keyboard_enabled = TYPE_FALSE;
-        controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD;
+        core_machine_kbc_flush_output(controller);
+        core_machine_kbc_set_command_byte(controller,
+            controller->data.command_byte | CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD);
         controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_SYSTEM;
-        core_machine_kbc_refresh_current_irq(controller);
         core_machine_kbc_schedule_response_byte(controller, 0x55u,
             CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
         break;
@@ -769,14 +807,12 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
             CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
         break;
     case 0xadu:
-        controller->data.keyboard_enabled = TYPE_FALSE;
-        controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD;
-        core_machine_kbc_refresh_current_irq(controller);
+        core_machine_kbc_set_command_byte(controller,
+            controller->data.command_byte | CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD);
         break;
     case 0xaeu:
-        controller->data.keyboard_enabled = TYPE_TRUE;
-        controller->data.command_byte &= ~CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD;
-        core_machine_kbc_refresh_current_irq(controller);
+        core_machine_kbc_set_command_byte(controller,
+            controller->data.command_byte & ~CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD);
         break;
     case 0xa7u:
         controller->data.aux_enabled = TYPE_FALSE;
