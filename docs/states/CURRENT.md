@@ -31,12 +31,12 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifacts:** CMake target `vm-0-5-0518` emits
-  `nxvm_0_5_0518_x64.exe` and `nxvm_0_5_0518_x86.exe` in stripped Release
+- **Current developer artifacts:** CMake target `vm-0-5-0519` emits
+  `nxvm_0_5_0519_x64.exe` and `nxvm_0_5_0519_x86.exe` in stripped Release
   builds. They retain the runtime debugger and contain no compiler debug
   information. SHA-256: x64
-  `46B27A9531F495A92933181A6503FE3819BF375DB866BF7DBD85DB76853E0213`;
-  x86 `538037537249DD1C651D5AFBC7A800B038F4C04A838C94A1CCE3DA28D1BB7BC2`.
+  `AAFBF4E111DA8B99DF6F637666DFC8F3FBA664E46196D53BA67F2EDF5DFD303F`;
+  x86 `A2EB6359AD37BD57B2908E7C5FA18FFB813A363952A29D5DF36237521B633C5F`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
