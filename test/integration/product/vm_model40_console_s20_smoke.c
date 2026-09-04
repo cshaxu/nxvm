@@ -34,7 +34,7 @@ static C_INT model40_choice(const C_CHAR *directory)
         vm_product_session_request request;
 
         if (vm_product_session_catalog_get_request(catalog, index, &request) == TYPE_STATUS_OK &&
-            !STD_STRCMP(request.file_name, "compaq-deskpro-386-model-40.yaml")) {
+            !STD_STRCMP(request.file_name, "compaq-deskpro-386-model-40-1200k.yaml")) {
             choice = (C_INT)index + 1;
             break;
         }

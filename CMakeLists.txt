@@ -2755,6 +2755,9 @@ function(project_add_test target route)
 endfunction()
 
 function(project_add_t515_yaml_boot_case session_file)
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/assets/sessions/${session_file}")
+        message(FATAL_ERROR "T515 YAML boot session is missing: ${session_file}")
+    endif()
     set(project_t515_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
     set(project_t515_test "integration.${project_t515_test_suffix}")
     # These are real external-media boots.  The runner has the same bounded
@@ -2786,6 +2789,13 @@ function(project_add_t515_yaml_integration_test target)
     set(project_t515_test "integration.${target}")
     set(project_t515_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/${project_t515_test}")
 
+    foreach(project_t515_session_file IN LISTS ARGN)
+        if(project_t515_session_file MATCHES "\\.ya?ml$" AND
+           NOT EXISTS "${CMAKE_SOURCE_DIR}/assets/sessions/${project_t515_session_file}")
+            message(FATAL_ERROR
+                "T515 YAML integration session is missing: ${project_t515_session_file}")
+        endif()
+    endforeach()
     file(MAKE_DIRECTORY "${project_t515_workspace}")
     project_add_test(${target} integration "${CMAKE_SOURCE_DIR}/assets/sessions" ${ARGN})
     set_tests_properties("${project_t515_test}" PROPERTIES
@@ -2849,7 +2859,7 @@ if(POWERSHELL_EXECUTABLE)
 endif()
 
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_TARGETS)
-    project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
+    project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml)
 endforeach()
 foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
     if(target STREQUAL "vm-dos-prompt-smoke" OR
@@ -2860,32 +2870,32 @@ foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
         target STREQUAL "vm-rom-ega-int10-dos-smoke" OR
         target STREQUAL "vm-mouse-driver-dos-smoke" OR
         target STREQUAL "vm-fdc-read-track-dos-smoke")
-        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml)
     elseif(target STREQUAL "vm-dos-keyboard-smoke")
-        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml extended)
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml extended)
     else()
-        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml)
     endif()
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_HDD_TARGETS)
-    project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd-only.yaml)
+    project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k-hdd.yaml)
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_FDD_HDD_TARGETS)
     if(target STREQUAL "vm-windows31-checkpoint")
-        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd.yaml)
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k-hdd.yaml)
     elseif(target STREQUAL "vm-full-pc-session-smoke")
-        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml)
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml)
     elseif(target STREQUAL "vm-windows31-int13-trace-probe")
-        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd-only.yaml)
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k-hdd.yaml)
     elseif(target STREQUAL "vm-product-default-profile-smoke")
-        project_add_t515_yaml_integration_test(${target} default-pc-at-80386.yaml
-            default-pc-at-80386-hdd.yaml)
+        project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml
+            default-pc-at-80386-1440k-hdd.yaml)
     else()
         message(FATAL_ERROR "T515 YAML integration mapping is missing: ${target}")
     endif()
 endforeach()
 foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
-    project_add_t515_yaml_integration_test(${target} default-pc-at-80386-hdd.yaml)
+    project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k-hdd.yaml)
 endforeach()
 
 foreach(target IN LISTS PROJECT_INTEGRATION_PRODUCT_TARGETS)
@@ -2893,26 +2903,26 @@ foreach(target IN LISTS PROJECT_INTEGRATION_PRODUCT_TARGETS)
 endforeach()
 
 foreach(project_t515_session IN ITEMS
-    compaq-deskpro-386-model-40.yaml
+    compaq-deskpro-386-model-40-1200k.yaml
     default-pc-at-8086-360k.yaml
     default-pc-at-8086-720k.yaml
     default-pc-at-8086-1200k.yaml
-    default-pc-at-8086.yaml
+    default-pc-at-8086-1440k.yaml
     default-pc-at-80186-360k.yaml
     default-pc-at-80186-720k.yaml
     default-pc-at-80186-1200k.yaml
-    default-pc-at-80186.yaml
+    default-pc-at-80186-1440k.yaml
     default-pc-at-80286-360k.yaml
     default-pc-at-80286-720k.yaml
     default-pc-at-80286-1200k.yaml
-    default-pc-at-80286.yaml
+    default-pc-at-80286-1440k.yaml
     default-pc-at-80386-360k.yaml
     default-pc-at-80386-720k.yaml
     default-pc-at-80386-1200k.yaml
-    default-pc-at-80386.yaml
-    ibm-5160-model-268.yaml
+    default-pc-at-80386-1440k.yaml
+    ibm-5160-model-268-360k.yaml
     ibm-5170-model-339-360k.yaml
-    ibm-5170-model-339.yaml)
+    ibm-5170-model-339-1200k.yaml)
     project_add_t515_yaml_boot_case(${project_t515_session})
 endforeach()
 set_tests_properties("integration.vm-windows31-checkpoint" PROPERTIES

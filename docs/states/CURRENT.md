@@ -2,10 +2,10 @@
 
 ## Current Work
 
-No numeric implementation task is active. T517 is closed: one CMake product
-target now emits verified x64 and x86 stripped Release artifacts, while the
-full primary x64 regression suite and native x86 smoke pass. The next candidate
-is selected only from [Queue](QUEUE.md).
+No numeric implementation task is active. Td S160 reconciles the explicit
+profile/CPU/media session filenames across the CMake integration matrix and
+direct integration consumers; affected tests pass. The next candidate is
+selected only from [Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
@@ -55,6 +55,11 @@ is selected only from [Queue](QUEUE.md).
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
 
 ## Recent Governance
+
+- **M5 Td S160 P1:** reconciles the owner-renamed `assets/sessions` YAML files
+  without aliases: CMake now rejects a missing registered YAML and all live
+  integration consumers use explicit media suffixes. The YAML boundary gate,
+  five direct integration tests, and the 20-row boot matrix pass.
 
 - **M5 Td S159 P1:** makes dual x64/x86 optimized, stripped developer artifacts
   a mandatory implementation-task closure condition. One CMake product target

@@ -38,3 +38,9 @@ Every implementation-task closure also builds the same product target for
 32-bit Windows. Set `NXVM_I686_GCC` to an i686 MinGW-w64 `gcc.exe`, then use
 `mingw-gcc-x86-release` and `current-gcc-x86`. This is a second compiler
 configuration, not a second source or product route.
+
+Session templates in `assets/sessions/` name the selected profile, CPU variant
+when applicable, and attached floppy geometry (for example,
+`default-pc-at-80386-1440k.yaml`). Integration registrations use those exact
+filenames; they do not retain unsuffixed compatibility aliases, and CMake
+rejects a registration whose named YAML is absent.

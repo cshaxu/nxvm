@@ -25,17 +25,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 2 ||
         !vm_yaml_cmos_seed_matches(argv[1],
-            "compaq-deskpro-386-model-40.yaml", 0x31u, 0x04u) ||
+            "compaq-deskpro-386-model-40-1200k.yaml", 0x31u, 0x04u) ||
         !vm_yaml_cmos_seed_matches(argv[1],
-            "compaq-deskpro-386-model-40.yaml", 0x33u, 0x80u) ||
+            "compaq-deskpro-386-model-40-1200k.yaml", 0x33u, 0x80u) ||
         !vm_yaml_cmos_seed_matches(argv[1],
-            "compaq-deskpro-386-model-40.yaml", 0x2eu, 0x01u) ||
+            "compaq-deskpro-386-model-40-1200k.yaml", 0x2eu, 0x01u) ||
         !vm_yaml_cmos_seed_matches(argv[1],
-            "compaq-deskpro-386-model-40.yaml", 0x2fu, 0x69u) ||
+            "compaq-deskpro-386-model-40-1200k.yaml", 0x2fu, 0x69u) ||
         !vm_yaml_cmos_seed_matches(argv[1],
-            "ibm-5170-model-339.yaml", 0x12u, 0x00u) ||
+            "ibm-5170-model-339-1200k.yaml", 0x12u, 0x00u) ||
         !vm_yaml_cmos_seed_matches(argv[1],
-            "ibm-5170-model-339.yaml", 0x2fu, 0x43u)) return 1;
+            "ibm-5170-model-339-1200k.yaml", 0x2fu, 0x43u)) return 1;
     STD_PRINTF("M5:T515:INTEGRATION:YAML-CMOS-SEED:OK\n");
     return 0;
 }

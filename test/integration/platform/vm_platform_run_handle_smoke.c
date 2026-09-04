@@ -45,7 +45,7 @@ int main(C_INT argc, C_CHAR **argv)
     vm_platform_run_handle_destroy(event_handle);
 
     if (argc != 2 || integration_yaml_session_open(argv[1],
-            "default-pc-at-80386.yaml", &yaml_session) != TYPE_STATUS_OK ||
+            "default-pc-at-80386-1440k.yaml", &yaml_session) != TYPE_STATUS_OK ||
         (session = yaml_session.session) == STD_NULL || !session->active) goto fail;
     vm_platform_run_context_set_window_display(session->platform_run_context, 1);
     if (vm_session_start(session) != TYPE_STATUS_OK ||

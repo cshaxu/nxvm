@@ -66,7 +66,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT choice;
     C_INT result = 1;
 
-    if (argc != 2 || (choice = session_choice(argv[1], "ibm-5170-model-339.yaml")) == 0 ||
+    if (argc != 2 || (choice = session_choice(argv[1], "ibm-5170-model-339-1200k.yaml")) == 0 ||
         (input = tmpfile()) == STD_NULL ||
         STD_SNPRINTF(commands, sizeof(commands), "%d\nspeed turbo\nsession list\nhelp\ninfo\nexit\n",
             choice) < 0 || STD_FPUTS(commands, input) < 0 || fflush(input) != 0 ||

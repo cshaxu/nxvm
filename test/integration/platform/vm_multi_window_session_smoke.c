@@ -17,8 +17,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT stage = 0;
 
     if (argc != 2 || integration_yaml_session_open(argv[1],
-            "default-pc-at-80386.yaml", &first_yaml) != TYPE_STATUS_OK ||
-        integration_yaml_session_open(argv[1], "default-pc-at-80386.yaml",
+            "default-pc-at-80386-1440k.yaml", &first_yaml) != TYPE_STATUS_OK ||
+        integration_yaml_session_open(argv[1], "default-pc-at-80386-1440k.yaml",
             &second_yaml) != TYPE_STATUS_OK ||
         (first = first_yaml.session) == STD_NULL ||
         (second = second_yaml.session) == STD_NULL) { stage = 1; goto done; }
