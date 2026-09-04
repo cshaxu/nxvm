@@ -493,9 +493,16 @@ C_INT main(C_VOID)
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
     core_machine_port_write(&port, 0x0060u, 0xffu);
-    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
+    core_machine_port_write(&port, 0x0060u, 0xedu);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
+    core_machine_port_write(&port, 0x0060u, 0x02u);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+        kbc.data.led_state != 0x02u;
     core_machine_kbc_set_command_response_status_polls(&kbc, 0u);
     core_machine_port_write(&port, 0x0020u, 0x20u);
     core_machine_port_write(&port, 0x0064u, 0xabu);
