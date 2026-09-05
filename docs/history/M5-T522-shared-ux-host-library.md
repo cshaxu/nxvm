@@ -95,3 +95,30 @@ verification is 304/304; focused shared-UX binding/frame/Linux-key tests,
 strict Linux-path static analysis, documentation governance and diff checks
 pass. The owner accepts source/static/unit Linux verification in place of a
 native Linux host run. S5 is limited to product/integration/artifact closure.
+
+## S5 Result And Acceptance
+
+The shared route closes with no legacy presenter, input or mailbox route.  A
+large copied UX frame is now conversion scratch owned by the VM platform
+context, so display publication cannot exhaust a session thread stack.  Every
+registered host action first releases its consumed chord through the neutral
+UX binding, then calls the product action callback; pause, mouse release,
+Ctrl+Alt+Del and Alt+Enter therefore share one ordering rule.  The product
+callback alone decides the requested operation or guest sequence.
+
+The external boot matrix exposed a test scheduling defect: concurrent turbo
+boots made Model 40's wall-clock terminal a function of host CPU contention.
+The four bounded real-boot probes are now CTest-serial host-resource tests;
+ordinary integration cases remain parallel.  This is test scheduling only and
+does not change a machine, controller, profile, firmware or media route.
+
+Focused UX contract/binding/frame and mouse-driver tests pass.  Full unit is
+304/304.  Complete external-YAML integration is 44/44, with no failure marker.
+The portable Linux key-map unit passes; its curses adapter was source-reviewed
+but not compiled on a native POSIX target, per the owner-approved no-Linux-run
+scope.  `git diff --check` and the legacy-route sweep pass.  The single current
+target produced stripped optimized `nxvm_0_5_0522_x64.exe`
+(`13ED2D6D69BA012F36E28EBFF580F00F2FC8B5DA61306C458794ED66CC119EED`)
+and `nxvm_0_5_0522_x86.exe`
+(`EAEC436BBF2AB9776800E260B335D85129D5FC7F59D8EBE80B7AB0802A61DC0B`);
+the configured PE checks confirm their architectures.

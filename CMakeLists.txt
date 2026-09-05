@@ -2801,9 +2801,11 @@ function(project_add_t515_yaml_boot_case session_file)
     endif()
     set(project_t515_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
     set(project_t515_test "integration.${project_t515_test_suffix}")
-    # These are real external-media boots.  The runner has the same bounded
-    # 180-second guest-terminal limit, so CTest must not kill slower CPUs
-    # before the runner can report its terminal or diagnostic.
+    # These are real turbo guest boots with a bounded wall-clock terminal.
+    # A Model 40 boot alone consumes most of a host core for roughly three
+    # minutes; overlapping it with other turbo boots turns that host capacity
+    # into an accidental test input.  Keep this finite host resource exclusive
+    # without serializing ordinary integration rows.
     set(project_t515_timeout 190)
     get_property(project_t515_registered_cases GLOBAL
         PROPERTY PROJECT_T515_YAML_BOOT_REGISTERED_CASES)
@@ -2823,6 +2825,7 @@ function(project_add_t515_yaml_boot_case session_file)
         LABELS integration
         SKIP_RETURN_CODE 77
         TIMEOUT ${project_t515_timeout}
+        RUN_SERIAL TRUE
         WORKING_DIRECTORY "${project_t515_workspace}")
 endfunction()
 
@@ -3148,8 +3151,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0521)
-add_current_vm_artifact(vm-0-5-0521 "0.5.0521")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0522)
+add_current_vm_artifact(vm-0-5-0522 "0.5.0522")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

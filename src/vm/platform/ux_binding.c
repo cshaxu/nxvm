@@ -3,7 +3,6 @@
 #include "core/platform/input_interface.h"
 #ifdef _WIN32
 #include "core/platform/win32/keyboard.h"
-#include "lib/ux/win32/input.h"
 #endif
 #include "vm/platform/platform_internal.h"
 
@@ -82,22 +81,24 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
         TYPE_STATUS_OK;
 }
 
+static C_INT vm_platform_ux_action_key(vm_platform_run_handle *handle,
+    ux_event_sink input_sink, type_unsigned_16 scan_code,
+    type_unsigned_16 virtual_key, C_INT pressed)
+{
+    ux_event event = { 0 };
+
+    event.type = UX_EVENT_KEY;
+    event.data.key.scan_code = scan_code;
+    event.data.key.virtual_key = virtual_key;
+    event.data.key.pressed = pressed;
+    return input_sink(handle, &event);
+}
+
 static ux_run_result vm_platform_ux_action(C_VOID *opaque, ux_action action,
     ux_event_sink input_sink)
 {
     vm_platform_run_handle *handle = opaque;
-    if (handle == STD_NULL) return UX_RUN_ERROR_RESULT;
-#ifdef _WIN32
-    /* Win32 has already delivered the host chord's Ctrl/Alt makes through the
-       ordinary input route before it consumes the action key.  Always clear
-       those modifiers through the shared normalizer helpers: pause/release
-       must not leave a guest modifier down, and the two injected chords must
-       start from a neutral guest state. */
-    if (action == UX_ACTION_PAUSE_TOGGLE || action == UX_ACTION_RELEASE_MOUSE) {
-        if (!ux_win32_keyboard_release_ctrl_alt(handle, input_sink))
-            return UX_RUN_ERROR_RESULT;
-    }
-#endif
+    if (handle == STD_NULL || input_sink == STD_NULL) return UX_RUN_ERROR_RESULT;
     if (action == UX_ACTION_PAUSE_TOGGLE) {
         vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
         return UX_RUN_CONTINUE;
@@ -106,40 +107,19 @@ static ux_run_result vm_platform_ux_action(C_VOID *opaque, ux_action action,
         vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED);
     } else if (action == UX_ACTION_SEND_CTRL_ALT_DEL ||
         action == UX_ACTION_SEND_ALT_ENTER) {
-#ifdef _WIN32
-        if (!(action == UX_ACTION_SEND_CTRL_ALT_DEL ?
-                ux_win32_keyboard_submit_ctrl_alt_del(handle, input_sink) :
-                ux_win32_keyboard_submit_alt_enter(handle, input_sink))) {
-            return UX_RUN_ERROR_RESULT;
-        }
-#else
-        ux_event event = { 0 };
-        type_unsigned_16 scans[] = { 0x1du, 0x38u, 0x153u };
-        type_unsigned_16 virtual_keys[] = { 0x11u, 0x12u, 0x2eu };
-        type_unsigned_32 count = action == UX_ACTION_SEND_CTRL_ALT_DEL ? 3u : 2u;
-
-        if (action == UX_ACTION_SEND_ALT_ENTER) {
-            scans[0u] = 0x38u;
-            scans[1u] = 0x1cu;
-            virtual_keys[0u] = 0x12u;
-            virtual_keys[1u] = 0x0du;
-        }
-        type_unsigned_32 index;
-
-        event.type = UX_EVENT_KEY;
-        for (index = 0u; index < count; ++index) {
-            event.data.key.scan_code = scans[index];
-            event.data.key.virtual_key = virtual_keys[index];
-            event.data.key.pressed = TYPE_TRUE;
-            if (!input_sink(handle, &event)) return UX_RUN_ERROR_RESULT;
-        }
-        for (index = count; index != 0u; --index) {
-            event.data.key.scan_code = scans[index - 1u];
-            event.data.key.virtual_key = virtual_keys[index - 1u];
-            event.data.key.pressed = TYPE_FALSE;
-            if (!input_sink(handle, &event)) return UX_RUN_ERROR_RESULT;
-        }
-#endif
+        if (action == UX_ACTION_SEND_CTRL_ALT_DEL) {
+            if (!vm_platform_ux_action_key(handle, input_sink, 0x1du, 0x11u, TYPE_TRUE) ||
+                !vm_platform_ux_action_key(handle, input_sink, 0x38u, 0x12u, TYPE_TRUE) ||
+                !vm_platform_ux_action_key(handle, input_sink, 0x153u, 0x2eu, TYPE_TRUE) ||
+                !vm_platform_ux_action_key(handle, input_sink, 0x153u, 0x2eu, TYPE_FALSE) ||
+                !vm_platform_ux_action_key(handle, input_sink, 0x38u, 0x12u, TYPE_FALSE) ||
+                !vm_platform_ux_action_key(handle, input_sink, 0x1du, 0x11u, TYPE_FALSE))
+                return UX_RUN_ERROR_RESULT;
+        } else if (!vm_platform_ux_action_key(handle, input_sink, 0x38u, 0x12u,
+                TYPE_TRUE) || !vm_platform_ux_action_key(handle, input_sink, 0x1cu,
+                0x0du, TYPE_TRUE) || !vm_platform_ux_action_key(handle, input_sink,
+                0x1cu, 0x0du, TYPE_FALSE) || !vm_platform_ux_action_key(handle,
+                input_sink, 0x38u, 0x12u, TYPE_FALSE)) return UX_RUN_ERROR_RESULT;
     }
     return UX_RUN_CONTINUE;
 }

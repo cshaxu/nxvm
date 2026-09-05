@@ -584,17 +584,17 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         return TRUE;
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN: {
+        type_unsigned_8 modifiers = ux_win32_modifiers_from_key_state();
         ux_action action = ux_actions_match(
             win32_window_binding->actions, (WORD)wparam,
-            ux_win32_modifiers_from_key_state());
+            modifiers);
         if (action != UX_ACTION_NONE) {
             ux_run_result action_result;
             if (action == UX_ACTION_PAUSE_TOGGLE ||
                 action == UX_ACTION_RELEASE_MOUSE)
                 win32_window_release_mouse_capture();
-            action_result = win32_window_binding->handle_action(
-                win32_window_binding->context, action,
-                win32_window_binding->input_sink);
+            action_result = ux_binding_invoke_action(win32_window_binding,
+                action, modifiers);
             if (action_result != UX_RUN_CONTINUE)
                 win32_window_result = action_result;
             win32_window_update_title(window);

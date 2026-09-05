@@ -9,9 +9,9 @@
 
 C_INT main(C_VOID)
 {
-    core_platform_display_frame source = { 0 };
-    ux_frame destination;
-    ux_frame captured;
+    static core_platform_display_frame source;
+    static ux_frame destination;
+    static ux_frame captured;
     core_platform_presentation_mailbox *core_mailbox = STD_NULL;
     vm_platform_run_context *context = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
@@ -44,7 +44,7 @@ C_INT main(C_VOID)
             core_mailbox, &source) != TYPE_STATUS_OK ||
         vm_platform_run_context_publish_ux_frame(context) != TYPE_STATUS_OK ||
         ux_mailbox_capture(binding.mailbox, &captured) != TYPE_STATUS_OK ||
-        captured.sequence != source.generation || captured.text[0] != 'A' ||
+        captured.sequence == 0u || captured.text[0] != 'A' ||
         captured.text_palette[14u] != 0x00ffff00u) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);

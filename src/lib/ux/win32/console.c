@@ -98,19 +98,18 @@ static ux_run_result win32_console_key(
     const KEY_EVENT_RECORD *key)
 {
     ux_action action;
+    type_unsigned_8 modifiers;
 
     if (!key->bKeyDown && normalizer->suppressed_virtual_key ==
         key->wVirtualKeyCode) {
         normalizer->suppressed_virtual_key = 0u;
         return UX_RUN_CONTINUE;
     }
-    action = key->bKeyDown ? ux_actions_match(
-        binding->actions, key->wVirtualKeyCode,
-        ux_win32_modifiers_from_console_state(
-            key->dwControlKeyState)) : UX_ACTION_NONE;
+    modifiers = ux_win32_modifiers_from_console_state(key->dwControlKeyState);
+    action = key->bKeyDown ? ux_actions_match(binding->actions,
+        key->wVirtualKeyCode, modifiers) : UX_ACTION_NONE;
     if (action != UX_ACTION_NONE) {
-        ux_run_result result = binding->handle_action(
-            binding->context, action, binding->input_sink);
+        ux_run_result result = ux_binding_invoke_action(binding, action, modifiers);
         normalizer->suppressed_virtual_key = key->wVirtualKeyCode;
         return result;
     }

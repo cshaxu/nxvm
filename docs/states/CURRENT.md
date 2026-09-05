@@ -4,29 +4,29 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T522 S5 |
-| Admission And Approval | Owner approved T522 implementation on 2026-09-05 and directed continued execution. Accepted S4 `11d0f9e1` removes the old presenter route; the owner accepts Linux source/static/unit verification rather than a native Linux environment. |
-| Objective | Close the shared-UX adoption with product-boundary acceptance, external-YAML integration, dual-architecture artifacts and final source/evidence review. |
+| Identifier Mode | M5 T522 closed |
+| Admission And Approval | Owner approved T522 implementation on 2026-09-05. S5 closes the shared UX route and its required product, integration and artifact acceptance. |
+| Objective | No active implementation packet. |
 | Non-goals | No new UX architecture, no parallel compatibility selector, no Core/VADP/guest-input protocol change, no machine/profile/controller change and no Linux graphics backend. |
-| Reference Baseline | `11d0f9e1`; accepted S1--S4 evidence; one `lib/ux` presentation route and every product/integration acceptance consumer. |
-| Candidate Proposal | `docs/proposals/m5-softpc-platform-library-adoption.md`. |
+| Reference Baseline | T522 closure: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
+| Candidate Proposal | None. |
 | Files And ABI Surface | Existing S4 binding and `lib/ux` route only; CTest product/integration registration, artifact presets/output, closure evidence and task history. |
 | Applicable Rules | Architecture: retained Core mailbox then VM conversion then UX mailbox remains sole path. Coding: no closure workaround, test-only route, duplicate state or ABI widening. UX, execution, source and documentation rules apply. |
-| Verification | Full repository unit; complete external-YAML integration suite; focused multi-Window/Console-lease/close-pause/RDP behavior tests; Linux key-map unit plus strict Console/adapter static analysis; source/ABI sweep; documentation governance; actual diff review; stripped x64/x86 T522 artifacts with architecture/hash proof. |
-| Expected Markers | Product behavior reaches its existing acceptance tests through one shared UX path; all external integration rows remain green; both optimized, stripped `nxvm_0_5_0522_{x64,x86}.exe` artifacts exist with recorded hashes. |
+| Verification | T522: unit 304/304; external-YAML integration 44/44; focused UX route tests; source sweep; dual architecture proof. Linux native execution is not required. |
+| Expected Markers | Next task admission is required before new implementation work. |
 | Asset Needs | None. No ROM, CMOS, media or external runtime asset is used. |
-| Reporting Requirements | Record focused product and external integration results, Linux source/unit/static result, artifact identity/hashes, source sweep, code delta and every discovered behavior gap before closure. |
-| Stop Conditions | Any required behavior bypasses the S4 UX route, an integration result regresses, an artifact cannot be built/verified, or closure would rely on a test-only or compatibility path. |
-| Exit Criteria | Full unit and integration suites pass; product-focused behavior proves the sole route; Linux source/unit/static gates pass; stripped x64/x86 artifacts and closure evidence are verified; actual-diff review confirms no duplicate route or debt. |
+| Reporting Requirements | T522 evidence is retained in its history record. |
+| Stop Conditions | New work requires an admitted packet. |
+| Exit Criteria | T522 closed. |
 | Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
 | Similar-Issue Sweep | Enumerate all Win32/Linux Console/Window, input, mailbox, display mode, run-handle and lifecycle callback paths so no old native route, test-only route or hidden product state survives the cutover. |
 
 ## Current Technical Baseline
 
-- **Current developer artifacts:** CMake target `vm-0-5-0521` emits
-  `nxvm_0_5_0521_x64.exe` and `nxvm_0_5_0521_x86.exe` in stripped Release
+- **Current developer artifacts:** CMake target `vm-0-5-0522` emits
+  `nxvm_0_5_0522_x64.exe` and `nxvm_0_5_0522_x86.exe` in stripped Release
   builds. They retain the runtime debugger and contain no compiler debug
-  information. T521 S4 records their verified hashes.
+  information. T522 records their verified hashes.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

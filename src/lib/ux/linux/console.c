@@ -92,8 +92,7 @@ static ux_run_result ux_linux_console_key(const ux_binding *binding, C_INT key)
     if (key == ERR) return UX_RUN_CONTINUE;
     action = ux_actions_match(binding->actions, ux_linux_action_key(key), 0u);
     if (action != UX_ACTION_NONE)
-        return binding->handle_action(binding->context, action,
-            binding->input_sink);
+        return ux_binding_invoke_action(binding, action, 0u);
     if (key >= 0x20 && key <= 0xff) {
         event.type = UX_EVENT_TEXT;
         event.data.text.scalar = (type_unsigned_32)key;

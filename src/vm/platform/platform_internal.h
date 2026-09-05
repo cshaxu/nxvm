@@ -12,6 +12,8 @@ struct vm_platform_run_context {
     const core_platform_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;
     ux_mailbox *ux_mailbox;
+    core_platform_display_frame *core_frame;
+    ux_frame *ux_frame;
     ux_action_registry ux_actions;
     ux_router ux_router;
     vm_platform_display_mode display_mode;

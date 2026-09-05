@@ -29,7 +29,12 @@ type_status vm_platform_run_context_create(
         (vm_platform_host_input_sink){0} : *input_sink;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
-    if (ux_mailbox_create(&context->ux_mailbox) != TYPE_STATUS_OK) {
+    context->core_frame = STD_MALLOC(sizeof(*context->core_frame));
+    context->ux_frame = STD_MALLOC(sizeof(*context->ux_frame));
+    if (context->core_frame == STD_NULL || context->ux_frame == STD_NULL ||
+        ux_mailbox_create(&context->ux_mailbox) != TYPE_STATUS_OK) {
+        STD_FREE(context->ux_frame);
+        STD_FREE(context->core_frame);
         STD_FREE(context);
         return TYPE_STATUS_NO_MEMORY;
     }
@@ -51,24 +56,25 @@ type_status vm_platform_run_context_create(
 C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context)
 {
     if (context != STD_NULL) ux_mailbox_destroy(context->ux_mailbox);
+    if (context != STD_NULL) STD_FREE(context->ux_frame);
+    if (context != STD_NULL) STD_FREE(context->core_frame);
     STD_FREE(context);
 }
 
 type_status vm_platform_run_context_publish_ux_frame(
     vm_platform_run_context *context)
 {
-    core_platform_display_frame frame;
-    ux_frame ux_frame;
     type_status status;
 
-    if (context == STD_NULL || context->presentation == STD_NULL)
+    if (context == STD_NULL || context->presentation == STD_NULL ||
+        context->core_frame == STD_NULL || context->ux_frame == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
     status = core_platform_presentation_mailbox_capture(context->presentation,
-        &frame);
+        context->core_frame);
     if (status != TYPE_STATUS_OK) return status;
-    status = vm_platform_ux_frame_from_core(&frame, &ux_frame);
+    status = vm_platform_ux_frame_from_core(context->core_frame, context->ux_frame);
     if (status != TYPE_STATUS_OK) return status;
-    return ux_mailbox_publish(context->ux_mailbox, &ux_frame);
+    return ux_mailbox_publish(context->ux_mailbox, context->ux_frame);
 }
 
 type_status vm_platform_host_input_sink_submit(
