@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T522 S4 |
-| Admission And Approval | Owner approved T522 implementation on 2026-09-05 and directed continued execution. Accepted S1-S3 prove `lib/ux` is the only admissible shared receiver and require atomic retirement of the old NXVM presentation route. |
-| Objective | Replace NXVM's existing platform presenter/input/run-handle route with one product-root binding to `lib/ux`, then delete the superseded route in the same delivery. |
-| Non-goals | No parallel compatibility selector; no Core/VADP/guest-input protocol change; no machine/profile/controller change; no Linux graphics backend; no extraction of rejected non-UX components. |
-| Reference Baseline | `15856966`; S1 migration ledger; S2 UX evidence; current `vm/platform/{platform,execution,host_surface,input_flush,request_bridge,virtual_time}` and Win32/Linux presenters plus every direct caller/test. |
+| Identifier Mode | Continuation M5 T522 S5 |
+| Admission And Approval | Owner approved T522 implementation on 2026-09-05 and directed continued execution. Accepted S4 `11d0f9e1` removes the old presenter route; the owner accepts Linux source/static/unit verification rather than a native Linux environment. |
+| Objective | Close the shared-UX adoption with product-boundary acceptance, external-YAML integration, dual-architecture artifacts and final source/evidence review. |
+| Non-goals | No new UX architecture, no parallel compatibility selector, no Core/VADP/guest-input protocol change, no machine/profile/controller change and no Linux graphics backend. |
+| Reference Baseline | `11d0f9e1`; accepted S1--S4 evidence; one `lib/ux` presentation route and every product/integration acceptance consumer. |
 | Candidate Proposal | `docs/proposals/m5-softpc-platform-library-adoption.md`. |
-| Files And ABI Surface | One VM product-composition binding/conversion owner, `src/lib/ux` consumers, CMake source selection and corresponding unit tests; delete every replaced `vm/platform` presenter, native input normalizer, mailbox/router and run-handle source/caller/test route. |
-| Applicable Rules | Architecture: Core copied frame remains producer, VM composition is the sole conversion/binding root, library owns only copied presentation state, and one retained production path. Coding: no forwarding wrapper, duplicate state, product pointer in public library ABI or platform type in UX root. UX, execution, source and documentation rules apply. |
-| Verification | Complete old/new caller map; source ownership and include sweep; product-root binding unit proof; retained action, Console lease, independent Window, close-to-pause and input behavior tests; full repository-only unit suite, configured Linux regression, documentation governance, diff check and actual-diff review. |
-| Expected Markers | `vm/platform` no longer contains a presenter/input/run-handle production implementation; Core frame -> VM copied conversion -> `ux_mailbox` -> native UX is the sole route; ordinary F keys remain guest input and product actions remain product callbacks. |
+| Files And ABI Surface | Existing S4 binding and `lib/ux` route only; CTest product/integration registration, artifact presets/output, closure evidence and task history. |
+| Applicable Rules | Architecture: retained Core mailbox then VM conversion then UX mailbox remains sole path. Coding: no closure workaround, test-only route, duplicate state or ABI widening. UX, execution, source and documentation rules apply. |
+| Verification | Full repository unit; complete external-YAML integration suite; focused multi-Window/Console-lease/close-pause/RDP behavior tests; Linux key-map unit plus strict Console/adapter static analysis; source/ABI sweep; documentation governance; actual diff review; stripped x64/x86 T522 artifacts with architecture/hash proof. |
+| Expected Markers | Product behavior reaches its existing acceptance tests through one shared UX path; all external integration rows remain green; both optimized, stripped `nxvm_0_5_0522_{x64,x86}.exe` artifacts exist with recorded hashes. |
 | Asset Needs | None. No ROM, CMOS, media or external runtime asset is used. |
-| Reporting Requirements | Record every retired source/caller/test, the retained binding owner and data flow, code delta, full verification, and any concrete behavior gap before closure. |
-| Stop Conditions | Any required behavior cannot be preserved through the UX binding, old and new paths would coexist, a binding needs a raw Core/VM/session pointer in a public UX contract, or a native UX loop cannot honor product lifecycle outcomes. |
-| Exit Criteria | One complete product binding and native UX route replaces the old route; all superseded source is removed; complete unit, focused UX behavior and documentation gates pass; one reviewed, pushed S4 delivery records the sole retained path. |
+| Reporting Requirements | Record focused product and external integration results, Linux source/unit/static result, artifact identity/hashes, source sweep, code delta and every discovered behavior gap before closure. |
+| Stop Conditions | Any required behavior bypasses the S4 UX route, an integration result regresses, an artifact cannot be built/verified, or closure would rely on a test-only or compatibility path. |
+| Exit Criteria | Full unit and integration suites pass; product-focused behavior proves the sole route; Linux source/unit/static gates pass; stripped x64/x86 artifacts and closure evidence are verified; actual-diff review confirms no duplicate route or debt. |
 | Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
 | Similar-Issue Sweep | Enumerate all Win32/Linux Console/Window, input, mailbox, display mode, run-handle and lifecycle callback paths so no old native route, test-only route or hidden product state survives the cutover. |
 

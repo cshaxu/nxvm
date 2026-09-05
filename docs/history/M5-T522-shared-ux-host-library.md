@@ -75,3 +75,23 @@ does not hide implementation in a documentation delivery or create a library
 root. The complete repository-only unit suite remains 306/306 and
 documentation governance passes. S3 is accepted with no transfer other than
 the already planned S4 UX receiver.
+
+## S4 Result
+
+S4 replaces NXVM's native presenter/input route atomically. The retained
+production flow is one copied Core mailbox entry through one VM conversion to
+one `lib/ux` mailbox and native shared Console/Window loops. The VM binding is
+the only product action and guest-ingress adapter; `lib/ux` public headers
+remain value-only. The old Win32 presenters, Linux Console, host surface,
+display-control stubs and VM shortcut classifier are removed. Linux special
+key mapping is a small reusable value helper with a repository unit proof.
+
+## S4 Acceptance
+
+The coordinator reviewed `11d0f9e1` against the S1 migration ledger and found
+no old route, no public Core/VM/native-type leak, and no parallel presenter.
+The cutover removes 1,962 tracked lines overall. Full repository unit
+verification is 304/304; focused shared-UX binding/frame/Linux-key tests,
+strict Linux-path static analysis, documentation governance and diff checks
+pass. The owner accepts source/static/unit Linux verification in place of a
+native Linux host run. S5 is limited to product/integration/artifact closure.
