@@ -2,24 +2,7 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T522 S10 Continuation |
-| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S9 is accepted locally as `713cf1a5` (remote push requires renewed authorization); S10 implements the final shared component before whole-task closure. |
-| Objective | Extract the real generic copied status-outcome publication from VM into independent `lib/observability`, while retaining Core machine-trace meaning and VM fault/debugger semantics with their current owners. |
-| Non-goals | No generic trace framework, second trace ring, raw Core/VM pointer in a lib API, debugger behavior, CPU/fault diagnostic migration or product logging sink. |
-| Reference Baseline | `ec45caef`: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
-| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S10. |
-| Files And ABI Surface | New `src/lib/observability/outcome.{h,c}` and `test/lib/observability_outcome_smoke.c`; replace the generic VM start-outcome state with the lib outcome owner. |
-| Applicable Rules | Architecture: outcome carries only copied `valid/status/sequence` values. Core retains trace-event definition/ring and VM retains machine/profile-specific fault/debugger semantics. Coding: one outcome owner, no forwarding mirror, no unused trace abstraction. Execution and documentation rules apply. |
-| Verification | Outcome publication/capture, VM normal start/reset/restart and fault-injection startup-failure proof pass; full repository-only unit is 308/308. Final external-YAML integration, governance, owner sweep and dual stripped 0522 artifacts remain at T closure. [S10 evidence](../etc/evidence/t522-s10-observability-closure.md). |
-| Expected Markers | One lib outcome owner; no VM duplicate `valid/status` start record; Core trace and VM fault paths unchanged by ownership sweep; complete gates and artifacts at T close. |
-| Asset Needs | Existing external YAML/ROM/CMOS/media only for T-level integration; no asset creation, copying or mutation. |
-| Reporting Requirements | Record extracted outcome owner/callers, Core trace and VM fault retained-owner decisions, deleted state and verification; report a necessary generic publication mechanism that lacks a real replacement target. |
-| Stop Conditions | Stop if the proposed lib API needs a raw Core/VM pointer, requires a second trace ring, alters debugger/fault semantics, or exists only as an unused framework. |
-| Exit Criteria | `lib/observability` owns the one real generic copied outcome mechanism; VM has no duplicate start-outcome state; Core trace and VM fault/debugger semantics retain their sole owners; T522 then proceeds to the whole-task closure gate. |
-| Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
-| Similar-Issue Sweep | Search all tracked source/tests/CMake for generic `valid/status` result holders, trace transport/rings and fault publication. Migrate only duplicate generic outcome state; retain Core trace and VM diagnostic state with explicit semantic reasons. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -57,6 +40,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
@@ -64,7 +48,6 @@
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
-| T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
 
 ## Recent Governance
 

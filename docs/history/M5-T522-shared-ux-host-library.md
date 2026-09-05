@@ -152,3 +152,56 @@ The legacy-symbol sweep is empty. The regenerated test tree runs host sync as
 `unit.host-sync-smoke`; complete unit is 304/304 and external-YAML integration
 is 44/44. Current 0522 x64 and x86 artifacts have passed their architecture
 checks. T522 stays open for session, storage and observability extraction.
+
+## S8 Result
+
+`lib/session` now owns the reusable lifecycle state and bounded executor
+transport. VM composition retains machine construction, profile facts, command,
+debugger and reporting ownership. The former `vm/platform/execution` route is
+deleted instead of retained as a compatibility selector.
+
+## S9 Result
+
+`lib/storage` now owns generic byte-image allocation, explicit
+`direct-readonly` and `overlay` modes, and atomic commit/cleanup. FDD/HDD
+retain geometry and controller semantics, but borrow the one image owner. The
+native file mechanics are confined to `storage/win32` and `storage/linux`;
+public storage headers carry no native types. External-YAML integration uses
+an uncommitted overlay, so master media remains unchanged. [S9 evidence](../etc/evidence/t522-s9-storage-closure.md)
+records the ownership and media-hash proof.
+
+## S10 Result
+
+`lib/observability/outcome` replaces VM's generic start-outcome struct with
+one copied `sequence/valid/status` owner. Core trace remains Core-owned and VM
+fault/debugger state remains VM-owned because each has machine/product
+semantics, not generic outcome semantics. No unused trace framework or second
+trace path was added. [S10 evidence](../etc/evidence/t522-s10-observability-closure.md)
+records normal-start and fault-injection proof.
+
+## T522 Closure Audit
+
+The final review inspected `ec45caef..bf7bca5b`, all five `src/lib` roots,
+their CMake targets, deleted VM lifecycle/media paths and the session outcome
+callers. The library components are peers: UX owns copied presentation/native
+loops; host owns native-free synchronization; session owns lifecycle/executor
+state; storage owns image/overlay/commit; observability owns the one generic
+copied outcome. No library root names Core, VM, profile or machine state.
+
+Storage has no legacy `media_save` route; direct readonly offers no mutable
+view or commit; overlay is the only private writable image. VM has no duplicate
+start-outcome state. Core trace and VM fault/debug retain their original sole
+owners. Final verification passes: repository-only unit `308/308`,
+external-YAML integration `44/44`, documentation governance, `git diff
+--check`, and the owner/legacy-route sweep.
+
+The optimized stripped developer artifacts are `nxvm_0_5_0522_x64.exe`
+(`E591AD9E929580631360EA753B7581295D1F301589005D3B0C829171D258AF72`) and
+`nxvm_0_5_0522_x86.exe`
+(`E3242964B3EBA9D4D92111941A21D28E9A46E407C23E0F25ECE8F7A3181EDA5C`). CMake
+verified their PE architectures and optimized Release form; their target links
+with `--strip-debug`. The x86 build required the matching `mingw32/bin`
+directory first in host `PATH`, correcting an external DLL architecture
+mismatch without changing project source or CMake behavior.
+
+T522 is closed.
