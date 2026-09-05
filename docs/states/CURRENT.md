@@ -2,24 +2,9 @@
 
 ## Current Work
 
-| Field | Required record |
+| Task | Compact progress |
 | --- | --- |
-| Identifier Mode | Continuation M5 T522 S2 |
-| Admission And Approval | Owner approved T522 implementation on 2026-09-05. Accepted S1 (`a3518035`) limits this S to the admitted UX root/Win32/Linux extraction. |
-| Objective | Create one self-contained `lib/ux` component with platform-neutral copied-value contracts, a Win32 native implementation, and a Linux Console implementation that consumes the same product binding. |
-| Non-goals | No `lib/host`, `lib/session`, `lib/storage`, or `lib/observability` root; no NXVM production cutover or old-path deletion; no Linux Window backend; no Core/VADP/session/profile semantic change. |
-| Reference Baseline | `a3518035`; S1 ledger `docs/etc/evidence/t522-s1-shared-library-migration-ledger.md`; staged owner-provided `src/lib/platform/win32` source. |
-| Candidate Proposal | `docs/proposals/m5-softpc-platform-library-adoption.md`. |
-| Files And ABI Surface | `src/lib/ux/*`, `src/lib/ux/win32/*`, `src/lib/ux/linux/*`, CMake library-only target/test declarations, provenance index, source manifest/readme and S2 evidence. Existing VM platform ABI remains unchanged. |
-| Applicable Rules | Architecture: dependencies only toward neutral contracts; one mutable owner; opaque/copy boundary; composition only at product root. Coding: C11, `type.h` at NXVM public boundaries, no platform SDK type in root UX headers, no duplicate route. Source policy, UX, documentation and execution governance apply. |
-| Verification | Library-only unit tests for root contracts and router; static root-header platform-type sweep; staged-to-admitted inventory/provenance check; Win32 compile and existing unit suite; Linux compile/regression where configured; full repository-only unit suite; documentation governance and diff check. |
-| Expected Markers | All root UX headers are platform-neutral; native Win32 Console/Window loops and private wake state are under `ux/win32`; Linux Console loop is under `ux/linux`; no `lib` peer component dependency or product/machine pointer enters a library public contract. |
-| Asset Needs | None. No firmware, media, ROM or external runtime asset is used. |
-| Reporting Requirements | Report every moved/rewritten source file, retained source path, public ABI decision, code delta, library-only and full-unit result, and any discovered gap before S3. |
-| Stop Conditions | A required product pointer/guest protocol in root UX, inability to preserve a selected UX route under one native loop, independent notice, or required `lib` peer dependency stops this S for owner direction. |
-| Exit Criteria | The admitted UX corpus has the declared layout and unit proof while NXVM still uses its current platform route; complete unit and documentation gates pass; one S2 implementation P is committed and pushed. |
-| Original Owner Request | Owner requested shared independent UX, host, session, storage and observability components for NXVM, SoftPC and eventual NTVDM64, with UX owning native loops and no peer dependencies. |
-| Similar-Issue Sweep | Audit every staged and current Win32/Linux presenter, event, mailbox, input, mouse, router and Console lease route for platform-type leakage, globals, product pointer exposure, duplicate loops and ownership overlap. |
+| T522 S2 | Accepted: `4d96a052` establishes the independent `lib/ux` root and native Win32/Linux implementations, with only copied-value public contracts. The coordinator re-ran the full repository-only unit suite (306/306), documentation governance and diff check. NXVM's existing platform route remains intentionally unselected until the atomic S4 cutover; no empty peer library root or compatibility route was introduced. |
 
 ## Current Technical Baseline
 

@@ -42,3 +42,18 @@ mailbox/event queue rather than wrapping them. NXVM has not cut over: the
 existing VM platform still owns its production route until S4 can replace and
 remove it atomically. The S2 [evidence](../etc/evidence/t522-s2-ux-library-extraction.md)
 records the full source manifest, ownership sweep and `306/306` unit result.
+
+## S2 Acceptance
+
+The coordinator independently reviewed the actual `4d96a052` diff and accepts
+S2. The root headers are value-only and do not name a native SDK, Core, VM,
+machine, profile or session type; native implementations depend only on the
+UX root. The process-wide Console lease carries no product state, while the
+Window's mutable presentation state is allocated in its per-run context. The
+only retained production presenter path is still NXVM's existing path, by S2
+design; S4 must replace and delete it atomically. The coordinator re-ran the
+complete repository-only unit suite (306/306), documentation governance, and
+`git diff --check`. The library source delta is `+2480/-2` tracked lines:
+the positive count is the owner-provided 23-file UX corpus newly brought under
+version control and reshaped into the neutral contract, not a second NXVM
+production route.
