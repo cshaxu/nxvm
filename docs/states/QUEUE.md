@@ -5,7 +5,7 @@ reserve a numeric task identifier, or define a technical baseline.
 
 ## M5 Candidates
 
-1. [M5 SoftPC platform-library adoption and Win32 UX convergence](../proposals/m5-softpc-platform-library-adoption.md)
+1. [M5 shared UX and host library adoption](../proposals/m5-softpc-platform-library-adoption.md)
 2. [M5 YAML asset and read-only CMOS seed contract](../proposals/m5-yaml-image-load-mode-contract.md)
 3. [M5 PIC8259A manual and board-integration reclosure](../proposals/m5-pic-board-integration-reclosure.md)
 4. [M5 DMA8237A manual and board-integration reclosure](../proposals/m5-dma-board-integration-reclosure.md)

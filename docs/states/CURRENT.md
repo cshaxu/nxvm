@@ -2,7 +2,9 @@
 
 ## Current Work
 
-**Idle.**
+| Task | Compact progress |
+| --- | --- |
+| T522 S1 | Accepted: the complete migration ledger admits only the bounded UX root/Win32/Linux split. The staged corpus byte-matches the owner-provided SoftPC revision and has no independent notice. `host`, `session`, `storage`, and `observability` have no admissible implementation yet, so no empty roots may be created. Unit 317/317 and documentation governance pass. S2 may now perform the UX extraction and Linux conversion. |
 
 ## Current Technical Baseline
 
