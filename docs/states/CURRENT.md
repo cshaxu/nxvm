@@ -9,8 +9,8 @@ No active packet.  The next task requires explicit admission.
 - **Current developer artifacts:** CMake target `vm-0-5-0520` emits
   `nxvm_0_5_0520_x64.exe` and `nxvm_0_5_0520_x86.exe` in stripped Release
   builds. They retain the runtime debugger and contain no compiler debug
-  information. The S1 source/unit evidence is complete; dual-architecture
-  artifact publication remains a T520 closure requirement.
+  information. T520 records the completed dual-architecture artifact
+  publication and its verified hashes.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -51,6 +51,11 @@ No active packet.  The next task requires explicit admission.
 | T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 
 ## Recent Governance
+
+- **M5 Td S162 P1:** removes the stale Type-47 and mechanism-reduction
+  candidates after T519 S2 and T520 closure evidence, deletes their current
+  proposals, and corrects the completed T520 artifact statement. No code,
+  test, asset or runtime contract changed.
 
 - **M5 Td S161 P1:** places the host-input, capture and status UX candidate at
   Queue head. It defines one host-action classifier before existing guest-key
