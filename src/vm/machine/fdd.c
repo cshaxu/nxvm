@@ -6,11 +6,9 @@
 
 
 
-#include "core/platform/file.h"
-
-
 #include "vm/machine/fdd_private.h"
-#include "vm/machine/media_save.h"
+#include "lib/storage/commit.h"
+#include "lib/storage/file.h"
 
 static C_CHAR *vm_machine_fdd_sidecar_name(const C_CHAR *image_name)
 {
@@ -91,13 +89,13 @@ static C_INT vm_machine_fdd_sidecar_load(const t_fdd *fdd, const C_CHAR *image_n
 
     sidecar_name = vm_machine_fdd_sidecar_name(image_name);
     if (sidecar_name == STD_NULL) return TYPE_TRUE;
-    if (!core_platform_file_exists(sidecar_name)) {
+    if (!lib_storage_file_exists(sidecar_name)) {
         STD_FREE(sidecar_name);
         return TYPE_FALSE;
     }
     loaded = STD_NULL;
-    if (core_platform_file_read_all(sidecar_name, 65536u, &loaded,
-            &length) != TYPE_FALSE) {
+    if (lib_storage_file_read_owned(sidecar_name, 65536u, &loaded,
+            &length) != TYPE_STATUS_OK) {
         STD_FREE(sidecar_name);
         return TYPE_TRUE;
     }
@@ -373,18 +371,17 @@ C_INT vm_machine_fdd_has_media(const t_fdd *fdd)
 }
 
 static C_VOID vm_machine_fdd_commit_candidate(t_fdd *fdd,
-    type_virtual_address candidate, type_virtual_address marks)
+    lib_storage_image *candidate, type_virtual_address marks)
 {
-    type_virtual_address old_image = fdd->connect.pImgBase;
+    lib_storage_image *old_image = fdd->connect.image;
     type_virtual_address old_marks = fdd->connect.pAddressMarks;
 
-    fdd->connect.pImgBase = candidate;
+    fdd->connect.image = candidate;
+    fdd->connect.pImgBase = (type_virtual_address)lib_storage_image_const_bytes(candidate);
     fdd->connect.pAddressMarks = marks;
     fdd->connect.flagDiskExist = TYPE_TRUE;
     ++fdd->connect.media_generation;
-    if (old_image != (type_virtual_address)STD_NULL) {
-        STD_FREE((C_VOID *)old_image);
-    }
+    lib_storage_image_destroy(old_image);
     if (old_marks != (type_virtual_address)STD_NULL) {
         STD_FREE((C_VOID *)old_marks);
     }
@@ -394,20 +391,19 @@ C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
     STD_SIZE_T byte_count)
 {
     STD_SIZE_T image_size;
-    type_virtual_address candidate = (type_virtual_address)STD_NULL;
+    lib_storage_image *candidate = STD_NULL;
     type_virtual_address marks = (type_virtual_address)STD_NULL;
 
     if (fdd == STD_NULL || bytes == STD_NULL ||
         byte_count != (image_size = vm_machine_fdd_image_size(fdd)) ||
-        (candidate = (type_virtual_address)STD_MALLOC(image_size)) ==
-            (type_virtual_address)STD_NULL ||
+        lib_storage_image_create_overlay(bytes, image_size, &candidate) !=
+            TYPE_STATUS_OK ||
         (marks = (type_virtual_address)STD_CALLOC((STD_SIZE_T)fdd->data.ncyl *
             fdd->data.nhead * fdd->data.nsector, sizeof(type_unsigned_8))) ==
             (type_virtual_address)STD_NULL) {
-        if (candidate != (type_virtual_address)STD_NULL) STD_FREE((C_VOID *)candidate);
+        lib_storage_image_destroy(candidate);
         return TYPE_TRUE;
     }
-    STD_MEMCPY((C_VOID *)candidate, bytes, image_size);
     vm_machine_fdd_commit_candidate(fdd, candidate, marks);
     return TYPE_FALSE;
 }
@@ -480,11 +476,17 @@ C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
         return TYPE_TRUE;
     }
     STD_MEMSET((C_VOID *)fdd, TYPE_ZERO_8, sizeof(*fdd));
+    fdd->connect.flagCommitEnabled = TYPE_TRUE;
     fdd->geometry = *geometry;
     vm_machine_fdd_reset(fdd);
     sector_count = (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead *
         fdd->data.nsector;
-    fdd->connect.pImgBase = (type_virtual_address)STD_MALLOC(vm_machine_fdd_image_size(fdd));
+    if (lib_storage_image_create_zero_overlay(vm_machine_fdd_image_size(fdd),
+            &fdd->connect.image) != TYPE_STATUS_OK) {
+        fdd->connect.image = STD_NULL;
+    }
+    fdd->connect.pImgBase = (type_virtual_address)lib_storage_image_writable_bytes(
+        fdd->connect.image);
     fdd->connect.pAddressMarks = (type_virtual_address)STD_CALLOC(sector_count,
         sizeof(type_unsigned_8));
     if (fdd->connect.pImgBase == (type_virtual_address)STD_NULL ||
@@ -492,8 +494,6 @@ C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
         vm_machine_fdd_finalize(fdd);
         return TYPE_TRUE;
     }
-    STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8,
-        vm_machine_fdd_image_size(fdd));
     return TYPE_FALSE;
 }
 
@@ -507,10 +507,11 @@ C_VOID vm_machine_fdd_reset(t_fdd *fdd)
 
 C_VOID vm_machine_fdd_finalize(t_fdd *fdd)
 {
-    if (fdd != STD_NULL && fdd->connect.pImgBase) STD_FREE((C_VOID *)fdd->connect.pImgBase);
+    if (fdd != STD_NULL) lib_storage_image_destroy(fdd->connect.image);
     if (fdd != STD_NULL && fdd->connect.pAddressMarks)
         STD_FREE((C_VOID *)fdd->connect.pAddressMarks);
     if (fdd != STD_NULL) fdd->connect.pImgBase = (type_virtual_address)STD_NULL;
+    if (fdd != STD_NULL) fdd->connect.image = STD_NULL;
     if (fdd != STD_NULL) fdd->connect.pAddressMarks = (type_virtual_address)STD_NULL;
 }
 
@@ -523,39 +524,49 @@ C_VOID vm_machine_fdd_create_for(t_fdd *fdd)
     }
 }
 
-C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
+static C_INT vm_machine_fdd_insert_image_for(t_fdd *fdd, const C_CHAR *file_name,
+    C_INT direct_readonly)
 {
     STD_SIZE_T image_size;
     STD_SIZE_T loaded_count;
-    type_virtual_address candidate = (type_virtual_address)STD_NULL;
+    lib_storage_image *candidate = STD_NULL;
     type_virtual_address marks = (type_virtual_address)STD_NULL;
     C_VOID *loaded = STD_NULL;
 
     if (fdd == STD_NULL || file_name == STD_NULL ||
-        core_platform_file_read_all(file_name, vm_machine_fdd_image_size(fdd),
-            &loaded, &loaded_count) != TYPE_FALSE) return TYPE_TRUE;
+        lib_storage_file_read_owned(file_name, vm_machine_fdd_image_size(fdd),
+            &loaded, &loaded_count) != TYPE_STATUS_OK) return TYPE_TRUE;
     image_size = vm_machine_fdd_image_size(fdd);
     if (loaded_count != image_size ||
-        (candidate = (type_virtual_address)STD_MALLOC(image_size)) ==
-            (type_virtual_address)STD_NULL ||
+        (direct_readonly ?
+            lib_storage_image_take_direct_readonly(loaded, image_size, &candidate) :
+            lib_storage_image_create_overlay(loaded, image_size, &candidate)) !=
+            TYPE_STATUS_OK ||
         (marks = (type_virtual_address)STD_CALLOC((STD_SIZE_T)fdd->data.ncyl *
             fdd->data.nhead * fdd->data.nsector, sizeof(type_unsigned_8))) ==
             (type_virtual_address)STD_NULL) {
-        if (candidate != (type_virtual_address)STD_NULL) STD_FREE((C_VOID *)candidate);
-        STD_FREE(loaded);
+        lib_storage_image_destroy(candidate);
+        if (!direct_readonly || candidate == STD_NULL) STD_FREE(loaded);
         return TYPE_TRUE;
     }
-    STD_MEMCPY((C_VOID *)candidate, loaded, image_size);
-    STD_FREE(loaded);
-    if (vm_machine_fdd_sidecar_load(fdd, file_name, (const C_VOID *)candidate,
+    if (!direct_readonly) STD_FREE(loaded);
+    if (vm_machine_fdd_sidecar_load(fdd, file_name,
+        lib_storage_image_const_bytes(candidate),
         marks) != TYPE_FALSE) {
-        STD_FREE((C_VOID *)candidate);
+        lib_storage_image_destroy(candidate);
         STD_FREE((C_VOID *)marks);
         return TYPE_TRUE;
     }
     vm_machine_fdd_commit_candidate(fdd, candidate, marks);
+    fdd->connect.flagReadOnly = direct_readonly != 0;
     return TYPE_FALSE;
 }
+
+C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
+{ return vm_machine_fdd_insert_image_for(fdd, file_name, TYPE_FALSE); }
+
+C_INT vm_machine_fdd_insert_readonly_for(t_fdd *fdd, const C_CHAR *file_name)
+{ return vm_machine_fdd_insert_image_for(fdd, file_name, TYPE_TRUE); }
 
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
 {
@@ -564,12 +575,13 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
     STD_SIZE_T sidecar_byte_count;
 
     if (fdd == STD_NULL) return TYPE_TRUE;
-    if (file_name != STD_NULL && !fdd->connect.flagReadOnly) {
+    if (file_name != STD_NULL && fdd->connect.flagCommitEnabled &&
+        !fdd->connect.flagReadOnly) {
         sidecar_name = vm_machine_fdd_sidecar_name(file_name);
         if (sidecar_name == STD_NULL || vm_machine_fdd_sidecar_serialize(fdd,
             (const C_VOID *)fdd->connect.pImgBase, &sidecar_bytes,
             &sidecar_byte_count) != TYPE_FALSE ||
-            vm_machine_media_save_pair_atomically(file_name,
+            lib_storage_commit_pair_atomically(file_name,
                 (const C_VOID *)fdd->connect.pImgBase, vm_machine_fdd_image_size(fdd),
                 sidecar_name, sidecar_bytes, sidecar_byte_count) != TYPE_FALSE) {
             STD_FREE(sidecar_bytes);
@@ -581,7 +593,8 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
     }
     fdd->connect.flagDiskExist = TYPE_FALSE;
     fdd->connect.media_generation++;
-    if (fdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
+    if (!fdd->connect.flagReadOnly &&
+        fdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
         STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8,
             vm_machine_fdd_image_size(fdd));
     }
@@ -590,6 +603,12 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
             (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector);
     }
     return TYPE_FALSE;
+}
+
+C_VOID vm_machine_fdd_set_commit_enabled(t_fdd *fdd, C_INT enabled)
+{
+    if (fdd == STD_NULL) return;
+    fdd->connect.flagCommitEnabled = enabled != 0;
 }
 
 C_VOID vm_machine_fdd_print(const t_fdd *fdd) {

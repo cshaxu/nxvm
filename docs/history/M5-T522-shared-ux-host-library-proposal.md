@@ -17,7 +17,9 @@ src/lib/
   session/
     state.h command.h executor.h lifecycle.h
   storage/
-    image.h overlay.h
+    image.h commit.h
+    win32/file.c
+    linux/file.c
   observability/
     trace.h outcome.h
 ```
@@ -34,6 +36,14 @@ another. A native `ux/win32` or `ux/linux` implementation naturally depends on
 the public `ux` value contracts above it, but never on `host`, `session`,
 `storage`, or `observability`. It owns the full Console/Window event loop,
 native input translation, presentation and local wake-up mechanics.
+
+`storage` has two explicit media modes. `direct-readonly` presents an asset
+as immutable media and cannot acquire a writable byte view or commit. An
+`overlay` materializes one private writable byte image from that same asset;
+only an explicit product commit may replace a destination. The mode is a
+generic storage fact, never an FDD/HDD/profile decision. Platform file
+mechanics live below `storage/win32` and `storage/linux`; public storage
+headers contain neither Win32 nor POSIX native types.
 
 `host` owns only a separately consumable host synchronization capability.
 `session` owns a deterministic lifecycle state machine and calls a bounded
@@ -119,11 +129,13 @@ wrapping it.
 
 ## S9 - Storage Extraction
 
-Extract the generic byte-image and copy-on-write overlay/atomic-persistence
-mechanics into `lib/storage`. The library owns byte buffers, overlay and
-commit/rollback mechanics only. FDD/HDD geometry, controller media requests,
-drive selection, sidecars and session media policy remain product/device
-owners and consume the one storage route.
+Extract the generic byte-image, explicit direct-readonly/overlay modes and
+atomic-persistence mechanics into `lib/storage`. The library owns byte
+buffers, mode enforcement and commit/rollback mechanics only. Native asset
+file access is implemented below `storage/win32` and `storage/linux`; its
+public contract is native-type-free. FDD/HDD geometry, controller media
+requests, drive selection, sidecars and session media policy remain
+product/device owners and consume the one storage route.
 
 ## S10 - Observability Extraction And Whole-Task Closure
 

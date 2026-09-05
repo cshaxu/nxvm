@@ -100,6 +100,17 @@ add_library(session-lifecycle STATIC
     src/lib/session/executor.c)
 target_include_directories(session-lifecycle PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(session-lifecycle PUBLIC type-facade)
+add_library(storage-image STATIC
+    src/lib/storage/commit.c
+    src/lib/storage/file.c
+    src/lib/storage/image.c)
+if(WIN32)
+    target_sources(storage-image PRIVATE src/lib/storage/win32/file.c)
+else()
+    target_sources(storage-image PRIVATE src/lib/storage/linux/file.c)
+endif()
+target_include_directories(storage-image PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(storage-image PUBLIC type-facade)
 if(WIN32)
     add_library(ux-win32-native STATIC
         src/lib/ux/win32/actions.c
@@ -282,6 +293,9 @@ add_executable(vm-hdc-port-smoke test/vm/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
 add_executable(vm-media-provider-smoke test/vm/machine/vm_media_provider_smoke.c)
 target_link_libraries(vm-media-provider-smoke PRIVATE vm-machine core-machine)
+add_executable(vm-media-direct-readonly-smoke
+    test/vm/machine/vm_media_direct_readonly_smoke.c)
+target_link_libraries(vm-media-direct-readonly-smoke PRIVATE vm-machine core-machine)
 add_executable(vm-hdc-hdd-boot-smoke test/integration/hdd/vm_hdc_hdd_boot_smoke.c)
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-default-pc-at-apply-smoke
@@ -1251,7 +1265,6 @@ set(VM_COMPOSITION_SOURCES
 set(VM_MACHINE_SOURCES
     src/vm/machine/fdd.c
     src/vm/machine/hdd.c
-    src/vm/machine/media_save.c
     src/vm/machine/debug.c
 )
 set(CORE_MACHINE_SOURCES
@@ -1539,6 +1552,8 @@ add_executable(host-sync-smoke
 target_link_libraries(host-sync-smoke PRIVATE host-sync)
 add_executable(session-state-smoke test/lib/session_state_smoke.c)
 target_link_libraries(session-state-smoke PRIVATE session-lifecycle)
+add_executable(storage-image-smoke test/lib/storage_image_smoke.c)
+target_link_libraries(storage-image-smoke PRIVATE storage-image)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -1625,7 +1640,8 @@ target_include_directories(vm-machine PUBLIC
 )
 target_link_libraries(vm-machine PUBLIC
     core-machine
-    core-platform)
+    core-platform
+    storage-image)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
 target_include_directories(vm-product PUBLIC
@@ -2190,6 +2206,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-hdc-port-smoke
     vm-media-provider-smoke
+    vm-media-direct-readonly-smoke
     vm-default-pc-at-apply-smoke
     vm-default-pc-at-rom-materialization-smoke
     vm-two-session-isolation-smoke
@@ -2409,6 +2426,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-platform-input-source-smoke
     host-sync-smoke
     session-state-smoke
+    storage-image-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-platform-presentation-mailbox-smoke
@@ -2871,6 +2889,7 @@ endforeach()
 foreach(target IN ITEMS
     vm-debugger-recording-lifecycle-smoke
     vm-media-provider-smoke
+    vm-media-direct-readonly-smoke
     vm-xt-5160-268-profile-smoke)
     set(project_console_smoke_workspace
         "${CMAKE_CURRENT_BINARY_DIR}/test/${target}")
@@ -3782,6 +3801,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(session-executor-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(storage-image-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3934,7 +3955,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-platform|src/vm/platform/win32/win32.c|win32-platform"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
-    "vm-machine|src/vm/machine/media_save.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
     "vm-composition|src/vm/composition/session/session_factory.c|vm-composition"
     "vm-composition|src/vm/composition/session/console_machine_adapter.c|vm-composition"

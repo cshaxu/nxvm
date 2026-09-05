@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T522 S8 Continuation |
-| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S7 accepted the sole host-sync replacement. |
-| Objective | Extract the generic serial lifecycle state transitions into independent `lib/session` through bounded callbacks, then replace the VM control state mechanism. |
-| Non-goals | No VM/Core/machine pointer in a public lib API; no profile, firmware, debugger, display, command or scheduler policy migration; no generic executor framework or compatibility wrapper. |
+| Identifier Mode | M5 T522 S9 Continuation |
+| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S8 extracted the generic session state/executor; S9 is the approved next proposal stage. |
+| Objective | Extract generic byte images, explicit `direct-readonly` and private `overlay` modes, platform file mechanics and atomic commit into independent `lib/storage`, then make FDD/HDD consume that one storage route. S9 implementation and evidence are complete; commit it before S10. |
+| Non-goals | No controller geometry, drive selection, FDC/HDC request semantics, media topology, YAML grammar or profile policy migration; no media copying, shared mutable asset master, or second byte store. |
 | Reference Baseline | `ec45caef`: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
-| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S8. |
-| Files And ABI Surface | New `src/lib/session/{state.h,state.c,executor.h,lifecycle.h,lifecycle.c}` and `test/lib/session_*`; replace the generic state portion of `vm/composition/session/control.*` and its callers. |
-| Applicable Rules | Architecture: lib session uses copied state and bounded callbacks only; VM remains sole owner of session/machine/debugger/profile facts. Coding: one lifecycle state owner, no raw product pointer in public lib headers, no forwarding wrapper or duplicate state. Execution and documentation rules apply. |
-| Verification | Lib-session transition tests; VM lifecycle/control focused tests; source sweep for old generic control flags/transitions; complete repository-only unit, external-YAML integration, governance, diff check and stripped 0522 x64/x86 artifact proof. |
-| Expected Markers | Session lifecycle test; unit 304/304; integration 44/44; old generic VM control transition route absent; both 0522 architecture checks pass. |
-| Asset Needs | None. No ROM, CMOS, media or external runtime asset is used. |
-| Reporting Requirements | Record the removed VM generic transition state, retained VM policy callbacks, lib session API/owner, migrated callers, code-size and verification; report a necessary state whose meaning is machine/profile-specific. |
-| Stop Conditions | Stop if an extracted contract needs a raw VM/Core/machine pointer, mirrors debugger/profile state, changes pause/reset semantics, or retains parallel VM and lib lifecycle state. |
-| Exit Criteria | `lib/session` is the sole owner of generic start/pause/resume/reset/stop transition state; VM supplies bounded policy callbacks; old generic VM control state is deleted; all gates and dual artifacts pass; T522 remains open for S9--S10. |
+| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S9. |
+| Files And ABI Surface | New `src/lib/storage/{image.h,image.c,commit.h,commit.c,win32/file.c,linux/file.c}` and `test/lib/storage_*`; replace `vm/machine/media_save.*` and FDD/HDD raw-buffer persistence use with the shared storage path. |
+| Applicable Rules | Architecture: storage owns only generic bytes, explicit direct-readonly/overlay mode and transactional commit; FDD/HDD retain device semantics. `storage/win32` and `storage/linux` own native file mechanics. Coding: one byte view per mounted image, one persistence route, no Core/VM pointer in lib storage, no media-master mutation from integration. Execution and documentation rules apply. |
+| Verification | Passed: storage image/direct-readonly/commit tests, FDD/HDD media lifecycle tests, 307-unit gate and Model-40/5170/default-PC-AT external-YAML overlay rows. Evidence: [T522 S9 storage closure](../etc/evidence/t522-s9-storage-closure.md). Remaining: commit S9, then S10 and T-level governance/artifacts. |
+| Expected Markers | Storage direct-readonly/overlay/commit tests; concurrent external-YAML Model-40/5170/default-PC-AT boot rows stable; unit and integration gates pass; no external master-media write from an integration session. |
+| Asset Needs | Existing external YAML, ROM, CMOS and media assets only; no asset creation, copying or mutation. |
+| Reporting Requirements | Record byte-buffer owner, volatile versus explicit commit boundary, removed old persistence route, retained device responsibilities, code-size and verification; report any necessary persistence policy that cannot be represented without product input. |
+| Stop Conditions | Stop if storage needs a VM/Core/device pointer, must infer a profile/media topology, mutates an asset master without an explicit product commit, or retains parallel buffers/persistence routes. |
+| Exit Criteria | `lib/storage` owns generic image bytes, direct-readonly/overlay modes, platform file mechanics and atomic commit; FDD/HDD have one borrowed storage byte view and retain only device semantics; integration sessions use volatile overlay and do not mutate external assets; old VM save route is deleted; T522 remains open for S10. |
 | Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
-| Similar-Issue Sweep | Search all tracked source/tests/CMake for session lifecycle/control state, start/pause/resume/reset/stop transitions and run-handle reports. Migrate generic transition state; retain only documented VM policy callbacks and machine-owned facts. |
+| Similar-Issue Sweep | Search all tracked source/tests/CMake for raw image allocation/loading, atomic saves, FDD/HDD teardown persistence and integration asset writes. Migrate generic byte/persistence mechanics; retain only documented device geometry, sidecar and session policy facts. |
 
 ## Current Technical Baseline
 

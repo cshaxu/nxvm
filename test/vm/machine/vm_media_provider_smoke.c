@@ -3,7 +3,7 @@
 #include "core/machine/media_interface.h"
 #include "vm/machine/fdd_private.h"
 #include "vm/machine/hdd_private.h"
-#include "vm/machine/media_save.h"
+#include "lib/storage/commit.h"
 
 static type_unsigned_8 vm_media_provider_fdd_image[80u * 2u * 18u * 512u];
 static const C_CHAR vm_media_provider_save_target[] = "vm_media_provider_t283.img";
@@ -161,11 +161,11 @@ C_INT main(C_VOID)
     null_hdd.connect.media_generation = 7u;
     if (vm_media_provider_write_byte_file(vm_media_provider_save_target, 0x39u) ||
         vm_media_provider_write_byte_file(vm_media_provider_save_collision, collision_byte) ||
-        vm_machine_media_save_atomically(vm_media_provider_save_target, &save_byte,
+        lib_storage_commit_atomically(vm_media_provider_save_target, &save_byte,
             sizeof(save_byte)) != TYPE_FALSE ||
         vm_media_provider_read_byte_file(vm_media_provider_save_target, save_byte) ||
         vm_media_provider_read_byte_file(vm_media_provider_save_collision, collision_byte) ||
-        vm_machine_media_save_atomically(vm_media_provider_save_target, STD_NULL, 1u) !=
+        lib_storage_commit_atomically(vm_media_provider_save_target, STD_NULL, 1u) !=
             TYPE_TRUE ||
         vm_media_provider_read_byte_file(vm_media_provider_save_target, save_byte)) {
         failed = 1;

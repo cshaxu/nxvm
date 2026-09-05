@@ -7,9 +7,9 @@
 
 
 #include "vm/machine/hdd_private.h"
-#include "vm/machine/media_save.h"
+#include "lib/storage/commit.h"
 
-#include "core/platform/file.h"
+#include "lib/storage/file.h"
 
 static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
     core_machine_media_info *out_info)
@@ -156,27 +156,24 @@ static C_INT vm_machine_hdd_capacity_from_raw(STD_SIZE_T raw_byte_count,
     return TYPE_FALSE;
 }
 
-static type_virtual_address vm_machine_hdd_allocate_candidate(STD_SIZE_T byte_count)
+static lib_storage_image *vm_machine_hdd_allocate_candidate(
+    STD_SIZE_T byte_count)
 {
-    type_virtual_address image;
+    lib_storage_image *image = STD_NULL;
 
-    if (byte_count == 0u) {
-        return (type_virtual_address)STD_NULL;
-    }
-    image = (type_virtual_address)STD_MALLOC(byte_count);
-    if (image != (type_virtual_address)STD_NULL) {
-        STD_MEMSET((C_VOID *)image, TYPE_ZERO_8, byte_count);
-    }
-    return image;
+    if (byte_count == 0u) return STD_NULL;
+    return lib_storage_image_create_zero_overlay(byte_count, &image) == TYPE_STATUS_OK ?
+        image : STD_NULL;
 }
 
 static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
-    type_virtual_address candidate, STD_SIZE_T raw_byte_count,
+    lib_storage_image *candidate, STD_SIZE_T raw_byte_count,
     STD_SIZE_T virtual_byte_count, type_unsigned_32 cylinders)
 {
-    type_virtual_address old_image = hdd->connect.pImgBase;
+    lib_storage_image *old_image = hdd->connect.image;
 
-    hdd->connect.pImgBase = candidate;
+    hdd->connect.image = candidate;
+    hdd->connect.pImgBase = (type_virtual_address)lib_storage_image_const_bytes(candidate);
     hdd->connect.raw_byte_count = raw_byte_count;
     hdd->connect.virtual_byte_count = virtual_byte_count;
     hdd->connect.flagPaddingWritten = TYPE_FALSE;
@@ -189,14 +186,13 @@ static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
     hdd->data.sector = 1u;
     hdd->connect.flagDiskExist = TYPE_TRUE;
     ++hdd->connect.media_generation;
-    if (old_image != (type_virtual_address)STD_NULL) {
-        STD_FREE((C_VOID *)old_image);
-    }
+    lib_storage_image_destroy(old_image);
 }
 
 C_VOID vm_machine_hdd_initialize(t_hdd *hdd) {
     if (hdd == STD_NULL) return;
     STD_MEMSET((C_VOID *)hdd, TYPE_ZERO_8, sizeof(*hdd));
+    hdd->connect.flagCommitEnabled = TYPE_TRUE;
     hdd->connect.geometry_heads = 16u;
     hdd->connect.geometry_sectors_per_track = 63u;
     hdd->data.nhead = hdd->connect.geometry_heads;
@@ -216,11 +212,10 @@ C_VOID vm_machine_hdd_reset(t_hdd *hdd) {
     }
 }
 C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
-    if (hdd != STD_NULL && hdd->connect.pImgBase) {
-        STD_FREE((C_VOID *)hdd->connect.pImgBase);
-    }
+    if (hdd != STD_NULL) lib_storage_image_destroy(hdd->connect.image);
     if (hdd != STD_NULL) {
         hdd->connect.pImgBase = (type_virtual_address)STD_NULL;
+        hdd->connect.image = STD_NULL;
         hdd->connect.raw_byte_count = 0u;
         hdd->connect.virtual_byte_count = 0u;
         hdd->connect.flagPaddingWritten = TYPE_FALSE;
@@ -229,12 +224,12 @@ C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
 
 C_VOID vm_machine_hdd_create(t_hdd *hdd, type_unsigned_16 cylinders) {
     STD_SIZE_T virtual_byte_count;
-    type_virtual_address candidate;
+    lib_storage_image *candidate;
 
     if (hdd == STD_NULL) return;
     virtual_byte_count = (STD_SIZE_T)cylinders * 16u * 63u * 512u;
     candidate = vm_machine_hdd_allocate_candidate(virtual_byte_count);
-    if (virtual_byte_count != 0u && candidate == (type_virtual_address)STD_NULL) {
+    if (virtual_byte_count != 0u && candidate == STD_NULL) {
         return;
     }
     vm_machine_hdd_commit_candidate(hdd, candidate, virtual_byte_count,
@@ -245,7 +240,7 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
 {
     STD_SIZE_T virtual_byte_count;
     type_unsigned_32 cylinders;
-    type_virtual_address candidate;
+    lib_storage_image *candidate;
 
     if (hdd == STD_NULL || (raw_byte_count != 0u && bytes == STD_NULL) ||
         vm_machine_hdd_capacity_from_raw(raw_byte_count, &virtual_byte_count,
@@ -253,54 +248,70 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
         return TYPE_TRUE;
     }
     candidate = vm_machine_hdd_allocate_candidate(virtual_byte_count);
-    if (virtual_byte_count != 0u && candidate == (type_virtual_address)STD_NULL) {
+    if (virtual_byte_count != 0u && candidate == STD_NULL) {
         return TYPE_TRUE;
     }
     if (raw_byte_count != 0u) {
-        STD_MEMCPY((C_VOID *)candidate, bytes, raw_byte_count);
+        STD_MEMCPY(lib_storage_image_writable_bytes(candidate), bytes, raw_byte_count);
     }
     vm_machine_hdd_commit_candidate(hdd, candidate, raw_byte_count,
         virtual_byte_count, cylinders);
     return TYPE_FALSE;
 }
-C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name) {
+static C_INT vm_machine_hdd_insert_image(t_hdd *hdd, const C_CHAR *file_name,
+    C_INT direct_readonly) {
     STD_SIZE_T raw_byte_count;
     STD_SIZE_T virtual_byte_count;
     type_unsigned_32 cylinders;
-    type_virtual_address candidate;
+    lib_storage_image *candidate;
     C_VOID *loaded = STD_NULL;
 
     if (hdd == STD_NULL || file_name == STD_NULL ||
-        core_platform_file_read_all(file_name, (STD_SIZE_T)-1, &loaded,
-            &raw_byte_count) != TYPE_FALSE) {
+        lib_storage_file_read_owned(file_name, (STD_SIZE_T)-1, &loaded,
+            &raw_byte_count) != TYPE_STATUS_OK) {
         return TYPE_TRUE;
     }
     if (vm_machine_hdd_capacity_from_raw(raw_byte_count, &virtual_byte_count,
             &cylinders) ||
+        (direct_readonly && (raw_byte_count == 0u || raw_byte_count != virtual_byte_count)) ||
         (virtual_byte_count != 0u &&
             (candidate = vm_machine_hdd_allocate_candidate(virtual_byte_count)) ==
-                (type_virtual_address)STD_NULL)) {
+                STD_NULL)) {
         STD_FREE(loaded);
         return TYPE_TRUE;
     }
     if (virtual_byte_count == 0u) {
-        candidate = (type_virtual_address)STD_NULL;
+        candidate = STD_NULL;
     }
-    if (raw_byte_count != 0u) {
-        STD_MEMCPY((C_VOID *)candidate, loaded, raw_byte_count);
+    if (direct_readonly) {
+        lib_storage_image_destroy(candidate);
+        candidate = STD_NULL;
+        if (lib_storage_image_take_direct_readonly(loaded, raw_byte_count,
+                &candidate) != TYPE_STATUS_OK) {
+            STD_FREE(loaded);
+            return TYPE_TRUE;
+        }
+    } else if (raw_byte_count != 0u) {
+        STD_MEMCPY(lib_storage_image_writable_bytes(candidate), loaded, raw_byte_count);
     }
-    STD_FREE(loaded);
+    if (!direct_readonly) STD_FREE(loaded);
     vm_machine_hdd_commit_candidate(hdd, candidate, raw_byte_count,
         virtual_byte_count, cylinders);
+    hdd->connect.flagReadOnly = direct_readonly != 0;
     return TYPE_FALSE;
 }
+C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name)
+{ return vm_machine_hdd_insert_image(hdd, file_name, TYPE_FALSE); }
+
+C_INT vm_machine_hdd_insert_readonly(t_hdd *hdd, const C_CHAR *file_name)
+{ return vm_machine_hdd_insert_image(hdd, file_name, TYPE_TRUE); }
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
     STD_SIZE_T persistence_byte_count;
     if (hdd == STD_NULL) return TYPE_TRUE;
-    if (file_name) {
+    if (file_name && hdd->connect.flagCommitEnabled) {
         persistence_byte_count = hdd->connect.flagPaddingWritten ?
             hdd->connect.virtual_byte_count : hdd->connect.raw_byte_count;
-        if (!hdd->connect.flagReadOnly && vm_machine_media_save_atomically(file_name,
+        if (!hdd->connect.flagReadOnly && lib_storage_commit_atomically(file_name,
                 (const C_VOID *)hdd->connect.pImgBase,
                 persistence_byte_count) != TYPE_FALSE) {
             return TYPE_TRUE;
@@ -312,11 +323,18 @@ C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
     }
     hdd->connect.flagDiskExist = TYPE_FALSE;
     ++hdd->connect.media_generation;
-    if (hdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
+    if (!hdd->connect.flagReadOnly &&
+        hdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
         STD_MEMSET((C_VOID *)hdd->connect.pImgBase, TYPE_ZERO_8,
             hdd->connect.virtual_byte_count);
     }
     return TYPE_FALSE;
+}
+
+C_VOID vm_machine_hdd_set_commit_enabled(t_hdd *hdd, C_INT enabled)
+{
+    if (hdd == STD_NULL) return;
+    hdd->connect.flagCommitEnabled = enabled != 0;
 }
 C_INT vm_machine_hdd_set_geometry(t_hdd *hdd, type_unsigned_32 cylinders,
     type_unsigned_16 heads, type_unsigned_16 sectors_per_track)
