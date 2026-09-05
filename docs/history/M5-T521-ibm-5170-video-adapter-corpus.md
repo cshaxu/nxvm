@@ -73,3 +73,19 @@ Coordinator actual-diff review accepted `ea6f8cc9`: no profile-specific
 renderer, source fallback, duplicate mode/VRAM/frame state, or option-ROM
 selection path was added. S4 retains only the source-qualified YAML/manifest
 and complete-integration closure work.
+
+## S4 Result
+
+S4 reconciles every one of the 22 live YAML rows with the sole external MDA
+character-generator asset and its external manifest. That asset is a bounded
+Other-L2 glyph-layout input, not a false declaration that the selected PC/AT,
+XT, CGA, EGA, or Model-40 configuration has acquired a source-qualified video
+firmware identity. The owner-provided IBM EGA U44 option ROM remains archive
+only and no YAML selects it. The existing Model-40 video ROM remains its
+separate, pre-existing route.
+
+The full repository-only unit suite passed `304/304`, complete external-YAML
+integration passed `44/44`, and stripped 0521 x64/x86 artifacts were built,
+PE-checked and hashed. The detailed matrix, retained sole route, unsupported
+IBM 5170 configuration transfer and artifact record are in
+[S4 evidence](../etc/evidence/t521-s4-external-video-asset-closure.md).
