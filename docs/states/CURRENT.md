@@ -51,6 +51,12 @@
 
 ## Recent Governance
 
+- **M5 Td S163 P1:** places the owner-provided SoftPC platform-library adoption
+  candidate at Queue head. S1 must inventory the exact source and every host
+  ownership/lifecycle contract before import; S2 is eligible only after a
+  no-gap S1 disposition and owner approval, then replaces rather than wraps
+  the NXVM Win32 path. No source, build, test, asset, ABI or artifact changed.
+
 - **M5 Td S162 P1:** removes the stale Type-47 and mechanism-reduction
   candidates after T519 S2 and T520 closure evidence, deletes their current
   proposals, and corrects the completed T520 artifact statement. No code,
