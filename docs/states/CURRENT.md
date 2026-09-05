@@ -2,28 +2,9 @@
 
 ## Current Work
 
-## M5 T521 S3 Packet
-
-| Field | Required record |
+| Task | Current state |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Original Owner Request | Execute the IBM 5170 video-adapter corpus and external-ROM admission task in single-agent mode, with a minimalist result and no incremental compatibility paths. |
-| Admission And Approval | The owner approved T521 and, on 2026-09-04, explicitly authorized organizing the current locally held IBM MDA character-generator and IBM EGA video-ROM binaries in the owner-managed `nxvm-assets` archive. |
-| Objective | Replace the renderer-owned CP437 input with one construction-only, VADP-owned character-generator route and register the approved IBM MDA/EGA external assets through the same manifest/YAML model. |
-| Candidate Proposal | [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md). |
-| Reference Baseline | `ccb82be8` (T521 S2): one renderer-owned CP437 loader remains; generic immutable option-ROM mapping exists; profile VIDEO_INT10 declarations are dead. |
-| Files And ABI Surface | Core display configuration/snapshot/frame, VADP, VM session asset construction and presentation adapters; repository-only unit tests; external `nxvm-assets` MDA/EGA manifests and binaries. Any public ABI change must remain copied, bounded and construction-only. |
-| Scope | Add the single generic character-generator descriptor/data flow `YAML asset -> VM copied construction input -> VADP owner -> copied display snapshot/frame -> presenter`; delete renderer file ownership and dead video INT10 descriptor; organize only the approved MDA character-generator and IBM EGA Option-ROM assets externally. |
-| Non-goals | Do not add a profile-specific renderer, a guest-font fallback, a second VRAM/frame/mode owner, a fabricated CGA asset, a synthetic video BIOS callback, or an arbitrary 5170 Option-ROM configuration. Do not commit protected firmware to NXVM. |
-| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), [source policy](../etc/operations/policy/source-policy.md), [asset policy](../etc/operations/policy/asset-policy.md), T521 List 1/List 2 and the candidate proposal. |
-| Verification | New repository-only Core/VADP and presentation-frame tests use code-defined glyph bytes; complete repository-only unit suite; external-YAML integration rows use only the approved `nxvm-assets` MDA/EGA assets when their supported configuration exists; documentation governance, `git diff --check`, actual-diff review and static duplicate-route sweep. |
-| Expected Markers | No production presentation adapter opens a font file or owns guest glyph bytes; every published text frame contains only VADP-owned copied glyph data; MDA and EGA external manifests identify exact role, size, hash, access and owner-provided provenance. |
-| Asset Needs | The two owner-approved local binaries may be copied only into `nxvm-assets` and registered only in external manifests. No protected byte enters NXVM Git, build output or test fixture directory. |
-| Reporting Requirements | Record source role, exact hash and external-manifest location without repository-local absolute paths; count deleted/added production paths; name the sole retained owner and any configuration still unsupported. |
-| Similar-Issue Sweep | Re-search tracked production code, unit tests, CMake, YAML and external manifests for path-based font loads, private glyph state, fixed CP437 tables, Option-ROM mapping and dead video-service declarations. |
-| Stop Conditions | Stop for an asset-identity contradiction, a need to treat an adapter ROM as a character-generator ROM, a required new profile-selection semantics decision, or a public mutable runtime setter. |
-| Exit Criteria | S3 closes only after the sole VADP font-owner path is implemented and proven, the approved assets are externally manifest-registered, duplicate/dead paths are removed, full unit/governance pass and the actual diff is reviewed. |
-| Task Exit Criteria | Every candidate video configuration has a source, ownership and support disposition; every admitted YAML asset is manifest-verified and consumed by one external session route; in-code INT 10h and renderer-font routes are removed or source-assigned; selected VADP output/font behavior is proven through its one owner path; full unit and external integration gates pass with T521 dual-architecture artifacts. |
+| T521 S3 | Complete and accepted: `ea6f8cc9` installs the sole VADP-owned character-generator route, removes renderer file ownership and dead video-service data, and records the approved external MDA/EGA assets. Release build 435/435, unit 304/304, selected external-YAML integration 3/3, documentation governance, diff and duplicate-route sweeps pass. S4 remains the source-qualified YAML/manifest closure and complete integration audit. |
 
 ## Current Technical Baseline
 
@@ -62,7 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T521 S2 | Complete: List 2 finds the one renderer-owned CP437 duplicate path and dead video INT 10 descriptor; one generic immutable option-ROM mapper is retained. Full unit 304/304 and governance pass. The hardware-character-generator receiver is source-gated. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
+| T521 S3 | Complete: `ea6f8cc9` replaces the renderer CP437 loader with one YAML asset-to-VM-copy-to-VADP-to-frame path. The owner-approved MDA generator and EGA option ROM are external manifest records; only MDA is selected as text glyph source. Release build 435/435, unit 304/304, selected external-YAML integration 3/3, governance and duplicate-route sweep pass. S4 owns YAML/manifest closure. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
@@ -70,7 +51,6 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 | T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
-| T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 
 ## Recent Governance
 

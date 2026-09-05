@@ -69,3 +69,7 @@ independent of YAML and external assets.  Release build completed 435/435 target
 Documentation governance, `git diff --check`, and the duplicate-route sweep
 passed.  The complete source/asset disposition is in
 [S3 evidence](../etc/evidence/t521-s3-vadp-character-generator-owner-path.md).
+Coordinator actual-diff review accepted `ea6f8cc9`: no profile-specific
+renderer, source fallback, duplicate mode/VRAM/frame state, or option-ROM
+selection path was added. S4 retains only the source-qualified YAML/manifest
+and complete-integration closure work.
