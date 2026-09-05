@@ -5,7 +5,7 @@
 | Task | Compact progress |
 | --- | --- |
 | T522 S2 | Accepted: `4d96a052` establishes the independent `lib/ux` root and native Win32/Linux implementations, with only copied-value public contracts. The coordinator re-ran the full repository-only unit suite (306/306), documentation governance and diff check. NXVM's existing platform route remains intentionally unselected until the atomic S4 cutover; no empty peer library root or compatibility route was introduced. |
-| T522 S3 | Accepted: `e11a3f1a` exhausts every non-UX candidate and admits none, because each retains a Core/VM owner or lacks a complete neutral replacement. Full unit 306/306, documentation governance and actual-diff review pass. No empty root or forwarding façade was created; S4 is the only receiver for product UX cutover. |
+| T522 S3 | Accepted: `e11a3f1a` exhausts every non-UX candidate and admits none, because each retains a Core/VM owner or lacks a complete neutral replacement. Full unit 306/306, documentation governance and actual-diff review pass. No empty root or forwarding wrapper was created; S4 is the only receiver for product UX cutover. |
 
 ## Current Technical Baseline
 
