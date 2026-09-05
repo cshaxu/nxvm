@@ -217,7 +217,10 @@ static C_INT core_machine_kbc_bat_on_line_enable(C_VOID)
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
-    core_machine_kbc_set_input_port(&kbc, 0u);
+    /* C0h bit 7 is the board keyboard-inhibit switch, not the 8042's
+       serial data line.  The 5170's B0h board straps must therefore not
+       suppress the command-byte's 45h -> 4Dh release edge. */
+    core_machine_kbc_set_input_port(&kbc, 0xb0u);
     /* The 5170 can release only the serial-line override (45h -> 4Dh); its
        keyboard-disable bit need not change.  The clock/data enable edge, not
        a BIOS special case, releases BAT. */

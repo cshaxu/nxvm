@@ -13,7 +13,6 @@
 
 #define CORE_MACHINE_KBC_COMMAND_IRQ1 0x01u
 #define CORE_MACHINE_KBC_COMMAND_SYSTEM 0x04u
-#define CORE_MACHINE_KBC_INPUT_INHIBIT_RELEASED 0x80u
 #define CORE_MACHINE_KBC_OUTPUT_RESET 0x01u
 #define CORE_MACHINE_KBC_OUTPUT_A20 0x02u
 
@@ -49,25 +48,24 @@ static C_VOID core_machine_kbc_deassert_irq12(t_kbc *controller)
     controller->data.irq12_asserted = TYPE_FALSE;
 }
 
-/* The AT command byte controls the keyboard's two serial lines: bit 4 holds
- * clock low and bit 3 overrides the data-line inhibit.  A keyboard BAT is a
- * device response to their joint transition to usable, not a BIOS/profile
- * special case. */
-static type_bool core_machine_kbc_keyboard_lines_enabled(const t_kbc *controller,
+/* C0h bit 7 is the board keyboard-inhibit switch.  It gates ordinary scan
+ * codes unless command-byte bit 3 overrides the switch; it is not the 8042
+ * data line and therefore cannot suppress the keyboard's BAT edge. */
+static type_bool core_machine_kbc_keyboard_scan_delivery_enabled(const t_kbc *controller,
     type_unsigned_8 command_byte)
 {
     return controller != STD_NULL &&
         (command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u &&
         ((command_byte & CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) != 0u ||
-        (controller->data.input_port & CORE_MACHINE_KBC_INPUT_INHIBIT_RELEASED) != 0u);
+        (controller->data.input_port & 0x80u) != 0u);
 }
 
 static C_VOID core_machine_kbc_set_command_byte(t_kbc *controller,
     type_unsigned_8 value)
 {
-    const type_bool keyboard_lines_were_enabled =
-        core_machine_kbc_keyboard_lines_enabled(controller,
-            controller->data.command_byte);
+    const type_unsigned_8 previous_command_byte = controller->data.command_byte;
+    const type_bool keyboard_clock_was_enabled =
+        (previous_command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u;
 
     controller->data.command_byte = value & 0x7du;
     if (controller->connect.aux_present) {
@@ -79,9 +77,16 @@ static C_VOID core_machine_kbc_set_command_byte(t_kbc *controller,
         (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u;
     controller->data.aux_enabled = controller->connect.aux_present &&
         (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
-    if (!controller->data.keyboard_startup_released && !keyboard_lines_were_enabled &&
-        core_machine_kbc_keyboard_lines_enabled(controller,
-            controller->data.command_byte)) {
+    /* The IBM AT keyboard starts BAT when the controller first either raises
+     * the command-byte inhibit override (45h -> 4Dh) or releases a previously
+     * held clock while the board switch permits the interface (AEh).  The
+     * switch is an input observation; it is not a synthetic data-line state. */
+    if (!controller->data.keyboard_startup_released &&
+        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u &&
+        (((previous_command_byte & CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) == 0u &&
+            (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) != 0u) ||
+         (!keyboard_clock_was_enabled &&
+            (controller->data.input_port & 0x80u) != 0u))) {
         controller->data.keyboard_startup_released = TYPE_TRUE;
         controller->data.keyboard_bat_pending = TYPE_TRUE;
         core_machine_kbc_advance(controller, 0u);
@@ -357,7 +362,7 @@ static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
     if (controller == STD_NULL ||
         controller->data.serial_delivery_remaining_ticks != 0u ||
         !controller->data.scanning_enabled ||
-        !core_machine_kbc_keyboard_lines_enabled(controller,
+        !core_machine_kbc_keyboard_scan_delivery_enabled(controller,
             controller->data.command_byte)) return;
     /* The keyboard serial stream may have private backlog, but only one
      * scan byte may enter the controller output path at a time.  Firmware
@@ -984,7 +989,7 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_tick
             controller->data.response_remaining_ticks = 0u;
             if ((controller->data.keyboard_serial_count == 0u ||
                     !controller->data.scanning_enabled ||
-                    !core_machine_kbc_keyboard_lines_enabled(controller,
+                    !core_machine_kbc_keyboard_scan_delivery_enabled(controller,
                         controller->data.command_byte)) &&
                 controller->data.delayed_response_count <=
                 CORE_MACHINE_KBC_FIFO_CAPACITY - controller->data.fifo_count) {
@@ -1097,10 +1102,9 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
     type_unsigned_8 set1;
 
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled ||
-        ((controller->data.input_port & 0x80u) == 0u &&
-            (controller->data.command_byte &
-                CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) == 0u)) {
+    if (!controller->data.scanning_enabled ||
+        !core_machine_kbc_keyboard_scan_delivery_enabled(controller,
+            controller->data.command_byte)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     /* Break-prefix state belongs to the native keyboard stream even while
@@ -1178,10 +1182,9 @@ type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
     if (controller == STD_NULL || (native_bytes == STD_NULL && count != 0u)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled ||
-        ((controller->data.input_port & 0x80u) == 0u &&
-            (controller->data.command_byte &
-                CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) == 0u)) {
+    if (!controller->data.scanning_enabled ||
+        !core_machine_kbc_keyboard_scan_delivery_enabled(controller,
+            controller->data.command_byte)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     if (count > CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY -

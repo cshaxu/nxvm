@@ -62,25 +62,36 @@ static C_VOID win32con_process_input(win32con_run_handle *handle)
 {
     DWORD count;
     INPUT_RECORD input;
-    type_unsigned_16 scan_code;
-    UCHAR virtual_key;
 
     GetNumberOfConsoleInputEvents(handle->input, &count);
     if (count == 0u || !ReadConsoleInput(handle->input, &input, 1u, &count)) return;
-    switch (input.EventType) {
+    vm_platform_win32con_submit_input_record(handle->platform, handle->owner,
+        &handle->keyboard_normalizer, &input);
+}
+
+C_VOID vm_platform_win32con_submit_input_record(
+    const vm_platform_run_context *context, vm_platform_run_handle *owner,
+    core_platform_win32_keyboard_normalizer *normalizer, const INPUT_RECORD *input)
+{
+    type_unsigned_16 scan_code;
+    UCHAR virtual_key;
+
+    if (context == STD_NULL || normalizer == STD_NULL || input == STD_NULL) return;
+    switch (input->EventType) {
     case KEY_EVENT:
         scan_code = vm_platform_win32con_decode_scan_code(
-            input.Event.KeyEvent.wVirtualScanCode,
-            input.Event.KeyEvent.dwControlKeyState);
-        virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
-        if (scan_code == 0u && input.Event.KeyEvent.bKeyDown != 0 &&
-            input.Event.KeyEvent.uChar.UnicodeChar != L'\0') {
-            vm_platform_win32_keyboard_make_utf16_for(&handle->keyboard_normalizer,
-                handle->platform, input.Event.KeyEvent.uChar.UnicodeChar);
-        } else vm_platform_win32_keyboard_make_key_with_modifiers_for(handle->platform,
-            handle->owner, scan_code, virtual_key,
-            win32con_modifiers(input.Event.KeyEvent.dwControlKeyState),
-            input.Event.KeyEvent.bKeyDown != 0);
+            input->Event.KeyEvent.wVirtualScanCode,
+            input->Event.KeyEvent.dwControlKeyState);
+        virtual_key = (UCHAR)input->Event.KeyEvent.wVirtualKeyCode;
+        if (scan_code == 0u && input->Event.KeyEvent.bKeyDown != 0 &&
+            input->Event.KeyEvent.uChar.UnicodeChar != L'\0') {
+            /* Console text packets have no physical scan code. */
+            vm_platform_win32_keyboard_make_utf16_for(normalizer, context,
+                input->Event.KeyEvent.uChar.UnicodeChar);
+        } else vm_platform_win32_keyboard_make_key_with_modifiers_for(context,
+            owner, scan_code, virtual_key,
+            win32con_modifiers(input->Event.KeyEvent.dwControlKeyState),
+            input->Event.KeyEvent.bKeyDown != 0);
         break;
     case FOCUS_EVENT:
         break;

@@ -187,6 +187,16 @@ static C_INT boot_terminal(const vm_session *session, const C_CHAR **out_name)
     return 0;
 }
 
+static C_INT boot_post_reports_keyboard_failure(const vm_session *session)
+{
+    core_platform_display_frame frame;
+
+    return session != STD_NULL &&
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox, &frame) ==
+            TYPE_STATUS_OK && frame.kind == CORE_PLATFORM_DISPLAY_KIND_TEXT &&
+        (boot_text_has(&frame, "301-Keyboard") || boot_text_has(&frame, "303-Keyboard"));
+}
+
 static C_VOID boot_timeout_report(const vm_session *session, const C_CHAR *name,
     const boot_trace_probe *trace_probe)
 {
@@ -502,14 +512,20 @@ int main(int argc, char **argv)
     ULONGLONG started;
     boot_trace_probe trace_probe = {0};
     C_INT trace_enabled = 0;
+    C_INT standard_speed = 0;
+    C_INT keyboard_post_failure_seen = 0;
     C_INT result = 1;
 
-    if ((argc != 3 && argc != 4 && argc != 5) ||
+    if ((argc < 3 || argc > 6) ||
         (argc >= 4 && !boot_timeout_parse(argv[3], &timeout)) ||
-        (argc == 5 && STD_STRCMP(argv[4], "trace") != 0)) {
+        (argc >= 5 && STD_STRCMP(argv[4], "trace") != 0 &&
+            STD_STRCMP(argv[4], "standard") != 0) ||
+        (argc == 6 && (STD_STRCMP(argv[4], "trace") != 0 ||
+            STD_STRCMP(argv[5], "standard") != 0))) {
         return 1;
     }
-    trace_enabled = argc == 5;
+    trace_enabled = argc >= 5 && !STD_STRCMP(argv[4], "trace");
+    standard_speed = (argc == 5 && !STD_STRCMP(argv[4], "standard")) || argc == 6;
     if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) ==
         TYPE_STATUS_UNSUPPORTED) {
         STD_PRINTF("T515:YAML-BOOT:%s:UNAVAILABLE\n", argv[2]);
@@ -535,14 +551,16 @@ int main(int argc, char **argv)
     vm_platform_run_context_set_display_mode(session->platform_run_context,
         !STD_STRCMP(yaml_session.request.display, "window") ? VM_PLATFORM_DISPLAY_WINDOW :
         VM_PLATFORM_DISPLAY_CONSOLE);
-    if (vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK ||
+    if (vm_session_set_speed(session, standard_speed ? VM_SESSION_SPEED_STANDARD :
+            VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK ||
         (thread = CreateThread(STD_NULL, 0u, boot_start, session, 0u, STD_NULL)) == STD_NULL) goto done;
     started = GetTickCount64();
     while (GetTickCount64() - started < timeout) {
+        if (boot_post_reports_keyboard_failure(session)) keyboard_post_failure_seen = 1;
         if (boot_terminal(session, &terminal)) break;
         Sleep(BOOT_POLL);
     }
-    if (terminal == STD_NULL) {
+    if (terminal == STD_NULL || keyboard_post_failure_seen) {
         vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
         if (vm_session_control_wait_for_pause(&session->control, 2000u)) {
             boot_timeout_report(session, argv[2], trace_enabled ? &trace_probe : STD_NULL);
@@ -551,8 +569,13 @@ int main(int argc, char **argv)
     vm_session_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto done;
     CloseHandle(thread); thread = STD_NULL;
-    if (terminal == STD_NULL) {
-        STD_PRINTF("T515:YAML-BOOT:%s:TERMINAL-TIMEOUT\n", argv[2]);
+    if (terminal == STD_NULL || keyboard_post_failure_seen) {
+        if (keyboard_post_failure_seen) {
+            STD_PRINTF("T515:YAML-BOOT:%s:KEYBOARD-POST-FAILURE\n", argv[2]);
+        }
+        if (terminal == STD_NULL) {
+            STD_PRINTF("T515:YAML-BOOT:%s:TERMINAL-TIMEOUT\n", argv[2]);
+        }
         goto done;
     }
     STD_PRINTF("T515:YAML-BOOT:%s:%s\n", argv[2], terminal);

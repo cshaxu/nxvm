@@ -33,8 +33,8 @@
   `nxvm_0_5_0519_x64.exe` and `nxvm_0_5_0519_x86.exe` in stripped Release
   builds. They retain the runtime debugger and contain no compiler debug
   information. SHA-256: x64
-  `39F657A98013BCF2445DE1730ECC28D903E3A36F2D2334D22674C3A2749665B8`;
-  x86 `F58B04D05A2A7AE9265FE3911CA007B22E78B4C284B03303AA89D3FDEF37E643`.
+  `4AB8A40AC8552DF01B5803BA256448FF51C717284EBD92D4E3528D6BED6EEA79`;
+  x86 `B992D7E30F2E5A1F7F3FAED622934F12125086EB68F49AD7978881A5CD7A870B`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

@@ -5,6 +5,7 @@
 #include "vm/platform/platform.h"
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/win32app.h"
+#include "vm/platform/win32/win32con.h"
 
 typedef struct host_action_capture {
     core_platform_input_event events[24];
@@ -46,6 +47,7 @@ int main(C_INT argc, C_CHAR **argv)
     vm_platform_run_context *context = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
     host_action_capture capture = {0};
+    core_platform_win32_keyboard_normalizer normalizer = {0};
     vm_platform_host_input_sink sink = {host_action_capture_submit, &capture};
 
     (C_VOID)argc;
@@ -64,10 +66,18 @@ int main(C_INT argc, C_CHAR **argv)
         vm_platform_win32app_pointer_input_enabled(
             VM_PLATFORM_EXECUTION_PAUSED, 1)) goto fail;
 
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x003bu, VK_F1, VM_PLATFORM_WIN32_MODIFIER_NONE, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x003bu, VK_F1, VM_PLATFORM_WIN32_MODIFIER_NONE, 0);
+    {
+        INPUT_RECORD record = {0};
+
+        record.EventType = KEY_EVENT;
+        /* RDP may supply VK_F1 without a physical scan code. */
+        record.Event.KeyEvent.wVirtualScanCode = 0u;
+        record.Event.KeyEvent.wVirtualKeyCode = VK_F1;
+        record.Event.KeyEvent.bKeyDown = TRUE;
+        vm_platform_win32con_submit_input_record(context, handle, &normalizer, &record);
+        record.Event.KeyEvent.bKeyDown = FALSE;
+        vm_platform_win32con_submit_input_record(context, handle, &normalizer, &record);
+    }
     vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
         0x0043u, VK_F9, VM_PLATFORM_WIN32_MODIFIER_NONE, 1);
     vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
