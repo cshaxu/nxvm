@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T520 S2 Packet
+## M5 T520 S1 Packet
 
 | Field | Required record |
 | --- | --- |
@@ -16,15 +16,15 @@
 | Scope | Inventory the complete construction/failure surface, then replace the duplicated Model 40 storage lifecycle with generic session ownership and a distinct Model 40 preparation contribution. |
 | Non-goals | Do not alter external YAML, ROM/CMOS/media assets, public session API, Core controller ownership or Model 40 board topology. |
 | Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), and the [source policy](../etc/operations/policy/source-policy.md). |
-| S2 Objective | Close the full construction and failure sweep across default PC/AT, IBM 5160 XT, IBM 5170 and Model 40, then build the required stripped x64/x86 T520 artifacts. |
-| S2 Verification | Run all repository-only unit tests; run each applicable external-ROM profile integration row without copying/mutating assets; confirm every production shared-resource create/destroy call remains in generic session storage; build and architecture-check both T520 artifacts. |
-| Verification | Use the existing owner-local construction/failure receivers plus the external profile matrix. Review the final production caller inventory and actual diff. |
-| Expected Markers | All unit/integration rows pass; no Model 40 storage lifecycle symbol or shared-resource create/destroy caller remains outside generic session storage; two optimized stripped PE artifacts are emitted and hashed. |
-| Asset Needs | Existing owner-managed external ROM/CMOS/media declared by integration YAMLs; read only, through the normal YAML/overlay route. |
-| Reporting Requirements | Record every profile's construction disposition, exact integration output, final static sweep, artifacts and any blocker. Do not alter external inputs or user YAML. |
-| Similar-Issue Sweep | Repeat the complete VM production caller query for shared lifecycle resources and run the construction/boot matrix for all supported profile roots. |
-| Stop Conditions | Stop for an actual profile/board semantic failure, missing external input, or an unavoidable build-environment blocker after safe retries. |
-| Exit Criteria | S2 closes only after all construction/boot receivers, full unit, applicable integration, governance, dual artifacts and actual-diff review pass. |
+| S1 Objective | Produce the complete lifecycle/caller ledger and converge the duplicated generic/Model 40 resource transaction into one VM session lifecycle while retaining the distinct Model 40 preparation contribution. |
+| S1 Verification | Static inventory proves where every shared session resource is constructed and destroyed. Model 40 composition, generic construction failure and two-session tests prove the unified route; a fresh complete unit suite and artifact build remain required before S1 closes. |
+| Verification | Inspect all `core_machine_plan`, media-registry, display-provider, Core-machine, mailbox and debugger create/destroy calls under `src/vm`; classify every hit as shared lifecycle, Model 40 board preparation, or unrelated. |
+| Expected Markers | One ledger entry for every production hit; no unclassified caller; a private contract that has no public pointer/API expansion and no Model 40 resource lifecycle owner. |
+| Asset Needs | None. S1 is repository-only and must not read, copy or mutate external firmware/media/YAML assets. |
+| Reporting Requirements | Record search scope, every production disposition, construction/failure test coverage and the exact deletion target for S2. Do not claim S2 implementation from S1 inventory. |
+| Similar-Issue Sweep | Search all tracked production VM composition/profile source and tests for the six shared session resources and all rollback/finalization helpers. Every hit is classified before code moves. |
+| Stop Conditions | Stop for a real semantic mismatch requiring a public API, Core ownership change, or an owner decision about Model 40 board behavior. |
+| Exit Criteria | S1 closes only after the bounded ledger, deleted duplicate lifecycle, rebuilt focused/full regression suite, documentation governance and actual-diff review pass. |
 | Task Exit Criteria | One generic VM resource lifecycle serves default PC/AT, XT, IBM 5170 and Model 40; Model 40 retains only board preparation, all construction failure states remain atomic, full unit/external integration pass, and current x64/x86 artifacts plus actual-diff review pass. |
 
 ## Current Technical Baseline
