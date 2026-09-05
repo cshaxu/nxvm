@@ -2,29 +2,29 @@
 
 ## Current Work
 
-## M5 T521 S1 Packet
+## M5 T521 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
+| Identifier Mode | Continuation |
 | Original Owner Request | Execute the IBM 5170 video-adapter corpus and external-ROM admission task in single-agent mode, with a minimalist result and no incremental compatibility paths. |
 | Admission And Approval | The owner explicitly approved the queue-head candidate on 2026-09-04 after reviewing its brief and the required single VADP/video-font owner path. T520 is closed. |
 | Objective | Establish the source-qualified IBM 5170 video-adapter corpus and admit only configurations whose external ROM/font assets travel through one session-YAML-to-VADP path. |
 | Candidate Proposal | [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md). |
 | Reference Baseline | `6adb6ba7` (post-T520 governance): VADP owns guest video state and copied snapshots, but session YAML still names a repository-local CP437 bitmap and selected profiles retain in-code INT 10h registration. |
-| Files And ABI Surface | S1 is documentation/evidence only: `docs/etc/evidence/`, its index, the active packet and T521 history. No C ABI, VADP, YAML grammar, manifest or external asset mutation is admitted in S1. |
-| Scope | Read and index original IBM 5170/CGA/EGA sources and inspect local external asset provenance without copying bytes. Produce List 1 for original 5170 plus MDA/CGA, IBM EGA and later ISA VGA candidates, including ROM/font/INT 10h ownership and evidence tier. |
-| Non-goals | Do not acquire, download, copy, hash-catalogue for distribution, fabricate or commit vendor firmware; do not designate the existing CP437 bitmap a hardware ROM; do not implement a video route, change session YAML or alter VADP in S1. |
+| Files And ABI Surface | S2 is an audit/evidence subtask over VADP, VM session asset materialization, profile firmware-service declarations, the Win32 presentation adapter, session YAML/manifest rows and their owner-local tests. It does not add a public ABI or modify production behavior. |
+| Scope | Map every List-1 row through current VADP, firmware mapping, session grammar, renderer, YAML, manifest and integration-test owners. Produce List 2 and one finite supported-configuration matrix; classify the in-code INT 10h service and repository CP437 route before S3 selects any replacement. |
+| Non-goals | Do not acquire, download, copy, fabricate or register vendor firmware; do not claim an external emulator ROM as IBM hardware; do not add a second font cache, VADP state owner, YAML compatibility alias or renderer fallback. |
 | Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), [source policy](../etc/operations/policy/source-policy.md), [asset policy](../etc/operations/policy/asset-policy.md), the candidate proposal, and T507's retained VADP audit. |
-| S1 Objective | Establish List 1: a finite source/provenance corpus for original 5170 + MDA/CGA, IBM EGA and later ISA VGA, with adapter identity, ports/aperture, option-ROM and character-generator expectations, INT 10h ownership, source quality, and allowed L3/L2 disposition. |
-| S1 Verification | Reconcile every List-1 row against a named original manual or label it source-unavailable; record SHA-256 and owner-managed manual locator only when read from the external archive; inspect the existing CP437 file and every local candidate as provenance evidence, not as admitted hardware. Run documentation governance. |
-| Verification | Render and inspect the cited manual pages, run the complete repository-only unit suite, documentation governance and `git diff --check`; review every changed record against the evidence index and source-policy boundary. |
-| Expected Markers | Every configuration has an explicit source/asset disposition; no unqualified asset becomes a ROM/font fallback; no L3 label lacks an exact manual value or formula. |
-| Asset Needs | Read-only owner-managed manuals and locally present firmware candidates. No asset is copied, renamed, downloaded, registered as a product requirement or modified. |
-| Reporting Requirements | Record manual identity, edition/order number, acquisition/archive locator, SHA-256 where available, PDF text/OCR/ambiguity quality, and external-reference limitation. State separately whether each candidate is original-5170, optional adapter, later expansion, or unsupported. |
-| Similar-Issue Sweep | Search all tracked proposal/evidence/session/profile records for IBM-5170 video, CGA, EGA, VGA, Option ROM, INT 10h and CP437/font claims. Classify each product-facing claim as sourced, external-reference-only, unsupported or outside S1. |
-| Stop Conditions | Stop only for an unavailable required source/asset, a licensing/provenance ambiguity requiring owner direction, or a contradiction that would change the selected configuration set. |
-| Exit Criteria | S1 closes after List 1, complete claim sweep, source-quality/provenance disposition, actual-diff review, full repository-only unit suite and documentation governance pass. |
+| S2 Objective | Produce List 2 and a finite supported-configuration matrix that gives every current firmware/video/font/input path one explicit source-backed owner/disposition. |
+| S2 Verification | Search every production and test caller of `firmware.video`, `firmware.font`, VADP capture/font state, in-code INT 10h service registration and renderer glyph loading. Prove each path's owner, mutation direction, source disposition and selected configuration reachability. |
+| Verification | Static production/test/manifest/YAML caller queries, owner-local repository-only tests where they already exist, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
+| Expected Markers | List 2 maps every List-1 row; no unclassified production font/ROM/INT 10h path; the matrix identifies a finite admitted set or explicit unsupported disposition, never a hidden default. |
+| Asset Needs | Existing external manifests and session YAML are read-only audit inputs. No asset is copied, renamed, downloaded, registered or mutated. |
+| Reporting Requirements | Record exact code callers and state mutations, YAML/manifest references, product reachability and every deleted/retained-path candidate. State why any existing path cannot survive S3. |
+| Similar-Issue Sweep | Search all tracked production source, tests, build descriptions, session YAML, manifests and documentation for guest-font ownership, fixed CP437 renderer data/loaders, video Option-ROM mapping and in-code video INT 10h registration. Classify every production hit. |
+| Stop Conditions | Stop only for a source contradiction requiring a new supported-configuration decision, a discovered protected asset boundary, or a needed public ABI/owner decision. |
+| Exit Criteria | S2 closes after List 2 and the finite matrix cover all current paths, full unit/governance pass, actual-diff review and an S3 deletion/replacement boundary are recorded. |
 | Task Exit Criteria | Every candidate video configuration has a source, ownership and support disposition; every admitted YAML asset is manifest-verified and consumed by one external session route; in-code INT 10h and renderer-font routes are removed or source-assigned; selected VADP output/font behavior is proven through its one owner path; full unit and external integration gates pass with T521 dual-architecture artifacts. |
 
 ## Current Technical Baseline
@@ -64,6 +64,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T521 S1 | Complete: source corpus separates the 5170 system BIOS, optional display adapter ROM and character-generator roles; the repository CP437 bitmap is source-unallocated, and no new video configuration is admitted. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |

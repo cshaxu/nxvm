@@ -27,3 +27,19 @@ The visually checked source corpus is retained in
 Complete repository-only unit passed `304/304` in 19.77 seconds; documentation
 governance and `git diff --check` passed. S2 owns the actual VADP, firmware,
 YAML and renderer caller audit.
+
+## S2 Result
+
+S2's [List 2](../etc/evidence/t521-s2-vadp-firmware-font-gap-map.md) found
+one active duplicate guest-font route: every session YAML names the
+source-unallocated CP437 file, which the Win32 renderer opens and retains as
+private glyph state.  VADP is already the sole mode/port/VRAM/frame owner, but
+does not yet own a character generator or publish one in its copied snapshot.
+
+The profile `VIDEO_INT10` entries are not a live in-code firmware service:
+they are unconsumed descriptor data, while all external-ROM providers expose
+no software-interrupt callback.  S3 therefore deletes that dead data rather
+than assigning it a fictional BIOS owner.  Existing option-ROM registration is
+one retained Core immutable-mapping mechanism; current 5170 YAML correctly
+rejects an arbitrary option ROM for fixed CGA.  No source-qualified 5170 video
+configuration is admitted before an owner-managed adapter asset exists.
