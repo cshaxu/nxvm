@@ -229,12 +229,25 @@ C_INT main(C_VOID)
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau) ||
         core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) != TYPE_STATUS_OK ||
         !kbc.data.irq12_asserted;
-    for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY - 3u; ++index) {
-        failed |= core_machine_kbc_submit_native_byte(&kbc, index) != TYPE_STATUS_OK;
+    /* Keyboard scan bytes and AUX packets now have distinct device-side
+     * admission queues.  Fill the KBC-visible AUX FIFO independently: 3
+     * initial packet bytes plus these packets leave one byte, so the next
+     * complete packet must be rejected atomically. */
+    for (index = 0u; index < (CORE_MACHINE_KBC_FIFO_CAPACITY - 3u) / 3u; ++index) {
+        failed |= core_machine_kbc_submit_aux_report(&kbc,
+            (type_signed_16)(index + 1u), 0, 0u) != TYPE_STATUS_OK;
     }
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 1u) !=
         TYPE_STATUS_INVALID_STATE || kbc.data.fifo_count !=
-            CORE_MACHINE_KBC_FIFO_CAPACITY || kbc.data.aux_button_state != 0u;
+            CORE_MACHINE_KBC_FIFO_CAPACITY - 1u || kbc.data.aux_button_state != 0u;
+
+    /* A saturated KBC output FIFO must not make keyboard serial input look
+     * like AUX state.  Its private queue has its own bounded admission. */
+    for (index = 0u; index < CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY; ++index) {
+        failed |= core_machine_kbc_submit_native_byte(&kbc, index) != TYPE_STATUS_OK;
+    }
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0u) != TYPE_STATUS_NO_MEMORY ||
+        kbc.data.keyboard_serial_count != CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY;
     core_machine_kbc_finalize(&kbc);
     failed |= kbc.data.irq12_asserted;
 

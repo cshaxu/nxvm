@@ -47,3 +47,27 @@ session resource lifetime.
 
 S2 will add the full cross-profile construction/failure matrix and external-ROM
 integration closure.  This ledger does not claim those task-level results.
+
+## S3 Fresh Closure Evidence
+
+The fresh `build/t520-x64-make` Release tree rebuilt the affected product and
+test graph rather than reusing the pre-change objects.  It passed repository-
+only unit `304/304` and the external-ROM/media integration matrix `44/44`.
+The integration result includes the default PC/AT, IBM 5160, IBM 5170 360 KB
+and 1.2 MB, and Model 40 1.2 MB YAML rows.
+
+That fresh run exposed one stale KBC test assertion: it treated serialized
+keyboard input as if it still occupied the KBC-visible AUX FIFO.  The existing
+T519 production contract intentionally separates the keyboard's bounded serial
+source queue from the controller output FIFO.  The test now verifies each
+capacity independently; no KBC production path changed.
+
+The final production query leaves `session.c` as the only VM creator and
+finalizer of the plan, media registry, display provider, Core machine,
+presentation mailbox and debugger.  Model 40 exposes only topology and plan
+materialization.  The current stripped Release artifacts are:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `nxvm_0_5_0520_x64.exe` | `8FC114F25384081ECAB9436F2B4EF96ECF6F19B8CCD8B2802845F924A916BF53` |
+| `nxvm_0_5_0520_x86.exe` | `BAEA015F0CC4A922270553825EE6011D3D56BB8B92C7007F8131A58A84FF0927` |
