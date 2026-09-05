@@ -41,7 +41,9 @@ session resource lifetime.
 - `unit.vm-session-initialization-atomicity-smoke`: generic construction and
   failure nonpublication.
 - `unit.vm-two-session-isolation-smoke`: independent lifecycle ownership.
-- Complete repository-only unit suite: 304/304 passed with `-j 8`.
+- The prior 304-test executable set predates this source change after the
+  CMake reconfiguration and is therefore not T520 evidence. The complete unit
+  suite must be rerun only after the configured build regenerates its targets.
 
 S2 will add the full cross-profile construction/failure matrix and external-ROM
 integration closure.  This ledger does not claim those task-level results.
