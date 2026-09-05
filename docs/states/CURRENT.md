@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T522 S9 Continuation |
-| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S8 extracted the generic session state/executor; S9 is the approved next proposal stage. |
-| Objective | Extract generic byte images, explicit `direct-readonly` and private `overlay` modes, platform file mechanics and atomic commit into independent `lib/storage`, then make FDD/HDD consume that one storage route. S9 implementation and evidence are complete; commit it before S10. |
-| Non-goals | No controller geometry, drive selection, FDC/HDC request semantics, media topology, YAML grammar or profile policy migration; no media copying, shared mutable asset master, or second byte store. |
+| Identifier Mode | M5 T522 S10 Continuation |
+| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S9 is accepted locally as `713cf1a5` (remote push requires renewed authorization); S10 implements the final shared component before whole-task closure. |
+| Objective | Extract the real generic copied status-outcome publication from VM into independent `lib/observability`, while retaining Core machine-trace meaning and VM fault/debugger semantics with their current owners. |
+| Non-goals | No generic trace framework, second trace ring, raw Core/VM pointer in a lib API, debugger behavior, CPU/fault diagnostic migration or product logging sink. |
 | Reference Baseline | `ec45caef`: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
-| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S9. |
-| Files And ABI Surface | New `src/lib/storage/{image.h,image.c,commit.h,commit.c,win32/file.c,linux/file.c}` and `test/lib/storage_*`; replace `vm/machine/media_save.*` and FDD/HDD raw-buffer persistence use with the shared storage path. |
-| Applicable Rules | Architecture: storage owns only generic bytes, explicit direct-readonly/overlay mode and transactional commit; FDD/HDD retain device semantics. `storage/win32` and `storage/linux` own native file mechanics. Coding: one byte view per mounted image, one persistence route, no Core/VM pointer in lib storage, no media-master mutation from integration. Execution and documentation rules apply. |
-| Verification | Passed: storage image/direct-readonly/commit tests, FDD/HDD media lifecycle tests, 307-unit gate and Model-40/5170/default-PC-AT external-YAML overlay rows. Evidence: [T522 S9 storage closure](../etc/evidence/t522-s9-storage-closure.md). Remaining: commit S9, then S10 and T-level governance/artifacts. |
-| Expected Markers | Storage direct-readonly/overlay/commit tests; concurrent external-YAML Model-40/5170/default-PC-AT boot rows stable; unit and integration gates pass; no external master-media write from an integration session. |
-| Asset Needs | Existing external YAML, ROM, CMOS and media assets only; no asset creation, copying or mutation. |
-| Reporting Requirements | Record byte-buffer owner, volatile versus explicit commit boundary, removed old persistence route, retained device responsibilities, code-size and verification; report any necessary persistence policy that cannot be represented without product input. |
-| Stop Conditions | Stop if storage needs a VM/Core/device pointer, must infer a profile/media topology, mutates an asset master without an explicit product commit, or retains parallel buffers/persistence routes. |
-| Exit Criteria | `lib/storage` owns generic image bytes, direct-readonly/overlay modes, platform file mechanics and atomic commit; FDD/HDD have one borrowed storage byte view and retain only device semantics; integration sessions use volatile overlay and do not mutate external assets; old VM save route is deleted; T522 remains open for S10. |
+| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S10. |
+| Files And ABI Surface | New `src/lib/observability/outcome.{h,c}` and `test/lib/observability_outcome_smoke.c`; replace the generic VM start-outcome state with the lib outcome owner. |
+| Applicable Rules | Architecture: outcome carries only copied `valid/status/sequence` values. Core retains trace-event definition/ring and VM retains machine/profile-specific fault/debugger semantics. Coding: one outcome owner, no forwarding mirror, no unused trace abstraction. Execution and documentation rules apply. |
+| Verification | Outcome publication/capture, VM normal start/reset/restart and fault-injection startup-failure proof pass; full repository-only unit is 308/308. Final external-YAML integration, governance, owner sweep and dual stripped 0522 artifacts remain at T closure. [S10 evidence](../etc/evidence/t522-s10-observability-closure.md). |
+| Expected Markers | One lib outcome owner; no VM duplicate `valid/status` start record; Core trace and VM fault paths unchanged by ownership sweep; complete gates and artifacts at T close. |
+| Asset Needs | Existing external YAML/ROM/CMOS/media only for T-level integration; no asset creation, copying or mutation. |
+| Reporting Requirements | Record extracted outcome owner/callers, Core trace and VM fault retained-owner decisions, deleted state and verification; report a necessary generic publication mechanism that lacks a real replacement target. |
+| Stop Conditions | Stop if the proposed lib API needs a raw Core/VM pointer, requires a second trace ring, alters debugger/fault semantics, or exists only as an unused framework. |
+| Exit Criteria | `lib/observability` owns the one real generic copied outcome mechanism; VM has no duplicate start-outcome state; Core trace and VM fault/debugger semantics retain their sole owners; T522 then proceeds to the whole-task closure gate. |
 | Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
-| Similar-Issue Sweep | Search all tracked source/tests/CMake for raw image allocation/loading, atomic saves, FDD/HDD teardown persistence and integration asset writes. Migrate generic byte/persistence mechanics; retain only documented device geometry, sidecar and session policy facts. |
+| Similar-Issue Sweep | Search all tracked source/tests/CMake for generic `valid/status` result holders, trace transport/rings and fault publication. Migrate only duplicate generic outcome state; retain Core trace and VM diagnostic state with explicit semantic reasons. |
 
 ## Current Technical Baseline
 

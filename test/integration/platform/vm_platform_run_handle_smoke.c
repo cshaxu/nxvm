@@ -28,6 +28,7 @@ int main(C_INT argc, C_CHAR **argv)
 {
     vm_session *session = STD_NULL;
     vm_platform_run_handle *event_handle = STD_NULL;
+    lib_observability_outcome_snapshot start_outcome;
     integration_yaml_session yaml_session;
 
     STD_MEMSET(&yaml_session, 0, sizeof(yaml_session));
@@ -49,8 +50,9 @@ int main(C_INT argc, C_CHAR **argv)
         (session = yaml_session.session) == STD_NULL || !session->active) goto fail;
     vm_platform_run_context_set_window_display(session->platform_run_context, 1);
     if (vm_session_start(session) != TYPE_STATUS_OK ||
-        !session->start_outcome.valid ||
-        session->start_outcome.status != TYPE_STATUS_OK) goto fail;
+        lib_observability_outcome_capture(session->start_outcome,
+            &start_outcome) != TYPE_STATUS_OK || !start_outcome.valid ||
+        start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     host_sync_sleep_milliseconds(50u);
     vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
@@ -60,11 +62,13 @@ int main(C_INT argc, C_CHAR **argv)
         vm_platform_run_handle_take_stop_report(session->platform_run_handle)) goto fail;
     vm_session_stop(session);
     vm_session_reset(session);
-    if (session->start_outcome.valid) goto fail;
+    if (lib_observability_outcome_capture(session->start_outcome,
+            &start_outcome) != TYPE_STATUS_OK || start_outcome.valid) goto fail;
     if (vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     if (vm_session_start(session) != TYPE_STATUS_OK ||
-        !session->start_outcome.valid ||
-        session->start_outcome.status != TYPE_STATUS_OK) goto fail;
+        lib_observability_outcome_capture(session->start_outcome,
+            &start_outcome) != TYPE_STATUS_OK || !start_outcome.valid ||
+        start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     host_sync_sleep_milliseconds(50u);
     if (session->core_machine->shared_kbc.data.last_keyboard_output_byte == 0x43u) {

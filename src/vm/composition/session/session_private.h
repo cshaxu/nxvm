@@ -11,6 +11,7 @@
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
 #include "core/utils/wait_provider.h"
+#include "lib/observability/outcome.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/model40_composition.h"
@@ -30,11 +31,6 @@ typedef enum vm_session_firmware_kind {
     VM_SESSION_FIRMWARE_MODEL40_BYOB,
     VM_SESSION_FIRMWARE_XT_BYOB
 } vm_session_firmware_kind;
-
-typedef struct vm_session_start_outcome {
-    C_INT valid;
-    type_status status;
-} vm_session_start_outcome;
 
 struct vm_session {
     C_INT active;
@@ -65,7 +61,7 @@ struct vm_session {
     core_utils_wait_scope wait_scope;
     vm_platform_run_context *platform_run_context;
     vm_platform_run_handle *platform_run_handle;
-    vm_session_start_outcome start_outcome;
+    lib_observability_outcome *start_outcome;
     core_product_debugger *debugger;
     type_unsigned_64 display_generation;
     type_unsigned_64 display_snapshot_generation;

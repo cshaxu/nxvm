@@ -111,6 +111,9 @@ else()
 endif()
 target_include_directories(storage-image PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(storage-image PUBLIC type-facade)
+add_library(observability-outcome STATIC src/lib/observability/outcome.c)
+target_include_directories(observability-outcome PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(observability-outcome PUBLIC type-facade)
 if(WIN32)
     add_library(ux-win32-native STATIC
         src/lib/ux/win32/actions.c
@@ -1554,6 +1557,8 @@ add_executable(session-state-smoke test/lib/session_state_smoke.c)
 target_link_libraries(session-state-smoke PRIVATE session-lifecycle)
 add_executable(storage-image-smoke test/lib/storage_image_smoke.c)
 target_link_libraries(storage-image-smoke PRIVATE storage-image)
+add_executable(observability-outcome-smoke test/lib/observability_outcome_smoke.c)
+target_link_libraries(observability-outcome-smoke PRIVATE observability-outcome)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -1631,7 +1636,7 @@ target_link_libraries(vm-composition PUBLIC
     vm-profile
     vm-product
     vm-request-transport)
-target_link_libraries(vm-composition PRIVATE session-lifecycle)
+target_link_libraries(vm-composition PRIVATE session-lifecycle observability-outcome)
 target_link_libraries(vm-composition PRIVATE vm-platform)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
@@ -2427,6 +2432,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     host-sync-smoke
     session-state-smoke
     storage-image-smoke
+    observability-outcome-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-platform-presentation-mailbox-smoke
@@ -3802,6 +3808,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(session-executor-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(storage-image-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(observability-outcome-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

@@ -44,10 +44,12 @@ static type_status verify_session(C_VOID *context, C_VOID *opaque)
     startup_failure_session_check *check =
         (startup_failure_session_check *)context;
     vm_session *session = (vm_session *)opaque;
+    lib_observability_outcome_snapshot outcome;
 
     if (check == STD_NULL || session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    check->failed = session->start_outcome.valid &&
-        session->start_outcome.status != TYPE_STATUS_OK &&
+    check->failed = lib_observability_outcome_capture(session->start_outcome,
+        &outcome) == TYPE_STATUS_OK && outcome.valid &&
+        outcome.status != TYPE_STATUS_OK &&
         !vm_session_control_is_running(&session->control) &&
         !vm_platform_run_handle_is_active(session->platform_run_handle);
     return TYPE_STATUS_OK;

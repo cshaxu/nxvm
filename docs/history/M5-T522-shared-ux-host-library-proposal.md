@@ -21,7 +21,7 @@ src/lib/
     win32/file.c
     linux/file.c
   observability/
-    trace.h outcome.h
+    outcome.h
 ```
 
 `ux/` replaces the proposed `platform/` name: its responsibility is product-facing presentation and interaction, not generic platform policy. Platform-specific code appears only below `ux/win32`, `ux/linux`, `host/win32`, or `host/linux`. Root `ux` headers contain no `HWND`, `HANDLE`, POSIX fd, X11, Wayland, SDL, or platform SDK type. `mailbox` owns copied-frame sequence/data semantics. The native UX implementation owns its own Console/Window event loop and private wake mechanics.
@@ -139,11 +139,12 @@ product/device owners and consume the one storage route.
 
 ## S10 - Observability Extraction And Whole-Task Closure
 
-Extract bounded, copied outcome/trace publication into `lib/observability`.
-Core remains the producer and owner of machine trace meaning; VM remains the
-owner of debugger and console policy. Retire the replaced generic transport
-helpers, run source-ownership sweeps, all unit and external-YAML integration
-gates, and fresh stripped x64/x86 artifacts before T522 closes.
+Extract the one real bounded, copied outcome publication into
+`lib/observability`. Core remains the sole owner of machine trace meaning and
+its trace ring; VM remains the owner of debugger, fault and console policy.
+Do not create an unused generic trace framework. Retire the replaced generic
+outcome state, run source-ownership sweeps, all unit and external-YAML
+integration gates, and fresh stripped x64/x86 artifacts before T522 closes.
 
 ## S4 - NXVM One-Path Cutover And Retirement
 
