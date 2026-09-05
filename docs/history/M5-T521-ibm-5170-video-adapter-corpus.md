@@ -43,3 +43,8 @@ than assigning it a fictional BIOS owner.  Existing option-ROM registration is
 one retained Core immutable-mapping mechanism; current 5170 YAML correctly
 rejects an arbitrary option ROM for fixed CGA.  No source-qualified 5170 video
 configuration is admitted before an owner-managed adapter asset exists.
+
+The complete repository-only unit suite passed `304/304`; documentation
+governance and `git diff --check` passed.  The coordinator actual-diff review
+accepted the evidence-only S2 change.  Its deletion/replacement receiver is
+source-gated rather than being allowed to invent a font fallback.

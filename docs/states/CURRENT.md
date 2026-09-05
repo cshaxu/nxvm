@@ -2,30 +2,9 @@
 
 ## Current Work
 
-## M5 T521 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Original Owner Request | Execute the IBM 5170 video-adapter corpus and external-ROM admission task in single-agent mode, with a minimalist result and no incremental compatibility paths. |
-| Admission And Approval | The owner explicitly approved the queue-head candidate on 2026-09-04 after reviewing its brief and the required single VADP/video-font owner path. T520 is closed. |
-| Objective | Establish the source-qualified IBM 5170 video-adapter corpus and admit only configurations whose external ROM/font assets travel through one session-YAML-to-VADP path. |
-| Candidate Proposal | [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md). |
-| Reference Baseline | `6adb6ba7` (post-T520 governance): VADP owns guest video state and copied snapshots, but session YAML still names a repository-local CP437 bitmap and selected profiles retain in-code INT 10h registration. |
-| Files And ABI Surface | S2 is an audit/evidence subtask over VADP, VM session asset materialization, profile firmware-service declarations, the Win32 presentation adapter, session YAML/manifest rows and their owner-local tests. It does not add a public ABI or modify production behavior. |
-| Scope | Map every List-1 row through current VADP, firmware mapping, session grammar, renderer, YAML, manifest and integration-test owners. Produce List 2 and one finite supported-configuration matrix; classify the in-code INT 10h service and repository CP437 route before S3 selects any replacement. |
-| Non-goals | Do not acquire, download, copy, fabricate or register vendor firmware; do not claim an external emulator ROM as IBM hardware; do not add a second font cache, VADP state owner, YAML compatibility alias or renderer fallback. |
-| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), [source policy](../etc/operations/policy/source-policy.md), [asset policy](../etc/operations/policy/asset-policy.md), the candidate proposal, and T507's retained VADP audit. |
-| S2 Objective | Produce List 2 and a finite supported-configuration matrix that gives every current firmware/video/font/input path one explicit source-backed owner/disposition. |
-| S2 Verification | Search every production and test caller of `firmware.video`, `firmware.font`, VADP capture/font state, in-code INT 10h service registration and renderer glyph loading. Prove each path's owner, mutation direction, source disposition and selected configuration reachability. |
-| Verification | Static production/test/manifest/YAML caller queries, owner-local repository-only tests where they already exist, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
-| Expected Markers | List 2 maps every List-1 row; no unclassified production font/ROM/INT 10h path; the matrix identifies a finite admitted set or explicit unsupported disposition, never a hidden default. |
-| Asset Needs | Existing external manifests and session YAML are read-only audit inputs. No asset is copied, renamed, downloaded, registered or mutated. |
-| Reporting Requirements | Record exact code callers and state mutations, YAML/manifest references, product reachability and every deleted/retained-path candidate. State why any existing path cannot survive S3. |
-| Similar-Issue Sweep | Search all tracked production source, tests, build descriptions, session YAML, manifests and documentation for guest-font ownership, fixed CP437 renderer data/loaders, video Option-ROM mapping and in-code video INT 10h registration. Classify every production hit. |
-| Stop Conditions | Stop only for a source contradiction requiring a new supported-configuration decision, a discovered protected asset boundary, or a needed public ABI/owner decision. |
-| Exit Criteria | S2 closes after List 2 and the finite matrix cover all current paths, full unit/governance pass, actual-diff review and an S3 deletion/replacement boundary are recorded. |
-| Task Exit Criteria | Every candidate video configuration has a source, ownership and support disposition; every admitted YAML asset is manifest-verified and consumed by one external session route; in-code INT 10h and renderer-font routes are removed or source-assigned; selected VADP output/font behavior is proven through its one owner path; full unit and external integration gates pass with T521 dual-architecture artifacts. |
+**T521 is between subtasks.** S2 completed the VADP/firmware/font owner audit;
+the next implementation step is source-gated because no lawful,
+source-qualified adapter character-generator asset is presently admitted.
 
 ## Current Technical Baseline
 
@@ -64,7 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T521 S1 | Complete: source corpus separates the 5170 system BIOS, optional display adapter ROM and character-generator roles; the repository CP437 bitmap is source-unallocated, and no new video configuration is admitted. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
+| T521 S2 | Complete: List 2 finds the one renderer-owned CP437 duplicate path and dead video INT 10 descriptor; one generic immutable option-ROM mapper is retained. Full unit 304/304 and governance pass. The hardware-character-generator receiver is source-gated. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
