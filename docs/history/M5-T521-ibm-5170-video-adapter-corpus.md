@@ -89,3 +89,33 @@ integration passed `44/44`, and stripped 0521 x64/x86 artifacts were built,
 PE-checked and hashed. The detailed matrix, retained sole route, unsupported
 IBM 5170 configuration transfer and artifact record are in
 [S4 evidence](../etc/evidence/t521-s4-external-video-asset-closure.md).
+
+## T521 Closure Audit
+
+The final review inspected `4d65fcfe^..9182af98`, the external manifests,
+the source/gap ledgers, live session YAML, CMake artifact selection and both
+test suites. List 1's finite candidate universe is exhausted without a false
+adapter admission:
+
+- V1 retains IBM's Manual-L3 option-ROM scan protocol, not a generic video
+  service.
+- V2's MDA hardware facts remain Manual-L3; its approved byte layout is the
+  reusable Other-L2 glyph input, not a claimed selected MDA board.
+- V3 CGA and V4 IBM EGA retain their Manual-L3 board facts but lack the
+  source-qualified firmware/configuration selection needed for a product row.
+- V5 later V7 VGA remains explicitly unsupported.
+- The approved EGA U44 ROM is archive-only; it has no YAML selection. The
+  pre-existing Model-40 route remains separate from the IBM 5170 corpus.
+
+List 2 is likewise exhausted: G1's renderer-owned source is deleted; G2 is
+the one VADP owner; G3 and G6 retain the sole generic immutable option-ROM
+mapper; G4's 5170 rejection remains deliberate; G5 stays the distinct
+Model-40 mapping; G7 is deleted dead data; and G8 is a repository-only
+copied-frame test. No open T521 production duplicate or silent configuration
+remains. Future source-qualified MDA/CGA/EGA/VGA board admission is explicitly
+transferred to the queued [VADP video-adapter and board-integration
+reclosure](../proposals/m5-vadp-board-integration-reclosure.md), rather than
+being inferred from these archived bytes.
+
+T521 is closed. Its retained proposal is
+[M5-T521-ibm-5170-video-adapter-corpus-proposal.md](M5-T521-ibm-5170-video-adapter-corpus-proposal.md).

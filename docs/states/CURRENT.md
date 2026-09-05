@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T521 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved T521 and its S1--S4 proposal, explicitly authorized the two current owner-provided MDA/EGA binaries for the external archive, and authorized ordinary Git pushes. |
-| Objective | Close the finite T521 video corpus by reconciling every live external session YAML row with its manifest-backed asset role, proving the sole VADP character-generator route through the complete integration corpus, and publishing the required dual stripped 0521 developer artifacts. |
-| Non-goals | Do not claim the MDA generator makes a CGA/EGA configuration source-qualified; do not select the EGA option ROM without a corresponding source-qualified adapter configuration; do not add a video BIOS callback, renderer loader, fallback glyph table, profile-specific state, new media, downloaded firmware, or new YAML validation. |
-| Reference Baseline | `652f5f15` accepts S3: all presentation glyph data follows one copied VM-to-VADP-to-frame route; the external archive has exactly the approved MDA generator and EGA option ROM records. |
-| Candidate Proposal | [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md). |
-| Files And ABI Surface | Session YAML, external archive manifests, T521 List 1/List 2/S3 evidence, T521 history/status, integration registrations and artifact configuration only if the current 0520 identity must advance to 0521. No Core/VADP behavioral ABI or profile selection semantics change without a packet revision. |
-| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), [source policy](../etc/operations/policy/source-policy.md), [asset policy](../etc/operations/policy/asset-policy.md), T521 List 1/List 2/S3 evidence and the candidate proposal. |
-| Verification | Manifest hash/size/path audit for every admitted asset; YAML relative-path audit; static sweep for renderer file loaders, private source glyph tables, dead `VIDEO_INT10` entries and option-ROM aliases; complete repository-only unit suite; complete external-YAML integration suite; documentation governance; actual-diff review; x64/x86 stripped 0521 PE architecture/debug-directory/hash verification. |
-| Expected Markers | Every YAML `firmware.font` resolves to the single manifest-recorded MDA generator; every `firmware.video` remains either explicit null or its already independent source-qualified Model-40 route; the EGA option ROM remains unselected/archive-only; the sole text-glyph owner remains VADP; each unsupported corpus row has an explicit disposition rather than a hidden fallback. |
-| Asset Needs | Read and hash only the two owner-approved external archive assets plus existing external ROM/CMOS/media inputs used by integration. No protected byte enters NXVM Git, fixtures or developer artifacts. |
-| Reporting Requirements | Record the finite YAML-to-asset matrix, asset hashes and role dispositions without absolute paths; distinguish Manual-L3 topology facts, Other-L2 raw glyph normalization and unsupported adapter configuration; report artifacts and every transferred unsupported row. |
-| Stop Conditions | Stop for a YAML/manifest identity mismatch, a new protected asset need, a need to make the EGA ROM a font source, a configuration that requires changing 5170 video selection semantics, or a failed supported integration row whose root cause is outside this packet. |
-| Exit Criteria | All live YAML rows and the two approved manifest assets have a truthful support disposition; no unselected asset silently alters runtime behavior; full unit and integration suites pass; static duplicate-route audit and governance pass; dual 0521 artifacts are verified; T-level actual-diff/ledger audit either closes T521 or transfers every unresolved candidate explicitly. |
-| Original Owner Request | Execute the IBM 5170 video-adapter corpus and external-ROM admission task in single-agent mode, with a minimalist result and no incremental compatibility paths. |
-| Similar-Issue Sweep | Search all production/session YAML/test/CMake/external-manifest paths for character-generator aliases, option-ROM aliasing, renderer file ownership, fixed CP437 tables and in-code video-service declarations; classify every hit as retained sole route, unsupported, or a defect repaired in this S. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -59,7 +40,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T521 S3 | Complete: `ea6f8cc9` replaces the renderer CP437 loader with one YAML asset-to-VM-copy-to-VADP-to-frame path. The owner-approved MDA generator and EGA option ROM are external manifest records; only MDA is selected as text glyph source. Release build 435/435, unit 304/304, selected external-YAML integration 3/3, governance and duplicate-route sweep pass. S4 owns YAML/manifest closure. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
+| T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
