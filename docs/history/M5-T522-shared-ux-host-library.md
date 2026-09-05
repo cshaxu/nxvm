@@ -57,3 +57,11 @@ complete repository-only unit suite (306/306), documentation governance, and
 the positive count is the owner-provided 23-file UX corpus newly brought under
 version control and reshaped into the neutral contract, not a second NXVM
 production route.
+
+## S3 Result
+
+The complete non-UX candidate sweep admits no extraction. Each current
+lifecycle, wait, storage and diagnostic path either owns Core/VM semantics or
+lacks a complete independent replacement/caller boundary. The [S3 ledger](../etc/evidence/t522-s3-nonux-capability-admission-ledger.md)
+records every disposition. The task therefore retains no empty library root
+and advances only to the planned S4 one-path UX cutover.

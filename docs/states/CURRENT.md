@@ -2,9 +2,24 @@
 
 ## Current Work
 
-| Task | Compact progress |
+| Field | Required record |
 | --- | --- |
-| T522 S2 | Accepted: `4d96a052` establishes the independent `lib/ux` root and native Win32/Linux implementations, with only copied-value public contracts. The coordinator re-ran the full repository-only unit suite (306/306), documentation governance and diff check. NXVM's existing platform route remains intentionally unselected until the atomic S4 cutover; no empty peer library root or compatibility route was introduced. |
+| Identifier Mode | Continuation M5 T522 S3 |
+| Admission And Approval | Owner approved T522 implementation on 2026-09-05 and instructed continued execution. Accepted S1 (`a3518035`) and S2 (`4d96a052`, `b4e96fc9`) require evidence before any non-UX library root is created. |
+| Objective | Produce a finite, source-level admission ledger for generic lifecycle, storage, synchronization and bounded observability candidates; extract only a complete product-neutral capability with one replacement boundary. |
+| Non-goals | No empty `lib/host`, `lib/session`, `lib/storage` or `lib/observability` directory; no relocation of Core timing/wait, VM profile/media/controller behavior, debugger behavior, firmware or machine construction; no production UX cutover. |
+| Reference Baseline | `b4e96fc9`; S1 migration ledger; `vm/composition/session`, `vm/platform`, Core wait/platform sources and their direct tests. |
+| Candidate Proposal | `docs/proposals/m5-softpc-platform-library-adoption.md`. |
+| Files And ABI Surface | Admission evidence and history/status only unless one candidate has a complete neutral state/callback/failure contract; any admitted source then resides under exactly one matching `src/lib/<component>/` root with an owner-local unit test. |
+| Applicable Rules | Architecture: neutral dependency direction, one owner/path and opaque/copy public boundary. Coding: no speculative façade, platform-neutral public types and no forwarding route. Execution, source policy and documentation governance apply. |
+| Verification | Complete candidate/caller include sweep; public-boundary type sweep for any admitted component; owner-local unit proof if code is admitted; full repository-only unit suite and documentation governance; actual-diff review and diff check. |
+| Expected Markers | Every candidate is admitted, retained or transferred with a concrete reason; no library peer dependency; no VM/Core/session/profile pointer in a public library ABI; no new root without its complete implementation and test. |
+| Asset Needs | None. No external source, firmware, media or runtime asset is used. |
+| Reporting Requirements | Record the complete candidate universe, each disposition, retained owner and reason, any admitted code/test delta, all gate results, and any blocker that prevents S4 one-path cutover. |
+| Stop Conditions | A candidate cannot become neutral without exposing product/guest state, retains a second production path, requires a peer library dependency, or has no complete caller/replacement map. Retain it and record its owner rather than abstracting it. |
+| Exit Criteria | A finite ledger exhausts the candidate universe; every admitted capability has one independent component and proof, every rejected capability has its retained owner; full gates pass; one reviewed, pushed S3 delivery is recorded. |
+| Original Owner Request | Build a flat, minimal shared library whose independent UX, host, session, storage and observability components can be reused by NXVM, SoftPC and later NTVDM64 without diverging machine behavior. |
+| Similar-Issue Sweep | Inspect all lifecycle, thread/run-handle, wait/sync, media/image/overlay, outcome/fault and trace paths—not just the first matching session file—for product-state leakage, duplicate ownership or fake genericization. |
 
 ## Current Technical Baseline
 
