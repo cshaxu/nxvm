@@ -32,3 +32,13 @@ The isolated x64 Debug build completed the full repository-only unit suite:
 `317/317` passed (758.00 process seconds). Documentation governance and
 `git diff --check` passed. The earlier `coverage-gcc` tree was not used as
 evidence because it had a stale registered executable missing before S1.
+
+## S2 Result
+
+S2 creates the admitted self-contained `lib/ux` source surface: root copied
+values/actions/router/binding/mailbox, a native Win32 Console/Window runner,
+and a native Linux Console source. It deletes the staged duplicate native
+mailbox/event queue rather than wrapping them. NXVM has not cut over: the
+existing VM platform still owns its production route until S4 can replace and
+remove it atomically. The S2 [evidence](../etc/evidence/t522-s2-ux-library-extraction.md)
+records the full source manifest, ownership sweep and `306/306` unit result.

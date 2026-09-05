@@ -23,6 +23,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t521-s3-vadp-character-generator-owner-path.md` | IBM 5170 video-adapter admission owner | T521 S3's owner-authorized external MDA/EGA asset records and the sole VADP text-generator route; the renderer has no font file loader or independent glyph source. |
 | `evidence/t521-s4-external-video-asset-closure.md` | IBM 5170 video-adapter admission owner | T521 S4's finite YAML/manifest matrix, external asset dispositions, full gates and dual 0521 artifact identity. |
 | `evidence/t522-s1-shared-library-migration-ledger.md` | Shared-library owner | T522 S1's complete owner-authorized staged-library inventory, NXVM candidate dispositions, independent-component boundary, and S2-only UX split admission. |
+| `evidence/t522-s2-ux-library-extraction.md` | Shared-library owner | T522 S2's public UX contracts, native Win32/Linux split, sole copied-frame mailbox, provenance manifest and non-cutover verification result. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

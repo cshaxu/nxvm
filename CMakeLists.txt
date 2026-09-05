@@ -76,6 +76,37 @@ add_custom_target(cpu-timing-manifest-catalog
     DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
         "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
+# Shared host-facing value contracts. Native UX implementations are admitted
+# separately; this target deliberately has no Core, VM, or platform SDK edge.
+add_library(ux-contract STATIC
+    src/lib/ux/actions.c
+    src/lib/ux/mailbox.c
+    src/lib/ux/presenter.c
+    src/lib/ux/router.c)
+target_include_directories(ux-contract PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(ux-contract PUBLIC type-facade)
+if(WIN32)
+    add_library(ux-win32-native STATIC
+        src/lib/ux/win32/actions.c
+        src/lib/ux/win32/console.c
+        src/lib/ux/win32/geometry.c
+        src/lib/ux/win32/input.c
+        src/lib/ux/win32/mouse.c
+        src/lib/ux/win32/runner.c
+        src/lib/ux/win32/window.c)
+    target_include_directories(ux-win32-native PUBLIC "${CMAKE_SOURCE_DIR}/src")
+    target_link_libraries(ux-win32-native PUBLIC ux-contract)
+endif()
+add_executable(ux-contract-smoke test/lib/ux_contract_smoke.c)
+target_link_libraries(ux-contract-smoke PRIVATE ux-contract)
+add_test(NAME unit.ux-contract-smoke COMMAND ux-contract-smoke)
+set_tests_properties(unit.ux-contract-smoke PROPERTIES LABELS "unit")
+add_test(NAME unit.ux-library-manifest
+    COMMAND ${CMAKE_COMMAND}
+        -DUX_LIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
+        -P ${CMAKE_SOURCE_DIR}/test/support/ux_library_manifest.cmake)
+set_tests_properties(unit.ux-library-manifest PROPERTIES LABELS "unit")
+
 add_library(core-machine STATIC
     src/core/machine/clock.c
     src/core/machine/cpu_timing.c
@@ -1272,6 +1303,14 @@ else()
     )
     find_package(Curses REQUIRED)
     find_package(Threads REQUIRED)
+    add_library(ux-linux-native STATIC
+        src/lib/ux/linux/console.c)
+    target_include_directories(ux-linux-native PUBLIC
+        "${CMAKE_SOURCE_DIR}/src"
+        ${CURSES_INCLUDE_DIRS})
+    target_link_libraries(ux-linux-native PUBLIC
+        ux-contract
+        ${CURSES_LIBRARIES})
 endif()
 add_library(vm-platform-requests STATIC
     src/vm/platform/request_bridge.c
