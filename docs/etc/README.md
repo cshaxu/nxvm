@@ -18,6 +18,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t516-s2-ibm5170-fdc-terminal-count.md` | Core FDC owner | T516 S2 records the Intel 8272A terminal-count repair, IBM 5170 cross-check and four-row external-YAML regression result. |
 | `evidence/t516-s3-deskpro-kbc-post.md` | Core KBC / Model 40 owners | T516 S3 records the DeskPro ROM's single-BAT POST contract, its seed checksum repair, and cross-profile boot proof. |
 | `evidence/t520-s1-session-lifecycle-ledger.md` | VM session composition owner | T520 S1 inventories the duplicated Model 40/generic lifecycle, moves shared resource lifetime to one VM owner, and retains only Model 40 board preparation. |
+| `evidence/t521-s1-ibm5170-video-adapter-source-corpus.md` | IBM 5170 video-adapter admission owner | T521 S1's visually checked IBM 5170/CGA/EGA and later-VGA source corpus; it separates system BIOS, Option ROM and character-generator roles and rejects the repository CP437 bitmap as an unproven hardware asset. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |
