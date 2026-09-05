@@ -1,15 +1,14 @@
 #include "type.h"
 
-#include <tchar.h>
-
+#include "lib/ux/presenter.h"
 #include "vm/platform/platform.h"
-#include "vm/platform/win32/win32.h"
-#include "vm/platform/win32/win32app.h"
-#include "vm/platform/win32/win32con.h"
+#include "vm/platform/ux_binding.h"
+
+#include <string.h>
 
 typedef struct host_action_capture {
     core_platform_input_event events[24];
-    C_UINT count;
+    type_unsigned_32 count;
 } host_action_capture;
 
 static type_status host_action_capture_submit(C_VOID *context,
@@ -17,163 +16,65 @@ static type_status host_action_capture_submit(C_VOID *context,
 {
     host_action_capture *capture = context;
 
-    if (capture == STD_NULL || event == STD_NULL || capture->count ==
-        (C_UINT)(sizeof(capture->events) / sizeof(capture->events[0]))) {
+    if (capture == STD_NULL || event == STD_NULL || capture->count >= 24u)
         return TYPE_STATUS_INVALID_STATE;
-    }
     capture->events[capture->count++] = *event;
     return TYPE_STATUS_OK;
-}
-
-static C_INT host_action_capture_key(const host_action_capture *capture,
-    C_UINT index, type_unsigned_16 virtual_key, C_INT pressed)
-{
-    return capture != STD_NULL && index < capture->count &&
-        capture->events[index].kind == CORE_PLATFORM_INPUT_KEY &&
-        capture->events[index].data.key.virtual_key == virtual_key &&
-        capture->events[index].data.key.pressed == pressed;
-}
-
-static C_INT host_action_capture_scan(const host_action_capture *capture,
-    C_UINT index, type_unsigned_16 scan_code)
-{
-    return capture != STD_NULL && index < capture->count &&
-        capture->events[index].kind == CORE_PLATFORM_INPUT_KEY &&
-        capture->events[index].data.key.scan_code == scan_code;
 }
 
 int main(C_INT argc, C_CHAR **argv)
 {
     vm_platform_run_context *context = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
-    host_action_capture capture = {0};
-    core_platform_win32_keyboard_normalizer normalizer = {0};
-    vm_platform_host_input_sink sink = {host_action_capture_submit, &capture};
+    vm_platform_host_input_sink sink;
+    host_action_capture capture = { 0 };
+    ux_binding binding;
+    ux_event event = { 0 };
+    C_CHAR title[32];
 
     (C_VOID)argc;
     (C_VOID)argv;
+    sink.submit = host_action_capture_submit;
+    sink.context = &capture;
     if (vm_platform_run_context_create(STD_NULL, &sink, STD_NULL, STD_NULL,
-            &context) != TYPE_STATUS_OK ||
-        vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK) goto fail;
-    if (_tcscmp(vm_platform_win32app_title_for_lifecycle(
-            VM_PLATFORM_EXECUTION_RUNNING), _T("NXVM (Running)")) != 0 ||
-        _tcscmp(vm_platform_win32app_title_for_lifecycle(
-            VM_PLATFORM_EXECUTION_PAUSED), _T("NXVM (Paused)")) != 0 ||
-        vm_platform_win32app_pointer_input_enabled(
-            VM_PLATFORM_EXECUTION_RUNNING, 0) ||
-        !vm_platform_win32app_pointer_input_enabled(
-            VM_PLATFORM_EXECUTION_RUNNING, 1) ||
-        vm_platform_win32app_pointer_input_enabled(
-            VM_PLATFORM_EXECUTION_PAUSED, 1)) goto fail;
+            &context) != TYPE_STATUS_OK || vm_platform_run_handle_create(
+            &handle) != TYPE_STATUS_OK || vm_platform_ux_binding_initialize(
+            context, handle, &binding) != TYPE_STATUS_OK) goto fail;
 
-    {
-        INPUT_RECORD record = {0};
-
-        record.EventType = KEY_EVENT;
-        /* RDP may supply VK_F1 without a physical scan code. */
-        record.Event.KeyEvent.wVirtualScanCode = 0u;
-        record.Event.KeyEvent.wVirtualKeyCode = VK_F1;
-        record.Event.KeyEvent.bKeyDown = TRUE;
-        vm_platform_win32con_submit_input_record(context, handle, &normalizer, &record);
-        record.Event.KeyEvent.bKeyDown = FALSE;
-        vm_platform_win32con_submit_input_record(context, handle, &normalizer, &record);
-    }
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0043u, VK_F9, VM_PLATFORM_WIN32_MODIFIER_NONE, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0043u, VK_F9, VM_PLATFORM_WIN32_MODIFIER_NONE, 0);
-    if (capture.count != 4u || !host_action_capture_key(&capture, 0u, VK_F1, 1) ||
-        !host_action_capture_key(&capture, 1u, VK_F1, 0) ||
-        !host_action_capture_key(&capture, 2u, VK_F9, 1) ||
-        !host_action_capture_key(&capture, 3u, VK_F9, 0) ||
-        vm_platform_run_handle_take_stop_report(handle)) goto fail;
-
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x001du, VK_CONTROL, VM_PLATFORM_WIN32_MODIFIER_CONTROL, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0038u, VK_MENU, VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0019u, 'P', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0019u, 'P', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 0);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0038u, VK_MENU, VM_PLATFORM_WIN32_MODIFIER_CONTROL, 0);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x001du, VK_CONTROL, VM_PLATFORM_WIN32_MODIFIER_NONE, 0);
-    if (capture.count != 4u || !vm_platform_run_handle_take_pause_report(handle) ||
-        vm_platform_run_handle_take_pause_report(handle)) goto fail;
-
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0020u, 'D', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0020u, 'D', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 0);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0032u, 'M', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0032u, 'M', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 0);
-    if (capture.count != 10u ||
-        !host_action_capture_key(&capture, 4u, VK_CONTROL, 1) ||
-        !host_action_capture_key(&capture, 5u, VK_MENU, 1) ||
-        !host_action_capture_key(&capture, 6u, VK_DELETE, 1) ||
-        !host_action_capture_key(&capture, 7u, VK_DELETE, 0) ||
-        !host_action_capture_key(&capture, 8u, VK_MENU, 0) ||
-        !host_action_capture_key(&capture, 9u, VK_CONTROL, 0) ||
-        !host_action_capture_scan(&capture, 4u, 0x001du) ||
-        !host_action_capture_scan(&capture, 5u, 0x0038u) ||
-        !host_action_capture_scan(&capture, 6u, 0x0153u) ||
-        !host_action_capture_scan(&capture, 7u, 0x0153u) ||
-        !host_action_capture_scan(&capture, 8u, 0x0038u) ||
-        !host_action_capture_scan(&capture, 9u, 0x001du) ||
-        !vm_platform_run_handle_take_mouse_release_report(handle)) goto fail;
-
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0021u, 'F', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0021u, 'F', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 0);
-    if (capture.count != 14u ||
-        !host_action_capture_key(&capture, 10u, VK_MENU, 1) ||
-        !host_action_capture_key(&capture, 11u, VK_RETURN, 1) ||
-        !host_action_capture_key(&capture, 12u, VK_RETURN, 0) ||
-        !host_action_capture_key(&capture, 13u, VK_MENU, 0) ||
-        !host_action_capture_scan(&capture, 10u, 0x0038u) ||
-        !host_action_capture_scan(&capture, 11u, 0x001cu) ||
-        !host_action_capture_scan(&capture, 12u, 0x001cu) ||
-        !host_action_capture_scan(&capture, 13u, 0x0038u)) goto fail;
-
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x001du, VK_CONTROL, VM_PLATFORM_WIN32_MODIFIER_CONTROL, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0038u, VK_MENU, VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x002du, 'X', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 1);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x002du, 'X', VM_PLATFORM_WIN32_MODIFIER_CONTROL |
-        VM_PLATFORM_WIN32_MODIFIER_ALT, 0);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x0038u, VK_MENU, VM_PLATFORM_WIN32_MODIFIER_CONTROL, 0);
-    vm_platform_win32_keyboard_make_key_with_modifiers_for(context, handle,
-        0x001du, VK_CONTROL, VM_PLATFORM_WIN32_MODIFIER_NONE, 0);
-    if (capture.count != 20u || !host_action_capture_key(&capture, 14u,
-            VK_CONTROL, 1) || !host_action_capture_key(&capture, 15u, VK_MENU, 1) ||
-        !host_action_capture_key(&capture, 16u, 'X', 1) ||
-        !host_action_capture_key(&capture, 17u, 'X', 0) ||
-        !host_action_capture_key(&capture, 18u, VK_MENU, 0) ||
-        !host_action_capture_key(&capture, 19u, VK_CONTROL, 0)) goto fail;
-
+    event.type = UX_EVENT_KEY;
+    event.data.key.scan_code = 0x3bu;
+    event.data.key.virtual_key = 0x70u;
+    event.data.key.pressed = TYPE_TRUE;
+    if (!binding.input_sink(binding.context, &event) || capture.count != 1u ||
+        capture.events[0].data.key.scan_code != 0x3bu ||
+        capture.events[0].data.key.virtual_key != 0x70u) goto fail;
+    if (binding.handle_action(binding.context, UX_ACTION_PAUSE_TOGGLE,
+            binding.input_sink) != UX_RUN_CONTINUE ||
+        !vm_platform_run_handle_take_pause_report(handle) || capture.count != 3u ||
+        capture.events[1].data.key.pressed ||
+        capture.events[2].data.key.pressed) goto fail;
+    if (binding.handle_action(binding.context, UX_ACTION_SEND_CTRL_ALT_DEL,
+            binding.input_sink) != UX_RUN_CONTINUE || capture.count != 9u ||
+        capture.events[5].data.key.scan_code != 0x0153u ||
+        !capture.events[5].data.key.pressed ||
+        capture.events[5].data.key.virtual_key != 0x2eu) goto fail;
+    event.type = UX_EVENT_TEXT;
+    event.data.text.scalar = 'a';
+    if (!binding.input_sink(binding.context, &event) || capture.count != 11u ||
+        capture.events[9].data.key.virtual_key != 'A' ||
+        !capture.events[9].data.key.pressed ||
+        capture.events[10].data.key.virtual_key != 'A' ||
+        capture.events[10].data.key.pressed) goto fail;
+    if (binding.handle_action(binding.context, UX_ACTION_SEND_ALT_ENTER,
+            binding.input_sink) != UX_RUN_CONTINUE || capture.count != 17u ||
+        capture.events[13].data.key.scan_code != 0x1cu ||
+        !capture.events[13].data.key.pressed ||
+        capture.events[13].data.key.virtual_key != 0x0du) goto fail;
+    binding.get_title(binding.context, title, sizeof(title));
+    if (strcmp(title, "NXVM (Stopped)") != 0) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
-    puts("M5:T518:S2:HOST-ACTIONS:OK");
+    puts("M5:T522:S4:UX-BINDING:OK");
     return 0;
 
 fail:

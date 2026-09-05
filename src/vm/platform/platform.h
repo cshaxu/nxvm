@@ -8,7 +8,6 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "vm/platform/host_surface.h"
 #include "core/platform/input_interface.h"
 #include "core/platform/presentation_mailbox_interface.h"
 #include "core/utils/wait_provider.h"
@@ -48,6 +47,8 @@ type_status vm_platform_run_context_create(
     const core_utils_wait_scope *wait_scope,
     vm_platform_run_context **out_context);
 C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context);
+type_status vm_platform_run_context_publish_ux_frame(
+    vm_platform_run_context *context);
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,
     const core_platform_input_event *event);
@@ -59,16 +60,6 @@ C_VOID vm_platform_run_context_set_display_mode(
     vm_platform_run_context *context, vm_platform_display_mode mode);
 C_VOID vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled);
-C_INT vm_platform_run_context_request_console_window_start(
-    vm_platform_run_context *context);
-C_INT vm_platform_run_context_take_console_window_start(
-    vm_platform_run_context *context);
-C_VOID vm_platform_run_context_confirm_console_window_started(
-    vm_platform_run_context *context);
-C_INT vm_platform_run_context_request_console_window_stop(
-    vm_platform_run_context *context);
-C_INT vm_platform_run_context_take_console_window_stop(
-    vm_platform_run_context *context);
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle);
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
@@ -87,10 +78,6 @@ C_INT vm_platform_run_handle_take_mouse_release_report(
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle);
-
-/* Device Operations */
-C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context);
-C_VOID vm_platform_display_paint(const vm_platform_run_context *context);
 
 type_status vm_platform_start(const vm_platform_run_context *context,
     vm_platform_run_handle *handle);

@@ -43,10 +43,17 @@ int main(void)
 
     if (ux_mailbox_create(&mailbox) != TYPE_STATUS_OK) return 1;
     published.valid = TYPE_TRUE;
+    published.graphics = TYPE_TRUE;
+    published.graphics_width = 320u;
+    published.graphics_height = 200u;
+    published.graphics_palette[1u] = 0x00112233u;
+    published.graphics_pixels[0u] = 1u;
     if (ux_mailbox_publish(mailbox, &published) != TYPE_STATUS_OK ||
         ux_mailbox_capture(mailbox, &captured) != TYPE_STATUS_OK ||
         captured.sequence != ux_mailbox_generation(mailbox) ||
-        captured.sequence == 0u) {
+        captured.sequence == 0u || captured.graphics_width != 320u ||
+        captured.graphics_palette[1u] != 0x00112233u ||
+        captured.graphics_pixels[0u] != 1u) {
         ux_mailbox_destroy(mailbox);
         return 1;
     }

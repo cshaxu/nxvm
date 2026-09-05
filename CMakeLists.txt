@@ -80,6 +80,7 @@ add_custom_target(cpu-timing-manifest-catalog
 # separately; this target deliberately has no Core, VM, or platform SDK edge.
 add_library(ux-contract STATIC
     src/lib/ux/actions.c
+    src/lib/ux/linux/input.c
     src/lib/ux/mailbox.c
     src/lib/ux/presenter.c
     src/lib/ux/router.c)
@@ -101,6 +102,10 @@ add_executable(ux-contract-smoke test/lib/ux_contract_smoke.c)
 target_link_libraries(ux-contract-smoke PRIVATE ux-contract)
 add_test(NAME unit.ux-contract-smoke COMMAND ux-contract-smoke)
 set_tests_properties(unit.ux-contract-smoke PROPERTIES LABELS "unit")
+add_executable(ux-linux-input-smoke test/lib/ux_linux_input_smoke.c)
+target_link_libraries(ux-linux-input-smoke PRIVATE ux-contract)
+add_test(NAME unit.ux-linux-input-smoke COMMAND ux-linux-input-smoke)
+set_tests_properties(unit.ux-linux-input-smoke PROPERTIES LABELS "unit")
 add_test(NAME unit.ux-library-manifest
     COMMAND ${CMAKE_COMMAND}
         -DUX_LIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
@@ -1275,31 +1280,21 @@ target_include_directories(core-platform PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-platform PUBLIC type-facade)
-add_executable(vm-platform-host-surface-smoke
-    test/vm/platform/vm_platform_host_surface_smoke.c
-)
-target_link_libraries(vm-platform-host-surface-smoke PRIVATE
-    vm-platform
-)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
     src/vm/platform/virtual_time.c
-    src/vm/platform/host_surface.c
     src/vm/platform/execution.c
     src/vm/platform/input_flush.c
+    src/vm/platform/ux_frame.c
+    src/vm/platform/ux_binding.c
 )
 if(WIN32)
     list(APPEND VM_PLATFORM_SOURCES
         src/vm/platform/win32/win32.c
-        src/vm/platform/win32/w32cdisp.c
-        src/vm/platform/win32/w32adisp.c
-        src/vm/platform/win32/win32con.c
-        src/vm/platform/win32/win32app.c
     )
 else()
     list(APPEND VM_PLATFORM_SOURCES
         src/vm/platform/linux/linux.c
-        src/vm/platform/linux/linuxcon.c
     )
     find_package(Curses REQUIRED)
     find_package(Threads REQUIRED)
@@ -1509,13 +1504,18 @@ target_include_directories(vm-platform PUBLIC
 target_link_libraries(vm-platform PUBLIC
     type-facade
     core-utils
-    core-platform)
+    core-platform
+    ux-contract)
 if(WIN32)
-    target_link_libraries(vm-platform PUBLIC user32 gdi32)
+    target_link_libraries(vm-platform PUBLIC ux-win32-native user32 gdi32)
 endif()
+
+add_executable(vm-platform-ux-frame-smoke
+    test/vm/platform/vm_platform_ux_frame_smoke.c)
+target_link_libraries(vm-platform-ux-frame-smoke PRIVATE vm-platform)
 if(NOT WIN32)
     target_include_directories(vm-platform PRIVATE ${CURSES_INCLUDE_DIRS})
-    target_link_libraries(vm-platform PUBLIC ${CURSES_LIBRARIES} Threads::Threads)
+    target_link_libraries(vm-platform PUBLIC ux-linux-native ${CURSES_LIBRARIES} Threads::Threads)
 endif()
 
 add_executable(core-platform-input-source-smoke
@@ -1533,17 +1533,10 @@ add_executable(vm-keyboard-host-ingress-smoke
 target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
     vm-composition)
 if(WIN32)
-    add_executable(vm-platform-win32-keyboard-scan-smoke
-        test/vm/platform/vm_platform_win32_keyboard_scan_smoke.c)
-    target_link_libraries(vm-platform-win32-keyboard-scan-smoke PRIVATE
-        vm-platform)
     add_executable(vm-platform-win32-host-action-smoke
         test/vm/platform/vm_platform_win32_host_action_smoke.c)
     target_link_libraries(vm-platform-win32-host-action-smoke PRIVATE
         vm-platform)
-    add_executable(vm-w32-text-palette-smoke
-        test/vm/platform/vm_w32_text_palette_smoke.c)
-    target_link_libraries(vm-w32-text-palette-smoke PRIVATE vm-platform)
 endif()
 add_executable(vm-host-cancellation-smoke
     test/vm/machine/vm_host_cancellation_smoke.c
@@ -1590,12 +1583,6 @@ add_executable(core-platform-presentation-mailbox-smoke
 )
 target_link_libraries(core-platform-presentation-mailbox-smoke PRIVATE
     core-platform)
-
-add_executable(vm-platform-surface-context-smoke
-    test/vm/platform/vm_platform_surface_context_smoke.c
-)
-target_link_libraries(vm-platform-surface-context-smoke PRIVATE
-    vm-platform)
 
 add_executable(vm-platform-mode-context-smoke
     test/vm/platform/vm_platform_mode_context_smoke.c
@@ -2404,7 +2391,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-product-debug-input-failure-smoke
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
-    vm-platform-surface-context-smoke
     vm-platform-execution-smoke
     core-platform-input-source-smoke
     core-platform-wait-smoke
@@ -2437,7 +2423,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-profile-resolver-smoke
     vm-ibm-5170-root-resolver-smoke
     vm-xt-5160-268-profile-smoke
-    vm-platform-host-surface-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
 
@@ -2662,14 +2647,10 @@ foreach(t337_current_target IN LISTS PROJECT_UNIT_TEST_TARGETS)
 endforeach()
 endfunction()
 if(WIN32)
-    list(APPEND PROJECT_UNIT_TEST_TARGETS vm-w32-text-palette-smoke)
-endif()
-
-if(WIN32)
     list(APPEND PROJECT_UNIT_TEST_TARGETS
-        vm-platform-win32-keyboard-scan-smoke
         vm-platform-win32-host-action-smoke)
 endif()
+list(APPEND PROJECT_UNIT_TEST_TARGETS vm-platform-ux-frame-smoke)
 
 t337_verify_ud_unit_test_inventory()
 
@@ -3778,7 +3759,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-utils PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-product-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-wait-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3928,15 +3908,10 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
     "vm-platform|src/vm/platform/platform.c|win32-platform"
-    "vm-platform|src/vm/platform/host_surface.c|win32-platform"
     "vm-platform|src/vm/platform/execution.c|win32-platform"
     "vm-platform|src/vm/platform/input_flush.c|win32-platform"
     "vm-platform|src/vm/platform/virtual_time.c|win32-platform"
     "vm-platform|src/vm/platform/win32/win32.c|win32-platform"
-    "vm-platform|src/vm/platform/win32/w32cdisp.c|win32-platform"
-    "vm-platform|src/vm/platform/win32/w32adisp.c|win32-platform"
-    "vm-platform|src/vm/platform/win32/win32con.c|win32-platform"
-    "vm-platform|src/vm/platform/win32/win32app.c|win32-platform"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/media_save.c|vm-machine"

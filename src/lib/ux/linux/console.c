@@ -1,4 +1,5 @@
 #include "lib/ux/linux/console.h"
+#include "lib/ux/linux/input.h"
 
 #if !defined(_WIN32)
 #include <curses.h>
@@ -24,6 +25,38 @@ static type_unsigned_32 ux_linux_action_key(C_INT key)
     return (type_unsigned_32)key;
 }
 
+static C_INT ux_linux_console_guest_key(C_INT key, ux_event *event)
+{
+    if (key == '\n' || key == '\r' || key == KEY_ENTER)
+        return ux_linux_key_to_event(UX_LINUX_KEY_ENTER, event);
+    if (key == KEY_BACKSPACE || key == 0x08)
+        return ux_linux_key_to_event(UX_LINUX_KEY_BACKSPACE, event);
+    if (key >= KEY_F(1) && key <= KEY_F(12))
+        return ux_linux_key_to_event((ux_linux_key)(UX_LINUX_KEY_F1 +
+            key - KEY_F(1)), event);
+    switch (key) {
+    case KEY_UP: return ux_linux_key_to_event(UX_LINUX_KEY_UP, event);
+    case KEY_DOWN: return ux_linux_key_to_event(UX_LINUX_KEY_DOWN, event);
+    case KEY_LEFT: return ux_linux_key_to_event(UX_LINUX_KEY_LEFT, event);
+    case KEY_RIGHT: return ux_linux_key_to_event(UX_LINUX_KEY_RIGHT, event);
+    case KEY_HOME: return ux_linux_key_to_event(UX_LINUX_KEY_HOME, event);
+    case KEY_END: return ux_linux_key_to_event(UX_LINUX_KEY_END, event);
+    case KEY_PPAGE: return ux_linux_key_to_event(UX_LINUX_KEY_PAGE_UP, event);
+    case KEY_NPAGE: return ux_linux_key_to_event(UX_LINUX_KEY_PAGE_DOWN, event);
+    case KEY_IC: return ux_linux_key_to_event(UX_LINUX_KEY_INSERT, event);
+    case KEY_DC: return ux_linux_key_to_event(UX_LINUX_KEY_DELETE, event);
+    default: return TYPE_FALSE;
+    }
+}
+
+static C_INT ux_linux_console_color_pair(type_unsigned_16 attribute)
+{
+    type_unsigned_16 foreground = attribute & 0x07u;
+    type_unsigned_16 background = (attribute >> 4u) & 0x07u;
+
+    return (C_INT)(foreground * 8u + background);
+}
+
 static C_VOID ux_linux_console_paint(const ux_frame *frame)
 {
     type_unsigned_32 row;
@@ -39,6 +72,8 @@ static C_VOID ux_linux_console_paint(const ux_frame *frame)
             type_unsigned_32 offset = row * UX_TEXT_COLUMNS + column;
             type_unsigned_8 character = frame->text[offset];
 
+            if (has_colors()) attrset(COLOR_PAIR(ux_linux_console_color_pair(
+                frame->attributes[offset])));
             mvaddch((C_INT)row, (C_INT)column,
                 character >= 0x20u && character < 0x7fu ? character : ' ');
         }
@@ -62,11 +97,7 @@ static ux_run_result ux_linux_console_key(const ux_binding *binding, C_INT key)
     if (key >= 0x20 && key <= 0xff) {
         event.type = UX_EVENT_TEXT;
         event.data.text.scalar = (type_unsigned_32)key;
-    } else {
-        event.type = UX_EVENT_KEY;
-        event.data.key.virtual_key = ux_linux_action_key(key);
-        event.data.key.pressed = TYPE_TRUE;
-    }
+    } else if (!ux_linux_console_guest_key(key, &event)) return UX_RUN_CONTINUE;
     (C_VOID)binding->input_sink(binding->context, &event);
     return UX_RUN_CONTINUE;
 }
@@ -79,10 +110,27 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
 
     if (ux_binding_validate(binding) != TYPE_STATUS_OK ||
         !ux_linux_console_acquire()) return UX_RUN_ERROR_RESULT;
-    if (initscr() == STD_NULL || raw() == ERR || noecho() == ERR ||
-        keypad(stdscr, TRUE) == ERR || nodelay(stdscr, TRUE) == ERR) {
+    if (initscr() == STD_NULL) {
         ux_linux_console_release();
         return UX_RUN_ERROR_RESULT;
+    }
+    if (raw() == ERR || noecho() == ERR || keypad(stdscr, TRUE) == ERR ||
+        nodelay(stdscr, TRUE) == ERR) {
+        endwin();
+        ux_linux_console_release();
+        return UX_RUN_ERROR_RESULT;
+    }
+    if (has_colors()) {
+        type_unsigned_32 foreground;
+
+        (C_VOID)start_color();
+        for (foreground = 0u; foreground < 8u; ++foreground) {
+            type_unsigned_32 background;
+
+            for (background = 0u; background < 8u; ++background)
+                (C_VOID)init_pair((short)(foreground * 8u + background),
+                    (short)foreground, (short)background);
+        }
     }
     frame = STD_CALLOC(1u, sizeof(*frame));
     if (frame == STD_NULL) {

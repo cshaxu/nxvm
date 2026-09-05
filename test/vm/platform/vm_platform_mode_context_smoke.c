@@ -29,16 +29,7 @@ C_INT main(C_VOID)
     if (vm_platform_run_context_get_display_mode(first) !=
             VM_PLATFORM_DISPLAY_CONSOLE ||
         vm_platform_run_context_get_window_display(first) ||
-        !vm_platform_run_context_request_console_window_start(first) ||
-        vm_platform_run_context_get_window_display(first) ||
-        !vm_platform_run_context_take_console_window_start(first) ||
-        vm_platform_run_context_take_console_window_start(first)) goto fail;
-    vm_platform_run_context_confirm_console_window_started(first);
-    if (!vm_platform_run_context_get_window_display(first) ||
-        !vm_platform_run_context_request_console_window_stop(first) ||
-        vm_platform_run_context_get_window_display(first) ||
-        !vm_platform_run_context_take_console_window_stop(first) ||
-        vm_platform_run_context_take_console_window_stop(first)) goto fail;
+        !vm_platform_run_context_get_window_display(second)) goto fail;
     if (vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK) goto fail;
     vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
     if (vm_platform_run_handle_get_last_event(handle) !=

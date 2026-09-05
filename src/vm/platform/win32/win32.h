@@ -33,10 +33,6 @@ C_VOID vm_platform_win32_keyboard_make_utf16_for(
 C_VOID vm_platform_win32_mouse_relative_for(const vm_platform_run_context *context,
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);
 
-C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,
-                           const vm_platform_run_context *context);
-C_VOID vm_platform_win32_display_paint(WIN32_BOOL flagWindow,
-                       const vm_platform_run_context *context);
 type_status vm_platform_win32_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *handle);
 C_VOID vm_platform_win32_run_handle_request_stop(vm_platform_run_handle *handle);

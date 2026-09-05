@@ -9,6 +9,7 @@
 #include "core/platform/display_frame.h"
 
 #include "vm/platform/platform_internal.h"
+#include "vm/platform/ux_frame.h"
 
 type_status vm_platform_run_context_create(
     const vm_platform_execution_transport *execution,
@@ -28,24 +29,46 @@ type_status vm_platform_run_context_create(
         (vm_platform_host_input_sink){0} : *input_sink;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
-    vm_platform_host_surface_context_initialize(&context->console_surface,
-        VM_PLATFORM_HOST_SURFACE_CONSOLE, STD_NULL);
-    vm_platform_host_surface_context_initialize(&context->window_surface,
-        VM_PLATFORM_HOST_SURFACE_WINDOW, STD_NULL);
-    context->console_renderer = STD_NULL;
-    context->window_renderer = STD_NULL;
-    context->terminal_displayed_generation = 0u;
+    if (ux_mailbox_create(&context->ux_mailbox) != TYPE_STATUS_OK) {
+        STD_FREE(context);
+        return TYPE_STATUS_NO_MEMORY;
+    }
+    ux_actions_initialize(&context->ux_actions);
+    (C_VOID)ux_actions_register(&context->ux_actions, 'P',
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_PAUSE_TOGGLE);
+    (C_VOID)ux_actions_register(&context->ux_actions, 'D',
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_SEND_CTRL_ALT_DEL);
+    (C_VOID)ux_actions_register(&context->ux_actions, 'F',
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_SEND_ALT_ENTER);
+    (C_VOID)ux_actions_register(&context->ux_actions, 'M',
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_RELEASE_MOUSE);
+    ux_router_initialize(&context->ux_router, UX_DISPLAY_CONSOLE);
     context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
-    STD_ATOMIC_INIT(&context->console_window_active, TYPE_FALSE);
-    STD_ATOMIC_INIT(&context->console_window_start_pending, TYPE_FALSE);
-    STD_ATOMIC_INIT(&context->console_window_stop_pending, TYPE_FALSE);
     *out_context = context;
     return TYPE_STATUS_OK;
 }
 
 C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context)
 {
+    if (context != STD_NULL) ux_mailbox_destroy(context->ux_mailbox);
     STD_FREE(context);
+}
+
+type_status vm_platform_run_context_publish_ux_frame(
+    vm_platform_run_context *context)
+{
+    core_platform_display_frame frame;
+    ux_frame ux_frame;
+    type_status status;
+
+    if (context == STD_NULL || context->presentation == STD_NULL)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    status = core_platform_presentation_mailbox_capture(context->presentation,
+        &frame);
+    if (status != TYPE_STATUS_OK) return status;
+    status = vm_platform_ux_frame_from_core(&frame, &ux_frame);
+    if (status != TYPE_STATUS_OK) return status;
+    return ux_mailbox_publish(context->ux_mailbox, &ux_frame);
 }
 
 type_status vm_platform_host_input_sink_submit(
@@ -61,10 +84,8 @@ type_status vm_platform_host_input_sink_submit(
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context)
 {
-    return context != STD_NULL && (context->display_mode ==
-        VM_PLATFORM_DISPLAY_WINDOW || (context->display_mode ==
-        VM_PLATFORM_DISPLAY_CONSOLE && STD_ATOMIC_LOAD(
-        &context->console_window_active)));
+    return context != STD_NULL && context->display_mode ==
+        VM_PLATFORM_DISPLAY_WINDOW;
 }
 
 C_INT vm_platform_run_context_get_display_mode(
@@ -80,9 +101,6 @@ C_VOID vm_platform_run_context_set_display_mode(
     if (context == STD_NULL || mode < VM_PLATFORM_DISPLAY_CONSOLE ||
         mode > VM_PLATFORM_DISPLAY_WINDOW) return;
     context->display_mode = mode;
-    STD_ATOMIC_STORE(&context->console_window_active, TYPE_FALSE);
-    STD_ATOMIC_STORE(&context->console_window_start_pending, TYPE_FALSE);
-    STD_ATOMIC_STORE(&context->console_window_stop_pending, TYPE_FALSE);
 }
 
 C_VOID vm_platform_run_context_set_window_display(
@@ -90,57 +108,6 @@ C_VOID vm_platform_run_context_set_window_display(
 {
     vm_platform_run_context_set_display_mode(context, enabled ?
         VM_PLATFORM_DISPLAY_WINDOW : VM_PLATFORM_DISPLAY_CONSOLE);
-}
-
-C_INT vm_platform_run_context_request_console_window_start(
-    vm_platform_run_context *context)
-{
-    if (context == STD_NULL || context->display_mode != VM_PLATFORM_DISPLAY_CONSOLE ||
-        STD_ATOMIC_LOAD(&context->console_window_active) ||
-        STD_ATOMIC_EXCHANGE(&context->console_window_start_pending, TYPE_TRUE)) {
-        return TYPE_FALSE;
-    }
-    STD_ATOMIC_STORE(&context->console_window_stop_pending, TYPE_FALSE);
-    return TYPE_TRUE;
-}
-
-C_INT vm_platform_run_context_take_console_window_start(
-    vm_platform_run_context *context)
-{
-    return context != STD_NULL && STD_ATOMIC_EXCHANGE(
-        &context->console_window_start_pending, TYPE_FALSE);
-}
-
-C_VOID vm_platform_run_context_confirm_console_window_started(
-    vm_platform_run_context *context)
-{
-    if (context != STD_NULL) STD_ATOMIC_STORE(&context->console_window_active,
-        TYPE_TRUE);
-}
-
-C_INT vm_platform_run_context_request_console_window_stop(
-    vm_platform_run_context *context)
-{
-    C_INT active;
-    C_INT pending;
-
-    if (context == STD_NULL || context->display_mode != VM_PLATFORM_DISPLAY_CONSOLE) {
-        return TYPE_FALSE;
-    }
-    active = STD_ATOMIC_EXCHANGE(&context->console_window_active, TYPE_FALSE);
-    pending = STD_ATOMIC_EXCHANGE(&context->console_window_start_pending,
-        TYPE_FALSE);
-    if (!active && !pending) return TYPE_FALSE;
-    if (active) STD_ATOMIC_STORE(&context->console_window_stop_pending,
-        TYPE_TRUE);
-    return TYPE_TRUE;
-}
-
-C_INT vm_platform_run_context_take_console_window_stop(
-    vm_platform_run_context *context)
-{
-    return context != STD_NULL && STD_ATOMIC_EXCHANGE(
-        &context->console_window_stop_pending, TYPE_FALSE);
 }
 
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle)
@@ -164,11 +131,6 @@ C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
     STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE);
     STD_ATOMIC_INIT(&handle->pause_reported, TYPE_FALSE);
     STD_ATOMIC_INIT(&handle->mouse_release_reported, TYPE_FALSE);
-    STD_ATOMIC_INIT(&handle->reserved_virtual_key, 0);
-    STD_ATOMIC_INIT(&handle->pending_modifier_keys, 0);
-    STD_ATOMIC_INIT(&handle->suppressed_modifier_keys, 0);
-    STD_ATOMIC_INIT(&handle->pending_control_scan_code, 0);
-    STD_ATOMIC_INIT(&handle->pending_alt_scan_code, 0);
 }
 
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle)
@@ -234,12 +196,6 @@ C_INT vm_platform_run_handle_take_mouse_release_report(
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 
 #include "vm/platform/win32/win32.h"
-C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context) {
-    vm_platform_win32_display_set_screen(vm_platform_run_context_get_window_display(context), context);
-}
-C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
-    vm_platform_win32_display_paint(vm_platform_run_context_get_window_display(context), context);
-}
 type_status vm_platform_start(const vm_platform_run_context *context,
     vm_platform_run_handle *handle) {
     return vm_platform_win32_run_handle_start(context, handle);
@@ -256,14 +212,6 @@ C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle) {
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
 
 #include "vm/platform/linux/linux.h"
-C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context) {
-    (C_VOID)context;
-    vm_platform_linux_display_set_screen(vm_platform_run_context_get_window_display(context), context);
-}
-C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
-    (C_VOID)context;
-    vm_platform_linux_display_paint(vm_platform_run_context_get_window_display(context), context);
-}
 type_status vm_platform_start(const vm_platform_run_context *context,
     vm_platform_run_handle *handle) {
     return vm_platform_linux_run_handle_start(context, handle);

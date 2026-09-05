@@ -101,21 +101,7 @@ C_VOID vm_session_runner_run(vm_session *session)
                 continue;
             }
         }
-        {
-            core_machine_display_kind display_kind = vm_session_publish_display(
-                session, TYPE_FALSE);
-
-            if (vm_platform_run_context_get_display_mode(
-                    session->platform_run_context) == VM_PLATFORM_DISPLAY_CONSOLE) {
-                if (display_kind == CORE_MACHINE_DISPLAY_KIND_TEXT) {
-                    (C_VOID)vm_platform_run_context_request_console_window_stop(
-                        session->platform_run_context);
-                } else {
-                    (C_VOID)vm_platform_run_context_request_console_window_start(
-                        session->platform_run_context);
-                }
-            }
-        }
+        (C_VOID)vm_session_publish_display(session, TYPE_FALSE);
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             /* Core reset the requested processor state before returning. */
             vm_machine_debug_reset(&session->debug);

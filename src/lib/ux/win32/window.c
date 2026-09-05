@@ -34,7 +34,7 @@ typedef struct ux_win32_window_context {
     uint32_t *graphics_pixels;
     uint32_t graphics_width;
     uint32_t graphics_height;
-    uint8_t graphics_palette[UX_DIB_INFO_BYTES];
+    uint32_t graphics_palette[UX_GRAPHICS_PALETTE_ENTRIES];
     int graphics_valid;
     unsigned char presented_text[UX_TEXT_COLUMNS * UX_TEXT_ROWS];
     unsigned short presented_attributes[UX_TEXT_COLUMNS * UX_TEXT_ROWS];
@@ -182,8 +182,8 @@ static void win32_window_resize_frame(HWND window)
     if (win32_window_frame == NULL || win32_window_frame->valid == 0u)
         return;
     if (win32_window_frame->graphics != 0u)
-        win32_window_resize_surface(window, win32_window_frame->dib_width,
-            win32_window_frame->dib_height);
+        win32_window_resize_surface(window, win32_window_frame->graphics_width,
+            win32_window_frame->graphics_height);
     else
         win32_window_resize_surface(window, WIN32_WINDOW_TEXT_SURFACE_WIDTH,
             WIN32_WINDOW_TEXT_SURFACE_HEIGHT);
@@ -195,8 +195,8 @@ static void win32_window_current_surface_size(uint32_t *width,
     if (width == NULL || height == NULL) return;
     if (win32_window_frame != NULL && win32_window_frame->valid != 0u &&
         win32_window_frame->graphics != 0u) {
-        *width = win32_window_frame->dib_width;
-        *height = win32_window_frame->dib_height;
+        *width = win32_window_frame->graphics_width;
+        *height = win32_window_frame->graphics_height;
     } else {
         *width = WIN32_WINDOW_TEXT_SURFACE_WIDTH;
         *height = WIN32_WINDOW_TEXT_SURFACE_HEIGHT;
@@ -287,7 +287,6 @@ static void win32_window_update_text_surface(void)
  * this is the same isolated presentation boundary as the text surface. */
 static int win32_window_update_graphics_surface(RECT *changed)
 {
-    const BITMAPINFO *dib;
     uint32_t source_stride;
     uint32_t row;
     int full_refresh;
@@ -298,48 +297,45 @@ static int win32_window_update_graphics_surface(RECT *changed)
 
     if (win32_window_frame == NULL || win32_window_graphics_pixels == NULL ||
         win32_window_frame->graphics == 0u ||
-        win32_window_frame->dib_width == 0u ||
-        win32_window_frame->dib_height == 0u ||
-        win32_window_frame->dib_width > WIN32_WINDOW_GRAPHICS_SURFACE_MAX_WIDTH ||
-        win32_window_frame->dib_height > WIN32_WINDOW_GRAPHICS_SURFACE_MAX_HEIGHT ||
+        win32_window_frame->graphics_width == 0u ||
+        win32_window_frame->graphics_height == 0u ||
+        win32_window_frame->graphics_width > WIN32_WINDOW_GRAPHICS_SURFACE_MAX_WIDTH ||
+        win32_window_frame->graphics_height > WIN32_WINDOW_GRAPHICS_SURFACE_MAX_HEIGHT ||
         changed == NULL)
         return 0;
-    dib = (const BITMAPINFO *)win32_window_frame->dib_info;
     full_refresh = !win32_window_graphics_valid ||
-        win32_window_graphics_width != win32_window_frame->dib_width ||
-        win32_window_graphics_height != win32_window_frame->dib_height ||
-        memcmp(win32_window_graphics_palette, win32_window_frame->dib_info,
+        win32_window_graphics_width != win32_window_frame->graphics_width ||
+        win32_window_graphics_height != win32_window_frame->graphics_height ||
+        memcmp(win32_window_graphics_palette, win32_window_frame->graphics_palette,
             sizeof(win32_window_graphics_palette)) != 0;
     left = full_refresh ? 0 : win32_window_frame->dirty_left;
     top = full_refresh ? 0 : win32_window_frame->dirty_top;
-    right = full_refresh ? (int32_t)win32_window_frame->dib_width - 1 :
+    right = full_refresh ? (int32_t)win32_window_frame->graphics_width - 1 :
         win32_window_frame->dirty_right;
-    bottom = full_refresh ? (int32_t)win32_window_frame->dib_height - 1 :
+    bottom = full_refresh ? (int32_t)win32_window_frame->graphics_height - 1 :
         win32_window_frame->dirty_bottom;
     if (left < 0) left = 0;
     if (top < 0) top = 0;
-    if (right >= (int32_t)win32_window_frame->dib_width)
-        right = (int32_t)win32_window_frame->dib_width - 1;
-    if (bottom >= (int32_t)win32_window_frame->dib_height)
-        bottom = (int32_t)win32_window_frame->dib_height - 1;
+    if (right >= (int32_t)win32_window_frame->graphics_width)
+        right = (int32_t)win32_window_frame->graphics_width - 1;
+    if (bottom >= (int32_t)win32_window_frame->graphics_height)
+        bottom = (int32_t)win32_window_frame->graphics_height - 1;
     if (right < left || bottom < top) return 0;
-    source_stride = (win32_window_frame->dib_width + 3u) & ~3u;
+    source_stride = win32_window_frame->graphics_width;
     for (row = (uint32_t)top; row <= (uint32_t)bottom; ++row) {
-        const uint8_t *source = win32_window_frame->dib_bits +
+        const uint8_t *source = win32_window_frame->graphics_pixels +
             row * source_stride;
         uint32_t *destination = win32_window_graphics_pixels +
             row * WIN32_WINDOW_GRAPHICS_SURFACE_MAX_WIDTH;
         uint32_t column;
         for (column = (uint32_t)left; column <= (uint32_t)right; ++column) {
-            const RGBQUAD *colour = &dib->bmiColors[source[column]];
-            destination[column] = ((uint32_t)colour->rgbRed << 16) |
-                ((uint32_t)colour->rgbGreen << 8) |
-                (uint32_t)colour->rgbBlue;
+            destination[column] = win32_window_frame->graphics_palette[
+                source[column]];
         }
     }
-    win32_window_graphics_width = win32_window_frame->dib_width;
-    win32_window_graphics_height = win32_window_frame->dib_height;
-    memcpy(win32_window_graphics_palette, win32_window_frame->dib_info,
+    win32_window_graphics_width = win32_window_frame->graphics_width;
+    win32_window_graphics_height = win32_window_frame->graphics_height;
+    memcpy(win32_window_graphics_palette, win32_window_frame->graphics_palette,
         sizeof(win32_window_graphics_palette));
     win32_window_graphics_valid = 1;
     changed->left = left;
@@ -357,10 +353,10 @@ static void win32_window_invalidate_graphics(HWND window, const RECT *source)
     uint32_t height;
 
     if (window == NULL || source == NULL || win32_window_frame == NULL ||
-        !win32_window_display_rect(window, win32_window_frame->dib_width,
-            win32_window_frame->dib_height, &display)) return;
-    width = win32_window_frame->dib_width;
-    height = win32_window_frame->dib_height;
+        !win32_window_display_rect(window, win32_window_frame->graphics_width,
+            win32_window_frame->graphics_height, &display)) return;
+    width = win32_window_frame->graphics_width;
+    height = win32_window_frame->graphics_height;
     ux_win32_map_dirty_rect(source, &display, width, height,
         &target);
     InvalidateRect(window, &target, FALSE);
@@ -430,11 +426,11 @@ static void win32_window_paint(HWND window, HDC dc)
     if (win32_window_frame == NULL || win32_window_frame->valid == 0u) return;
     if (win32_window_frame->graphics != 0u) {
         if (!win32_window_display_rect(window,
-                win32_window_frame->dib_width,
-                win32_window_frame->dib_height, &display)) return;
+                win32_window_frame->graphics_width,
+                win32_window_frame->graphics_height, &display)) return;
         if (win32_window_graphics_dc == NULL ||
-            win32_window_graphics_width != win32_window_frame->dib_width ||
-            win32_window_graphics_height != win32_window_frame->dib_height)
+            win32_window_graphics_width != win32_window_frame->graphics_width ||
+            win32_window_graphics_height != win32_window_frame->graphics_height)
             return;
         StretchBlt(dc, display.left, display.top,
             display.right - display.left, display.bottom - display.top,
@@ -668,14 +664,13 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         win32_window_release_mouse_capture();
         return 0;
     case WM_CLOSE:
-        /* Closing the presentation must not power off the machine.  The
-           monitor owns its lifetime, so retain the paused executor and let a
-           later `resume` create a fresh window for the same guest. */
+        /* Closing the presentation is the product pause action.  Retain this
+           loop and its last copied frame: a resumed VM uses the same sole
+           presenter, while only a terminal lifecycle state destroys it. */
         win32_window_release_mouse_capture();
         win32_window_result = win32_window_binding->handle_close(
             win32_window_binding->context,
             win32_window_binding->input_sink);
-        DestroyWindow(window);
         return 0;
     case WM_DESTROY:
         win32_window_release_mouse_capture();

@@ -2,10 +2,24 @@
 
 ## Current Work
 
-| Task | Compact progress |
+| Field | Required record |
 | --- | --- |
-| T522 S2 | Accepted: `4d96a052` establishes the independent `lib/ux` root and native Win32/Linux implementations, with only copied-value public contracts. The coordinator re-ran the full repository-only unit suite (306/306), documentation governance and diff check. NXVM's existing platform route remains intentionally unselected until the atomic S4 cutover; no empty peer library root or compatibility route was introduced. |
-| T522 S3 | Accepted: `e11a3f1a` exhausts every non-UX candidate and admits none, because each retains a Core/VM owner or lacks a complete neutral replacement. Full unit 306/306, documentation governance and actual-diff review pass. No empty root or forwarding wrapper was created; S4 is the only receiver for product UX cutover. |
+| Identifier Mode | Continuation M5 T522 S4 |
+| Admission And Approval | Owner approved T522 implementation on 2026-09-05 and directed continued execution. Accepted S1-S3 prove `lib/ux` is the only admissible shared receiver and require atomic retirement of the old NXVM presentation route. |
+| Objective | Replace NXVM's existing platform presenter/input/run-handle route with one product-root binding to `lib/ux`, then delete the superseded route in the same delivery. |
+| Non-goals | No parallel compatibility selector; no Core/VADP/guest-input protocol change; no machine/profile/controller change; no Linux graphics backend; no extraction of rejected non-UX components. |
+| Reference Baseline | `15856966`; S1 migration ledger; S2 UX evidence; current `vm/platform/{platform,execution,host_surface,input_flush,request_bridge,virtual_time}` and Win32/Linux presenters plus every direct caller/test. |
+| Candidate Proposal | `docs/proposals/m5-softpc-platform-library-adoption.md`. |
+| Files And ABI Surface | One VM product-composition binding/conversion owner, `src/lib/ux` consumers, CMake source selection and corresponding unit tests; delete every replaced `vm/platform` presenter, native input normalizer, mailbox/router and run-handle source/caller/test route. |
+| Applicable Rules | Architecture: Core copied frame remains producer, VM composition is the sole conversion/binding root, library owns only copied presentation state, and one retained production path. Coding: no forwarding wrapper, duplicate state, product pointer in public library ABI or platform type in UX root. UX, execution, source and documentation rules apply. |
+| Verification | Complete old/new caller map; source ownership and include sweep; product-root binding unit proof; retained action, Console lease, independent Window, close-to-pause and input behavior tests; full repository-only unit suite, configured Linux regression, documentation governance, diff check and actual-diff review. |
+| Expected Markers | `vm/platform` no longer contains a presenter/input/run-handle production implementation; Core frame -> VM copied conversion -> `ux_mailbox` -> native UX is the sole route; ordinary F keys remain guest input and product actions remain product callbacks. |
+| Asset Needs | None. No ROM, CMOS, media or external runtime asset is used. |
+| Reporting Requirements | Record every retired source/caller/test, the retained binding owner and data flow, code delta, full verification, and any concrete behavior gap before closure. |
+| Stop Conditions | Any required behavior cannot be preserved through the UX binding, old and new paths would coexist, a binding needs a raw Core/VM/session pointer in a public UX contract, or a native UX loop cannot honor product lifecycle outcomes. |
+| Exit Criteria | One complete product binding and native UX route replaces the old route; all superseded source is removed; complete unit, focused UX behavior and documentation gates pass; one reviewed, pushed S4 delivery records the sole retained path. |
+| Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
+| Similar-Issue Sweep | Enumerate all Win32/Linux Console/Window, input, mailbox, display mode, run-handle and lifecycle callback paths so no old native route, test-only route or hidden product state survives the cutover. |
 
 ## Current Technical Baseline
 
