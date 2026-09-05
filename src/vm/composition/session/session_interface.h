@@ -37,6 +37,9 @@ typedef enum vm_session_floppy_format {
 #define VM_SESSION_PC_AT_ROM_BYTES (64u * 1024u)
 #define VM_SESSION_PC_AT_ROM_CHIP_BYTES (32u * 1024u)
 #define VM_SESSION_PC_AT_VIDEO_ROM_MAX_BYTES VM_PROFILE_BYOB_OPTION_ROM_MAX_BYTES
+#define VM_SESSION_TEXT_GLYPH_ROW_PLANE_BYTES (2u * 1024u)
+#define VM_SESSION_TEXT_CHARACTER_GENERATOR_BYTES \
+    (4u * VM_SESSION_TEXT_GLYPH_ROW_PLANE_BYTES)
 
 const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind);
 
@@ -73,6 +76,7 @@ typedef struct vm_session_assets {
     vm_session_asset_bytes bios[2];
     vm_session_asset_bytes video;
     vm_session_asset_bytes cmos_seed;
+    vm_session_asset_bytes font;
 } vm_session_assets;
 
 typedef struct vm_session vm_session;

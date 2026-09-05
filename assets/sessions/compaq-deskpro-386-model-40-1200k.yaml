@@ -8,7 +8,7 @@ firmware:
         - path: ../../../nxvm-assets/profiles/deskpro-386-model-40/firmware/compaq-deskpro-386-16-rev-e-1986-08-19-odd-108284-001.rom
     video: ../../../nxvm-assets/profiles/deskpro-386-model-40/firmware/compaq-ega-108281-001.rom
     cmos: ../../../nxvm-assets/profiles/deskpro-386-model-40/cmos/deskpro-386-model-40-default.cmos
-    font: ../default-cp437-8x16.bin
+  font: ../../../nxvm-assets/profiles/ibm-mda/firmware/ibm-mda-cp437-character-generator.rom
 media:
     floppy:
         - path: ../../../nxvm-assets/media/fdd_1200k_msdos_500a_01.img

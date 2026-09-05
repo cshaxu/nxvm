@@ -103,6 +103,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 ega_latches[CORE_MACHINE_VADP_EGA_PLANES];
     type_unsigned_64 captured_ega_dirty_generation;
     core_machine_vadp_text_timing text_timing;
+    core_machine_vadp_text_glyph_config text_glyphs;
     type_unsigned_32 raster_phase;
     type_bool crtc_initialized;
     type_bool cga_logical_raster_started;
@@ -163,6 +164,8 @@ type_status core_machine_vadp_configure_text(t_vadp *adapter, type_unsigned_8 mo
     type_unsigned_16 columns, type_unsigned_16 rows, C_INT color_enabled);
 type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     const core_machine_vadp_text_timing *timing);
+type_status core_machine_vadp_configure_text_glyphs(t_vadp *adapter,
+    const core_machine_vadp_text_glyph_config *config);
 type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
     t_ram *memory, const core_machine_vadp_ega_sequencer_config *config);
 type_status core_machine_vadp_configure_ega_controllers(t_vadp *adapter,

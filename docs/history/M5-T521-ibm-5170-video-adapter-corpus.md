@@ -48,3 +48,24 @@ The complete repository-only unit suite passed `304/304`; documentation
 governance and `git diff --check` passed.  The coordinator actual-diff review
 accepted the evidence-only S2 change.  Its deletion/replacement receiver is
 source-gated rather than being allowed to invent a font fallback.
+
+## S3 Result
+
+S3 accepts only the owner-approved IBM MDA character-generator ROM as the
+external text-glyph input and keeps the IBM EGA U44 option ROM as an
+archive-only identity record.  The one live route is now `firmware.font` YAML
+asset to a VM construction-time copy, VADP-owned text-glyph state, copied Core
+snapshot, copied platform frame, and a derived Win32 GDI cache.  The renderer
+opens no file and carries no source glyph table; the old unallocated CP437
+repository binary and the dead default-PC/AT `VIDEO_INT10` descriptor are
+removed.
+
+The implementation changes 19 production and 6 repository-only test paths:
+production source is `+105/-63` lines and tests are `+22/-17` lines.  This is
+a cohesive ownership replacement; the 4-KiB binary source table is deleted.
+Core/VADP and Win32 tests use in-process bytes, so unit tests remain
+independent of YAML and external assets.  Release build completed 435/435 targets, unit passed
+304/304, and the three selected external-YAML integration rows passed 3/3.
+Documentation governance, `git diff --check`, and the duplicate-route sweep
+passed.  The complete source/asset disposition is in
+[S3 evidence](../etc/evidence/t521-s3-vadp-character-generator-owner-path.md).

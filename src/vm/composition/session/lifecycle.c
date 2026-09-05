@@ -319,7 +319,6 @@ type_status vm_session_initialize(vm_session *machine) {
     status = vm_platform_run_context_create(
         machine->execution_transport, &host_input_sink,
         machine->presentation_mailbox, &machine->wait_scope,
-        machine->retained_config.font_path,
         &machine->platform_run_context);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     status = vm_platform_run_handle_create(&machine->platform_run_handle);

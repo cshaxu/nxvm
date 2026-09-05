@@ -91,6 +91,9 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
         frame.cursor_x = snapshot.cursor_x;
         frame.cursor_y = snapshot.cursor_y;
         frame.cursor_visible = snapshot.cursor_visible;
+        frame.text_glyphs_present = snapshot.text_glyphs_present;
+        STD_MEMCPY(frame.text_glyphs, snapshot.text_glyphs,
+            sizeof(frame.text_glyphs));
         for (row = 0u; row < frame.rows; ++row) {
             for (column = 0u; column < frame.columns; ++column) {
                 type_unsigned_16 index = row * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + column;

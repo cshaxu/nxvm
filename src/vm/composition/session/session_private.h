@@ -83,6 +83,7 @@ struct vm_session {
     vm_session_config retained_config;
     type_unsigned_8 cmos_seed[VM_SESSION_CMOS_SEED_BYTES];
     type_bool cmos_seed_present;
+    core_machine_vadp_text_glyph_config text_glyphs;
     vm_session_firmware_kind firmware_kind;
     C_INT model40_private;
     C_INT xt_private;
@@ -103,9 +104,6 @@ struct vm_session {
         C_CHAR floppy_image_path[VM_SESSION_FLOPPY_SLOT_COUNT][1024]; };
     union { C_CHAR hdd_image_path[1024];
         C_CHAR fixed_disk_image_path[VM_SESSION_FIXED_DISK_SLOT_COUNT][1024]; };
-    /* Catalog/request storage is transient; the session owns this resolved
-       presentation-resource path for the lifetime of its platform context. */
-    C_CHAR font_path[1024];
 };
 
 type_status vm_session_storage_initialize(vm_session *machine);

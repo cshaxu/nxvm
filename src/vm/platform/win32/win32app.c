@@ -394,7 +394,7 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
         return 1;
     }
     w32adispInit((w32adisp_context *)platform->window_renderer, presenter->window,
-        platform->presentation, platform->font_path);
+        platform->presentation);
     win32app_sync_lifecycle(presenter);
     InterlockedExchange(&presenter->display_ready, 1);
     if (presenter->wait_for_execution_start) {

@@ -25,6 +25,29 @@ static type_status vm_session_cmos_seed_copy(vm_session *session,
     return TYPE_STATUS_OK;
 }
 
+static type_status vm_session_text_glyphs_copy(vm_session *session,
+    vm_session_asset_bytes source)
+{
+    STD_SIZE_T character;
+
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (source.data == STD_NULL && source.bytes == 0u) return TYPE_STATUS_OK;
+    if (source.data == STD_NULL || source.bytes !=
+        VM_SESSION_TEXT_CHARACTER_GENERATOR_BYTES) return TYPE_STATUS_INVALID_ARGUMENT;
+    for (character = 0u; character < CORE_MACHINE_DISPLAY_TEXT_GLYPH_COUNT;
+        ++character) {
+        STD_MEMCPY(&session->text_glyphs.bytes[character *
+                CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS],
+            &source.data[character * 8u], 8u);
+        STD_MEMCPY(&session->text_glyphs.bytes[character *
+                CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS + 8u],
+            &source.data[VM_SESSION_TEXT_GLYPH_ROW_PLANE_BYTES +
+                character * 8u], 8u);
+    }
+    session->text_glyphs.present = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
 static type_status vm_session_pc_at_rom_copy(vm_session *session,
     const vm_session_config *config, const vm_session_assets *assets)
 {
@@ -134,16 +157,6 @@ static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     if (length >= capacity) return 0;
     STD_MEMCPY(destination, source, length + 1u);
     return 1;
-}
-
-static type_status vm_session_retain_font_path(vm_session *session,
-    const C_CHAR *path)
-{
-    if (session == STD_NULL || !vm_session_copy_path(session->font_path,
-            sizeof(session->font_path), path)) return TYPE_STATUS_INVALID_ARGUMENT;
-    session->retained_config.font_path = path == STD_NULL ? STD_NULL :
-        session->font_path;
-    return TYPE_STATUS_OK;
 }
 
 type_status vm_session_submit_host_input(vm_session *session,
@@ -404,6 +417,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
     }
     status = vm_session_apply_cmos_seed(machine, &topology);
     if (status != TYPE_STATUS_OK) { vm_session_storage_finalize(machine); return status; }
+    topology.display.text_glyphs = machine->text_glyphs;
     status = core_machine_plan_set_topology(machine->core_machine_plan, &topology);
     if (status == TYPE_STATUS_OK) {
         status = core_machine_plan_bind_media_registry(machine->core_machine_plan,
@@ -560,9 +574,9 @@ static type_status vm_session_create_xt_from_assets(const vm_session_config *con
     session->retained_config = *config;
     session->retained_config.bios_path[0u] = STD_NULL;
     session->retained_config.bios_path[1u] = STD_NULL;
-    if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
-        vm_session_destroy(session);
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    session->retained_config.font_path = STD_NULL;
+    if (vm_session_text_glyphs_copy(session, assets->font) != TYPE_STATUS_OK) {
+        vm_session_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
@@ -634,9 +648,9 @@ static type_status vm_session_create_model40_from_assets(
     session->retained_config.bios_path[0u] = STD_NULL;
     session->retained_config.bios_path[1u] = STD_NULL;
     session->retained_config.video_path = STD_NULL;
-    if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
-        vm_session_destroy(session);
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    session->retained_config.font_path = STD_NULL;
+    if (vm_session_text_glyphs_copy(session, assets->font) != TYPE_STATUS_OK) {
+        vm_session_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
@@ -709,9 +723,9 @@ type_status vm_session_create_from_assets(const vm_session_config *config,
     session->retained_config.cmos_seed = STD_NULL;
     session->retained_config.bios_path[0u] = STD_NULL;
     session->retained_config.bios_path[1u] = STD_NULL;
-    if (vm_session_retain_font_path(session, config->font_path) != TYPE_STATUS_OK) {
-        vm_session_destroy(session);
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    session->retained_config.font_path = STD_NULL;
+    if (vm_session_text_glyphs_copy(session, assets->font) != TYPE_STATUS_OK) {
+        vm_session_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
@@ -737,6 +751,7 @@ typedef struct vm_session_file_assets {
     type_unsigned_8 *bios[2];
     type_unsigned_8 *cmos_seed;
     type_unsigned_8 *video;
+    type_unsigned_8 *font;
     vm_session_assets view;
 } vm_session_file_assets;
 
@@ -747,6 +762,7 @@ static C_VOID vm_session_file_assets_destroy(vm_session_file_assets *assets)
     STD_FREE(assets->bios[1u]);
     STD_FREE(assets->cmos_seed);
     STD_FREE(assets->video);
+    STD_FREE(assets->font);
     *assets = (vm_session_file_assets) {0};
 }
 
@@ -831,6 +847,11 @@ static type_status vm_session_file_assets_load(const vm_session_config *config,
                 &assets->video) : vm_session_file_variable_asset_load(config->video_path,
                 VM_SESSION_PC_AT_VIDEO_ROM_MAX_BYTES, &assets->view.video,
                 &assets->video);
+    }
+    if (status == TYPE_STATUS_OK && config->font_path != STD_NULL) {
+        status = vm_session_file_asset_load(config->font_path,
+            VM_SESSION_TEXT_CHARACTER_GENERATOR_BYTES, &assets->view.font,
+            &assets->font);
     }
     if (status != TYPE_STATUS_OK) vm_session_file_assets_destroy(assets);
     return status;

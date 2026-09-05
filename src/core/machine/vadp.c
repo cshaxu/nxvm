@@ -1647,6 +1647,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     type_bool vga_configured;
     type_bool cga_memory_configured;
     type_virtual_address ega_planar_vram;
+    core_machine_vadp_text_glyph_config text_glyphs;
 
     if (adapter == STD_NULL) return;
     timing = adapter->data.text_timing;
@@ -1667,6 +1668,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     cga_memory_configured = adapter->data.cga_memory_configured;
     ega_planar_vram = adapter->data.ega_planar_vram;
     crtc_initialized = adapter->data.crtc_initialized;
+    text_glyphs = adapter->data.text_glyphs;
     STD_MEMCPY(crtc, adapter->data.crtc, sizeof(crtc));
     if (ega_planar_vram != 0u) {
         STD_MEMSET((C_VOID *)ega_planar_vram, 0,
@@ -1675,6 +1677,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     STD_MEMSET(&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
     adapter->data.mode_control = 0x05u;
     adapter->data.text_timing = timing;
+    adapter->data.text_glyphs = text_glyphs;
     adapter->data.raster_phase = timing.vertical_retrace_ticks;
     adapter->data.columns = 80u;
     adapter->data.rows = 25u;
@@ -1712,6 +1715,14 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
         adapter->data.cga_logical_raster_started = TYPE_FALSE;
     }
     adapter->data.dirty_generation = 1u;
+}
+
+type_status core_machine_vadp_configure_text_glyphs(t_vadp *adapter,
+    const core_machine_vadp_text_glyph_config *config)
+{
+    if (adapter == STD_NULL || config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    adapter->data.text_glyphs = *config;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
@@ -1964,6 +1975,9 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
         sizeof(out_snapshot->characters));
     STD_MEMCPY(out_snapshot->attributes, adapter->data.attributes,
         sizeof(out_snapshot->attributes));
+    out_snapshot->text_glyphs_present = adapter->data.text_glyphs.present;
+    STD_MEMCPY(out_snapshot->text_glyphs, adapter->data.text_glyphs.bytes,
+        sizeof(out_snapshot->text_glyphs));
     cursor_changed = !adapter->data.captured ||
         adapter->data.captured_cursor_top != out_snapshot->cursor_top ||
         adapter->data.captured_cursor_bottom != out_snapshot->cursor_bottom ||

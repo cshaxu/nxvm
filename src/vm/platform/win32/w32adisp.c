@@ -49,29 +49,9 @@ struct w32adisp_context {
     type_unsigned_64 displayed_generation;
     HDC font_dc;
     HBITMAP font_bitmap;
-    UCHAR font_glyphs[FONT_NCHAR][FONT_HEIGHT];
-    BOOL font_loaded;
+    UCHAR cached_glyphs[FONT_NCHAR][FONT_HEIGHT];
     BOOL font_character_exists[FONT_NCHAR][FONT_NCOLOR];
 };
-
-static type_status w32adisp_load_font(w32adisp_context *context,
-    const C_CHAR *path) {
-    STD_FILE *file;
-    STD_SIZE_T count;
-    C_INT extra;
-    C_INT close_result;
-
-    if (context == STD_NULL || path == STD_NULL || path[0] == '\0') return TYPE_STATUS_INVALID_ARGUMENT;
-    file = STD_FOPEN(path, "rb");
-    if (file == STD_NULL) return TYPE_STATUS_FAULT;
-    count = STD_FREAD(context->font_glyphs, 1u, W32ADISP_FONT_BYTES, file);
-    extra = STD_FGETC(file);
-    close_result = STD_FCLOSE(file);
-    if (count != W32ADISP_FONT_BYTES || extra != STD_EOF || close_result != 0)
-        return TYPE_STATUS_FAULT;
-    context->font_loaded = TRUE;
-    return TYPE_STATUS_OK;
-}
 
 static COLORREF CharProp2Color(UCHAR prop, BOOL flagForeColor) {
     UCHAR byte;
@@ -153,7 +133,7 @@ static VOID CreateBitmapFontChar(w32adisp_context *context, UCHAR ch,
     bc = CharProp2Color(prop, FALSE);
     for (i = 0; i < FONT_HEIGHT; ++i) {
         for (j = 0; j < FONT_WIDTH; ++j) {
-            if (!!(context->font_glyphs[ch][i] & (1 << j))) {
+            if (!!(context->cached_glyphs[ch][i] & (1 << j))) {
                 SetPixel(hdcChar, j, i, fc);
             } else {
                 SetPixel(hdcChar, j, i, bc);
@@ -182,15 +162,9 @@ type_unsigned_64 w32adisp_context_generation(const w32adisp_context *context) {
 }
 
 C_VOID w32adispInit(w32adisp_context *context, WIN32_HWND window,
-                  const core_platform_presentation_mailbox *mailbox,
-                  const C_CHAR *font_path) {
+                  const core_platform_presentation_mailbox *mailbox) {
     UINT i, j;
     if (context == STD_NULL) return;
-    if (w32adisp_load_font(context, font_path) != TYPE_STATUS_OK) {
-        MessageBoxA(window, "Missing or invalid session font asset.",
-            "NXVM display initialization", MB_OK | MB_ICONERROR);
-        return;
-    }
     context->window = window;
     context->window_dc = GetDC(window);
     context->buffer_dc = CreateCompatibleDC(STD_NULL);
@@ -312,7 +286,8 @@ C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
     BOOL changed;
     core_platform_display_frame frame;
 
-    if (context == STD_NULL || !context->font_loaded || core_platform_presentation_mailbox_capture(mailbox,
+    (C_VOID)window;
+    if (context == STD_NULL || core_platform_presentation_mailbox_capture(mailbox,
             &frame) != TYPE_STATUS_OK) return;
     context->flash_count = (context->flash_count + 1) % 10;
     changed = flagForce || frame.generation != context->displayed_generation;
@@ -324,6 +299,14 @@ C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
         return;
     }
     if (changed) {
+        if (!frame.text_glyphs_present) return;
+        if (STD_MEMCMP(context->cached_glyphs, frame.text_glyphs,
+                W32ADISP_FONT_BYTES) != 0) {
+            STD_MEMCPY(context->cached_glyphs, frame.text_glyphs,
+                W32ADISP_FONT_BYTES);
+            STD_MEMSET(context->font_character_exists, 0,
+                sizeof(context->font_character_exists));
+        }
         for (i = 0; i < context->columns; ++i) {
             for (j = 0; j < context->rows; ++j) {
                 index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;

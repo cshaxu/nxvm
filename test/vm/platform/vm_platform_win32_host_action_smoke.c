@@ -53,7 +53,7 @@ int main(C_INT argc, C_CHAR **argv)
     (C_VOID)argc;
     (C_VOID)argv;
     if (vm_platform_run_context_create(STD_NULL, &sink, STD_NULL, STD_NULL,
-            STD_NULL, &context) != TYPE_STATUS_OK ||
+            &context) != TYPE_STATUS_OK ||
         vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK) goto fail;
     if (_tcscmp(vm_platform_win32app_title_for_lifecycle(
             VM_PLATFORM_EXECUTION_RUNNING), _T("NXVM (Running)")) != 0 ||

@@ -10,9 +10,9 @@ C_INT main(C_VOID)
     vm_platform_run_context *second = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
 
-    if (vm_platform_run_context_create(STD_NULL, STD_NULL, STD_NULL, STD_NULL, STD_NULL,
+    if (vm_platform_run_context_create(STD_NULL, STD_NULL, STD_NULL, STD_NULL,
             &first) != TYPE_STATUS_OK || vm_platform_run_context_create(STD_NULL,
-            STD_NULL, STD_NULL, STD_NULL, STD_NULL, &second) != TYPE_STATUS_OK) goto fail;
+            STD_NULL, STD_NULL, STD_NULL, &second) != TYPE_STATUS_OK) goto fail;
     if (vm_platform_run_context_get_display_mode(first) !=
             VM_PLATFORM_DISPLAY_CONSOLE ||
         vm_platform_run_context_get_window_display(first)) goto fail;

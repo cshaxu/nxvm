@@ -108,7 +108,6 @@ static const vm_profile_default_pc_at_route ibm_5170_model_339_routes[] = {
 
 static const vm_profile_default_pc_at_firmware_service
 default_pc_at_firmware_services[] = {
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10, 0x10u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST, 0u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0, 0x08u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A, 0x1au },
@@ -126,7 +125,6 @@ default_pc_at_firmware_services[] = {
 
 static const vm_profile_default_pc_at_firmware_service
 ibm_5170_model_339_firmware_services[] = {
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10, 0x10u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST, 0u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0, 0x08u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A, 0x1au },

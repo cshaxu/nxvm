@@ -8,7 +8,7 @@ firmware:
     - path: ../../../nxvm-assets/profiles/ibm-5170-model-339/firmware/ibm-5170-15nov85-u47-61x9265.rom
   video: null
   cmos: ../../../nxvm-assets/profiles/ibm-5170-model-339/cmos/ibm-5170-model-339-default.cmos
-  font: ../default-cp437-8x16.bin
+  font: ../../../nxvm-assets/profiles/ibm-mda/firmware/ibm-mda-cp437-character-generator.rom
 media:
   floppy:
     - path: ../../../nxvm-assets/media/fdd_360k_msdos_500.img

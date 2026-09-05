@@ -72,7 +72,6 @@ typedef struct vm_profile_default_pc_at_cmos_defaults {
 } vm_profile_default_pc_at_cmos_defaults;
 
 typedef enum vm_profile_default_pc_at_firmware_hook {
-    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A,

@@ -57,7 +57,7 @@ C_INT main(C_VOID)
         profile->cmos.base_memory_kib != 0x027fu ||
         profile->cmos.fixed_disk_type != 0xf0u ||
         profile->cmos.fixed_disk_type_extended_0 != 0x2fu ||
-        profile->route_count != 5u || profile->firmware_service_count != 14u ||
+        profile->route_count != 5u || profile->firmware_service_count != 13u ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile)) return 1;
 
     if (!vm_profile_default_pc_at_cpu_contract_select(profile,

@@ -72,6 +72,9 @@ type_status core_machine_configure_display(core_machine *machine,
     status = core_machine_vadp_configure_text_timing(&machine->shared_vadp,
         &config->text_timing);
     if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_vadp_configure_text_glyphs(&machine->shared_vadp,
+        &config->text_glyphs);
+    if (status != TYPE_STATUS_OK) return status;
     if (config->cga_vram_present) {
         status = core_machine_vadp_configure_cga_memory(&machine->shared_vadp,
             &machine->executor_memory);

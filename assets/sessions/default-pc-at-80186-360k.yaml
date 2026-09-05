@@ -8,7 +8,7 @@ firmware:
     - path: ../../../nxvm-assets/profiles/default-pc-at/firmware/default-pc-at-360k.rom
   video: null
   cmos: ../../../nxvm-assets/profiles/default-pc-at/cmos/default-pc-at-360k.cmos
-  font: ../default-cp437-8x16.bin
+  font: ../../../nxvm-assets/profiles/ibm-mda/firmware/ibm-mda-cp437-character-generator.rom
 media:
   floppy:
     - path: ../../../nxvm-assets/media/fdd_360k_msdos_500.img

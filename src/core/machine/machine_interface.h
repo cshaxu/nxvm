@@ -305,6 +305,7 @@ typedef struct core_machine_display_port_topology {
  * separately on the Core-owned plan. */
 typedef struct core_machine_display_config {
     core_machine_vadp_text_timing text_timing;
+    core_machine_vadp_text_glyph_config text_glyphs;
     type_bool cga_vram_present;
     type_bool ega_present;
     core_machine_vadp_ega_personality ega_personality;

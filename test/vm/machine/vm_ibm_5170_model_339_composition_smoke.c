@@ -14,9 +14,13 @@ static type_status vm_test_create_5170(const vm_session_config *config,
 {
     type_unsigned_8 even[VM_SESSION_PC_AT_ROM_CHIP_BYTES];
     type_unsigned_8 odd[VM_SESSION_PC_AT_ROM_CHIP_BYTES];
+    type_unsigned_8 font[VM_SESSION_TEXT_CHARACTER_GENERATOR_BYTES] = {0};
     vm_session_assets assets;
 
     vm_test_ibm_5170_assets(&assets, even, odd);
+    font['A' * 8u] = 0x81u;
+    font[2048u + 'A' * 8u] = 0x42u;
+    assets.font = (vm_session_asset_bytes) { font, sizeof(font) };
     return vm_session_create_from_assets(config, &assets, out_session);
 }
 
@@ -64,6 +68,11 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     }
     failed |= (STD_STRCMP(session->profile->identity, "pc-at-5170") != 0 ||
         !vm_profile_default_pc_at_descriptor_is_valid(session->profile)) ? 0x0001 : 0;
+    failed |= (!session->core_machine->shared_vadp.data.text_glyphs.present ||
+        session->core_machine->shared_vadp.data.text_glyphs.bytes['A' *
+        CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] != 0x81u ||
+        session->core_machine->shared_vadp.data.text_glyphs.bytes['A' *
+        CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS + 8u] != 0x42u) ? 0x2000 : 0;
     failed |= (session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled ||
         session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled ||
         session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 0u ||

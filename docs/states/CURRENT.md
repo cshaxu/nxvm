@@ -2,9 +2,28 @@
 
 ## Current Work
 
-**T521 is between subtasks.** S2 completed the VADP/firmware/font owner audit;
-the next implementation step is source-gated because no lawful,
-source-qualified adapter character-generator asset is presently admitted.
+## M5 T521 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Original Owner Request | Execute the IBM 5170 video-adapter corpus and external-ROM admission task in single-agent mode, with a minimalist result and no incremental compatibility paths. |
+| Admission And Approval | The owner approved T521 and, on 2026-09-04, explicitly authorized organizing the current locally held IBM MDA character-generator and IBM EGA video-ROM binaries in the owner-managed `nxvm-assets` archive. |
+| Objective | Replace the renderer-owned CP437 input with one construction-only, VADP-owned character-generator route and register the approved IBM MDA/EGA external assets through the same manifest/YAML model. |
+| Candidate Proposal | [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md). |
+| Reference Baseline | `ccb82be8` (T521 S2): one renderer-owned CP437 loader remains; generic immutable option-ROM mapping exists; profile VIDEO_INT10 declarations are dead. |
+| Files And ABI Surface | Core display configuration/snapshot/frame, VADP, VM session asset construction and presentation adapters; repository-only unit tests; external `nxvm-assets` MDA/EGA manifests and binaries. Any public ABI change must remain copied, bounded and construction-only. |
+| Scope | Add the single generic character-generator descriptor/data flow `YAML asset -> VM copied construction input -> VADP owner -> copied display snapshot/frame -> presenter`; delete renderer file ownership and dead video INT10 descriptor; organize only the approved MDA character-generator and IBM EGA Option-ROM assets externally. |
+| Non-goals | Do not add a profile-specific renderer, a guest-font fallback, a second VRAM/frame/mode owner, a fabricated CGA asset, a synthetic video BIOS callback, or an arbitrary 5170 Option-ROM configuration. Do not commit protected firmware to NXVM. |
+| Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), [source policy](../etc/operations/policy/source-policy.md), [asset policy](../etc/operations/policy/asset-policy.md), T521 List 1/List 2 and the candidate proposal. |
+| Verification | New repository-only Core/VADP and presentation-frame tests use code-defined glyph bytes; complete repository-only unit suite; external-YAML integration rows use only the approved `nxvm-assets` MDA/EGA assets when their supported configuration exists; documentation governance, `git diff --check`, actual-diff review and static duplicate-route sweep. |
+| Expected Markers | No production presentation adapter opens a font file or owns guest glyph bytes; every published text frame contains only VADP-owned copied glyph data; MDA and EGA external manifests identify exact role, size, hash, access and owner-provided provenance. |
+| Asset Needs | The two owner-approved local binaries may be copied only into `nxvm-assets` and registered only in external manifests. No protected byte enters NXVM Git, build output or test fixture directory. |
+| Reporting Requirements | Record source role, exact hash and external-manifest location without repository-local absolute paths; count deleted/added production paths; name the sole retained owner and any configuration still unsupported. |
+| Similar-Issue Sweep | Re-search tracked production code, unit tests, CMake, YAML and external manifests for path-based font loads, private glyph state, fixed CP437 tables, Option-ROM mapping and dead video-service declarations. |
+| Stop Conditions | Stop for an asset-identity contradiction, a need to treat an adapter ROM as a character-generator ROM, a required new profile-selection semantics decision, or a public mutable runtime setter. |
+| Exit Criteria | S3 closes only after the sole VADP font-owner path is implemented and proven, the approved assets are externally manifest-registered, duplicate/dead paths are removed, full unit/governance pass and the actual diff is reviewed. |
+| Task Exit Criteria | Every candidate video configuration has a source, ownership and support disposition; every admitted YAML asset is manifest-verified and consumed by one external session route; in-code INT 10h and renderer-font routes are removed or source-assigned; selected VADP output/font behavior is proven through its one owner path; full unit and external integration gates pass with T521 dual-architecture artifacts. |
 
 ## Current Technical Baseline
 

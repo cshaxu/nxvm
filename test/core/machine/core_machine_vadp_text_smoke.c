@@ -22,6 +22,7 @@ C_INT main(C_VOID)
     C_INT saw_display_interference = TYPE_FALSE;
     C_INT saw_buffer_access = TYPE_FALSE;
     core_machine_vadp_text_timing timing = { 3u, 2u, 1u };
+    core_machine_vadp_text_glyph_config glyphs = {0};
     type_unsigned_8 status;
     STD_SIZE_T refresh;
     C_INT failed = 0;
@@ -30,6 +31,10 @@ C_INT main(C_VOID)
     core_machine_port_initialize(&port);
     core_machine_memory_initialize(&memory);
     core_machine_vadp_initialize(&vadp, &port);
+    glyphs.present = TYPE_TRUE;
+    glyphs.bytes['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] = 0x81u;
+    failed |= core_machine_vadp_configure_text_glyphs(&vadp, &glyphs) !=
+        TYPE_STATUS_OK;
     failed |= core_machine_vadp_configure_text_timing(&vadp, &timing) !=
         TYPE_STATUS_OK;
     core_machine_vadp_reset(&vadp);
@@ -47,7 +52,8 @@ C_INT main(C_VOID)
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.columns != 80u || snapshot.rows != 25u ||
         snapshot.characters[0] != 'A' || snapshot.attributes[0] != 0x1fu ||
-        !snapshot.buffer_changed;
+        !snapshot.buffer_changed || !snapshot.text_glyphs_present ||
+        snapshot.text_glyphs['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] != 0x81u;
 
     core_machine_vadp_write_crtc(&port, 0x0eu, 0u);
     core_machine_vadp_write_crtc(&port, 0x0fu, 1u);

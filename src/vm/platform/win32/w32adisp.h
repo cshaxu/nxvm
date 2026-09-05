@@ -26,8 +26,7 @@ C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
                    WIN32_BOOL flagForce);
 
 C_VOID w32adispInit(w32adisp_context *context, WIN32_HWND window,
-                  const core_platform_presentation_mailbox *mailbox,
-                  const C_CHAR *font_path);
+                  const core_platform_presentation_mailbox *mailbox);
 C_VOID w32adispFinal(w32adisp_context *context);
 
 #ifdef __cplusplus

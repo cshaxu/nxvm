@@ -17,12 +17,23 @@
 #define CORE_MACHINE_DISPLAY_PALETTE_ENTRIES 256u
 #define CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT 9u
 #define CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT 21u
+#define CORE_MACHINE_DISPLAY_TEXT_GLYPH_COUNT 256u
+#define CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS 16u
+#define CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES \
+    (CORE_MACHINE_DISPLAY_TEXT_GLYPH_COUNT * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS)
 
 typedef struct core_machine_vadp_text_timing {
     type_unsigned_32 active_display_ticks;
     type_unsigned_32 horizontal_blank_ticks;
     type_unsigned_32 vertical_retrace_ticks;
 } core_machine_vadp_text_timing;
+
+/* A construction-time character generator is normalized by VM composition;
+ * VADP thereafter owns the copied 8x16 glyph state exposed to presenters. */
+typedef struct core_machine_vadp_text_glyph_config {
+    type_bool present;
+    type_unsigned_8 bytes[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
+} core_machine_vadp_text_glyph_config;
 
 typedef struct core_machine_vadp_ega_sequencer_config {
     type_unsigned_32 aperture_base;
@@ -85,6 +96,8 @@ typedef struct core_machine_display_snapshot {
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
+    type_bool text_glyphs_present;
+    type_unsigned_8 text_glyphs[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
     type_unsigned_8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
     type_unsigned_8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
     type_unsigned_16 pixel_width;

@@ -16,6 +16,10 @@
     (CORE_PLATFORM_DISPLAY_CGA_HIGH_RES_WIDTH * \
         CORE_PLATFORM_DISPLAY_EGA_HIGH_RES_HEIGHT)
 #define CORE_PLATFORM_DISPLAY_PALETTE_ENTRIES 256u
+#define CORE_PLATFORM_DISPLAY_TEXT_GLYPH_COUNT 256u
+#define CORE_PLATFORM_DISPLAY_TEXT_GLYPH_ROWS 16u
+#define CORE_PLATFORM_DISPLAY_TEXT_GLYPH_BYTES \
+    (CORE_PLATFORM_DISPLAY_TEXT_GLYPH_COUNT * CORE_PLATFORM_DISPLAY_TEXT_GLYPH_ROWS)
 
 typedef enum core_platform_display_kind {
     CORE_PLATFORM_DISPLAY_KIND_TEXT,
@@ -36,6 +40,8 @@ typedef struct core_platform_display_frame {
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
+    type_bool text_glyphs_present;
+    type_unsigned_8 text_glyphs[CORE_PLATFORM_DISPLAY_TEXT_GLYPH_BYTES];
     type_unsigned_16 pixel_width;
     type_unsigned_16 pixel_height;
     type_unsigned_8 pixels[CORE_PLATFORM_DISPLAY_MAX_PIXELS];
