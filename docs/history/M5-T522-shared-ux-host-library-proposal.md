@@ -70,7 +70,7 @@ This permits a later NTVDM64 adoption without making it a dependency of NXVM or 
 
 Inventory every staged owner-provided `src/lib` file and the current NXVM Win32/Linux presentation, lifecycle, storage, and diagnostic candidates. Create a finite migration ledger that gives each item exactly one disposition: admit into the declared library root, retain product-local with its reason, or exclude with a named receiver. Verify provenance and notices before source is moved.
 
-Define the public `ux`, `host/sync`, `session`, `storage`, and `observability` contracts only where a current or explicitly identified cross-product capability exists. Do not create empty subsystem roots, speculative Linux Window backends, a generic machine interface, or a framework for a hypothetical consumer.
+Define the public `ux`, `host/sync`, `session`, `storage`, and `observability` contracts from the finite current candidates. Do not create speculative Linux Window backends, a generic machine interface, or a framework for a hypothetical consumer. Each admitted root must replace a complete bounded mechanism in NXVM; it must not own a machine, profile, controller, firmware, media topology, or guest debugger policy.
 
 The S1 ledger must explicitly resolve these existing UX defects before any product cutover:
 
@@ -90,15 +90,60 @@ Admit the ledger's genuinely reusable lifecycle, storage, and diagnostic mechani
 
 Likewise, consolidate only duplicate generic image/overlay and bounded outcome or trace mechanics. Controller-specific disk behavior, session media policy, and guest-visible debugging remain owned by their product/core boundaries.
 
+## S6 - Complete Shared-Capability Ledger And RDP Closure Proof
+
+Reopen T522 after the UX cutover to correct its incomplete non-UX admission.
+Freeze one migration ledger for every concrete candidate in `host/sync`,
+`session`, `storage`, and `observability`, including its state owner, callers,
+failure and cancellation boundary, retained product policy, receiver S and
+replacement/deletion target. The existing Win32/RDP UTF-16 normalizer must be
+proven through the shared UX binding; this is a test-only closure proof, not a
+second input route.
+
+## S7 - Host Synchronization Extraction
+
+Extract the existing bounded host wait/cancel/thread-completion mechanics into
+`lib/host`, with platform implementations below `host/win32` and
+`host/linux`. The public contract carries only opaque/native-free values and
+explicit cancellation/result semantics. NXVM's platform runner consumes it;
+the library neither selects nor owns a VM session, UI loop, Core clock, or
+guest progression.
+
+## S8 - Session Lifecycle Extraction
+
+Extract the reusable serial lifecycle state machine into `lib/session` through
+an injected, bounded executor callback. NXVM remains the owner of session
+construction, machine/profile facts, commands, debugger policy and final
+reporting; it removes the replaced control/lifecycle mechanism instead of
+wrapping it.
+
+## S9 - Storage Extraction
+
+Extract the generic byte-image and copy-on-write overlay/atomic-persistence
+mechanics into `lib/storage`. The library owns byte buffers, overlay and
+commit/rollback mechanics only. FDD/HDD geometry, controller media requests,
+drive selection, sidecars and session media policy remain product/device
+owners and consume the one storage route.
+
+## S10 - Observability Extraction And Whole-Task Closure
+
+Extract bounded, copied outcome/trace publication into `lib/observability`.
+Core remains the producer and owner of machine trace meaning; VM remains the
+owner of debugger and console policy. Retire the replaced generic transport
+helpers, run source-ownership sweeps, all unit and external-YAML integration
+gates, and fresh stripped x64/x86 artifacts before T522 closes.
+
 ## S4 - NXVM One-Path Cutover And Retirement
 
 Bind NXVM's VM platform layer to the shared library. In the same delivery, delete superseded NXVM Win32/Linux presenter loops, duplicate native keyboard normalization, and any replaced lifecycle/host-sync route. No wrapper selects between old and new presenters, mailboxes, or lifecycle owners.
 
 The retained UX contracts include one Console lease, independent Window sessions, Console lease retention while a Console-mode guest opens graphics, Window close-to-pause, click capture/release, and the existing product action semantics. Linux uses the same values and binding route; a new Linux graphics backend is explicitly out of scope unless the ledger finds an already-owned implementation suitable for migration.
 
-## S5 - Closure
+## S5 - Initial UX Closure (superseded)
 
-Run library and product repository-only unit tests, the full unit suite, the external-YAML integration suite, focused Win32 multi-window/Console-lease/close-pause/RDP acceptance, retained Linux presentation regression, source ownership sweep, documentation governance, and stripped x64/x86 artifact builds. Record provenance, the migration ledger, code-size result, and the single retained production path for each migrated capability.
+The former UX-only closure is superseded by S6--S10. Its completed UX evidence
+remains valid, but T522 cannot close until every admitted shared capability is
+implemented and the whole-task gate is run.
 
 ## Non-goals And Stop Conditions
 

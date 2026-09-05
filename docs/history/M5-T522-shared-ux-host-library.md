@@ -122,3 +122,18 @@ target produced stripped optimized `nxvm_0_5_0522_x64.exe`
 and `nxvm_0_5_0522_x86.exe`
 (`EAEC436BBF2AB9776800E260B335D85129D5FC7F59D8EBE80B7AB0802A61DC0B`);
 the configured PE checks confirm their architectures.
+
+## S6 Result
+
+The owner rejected the former UX-only task closure: T522 remains responsible
+for the five independent shared capabilities stated in its proposal.  The
+[complete capability ledger](../etc/evidence/t522-s6-complete-shared-capability-ledger.md)
+maps each `host`, `session`, `storage` and `observability` candidate to a
+bounded receiver, old-route deletion boundary, retained product/Core policy
+and regression owner.  It explicitly prohibits empty library roots and raw
+machine/session pointer exposure.
+
+The S6 RDP closure test sends UTF-16 through the existing shared Win32
+normalizer and UX binding, observing only VM guest key make/break output.  It
+adds no product route.  The focused proof and full repository-only unit suite
+pass; S7 begins the host synchronization replacement.  T522 is open.

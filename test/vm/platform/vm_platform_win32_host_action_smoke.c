@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "lib/ux/presenter.h"
+#include "lib/ux/win32/input.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/ux_binding.h"
 
@@ -29,6 +30,7 @@ int main(C_INT argc, C_CHAR **argv)
     vm_platform_host_input_sink sink;
     host_action_capture capture = { 0 };
     ux_binding binding;
+    ux_win32_keyboard_normalizer normalizer = { 0 };
     ux_event event = { 0 };
     C_CHAR title[32];
 
@@ -70,6 +72,12 @@ int main(C_INT argc, C_CHAR **argv)
         capture.count != 19u || capture.events[16].data.key.scan_code != 0x1cu ||
         !capture.events[16].data.key.pressed ||
         capture.events[16].data.key.virtual_key != 0x0du) goto fail;
+    if (!ux_win32_keyboard_submit_utf16(&normalizer, binding.context,
+            binding.input_sink, 'b') || capture.count != 21u ||
+        capture.events[19].data.key.virtual_key != 'B' ||
+        !capture.events[19].data.key.pressed ||
+        capture.events[20].data.key.virtual_key != 'B' ||
+        capture.events[20].data.key.pressed) goto fail;
     binding.get_title(binding.context, title, sizeof(title));
     if (strcmp(title, "NXVM (Stopped)") != 0) goto fail;
     vm_platform_run_handle_destroy(handle);

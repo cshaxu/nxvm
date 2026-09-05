@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T522 closed |
-| Admission And Approval | Owner approved T522 implementation on 2026-09-05. S5 closes the shared UX route and its required product, integration and artifact acceptance. |
-| Objective | No active implementation packet. |
-| Non-goals | No new UX architecture, no parallel compatibility selector, no Core/VADP/guest-input protocol change, no machine/profile/controller change and no Linux graphics backend. |
-| Reference Baseline | T522 closure: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
-| Candidate Proposal | None. |
-| Files And ABI Surface | Existing S4 binding and `lib/ux` route only; CTest product/integration registration, artifact presets/output, closure evidence and task history. |
-| Applicable Rules | Architecture: retained Core mailbox then VM conversion then UX mailbox remains sole path. Coding: no closure workaround, test-only route, duplicate state or ABI widening. UX, execution, source and documentation rules apply. |
-| Verification | T522: unit 304/304; external-YAML integration 44/44; focused UX route tests; source sweep; dual architecture proof. Linux native execution is not required. |
-| Expected Markers | Next task admission is required before new implementation work. |
+| Identifier Mode | M5 T522 S6 Owner-Reopen |
+| Admission And Approval | Owner rejected UX-only closure and explicitly approved reopening T522 on 2026-09-05. S6 corrects the incomplete non-UX admission and retains the discovered RDP proof gap. |
+| Objective | Freeze the complete finite migration ledger and exact replacement contracts for `lib/host`, `lib/session`, `lib/storage` and `lib/observability`; directly prove existing RDP UTF-16 ingress through the shared UX binding. |
+| Non-goals | No speculative framework, generic machine interface, parallel compatibility selector, Core/VADP/guest-input protocol change, machine/profile/controller change, external RDP environment or Linux graphics backend. |
+| Reference Baseline | `ec45caef`: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
+| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S6--S10. |
+| Files And ABI Surface | `test/vm/platform/vm_platform_win32_host_action_smoke.c`; migration ledger/history/status. S6 changes no production ABI; it identifies the finite source and deletion surface for S7--S10. |
+| Applicable Rules | Architecture: each extracted capability has one owner and product-neutral direction; Core mailbox then VM conversion then UX mailbox remains sole presentation path. Coding: no empty roots, test-only route, duplicate state or ABI widening. UX, execution and documentation rules apply. |
+| Verification | Focused Win32 host-action test proves UTF-16 text reaches the VM sink; static candidate/caller sweep; complete repository-only unit; documentation governance and diff check. S7--S10 own production extraction, integration and artifact gates. Linux native execution remains owner-approved out of scope. |
+| Expected Markers | `M5:T522:S4:UX-BINDING:OK`; unit 304/304; one complete disposition for every host/session/storage/observability candidate. |
 | Asset Needs | None. No ROM, CMOS, media or external runtime asset is used. |
-| Reporting Requirements | T522 evidence is retained in its history record. |
-| Stop Conditions | New work requires an admitted packet. |
-| Exit Criteria | T522 closed. |
+| Reporting Requirements | Record the rejected UX-only closure, RDP proof, complete migration ledger, retained product policy and exact S7--S10 receiver for each candidate; report a candidate that cannot be isolated without raw machine/session exposure. |
+| Stop Conditions | Stop if a candidate needs a raw Core/VM/machine/session pointer in a public lib contract, must duplicate guest/media/debugger state, or has no finite replacement/deletion boundary. |
+| Exit Criteria | Every in-scope candidate has one evidence-backed disposition, public capability boundary, source/deletion receiver and regression owner; RDP UTF-16 ingress is directly proven; full unit/governance pass; T522 remains open for S7--S10. |
 | Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
-| Similar-Issue Sweep | Enumerate all Win32/Linux Console/Window, input, mailbox, display mode, run-handle and lifecycle callback paths so no old native route, test-only route or hidden product state survives the cutover. |
+| Similar-Issue Sweep | Search all host waiting/thread/cancel, session lifecycle/control, image/overlay/atomic-persistence and trace/outcome transport callers. Each hit must be assigned to extraction, retained product policy or a named exclusion with reason; no mechanism may be silently omitted because it currently lacks a lib directory. |
 
 ## Current Technical Baseline
 
