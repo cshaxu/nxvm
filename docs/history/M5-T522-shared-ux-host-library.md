@@ -65,3 +65,13 @@ lifecycle, wait, storage and diagnostic path either owns Core/VM semantics or
 lacks a complete independent replacement/caller boundary. The [S3 ledger](../etc/evidence/t522-s3-nonux-capability-admission-ledger.md)
 records every disposition. The task therefore retains no empty library root
 and advances only to the planned S4 one-path UX cutover.
+
+## S3 Acceptance
+
+The coordinator independently reviewed `e11a3f1a`: it changes only the
+indexed admission evidence, history and active-status record, and its six
+candidate-family dispositions match the referenced source/caller sweep. It
+does not hide implementation in a documentation delivery or create a library
+root. The complete repository-only unit suite remains 306/306 and
+documentation governance passes. S3 is accepted with no transfer other than
+the already planned S4 UX receiver.
