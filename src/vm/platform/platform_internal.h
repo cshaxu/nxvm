@@ -7,7 +7,7 @@
 #include "lib/ux/router.h"
 
 struct vm_platform_run_context {
-    const vm_platform_execution_transport *execution;
+    const lib_session_executor *execution;
     vm_platform_host_input_sink input_sink;
     const core_platform_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;

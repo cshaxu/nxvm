@@ -95,6 +95,11 @@ else()
 endif()
 target_include_directories(host-sync PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(host-sync PUBLIC type-facade)
+add_library(session-lifecycle STATIC
+    src/lib/session/state.c
+    src/lib/session/executor.c)
+target_include_directories(session-lifecycle PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(session-lifecycle PUBLIC type-facade)
 if(WIN32)
     add_library(ux-win32-native STATIC
         src/lib/ux/win32/actions.c
@@ -1288,7 +1293,7 @@ target_link_libraries(core-platform PUBLIC type-facade host-sync)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
     src/vm/platform/virtual_time.c
-    src/vm/platform/execution.c
+    src/vm/platform/execution_wait.c
     src/vm/platform/input_flush.c
     src/vm/platform/ux_frame.c
     src/vm/platform/ux_binding.c
@@ -1510,6 +1515,7 @@ target_link_libraries(vm-platform PUBLIC
     type-facade
     core-utils
     core-platform
+    session-lifecycle
     ux-contract)
 if(WIN32)
     target_link_libraries(vm-platform PUBLIC ux-win32-native user32 gdi32)
@@ -1531,6 +1537,8 @@ add_executable(host-sync-smoke
     test/lib/host_sync_smoke.c
 )
 target_link_libraries(host-sync-smoke PRIVATE host-sync)
+add_executable(session-state-smoke test/lib/session_state_smoke.c)
+target_link_libraries(session-state-smoke PRIVATE session-lifecycle)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -1549,10 +1557,10 @@ add_executable(vm-host-cancellation-smoke
 target_link_libraries(vm-host-cancellation-smoke PRIVATE
     vm-composition)
 
-add_executable(vm-platform-execution-smoke
-    test/vm/platform/vm_platform_execution_smoke.c
+add_executable(session-executor-smoke
+    test/lib/session_executor_smoke.c
 )
-target_link_libraries(vm-platform-execution-smoke PRIVATE vm-platform)
+target_link_libraries(session-executor-smoke PRIVATE session-lifecycle)
 add_executable(vm-platform-run-handle-smoke
     test/integration/platform/vm_platform_run_handle_smoke.c
 )
@@ -1608,6 +1616,7 @@ target_link_libraries(vm-composition PUBLIC
     vm-profile
     vm-product
     vm-request-transport)
+target_link_libraries(vm-composition PRIVATE session-lifecycle)
 target_link_libraries(vm-composition PRIVATE vm-platform)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
@@ -2396,9 +2405,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-product-debug-input-failure-smoke
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
-    vm-platform-execution-smoke
+    session-executor-smoke
     core-platform-input-source-smoke
     host-sync-smoke
+    session-state-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-platform-presentation-mailbox-smoke
@@ -3770,6 +3780,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(session-executor-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3916,7 +3928,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
     "vm-platform|src/vm/platform/platform.c|win32-platform"
-    "vm-platform|src/vm/platform/execution.c|win32-platform"
+    "vm-platform|src/vm/platform/execution_wait.c|win32-platform"
     "vm-platform|src/vm/platform/input_flush.c|win32-platform"
     "vm-platform|src/vm/platform/virtual_time.c|win32-platform"
     "vm-platform|src/vm/platform/win32/win32.c|win32-platform"

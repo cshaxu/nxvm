@@ -26,7 +26,7 @@ static C_INT has_dos_prompt(const vm_session *session);
 
 static DWORD WINAPI run_full_pc(C_VOID *opaque)
 {
-    vm_session_start((vm_session *)opaque);
+    vm_session_control_start(&((vm_session *)opaque)->control);
     return 0u;
 }
 

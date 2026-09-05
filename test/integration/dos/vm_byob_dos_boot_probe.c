@@ -1842,7 +1842,7 @@ int main(C_INT argc, C_CHAR **argv)
             goto done;
         }
     }
-    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
+    lib_session_state_start(&session->control.state);
     started = GetTickCount64();
     progress = started;
     next_display_capture = started;

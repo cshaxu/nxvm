@@ -11,7 +11,7 @@ extern "C" {
 #include "core/platform/input_interface.h"
 #include "core/platform/presentation_mailbox_interface.h"
 #include "core/utils/wait_provider.h"
-#include "vm/platform/execution.h"
+#include "lib/session/executor.h"
 
 typedef type_status (*vm_platform_host_input_submit)(C_VOID *context,
     const core_platform_input_event *event);
@@ -41,7 +41,7 @@ typedef enum vm_platform_run_event {
 typedef struct vm_platform_run_handle vm_platform_run_handle;
 
 type_status vm_platform_run_context_create(
-    const vm_platform_execution_transport *execution,
+    const lib_session_executor *execution,
     const vm_platform_host_input_sink *input_sink,
     const core_platform_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope,

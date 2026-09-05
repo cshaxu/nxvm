@@ -3,6 +3,7 @@
 
 
 #include "type.h"
+#include "lib/session/state.h"
 #include "vm/composition/session/execution.h"
 
 #ifdef __cplusplus
@@ -20,13 +21,7 @@ typedef enum vm_session_pause_reason {
 typedef struct vm_session vm_session;
 
 typedef struct vm_session_control_state {
-    STD_ATOMIC_BOOL flagFlip;
-    STD_ATOMIC_BOOL flagRun;
-    STD_ATOMIC_BOOL flagReset;
-    STD_ATOMIC_BOOL pauseRequested;
-    STD_ATOMIC_BOOL paused;
-    STD_ATOMIC_BOOL stepRequested;
-    STD_ATOMIC_INT pauseReason;
+    lib_session_state state;
     vm_session_execution_context execution_context;
 } vm_session_control_state;
 

@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T522 S7 Continuation |
-| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S6 accepted the finite receiver ledger. |
-| Objective | Replace Core-platform generic sleep/yield/cancellation-aware wait with independent `lib/host/sync` and migrate every caller to the one route. |
-| Non-goals | No VM virtual-time/pacing policy, Core scheduler semantics, UI event-loop ownership, VM session selection, generic thread framework, external RDP dependency or Linux graphics backend. |
+| Identifier Mode | M5 T522 S8 Continuation |
+| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S7 accepted the sole host-sync replacement. |
+| Objective | Extract the generic serial lifecycle state transitions into independent `lib/session` through bounded callbacks, then replace the VM control state mechanism. |
+| Non-goals | No VM/Core/machine pointer in a public lib API; no profile, firmware, debugger, display, command or scheduler policy migration; no generic executor framework or compatibility wrapper. |
 | Reference Baseline | `ec45caef`: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
-| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S7. |
-| Files And ABI Surface | New `src/lib/host/{sync.h,sync.c,win32/sync.c,linux/sync.c}`; delete `src/core/platform/{sleep.h,wait_interface.h,wait.c,win32/sleep.c,linux/sleep.c}`; update their complete caller and test surface. |
-| Applicable Rules | Architecture: `lib/host` is native-free at its root and owns one generic host wait route; Core/VM consume it without reverse dependency or product policy. Coding: no compatibility forwarding wrapper, duplicate sleep/wait state or ABI widening. Execution, source and documentation rules apply. |
-| Verification | Focused host-sync and all migrated Core/VM waits; source sweep finds no `core_platform_sleep`, `core_platform_yield` or `core_platform_wait`; complete repository-only unit, external-YAML integration, documentation governance, diff check and stripped 0522 x64/x86 artifact proof. |
-| Expected Markers | Host-sync contract test; unit 304/304; integration 44/44; legacy host-wait source sweep empty; both 0522 architecture checks pass. |
+| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S8. |
+| Files And ABI Surface | New `src/lib/session/{state.h,state.c,executor.h,lifecycle.h,lifecycle.c}` and `test/lib/session_*`; replace the generic state portion of `vm/composition/session/control.*` and its callers. |
+| Applicable Rules | Architecture: lib session uses copied state and bounded callbacks only; VM remains sole owner of session/machine/debugger/profile facts. Coding: one lifecycle state owner, no raw product pointer in public lib headers, no forwarding wrapper or duplicate state. Execution and documentation rules apply. |
+| Verification | Lib-session transition tests; VM lifecycle/control focused tests; source sweep for old generic control flags/transitions; complete repository-only unit, external-YAML integration, governance, diff check and stripped 0522 x64/x86 artifact proof. |
+| Expected Markers | Session lifecycle test; unit 304/304; integration 44/44; old generic VM control transition route absent; both 0522 architecture checks pass. |
 | Asset Needs | None. No ROM, CMOS, media or external runtime asset is used. |
-| Reporting Requirements | Record the deleted Core-platform route, retained `lib/host` API/owner, migrated callers, code-size result and verification; report any caller that needs policy beyond cancellable host waiting. |
-| Stop Conditions | Stop if a caller requires Core guest-time progression, VM policy, a native SDK type in the root header, an ABI compatibility wrapper or a second wait implementation. |
-| Exit Criteria | `lib/host` provides the sole bounded sleep/yield/cancellable-wait mechanism; every legacy definition/caller is removed or migrated; focused/full gates and dual artifacts pass; T522 remains open for S8--S10. |
+| Reporting Requirements | Record the removed VM generic transition state, retained VM policy callbacks, lib session API/owner, migrated callers, code-size and verification; report a necessary state whose meaning is machine/profile-specific. |
+| Stop Conditions | Stop if an extracted contract needs a raw VM/Core/machine pointer, mirrors debugger/profile state, changes pause/reset semantics, or retains parallel VM and lib lifecycle state. |
+| Exit Criteria | `lib/session` is the sole owner of generic start/pause/resume/reset/stop transition state; VM supplies bounded policy callbacks; old generic VM control state is deleted; all gates and dual artifacts pass; T522 remains open for S9--S10. |
 | Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
-| Similar-Issue Sweep | Search all tracked source/tests/CMake for `core_platform_sleep`, `core_platform_yield`, `core_platform_wait` and their implementation files. Migrate every generic host-wait hit; exclude only Core/VM logical wait callbacks that remain values passed to the new host boundary. |
+| Similar-Issue Sweep | Search all tracked source/tests/CMake for session lifecycle/control state, start/pause/resume/reset/stop transitions and run-handle reports. Migrate generic transition state; retain only documented VM policy callbacks and machine-owned facts. |
 
 ## Current Technical Baseline
 

@@ -26,7 +26,7 @@
 
 #include "core/machine/machine_interface.h"
 
-#include "vm/platform/execution.h"
+#include "lib/session/executor.h"
 
 #include "core/platform/input_interface.h"
 
@@ -132,14 +132,14 @@ static const vm_platform_host_input_sink vm_session_host_input_sink = {
     STD_NULL
 };
 
-static vm_platform_execution_lifecycle vm_session_execution_get_lifecycle(
+static lib_session_lifecycle vm_session_execution_get_lifecycle(
     C_VOID *context)
 {
     vm_session_control_state *control = &((vm_session *)context)->control;
 
     return vm_session_control_is_running(control) ?
-        VM_PLATFORM_EXECUTION_RUNNING : vm_session_control_is_paused(control) ?
-        VM_PLATFORM_EXECUTION_PAUSED : VM_PLATFORM_EXECUTION_STOPPED;
+        LIB_SESSION_RUNNING : vm_session_control_is_paused(control) ?
+        LIB_SESSION_PAUSED : LIB_SESSION_STOPPED;
 }
 
 static C_INT vm_session_execution_get_flip(C_VOID *context)
@@ -158,7 +158,7 @@ static C_VOID vm_session_execution_stop(C_VOID *context)
     vm_session_control_stop(&((vm_session *)context)->control);
 }
 
-static const vm_platform_execution_sink vm_session_execution_sink = {
+static const lib_session_executor_sink vm_session_execution_sink = {
     vm_session_execution_get_lifecycle,
     vm_session_execution_get_flip,
     vm_session_execution_start,
@@ -302,7 +302,7 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
         vm_session_debug_disassemble, STD_NULL);
-    status = vm_platform_execution_transport_create(&vm_session_execution_sink,
+    status = lib_session_executor_create(&vm_session_execution_sink,
         machine, &machine->execution_transport);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     status = vm_platform_request_transport_create(&machine->request_transport);
@@ -339,7 +339,7 @@ C_VOID vm_session_finalize(vm_session *machine) {
     machine->platform_run_handle = STD_NULL;
     vm_platform_run_context_destroy(machine->platform_run_context);
     machine->platform_run_context = STD_NULL;
-    vm_platform_execution_transport_destroy(machine->execution_transport);
+    lib_session_executor_destroy(machine->execution_transport);
     machine->execution_transport = STD_NULL;
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     core_platform_input_source_destroy(machine->input_source);

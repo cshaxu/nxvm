@@ -4,6 +4,7 @@
 
 #include "lib/ux/linux/console.h"
 #include "vm/platform/platform_internal.h"
+#include "vm/platform/execution_wait.h"
 #include "vm/platform/ux_binding.h"
 #include "vm/platform/linux/linux.h"
 
@@ -37,7 +38,7 @@ static C_VOID *vm_platform_linux_ux_kernel_thread(C_VOID *opaque)
     vm_platform_linux_ux_handle *handle = opaque;
 
     if (handle == STD_NULL) return STD_NULL;
-    vm_platform_execution_start_for(handle->context->execution);
+    lib_session_executor_start(handle->context->execution);
     vm_platform_run_handle_report(handle->owner,
         VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED);
     return STD_NULL;
@@ -62,14 +63,14 @@ type_status vm_platform_linux_run_handle_start(
     owner->window_display = TYPE_FALSE;
     owner->active = TYPE_TRUE;
     ux_router_initialize((ux_router *)&context->ux_router, UX_DISPLAY_CONSOLE);
-    old_flip = vm_platform_execution_get_flip_for(context->execution);
+    old_flip = lib_session_executor_get_flip(context->execution);
     if (pthread_create(&handle->kernel_thread, STD_NULL,
             vm_platform_linux_ux_kernel_thread, handle) != 0) {
         vm_platform_linux_run_handle_finalize(owner);
         return TYPE_STATUS_INVALID_STATE;
     }
     handle->kernel_started = TYPE_TRUE;
-    if (!vm_platform_execution_wait_for_flip_for(context->execution, old_flip,
+    if (!vm_platform_wait_for_execution_flip(context->execution, old_flip,
             VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
         vm_platform_linux_run_handle_request_stop(owner);
         vm_platform_linux_run_handle_join(owner);
@@ -92,7 +93,7 @@ C_VOID vm_platform_linux_run_handle_request_stop(vm_platform_run_handle *owner)
     vm_platform_linux_ux_handle *handle = owner == STD_NULL ? STD_NULL :
         owner->backend;
 
-    if (handle != STD_NULL) vm_platform_execution_stop_for(
+    if (handle != STD_NULL) lib_session_executor_stop(
         handle->context->execution);
 }
 

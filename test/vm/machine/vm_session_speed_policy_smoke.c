@@ -43,18 +43,18 @@ static C_INT verify_wait_speed(vm_session *session, vm_session_speed speed)
     if (core_machine_get_elapsed_ticks(session->core_machine, &before) != TYPE_STATUS_OK) {
         return 1;
     }
-    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
+    lib_session_state_start(&session->control.state);
     if (vm_session_waiting_advance(session, &waiting, &advanced) != TYPE_STATUS_OK ||
         !advanced || core_machine_get_elapsed_ticks(session->core_machine, &after) !=
             TYPE_STATUS_OK || after <= before) {
-        STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);
+        lib_session_state_stop(&session->control.state);
         return 1;
     }
     if (vm_session_set_speed(session, VM_SESSION_SPEED_STANDARD) != TYPE_STATUS_INVALID_STATE) {
-        STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);
+        lib_session_state_stop(&session->control.state);
         return 1;
     }
-    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);
+    lib_session_state_stop(&session->control.state);
     return 0;
 }
 
