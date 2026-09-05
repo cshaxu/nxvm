@@ -86,6 +86,15 @@ add_library(ux-contract STATIC
     src/lib/ux/router.c)
 target_include_directories(ux-contract PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(ux-contract PUBLIC type-facade)
+add_library(host-sync STATIC
+    src/lib/host/sync.c)
+if(WIN32)
+    target_sources(host-sync PRIVATE src/lib/host/win32/sync.c)
+else()
+    target_sources(host-sync PRIVATE src/lib/host/linux/sync.c)
+endif()
+target_include_directories(host-sync PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(host-sync PUBLIC type-facade)
 if(WIN32)
     add_library(ux-win32-native STATIC
         src/lib/ux/win32/actions.c
@@ -1260,12 +1269,10 @@ set(CORE_MACHINE_SOURCES
 add_library(core-platform STATIC
     src/core/platform/file.c
     src/core/platform/input.c
-    src/core/platform/presentation_mailbox.c
-    src/core/platform/wait.c)
+    src/core/platform/presentation_mailbox.c)
 if(WIN32)
     target_sources(core-platform PRIVATE
-        src/core/platform/win32/keyboard.c
-        src/core/platform/win32/sleep.c)
+        src/core/platform/win32/keyboard.c)
     add_executable(core-platform-win32-keyboard-smoke
         test/core/platform/core_platform_win32_keyboard_smoke.c)
     target_link_libraries(core-platform-win32-keyboard-smoke PRIVATE core-platform)
@@ -1273,13 +1280,11 @@ if(WIN32)
         COMMAND core-platform-win32-keyboard-smoke)
     set_tests_properties(unit.core-platform-win32-keyboard-smoke PROPERTIES LABELS unit)
 else()
-    target_sources(core-platform PRIVATE
-        src/core/platform/linux/sleep.c)
 endif()
 target_include_directories(core-platform PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-platform PUBLIC type-facade)
+target_link_libraries(core-platform PUBLIC type-facade host-sync)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
     src/vm/platform/virtual_time.c
@@ -1522,10 +1527,10 @@ add_executable(core-platform-input-source-smoke
     test/core/platform/core_platform_input_source_smoke.c
 )
 target_link_libraries(core-platform-input-source-smoke PRIVATE core-platform)
-add_executable(core-platform-wait-smoke
-    test/core/platform/core_platform_wait_smoke.c
+add_executable(host-sync-smoke
+    test/lib/host_sync_smoke.c
 )
-target_link_libraries(core-platform-wait-smoke PRIVATE core-platform)
+target_link_libraries(host-sync-smoke PRIVATE host-sync)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -2393,7 +2398,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-console-exit-smoke
     vm-platform-execution-smoke
     core-platform-input-source-smoke
-    core-platform-wait-smoke
+    host-sync-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-platform-presentation-mailbox-smoke
@@ -3764,7 +3769,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-platform-wait-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

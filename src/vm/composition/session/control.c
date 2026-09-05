@@ -16,7 +16,7 @@
 
 #include "core/machine/machine_interface.h"
 
-#include "core/platform/sleep.h"
+#include "lib/host/sync.h"
 
 #include "vm/composition/session/control.h"
 
@@ -130,7 +130,7 @@ C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,
     if (control == STD_NULL) return TYPE_FALSE;
     while (STD_ATOMIC_LOAD(&control->flagRun) && !STD_ATOMIC_LOAD(&control->paused) &&
            waited < milliseconds) {
-        core_platform_sleep_milliseconds(1u);
+        host_sync_sleep_milliseconds(1u);
         ++waited;
     }
     return STD_ATOMIC_LOAD(&control->paused);

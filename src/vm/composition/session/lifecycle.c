@@ -18,7 +18,7 @@
 #include "core/product/utils.h"
 #include "core/utils/wait_provider.h"
 
-#include "core/platform/sleep.h"
+#include "lib/host/sync.h"
 
 #include "vm/composition/session/debug_target.h"
 
@@ -42,7 +42,7 @@
 static C_VOID vm_session_wait(C_VOID *context, type_unsigned_32 milliseconds)
 {
     (C_VOID)context;
-    core_platform_sleep_milliseconds(milliseconds);
+    host_sync_sleep_milliseconds(milliseconds);
 }
 
 static type_status vm_session_debug_disassemble(C_VOID *context,

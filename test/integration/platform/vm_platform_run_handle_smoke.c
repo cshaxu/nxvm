@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine.h"
-#include "core/platform/sleep.h"
+#include "lib/host/sync.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/lifecycle.h"
@@ -19,7 +19,7 @@ static C_INT vm_platform_run_handle_wait_for_keyboard(vm_session *session,
             session->core_machine->shared_kbc.data.last_keyboard_output_byte != previous) {
             return 1;
         }
-        core_platform_sleep_milliseconds(1u);
+        host_sync_sleep_milliseconds(1u);
     }
     return 0;
 }
@@ -52,10 +52,10 @@ int main(C_INT argc, C_CHAR **argv)
         !session->start_outcome.valid ||
         session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
-    core_platform_sleep_milliseconds(50u);
+    host_sync_sleep_milliseconds(50u);
     vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
         session->platform_run_handle, 0x43u, VK_F9, 1);
-    core_platform_sleep_milliseconds(50u);
+    host_sync_sleep_milliseconds(50u);
     if (!vm_session_control_is_running(&session->control) ||
         vm_platform_run_handle_take_stop_report(session->platform_run_handle)) goto fail;
     vm_session_stop(session);
@@ -66,7 +66,7 @@ int main(C_INT argc, C_CHAR **argv)
         !session->start_outcome.valid ||
         session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
-    core_platform_sleep_milliseconds(50u);
+    host_sync_sleep_milliseconds(50u);
     if (session->core_machine->shared_kbc.data.last_keyboard_output_byte == 0x43u) {
         goto fail;
     }

@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/platform/wait_interface.h"
+#include "lib/host/sync.h"
 #include "vm/platform/execution.h"
 
 
@@ -94,7 +94,7 @@ C_INT vm_platform_execution_wait_for_flip_for(
     vm_platform_execution_flip_wait wait = { transport, initial_flip };
 
     if (transport == STD_NULL) return TYPE_FALSE;
-    (C_VOID)core_platform_wait_milliseconds(timeout_milliseconds,
+    (C_VOID)host_sync_wait_milliseconds(timeout_milliseconds,
         vm_platform_execution_flip_wait_cancelled, &wait);
     return vm_platform_execution_get_flip_for(transport) != initial_flip;
 }

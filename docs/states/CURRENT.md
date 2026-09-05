@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T522 S6 Owner-Reopen |
-| Admission And Approval | Owner rejected UX-only closure and explicitly approved reopening T522 on 2026-09-05. S6 corrects the incomplete non-UX admission and retains the discovered RDP proof gap. |
-| Objective | Freeze the complete finite migration ledger and exact replacement contracts for `lib/host`, `lib/session`, `lib/storage` and `lib/observability`; directly prove existing RDP UTF-16 ingress through the shared UX binding. |
-| Non-goals | No speculative framework, generic machine interface, parallel compatibility selector, Core/VADP/guest-input protocol change, machine/profile/controller change, external RDP environment or Linux graphics backend. |
+| Identifier Mode | M5 T522 S7 Continuation |
+| Admission And Approval | Owner approved T522's complete `host`, `session`, `storage` and `observability` extraction on 2026-09-05. S6 accepted the finite receiver ledger. |
+| Objective | Replace Core-platform generic sleep/yield/cancellation-aware wait with independent `lib/host/sync` and migrate every caller to the one route. |
+| Non-goals | No VM virtual-time/pacing policy, Core scheduler semantics, UI event-loop ownership, VM session selection, generic thread framework, external RDP dependency or Linux graphics backend. |
 | Reference Baseline | `ec45caef`: one `lib/ux` presentation route; current stripped dual artifacts are 0522. |
-| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S6--S10. |
-| Files And ABI Surface | `test/vm/platform/vm_platform_win32_host_action_smoke.c`; migration ledger/history/status. S6 changes no production ABI; it identifies the finite source and deletion surface for S7--S10. |
-| Applicable Rules | Architecture: each extracted capability has one owner and product-neutral direction; Core mailbox then VM conversion then UX mailbox remains sole presentation path. Coding: no empty roots, test-only route, duplicate state or ABI widening. UX, execution and documentation rules apply. |
-| Verification | Focused Win32 host-action test proves UTF-16 text reaches the VM sink; static candidate/caller sweep; complete repository-only unit; documentation governance and diff check. S7--S10 own production extraction, integration and artifact gates. Linux native execution remains owner-approved out of scope. |
-| Expected Markers | `M5:T522:S4:UX-BINDING:OK`; unit 304/304; one complete disposition for every host/session/storage/observability candidate. |
+| Candidate Proposal | [T522 retained proposal](../history/M5-T522-shared-ux-host-library-proposal.md), S7. |
+| Files And ABI Surface | New `src/lib/host/{sync.h,sync.c,win32/sync.c,linux/sync.c}`; delete `src/core/platform/{sleep.h,wait_interface.h,wait.c,win32/sleep.c,linux/sleep.c}`; update their complete caller and test surface. |
+| Applicable Rules | Architecture: `lib/host` is native-free at its root and owns one generic host wait route; Core/VM consume it without reverse dependency or product policy. Coding: no compatibility forwarding wrapper, duplicate sleep/wait state or ABI widening. Execution, source and documentation rules apply. |
+| Verification | Focused host-sync and all migrated Core/VM waits; source sweep finds no `core_platform_sleep`, `core_platform_yield` or `core_platform_wait`; complete repository-only unit, external-YAML integration, documentation governance, diff check and stripped 0522 x64/x86 artifact proof. |
+| Expected Markers | Host-sync contract test; unit 304/304; integration 44/44; legacy host-wait source sweep empty; both 0522 architecture checks pass. |
 | Asset Needs | None. No ROM, CMOS, media or external runtime asset is used. |
-| Reporting Requirements | Record the rejected UX-only closure, RDP proof, complete migration ledger, retained product policy and exact S7--S10 receiver for each candidate; report a candidate that cannot be isolated without raw machine/session exposure. |
-| Stop Conditions | Stop if a candidate needs a raw Core/VM/machine/session pointer in a public lib contract, must duplicate guest/media/debugger state, or has no finite replacement/deletion boundary. |
-| Exit Criteria | Every in-scope candidate has one evidence-backed disposition, public capability boundary, source/deletion receiver and regression owner; RDP UTF-16 ingress is directly proven; full unit/governance pass; T522 remains open for S7--S10. |
+| Reporting Requirements | Record the deleted Core-platform route, retained `lib/host` API/owner, migrated callers, code-size result and verification; report any caller that needs policy beyond cancellable host waiting. |
+| Stop Conditions | Stop if a caller requires Core guest-time progression, VM policy, a native SDK type in the root header, an ABI compatibility wrapper or a second wait implementation. |
+| Exit Criteria | `lib/host` provides the sole bounded sleep/yield/cancellable-wait mechanism; every legacy definition/caller is removed or migrated; focused/full gates and dual artifacts pass; T522 remains open for S8--S10. |
 | Original Owner Request | Build a flat shared library with UX-native loops independent of lifecycle/storage/host peers, then integrate it into NXVM without divergent code paths or unnecessary abstraction. |
-| Similar-Issue Sweep | Search all host waiting/thread/cancel, session lifecycle/control, image/overlay/atomic-persistence and trace/outcome transport callers. Each hit must be assigned to extraction, retained product policy or a named exclusion with reason; no mechanism may be silently omitted because it currently lacks a lib directory. |
+| Similar-Issue Sweep | Search all tracked source/tests/CMake for `core_platform_sleep`, `core_platform_yield`, `core_platform_wait` and their implementation files. Migrate every generic host-wait hit; exclude only Core/VM logical wait callbacks that remain values passed to the new host boundary. |
 
 ## Current Technical Baseline
 

@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "core/platform/sleep.h"
+#include "lib/host/sync.h"
 #include "vm/composition/session/execution.h"
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/fault.h"
@@ -63,7 +63,7 @@ C_VOID vm_session_runner_run(vm_session *session)
         }
         while (STD_ATOMIC_LOAD(&control->flagRun) && STD_ATOMIC_LOAD(&control->paused)) {
             vm_session_execution_context_run_command_boundary(&control->execution_context);
-            core_platform_sleep_milliseconds(1u);
+            host_sync_sleep_milliseconds(1u);
         }
         if (!STD_ATOMIC_LOAD(&control->flagRun)) break;
         vm_session_execution_context_run_command_boundary(&control->execution_context);
@@ -120,7 +120,7 @@ C_VOID vm_session_runner_run(vm_session *session)
                 /* Core has no source-qualified deadline to advance.  Yielding
                  * gives host input/control a turn without manufacturing guest
                  * time or restoring the old fixed-delay polling loop. */
-                core_platform_yield();
+                host_sync_yield();
             }
         }
         if (STD_ATOMIC_EXCHANGE(&control->stepRequested, TYPE_FALSE)) {

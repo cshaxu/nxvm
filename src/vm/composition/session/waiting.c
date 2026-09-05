@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/platform/sleep.h"
+#include "lib/host/sync.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
@@ -101,9 +101,9 @@ static C_INT vm_session_pacing_target_due(vm_session *session,
          * fixed 1 ms oversleep. Neither branch advances guest time. */
         if (vm_session_pacing_waits_at_least_millisecond(session, observation,
                 target_tick, host_units)) {
-            core_platform_sleep_milliseconds(1u);
+            host_sync_sleep_milliseconds(1u);
         } else {
-            core_platform_yield();
+            host_sync_yield();
         }
         if (vm_platform_host_monotonic_counter(&host_units,
                 &host_units_per_second) != TYPE_STATUS_OK ||

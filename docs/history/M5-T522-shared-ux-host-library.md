@@ -137,3 +137,18 @@ The S6 RDP closure test sends UTF-16 through the existing shared Win32
 normalizer and UX binding, observing only VM guest key make/break output.  It
 adds no product route.  The focused proof and full repository-only unit suite
 pass; S7 begins the host synchronization replacement.  T522 is open.
+
+## S7 Result
+
+`lib/host/sync` now owns the sole generic host sleep, yield and
+cancellation-aware wait contract. Its root header remains native-free; the
+Win32 and Linux implementations are the only native leaves. The old
+`core/platform` sleep/wait implementation and its test were deleted, and every
+Core/VM/test caller now consumes `host_sync_*`. The independent host test is
+under `test/lib`, links only `host-sync`, and proves completed, cancelled and
+invalid waits.
+
+The legacy-symbol sweep is empty. The regenerated test tree runs host sync as
+`unit.host-sync-smoke`; complete unit is 304/304 and external-YAML integration
+is 44/44. Current 0522 x64 and x86 artifacts have passed their architecture
+checks. T522 stays open for session, storage and observability extraction.
