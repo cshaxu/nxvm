@@ -302,23 +302,6 @@ static type_status vm_session_ibm_5170_floppy_select(const vm_session_config *co
     return TYPE_STATUS_INVALID_ARGUMENT;
 }
 
-static C_VOID vm_session_storage_rollback(vm_session *machine)
-{
-    if (machine == STD_NULL) return;
-    core_platform_presentation_mailbox_destroy(machine->presentation_mailbox);
-    machine->presentation_mailbox = STD_NULL;
-    core_product_debugger_destroy(machine->debugger);
-    machine->debugger = STD_NULL;
-    core_machine_destroy(machine->core_machine);
-    machine->core_machine = STD_NULL;
-    core_machine_display_provider_slot_destroy(machine->display_provider);
-    machine->display_provider = STD_NULL;
-    core_machine_media_registry_destroy(machine->media_registry);
-    machine->media_registry = STD_NULL;
-    core_machine_plan_destroy(machine->core_machine_plan);
-    machine->core_machine_plan = STD_NULL;
-}
-
 static C_INT vm_session_insert_floppy_at(vm_session *session, STD_SIZE_T slot,
     const C_CHAR *path)
 {
@@ -376,14 +359,12 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine != STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (machine->model40_private) {
-        return vm_session_model40_storage_initialize(machine);
-    }
-    if (!machine->xt_private && machine->profile == STD_NULL &&
+    if (!machine->model40_private && !machine->xt_private && machine->profile == STD_NULL &&
         vm_session_default_at_resolve(machine, STD_NULL) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (!machine->xt_private && !vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
+    if (!machine->model40_private && !machine->xt_private &&
+        !vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_plan_create(&machine->core_machine_config,
@@ -394,16 +375,22 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_media_registry_create(&machine->media_registry);
     if (status != TYPE_STATUS_OK) {
-        vm_session_storage_rollback(machine);
+        vm_session_storage_finalize(machine);
         return status;
     }
     status = core_machine_display_provider_slot_create(&machine->display_provider);
     if (status != TYPE_STATUS_OK) {
-        vm_session_storage_rollback(machine);
+        vm_session_storage_finalize(machine);
         return status;
     }
     vm_session_bind_display(machine);
-    if (machine->profile_topology != STD_NULL) {
+    if (machine->model40_private) {
+        status = vm_session_model40_topology_materialize(machine, &topology);
+        if (status != TYPE_STATUS_OK) {
+            vm_session_storage_finalize(machine);
+            return status;
+        }
+    } else if (machine->profile_topology != STD_NULL) {
         topology = *machine->profile_topology;
     } else {
         /* Direct white-box fixtures retain their descriptor failure coverage
@@ -411,12 +398,12 @@ type_status vm_session_storage_initialize(vm_session *machine)
         status = vm_profile_default_pc_at_topology_materialize(machine->profile,
             &machine->controller_timing_rules, &topology);
         if (status != TYPE_STATUS_OK) {
-            vm_session_storage_rollback(machine);
+            vm_session_storage_finalize(machine);
             return status;
         }
     }
     status = vm_session_apply_cmos_seed(machine, &topology);
-    if (status != TYPE_STATUS_OK) { vm_session_storage_rollback(machine); return status; }
+    if (status != TYPE_STATUS_OK) { vm_session_storage_finalize(machine); return status; }
     status = core_machine_plan_set_topology(machine->core_machine_plan, &topology);
     if (status == TYPE_STATUS_OK) {
         status = core_machine_plan_bind_media_registry(machine->core_machine_plan,
@@ -427,13 +414,14 @@ type_status vm_session_storage_initialize(vm_session *machine)
             machine->display_provider);
     }
     if (status != TYPE_STATUS_OK) {
-        vm_session_storage_rollback(machine);
+        vm_session_storage_finalize(machine);
         return status;
     }
-    status = vm_session_machine_devices_materialize_plan(machine,
-        machine->core_machine_plan);
+    status = machine->model40_private ?
+        vm_session_model40_materialize_plan(machine, machine->core_machine_plan) :
+        vm_session_machine_devices_materialize_plan(machine, machine->core_machine_plan);
     if (status != TYPE_STATUS_OK) {
-        vm_session_storage_rollback(machine);
+        vm_session_storage_finalize(machine);
         return status;
     }
     status = core_machine_create_from_plan(machine->core_machine_plan,
@@ -443,7 +431,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
             &machine->fdc_dma_request);
     }
     if (status != TYPE_STATUS_OK) {
-        vm_session_storage_rollback(machine);
+        vm_session_storage_finalize(machine);
         return status;
     }
     if (machine->firmware_kind == VM_SESSION_FIRMWARE_EXTERNAL_PC_AT_ROM)
@@ -455,12 +443,12 @@ type_status vm_session_storage_initialize(vm_session *machine)
     }
     if (core_platform_presentation_mailbox_create(&machine->presentation_mailbox) !=
         TYPE_STATUS_OK) {
-        vm_session_storage_rollback(machine);
+        vm_session_storage_finalize(machine);
         return TYPE_STATUS_NO_MEMORY;
     }
     status = core_product_debugger_create(&machine->debugger);
     if (status != TYPE_STATUS_OK) {
-        vm_session_storage_rollback(machine);
+        vm_session_storage_finalize(machine);
         return status;
     }
     machine->display_generation = 0u;

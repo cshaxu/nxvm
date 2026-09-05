@@ -5,7 +5,7 @@ reserve a numeric task identifier, or define a technical baseline.
 
 ## M5 Candidates
 
-1. [M5 8042 keyboard-controller and board-integration reclosure](../proposals/m5-kbc-board-integration-reclosure.md)
+1. [M5 Model 40 session lifecycle consolidation](../proposals/m5-model40-session-lifecycle-consolidation.md)
 2. [M5 default-PC/AT type-47 CMOS and fixed-disk boot contract](../proposals/m5-default-pc-at-type47-cmos-hdc-boot-contract.md)
 3. [M5 NXVM mechanism-reduction audit](../proposals/m5-mechanism-reduction-audit.md)
 4. [M5 IBM 5170 video-adapter corpus and external-ROM admission](../proposals/m5-ibm-5170-video-adapter-corpus.md)

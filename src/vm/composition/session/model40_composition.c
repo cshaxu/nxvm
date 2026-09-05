@@ -13,23 +13,6 @@ static C_VOID vm_session_model40_capture_fdc_terminal(C_VOID *opaque,
     session->model40_fdc_terminal_observation = *observation;
     session->model40_fdc_terminal_observation_valid = TYPE_TRUE;
 }
-static C_VOID vm_session_model40_storage_rollback(vm_session *session)
-{
-    if (session == STD_NULL) return;
-    core_platform_presentation_mailbox_destroy(session->presentation_mailbox);
-    session->presentation_mailbox = STD_NULL;
-    core_product_debugger_destroy(session->debugger);
-    session->debugger = STD_NULL;
-    core_machine_destroy(session->core_machine);
-    session->core_machine = STD_NULL;
-    core_machine_display_provider_slot_destroy(session->display_provider);
-    session->display_provider = STD_NULL;
-    core_machine_media_registry_destroy(session->media_registry);
-    session->media_registry = STD_NULL;
-    core_machine_plan_destroy(session->core_machine_plan);
-    session->core_machine_plan = STD_NULL;
-}
-
 static type_status vm_session_model40_materialize_controllers(vm_session *session,
     core_machine_plan *plan)
 {
@@ -71,7 +54,8 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
         CORE_MACHINE_MEDIA_ID_INVALID, &hdc);
 }
 
-type_status vm_session_model40_storage_initialize(vm_session *session)
+type_status vm_session_model40_topology_materialize(vm_session *session,
+    core_machine_plan_topology *out_topology)
 {
     core_machine_display_config display = {0};
     core_machine_dma_wiring dma = { .fdc_channel = 2u,
@@ -80,36 +64,11 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u };
     core_machine_rtc_cmos_config rtc = {0};
     core_machine_plan_topology topology = {0};
-    core_machine_d4_memory_config d4_memory = {0};
-    type_status status;
-
     if (session == STD_NULL || session->core_machine != STD_NULL ||
         !session->model40_private ||
-        !vm_profile_model40_external_rom_is_valid(&session->model40_rom)) {
+        !vm_profile_model40_external_rom_is_valid(&session->model40_rom) ||
+        out_topology == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    status = core_machine_display_provider_slot_create(&session->display_provider);
-    if (status != TYPE_STATUS_OK) return status;
-    vm_session_bind_display(session);
-    status = core_machine_media_registry_create(&session->media_registry);
-    if (status != TYPE_STATUS_OK) {
-        vm_session_model40_storage_rollback(session);
-        return status;
-    }
-    status = core_machine_plan_create(&session->core_machine_config,
-        &session->core_machine_plan);
-    if (status != TYPE_STATUS_OK) {
-        vm_session_model40_storage_rollback(session);
-        return status;
-    }
-    /* The selected 2 MiB board reports 8Fh/FDh diagnostics.  Its setup
-     * register is 42h: selector 2 plus the documented enabled cache bit. */
-    d4_memory = (core_machine_d4_memory_config) { TYPE_TRUE, 0x8fu, 0xfdu, 0xfc42u };
-    status = core_machine_plan_configure_d4_memory(session->core_machine_plan,
-        &d4_memory);
-    if (status != TYPE_STATUS_OK) {
-        vm_session_model40_storage_rollback(session);
-        return status;
     }
     display.text_timing = (core_machine_vadp_text_timing) {48u, 8u, 8u};
     display.cga_vram_present = TYPE_FALSE;
@@ -163,42 +122,21 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     topology.dma = dma;
     topology.rtc_cmos_present = TYPE_TRUE;
     topology.rtc_cmos = rtc;
-    status = vm_session_apply_cmos_seed(session, &topology);
-    if (status != TYPE_STATUS_OK) {
-        vm_session_model40_storage_rollback(session);
-        return status;
-    }
-    status = core_machine_plan_set_topology(session->core_machine_plan, &topology);
-    if (status == TYPE_STATUS_OK) {
-        status = core_machine_plan_bind_media_registry(session->core_machine_plan,
-            session->media_registry);
-    }
-    if (status == TYPE_STATUS_OK) {
-        status = core_machine_plan_bind_display_provider(session->core_machine_plan,
-            session->display_provider);
-    }
-    if (status != TYPE_STATUS_OK) {
-        vm_session_model40_storage_rollback(session);
-        return status;
-    }
-    status = vm_session_model40_materialize_controllers(session,
-        session->core_machine_plan);
-    if (status != TYPE_STATUS_OK) {
-        vm_session_model40_storage_rollback(session);
-        return status;
-    }
-    status = core_machine_create_from_plan(session->core_machine_plan,
-        &session->core_machine);
-    if (status == TYPE_STATUS_OK) {
-        status = core_machine_get_fdc_dma_request_binding(session->core_machine,
-            &session->fdc_dma_request);
-    }
-    if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
-    status = core_platform_presentation_mailbox_create(&session->presentation_mailbox);
-    if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
-    status = core_product_debugger_create(&session->debugger);
-    if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
+    *out_topology = topology;
     return TYPE_STATUS_OK;
+}
+
+type_status vm_session_model40_materialize_plan(vm_session *session,
+    core_machine_plan *plan)
+{
+    const core_machine_d4_memory_config d4_memory = {
+        TYPE_TRUE, 0x8fu, 0xfdu, 0xfc42u };
+
+    if (session == STD_NULL || plan == STD_NULL || !session->model40_private ||
+        core_machine_plan_configure_d4_memory(plan, &d4_memory) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return vm_session_model40_materialize_controllers(session, plan);
 }
 
 C_INT vm_session_model40_insert_hdd_at_startup(vm_session *session, const C_CHAR *path)

@@ -60,17 +60,17 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64-release",
-      "targets": ["vm-0-5-0519"]
+      "targets": ["vm-0-5-0520"]
     },
     {
       "name": "current-gcc-ccache",
       "configurePreset": "mingw-gcc-x64-release-ccache",
-      "targets": ["vm-0-5-0519"]
+      "targets": ["vm-0-5-0520"]
     },
     {
       "name": "current-gcc-x86",
       "configurePreset": "mingw-gcc-x86-release",
-      "targets": ["vm-0-5-0519"]
+      "targets": ["vm-0-5-0520"]
     },
     {
       "name": "unit-tests-gcc",

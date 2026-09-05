@@ -2,39 +2,38 @@
 
 ## Current Work
 
-## M5 T519 S1 Packet
+## M5 T520 S1 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | New |
-| Original Owner Request | Repair the IBM 5170 startup failure: `301/303 Keyboard Or System Unit Error`, including the inert BIOS F1 recovery path, without a BIOS/profile workaround. |
-| Admission And Approval | The owner directed the 5170 repair during T519 and has continued to report the product failure after P8; this packet corrects the stale HDD description to the work actually admitted and implemented in P1--P8. |
-| Objective | Establish one Core-owned 8042/keyboard/IRQ1 state path that lets the external IBM 5170 Rev-3 ROM complete keyboard POST and boot both declared floppy sessions. |
-| Candidate Proposal | [M5 8042 keyboard-controller and board-integration reclosure](../proposals/m5-kbc-board-integration-reclosure.md). |
-| Reference Baseline | `63c6b414` (T518 closure): the 5170 external-ROM session could stop at `301`/`303`; host F1 was not proven end-to-end. |
-| Files And ABI Surface | Core KBC/keyboard state and its existing PIC IRQ1 boundary; Win32 Console/Window host-input adapters; focused Core and external-ROM integration tests. No ROM, CMOS, YAML or BIOS special case is permitted. |
-| Scope | Reproduce the external-ROM failure, audit command byte, output-buffer origin, line inhibition, keyboard BAT/replies and IRQ1 delivery, then repair the shared owner and verify both 360KB and 1.2MB 5170 sessions. |
-| Non-goals | Do not alter external session YAML, inject BIOS replies, add profile-specific KBC state, or retain a parallel host-key FIFO. |
+| Original Owner Request | Add the code-audit finding as the queue-head task and immediately consolidate Model 40 session construction without losing its board-specific behavior. |
+| Admission And Approval | The owner explicitly approved immediate queue-head admission after the read-only code-quality audit on 2026-09-04. T519 is closed from its accepted product and gate evidence. |
+| Objective | Establish one VM-owned construction, rollback and finalization lifecycle for every supported session; Model 40 contributes only its immutable board/controller preparation. |
+| Candidate Proposal | [M5 Model 40 session lifecycle consolidation](../proposals/m5-model40-session-lifecycle-consolidation.md). |
+| Reference Baseline | `614f1811` (T519 closure): Model 40 and generic sessions independently allocate and destroy the same shared resource set. |
+| Files And ABI Surface | Private VM session composition and profile preparation only: `session.c`, `model40_composition.c`, their private headers and owner-local tests. No public session/Core ABI change. |
+| Scope | Inventory the complete construction/failure surface, then replace the duplicated Model 40 storage lifecycle with generic session ownership and a distinct Model 40 preparation contribution. |
+| Non-goals | Do not alter external YAML, ROM/CMOS/media assets, public session API, Core controller ownership or Model 40 board topology. |
 | Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), and the [source policy](../etc/operations/policy/source-policy.md). |
-| S1 Objective | Recover the real keyboard POST contract from the IBM ROM and reconcile it with the KBC owner. P1--P8 have removed reply races and serialized host scan-byte publication; this S remains open because a product `303` report persists. |
-| S1 Verification | The external 360KB and 1.2MB sessions must each reach a DOS/installer terminal; a deliberately observed `301`/`303` state must expose command byte, line state, scan state, queued output origin and IRQ1 disposition; a native F1 event must be observed at the BIOS recovery boundary. |
-| Verification | Both matrix rows currently pass (`360KB`: 23.81 seconds; earlier `1.2MB` product runs reached DOS Setup), but that does not prove the reported intermittent product failure or Console F1 chain. |
-| Expected Markers | No `301`/`303`; `BOOT-PROBE=installer-ready` or matrix `dos-prompt`/`date-input`; if the BIOS recovery prompt is intentionally reached, a native F1 reaches INT 16 rather than being dropped. |
-| Asset Needs | The owner-managed external IBM 5170 ROM, CMOS and existing DOS media already declared by the two session YAMLs; no acquisition, import or asset mutation. |
-| Reporting Requirements | Record the exact external YAML, ROM/CMOS identity, KBC/PIC observations and host-event path. Do not claim closure from a Core-only injection or from one media row. |
-| Similar-Issue Sweep | Examine KBC command-byte writes, controller and keyboard output origins, delayed replies, native scan queues, Console and Window ingress, and every active AT-derived profile. Each production hit is repaired at its owner or explicitly ruled out by its distinct contract. |
-| Stop Conditions | Stop only for a missing external asset, an unresolvable ROM observation, or an owner decision required to change the product input boundary. |
-| Exit Criteria | This packet remains active until the two 5170 rows and actual product Console path are proven, the full applicable gate is green, and no shared KBC/input regression remains. |
-| Task Exit Criteria | The external IBM 5170 ROM boots both declared floppy sessions with no keyboard POST error; normal F1 input is delivered when BIOS requests it; all unit/integration gates, governance, current x64/x86 artifacts and actual-diff review pass. |
+| S1 Objective | Produce the complete lifecycle/caller ledger and converge the duplicated generic/Model 40 resource transaction into one VM session lifecycle while retaining the distinct Model 40 preparation contribution. |
+| S1 Verification | Static inventory proves where every shared session resource is constructed and destroyed. Model 40 composition, generic construction failure and two-session tests prove the unified route; full repository-only unit and documentation governance pass. |
+| Verification | Inspect all `core_machine_plan`, media-registry, display-provider, Core-machine, mailbox and debugger create/destroy calls under `src/vm`; classify every hit as shared lifecycle, Model 40 board preparation, or unrelated. |
+| Expected Markers | One ledger entry for every production hit; no unclassified caller; a private contract that has no public pointer/API expansion and no Model 40 resource lifecycle owner. |
+| Asset Needs | None. S1 is repository-only and must not read, copy or mutate external firmware/media/YAML assets. |
+| Reporting Requirements | Record search scope, every production disposition, construction/failure test coverage and the exact deletion target for S2. Do not claim S2 implementation from S1 inventory. |
+| Similar-Issue Sweep | Search all tracked production VM composition/profile source and tests for the six shared session resources and all rollback/finalization helpers. Every hit is classified before code moves. |
+| Stop Conditions | Stop for a real semantic mismatch requiring a public API, Core ownership change, or an owner decision about Model 40 board behavior. |
+| Exit Criteria | S1 closes only after the bounded ledger, deleted duplicate lifecycle, focused regression plan, full unit suite, documentation governance and actual-diff review pass. |
+| Task Exit Criteria | One generic VM resource lifecycle serves default PC/AT, XT, IBM 5170 and Model 40; Model 40 retains only board preparation, all construction failure states remain atomic, full unit/external integration pass, and current x64/x86 artifacts plus actual-diff review pass. |
 
 ## Current Technical Baseline
 
-- **Current developer artifacts:** CMake target `vm-0-5-0519` emits
-  `nxvm_0_5_0519_x64.exe` and `nxvm_0_5_0519_x86.exe` in stripped Release
+- **Current developer artifacts:** CMake target `vm-0-5-0520` emits
+  `nxvm_0_5_0520_x64.exe` and `nxvm_0_5_0520_x86.exe` in stripped Release
   builds. They retain the runtime debugger and contain no compiler debug
-  information. SHA-256: x64
-  `4AB8A40AC8552DF01B5803BA256448FF51C717284EBD92D4E3528D6BED6EEA79`;
-  x86 `B992D7E30F2E5A1F7F3FAED622934F12125086EB68F49AD7978881A5CD7A870B`.
+  information. The S1 source/unit evidence is complete; dual-architecture
+  artifact publication remains a T520 closure requirement.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -65,6 +64,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
@@ -72,7 +72,6 @@
 | T514 | Closed: one Core-platform Win32 normalizer now receives native, virtual-key and Unicode RDP input; Console/Window are thin adapters and Core remains KBC owner. Owner RDP proof, unit 317/317, integration 40/40, governance and stripped Release 0514 pass. [History](../history/M5-T514-win32-unicode-guest-keyboard-ingress.md). |
 | T513 | Closed: the complete 20-row profile/CPU/FDD matrix reaches its declared DOS/installer terminals through one runner; Model 40 retains profile seed/Core CMOS, physical/media FDD, VADP and HDC sole-owner repairs. Unit 316/316, integration 40/40, governance and stripped Release 0513 pass. [History](../history/M5-T513-profile-cpu-floppy-integration-matrix.md). |
 | T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |
-| T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
 
 ## Recent Governance
 
