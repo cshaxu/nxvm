@@ -2,29 +2,29 @@
 
 ## Current Work
 
-## M5 T520 S1 Packet
+## M5 T520 S3 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
+| Identifier Mode | Continuation |
 | Original Owner Request | Add the code-audit finding as the queue-head task and immediately consolidate Model 40 session construction without losing its board-specific behavior. |
 | Admission And Approval | The owner explicitly approved immediate queue-head admission after the read-only code-quality audit on 2026-09-04. T519 is closed from its accepted product and gate evidence. |
 | Objective | Establish one VM-owned construction, rollback and finalization lifecycle for every supported session; Model 40 contributes only its immutable board/controller preparation. |
 | Candidate Proposal | [M5 Model 40 session lifecycle consolidation](../proposals/m5-model40-session-lifecycle-consolidation.md). |
 | Reference Baseline | `614f1811` (T519 closure): Model 40 and generic sessions independently allocate and destroy the same shared resource set. |
 | Files And ABI Surface | Private VM session composition and profile preparation only: `session.c`, `model40_composition.c`, their private headers and owner-local tests. No public session/Core ABI change. |
-| Scope | Inventory the complete construction/failure surface, then replace the duplicated Model 40 storage lifecycle with generic session ownership and a distinct Model 40 preparation contribution. |
+| Scope | Close the rebuilt cross-profile construction/failure and external-ROM sweep for the unified lifecycle, then publish required T520 x64/x86 artifacts. |
 | Non-goals | Do not alter external YAML, ROM/CMOS/media assets, public session API, Core controller ownership or Model 40 board topology. |
 | Applicable Rules | [Documentation Guide](../README.md), [Execution Rules](../rules/EXECUTION.md), [Documentation Rules](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Architecture Rules](../rules/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Coding Rules](../rules/CODING.md), [Roadmap](../design/ROADMAP.md), [Contributing](../../CONTRIBUTING.md), and the [source policy](../etc/operations/policy/source-policy.md). |
-| S1 Objective | Produce the complete lifecycle/caller ledger and converge the duplicated generic/Model 40 resource transaction into one VM session lifecycle while retaining the distinct Model 40 preparation contribution. |
-| S1 Verification | Static inventory proves where every shared session resource is constructed and destroyed. Model 40 composition, generic construction failure and two-session tests prove the unified route; a fresh complete unit suite and artifact build remain required before S1 closes. |
-| Verification | Inspect all `core_machine_plan`, media-registry, display-provider, Core-machine, mailbox and debugger create/destroy calls under `src/vm`; classify every hit as shared lifecycle, Model 40 board preparation, or unrelated. |
-| Expected Markers | One ledger entry for every production hit; no unclassified caller; a private contract that has no public pointer/API expansion and no Model 40 resource lifecycle owner. |
-| Asset Needs | None. S1 is repository-only and must not read, copy or mutate external firmware/media/YAML assets. |
-| Reporting Requirements | Record search scope, every production disposition, construction/failure test coverage and the exact deletion target for S2. Do not claim S2 implementation from S1 inventory. |
-| Similar-Issue Sweep | Search all tracked production VM composition/profile source and tests for the six shared session resources and all rollback/finalization helpers. Every hit is classified before code moves. |
-| Stop Conditions | Stop for a real semantic mismatch requiring a public API, Core ownership change, or an owner decision about Model 40 board behavior. |
-| Exit Criteria | S1 closes only after the bounded ledger, deleted duplicate lifecycle, rebuilt focused/full regression suite, documentation governance and actual-diff review pass. |
+| S3 Objective | Rebuild the changed product/test graph, run the complete unit suite and applicable external-ROM integration matrix, repeat the production lifecycle sweep, and publish T520 artifacts. |
+| S3 Verification | Only freshly rebuilt tests count. Validate default PC/AT, XT, IBM 5170 and Model 40 construction/boot paths, then architecture-check and hash stripped x64/x86 artifacts. |
+| Verification | Use owner-local construction/failure receivers, the external profile matrix and the production caller query. Review the final actual diff. |
+| Expected Markers | All rebuilt rows pass; no Model 40 storage lifecycle or non-generic shared-resource owner remains; two optimized stripped PE artifacts exist. |
+| Asset Needs | Existing integration YAML assets, read only through normal YAML/overlay loading. |
+| Reporting Requirements | Record fresh build identity, profile dispositions, static sweep, artifact hashes and any blocker; do not alter YAML or assets. |
+| Similar-Issue Sweep | Repeat the complete VM production caller query and exercise every supported profile root. |
+| Stop Conditions | Stop only for a profile semantic failure, unavailable external input, or a reproducible build-environment block after safe retries. |
+| Exit Criteria | S3 closes only after rebuilt unit/integration, governance, artifacts and actual-diff review pass. |
 | Task Exit Criteria | One generic VM resource lifecycle serves default PC/AT, XT, IBM 5170 and Model 40; Model 40 retains only board preparation, all construction failure states remain atomic, full unit/external integration pass, and current x64/x86 artifacts plus actual-diff review pass. |
 
 ## Current Technical Baseline
@@ -64,6 +64,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T520 S2 | Progress: S1 consolidated the duplicate Model 40 session lifecycle; S2 corrected the stale-test-evidence classification. Fresh rebuild, complete gates and task closure remain active in S3. |
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |

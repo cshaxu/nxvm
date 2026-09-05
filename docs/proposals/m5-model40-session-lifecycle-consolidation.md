@@ -25,7 +25,9 @@ conditional is admitted.
    40's distinct preparation while routing it through the generic allocation,
    binding, rollback and finalization transaction. Delete the Model 40 storage
    initializer and rollback.
-2. **S2 - closure sweep.** Prove successful and failed construction for default
+2. **S2 - verification-baseline correction.** Reject stale pre-change binaries
+   as evidence and retain only the fresh-build requirement.
+3. **S3 - closure sweep.** Prove successful and failed construction for default
    PC/AT, XT, IBM 5170 and Model 40; rerun unit and applicable external-ROM
    integration, then review the complete construction-caller inventory.
 
