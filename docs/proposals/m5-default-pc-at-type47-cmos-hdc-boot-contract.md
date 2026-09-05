@@ -40,22 +40,22 @@ reproduces the consequence: DOS rejects C: without issuing ATA work.
 
 ## Planned subtasks
 
-1. **S1 — source and asset contract audit.** Record the MBR/CHS derivation,
+1. **S1 - source and asset contract audit.** Record the MBR/CHS derivation,
    CMOS type-47 field map and checksum convention. Audit every default-PC/AT
    YAML/seed pair and external manifest entry so no seed can declare type 47
    with an all-zero geometry block.
-2. **S2 — firmware asset repair.** Correct the external default-PC/AT
+2. **S2 - firmware asset repair.** Correct the external default-PC/AT
    seed(s) that pair with the 50 MiB image, including the configuration
    checksum. Correct the same ROM's BDA template and INT 41h vector/table for
    that declared type-47 drive, then update their external manifest identities.
    Redirect only the two HDD YAMLs to those matched assets; leave every
    no-disk YAML on the zero-drive assets.
-3. **S3 — BIOS-visible integration closure.** Replace the checkpoint's
+3. **S3 - BIOS-visible integration closure.** Replace the checkpoint's
    tolerated `c-drive-absent` outcome with a required C: prompt and evidence
    that BIOS issued at least one HDC command. Repair the test lifecycle only
    through its existing session control path; never manufacture BDA/INT 13h
    success. Run the complete integration suite and affected profile matrix.
-4. **S4 — full audit and release closure.** Sweep every default-PC/AT fixed
+4. **S4 - full audit and release closure.** Sweep every default-PC/AT fixed
    disk consumer, full unit and integration gates, actual-diff review and the
    required dual-architecture stripped developer artifact.
 

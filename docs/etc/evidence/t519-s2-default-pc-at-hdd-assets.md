@@ -1,4 +1,4 @@
-# T519 S2 — Default PC/AT fixed-disk asset closure
+# T519 S2 - Default PC/AT fixed-disk asset closure
 
 `hdd_50m_win31.img` is 51,609,600 bytes: 100,800 512-byte sectors.  Its MBR
 has `55AA` and an active FAT16 partition at LBA 63.  The selected CHS is
