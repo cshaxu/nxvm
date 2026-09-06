@@ -126,3 +126,21 @@ under `core/platform`; and generic monotonic-clock mechanics in
 `vm/platform/virtual_time.*`. Corrective S6--S9 respectively own those four
 surfaces. The former closure remains historical evidence, not a claim that
 these newly admitted paths were already clean.
+
+## S6 Result And Acceptance
+
+S6 deletes the duplicate `core/platform/file.*` implementation and makes
+`lib/storage/file.*` the one generic byte, exclusive-create, replace, remove
+and opaque text-stream owner. VM asset validation, media semantics and debug
+record formatting remain at their existing product owners; only their generic
+file mechanics moved. Two obsolete boundary checks now prove the real
+`lib/storage` atomic-media and caller routes rather than referring to deleted
+paths.
+
+Coordinator actual-diff review accepts `bd6141b1`: the code and test delta is
+`+190/-230` outside documentation, including the focused opaque stream proof;
+the historical `type` standard-C facade remains only for standard streams and
+product debugger commands, not as a Core file owner. Full repository-only
+unit passes `311/311` in 18.46 seconds, both refreshed CMake boundary checks,
+documentation governance, manifest and obsolete-symbol sweeps pass. S7 is
+admitted for the single Win32 keyboard binding move.

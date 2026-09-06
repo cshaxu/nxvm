@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective - M5 T523 S6 |
-| Admission And Approval | Owner reopened closed T523 on 2026-09-05 and explicitly approved four corrective S tasks: generic file mechanics, native keyboard ownership, Core guest-boundary naming, then monotonic host-clock mechanics. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
-| Objective | Make `lib/storage` the sole generic file-mechanics owner and remove the duplicate `core/platform/file.*` route. |
-| Non-goals | No machine/controller/profile change, guest input protocol, UX redesign, asset change, Linux graphics backend, speculative framework, guest-time ownership change, or migration of machine safe-point semantics into lib. |
-| Reference Baseline | `d96baff5`: accepted T523 S5 neutral consumer and source-identical 56-file library corpus; S6 consumes the file-mechanics duplicate discovered in the closure review. |
+| Identifier Mode | Corrective - M5 T523 S7 |
+| Admission And Approval | Owner reopened closed T523 on 2026-09-05 and explicitly approved four corrective S tasks: generic file mechanics, native keyboard ownership, Core guest-boundary naming, then monotonic host-clock mechanics. S6 is accepted at `bd6141b1`. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
+| Objective | Move the Win32 keyboard-layout-to-PC-input binding out of Core and make the VM Win32 binding its sole owner. |
+| Non-goals | No guest keyboard protocol change, UX redesign, machine/controller/profile change, asset change, Linux graphics backend, speculative framework, or move of guest-input semantics into `lib`. |
+| Reference Baseline | `bd6141b1`: accepted T523 S6 generic file-owner replacement. |
 | Candidate Proposal | [T523 retained proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md), corrective S6--S9. |
-| Files And ABI Surface | `src/core/platform/file.*`, `src/lib/storage/**`, every direct caller and owner-mirrored unit test; public library API may grow only for a real generic file operation, with no NXVM type, product state or wrapper. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): one file-mechanics owner and no reverse product dependency; [Coding](../rules/CODING.md): replacement cleanup and no forwarding facade; [Documentation](../rules/DOCUMENT.md): current/history authority separation. |
-| Verification | Focused generic file read/write/replace/exclusive-create and VM asset/debug-record callers; complete repository-only unit suite; repository-wide duplicate-file-mechanics sweep; library public-header/product-vocabulary and peer-root sweeps; documentation governance; `git diff --check`. |
-| Expected Markers | `M5:T523:S6:STORAGE-OWNER:OK`; no `core_platform_file_*` production symbol, source or forwarding wrapper remains. |
+| Files And ABI Surface | `src/core/platform/win32/keyboard.*`, its Core-path test, `src/vm/platform/win32/**`, `src/vm/platform/ux_binding.c` and CMake target ownership; the relocated VM-private contract may retain the existing guest-input value callback, but Core must expose neither `windows.h` nor host-layout policy. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): Core owns guest input while VM owns host-native conversion; [Coding](../rules/CODING.md): one route and no forwarding facade; [Documentation](../rules/DOCUMENT.md): current/history authority separation. |
+| Verification | Focused native key, recovered-character and UTF-16 normalization proof; VM host-ingress proof; complete repository-only unit suite; repository sweep for obsolete Core Win32 keyboard symbols and duplicate conversion helpers; documentation governance; `git diff --check`. |
+| Expected Markers | Existing keyboard behavior marker plus `M5:T523:S7:VM-WIN32-KEYBOARD-OWNER:OK`; no `core_platform_win32_keyboard_*` production symbol, source or forwarding wrapper remains. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record every migrated caller, each retained product-specific file operation if any, source/test line delta, the sole retained owner and the S7--S9 planned receivers. Report any operation that cannot use generic storage without exposing product state. |
-| Stop Conditions | Stop and report if a Core machine owner directly requires host file mechanics, if a needed file operation cannot be represented without an NXVM type in `lib`, or if migration would change asset, media or debugger-record behavior. |
-| Exit Criteria | `lib/storage` owns every generic file operation; all callers use that owner or have a distinct product-specific reason; `core/platform/file.*` and its obsolete tests are deleted; complete unit/governance/sweeps pass; actual-diff review accepts the result. |
+| Reporting Requirements | Record every caller moved, API name change, source/test line delta and the one VM owner. Report any conversion path that would need to put Win32 types or host-layout policy back into Core. |
+| Stop Conditions | Stop and report if the move requires changing guest scan-code semantics, introduces a second normalizer, or needs a Core-to-VM callback that exposes native handles. |
+| Exit Criteria | The source and test leave the Core Win32 keyboard directory; all consumers use one VM-native owner; Core remains free of `windows.h` and host-layout conversion; complete unit/governance/sweeps pass; actual-diff review accepts the result. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Sweep every `src/**` file read/write/replace/remove/exclusive-create, opaque reader/writer and direct C stdio wrapper; consolidate generic mechanics at `lib/storage`, retain only a named product semantic, and record the S7--S9 keyboard/Core-boundary/clock receivers without implementing them in S6. |
+| Similar-Issue Sweep | Sweep every `src/**` native keyboard-layout conversion, scan-code synthesis, recovered-character and UTF-16 normalizer; move VM-owned host conversion together, retain Core only as the guest-input value consumer, and record the S8/S9 receivers without implementing them in S7. |
 
 ## Current Technical Baseline
 
