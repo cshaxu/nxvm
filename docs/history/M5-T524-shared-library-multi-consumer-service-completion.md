@@ -95,3 +95,13 @@ deletes the unproven `lib/session/executor` facade. NXVM owns its one local
 execution callback boundary, so library state has no product-run policy or
 thread/safe-point behavior. The complete disposition and verification are in
 [S5 evidence](../etc/evidence/t524-s5-session-disposition.md).
+
+## S5 Acceptance
+
+Coordinator actual-diff review accepts `9ecb6713`: the library loses the
+one-product executor rather than gaining a speculative callback framework, and
+NXVM has exactly one local execution boundary around the retained neutral
+lifecycle state. The review also confirms that the repaired UX wake fixture
+now obeys its existing validity contract. Focused checks, standalone lib build,
+manifest, complete unit 311/311, session-root vocabulary/dependency sweeps,
+documentation governance and diff checks pass. T524 remains open for S6--S8.

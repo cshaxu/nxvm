@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S5 |
-| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06; the T524 proposal admits S5 after accepted S4. |
-| Objective | Disposition the entire `lib/session` root: retain only two-consumer neutral lifecycle state, and remove the NXVM-only executor facade from `lib`. |
-| Non-goals | No generic callback driver, machine thread, safe point, product binding or new lifecycle behavior in `lib`. |
-| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md) identifies `executor` as an unproven one-product facade; S4 is accepted at `ab0c0adc`. |
+| Identifier Mode | Progress - M5 T524 S5 accepted |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S5 P1 `9ecb6713`. |
+| Objective | T524 remains open: complete every retained neutral library root without product/machine ownership or cross-root dependency. |
+| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
+| Reference Baseline | [T524 S5 evidence](../etc/evidence/t524-s5-session-disposition.md): sole shared lifecycle state and NXVM-owned execution boundary. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
-| Files And ABI Surface | `src/lib/session/{state,executor}.*`, lib CMake/manifest and NXVM's `vm/platform` execution boundary only. The public lib ABI loses `executor`; NXVM retains its one product-local run/stop callback boundary. The fresh full build also exposes one existing `ux` test fixture that violates its accepted valid-frame contract; correct that fixture only. |
+| Files And ABI Surface | S5 closes the complete session-root disposition only; later root-specific S packets define their own public contract surfaces. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused lifecycle/platform checks; full unit; standalone lib build; manifest; lib-session peer-dependency and vocabulary sweeps; documentation governance and actual-diff review. |
-| Expected Markers | `lib/session` depends only on `base`; its state has two neutral public-API conformance proofs; no `lib_session_executor` path remains; NXVM has one explicit product execution route. The retained UX wake smoke supplies a valid copied frame. |
+| Verification | S5 actual review: focused state/platform checks, complete unit 311/311, standalone lib build, manifest, session vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
+| Expected Markers | S5 is accepted; S6 must decide the complete storage-root disposition rather than reopen session or UX ownership. |
 | Asset Needs | None. |
-| Reporting Requirements | Report the exact retained state ownership and the removed executor route, including any unsupported second-consumer claim. |
-| Stop Conditions | Stop for an owner decision if deleting the facade exposes a second genuine product contract rather than an NXVM-only binding. |
-| Exit Criteria | One complete session-root disposition is implemented, verified and accepted; T524 remains open for S6. |
+| Reporting Requirements | Before the next S, report any root that lacks two neutral consumer/conformance proofs or contains machine vocabulary. |
+| Stop Conditions | No subsequent S starts without its bounded complete root batch. |
+| Exit Criteria | S5 met: session state is sole shared state, the NXVM-only executor is gone, and all stated gates pass. T524 remains open. |
 | Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
-| Similar-Issue Sweep | Sweep all lib consumers for wrappers that merely forward a product callback; S6--S7 still consume their full roots and S8 rechecks all 63 corpus files and every product binding. |
+| Similar-Issue Sweep | S6--S7 each consume a whole root; S8 rechecks the current 61-file corpus and every product binding. |
 
 ## Current Technical Baseline
 
