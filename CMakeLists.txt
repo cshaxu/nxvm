@@ -78,42 +78,47 @@ add_custom_target(cpu-timing-manifest-catalog
 
 # Shared host-facing value contracts. Native UX implementations are admitted
 # separately; this target deliberately has no Core, VM, or platform SDK edge.
-add_library(ux-contract STATIC
+set(LIB_UX_CONTRACT_SOURCES
     src/lib/ux/actions.c
     src/lib/ux/linux/input.c
     src/lib/ux/mailbox.c
     src/lib/ux/presenter.c
     src/lib/ux/router.c)
 if(WIN32)
-    target_sources(ux-contract PRIVATE src/lib/ux/win32/mailbox.c)
+    list(APPEND LIB_UX_CONTRACT_SOURCES src/lib/ux/win32/mailbox.c)
 else()
-    target_sources(ux-contract PRIVATE src/lib/ux/linux/mailbox.c)
+    list(APPEND LIB_UX_CONTRACT_SOURCES src/lib/ux/linux/mailbox.c)
 endif()
+add_library(ux-contract STATIC ${LIB_UX_CONTRACT_SOURCES})
 target_include_directories(ux-contract PUBLIC "${CMAKE_SOURCE_DIR}/src")
 if(WIN32)
-    add_library(host-sync STATIC src/lib/host/win32/sync.c)
+    set(LIB_HOST_SYNC_SOURCE src/lib/host/win32/sync.c)
 else()
-    add_library(host-sync STATIC src/lib/host/linux/sync.c)
+    set(LIB_HOST_SYNC_SOURCE src/lib/host/linux/sync.c)
 endif()
+add_library(host-sync STATIC ${LIB_HOST_SYNC_SOURCE})
 target_include_directories(host-sync PUBLIC "${CMAKE_SOURCE_DIR}/src")
-add_library(session-lifecycle STATIC
+set(LIB_SESSION_LIFECYCLE_SOURCES
     src/lib/session/state.c
     src/lib/session/executor.c)
+add_library(session-lifecycle STATIC ${LIB_SESSION_LIFECYCLE_SOURCES})
 target_include_directories(session-lifecycle PUBLIC "${CMAKE_SOURCE_DIR}/src")
-add_library(storage-image STATIC
+set(LIB_STORAGE_IMAGE_SOURCES
     src/lib/storage/commit.c
     src/lib/storage/file.c
     src/lib/storage/image.c)
 if(WIN32)
-    target_sources(storage-image PRIVATE src/lib/storage/win32/file.c)
+    list(APPEND LIB_STORAGE_IMAGE_SOURCES src/lib/storage/win32/file.c)
 else()
-    target_sources(storage-image PRIVATE src/lib/storage/linux/file.c)
+    list(APPEND LIB_STORAGE_IMAGE_SOURCES src/lib/storage/linux/file.c)
 endif()
+add_library(storage-image STATIC ${LIB_STORAGE_IMAGE_SOURCES})
 target_include_directories(storage-image PUBLIC "${CMAKE_SOURCE_DIR}/src")
-add_library(observability-outcome STATIC src/lib/observability/outcome.c)
+set(LIB_OBSERVABILITY_OUTCOME_SOURCE src/lib/observability/outcome.c)
+add_library(observability-outcome STATIC ${LIB_OBSERVABILITY_OUTCOME_SOURCE})
 target_include_directories(observability-outcome PUBLIC "${CMAKE_SOURCE_DIR}/src")
 if(WIN32)
-    add_library(ux-win32-native STATIC
+    set(LIB_UX_NATIVE_SOURCES
         src/lib/ux/win32/actions.c
         src/lib/ux/win32/console.c
         src/lib/ux/win32/geometry.c
@@ -121,9 +126,20 @@ if(WIN32)
         src/lib/ux/win32/mouse.c
         src/lib/ux/win32/runner.c
         src/lib/ux/win32/window.c)
+    add_library(ux-win32-native STATIC ${LIB_UX_NATIVE_SOURCES})
     target_include_directories(ux-win32-native PUBLIC "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(ux-win32-native PUBLIC ux-contract)
+else()
+    set(LIB_UX_NATIVE_SOURCES src/lib/ux/linux/console.c)
 endif()
+add_library(lib-neutral-corpus STATIC
+    ${LIB_UX_CONTRACT_SOURCES}
+    ${LIB_UX_NATIVE_SOURCES}
+    ${LIB_HOST_SYNC_SOURCE}
+    ${LIB_SESSION_LIFECYCLE_SOURCES}
+    ${LIB_STORAGE_IMAGE_SOURCES}
+    ${LIB_OBSERVABILITY_OUTCOME_SOURCE})
+target_include_directories(lib-neutral-corpus PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_executable(ux-contract-smoke test/lib/ux_contract_smoke.c)
 target_link_libraries(ux-contract-smoke PRIVATE ux-contract)
 add_test(NAME unit.ux-contract-smoke COMMAND ux-contract-smoke)
@@ -141,6 +157,10 @@ add_test(NAME unit.ux-library-manifest
         -DUX_LIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
         -P ${CMAKE_SOURCE_DIR}/test/support/ux_library_manifest.cmake)
 set_tests_properties(unit.ux-library-manifest PROPERTIES LABELS "unit")
+add_executable(lib-neutral-consumer test/lib/library_consumer_conformance.c)
+target_link_libraries(lib-neutral-consumer PRIVATE lib-neutral-corpus)
+add_test(NAME unit.lib-neutral-consumer COMMAND lib-neutral-consumer)
+set_tests_properties(unit.lib-neutral-consumer PROPERTIES LABELS "unit")
 
 add_library(core-machine STATIC
     src/core/machine/clock.c
