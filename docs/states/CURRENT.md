@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S14 |
-| Admission And Approval | Owner explicitly admitted S14 on 2026-09-06 after reporting a clipped Win32 Console viewport and a Window-mode pause that destroys the presenter. Remote Linux CI remains explicitly out of scope. |
-| Objective | Restore complete Console text visibility and make NXVM the sole presenter-lifecycle authority: Ctrl+Alt+P pauses a Window-mode session in place rather than closing its window. |
-| Non-goals | No second renderer, frame source, display-mode mirror, input path, guest/Core/profile/media semantic, Linux runtime requirement, SoftPC import, product-specific policy in lib, event queue, or polling loop. |
-| Reference Baseline | S13 P1 `d64c04fd`, the accepted shared-UX ownership result, and the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
+| Identifier Mode | Continuation - M5 T524 S15 |
+| Admission And Approval | Owner explicitly closed S14 after P1 `3e4d62da` and admitted S15 on 2026-09-06: remove the thin `lib/session` and `lib/observability` roots and return their sole product behavior to NXVM. |
+| Objective | Remove non-reusable session lifecycle and outcome components from `src/lib`, leaving NXVM as their sole state and behavior owner. |
+| Non-goals | No lifecycle semantic change, second state/outcome owner, compatibility wrapper, UX/host/storage change, external asset change, SoftPC import, or new generic library abstraction. |
+| Reference Baseline | Accepted S14 P1 `3e4d62da`, its 311/311 unit, lib-only 2/2, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/ux/{router,win32/{console,runner,window},linux/console}.*`, `src/vm/platform/{platform,platform_internal,win32/win32,linux/linux}.*`, VM session lifecycle/runner consumers, repository-only platform UX fixtures and lib build declarations. |
+| Files And ABI Surface | `src/lib/{CMakeLists,MANIFEST.sha256,session,observability}/*`, `src/vm/composition/session/*`, VM platform/execution consumers, root and lib CMake declarations, and repository-only lifecycle/startup tests. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused Console viewport and live-mode platform tests, complete unit suite, lib-only build/CTest, strict Linux syntax and Linux platform-contract gates, manifest, governance, actual-diff review and stripped x64/x86 T524 artifacts for owner Windows-host validation. |
-| Expected Markers | A Console text frame's full viewport is requested with its buffer; no run-handle display-mode mirror exists; NXVM alone requests `CONSOLE`, `WINDOW` or `NONE` and wakes the mailbox; lib's owner thread alone releases its active surface; a Window-mode pause leaves its presenter and session active-but-paused; no new presenter, frame, display-state or lifecycle owner exists. |
+| Verification | Focused lifecycle, start-outcome and platform startup tests; complete unit suite; reduced lib-only build/CTest; manifest, governance, actual-diff review and stripped x64/x86 T524 artifacts. |
+| Expected Markers | No `lib_session_*`, `lib_observability_*`, `session-lifecycle` or `observability-outcome` production path remains; NXVM owns one lifecycle state and one start-outcome record; lib retains only `ux`, `host-sync` and `storage-medium`. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report the viewport and mode-owner root causes, every retired display-mode mirror, code-size result and exact gates. |
-| Stop Conditions | Stop only if a complete Console viewport requires a second text surface, or fixing live mode requires a new product lifecycle policy. |
-| Exit Criteria | Console uses matching buffer and viewport dimensions; NXVM explicitly controls all presenter switching and destruction through an atomic latest-intent router plus mailbox wake; Window pause preserves its window; all named gates pass and T524 remains open. |
-| Original Owner Request | Owner reported a clipped Console text display and a Window-mode Ctrl+Alt+P lifecycle regression and requires their shared-owner repair. |
-| Similar-Issue Sweep | Search all `src/lib`, `src/vm`, `test` and build declarations for Console buffer-only sizing, display-mode copies, and lifecycle decisions based on a presentation snapshot. |
+| Reporting Requirements | Report every deleted lib root/file/target, retained NXVM owner, code-size result and exact gates. |
+| Stop Conditions | Stop if either component has a second genuine product-neutral consumer or moving it changes lifecycle/outcome semantics. |
+| Exit Criteria | Both roots and all wrappers are deleted; NXVM has one direct owner route for each behavior; every caller/test/build declaration is migrated; all named gates pass and T524 remains open. |
+| Original Owner Request | Owner judged the session and observability lib components too thin to justify shared-library existence and requires their removal. |
+| Similar-Issue Sweep | Search all `src/lib`, `src/vm`, `test`, manifests and CMake declarations for remaining one-product thin roots, retired symbols and stale targets. |
 
 ## Current Technical Baseline
 

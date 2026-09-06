@@ -172,6 +172,17 @@ owner; it does not create a product dependency.
    complete unit suite, lib-only build/CTest, platform gates, governance and
    dual stripped artifacts. No guest, Core, profile, router-policy or external
    asset change is admitted.
+15. **S15 - retire thin session and outcome library roots.** `session-lifecycle`
+   and `observability-outcome` have one real product consumer, NXVM, and add no
+   reusable policy or mechanism. Move their small state/outcome implementations
+   to the owning NXVM session/control area, update every product and test caller,
+   remove their public lib headers, source roots, manifest entries, standalone
+   tests and neutral-consumer assertions, and remove their CMake targets. Do not
+   retain compatibility wrappers or product logic in `src/lib`. Retain one
+   NXVM-owned lifecycle state and one NXVM-owned start-outcome record. Sweep all
+   build declarations, includes and tests for the retired names; verify focused
+   lifecycle/startup behavior, full repository-only unit, the reduced lib-only
+   corpus and dual stripped artifacts before P closure.
 
 ## Acceptance
 
