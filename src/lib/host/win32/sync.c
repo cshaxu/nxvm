@@ -1,13 +1,14 @@
+#include "lib/base/base.h"
 #include "lib/host/sync.h"
 
 #include <windows.h>
 
-C_VOID host_sync_sleep_milliseconds(type_unsigned_32 milliseconds)
+void host_sync_sleep_milliseconds(lib_u32 milliseconds)
 {
     Sleep(milliseconds);
 }
 
-C_VOID host_sync_yield(C_VOID)
+void host_sync_yield(void)
 {
     Sleep(0u);
 }

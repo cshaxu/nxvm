@@ -31,3 +31,20 @@ tree, not an UX behavior failure. After an incremental rebuild, both targeted
 tests pass and the complete rebuilt repository-only suite passes (`308/308`);
 the final log contains no failed or missing executable record. Documentation
 governance and `git diff --check` pass. S2 is the next admitted batch.
+
+## S2 Result
+
+S2 establishes `lib/base` as the only public library value/status/atomic
+vocabulary and eliminates the direct `type.h`/`type-facade` dependency from
+every library target.  Implementations use direct C and neutral `lib_*`
+spellings; no NXVM compatibility layer remains in the reusable corpus.
+
+The copied-frame mailbox now owns one platform wake object.  Publish signals
+that object; Console and Window wait on it indefinitely with their existing
+input/message sources, replacing the 250 ms Console and 16 ms Window polling
+routes.  Linux receives the same pipe-backed wake contract.  The detailed
+owner and verification record is retained in
+[T523 S2 evidence](../etc/evidence/t523-s2-portable-base-event-mailbox.md).
+
+A full rebuilt x64 repository-only replay passes `309/309`; focused mailbox
+and manifest checks, documentation governance and `git diff --check` pass.

@@ -84,8 +84,12 @@ add_library(ux-contract STATIC
     src/lib/ux/mailbox.c
     src/lib/ux/presenter.c
     src/lib/ux/router.c)
+if(WIN32)
+    target_sources(ux-contract PRIVATE src/lib/ux/win32/mailbox.c)
+else()
+    target_sources(ux-contract PRIVATE src/lib/ux/linux/mailbox.c)
+endif()
 target_include_directories(ux-contract PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(ux-contract PUBLIC type-facade)
 add_library(host-sync STATIC
     src/lib/host/sync.c)
 if(WIN32)
@@ -94,12 +98,10 @@ else()
     target_sources(host-sync PRIVATE src/lib/host/linux/sync.c)
 endif()
 target_include_directories(host-sync PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(host-sync PUBLIC type-facade)
 add_library(session-lifecycle STATIC
     src/lib/session/state.c
     src/lib/session/executor.c)
 target_include_directories(session-lifecycle PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(session-lifecycle PUBLIC type-facade)
 add_library(storage-image STATIC
     src/lib/storage/commit.c
     src/lib/storage/file.c
@@ -110,10 +112,8 @@ else()
     target_sources(storage-image PRIVATE src/lib/storage/linux/file.c)
 endif()
 target_include_directories(storage-image PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(storage-image PUBLIC type-facade)
 add_library(observability-outcome STATIC src/lib/observability/outcome.c)
 target_include_directories(observability-outcome PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(observability-outcome PUBLIC type-facade)
 if(WIN32)
     add_library(ux-win32-native STATIC
         src/lib/ux/win32/actions.c
@@ -134,6 +134,10 @@ add_executable(ux-linux-input-smoke test/lib/ux_linux_input_smoke.c)
 target_link_libraries(ux-linux-input-smoke PRIVATE ux-contract)
 add_test(NAME unit.ux-linux-input-smoke COMMAND ux-linux-input-smoke)
 set_tests_properties(unit.ux-linux-input-smoke PROPERTIES LABELS "unit")
+add_executable(ux-mailbox-wake-smoke test/lib/ux_mailbox_wake_smoke.c)
+target_link_libraries(ux-mailbox-wake-smoke PRIVATE ux-contract)
+add_test(NAME unit.ux-mailbox-wake-smoke COMMAND ux-mailbox-wake-smoke)
+set_tests_properties(unit.ux-mailbox-wake-smoke PROPERTIES LABELS "unit")
 add_test(NAME unit.ux-library-manifest
     COMMAND ${CMAKE_COMMAND}
         -DUX_LIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib

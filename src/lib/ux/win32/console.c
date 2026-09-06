@@ -1,25 +1,27 @@
+#include "lib/base/base.h"
 #include "console.h"
 
 #ifdef _WIN32
 #include "actions.h"
 #include "input.h"
+#include "mailbox.h"
 
 #include <windows.h>
 #include <stdlib.h>
 #include <string.h>
 
-static STD_ATOMIC_FLAG ux_win32_console_lease = ATOMIC_FLAG_INIT;
+static atomic_flag ux_win32_console_lease = ATOMIC_FLAG_INIT;
 
-static type_bool ux_win32_console_acquire(C_VOID)
+static lib_bool ux_win32_console_acquire(void)
 {
-    return !STD_ATOMIC_FLAG_TEST_AND_SET_EXPLICIT(&ux_win32_console_lease,
-        STD_MEMORY_ORDER_ACQUIRE);
+    return !atomic_flag_test_and_set_explicit(&ux_win32_console_lease,
+        memory_order_acquire);
 }
 
-static C_VOID ux_win32_console_release(C_VOID)
+static void ux_win32_console_release(void)
 {
-    STD_ATOMIC_FLAG_CLEAR_EXPLICIT(&ux_win32_console_lease,
-        STD_MEMORY_ORDER_RELEASE);
+    atomic_flag_clear_explicit(&ux_win32_console_lease,
+        memory_order_release);
 }
 
 /* A console presenter is entirely a host surface.  It uses only the copied
@@ -98,7 +100,7 @@ static ux_run_result win32_console_key(
     const KEY_EVENT_RECORD *key)
 {
     ux_action action;
-    type_unsigned_8 modifiers;
+    lib_u8 modifiers;
 
     if (!key->bKeyDown && normalizer->suppressed_virtual_key ==
         key->wVirtualKeyCode) {
@@ -233,7 +235,7 @@ ux_run_result ux_win32_run_console(
         UX_RUN_STOPPED_RESULT;
     HANDLE wait_handles[2];
 
-    if (ux_binding_validate(binding) != TYPE_STATUS_OK ||
+    if (ux_binding_validate(binding) != LIB_STATUS_OK ||
         !ux_win32_console_acquire())
         return UX_RUN_ERROR_RESULT;
     if (!win32_console_open(binding, &input, &output, &original_mode,
@@ -260,6 +262,7 @@ ux_run_result ux_win32_run_console(
     memset(previous_attributes, 0xff, sizeof(previous_attributes));
     memset(previous_palette, 0xff, sizeof(previous_palette));
     wait_handles[0] = input;
+    wait_handles[1] = ux_win32_mailbox_wait_handle(binding->mailbox);
     while (running && binding->get_state(binding->context) ==
         UX_RUN_RUNNING) {
         INPUT_RECORD record;
@@ -283,7 +286,7 @@ ux_run_result ux_win32_run_console(
             }
         }
         if (ux_mailbox_generation(binding->mailbox) != displayed_sequence &&
-            ux_mailbox_capture(binding->mailbox, frame) == TYPE_STATUS_OK) {
+            ux_mailbox_capture(binding->mailbox, frame) == LIB_STATUS_OK) {
             if (ux_router_observe(binding->router, frame) ==
                 UX_TARGET_WINDOW) {
                 result = UX_RUN_SWITCH_WINDOW;
@@ -294,7 +297,7 @@ ux_run_result ux_win32_run_console(
                     previous_attributes, previous_palette))
                 displayed_sequence = frame->sequence;
         }
-        if (WaitForMultipleObjects(1u, wait_handles, FALSE, 250u) ==
+        if (WaitForMultipleObjects(2u, wait_handles, FALSE, INFINITE) ==
             WAIT_FAILED) {
             result = UX_RUN_ERROR_RESULT;
             running = 0;

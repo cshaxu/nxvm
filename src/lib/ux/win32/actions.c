@@ -1,11 +1,12 @@
+#include "lib/base/base.h"
 #include "lib/ux/win32/actions.h"
 
 #ifdef _WIN32
 #include <windows.h>
 
-type_unsigned_8 ux_win32_modifiers_from_key_state(C_VOID)
+lib_u8 ux_win32_modifiers_from_key_state(void)
 {
-    type_unsigned_8 modifiers = 0u;
+    lib_u8 modifiers = 0u;
 
     if ((GetKeyState(VK_CONTROL) & 0x8000) != 0)
         modifiers |= UX_MODIFIER_CONTROL;
@@ -16,9 +17,9 @@ type_unsigned_8 ux_win32_modifiers_from_key_state(C_VOID)
     return modifiers;
 }
 
-type_unsigned_8 ux_win32_modifiers_from_console_state(DWORD control_state)
+lib_u8 ux_win32_modifiers_from_console_state(DWORD control_state)
 {
-    type_unsigned_8 modifiers = 0u;
+    lib_u8 modifiers = 0u;
 
     if ((control_state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) != 0u)
         modifiers |= UX_MODIFIER_CONTROL;

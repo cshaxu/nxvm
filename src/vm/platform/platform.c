@@ -32,7 +32,7 @@ type_status vm_platform_run_context_create(
     context->core_frame = STD_MALLOC(sizeof(*context->core_frame));
     context->ux_frame = STD_MALLOC(sizeof(*context->ux_frame));
     if (context->core_frame == STD_NULL || context->ux_frame == STD_NULL ||
-        ux_mailbox_create(&context->ux_mailbox) != TYPE_STATUS_OK) {
+        ux_mailbox_create(&context->ux_mailbox) != LIB_STATUS_OK) {
         STD_FREE(context->ux_frame);
         STD_FREE(context->core_frame);
         STD_FREE(context);

@@ -33,6 +33,6 @@ typedef enum ux_linux_key {
 /* Translate a semantic terminal key into one guest Set-1 make transition.
  * Printable text is intentionally not represented here: it remains Unicode
  * text at the native terminal boundary. */
-type_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event);
+lib_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event);
 
 #endif

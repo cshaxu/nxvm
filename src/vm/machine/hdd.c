@@ -162,7 +162,7 @@ static lib_storage_image *vm_machine_hdd_allocate_candidate(
     lib_storage_image *image = STD_NULL;
 
     if (byte_count == 0u) return STD_NULL;
-    return lib_storage_image_create_zero_overlay(byte_count, &image) == TYPE_STATUS_OK ?
+    return lib_storage_image_create_zero_overlay(byte_count, &image) == LIB_STATUS_OK ?
         image : STD_NULL;
 }
 

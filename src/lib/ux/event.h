@@ -1,7 +1,7 @@
 #ifndef UX_EVENT_H
 #define UX_EVENT_H
 
-#include "type.h"
+#include "lib/base/base.h"
 
 /* Product-neutral host input emitted by the presentation library.  Virtual
  * keys and scan codes describe a host physical transition; text is the
@@ -16,23 +16,23 @@ typedef struct ux_event {
     ux_event_type type;
     union {
         struct {
-            type_unsigned_16 scan_code;
-            type_unsigned_16 virtual_key;
-            type_unsigned_32 modifiers;
-            type_unsigned_8 pressed;
+            lib_u16 scan_code;
+            lib_u16 virtual_key;
+            lib_u32 modifiers;
+            lib_u8 pressed;
         } key;
         struct {
-            type_unsigned_32 scalar;
+            lib_u32 scalar;
         } text;
         struct {
-            type_signed_32 delta_x;
-            type_signed_32 delta_y;
-            type_unsigned_8 left_down;
-            type_unsigned_8 right_down;
+            lib_i32 delta_x;
+            lib_i32 delta_y;
+            lib_u8 left_down;
+            lib_u8 right_down;
         } mouse;
     } data;
 } ux_event;
 
-typedef int (*ux_event_sink)(C_VOID *context, const ux_event *event);
+typedef int (*ux_event_sink)(void *context, const ux_event *event);
 
 #endif

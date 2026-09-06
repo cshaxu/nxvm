@@ -7,8 +7,8 @@
 #include <windows.h>
 
 /* Native translation only. Chord ownership and matching remain in ux/. */
-type_unsigned_8 ux_win32_modifiers_from_key_state(C_VOID);
-type_unsigned_8 ux_win32_modifiers_from_console_state(DWORD control_state);
+lib_u8 ux_win32_modifiers_from_key_state(void);
+lib_u8 ux_win32_modifiers_from_console_state(DWORD control_state);
 #endif
 
 #endif

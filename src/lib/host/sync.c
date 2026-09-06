@@ -1,15 +1,16 @@
+#include "lib/base/base.h"
 #include "lib/host/sync.h"
 
 #define HOST_SYNC_WAIT_POLL_MILLISECONDS 20u
 
-host_sync_wait_result host_sync_wait_milliseconds(type_unsigned_32 milliseconds,
-    host_sync_cancel_predicate cancelled, C_VOID *context)
+host_sync_wait_result host_sync_wait_milliseconds(lib_u32 milliseconds,
+    host_sync_cancel_predicate cancelled, void *context)
 {
-    type_unsigned_32 waited = 0u;
+    lib_u32 waited = 0u;
 
-    if (cancelled == STD_NULL) return HOST_SYNC_WAIT_INVALID_ARGUMENT;
+    if (cancelled == LIB_NULL) return HOST_SYNC_WAIT_INVALID_ARGUMENT;
     while (waited < milliseconds) {
-        type_unsigned_32 interval;
+        lib_u32 interval;
 
         if (cancelled(context)) return HOST_SYNC_WAIT_CANCELLED;
         interval = milliseconds - waited;

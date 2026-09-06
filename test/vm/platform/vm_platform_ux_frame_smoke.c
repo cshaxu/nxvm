@@ -43,7 +43,7 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK || core_platform_presentation_mailbox_publish(
             core_mailbox, &source) != TYPE_STATUS_OK ||
         vm_platform_run_context_publish_ux_frame(context) != TYPE_STATUS_OK ||
-        ux_mailbox_capture(binding.mailbox, &captured) != TYPE_STATUS_OK ||
+        ux_mailbox_capture(binding.mailbox, &captured) != LIB_STATUS_OK ||
         captured.sequence == 0u || captured.text[0] != 'A' ||
         captured.text_palette[14u] != 0x00ffff00u) goto fail;
     vm_platform_run_handle_destroy(handle);

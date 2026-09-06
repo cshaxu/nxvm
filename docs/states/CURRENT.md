@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New - M5 T523 S1 |
-| Admission And Approval | Owner approved the Queue-head candidate for implementation on 2026-09-05. No exception authorizes product coupling, imported SoftPC code, or a second generic route. |
-| Objective | Freeze the complete cross-product library compatibility ledger and the zero-machine-pointer ABI before any source replacement. |
-| Non-goals | No SoftPC import, product binding, machine/controller/profile change, asset change, or speculative public framework. |
-| Reference Baseline | `dbb0a4ea` / T522 closure; current `src/lib` and the owner-provided candidate proposal. |
+| Identifier Mode | Continuation - M5 T523 S2 |
+| Admission And Approval | S1 is accepted at `b16c10f7`; the owner-approved T523 proposal authorizes its stated S2 batch. No exception authorizes product coupling, imported SoftPC code, or a second generic route. |
+| Objective | Replace the library's NXVM public-type dependency with one library-private base vocabulary and replace the fixed native presentation polling with mailbox publication wakeups. |
+| Non-goals | No frame/input/action expansion, presenter policy redesign, product lifecycle/storage change, machine/controller/profile change, asset change, or speculative public framework. |
+| Reference Baseline | `b16c10f7` / accepted T523 S1 ledger and current `src/lib` implementation. |
 | Candidate Proposal | [T523 proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/**`, CMake/test registration, `docs/history/M5-T523-*`, and `docs/etc/evidence/t523-s1-*`; public ABI is value/callback-only and cannot expose product, machine, VM, profile, native SDK, or guest pointer. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): packet, coverage ledger, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): neutral dependency direction and sole ownership; [Coding](../rules/CODING.md): one durable public capability and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current/queue authority separation; [source policy](../etc/operations/policy/source-policy.md): read-only SoftPC research only. |
-| Verification | Static complete-corpus owner/include sweep; public ABI inventory; source-identical manifest plan; full repository-only unit suite; documentation governance; `git diff --check`. |
-| Expected Markers | Every public surface has exactly one disposition and receiver; every current top-level library root has no peer/product include; no proposed public operation needs a guest or product pointer. |
+| Files And ABI Surface | `src/lib/base/**`, public `src/lib/**` headers and implementations, native `src/lib/ux/{win32,linux}/**`, CMake and repository-only `test/lib/**`; library public ABI remains value/callback-only and cannot expose product, machine, VM, profile, native SDK, or guest pointer. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): S1 ledger batch, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): neutral dependency direction and sole ownership; [Coding](../rules/CODING.md): bounded durable public capability and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. The T523 proposal authorizes the library-local base vocabulary as the exception to the product-wide `src/type.*` convention. |
+| Verification | Compile library targets without `type-facade`; static full-`src/lib` include sweep; mailbox wake/no-idle-poll unit tests; focused native presenter tests; full repository-only unit suite; documentation governance; `git diff --check`. |
+| Expected Markers | No `type.h` or `type_*` public ABI dependency in `src/lib`; mailbox publication wakes one waiting native loop; neither Console nor Window uses a fixed frame-poll wait. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record the finite ledger, product-binding boundary, exact sweep commands and S1 disposition. Report any feature that requires guest/product ownership before implementation. |
-| Stop Conditions | Stop and report if a necessary shared operation cannot be represented by copied values, opaque callbacks and native-private handles, or if reuse requires copying/deriving SoftPC code. |
-| Exit Criteria | A durable complete ledger names the frozen corpus, each public/mutable/native/timer/action/frame/storage surface and its disposition, plus neutral NXVM/SoftPC binding contracts; full unit and governance pass. |
+| Reporting Requirements | Record the retired polling routes, one mailbox wake owner, code-size delta, exact sweep commands and focused proof. Report any feature that requires guest/product ownership before implementation. |
+| Stop Conditions | Stop and report if an event-driven wait needs an exposed native handle, a peer-library dependency, guest state, or product policy. |
+| Exit Criteria | `lib/base` is the only library public type/status/atomic dependency; `src/lib` has no `type.h` include; publication wakes Console/Window without periodic frame polling; library targets and full unit/governance pass. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Sweep all tracked `src/lib`, product call sites, library CMake/test registration and manifests for NXVM type/product leakage, peer includes, polling, implicit routing and product-named storage semantics; record every hit in the S1 ledger. |
+| Similar-Issue Sweep | Sweep all tracked `src/lib`, its CMake targets and native presenter loops for `type.h`, `type_*`, `Sleep`, fixed timed waits, timers and polling-driven mailbox capture; replace every in-scope production hit or record its distinct non-frame reason. |
 
 ## Current Technical Baseline
 

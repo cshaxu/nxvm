@@ -10,7 +10,7 @@ typedef enum ux_target { UX_TARGET_WINDOW, UX_TARGET_CONSOLE } ux_target;
 typedef struct ux_router {
     ux_display_policy policy;
     ux_target target;
-    type_unsigned_32 stable_text_frames;
+    lib_u32 stable_text_frames;
 } ux_router;
 
 #define UX_STABLE_TEXT_FRAMES 3u

@@ -1,3 +1,4 @@
+#include "lib/base/base.h"
 #include "lib/ux/win32/runner.h"
 
 #ifdef _WIN32
@@ -8,7 +9,7 @@ ux_run_result ux_win32_run(const ux_binding *binding)
 {
     ux_run_result result;
 
-    if (ux_binding_validate(binding) != TYPE_STATUS_OK)
+    if (ux_binding_validate(binding) != LIB_STATUS_OK)
         return UX_RUN_ERROR_RESULT;
     for (;;) {
         result = ux_router_target(binding->router) == UX_TARGET_CONSOLE ?

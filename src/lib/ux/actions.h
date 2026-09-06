@@ -1,7 +1,7 @@
 #ifndef UX_ACTIONS_H
 #define UX_ACTIONS_H
 
-#include "type.h"
+#include "lib/base/base.h"
 
 typedef enum ux_action {
     UX_ACTION_NONE,
@@ -32,20 +32,20 @@ enum {
 };
 
 typedef struct ux_action_chord {
-    type_unsigned_32 key;
-    type_unsigned_8 modifiers;
+    lib_u32 key;
+    lib_u8 modifiers;
     ux_action action;
 } ux_action_chord;
 
 typedef struct ux_action_registry {
     ux_action_chord entries[UX_ACTION_CAPACITY];
-    type_unsigned_32 count;
+    lib_u32 count;
 } ux_action_registry;
 
-C_VOID ux_actions_initialize(ux_action_registry *registry);
-type_status ux_actions_register(ux_action_registry *registry,
-    type_unsigned_32 key, type_unsigned_8 modifiers, ux_action action);
+void ux_actions_initialize(ux_action_registry *registry);
+lib_status ux_actions_register(ux_action_registry *registry,
+    lib_u32 key, lib_u8 modifiers, ux_action action);
 ux_action ux_actions_match(const ux_action_registry *registry,
-    type_unsigned_32 key, type_unsigned_8 modifiers);
+    lib_u32 key, lib_u8 modifiers);
 
 #endif

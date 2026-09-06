@@ -51,8 +51,8 @@ int main(C_INT argc, C_CHAR **argv)
     vm_platform_run_context_set_window_display(session->platform_run_context, 1);
     if (vm_session_start(session) != TYPE_STATUS_OK ||
         lib_observability_outcome_capture(session->start_outcome,
-            &start_outcome) != TYPE_STATUS_OK || !start_outcome.valid ||
-        start_outcome.status != TYPE_STATUS_OK) goto fail;
+            &start_outcome) != LIB_STATUS_OK || !start_outcome.valid ||
+        start_outcome.status != LIB_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     host_sync_sleep_milliseconds(50u);
     vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
@@ -63,12 +63,12 @@ int main(C_INT argc, C_CHAR **argv)
     vm_session_stop(session);
     vm_session_reset(session);
     if (lib_observability_outcome_capture(session->start_outcome,
-            &start_outcome) != TYPE_STATUS_OK || start_outcome.valid) goto fail;
+            &start_outcome) != LIB_STATUS_OK || start_outcome.valid) goto fail;
     if (vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     if (vm_session_start(session) != TYPE_STATUS_OK ||
         lib_observability_outcome_capture(session->start_outcome,
-            &start_outcome) != TYPE_STATUS_OK || !start_outcome.valid ||
-        start_outcome.status != TYPE_STATUS_OK) goto fail;
+            &start_outcome) != LIB_STATUS_OK || !start_outcome.valid ||
+        start_outcome.status != LIB_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     host_sync_sleep_milliseconds(50u);
     if (session->core_machine->shared_kbc.data.last_keyboard_output_byte == 0x43u) {

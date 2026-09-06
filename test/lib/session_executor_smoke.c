@@ -49,9 +49,9 @@ C_INT main(C_VOID)
     lib_session_executor *executor = STD_NULL;
     lib_session_executor *second_executor = STD_NULL;
 
-    if (lib_session_executor_create(&sink, &state, &executor) != TYPE_STATUS_OK ||
+    if (lib_session_executor_create(&sink, &state, &executor) != LIB_STATUS_OK ||
         lib_session_executor_create(&sink, &second_state, &second_executor) !=
-            TYPE_STATUS_OK) goto fail;
+            LIB_STATUS_OK) goto fail;
     lib_session_executor_start(executor);
     lib_session_executor_start(second_executor);
     lib_session_executor_stop(executor);

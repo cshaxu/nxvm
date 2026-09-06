@@ -1,11 +1,12 @@
+#include "lib/base/base.h"
 #include "lib/ux/linux/input.h"
 
-type_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event)
+lib_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event)
 {
-    type_unsigned_16 scan_code;
-    type_unsigned_16 virtual_key = 0u;
+    lib_u16 scan_code;
+    lib_u16 virtual_key = 0u;
 
-    if (out_event == STD_NULL) return TYPE_FALSE;
+    if (out_event == LIB_NULL) return LIB_FALSE;
     switch (key) {
     case UX_LINUX_KEY_ENTER: scan_code = 0x1cu; virtual_key = 0x0du; break;
     case UX_LINUX_KEY_BACKSPACE: scan_code = 0x0eu; virtual_key = 0x08u; break;
@@ -31,12 +32,12 @@ type_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event)
     case UX_LINUX_KEY_PAGE_DOWN: scan_code = 0x51u; break;
     case UX_LINUX_KEY_INSERT: scan_code = 0x52u; break;
     case UX_LINUX_KEY_DELETE: scan_code = 0x53u; break;
-    default: return TYPE_FALSE;
+    default: return LIB_FALSE;
     }
-    STD_MEMSET(out_event, 0, sizeof(*out_event));
+    memset(out_event, 0, sizeof(*out_event));
     out_event->type = UX_EVENT_KEY;
     out_event->data.key.scan_code = scan_code;
     out_event->data.key.virtual_key = virtual_key;
-    out_event->data.key.pressed = TYPE_TRUE;
-    return TYPE_TRUE;
+    out_event->data.key.pressed = LIB_TRUE;
+    return LIB_TRUE;
 }

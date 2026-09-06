@@ -8,7 +8,7 @@
 static type_unsigned_8 vm_media_provider_fdd_image[80u * 2u * 18u * 512u];
 static const C_CHAR vm_media_provider_save_target[] = "vm_media_provider_t283.img";
 static const C_CHAR vm_media_provider_save_collision[] =
-    "vm_media_provider_t283.img.ntvdm64.tmp.000";
+    "vm_media_provider_t283.img.tmp.000";
 static const C_CHAR vm_media_provider_sidecar_image[] = "vm_media_provider_t376.img";
 static const C_CHAR vm_media_provider_sidecar_metadata[] = "vm_media_provider_t376.img.json";
 static const C_CHAR vm_media_provider_malformed_image[] =
@@ -16,13 +16,13 @@ static const C_CHAR vm_media_provider_malformed_image[] =
 static const C_CHAR vm_media_provider_malformed_metadata[] =
     "vm_media_provider_t376_malformed.img.json";
 static const C_CHAR vm_media_provider_sidecar_backup_collision[] =
-    "vm_media_provider_t376.img.json.ntvdm64.bak";
+    "vm_media_provider_t376.img.json.bak";
 static const C_CHAR vm_media_provider_sidecar_image_temporary[] =
-    "vm_media_provider_t376.img.ntvdm64.tmp.000";
+    "vm_media_provider_t376.img.tmp.000";
 static const C_CHAR vm_media_provider_sidecar_metadata_temporary[] =
-    "vm_media_provider_t376.img.json.ntvdm64.tmp.000";
+    "vm_media_provider_t376.img.json.tmp.000";
 static const C_CHAR vm_media_provider_invalid_path_temporary[] =
-    "..ntvdm64.tmp.000";
+    "..tmp.000";
 
 static C_INT vm_media_provider_write_byte_file(const C_CHAR *file_name, type_unsigned_8 byte)
 {

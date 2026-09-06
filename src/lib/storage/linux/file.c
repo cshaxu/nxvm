@@ -1,12 +1,12 @@
-#include "type.h"
+#include "lib/base/base.h"
 
 #include "lib/storage/native.h"
 
-C_INT lib_storage_native_file_replace(const C_CHAR *source, const C_CHAR *destination)
+int lib_storage_native_file_replace(const char *source, const char *destination)
 {
-    return source == STD_NULL || destination == STD_NULL ||
-        STD_RENAME_REPLACE(source, destination) != 0 ? TYPE_TRUE : TYPE_FALSE;
+    return source == LIB_NULL || destination == LIB_NULL ||
+        rename(source, destination) != 0 ? LIB_TRUE : LIB_FALSE;
 }
 
-C_INT lib_storage_native_file_remove(const C_CHAR *path)
-{ return path == STD_NULL || STD_REMOVE(path) != 0 ? TYPE_TRUE : TYPE_FALSE; }
+int lib_storage_native_file_remove(const char *path)
+{ return path == LIB_NULL || remove(path) != 0 ? LIB_TRUE : LIB_FALSE; }

@@ -1,9 +1,11 @@
+#include "lib/base/base.h"
 #include "window.h"
 
 #ifdef _WIN32
 #include "actions.h"
 #include "geometry.h"
 #include "input.h"
+#include "mailbox.h"
 #include "mouse.h"
 
 #include <windows.h>
@@ -17,8 +19,7 @@
 #define WIN32_WINDOW_TEXT_SURFACE_HEIGHT (UX_TEXT_ROWS * WIN32_WINDOW_TEXT_CELL_HEIGHT)
 #define WIN32_WINDOW_GRAPHICS_SURFACE_MAX_WIDTH 1280u
 #define WIN32_WINDOW_GRAPHICS_SURFACE_MAX_HEIGHT 768u
-#define WIN32_WINDOW_TIMER_ID 1u
-#define WIN32_WINDOW_FRAME_INTERVAL_MS 16u
+#define WIN32_WINDOW_FRAME_READY (WM_APP + 1u)
 #define WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS 250u
 
 typedef struct ux_win32_window_context {
@@ -516,7 +517,7 @@ static void win32_window_capture_mouse(HWND window, LPARAM position)
         position);
     /* The guest owns the visible pointer after an explicit click.  Returning
        NULL from WM_SETCURSOR keeps the desktop arrow out of the guest DIB
-       without changing any SoftPC device or guest cursor state. */
+       without changing product device or guest cursor state. */
     SetCursor(NULL);
 }
 
@@ -524,12 +525,12 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
     WPARAM wparam, LPARAM lparam)
 {
     switch (message) {
-    case WM_TIMER:
-        if (wparam == WIN32_WINDOW_TIMER_ID) {
+    case WIN32_WINDOW_FRAME_READY:
+        {
             if (ux_mailbox_generation(win32_window_binding->mailbox) !=
                     win32_window_displayed_sequence &&
                 ux_mailbox_capture(win32_window_binding->mailbox,
-                    win32_window_frame) == TYPE_STATUS_OK) {
+                    win32_window_frame) == LIB_STATUS_OK) {
                 win32_window_displayed_sequence = win32_window_frame->sequence;
                 if (ux_router_observe(win32_window_binding->router,
                         win32_window_frame) == UX_TARGET_CONSOLE) {
@@ -584,7 +585,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         return TRUE;
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN: {
-        type_unsigned_8 modifiers = ux_win32_modifiers_from_key_state();
+        lib_u8 modifiers = ux_win32_modifiers_from_key_state();
         ux_action action = ux_actions_match(
             win32_window_binding->actions, (WORD)wparam,
             modifiers);
@@ -674,7 +675,6 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         return 0;
     case WM_DESTROY:
         win32_window_release_mouse_capture();
-        KillTimer(window, WIN32_WINDOW_TIMER_ID);
         PostQuitMessage(0);
         return 0;
     }
@@ -690,7 +690,7 @@ ux_run_result ux_win32_run_window(
     HDC dc;
     ux_win32_window_context *context;
 
-    if (ux_binding_validate(binding) != TYPE_STATUS_OK)
+    if (ux_binding_validate(binding) != LIB_STATUS_OK)
         return UX_RUN_ERROR_RESULT;
     ZeroMemory(&klass, sizeof(klass));
     klass.lpfnWndProc = win32_window_proc;
@@ -791,14 +791,12 @@ ux_run_result ux_win32_run_window(
     SetForegroundWindow(window);
     SetFocus(window);
     for (;;) {
-        DWORD wait = MsgWaitForMultipleObjects(0u, NULL, FALSE,
-            WIN32_WINDOW_FRAME_INTERVAL_MS, QS_ALLINPUT);
+        HANDLE wait_handle = ux_win32_mailbox_wait_handle(binding->mailbox);
+        DWORD wait = MsgWaitForMultipleObjects(1u, &wait_handle, FALSE,
+            INFINITE, QS_ALLINPUT);
 
-        /* Frame polling is native-loop-local. Product integration may later
-           replace this private wake policy without exposing a host handle in
-           the root UX ABI; native input messages still wake immediately. */
-        if (wait == WAIT_TIMEOUT)
-            SendMessageA(window, WM_TIMER, WIN32_WINDOW_TIMER_ID, 0);
+        if (wait == WAIT_OBJECT_0)
+            SendMessageA(window, WIN32_WINDOW_FRAME_READY, 0, 0);
         else if (wait == WAIT_FAILED) {
             win32_window_result = UX_RUN_ERROR_RESULT;
             DestroyWindow(window);
