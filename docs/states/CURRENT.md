@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T523 S4 |
-| Admission And Approval | S3 implementation P1--P3 (`73b2c5ef`, `def32c37`, `d90fd430`) is accepted by this governance update; the owner-approved T523 proposal authorizes its stated S4 batch. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
-| Objective | Complete the independent `host`, `session`, and `storage` capabilities and remove superseded NXVM generic routes without moving machine ownership into lib. |
+| Identifier Mode | Continuation - M5 T523 S5 |
+| Admission And Approval | S4 implementation P1--P2 (`9ecb3810`, `b4ba3957`) is accepted by this governance update; the owner-approved T523 proposal authorizes its stated S5 cutover and adoption-handoff batch. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
+| Objective | Complete the one-path NXVM cutover, independent consumer conformance proof and bounded SoftPC adoption handoff without changing either product's machine behavior. |
 | Non-goals | No machine/controller/profile change, guest input protocol, UX redesign, asset change, Linux graphics backend, speculative framework, or migration of machine safe-point semantics into lib. |
-| Reference Baseline | `d90fd430` / accepted T523 S3 evidence and current independent library roots. |
+| Reference Baseline | `b4ba3957` / accepted T523 S4 evidence and current independent library roots. |
 | Candidate Proposal | [T523 proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md). |
-| Files And ABI Surface | Public `src/lib/{host,session,storage}/**`, their native Win32/Linux implementations, NXVM lifecycle/media callers, CMake and repository-only `test/lib/**`; public ABI remains copied values, opaque library handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): accepted S3 baseline, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): independent peer roots and product-only safe points; [Coding](../rules/CODING.md): durable bounded contracts and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. |
-| Verification | Inventory every host/session/storage public and native operation; compile affected targets; table-driven repository-only cancellation/join/lifecycle/storage-mode conformance; focused NXVM lifecycle/media proof; complete repository-only unit suite; documentation governance; `git diff --check`. |
-| Expected Markers | `host`, `session`, and `storage` remain peer roots; lib has one cancellation/join contract, one generic lifecycle acknowledgement and direct-readonly/overlay image modes; NXVM alone retains machine safe-point and controller ownership. |
+| Files And ABI Surface | Complete `src/lib/**` corpus and manifest, CMake consumer targets, NXVM bindings that consume it, repository-only neutral conformance tests and the bounded SoftPC handoff proposal; public ABI remains copied values, opaque library handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): accepted S4 baseline, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): independent peer roots and product-only safe points; [Coding](../rules/CODING.md): durable bounded contracts and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. |
+| Verification | Compile every library root as an independent consumer; execute neutral value/conformance coverage for frame, input, action, capture, mailbox, lifecycle and storage; audit NXVM's single production route per replaced generic mechanism; complete repository-only unit suite; documentation governance; `git diff --check`. |
+| Expected Markers | A byte-identical manifest-selected library corpus has a neutral consumer proof; NXVM consumes each generic mechanism through one binding; the SoftPC handoff names only binding work and cannot require source changes inside `src/lib`. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record each operation disposition, retained NXVM safe-point boundary, code-size delta, exact sweep commands and focused proof. Report any feature that requires machine/profile/controller ownership before implementation. |
-| Stop Conditions | Stop and report if a required lifecycle/storage shape cannot be represented by copied values, opaque handles/callbacks and native-private state, or if removing an NXVM route would move a machine safe point into lib. |
-| Exit Criteria | The declared generic lifecycle/host/storage operations are complete and table-driven; every generic NXVM route is removed or retained with a distinct machine-owned reason; no public contract needs product or guest ownership; affected targets and full unit/governance pass. |
+| Reporting Requirements | Record the byte-identical corpus check, every neutral conformance capability, each retained NXVM route and its distinct machine-owned reason, code-size delta, exact sweep commands and focused proof. Report any feature that requires machine/profile/controller ownership before implementation. |
+| Stop Conditions | Stop and report if a neutral consumer requires product ownership, if a required NXVM deletion moves a machine safe point into lib, or if SoftPC adoption needs a source edit inside the manifest-selected corpus. |
+| Exit Criteria | The neutral consumer proves all shared values and mechanics; every NXVM generic route is single-path or has a distinct machine-owned reason; `src/lib` is source-identical and product-free; the SoftPC handoff is bounded to an external binding; full unit/governance pass. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
 | Similar-Issue Sweep | Sweep tracked `src/lib`, its CMake targets, NXVM lifecycle/media callers and native implementations for product-safe-point leakage, duplicate cancellation/join state, polling wrappers, product-specific file suffixes, native types in public headers and parallel direct/overlay paths; replace every in-scope production hit or record its distinct machine-owned reason. |
 
@@ -67,6 +67,13 @@
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 
 ## Recent Governance
+
+- **M5 T523 S4 P3:** coordinator actual-diff review accepts `9ecb3810` and
+  `b4ba3957`. The generic host task/event contract, opaque session lifecycle,
+  three image modes and one stop wake replace their NXVM generic routes;
+  Core-safe-point, controller and media-topology ownership remain product
+  local. The native mailbox bridge is `ux/internal`, the 56-file manifest is
+  exact, focused lifecycle proof passes and unit is 309/309. S5 is admitted.
 
 - **M5 Td S164 P1:** places the owner-approved cross-product library-contract
   completion candidate at Queue head.  It corrects the remaining portability,

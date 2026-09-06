@@ -76,3 +76,19 @@ and one release-all callback before every registered action callback. The full
 repository-only unit suite passes `309/309` in 14.74 seconds; documentation
 governance, manifest, legacy-vocabulary and routing sweeps pass. S4 is admitted
 for the independent host/session/storage completion batch.
+
+## S4 Result And Acceptance
+
+S4 replaces the former polling-only host route with opaque native event/task
+create, cancellation, wait and join mechanics; it makes generic lifecycle
+state opaque, provides direct-readonly/direct-writable/overlay byte-image
+modes, and leaves Core safe-point and controller ownership in NXVM. The old
+execution-flip polling helper is deleted. A final review also moves the native
+mailbox wait bridge into `ux/internal`, so it cannot be consumed as public UX
+ABI.
+
+Coordinator review accepts `9ecb3810` and `b4ba3957`: 56 manifest-selected
+library files hash exactly, public headers carry neither native nor product
+types, focused native lifecycle proof passes, and the full repository-only unit
+suite passes `309/309`. S5 is admitted for neutral conformance, one-path NXVM
+audit and the bounded SoftPC adoption handoff.
