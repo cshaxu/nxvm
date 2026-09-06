@@ -5,8 +5,9 @@ root may combine them; a library component may not include another component.
 
 - `base` provides the library's portable scalar, status and atomic vocabulary.
 - `host` provides opaque native events and cancellable joined tasks.
-- `session` provides opaque lifecycle state. Product code owns execution
-  callbacks, host threads and safe points.
+- `session` provides opaque start, stop, reset and generic pause/resume state.
+  Product code owns execution callbacks, host threads, safe points and every
+  product-specific pause or stepping policy.
 - `storage` owns exclusive byte-medium leases. Direct and readonly media retain
   their backing file for offset I/O; overlay retains an immutable base plus only
   changed 4-KiB pages, then discards them. Product code owns storage topology

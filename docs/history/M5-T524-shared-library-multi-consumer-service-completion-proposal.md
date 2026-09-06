@@ -96,6 +96,14 @@ owner; it does not create a product dependency.
    removal and has no commit operation. Port NXVM FDD/HDD file insertion to that contract while
    retaining their topology and offset calculation locally. Do not import
    SoftPC controller code or add controller vocabulary to `lib`.
+11. **S11 - lifecycle neutrality repair.** Remove single-step requests,
+   numerical pause reasons and `flip` from the shared lifecycle state. Keep
+   only start, stop, reset, generic pause request/acknowledgement and resume in
+   `lib/session`. NXVM `session/control` exclusively owns debugger-specific
+   single-step and pause-reason state; its runner consumes the step flag after
+   one instruction and requests a normal lifecycle pause. Delete `flip` in
+   both layers after confirming it has no consumer. Build stripped x64/x86
+   artifacts for owner manual testing.
 
 ## Acceptance
 
@@ -115,6 +123,8 @@ owner; it does not create a product dependency.
   offset I/O; they never first materialize an entire file merely to call them
   direct. Overlay retains the readonly base and only changed 4-KiB pages in
   memory; it is always discarded and never materializes a replacement.
+- Shared lifecycle headers expose neither stepping, a pause reason nor `flip`;
+  NXVM retains each debugger-specific fact exactly once in `session/control`.
 
 ## Non-goals
 

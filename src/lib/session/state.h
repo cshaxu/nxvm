@@ -15,20 +15,14 @@ lib_status lib_session_state_create(lib_session_state **out_state);
 void lib_session_state_destroy(lib_session_state *state);
 void lib_session_state_start(lib_session_state *state);
 void lib_session_state_stop(lib_session_state *state);
-void lib_session_state_fault(lib_session_state *state);
 void lib_session_state_request_reset(lib_session_state *state);
 int lib_session_state_take_reset(lib_session_state *state);
-void lib_session_state_request_pause(lib_session_state *state, lib_u32 reason);
+void lib_session_state_request_pause(lib_session_state *state);
 void lib_session_state_acknowledge_pause(lib_session_state *state);
 void lib_session_state_resume(lib_session_state *state);
-int lib_session_state_request_step(lib_session_state *state);
-int lib_session_state_take_step(lib_session_state *state);
 int lib_session_state_is_active(const lib_session_state *state);
 int lib_session_state_is_paused(const lib_session_state *state);
 int lib_session_state_pause_requested(const lib_session_state *state);
-int lib_session_state_step_requested(const lib_session_state *state);
-lib_u32 lib_session_state_pause_reason(const lib_session_state *state);
-int lib_session_state_flip(const lib_session_state *state);
 lib_session_lifecycle lib_session_state_lifecycle(const lib_session_state *state);
 
 #endif

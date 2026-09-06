@@ -70,7 +70,7 @@ C_VOID vm_session_runner_run(vm_session *session)
         vm_session_execution_context_run_command_boundary(&control->execution_context);
         vm_session_execution_context_debug_refresh(&control->execution_context);
         if (lib_session_state_pause_requested(control->state)) continue;
-        budget.instructions = lib_session_state_step_requested(control->state) ? 1u :
+        budget.instructions = vm_session_control_step_requested(control) ? 1u :
             session->speed == VM_SESSION_SPEED_TURBO ?
             VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
@@ -78,7 +78,7 @@ C_VOID vm_session_runner_run(vm_session *session)
          * stay responsive, but it must not impose a second tick throttle.
          * Core still advances every retired instruction and every device
          * deadline on its one guest-time axis. */
-        budget.ticks = lib_session_state_step_requested(control->state) ||
+        budget.ticks = vm_session_control_step_requested(control) ||
             session->speed == VM_SESSION_SPEED_TURBO ? 0u :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
         {
@@ -111,7 +111,7 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_stop(control);
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
-            !lib_session_state_step_requested(control->state)) {
+            !vm_session_control_step_requested(control)) {
             C_INT advanced = 0;
             type_status time_status = vm_session_waiting_advance(
                 session, &result, &advanced);
@@ -124,7 +124,7 @@ C_VOID vm_session_runner_run(vm_session *session)
                 host_sync_yield();
             }
         }
-        if (lib_session_state_take_step(control->state)) {
+        if (vm_session_control_take_step(control)) {
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_STEP);
         }
     }

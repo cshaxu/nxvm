@@ -72,11 +72,10 @@ static int library_consumer_host_and_session(void)
         host_sync_event_wait(event, 0u) != HOST_SYNC_WAIT_TIMED_OUT) goto done;
     host_sync_event_signal(event);
     lib_session_state_start(state);
-    lib_session_state_request_pause(state, 7u);
+    lib_session_state_request_pause(state);
     lib_session_state_acknowledge_pause(state);
     if (host_sync_event_wait(event, 0u) != HOST_SYNC_WAIT_SIGNALED ||
-        lib_session_state_lifecycle(state) != LIB_SESSION_PAUSED ||
-        lib_session_state_pause_reason(state) != 7u) goto done;
+        lib_session_state_lifecycle(state) != LIB_SESSION_PAUSED) goto done;
     lib_session_state_resume(state);
     lib_session_state_stop(state);
     passed = lib_session_state_lifecycle(state) == LIB_SESSION_STOPPED;

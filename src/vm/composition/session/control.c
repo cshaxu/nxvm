@@ -93,20 +93,26 @@ C_VOID vm_session_control_stop(vm_session_control_state *control)  {
     if (machine != STD_NULL && machine->core_machine != STD_NULL) {
         core_machine_request_stop(machine->core_machine);
     }
+    atomic_store(&control->step_requested, TYPE_FALSE);
+    atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
     lib_session_state_stop(control->state);
 }
 
 C_VOID vm_session_control_fault(vm_session_control_state *control)
 {
     if (control == STD_NULL) return;
-    lib_session_state_fault(control->state);
+    atomic_store(&control->step_requested, TYPE_FALSE);
+    atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
+    lib_session_state_stop(control->state);
 }
 
 C_VOID vm_session_control_request_pause(vm_session_control_state *control,
     vm_session_pause_reason reason)
 {
     if (control == STD_NULL) return;
-    lib_session_state_request_pause(control->state, (type_unsigned_32)reason);
+    atomic_store(&control->step_requested, TYPE_FALSE);
+    atomic_store(&control->pause_reason, reason);
+    lib_session_state_request_pause(control->state);
 }
 
 C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,
@@ -132,19 +138,33 @@ vm_session_pause_reason vm_session_control_get_pause_reason(
     const vm_session_control_state *control)
 {
     return control == STD_NULL ? VM_SESSION_PAUSE_NONE :
-        (vm_session_pause_reason)lib_session_state_pause_reason(control->state);
+        (vm_session_pause_reason)atomic_load(&control->pause_reason);
 }
 
 C_VOID vm_session_control_continue(vm_session_control_state *control)
 {
     if (control == STD_NULL) return;
+    atomic_store(&control->step_requested, TYPE_FALSE);
+    atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
     lib_session_state_resume(control->state);
 }
 
 C_INT vm_session_control_step(vm_session_control_state *control)
 {
-    return control == STD_NULL ? TYPE_FALSE : lib_session_state_request_step(control->state);
+    if (control == STD_NULL || !lib_session_state_is_paused(control->state)) {
+        return TYPE_FALSE;
+    }
+    atomic_store(&control->step_requested, TYPE_TRUE);
+    atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
+    lib_session_state_resume(control->state);
+    return TYPE_TRUE;
 }
+
+C_INT vm_session_control_step_requested(const vm_session_control_state *control)
+{ return control != STD_NULL && atomic_load(&control->step_requested); }
+
+C_INT vm_session_control_take_step(vm_session_control_state *control)
+{ return control != STD_NULL && atomic_exchange(&control->step_requested, TYPE_FALSE); }
 
 C_VOID vm_session_control_bind_command_boundary(
     vm_session_control_state *control,
@@ -163,6 +183,8 @@ type_status vm_session_control_initialize(vm_session_control_state *control,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     STD_MEMSET((C_VOID *)(control), TYPE_ZERO_8, sizeof(*control));
+    atomic_init(&control->step_requested, TYPE_FALSE);
+    atomic_init(&control->pause_reason, VM_SESSION_PAUSE_NONE);
     status = lib_session_state_create(&control->state);
     if (status != LIB_STATUS_OK) return TYPE_STATUS_NO_MEMORY;
     vm_session_execution_context_initialize(&control->execution_context);
@@ -206,9 +228,4 @@ C_INT vm_session_control_is_running(const vm_session_control_state *control)
 {
     return control != STD_NULL && lib_session_state_is_active(control->state) &&
         !lib_session_state_is_paused(control->state);
-}
-
-C_INT vm_session_control_get_flip(const vm_session_control_state *control)
-{
-    return control != STD_NULL && lib_session_state_flip(control->state);
 }

@@ -43,6 +43,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t524-s8-portable-closure-audit.md` | Shared-library owner | T524 S8's whole-corpus portable-closure audit, including the current external integration gate blocker. |
 | `evidence/t524-s9-model40-clean-integration-replay.md` | Shared-library owner | T524 S9's clean Model-40 replay: no owner defect, complete unit/integration green, and no compatibility-path addition. |
 | `evidence/t524-s10-file-backed-storage.md` | Shared-library owner | T524 S10's neutral direct/readonly/sparse-overlay medium contract, FDD/HDD owner sweep and focused proof. |
+| `evidence/t524-s11-lifecycle-neutrality.md` | Shared-library owner | T524 S11's removal of shared step/reason/flip/fault policy and the sole NXVM debugger-control route. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

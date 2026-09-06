@@ -207,3 +207,14 @@ discard-only Overlay routes. The complete unit replay passes 311/311; the
 fresh Release Model-40 1.2MB external-YAML row reaches `installer-running` in
 53.75 seconds. T524 remains open for owner confirmation and task-level
 integration closure.
+
+## S11 Implementation P1
+
+S11 removes NXVM debugger policy from the shared lifecycle state: step,
+numeric pause reason, unused flip, and the NXVM-only fault alias are gone from
+`lib/session`. NXVM control alone owns the step/reason atomics, and the runner
+uses that one control route to execute one instruction before a generic pause.
+The complete owner sweep, current-source focused proof, full unit replay,
+manifest and x64/x86 optimized artifact evidence are in [S11 lifecycle
+neutrality](../etc/evidence/t524-s11-lifecycle-neutrality.md). T524 remains
+open for owner manual artifact testing and subsequent acceptance.

@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Owner-Reopen - M5 T524 S10 |
-| Admission And Approval | Owner explicitly reopened T524 and admitted S10 on 2026-09-06. Remote Linux CI remains explicitly out of scope. |
-| Objective | Replace the false RAM-only interpretation of direct/readonly media with one neutral file-backed storage route and discard-only sparse 4-KiB dirty-page overlay, then prove NXVM FDD/HDD consume it without importing controller semantics into `lib`. |
-| Non-goals | No SoftPC source import, product vocabulary in `src/lib`, firmware/profile/BIOS workaround, controller alias, media topology, CHS, or guest policy in the library. |
-| Reference Baseline | [T524 S6 storage lease contract](../etc/evidence/t524-s6-storage-lease-contract.md), the clean [S9 replay](../etc/evidence/t524-s9-model40-clean-integration-replay.md), and the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
+| Identifier Mode | Continuation - M5 T524 S11 |
+| Admission And Approval | Owner explicitly admitted S11 on 2026-09-06 after accepting S10 P1 `509f2f77`. Remote Linux CI remains explicitly out of scope. |
+| Objective | Make `lib/session` lifecycle-neutral: remove step, numerical pause reason and unused flip; retain those NXVM debugger facts solely in `vm/composition/session/control` while preserving one-instruction step then pause behavior. |
+| Non-goals | No SoftPC source import, generic executor loop, Core debug change, lifecycle callback framework, machine/profile policy or product state in `src/lib`. |
+| Reference Baseline | S10 P1 `509f2f77`, the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md), and current `lib/session`/NXVM control owner sweep. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/storage/` public opaque byte-medium ABI and native Win32/Linux mechanics; NXVM FDD/HDD media bindings and repository-only tests. |
+| Files And ABI Surface | `src/lib/session/state.[ch]`; NXVM `vm/composition/session/control.[ch]` and runner/debug consumers; repository-only lifecycle/debug tests; CMake artifact path. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Repository-only storage and FDD/HDD focused proof, complete unit suite, lib-only build/CTest, strict Linux syntax, external integration suite, governance and actual-diff review pass. |
-| Expected Markers | Direct and readonly retain file handles and perform offset I/O; overlay retains an immutable base plus only dirty 4-KiB pages; no FDD/HDD direct `FILE`/native I/O route or retained full-file load occurs. |
-| Asset Needs | Existing external integration assets only; no new assets or third-party source. |
-| Reporting Requirements | Report the former false contract, public ABI, every FDD/HDD route disposition, and exact gate outcomes. |
-| Stop Conditions | Stop for an owner decision only if direct file I/O requires controller semantics, a product-specific ABI, or an incompatible persistence policy. |
-| Exit Criteria | One neutral library implementation supports all three modes, NXVM FDD/HDD use it for file media, all gates pass, and the implementation P is pushed. T524 remains open for owner confirmation. |
-| Original Owner Request | Owner requires direct and readonly image-file access as a shared lib capability, matching SoftPC's general file-media model without importing SoftPC controller code. |
-| Similar-Issue Sweep | Sweep all tracked production FDD/HDD and storage paths for direct native/file I/O and full-file materialization; every hit is replaced, not applicable, or explicitly recorded. |
+| Verification | Repository-only lifecycle/control focused tests, complete unit suite, lib-only build/CTest, strict Linux syntax, stripped x64/x86 artifact builds, governance and actual-diff review pass. |
+| Expected Markers | Public `lib/session` lacks step, reason and flip API/state; NXVM control uniquely owns the step/reason atomics; runner executes exactly one instruction for step then issues a generic pause. |
+| Asset Needs | No new assets or third-party source. |
+| Reporting Requirements | Report former shared-product leakage, every moved/deleted API and caller disposition, retained owner path, code-size result, exact gates and artifact locations. |
+| Stop Conditions | Stop for owner decision only if preserving debugger stepping requires a product-specific capability in `lib/session` or changes an approved Core debugger semantic. |
+| Exit Criteria | Lifecycle library is neutral, NXVM retains correct debugger step/pause behavior on one owner path, flip is deleted, all gates pass, and stripped x64/x86 artifacts are available for manual test. T524 remains open for owner confirmation. |
+| Original Owner Request | Owner requires shared session lifecycle to exclude NXVM-only step, pause reason and flip, preserving debugger behavior locally. |
+| Similar-Issue Sweep | Sweep all `lib/session` API consumers and NXVM session-control/debug/runner callers; every step/reason/flip use is removed or assigned to NXVM control with no duplicate state. |
 
 ## Current Technical Baseline
 

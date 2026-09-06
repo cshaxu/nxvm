@@ -1,6 +1,7 @@
 #ifndef VM_SESSION_CONTROL_H
 #define VM_SESSION_CONTROL_H
 
+#include <stdatomic.h>
 
 #include "type.h"
 #include "lib/session/state.h"
@@ -22,6 +23,8 @@ typedef struct vm_session vm_session;
 
 typedef struct vm_session_control_state {
     lib_session_state *state;
+    atomic_bool step_requested;
+    atomic_int pause_reason;
     vm_session_execution_context execution_context;
 } vm_session_control_state;
 
@@ -40,12 +43,13 @@ vm_session_pause_reason vm_session_control_get_pause_reason(
     const vm_session_control_state *control);
 C_VOID vm_session_control_continue(vm_session_control_state *control);
 C_INT vm_session_control_step(vm_session_control_state *control);
+C_INT vm_session_control_step_requested(const vm_session_control_state *control);
+C_INT vm_session_control_take_step(vm_session_control_state *control);
 type_status vm_session_control_initialize(vm_session_control_state *control,
     vm_session *machine);
 C_VOID vm_session_control_finalize(vm_session_control_state *control,
     vm_session *machine);
 C_INT vm_session_control_is_running(const vm_session_control_state *control);
-C_INT vm_session_control_get_flip(const vm_session_control_state *control);
 C_VOID vm_session_control_print_status(const vm_session_control_state *control);
 C_VOID vm_session_control_bind_command_boundary(
     vm_session_control_state *control,
