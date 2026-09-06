@@ -211,8 +211,7 @@ int main(void)
     binding.handle_action = ux_contract_action;
     binding.handle_close = ux_contract_close;
     if (ux_binding_validate(&binding) != LIB_STATUS_OK) return 1;
-    if (ux_binding_invoke_action(&binding, UX_CONTRACT_ACTION,
-            UX_MODIFIER_CONTROL | UX_MODIFIER_ALT | UX_MODIFIER_SHIFT) !=
+    if (ux_binding_invoke_action(&binding, UX_CONTRACT_ACTION) !=
             UX_RUN_CONTINUE || capture.action_count != 1u ||
         capture.events[0u].data.key.scan_code != 0x1du ||
         capture.events[1u].data.key.scan_code != 0x38u ||

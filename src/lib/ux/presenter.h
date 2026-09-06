@@ -24,6 +24,6 @@ typedef struct ux_binding {
 
 lib_status ux_binding_validate(const ux_binding *binding);
 ux_run_result ux_binding_invoke_action(const ux_binding *binding,
-    ux_action action, lib_u8 modifiers);
+    ux_action action);
 
 #endif

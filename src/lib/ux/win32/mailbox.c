@@ -32,13 +32,10 @@ void ux_mailbox_native_signal(ux_mailbox_native *native_mailbox)
         (void)SetEvent(native_mailbox->event);
 }
 
-void *ux_mailbox_native_wait_handle(const ux_mailbox_native *native_mailbox)
-{
-    return native_mailbox == NULL ? NULL : native_mailbox->event;
-}
-
 HANDLE ux_win32_mailbox_wait_handle(const ux_mailbox *mailbox)
 {
-    return (HANDLE)ux_mailbox_native_wait_handle_for_mailbox(mailbox);
+    ux_mailbox_native *native_mailbox = ux_mailbox_native_for_mailbox(mailbox);
+
+    return native_mailbox == NULL ? NULL : native_mailbox->event;
 }
 #endif

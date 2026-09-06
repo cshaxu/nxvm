@@ -117,6 +117,43 @@ owner; it does not create a product dependency.
    Linux runtime behavior. The retained neutral text writer exposes one open
    parameter for truncate or append; product record formats, reset timing and
    write cadence remain outside `lib`.
+13. **S13 - UX owner and surface-lifecycle cleanup.**
+   Apply the completed whole-`src/lib` quality audit without creating a second
+   renderer, presentation state, or product policy route. A presenter has one
+   active render surface: either the Console text buffer or one native-window
+   DIB. A Console-mode session whose copied frame becomes graphical closes its
+   Console presenter and returns the Console to the product controller before
+   presenting only through the window DIB. On a stable return to text it
+   destroys the window DIB/window, then reacquires the Console text surface.
+   Window-mode sessions always use the window surface. The router remains the
+   one target-selection owner and the copied mailbox remains the only frame
+   source; this change does not create a second video, keyboard, mouse, or
+   session-state owner.
+
+   The Win32 window binds its one heap context to its `HWND` through
+   `GWLP_USERDATA`, eliminating the thread-local current-context and its
+   forwarding macro layer. One owner-local cleanup path releases a partially
+   or fully initialized native surface, including selected DIB restoration,
+   DCs, bitmaps, frame and window lifetime. Console input/output handles are
+   always closed by their opener, while `FreeConsole` remains limited to a
+   Console allocated by this presenter. Remove the mailbox `active` mirror,
+   the ignored presenter modifiers parameter, the duplicated mouse
+   cursor-hidden state, and the stopped-state pause request that cannot survive
+   `start`. Linux mailbox creation must prove nonblocking fd setup and retain
+   its wait reference as a native internal value rather than an fd-to-`void *`
+   encoding.
+
+   The S consumes the complete UX/native/lifecycle finding batch: Win32
+   Console handles, Console-to-window release, Win32 surface creation and
+   teardown, HWND context dispatch, common mailbox lifetime, Linux mailbox
+   wake setup, presenter action ABI, mouse state and stopped lifecycle pause.
+   It sweeps all `src/lib`, `src/vm`, `test`, and CMake callers for the retired
+   fields/parameters/TLS access and native-resource paths. It adds owner-local
+   regression coverage for router transitions and lifecycle semantics, runs
+   the complete repository-only unit suite plus lib-only build/CTest and both
+   static platform gates, and builds the required stripped x64/x86 T524
+   artifacts for owner Windows-host validation. It neither requires a Linux
+   runtime nor changes guest, Core, profile, firmware, or media semantics.
 
 ## Acceptance
 

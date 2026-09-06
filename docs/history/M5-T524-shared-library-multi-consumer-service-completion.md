@@ -268,3 +268,24 @@ retirement and error cleanup use that same route.
 The neutral file writer now takes a `TRUNCATE` or `APPEND` opening mode. NXVM
 selects truncate for a new recorder; the library does not acquire record
 format, reset or write-cadence policy. Its smoke proves both file modes.
+
+## S13 Admission
+
+The owner admitted the complete shared-library UX quality-audit batch. S13
+must replace the simultaneous Win32 Console/text-DIB/graphics-DIB model with
+one active render surface and lease, return the Console to the product
+controller during Console-mode graphics, and repair the associated native
+ownership and lifecycle defects.
+It may not create a second copied-frame, input, product-policy or guest route.
+
+## S13 Implementation P1
+
+The Console-to-window handoff now releases the Console presenter completely,
+returning it to product control before the window creates its only DIB. The
+reverse transition destroys that window surface before a Console presenter is
+reacquired. `GWLP_USERDATA` is the sole window-context owner; mailbox, mouse,
+action and stopped-pause mirrors are removed. Linux mailbox setup now proves
+both nonblocking fds. The stale Linux adapter hygiene gate now inspects the
+actual lib Linux console instead of a deleted VM implementation. Evidence:
+[T524 S13 UX owner and lifecycle closure](../etc/evidence/t524-s13-ux-owner-lifecycle.md).
+T524 remains open for owner re-audit and task-level closure.

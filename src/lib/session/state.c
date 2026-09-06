@@ -60,12 +60,8 @@ int lib_session_state_take_reset(lib_session_state *state)
 
 void lib_session_state_request_pause(lib_session_state *state)
 {
-    if (state == LIB_NULL) return;
-    if (atomic_load(&state->active)) {
+    if (state != LIB_NULL && atomic_load(&state->active))
         atomic_store(&state->pause_requested, LIB_TRUE);
-    } else {
-        atomic_store(&state->paused, LIB_TRUE);
-    }
 }
 
 void lib_session_state_acknowledge_pause(lib_session_state *state)

@@ -46,6 +46,10 @@ int main(void)
     if (lib_session_state_create(&state) != LIB_STATUS_OK ||
         lib_session_state_lifecycle(state) != LIB_SESSION_STOPPED ||
         lib_session_state_pause_requested(state)) goto failed;
+    lib_session_state_request_pause(state);
+    if (lib_session_state_lifecycle(state) != LIB_SESSION_STOPPED ||
+        lib_session_state_is_paused(state) ||
+        lib_session_state_pause_requested(state)) goto failed;
     for (index = 0u; index < sizeof(rows) / sizeof(rows[0]); ++index) {
         if (!session_state_apply(state, rows[index].command) ||
             lib_session_state_lifecycle(state) != rows[index].expected) goto failed;

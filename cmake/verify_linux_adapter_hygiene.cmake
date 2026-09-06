@@ -4,9 +4,9 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.h" linux_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.c" linux_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linuxcon.c" linuxcon_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/lib/ux/linux/console.c" linux_console_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/win32/win32.h" win32_header)
-set(adapter_source "${linux_header}\n${linux_source}\n${linuxcon_source}\n${win32_header}")
+set(adapter_source "${linux_header}\n${linux_source}\n${linux_console_source}\n${win32_header}")
 
 foreach(forbidden
     "vm_platform_linux_sleep"
@@ -26,7 +26,7 @@ foreach(forbidden
 endforeach()
 
 string(REGEX MATCH "return[^\n]*;[ \t\r\n]+break;" return_break
-    "${linuxcon_source}")
+    "${linux_console_source}")
 if(NOT return_break STREQUAL "")
     message(FATAL_ERROR "Linux adapter retains break after return")
 endif()

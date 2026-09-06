@@ -12,7 +12,6 @@ typedef struct ux_win32_mouse {
     int y;
     int valid;
     ux_capture capture;
-    int host_cursor_hidden;
 } ux_win32_mouse;
 
 void ux_win32_mouse_reset(ux_win32_mouse *mouse);
@@ -23,8 +22,6 @@ int ux_win32_mouse_move(ux_win32_mouse *mouse,
     LPARAM position, int client_width, int client_height,
     unsigned int content_width, unsigned int content_height, int *dx, int *dy);
 int ux_win32_mouse_captured(const ux_win32_mouse *mouse);
-int ux_win32_mouse_hides_host_cursor(
-    const ux_win32_mouse *mouse);
 #endif
 
 #endif

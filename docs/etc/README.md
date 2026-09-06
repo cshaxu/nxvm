@@ -45,6 +45,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t524-s10-file-backed-storage.md` | Shared-library owner | T524 S10's neutral direct/readonly/sparse-overlay medium contract, FDD/HDD owner sweep and focused proof. |
 | `evidence/t524-s11-lifecycle-neutrality.md` | Shared-library owner | T524 S11's removal of shared step/reason/flip/fault policy and the sole NXVM debugger-control route. |
 | `evidence/t524-s12-storage-api-surface.md` | Shared-library owner | T524 S12's dead storage API removal, retained immediate Direct persistence and FDD/HDD eject-discard route. |
+| `evidence/t524-s13-ux-owner-lifecycle.md` | Shared-library owner | T524 S13's single active Console/window surface and lease, native-lifecycle cleanup and cross-platform mailbox closure. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

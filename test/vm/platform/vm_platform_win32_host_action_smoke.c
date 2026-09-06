@@ -50,15 +50,15 @@ int main(C_INT argc, C_CHAR **argv)
     if (!binding.input_sink(binding.context, &event) || capture.count != 1u ||
         capture.events[0].data.key.scan_code != 0x3bu ||
         capture.events[0].data.key.virtual_key != 0x70u) goto fail;
-    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE,
-            UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
+    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE) !=
+            UX_RUN_CONTINUE ||
         !vm_platform_run_handle_take_pause_report(handle) || capture.count != 3u ||
         capture.events[1].kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE ||
         capture.events[1].data.relative_mouse.buttons != 0u ||
         capture.events[2].data.key.scan_code != 0x3bu ||
         capture.events[2].data.key.pressed) goto fail;
-    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL,
-            UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
+    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL) !=
+            UX_RUN_CONTINUE ||
         capture.count != 10u ||
         capture.events[3].kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE ||
         capture.events[3].data.relative_mouse.buttons != 0u ||
@@ -71,8 +71,8 @@ int main(C_INT argc, C_CHAR **argv)
         !capture.events[10].data.key.pressed ||
         capture.events[11].data.key.virtual_key != 'A' ||
         capture.events[11].data.key.pressed) goto fail;
-    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER,
-            UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
+    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER) !=
+            UX_RUN_CONTINUE ||
         capture.count != 17u ||
         capture.events[12].kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE ||
         capture.events[12].data.relative_mouse.buttons != 0u ||

@@ -1,7 +1,7 @@
 #ifndef UX_ROUTER_H
 #define UX_ROUTER_H
 
-#include "lib/ux/frame.h"
+#include "lib/base/base.h"
 
 typedef enum ux_target { UX_TARGET_WINDOW, UX_TARGET_CONSOLE } ux_target;
 

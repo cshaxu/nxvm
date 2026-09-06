@@ -4,29 +4,30 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S12 |
-| Admission And Approval | Owner explicitly closed S11 and admitted S12 on 2026-09-06. Remote Linux CI remains explicitly out of scope. |
-| Objective | Remove dead shared-storage API surface: delete unconsumed exclusive/exists/replace/remove and line-reader helpers, `medium_mode_of`, `medium_flush` and duplicate `medium_discard`; preserve immediate Direct persistence, one pointer-clearing `medium_destroy` lease-destruction route and one parameterized writer open mode. Correct the discovered Linux platform-contract gate to validate the current host-sync/UX lifecycle owner. |
-| Non-goals | No overlay commit, delayed persistence policy, controller/media-topology change, SoftPC import, generic executor work, product-specific storage API or Linux runtime behavior change. |
-| Reference Baseline | S10 P1 `509f2f77`, accepted S11 P1 `879e4838`, the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md), and the complete current storage-call sweep. |
+| Identifier Mode | Continuation - M5 T524 S13 |
+| Admission And Approval | Owner explicitly admitted S13 on 2026-09-06 after approving the complete lib quality-audit disposition. Remote Linux CI remains explicitly out of scope. |
+| Objective | Repair the audited shared-UX ownership and lifecycle defects: one active Console-or-window render surface and lease, HWND-owned window context, one native cleanup path, exact mailbox lifecycle, and removal of duplicate or ineffective UX/session state. |
+| Non-goals | No second renderer, frame source, input path, guest/Core/profile/media semantic, Linux runtime requirement, SoftPC import, or product-specific policy in lib. |
+| Reference Baseline | S12 P5 `7038e0ef`, the accepted whole-`src/lib` audit, and the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/storage/{file,medium,native}.[ch]`, native Windows/Linux file mechanics, FDD/HDD eject consumers, repository-only storage/debug fixtures, and `cmake/verify_linux_platform_contract.cmake`. |
+| Files And ABI Surface | `src/lib/ux/`, `src/lib/session/state.*`, Win32/Linux UX-native mechanics, `src/vm/platform/` UX binding/route consumers, repository-only UX/session fixtures and lib build declarations. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused storage/file/FDD/HDD/debug fixture tests, complete unit suite, lib-only build/CTest, repaired Linux platform-contract and strict Linux syntax, manifest, governance and actual-diff review pass. |
-| Expected Markers | No public or native dead helper/query/flush/reader/discard symbol remains; Direct `write_at` is the sole immediate `fflush` point; pointer-clearing `medium_destroy` is the one destruction-and-null route; writer open selects either truncate or append without product record policy; the Linux gate names current `linux.c` host-sync/UX ownership only. |
+| Verification | Focused UX/native/session route tests, complete unit suite, lib-only build/CTest, strict Linux syntax and Linux platform-contract gates, manifest, governance, actual-diff review and stripped x64/x86 T524 artifacts for owner Windows-host validation. |
+| Expected Markers | One active native render surface and lease per presenter; a graphics-window transition returns the Console to the product controller; no TLS current-window owner; no mailbox `active`, cursor-hidden mirror, ignored action modifier or stopped-pause residue; Linux mailbox setup cannot silently become blocking. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report every deleted API and its caller disposition, retained Direct/destroy path, repaired gate ownership, code-size result and exact gates. |
-| Stop Conditions | Stop only if a helper has a distinct live production consumer, deleting it requires an unapproved commit/persistence semantic, or current Linux owner evidence requires a behavior change. |
-| Exit Criteria | The storage public/native surface exposes only live capabilities; FDD/HDD retain one pointer-clearing destroy path; Direct persistence remains immediate; all named gates, including the repaired Linux owner gate, pass. T524 remains open. |
-| Original Owner Request | Owner requires deletion or strict removal of dead file and medium APIs, including line reader, while retaining pointer-clearing eject destruction and choosing immediate Direct persistence over a redundant flush API. |
-| Similar-Issue Sweep | Search all `src`, `test` and build declarations for the retired public/native/reader/discard symbols and every `medium_destroy` consumer; remove test-only public API dependencies rather than preserve them. |
+| Reporting Requirements | Report the active-surface transition, retired duplicate states/ABI, native-resource disposition, all route sweep hits, code-size result and exact gates. |
+| Stop Conditions | Stop only if preserving the Console lease requires a second frame/input owner, the host APIs cannot bind context to HWND, or a Linux contract repair requires a new runtime policy. |
+| Exit Criteria | The one-surface and one-mailbox contracts hold across Console/window transitions; all named duplicate/ineffective states and hidden TLS ownership are absent; no native partial-initialization leak remains; all named gates pass and T524 remains open. |
+| Original Owner Request | Owner approved the first-principles lib audit dispositions and requires their minimal, single-owner implementation before re-audit. |
+| Similar-Issue Sweep | Search all `src/lib`, `src/vm`, `test` and build declarations for native surface allocation/destruction, TLS presenter state, mailbox lifecycle flags, duplicate capture/cursor state, action ABI callers and stopped-pause callers. |
 
 ## Current Technical Baseline
 
-- **Current developer artifacts:** CMake target `vm-0-5-0522` emits
-  `nxvm_0_5_0522_x64.exe` and `nxvm_0_5_0522_x86.exe` in stripped Release
-  builds. They retain the runtime debugger and contain no compiler debug
-  information. T522 records their verified hashes.
+- **Current developer artifacts:** T524 advances the active CMake target to
+  `vm-0-5-0524`, which emits `nxvm_0_5_0524_x64.exe` and
+  `nxvm_0_5_0524_x86.exe` in stripped Release builds. They retain the runtime
+  debugger and contain no compiler debug information. S13 records their
+  verified hashes before its P closure.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
