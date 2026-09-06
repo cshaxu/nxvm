@@ -169,12 +169,12 @@ API.
 
 ### S7 - Remove Native Keyboard Code From Core
 
-Move `core/platform/win32/keyboard.*` and its tests to the NXVM Win32 UX/VM
-binding that owns host-layout conversion to PC scan-code input.  Preserve the
-existing normalized event contract and guest delivery behavior, but leave Core
-without a Win32 SDK edge or host-layout/scan-code policy.  Sweep every native
-keyboard conversion helper so this is a relocation to one product binding,
-not a parallel path.
+Delete `core/platform/win32/keyboard.*` and its test path. `lib/ux/win32`
+already owns the shared host-layout normalization to product-neutral input
+events; VM maps that one event stream to its Core guest-input value. Preserve
+guest delivery behavior, but leave Core without a Win32 SDK edge or
+host-layout/scan-code policy. Sweep every native keyboard conversion helper so
+this is a one-normalizer replacement, not a parallel VM path.
 
 ### S8 - Name And Retain The Core Guest-Boundary Owners
 

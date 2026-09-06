@@ -129,6 +129,10 @@ if(WIN32)
     add_library(ux-win32-native STATIC ${LIB_UX_NATIVE_SOURCES})
     target_include_directories(ux-win32-native PUBLIC "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(ux-win32-native PUBLIC ux-contract)
+    add_executable(ux-win32-input-smoke test/lib/ux_win32_input_smoke.c)
+    target_link_libraries(ux-win32-input-smoke PRIVATE ux-win32-native)
+    add_test(NAME unit.ux-win32-input-smoke COMMAND ux-win32-input-smoke)
+    set_tests_properties(unit.ux-win32-input-smoke PROPERTIES LABELS "unit")
 else()
     set(LIB_UX_NATIVE_SOURCES src/lib/ux/linux/console.c)
 endif()
@@ -1329,7 +1333,6 @@ set(VM_PLATFORM_SOURCES
 )
 if(WIN32)
     list(APPEND VM_PLATFORM_SOURCES
-        src/vm/platform/win32/keyboard.c
         src/vm/platform/win32/win32.c
     )
 else()
@@ -1552,12 +1555,6 @@ target_link_libraries(vm-platform PUBLIC
     ux-contract)
 if(WIN32)
     target_link_libraries(vm-platform PUBLIC ux-win32-native user32 gdi32)
-    add_executable(vm-platform-win32-keyboard-smoke
-        test/vm/platform/vm_platform_win32_keyboard_smoke.c)
-    target_link_libraries(vm-platform-win32-keyboard-smoke PRIVATE vm-platform)
-    add_test(NAME unit.vm-platform-win32-keyboard-smoke
-        COMMAND vm-platform-win32-keyboard-smoke)
-    set_tests_properties(unit.vm-platform-win32-keyboard-smoke PROPERTIES LABELS unit)
 endif()
 
 add_executable(vm-platform-ux-frame-smoke
@@ -3046,8 +3043,8 @@ set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
 # route and a dependency of run-unit-tests.  Account for it once here rather
 # than creating a second registration path.
 if(WIN32)
-    list(APPEND project_t344_single_test_targets vm-platform-win32-keyboard-smoke)
-    list(APPEND project_t344_registered_targets vm-platform-win32-keyboard-smoke)
+    list(APPEND project_t344_single_test_targets ux-win32-input-smoke)
+    list(APPEND project_t344_registered_targets ux-win32-input-smoke)
 endif()
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
@@ -3113,8 +3110,7 @@ if(POWERSHELL_EXECUTABLE)
             -DeadlineSeconds "${PROJECT_UNIT_TEST_DEADLINE_SECONDS}"
         COMMENT "Building and executing repository-only unit tests"
         VERBATIM)
-    add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS}
-        vm-platform-win32-keyboard-smoke)
+    add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS})
 
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass

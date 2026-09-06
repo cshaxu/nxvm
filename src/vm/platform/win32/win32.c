@@ -2,9 +2,8 @@
 
 #include "type.h"
 
-#include "core/platform/input_interface.h"
-#include "vm/platform/win32/keyboard.h"
 #include "lib/host/sync.h"
+#include "lib/ux/win32/input.h"
 #include "lib/ux/win32/runner.h"
 #include "vm/platform/platform_internal.h"
 #include "vm/platform/ux_binding.h"
@@ -23,13 +22,9 @@ typedef struct vm_platform_win32_ux_handle {
 static void vm_platform_win32_signal_started(void *opaque)
 { host_sync_event_signal(opaque); }
 
-static type_status vm_platform_win32_submit_event(C_VOID *opaque,
-    const core_platform_input_event *event)
+static int vm_platform_win32_submit_ux_event(void *opaque, const ux_event *event)
 {
-    const vm_platform_run_context *context = opaque;
-
-    return context == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
-        vm_platform_host_input_sink_submit(&context->input_sink, event);
+    return vm_platform_ux_event_submit(opaque, event);
 }
 
 C_VOID vm_platform_win32_keyboard_make_key_for(
@@ -37,8 +32,8 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
     (C_VOID)owner;
-    (C_VOID)vm_platform_win32_keyboard_submit_key((C_VOID *)context,
-        vm_platform_win32_submit_event, scan_code, virtual_key, pressed);
+    (C_VOID)ux_win32_keyboard_submit_transition((C_VOID *)context,
+        vm_platform_win32_submit_ux_event, scan_code, virtual_key, 0u, pressed);
 }
 
 C_VOID vm_platform_win32_keyboard_make_key_with_modifiers_for(
@@ -46,24 +41,26 @@ C_VOID vm_platform_win32_keyboard_make_key_with_modifiers_for(
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key,
     type_unsigned_8 modifiers, C_INT pressed)
 {
-    (C_VOID)modifiers;
-    vm_platform_win32_keyboard_make_key_for(context, owner, scan_code,
-        virtual_key, pressed);
+    (C_VOID)owner;
+    (C_VOID)ux_win32_keyboard_submit_transition((C_VOID *)context,
+        vm_platform_win32_submit_ux_event, scan_code, virtual_key, modifiers, pressed);
 }
 
 C_VOID vm_platform_win32_keyboard_make_character_for(
     const vm_platform_run_context *context, type_unsigned_32 scalar)
 {
-    (C_VOID)vm_platform_win32_keyboard_submit_character((C_VOID *)context,
-        vm_platform_win32_submit_event, scalar);
+    ux_win32_keyboard_normalizer normalizer = {0};
+
+    if (scalar <= 0xffffu) (C_VOID)ux_win32_keyboard_submit_utf16(&normalizer,
+        (C_VOID *)context, vm_platform_win32_submit_ux_event, (WORD)scalar);
 }
 
 C_VOID vm_platform_win32_keyboard_make_utf16_for(
-    vm_platform_win32_keyboard_normalizer *state,
+    ux_win32_keyboard_normalizer *state,
     const vm_platform_run_context *context, type_unsigned_16 code_unit)
 {
-    (C_VOID)vm_platform_win32_keyboard_submit_utf16(state,
-        (C_VOID *)context, vm_platform_win32_submit_event, code_unit);
+    (C_VOID)ux_win32_keyboard_submit_utf16(state,
+        (C_VOID *)context, vm_platform_win32_submit_ux_event, code_unit);
 }
 
 C_VOID vm_platform_win32_mouse_relative_for(

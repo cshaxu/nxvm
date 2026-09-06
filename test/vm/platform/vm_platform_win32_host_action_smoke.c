@@ -65,9 +65,8 @@ int main(C_INT argc, C_CHAR **argv)
         capture.events[6].data.key.scan_code != 0x0153u ||
         !capture.events[6].data.key.pressed ||
         capture.events[6].data.key.virtual_key != 0x2eu) goto fail;
-    event.type = UX_EVENT_TEXT;
-    event.data.text.scalar = 'a';
-    if (!binding.input_sink(binding.context, &event) || capture.count != 12u ||
+    if (!ux_win32_keyboard_submit_utf16(&normalizer, binding.context,
+            binding.input_sink, 'a') || capture.count != 12u ||
         capture.events[10].data.key.virtual_key != 'A' ||
         !capture.events[10].data.key.pressed ||
         capture.events[11].data.key.virtual_key != 'A' ||

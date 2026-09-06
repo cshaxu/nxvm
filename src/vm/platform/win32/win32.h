@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "vm/platform/win32/keyboard.h"
+#include "lib/ux/win32/input.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/win32/win32_types.h"
 
@@ -28,7 +28,7 @@ C_VOID vm_platform_win32_keyboard_make_key_with_modifiers_for(
 C_VOID vm_platform_win32_keyboard_make_character_for(const vm_platform_run_context *context,
     type_unsigned_32 scalar);
 C_VOID vm_platform_win32_keyboard_make_utf16_for(
-    vm_platform_win32_keyboard_normalizer *state, const vm_platform_run_context *context,
+    ux_win32_keyboard_normalizer *state, const vm_platform_run_context *context,
     type_unsigned_16 code_unit);
 C_VOID vm_platform_win32_mouse_relative_for(const vm_platform_run_context *context,
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);

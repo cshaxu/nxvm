@@ -1,9 +1,6 @@
 #include "vm/platform/ux_binding.h"
 
 #include "core/platform/input_interface.h"
-#ifdef _WIN32
-#include "vm/platform/win32/keyboard.h"
-#endif
 #include "vm/platform/platform_internal.h"
 
 #include <limits.h>
@@ -19,19 +16,6 @@ static C_INT vm_platform_ux_action_key(vm_platform_run_handle *handle,
     ux_event_sink input_sink, type_unsigned_16 scan_code,
     type_unsigned_16 virtual_key, C_INT pressed);
 
-#ifdef _WIN32
-static type_status vm_platform_ux_submit_core(C_VOID *opaque,
-    const core_platform_input_event *event)
-{
-    vm_platform_run_handle *handle = opaque;
-    vm_platform_run_context *context = handle == STD_NULL ? STD_NULL :
-        (vm_platform_run_context *)handle->context;
-
-    return context == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
-        vm_platform_host_input_sink_submit(&context->input_sink, event);
-}
-#endif
-
 static ux_run_state vm_platform_ux_state(C_VOID *opaque)
 {
     const vm_platform_run_handle *handle = opaque;
@@ -43,11 +27,9 @@ static ux_run_state vm_platform_ux_state(C_VOID *opaque)
         state == LIB_SESSION_PAUSED ? UX_RUN_PAUSED : UX_RUN_STOPPED;
 }
 
-static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
+C_INT vm_platform_ux_event_submit(const vm_platform_run_context *context,
+    const ux_event *event)
 {
-    vm_platform_run_handle *handle = opaque;
-    vm_platform_run_context *context = handle == STD_NULL ? STD_NULL :
-        (vm_platform_run_context *)handle->context;
     core_platform_input_event input;
 
     if (context == STD_NULL || event == STD_NULL) return TYPE_FALSE;
@@ -68,11 +50,7 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
             (event->data.mouse.buttons & UX_MOUSE_BUTTON_RIGHT ? 2u : 0u);
     }
 #ifdef _WIN32
-    else if (event->type == UX_EVENT_TEXT) {
-        return vm_platform_win32_keyboard_submit_character(handle,
-            vm_platform_ux_submit_core,
-            event->data.text.scalar) == TYPE_STATUS_OK;
-    }
+    else if (event->type == UX_EVENT_TEXT) return TYPE_FALSE;
 #else
     else if (event->type == UX_EVENT_TEXT && event->data.text.scalar <= 0xffffu) {
         input.kind = CORE_PLATFORM_INPUT_KEY;
@@ -83,6 +61,16 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
     else return TYPE_FALSE;
     if (vm_platform_host_input_sink_submit(&context->input_sink, &input) !=
         TYPE_STATUS_OK) return TYPE_FALSE;
+    return TYPE_TRUE;
+}
+
+static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
+{
+    vm_platform_run_handle *handle = opaque;
+    const vm_platform_run_context *context = handle == STD_NULL ? STD_NULL :
+        handle->context;
+
+    if (!vm_platform_ux_event_submit(context, event)) return TYPE_FALSE;
     if (event->type == UX_EVENT_KEY && event->data.key.scan_code < 512u)
         handle->ux_pressed_keys[event->data.key.scan_code] =
             event->data.key.pressed != 0u;
