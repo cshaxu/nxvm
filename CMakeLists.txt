@@ -1531,10 +1531,6 @@ add_executable(vm-host-cancellation-smoke
 target_link_libraries(vm-host-cancellation-smoke PRIVATE
     vm-composition)
 
-add_executable(session-executor-smoke
-    test/lib/session_executor_smoke.c
-)
-target_link_libraries(session-executor-smoke PRIVATE session-lifecycle)
 add_executable(vm-platform-run-handle-smoke
     test/integration/platform/vm_platform_run_handle_smoke.c
 )
@@ -2382,7 +2378,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-product-debug-input-failure-smoke
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
-    session-executor-smoke
     core-machine-guest-input-source-smoke
     host-sync-smoke
     session-state-smoke
@@ -3760,7 +3755,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(session-executor-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(storage-image-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(observability-outcome-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

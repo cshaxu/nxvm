@@ -100,8 +100,9 @@ static void vm_platform_win32_ux_kernel_task(void *opaque,
 
     (void)task;
     if (handle == STD_NULL) return;
-    lib_session_executor_start(handle->context->execution,
-        vm_platform_win32_signal_started, handle->kernel_started);
+    lib_session_state_start(handle->context->execution->state);
+    vm_platform_win32_signal_started(handle->kernel_started);
+    handle->context->execution->run(handle->context->execution->context);
     vm_platform_run_handle_report(handle->owner,
         VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED);
 }
@@ -112,7 +113,9 @@ type_status vm_platform_win32_run_handle_start(
     vm_platform_win32_ux_handle *handle;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
-        context->execution == STD_NULL || context->input_sink.submit == STD_NULL)
+        context->execution == STD_NULL || context->execution->state == STD_NULL ||
+        context->execution->run == STD_NULL || context->execution->stop == STD_NULL ||
+        context->input_sink.submit == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
     handle = STD_CALLOC(1u, sizeof(*handle));
     if (handle == STD_NULL) return TYPE_STATUS_NO_MEMORY;
@@ -154,8 +157,8 @@ C_VOID vm_platform_win32_run_handle_request_stop(vm_platform_run_handle *owner)
     vm_platform_win32_ux_handle *handle = owner == STD_NULL ? STD_NULL :
         owner->backend;
 
-    if (handle != STD_NULL) lib_session_executor_stop(
-        handle->context->execution);
+    if (handle != STD_NULL) handle->context->execution->stop(
+        handle->context->execution->context);
     if (handle != STD_NULL) {
         ux_mailbox_wake(handle->context->ux_mailbox);
         host_sync_task_request_cancel(handle->kernel_task);

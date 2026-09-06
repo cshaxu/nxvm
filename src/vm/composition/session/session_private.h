@@ -56,7 +56,7 @@ struct vm_session {
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
     core_machine_guest_presentation_mailbox *presentation_mailbox;
-    lib_session_executor *execution_transport;
+    vm_platform_execution execution;
     core_machine_guest_input_source *input_source;
     core_utils_wait_scope wait_scope;
     vm_platform_run_context *platform_run_context;

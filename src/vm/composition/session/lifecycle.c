@@ -26,8 +26,6 @@
 
 #include "core/machine/machine_interface.h"
 
-#include "lib/session/executor.h"
-
 #include "core/machine/guest_input_interface.h"
 
 #include "vm/platform/platform.h"
@@ -141,11 +139,6 @@ static C_VOID vm_session_execution_stop(C_VOID *context)
 {
     vm_session_control_stop(&((vm_session *)context)->control);
 }
-
-static const lib_session_executor_sink vm_session_execution_sink = {
-    vm_session_execution_start,
-    vm_session_execution_stop
-};
 
 static C_VOID vm_session_debug_request_pause(C_VOID *context,
     vm_machine_debug_pause_reason reason)
@@ -282,9 +275,10 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_debug_disassemble, STD_NULL);
     status = lib_observability_outcome_create(&machine->start_outcome);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
-    status = lib_session_executor_create(machine->control.state,
-        &vm_session_execution_sink, machine, &machine->execution_transport);
-    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
+    machine->execution.state = machine->control.state;
+    machine->execution.run = vm_session_execution_start;
+    machine->execution.stop = vm_session_execution_stop;
+    machine->execution.context = machine;
     status = vm_platform_request_transport_create(&machine->request_transport);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     vm_platform_request_transport_bind_consumer(machine->request_transport,
@@ -297,7 +291,7 @@ type_status vm_session_initialize(vm_session *machine) {
     }
     host_input_sink.context = machine;
     status = vm_platform_run_context_create(
-        machine->execution_transport, &host_input_sink,
+        &machine->execution, &host_input_sink,
         machine->presentation_mailbox, &machine->wait_scope,
         &machine->platform_run_context);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
@@ -321,8 +315,7 @@ C_VOID vm_session_finalize(vm_session *machine) {
     machine->platform_run_context = STD_NULL;
     lib_observability_outcome_destroy(machine->start_outcome);
     machine->start_outcome = STD_NULL;
-    lib_session_executor_destroy(machine->execution_transport);
-    machine->execution_transport = STD_NULL;
+    STD_MEMSET(&machine->execution, 0, sizeof(machine->execution));
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     core_machine_guest_input_source_destroy(machine->input_source);
     machine->input_source = STD_NULL;

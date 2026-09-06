@@ -13,7 +13,7 @@
 #include "vm/platform/ux_frame.h"
 
 type_status vm_platform_run_context_create(
-    const lib_session_executor *execution,
+    const vm_platform_execution *execution,
     const vm_platform_host_input_sink *input_sink,
     const core_machine_guest_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope,

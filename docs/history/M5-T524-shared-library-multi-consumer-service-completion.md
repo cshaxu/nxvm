@@ -87,3 +87,11 @@ was introduced, and both native implementations implement the same visible
 priority/lifecycle contract. Windows smoke, strict Linux syntax, complete unit
 312/312, manifest, vocabulary/dependency sweeps, documentation governance and
 diff checks pass. T524 remains open for S5--S8.
+
+## S5 Result
+
+S5 retains `lib/session/state` as the sole neutral lifecycle capability and
+deletes the unproven `lib/session/executor` facade. NXVM owns its one local
+execution callback boundary, so library state has no product-run policy or
+thread/safe-point behavior. The complete disposition and verification are in
+[S5 evidence](../etc/evidence/t524-s5-session-disposition.md).

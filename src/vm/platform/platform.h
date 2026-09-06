@@ -11,7 +11,7 @@ extern "C" {
 #include "core/machine/guest_input_interface.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/utils/wait_provider.h"
-#include "lib/session/executor.h"
+#include "lib/session/state.h"
 
 typedef type_status (*vm_platform_host_input_submit)(C_VOID *context,
     const core_machine_guest_input_event *event);
@@ -20,6 +20,19 @@ typedef struct vm_platform_host_input_sink {
     vm_platform_host_input_submit submit;
     C_VOID *context;
 } vm_platform_host_input_sink;
+
+/* This is the NXVM product execution boundary.  The library does not own it:
+ * a product supplies its own execution turn and stop action around the
+ * neutral lifecycle state. */
+typedef void (*vm_platform_execution_run)(C_VOID *context);
+typedef void (*vm_platform_execution_stop)(C_VOID *context);
+
+typedef struct vm_platform_execution {
+    lib_session_state *state;
+    vm_platform_execution_run run;
+    vm_platform_execution_stop stop;
+    C_VOID *context;
+} vm_platform_execution;
 
 typedef enum vm_platform_display_mode {
     VM_PLATFORM_DISPLAY_CONSOLE,
@@ -41,7 +54,7 @@ typedef enum vm_platform_run_event {
 typedef struct vm_platform_run_handle vm_platform_run_handle;
 
 type_status vm_platform_run_context_create(
-    const lib_session_executor *execution,
+    const vm_platform_execution *execution,
     const vm_platform_host_input_sink *input_sink,
     const core_machine_guest_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope,

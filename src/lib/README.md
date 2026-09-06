@@ -5,8 +5,8 @@ root may combine them; a library component may not include another component.
 
 - `base` provides the library's portable scalar, status and atomic vocabulary.
 - `host` provides opaque native events and cancellable joined tasks.
-- `session` provides opaque lifecycle state and product-run callbacks; it does
-  not own a host thread or a machine safe point.
+- `session` provides opaque lifecycle state. Product code owns execution
+  callbacks, host threads and safe points.
 - `storage` owns image bytes and direct-readonly, direct-writable and overlay
   persistence mechanics. Product code owns drive/controller topology.
 - `observability` publishes bounded copied outcomes.

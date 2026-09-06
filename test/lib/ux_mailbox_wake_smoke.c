@@ -17,6 +17,8 @@ int main(void)
     if (event == NULL || WaitForSingleObject(event, 0u) != WAIT_TIMEOUT)
         failed = 1;
     frame.valid = 1u;
+    frame.text_columns = UX_TEXT_COLUMNS;
+    frame.text_rows = UX_TEXT_ROWS;
     if (!failed && ux_mailbox_publish(mailbox, &frame) != LIB_STATUS_OK)
         failed = 1;
     if (!failed && WaitForSingleObject(event, 0u) != WAIT_OBJECT_0)

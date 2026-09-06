@@ -46,7 +46,7 @@ endif()
 add_library(host-sync STATIC ${LIBRARY_HOST_SOURCES})
 library_root(host-sync)
 
-add_library(session-lifecycle STATIC session/state.c session/executor.c)
+add_library(session-lifecycle STATIC session/state.c)
 library_root(session-lifecycle)
 
 set(LIBRARY_STORAGE_SOURCES storage/commit.c storage/file.c storage/image.c)
