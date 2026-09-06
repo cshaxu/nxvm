@@ -53,31 +53,39 @@ int main(C_INT argc, C_CHAR **argv)
     if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE,
             UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
         !vm_platform_run_handle_take_pause_report(handle) || capture.count != 3u ||
-        capture.events[1].data.key.pressed ||
+        capture.events[1].kind != CORE_PLATFORM_INPUT_RELATIVE_MOUSE ||
+        capture.events[1].data.relative_mouse.buttons != 0u ||
+        capture.events[2].data.key.scan_code != 0x3bu ||
         capture.events[2].data.key.pressed) goto fail;
     if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL,
             UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
-        capture.count != 11u || capture.events[7].data.key.scan_code != 0x0153u ||
-        !capture.events[7].data.key.pressed ||
-        capture.events[7].data.key.virtual_key != 0x2eu) goto fail;
+        capture.count != 10u ||
+        capture.events[3].kind != CORE_PLATFORM_INPUT_RELATIVE_MOUSE ||
+        capture.events[3].data.relative_mouse.buttons != 0u ||
+        capture.events[6].data.key.scan_code != 0x0153u ||
+        !capture.events[6].data.key.pressed ||
+        capture.events[6].data.key.virtual_key != 0x2eu) goto fail;
     event.type = UX_EVENT_TEXT;
     event.data.text.scalar = 'a';
-    if (!binding.input_sink(binding.context, &event) || capture.count != 13u ||
+    if (!binding.input_sink(binding.context, &event) || capture.count != 12u ||
+        capture.events[10].data.key.virtual_key != 'A' ||
+        !capture.events[10].data.key.pressed ||
         capture.events[11].data.key.virtual_key != 'A' ||
-        !capture.events[11].data.key.pressed ||
-        capture.events[12].data.key.virtual_key != 'A' ||
-        capture.events[12].data.key.pressed) goto fail;
+        capture.events[11].data.key.pressed) goto fail;
     if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER,
             UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
-        capture.count != 19u || capture.events[16].data.key.scan_code != 0x1cu ||
-        !capture.events[16].data.key.pressed ||
-        capture.events[16].data.key.virtual_key != 0x0du) goto fail;
+        capture.count != 17u ||
+        capture.events[12].kind != CORE_PLATFORM_INPUT_RELATIVE_MOUSE ||
+        capture.events[12].data.relative_mouse.buttons != 0u ||
+        capture.events[14].data.key.scan_code != 0x1cu ||
+        !capture.events[14].data.key.pressed ||
+        capture.events[14].data.key.virtual_key != 0x0du) goto fail;
     if (!ux_win32_keyboard_submit_utf16(&normalizer, binding.context,
-            binding.input_sink, 'b') || capture.count != 21u ||
-        capture.events[19].data.key.virtual_key != 'B' ||
-        !capture.events[19].data.key.pressed ||
-        capture.events[20].data.key.virtual_key != 'B' ||
-        capture.events[20].data.key.pressed) goto fail;
+            binding.input_sink, 'b') || capture.count != 19u ||
+        capture.events[17].data.key.virtual_key != 'B' ||
+        !capture.events[17].data.key.pressed ||
+        capture.events[18].data.key.virtual_key != 'B' ||
+        capture.events[18].data.key.pressed) goto fail;
     binding.get_title(binding.context, title, sizeof(title));
     if (strcmp(title, "NXVM (Stopped)") != 0) goto fail;
     vm_platform_run_handle_destroy(handle);

@@ -10,8 +10,9 @@ Linux presenters consume those values without borrowing Core or VM memory.
 
 Input values carry physical key transition, Unicode scalar, modifier state and
 relative/absolute/wheel/button mouse data. Product action identifiers are
-registered values: `lib/ux` releases shortcut modifiers and native capture
-before invoking the product callback, but has no NXVM action meaning. The new
+registered values: `lib/ux` asks the product binding to release all of its
+tracked inputs, while the native presenter releases capture before invoking
+the product callback. It has no NXVM action meaning. The new
 `ux_capture` value is the one capture-state owner; Win32 retains only the
 native `ClipCursor`/`ReleaseCapture` effect.
 
@@ -39,5 +40,5 @@ where three text frames may explicitly request Console again.
   action-before-callback release and capture release.
 - Complete repository-only x64 unit replay:
   `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8 --output-on-failure`:
-  `309/309` pass in 14.92 seconds.
+  `309/309` pass in 14.56 seconds.
 - `git diff --check` and the public-vocabulary/automatic-route sweeps pass.

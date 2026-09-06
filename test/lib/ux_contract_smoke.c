@@ -36,6 +36,22 @@ static ux_run_state ux_contract_state(void *context)
     return UX_RUN_RUNNING;
 }
 
+static int ux_contract_release_inputs(void *context, ux_event_sink sink)
+{
+    static const lib_u16 scan_codes[] = { 0x1du, 0x38u, 0x2au };
+    ux_contract_capture *capture = context;
+    lib_u32 index;
+
+    if (capture == LIB_NULL || sink == LIB_NULL) return LIB_FALSE;
+    for (index = 0u; index < sizeof(scan_codes) / sizeof(scan_codes[0]); ++index) {
+        ux_event event = { 0 };
+        event.type = UX_EVENT_KEY;
+        event.data.key.scan_code = scan_codes[index];
+        if (!sink(context, &event)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static ux_run_result ux_contract_action(void *context, ux_action action,
     ux_event_sink sink)
 {
@@ -168,6 +184,7 @@ int main(void)
     binding.router = &router;
     binding.actions = &actions;
     binding.input_sink = ux_contract_event;
+    binding.release_inputs = ux_contract_release_inputs;
     binding.get_state = ux_contract_state;
     binding.handle_action = ux_contract_action;
     binding.handle_close = ux_contract_close;

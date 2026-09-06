@@ -15,6 +15,7 @@ typedef struct ux_binding {
     ux_router *router;
     const ux_action_registry *actions;
     ux_event_sink input_sink;
+    int (*release_inputs)(void *context, ux_event_sink input_sink);
     ux_run_state (*get_state)(void *context);
     ux_run_result (*handle_action)(void *context, ux_action action, ux_event_sink input_sink);
     ux_run_result (*handle_close)(void *context, ux_event_sink input_sink);

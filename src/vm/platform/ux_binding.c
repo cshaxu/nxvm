@@ -15,6 +15,10 @@ static type_signed_16 vm_platform_ux_mouse_delta(type_signed_32 value)
         (type_signed_16)value;
 }
 
+static C_INT vm_platform_ux_action_key(vm_platform_run_handle *handle,
+    ux_event_sink input_sink, type_unsigned_16 scan_code,
+    type_unsigned_16 virtual_key, C_INT pressed);
+
 #ifdef _WIN32
 static type_status vm_platform_ux_submit_core(C_VOID *opaque,
     const core_platform_input_event *event)
@@ -53,6 +57,9 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
         input.data.key.scan_code = event->data.key.scan_code;
         input.data.key.virtual_key = event->data.key.virtual_key;
         input.data.key.pressed = event->data.key.pressed;
+        if (event->data.key.scan_code < 512u)
+            handle->ux_pressed_keys[event->data.key.scan_code] =
+                event->data.key.pressed != 0u;
     } else if (event->type == UX_EVENT_MOUSE) {
         input.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
         input.data.relative_mouse.delta_x = vm_platform_ux_mouse_delta(
@@ -92,6 +99,26 @@ static C_INT vm_platform_ux_action_key(vm_platform_run_handle *handle,
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed;
     return input_sink(handle, &event);
+}
+
+static C_INT vm_platform_ux_release_inputs(C_VOID *opaque,
+    ux_event_sink input_sink)
+{
+    vm_platform_run_handle *handle = opaque;
+    ux_event mouse = { 0 };
+    type_unsigned_32 scan_code;
+
+    if (handle == STD_NULL || input_sink == STD_NULL) return TYPE_FALSE;
+    mouse.type = UX_EVENT_MOUSE;
+    mouse.data.mouse.relative = TYPE_TRUE;
+    if (!input_sink(handle, &mouse)) return TYPE_FALSE;
+    for (scan_code = 0u; scan_code < 512u; ++scan_code) {
+        if (handle->ux_pressed_keys[scan_code] &&
+            !vm_platform_ux_action_key(handle, input_sink,
+                (type_unsigned_16)scan_code, 0u, TYPE_FALSE))
+            return TYPE_FALSE;
+    }
+    return TYPE_TRUE;
 }
 
 static ux_run_result vm_platform_ux_action(C_VOID *opaque, ux_action action,
@@ -157,6 +184,7 @@ type_status vm_platform_ux_binding_initialize(const vm_platform_run_context *con
     out_binding->router = (ux_router *)&context->ux_router;
     out_binding->actions = &context->ux_actions;
     out_binding->input_sink = vm_platform_ux_input;
+    out_binding->release_inputs = vm_platform_ux_release_inputs;
     out_binding->get_state = vm_platform_ux_state;
     out_binding->handle_action = vm_platform_ux_action;
     out_binding->handle_close = vm_platform_ux_close;

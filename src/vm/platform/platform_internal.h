@@ -29,6 +29,7 @@ struct vm_platform_run_handle {
     STD_ATOMIC_BOOL mouse_release_reported;
     C_INT active;
     C_INT window_display;
+    type_bool ux_pressed_keys[512u];
 };
 
 C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle);
