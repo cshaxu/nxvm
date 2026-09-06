@@ -105,8 +105,8 @@ owner; it does not create a product dependency.
    both layers after confirming it has no consumer. Build stripped x64/x86
    artifacts for owner manual testing.
 12. **S12 - storage API dead-surface cleanup.** Delete unconsumed exclusive
-   creation, existence, replacement and removal helpers, together with their
-   native-only implementations. Delete `medium_mode_of` and `medium_flush`;
+   creation, existence, replacement, removal and line-reader helpers, together
+   with their native-only implementations. Delete `medium_mode_of` and `medium_flush`;
    tests prove Direct persistence by reopen behavior rather than a redundant
    public flush. Retain `medium_discard` because FDD/HDD eject uses it to
    destroy and null the sole lease. Direct `write_at` remains the one

@@ -47,3 +47,12 @@ checks the real split: root CMake selects `linux.c`, library CMake owns
 Curses/Threads, and `linux.c` owns its host-sync task, UX presenter, one
 execution-stop request, join and finalize path. This is a gate-only correction:
 no Linux runtime source or behavior changes.
+
+## P3 line-reader removal
+
+The complete production sweep finds no consumer of `reader_open`,
+`reader_next` or `reader_close`; the sole test consumer exists only to retain
+that API. P3 removes the reader type, declarations and implementation. The
+file smoke keeps only live behavior: writer output is observed through the
+production `read_owned` route, using newline-free text so it does not assert a
+host-specific text line-ending conversion.

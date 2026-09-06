@@ -3,7 +3,6 @@
 #include "lib/storage/file.h"
 #include "lib/storage/native.h"
 
-struct lib_storage_file_reader { FILE *file; };
 struct lib_storage_file_writer { FILE *file; };
 
 lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
@@ -37,38 +36,6 @@ lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
     *out_bytes = bytes;
     *out_byte_count = (size_t)length;
     return LIB_STATUS_OK;
-}
-
-lib_status lib_storage_file_reader_open(const char *path,
-    lib_storage_file_reader **out_reader)
-{
-    lib_storage_file_reader *reader;
-
-    if (out_reader == LIB_NULL || path == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_reader = LIB_NULL;
-    reader = malloc(sizeof(*reader));
-    if (reader == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    reader->file = fopen(path, "rb");
-    if (reader->file == LIB_NULL) {
-        free(reader);
-        return LIB_STATUS_IO_ERROR;
-    }
-    *out_reader = reader;
-    return LIB_STATUS_OK;
-}
-
-int lib_storage_file_reader_next(lib_storage_file_reader *reader, char *line,
-    size_t capacity)
-{
-    return reader != LIB_NULL && line != LIB_NULL && capacity != 0u &&
-        capacity <= 0x7fffffffu && fgets(line, (int)capacity, reader->file) != LIB_NULL;
-}
-
-void lib_storage_file_reader_close(lib_storage_file_reader *reader)
-{
-    if (reader == LIB_NULL) return;
-    if (reader->file != LIB_NULL) (void)fclose(reader->file);
-    free(reader);
 }
 
 lib_status lib_storage_file_writer_open(const char *path,

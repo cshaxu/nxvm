@@ -247,3 +247,10 @@ The stale Linux platform-contract gate now verifies the current `linux.c`
 host-sync/UX lifecycle and library CMake platform dependencies, rather than a
 removed pre-library source file. No runtime code changes. The S12 evidence
 records the corrected contract and gate result.
+
+## S12 Implementation P3
+
+The unused line-reader public API and its test-only consumer are deleted.
+`read_owned` and writer remain because profile/session loading and debugger
+recording use them in production. The revised smoke asserts that live pair
+without a host-specific newline assumption.
