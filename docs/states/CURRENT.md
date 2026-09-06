@@ -2,7 +2,24 @@
 
 ## Current Work
 
-**Idle.**
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New - M5 T523 S1 |
+| Admission And Approval | Owner approved the Queue-head candidate for implementation on 2026-09-05. No exception authorizes product coupling, imported SoftPC code, or a second generic route. |
+| Objective | Freeze the complete cross-product library compatibility ledger and the zero-machine-pointer ABI before any source replacement. |
+| Non-goals | No SoftPC import, product binding, machine/controller/profile change, asset change, or speculative public framework. |
+| Reference Baseline | `dbb0a4ea` / T522 closure; current `src/lib` and the owner-provided candidate proposal. |
+| Candidate Proposal | [T523 proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md). |
+| Files And ABI Surface | `src/lib/**`, CMake/test registration, `docs/history/M5-T523-*`, and `docs/etc/evidence/t523-s1-*`; public ABI is value/callback-only and cannot expose product, machine, VM, profile, native SDK, or guest pointer. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): packet, coverage ledger, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): neutral dependency direction and sole ownership; [Coding](../rules/CODING.md): one durable public capability and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current/queue authority separation; [source policy](../etc/operations/policy/source-policy.md): read-only SoftPC research only. |
+| Verification | Static complete-corpus owner/include sweep; public ABI inventory; source-identical manifest plan; full repository-only unit suite; documentation governance; `git diff --check`. |
+| Expected Markers | Every public surface has exactly one disposition and receiver; every current top-level library root has no peer/product include; no proposed public operation needs a guest or product pointer. |
+| Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
+| Reporting Requirements | Record the finite ledger, product-binding boundary, exact sweep commands and S1 disposition. Report any feature that requires guest/product ownership before implementation. |
+| Stop Conditions | Stop and report if a necessary shared operation cannot be represented by copied values, opaque callbacks and native-private handles, or if reuse requires copying/deriving SoftPC code. |
+| Exit Criteria | A durable complete ledger names the frozen corpus, each public/mutable/native/timer/action/frame/storage surface and its disposition, plus neutral NXVM/SoftPC binding contracts; full unit and governance pass. |
+| Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
+| Similar-Issue Sweep | Sweep all tracked `src/lib`, product call sites, library CMake/test registration and manifests for NXVM type/product leakage, peer includes, polling, implicit routing and product-named storage semantics; record every hit in the S1 ledger. |
 
 ## Current Technical Baseline
 
@@ -50,6 +67,12 @@
 | T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 
 ## Recent Governance
+
+- **M5 Td S164 P1:** places the owner-approved cross-product library-contract
+  completion candidate at Queue head.  It corrects the remaining portability,
+  copied-frame, event wake, explicit presenter-control, lifecycle and storage
+  gaps before a future SoftPC binding may copy `src/lib` unchanged.  No source,
+  build, test, asset, ABI or artifact changed.
 
 - **M5 Td S163 P1:** places the owner-provided SoftPC platform-library adoption
   candidate at Queue head. S1 must inventory the exact source and every host
