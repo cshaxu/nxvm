@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New - M5 T524 S1 |
-| Admission And Approval | Owner corrected the Queue-head disposition on 2026-09-05: T523 does not prove that the exported `src/lib` corpus is complete or independently consumable. The owner approved restoring and revising the multi-consumer completion proposal as the current task. |
-| Objective | Freeze the complete `src/lib` corpus and its publish/verification boundary before any capability expansion; identify the exact P0 manifest, standalone-build, conformance and forbidden-vocabulary gaps. |
-| Non-goals | No SoftPC/MVDM/CPU/controller/BIOS/ROM/guest/profile behavior in `lib`; no consumer-specific binding; no speculative session driver, observability event, presenter policy or storage semantics; no copied third-party source. |
-| Reference Baseline | `9ef5e899`: T523 leaves the shared roots independent, but the current `MANIFEST.sha256` omits all five `host/clock*` files despite CMake consuming them. |
-| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md), revised by the owner-required P0 acceptance conditions. |
-| Files And ABI Surface | S1 reads all `src/lib` files, manifest, root CMake source lists, existing conformance targets and public headers; it may add only the finite disposition evidence and task history, not change a library API. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): finite coverage ledger and complete S gates; [Architecture](../rules/ARCHITECTURE.md): neutral one-owner ABI; [Coding](../rules/CODING.md): no speculative facade; [Source policy](../etc/operations/policy/source-policy.md): no third-party import; [Documentation](../rules/DOCUMENT.md): truthful Queue/history/state. |
-| Verification | Reconcile every tracked `src/lib` file with manifest and CMake; inventory every public header and existing conformance test; sweep the library tree for product/machine vocabulary; run documentation governance and `git diff --check`. S1 closure also runs the complete repository-only unit suite. |
-| Expected Markers | T524 S1 evidence identifies every file and source-list owner, current manifest omission, standalone build/verify gap, public-ABI product-vocabulary hit, and each component's two-consumer/conformance disposition. |
-| Asset Needs | None. This task has no ROM, media, BIOS, guest or external executable input. |
-| Reporting Requirements | Report P0 gaps before implementation, the exact retained component boundaries, and any capability that lacks two neutral consumers. Report immediately if a proposed shared API needs product/machine semantics. |
-| Stop Conditions | Stop before an API change if it would introduce product/machine vocabulary, a second product route, native type in a public header, or a capability without a two-consumer justification. |
-| Exit Criteria | S1 closes only with a complete corpus ledger and bounded S2--S5 implementation batches. It must not declare `lib` ready or alter APIs during audit. |
-| Original Owner Request | Owner supplied the cross-product `src/lib` readiness review, required restoring the incorrectly removed Queue proposal, and requires that the library be byte-identical and independently usable by NXVM and SoftPC. |
-| Similar-Issue Sweep | Audit all five peer roots (`ux`, `host`, `session`, `storage`, `observability`) plus `base`, every platform-private implementation, manifest entry and CMake source list; do not repair only the five known clock omissions. |
+| Identifier Mode | Progress - M5 T524 S1 accepted |
+| Admission And Approval | Owner approved the restored multi-consumer completion task on 2026-09-06. S1 audit delivery `69a8e875` is accepted after actual source/CMake/test review. |
+| Objective | Open T524: make `src/lib` a complete, byte-identical, independently verifiable neutral corpus for later NXVM and SoftPC bindings. |
+| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
+| Reference Baseline | `69a8e875`: complete 61-file corpus inventory and S1 readiness evidence. |
+| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
+| Files And ABI Surface | S1 changed evidence, proposal, history and state only. S2 is limited to the exhaustive manifest, independent verifier/build entry and CI drift boundary. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Source policy](../etc/operations/policy/source-policy.md) and [Documentation](../rules/DOCUMENT.md). |
+| Verification | S1: actual 61-versus-56 corpus comparison; source/CMake/header/test/vocabulary review; unit 311/311; documentation governance and diff checks pass. |
+| Expected Markers | S1 evidence fixes the finite S2--S8 receivers. S2 must remove the five known omissions and establish one standalone verification source list. |
+| Asset Needs | None. |
+| Reporting Requirements | Before S2, report any source-list ownership conflict or inability to make a missing/extra file fail verification. |
+| Stop Conditions | Do not enter S2 until its one manifest/build ownership path is defined; stop if it requires product/machine concepts or a duplicate list. |
+| Exit Criteria | S1 met: complete audit and bounded plan accepted. T524 remains open at its S2 admission boundary. |
+| Original Owner Request | Owner requires a source-identical shared library with only genuinely neutral capabilities and supplied the acceptance conditions. |
+| Similar-Issue Sweep | Each later S consumes its whole root-level batch; S8 rechecks the entire corpus, not only the known clock files. |
 
 ## Current Technical Baseline
 

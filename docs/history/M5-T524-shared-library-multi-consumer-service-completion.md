@@ -24,3 +24,12 @@ library build or CI drift gate, and material neutral-boundary defects in Linux
 key translation, mailbox/lifetime semantics, host wait semantics and storage
 lease semantics. It assigns one bounded receiver per library root; no API was
 added during the audit.
+
+## S1 Acceptance
+
+Coordinator actual-diff review accepts `69a8e875`: the evidence reconciles the
+whole manifest rather than only the reported clocks, verifies the source/CMake
+and public-vocabulary findings against current code, and does not add a
+speculative library interface. Repository-only unit is 311/311 in 23.23
+seconds; documentation governance and diff checks pass. T524 remains open for
+the owner to admit S2's single manifest/build replacement boundary.
