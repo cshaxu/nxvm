@@ -146,7 +146,7 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
         ux_linux_console_release();
         return UX_RUN_ERROR_RESULT;
     }
-    while (binding->get_state(binding->context) == UX_RUN_RUNNING) {
+    while (result == UX_RUN_CONTINUE) {
         struct pollfd waits[2] = {
             { STDIN_FILENO, POLLIN, 0 },
             { ux_linux_mailbox_wait_fd(binding->mailbox), POLLIN, 0 }
@@ -161,12 +161,18 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
             ux_linux_mailbox_consume(binding->mailbox);
         }
         if ((waits[1].revents & POLLIN) != 0 &&
+            ux_router_target(binding->router) == UX_TARGET_NONE) {
+            result = UX_RUN_STOPPED_RESULT;
+            break;
+        }
+        if ((waits[1].revents & POLLIN) != 0 &&
+            ux_router_target(binding->router) == UX_TARGET_WINDOW) {
+            result = UX_RUN_SWITCH_WINDOW;
+            break;
+        }
+        if ((waits[1].revents & POLLIN) != 0 &&
             ux_mailbox_generation(binding->mailbox) != displayed_generation &&
             ux_mailbox_capture(binding->mailbox, frame) == LIB_STATUS_OK) {
-            if (ux_router_target(binding->router) == UX_TARGET_WINDOW) {
-                result = UX_RUN_SWITCH_WINDOW;
-                break;
-            }
             ux_linux_console_paint(frame);
             displayed_generation = frame->sequence;
         }
@@ -175,9 +181,6 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
             if (result != UX_RUN_CONTINUE) break;
         }
     }
-    if (result == UX_RUN_STOPPED_RESULT &&
-        binding->get_state(binding->context) == UX_RUN_PAUSED)
-        result = UX_RUN_PAUSED_RESULT;
     free(frame);
     endwin();
     ux_linux_console_release();

@@ -57,6 +57,8 @@ C_VOID vm_session_runner_run(vm_session *session)
             if (vm_platform_run_handle_is_active(session->platform_run_handle) &&
                 !vm_platform_run_handle_is_window_display(
                     session->platform_run_handle)) {
+                vm_platform_run_handle_request_presenter_stop(
+                    session->platform_run_handle);
                 lib_session_state_stop(control->state);
                 break;
             }
@@ -128,4 +130,5 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_STEP);
         }
     }
+    vm_platform_run_handle_request_presenter_stop(session->platform_run_handle);
 }

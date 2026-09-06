@@ -228,6 +228,11 @@ int main(void)
         ux_mailbox_destroy(mailbox);
         return 1;
     }
+    ux_router_request(&router, UX_TARGET_NONE);
+    if (ux_router_target(&router) != UX_TARGET_NONE) {
+        ux_mailbox_destroy(mailbox);
+        return 1;
+    }
     ux_mailbox_destroy(mailbox);
     return 0;
 }

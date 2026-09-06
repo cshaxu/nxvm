@@ -154,6 +154,24 @@ owner; it does not create a product dependency.
    static platform gates, and builds the required stripped x64/x86 T524
    artifacts for owner Windows-host validation. It neither requires a Linux
    runtime nor changes guest, Core, profile, firmware, or media semantics.
+14. **S14 - Console viewport and explicit presentation-lifecycle repair.** A Win32
+   Console text presenter must establish both its screen buffer and its visible
+   viewport for the copied text frame; growing only the buffer leaves a
+   physically present but hidden lower screen. Do this at the Console surface
+   owner, with no second frame or display-state copy. Separately, remove the
+   run-handle's start-time `window_display` mirror. NXVM is the sole
+   presentation-lifecycle authority: it writes only the latest `CONSOLE`,
+   `WINDOW`, or `NONE` request to the router and wakes the existing mailbox;
+   no event queue or polling loop is introduced. The active Console or Window
+   thread releases its own native surface only after that request. The run context remains the
+   sole presentation-mode owner; lib never infers a switch or destruction from
+   lifecycle state. In particular,
+   Ctrl+Alt+P pauses a Window-mode session in place, releases capture and
+   updates its title, but neither stops the session nor destroys its window.
+   Add focused repository-only proof for live mode observation and retain the
+   complete unit suite, lib-only build/CTest, platform gates, governance and
+   dual stripped artifacts. No guest, Core, profile, router-policy or external
+   asset change is admitted.
 
 ## Acceptance
 

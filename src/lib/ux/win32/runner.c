@@ -12,8 +12,11 @@ ux_run_result ux_win32_run(const ux_binding *binding)
     if (ux_binding_validate(binding) != LIB_STATUS_OK)
         return UX_RUN_ERROR_RESULT;
     for (;;) {
-        result = ux_router_target(binding->router) == UX_TARGET_CONSOLE ?
-            ux_win32_run_console(binding) : ux_win32_run_window(binding);
+        ux_target target = ux_router_target(binding->router);
+
+        if (target == UX_TARGET_NONE) return UX_RUN_STOPPED_RESULT;
+        result = target == UX_TARGET_CONSOLE ? ux_win32_run_console(binding) :
+            ux_win32_run_window(binding);
         if (result == UX_RUN_SWITCH_WINDOW || result == UX_RUN_SWITCH_CONSOLE)
             continue;
         return result;

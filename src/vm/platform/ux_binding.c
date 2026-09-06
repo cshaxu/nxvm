@@ -203,7 +203,7 @@ static ux_run_result vm_platform_ux_close(C_VOID *opaque, ux_event_sink input_si
         input_sink);
 }
 
-type_status vm_platform_ux_binding_initialize(const vm_platform_run_context *context,
+type_status vm_platform_ux_binding_initialize(vm_platform_run_context *context,
     vm_platform_run_handle *handle, ux_binding *out_binding)
 {
     if (context == STD_NULL || handle == STD_NULL || out_binding == STD_NULL) {
@@ -215,7 +215,7 @@ type_status vm_platform_ux_binding_initialize(const vm_platform_run_context *con
     handle->context = context;
     out_binding->context = handle;
     out_binding->mailbox = context->ux_mailbox;
-    out_binding->router = (ux_router *)&context->ux_router;
+    out_binding->router = &context->ux_router;
     out_binding->actions = &context->ux_actions;
     out_binding->input_sink = vm_platform_ux_input;
     out_binding->release_inputs = vm_platform_ux_release_inputs;

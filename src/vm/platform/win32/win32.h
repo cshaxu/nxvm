@@ -34,7 +34,7 @@ C_VOID vm_platform_win32_mouse_relative_for(const vm_platform_run_context *conte
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);
 
 type_status vm_platform_win32_run_handle_start(
-    const vm_platform_run_context *context, vm_platform_run_handle *handle);
+    vm_platform_run_context *context, vm_platform_run_handle *handle);
 C_VOID vm_platform_win32_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_win32_run_handle_join(vm_platform_run_handle *handle);
 C_VOID vm_platform_win32_run_handle_finalize(vm_platform_run_handle *handle);

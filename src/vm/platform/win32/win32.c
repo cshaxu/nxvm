@@ -12,7 +12,7 @@
 #include <windows.h>
 
 typedef struct vm_platform_win32_ux_handle {
-    const vm_platform_run_context *context;
+    vm_platform_run_context *context;
     vm_platform_run_handle *owner;
     host_sync_task *kernel_task;
     host_sync_task *presenter_task;
@@ -108,7 +108,7 @@ static void vm_platform_win32_ux_kernel_task(void *opaque,
 }
 
 type_status vm_platform_win32_run_handle_start(
-    const vm_platform_run_context *context, vm_platform_run_handle *owner)
+    vm_platform_run_context *context, vm_platform_run_handle *owner)
 {
     vm_platform_win32_ux_handle *handle;
 
@@ -123,8 +123,6 @@ type_status vm_platform_win32_run_handle_start(
     handle->owner = owner;
     owner->context = context;
     owner->backend = handle;
-    owner->window_display = vm_platform_run_context_get_display_mode(context) ==
-        VM_PLATFORM_DISPLAY_WINDOW;
     owner->active = TYPE_TRUE;
     if (host_sync_event_create(&handle->kernel_started) != LIB_STATUS_OK ||
         host_sync_task_create(vm_platform_win32_ux_kernel_task, handle,
@@ -157,6 +155,7 @@ C_VOID vm_platform_win32_run_handle_request_stop(vm_platform_run_handle *owner)
     vm_platform_win32_ux_handle *handle = owner == STD_NULL ? STD_NULL :
         owner->backend;
 
+    vm_platform_run_handle_request_presenter_stop(owner);
     if (handle != STD_NULL) handle->context->execution->stop(
         handle->context->execution->context);
     if (handle != STD_NULL) {

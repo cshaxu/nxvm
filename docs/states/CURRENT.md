@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S13 |
-| Admission And Approval | Owner explicitly admitted S13 on 2026-09-06 after approving the complete lib quality-audit disposition. Remote Linux CI remains explicitly out of scope. |
-| Objective | Repair the audited shared-UX ownership and lifecycle defects: one active Console-or-window render surface and lease, HWND-owned window context, one native cleanup path, exact mailbox lifecycle, and removal of duplicate or ineffective UX/session state. |
-| Non-goals | No second renderer, frame source, input path, guest/Core/profile/media semantic, Linux runtime requirement, SoftPC import, or product-specific policy in lib. |
-| Reference Baseline | S12 P5 `7038e0ef`, the accepted whole-`src/lib` audit, and the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
+| Identifier Mode | Continuation - M5 T524 S14 |
+| Admission And Approval | Owner explicitly admitted S14 on 2026-09-06 after reporting a clipped Win32 Console viewport and a Window-mode pause that destroys the presenter. Remote Linux CI remains explicitly out of scope. |
+| Objective | Restore complete Console text visibility and make NXVM the sole presenter-lifecycle authority: Ctrl+Alt+P pauses a Window-mode session in place rather than closing its window. |
+| Non-goals | No second renderer, frame source, display-mode mirror, input path, guest/Core/profile/media semantic, Linux runtime requirement, SoftPC import, product-specific policy in lib, event queue, or polling loop. |
+| Reference Baseline | S13 P1 `d64c04fd`, the accepted shared-UX ownership result, and the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/ux/`, `src/lib/session/state.*`, Win32/Linux UX-native mechanics, `src/vm/platform/` UX binding/route consumers, repository-only UX/session fixtures and lib build declarations. |
+| Files And ABI Surface | `src/lib/ux/{router,win32/{console,runner,window},linux/console}.*`, `src/vm/platform/{platform,platform_internal,win32/win32,linux/linux}.*`, VM session lifecycle/runner consumers, repository-only platform UX fixtures and lib build declarations. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused UX/native/session route tests, complete unit suite, lib-only build/CTest, strict Linux syntax and Linux platform-contract gates, manifest, governance, actual-diff review and stripped x64/x86 T524 artifacts for owner Windows-host validation. |
-| Expected Markers | One active native render surface and lease per presenter; a graphics-window transition returns the Console to the product controller; no TLS current-window owner; no mailbox `active`, cursor-hidden mirror, ignored action modifier or stopped-pause residue; Linux mailbox setup cannot silently become blocking. |
+| Verification | Focused Console viewport and live-mode platform tests, complete unit suite, lib-only build/CTest, strict Linux syntax and Linux platform-contract gates, manifest, governance, actual-diff review and stripped x64/x86 T524 artifacts for owner Windows-host validation. |
+| Expected Markers | A Console text frame's full viewport is requested with its buffer; no run-handle display-mode mirror exists; NXVM alone requests `CONSOLE`, `WINDOW` or `NONE` and wakes the mailbox; lib's owner thread alone releases its active surface; a Window-mode pause leaves its presenter and session active-but-paused; no new presenter, frame, display-state or lifecycle owner exists. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report the active-surface transition, retired duplicate states/ABI, native-resource disposition, all route sweep hits, code-size result and exact gates. |
-| Stop Conditions | Stop only if preserving the Console lease requires a second frame/input owner, the host APIs cannot bind context to HWND, or a Linux contract repair requires a new runtime policy. |
-| Exit Criteria | The one-surface and one-mailbox contracts hold across Console/window transitions; all named duplicate/ineffective states and hidden TLS ownership are absent; no native partial-initialization leak remains; all named gates pass and T524 remains open. |
-| Original Owner Request | Owner approved the first-principles lib audit dispositions and requires their minimal, single-owner implementation before re-audit. |
-| Similar-Issue Sweep | Search all `src/lib`, `src/vm`, `test` and build declarations for native surface allocation/destruction, TLS presenter state, mailbox lifecycle flags, duplicate capture/cursor state, action ABI callers and stopped-pause callers. |
+| Reporting Requirements | Report the viewport and mode-owner root causes, every retired display-mode mirror, code-size result and exact gates. |
+| Stop Conditions | Stop only if a complete Console viewport requires a second text surface, or fixing live mode requires a new product lifecycle policy. |
+| Exit Criteria | Console uses matching buffer and viewport dimensions; NXVM explicitly controls all presenter switching and destruction through an atomic latest-intent router plus mailbox wake; Window pause preserves its window; all named gates pass and T524 remains open. |
+| Original Owner Request | Owner reported a clipped Console text display and a Window-mode Ctrl+Alt+P lifecycle regression and requires their shared-owner repair. |
+| Similar-Issue Sweep | Search all `src/lib`, `src/vm`, `test` and build declarations for Console buffer-only sizing, display-mode copies, and lifecycle decisions based on a presentation snapshot. |
 
 ## Current Technical Baseline
 

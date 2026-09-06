@@ -366,19 +366,27 @@ static void win32_window_capture_mouse(HWND window,
 static void win32_window_consume_frame(HWND window,
     ux_win32_window_context *context)
 {
+    ux_target target;
     uint32_t width;
     uint32_t height;
 
-    if (context == NULL || ux_mailbox_generation(context->binding->mailbox) ==
-            context->displayed_sequence ||
-        ux_mailbox_capture(context->binding->mailbox, context->frame) != LIB_STATUS_OK)
+    if (context == NULL) return;
+    target = ux_router_target(context->binding->router);
+    if (target == UX_TARGET_NONE) {
+        context->result = UX_RUN_STOPPED_RESULT;
+        DestroyWindow(window);
         return;
-    context->displayed_sequence = context->frame->sequence;
-    if (ux_router_target(context->binding->router) == UX_TARGET_CONSOLE) {
+    }
+    if (target == UX_TARGET_CONSOLE) {
         context->result = UX_RUN_SWITCH_CONSOLE;
         DestroyWindow(window);
         return;
     }
+    if (ux_mailbox_generation(context->binding->mailbox) ==
+            context->displayed_sequence ||
+        ux_mailbox_capture(context->binding->mailbox, context->frame) != LIB_STATUS_OK)
+        return;
+    context->displayed_sequence = context->frame->sequence;
     if (!win32_window_frame_size(context->frame, &width, &height) ||
         !win32_window_ensure_surface(window, context, width, height)) {
         context->result = UX_RUN_ERROR_RESULT;
@@ -417,9 +425,6 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         win32_window_consume_frame(window, context);
         win32_window_advance_cursor_blink(window, context);
         win32_window_update_title(window, context);
-        if (context->binding->get_state(context->binding->context) == UX_RUN_STOPPED ||
-            context->binding->get_state(context->binding->context) == UX_RUN_ERROR)
-            DestroyWindow(window);
         return 0;
     case WM_PAINT:
         { PAINTSTRUCT paint; HDC dc = BeginPaint(window, &paint);

@@ -23,14 +23,13 @@ struct vm_platform_run_context {
 };
 
 struct vm_platform_run_handle {
-    const vm_platform_run_context *context;
+    vm_platform_run_context *context;
     C_VOID *backend;
     STD_ATOMIC_INT last_event;
     STD_ATOMIC_BOOL stop_reported;
     STD_ATOMIC_BOOL pause_reported;
     STD_ATOMIC_BOOL mouse_release_reported;
     C_INT active;
-    C_INT window_display;
     type_bool ux_pressed_keys[512u];
 };
 

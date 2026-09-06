@@ -168,7 +168,9 @@ C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle)
 C_INT vm_platform_run_handle_is_window_display(
     const vm_platform_run_handle *handle)
 {
-    return handle != STD_NULL && handle->window_display;
+    return handle != STD_NULL && handle->context != STD_NULL &&
+        vm_platform_run_context_get_display_mode(handle->context) ==
+            VM_PLATFORM_DISPLAY_WINDOW;
 }
 
 C_VOID vm_platform_run_handle_report(
@@ -217,12 +219,19 @@ C_INT vm_platform_run_handle_take_mouse_release_report(
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 
 #include "vm/platform/win32/win32.h"
-type_status vm_platform_start(const vm_platform_run_context *context,
+type_status vm_platform_start(vm_platform_run_context *context,
     vm_platform_run_handle *handle) {
     return vm_platform_win32_run_handle_start(context, handle);
 }
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle) {
     vm_platform_win32_run_handle_request_stop(handle);
+}
+C_VOID vm_platform_run_handle_request_presenter_stop(
+    vm_platform_run_handle *handle)
+{
+    if (handle == STD_NULL || handle->context == STD_NULL) return;
+    ux_router_request(&handle->context->ux_router, UX_TARGET_NONE);
+    ux_mailbox_wake(handle->context->ux_mailbox);
 }
 C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle) {
     vm_platform_win32_run_handle_join(handle);
@@ -233,12 +242,19 @@ C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle) {
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
 
 #include "vm/platform/linux/linux.h"
-type_status vm_platform_start(const vm_platform_run_context *context,
+type_status vm_platform_start(vm_platform_run_context *context,
     vm_platform_run_handle *handle) {
     return vm_platform_linux_run_handle_start(context, handle);
 }
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle) {
     vm_platform_linux_run_handle_request_stop(handle);
+}
+C_VOID vm_platform_run_handle_request_presenter_stop(
+    vm_platform_run_handle *handle)
+{
+    if (handle == STD_NULL || handle->context == STD_NULL) return;
+    ux_router_request(&handle->context->ux_router, UX_TARGET_NONE);
+    ux_mailbox_wake(handle->context->ux_mailbox);
 }
 C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle) {
     vm_platform_linux_run_handle_join(handle);

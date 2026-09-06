@@ -15,7 +15,7 @@ typedef enum vm_platform_ux_action_id {
 } vm_platform_ux_action_id;
 
 type_status vm_platform_ux_binding_initialize(
-    const struct vm_platform_run_context *context,
+    struct vm_platform_run_context *context,
     struct vm_platform_run_handle *handle, ux_binding *out_binding);
 C_INT vm_platform_ux_event_submit(const struct vm_platform_run_context *context,
     const ux_event *event);

@@ -96,19 +96,25 @@ static void win32_console_close(ux_win32_console *console)
     console->output = NULL;
 }
 
-static void win32_console_ensure_text_surface(HANDLE output)
+static int win32_console_ensure_text_surface(HANDLE output)
 {
     CONSOLE_SCREEN_BUFFER_INFO info;
+    COORD largest;
     COORD required;
+    SMALL_RECT viewport = { 0, 0, UX_TEXT_COLUMNS - 1, UX_TEXT_ROWS - 1 };
 
     if (output == NULL || output == INVALID_HANDLE_VALUE ||
-        !GetConsoleScreenBufferInfo(output, &info)) return;
+        !GetConsoleScreenBufferInfo(output, &info)) return 0;
     required.X = info.dwSize.X < (SHORT)UX_TEXT_COLUMNS ?
         (SHORT)UX_TEXT_COLUMNS : info.dwSize.X;
     required.Y = info.dwSize.Y < (SHORT)UX_TEXT_ROWS ?
         (SHORT)UX_TEXT_ROWS : info.dwSize.Y;
-    if (required.X != info.dwSize.X || required.Y != info.dwSize.Y)
-        (void)SetConsoleScreenBufferSize(output, required);
+    if ((required.X != info.dwSize.X || required.Y != info.dwSize.Y) &&
+        !SetConsoleScreenBufferSize(output, required)) return 0;
+    largest = GetLargestConsoleWindowSize(output);
+    if (largest.X < (SHORT)UX_TEXT_COLUMNS || largest.Y < (SHORT)UX_TEXT_ROWS)
+        return 0;
+    return SetConsoleWindowInfo(output, TRUE, &viewport) != 0;
 }
 
 static ux_run_result win32_console_key(ux_win32_console *console,
@@ -183,6 +189,7 @@ static int win32_console_paint(ux_win32_console *console)
     if (frame->text_columns == 0u || frame->text_rows == 0u ||
         frame->text_columns > UX_TEXT_COLUMNS || frame->text_rows > UX_TEXT_ROWS)
         return 0;
+    if (!win32_console_ensure_text_surface(console->output)) return 0;
     columns = frame->text_columns;
     rows = frame->text_rows;
     if (memcmp(frame->text_palette, console->previous_palette,
@@ -266,7 +273,13 @@ static lib_status ux_win32_console_create(const ux_binding *binding,
         ux_win32_console_release();
         return LIB_STATUS_INVALID_STATE;
     }
-    win32_console_ensure_text_surface(console->output);
+    if (!win32_console_ensure_text_surface(console->output)) {
+        (void)SetConsoleMode(console->input, console->original_mode);
+        win32_console_close(console);
+        free(console);
+        ux_win32_console_release();
+        return LIB_STATUS_INVALID_STATE;
+    }
     console->frame = calloc(1u, sizeof(*console->frame));
     if (console->frame == NULL) {
         (void)SetConsoleMode(console->input, console->original_mode);
@@ -291,8 +304,7 @@ static ux_run_result ux_win32_console_run(ux_win32_console *console)
     if (console == NULL) return UX_RUN_ERROR_RESULT;
     wait_handles[0] = console->input;
     wait_handles[1] = ux_win32_mailbox_wait_handle(console->binding->mailbox);
-    while (running && console->binding->get_state(console->binding->context) ==
-        UX_RUN_RUNNING) {
+    while (running) {
         INPUT_RECORD record;
         DWORD available;
         DWORD read;
@@ -313,14 +325,18 @@ static ux_run_result ux_win32_console_run(ux_win32_console *console)
                 win32_console_mouse(console, &record.Event.MouseEvent);
             }
         }
+        if (ux_router_target(console->binding->router) == UX_TARGET_NONE) {
+            result = UX_RUN_STOPPED_RESULT;
+            break;
+        }
+        if (ux_router_target(console->binding->router) == UX_TARGET_WINDOW) {
+            result = UX_RUN_SWITCH_WINDOW;
+            break;
+        }
         if (ux_mailbox_generation(console->binding->mailbox) !=
                 console->displayed_sequence &&
             ux_mailbox_capture(console->binding->mailbox, console->frame) ==
                 LIB_STATUS_OK) {
-            if (ux_router_target(console->binding->router) == UX_TARGET_WINDOW) {
-                result = UX_RUN_SWITCH_WINDOW;
-                break;
-            }
             if (win32_console_paint(console))
                 console->displayed_sequence = console->frame->sequence;
         }
@@ -329,11 +345,6 @@ static ux_run_result ux_win32_console_run(ux_win32_console *console)
             result = UX_RUN_ERROR_RESULT;
             running = 0;
         }
-    }
-    if (result == UX_RUN_STOPPED_RESULT) {
-        ux_run_state state = console->binding->get_state(console->binding->context);
-        if (state == UX_RUN_PAUSED) result = UX_RUN_PAUSED_RESULT;
-        else if (state == UX_RUN_ERROR) result = UX_RUN_ERROR_RESULT;
     }
     return result;
 }
