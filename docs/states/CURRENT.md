@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S2 |
-| Admission And Approval | Owner directed single-agent dual-role execution of the lib-governance task on 2026-09-06. S1 `69a8e875` / `7f45080a` is accepted; S2 consumes its complete P0 corpus/publish batch. |
-| Objective | Make one complete `src/lib` corpus manifest, standalone selected-platform CMake entry, verifier and CI drift gate without changing any library capability. |
-| Non-goals | No UX/host/session/storage/observability API change, product binding, Core/VM behavior, native presenter policy, asset input, or third-party import. |
-| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md): 61 tracked files, 56 listed; root CMake owns duplicate source inventories. |
-| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md), S2. |
-| Files And ABI Surface | `src/lib/MANIFEST.sha256`, new `src/lib/CMakeLists.txt` and verifier, root CMake cutover, CI workflow, library test registration and S2 evidence only. Public C API is unchanged. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): S unit gate; [Architecture](../rules/ARCHITECTURE.md): peer-root independence and one source-list owner; [Coding](../rules/CODING.md): delete duplicate inventory; [Documentation](../rules/DOCUMENT.md): evidence/state; no source-policy import applies. |
-| Verification | Standalone Windows-selected CMake configure/build/CTest; manifest verifier detects clean, missing, extra and stale-hash fixture copies; root NXVM configuration uses the same source list; complete repository-only unit suite; documentation governance and diff checks. |
-| Expected Markers | Manifest lists all and only library files, including clock and build/verifier files; no root CMake list duplicates the library source corpus; CI invokes the standalone verifier/build on Windows and Linux. |
+| Identifier Mode | Progress - M5 T524 S2 accepted |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S2 P1 `8e926c03`. |
+| Objective | T524 remains open: complete every retained neutral library root without product/machine ownership or cross-root dependency. |
+| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
+| Reference Baseline | [T524 S2 evidence](../etc/evidence/t524-s2-library-publish-boundary.md): complete 63-file corpus, one source-list owner and standalone gate. |
+| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
+| Files And ABI Surface | S2 closes the manifest/CMake/CI replacement only; later root-specific S packets define their own public contract surfaces. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
+| Verification | S2 actual review: 63/63 manifest/tree check; standalone CMake build/CTest; missing/extra/stale fixture proof; root unit 312/312; documentation governance and diff checks pass. |
+| Expected Markers | S2 is accepted; S3 must consume the complete UX batch rather than reopen source-list ownership. |
 | Asset Needs | None. |
-| Reporting Requirements | Report immediately if CMake cannot expose peer roots without cross-root linkage, if a manifest rule requires a product path, or if platform compilation reveals a public native/product type. |
-| Stop Conditions | Stop if standalone build needs NXVM/Core/VM headers or behavior, or if a proposed compatibility alias creates a second source-list owner. |
-| Exit Criteria | One source inventory is consumed by root and standalone builds; complete manifest is independently verified; CI enforces it; no library API changes; all stated verification passes. |
-| Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`; the first mandatory repair is the complete publish boundary. |
-| Similar-Issue Sweep | Compare every `src/lib` path, all root CMake library targets and all manifest/test verifier names; do not fix only the five clock entries. |
+| Reporting Requirements | Before the next S, report any root that lacks two neutral consumer/conformance proofs or contains machine vocabulary. |
+| Stop Conditions | No subsequent S starts without its bounded complete root batch. |
+| Exit Criteria | S2 met: one source inventory, complete verified manifest, standalone build/CTest and CI drift gate. T524 remains open. |
+| Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
+| Similar-Issue Sweep | S3--S7 each consume a whole root; S8 rechecks all 63 corpus files and every product binding. |
 
 ## Current Technical Baseline
 

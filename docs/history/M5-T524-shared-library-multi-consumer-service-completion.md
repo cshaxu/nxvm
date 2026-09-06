@@ -42,3 +42,11 @@ failure fixtures and Windows/Linux CI gate replace the partial UX-only checker
 and root-owned duplicate lists. The [S2 evidence](../etc/evidence/t524-s2-library-publish-boundary.md)
 records exact coverage and verification. No public library or product contract
 changes; T524 remains open for the per-root contract batches.
+
+## S2 Acceptance
+
+Coordinator actual-diff review accepts `8e926c03`: the root has one source
+inventory, `ux` is one root rather than a cross-root target edge, and the
+manifest covers all 63 non-self files. Standalone build/CTest, failure fixtures,
+root unit 312/312, documentation governance and diff checks pass. T524 remains
+open for S3--S8.
