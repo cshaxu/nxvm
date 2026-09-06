@@ -2,7 +2,7 @@
 
 #include "core/platform/input_interface.h"
 #ifdef _WIN32
-#include "core/platform/win32/keyboard.h"
+#include "vm/platform/win32/keyboard.h"
 #endif
 #include "vm/platform/platform_internal.h"
 
@@ -69,7 +69,7 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
     }
 #ifdef _WIN32
     else if (event->type == UX_EVENT_TEXT) {
-        return core_platform_win32_keyboard_submit_character(handle,
+        return vm_platform_win32_keyboard_submit_character(handle,
             vm_platform_ux_submit_core,
             event->data.text.scalar) == TYPE_STATUS_OK;
     }

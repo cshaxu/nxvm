@@ -3,7 +3,7 @@
 #include "type.h"
 
 #include "core/platform/input_interface.h"
-#include "core/platform/win32/keyboard.h"
+#include "vm/platform/win32/keyboard.h"
 #include "lib/host/sync.h"
 #include "lib/ux/win32/runner.h"
 #include "vm/platform/platform_internal.h"
@@ -37,7 +37,7 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
     (C_VOID)owner;
-    (C_VOID)core_platform_win32_keyboard_submit_key((C_VOID *)context,
+    (C_VOID)vm_platform_win32_keyboard_submit_key((C_VOID *)context,
         vm_platform_win32_submit_event, scan_code, virtual_key, pressed);
 }
 
@@ -54,15 +54,15 @@ C_VOID vm_platform_win32_keyboard_make_key_with_modifiers_for(
 C_VOID vm_platform_win32_keyboard_make_character_for(
     const vm_platform_run_context *context, type_unsigned_32 scalar)
 {
-    (C_VOID)core_platform_win32_keyboard_submit_character((C_VOID *)context,
+    (C_VOID)vm_platform_win32_keyboard_submit_character((C_VOID *)context,
         vm_platform_win32_submit_event, scalar);
 }
 
 C_VOID vm_platform_win32_keyboard_make_utf16_for(
-    core_platform_win32_keyboard_normalizer *state,
+    vm_platform_win32_keyboard_normalizer *state,
     const vm_platform_run_context *context, type_unsigned_16 code_unit)
 {
-    (C_VOID)core_platform_win32_keyboard_submit_utf16(state,
+    (C_VOID)vm_platform_win32_keyboard_submit_utf16(state,
         (C_VOID *)context, vm_platform_win32_submit_event, code_unit);
 }
 

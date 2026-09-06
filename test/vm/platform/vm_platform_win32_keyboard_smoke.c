@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/platform/win32/keyboard.h"
+#include "vm/platform/win32/keyboard.h"
 
 typedef struct keyboard_capture {
     core_platform_input_event events[24u];
@@ -40,39 +40,40 @@ static C_INT keyboard_capture_has_no_stuck_key(const keyboard_capture *capture,
 C_INT main(C_VOID)
 {
     keyboard_capture capture = {0};
-    core_platform_win32_keyboard_normalizer normalizer = {0};
+    vm_platform_win32_keyboard_normalizer normalizer = {0};
 
-    if (core_platform_win32_keyboard_submit_key(&capture, keyboard_capture_submit,
+    if (vm_platform_win32_keyboard_submit_key(&capture, keyboard_capture_submit,
             0u, 0x70u, TYPE_TRUE) != TYPE_STATUS_OK || capture.count != 1u ||
         !capture.events[0].data.key.pressed ||
-        core_platform_win32_keyboard_submit_key(&capture, keyboard_capture_submit,
+        vm_platform_win32_keyboard_submit_key(&capture, keyboard_capture_submit,
             0x0148u, 0x26u, TYPE_TRUE) != TYPE_STATUS_OK ||
         capture.events[1u].data.key.scan_code != 0x0148u ||
-        core_platform_win32_keyboard_submit_character(&capture,
+        vm_platform_win32_keyboard_submit_character(&capture,
             keyboard_capture_submit, 'a') != TYPE_STATUS_OK || capture.count < 2u ||
         !capture.events[capture.count - 2u].data.key.pressed ||
         capture.events[capture.count - 1u].data.key.pressed ||
-        !core_platform_win32_keyboard_character_matches_virtual_key('a',
+        !vm_platform_win32_keyboard_character_matches_virtual_key('a',
             capture.events[capture.count - 1u].data.key.virtual_key) ||
-        core_platform_win32_keyboard_submit_character(&capture,
+        vm_platform_win32_keyboard_submit_character(&capture,
             keyboard_capture_submit, 0xd800u) != TYPE_STATUS_UNSUPPORTED ||
-        core_platform_win32_keyboard_submit_utf16(&normalizer, &capture,
+        vm_platform_win32_keyboard_submit_utf16(&normalizer, &capture,
             keyboard_capture_submit, 0xdc00u) != TYPE_STATUS_UNSUPPORTED ||
-        core_platform_win32_keyboard_submit_utf16(&normalizer, &capture,
+        vm_platform_win32_keyboard_submit_utf16(&normalizer, &capture,
             keyboard_capture_submit, 0xd800u) != TYPE_STATUS_OK ||
-        core_platform_win32_keyboard_submit_utf16(&normalizer, &capture,
+        vm_platform_win32_keyboard_submit_utf16(&normalizer, &capture,
             keyboard_capture_submit, 0xdc00u) != TYPE_STATUS_UNSUPPORTED ||
-        core_platform_win32_keyboard_submit_character(&capture,
+        vm_platform_win32_keyboard_submit_character(&capture,
             keyboard_capture_submit, 'A') != TYPE_STATUS_OK ||
         !keyboard_capture_has_no_stuck_key(&capture, 2u)) return 1;
-    core_platform_win32_keyboard_note_recovered_key(&normalizer, 0x41u);
-    if (!core_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a') ||
-        core_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a')) return 1;
-    core_platform_win32_keyboard_note_recovered_key(&normalizer, 0x70u);
-    if (core_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a')) return 1;
-    core_platform_win32_keyboard_note_recovered_key(&normalizer, 0x41u);
-    core_platform_win32_keyboard_release_recovered_key(&normalizer, 0x41u);
-    if (core_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a') ||
-        core_platform_win32_keyboard_resolve_scan(0x70u) == 0u) return 1;
+    vm_platform_win32_keyboard_note_recovered_key(&normalizer, 0x41u);
+    if (!vm_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a') ||
+        vm_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a')) return 1;
+    vm_platform_win32_keyboard_note_recovered_key(&normalizer, 0x70u);
+    if (vm_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a')) return 1;
+    vm_platform_win32_keyboard_note_recovered_key(&normalizer, 0x41u);
+    vm_platform_win32_keyboard_release_recovered_key(&normalizer, 0x41u);
+    if (vm_platform_win32_keyboard_consume_duplicate_character(&normalizer, 'a') ||
+        vm_platform_win32_keyboard_resolve_scan(0x70u) == 0u) return 1;
+    STD_PRINTF("M5:T523:S7:VM-WIN32-KEYBOARD-OWNER:OK\n");
     return 0;
 }

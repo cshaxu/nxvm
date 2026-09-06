@@ -1316,17 +1316,6 @@ set(CORE_MACHINE_SOURCES
 add_library(core-platform STATIC
     src/core/platform/input.c
     src/core/platform/presentation_mailbox.c)
-if(WIN32)
-    target_sources(core-platform PRIVATE
-        src/core/platform/win32/keyboard.c)
-    add_executable(core-platform-win32-keyboard-smoke
-        test/core/platform/core_platform_win32_keyboard_smoke.c)
-    target_link_libraries(core-platform-win32-keyboard-smoke PRIVATE core-platform)
-    add_test(NAME unit.core-platform-win32-keyboard-smoke
-        COMMAND core-platform-win32-keyboard-smoke)
-    set_tests_properties(unit.core-platform-win32-keyboard-smoke PROPERTIES LABELS unit)
-else()
-endif()
 target_include_directories(core-platform PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -1340,6 +1329,7 @@ set(VM_PLATFORM_SOURCES
 )
 if(WIN32)
     list(APPEND VM_PLATFORM_SOURCES
+        src/vm/platform/win32/keyboard.c
         src/vm/platform/win32/win32.c
     )
 else()
@@ -1562,6 +1552,12 @@ target_link_libraries(vm-platform PUBLIC
     ux-contract)
 if(WIN32)
     target_link_libraries(vm-platform PUBLIC ux-win32-native user32 gdi32)
+    add_executable(vm-platform-win32-keyboard-smoke
+        test/vm/platform/vm_platform_win32_keyboard_smoke.c)
+    target_link_libraries(vm-platform-win32-keyboard-smoke PRIVATE vm-platform)
+    add_test(NAME unit.vm-platform-win32-keyboard-smoke
+        COMMAND vm-platform-win32-keyboard-smoke)
+    set_tests_properties(unit.vm-platform-win32-keyboard-smoke PROPERTIES LABELS unit)
 endif()
 
 add_executable(vm-platform-ux-frame-smoke
@@ -3050,8 +3046,8 @@ set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
 # route and a dependency of run-unit-tests.  Account for it once here rather
 # than creating a second registration path.
 if(WIN32)
-    list(APPEND project_t344_single_test_targets core-platform-win32-keyboard-smoke)
-    list(APPEND project_t344_registered_targets core-platform-win32-keyboard-smoke)
+    list(APPEND project_t344_single_test_targets vm-platform-win32-keyboard-smoke)
+    list(APPEND project_t344_registered_targets vm-platform-win32-keyboard-smoke)
 endif()
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
@@ -3118,7 +3114,7 @@ if(POWERSHELL_EXECUTABLE)
         COMMENT "Building and executing repository-only unit tests"
         VERBATIM)
     add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS}
-        core-platform-win32-keyboard-smoke)
+        vm-platform-win32-keyboard-smoke)
 
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
