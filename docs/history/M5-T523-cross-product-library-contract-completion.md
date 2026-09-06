@@ -189,3 +189,12 @@ Coordinator review accepts `743ec108`: focused proof and repository-only unit
 311/311 pass in 18.87 seconds; retired VM clock names have no consumers and
 the generic wall-clock sweep has only `lib/host` readers. S10 is admitted for
 task-level integration and final owner audit.
+
+## S10 And T523 Closure
+
+The final audit finds no duplicate generic file, keyboard, guest-boundary or
+host-clock route. Repository-only unit passes 311/311. All 44 external-asset
+integration rows pass through a non-profile 24/24 replay plus isolated serial
+profile rows, including the Model 40 and IBM boot terminals. Documentation
+governance and diff checks pass. The retained [closure audit](../etc/evidence/t523-s10-closure-audit.md)
+records the complete owner disposition; T523 is closed.

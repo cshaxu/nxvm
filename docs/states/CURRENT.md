@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective - M5 T523 S10 |
-| Admission And Approval | Owner reopened T523 on 2026-09-05 for the four stated cleanups. S6--S9 are accepted at `bd6141b1`, `64a30bca`, `7963034f`, and `743ec108`. S10 changes no source unless a final owner sweep identifies a real duplicate or test defect. |
-| Objective | Audit every completed T523 replacement path and obtain one uncontaminated task-level integration result before closure. |
+| Identifier Mode | Closed - M5 T523 |
+| Admission And Approval | Owner reopened T523 on 2026-09-05 for four finite cleanups. S6--S10 are accepted at `bd6141b1`, `64a30bca`, `7963034f`, `743ec108`, and this closure audit. |
+| Objective | Closed: NXVM no longer duplicates the four identified shared-library capabilities. |
 | Non-goals | No guest-time progression change, pacing-policy change, UX redesign, machine/controller/profile change, asset change, or host-clock injection into Core. |
-| Reference Baseline | `743ec108`: accepted S9 shared host-clock consolidation. |
+| Reference Baseline | `172281e7`: accepted S9 shared host-clock consolidation. |
 | Candidate Proposal | [T523 retained proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md), corrective S6--S9. |
 | Files And ABI Surface | The T523 S6--S9 replacement surfaces, their owner ledgers, source/test/build sweeps and complete integration suite. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): T-level unit and integration closure; [Architecture](../rules/ARCHITECTURE.md): one owner and one route; [Coding](../rules/CODING.md): replacement cleanup; [Documentation](../rules/DOCUMENT.md): task closure record. |
-| Verification | Fresh full unit and one uncontaminated full integration run; all S6--S9 retired-path sweeps; documentation governance, `git diff --check` and actual-diff review. |
-| Expected Markers | A single final T523 owner-audit marker and no duplicate generic file, native keyboard, Core guest-boundary or host-clock route. |
+| Verification | Unit 311/311; all 44 integration rows; all S6--S9 retired-path sweeps; documentation governance, `git diff --check` and actual-diff review. |
+| Expected Markers | T523 closure audit; no duplicate generic file, native keyboard, Core guest-boundary or host-clock route. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
 | Reporting Requirements | Record the complete four-surface disposition, actual integration result and any unclosed blocker. |
 | Stop Conditions | Stop and report if a duplicate route remains, a gate fails, or task-level integration cannot reach a terminal result. |
-| Exit Criteria | All four stated surfaces have one owner/route, full unit and integration pass, and task documentation records the actual audit. |
+| Exit Criteria | Met: all four stated surfaces have one owner/route, full unit and integration pass, and task documentation records the actual audit. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
 | Similar-Issue Sweep | Re-run the finite S6--S9 symbol/path sweeps together and inspect any remaining direct native or generic ownership route. |
 
