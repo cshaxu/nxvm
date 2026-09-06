@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S3 |
-| Admission And Approval | Owner approved the complete shared-lib task and its revised acceptance criteria on 2026-09-06. S2 `8e926c03` / `bf8b174f` is accepted; S3 consumes the whole UX root. |
-| Objective | Make `lib/ux` a neutral copied-presentation/input capability: no x86 or product/machine protocol, explicit value/lifetime/action semantics, and two public-API neutral conformance consumers. |
-| Non-goals | No Core/VM behavior change, product hotkey meaning, guest input protocol, renderer/machine state, new presenter policy, host/session/storage/observability contract change, or compatibility wrapper. |
-| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md): Linux maps terminal keys to Set-1 and UX semantics are incomplete; [S2 evidence](../etc/evidence/t524-s2-library-publish-boundary.md) supplies the one corpus owner. |
-| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md), S3. |
-| Files And ABI Surface | All `src/lib/ux/**`, all existing UX product binding callers required to move x86 mapping outside lib, `test/lib/**` neutral consumers/conformance evidence, source manifest and S3 evidence only. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete root batch and unit gate; [Architecture](../rules/ARCHITECTURE.md): UX is one independent lib root, product owns semantic mapping; [Coding](../rules/CODING.md): delete parallel/native-specific protocol routes; [Documentation](../rules/DOCUMENT.md): evidence/state. |
-| Verification | Two distinct public-header-only neutral UX consumer/conformance tests; frame validity/bounds, action duplicate/capacity, mailbox publish/capture/generation/wake and presenter lifecycle checks; Windows native UX smoke; root complete unit; standalone selected-platform library build/CTest; vocabulary and direct dependency sweeps; documentation governance/diff checks. |
-| Expected Markers | Native adapters emit only neutral key/text/mouse values; NXVM alone maps those values to its input protocol; action registration rejects conflicts; documented mailbox ownership permits one producer and one consumer with destruction only after they stop; no UX source/comment contains forbidden product/machine vocabulary. |
+| Identifier Mode | Progress - M5 T524 S3 accepted |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S3 P1 `94e81d1b`. |
+| Objective | T524 remains open: complete every retained neutral library root without product/machine ownership or cross-root dependency. |
+| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
+| Reference Baseline | [T524 S3 evidence](../etc/evidence/t524-s3-ux-neutral-contract.md): neutral UX contract, sole NXVM protocol mapping and two consumer proofs. |
+| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
+| Files And ABI Surface | S3 closes the complete UX contract and NXVM protocol-mapping boundary only; later root-specific S packets define their own public contract surfaces. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
+| Verification | S3 actual review: focused UX/native/binding checks, complete unit 312/312, manifest, standalone selected-platform library CMake/CTest, UX vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
+| Expected Markers | S3 is accepted; S4 must consume the complete host batch rather than reopen UX or corpus ownership. |
 | Asset Needs | None. |
-| Reporting Requirements | Report immediately if the only safe neutral input value cannot express a required native event, or if two independent consumers require incompatible lifetime/action semantics. |
-| Stop Conditions | Stop if moving Set-1 mapping would require `lib` to include Core/VM headers or if a second copied frame/mailbox path would remain. |
-| Exit Criteria | Entire UX root has an explicit neutral contract, product-only protocol conversion, two independent consumer proofs, all stated sweeps/gates, and no retained duplicated route. |
-| Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`; UX must not hide product/machine semantics. |
-| Similar-Issue Sweep | Inspect all native Windows/Linux adapters, every `ux_event` consumer, all actions/mailbox/frame/presenter callers and comments, not only the terminal mapper. |
+| Reporting Requirements | Before the next S, report any root that lacks two neutral consumer/conformance proofs or contains machine vocabulary. |
+| Stop Conditions | No subsequent S starts without its bounded complete root batch. |
+| Exit Criteria | S3 met: a neutral UX root, product-only conversion, two consumer proofs and all stated gates. T524 remains open. |
+| Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
+| Similar-Issue Sweep | S4--S7 each consume a whole root; S8 rechecks all 63 corpus files and every product binding. |
 
 ## Current Technical Baseline
 

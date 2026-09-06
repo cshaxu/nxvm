@@ -60,3 +60,13 @@ documents mailbox lifetime/generation rules, rejects duplicate or over-capacity
 action chords, removes product/machine vocabulary, and supplies two independent
 public-header consumer proofs.  The complete contract and verification record
 is retained in [S3 evidence](../etc/evidence/t524-s3-ux-neutral-contract.md).
+
+## S3 Acceptance
+
+Coordinator actual-diff review accepts `94e81d1b`: the terminal no longer
+emits an x86 protocol from `lib`; the sole conversion stays in NXVM's binding.
+Frame, action and mailbox contracts are enforced rather than merely described,
+and the two consumer tests use only public library headers. Focused native and
+binding tests, complete unit 312/312, manifest verification, standalone CMake
+build/CTest, vocabulary and peer-root sweeps, documentation governance and
+diff checks pass. T524 remains open for S4--S8.

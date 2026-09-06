@@ -66,4 +66,3 @@ The peer-root include query found only same-root headers; no root except
 - `cmake -S src/lib -B build/t524-s3-lib -G "MinGW Makefiles" -DBUILD_TESTING=ON`; build and CTest: pass.
 - `ctest --test-dir build/mingw-gcc-x64-s8-make -L unit -j 4 --output-on-failure`: 312/312 pass in 18.97 seconds.
 - `git diff --check`: pass.
-
