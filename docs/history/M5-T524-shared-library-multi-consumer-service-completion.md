@@ -13,6 +13,12 @@ product time terminology. This is not S8 or T524 acceptance: the current
 Model-40 FDC integration row remains red. See
 [`t524-s8-portable-closure-audit.md`](../etc/evidence/t524-s8-portable-closure-audit.md).
 
+The first upstream P1 matrix exposed two publication defects: MSVC cannot
+compile the retained C11 atomic contract, and the previous manifest verifier
+depended on CMake text hashing. The active S8 correction selects UCRT64 GCC on
+Windows and verifies LF-only raw source bytes. It remains pending its upstream
+matrix and the unrelated Model-40 integration gate.
+
 ## S1 Admission
 
 S1 is a read-only completeness audit. It freezes the entire tracked library

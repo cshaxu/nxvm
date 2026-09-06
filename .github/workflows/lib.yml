@@ -15,15 +15,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            shell: msys2 {0}
+            msys2: true
+          - os: ubuntu-latest
+            shell: bash
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - if: matrix.msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-ninja
       - name: Configure standalone library
-        run: cmake -S src/lib -B build/lib
+        shell: ${{ matrix.shell }}
+        run: cmake -G Ninja -S src/lib -B build/lib
       - name: Verify complete manifest
+        shell: ${{ matrix.shell }}
         run: cmake --build build/lib --target lib-verify-manifest
       - name: Build selected platform library
+        shell: ${{ matrix.shell }}
         run: cmake --build build/lib --config Release
       - name: Run standalone library tests
+        shell: ${{ matrix.shell }}
         run: ctest --test-dir build/lib --output-on-failure
