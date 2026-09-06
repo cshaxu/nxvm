@@ -11,7 +11,7 @@ extern "C" {
 #include "core/machine/guest_input_interface.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/utils/wait_provider.h"
-#include "lib/session/state.h"
+#include "vm/platform/session_state.h"
 
 typedef type_status (*vm_platform_host_input_submit)(C_VOID *context,
     const core_machine_guest_input_event *event);
@@ -28,7 +28,7 @@ typedef void (*vm_platform_execution_run)(C_VOID *context);
 typedef void (*vm_platform_execution_stop)(C_VOID *context);
 
 typedef struct vm_platform_execution {
-    lib_session_state *state;
+    vm_session_state *state;
     vm_platform_execution_run run;
     vm_platform_execution_stop stop;
     C_VOID *context;

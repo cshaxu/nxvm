@@ -41,7 +41,7 @@ static void vm_platform_linux_ux_kernel_task(void *opaque,
 
     (void)task;
     if (handle == STD_NULL) return;
-    lib_session_state_start(handle->context->execution->state);
+    vm_session_state_start(handle->context->execution->state);
     vm_platform_linux_signal_started(handle->kernel_started);
     handle->context->execution->run(handle->context->execution->context);
     vm_platform_run_handle_report(handle->owner,

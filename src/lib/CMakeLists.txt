@@ -46,9 +46,6 @@ endif()
 add_library(host-sync STATIC ${LIBRARY_HOST_SOURCES})
 library_root(host-sync)
 
-add_library(session-lifecycle STATIC session/state.c)
-library_root(session-lifecycle)
-
 set(LIBRARY_STORAGE_SOURCES storage/file.c storage/medium.c)
 if(WIN32)
     list(APPEND LIBRARY_STORAGE_SOURCES storage/win32/file.c)
@@ -57,9 +54,6 @@ else()
 endif()
 add_library(storage-medium STATIC ${LIBRARY_STORAGE_SOURCES})
 library_root(storage-medium)
-
-add_library(observability-outcome STATIC observability/outcome.c)
-library_root(observability-outcome)
 
 if(WIN32)
     add_library(ux-win32-native ALIAS ux)
@@ -74,8 +68,7 @@ endif()
 # This build-only aggregate does not create a library-root dependency. Each
 # peer root remains independently compilable and depends only on `base`.
 add_library(lib-neutral-corpus INTERFACE)
-target_link_libraries(lib-neutral-corpus INTERFACE
-    ux host-sync session-lifecycle storage-medium observability-outcome)
+target_link_libraries(lib-neutral-corpus INTERFACE ux host-sync storage-medium)
 
 add_custom_target(lib-verify-manifest
     COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}
@@ -85,10 +78,4 @@ if(BUILD_TESTING)
     add_test(NAME library.manifest
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}
             -P "${CMAKE_CURRENT_LIST_DIR}/verify_manifest.cmake")
-    if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-        add_executable(library-neutral-consumer
-            "${LIBRARY_SOURCE_ROOT}/../test/lib/library_consumer_conformance.c")
-        target_link_libraries(library-neutral-consumer PRIVATE lib-neutral-corpus)
-        add_test(NAME library.neutral-consumer COMMAND library-neutral-consumer)
-    endif()
 endif()

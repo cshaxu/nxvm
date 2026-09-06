@@ -4,7 +4,7 @@
 #include <stdatomic.h>
 
 #include "type.h"
-#include "lib/session/state.h"
+#include "vm/platform/session_state.h"
 #include "vm/composition/session/execution.h"
 
 #ifdef __cplusplus
@@ -22,7 +22,7 @@ typedef enum vm_session_pause_reason {
 typedef struct vm_session vm_session;
 
 typedef struct vm_session_control_state {
-    lib_session_state *state;
+    vm_session_state *state;
     atomic_bool step_requested;
     atomic_int pause_reason;
     vm_session_execution_context execution_context;

@@ -1842,7 +1842,7 @@ int main(C_INT argc, C_CHAR **argv)
             goto done;
         }
     }
-    lib_session_state_start(session->control.state);
+    vm_session_state_start(session->control.state);
     started = GetTickCount64();
     progress = started;
     next_display_capture = started;

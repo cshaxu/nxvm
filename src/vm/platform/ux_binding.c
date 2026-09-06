@@ -59,11 +59,11 @@ static ux_run_state vm_platform_ux_state(C_VOID *opaque)
     const vm_platform_run_handle *handle = opaque;
     const vm_platform_run_context *context = handle == STD_NULL ? STD_NULL :
         handle->context;
-    lib_session_lifecycle state = context == STD_NULL ||
-        context->execution == STD_NULL ? LIB_SESSION_STOPPED :
-        lib_session_state_lifecycle(context->execution->state);
-    return state == LIB_SESSION_RUNNING ? UX_RUN_RUNNING :
-        state == LIB_SESSION_PAUSED ? UX_RUN_PAUSED : UX_RUN_STOPPED;
+    vm_session_lifecycle state = context == STD_NULL ||
+        context->execution == STD_NULL ? VM_SESSION_STOPPED :
+        vm_session_state_lifecycle(context->execution->state);
+    return state == VM_SESSION_RUNNING ? UX_RUN_RUNNING :
+        state == VM_SESSION_PAUSED ? UX_RUN_PAUSED : UX_RUN_STOPPED;
 }
 
 C_INT vm_platform_ux_event_submit(const vm_platform_run_context *context,

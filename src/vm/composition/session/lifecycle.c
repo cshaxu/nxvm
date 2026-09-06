@@ -168,16 +168,16 @@ static C_VOID vm_session_platform_request_stop(vm_session *machine)
     vm_platform_run_handle_request_stop(machine->platform_run_handle);
 }
 
-static C_VOID vm_session_start_outcome_clear(vm_session *machine)
+static C_VOID vm_session_start_outcome_reset(vm_session *machine)
 {
-    if (machine != STD_NULL) lib_observability_outcome_clear(machine->start_outcome);
+    if (machine != STD_NULL) vm_session_start_outcome_clear(machine->start_outcome);
 }
 
 static type_status vm_session_start_outcome_record(vm_session *machine,
     type_status status)
 {
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    return lib_observability_outcome_publish(machine->start_outcome, status);
+    return vm_session_start_outcome_publish(machine->start_outcome, status);
 }
 
 type_status vm_session_start(vm_session *machine) {
@@ -197,7 +197,7 @@ type_status vm_session_finish_reset(vm_session *machine, type_status status)
     vm_session_pacing_reset(machine);
     machine->display_snapshot_generation_valid = TYPE_FALSE;
     machine->model40_fdc_terminal_observation_valid = TYPE_FALSE;
-    vm_session_start_outcome_clear(machine);
+    vm_session_start_outcome_reset(machine);
     if (!vm_session_control_is_running(&machine->control)) {
         vm_session_publish_display(machine, 1);
     }
@@ -273,7 +273,7 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
         vm_session_debug_disassemble, STD_NULL);
-    status = lib_observability_outcome_create(&machine->start_outcome);
+    status = vm_session_start_outcome_create(&machine->start_outcome);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     machine->execution.state = machine->control.state;
     machine->execution.run = vm_session_execution_start;
@@ -297,7 +297,7 @@ type_status vm_session_initialize(vm_session *machine) {
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     status = vm_platform_run_handle_create(&machine->platform_run_handle);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
-    vm_session_start_outcome_clear(machine);
+    vm_session_start_outcome_reset(machine);
     vm_session_control_bind_command_boundary(&machine->control,
         vm_platform_request_transport_observe_execution_boundary,
         machine->request_transport);
@@ -313,7 +313,7 @@ C_VOID vm_session_finalize(vm_session *machine) {
     machine->platform_run_handle = STD_NULL;
     vm_platform_run_context_destroy(machine->platform_run_context);
     machine->platform_run_context = STD_NULL;
-    lib_observability_outcome_destroy(machine->start_outcome);
+    vm_session_start_outcome_destroy(machine->start_outcome);
     machine->start_outcome = STD_NULL;
     STD_MEMSET(&machine->execution, 0, sizeof(machine->execution));
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);

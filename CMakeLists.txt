@@ -107,10 +107,6 @@ add_test(NAME unit.library-manifest-fixtures
         -DWORK_ROOT:PATH=${CMAKE_BINARY_DIR}/test-library-manifest-fixtures
         -P ${CMAKE_SOURCE_DIR}/test/lib/library_manifest_fixture.cmake)
 set_tests_properties(unit.library-manifest-fixtures PROPERTIES LABELS "unit")
-add_executable(lib-neutral-consumer test/lib/library_consumer_conformance.c)
-target_link_libraries(lib-neutral-consumer PRIVATE lib-neutral-corpus)
-add_test(NAME unit.lib-neutral-consumer COMMAND lib-neutral-consumer)
-set_tests_properties(unit.lib-neutral-consumer PROPERTIES LABELS "unit")
 add_executable(storage-file-smoke test/lib/storage_file_smoke.c)
 target_link_libraries(storage-file-smoke PRIVATE storage-medium)
 add_test(NAME unit.storage-file-smoke COMMAND storage-file-smoke)
@@ -1231,6 +1227,7 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/lifecycle.c
     src/vm/composition/session/session.c
     src/vm/composition/session/control.c
+    src/vm/composition/session/start_outcome.c
     src/vm/composition/session/fault.c
     src/vm/composition/session/execution.c
     src/vm/composition/session/runner.c
@@ -1272,6 +1269,7 @@ target_include_directories(core-machine-boundary PUBLIC
 target_link_libraries(core-machine-boundary PUBLIC type-facade host-sync)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
+    src/vm/platform/session_state.c
     src/vm/platform/input_flush.c
     src/vm/platform/ux_frame.c
     src/vm/platform/ux_binding.c
@@ -1486,7 +1484,6 @@ target_link_libraries(vm-platform PUBLIC
     type-facade
     core-utils
     core-machine-boundary
-    session-lifecycle
     ux-contract)
 if(WIN32)
     target_link_libraries(vm-platform PUBLIC ux-win32-native user32 gdi32)
@@ -1507,12 +1504,14 @@ add_executable(host-sync-smoke
     test/lib/host_sync_smoke.c
 )
 target_link_libraries(host-sync-smoke PRIVATE host-sync)
-add_executable(session-state-smoke test/lib/session_state_smoke.c)
-target_link_libraries(session-state-smoke PRIVATE session-lifecycle)
+add_executable(vm-session-state-smoke
+    test/vm/platform/vm_session_state_smoke.c)
+target_link_libraries(vm-session-state-smoke PRIVATE vm-platform)
 add_executable(storage-medium-smoke test/lib/storage_medium_smoke.c)
 target_link_libraries(storage-medium-smoke PRIVATE storage-medium)
-add_executable(observability-outcome-smoke test/lib/observability_outcome_smoke.c)
-target_link_libraries(observability-outcome-smoke PRIVATE observability-outcome)
+add_executable(vm-session-start-outcome-smoke
+    test/vm/composition/session/vm_session_start_outcome_smoke.c)
+target_link_libraries(vm-session-start-outcome-smoke PRIVATE vm-composition)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -1586,7 +1585,7 @@ target_link_libraries(vm-composition PUBLIC
     vm-profile
     vm-product
     vm-request-transport)
-target_link_libraries(vm-composition PRIVATE session-lifecycle observability-outcome storage-medium)
+target_link_libraries(vm-composition PRIVATE storage-medium)
 target_link_libraries(vm-composition PRIVATE vm-platform)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
@@ -2380,9 +2379,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-console-exit-smoke
     core-machine-guest-input-source-smoke
     host-sync-smoke
-    session-state-smoke
+    vm-session-state-smoke
     storage-medium-smoke
-    observability-outcome-smoke
+    vm-session-start-outcome-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-machine-guest-presentation-mailbox-smoke
@@ -3748,9 +3747,9 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(storage-medium-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(observability-outcome-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-session-start-outcome-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3911,6 +3910,8 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-composition|src/vm/composition/session/lifecycle.c|vm-composition"
     "vm-composition|src/vm/composition/session/session.c|vm-composition"
     "vm-composition|src/vm/composition/session/control.c|vm-composition"
+    "vm-platform|src/vm/platform/session_state.c|vm-platform"
+    "vm-composition|src/vm/composition/session/start_outcome.c|vm-composition"
     "vm-composition|src/vm/composition/session/fault.c|vm-composition"
     "vm-composition|src/vm/composition/session/execution.c|vm-composition"
     "vm-composition|src/vm/composition/session/runner.c|vm-composition"

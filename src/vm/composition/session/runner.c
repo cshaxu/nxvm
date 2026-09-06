@@ -27,7 +27,7 @@ C_VOID vm_session_runner_run(vm_session *session)
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
-    while (lib_session_state_is_active(control->state)) {
+    while (vm_session_state_is_active(control->state)) {
         if (vm_platform_run_handle_take_stop_report(session->platform_run_handle)) {
             vm_session_control_stop(control);
             continue;
@@ -36,19 +36,19 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
             continue;
         }
-        if (lib_session_state_take_reset(control->state)) {
+        if (vm_session_state_take_reset(control->state)) {
             type_status reset_status = vm_session_execution_context_reset(
                 &control->execution_context);
 
             (C_VOID)vm_session_finish_reset(session, reset_status);
             if (reset_status != TYPE_STATUS_OK) continue;
         }
-        if (lib_session_state_pause_requested(control->state)) {
+        if (vm_session_state_pause_requested(control->state)) {
             /* The runner exclusively owns Core mutation.  Publish the final
              * VADP snapshot before acknowledging pause, so a paused debugger
              * or presenter never observes a stale mailbox frame. */
             (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
-            lib_session_state_acknowledge_pause(control->state);
+            vm_session_state_acknowledge_pause(control->state);
             /* A Console session owns the one process Console surface while
              * running. End its runner at a paused boundary so the display
              * thread releases that lease and START returns to the NXVM
@@ -59,19 +59,19 @@ C_VOID vm_session_runner_run(vm_session *session)
                     session->platform_run_handle)) {
                 vm_platform_run_handle_request_presenter_stop(
                     session->platform_run_handle);
-                lib_session_state_stop(control->state);
+                vm_session_state_stop(control->state);
                 break;
             }
         }
-        while (lib_session_state_is_active(control->state) &&
-            lib_session_state_is_paused(control->state)) {
+        while (vm_session_state_is_active(control->state) &&
+            vm_session_state_is_paused(control->state)) {
             vm_session_execution_context_run_command_boundary(&control->execution_context);
             host_sync_sleep_milliseconds(1u);
         }
-        if (!lib_session_state_is_active(control->state)) break;
+        if (!vm_session_state_is_active(control->state)) break;
         vm_session_execution_context_run_command_boundary(&control->execution_context);
         vm_session_execution_context_debug_refresh(&control->execution_context);
-        if (lib_session_state_pause_requested(control->state)) continue;
+        if (vm_session_state_pause_requested(control->state)) continue;
         budget.instructions = vm_session_control_step_requested(control) ? 1u :
             session->speed == VM_SESSION_SPEED_TURBO ?
             VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :

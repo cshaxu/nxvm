@@ -188,7 +188,7 @@ static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
     if (yaml_session == STD_NULL || out_result == STD_NULL || quantum == 0u ||
         integration_yaml_session_restart(yaml_session) != TYPE_STATUS_OK) goto done;
     session = yaml_session->session;
-    lib_session_state_start(session->control.state);
+    vm_session_state_start(session->control.state);
     if (!vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
         session->core_machine, command[index]) != TYPE_STATUS_OK) goto done;
@@ -203,7 +203,7 @@ static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
         sizeof(out_result->off_result)) != TYPE_STATUS_OK) goto done;
     ok = 1;
 done:
-    if (session != STD_NULL) lib_session_state_stop(session->control.state);
+    if (session != STD_NULL) vm_session_state_stop(session->control.state);
     return ok;
 }
 
