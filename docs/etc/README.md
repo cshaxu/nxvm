@@ -31,6 +31,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t523-s5-neutral-consumer-and-route-ledger.md` | Shared-library owner | T523 S5's source-identical neutral consumer proof, NXVM generic-route disposition and bounded SoftPC binding handoff. |
 | `evidence/t523-s6-file-mechanics-owner-ledger.md` | Shared-library owner | T523 S6's sole generic file-mechanics owner, caller migration and retained VM semantics. |
 | `evidence/t523-s7-vm-win32-keyboard-owner-ledger.md` | Shared UX / VM input owners | T523 S7's sole native keyboard-layout normalizer and retained VM-to-Core input-value boundary. |
+| `evidence/t523-s8-core-guest-boundary-owner-ledger.md` | Core guest-boundary owner | T523 S8's semantic Core guest-input, frame and copied-publication paths, distinct from native `lib/ux` presentation. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

@@ -10,7 +10,7 @@
 | Non-goals | No guest input/display behavior change, UX redesign, native backend move, machine/controller/profile change, asset change, or mailbox replacement. |
 | Reference Baseline | `64a30bca`: accepted S7 one-normalizer replacement. |
 | Candidate Proposal | [T523 retained proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md), corrective S6--S9. |
-| Files And ABI Surface | `src/core/platform/display_frame.h`, `input_interface.*`, `presentation_mailbox*`, their callers/tests and CMake names. Core values remain guest-derived and copied; `lib/ux` stays the independent native presenter. |
+| Files And ABI Surface | `src/core/machine/guest_display_frame.h`, `guest_input_interface.*`, `guest_presentation_mailbox*`, their callers/tests and CMake names. Core values remain guest-derived and copied; `lib/ux` stays the independent native presenter. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): one guest-boundary owner and no native Core dependency; [Coding](../rules/CODING.md): semantic names and replacement cleanup; [Documentation](../rules/DOCUMENT.md): current/history separation. |
 | Verification | Focused Core input/frame/mailbox tests; full unit suite; sweep for retired names and duplicate mailbox/input routes; documentation governance and `git diff --check`. |
 | Expected Markers | A new S8 owner marker; no retired `core/platform` guest-boundary path remains. |

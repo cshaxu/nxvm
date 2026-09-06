@@ -160,14 +160,14 @@ static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
 }
 
 type_status vm_session_submit_host_input(vm_session *session,
-    const core_platform_input_event *event)
+    const core_machine_guest_input_event *event)
 {
     if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
-    if (event == STD_NULL || (event->kind != CORE_PLATFORM_INPUT_KEY &&
-        event->kind != CORE_PLATFORM_INPUT_RELATIVE_MOUSE)) {
+    if (event == STD_NULL || (event->kind != CORE_MACHINE_GUEST_INPUT_KEY &&
+        event->kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return core_platform_input_source_submit(session->input_source, event);
+    return core_machine_guest_input_source_submit(session->input_source, event);
 }
 
 static const C_CHAR *vm_session_config_floppy(const vm_session_config *config,
@@ -473,7 +473,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
             STD_NULL : machine->pc_at_video_rom;
         machine->pc_at_rom_context.video_bytes = machine->pc_at_video_rom_bytes;
     }
-    if (core_platform_presentation_mailbox_create(&machine->presentation_mailbox) !=
+    if (core_machine_guest_presentation_mailbox_create(&machine->presentation_mailbox) !=
         TYPE_STATUS_OK) {
         vm_session_storage_finalize(machine);
         return TYPE_STATUS_NO_MEMORY;
@@ -492,7 +492,7 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     if (machine == STD_NULL) return;
     core_product_debugger_destroy(machine->debugger);
     machine->debugger = STD_NULL;
-    core_platform_presentation_mailbox_destroy(machine->presentation_mailbox);
+    core_machine_guest_presentation_mailbox_destroy(machine->presentation_mailbox);
     machine->presentation_mailbox = STD_NULL;
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;

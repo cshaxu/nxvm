@@ -23,12 +23,12 @@ static DWORD WINAPI run_machine(C_VOID *opaque)
 static C_INT vm_dos_keyboard_has_text(const vm_session *session,
     const C_CHAR *text)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
     STD_SIZE_T character;
     STD_SIZE_T length = STD_STRLEN(text);
 
-    (C_VOID)core_platform_presentation_mailbox_capture(
+    (C_VOID)core_machine_guest_presentation_mailbox_capture(
         session->presentation_mailbox, &frame);
     for (cell = 0u; cell + length <= TEXT_VIDEO_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
@@ -41,10 +41,10 @@ static C_INT vm_dos_keyboard_has_text(const vm_session *session,
 
 static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
 
-    (C_VOID)core_platform_presentation_mailbox_capture(
+    (C_VOID)core_machine_guest_presentation_mailbox_capture(
         session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&
@@ -74,7 +74,7 @@ static C_INT vm_dos_keyboard_has_edit_menu(const vm_session *session)
 
 static C_INT vm_dos_keyboard_verify_text_frame(const vm_session *session)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     type_unsigned_8 text[TEXT_VIDEO_CELLS * 2u];
     STD_SIZE_T cell;
     STD_SIZE_T title_cell = TEXT_VIDEO_CELLS;
@@ -85,9 +85,9 @@ static C_INT vm_dos_keyboard_verify_text_frame(const vm_session *session)
         STD_PRINTF("edit display: text memory unavailable\n");
         return 0;
     }
-    (C_VOID)core_platform_presentation_mailbox_capture(
+    (C_VOID)core_machine_guest_presentation_mailbox_capture(
         session->presentation_mailbox, &frame);
-    if (frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT || frame.columns != 80u ||
+    if (frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u) {
         STD_PRINTF("edit display: kind=%u columns=%u rows=%u\n", frame.kind,
             frame.columns, frame.rows);
@@ -117,7 +117,7 @@ static C_INT vm_dos_keyboard_verify_text_frame(const vm_session *session)
 static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
     const core_machine_cpu_state *state)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     type_unsigned_16 head = 0u;
     type_unsigned_16 tail = 0u;
     type_unsigned_8 video_mode = 0u;
@@ -137,7 +137,7 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
         state->cs_base + state->eip, instructions, sizeof(instructions));
     (C_VOID)core_machine_keyboard_get_native_scan_set(session->core_machine,
         &scan_set);
-    (C_VOID)core_platform_presentation_mailbox_capture(
+    (C_VOID)core_machine_guest_presentation_mailbox_capture(
         session->presentation_mailbox, &frame);
     STD_PRINTF("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
     for (cell = 0u; cell < 25u; ++cell) {

@@ -1538,7 +1538,7 @@ static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *sn
 static C_INT vm_byob_send_f1(vm_session *session, C_INT pressed,
     type_unsigned_8 *out_scan_set)
 {
-    core_platform_input_event event = {0};
+    core_machine_guest_input_event event = {0};
     type_unsigned_8 scan_set = 0u;
 
     if (session == STD_NULL || session->core_machine == STD_NULL ||
@@ -1546,7 +1546,7 @@ static C_INT vm_byob_send_f1(vm_session *session, C_INT pressed,
             session->core_machine, &scan_set) !=
             TYPE_STATUS_OK) return 0;
     *out_scan_set = scan_set;
-    event.kind = CORE_PLATFORM_INPUT_KEY;
+    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
     event.data.key.scan_code = 0x3bu;
     event.data.key.virtual_key = 0x70u;
     event.data.key.pressed = pressed != 0;

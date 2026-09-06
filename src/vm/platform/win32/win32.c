@@ -67,11 +67,11 @@ C_VOID vm_platform_win32_mouse_relative_for(
     const vm_platform_run_context *context, type_signed_16 delta_x,
     type_signed_16 delta_y, type_unsigned_8 buttons)
 {
-    core_platform_input_event event;
+    core_machine_guest_input_event event;
 
     if (context == STD_NULL) return;
     STD_MEMSET(&event, 0, sizeof(event));
-    event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+    event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
     event.data.relative_mouse.delta_x = delta_x;
     event.data.relative_mouse.delta_y = delta_y;
     event.data.relative_mouse.buttons = buttons;

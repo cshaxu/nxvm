@@ -4,7 +4,7 @@
 
 #include "vm/composition/session/display.h"
 
-#include "core/platform/display_frame.h"
+#include "core/machine/guest_display_frame.h"
 
 #include "vm/platform/platform.h"
 #include "vm/platform/virtual_time.h"
@@ -41,7 +41,7 @@ static C_INT vm_session_capture_display_snapshot(C_VOID *context,
 core_machine_display_kind vm_session_publish_display(vm_session *machine,
     C_INT force)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     core_machine_display_snapshot_observation observation;
     type_unsigned_16 row;
     type_unsigned_16 column;
@@ -68,10 +68,10 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
 
     STD_MEMSET(&frame, 0, sizeof(frame));
     frame.kind = snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ?
-        CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS : CORE_PLATFORM_DISPLAY_KIND_TEXT;
+        CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS : CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
     frame.buffer_changed = buffer_changed;
     frame.cursor_changed = cursor_changed;
-    if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS) {
+    if (frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS) {
         frame.pixel_width = snapshot.pixel_width;
         frame.pixel_height = snapshot.pixel_height;
         STD_MEMCPY(frame.pixels, snapshot.pixels, sizeof(frame.pixels));
@@ -80,11 +80,11 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     } else {
         frame.columns = snapshot.columns;
         frame.rows = snapshot.rows;
-        if (frame.columns > CORE_PLATFORM_DISPLAY_MAX_COLUMNS) {
-            frame.columns = CORE_PLATFORM_DISPLAY_MAX_COLUMNS;
+        if (frame.columns > CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS) {
+            frame.columns = CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS;
         }
-        if (frame.rows > CORE_PLATFORM_DISPLAY_MAX_ROWS) {
-            frame.rows = CORE_PLATFORM_DISPLAY_MAX_ROWS;
+        if (frame.rows > CORE_MACHINE_GUEST_DISPLAY_MAX_ROWS) {
+            frame.rows = CORE_MACHINE_GUEST_DISPLAY_MAX_ROWS;
         }
         frame.cursor_top = snapshot.cursor_top;
         frame.cursor_bottom = snapshot.cursor_bottom;
@@ -96,14 +96,14 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
             sizeof(frame.text_glyphs));
         for (row = 0u; row < frame.rows; ++row) {
             for (column = 0u; column < frame.columns; ++column) {
-                type_unsigned_16 index = row * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + column;
+                type_unsigned_16 index = row * CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS + column;
                 frame.characters[index] = snapshot.characters[index];
                 frame.attributes[index] = snapshot.attributes[index];
             }
         }
     }
     frame.generation = machine->display_generation + 1u;
-    if (core_platform_presentation_mailbox_publish(machine->presentation_mailbox,
+    if (core_machine_guest_presentation_mailbox_publish(machine->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return snapshot.kind;
     if (vm_platform_run_context_publish_ux_frame(machine->platform_run_context) !=
             TYPE_STATUS_OK) return snapshot.kind;

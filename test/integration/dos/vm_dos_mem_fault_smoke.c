@@ -23,10 +23,10 @@ static DWORD WINAPI vm_dos_mem_fault_run_machine(C_VOID *opaque)
 
 static C_INT vm_dos_mem_fault_has_prompt(const vm_session *session)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
 
-    (C_VOID)core_platform_presentation_mailbox_capture(
+    (C_VOID)core_machine_guest_presentation_mailbox_capture(
         session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&

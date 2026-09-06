@@ -159,3 +159,12 @@ VM normalizer symbols have no source hits. Focused shared-UX and VM ingress
 proofs pass, as does repository-only unit `311/311` in 15.88 seconds.
 Documentation governance and diff checks pass. S8 is admitted for semantic
 Core guest-boundary names only.
+
+## S8 Result
+
+S8 moves the Core guest-frame value, guest-input source and copied-frame
+publication mailbox out of the misleading `core/platform` namespace into
+`core/machine`. This is a semantic source and test target consolidation only:
+Core remains the sole guest-state owner, while `lib/ux` remains the sole native
+presentation owner. The old paths and names are deleted rather than wrapped.
+The retained ledger is [T523 S8 evidence](../etc/evidence/t523-s8-core-guest-boundary-owner-ledger.md).

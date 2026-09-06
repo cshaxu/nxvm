@@ -11,10 +11,10 @@
 struct vm_platform_run_context {
     const lib_session_executor *execution;
     vm_platform_host_input_sink input_sink;
-    const core_platform_presentation_mailbox *presentation;
+    const core_machine_guest_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;
     ux_mailbox *ux_mailbox;
-    core_platform_display_frame *core_frame;
+    core_machine_guest_display_frame *core_frame;
     ux_frame *ux_frame;
     ux_action_registry ux_actions;
     ux_router ux_router;

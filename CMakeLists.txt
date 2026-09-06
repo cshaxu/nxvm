@@ -1317,13 +1317,13 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/rtc.c
     src/core/machine/transaction.c
 )
-add_library(core-platform STATIC
-    src/core/platform/input.c
-    src/core/platform/presentation_mailbox.c)
-target_include_directories(core-platform PUBLIC
+add_library(core-machine-boundary STATIC
+    src/core/machine/guest_input.c
+    src/core/machine/guest_presentation_mailbox.c)
+target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-platform PUBLIC type-facade host-sync)
+target_link_libraries(core-machine-boundary PUBLIC type-facade host-sync)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
     src/vm/platform/virtual_time.c
@@ -1482,7 +1482,7 @@ target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
 target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     core-product-session
     core-product-utils
-    core-platform
+    core-machine-boundary
     storage-image
     type-facade
 )
@@ -1498,7 +1498,7 @@ target_include_directories(vm-product-console-exit-smoke PRIVATE
 target_link_libraries(vm-product-console-exit-smoke PRIVATE
     core-product-session
     core-product-utils
-    core-platform
+    core-machine-boundary
     storage-image
     type-facade
 )
@@ -1539,7 +1539,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
-    core-platform
+    core-machine-boundary
     storage-image
     type-facade)
 
@@ -1550,7 +1550,7 @@ target_include_directories(vm-platform PUBLIC
 target_link_libraries(vm-platform PUBLIC
     type-facade
     core-utils
-    core-platform
+    core-machine-boundary
     session-lifecycle
     ux-contract)
 if(WIN32)
@@ -1565,10 +1565,10 @@ if(NOT WIN32)
     target_link_libraries(vm-platform PUBLIC ux-linux-native ${CURSES_LIBRARIES} Threads::Threads)
 endif()
 
-add_executable(core-platform-input-source-smoke
-    test/core/platform/core_platform_input_source_smoke.c
+add_executable(core-machine-guest-input-source-smoke
+    test/core/machine/core_machine_guest_input_source_smoke.c
 )
-target_link_libraries(core-platform-input-source-smoke PRIVATE core-platform)
+target_link_libraries(core-machine-guest-input-source-smoke PRIVATE core-machine-boundary)
 add_executable(host-sync-smoke
     test/lib/host_sync_smoke.c
 )
@@ -1631,11 +1631,11 @@ add_executable(vm-multi-window-session-smoke
 target_link_libraries(vm-multi-window-session-smoke PRIVATE
     integration-session-yaml-support)
 
-add_executable(core-platform-presentation-mailbox-smoke
-    test/core/platform/core_platform_presentation_mailbox_smoke.c
+add_executable(core-machine-guest-presentation-mailbox-smoke
+    test/core/machine/core_machine_guest_presentation_mailbox_smoke.c
 )
-target_link_libraries(core-platform-presentation-mailbox-smoke PRIVATE
-    core-platform)
+target_link_libraries(core-machine-guest-presentation-mailbox-smoke PRIVATE
+    core-machine-boundary)
 
 add_executable(vm-platform-mode-context-smoke
     test/vm/platform/vm_platform_mode_context_smoke.c
@@ -1665,7 +1665,7 @@ target_include_directories(vm-machine PUBLIC
 )
 target_link_libraries(vm-machine PUBLIC
     core-machine
-    core-platform
+    core-machine-boundary
     storage-image)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
@@ -1674,7 +1674,7 @@ target_include_directories(vm-product PUBLIC
 )
 target_link_libraries(vm-product PUBLIC
     core-product-utils
-    core-platform
+    core-machine-boundary
     storage-image)
 
 add_executable(vm-execution-context-smoke
@@ -1812,7 +1812,7 @@ add_executable(core-machine-controller-authority-smoke
     test/core/machine/core_machine_controller_authority_smoke.c)
 target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-machine)
 add_executable(core-mantle-shape-smoke test/vm/machine/core_mantle_shape_smoke.c)
-target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-platform)
+target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-machine-boundary)
 add_executable(vm-kbc-aux-guest-smoke
     test/vm/machine/vm_kbc_aux_guest_smoke.c
 )
@@ -2449,14 +2449,14 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
     session-executor-smoke
-    core-platform-input-source-smoke
+    core-machine-guest-input-source-smoke
     host-sync-smoke
     session-state-smoke
     storage-image-smoke
     observability-outcome-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
-    core-platform-presentation-mailbox-smoke
+    core-machine-guest-presentation-mailbox-smoke
     vm-platform-mode-context-smoke
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
@@ -3818,12 +3818,12 @@ if(PROJECT_ENABLE_BOCHX_RESEARCH)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-utils PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-product-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(session-executor-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -4013,7 +4013,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-utils
     core-machine
     core-machine-executor
-    core-platform
+    core-machine-boundary
     vm-platform-requests
     vm-request-transport
     core-product-debug

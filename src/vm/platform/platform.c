@@ -6,7 +6,7 @@
 
 
 
-#include "core/platform/display_frame.h"
+#include "core/machine/guest_display_frame.h"
 
 #include "vm/platform/platform_internal.h"
 #include "vm/platform/ux_binding.h"
@@ -15,7 +15,7 @@
 type_status vm_platform_run_context_create(
     const lib_session_executor *execution,
     const vm_platform_host_input_sink *input_sink,
-    const core_platform_presentation_mailbox *presentation,
+    const core_machine_guest_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope,
     vm_platform_run_context **out_context)
 {
@@ -71,7 +71,7 @@ type_status vm_platform_run_context_publish_ux_frame(
     if (context == STD_NULL || context->presentation == STD_NULL ||
         context->core_frame == STD_NULL || context->ux_frame == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
-    status = core_platform_presentation_mailbox_capture(context->presentation,
+    status = core_machine_guest_presentation_mailbox_capture(context->presentation,
         context->core_frame);
     if (status != TYPE_STATUS_OK) return status;
     status = vm_platform_ux_frame_from_core(context->core_frame, context->ux_frame);
@@ -91,7 +91,7 @@ type_status vm_platform_run_context_publish_ux_frame(
 
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,
-    const core_platform_input_event *event)
+    const core_machine_guest_input_event *event)
 {
     if (sink == STD_NULL || sink->submit == STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;

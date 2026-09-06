@@ -1,7 +1,7 @@
 #include "type.h"
 
-#include "core/platform/display_frame.h"
-#include "core/platform/presentation_mailbox_interface.h"
+#include "core/machine/guest_display_frame.h"
+#include "core/machine/guest_presentation_mailbox_interface.h"
 #include "lib/ux/presenter.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/ux_binding.h"
@@ -9,15 +9,15 @@
 
 C_INT main(C_VOID)
 {
-    static core_platform_display_frame source;
+    static core_machine_guest_display_frame source;
     static ux_frame destination;
     static ux_frame captured;
-    core_platform_presentation_mailbox *core_mailbox = STD_NULL;
+    core_machine_guest_presentation_mailbox *core_mailbox = STD_NULL;
     vm_platform_run_context *context = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
     ux_binding binding;
 
-    source.kind = CORE_PLATFORM_DISPLAY_KIND_TEXT;
+    source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
     source.generation = 7u;
     source.columns = 80u;
     source.rows = 25u;
@@ -40,12 +40,12 @@ C_INT main(C_VOID)
         destination.cursor_top != 14u || destination.cursor_bottom != 15u ||
         destination.cursor_visible == 0u || destination.cursor_phase == 0u)
         return 1;
-    if (core_platform_presentation_mailbox_create(&core_mailbox) != TYPE_STATUS_OK ||
+    if (core_machine_guest_presentation_mailbox_create(&core_mailbox) != TYPE_STATUS_OK ||
         vm_platform_run_context_create(STD_NULL, STD_NULL, core_mailbox,
             STD_NULL, &context) != TYPE_STATUS_OK ||
         vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK ||
         vm_platform_ux_binding_initialize(context, handle, &binding) !=
-            TYPE_STATUS_OK || core_platform_presentation_mailbox_publish(
+            TYPE_STATUS_OK || core_machine_guest_presentation_mailbox_publish(
             core_mailbox, &source) != TYPE_STATUS_OK ||
         vm_platform_run_context_publish_ux_frame(context) != TYPE_STATUS_OK ||
         ux_mailbox_capture(binding.mailbox, &captured) != LIB_STATUS_OK ||
@@ -53,13 +53,13 @@ C_INT main(C_VOID)
         captured.text_palette[14u] != 0x00ffff00u) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
-    core_platform_presentation_mailbox_destroy(core_mailbox);
+    core_machine_guest_presentation_mailbox_destroy(core_mailbox);
     puts("M5:T522:S4:UX-FRAME:OK");
     return 0;
 
 fail:
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
-    core_platform_presentation_mailbox_destroy(core_mailbox);
+    core_machine_guest_presentation_mailbox_destroy(core_mailbox);
     return 1;
 }

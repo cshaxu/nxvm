@@ -8,13 +8,13 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "core/platform/input_interface.h"
-#include "core/platform/presentation_mailbox_interface.h"
+#include "core/machine/guest_input_interface.h"
+#include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/utils/wait_provider.h"
 #include "lib/session/executor.h"
 
 typedef type_status (*vm_platform_host_input_submit)(C_VOID *context,
-    const core_platform_input_event *event);
+    const core_machine_guest_input_event *event);
 
 typedef struct vm_platform_host_input_sink {
     vm_platform_host_input_submit submit;
@@ -43,7 +43,7 @@ typedef struct vm_platform_run_handle vm_platform_run_handle;
 type_status vm_platform_run_context_create(
     const lib_session_executor *execution,
     const vm_platform_host_input_sink *input_sink,
-    const core_platform_presentation_mailbox *presentation,
+    const core_machine_guest_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope,
     vm_platform_run_context **out_context);
 C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context);
@@ -51,7 +51,7 @@ type_status vm_platform_run_context_publish_ux_frame(
     vm_platform_run_context *context);
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,
-    const core_platform_input_event *event);
+    const core_machine_guest_input_event *event);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
 C_INT vm_platform_run_context_get_display_mode(

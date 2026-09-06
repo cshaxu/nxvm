@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-#include "core/platform/presentation_mailbox_interface.h"
+#include "core/machine/guest_presentation_mailbox_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
@@ -18,13 +18,13 @@ static DWORD WINAPI vm_t287_fdisk_run(C_VOID *opaque)
 
 static C_INT vm_t287_fdisk_has_text(const vm_session *session, const C_CHAR *text)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
     STD_SIZE_T character;
     STD_SIZE_T length = STD_STRLEN(text);
 
     if (session == STD_NULL || text == STD_NULL || length == 0u ||
-        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
+        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_FDISK_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {

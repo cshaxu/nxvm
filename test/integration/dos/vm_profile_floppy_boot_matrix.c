@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "core/platform/presentation_mailbox_interface.h"
+#include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
@@ -151,7 +151,7 @@ static C_VOID boot_trace_observe(C_VOID *opaque, const core_machine_trace_event 
     }
 }
 
-static C_INT boot_text_has(const core_platform_display_frame *frame, const C_CHAR *text)
+static C_INT boot_text_has(const core_machine_guest_display_frame *frame, const C_CHAR *text)
 {
     STD_SIZE_T cell;
     const STD_SIZE_T length = text == STD_NULL ? 0u : STD_STRLEN(text);
@@ -165,12 +165,12 @@ static C_INT boot_text_has(const core_platform_display_frame *frame, const C_CHA
 
 static C_INT boot_terminal(const vm_session *session, const C_CHAR **out_name)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
 
     if (session == STD_NULL || out_name == STD_NULL ||
-        core_platform_presentation_mailbox_capture(session->presentation_mailbox, &frame) !=
-            TYPE_STATUS_OK || frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT) return 0;
+        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox, &frame) !=
+            TYPE_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < TEXT_CELLS; ++cell) {
         if (STD_ISALPHA((C_UCHAR)frame.characters[cell]) && frame.characters[cell + 1u] == ':' &&
             frame.characters[cell + 2u] == '\\' && frame.characters[cell + 3u] == '>') {
@@ -189,18 +189,18 @@ static C_INT boot_terminal(const vm_session *session, const C_CHAR **out_name)
 
 static C_INT boot_post_reports_keyboard_failure(const vm_session *session)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
 
     return session != STD_NULL &&
-        core_platform_presentation_mailbox_capture(session->presentation_mailbox, &frame) ==
-            TYPE_STATUS_OK && frame.kind == CORE_PLATFORM_DISPLAY_KIND_TEXT &&
+        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox, &frame) ==
+            TYPE_STATUS_OK && frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT &&
         (boot_text_has(&frame, "301-Keyboard") || boot_text_has(&frame, "303-Keyboard"));
 }
 
 static C_VOID boot_timeout_report(const vm_session *session, const C_CHAR *name,
     const boot_trace_probe *trace_probe)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     core_machine_cpu_state cpu;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_observation observation;
@@ -431,8 +431,8 @@ static C_VOID boot_timeout_report(const vm_session *session, const C_CHAR *name,
                 point->bytes[2u]);
         }
     }
-    if (core_platform_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK || frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT) return;
+    if (core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
+            &frame) != TYPE_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return;
     for (row = 0u; row < 25u; ++row) {
         C_INT nonblank = 0;
         for (index = 0u; index < 80u; ++index) {

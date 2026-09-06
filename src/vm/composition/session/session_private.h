@@ -6,8 +6,8 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/media_interface.h"
 #include "core/machine/display_interface.h"
-#include "core/platform/input_interface.h"
-#include "core/platform/presentation_mailbox_interface.h"
+#include "core/machine/guest_input_interface.h"
+#include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
 #include "core/utils/wait_provider.h"
@@ -55,9 +55,9 @@ struct vm_session {
     vm_session_external_pc_at_rom_context pc_at_rom_context;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
-    core_platform_presentation_mailbox *presentation_mailbox;
+    core_machine_guest_presentation_mailbox *presentation_mailbox;
     lib_session_executor *execution_transport;
-    core_platform_input_source *input_source;
+    core_machine_guest_input_source *input_source;
     core_utils_wait_scope wait_scope;
     vm_platform_run_context *platform_run_context;
     vm_platform_run_handle *platform_run_handle;

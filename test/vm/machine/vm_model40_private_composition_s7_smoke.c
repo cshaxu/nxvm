@@ -110,9 +110,9 @@ C_INT main(C_VOID)
             result.elapsed_ticks != 3u;
     }
     if (!failed) {
-        core_platform_input_event event = {0};
+        core_machine_guest_input_event event = {0};
 
-        event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 1;
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;

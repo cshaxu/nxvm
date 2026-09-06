@@ -1,6 +1,6 @@
 #include "vm/platform/ux_binding.h"
 
-#include "core/platform/input_interface.h"
+#include "core/machine/guest_input_interface.h"
 #include "vm/platform/platform_internal.h"
 
 #include <limits.h>
@@ -30,17 +30,17 @@ static ux_run_state vm_platform_ux_state(C_VOID *opaque)
 C_INT vm_platform_ux_event_submit(const vm_platform_run_context *context,
     const ux_event *event)
 {
-    core_platform_input_event input;
+    core_machine_guest_input_event input;
 
     if (context == STD_NULL || event == STD_NULL) return TYPE_FALSE;
     STD_MEMSET(&input, 0, sizeof(input));
     if (event->type == UX_EVENT_KEY) {
-        input.kind = CORE_PLATFORM_INPUT_KEY;
+        input.kind = CORE_MACHINE_GUEST_INPUT_KEY;
         input.data.key.scan_code = event->data.key.scan_code;
         input.data.key.virtual_key = event->data.key.virtual_key;
         input.data.key.pressed = event->data.key.pressed;
     } else if (event->type == UX_EVENT_MOUSE) {
-        input.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+        input.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
         input.data.relative_mouse.delta_x = vm_platform_ux_mouse_delta(
             event->data.mouse.delta_x);
         input.data.relative_mouse.delta_y = vm_platform_ux_mouse_delta(
@@ -53,7 +53,7 @@ C_INT vm_platform_ux_event_submit(const vm_platform_run_context *context,
     else if (event->type == UX_EVENT_TEXT) return TYPE_FALSE;
 #else
     else if (event->type == UX_EVENT_TEXT && event->data.text.scalar <= 0xffffu) {
-        input.kind = CORE_PLATFORM_INPUT_KEY;
+        input.kind = CORE_MACHINE_GUEST_INPUT_KEY;
         input.data.key.virtual_key = (type_unsigned_16)event->data.text.scalar;
         input.data.key.pressed = TYPE_TRUE;
     }

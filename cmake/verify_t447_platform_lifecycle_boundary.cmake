@@ -3,11 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(project_t447_s5_contracts
-    "src/core/platform/input_interface.h|core_platform_input_source"
-    "src/core/platform/presentation_mailbox_interface.h|core_platform_presentation_mailbox"
-    "src/vm/platform/execution.h|vm_platform_execution_transport"
-    "src/vm/platform/host_surface.h|vm_platform_host_surface_context"
-    "src/vm/platform/host_surface.h|vm_platform_host_surface_lease"
+    "src/core/machine/guest_input_interface.h|core_machine_guest_input_source"
+    "src/core/machine/guest_presentation_mailbox_interface.h|core_machine_guest_presentation_mailbox"
     "src/vm/platform/platform.h|vm_platform_run_context"
     "src/vm/platform/platform.h|vm_platform_run_handle"
     "src/vm/platform/vm_request_transport.h|vm_platform_request_transport")

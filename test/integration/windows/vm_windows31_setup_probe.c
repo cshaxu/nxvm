@@ -6,7 +6,7 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
-#include "core/platform/presentation_mailbox_interface.h"
+#include "core/machine/guest_presentation_mailbox_interface.h"
 #include "test/integration/support/session_yaml.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
@@ -30,13 +30,13 @@ static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
 
 static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
     STD_SIZE_T character;
     STD_SIZE_T length = STD_STRLEN(text);
 
     if (session == STD_NULL || text == STD_NULL || length == 0u ||
-        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
+        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
@@ -49,10 +49,10 @@ static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
 
 static C_INT vm_t287_has_prompt(const vm_session *session)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
 
-    if (session == STD_NULL || core_platform_presentation_mailbox_capture(
+    if (session == STD_NULL || core_machine_guest_presentation_mailbox_capture(
             session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + 1u < VM_T287_TEXT_CELLS; ++cell) {
         if (frame.characters[cell] == 'C' && frame.characters[cell + 1u] == '>') {
@@ -145,11 +145,11 @@ static C_INT vm_t288_type_windows(vm_session *session)
 
 static C_VOID vm_t287_print_frame(const vm_session *session)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T row;
     STD_SIZE_T column;
 
-    if (session == STD_NULL || core_platform_presentation_mailbox_capture(
+    if (session == STD_NULL || core_machine_guest_presentation_mailbox_capture(
             session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {

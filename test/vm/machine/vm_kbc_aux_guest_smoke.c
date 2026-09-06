@@ -2,7 +2,7 @@
 
 #include "core/machine/entry_plan_interface.h"
 #include "core/machine/machine_interface.h"
-#include "core/platform/input_interface.h"
+#include "core/machine/guest_input_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/platform/vm_request_transport.h"
@@ -92,9 +92,9 @@ C_INT main(C_VOID)
         core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0xfau) { stage = 2; goto done; }
     {
-        core_platform_input_event event = {0};
+        core_machine_guest_input_event event = {0};
 
-        event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;

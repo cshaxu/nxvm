@@ -103,11 +103,11 @@ fail:
 }
 static C_INT has_dos_prompt(const vm_session *session)
 {
-    core_platform_display_frame frame;
+    core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
 
     if (session == STD_NULL) return 0;
-    (C_VOID)core_platform_presentation_mailbox_capture(
+    (C_VOID)core_machine_guest_presentation_mailbox_capture(
         session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = frame.characters[cell];

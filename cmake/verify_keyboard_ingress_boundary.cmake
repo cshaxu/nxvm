@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/platform/input_interface.h" input_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/platform/input.c" input_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/guest_input_interface.h" input_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/guest_input.c" input_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/win32/win32.c" win32_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c" session_source)
@@ -22,9 +22,9 @@ if(win32_submit_position EQUAL -1 OR NOT win32_direct_position EQUAL -1)
     message(FATAL_ERROR "Win32 keyboard events bypass the transport ingress operation")
 endif()
 
-string(FIND "${lifecycle_source}" "core_platform_input_source_create"
+string(FIND "${lifecycle_source}" "core_machine_guest_input_source_create"
     source_position)
-string(FIND "${session_source}" "core_platform_input_source_submit"
+string(FIND "${session_source}" "core_machine_guest_input_source_submit"
     ingress_position)
 string(FIND "${lifecycle_source}" "VM_PLATFORM_REQUEST_KEY_EVENT"
     request_position)

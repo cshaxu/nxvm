@@ -28,7 +28,7 @@
 
 #include "lib/session/executor.h"
 
-#include "core/platform/input_interface.h"
+#include "core/machine/guest_input_interface.h"
 
 #include "vm/platform/platform.h"
 
@@ -56,18 +56,18 @@ static type_status vm_session_debug_disassemble(C_VOID *context,
 }
 
 static C_VOID vm_session_input_submit(C_VOID *context,
-    const core_platform_input_event *event)
+    const core_machine_guest_input_event *event)
 {
     vm_session *machine = (vm_session *)context;
     vm_platform_request request;
 
     if (machine == STD_NULL || event == STD_NULL) return;
-    if (event->kind == CORE_PLATFORM_INPUT_KEY) {
+    if (event->kind == CORE_MACHINE_GUEST_INPUT_KEY) {
         request.kind = VM_PLATFORM_REQUEST_KEY_EVENT;
         request.data.key_event.scan_code = event->data.key.scan_code;
         request.data.key_event.virtual_key = event->data.key.virtual_key;
         request.data.key_event.pressed = event->data.key.pressed;
-    } else if (event->kind == CORE_PLATFORM_INPUT_RELATIVE_MOUSE) {
+    } else if (event->kind == CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE) {
         request.kind = VM_PLATFORM_REQUEST_MOUSE_EVENT;
         request.data.mouse_event.delta_x = event->data.relative_mouse.delta_x;
         request.data.mouse_event.delta_y = event->data.relative_mouse.delta_y;
@@ -117,12 +117,12 @@ type_status vm_session_bind_execution_provider(vm_session *machine)
     return core_machine_freeze_execution_providers(machine->core_machine);
 }
 
-static const core_platform_input_sink vm_session_input_sink = {
+static const core_machine_guest_input_sink vm_session_input_sink = {
     vm_session_input_submit
 };
 
 static type_status vm_session_host_input_submit(C_VOID *context,
-    const core_platform_input_event *event)
+    const core_machine_guest_input_event *event)
 {
     return vm_session_submit_host_input((vm_session *)context, event);
 }
@@ -289,7 +289,7 @@ type_status vm_session_initialize(vm_session *machine) {
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     vm_platform_request_transport_bind_consumer(machine->request_transport,
         vm_session_consume_request, machine);
-    status = core_platform_input_source_create(&vm_session_input_sink, machine,
+    status = core_machine_guest_input_source_create(&vm_session_input_sink, machine,
         &machine->input_source);
     if (status != TYPE_STATUS_OK) {
         vm_session_finalize(machine);
@@ -324,7 +324,7 @@ C_VOID vm_session_finalize(vm_session *machine) {
     lib_session_executor_destroy(machine->execution_transport);
     machine->execution_transport = STD_NULL;
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
-    core_platform_input_source_destroy(machine->input_source);
+    core_machine_guest_input_source_destroy(machine->input_source);
     machine->input_source = STD_NULL;
     vm_platform_request_transport_close(machine->request_transport);
     vm_platform_request_transport_destroy(machine->request_transport);

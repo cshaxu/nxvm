@@ -61,9 +61,9 @@ C_INT main(C_VOID)
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
     if (failed) stage = 1;
     if (!failed) {
-        core_platform_input_event event = {0};
+        core_machine_guest_input_event event = {0};
 
-        event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 1;
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;

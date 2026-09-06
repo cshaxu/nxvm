@@ -5,7 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
-#include "core/platform/input_interface.h"
+#include "core/machine/guest_input_interface.h"
 #include "vm/platform/vm_request_transport.h"
 #include "test/integration/support/session_yaml.h"
 
@@ -350,8 +350,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     bytes_address = ((type_unsigned_32)observation.cpu.cs << 4) + bytes_offset;
     stage = 5;
     {
-        core_platform_input_event event = {0};
-        event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+        core_machine_guest_input_event event = {0};
+        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
