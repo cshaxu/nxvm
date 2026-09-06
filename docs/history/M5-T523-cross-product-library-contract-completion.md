@@ -178,3 +178,14 @@ remain sole Core state owners and `lib/ux` retains native presentation. Focused
 boundary proofs, 311/311 repository-only unit in 17.11 seconds, refreshed
 boundary verifiers, documentation governance and diff checks pass. S9 is
 admitted for the generic monotonic-clock replacement.
+
+## S9 Result And Acceptance
+
+S9 deletes VM-owned virtual-time mechanics. `lib/host/clock.c` owns the one
+generic validation/conversion route; its Win32 and Linux private readers own
+only their respective counter API. VM retains only display cadence and
+completed-Core-progress pacing comparison, and Core has no host-clock input.
+Coordinator review accepts `743ec108`: focused proof and repository-only unit
+311/311 pass in 18.87 seconds; retired VM clock names have no consumers and
+the generic wall-clock sweep has only `lib/host` readers. S10 is admitted for
+task-level integration and final owner audit.
