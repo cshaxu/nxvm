@@ -92,3 +92,26 @@ library files hash exactly, public headers carry neither native nor product
 types, focused native lifecycle proof passes, and the full repository-only unit
 suite passes `309/309`. S5 is admitted for neutral conformance, one-path NXVM
 audit and the bounded SoftPC adoption handoff.
+
+## S5 Result And T523 Closure
+
+S5 recompiles the entire platform-selected 56-file manifest corpus as a
+test-only neutral static target. Its consumer includes only public `lib`
+headers and proves copied text/graphics frames, palette, dirty rectangle,
+mailbox wake, Unicode text input, action/capture, opaque host/lifecycle state,
+all image modes and copied outcomes. It neither links NXVM nor includes Core,
+VM, profile, firmware or asset headers.
+
+The retained [S5 ledger](../etc/evidence/t523-s5-neutral-consumer-and-route-ledger.md)
+also records the one NXVM generic route per capability and the different
+machine-owned reason for each retained Core/VM boundary. The manifest remains
+source-identical; public-header, product-vocabulary and peer-root sweeps have
+no hits. The Queue-only [SoftPC adoption proposal](../proposals/m5-softpc-shared-library-binding-adoption.md)
+requires a byte-identical copy plus a product-local binding, never a source
+edit inside `lib`.
+
+Coordinator actual-diff review accepts `fcdc7e99`. The neutral marker and the
+native run-handle marker pass; repository-only unit passes `310/310`, and
+documentation governance plus `git diff --check` pass. T523 is closed. No
+machine/controller/profile behavior, asset or runtime dependency was moved
+into the library.

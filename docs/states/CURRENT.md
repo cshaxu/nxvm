@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T523 S5 |
-| Admission And Approval | S4 implementation P1--P2 (`9ecb3810`, `b4ba3957`) is accepted by this governance update; the owner-approved T523 proposal authorizes its stated S5 cutover and adoption-handoff batch. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
-| Objective | Complete the one-path NXVM cutover, independent consumer conformance proof and bounded SoftPC adoption handoff without changing either product's machine behavior. |
+| Identifier Mode | M5 T523 closed |
+| Admission And Approval | T523 S5 P1 (`fcdc7e99`) is accepted after actual-diff review. The owner-approved cross-product-library objective is complete; no exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
+| Objective | No active implementation packet. |
 | Non-goals | No machine/controller/profile change, guest input protocol, UX redesign, asset change, Linux graphics backend, speculative framework, or migration of machine safe-point semantics into lib. |
-| Reference Baseline | `b4ba3957` / accepted T523 S4 evidence and current independent library roots. |
-| Candidate Proposal | [T523 proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md). |
-| Files And ABI Surface | Complete `src/lib/**` corpus and manifest, CMake consumer targets, NXVM bindings that consume it, repository-only neutral conformance tests and the bounded SoftPC handoff proposal; public ABI remains copied values, opaque library handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
+| Reference Baseline | T523 closure: 56-file manifest-selected independent library corpus and one NXVM binding per generic capability. |
+| Candidate Proposal | None. The bounded future [SoftPC binding proposal](../proposals/m5-softpc-shared-library-binding-adoption.md) is Queue-only. |
+| Files And ABI Surface | Closed `src/lib/**` corpus and manifest, NXVM bindings, repository-only neutral consumer test and the Queue-only SoftPC binding proposal; public ABI remains copied values, opaque library handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): accepted S4 baseline, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): independent peer roots and product-only safe points; [Coding](../rules/CODING.md): durable bounded contracts and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. |
-| Verification | Compile every library root as an independent consumer; execute neutral value/conformance coverage for frame, input, action, capture, mailbox, lifecycle and storage; audit NXVM's single production route per replaced generic mechanism; complete repository-only unit suite; documentation governance; `git diff --check`. |
-| Expected Markers | A byte-identical manifest-selected library corpus has a neutral consumer proof; NXVM consumes each generic mechanism through one binding; the SoftPC handoff names only binding work and cannot require source changes inside `src/lib`. |
+| Verification | T523: neutral consumer and native run-handle markers pass; unit 310/310; source-manifest, product-vocabulary, public-header and peer-root sweeps pass; documentation governance and `git diff --check` pass. |
+| Expected Markers | Next implementation requires a newly admitted packet. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record the byte-identical corpus check, every neutral conformance capability, each retained NXVM route and its distinct machine-owned reason, code-size delta, exact sweep commands and focused proof. Report any feature that requires machine/profile/controller ownership before implementation. |
-| Stop Conditions | Stop and report if a neutral consumer requires product ownership, if a required NXVM deletion moves a machine safe point into lib, or if SoftPC adoption needs a source edit inside the manifest-selected corpus. |
-| Exit Criteria | The neutral consumer proves all shared values and mechanics; every NXVM generic route is single-path or has a distinct machine-owned reason; `src/lib` is source-identical and product-free; the SoftPC handoff is bounded to an external binding; full unit/governance pass. |
+| Reporting Requirements | T523 evidence is retained in its history record. |
+| Stop Conditions | New work requires an admitted packet. |
+| Exit Criteria | T523 closed. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
 | Similar-Issue Sweep | Sweep tracked `src/lib`, its CMake targets, NXVM lifecycle/media callers and native implementations for product-safe-point leakage, duplicate cancellation/join state, polling wrappers, product-specific file suffixes, native types in public headers and parallel direct/overlay paths; replace every in-scope production hit or record its distinct machine-owned reason. |
 
@@ -57,6 +57,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T523 | Closed: the exact 56-file `lib` corpus is product-free and has independent `base`, `ux`, `host`, `session`, `storage` and `observability` roots. A neutral consumer compiles the selected corpus and proves values/mechanics; NXVM has one generic route per capability; future SoftPC work is binding-only. Unit 310/310, governance and all library-boundary sweeps pass. [History](../history/M5-T523-cross-product-library-contract-completion.md). |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
@@ -64,9 +65,10 @@
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
-| T515 | Closed at the owner-approved asset-boundary standard: one YAML-relative external firmware/CMOS/media request path; no production ROM/CMOS fallback; all declared asset paths resolve; unit 302/302 and boundary governance pass. Full integration is recorded truthfully as 41/44: Model 40 and two 5170 real-ROM boot timeouts transfer as debt. [History](../history/M5-T515-external-asset-bundle-governance.md). |
 
 ## Recent Governance
+
+- **M5 T523 S5 P2:** coordinator actual-diff review accepts `fcdc7e99` and closes T523. The independent neutral consumer compiles the entire platform-selected 56-file manifest corpus with public `lib` headers only; its value/lifecycle/storage/outcome proof, one-route NXVM ledger and Queue-only SoftPC binding handoff pass. Unit 310/310, source-manifest, product-vocabulary, public-header and peer-root sweeps, documentation governance and `git diff --check` pass.
 
 - **M5 T523 S4 P3:** coordinator actual-diff review accepts `9ecb3810` and
   `b4ba3957`. The generic host task/event contract, opaque session lifecycle,
