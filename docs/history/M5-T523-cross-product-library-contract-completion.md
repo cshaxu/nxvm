@@ -67,3 +67,12 @@ explicitly and maps its own action identifiers; the shared library only owns
 the native presentation loop, copied frame/input values, registered action
 callback ordering and capture state. The detailed field/owner and verification
 record is retained in [T523 S3 evidence](../etc/evidence/t523-s3-ux-value-contract.md).
+
+## S3 Acceptance
+
+Coordinator review accepts `73b2c5ef`, `def32c37`, and `d90fd430`. The final
+batch has no public product or guest ownership, no automatic library routing,
+and one release-all callback before every registered action callback. The full
+repository-only unit suite passes `309/309` in 14.74 seconds; documentation
+governance, manifest, legacy-vocabulary and routing sweeps pass. S4 is admitted
+for the independent host/session/storage completion batch.

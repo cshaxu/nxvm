@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T523 S3 |
-| Admission And Approval | S2 is accepted at `22ff221f`; the owner-approved T523 proposal authorizes its stated S3 batch. No exception authorizes product coupling, imported SoftPC code, a second generic route, automatic display policy, or guest-state access. |
-| Objective | Complete the product-neutral UX value contracts and explicit presenter operations needed by NXVM and SoftPC-shaped consumers. |
-| Non-goals | No machine/controller/profile change, guest input protocol, automatic text/graphics routing policy, lifecycle/storage redesign, asset change, Linux graphics backend, or speculative framework. |
-| Reference Baseline | `22ff221f` / accepted T523 S2 evidence and current `src/lib` implementation. |
+| Identifier Mode | Continuation - M5 T523 S4 |
+| Admission And Approval | S3 implementation P1--P3 (`73b2c5ef`, `def32c37`, `d90fd430`) is accepted by this governance update; the owner-approved T523 proposal authorizes its stated S4 batch. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
+| Objective | Complete the independent `host`, `session`, and `storage` capabilities and remove superseded NXVM generic routes without moving machine ownership into lib. |
+| Non-goals | No machine/controller/profile change, guest input protocol, UX redesign, asset change, Linux graphics backend, speculative framework, or migration of machine safe-point semantics into lib. |
+| Reference Baseline | `d90fd430` / accepted T523 S3 evidence and current independent library roots. |
 | Candidate Proposal | [T523 proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md). |
-| Files And ABI Surface | Public `src/lib/ux/{frame,event,actions,router,mailbox,presenter}.h`, native `src/lib/ux/{win32,linux}/**`, NXVM UX binding call sites, CMake and repository-only `test/lib/**`; public ABI remains copied values, opaque handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): accepted S2 baseline, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): neutral dependency direction, single copied-frame owner and product-only policy; [Coding](../rules/CODING.md): durable bounded value contracts and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. |
-| Verification | Compile affected library/native targets; table-driven repository-only UX conformance for text, graphics, palette, font, dirty rectangle, normalized input, action and capture/release shapes; explicit-target/no-auto-route proof; focused NXVM binding proof; complete repository-only unit suite; documentation governance; `git diff --check`. |
-| Expected Markers | A frame type change alone cannot create/switch/hide a presenter; all text/graphics/input fields are copied values; actions are registered callbacks after release-all; capture has one state owner and releases on focus loss/pause/terminal/explicit release. |
+| Files And ABI Surface | Public `src/lib/{host,session,storage}/**`, their native Win32/Linux implementations, NXVM lifecycle/media callers, CMake and repository-only `test/lib/**`; public ABI remains copied values, opaque library handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): accepted S3 baseline, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): independent peer roots and product-only safe points; [Coding](../rules/CODING.md): durable bounded contracts and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. |
+| Verification | Inventory every host/session/storage public and native operation; compile affected targets; table-driven repository-only cancellation/join/lifecycle/storage-mode conformance; focused NXVM lifecycle/media proof; complete repository-only unit suite; documentation governance; `git diff --check`. |
+| Expected Markers | `host`, `session`, and `storage` remain peer roots; lib has one cancellation/join contract, one generic lifecycle acknowledgement and direct-readonly/overlay image modes; NXVM alone retains machine safe-point and controller ownership. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record each contract-field disposition, retained product policy boundary, code-size delta, exact sweep commands and focused proof. Report any feature that requires guest/product ownership before implementation. |
-| Stop Conditions | Stop and report if a required shape cannot be represented by copied values, opaque callbacks and native-private state, or if preserving NXVM behavior requires automatic routing in the library. |
-| Exit Criteria | The declared copied frame/input/action/capture surface is complete and table-driven; presenter target changes only by explicit product request; no public contract needs product or guest ownership; affected targets and full unit/governance pass. |
+| Reporting Requirements | Record each operation disposition, retained NXVM safe-point boundary, code-size delta, exact sweep commands and focused proof. Report any feature that requires machine/profile/controller ownership before implementation. |
+| Stop Conditions | Stop and report if a required lifecycle/storage shape cannot be represented by copied values, opaque handles/callbacks and native-private state, or if removing an NXVM route would move a machine safe point into lib. |
+| Exit Criteria | The declared generic lifecycle/host/storage operations are complete and table-driven; every generic NXVM route is removed or retained with a distinct machine-owned reason; no public contract needs product or guest ownership; affected targets and full unit/governance pass. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Sweep tracked `src/lib`, its CMake targets, NXVM bindings and native presenters for frame-kind routing, borrowed guest buffers, product-defined action values, native types in public headers, duplicated capture state and action paths that do not release input first; replace every in-scope production hit or record its distinct non-UX reason. |
+| Similar-Issue Sweep | Sweep tracked `src/lib`, its CMake targets, NXVM lifecycle/media callers and native implementations for product-safe-point leakage, duplicate cancellation/join state, polling wrappers, product-specific file suffixes, native types in public headers and parallel direct/overlay paths; replace every in-scope production hit or record its distinct machine-owned reason. |
 
 ## Current Technical Baseline
 

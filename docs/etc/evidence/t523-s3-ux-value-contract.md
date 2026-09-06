@@ -20,6 +20,10 @@ The router now stores only an explicit target. Frame content cannot route a
 presenter. NXVM retains its Console-to-Window policy in its product binding,
 where three text frames may explicitly request Console again.
 
+The retained runtime source delta is `+299/-203` lines (`+96`): the new value
+contract replaces automatic routing, duplicate product-shaped input helpers
+and the native-private capture boolean rather than adding a parallel path.
+
 ## Similar-Issue Sweep
 
 - `src/lib` contains no NXVM, SoftPC, NTVDM64, `type.h`, `type_*`, `STD_*`,
