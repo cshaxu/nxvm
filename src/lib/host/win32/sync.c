@@ -24,15 +24,39 @@ static DWORD WINAPI host_sync_task_main(LPVOID opaque)
     return 0u;
 }
 
-static host_sync_wait_result host_sync_wait_handle(HANDLE handle,
-    lib_u32 timeout_milliseconds)
+host_sync_wait_result host_sync_wait_any(host_sync_event *const *events,
+    lib_u32 event_count, const host_sync_task *cancel_task,
+    lib_u32 timeout_milliseconds, lib_u32 *out_event_index)
 {
+    HANDLE handles[MAXIMUM_WAIT_OBJECTS];
+    DWORD count = 0u;
     DWORD result;
+    lib_u32 index;
 
-    if (handle == NULL) return HOST_SYNC_WAIT_INVALID_ARGUMENT;
-    result = WaitForSingleObject(handle, timeout_milliseconds);
-    return result == WAIT_OBJECT_0 ? HOST_SYNC_WAIT_SIGNALED :
-        result == WAIT_TIMEOUT ? HOST_SYNC_WAIT_TIMED_OUT : HOST_SYNC_WAIT_FAULT;
+    if ((event_count != 0u && events == LIB_NULL) ||
+        (event_count == 0u && cancel_task == LIB_NULL) ||
+        event_count > MAXIMUM_WAIT_OBJECTS - (cancel_task != LIB_NULL ? 1u : 0u))
+        return HOST_SYNC_WAIT_INVALID_ARGUMENT;
+    if (out_event_index != LIB_NULL) *out_event_index = UINT32_MAX;
+    if (cancel_task != LIB_NULL) {
+        if (cancel_task->cancellation == NULL) return HOST_SYNC_WAIT_INVALID_ARGUMENT;
+        handles[count++] = cancel_task->cancellation;
+    }
+    for (index = 0u; index < event_count; ++index) {
+        if (events[index] == LIB_NULL || events[index]->handle == NULL)
+            return HOST_SYNC_WAIT_INVALID_ARGUMENT;
+        handles[count++] = events[index]->handle;
+    }
+    result = WaitForMultipleObjects(count, handles, FALSE, timeout_milliseconds);
+    if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + count) {
+        if (cancel_task != LIB_NULL && result == WAIT_OBJECT_0)
+            return HOST_SYNC_WAIT_CANCELLED;
+        if (out_event_index != LIB_NULL)
+            *out_event_index = result - WAIT_OBJECT_0 -
+                (cancel_task != LIB_NULL ? 1u : 0u);
+        return HOST_SYNC_WAIT_SIGNALED;
+    }
+    return result == WAIT_TIMEOUT ? HOST_SYNC_WAIT_TIMED_OUT : HOST_SYNC_WAIT_FAULT;
 }
 
 void host_sync_sleep_milliseconds(lib_u32 milliseconds)
@@ -82,8 +106,7 @@ void host_sync_event_reset(host_sync_event *event)
 host_sync_wait_result host_sync_event_wait(host_sync_event *event,
     lib_u32 timeout_milliseconds)
 {
-    return event == LIB_NULL ? HOST_SYNC_WAIT_INVALID_ARGUMENT :
-        host_sync_wait_handle(event->handle, timeout_milliseconds);
+    return host_sync_wait_any(&event, 1u, LIB_NULL, timeout_milliseconds, LIB_NULL);
 }
 
 lib_status host_sync_task_create(host_sync_task_entry entry, void *context,
@@ -128,8 +151,8 @@ host_sync_wait_result host_sync_task_wait_cancel(const host_sync_task *task,
     host_sync_wait_result result;
 
     if (task == LIB_NULL) return HOST_SYNC_WAIT_INVALID_ARGUMENT;
-    result = host_sync_wait_handle(task->cancellation, timeout_milliseconds);
-    return result == HOST_SYNC_WAIT_SIGNALED ? HOST_SYNC_WAIT_CANCELLED : result;
+    result = host_sync_wait_any(LIB_NULL, 0u, task, timeout_milliseconds, LIB_NULL);
+    return result;
 }
 
 void host_sync_task_join(host_sync_task *task)
@@ -142,6 +165,7 @@ void host_sync_task_join(host_sync_task *task)
 void host_sync_task_destroy(host_sync_task *task)
 {
     if (task == LIB_NULL) return;
+    host_sync_task_request_cancel(task);
     host_sync_task_join(task);
     if (task->thread != NULL) (void)CloseHandle(task->thread);
     if (task->cancellation != NULL) (void)CloseHandle(task->cancellation);

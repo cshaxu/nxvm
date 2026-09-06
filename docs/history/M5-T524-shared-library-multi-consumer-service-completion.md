@@ -70,3 +70,11 @@ and the two consumer tests use only public library headers. Focused native and
 binding tests, complete unit 312/312, manifest verification, standalone CMake
 build/CTest, vocabulary and peer-root sweeps, documentation governance and
 diff checks pass. T524 remains open for S4--S8.
+
+## S4 Result
+
+S4 gives the shared host root one explicit manual-reset, cancellation and
+wait-any contract. The Linux backend uses monotonic generation-based waiting;
+the Windows backend has the same cancellation-first result order. Task
+destruction has one safe cancellation/join path. The retained evidence is
+[S4 host contract](../etc/evidence/t524-s4-host-contract.md).

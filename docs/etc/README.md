@@ -36,6 +36,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t523-s10-closure-audit.md` | T523 closure | T523's complete four-surface owner replacement and unit/integration closure record. |
 | `evidence/t524-s1-shared-library-readiness-audit.md` | Shared-library owner | T524 S1's complete 61-file corpus, public-contract and neutral-consumer audit; it records P0 manifest omissions and the bounded S2--S8 receivers. |
 | `evidence/t524-s3-ux-neutral-contract.md` | Shared-library owner | T524 S3's neutral copied-frame/input/action/mailbox contract, sole NXVM protocol mapping, consumer proof and root-local vocabulary sweep. |
+| `evidence/t524-s4-host-contract.md` | Shared-library owner | T524 S4's neutral host event/task/wait contract, Windows/Linux parity model and host-root verification. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

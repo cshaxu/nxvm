@@ -14,7 +14,9 @@ typedef enum host_sync_wait_result {
 typedef struct host_sync_event host_sync_event;
 typedef struct host_sync_task host_sync_task;
 
-/* Runs on a host_sync_task-owned native thread. */
+/* Events are manual-reset: signal remains observable until reset. A task owns
+ * one cancellation source. Task lifecycle calls are made by one owner; destroy
+ * requests cancellation and joins, and is never called by its own entry. */
 typedef void (*host_sync_task_entry)(void *context,
     const host_sync_task *task);
 
@@ -26,6 +28,12 @@ void host_sync_event_signal(host_sync_event *event);
 void host_sync_event_reset(host_sync_event *event);
 host_sync_wait_result host_sync_event_wait(host_sync_event *event,
     lib_u32 timeout_milliseconds);
+/* Waits for a cancellation source or one of events. When both are observable,
+ * cancellation wins; otherwise the lowest event index wins. out_event_index is
+ * optional and receives UINT32_MAX unless an event wins. */
+host_sync_wait_result host_sync_wait_any(host_sync_event *const *events,
+    lib_u32 event_count, const host_sync_task *cancel_task,
+    lib_u32 timeout_milliseconds, lib_u32 *out_event_index);
 lib_status host_sync_task_create(host_sync_task_entry entry, void *context,
     host_sync_task **out_task);
 void host_sync_task_request_cancel(host_sync_task *task);
