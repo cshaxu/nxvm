@@ -168,3 +168,13 @@ publication mailbox out of the misleading `core/platform` namespace into
 Core remains the sole guest-state owner, while `lib/ux` remains the sole native
 presentation owner. The old paths and names are deleted rather than wrapped.
 The retained ledger is [T523 S8 evidence](../etc/evidence/t523-s8-core-guest-boundary-owner-ledger.md).
+
+## S8 Acceptance
+
+Coordinator actual-diff review accepts `7963034f`: all guest-boundary source,
+test and CMake names now resolve under `core/machine`; the authority source map
+no longer describes a Core platform module. The guest mailbox/input source
+remain sole Core state owners and `lib/ux` retains native presentation. Focused
+boundary proofs, 311/311 repository-only unit in 17.11 seconds, refreshed
+boundary verifiers, documentation governance and diff checks pass. S9 is
+admitted for the generic monotonic-clock replacement.

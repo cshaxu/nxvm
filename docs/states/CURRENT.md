@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective - M5 T523 S8 |
-| Admission And Approval | Owner reopened T523 on 2026-09-05 for the four stated cleanups. S6 is accepted at `bd6141b1`; S7 is accepted at `64a30bca`. No compatibility wrapper, second mailbox/input route, product coupling or guest-state change is authorized. |
-| Objective | Give the retained Core guest-input, guest-frame and copied-publication boundary semantically accurate owner paths, without creating a native UX route. |
-| Non-goals | No guest input/display behavior change, UX redesign, native backend move, machine/controller/profile change, asset change, or mailbox replacement. |
-| Reference Baseline | `64a30bca`: accepted S7 one-normalizer replacement. |
+| Identifier Mode | Corrective - M5 T523 S9 |
+| Admission And Approval | Owner reopened T523 on 2026-09-05 for the four stated cleanups. S6 is accepted at `bd6141b1`; S7 is accepted at `64a30bca`; S8 is accepted at `7963034f`. No compatibility wrapper, host-to-Core time injection, product coupling or guest-state change is authorized. |
+| Objective | Make `lib/host` the sole generic monotonic-clock mechanism while retaining VM-only pacing policy. |
+| Non-goals | No guest-time progression change, pacing-policy change, UX redesign, machine/controller/profile change, asset change, or host-clock injection into Core. |
+| Reference Baseline | `7963034f`: accepted S8 Core guest-boundary consolidation. |
 | Candidate Proposal | [T523 retained proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md), corrective S6--S9. |
-| Files And ABI Surface | `src/core/machine/guest_display_frame.h`, `guest_input_interface.*`, `guest_presentation_mailbox*`, their callers/tests and CMake names. Core values remain guest-derived and copied; `lib/ux` stays the independent native presenter. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): one guest-boundary owner and no native Core dependency; [Coding](../rules/CODING.md): semantic names and replacement cleanup; [Documentation](../rules/DOCUMENT.md): current/history separation. |
-| Verification | Focused Core input/frame/mailbox tests; full unit suite; sweep for retired names and duplicate mailbox/input routes; documentation governance and `git diff --check`. |
-| Expected Markers | A new S8 owner marker; no retired `core/platform` guest-boundary path remains. |
+| Files And ABI Surface | `src/vm/platform/virtual_time.*`, `src/lib/host/*`, all wall-clock consumers, their tests and CMake names. VM retains completed-Core-progress pacing policy only. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): Core-only guest progression and one-way host policy; [Coding](../rules/CODING.md): semantic names and replacement cleanup; [Documentation](../rules/DOCUMENT.md): current/history separation. |
+| Verification | Focused host-clock and VM pacing tests; full unit suite; sweep for retired VM clock mechanics and all direct wall-clock reads; documentation governance and `git diff --check`. |
+| Expected Markers | A new S9 owner marker; no `vm_platform_host_*` clock mechanism or direct generic wall-clock reader remains. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record old-to-new names, callers, source/test delta, sole Core state owner and explicit distinction from `lib/ux`. Report any name that cannot move without an ABI or behavior change. |
-| Stop Conditions | Stop and report if a rename requires a compatibility facade, creates a second mailbox/input owner, or exposes native state through Core. |
-| Exit Criteria | Guest input/frame/publication have clear Core owner names, obsolete paths are gone, `lib/ux` remains separate, and complete verification/review pass. |
+| Reporting Requirements | Record every old-to-new reader, platform-private implementation and retained VM policy caller. Report any reader that cannot move without a host-to-Core injection or pacing-policy change. |
+| Stop Conditions | Stop and report if consolidation requires a compatibility facade, duplicate counter, guest-time injection, or any change to Core's sole progression authority. |
+| Exit Criteria | `lib/host` is the sole generic monotonic-clock owner, VM only compares completed Core progress, obsolete VM clock mechanics are gone, and complete verification/review pass. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Sweep all Core platform names and references for guest-boundary versus native-host ambiguity; consolidate names at the existing Core owner and record S9 clock work without implementing it in S8. |
+| Similar-Issue Sweep | Sweep all production wall-clock readers and generic conversions; retain only product-specific policy outside `lib/host`, with no Core host-clock consumer. |
 
 ## Current Technical Baseline
 
