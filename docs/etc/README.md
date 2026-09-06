@@ -27,6 +27,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t522-s3-nonux-capability-admission-ledger.md` | Shared-library owner | T522 S3's finite admission ledger for non-UX candidates; it records why no host, session, storage or observability root may be fabricated from current Core/VM mechanisms. |
 | `evidence/t522-s4-ux-cutover-map.md` | Shared-library owner | T522 S4's explicit old-to-new UX route map: VM remains the Core-frame conversion and guest-ingress owner while shared UX becomes the sole native presenter. |
 | `evidence/t523-s3-ux-value-contract.md` | Shared-library owner | T523 S3's copied frame/input/action/capture contract, explicit router boundary and repository-only verification. |
+| `evidence/t523-s4-independent-host-session-storage.md` | Shared-library owner | T523 S4's host event/task, opaque lifecycle, storage-mode and one-mailbox-stop-wake ownership ledger. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

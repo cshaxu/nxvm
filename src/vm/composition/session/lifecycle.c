@@ -132,22 +132,6 @@ static const vm_platform_host_input_sink vm_session_host_input_sink = {
     STD_NULL
 };
 
-static lib_session_lifecycle vm_session_execution_get_lifecycle(
-    C_VOID *context)
-{
-    vm_session_control_state *control = &((vm_session *)context)->control;
-
-    return vm_session_control_is_running(control) ?
-        LIB_SESSION_RUNNING : vm_session_control_is_paused(control) ?
-        LIB_SESSION_PAUSED : LIB_SESSION_STOPPED;
-}
-
-static C_INT vm_session_execution_get_flip(C_VOID *context)
-{
-    return vm_session_control_get_flip(
-        &((vm_session *)context)->control);
-}
-
 static C_VOID vm_session_execution_start(C_VOID *context)
 {
     vm_session_control_start(&((vm_session *)context)->control);
@@ -159,8 +143,6 @@ static C_VOID vm_session_execution_stop(C_VOID *context)
 }
 
 static const lib_session_executor_sink vm_session_execution_sink = {
-    vm_session_execution_get_lifecycle,
-    vm_session_execution_get_flip,
     vm_session_execution_start,
     vm_session_execution_stop
 };
@@ -300,8 +282,8 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_debug_disassemble, STD_NULL);
     status = lib_observability_outcome_create(&machine->start_outcome);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
-    status = lib_session_executor_create(&vm_session_execution_sink,
-        machine, &machine->execution_transport);
+    status = lib_session_executor_create(machine->control.state,
+        &vm_session_execution_sink, machine, &machine->execution_transport);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     status = vm_platform_request_transport_create(&machine->request_transport);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }

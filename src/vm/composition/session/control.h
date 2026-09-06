@@ -21,7 +21,7 @@ typedef enum vm_session_pause_reason {
 typedef struct vm_session vm_session;
 
 typedef struct vm_session_control_state {
-    lib_session_state state;
+    lib_session_state *state;
     vm_session_execution_context execution_context;
 } vm_session_control_state;
 

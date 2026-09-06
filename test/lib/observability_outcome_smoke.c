@@ -1,10 +1,8 @@
-#include "type.h"
-
 #include "lib/observability/outcome.h"
 
-C_INT main(C_VOID)
+int main(void)
 {
-    lib_observability_outcome *outcome = STD_NULL;
+    lib_observability_outcome *outcome = LIB_NULL;
     lib_observability_outcome_snapshot snapshot;
 
     if (lib_observability_outcome_create(&outcome) != LIB_STATUS_OK ||
@@ -24,6 +22,6 @@ C_INT main(C_VOID)
         return 1;
     }
     lib_observability_outcome_destroy(outcome);
-    puts("M5:T522:S10:OBSERVABILITY-OUTCOME:OK");
+    puts("M5:T523:S4:OBSERVABILITY-OUTCOME:OK");
     return 0;
 }

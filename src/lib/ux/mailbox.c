@@ -65,6 +65,14 @@ lib_status ux_mailbox_publish(ux_mailbox *mailbox, const ux_frame *frame)
     return status;
 }
 
+void ux_mailbox_wake(ux_mailbox *mailbox)
+{
+    if (mailbox == LIB_NULL) return;
+    ux_mailbox_lock(mailbox);
+    if (mailbox->active) ux_mailbox_native_signal(mailbox->native_mailbox);
+    atomic_flag_clear_explicit(&mailbox->lock, memory_order_release);
+}
+
 void *ux_mailbox_native_wait_handle_for_mailbox(const ux_mailbox *mailbox)
 {
     return mailbox == LIB_NULL ? LIB_NULL :

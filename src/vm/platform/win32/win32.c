@@ -4,9 +4,9 @@
 
 #include "core/platform/input_interface.h"
 #include "core/platform/win32/keyboard.h"
+#include "lib/host/sync.h"
 #include "lib/ux/win32/runner.h"
 #include "vm/platform/platform_internal.h"
-#include "vm/platform/execution_wait.h"
 #include "vm/platform/ux_binding.h"
 #include "vm/platform/win32/win32.h"
 
@@ -15,9 +15,13 @@
 typedef struct vm_platform_win32_ux_handle {
     const vm_platform_run_context *context;
     vm_platform_run_handle *owner;
-    HANDLE kernel_thread;
-    HANDLE presenter_thread;
+    host_sync_task *kernel_task;
+    host_sync_task *presenter_task;
+    host_sync_event *kernel_started;
 } vm_platform_win32_ux_handle;
+
+static void vm_platform_win32_signal_started(void *opaque)
+{ host_sync_event_signal(opaque); }
 
 static type_status vm_platform_win32_submit_event(C_VOID *opaque,
     const core_platform_input_event *event)
@@ -77,37 +81,38 @@ C_VOID vm_platform_win32_mouse_relative_for(
     (C_VOID)vm_platform_host_input_sink_submit(&context->input_sink, &event);
 }
 
-static DWORD WINAPI vm_platform_win32_ux_presenter_thread(LPVOID opaque)
+static void vm_platform_win32_ux_presenter_task(void *opaque,
+    const host_sync_task *task)
 {
     vm_platform_win32_ux_handle *handle = opaque;
     ux_binding binding;
 
+    (void)task;
     if (handle == STD_NULL || vm_platform_ux_binding_initialize(
             handle->context, handle->owner, &binding) != TYPE_STATUS_OK ||
         ux_win32_run(&binding) == UX_RUN_ERROR_RESULT) {
         if (handle != STD_NULL) vm_platform_run_handle_report(handle->owner,
             VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
     }
-    return 0;
 }
 
-static DWORD WINAPI vm_platform_win32_ux_kernel_thread(LPVOID opaque)
+static void vm_platform_win32_ux_kernel_task(void *opaque,
+    const host_sync_task *task)
 {
     vm_platform_win32_ux_handle *handle = opaque;
 
-    if (handle == STD_NULL) return 0;
-    lib_session_executor_start(handle->context->execution);
+    (void)task;
+    if (handle == STD_NULL) return;
+    lib_session_executor_start(handle->context->execution,
+        vm_platform_win32_signal_started, handle->kernel_started);
     vm_platform_run_handle_report(handle->owner,
         VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED);
-    return 0;
 }
 
 type_status vm_platform_win32_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner)
 {
     vm_platform_win32_ux_handle *handle;
-    DWORD thread_id;
-    C_INT old_flip;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
         context->execution == STD_NULL || context->input_sink.submit == STD_NULL)
@@ -121,20 +126,24 @@ type_status vm_platform_win32_run_handle_start(
     owner->window_display = vm_platform_run_context_get_display_mode(context) ==
         VM_PLATFORM_DISPLAY_WINDOW;
     owner->active = TYPE_TRUE;
-    old_flip = lib_session_executor_get_flip(context->execution);
-    handle->kernel_thread = CreateThread(STD_NULL, 0,
-        vm_platform_win32_ux_kernel_thread, handle, 0, &thread_id);
-    if (handle->kernel_thread == STD_NULL ||
-        !vm_platform_wait_for_execution_flip(context->execution, old_flip,
-            VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
+    if (host_sync_event_create(&handle->kernel_started) != LIB_STATUS_OK ||
+        host_sync_task_create(vm_platform_win32_ux_kernel_task, handle,
+            &handle->kernel_task) != LIB_STATUS_OK) {
         vm_platform_win32_run_handle_request_stop(owner);
         vm_platform_win32_run_handle_join(owner);
         vm_platform_win32_run_handle_finalize(owner);
         return TYPE_STATUS_INVALID_STATE;
     }
-    handle->presenter_thread = CreateThread(STD_NULL, 0,
-        vm_platform_win32_ux_presenter_thread, handle, 0, &thread_id);
-    if (handle->presenter_thread == STD_NULL) {
+    if (host_sync_event_wait(handle->kernel_started,
+            VM_PLATFORM_START_TIMEOUT_MILLISECONDS) !=
+        HOST_SYNC_WAIT_SIGNALED) {
+        vm_platform_win32_run_handle_request_stop(owner);
+        vm_platform_win32_run_handle_join(owner);
+        vm_platform_win32_run_handle_finalize(owner);
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (host_sync_task_create(vm_platform_win32_ux_presenter_task, handle,
+            &handle->presenter_task) != LIB_STATUS_OK) {
         vm_platform_win32_run_handle_request_stop(owner);
         vm_platform_win32_run_handle_join(owner);
         vm_platform_win32_run_handle_finalize(owner);
@@ -150,6 +159,11 @@ C_VOID vm_platform_win32_run_handle_request_stop(vm_platform_run_handle *owner)
 
     if (handle != STD_NULL) lib_session_executor_stop(
         handle->context->execution);
+    if (handle != STD_NULL) {
+        ux_mailbox_wake(handle->context->ux_mailbox);
+        host_sync_task_request_cancel(handle->kernel_task);
+        host_sync_task_request_cancel(handle->presenter_task);
+    }
 }
 
 C_VOID vm_platform_win32_run_handle_join(vm_platform_run_handle *owner)
@@ -158,10 +172,8 @@ C_VOID vm_platform_win32_run_handle_join(vm_platform_run_handle *owner)
         owner->backend;
 
     if (handle == STD_NULL) return;
-    if (handle->kernel_thread != STD_NULL) WaitForSingleObject(
-        handle->kernel_thread, INFINITE);
-    if (handle->presenter_thread != STD_NULL) WaitForSingleObject(
-        handle->presenter_thread, INFINITE);
+    host_sync_task_join(handle->kernel_task);
+    host_sync_task_join(handle->presenter_task);
 }
 
 C_VOID vm_platform_win32_run_handle_finalize(vm_platform_run_handle *owner)
@@ -170,8 +182,9 @@ C_VOID vm_platform_win32_run_handle_finalize(vm_platform_run_handle *owner)
         owner->backend;
 
     if (handle == STD_NULL) return;
-    if (handle->kernel_thread != STD_NULL) CloseHandle(handle->kernel_thread);
-    if (handle->presenter_thread != STD_NULL) CloseHandle(handle->presenter_thread);
+    host_sync_task_destroy(handle->kernel_task);
+    host_sync_task_destroy(handle->presenter_task);
+    host_sync_event_destroy(handle->kernel_started);
     STD_FREE(handle);
     vm_platform_run_handle_initialize(owner);
 }

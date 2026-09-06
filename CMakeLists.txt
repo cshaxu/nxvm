@@ -90,12 +90,10 @@ else()
     target_sources(ux-contract PRIVATE src/lib/ux/linux/mailbox.c)
 endif()
 target_include_directories(ux-contract PUBLIC "${CMAKE_SOURCE_DIR}/src")
-add_library(host-sync STATIC
-    src/lib/host/sync.c)
 if(WIN32)
-    target_sources(host-sync PRIVATE src/lib/host/win32/sync.c)
+    add_library(host-sync STATIC src/lib/host/win32/sync.c)
 else()
-    target_sources(host-sync PRIVATE src/lib/host/linux/sync.c)
+    add_library(host-sync STATIC src/lib/host/linux/sync.c)
 endif()
 target_include_directories(host-sync PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_library(session-lifecycle STATIC
@@ -1313,7 +1311,6 @@ target_link_libraries(core-platform PUBLIC type-facade host-sync)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
     src/vm/platform/virtual_time.c
-    src/vm/platform/execution_wait.c
     src/vm/platform/input_flush.c
     src/vm/platform/ux_frame.c
     src/vm/platform/ux_binding.c
@@ -3960,7 +3957,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
     "vm-platform|src/vm/platform/platform.c|win32-platform"
-    "vm-platform|src/vm/platform/execution_wait.c|win32-platform"
     "vm-platform|src/vm/platform/input_flush.c|win32-platform"
     "vm-platform|src/vm/platform/virtual_time.c|win32-platform"
     "vm-platform|src/vm/platform/win32/win32.c|win32-platform"

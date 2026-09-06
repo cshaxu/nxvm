@@ -1,8 +1,6 @@
-#include "type.h"
-
 #include "lib/ux/linux/input.h"
 
-C_INT main(C_VOID)
+int main(void)
 {
     ux_event event;
 
@@ -16,6 +14,6 @@ C_INT main(C_VOID)
         !ux_linux_key_to_event(UX_LINUX_KEY_ENTER, &event) ||
         event.data.key.scan_code != 0x1cu || event.data.key.virtual_key != 0x0du ||
         ux_linux_key_to_event((ux_linux_key)999, &event)) return 1;
-    puts("M5:T522:S4:UX-LINUX-INPUT:OK");
+    puts("M5:T523:S4:UX-LINUX-INPUT:OK");
     return 0;
 }

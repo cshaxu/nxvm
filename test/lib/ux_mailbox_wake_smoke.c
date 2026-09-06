@@ -1,5 +1,3 @@
-#include "type.h"
-
 #include "lib/ux/mailbox.h"
 
 #ifdef _WIN32
@@ -24,6 +22,13 @@ int main(void)
     if (!failed && WaitForSingleObject(event, 0u) != WAIT_OBJECT_0)
         failed = 1;
     if (!failed && WaitForSingleObject(event, 0u) != WAIT_TIMEOUT)
+        failed = 1;
+    if (!failed && ux_mailbox_generation(mailbox) != 1u)
+        failed = 1;
+    ux_mailbox_wake(mailbox);
+    if (!failed && WaitForSingleObject(event, 0u) != WAIT_OBJECT_0)
+        failed = 1;
+    if (!failed && ux_mailbox_generation(mailbox) != 1u)
         failed = 1;
     ux_mailbox_destroy(mailbox);
     return failed;

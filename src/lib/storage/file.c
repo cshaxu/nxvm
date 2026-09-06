@@ -12,7 +12,7 @@ lib_storage_file_write_result lib_storage_file_write_exclusive(const char *path,
     if (path == LIB_NULL || (byte_count != 0u && bytes == LIB_NULL)) {
         return LIB_STORAGE_FILE_WRITE_FAULT;
     }
-    file = lib_base_fopen_exclusive_write(path);
+    file = lib_storage_native_open_exclusive_write(path);
     if (file == LIB_NULL) return LIB_STORAGE_FILE_WRITE_EXISTS;
     failed = (byte_count != 0u && fwrite(bytes, 1u, byte_count, file) != byte_count) ||
         fclose(file) != 0;
@@ -34,9 +34,9 @@ lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
     *out_byte_count = 0u;
     file = fopen(path, "rb");
     if (file == LIB_NULL) return LIB_STATUS_IO_ERROR;
-    if (lib_base_fseek_64(file, 0, SEEK_END) != 0 ||
-        (length = lib_base_ftell_64(file)) < 0 || (lib_u64)length > maximum ||
-        lib_base_fseek_64(file, 0, SEEK_SET) != 0 ||
+    if (lib_storage_native_seek_64(file, 0, SEEK_END) != 0 ||
+        (length = lib_storage_native_tell_64(file)) < 0 || (lib_u64)length > maximum ||
+        lib_storage_native_seek_64(file, 0, SEEK_SET) != 0 ||
         (bytes = malloc((size_t)length == 0u ? 1u : (size_t)length)) == LIB_NULL ||
         ((size_t)length != 0u && fread(bytes, 1u, (size_t)length, file) !=
             (size_t)length)) {

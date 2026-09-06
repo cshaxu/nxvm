@@ -6,6 +6,8 @@
 #include "lib/ux/actions.h"
 #include "lib/ux/router.h"
 
+#define VM_PLATFORM_START_TIMEOUT_MILLISECONDS 5000u
+
 struct vm_platform_run_context {
     const lib_session_executor *execution;
     vm_platform_host_input_sink input_sink;

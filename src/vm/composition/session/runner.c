@@ -27,7 +27,7 @@ C_VOID vm_session_runner_run(vm_session *session)
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
-    while (lib_session_state_is_active(&control->state)) {
+    while (lib_session_state_is_active(control->state)) {
         if (vm_platform_run_handle_take_stop_report(session->platform_run_handle)) {
             vm_session_control_stop(control);
             continue;
@@ -36,19 +36,19 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
             continue;
         }
-        if (lib_session_state_take_reset(&control->state)) {
+        if (lib_session_state_take_reset(control->state)) {
             type_status reset_status = vm_session_execution_context_reset(
                 &control->execution_context);
 
             (C_VOID)vm_session_finish_reset(session, reset_status);
             if (reset_status != TYPE_STATUS_OK) continue;
         }
-        if (lib_session_state_pause_requested(&control->state)) {
+        if (lib_session_state_pause_requested(control->state)) {
             /* The runner exclusively owns Core mutation.  Publish the final
              * VADP snapshot before acknowledging pause, so a paused debugger
              * or presenter never observes a stale mailbox frame. */
             (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
-            lib_session_state_acknowledge_pause(&control->state);
+            lib_session_state_acknowledge_pause(control->state);
             /* A Console session owns the one process Console surface while
              * running. End its runner at a paused boundary so the display
              * thread releases that lease and START returns to the NXVM
@@ -57,20 +57,20 @@ C_VOID vm_session_runner_run(vm_session *session)
             if (vm_platform_run_handle_is_active(session->platform_run_handle) &&
                 !vm_platform_run_handle_is_window_display(
                     session->platform_run_handle)) {
-                lib_session_state_stop(&control->state);
+                lib_session_state_stop(control->state);
                 break;
             }
         }
-        while (lib_session_state_is_active(&control->state) &&
-            lib_session_state_is_paused(&control->state)) {
+        while (lib_session_state_is_active(control->state) &&
+            lib_session_state_is_paused(control->state)) {
             vm_session_execution_context_run_command_boundary(&control->execution_context);
             host_sync_sleep_milliseconds(1u);
         }
-        if (!lib_session_state_is_active(&control->state)) break;
+        if (!lib_session_state_is_active(control->state)) break;
         vm_session_execution_context_run_command_boundary(&control->execution_context);
         vm_session_execution_context_debug_refresh(&control->execution_context);
-        if (lib_session_state_pause_requested(&control->state)) continue;
-        budget.instructions = lib_session_state_step_requested(&control->state) ? 1u :
+        if (lib_session_state_pause_requested(control->state)) continue;
+        budget.instructions = lib_session_state_step_requested(control->state) ? 1u :
             session->speed == VM_SESSION_SPEED_TURBO ?
             VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
@@ -78,7 +78,7 @@ C_VOID vm_session_runner_run(vm_session *session)
          * stay responsive, but it must not impose a second tick throttle.
          * Core still advances every retired instruction and every device
          * deadline on its one guest-time axis. */
-        budget.ticks = lib_session_state_step_requested(&control->state) ||
+        budget.ticks = lib_session_state_step_requested(control->state) ||
             session->speed == VM_SESSION_SPEED_TURBO ? 0u :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
         {
@@ -111,7 +111,7 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_stop(control);
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
-            !lib_session_state_step_requested(&control->state)) {
+            !lib_session_state_step_requested(control->state)) {
             C_INT advanced = 0;
             type_status time_status = vm_session_waiting_advance(
                 session, &result, &advanced);
@@ -124,7 +124,7 @@ C_VOID vm_session_runner_run(vm_session *session)
                 host_sync_yield();
             }
         }
-        if (lib_session_state_take_step(&control->state)) {
+        if (lib_session_state_take_step(control->state)) {
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_STEP);
         }
     }

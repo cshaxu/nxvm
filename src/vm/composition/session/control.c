@@ -63,8 +63,8 @@ C_VOID vm_session_control_start(vm_session_control_state *control) {
     if (control == STD_NULL) return;
     machine = control->execution_context.session;
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
+    lib_session_state_start(control->state);
     vm_session_execution_context_activate(&control->execution_context);
-    lib_session_state_start(&control->state);
     vm_session_runner_run(machine);
     vm_session_execution_context_deactivate(&control->execution_context);
 }
@@ -72,14 +72,14 @@ C_VOID vm_session_control_start(vm_session_control_state *control) {
 /* Issues resetting signal to device thread */
 type_status vm_session_control_reset(vm_session_control_state *control) {
     if (control == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (lib_session_state_is_active(&control->state)) {
-        lib_session_state_request_reset(&control->state);
+    if (lib_session_state_is_active(control->state)) {
+        lib_session_state_request_reset(control->state);
         return TYPE_STATUS_OK;
     } else {
         type_status status = vm_session_execution_context_reset(
             &control->execution_context);
 
-        (C_VOID)lib_session_state_take_reset(&control->state);
+        (C_VOID)lib_session_state_take_reset(control->state);
         return status;
     }
 }
@@ -93,20 +93,20 @@ C_VOID vm_session_control_stop(vm_session_control_state *control)  {
     if (machine != STD_NULL && machine->core_machine != STD_NULL) {
         core_machine_request_stop(machine->core_machine);
     }
-    lib_session_state_stop(&control->state);
+    lib_session_state_stop(control->state);
 }
 
 C_VOID vm_session_control_fault(vm_session_control_state *control)
 {
     if (control == STD_NULL) return;
-    lib_session_state_fault(&control->state);
+    lib_session_state_fault(control->state);
 }
 
 C_VOID vm_session_control_request_pause(vm_session_control_state *control,
     vm_session_pause_reason reason)
 {
     if (control == STD_NULL) return;
-    lib_session_state_request_pause(&control->state, (type_unsigned_32)reason);
+    lib_session_state_request_pause(control->state, (type_unsigned_32)reason);
 }
 
 C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,
@@ -115,35 +115,35 @@ C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,
     C_UINT waited = 0u;
 
     if (control == STD_NULL) return TYPE_FALSE;
-    while (lib_session_state_is_active(&control->state) && !lib_session_state_is_paused(&control->state) &&
+    while (lib_session_state_is_active(control->state) && !lib_session_state_is_paused(control->state) &&
            waited < milliseconds) {
         host_sync_sleep_milliseconds(1u);
         ++waited;
     }
-    return lib_session_state_is_paused(&control->state);
+    return lib_session_state_is_paused(control->state);
 }
 
 C_INT vm_session_control_is_paused(const vm_session_control_state *control)
 {
-    return control != STD_NULL && lib_session_state_is_paused(&control->state);
+    return control != STD_NULL && lib_session_state_is_paused(control->state);
 }
 
 vm_session_pause_reason vm_session_control_get_pause_reason(
     const vm_session_control_state *control)
 {
     return control == STD_NULL ? VM_SESSION_PAUSE_NONE :
-        (vm_session_pause_reason)lib_session_state_pause_reason(&control->state);
+        (vm_session_pause_reason)lib_session_state_pause_reason(control->state);
 }
 
 C_VOID vm_session_control_continue(vm_session_control_state *control)
 {
     if (control == STD_NULL) return;
-    lib_session_state_resume(&control->state);
+    lib_session_state_resume(control->state);
 }
 
 C_INT vm_session_control_step(vm_session_control_state *control)
 {
-    return control == STD_NULL ? TYPE_FALSE : lib_session_state_request_step(&control->state);
+    return control == STD_NULL ? TYPE_FALSE : lib_session_state_request_step(control->state);
 }
 
 C_VOID vm_session_control_bind_command_boundary(
@@ -163,7 +163,8 @@ type_status vm_session_control_initialize(vm_session_control_state *control,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     STD_MEMSET((C_VOID *)(control), TYPE_ZERO_8, sizeof(*control));
-    lib_session_state_initialize(&control->state);
+    status = lib_session_state_create(&control->state);
+    if (status != LIB_STATUS_OK) return TYPE_STATUS_NO_MEMORY;
     vm_session_execution_context_initialize(&control->execution_context);
     vm_session_execution_context_bind_session(&control->execution_context,
         machine);
@@ -188,6 +189,8 @@ C_VOID vm_session_control_finalize(vm_session_control_state *control,
     vm_session_execution_context_deactivate(&control->execution_context);
     vm_session_provider_lifecycle_finalize(machine);
     vm_machine_debug_finalize(&machine->debug);
+    lib_session_state_destroy(control->state);
+    control->state = STD_NULL;
 }
 
 C_VOID vm_session_control_print_status(const vm_session_control_state *control) {
@@ -195,17 +198,17 @@ C_VOID vm_session_control_print_status(const vm_session_control_state *control) 
         control->execution_context.session != STD_NULL &&
         control->execution_context.session->debug.
             connect.recordFile ? "Yes" : "No");
-    STD_PRINTF("Running:   %s\n", control != STD_NULL && lib_session_state_is_active(&control->state) ?
+    STD_PRINTF("Running:   %s\n", control != STD_NULL && lib_session_state_is_active(control->state) ?
         "Yes" : "No");
 }
 
 C_INT vm_session_control_is_running(const vm_session_control_state *control)
 {
-    return control != STD_NULL && lib_session_state_is_active(&control->state) &&
-        !lib_session_state_is_paused(&control->state);
+    return control != STD_NULL && lib_session_state_is_active(control->state) &&
+        !lib_session_state_is_paused(control->state);
 }
 
 C_INT vm_session_control_get_flip(const vm_session_control_state *control)
 {
-    return control != STD_NULL && lib_session_state_flip(&control->state);
+    return control != STD_NULL && lib_session_state_flip(control->state);
 }
