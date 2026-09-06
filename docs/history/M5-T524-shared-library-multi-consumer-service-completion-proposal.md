@@ -174,8 +174,9 @@ owner; it does not create a product dependency.
    asset change is admitted.
 15. **S15 - retire thin session and outcome library roots.** `session-lifecycle`
    and `observability-outcome` have one real product consumer, NXVM, and add no
-   reusable policy or mechanism. Move their small state/outcome implementations
-   to the owning NXVM session/control area, update every product and test caller,
+     reusable policy or mechanism. Move lifecycle state to its owning NXVM platform
+     layer and keep the sole start-result record directly on the NXVM session,
+     update every product and test caller,
    remove their public lib headers, source roots, manifest entries, standalone
    tests and neutral-consumer assertions, and remove their CMake targets. Do not
    retain compatibility wrappers or product logic in `src/lib`. Retain one

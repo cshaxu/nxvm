@@ -58,7 +58,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T524 | Closed: source-identical `src/lib` corpus has standalone Windows verification, a complete manifest and one NXVM route per retained neutral root. Model 40 clean replay reaches `installer-running`; unit 311/311, integration 44/44 and governance pass. No production workaround was needed. [History](../history/M5-T524-shared-library-multi-consumer-service-completion.md). |
+| T524 | Active: S15 is retiring its two one-product roots; prior shared-lib verification remains the reference baseline until the current closure gates pass. |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |

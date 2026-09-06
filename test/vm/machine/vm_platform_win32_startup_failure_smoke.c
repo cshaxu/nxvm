@@ -26,11 +26,9 @@ static C_INT assert_failed_start(vm_session *session)
 static C_INT assert_failed_session_start(vm_session *session)
 {
     type_status status = vm_session_resume(session);
-    vm_session_start_outcome_snapshot outcome;
 
     return status != TYPE_STATUS_OK &&
-        vm_session_start_outcome_capture(session->start_outcome, &outcome) ==
-            TYPE_STATUS_OK && outcome.valid && outcome.status == status &&
+        session->start_outcome.valid && session->start_outcome.status == status &&
         !vm_session_control_is_running(&session->control) &&
         !vm_platform_run_handle_is_active(session->platform_run_handle);
 }

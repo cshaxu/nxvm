@@ -55,7 +55,7 @@ int main(void)
             vm_session_state_lifecycle(state) != rows[index].expected) goto failed;
     }
     vm_session_state_destroy(state);
-    puts("M5:T523:S4:SESSION-STATE:OK");
+    puts("M5:T524:S15:SESSION-STATE:OK");
     return 0;
 failed:
     vm_session_state_destroy(state);

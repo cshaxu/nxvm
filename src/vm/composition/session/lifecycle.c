@@ -170,14 +170,19 @@ static C_VOID vm_session_platform_request_stop(vm_session *machine)
 
 static C_VOID vm_session_start_outcome_reset(vm_session *machine)
 {
-    if (machine != STD_NULL) vm_session_start_outcome_clear(machine->start_outcome);
+    if (machine == STD_NULL) return;
+    machine->start_outcome.status = TYPE_STATUS_OK;
+    machine->start_outcome.valid = TYPE_FALSE;
 }
 
 static type_status vm_session_start_outcome_record(vm_session *machine,
     type_status status)
 {
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    return vm_session_start_outcome_publish(machine->start_outcome, status);
+    ++machine->start_outcome.sequence;
+    machine->start_outcome.status = status;
+    machine->start_outcome.valid = TYPE_TRUE;
+    return status;
 }
 
 type_status vm_session_start(vm_session *machine) {
@@ -273,8 +278,6 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
         vm_session_debug_disassemble, STD_NULL);
-    status = vm_session_start_outcome_create(&machine->start_outcome);
-    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     machine->execution.state = machine->control.state;
     machine->execution.run = vm_session_execution_start;
     machine->execution.stop = vm_session_execution_stop;
@@ -313,8 +316,6 @@ C_VOID vm_session_finalize(vm_session *machine) {
     machine->platform_run_handle = STD_NULL;
     vm_platform_run_context_destroy(machine->platform_run_context);
     machine->platform_run_context = STD_NULL;
-    vm_session_start_outcome_destroy(machine->start_outcome);
-    machine->start_outcome = STD_NULL;
     STD_MEMSET(&machine->execution, 0, sizeof(machine->execution));
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     core_machine_guest_input_source_destroy(machine->input_source);

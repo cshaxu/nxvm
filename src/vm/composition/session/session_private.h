@@ -11,7 +11,6 @@
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
 #include "core/utils/wait_provider.h"
-#include "vm/composition/session/start_outcome.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/model40_composition.h"
@@ -61,7 +60,11 @@ struct vm_session {
     core_utils_wait_scope wait_scope;
     vm_platform_run_context *platform_run_context;
     vm_platform_run_handle *platform_run_handle;
-    vm_session_start_outcome *start_outcome;
+    struct {
+        type_unsigned_64 sequence;
+        type_status status;
+        type_bool valid;
+    } start_outcome;
     core_product_debugger *debugger;
     type_unsigned_64 display_generation;
     type_unsigned_64 display_snapshot_generation;

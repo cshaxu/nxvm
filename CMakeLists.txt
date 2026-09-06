@@ -1227,7 +1227,6 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/lifecycle.c
     src/vm/composition/session/session.c
     src/vm/composition/session/control.c
-    src/vm/composition/session/start_outcome.c
     src/vm/composition/session/fault.c
     src/vm/composition/session/execution.c
     src/vm/composition/session/runner.c
@@ -1509,9 +1508,6 @@ add_executable(vm-session-state-smoke
 target_link_libraries(vm-session-state-smoke PRIVATE vm-platform)
 add_executable(storage-medium-smoke test/lib/storage_medium_smoke.c)
 target_link_libraries(storage-medium-smoke PRIVATE storage-medium)
-add_executable(vm-session-start-outcome-smoke
-    test/vm/composition/session/vm_session_start_outcome_smoke.c)
-target_link_libraries(vm-session-start-outcome-smoke PRIVATE vm-composition)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -2381,7 +2377,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     host-sync-smoke
     vm-session-state-smoke
     storage-medium-smoke
-    vm-session-start-outcome-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-machine-guest-presentation-mailbox-smoke
@@ -3749,7 +3744,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(storage-medium-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-session-start-outcome-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3911,7 +3905,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-composition|src/vm/composition/session/session.c|vm-composition"
     "vm-composition|src/vm/composition/session/control.c|vm-composition"
     "vm-platform|src/vm/platform/session_state.c|vm-platform"
-    "vm-composition|src/vm/composition/session/start_outcome.c|vm-composition"
     "vm-composition|src/vm/composition/session/fault.c|vm-composition"
     "vm-composition|src/vm/composition/session/execution.c|vm-composition"
     "vm-composition|src/vm/composition/session/runner.c|vm-composition"
