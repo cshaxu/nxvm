@@ -50,3 +50,13 @@ inventory, `ux` is one root rather than a cross-root target edge, and the
 manifest covers all 63 non-self files. Standalone build/CTest, failure fixtures,
 root unit 312/312, documentation governance and diff checks pass. T524 remains
 open for S3--S8.
+
+## S3 Result
+
+S3 makes the entire UX root neutral: Linux terminal adapters publish shared key
+identities rather than an x86 transition, and NXVM alone performs its protocol
+conversion at its product binding.  The root now rejects invalid copied frames,
+documents mailbox lifetime/generation rules, rejects duplicate or over-capacity
+action chords, removes product/machine vocabulary, and supplies two independent
+public-header consumer proofs.  The complete contract and verification record
+is retained in [S3 evidence](../etc/evidence/t524-s3-ux-neutral-contract.md).

@@ -42,4 +42,19 @@ typedef struct ux_frame {
     lib_u8 graphics_pixels[UX_GRAPHICS_MAX_PIXELS];
 } ux_frame;
 
+static inline lib_bool ux_frame_is_valid(const ux_frame *frame)
+{
+    if (frame == LIB_NULL || frame->valid == 0u) return LIB_FALSE;
+    if (frame->graphics != 0u) {
+        return frame->graphics_width != 0u &&
+            frame->graphics_width <= UX_GRAPHICS_MAX_WIDTH &&
+            frame->graphics_height != 0u &&
+            frame->graphics_height <= UX_GRAPHICS_MAX_HEIGHT &&
+            frame->graphics_stride >= frame->graphics_width &&
+            frame->graphics_stride <= UX_GRAPHICS_MAX_WIDTH;
+    }
+    return frame->text_columns != 0u && frame->text_columns <= UX_TEXT_COLUMNS &&
+        frame->text_rows != 0u && frame->text_rows <= UX_TEXT_ROWS;
+}
+
 #endif

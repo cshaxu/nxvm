@@ -1,6 +1,7 @@
 #ifndef UX_LINUX_INPUT_H
 #define UX_LINUX_INPUT_H
 
+#include "lib/ux/actions.h"
 #include "lib/ux/event.h"
 
 typedef enum ux_linux_key {
@@ -30,9 +31,9 @@ typedef enum ux_linux_key {
     UX_LINUX_KEY_DELETE
 } ux_linux_key;
 
-/* Translate a semantic terminal key into one guest Set-1 make transition.
- * Printable text is intentionally not represented here: it remains Unicode
- * text at the native terminal boundary. */
+/* Translate a terminal key to a neutral key identity. Native scan_code is
+ * zero because a terminal reports no portable physical transition. Printable
+ * text remains Unicode at the native terminal boundary. */
 lib_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event);
 
 #endif

@@ -104,7 +104,7 @@ static _Thread_local ux_win32_window_context *ux_win32_window_current;
 #define win32_window_cursor_blink_visible ux_win32_window_current->cursor_blink_visible
 #define win32_window_cursor_blink_due ux_win32_window_current->cursor_blink_due
 
-static int win32_window_guest_running(void)
+static int win32_window_content_running(void)
 {
     return win32_window_binding != NULL &&
         win32_window_binding->get_state(win32_window_binding->context) ==
@@ -132,9 +132,8 @@ static COLORREF win32_window_colour(unsigned int colour)
     };
     unsigned int index = colour & 0x0fu;
 
-    /* The original nt_graph text path supplies the active guest VGA palette
-       with each copied frame.  The fallback is used only before a machine
-       frame exists, never as a substitute for guest colour programming. */
+    /* Each copied frame supplies its active palette. The fallback is used only
+       before a valid frame exists. */
     if (win32_window_frame != NULL && win32_window_frame->valid != 0u)
         return (COLORREF)win32_window_frame->text_palette[index];
     return palette[index];
@@ -142,15 +141,14 @@ static COLORREF win32_window_colour(unsigned int colour)
 
 /* A COLORREF is packed for Win32 colour APIs (0x00bbggrr), whereas the
  * standalone text DIB is a 32-bit BI_RGB surface (0x00rrggbb as a DWORD).
- * The original nt_graph palette is already correct; convert only at this
- * final GDI storage boundary. */
+ * Convert only at this final GDI storage boundary. */
 static uint32_t win32_window_dib_pixel(COLORREF colour)
 {
     return ux_win32_dib_pixel(colour);
 }
 
 /* The frontend has no independent canvas size. By default its client area is
- * the physical guest surface; after a user resize, the final GDI blit follows
+ * the copied content surface; after a user resize, the final GDI blit follows
  * that client area with no unused letterbox space. */
 static int win32_window_display_rect(HWND window, uint32_t source_width,
     uint32_t source_height, RECT *display)
@@ -176,7 +174,7 @@ static void win32_window_resize_surface(HWND window, uint32_t width,
     if (window == NULL || width == 0u || height == 0u ||
         (win32_window_surface_width == width &&
          win32_window_surface_height == height)) return;
-    /* Preserve the user's desktop position across guest mode changes. */
+    /* Preserve the user's desktop position across content-size changes. */
     if (!ux_win32_resize_client(window, width, height)) return;
     win32_window_surface_width = width;
     win32_window_surface_height = height;
@@ -307,11 +305,9 @@ static void win32_window_update_text_surface(void)
     win32_window_presented_text_valid = 1;
 }
 
-/* The original nt_ega/nt_vga painters own the indexed DIB and palette.  Some
- * current Win32/RDP paths fail to blit that indexed, top-down DIB directly to
- * a window even though its bytes are valid (the exact same frame writes a
- * correct BMP). Convert only at the final frontend outlet to an RGB32 DIB;
- * this is the same isolated presentation boundary as the text surface. */
+/* Some Win32/RDP paths cannot blit an indexed, top-down DIB directly even
+ * when its copied bytes are valid. Convert only at this final outlet to RGB32,
+ * the same isolated presentation boundary used by text. */
 static int win32_window_update_graphics_surface(RECT *changed)
 {
     uint32_t source_stride;
@@ -391,10 +387,8 @@ static void win32_window_invalidate_graphics(HWND window, const RECT *source)
     InvalidateRect(window, &target, FALSE);
 }
 
-/* The original nt_graph endpoint gave Windows Console a real cursor.  Its
- * blink was therefore owned by the host, not by a guest timer or by C-VID.
- * Keep that boundary: this merely describes the copied-frame overlay that the
- * standalone window may invalidate between otherwise unchanged frames. */
+/* Cursor blink is a host overlay. It only invalidates the copied-frame view
+ * between otherwise unchanged frames. */
 static int win32_window_cursor_rect(HWND window, RECT *cursor)
 {
     RECT display;
@@ -450,8 +444,8 @@ static void win32_window_advance_cursor_blink(HWND window)
 
     /* The text cursor is a host presentation overlay.  Once the executor is
        paused, preserve the last composited frame exactly: do not let this
-       host-only blink timer alter an otherwise frozen guest display. */
-    if (!win32_window_guest_running()) return;
+       host-only blink timer alter an otherwise frozen display. */
+    if (!win32_window_content_running()) return;
     if ((LONG)(now - win32_window_cursor_blink_due) < 0) return;
     win32_window_cursor_blink_visible = !win32_window_cursor_blink_visible;
     win32_window_cursor_blink_due = now + WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS;
@@ -490,10 +484,8 @@ static void win32_window_paint(HWND window, HDC dc)
         win32_window_frame->text_rows * WIN32_WINDOW_TEXT_CELL_HEIGHT, SRCCOPY);
     if (win32_window_cursor_blink_visible) {
         RECT cursor;
-        /* nt_graph publishes the original controller-selected text cursor
-           through the compatibility Console endpoint.  Draw it only after
-           the copied text DIB reaches the window, so this remains a pure
-           frontend overlay and never changes guest video memory. */
+        /* Draw the copied text cursor only after the text DIB reaches the
+           window; this remains a pure frontend overlay. */
         if (win32_window_cursor_rect(window, &cursor))
             InvertRect(dc, &cursor);
     }
@@ -518,18 +510,16 @@ static void win32_window_transition(WPARAM key, LPARAM lparam, int released)
 static void win32_window_mouse(LPARAM position)
 {
     int dx = 0, dy = 0;
-    uint32_t guest_width;
-    uint32_t guest_height;
+    uint32_t content_width;
+    uint32_t content_height;
 
-    if (!win32_window_guest_running()) return;
-    /* Mouse counters belong to the native guest surface, whereas WM_MOUSE
-       reports pixels in the current (possibly user-scaled) client area.
-       Preserve the same physical InPort controller while making an enlarged
-       or reduced window describe the same guest movement. */
-    win32_window_current_surface_size(&guest_width, &guest_height);
+    if (!win32_window_content_running()) return;
+    /* WM_MOUSE reports pixels in the current client area. Normalize them to
+       the copied content surface before reporting relative movement. */
+    win32_window_current_surface_size(&content_width, &content_height);
     if (!ux_win32_mouse_move(&win32_window_mouse_state, position,
-            win32_window_client_width, win32_window_client_height, guest_width,
-            guest_height, &dx, &dy)) return;
+            win32_window_client_width, win32_window_client_height, content_width,
+            content_height, &dx, &dy)) return;
     {
         ux_event event = { 0 };
         event.type = UX_EVENT_MOUSE;
@@ -544,12 +534,10 @@ static void win32_window_mouse(LPARAM position)
     }
 }
 
-/* Windowed mouse input is a relative guest device.  Once the user explicitly
- * clicks the guest surface, keep the host pointer in that surface so it cannot
- * accidentally operate the desktop while its deltas are being delivered to
- * the original Bus Mouse controller.  An explicit product release action
- * (and loss of window focus) releases this purely frontend capture; no guest
- * controller state changes. */
+/* Once the user explicitly clicks the content surface, keep the host pointer
+ * there so it cannot accidentally operate the desktop while relative deltas
+ * are delivered. An explicit product release action or focus loss releases
+ * this frontend capture. */
 static void win32_window_release_mouse_capture(void)
 {
     ux_win32_mouse_release(&win32_window_mouse_state);
@@ -557,12 +545,11 @@ static void win32_window_release_mouse_capture(void)
 
 static void win32_window_capture_mouse(HWND window, LPARAM position)
 {
-    if (window == NULL || !win32_window_guest_running()) return;
+    if (window == NULL || !win32_window_content_running()) return;
     (void)ux_win32_mouse_capture(&win32_window_mouse_state, window,
         position);
-    /* The guest owns the visible pointer after an explicit click.  Returning
-       NULL from WM_SETCURSOR keeps the desktop arrow out of the guest DIB
-       without changing product device or guest cursor state. */
+    /* Returning NULL from WM_SETCURSOR keeps the desktop arrow out of the
+       content surface without changing product input state. */
     SetCursor(NULL);
 }
 
@@ -616,9 +603,8 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
     case WM_NCLBUTTONDBLCLK:
         if (wparam == HTCAPTION) {
             if (IsZoomed(window)) ShowWindow(window, SW_RESTORE);
-            /* A user resize deliberately does not alter the guest-surface
-               cache.  Double-click is an explicit request to override that
-               host geometry and restore the current native guest size. */
+            /* A user resize deliberately does not alter the content-surface
+               cache. Double-click restores the current copied size. */
             win32_window_surface_width = 0u;
             win32_window_surface_height = 0u;
             win32_window_resize_frame(window);
@@ -645,7 +631,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
                 win32_window_result = action_result;
             win32_window_update_title(window);
             win32_window_suppressed_hotkey = wparam;
-        } else if (win32_window_guest_running())
+        } else if (win32_window_content_running())
             win32_window_transition(wparam, lparam, 0);
         return 0;
     }
@@ -655,14 +641,14 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
             win32_window_suppressed_hotkey = 0u;
             return 0;
         }
-        if (win32_window_guest_running())
+        if (win32_window_content_running())
             win32_window_transition(wparam, lparam, 1);
         return 0;
     case WM_CHAR:
         /* A physical WM_KEYDOWN has already been delivered.  A scan-less
            RDP text packet is normalized only when it is not that recovered
            physical key's duplicate character. */
-        if (win32_window_guest_running() &&
+        if (win32_window_content_running() &&
             ((uint32_t)lparam >> 16u & 0xffu) == 0u &&
             !ux_win32_keyboard_consume_duplicate_character(
                 &win32_window_keyboard_normalizer, (WORD)wparam))
@@ -671,7 +657,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
                 win32_window_binding->input_sink, (WORD)wparam);
         return 0;
     case WM_MOUSEMOVE:
-        if (win32_window_guest_running() &&
+        if (win32_window_content_running() &&
             ux_win32_mouse_captured(&win32_window_mouse_state))
             win32_window_mouse(lparam);
         return 0;
@@ -683,25 +669,25 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         }
         break;
     case WM_LBUTTONDOWN:
-        if (!win32_window_guest_running()) return 0;
+        if (!win32_window_content_running()) return 0;
         win32_window_left_button = 1;
         win32_window_capture_mouse(window, lparam);
         win32_window_mouse(lparam);
         return 0;
     case WM_LBUTTONUP:
-        if (!win32_window_guest_running()) return 0;
+        if (!win32_window_content_running()) return 0;
         win32_window_left_button = 0;
         if (ux_win32_mouse_captured(&win32_window_mouse_state))
             win32_window_mouse(lparam);
         return 0;
     case WM_RBUTTONDOWN:
-        if (!win32_window_guest_running()) return 0;
+        if (!win32_window_content_running()) return 0;
         win32_window_right_button = 1;
         win32_window_capture_mouse(window, lparam);
         win32_window_mouse(lparam);
         return 0;
     case WM_RBUTTONUP:
-        if (!win32_window_guest_running()) return 0;
+        if (!win32_window_content_running()) return 0;
         win32_window_right_button = 0;
         if (ux_win32_mouse_captured(&win32_window_mouse_state))
             win32_window_mouse(lparam);
@@ -771,7 +757,7 @@ ux_run_result ux_win32_run_window(
     win32_window_cursor_blink_visible = 1;
     win32_window_cursor_blink_due = GetTickCount() +
         WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS;
-    /* Begin at the actual 80x25 guest client dimensions. */
+    /* Begin at the standard 80x25 text client dimensions. */
     {
         char title[128] = "Presentation";
         if (binding->get_title != NULL)

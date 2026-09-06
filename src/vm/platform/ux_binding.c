@@ -12,6 +12,44 @@ static type_signed_16 vm_platform_ux_mouse_delta(type_signed_32 value)
         (type_signed_16)value;
 }
 
+static C_INT vm_platform_ux_map_key_identity(type_unsigned_32 identity,
+    type_unsigned_16 *scan_code, type_unsigned_16 *virtual_key)
+{
+    type_unsigned_16 scan = 0u;
+    type_unsigned_16 key = 0u;
+
+    switch (identity) {
+    case UX_KEY_ENTER: scan = 0x1cu; key = 0x0du; break;
+    case UX_KEY_BACKSPACE: scan = 0x0eu; key = 0x08u; break;
+    case UX_KEY_F1: scan = 0x3bu; break;
+    case UX_KEY_F2: scan = 0x3cu; break;
+    case UX_KEY_F3: scan = 0x3du; break;
+    case UX_KEY_F4: scan = 0x3eu; break;
+    case UX_KEY_F5: scan = 0x3fu; break;
+    case UX_KEY_F6: scan = 0x40u; break;
+    case UX_KEY_F7: scan = 0x41u; break;
+    case UX_KEY_F8: scan = 0x42u; break;
+    case UX_KEY_F9: scan = 0x43u; break;
+    case UX_KEY_F10: scan = 0x44u; break;
+    case UX_KEY_F11: scan = 0x57u; break;
+    case UX_KEY_F12: scan = 0x58u; break;
+    case UX_KEY_UP: scan = 0x48u; break;
+    case UX_KEY_DOWN: scan = 0x50u; break;
+    case UX_KEY_LEFT: scan = 0x4bu; break;
+    case UX_KEY_RIGHT: scan = 0x4du; break;
+    case UX_KEY_HOME: scan = 0x47u; break;
+    case UX_KEY_END: scan = 0x4fu; break;
+    case UX_KEY_PAGE_UP: scan = 0x49u; break;
+    case UX_KEY_PAGE_DOWN: scan = 0x51u; break;
+    case UX_KEY_INSERT: scan = 0x52u; break;
+    case UX_KEY_DELETE: scan = 0x53u; break;
+    default: return TYPE_FALSE;
+    }
+    *scan_code = scan;
+    *virtual_key = key;
+    return TYPE_TRUE;
+}
+
 static C_INT vm_platform_ux_action_key(vm_platform_run_handle *handle,
     ux_event_sink input_sink, type_unsigned_16 scan_code,
     type_unsigned_16 virtual_key, C_INT pressed);
@@ -35,9 +73,15 @@ C_INT vm_platform_ux_event_submit(const vm_platform_run_context *context,
     if (context == STD_NULL || event == STD_NULL) return TYPE_FALSE;
     STD_MEMSET(&input, 0, sizeof(input));
     if (event->type == UX_EVENT_KEY) {
+        type_unsigned_16 scan_code = event->data.key.scan_code;
+        type_unsigned_16 virtual_key = (type_unsigned_16)event->data.key.virtual_key;
+
+        if (scan_code == 0u && !vm_platform_ux_map_key_identity(
+                event->data.key.virtual_key, &scan_code, &virtual_key))
+            return TYPE_FALSE;
         input.kind = CORE_MACHINE_GUEST_INPUT_KEY;
-        input.data.key.scan_code = event->data.key.scan_code;
-        input.data.key.virtual_key = event->data.key.virtual_key;
+        input.data.key.scan_code = scan_code;
+        input.data.key.virtual_key = virtual_key;
         input.data.key.pressed = event->data.key.pressed;
     } else if (event->type == UX_EVENT_MOUSE) {
         input.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;

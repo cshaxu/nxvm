@@ -25,7 +25,19 @@ enum {
     UX_KEY_F9 = 0x00010009u,
     UX_KEY_F10 = 0x0001000au,
     UX_KEY_F11 = 0x0001000bu,
-    UX_KEY_F12 = 0x0001000cu
+    UX_KEY_F12 = 0x0001000cu,
+    UX_KEY_ENTER = 0x00020001u,
+    UX_KEY_BACKSPACE = 0x00020002u,
+    UX_KEY_UP = 0x00020003u,
+    UX_KEY_DOWN = 0x00020004u,
+    UX_KEY_LEFT = 0x00020005u,
+    UX_KEY_RIGHT = 0x00020006u,
+    UX_KEY_HOME = 0x00020007u,
+    UX_KEY_END = 0x00020008u,
+    UX_KEY_PAGE_UP = 0x00020009u,
+    UX_KEY_PAGE_DOWN = 0x0002000au,
+    UX_KEY_INSERT = 0x0002000bu,
+    UX_KEY_DELETE = 0x0002000cu
 };
 
 typedef struct ux_action_chord {
@@ -39,6 +51,8 @@ typedef struct ux_action_registry {
     lib_u32 count;
 } ux_action_registry;
 
+/* Registration is immutable after success for that chord. A duplicate chord
+ * or a full registry returns LIB_STATUS_INVALID_STATE. */
 void ux_actions_initialize(ux_action_registry *registry);
 lib_status ux_actions_register(ux_action_registry *registry,
     lib_u32 key, lib_u8 modifiers, ux_action action);

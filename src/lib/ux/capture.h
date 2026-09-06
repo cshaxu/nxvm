@@ -5,7 +5,7 @@
 
 /* A presenter records only whether its native capture is active.  The native
  * backend owns the corresponding host calls; products never receive a native
- * handle or guest-device state through this value. */
+ * handle or product input-device state through this value. */
 typedef enum ux_capture_state {
     UX_CAPTURE_RELEASED,
     UX_CAPTURE_ACTIVE

@@ -3,41 +3,39 @@
 
 lib_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event)
 {
-    lib_u16 scan_code;
-    lib_u16 virtual_key = 0u;
+    lib_u32 key_identity;
 
     if (out_event == LIB_NULL) return LIB_FALSE;
     switch (key) {
-    case UX_LINUX_KEY_ENTER: scan_code = 0x1cu; virtual_key = 0x0du; break;
-    case UX_LINUX_KEY_BACKSPACE: scan_code = 0x0eu; virtual_key = 0x08u; break;
-    case UX_LINUX_KEY_F1: scan_code = 0x3bu; break;
-    case UX_LINUX_KEY_F2: scan_code = 0x3cu; break;
-    case UX_LINUX_KEY_F3: scan_code = 0x3du; break;
-    case UX_LINUX_KEY_F4: scan_code = 0x3eu; break;
-    case UX_LINUX_KEY_F5: scan_code = 0x3fu; break;
-    case UX_LINUX_KEY_F6: scan_code = 0x40u; break;
-    case UX_LINUX_KEY_F7: scan_code = 0x41u; break;
-    case UX_LINUX_KEY_F8: scan_code = 0x42u; break;
-    case UX_LINUX_KEY_F9: scan_code = 0x43u; break;
-    case UX_LINUX_KEY_F10: scan_code = 0x44u; break;
-    case UX_LINUX_KEY_F11: scan_code = 0x57u; break;
-    case UX_LINUX_KEY_F12: scan_code = 0x58u; break;
-    case UX_LINUX_KEY_UP: scan_code = 0x48u; break;
-    case UX_LINUX_KEY_DOWN: scan_code = 0x50u; break;
-    case UX_LINUX_KEY_LEFT: scan_code = 0x4bu; break;
-    case UX_LINUX_KEY_RIGHT: scan_code = 0x4du; break;
-    case UX_LINUX_KEY_HOME: scan_code = 0x47u; break;
-    case UX_LINUX_KEY_END: scan_code = 0x4fu; break;
-    case UX_LINUX_KEY_PAGE_UP: scan_code = 0x49u; break;
-    case UX_LINUX_KEY_PAGE_DOWN: scan_code = 0x51u; break;
-    case UX_LINUX_KEY_INSERT: scan_code = 0x52u; break;
-    case UX_LINUX_KEY_DELETE: scan_code = 0x53u; break;
+    case UX_LINUX_KEY_ENTER: key_identity = UX_KEY_ENTER; break;
+    case UX_LINUX_KEY_BACKSPACE: key_identity = UX_KEY_BACKSPACE; break;
+    case UX_LINUX_KEY_F1: key_identity = UX_KEY_F1; break;
+    case UX_LINUX_KEY_F2: key_identity = UX_KEY_F2; break;
+    case UX_LINUX_KEY_F3: key_identity = UX_KEY_F3; break;
+    case UX_LINUX_KEY_F4: key_identity = UX_KEY_F4; break;
+    case UX_LINUX_KEY_F5: key_identity = UX_KEY_F5; break;
+    case UX_LINUX_KEY_F6: key_identity = UX_KEY_F6; break;
+    case UX_LINUX_KEY_F7: key_identity = UX_KEY_F7; break;
+    case UX_LINUX_KEY_F8: key_identity = UX_KEY_F8; break;
+    case UX_LINUX_KEY_F9: key_identity = UX_KEY_F9; break;
+    case UX_LINUX_KEY_F10: key_identity = UX_KEY_F10; break;
+    case UX_LINUX_KEY_F11: key_identity = UX_KEY_F11; break;
+    case UX_LINUX_KEY_F12: key_identity = UX_KEY_F12; break;
+    case UX_LINUX_KEY_UP: key_identity = UX_KEY_UP; break;
+    case UX_LINUX_KEY_DOWN: key_identity = UX_KEY_DOWN; break;
+    case UX_LINUX_KEY_LEFT: key_identity = UX_KEY_LEFT; break;
+    case UX_LINUX_KEY_RIGHT: key_identity = UX_KEY_RIGHT; break;
+    case UX_LINUX_KEY_HOME: key_identity = UX_KEY_HOME; break;
+    case UX_LINUX_KEY_END: key_identity = UX_KEY_END; break;
+    case UX_LINUX_KEY_PAGE_UP: key_identity = UX_KEY_PAGE_UP; break;
+    case UX_LINUX_KEY_PAGE_DOWN: key_identity = UX_KEY_PAGE_DOWN; break;
+    case UX_LINUX_KEY_INSERT: key_identity = UX_KEY_INSERT; break;
+    case UX_LINUX_KEY_DELETE: key_identity = UX_KEY_DELETE; break;
     default: return LIB_FALSE;
     }
     memset(out_event, 0, sizeof(*out_event));
     out_event->type = UX_EVENT_KEY;
-    out_event->data.key.scan_code = scan_code;
-    out_event->data.key.virtual_key = virtual_key;
+    out_event->data.key.virtual_key = key_identity;
     out_event->data.key.pressed = LIB_TRUE;
     return LIB_TRUE;
 }

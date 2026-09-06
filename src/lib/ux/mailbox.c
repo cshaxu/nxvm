@@ -53,7 +53,8 @@ lib_status ux_mailbox_publish(ux_mailbox *mailbox, const ux_frame *frame)
 {
     lib_status status = LIB_STATUS_INVALID_STATE;
 
-    if (mailbox == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (mailbox == LIB_NULL || !ux_frame_is_valid(frame))
+        return LIB_STATUS_INVALID_ARGUMENT;
     ux_mailbox_lock(mailbox);
     if (mailbox->active) {
         mailbox->frame = *frame;

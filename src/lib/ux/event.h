@@ -23,7 +23,8 @@ typedef struct ux_event {
     union {
         struct {
             lib_u16 scan_code;
-            lib_u16 virtual_key;
+            /* A host-native or neutral key identity. Zero means absent. */
+            lib_u32 virtual_key;
             lib_u32 modifiers;
             lib_u8 pressed;
         } key;

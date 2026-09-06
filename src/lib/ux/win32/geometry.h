@@ -7,7 +7,7 @@
 #include <windows.h>
 
 /* Host-only geometry helpers.  They map copied source coordinates to a Win32
- * client surface and own no guest rendering or lifecycle policy. */
+ * client surface and own no product rendering or lifecycle policy. */
 int ux_win32_display_rect(int client_width, int client_height,
     uint32_t source_width, uint32_t source_height, RECT *display);
 void ux_win32_map_dirty_rect(const RECT *source, const RECT *display,

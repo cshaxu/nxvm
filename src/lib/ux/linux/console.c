@@ -28,7 +28,7 @@ static lib_u32 ux_linux_action_key(int key)
     return (lib_u32)key;
 }
 
-static int ux_linux_console_guest_key(int key, ux_event *event)
+static int ux_linux_console_key_event(int key, ux_event *event)
 {
     if (key == '\n' || key == '\r' || key == KEY_ENTER)
         return ux_linux_key_to_event(UX_LINUX_KEY_ENTER, event);
@@ -105,7 +105,7 @@ static ux_run_result ux_linux_console_key(const ux_binding *binding, int key)
     if (key >= 0x20 && key <= 0xff) {
         event.type = UX_EVENT_TEXT;
         event.data.text.scalar = (lib_u32)key;
-    } else if (!ux_linux_console_guest_key(key, &event)) return UX_RUN_CONTINUE;
+    } else if (!ux_linux_console_key_event(key, &event)) return UX_RUN_CONTINUE;
     (void)binding->input_sink(binding->context, &event);
     return UX_RUN_CONTINUE;
 }

@@ -87,11 +87,14 @@ int main(void)
     static ux_frame published;
     static ux_frame captured;
     ux_action_registry actions;
+    ux_action_registry capacity_actions;
     ux_router router;
     ux_capture native_capture;
     ux_binding binding = { 0 };
     ux_contract_capture capture = { 0 };
     ux_event mouse = { 0 };
+
+    if (ux_frame_is_valid(&published)) return 1;
 
     if (ux_mailbox_create(&mailbox) != LIB_STATUS_OK) return 1;
     ux_capture_initialize(&native_capture);
@@ -145,6 +148,7 @@ int main(void)
         published.cursor_phase = LIB_TRUE;
         published.graphics_palette[1u] = 0x00112233u;
         published.graphics_pixels[0u] = 1u;
+        if (!ux_frame_is_valid(&published)) return 1;
         if (ux_mailbox_publish(mailbox, &published) != LIB_STATUS_OK ||
             ux_mailbox_capture(mailbox, &captured) != LIB_STATUS_OK ||
             captured.sequence != ux_mailbox_generation(mailbox) ||
@@ -170,11 +174,29 @@ int main(void)
             return 1;
         }
     }
+    memset(&published, 0, sizeof(published));
+    published.valid = LIB_TRUE;
+    published.graphics = LIB_TRUE;
+    published.graphics_width = UX_GRAPHICS_MAX_WIDTH + 1u;
+    published.graphics_height = 1u;
+    published.graphics_stride = published.graphics_width;
+    if (ux_frame_is_valid(&published) ||
+        ux_mailbox_publish(mailbox, &published) != LIB_STATUS_INVALID_ARGUMENT)
+        return 1;
     ux_actions_initialize(&actions);
     if (ux_actions_register(&actions, 'P', UX_MODIFIER_CONTROL | UX_MODIFIER_ALT,
             UX_CONTRACT_ACTION) != LIB_STATUS_OK ||
+        ux_actions_register(&actions, 'P', UX_MODIFIER_CONTROL | UX_MODIFIER_ALT,
+            UX_CONTRACT_ACTION) != LIB_STATUS_INVALID_STATE ||
         ux_actions_match(&actions, 'P', UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) !=
             UX_CONTRACT_ACTION) return 1;
+    ux_actions_initialize(&capacity_actions);
+    for (lib_u32 index = 0u; index < UX_ACTION_CAPACITY; ++index) {
+        if (ux_actions_register(&capacity_actions, 0x1000u + index,
+                UX_MODIFIER_SHIFT, index + 1u) != LIB_STATUS_OK) return 1;
+    }
+    if (ux_actions_register(&capacity_actions, 0x2000u, UX_MODIFIER_SHIFT,
+            UX_ACTION_CAPACITY + 1u) != LIB_STATUS_INVALID_STATE) return 1;
     ux_router_initialize(&router, UX_TARGET_CONSOLE);
     /* Publishing a graphics frame cannot route a presenter.  Only the
        product request below is allowed to change this target. */
@@ -197,6 +219,8 @@ int main(void)
         capture.events[2u].data.key.scan_code != 0x2au ||
         capture.events[0u].data.key.pressed || capture.events[1u].data.key.pressed ||
         capture.events[2u].data.key.pressed) return 1;
+    if (binding.handle_close(binding.context, binding.input_sink) !=
+        UX_RUN_PAUSED_RESULT) return 1;
     binding.input_sink = LIB_NULL;
     if (ux_binding_validate(&binding) != LIB_STATUS_INVALID_ARGUMENT) return 1;
     if (ux_router_target(&router) != UX_TARGET_CONSOLE) return 1;

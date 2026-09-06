@@ -9,8 +9,16 @@ void ux_actions_initialize(ux_action_registry *registry)
 lib_status ux_actions_register(ux_action_registry *registry,
     lib_u32 key, lib_u8 modifiers, ux_action action)
 {
-    if (registry == LIB_NULL || action == UX_ACTION_NONE ||
-        registry->count >= UX_ACTION_CAPACITY) return LIB_STATUS_INVALID_ARGUMENT;
+    lib_u32 index;
+
+    if (registry == LIB_NULL || action == UX_ACTION_NONE)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < registry->count; ++index) {
+        if (registry->entries[index].key == key &&
+            registry->entries[index].modifiers == modifiers)
+            return LIB_STATUS_INVALID_STATE;
+    }
+    if (registry->count >= UX_ACTION_CAPACITY) return LIB_STATUS_INVALID_STATE;
     registry->entries[registry->count++] = (ux_action_chord) {
         key, modifiers, action
     };

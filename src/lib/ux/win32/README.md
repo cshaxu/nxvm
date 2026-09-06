@@ -7,7 +7,7 @@ library component.
 
 `actions.c` translates Win32 modifier state only.  Registered chords and their
 matching have one owner in `lib/ux/actions.c`.  `input.c` translates native
-packets to `ux_event`; a product binding decides their guest meaning.  The
+packets to `ux_event`; a product binding decides their input meaning. The
 `runner.c` is the one native Console/Window selector.  The Console lease is
 the only process-global UX state; Window state is allocated per presenter run.
 Products adopt this library through their own binding boundary; the native

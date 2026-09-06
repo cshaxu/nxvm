@@ -5,7 +5,7 @@
 #include "lib/ux/capture.h"
 #include <windows.h>
 
-/* Host-only relative-pointer state.  The caller owns guest-device buttons and
+/* Host-only relative-pointer state. The caller owns input-device buttons and
  * lifecycle policy; this component owns explicit Win32 client capture only. */
 typedef struct ux_win32_mouse {
     int x;
@@ -21,7 +21,7 @@ int ux_win32_mouse_capture(ux_win32_mouse *mouse,
     HWND window, LPARAM position);
 int ux_win32_mouse_move(ux_win32_mouse *mouse,
     LPARAM position, int client_width, int client_height,
-    unsigned int guest_width, unsigned int guest_height, int *dx, int *dy);
+    unsigned int content_width, unsigned int content_height, int *dx, int *dy);
 int ux_win32_mouse_captured(const ux_win32_mouse *mouse);
 int ux_win32_mouse_hides_host_cursor(
     const ux_win32_mouse *mouse);

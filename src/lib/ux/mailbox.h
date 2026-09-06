@@ -6,6 +6,10 @@
 
 typedef struct ux_mailbox ux_mailbox;
 
+/* One producer publishes copied frames and one consumer captures them. Calls
+ * may overlap between those two participants. wake only releases a native
+ * wait; it never changes generation. Both participants must have stopped
+ * using the mailbox before destroy. */
 lib_status ux_mailbox_create(ux_mailbox **out_mailbox);
 void ux_mailbox_destroy(ux_mailbox *mailbox);
 lib_status ux_mailbox_publish(ux_mailbox *mailbox,

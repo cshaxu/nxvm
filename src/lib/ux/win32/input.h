@@ -7,7 +7,7 @@
 #include <windows.h>
 
 /* This component normalizes Win32 input only. It emits product-neutral input
- * events and neither knows nor maps any guest keyboard/controller protocol. */
+ * events and neither knows nor maps any product input protocol. */
 
 typedef struct ux_win32_keyboard_normalizer {
     WORD pending_high_surrogate;
@@ -16,7 +16,7 @@ typedef struct ux_win32_keyboard_normalizer {
 } ux_win32_keyboard_normalizer;
 
 /* These functions only normalize host packets.  A project binding maps each
-   physical record to its guest input protocol and owns its input queue. */
+   physical record to its own input protocol and owns its input queue. */
 int ux_win32_keyboard_submit_transition(void *context,
     ux_event_sink sink, WORD scan, WORD virtual_key,
     DWORD control_state, int pressed);

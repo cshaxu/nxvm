@@ -56,7 +56,7 @@ int ux_win32_mouse_capture(ux_win32_mouse *mouse,
 
 int ux_win32_mouse_move(ux_win32_mouse *mouse,
     LPARAM position, int client_width, int client_height,
-    unsigned int guest_width, unsigned int guest_height, int *dx, int *dy)
+    unsigned int content_width, unsigned int content_height, int *dx, int *dy)
 {
     int x;
     int y;
@@ -69,10 +69,10 @@ int ux_win32_mouse_move(ux_win32_mouse *mouse,
     mouse->x = x;
     mouse->y = y;
     mouse->valid = 1;
-    if (client_width > 0 && guest_width != 0u)
-        *dx = (int)((long long)*dx * (long long)guest_width / client_width);
-    if (client_height > 0 && guest_height != 0u)
-        *dy = (int)((long long)*dy * (long long)guest_height / client_height);
+    if (client_width > 0 && content_width != 0u)
+        *dx = (int)((long long)*dx * (long long)content_width / client_width);
+    if (client_height > 0 && content_height != 0u)
+        *dy = (int)((long long)*dy * (long long)content_height / client_height);
     return 1;
 }
 
