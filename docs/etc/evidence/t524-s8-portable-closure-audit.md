@@ -43,10 +43,11 @@ of a retained library capability.
 - The first upstream matrix for `724027ed` is red. Windows selected the
   runner's MSVC compiler, which rejects the C11 atomic contract before the
   library can build; Ubuntu stopped at the text-string manifest verifier.
-  S8 corrects both owner-local publish defects: Windows now selects the MSYS2
-  UCRT64 GCC C11 toolchain, and the verifier requires LF-only source then
-  hashes its raw bytes. The revised matrix must pass before this evidence can
-  become S8 acceptance proof.
+  P2 corrected the verifier but used an invalid dynamic GitHub Actions shell;
+  Actions rejected it before creating a job. P3 now uses two explicit jobs:
+  Windows selects the MSYS2 UCRT64 GCC C11 toolchain and Ubuntu uses its native
+  shell. The revised matrix must pass before this evidence can become S8
+  acceptance proof.
 - Full repository unit: 311/311 pass in 22.36 seconds.
 - Full integration was started.  Its first row,
   `compaq-deskpro-386-model-40-1200k.yaml`, failed after 180.09 seconds before
