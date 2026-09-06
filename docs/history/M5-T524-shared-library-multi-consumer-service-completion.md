@@ -78,3 +78,12 @@ wait-any contract. The Linux backend uses monotonic generation-based waiting;
 the Windows backend has the same cancellation-first result order. Task
 destruction has one safe cancellation/join path. The retained evidence is
 [S4 host contract](../etc/evidence/t524-s4-host-contract.md).
+
+## S4 Acceptance
+
+Coordinator actual-diff review accepts `ab0c0adc`: all new synchronization
+state remains inside the host root, no product callback or cross-root include
+was introduced, and both native implementations implement the same visible
+priority/lifecycle contract. Windows smoke, strict Linux syntax, complete unit
+312/312, manifest, vocabulary/dependency sweeps, documentation governance and
+diff checks pass. T524 remains open for S5--S8.

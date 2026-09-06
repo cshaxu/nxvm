@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Progress - M5 T524 S3 accepted |
-| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S3 P1 `94e81d1b`. |
+| Identifier Mode | Progress - M5 T524 S4 accepted |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S4 P1 `ab0c0adc`. |
 | Objective | T524 remains open: complete every retained neutral library root without product/machine ownership or cross-root dependency. |
 | Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
-| Reference Baseline | [T524 S3 evidence](../etc/evidence/t524-s3-ux-neutral-contract.md): neutral UX contract, sole NXVM protocol mapping and two consumer proofs. |
+| Reference Baseline | [T524 S4 evidence](../etc/evidence/t524-s4-host-contract.md): neutral host event/task/wait contract and platform-parity model. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
-| Files And ABI Surface | S3 closes the complete UX contract and NXVM protocol-mapping boundary only; later root-specific S packets define their own public contract surfaces. |
+| Files And ABI Surface | S4 closes the complete host contract only; later root-specific S packets define their own public contract surfaces. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | S3 actual review: focused UX/native/binding checks, complete unit 312/312, manifest, standalone selected-platform library CMake/CTest, UX vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
-| Expected Markers | S3 is accepted; S4 must consume the complete host batch rather than reopen UX or corpus ownership. |
+| Verification | S4 actual review: focused host checks, Linux strict syntax, complete unit 312/312, manifest, host vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
+| Expected Markers | S4 is accepted; S5 must decide the complete session-root disposition rather than reopen host or UX ownership. |
 | Asset Needs | None. |
 | Reporting Requirements | Before the next S, report any root that lacks two neutral consumer/conformance proofs or contains machine vocabulary. |
 | Stop Conditions | No subsequent S starts without its bounded complete root batch. |
-| Exit Criteria | S3 met: a neutral UX root, product-only conversion, two consumer proofs and all stated gates. T524 remains open. |
+| Exit Criteria | S4 met: explicit host event/task/wait semantics, platform parity proof and all stated gates. T524 remains open. |
 | Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
 | Similar-Issue Sweep | S4--S7 each consume a whole root; S8 rechecks all 63 corpus files and every product binding. |
 
