@@ -1,4 +1,4 @@
-#include "lib/ux/mailbox_native.h"
+#include "lib/ux/internal/mailbox_native.h"
 #include "mailbox.h"
 
 #ifdef _WIN32

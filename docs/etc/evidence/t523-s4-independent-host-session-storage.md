@@ -44,3 +44,7 @@ machine safe point, controller, profile, media topology or guest state into
 - Peer-root include sweep:
   `rg -n '#include "lib/(ux|host|session|storage|observability)/' src/lib -g "*.c" -g "*.h"`
   shows only same-root includes; each root may use `lib/base` but no peer root.
+- Coordinator review correction: `ux/mailbox_native.h` moved to
+  `ux/internal/mailbox_native.h`; the only native wait-handle bridge is now
+  explicitly implementation-private. Rebuilt mailbox and run-handle targets,
+  direct run-handle proof and a fresh 309/309 unit replay pass.

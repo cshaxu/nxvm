@@ -1,5 +1,5 @@
 #include "lib/base/base.h"
-#include "lib/ux/mailbox_native.h"
+#include "lib/ux/internal/mailbox_native.h"
 #include "mailbox.h"
 
 struct ux_mailbox_native {
