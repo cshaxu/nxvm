@@ -1,6 +1,5 @@
 #include "vm/profile/model40/model40_private.h"
 
-#include "core/platform/file.h"
 #include "vm/profile/byob/blob.h"
 
 C_INT vm_profile_model40_external_rom_is_valid(

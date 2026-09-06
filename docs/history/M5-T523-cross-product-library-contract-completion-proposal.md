@@ -157,6 +157,43 @@ adoption task: it copies the manifest-selected library files unchanged,
 implements only the SoftPC binding, and proves no source under SoftPC's
 preserved machine baseline changes.
 
+### S6 - One Generic File-Mechanics Owner
+
+Replace `core/platform/file.*` with the sole `lib/storage` file-mechanics
+owner.  Migrate every caller, including bounded line-reader/writer uses, or
+place an irreducibly product-specific operation at its product owner; do not
+retain type-adapted forwarding wrappers.  Sweep the repository for equivalent
+read, write, replace, remove and exclusive-create implementations.  The
+result must leave Core free of host file I/O and leave no second generic file
+API.
+
+### S7 - Remove Native Keyboard Code From Core
+
+Move `core/platform/win32/keyboard.*` and its tests to the NXVM Win32 UX/VM
+binding that owns host-layout conversion to PC scan-code input.  Preserve the
+existing normalized event contract and guest delivery behavior, but leave Core
+without a Win32 SDK edge or host-layout/scan-code policy.  Sweep every native
+keyboard conversion helper so this is a relocation to one product binding,
+not a parallel path.
+
+### S8 - Name And Retain The Core Guest-Boundary Owners
+
+Move `core/platform/display_frame.h`, `input_interface.*`, and
+`presentation_mailbox*` into semantically named Core input/presentation
+owners.  They remain distinct from `lib/ux`: Core owns the guest-derived frame
+and guest-ingress synchronization; the VM performs the single copied
+representation conversion; `lib/ux` owns native presentation.  Delete the
+empty `core/platform` root and prove that this is not a second native mailbox
+or input route.
+
+### S9 - One Generic Monotonic Clock Mechanism
+
+Move the host monotonic-counter mechanics from `vm/platform/virtual_time.*`
+to `lib/host`, with platform-private implementations.  VM retains only the
+policy that compares completed guest progress against that clock.  Sweep for
+other wall-clock readers and consolidate every generic one without creating a
+host-to-Core time injection route or changing guest-time ownership.
+
 ## Acceptance
 
 - `src/lib` compiles using only its own public headers and standard C/platform
@@ -172,6 +209,10 @@ preserved machine baseline changes.
   `src/mvdm/softpc.new`.
 - Native Console/Window switching occurs only after an explicit product request;
   a change between text and graphics frames alone has no routing side effect.
+- `core/platform/file.*`, `core/platform/win32/keyboard.*`, the Core
+  display/input/presentation boundary names, and `vm/platform/virtual_time.*`
+  each reach their stated sole-owner disposition without a forwarding or
+  compatibility path.
 
 ## Non-goals
 

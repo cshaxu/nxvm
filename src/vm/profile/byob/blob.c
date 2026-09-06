@@ -2,7 +2,7 @@
 
 #include "vm/profile/byob/blob.h"
 
-#include "core/platform/file.h"
+#include "lib/storage/file.h"
 
 static type_unsigned_32 vm_profile_byob_sha256_rotate_right(
     type_unsigned_32 value, type_unsigned_8 bits)
@@ -121,7 +121,8 @@ type_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
     type_unsigned_8 digest[32];
 
     if (!vm_profile_byob_blob_is_valid(blob) || out_bytes == STD_NULL ||
-        core_platform_file_read_all(blob->path, blob->bytes, &loaded, &count) != TYPE_FALSE ||
+        lib_storage_file_read_owned(blob->path, blob->bytes, &loaded, &count) !=
+            LIB_STATUS_OK ||
         count != blob->bytes) { STD_FREE(loaded); return TYPE_STATUS_FAULT; }
     STD_MEMCPY(out_bytes, loaded, count);
     STD_FREE(loaded);

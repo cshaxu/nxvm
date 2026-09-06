@@ -115,3 +115,14 @@ native run-handle marker pass; repository-only unit passes `310/310`, and
 documentation governance plus `git diff --check` pass. T523 is closed. No
 machine/controller/profile behavior, asset or runtime dependency was moved
 into the library.
+
+## Corrective Reopening
+
+The owner reopened T523 after the closure review identified four finite
+remaining owner cleanups that the original S5 sweep did not cover: duplicate
+generic file mechanics in `core/platform/file.*`; a Win32 keyboard-to-PC-input
+binding incorrectly located under Core; misleading Core guest-boundary names
+under `core/platform`; and generic monotonic-clock mechanics in
+`vm/platform/virtual_time.*`. Corrective S6--S9 respectively own those four
+surfaces. The former closure remains historical evidence, not a claim that
+these newly admitted paths were already clean.

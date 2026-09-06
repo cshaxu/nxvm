@@ -2,7 +2,7 @@
 
 #include "vm/composition/session/session_private.h"
 
-#include "core/platform/file.h"
+#include "lib/storage/file.h"
 #include "vm/profile/byob/blob.h"
 
 static type_status vm_session_asset_copy(type_unsigned_8 *destination,
@@ -813,7 +813,8 @@ static type_status vm_session_file_variable_asset_load(const C_CHAR *path,
     STD_SIZE_T bytes = 0u;
 
     if (path == STD_NULL || out_view == STD_NULL || out_owned == STD_NULL ||
-        maximum == 0u || core_platform_file_read_all(path, maximum, &owned, &bytes) ||
+        maximum == 0u || lib_storage_file_read_owned(path, maximum, &owned, &bytes) !=
+            LIB_STATUS_OK ||
         bytes == 0u) {
         STD_FREE(owned);
         return TYPE_STATUS_FAULT;

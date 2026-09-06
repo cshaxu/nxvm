@@ -10,8 +10,8 @@ struct vm_product_session_catalog {
     STD_SIZE_T rejected;
 };
 
-#include "core/platform/file.h"
 #include "core/product/utils.h"
+#include "lib/storage/file.h"
 
 static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
 {
@@ -231,7 +231,8 @@ static C_INT vm_product_session_catalog_parse_file(const C_CHAR *directory,
     C_INT parsed;
 
     if (!vm_product_session_catalog_path(path, sizeof(path), directory, name) ||
-        core_platform_file_read_all(path, 64u * 1024u, &loaded, &bytes) != TYPE_FALSE ||
+        lib_storage_file_read_owned(path, 64u * 1024u, &loaded, &bytes) !=
+            LIB_STATUS_OK ||
         (document = (C_CHAR *)STD_MALLOC(bytes + 1u)) == STD_NULL) {
         STD_FREE(loaded);
         return 0;

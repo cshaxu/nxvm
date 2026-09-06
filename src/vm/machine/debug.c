@@ -7,8 +7,19 @@
 
 #include "type.h"
 
-#include "core/platform/file.h"
 #include "vm/machine/debug.h"
+
+static type_status debug_storage_status(lib_status status)
+{
+    switch (status) {
+    case LIB_STATUS_OK: return TYPE_STATUS_OK;
+    case LIB_STATUS_INVALID_ARGUMENT: return TYPE_STATUS_INVALID_ARGUMENT;
+    case LIB_STATUS_INVALID_STATE: return TYPE_STATUS_INVALID_STATE;
+    case LIB_STATUS_UNSUPPORTED: return TYPE_STATUS_UNSUPPORTED;
+    case LIB_STATUS_NO_MEMORY: return TYPE_STATUS_NO_MEMORY;
+    default: return TYPE_STATUS_FAULT;
+    }
+}
 
 static C_VOID debug_request_pause(t_debug *debug,
     vm_machine_debug_pause_reason reason)
@@ -23,8 +34,8 @@ static type_status debug_record_close(t_debug *debug)
     if (debug == STD_NULL || debug->connect.recordFile == STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    debug->connect.record_status = core_platform_file_writer_close(
-        debug->connect.recordFile);
+    debug->connect.record_status = debug_storage_status(
+        lib_storage_file_writer_close(debug->connect.recordFile));
     debug->connect.recordFile = STD_NULL;
     return debug->connect.record_status;
 }
@@ -39,8 +50,8 @@ static C_INT debug_record_write_failed(t_debug *debug)
 
 #define debug_record_write(debug, buffer, ...) \
     (STD_SNPRINTF((buffer), sizeof(buffer), __VA_ARGS__) >= 0 && \
-        core_platform_file_writer_write((debug)->connect.recordFile, (buffer)) == \
-            TYPE_STATUS_OK || debug_record_write_failed(debug))
+        lib_storage_file_writer_write((debug)->connect.recordFile, (buffer)) == \
+            LIB_STATUS_OK || debug_record_write_failed(debug))
 
 C_VOID vm_machine_debug_initialize(t_debug *debug)
 {
@@ -229,8 +240,8 @@ type_status vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_nam
         STD_PRINTF("ERROR:\trecorder close failed.\n");
         return TYPE_STATUS_FAULT;
     }
-    debug->connect.record_status = core_platform_file_writer_open(file_name,
-        &debug->connect.recordFile);
+    debug->connect.record_status = debug_storage_status(
+        lib_storage_file_writer_open(file_name, &debug->connect.recordFile));
     if (debug->connect.record_status != TYPE_STATUS_OK) {
         STD_PRINTF("ERROR:\tcannot write dump file.\n");
     } else {

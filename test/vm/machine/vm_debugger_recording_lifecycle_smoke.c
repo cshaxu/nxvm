@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/platform/file.h"
+#include "lib/storage/file.h"
 #include "vm/machine/debug.h"
 
 C_INT main(C_VOID)
@@ -30,10 +30,10 @@ C_INT main(C_VOID)
     if (vm_machine_debug_record_stop(&first) != TYPE_STATUS_OK ||
         first.connect.recordFile != STD_NULL ||
         vm_machine_debug_record_status(&first) != TYPE_STATUS_OK ||
-        core_platform_file_read_all(file_name, 4096u, &record, &record_size) !=
-            TYPE_FALSE || record_size == 0u) return 1;
+        lib_storage_file_read_owned(file_name, 4096u, &record, &record_size) !=
+            LIB_STATUS_OK || record_size == 0u) return 1;
     STD_FREE(record);
-    if (core_platform_file_remove(file_name) != TYPE_FALSE) return 1;
+    if (lib_storage_file_remove(file_name)) return 1;
     if (first.connect.recordFile != STD_NULL ||
         vm_machine_debug_record_status(&first) != TYPE_STATUS_OK)
         return 1;

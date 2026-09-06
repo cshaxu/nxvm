@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T523 closed |
-| Admission And Approval | T523 S5 P1 (`fcdc7e99`) is accepted after actual-diff review. The owner-approved cross-product-library objective is complete; no exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
-| Objective | No active implementation packet. |
-| Non-goals | No machine/controller/profile change, guest input protocol, UX redesign, asset change, Linux graphics backend, speculative framework, or migration of machine safe-point semantics into lib. |
-| Reference Baseline | T523 closure: 56-file manifest-selected independent library corpus and one NXVM binding per generic capability. |
-| Candidate Proposal | None. The bounded future [SoftPC binding proposal](../proposals/m5-softpc-shared-library-binding-adoption.md) is Queue-only. |
-| Files And ABI Surface | Closed `src/lib/**` corpus and manifest, NXVM bindings, repository-only neutral consumer test and the Queue-only SoftPC binding proposal; public ABI remains copied values, opaque library handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): accepted S4 baseline, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): independent peer roots and product-only safe points; [Coding](../rules/CODING.md): durable bounded contracts and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. |
-| Verification | T523: neutral consumer and native run-handle markers pass; unit 310/310; source-manifest, product-vocabulary, public-header and peer-root sweeps pass; documentation governance and `git diff --check` pass. |
-| Expected Markers | Next implementation requires a newly admitted packet. |
+| Identifier Mode | Corrective - M5 T523 S6 |
+| Admission And Approval | Owner reopened closed T523 on 2026-09-05 and explicitly approved four corrective S tasks: generic file mechanics, native keyboard ownership, Core guest-boundary naming, then monotonic host-clock mechanics. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
+| Objective | Make `lib/storage` the sole generic file-mechanics owner and remove the duplicate `core/platform/file.*` route. |
+| Non-goals | No machine/controller/profile change, guest input protocol, UX redesign, asset change, Linux graphics backend, speculative framework, guest-time ownership change, or migration of machine safe-point semantics into lib. |
+| Reference Baseline | `d96baff5`: accepted T523 S5 neutral consumer and source-identical 56-file library corpus; S6 consumes the file-mechanics duplicate discovered in the closure review. |
+| Candidate Proposal | [T523 retained proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md), corrective S6--S9. |
+| Files And ABI Surface | `src/core/platform/file.*`, `src/lib/storage/**`, every direct caller and owner-mirrored unit test; public library API may grow only for a real generic file operation, with no NXVM type, product state or wrapper. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): one file-mechanics owner and no reverse product dependency; [Coding](../rules/CODING.md): replacement cleanup and no forwarding facade; [Documentation](../rules/DOCUMENT.md): current/history authority separation. |
+| Verification | Focused generic file read/write/replace/exclusive-create and VM asset/debug-record callers; complete repository-only unit suite; repository-wide duplicate-file-mechanics sweep; library public-header/product-vocabulary and peer-root sweeps; documentation governance; `git diff --check`. |
+| Expected Markers | `M5:T523:S6:STORAGE-OWNER:OK`; no `core_platform_file_*` production symbol, source or forwarding wrapper remains. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | T523 evidence is retained in its history record. |
-| Stop Conditions | New work requires an admitted packet. |
-| Exit Criteria | T523 closed. |
+| Reporting Requirements | Record every migrated caller, each retained product-specific file operation if any, source/test line delta, the sole retained owner and the S7--S9 planned receivers. Report any operation that cannot use generic storage without exposing product state. |
+| Stop Conditions | Stop and report if a Core machine owner directly requires host file mechanics, if a needed file operation cannot be represented without an NXVM type in `lib`, or if migration would change asset, media or debugger-record behavior. |
+| Exit Criteria | `lib/storage` owns every generic file operation; all callers use that owner or have a distinct product-specific reason; `core/platform/file.*` and its obsolete tests are deleted; complete unit/governance/sweeps pass; actual-diff review accepts the result. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Sweep tracked `src/lib`, its CMake targets, NXVM lifecycle/media callers and native implementations for product-safe-point leakage, duplicate cancellation/join state, polling wrappers, product-specific file suffixes, native types in public headers and parallel direct/overlay paths; replace every in-scope production hit or record its distinct machine-owned reason. |
+| Similar-Issue Sweep | Sweep every `src/**` file read/write/replace/remove/exclusive-create, opaque reader/writer and direct C stdio wrapper; consolidate generic mechanics at `lib/storage`, retain only a named product semantic, and record the S7--S9 keyboard/Core-boundary/clock receivers without implementing them in S6. |
 
 ## Current Technical Baseline
 
@@ -57,7 +57,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T523 | Closed: the exact 56-file `lib` corpus is product-free and has independent `base`, `ux`, `host`, `session`, `storage` and `observability` roots. A neutral consumer compiles the selected corpus and proves values/mechanics; NXVM has one generic route per capability; future SoftPC work is binding-only. Unit 310/310, governance and all library-boundary sweeps pass. [History](../history/M5-T523-cross-product-library-contract-completion.md). |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |

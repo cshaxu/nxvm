@@ -161,6 +161,10 @@ add_executable(lib-neutral-consumer test/lib/library_consumer_conformance.c)
 target_link_libraries(lib-neutral-consumer PRIVATE lib-neutral-corpus)
 add_test(NAME unit.lib-neutral-consumer COMMAND lib-neutral-consumer)
 set_tests_properties(unit.lib-neutral-consumer PROPERTIES LABELS "unit")
+add_executable(storage-file-smoke test/lib/storage_file_smoke.c)
+target_link_libraries(storage-file-smoke PRIVATE storage-image)
+add_test(NAME unit.storage-file-smoke COMMAND storage-file-smoke)
+set_tests_properties(unit.storage-file-smoke PROPERTIES LABELS "unit")
 
 add_library(core-machine STATIC
     src/core/machine/clock.c
@@ -1310,7 +1314,6 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/transaction.c
 )
 add_library(core-platform STATIC
-    src/core/platform/file.c
     src/core/platform/input.c
     src/core/platform/presentation_mailbox.c)
 if(WIN32)
@@ -1487,6 +1490,7 @@ target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     core-product-session
     core-product-utils
     core-platform
+    storage-image
     type-facade
 )
 
@@ -1502,6 +1506,7 @@ target_link_libraries(vm-product-console-exit-smoke PRIVATE
     core-product-session
     core-product-utils
     core-platform
+    storage-image
     type-facade
 )
 
@@ -1542,6 +1547,7 @@ endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
     core-platform
+    storage-image
     type-facade)
 
 add_library(vm-platform STATIC ${VM_PLATFORM_SOURCES})
@@ -1657,7 +1663,7 @@ target_link_libraries(vm-composition PUBLIC
     vm-profile
     vm-product
     vm-request-transport)
-target_link_libraries(vm-composition PRIVATE session-lifecycle observability-outcome)
+target_link_libraries(vm-composition PRIVATE session-lifecycle observability-outcome storage-image)
 target_link_libraries(vm-composition PRIVATE vm-platform)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
@@ -1675,7 +1681,8 @@ target_include_directories(vm-product PUBLIC
 )
 target_link_libraries(vm-product PUBLIC
     core-product-utils
-    core-platform)
+    core-platform
+    storage-image)
 
 add_executable(vm-execution-context-smoke
     test/integration/dos/vm_execution_context_smoke.c
