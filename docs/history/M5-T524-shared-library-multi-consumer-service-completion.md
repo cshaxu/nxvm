@@ -105,3 +105,14 @@ lifecycle state. The review also confirms that the repaired UX wake fixture
 now obeys its existing validity contract. Focused checks, standalone lib build,
 manifest, complete unit 311/311, session-root vocabulary/dependency sweeps,
 documentation governance and diff checks pass. T524 remains open for S6--S8.
+
+## S6 Result
+
+S6 gives `lib/storage` one explicit exclusive byte-image lease and replacement
+transaction.  Direct-readonly, direct-writable and overlay byte modes remain
+the only retained persistence modes.  The generic transfer accepts an empty
+lease, returns the retired lease for caller-controlled destruction, and leaves
+the slot unchanged on an invalid alias.  NXVM FDD and HDD candidate swaps now
+both use that one operation; topology and derived-byte-view policy remain
+product local.  The complete contract and evidence are in [T524 S6 storage
+lease contract](../etc/evidence/t524-s6-storage-lease-contract.md).

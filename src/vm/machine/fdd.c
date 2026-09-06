@@ -373,10 +373,11 @@ C_INT vm_machine_fdd_has_media(const t_fdd *fdd)
 static C_VOID vm_machine_fdd_commit_candidate(t_fdd *fdd,
     lib_storage_image *candidate, type_virtual_address marks)
 {
-    lib_storage_image *old_image = fdd->connect.image;
+    lib_storage_image *old_image = STD_NULL;
     type_virtual_address old_marks = fdd->connect.pAddressMarks;
 
-    fdd->connect.image = candidate;
+    if (lib_storage_image_replace(&fdd->connect.image, candidate, &old_image) !=
+        LIB_STATUS_OK) return;
     fdd->connect.pImgBase = (type_virtual_address)lib_storage_image_const_bytes(candidate);
     fdd->connect.pAddressMarks = marks;
     fdd->connect.flagDiskExist = TYPE_TRUE;

@@ -7,11 +7,12 @@ root may combine them; a library component may not include another component.
 - `host` provides opaque native events and cancellable joined tasks.
 - `session` provides opaque lifecycle state. Product code owns execution
   callbacks, host threads and safe points.
-- `storage` owns image bytes and direct-readonly, direct-writable and overlay
-  persistence mechanics. Product code owns drive/controller topology.
+- `storage` owns exclusive byte-image leases and direct-readonly,
+  direct-writable and overlay persistence mechanics. Product code owns
+  storage topology and selects safe replacement points.
 - `observability` publishes bounded copied outcomes.
 
 `ux` owns copied presentation values and its native Console/Window loops.
-Its public headers contain no host SDK type and no product, machine, profile,
-or guest pointer. Native code belongs below its host directory and depends only
-on the public `ux` contract.
+Its public headers contain no host SDK type or product-owned pointer. Native
+code belongs below its host directory and depends only on the public `ux`
+contract.

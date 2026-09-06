@@ -16,6 +16,8 @@ int main(void)
     };
     lib_storage_image *overlay = LIB_NULL;
     lib_storage_image *image = LIB_NULL;
+    lib_storage_image *replacement = LIB_NULL;
+    lib_storage_image *retired = LIB_NULL;
     lib_u8 *owned;
     lib_u8 *bytes;
     size_t index;
@@ -28,6 +30,23 @@ int main(void)
     if (bytes == LIB_NULL || bytes[0u] != source[0u]) goto failed;
     bytes[0u] = 9u;
     if (source[0u] != 1u) goto failed;
+    if (lib_storage_image_create_zero_overlay(sizeof(source), &replacement) !=
+            LIB_STATUS_OK || lib_storage_image_replace(&overlay, replacement,
+            &retired) != LIB_STATUS_OK || retired == LIB_NULL ||
+        lib_storage_image_const_bytes(overlay) == lib_storage_image_const_bytes(retired) ||
+        lib_storage_image_replace(&overlay, overlay, &image) !=
+            LIB_STATUS_INVALID_ARGUMENT) goto failed;
+    if (lib_storage_image_replace(&overlay, LIB_NULL, &retired) !=
+            LIB_STATUS_INVALID_ARGUMENT || overlay == LIB_NULL) goto failed;
+    replacement = LIB_NULL;
+    lib_storage_image_destroy(retired);
+    retired = LIB_NULL;
+    if (lib_storage_image_replace(&overlay, LIB_NULL, &retired) != LIB_STATUS_OK ||
+        overlay != LIB_NULL || retired == LIB_NULL) goto failed;
+    lib_storage_image_destroy(retired);
+    retired = LIB_NULL;
+    if (lib_storage_image_replace(&overlay, LIB_NULL, &retired) != LIB_STATUS_OK ||
+        overlay != LIB_NULL || retired != LIB_NULL) goto failed;
     for (index = 0u; index < sizeof(rows) / sizeof(rows[0]); ++index) {
         lib_status status;
 
@@ -62,6 +81,8 @@ int main(void)
     puts("M5:T523:S4:STORAGE-IMAGE:OK");
     return 0;
 failed:
+    lib_storage_image_destroy(retired);
+    lib_storage_image_destroy(replacement);
     lib_storage_image_discard(&image);
     (void)lib_storage_file_remove("storage-image-smoke.img");
     lib_storage_image_destroy(overlay);

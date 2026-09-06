@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Progress - M5 T524 S5 accepted |
-| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S5 P1 `9ecb6713`. |
-| Objective | T524 remains open: complete every retained neutral library root without product/machine ownership or cross-root dependency. |
-| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
-| Reference Baseline | [T524 S5 evidence](../etc/evidence/t524-s5-session-disposition.md): sole shared lifecycle state and NXVM-owned execution boundary. |
+| Identifier Mode | Continuation - M5 T524 S6 |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06; the T524 proposal admits S6 after accepted S5. |
+| Objective | Disposition the entire `lib/storage` root: define and prove neutral byte-image lease, replacement, direct/overlay and commit/discard behavior used by independent NXVM consumers. |
+| Non-goals | No drive/controller topology, CHS, profile, firmware, guest policy, product lock or speculative path-backed media abstraction. |
+| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md) identifies undefined image replacement/lease behavior; S5 is accepted at `9ecb6713`. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
-| Files And ABI Surface | S5 closes the complete session-root disposition only; later root-specific S packets define their own public contract surfaces. |
+| Files And ABI Surface | `src/lib/storage/*`, its manifest/CMake/tests, and the existing NXVM FDD/HDD image-owner swap sites only. Public API may add a neutral image lease replacement operation. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | S5 actual review: focused state/platform checks, complete unit 311/311, standalone lib build, manifest, session vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
-| Expected Markers | S5 is accepted; S6 must decide the complete storage-root disposition rather than reopen session or UX ownership. |
+| Verification | Focused storage/FDD/HDD lifecycle proof; full unit; standalone lib build; manifest; storage vocabulary/direct-dependency sweeps; documentation governance and actual-diff review. |
+| Expected Markers | Storage depends only on `base`; image transfer, replacement and commit failure are explicit; FDD/HDD use one neutral swap route; no product storage policy enters lib. |
 | Asset Needs | None. |
-| Reporting Requirements | Before the next S, report any root that lacks two neutral consumer/conformance proofs or contains machine vocabulary. |
-| Stop Conditions | No subsequent S starts without its bounded complete root batch. |
-| Exit Criteria | S5 met: session state is sole shared state, the NXVM-only executor is gone, and all stated gates pass. T524 remains open. |
+| Reporting Requirements | Report the complete retained storage owner and any action that cannot become neutral without introducing product topology. |
+| Stop Conditions | Stop for an owner decision if a required storage operation needs machine/media semantics rather than a byte-image lease. |
+| Exit Criteria | One complete storage-root disposition is implemented, verified and accepted; T524 remains open for S7. |
 | Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
-| Similar-Issue Sweep | S6--S7 each consume a whole root; S8 rechecks the current 61-file corpus and every product binding. |
+| Similar-Issue Sweep | Sweep every image replacement and persistence caller, not only FDD/HDD; S7 consumes observability and S8 rechecks the current 61-file corpus and every product binding. |
 
 ## Current Technical Baseline
 

@@ -97,6 +97,19 @@ lib_storage_image_mode lib_storage_image_mode_of(const lib_storage_image *image)
     return image == LIB_NULL ? LIB_STORAGE_IMAGE_DIRECT_READONLY : image->mode;
 }
 
+lib_status lib_storage_image_replace(lib_storage_image **lease,
+    lib_storage_image *replacement, lib_storage_image **out_retired)
+{
+    if (lease == LIB_NULL || out_retired == LIB_NULL || lease == out_retired ||
+        *out_retired != LIB_NULL ||
+        (replacement != LIB_NULL && *lease == replacement)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    *out_retired = *lease;
+    *lease = replacement;
+    return LIB_STATUS_OK;
+}
+
 lib_status lib_storage_image_commit(const lib_storage_image *image,
     const char *path)
 {

@@ -38,6 +38,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t524-s3-ux-neutral-contract.md` | Shared-library owner | T524 S3's neutral copied-frame/input/action/mailbox contract, sole NXVM protocol mapping, consumer proof and root-local vocabulary sweep. |
 | `evidence/t524-s4-host-contract.md` | Shared-library owner | T524 S4's neutral host event/task/wait contract, Windows/Linux parity model and host-root verification. |
 | `evidence/t524-s5-session-disposition.md` | Shared-library owner | T524 S5's sole shared lifecycle-state disposition, removal of the NXVM-only executor facade and product-owned execution boundary proof. |
+| `evidence/t524-s6-storage-lease-contract.md` | Shared-library owner | T524 S6's neutral byte-image lease, replacement, persistence and sole FDD/HDD swap-route proof. |
 | `evidence/t514-s1-win32-keyboard-ingress-ledger.md` | Core platform / VM input owners | T514 S1's Console, Window and RDP character-input ledger and one-normalizer boundary. |
 | `evidence/t514-s2-win32-keyboard-normalizer.md` | Core platform / VM input owners | T514 S2's one Win32 character/virtual-key recovery path and unit proof. |
 | `evidence/t514-s3-win32-keyboard-regression-matrix.md` | Core platform / VM input owners | T514 S3's complete owner-local Win32 keyboard packet regression matrix. |

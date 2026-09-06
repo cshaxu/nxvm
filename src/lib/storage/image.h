@@ -11,7 +11,9 @@ typedef enum lib_storage_image_mode {
 
 typedef struct lib_storage_image lib_storage_image;
 
-/* Takes ownership of bytes.  Direct images expose no mutable byte view. */
+/* An image is an exclusive byte lease: callers do not concurrently access,
+ * replace or destroy it.  Direct images take ownership of bytes; overlay
+ * images own a private copy. */
 lib_status lib_storage_image_take_direct_readonly(void *bytes,
     size_t byte_count, lib_storage_image **out_image);
 /* Takes ownership of bytes and exposes the one writable direct view. */
@@ -27,6 +29,13 @@ const void *lib_storage_image_const_bytes(const lib_storage_image *image);
 void *lib_storage_image_writable_bytes(lib_storage_image *image);
 size_t lib_storage_image_byte_count(const lib_storage_image *image);
 lib_storage_image_mode lib_storage_image_mode_of(const lib_storage_image *image);
+/* Transfers replacement (or no lease) into the caller-owned lease at its safe
+ * point and returns the retired lease through an initially-null output for
+ * later destruction. A no-lease to no-lease transfer succeeds. It does not
+ * destroy or change bytes. */
+lib_status lib_storage_image_replace(lib_storage_image **lease,
+    lib_storage_image *replacement, lib_storage_image **out_retired);
+/* Commit never changes the lease or its bytes.  A failure leaves both intact. */
 lib_status lib_storage_image_commit(const lib_storage_image *image,
     const char *path);
 void lib_storage_image_discard(lib_storage_image **image);

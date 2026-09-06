@@ -170,9 +170,10 @@ static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
     lib_storage_image *candidate, STD_SIZE_T raw_byte_count,
     STD_SIZE_T virtual_byte_count, type_unsigned_32 cylinders)
 {
-    lib_storage_image *old_image = hdd->connect.image;
+    lib_storage_image *old_image = STD_NULL;
 
-    hdd->connect.image = candidate;
+    if (lib_storage_image_replace(&hdd->connect.image, candidate, &old_image) !=
+        LIB_STATUS_OK) return;
     hdd->connect.pImgBase = (type_virtual_address)lib_storage_image_const_bytes(candidate);
     hdd->connect.raw_byte_count = raw_byte_count;
     hdd->connect.virtual_byte_count = virtual_byte_count;
