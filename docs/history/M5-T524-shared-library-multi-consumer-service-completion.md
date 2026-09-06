@@ -7,10 +7,10 @@ the library an emulator or a product-binding owner.
 ## S8 Local P1
 
 Owner-approved P1 publishes the completed library-local portability batch:
-the standalone CMake entry runs a neutral public-header consumer, CI runs its
-CTest gate on both platforms, and the host-clock contract no longer carries
-product time terminology. This is not S8 or T524 acceptance: the current
-Model-40 FDC integration row remains red. See
+the standalone CMake entry runs a neutral public-header consumer, Windows CI
+runs its CTest gate, and the host-clock contract no longer carries product time
+terminology. This is not S8 or T524 acceptance: the current Model-40 FDC
+integration row remains red. See
 [`t524-s8-portable-closure-audit.md`](../etc/evidence/t524-s8-portable-closure-audit.md).
 
 The first upstream P1 matrix exposed two publication defects: MSVC cannot
@@ -27,6 +27,16 @@ Model-40 FDC integration row recorded as a transfer, not passing evidence.
 T524 remains open; S9 may repair only the Model-40 owner and must not add a
 `lib` workaround.
 
+## S9 Clean Model-40 Disposition
+
+The transferred Model-40 row is green without a source change. A concurrent
+instruction-level diagnostic had consumed host capacity and polluted a
+wall-clock integration result. With that probe absent, the unchanged external
+YAML reaches `installer-running` in 156.37 seconds. Complete integration is
+44/44 and complete unit is 311/311. The record is retained in
+[`t524-s9-model40-clean-integration-replay.md`](../etc/evidence/t524-s9-model40-clean-integration-replay.md).
+No FDC, CPU, memory, firmware, profile or library workaround was added.
+
 ## S1 Admission
 
 S1 is a read-only completeness audit. It freezes the entire tracked library
@@ -37,7 +47,7 @@ library contract or implementation.
 
 The active packet in [Current](../states/CURRENT.md) is the authoritative S1
 contract. The owner-revised candidate is
-[the multi-consumer completion proposal](../proposals/m5-shared-library-multi-consumer-service-completion.md).
+[the retained multi-consumer completion proposal](M5-T524-shared-library-multi-consumer-service-completion-proposal.md).
 
 ## S1 Result
 

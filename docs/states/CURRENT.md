@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S9 |
-| Admission And Approval | Owner explicitly directed S8 closure and S9 admission on 2026-09-06. The Model-40 FDC integration failure remains a recorded transfer, not passing evidence; remote Linux CI is explicitly out of scope. |
-| Objective | Restore the Model-40 external boot integration row through the owning FDC/board/product route, then rerun the complete integration suite without adding any library compatibility behavior. |
+| Identifier Mode | Closed - M5 T524 S9 |
+| Admission And Approval | Owner explicitly directed S8 closure and S9 admission on 2026-09-06. Remote Linux CI is explicitly out of scope. |
+| Objective | Establish whether the Model-40 external boot row has a sole-owner defect, then rerun the complete integration suite without adding any library compatibility behavior. |
 | Non-goals | No new `lib` service, product vocabulary in `src/lib`, firmware/profile/BIOS workaround, controller alias, third-party import, or artifact release. |
-| Reference Baseline | [T524 S8 audit](../etc/evidence/t524-s8-portable-closure-audit.md), the `compaq-deskpro-386-model-40-1200k.yaml` 180-second FDC terminal, and the retained S1--S7 library contracts. |
-| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
+| Reference Baseline | [T524 S8 audit](../etc/evidence/t524-s8-portable-closure-audit.md), the clean [S9 replay](../etc/evidence/t524-s9-model40-clean-integration-replay.md), and the retained S1--S7 library contracts. |
+| Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
 | Files And ABI Surface | The Model-40 board/FDC/product integration owner and its focused regression evidence; `src/lib` may change only to correct a separately demonstrated publish-boundary defect. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Reproduce the exact Model-40 YAML failure; establish its sole owner and all affected profile variants; run focused owner proof, complete repository-only unit suite, complete external integration suite, governance and actual-diff review. |
+| Verification | Clean Model-40 replay reaches `installer-running`; complete repository-only unit and external integration suites pass; governance and actual-diff review pass. |
 | Expected Markers | The Model-40 row reaches its declared terminal; no new FDC/media/board state owner, BIOS special case, or library/product duplicate route exists; previously passing boot rows remain green. |
 | Asset Needs | Existing owner-managed Model-40 external ROM/CMOS/media only. |
 | Reporting Requirements | Report the root cause, every affected profile variant, actual changes and exact gate outcomes. |
 | Stop Conditions | Stop for an owner decision only if repair requires a second controller owner, a firmware/profile workaround, or a new `lib` product concept. |
-| Exit Criteria | The complete Model-40 integration mechanism and affected profile class are repaired at their sole owner and all required gates pass. |
+| Exit Criteria | The clean replay and all required gates pass, or a demonstrated sole-owner repair and its affected-profile sweep pass. |
 | Original Owner Request | Owner requires `lib` peer independence and one NXVM route, and explicitly directed S9 to repair the Model-40 integration failure without a lib workaround. |
-| Similar-Issue Sweep | Sweep every Model-40/AT FDC board binding and each external boot-matrix row affected by the repaired mechanism before closure. |
+| Similar-Issue Sweep | Complete integration covers every external boot-matrix row; all 44 rows pass. |
 
 ## Current Technical Baseline
 
@@ -57,6 +57,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T524 | Closed: source-identical `src/lib` corpus has standalone Windows verification, a complete manifest and one NXVM route per retained neutral root. Model 40 clean replay reaches `installer-running`; unit 311/311, integration 44/44 and governance pass. No production workaround was needed. [History](../history/M5-T524-shared-library-multi-consumer-service-completion.md). |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
