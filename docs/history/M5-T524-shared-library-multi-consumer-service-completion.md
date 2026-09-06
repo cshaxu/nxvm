@@ -33,3 +33,12 @@ and public-vocabulary findings against current code, and does not add a
 speculative library interface. Repository-only unit is 311/311 in 23.23
 seconds; documentation governance and diff checks pass. T524 remains open for
 the owner to admit S2's single manifest/build replacement boundary.
+
+## S2 Result
+
+S2 establishes one complete 63-file publish corpus and makes `src/lib` its
+only source-list owner. The standalone CMake entry, full verifier, disposable
+failure fixtures and Windows/Linux CI gate replace the partial UX-only checker
+and root-owned duplicate lists. The [S2 evidence](../etc/evidence/t524-s2-library-publish-boundary.md)
+records exact coverage and verification. No public library or product contract
+changes; T524 remains open for the per-root contract batches.

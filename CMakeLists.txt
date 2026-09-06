@@ -76,74 +76,13 @@ add_custom_target(cpu-timing-manifest-catalog
     DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
         "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
-# Shared host-facing value contracts. Native UX implementations are admitted
-# separately; this target deliberately has no Core, VM, or platform SDK edge.
-set(LIB_UX_CONTRACT_SOURCES
-    src/lib/ux/actions.c
-    src/lib/ux/linux/input.c
-    src/lib/ux/mailbox.c
-    src/lib/ux/presenter.c
-    src/lib/ux/router.c)
+add_subdirectory(src/lib)
 if(WIN32)
-    list(APPEND LIB_UX_CONTRACT_SOURCES src/lib/ux/win32/mailbox.c)
-else()
-    list(APPEND LIB_UX_CONTRACT_SOURCES src/lib/ux/linux/mailbox.c)
-endif()
-add_library(ux-contract STATIC ${LIB_UX_CONTRACT_SOURCES})
-target_include_directories(ux-contract PUBLIC "${CMAKE_SOURCE_DIR}/src")
-if(WIN32)
-    set(LIB_HOST_SOURCES src/lib/host/clock.c src/lib/host/win32/clock.c src/lib/host/win32/sync.c)
-else()
-    set(LIB_HOST_SOURCES src/lib/host/clock.c src/lib/host/linux/clock.c src/lib/host/linux/sync.c)
-endif()
-add_library(host-sync STATIC ${LIB_HOST_SOURCES})
-target_include_directories(host-sync PUBLIC "${CMAKE_SOURCE_DIR}/src")
-set(LIB_SESSION_LIFECYCLE_SOURCES
-    src/lib/session/state.c
-    src/lib/session/executor.c)
-add_library(session-lifecycle STATIC ${LIB_SESSION_LIFECYCLE_SOURCES})
-target_include_directories(session-lifecycle PUBLIC "${CMAKE_SOURCE_DIR}/src")
-set(LIB_STORAGE_IMAGE_SOURCES
-    src/lib/storage/commit.c
-    src/lib/storage/file.c
-    src/lib/storage/image.c)
-if(WIN32)
-    list(APPEND LIB_STORAGE_IMAGE_SOURCES src/lib/storage/win32/file.c)
-else()
-    list(APPEND LIB_STORAGE_IMAGE_SOURCES src/lib/storage/linux/file.c)
-endif()
-add_library(storage-image STATIC ${LIB_STORAGE_IMAGE_SOURCES})
-target_include_directories(storage-image PUBLIC "${CMAKE_SOURCE_DIR}/src")
-set(LIB_OBSERVABILITY_OUTCOME_SOURCE src/lib/observability/outcome.c)
-add_library(observability-outcome STATIC ${LIB_OBSERVABILITY_OUTCOME_SOURCE})
-target_include_directories(observability-outcome PUBLIC "${CMAKE_SOURCE_DIR}/src")
-if(WIN32)
-    set(LIB_UX_NATIVE_SOURCES
-        src/lib/ux/win32/actions.c
-        src/lib/ux/win32/console.c
-        src/lib/ux/win32/geometry.c
-        src/lib/ux/win32/input.c
-        src/lib/ux/win32/mouse.c
-        src/lib/ux/win32/runner.c
-        src/lib/ux/win32/window.c)
-    add_library(ux-win32-native STATIC ${LIB_UX_NATIVE_SOURCES})
-    target_include_directories(ux-win32-native PUBLIC "${CMAKE_SOURCE_DIR}/src")
-    target_link_libraries(ux-win32-native PUBLIC ux-contract)
     add_executable(ux-win32-input-smoke test/lib/ux_win32_input_smoke.c)
     target_link_libraries(ux-win32-input-smoke PRIVATE ux-win32-native)
     add_test(NAME unit.ux-win32-input-smoke COMMAND ux-win32-input-smoke)
     set_tests_properties(unit.ux-win32-input-smoke PROPERTIES LABELS "unit")
-else()
-    set(LIB_UX_NATIVE_SOURCES src/lib/ux/linux/console.c)
 endif()
-add_library(lib-neutral-corpus STATIC
-    ${LIB_UX_CONTRACT_SOURCES}
-    ${LIB_UX_NATIVE_SOURCES}
-    ${LIB_HOST_SOURCES}
-    ${LIB_SESSION_LIFECYCLE_SOURCES}
-    ${LIB_STORAGE_IMAGE_SOURCES}
-    ${LIB_OBSERVABILITY_OUTCOME_SOURCE})
-target_include_directories(lib-neutral-corpus PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_executable(ux-contract-smoke test/lib/ux_contract_smoke.c)
 target_link_libraries(ux-contract-smoke PRIVATE ux-contract)
 add_test(NAME unit.ux-contract-smoke COMMAND ux-contract-smoke)
@@ -156,11 +95,18 @@ add_executable(ux-mailbox-wake-smoke test/lib/ux_mailbox_wake_smoke.c)
 target_link_libraries(ux-mailbox-wake-smoke PRIVATE ux-contract)
 add_test(NAME unit.ux-mailbox-wake-smoke COMMAND ux-mailbox-wake-smoke)
 set_tests_properties(unit.ux-mailbox-wake-smoke PROPERTIES LABELS "unit")
-add_test(NAME unit.ux-library-manifest
+add_test(NAME unit.library-manifest
     COMMAND ${CMAKE_COMMAND}
-        -DUX_LIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
-        -P ${CMAKE_SOURCE_DIR}/test/support/ux_library_manifest.cmake)
-set_tests_properties(unit.ux-library-manifest PROPERTIES LABELS "unit")
+        -DLIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
+        -P ${CMAKE_SOURCE_DIR}/src/lib/verify_manifest.cmake)
+set_tests_properties(unit.library-manifest PROPERTIES LABELS "unit")
+add_test(NAME unit.library-manifest-fixtures
+    COMMAND ${CMAKE_COMMAND}
+        -DLIBRARY_ROOT:PATH=${CMAKE_SOURCE_DIR}/src/lib
+        -DVERIFY_SCRIPT:FILEPATH=${CMAKE_SOURCE_DIR}/src/lib/verify_manifest.cmake
+        -DWORK_ROOT:PATH=${CMAKE_BINARY_DIR}/test-library-manifest-fixtures
+        -P ${CMAKE_SOURCE_DIR}/test/lib/library_manifest_fixture.cmake)
+set_tests_properties(unit.library-manifest-fixtures PROPERTIES LABELS "unit")
 add_executable(lib-neutral-consumer test/lib/library_consumer_conformance.c)
 target_link_libraries(lib-neutral-consumer PRIVATE lib-neutral-corpus)
 add_test(NAME unit.lib-neutral-consumer COMMAND lib-neutral-consumer)
@@ -1338,16 +1284,6 @@ else()
     list(APPEND VM_PLATFORM_SOURCES
         src/vm/platform/linux/linux.c
     )
-    find_package(Curses REQUIRED)
-    find_package(Threads REQUIRED)
-    add_library(ux-linux-native STATIC
-        src/lib/ux/linux/console.c)
-    target_include_directories(ux-linux-native PUBLIC
-        "${CMAKE_SOURCE_DIR}/src"
-        ${CURSES_INCLUDE_DIRS})
-    target_link_libraries(ux-linux-native PUBLIC
-        ux-contract
-        ${CURSES_LIBRARIES})
 endif()
 add_library(vm-platform-requests STATIC
     src/vm/platform/request_bridge.c
@@ -1560,8 +1496,7 @@ add_executable(vm-platform-ux-frame-smoke
     test/vm/platform/vm_platform_ux_frame_smoke.c)
 target_link_libraries(vm-platform-ux-frame-smoke PRIVATE vm-platform)
 if(NOT WIN32)
-    target_include_directories(vm-platform PRIVATE ${CURSES_INCLUDE_DIRS})
-    target_link_libraries(vm-platform PUBLIC ux-linux-native ${CURSES_LIBRARIES} Threads::Threads)
+    target_link_libraries(vm-platform PUBLIC ux-linux-native)
 endif()
 
 add_executable(core-machine-guest-input-source-smoke

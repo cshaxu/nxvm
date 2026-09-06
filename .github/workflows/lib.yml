@@ -1,0 +1,27 @@
+name: shared-library
+
+on:
+  push:
+    paths:
+      - 'src/lib/**'
+      - '.github/workflows/lib.yml'
+  pull_request:
+    paths:
+      - 'src/lib/**'
+      - '.github/workflows/lib.yml'
+
+jobs:
+  library:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure standalone library
+        run: cmake -S src/lib -B build/lib
+      - name: Verify complete manifest
+        run: cmake --build build/lib --target lib-verify-manifest
+      - name: Build selected platform library
+        run: cmake --build build/lib --config Release
