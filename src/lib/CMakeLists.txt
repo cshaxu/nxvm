@@ -49,14 +49,14 @@ library_root(host-sync)
 add_library(session-lifecycle STATIC session/state.c)
 library_root(session-lifecycle)
 
-set(LIBRARY_STORAGE_SOURCES storage/commit.c storage/file.c storage/image.c)
+set(LIBRARY_STORAGE_SOURCES storage/file.c storage/medium.c)
 if(WIN32)
     list(APPEND LIBRARY_STORAGE_SOURCES storage/win32/file.c)
 else()
     list(APPEND LIBRARY_STORAGE_SOURCES storage/linux/file.c)
 endif()
-add_library(storage-image STATIC ${LIBRARY_STORAGE_SOURCES})
-library_root(storage-image)
+add_library(storage-medium STATIC ${LIBRARY_STORAGE_SOURCES})
+library_root(storage-medium)
 
 add_library(observability-outcome STATIC observability/outcome.c)
 library_root(observability-outcome)
@@ -75,7 +75,7 @@ endif()
 # peer root remains independently compilable and depends only on `base`.
 add_library(lib-neutral-corpus INTERFACE)
 target_link_libraries(lib-neutral-corpus INTERFACE
-    ux host-sync session-lifecycle storage-image observability-outcome)
+    ux host-sync session-lifecycle storage-medium observability-outcome)
 
 add_custom_target(lib-verify-manifest
     COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}

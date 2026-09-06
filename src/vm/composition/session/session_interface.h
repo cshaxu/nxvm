@@ -95,8 +95,6 @@ type_status vm_session_reconfigure_memory(vm_session *session,
 type_status vm_session_get_speed(const vm_session *session,
     vm_session_speed *out_speed);
 type_status vm_session_set_speed(vm_session *session, vm_session_speed speed);
-type_status vm_session_set_media_commit_enabled(vm_session *session,
-    C_INT enabled);
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path);
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path);
 /* Production host-input ingress.  Events are copied into the session's

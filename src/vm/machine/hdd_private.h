@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/media_interface.h"
-#include "lib/storage/image.h"
+#include "lib/storage/medium.h"
 #include "vm/machine/hdd.h"
 
 
@@ -26,14 +26,11 @@ typedef struct {
 
 typedef struct {
     type_bool flagReadOnly;  /* write protect status */
-    type_bool flagCommitEnabled; /* whether teardown may persist the overlay */
     type_bool flagDiskExist; /* flag of floppy disk existance */
 
-    type_virtual_address pImgBase;   /* pointer to disk in ram */
-    lib_storage_image *image;        /* sole owner of pImgBase bytes */
+    lib_storage_medium *medium;      /* sole owner of file or overlay bytes */
     STD_SIZE_T raw_byte_count; /* exact bytes read from the backing image */
     STD_SIZE_T virtual_byte_count; /* guest-visible rounded sector capacity */
-    type_bool flagPaddingWritten; /* persistence must materialize tail padding */
     type_unsigned_32 media_generation; /* advances on create, insert, remove, format */
     type_unsigned_32 geometry_cylinders;
     type_unsigned_16 geometry_heads;

@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/media_interface.h"
-#include "lib/storage/image.h"
+#include "lib/storage/medium.h"
 #include "vm/machine/fdd.h"
 
 typedef struct t_latch t_latch;
@@ -28,11 +28,9 @@ typedef struct {
 
 typedef struct {
     type_bool flagReadOnly;  /* write protect status */
-    type_bool flagCommitEnabled; /* whether teardown may persist the overlay */
     type_bool flagDiskExist; /* flag of floppy disk existance */
 
-    type_virtual_address pImgBase;   /* pointer to disk in ram */
-    lib_storage_image *image;        /* sole owner of pImgBase bytes */
+    lib_storage_medium *medium;      /* sole owner of file or overlay bytes */
     type_virtual_address pAddressMarks; /* one Deleted-Data flag per logical sector */
     type_unsigned_32 media_generation; /* advances on every insert/remove/create */
 } t_fdd_connect;
@@ -63,6 +61,8 @@ C_VOID vm_machine_fdd_create_for(t_fdd *fdd);
 C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
     STD_SIZE_T byte_count);
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name);
+C_INT vm_machine_fdd_insert_readonly_for(t_fdd *fdd, const C_CHAR *file_name);
+C_INT vm_machine_fdd_insert_direct_for(t_fdd *fdd, const C_CHAR *file_name);
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name);
 
 C_VOID vm_machine_fdd_print(const t_fdd *fdd);

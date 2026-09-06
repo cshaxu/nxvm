@@ -17,27 +17,26 @@
 
 static type_unsigned_32 vm_hdc_hdd_boot_partition_lba(const vm_session *session)
 {
-    const type_unsigned_8 *image;
-    const type_unsigned_8 *entry;
+    type_unsigned_8 entry[4];
+    core_machine_media_result result;
 
-    if (session == STD_NULL || session->hdd.connect.pImgBase == 0u) return 0u;
-    image = (const type_unsigned_8 *)session->hdd.connect.pImgBase;
-    entry = image + VM_HDC_HDD_PARTITION_TABLE_OFFSET;
-    return (type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET] |
-        ((type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 1u] << 8u) |
-        ((type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 2u] << 16u) |
-        ((type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 3u] << 24u);
+    if (session == STD_NULL || core_machine_media_read_bytes(session->media_registry,
+        VM_SESSION_MEDIA_HDD_ID, VM_HDC_HDD_PARTITION_TABLE_OFFSET +
+        VM_HDC_HDD_PARTITION_LBA_OFFSET, entry, sizeof(entry), &result) !=
+        TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0u;
+    return (type_unsigned_32)entry[0u] | ((type_unsigned_32)entry[1u] << 8u) |
+        ((type_unsigned_32)entry[2u] << 16u) | ((type_unsigned_32)entry[3u] << 24u);
 }
 
 static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_session *session)
 {
     type_unsigned_8 boot_sector[VM_HDC_HDD_BOOT_BYTES];
     type_unsigned_32 partition_lba;
-    const type_unsigned_8 *image;
+    type_unsigned_8 image[11];
+    core_machine_media_result result;
     STD_SIZE_T index;
 
     if (session == STD_NULL || session->core_machine == STD_NULL ||
-        session->hdd.connect.pImgBase == 0u ||
         core_machine_debug_read_memory(session->core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, boot_sector, sizeof(boot_sector)) !=
             TYPE_STATUS_OK) {
@@ -45,8 +44,9 @@ static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_session *session)
     }
     partition_lba = vm_hdc_hdd_boot_partition_lba(session);
     if (partition_lba == 0u) return 0;
-    image = (const type_unsigned_8 *)session->hdd.connect.pImgBase +
-        (STD_SIZE_T)partition_lba * VM_HDC_HDD_BOOT_BYTES;
+    if (core_machine_media_read_bytes(session->media_registry, VM_SESSION_MEDIA_HDD_ID,
+        (STD_SIZE_T)partition_lba * VM_HDC_HDD_BOOT_BYTES, image, sizeof(image),
+        &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0;
     /* The VBR is already executing when this boundary is observed. Its BPB
        contains boot-time writable fields, so compare its stable identity. */
     for (index = 0u; index < 11u; ++index) {
@@ -109,22 +109,20 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (!loaded) {
         type_unsigned_8 bytes[16] = {0};
+        type_unsigned_8 image_bytes[4] = {0};
+        core_machine_media_result image_result;
 
         (C_VOID)core_machine_debug_read_memory(session->core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, bytes, sizeof(bytes));
+        (C_VOID)core_machine_media_read_bytes(session->media_registry,
+            VM_SESSION_MEDIA_HDD_ID, (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) *
+            VM_HDC_HDD_BOOT_BYTES, image_bytes, sizeof(image_bytes), &image_result);
         STD_FPRINTF(STD_STDERR,
             "M5:T213:S3:HDC:SYSTEM-NO-HANDOFF count=%u command=%02X memory=%02X%02X%02X%02X expected=%02X%02X%02X%02X\n",
             session->core_machine->hdc.data.command_count,
             session->core_machine->hdc.data.last_command,
             bytes[0], bytes[1], bytes[2], bytes[3],
-            TYPE_DEREFERENCE_UNSIGNED_8(session->hdd.connect.pImgBase +
-                (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) * VM_HDC_HDD_BOOT_BYTES),
-            TYPE_DEREFERENCE_UNSIGNED_8(session->hdd.connect.pImgBase +
-                (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) * VM_HDC_HDD_BOOT_BYTES + 1u),
-            TYPE_DEREFERENCE_UNSIGNED_8(session->hdd.connect.pImgBase +
-                (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) * VM_HDC_HDD_BOOT_BYTES + 2u),
-            TYPE_DEREFERENCE_UNSIGNED_8(session->hdd.connect.pImgBase +
-                (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) * VM_HDC_HDD_BOOT_BYTES + 3u));
+            image_bytes[0], image_bytes[1], image_bytes[2], image_bytes[3]);
         goto fail;
     }
     STD_PRINTF("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",

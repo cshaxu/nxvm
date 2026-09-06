@@ -20,9 +20,8 @@ struct integration_yaml_session {
     C_VOID *transform_opaque;
 };
 
-/* The integration boundary accepts one catalog request. VM loads the declared
- * external media into its sole in-memory overlay; tests may alter only that
- * owner-backed overlay, never an asset file or a replacement request path. */
+/* The integration boundary accepts one catalog request. VM opens declared
+ * external media as discard-only sparse overlays; tests never alter assets. */
 C_INT integration_yaml_session_assets_present(
     const vm_product_session_request *request);
 type_status integration_yaml_session_open(const C_CHAR *directory,

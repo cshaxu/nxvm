@@ -19,11 +19,24 @@ static C_INT vm_media_direct_write(const C_CHAR *path, const C_VOID *bytes,
     return failed;
 }
 
+static C_INT vm_media_direct_read_first(const C_CHAR *path,
+    type_unsigned_8 expected)
+{
+    STD_FILE *file = STD_FOPEN(path, "rb");
+    type_unsigned_8 value = 0u;
+    C_INT failed = file == STD_NULL || STD_FREAD(&value, 1u, 1u, file) != 1u ||
+        value != expected;
+
+    if (file != STD_NULL && STD_FCLOSE(file) != 0) failed = 1;
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     t_fdd fdd;
     t_hdd hdd;
     type_unsigned_8 hdd_bytes[512] = {0x5au};
+    type_unsigned_8 direct_value = 0x3cu;
     type_unsigned_8 byte = 0u;
     C_INT failed = 0;
 
@@ -48,11 +61,21 @@ C_INT main(C_VOID)
     }
     if (vm_machine_fdd_remove_for(&fdd, STD_NULL) != TYPE_FALSE ||
         vm_machine_hdd_remove(&hdd, STD_NULL) != TYPE_FALSE) failed = 1;
+    if (!failed && (vm_machine_fdd_insert_direct_for(&fdd,
+            vm_media_direct_fdd_path) != TYPE_FALSE ||
+        vm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, direct_value) != TYPE_FALSE ||
+        vm_machine_hdd_insert_direct(&hdd, vm_media_direct_hdd_path) != TYPE_FALSE ||
+        vm_machine_hdd_media_provider()->write_bytes(&hdd, 0u, &direct_value,
+            1u) != CORE_MACHINE_MEDIA_RESULT_OK ||
+        vm_machine_fdd_remove_for(&fdd, STD_NULL) != TYPE_FALSE ||
+        vm_machine_hdd_remove(&hdd, STD_NULL) != TYPE_FALSE ||
+        vm_media_direct_read_first(vm_media_direct_fdd_path, direct_value) ||
+        vm_media_direct_read_first(vm_media_direct_hdd_path, direct_value))) failed = 1;
     vm_machine_fdd_finalize(&fdd);
     vm_machine_hdd_finalize(&hdd);
     (C_VOID)STD_REMOVE(vm_media_direct_fdd_path);
     (C_VOID)STD_REMOVE(vm_media_direct_hdd_path);
     if (failed) return 1;
-    STD_PRINTF("M5:T522:S9:MEDIA-DIRECT-READONLY:OK\n");
+    STD_PRINTF("M5:T524:S10:MEDIA-DIRECT-READONLY:OK\n");
     return 0;
 }

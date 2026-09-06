@@ -7,9 +7,10 @@ root may combine them; a library component may not include another component.
 - `host` provides opaque native events and cancellable joined tasks.
 - `session` provides opaque lifecycle state. Product code owns execution
   callbacks, host threads and safe points.
-- `storage` owns exclusive byte-image leases and direct-readonly,
-  direct-writable and overlay persistence mechanics. Product code owns
-  storage topology and selects safe replacement points.
+- `storage` owns exclusive byte-medium leases. Direct and readonly media retain
+  their backing file for offset I/O; overlay retains an immutable base plus only
+  changed 4-KiB pages, then discards them. Product code owns storage topology
+  and selects safe replacement points.
 - `observability` publishes bounded copied outcomes.
 
 `ux` owns copied presentation values and its native Console/Window loops.

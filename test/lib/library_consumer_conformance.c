@@ -1,7 +1,7 @@
 #include "lib/host/sync.h"
 #include "lib/observability/outcome.h"
 #include "lib/session/state.h"
-#include "lib/storage/image.h"
+#include "lib/storage/medium.h"
 #include "lib/ux/actions.h"
 #include "lib/ux/capture.h"
 #include "lib/ux/event.h"
@@ -89,30 +89,23 @@ done:
 static int library_consumer_storage_and_outcome(void)
 {
     static const lib_u8 source[] = { 1u, 2u, 3u };
-    lib_storage_image *images[3] = { LIB_NULL, LIB_NULL, LIB_NULL };
+    lib_storage_medium *medium = LIB_NULL;
     lib_observability_outcome *outcome = LIB_NULL;
     lib_observability_outcome_snapshot snapshot;
     int passed = 0;
 
-    if (lib_storage_image_create_overlay(source, sizeof(source), &images[0]) !=
+    if (lib_storage_medium_create_overlay(source, sizeof(source), &medium) !=
             LIB_STATUS_OK ||
-        lib_storage_image_take_direct_readonly(malloc(sizeof(source)),
-            sizeof(source), &images[1]) != LIB_STATUS_OK ||
-        lib_storage_image_take_direct_writable(malloc(sizeof(source)),
-            sizeof(source), &images[2]) != LIB_STATUS_OK ||
         lib_observability_outcome_create(&outcome) != LIB_STATUS_OK) goto done;
-    if (lib_storage_image_writable_bytes(images[0]) == LIB_NULL ||
-        lib_storage_image_writable_bytes(images[1]) != LIB_NULL ||
-        lib_storage_image_writable_bytes(images[2]) == LIB_NULL ||
+    if (lib_storage_medium_write_at(medium, 0u, source, sizeof(source)) !=
+            LIB_STATUS_OK ||
         lib_observability_outcome_publish(outcome, LIB_STATUS_IO_ERROR) !=
             LIB_STATUS_IO_ERROR || lib_observability_outcome_capture(outcome,
             &snapshot) != LIB_STATUS_OK || !snapshot.valid ||
         snapshot.status != LIB_STATUS_IO_ERROR) goto done;
     passed = 1;
 done:
-    lib_storage_image_discard(&images[0]);
-    lib_storage_image_discard(&images[1]);
-    lib_storage_image_discard(&images[2]);
+    lib_storage_medium_discard(&medium);
     lib_observability_outcome_destroy(outcome);
     return passed;
 }

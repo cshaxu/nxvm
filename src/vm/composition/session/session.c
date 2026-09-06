@@ -225,24 +225,6 @@ type_status vm_session_set_speed(vm_session *session, vm_session_speed speed)
     return TYPE_STATUS_OK;
 }
 
-type_status vm_session_set_media_commit_enabled(vm_session *session,
-    C_INT enabled)
-{
-    if (session == STD_NULL || !session->active ||
-        vm_session_control_is_running(&session->control)) {
-        return TYPE_STATUS_INVALID_STATE;
-    }
-    vm_machine_fdd_set_commit_enabled(&session->fdd, enabled);
-    if (session->model40_private) {
-        vm_machine_fdd_set_commit_enabled(&session->floppy[1u], enabled);
-    }
-    if (session->model40_private || session->xt_private ||
-        (session->profile != STD_NULL && session->profile->hdc_present)) {
-        vm_machine_hdd_set_commit_enabled(&session->hdd, enabled);
-    }
-    return TYPE_STATUS_OK;
-}
-
 static type_status vm_session_default_at_floppy_select(const vm_session_config *config,
     vm_profile_floppy_kind *out_kind)
 {

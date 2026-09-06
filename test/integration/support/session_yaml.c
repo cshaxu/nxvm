@@ -62,12 +62,6 @@ type_status integration_yaml_session_restart(integration_yaml_session *session)
         &(core_product_session_open_options) {0u, STD_NULL, &session->request,
             sizeof(session->request)}, (C_VOID **)&session->session);
     if (status != TYPE_STATUS_OK || session->session == STD_NULL) return TYPE_STATUS_FAULT;
-    if (vm_session_set_media_commit_enabled(session->session, TYPE_FALSE) !=
-        TYPE_STATUS_OK) {
-        (C_VOID)session->provider.close(session->provider.context, session->session);
-        session->session = STD_NULL;
-        return TYPE_STATUS_FAULT;
-    }
     if (session->transform != STD_NULL && session->transform(session,
             session->transform_opaque) != TYPE_STATUS_OK) {
         (C_VOID)session->provider.close(session->provider.context, session->session);

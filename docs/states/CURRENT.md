@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Closed - M5 T524 S9 |
-| Admission And Approval | Owner explicitly directed S8 closure and S9 admission on 2026-09-06. Remote Linux CI is explicitly out of scope. |
-| Objective | Establish whether the Model-40 external boot row has a sole-owner defect, then rerun the complete integration suite without adding any library compatibility behavior. |
-| Non-goals | No new `lib` service, product vocabulary in `src/lib`, firmware/profile/BIOS workaround, controller alias, third-party import, or artifact release. |
-| Reference Baseline | [T524 S8 audit](../etc/evidence/t524-s8-portable-closure-audit.md), the clean [S9 replay](../etc/evidence/t524-s9-model40-clean-integration-replay.md), and the retained S1--S7 library contracts. |
+| Identifier Mode | Owner-Reopen - M5 T524 S10 |
+| Admission And Approval | Owner explicitly reopened T524 and admitted S10 on 2026-09-06. Remote Linux CI remains explicitly out of scope. |
+| Objective | Replace the false RAM-only interpretation of direct/readonly media with one neutral file-backed storage route and discard-only sparse 4-KiB dirty-page overlay, then prove NXVM FDD/HDD consume it without importing controller semantics into `lib`. |
+| Non-goals | No SoftPC source import, product vocabulary in `src/lib`, firmware/profile/BIOS workaround, controller alias, media topology, CHS, or guest policy in the library. |
+| Reference Baseline | [T524 S6 storage lease contract](../etc/evidence/t524-s6-storage-lease-contract.md), the clean [S9 replay](../etc/evidence/t524-s9-model40-clean-integration-replay.md), and the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | The Model-40 board/FDC/product integration owner and its focused regression evidence; `src/lib` may change only to correct a separately demonstrated publish-boundary defect. |
+| Files And ABI Surface | `src/lib/storage/` public opaque byte-medium ABI and native Win32/Linux mechanics; NXVM FDD/HDD media bindings and repository-only tests. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Clean Model-40 replay reaches `installer-running`; complete repository-only unit and external integration suites pass; governance and actual-diff review pass. |
-| Expected Markers | The Model-40 row reaches its declared terminal; no new FDC/media/board state owner, BIOS special case, or library/product duplicate route exists; previously passing boot rows remain green. |
-| Asset Needs | Existing owner-managed Model-40 external ROM/CMOS/media only. |
-| Reporting Requirements | Report the root cause, every affected profile variant, actual changes and exact gate outcomes. |
-| Stop Conditions | Stop for an owner decision only if repair requires a second controller owner, a firmware/profile workaround, or a new `lib` product concept. |
-| Exit Criteria | The clean replay and all required gates pass, or a demonstrated sole-owner repair and its affected-profile sweep pass. |
-| Original Owner Request | Owner requires `lib` peer independence and one NXVM route, and explicitly directed S9 to repair the Model-40 integration failure without a lib workaround. |
-| Similar-Issue Sweep | Complete integration covers every external boot-matrix row; all 44 rows pass. |
+| Verification | Repository-only storage and FDD/HDD focused proof, complete unit suite, lib-only build/CTest, strict Linux syntax, external integration suite, governance and actual-diff review pass. |
+| Expected Markers | Direct and readonly retain file handles and perform offset I/O; overlay retains an immutable base plus only dirty 4-KiB pages; no FDD/HDD direct `FILE`/native I/O route or retained full-file load occurs. |
+| Asset Needs | Existing external integration assets only; no new assets or third-party source. |
+| Reporting Requirements | Report the former false contract, public ABI, every FDD/HDD route disposition, and exact gate outcomes. |
+| Stop Conditions | Stop for an owner decision only if direct file I/O requires controller semantics, a product-specific ABI, or an incompatible persistence policy. |
+| Exit Criteria | One neutral library implementation supports all three modes, NXVM FDD/HDD use it for file media, all gates pass, and the implementation P is pushed. T524 remains open for owner confirmation. |
+| Original Owner Request | Owner requires direct and readonly image-file access as a shared lib capability, matching SoftPC's general file-media model without importing SoftPC controller code. |
+| Similar-Issue Sweep | Sweep all tracked production FDD/HDD and storage paths for direct native/file I/O and full-file materialization; every hit is replaced, not applicable, or explicitly recorded. |
 
 ## Current Technical Baseline
 

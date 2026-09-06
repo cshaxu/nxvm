@@ -112,7 +112,7 @@ target_link_libraries(lib-neutral-consumer PRIVATE lib-neutral-corpus)
 add_test(NAME unit.lib-neutral-consumer COMMAND lib-neutral-consumer)
 set_tests_properties(unit.lib-neutral-consumer PROPERTIES LABELS "unit")
 add_executable(storage-file-smoke test/lib/storage_file_smoke.c)
-target_link_libraries(storage-file-smoke PRIVATE storage-image)
+target_link_libraries(storage-file-smoke PRIVATE storage-medium)
 add_test(NAME unit.storage-file-smoke COMMAND storage-file-smoke)
 set_tests_properties(unit.storage-file-smoke PROPERTIES LABELS "unit")
 
@@ -1418,7 +1418,7 @@ target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     core-product-session
     core-product-utils
     core-machine-boundary
-    storage-image
+    storage-medium
     type-facade
 )
 
@@ -1434,7 +1434,7 @@ target_link_libraries(vm-product-console-exit-smoke PRIVATE
     core-product-session
     core-product-utils
     core-machine-boundary
-    storage-image
+    storage-medium
     type-facade
 )
 
@@ -1475,7 +1475,7 @@ endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
     core-machine-boundary
-    storage-image
+    storage-medium
     type-facade)
 
 add_library(vm-platform STATIC ${VM_PLATFORM_SOURCES})
@@ -1509,8 +1509,8 @@ add_executable(host-sync-smoke
 target_link_libraries(host-sync-smoke PRIVATE host-sync)
 add_executable(session-state-smoke test/lib/session_state_smoke.c)
 target_link_libraries(session-state-smoke PRIVATE session-lifecycle)
-add_executable(storage-image-smoke test/lib/storage_image_smoke.c)
-target_link_libraries(storage-image-smoke PRIVATE storage-image)
+add_executable(storage-medium-smoke test/lib/storage_medium_smoke.c)
+target_link_libraries(storage-medium-smoke PRIVATE storage-medium)
 add_executable(observability-outcome-smoke test/lib/observability_outcome_smoke.c)
 target_link_libraries(observability-outcome-smoke PRIVATE observability-outcome)
 
@@ -1586,7 +1586,7 @@ target_link_libraries(vm-composition PUBLIC
     vm-profile
     vm-product
     vm-request-transport)
-target_link_libraries(vm-composition PRIVATE session-lifecycle observability-outcome storage-image)
+target_link_libraries(vm-composition PRIVATE session-lifecycle observability-outcome storage-medium)
 target_link_libraries(vm-composition PRIVATE vm-platform)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
@@ -1596,7 +1596,7 @@ target_include_directories(vm-machine PUBLIC
 target_link_libraries(vm-machine PUBLIC
     core-machine
     core-machine-boundary
-    storage-image)
+    storage-medium)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
 target_include_directories(vm-product PUBLIC
@@ -1605,7 +1605,7 @@ target_include_directories(vm-product PUBLIC
 target_link_libraries(vm-product PUBLIC
     core-product-utils
     core-machine-boundary
-    storage-image)
+    storage-medium)
 
 add_executable(vm-execution-context-smoke
     test/integration/dos/vm_execution_context_smoke.c
@@ -2381,7 +2381,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-guest-input-source-smoke
     host-sync-smoke
     session-state-smoke
-    storage-image-smoke
+    storage-medium-smoke
     observability-outcome-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
@@ -2843,6 +2843,7 @@ endforeach()
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
+    storage-medium-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-media-provider-smoke
     vm-media-direct-readonly-smoke
@@ -3483,16 +3484,10 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM ATA PIO feature ownership boundary"
         VERBATIM)
 
-    add_custom_target(verify-hdd-legacy-api-closure
+    add_custom_target(verify-media-sole-route
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdd_legacy_api_closure.cmake"
-        COMMENT "Verifying obsolete HDD transfer API closure"
-        VERBATIM)
-
-    add_custom_target(verify-vm-media-atomic-save
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_media_atomic_save.cmake"
-        COMMENT "Verifying VM media save failure preservation"
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_media_sole_route.cmake"
+        COMMENT "Verifying the sole FDD/HDD media route"
         VERBATIM)
 
     add_custom_target(verify-core-utils-boundary
@@ -3685,8 +3680,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary
-    verify-hdd-legacy-api-closure
-    verify-vm-media-atomic-save
+    verify-media-sole-route
     verify-core-utils-boundary
     verify-cancellable-wait-boundary
     verify-vm-composition-lifecycle
@@ -3755,7 +3749,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(storage-image-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(storage-medium-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(observability-outcome-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

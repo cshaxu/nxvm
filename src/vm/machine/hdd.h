@@ -27,10 +27,10 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     STD_SIZE_T raw_byte_count);
 C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name);
 C_INT vm_machine_hdd_insert_readonly(t_hdd *hdd, const C_CHAR *file_name);
+C_INT vm_machine_hdd_insert_direct(t_hdd *hdd, const C_CHAR *file_name);
 C_INT vm_machine_hdd_set_geometry(t_hdd *hdd, type_unsigned_32 cylinders,
     type_unsigned_16 heads, type_unsigned_16 sectors_per_track);
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name);
-C_VOID vm_machine_hdd_set_commit_enabled(t_hdd *hdd, C_INT enabled);
 const core_machine_media_provider *vm_machine_hdd_media_provider(C_VOID);
 
 #ifdef __cplusplus

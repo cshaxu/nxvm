@@ -37,8 +37,8 @@ C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
     STD_SIZE_T byte_count);
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name);
 C_INT vm_machine_fdd_insert_readonly_for(t_fdd *fdd, const C_CHAR *file_name);
+C_INT vm_machine_fdd_insert_direct_for(t_fdd *fdd, const C_CHAR *file_name);
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name);
-C_VOID vm_machine_fdd_set_commit_enabled(t_fdd *fdd, C_INT enabled);
 C_VOID vm_machine_fdd_print(const t_fdd *fdd);
 const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID);
 

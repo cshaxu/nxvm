@@ -37,10 +37,11 @@ conformance tests using public library headers only.
   callback driver is admitted only if two real product bindings need it; it
   names `enter`, `run_until_safe_point`, acknowledgement and `leave` solely as
   product callbacks, never as machine ownership.
-- **Storage** owns byte-image leases, readonly/direct/overlay persistence,
-  replacement transaction, commit/discard, flush and defined concurrent
-  read/replace/destroy behavior. It does not know media topology, CHS, drives,
-  firmware, profiles or guest policy.
+- **Storage** owns opaque byte-medium leases. Readonly and direct media retain
+  a file-backed byte route; overlay retains its readonly base plus sparse
+  4-KiB dirty pages and is discarded. It owns replacement, offset I/O, flush
+  and defined exclusive-lease destruction behavior. It does not know media
+  topology, CHS, drives, firmware, profiles or guest policy.
 - **Observability** owns bounded copied outcomes. A bounded diagnostic event is
   admitted only after two consumers require sequence, status/severity and fixed
   copied message/metadata; paths, CLI rendering, machine traces and log policy
@@ -87,6 +88,14 @@ owner; it does not create a product dependency.
    repair only a demonstrated FDC/board/product defect, then rerun the
    complete integration gate. It may not add a library compatibility route or
    product vocabulary.
+10. **S10 - file-backed storage repair.** Correct the false equivalence between
+   an owned RAM byte image and a direct file medium. Add one opaque neutral
+   byte-medium contract with offset read/write/flush and direct, readonly and
+   sparse 4-KiB dirty-page overlay modes. The overlay reads its immutable base
+   file on demand and allocates only changed pages; it always discards at media
+   removal and has no commit operation. Port NXVM FDD/HDD file insertion to that contract while
+   retaining their topology and offset calculation locally. Do not import
+   SoftPC controller code or add controller vocabulary to `lib`.
 
 ## Acceptance
 
@@ -102,6 +111,10 @@ owner; it does not create a product dependency.
   runtime is not required.
 - The later SoftPC task imports the recorded manifest unchanged and supplies
   only a product binding.
+- Direct and readonly media retain an opened backing file and perform bounded
+  offset I/O; they never first materialize an entire file merely to call them
+  direct. Overlay retains the readonly base and only changed 4-KiB pages in
+  memory; it is always discarded and never materializes a replacement.
 
 ## Non-goals
 

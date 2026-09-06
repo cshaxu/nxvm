@@ -4,6 +4,22 @@ T524 turns the existing `src/lib` roots into a complete, independently verified
 source-identical corpus for NXVM and a later SoftPC adoption. It does not make
 the library an emulator or a product-binding owner.
 
+## S10 Owner-Reopen: File-Backed Storage Repair
+
+The owner rejected the prior S6 conclusion: an owned RAM byte image is not a
+direct disk-file medium.  SoftPC's existing floppy and fixed-disk paths retain
+an open file and perform offset I/O for direct and readonly media, whereas
+NXVM had first read the complete file into RAM.  S10 corrects this shared
+library gap with an opaque neutral byte-medium contract.  It must leave CHS,
+media topology, controller timing and product policy outside `src/lib`; the
+task remains open after the implementation P for owner confirmation.
+
+The owner further specifies the overlay contract: it is a readonly physical
+base plus sparse 4-KiB dirty pages.  A read observes a dirty page when present
+and otherwise reads the base at that byte offset.  It must not materialize the
+whole source merely to mount it.  It is discard-only: direct is the sole
+write-through mode and overlay never commits a replacement.
+
 ## S8 Local P1
 
 Owner-approved P1 publishes the completed library-local portability batch:
@@ -139,16 +155,13 @@ now obeys its existing validity contract. Focused checks, standalone lib build,
 manifest, complete unit 311/311, session-root vocabulary/dependency sweeps,
 documentation governance and diff checks pass. T524 remains open for S6--S8.
 
-## S6 Result
+## S6 Result (superseded by S10 file-backed medium)
 
-S6 gives `lib/storage` one explicit exclusive byte-image lease and replacement
-transaction.  Direct-readonly, direct-writable and overlay byte modes remain
-the only retained persistence modes.  The generic transfer accepts an empty
-lease, returns the retired lease for caller-controlled destruction, and leaves
-the slot unchanged on an invalid alias.  NXVM FDD and HDD candidate swaps now
-both use that one operation; topology and derived-byte-view policy remain
-product local.  The complete contract and evidence are in [T524 S6 storage
-lease contract](../etc/evidence/t524-s6-storage-lease-contract.md).
+S6 introduced an explicit exclusive byte-image lease and replacement
+transaction. S10 supersedes its RAM-backed direct/overlay interpretation with
+one file-backed byte-medium contract; S6's replacement ownership rule remains
+the retained transfer mechanism. The complete former contract is retained in
+[T524 S6 storage lease contract](../etc/evidence/t524-s6-storage-lease-contract.md).
 
 ## S6 Acceptance
 
@@ -179,3 +192,18 @@ run-handle integration proof, complete unit 311/311 in 21.45 seconds,
 standalone library build/CTest, manifest, strict Linux syntax,
 observability-root vocabulary/dependency sweeps, documentation governance and
 diff checks pass. T524 remains open only for S8.
+
+## S10 Implementation P1
+
+S10 replaces the former RAM-only `storage/image` and persistence-sidecar path
+with `storage/medium`: Direct and Readonly retain a file handle; Overlay keeps
+the readonly base plus sparse 4-KiB dirty pages and always discards them.
+FDD/HDD retain geometry and media policy locally while all file-media byte
+access uses the one opaque lease. The obsolete commit APIs, session toggle,
+sidecar and padding-persistence state are deleted.
+
+Focused proof passes for the neutral medium, FDD/HDD Direct/Readonly and
+discard-only Overlay routes. The complete unit replay passes 311/311; the
+fresh Release Model-40 1.2MB external-YAML row reaches `installer-running` in
+53.75 seconds. T524 remains open for owner confirmation and task-level
+integration closure.
