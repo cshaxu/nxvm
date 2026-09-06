@@ -144,3 +144,18 @@ product debugger commands, not as a Core file owner. Full repository-only
 unit passes `311/311` in 18.46 seconds, both refreshed CMake boundary checks,
 documentation governance, manifest and obsolete-symbol sweeps pass. S7 is
 admitted for the single Win32 keyboard binding move.
+
+## S7 Result And Acceptance
+
+S7 deletes Core's Win32 keyboard implementation. Review rejected the initial
+VM relocation because it duplicated `lib/ux/win32/input.c`; corrective P2
+removes that duplicate. `lib/ux` is now the sole host-layout normalizer and VM
+has one value-only `ux_event` to Core-input binding used by both native input
+and test injection.
+
+Coordinator actual-diff review accepts `ce9ba52f` plus `64a30bca`: only
+`lib/ux/win32/input.c` reads Win32 keyboard-layout APIs; the obsolete Core and
+VM normalizer symbols have no source hits. Focused shared-UX and VM ingress
+proofs pass, as does repository-only unit `311/311` in 15.88 seconds.
+Documentation governance and diff checks pass. S8 is admitted for semantic
+Core guest-boundary names only.

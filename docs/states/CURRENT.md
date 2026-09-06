@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective - M5 T523 S7 |
-| Admission And Approval | Owner reopened closed T523 on 2026-09-05 and explicitly approved four corrective S tasks: generic file mechanics, native keyboard ownership, Core guest-boundary naming, then monotonic host-clock mechanics. S6 is accepted at `bd6141b1`. S7 review corrected its initial VM-only disposition after finding `lib/ux/win32/input.c` is the existing shared native normalizer; the owner-required one-route rule selects it rather than a VM duplicate. No exception authorizes product coupling, a compatibility wrapper, a machine safe-point in lib, controller behavior in lib, or a second generic route. |
-| Objective | Remove the Core Win32 keyboard-layout-to-PC-input path; `lib/ux` is the sole native normalizer and VM solely maps its product-neutral events to Core guest-input values. |
-| Non-goals | No guest keyboard protocol change, UX redesign, machine/controller/profile change, asset change, Linux graphics backend, speculative framework, or move of guest-input semantics into `lib`. |
-| Reference Baseline | `bd6141b1`: accepted T523 S6 generic file-owner replacement. |
+| Identifier Mode | Corrective - M5 T523 S8 |
+| Admission And Approval | Owner reopened T523 on 2026-09-05 for the four stated cleanups. S6 is accepted at `bd6141b1`; S7 is accepted at `64a30bca`. No compatibility wrapper, second mailbox/input route, product coupling or guest-state change is authorized. |
+| Objective | Give the retained Core guest-input, guest-frame and copied-publication boundary semantically accurate owner paths, without creating a native UX route. |
+| Non-goals | No guest input/display behavior change, UX redesign, native backend move, machine/controller/profile change, asset change, or mailbox replacement. |
+| Reference Baseline | `64a30bca`: accepted S7 one-normalizer replacement. |
 | Candidate Proposal | [T523 retained proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md), corrective S6--S9. |
-| Files And ABI Surface | `src/core/platform/win32/keyboard.*`, its Core-path test, `src/lib/ux/win32/input.*`, `src/vm/platform/win32/**`, `src/vm/platform/ux_binding.c` and CMake target ownership; lib emits product-neutral events, VM retains only the event-to-Core value mapping, and Core exposes neither `windows.h` nor host-layout policy. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle and rejected-P correction; [Architecture](../rules/ARCHITECTURE.md): Core owns guest input, lib owns native normalization and VM owns one product binding; [Coding](../rules/CODING.md): one route and no forwarding facade; [Documentation](../rules/DOCUMENT.md): current/history authority separation. |
-| Verification | Focused shared native key, recovered-character and UTF-16 normalization proof; VM host-ingress proof; complete repository-only unit suite; repository sweep for obsolete Core/VM duplicate keyboard conversion helpers; documentation governance; `git diff --check`. |
-| Expected Markers | `M5:T523:S7:UX-WIN32-KEYBOARD-OWNER:OK`; no `core_platform_win32_keyboard_*` or duplicate VM layout-conversion implementation remains. |
+| Files And ABI Surface | `src/core/platform/display_frame.h`, `input_interface.*`, `presentation_mailbox*`, their callers/tests and CMake names. Core values remain guest-derived and copied; `lib/ux` stays the independent native presenter. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): corrective-S lifecycle and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): one guest-boundary owner and no native Core dependency; [Coding](../rules/CODING.md): semantic names and replacement cleanup; [Documentation](../rules/DOCUMENT.md): current/history separation. |
+| Verification | Focused Core input/frame/mailbox tests; full unit suite; sweep for retired names and duplicate mailbox/input routes; documentation governance and `git diff --check`. |
+| Expected Markers | A new S8 owner marker; no retired `core/platform` guest-boundary path remains. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record every caller moved, API name change, source/test line delta, the lib normalizer and the one VM event binding. Report any conversion path that would need to put Win32 types or host-layout policy back into Core. |
-| Stop Conditions | Stop and report if the move requires changing guest scan-code semantics, introduces a second normalizer, or needs a Core-to-VM callback that exposes native handles. |
-| Exit Criteria | The source and test leave the Core Win32 keyboard directory; `lib/ux` is the sole native normalizer; VM contains no layout conversion and one event-to-Core value mapping; Core remains free of `windows.h`; complete unit/governance/sweeps pass; actual-diff review accepts the result. |
+| Reporting Requirements | Record old-to-new names, callers, source/test delta, sole Core state owner and explicit distinction from `lib/ux`. Report any name that cannot move without an ABI or behavior change. |
+| Stop Conditions | Stop and report if a rename requires a compatibility facade, creates a second mailbox/input owner, or exposes native state through Core. |
+| Exit Criteria | Guest input/frame/publication have clear Core owner names, obsolete paths are gone, `lib/ux` remains separate, and complete verification/review pass. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Sweep every `src/**` native keyboard-layout conversion, scan-code synthesis, recovered-character and UTF-16 normalizer; retain the shared `lib/ux` normalizer, retain VM only as event-to-Core value binding, and record the S8/S9 receivers without implementing them in S7. |
+| Similar-Issue Sweep | Sweep all Core platform names and references for guest-boundary versus native-host ambiguity; consolidate names at the existing Core owner and record S9 clock work without implementing it in S8. |
 
 ## Current Technical Baseline
 
