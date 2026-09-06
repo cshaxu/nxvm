@@ -127,3 +127,11 @@ transitions.  Focused storage/FDD/HDD checks, complete unit 311/311 in 26.07
 seconds, standalone library build/CTest, manifest, strict Linux syntax,
 storage-root vocabulary/dependency sweeps, documentation governance and diff
 checks pass. T524 remains open for S7--S8.
+
+## S7 Result
+
+S7 retains copied outcome as the complete observability root.  It documents
+exclusive caller serialization and copied snapshot behavior, confirms the
+whole consumer set requires only sequence/status/validity, and rejects an
+unproven diagnostic-event framework.  The supporting result is [T524 S7
+observability disposition](../etc/evidence/t524-s7-observability-disposition.md).

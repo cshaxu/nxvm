@@ -5,7 +5,13 @@ int main(void)
     lib_observability_outcome *outcome = LIB_NULL;
     lib_observability_outcome_snapshot snapshot;
 
-    if (lib_observability_outcome_create(&outcome) != LIB_STATUS_OK ||
+    if (lib_observability_outcome_create(LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        lib_observability_outcome_capture(LIB_NULL, &snapshot) !=
+            LIB_STATUS_INVALID_ARGUMENT || lib_observability_outcome_create(&outcome) !=
+            LIB_STATUS_OK || lib_observability_outcome_publish(LIB_NULL,
+            LIB_STATUS_IO_ERROR) != LIB_STATUS_INVALID_ARGUMENT ||
+        lib_observability_outcome_capture(outcome, LIB_NULL) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
         lib_observability_outcome_capture(outcome, &snapshot) != LIB_STATUS_OK ||
         snapshot.valid || snapshot.status != LIB_STATUS_OK || snapshot.sequence != 0u ||
         lib_observability_outcome_publish(outcome, LIB_STATUS_IO_ERROR) !=
