@@ -7,7 +7,7 @@
 #include "core/machine/guest_display_frame.h"
 
 #include "vm/platform/platform.h"
-#include "vm/platform/virtual_time.h"
+#include "lib/host/clock.h"
 
 #include "vm/composition/session/session_private.h"
 
@@ -17,7 +17,7 @@ static C_INT vm_session_display_publish_is_due(vm_session *machine, C_INT force)
 {
     type_unsigned_64 now;
 
-    if (machine == STD_NULL || vm_platform_host_milliseconds(&now) != TYPE_STATUS_OK) {
+    if (machine == STD_NULL || host_clock_milliseconds(&now) != LIB_STATUS_OK) {
         return TYPE_TRUE;
     }
     if (!force && now >= machine->last_display_publish_milliseconds &&

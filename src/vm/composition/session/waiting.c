@@ -1,10 +1,10 @@
 #include "type.h"
 
 #include "lib/host/sync.h"
+#include "lib/host/clock.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
-#include "vm/platform/virtual_time.h"
 
 /* Compare positive rational values without cross multiplication overflow. */
 C_INT vm_session_pacing_ratio_compare(type_unsigned_64 left_numerator,
@@ -77,8 +77,8 @@ static C_INT vm_session_pacing_target_due(vm_session *session,
         !observation->pacing_time_available ||
         observation->pacing_ticks_per_second == 0u ||
         session->speed != VM_SESSION_SPEED_STANDARD) return TYPE_TRUE;
-    if (vm_platform_host_monotonic_counter(&host_units,
-            &host_units_per_second) != TYPE_STATUS_OK || host_units_per_second == 0u) {
+    if (host_clock_monotonic_counter(&host_units,
+            &host_units_per_second) != LIB_STATUS_OK || host_units_per_second == 0u) {
         vm_session_pacing_reset(session);
         return TYPE_TRUE;
     }
@@ -105,8 +105,8 @@ static C_INT vm_session_pacing_target_due(vm_session *session,
         } else {
             host_sync_yield();
         }
-        if (vm_platform_host_monotonic_counter(&host_units,
-                &host_units_per_second) != TYPE_STATUS_OK ||
+        if (host_clock_monotonic_counter(&host_units,
+                &host_units_per_second) != LIB_STATUS_OK ||
             host_units_per_second != session->pacing_host_units_per_second ||
             host_units < session->pacing_host_origin_units) {
             vm_session_pacing_reset(session);

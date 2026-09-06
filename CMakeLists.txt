@@ -92,11 +92,11 @@ endif()
 add_library(ux-contract STATIC ${LIB_UX_CONTRACT_SOURCES})
 target_include_directories(ux-contract PUBLIC "${CMAKE_SOURCE_DIR}/src")
 if(WIN32)
-    set(LIB_HOST_SYNC_SOURCE src/lib/host/win32/sync.c)
+    set(LIB_HOST_SOURCES src/lib/host/clock.c src/lib/host/win32/clock.c src/lib/host/win32/sync.c)
 else()
-    set(LIB_HOST_SYNC_SOURCE src/lib/host/linux/sync.c)
+    set(LIB_HOST_SOURCES src/lib/host/clock.c src/lib/host/linux/clock.c src/lib/host/linux/sync.c)
 endif()
-add_library(host-sync STATIC ${LIB_HOST_SYNC_SOURCE})
+add_library(host-sync STATIC ${LIB_HOST_SOURCES})
 target_include_directories(host-sync PUBLIC "${CMAKE_SOURCE_DIR}/src")
 set(LIB_SESSION_LIFECYCLE_SOURCES
     src/lib/session/state.c
@@ -139,7 +139,7 @@ endif()
 add_library(lib-neutral-corpus STATIC
     ${LIB_UX_CONTRACT_SOURCES}
     ${LIB_UX_NATIVE_SOURCES}
-    ${LIB_HOST_SYNC_SOURCE}
+    ${LIB_HOST_SOURCES}
     ${LIB_SESSION_LIFECYCLE_SOURCES}
     ${LIB_STORAGE_IMAGE_SOURCES}
     ${LIB_OBSERVABILITY_OUTCOME_SOURCE})
@@ -1326,7 +1326,6 @@ target_include_directories(core-machine-boundary PUBLIC
 target_link_libraries(core-machine-boundary PUBLIC type-facade host-sync)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
-    src/vm/platform/virtual_time.c
     src/vm/platform/input_flush.c
     src/vm/platform/ux_frame.c
     src/vm/platform/ux_binding.c
@@ -3977,7 +3976,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product|src/vm/product/session_catalog.c|console-product"
     "vm-platform|src/vm/platform/platform.c|win32-platform"
     "vm-platform|src/vm/platform/input_flush.c|win32-platform"
-    "vm-platform|src/vm/platform/virtual_time.c|win32-platform"
     "vm-platform|src/vm/platform/win32/win32.c|win32-platform"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
