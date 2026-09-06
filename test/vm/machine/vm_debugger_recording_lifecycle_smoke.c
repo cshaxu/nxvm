@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include <stdio.h>
+
 #include "lib/storage/file.h"
 #include "vm/machine/debug.h"
 
@@ -33,7 +35,7 @@ C_INT main(C_VOID)
         lib_storage_file_read_owned(file_name, 4096u, &record, &record_size) !=
             LIB_STATUS_OK || record_size == 0u) return 1;
     STD_FREE(record);
-    if (lib_storage_file_remove(file_name)) return 1;
+    if (remove(file_name) != 0) return 1;
     if (first.connect.recordFile != STD_NULL ||
         vm_machine_debug_record_status(&first) != TYPE_STATUS_OK)
         return 1;

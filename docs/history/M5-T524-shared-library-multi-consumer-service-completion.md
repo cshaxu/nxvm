@@ -218,3 +218,25 @@ The complete owner sweep, current-source focused proof, full unit replay,
 manifest and x64/x86 optimized artifact evidence are in [S11 lifecycle
 neutrality](../etc/evidence/t524-s11-lifecycle-neutrality.md). T524 remains
 open for owner manual artifact testing and subsequent acceptance.
+
+## S11 Acceptance
+
+The owner closed S11 on 2026-09-06 after the reported P1 and its manual-test
+handoff. `879e4838` is accepted: `lib/session` retains only neutral lifecycle
+state, while NXVM control alone owns step and pause reason. T524 remains open.
+
+## S12 Admission
+
+The owner admitted a narrow storage dead-surface cleanup. It removes APIs with
+no production consumer, keeps Direct write-through immediate, and retains the
+FDD/HDD eject discard route. It does not reopen the discard-only overlay
+contract or add commit semantics.
+
+## S12 Implementation P1
+
+S12 deletes the dead exclusive/exists/replace/remove file helpers and their
+native implementations, plus unused medium mode-query and flush operations.
+Direct `write_at` remains the sole immediate write-through boundary; FDD/HDD
+eject retain `medium_discard` as their destruction-and-null lease path. The
+complete evidence is [S12 storage API surface cleanup](../etc/evidence/t524-s12-storage-api-surface.md).
+T524 remains open for coordinator review and owner audit.

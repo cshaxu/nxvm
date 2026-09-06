@@ -23,14 +23,12 @@ lib_status lib_storage_medium_create_zero_overlay(size_t byte_count,
 void lib_storage_medium_destroy(lib_storage_medium *medium);
 
 size_t lib_storage_medium_byte_count(const lib_storage_medium *medium);
-lib_storage_medium_mode lib_storage_medium_mode_of(const lib_storage_medium *medium);
 lib_status lib_storage_medium_read_at(const lib_storage_medium *medium,
     size_t offset, void *bytes, size_t byte_count);
 lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
     size_t offset, const void *bytes, size_t byte_count);
 lib_status lib_storage_medium_fill_at(lib_storage_medium *medium,
     size_t offset, size_t byte_count, lib_u8 value);
-lib_status lib_storage_medium_flush(lib_storage_medium *medium);
 void lib_storage_medium_discard(lib_storage_medium **medium);
 
 /* Replacement is the sole generic transfer of a live medium lease. */

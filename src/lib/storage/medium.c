@@ -98,9 +98,6 @@ void lib_storage_medium_destroy(lib_storage_medium *medium)
 size_t lib_storage_medium_byte_count(const lib_storage_medium *medium)
 { return medium == LIB_NULL ? 0u : medium->byte_count; }
 
-lib_storage_medium_mode lib_storage_medium_mode_of(const lib_storage_medium *medium)
-{ return medium == LIB_NULL ? LIB_STORAGE_MEDIUM_READONLY : medium->mode; }
-
 static lib_status lib_storage_medium_range(const lib_storage_medium *medium,
     size_t offset, size_t byte_count, const void *bytes)
 {
@@ -240,14 +237,6 @@ lib_status lib_storage_medium_fill_at(lib_storage_medium *medium,
         byte_count -= count;
     }
     return LIB_STATUS_OK;
-}
-
-lib_status lib_storage_medium_flush(lib_storage_medium *medium)
-{
-    if (medium == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (medium->mode != LIB_STORAGE_MEDIUM_DIRECT) return LIB_STATUS_OK;
-    return medium->file == LIB_NULL || fflush(medium->file) != 0 ?
-        LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 
 void lib_storage_medium_discard(lib_storage_medium **medium)

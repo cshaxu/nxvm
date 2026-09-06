@@ -1,8 +1,19 @@
 #include "lib/base/base.h"
-#include "lib/storage/file.h"
 #include "lib/storage/medium.h"
 
+#include <stdio.h>
+
 static const char storage_medium_path[] = "storage-medium-smoke.img";
+
+static int storage_medium_write_fixture(const void *bytes, size_t byte_count)
+{
+    FILE *file = fopen(storage_medium_path, "wb");
+    int failed;
+
+    if (file == LIB_NULL) return 1;
+    failed = fwrite(bytes, 1u, byte_count, file) != byte_count;
+    return fclose(file) != 0 || failed;
+}
 
 int main(void)
 {
@@ -16,12 +27,10 @@ int main(void)
     source[0u] = 0x11u;
     source[1u] = 0x22u;
     source[4096u] = 0x33u;
-    if (lib_storage_file_write_exclusive(storage_medium_path, source,
-            sizeof(source)) != LIB_STORAGE_FILE_WRITE_OK ||
+    if (storage_medium_write_fixture(source, sizeof(source)) ||
         lib_storage_medium_open(storage_medium_path, LIB_STORAGE_MEDIUM_DIRECT,
             &direct) != LIB_STATUS_OK ||
         lib_storage_medium_write_at(direct, 1u, "Z", 1u) != LIB_STATUS_OK ||
-        lib_storage_medium_flush(direct) != LIB_STATUS_OK ||
         lib_storage_medium_read_at(direct, 1u, &value, 1u) != LIB_STATUS_OK ||
         value != (lib_u8)'Z') failed = 1;
     lib_storage_medium_destroy(direct);
@@ -50,6 +59,6 @@ int main(void)
         value != (lib_u8)'Z')) failed = 1;
     lib_storage_medium_destroy(direct);
     lib_storage_medium_destroy(overlay);
-    (void)lib_storage_file_remove(storage_medium_path);
+    (void)remove(storage_medium_path);
     return failed;
 }

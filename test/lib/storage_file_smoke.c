@@ -1,5 +1,7 @@
 #include "lib/storage/file.h"
 
+#include <stdio.h>
+
 int main(void)
 {
     static const char path[] = "storage-file-smoke.tmp";
@@ -32,7 +34,7 @@ done:
     free(bytes);
     lib_storage_file_reader_close(reader);
     if (writer != LIB_NULL) (void)lib_storage_file_writer_close(writer);
-    (void)lib_storage_file_remove(path);
+    (void)remove(path);
     if (result == 0) puts("M5:T523:S6:STORAGE-OWNER:OK");
     return result;
 }
