@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Closed - M5 T523 |
-| Admission And Approval | Owner reopened T523 on 2026-09-05 for four finite cleanups. S6--S10 are accepted at `bd6141b1`, `64a30bca`, `7963034f`, `743ec108`, and this closure audit. |
-| Objective | Closed: NXVM no longer duplicates the four identified shared-library capabilities. |
-| Non-goals | No guest-time progression change, pacing-policy change, UX redesign, machine/controller/profile change, asset change, or host-clock injection into Core. |
-| Reference Baseline | `172281e7`: accepted S9 shared host-clock consolidation. |
-| Candidate Proposal | [T523 retained proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md), corrective S6--S9. |
-| Files And ABI Surface | The T523 S6--S9 replacement surfaces, their owner ledgers, source/test/build sweeps and complete integration suite. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): T-level unit and integration closure; [Architecture](../rules/ARCHITECTURE.md): one owner and one route; [Coding](../rules/CODING.md): replacement cleanup; [Documentation](../rules/DOCUMENT.md): task closure record. |
-| Verification | Unit 311/311; all 44 integration rows; all S6--S9 retired-path sweeps; documentation governance, `git diff --check` and actual-diff review. |
-| Expected Markers | T523 closure audit; no duplicate generic file, native keyboard, Core guest-boundary or host-clock route. |
-| Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record the complete four-surface disposition, actual integration result and any unclosed blocker. |
-| Stop Conditions | Stop and report if a duplicate route remains, a gate fails, or task-level integration cannot reach a terminal result. |
-| Exit Criteria | Met: all four stated surfaces have one owner/route, full unit and integration pass, and task documentation records the actual audit. |
-| Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Re-run the finite S6--S9 symbol/path sweeps together and inspect any remaining direct native or generic ownership route. |
+| Identifier Mode | New - M5 T524 S1 |
+| Admission And Approval | Owner corrected the Queue-head disposition on 2026-09-05: T523 does not prove that the exported `src/lib` corpus is complete or independently consumable. The owner approved restoring and revising the multi-consumer completion proposal as the current task. |
+| Objective | Freeze the complete `src/lib` corpus and its publish/verification boundary before any capability expansion; identify the exact P0 manifest, standalone-build, conformance and forbidden-vocabulary gaps. |
+| Non-goals | No SoftPC/MVDM/CPU/controller/BIOS/ROM/guest/profile behavior in `lib`; no consumer-specific binding; no speculative session driver, observability event, presenter policy or storage semantics; no copied third-party source. |
+| Reference Baseline | `9ef5e899`: T523 leaves the shared roots independent, but the current `MANIFEST.sha256` omits all five `host/clock*` files despite CMake consuming them. |
+| Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md), revised by the owner-required P0 acceptance conditions. |
+| Files And ABI Surface | S1 reads all `src/lib` files, manifest, root CMake source lists, existing conformance targets and public headers; it may add only the finite disposition evidence and task history, not change a library API. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): finite coverage ledger and complete S gates; [Architecture](../rules/ARCHITECTURE.md): neutral one-owner ABI; [Coding](../rules/CODING.md): no speculative facade; [Source policy](../etc/operations/policy/source-policy.md): no third-party import; [Documentation](../rules/DOCUMENT.md): truthful Queue/history/state. |
+| Verification | Reconcile every tracked `src/lib` file with manifest and CMake; inventory every public header and existing conformance test; sweep the library tree for product/machine vocabulary; run documentation governance and `git diff --check`. S1 closure also runs the complete repository-only unit suite. |
+| Expected Markers | T524 S1 evidence identifies every file and source-list owner, current manifest omission, standalone build/verify gap, public-ABI product-vocabulary hit, and each component's two-consumer/conformance disposition. |
+| Asset Needs | None. This task has no ROM, media, BIOS, guest or external executable input. |
+| Reporting Requirements | Report P0 gaps before implementation, the exact retained component boundaries, and any capability that lacks two neutral consumers. Report immediately if a proposed shared API needs product/machine semantics. |
+| Stop Conditions | Stop before an API change if it would introduce product/machine vocabulary, a second product route, native type in a public header, or a capability without a two-consumer justification. |
+| Exit Criteria | S1 closes only with a complete corpus ledger and bounded S2--S5 implementation batches. It must not declare `lib` ready or alter APIs during audit. |
+| Original Owner Request | Owner supplied the cross-product `src/lib` readiness review, required restoring the incorrectly removed Queue proposal, and requires that the library be byte-identical and independently usable by NXVM and SoftPC. |
+| Similar-Issue Sweep | Audit all five peer roots (`ux`, `host`, `session`, `storage`, `observability`) plus `base`, every platform-private implementation, manifest entry and CMake source list; do not repair only the five known clock omissions. |
 
 ## Current Technical Baseline
 
