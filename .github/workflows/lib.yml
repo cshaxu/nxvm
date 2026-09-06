@@ -25,3 +25,5 @@ jobs:
         run: cmake --build build/lib --target lib-verify-manifest
       - name: Build selected platform library
         run: cmake --build build/lib --config Release
+      - name: Run standalone library tests
+        run: ctest --test-dir build/lib --output-on-failure

@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Progress - M5 T524 S7 accepted |
-| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S7 P1 `91fb0218`. |
-| Objective | T524 remains open only for its complete portable closure: verify every retained neutral library root as a source-identical corpus with no product ownership or cross-root dependency. |
-| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
-| Reference Baseline | [T524 S7 evidence](../etc/evidence/t524-s7-observability-disposition.md): sole neutral copied outcome and complete consumer sweep. |
+| Identifier Mode | Continuation - M5 T524 S8 |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06; the T524 proposal admits S8 after accepted S7. On 2026-09-06 the owner also approves committing the completed library-local S8 batch while its separately recorded Model-40 integration gate remains red; this does not accept or close S8/T524. |
+| Objective | Close the complete T524 corpus: prove every retained library root is source-identical, independently buildable on Windows/Linux, base-only in peer dependencies, free of product/machine vocabulary, and used through one NXVM binding. |
+| Non-goals | No new library service, product behavior change, compatibility layer, third-party import, source copy to a sibling repository, or artifact release. |
+| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md) freezes the corpus and gap universe; S2--S7 accepted records establish each root contract. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
-| Files And ABI Surface | S7 closes the complete observability-root disposition only; S8 defines the all-root portable closure surface. |
+| Files And ABI Surface | Entire `src/lib` corpus, manifest/CMake/CI/conformance tests, and every existing NXVM binding. Source edits are permitted only to eliminate a verified whole-corpus defect. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | S7 actual review: focused outcome/run-handle proof, complete unit 311/311, standalone lib build, manifest, Linux syntax, observability vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
-| Expected Markers | S7 is accepted; S8 must establish all-root portable closure rather than reopen individual root contracts. |
+| Verification | Exact manifest plus tracked-corpus comparison; public/full-tree vocabulary and native-SDK sweeps; root dependency and product-binding ledger; standalone Windows and Linux builds/tests; full unit and full integration; documentation governance and actual-diff review. |
+| Expected Markers | Every retained root has two public neutral consumers; the manifest and CMake select the same corpus; no forbidden vocabulary or peer-root edge remains; each NXVM binding is the sole retained route. |
 | Asset Needs | None. |
-| Reporting Requirements | Before S8, report any remaining whole-corpus portability or vocabulary defect and every product binding not covered by a retained root sweep. |
-| Stop Conditions | No T closure without S8's complete current-corpus proof. |
-| Exit Criteria | S7 met: copied outcome is sole neutral observability state, no unproven diagnostic facility entered `lib`, and all stated gates pass. T524 remains open. |
+| Reporting Requirements | Report every current-corpus defect and whether it is repaired or blocks closure; state exact Windows/Linux and NXVM gate evidence. |
+| Stop Conditions | Stop for an owner decision only if portability requires a consumer-specific API or a second library-root dependency. |
+| Exit Criteria | The proposal's full acceptance set is proven, each current library file has a neutral disposition and conformance proof, and the T-level closure audit is accepted. |
 | Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
-| Similar-Issue Sweep | S8 rechecks the whole current corpus, all public headers, every retained root and every NXVM binding. |
+| Similar-Issue Sweep | Any finding triggers its complete root and binding-class sweep before closure; no one-off compatibility repair is accepted. |
 
 ## Current Technical Baseline
 

@@ -85,4 +85,10 @@ if(BUILD_TESTING)
     add_test(NAME library.manifest
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}
             -P "${CMAKE_CURRENT_LIST_DIR}/verify_manifest.cmake")
+    if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+        add_executable(library-neutral-consumer
+            "${LIBRARY_SOURCE_ROOT}/../test/lib/library_consumer_conformance.c")
+        target_link_libraries(library-neutral-consumer PRIVATE lib-neutral-corpus)
+        add_test(NAME library.neutral-consumer COMMAND library-neutral-consumer)
+    endif()
 endif()

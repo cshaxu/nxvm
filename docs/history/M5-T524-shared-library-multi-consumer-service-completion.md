@@ -4,6 +4,15 @@ T524 turns the existing `src/lib` roots into a complete, independently verified
 source-identical corpus for NXVM and a later SoftPC adoption. It does not make
 the library an emulator or a product-binding owner.
 
+## S8 Local P1
+
+Owner-approved P1 publishes the completed library-local portability batch:
+the standalone CMake entry runs a neutral public-header consumer, CI runs its
+CTest gate on both platforms, and the host-clock contract no longer carries
+product time terminology. This is not S8 or T524 acceptance: the current
+Model-40 FDC integration row remains red. See
+[`t524-s8-portable-closure-audit.md`](../etc/evidence/t524-s8-portable-closure-audit.md).
+
 ## S1 Admission
 
 S1 is a read-only completeness audit. It freezes the entire tracked library
