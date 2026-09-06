@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S6 |
-| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06; the T524 proposal admits S6 after accepted S5. |
-| Objective | Disposition the entire `lib/storage` root: define and prove neutral byte-image lease, replacement, direct/overlay and commit/discard behavior used by independent NXVM consumers. |
-| Non-goals | No drive/controller topology, CHS, profile, firmware, guest policy, product lock or speculative path-backed media abstraction. |
-| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md) identifies undefined image replacement/lease behavior; S5 is accepted at `9ecb6713`. |
+| Identifier Mode | Progress - M5 T524 S6 accepted |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S6 P1 `ef604b3d`. |
+| Objective | T524 remains open: complete every retained neutral library root without product/machine ownership or cross-root dependency. |
+| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
+| Reference Baseline | [T524 S6 evidence](../etc/evidence/t524-s6-storage-lease-contract.md): sole neutral byte-image replacement transaction and complete live FDD/HDD route sweep. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
-| Files And ABI Surface | `src/lib/storage/*`, its manifest/CMake/tests, and the existing NXVM FDD/HDD image-owner swap sites only. Public API may add a neutral image lease replacement operation. |
+| Files And ABI Surface | S6 closes the complete storage-root disposition only; later root-specific S packets define their own public contract surfaces. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused storage/FDD/HDD lifecycle proof; full unit; standalone lib build; manifest; storage vocabulary/direct-dependency sweeps; documentation governance and actual-diff review. |
-| Expected Markers | Storage depends only on `base`; image transfer, replacement and commit failure are explicit; FDD/HDD use one neutral swap route; no product storage policy enters lib. |
+| Verification | S6 actual review: focused storage/FDD/HDD checks, complete unit 311/311, standalone lib build, manifest, Linux syntax, storage vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
+| Expected Markers | S6 is accepted; S7 must decide the complete observability-root disposition rather than reopen storage or session ownership. |
 | Asset Needs | None. |
-| Reporting Requirements | Report the complete retained storage owner and any action that cannot become neutral without introducing product topology. |
-| Stop Conditions | Stop for an owner decision if a required storage operation needs machine/media semantics rather than a byte-image lease. |
-| Exit Criteria | One complete storage-root disposition is implemented, verified and accepted; T524 remains open for S7. |
+| Reporting Requirements | Before the next S, report any root that lacks two neutral consumer/conformance proofs or contains product vocabulary. |
+| Stop Conditions | No subsequent S starts without its bounded complete root batch. |
+| Exit Criteria | S6 met: one neutral exclusive byte-image transfer replaces both live product swap spellings and all stated gates pass. T524 remains open. |
 | Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
-| Similar-Issue Sweep | Sweep every image replacement and persistence caller, not only FDD/HDD; S7 consumes observability and S8 rechecks the current 61-file corpus and every product binding. |
+| Similar-Issue Sweep | S7--S8 consume the remaining whole roots and recheck the current 61-file corpus and every product binding. |
 
 ## Current Technical Baseline
 

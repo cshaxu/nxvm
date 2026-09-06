@@ -116,3 +116,14 @@ the slot unchanged on an invalid alias.  NXVM FDD and HDD candidate swaps now
 both use that one operation; topology and derived-byte-view policy remain
 product local.  The complete contract and evidence are in [T524 S6 storage
 lease contract](../etc/evidence/t524-s6-storage-lease-contract.md).
+
+## S6 Acceptance
+
+Coordinator actual-diff review accepts `ef604b3d`: the replacement contract
+rejects nonempty self/output aliasing without dropping an owned lease, while
+empty-to-empty stays an explicit no-op.  The two live NXVM candidate routes
+share that one operation; creation and destruction remain distinct local
+transitions.  Focused storage/FDD/HDD checks, complete unit 311/311 in 26.07
+seconds, standalone library build/CTest, manifest, strict Linux syntax,
+storage-root vocabulary/dependency sweeps, documentation governance and diff
+checks pass. T524 remains open for S7--S8.
