@@ -4,7 +4,7 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S15 |
+| Identifier Mode | No active subtask - M5 T524 S15 closed; T524 remains open pending task-level disposition. |
 | Admission And Approval | Owner explicitly closed S14 after P1 `3e4d62da` and admitted S15 on 2026-09-06: remove the thin `lib/session` and `lib/observability` roots and return their sole product behavior to NXVM. |
 | Objective | Remove non-reusable session lifecycle and outcome components from `src/lib`, leaving NXVM as their sole state and behavior owner. |
 | Non-goals | No lifecycle semantic change, second state/outcome owner, compatibility wrapper, UX/host/storage change, external asset change, SoftPC import, or new generic library abstraction. |
@@ -58,7 +58,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T524 | Active: S15 is retiring its two one-product roots; prior shared-lib verification remains the reference baseline until the current closure gates pass. |
+| T524 | Open: S15 removed the one-product `session` and `observability` roots; `src/lib` now publishes only `ux`, `host-sync` and `storage-medium`. T-level closure remains a separate owner-led decision. |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
@@ -68,6 +68,17 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S15 P4:** coordinator actual-diff audit accepts `cb3ce7b6`,
+  `4cf0c3e0` and `3fa8c937`.  The shared corpus deletes both one-product
+  roots without wrappers; NXVM owns lifecycle state in `vm/platform`, while
+  the sole copied start result is a direct session value.  The corpus README
+  and exact manifest now name only `ux`, `host-sync` and `storage-medium`.
+  The S15 source/test diff is 262 added / 520 removed lines (net -258).
+  Focused lifecycle, Linux platform contracts, lib-only manifest and complete
+  unit 309/309 pass; the stripped 0524 x64/x86 artifacts are verified as
+  `AB76C721...A839A` and `E47AF3D5...286EF`.  S15 is closed; T524 remains open
+  for its task-level disposition.
 
 - **M5 T523 S5 P2:** coordinator actual-diff review accepts `fcdc7e99` and closes T523. The independent neutral consumer compiles the entire platform-selected 56-file manifest corpus with public `lib` headers only; its value/lifecycle/storage/outcome proof, one-route NXVM ledger and Queue-only SoftPC binding handoff pass. Unit 310/310, source-manifest, product-vocabulary, public-header and peer-root sweeps, documentation governance and `git diff --check` pass.
 
