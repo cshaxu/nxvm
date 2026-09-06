@@ -58,3 +58,12 @@ contract has no native handle.  The complete unit replay passes `309/309` in
 17.20 seconds; documentation governance and the full library dependency and
 legacy-vocabulary sweeps pass.  S3 is the next bounded UX-value and explicit
 presenter batch.
+
+## S3 Result
+
+S3 completes the copied UX values and removes the remaining automatic routing
+and product-action meanings from `lib/ux`. Product code now selects targets
+explicitly and maps its own action identifiers; the shared library only owns
+the native presentation loop, copied frame/input values, registered action
+callback ordering and capture state. The detailed field/owner and verification
+record is retained in [T523 S3 evidence](../etc/evidence/t523-s3-ux-value-contract.md).

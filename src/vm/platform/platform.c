@@ -9,6 +9,7 @@
 #include "core/platform/display_frame.h"
 
 #include "vm/platform/platform_internal.h"
+#include "vm/platform/ux_binding.h"
 #include "vm/platform/ux_frame.h"
 
 type_status vm_platform_run_context_create(
@@ -40,14 +41,15 @@ type_status vm_platform_run_context_create(
     }
     ux_actions_initialize(&context->ux_actions);
     (C_VOID)ux_actions_register(&context->ux_actions, 'P',
-        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_PAUSE_TOGGLE);
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE);
     (C_VOID)ux_actions_register(&context->ux_actions, 'D',
-        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_SEND_CTRL_ALT_DEL);
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL);
     (C_VOID)ux_actions_register(&context->ux_actions, 'F',
-        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_SEND_ALT_ENTER);
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER);
     (C_VOID)ux_actions_register(&context->ux_actions, 'M',
-        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, UX_ACTION_RELEASE_MOUSE);
-    ux_router_initialize(&context->ux_router, UX_DISPLAY_CONSOLE);
+        UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_RELEASE_MOUSE);
+    ux_router_initialize(&context->ux_router, UX_TARGET_CONSOLE);
+    context->console_text_frames = 0u;
     context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
     *out_context = context;
     return TYPE_STATUS_OK;
@@ -74,6 +76,16 @@ type_status vm_platform_run_context_publish_ux_frame(
     if (status != TYPE_STATUS_OK) return status;
     status = vm_platform_ux_frame_from_core(context->core_frame, context->ux_frame);
     if (status != TYPE_STATUS_OK) return status;
+    if (context->display_mode == VM_PLATFORM_DISPLAY_WINDOW) {
+        ux_router_request(&context->ux_router, UX_TARGET_WINDOW);
+    } else if (context->ux_frame->graphics != 0u) {
+        context->console_text_frames = 0u;
+        ux_router_request(&context->ux_router, UX_TARGET_WINDOW);
+    } else if (ux_router_target(&context->ux_router) == UX_TARGET_WINDOW &&
+        ++context->console_text_frames >= 3u) {
+        context->console_text_frames = 0u;
+        ux_router_request(&context->ux_router, UX_TARGET_CONSOLE);
+    }
     return ux_mailbox_publish(context->ux_mailbox, context->ux_frame);
 }
 
@@ -107,6 +119,9 @@ C_VOID vm_platform_run_context_set_display_mode(
     if (context == STD_NULL || mode < VM_PLATFORM_DISPLAY_CONSOLE ||
         mode > VM_PLATFORM_DISPLAY_WINDOW) return;
     context->display_mode = mode;
+    context->console_text_frames = 0u;
+    ux_router_request(&context->ux_router, mode == VM_PLATFORM_DISPLAY_WINDOW ?
+        UX_TARGET_WINDOW : UX_TARGET_CONSOLE);
 }
 
 C_VOID vm_platform_run_context_set_window_display(

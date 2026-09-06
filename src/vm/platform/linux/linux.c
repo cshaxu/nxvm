@@ -62,7 +62,6 @@ type_status vm_platform_linux_run_handle_start(
     owner->backend = handle;
     owner->window_display = TYPE_FALSE;
     owner->active = TYPE_TRUE;
-    ux_router_initialize((ux_router *)&context->ux_router, UX_DISPLAY_CONSOLE);
     old_flip = lib_session_executor_get_flip(context->execution);
     if (pthread_create(&handle->kernel_thread, STD_NULL,
             vm_platform_linux_ux_kernel_thread, handle) != 0) {

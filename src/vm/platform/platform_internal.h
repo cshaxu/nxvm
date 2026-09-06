@@ -16,6 +16,7 @@ struct vm_platform_run_context {
     ux_frame *ux_frame;
     ux_action_registry ux_actions;
     ux_router ux_router;
+    type_unsigned_32 console_text_frames;
     vm_platform_display_mode display_mode;
 };
 

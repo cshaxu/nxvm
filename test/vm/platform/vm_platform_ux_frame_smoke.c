@@ -19,6 +19,8 @@ C_INT main(C_VOID)
 
     source.kind = CORE_PLATFORM_DISPLAY_KIND_TEXT;
     source.generation = 7u;
+    source.columns = 80u;
+    source.rows = 25u;
     source.characters[0] = 'A';
     source.attributes[0] = 0x1eu;
     source.palette_rgb[0u] = 0x00000000u;
@@ -33,8 +35,11 @@ C_INT main(C_VOID)
         destination.sequence != 7u || destination.text[0] != 'A' ||
         destination.attributes[0] != 0x1eu ||
         destination.text_palette[14u] != 0x00ffff00u ||
+        destination.text_columns != 80u || destination.text_rows != 25u ||
         destination.cursor_column != 1 || destination.cursor_row != 2 ||
-        destination.cursor_size != 2u) return 1;
+        destination.cursor_top != 14u || destination.cursor_bottom != 15u ||
+        destination.cursor_visible == 0u || destination.cursor_phase == 0u)
+        return 1;
     if (core_platform_presentation_mailbox_create(&core_mailbox) != TYPE_STATUS_OK ||
         vm_platform_run_context_create(STD_NULL, STD_NULL, core_mailbox,
             STD_NULL, &context) != TYPE_STATUS_OK ||

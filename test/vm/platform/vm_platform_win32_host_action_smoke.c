@@ -50,12 +50,12 @@ int main(C_INT argc, C_CHAR **argv)
     if (!binding.input_sink(binding.context, &event) || capture.count != 1u ||
         capture.events[0].data.key.scan_code != 0x3bu ||
         capture.events[0].data.key.virtual_key != 0x70u) goto fail;
-    if (ux_binding_invoke_action(&binding, UX_ACTION_PAUSE_TOGGLE,
+    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE,
             UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
         !vm_platform_run_handle_take_pause_report(handle) || capture.count != 3u ||
         capture.events[1].data.key.pressed ||
         capture.events[2].data.key.pressed) goto fail;
-    if (ux_binding_invoke_action(&binding, UX_ACTION_SEND_CTRL_ALT_DEL,
+    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL,
             UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
         capture.count != 11u || capture.events[7].data.key.scan_code != 0x0153u ||
         !capture.events[7].data.key.pressed ||
@@ -67,7 +67,7 @@ int main(C_INT argc, C_CHAR **argv)
         !capture.events[11].data.key.pressed ||
         capture.events[12].data.key.virtual_key != 'A' ||
         capture.events[12].data.key.pressed) goto fail;
-    if (ux_binding_invoke_action(&binding, UX_ACTION_SEND_ALT_ENTER,
+    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER,
             UX_MODIFIER_CONTROL | UX_MODIFIER_ALT) != UX_RUN_CONTINUE ||
         capture.count != 19u || capture.events[16].data.key.scan_code != 0x1cu ||
         !capture.events[16].data.key.pressed ||

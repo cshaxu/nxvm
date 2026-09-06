@@ -59,8 +59,9 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
             event->data.mouse.delta_x);
         input.data.relative_mouse.delta_y = vm_platform_ux_mouse_delta(
             event->data.mouse.delta_y);
-        input.data.relative_mouse.buttons = (event->data.mouse.left_down ? 1u : 0u) |
-            (event->data.mouse.right_down ? 2u : 0u);
+        input.data.relative_mouse.buttons =
+            (event->data.mouse.buttons & UX_MOUSE_BUTTON_LEFT ? 1u : 0u) |
+            (event->data.mouse.buttons & UX_MOUSE_BUTTON_RIGHT ? 2u : 0u);
     }
 #ifdef _WIN32
     else if (event->type == UX_EVENT_TEXT) {
@@ -98,15 +99,15 @@ static ux_run_result vm_platform_ux_action(C_VOID *opaque, ux_action action,
 {
     vm_platform_run_handle *handle = opaque;
     if (handle == STD_NULL || input_sink == STD_NULL) return UX_RUN_ERROR_RESULT;
-    if (action == UX_ACTION_PAUSE_TOGGLE) {
+    if (action == VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE) {
         vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
         return UX_RUN_CONTINUE;
     }
-    if (action == UX_ACTION_RELEASE_MOUSE) {
+    if (action == VM_PLATFORM_UX_ACTION_RELEASE_MOUSE) {
         vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED);
-    } else if (action == UX_ACTION_SEND_CTRL_ALT_DEL ||
-        action == UX_ACTION_SEND_ALT_ENTER) {
-        if (action == UX_ACTION_SEND_CTRL_ALT_DEL) {
+    } else if (action == VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL ||
+        action == VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER) {
+        if (action == VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL) {
             if (!vm_platform_ux_action_key(handle, input_sink, 0x1du, 0x11u, TYPE_TRUE) ||
                 !vm_platform_ux_action_key(handle, input_sink, 0x38u, 0x12u, TYPE_TRUE) ||
                 !vm_platform_ux_action_key(handle, input_sink, 0x153u, 0x2eu, TYPE_TRUE) ||
@@ -137,7 +138,8 @@ static C_VOID vm_platform_ux_title(C_VOID *opaque, C_CHAR *buffer,
 
 static ux_run_result vm_platform_ux_close(C_VOID *opaque, ux_event_sink input_sink)
 {
-    return vm_platform_ux_action(opaque, UX_ACTION_PAUSE_TOGGLE, input_sink);
+    return vm_platform_ux_action(opaque, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE,
+        input_sink);
 }
 
 type_status vm_platform_ux_binding_initialize(const vm_platform_run_context *context,

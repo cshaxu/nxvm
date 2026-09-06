@@ -16,9 +16,14 @@ typedef struct ux_frame {
     lib_u32 sequence;
     lib_u32 graphics;
     lib_u32 valid;
+    lib_u16 text_columns;
+    lib_u16 text_rows;
     lib_i32 cursor_column;
     lib_i32 cursor_row;
-    lib_u32 cursor_size;
+    lib_u8 cursor_top;
+    lib_u8 cursor_bottom;
+    lib_u8 cursor_visible;
+    lib_u8 cursor_phase;
     lib_u8 text[UX_TEXT_COLUMNS * UX_TEXT_ROWS];
     lib_u16 attributes[UX_TEXT_COLUMNS * UX_TEXT_ROWS];
     lib_u32 text_palette[16u];
@@ -28,6 +33,7 @@ typedef struct ux_frame {
     lib_u32 attribute_font_select;
     lib_u32 graphics_width;
     lib_u32 graphics_height;
+    lib_u32 graphics_stride;
     lib_i32 dirty_left;
     lib_i32 dirty_top;
     lib_i32 dirty_right;

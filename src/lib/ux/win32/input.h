@@ -23,16 +23,6 @@ int ux_win32_keyboard_submit_transition(void *context,
 int ux_win32_keyboard_submit_utf16(
     ux_win32_keyboard_normalizer *state, void *context,
     ux_event_sink sink, WORD code_unit);
-/* Emit the standard physical Ctrl+Alt+Del make/break sequence. */
-int ux_win32_keyboard_submit_ctrl_alt_del(void *context,
-    ux_event_sink sink);
-/* A project may consume a Ctrl+Alt host chord after its modifier makes have
-   arrived.  Emit releases before the binding pauses or substitutes input. */
-int ux_win32_keyboard_release_ctrl_alt(void *context,
-    ux_event_sink sink);
-/* Emit Alt+Enter after neutralizing the consumed Ctrl+Alt host chord. */
-int ux_win32_keyboard_submit_alt_enter(void *context,
-    ux_event_sink sink);
 void ux_win32_keyboard_note_recovered_key(
     ux_win32_keyboard_normalizer *state, WORD virtual_key);
 void ux_win32_keyboard_release_recovered_key(

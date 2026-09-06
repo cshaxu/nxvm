@@ -12,6 +12,12 @@ typedef enum ux_event_type {
     UX_EVENT_MOUSE
 } ux_event_type;
 
+enum {
+    UX_MOUSE_BUTTON_LEFT = 0x01u,
+    UX_MOUSE_BUTTON_RIGHT = 0x02u,
+    UX_MOUSE_BUTTON_MIDDLE = 0x04u
+};
+
 typedef struct ux_event {
     ux_event_type type;
     union {
@@ -27,8 +33,12 @@ typedef struct ux_event {
         struct {
             lib_i32 delta_x;
             lib_i32 delta_y;
-            lib_u8 left_down;
-            lib_u8 right_down;
+            lib_i32 absolute_x;
+            lib_i32 absolute_y;
+            lib_i32 wheel_x;
+            lib_i32 wheel_y;
+            lib_u32 buttons;
+            lib_u8 relative;
         } mouse;
     } data;
 } ux_event;

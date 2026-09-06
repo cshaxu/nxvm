@@ -17,15 +17,22 @@ type_status vm_platform_ux_frame_from_core(
         }
         destination->graphics_width = source->pixel_width;
         destination->graphics_height = source->pixel_height;
+        destination->graphics_stride = source->pixel_width;
         STD_MEMCPY(destination->graphics_pixels, source->pixels,
             sizeof(source->pixels));
         STD_MEMCPY(destination->graphics_palette, source->palette_rgb,
             sizeof(source->palette_rgb));
     } else {
-        destination->cursor_column = source->cursor_visible ? source->cursor_x : -1;
-        destination->cursor_row = source->cursor_visible ? source->cursor_y : -1;
-        destination->cursor_size = source->cursor_bottom >= source->cursor_top ?
-            source->cursor_bottom - source->cursor_top + 1u : 0u;
+        if (source->columns > UX_TEXT_COLUMNS || source->rows > UX_TEXT_ROWS)
+            return TYPE_STATUS_UNSUPPORTED;
+        destination->text_columns = source->columns;
+        destination->text_rows = source->rows;
+        destination->cursor_column = source->cursor_x;
+        destination->cursor_row = source->cursor_y;
+        destination->cursor_top = source->cursor_top;
+        destination->cursor_bottom = source->cursor_bottom;
+        destination->cursor_visible = source->cursor_visible;
+        destination->cursor_phase = source->cursor_visible;
         STD_MEMCPY(destination->text, source->characters, sizeof(source->characters));
         STD_MEMCPY(destination->attributes, source->attributes, sizeof(source->attributes));
         STD_MEMCPY(destination->text_palette, source->palette_rgb,

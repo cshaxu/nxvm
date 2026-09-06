@@ -121,8 +121,6 @@ type_status vm_platform_win32_run_handle_start(
     owner->window_display = vm_platform_run_context_get_display_mode(context) ==
         VM_PLATFORM_DISPLAY_WINDOW;
     owner->active = TYPE_TRUE;
-    ux_router_initialize((ux_router *)&context->ux_router,
-        owner->window_display ? UX_DISPLAY_WINDOW : UX_DISPLAY_CONSOLE);
     old_flip = lib_session_executor_get_flip(context->execution);
     handle->kernel_thread = CreateThread(STD_NULL, 0,
         vm_platform_win32_ux_kernel_thread, handle, 0, &thread_id);

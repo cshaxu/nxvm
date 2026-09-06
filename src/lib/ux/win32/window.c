@@ -44,6 +44,8 @@ typedef struct ux_win32_window_context {
     unsigned char presented_secondary_font[256u * 16u];
     uint32_t presented_font_height;
     uint32_t presented_attribute_font_select;
+    uint16_t presented_text_columns;
+    uint16_t presented_text_rows;
     int presented_text_valid;
     uint32_t displayed_sequence;
     int result;
@@ -85,6 +87,8 @@ static _Thread_local ux_win32_window_context *ux_win32_window_current;
 #define win32_window_presented_secondary_font ux_win32_window_current->presented_secondary_font
 #define win32_window_presented_font_height ux_win32_window_current->presented_font_height
 #define win32_window_presented_attribute_font_select ux_win32_window_current->presented_attribute_font_select
+#define win32_window_presented_text_columns ux_win32_window_current->presented_text_columns
+#define win32_window_presented_text_rows ux_win32_window_current->presented_text_rows
 #define win32_window_presented_text_valid ux_win32_window_current->presented_text_valid
 #define win32_window_displayed_sequence ux_win32_window_current->displayed_sequence
 #define win32_window_result ux_win32_window_current->result
@@ -185,9 +189,13 @@ static void win32_window_resize_frame(HWND window)
     if (win32_window_frame->graphics != 0u)
         win32_window_resize_surface(window, win32_window_frame->graphics_width,
             win32_window_frame->graphics_height);
-    else
-        win32_window_resize_surface(window, WIN32_WINDOW_TEXT_SURFACE_WIDTH,
-            WIN32_WINDOW_TEXT_SURFACE_HEIGHT);
+    else if (win32_window_frame->text_columns != 0u &&
+        win32_window_frame->text_rows != 0u &&
+        win32_window_frame->text_columns <= UX_TEXT_COLUMNS &&
+        win32_window_frame->text_rows <= UX_TEXT_ROWS)
+        win32_window_resize_surface(window,
+            win32_window_frame->text_columns * WIN32_WINDOW_TEXT_CELL_WIDTH,
+            win32_window_frame->text_rows * WIN32_WINDOW_TEXT_CELL_HEIGHT);
 }
 
 static void win32_window_current_surface_size(uint32_t *width,
@@ -198,6 +206,11 @@ static void win32_window_current_surface_size(uint32_t *width,
         win32_window_frame->graphics != 0u) {
         *width = win32_window_frame->graphics_width;
         *height = win32_window_frame->graphics_height;
+    } else if (win32_window_frame != NULL &&
+        win32_window_frame->text_columns != 0u &&
+        win32_window_frame->text_rows != 0u) {
+        *width = win32_window_frame->text_columns * WIN32_WINDOW_TEXT_CELL_WIDTH;
+        *height = win32_window_frame->text_rows * WIN32_WINDOW_TEXT_CELL_HEIGHT;
     } else {
         *width = WIN32_WINDOW_TEXT_SURFACE_WIDTH;
         *height = WIN32_WINDOW_TEXT_SURFACE_HEIGHT;
@@ -220,6 +233,10 @@ static void win32_window_update_text_surface(void)
 {
     int row;
     if (win32_window_frame == NULL || win32_window_text_dc == NULL ||
+        win32_window_frame->text_columns == 0u ||
+        win32_window_frame->text_rows == 0u ||
+        win32_window_frame->text_columns > UX_TEXT_COLUMNS ||
+        win32_window_frame->text_rows > UX_TEXT_ROWS ||
         (win32_window_presented_text_valid && memcmp(win32_window_presented_text,
             win32_window_frame->text, sizeof(win32_window_presented_text)) == 0 &&
          memcmp(win32_window_presented_attributes,
@@ -236,10 +253,17 @@ static void win32_window_update_text_surface(void)
          win32_window_presented_font_height ==
             win32_window_frame->font_height &&
          win32_window_presented_attribute_font_select ==
-            win32_window_frame->attribute_font_select)) return;
-    for (row = 0; row < UX_TEXT_ROWS; ++row) {
+            win32_window_frame->attribute_font_select &&
+         win32_window_presented_text_columns ==
+            win32_window_frame->text_columns &&
+         win32_window_presented_text_rows ==
+            win32_window_frame->text_rows)) return;
+    memset(win32_window_text_pixels, 0,
+        WIN32_WINDOW_TEXT_SURFACE_WIDTH * WIN32_WINDOW_TEXT_SURFACE_HEIGHT *
+        sizeof(*win32_window_text_pixels));
+    for (row = 0; row < (int)win32_window_frame->text_rows; ++row) {
         int column;
-        for (column = 0; column < UX_TEXT_COLUMNS; ++column) {
+        for (column = 0; column < (int)win32_window_frame->text_columns; ++column) {
             unsigned int scan;
             size_t index = (size_t)row * UX_TEXT_COLUMNS + column;
             unsigned char character = win32_window_frame->text[index];
@@ -278,6 +302,8 @@ static void win32_window_update_text_surface(void)
     win32_window_presented_font_height = win32_window_frame->font_height;
     win32_window_presented_attribute_font_select =
         win32_window_frame->attribute_font_select;
+    win32_window_presented_text_columns = win32_window_frame->text_columns;
+    win32_window_presented_text_rows = win32_window_frame->text_rows;
     win32_window_presented_text_valid = 1;
 }
 
@@ -322,7 +348,9 @@ static int win32_window_update_graphics_surface(RECT *changed)
     if (bottom >= (int32_t)win32_window_frame->graphics_height)
         bottom = (int32_t)win32_window_frame->graphics_height - 1;
     if (right < left || bottom < top) return 0;
-    source_stride = win32_window_frame->graphics_width;
+    source_stride = win32_window_frame->graphics_stride;
+    if (source_stride < win32_window_frame->graphics_width ||
+        source_stride > UX_GRAPHICS_MAX_WIDTH) return 0;
     for (row = (uint32_t)top; row <= (uint32_t)bottom; ++row) {
         const uint8_t *source = win32_window_frame->graphics_pixels +
             row * source_stride;
@@ -374,33 +402,44 @@ static int win32_window_cursor_rect(HWND window, RECT *cursor)
     int height;
     int cell_height;
     int cursor_height;
-    uint32_t cursor_size;
+    uint32_t cursor_percent;
 
     if (window == NULL || cursor == NULL || win32_window_frame == NULL ||
         win32_window_frame->valid == 0u ||
         win32_window_frame->graphics != 0u ||
+        win32_window_frame->cursor_visible == 0u ||
+        win32_window_frame->cursor_phase == 0u ||
         win32_window_frame->cursor_column < 0 ||
         win32_window_frame->cursor_row < 0 ||
-        win32_window_frame->cursor_column >= UX_TEXT_COLUMNS ||
-        win32_window_frame->cursor_row >= UX_TEXT_ROWS) return 0;
-    if (!win32_window_display_rect(window, WIN32_WINDOW_TEXT_SURFACE_WIDTH,
-            WIN32_WINDOW_TEXT_SURFACE_HEIGHT, &display)) return 0;
+        win32_window_frame->text_columns == 0u ||
+        win32_window_frame->text_rows == 0u ||
+        win32_window_frame->cursor_column >=
+            (lib_i32)win32_window_frame->text_columns ||
+        win32_window_frame->cursor_row >=
+            (lib_i32)win32_window_frame->text_rows) return 0;
+    if (!win32_window_display_rect(window,
+            win32_window_frame->text_columns * WIN32_WINDOW_TEXT_CELL_WIDTH,
+            win32_window_frame->text_rows * WIN32_WINDOW_TEXT_CELL_HEIGHT,
+            &display)) return 0;
     width = display.right - display.left;
     height = display.bottom - display.top;
-    cell_height = height / UX_TEXT_ROWS;
+    cell_height = height / win32_window_frame->text_rows;
     if (width <= 0 || cell_height <= 0) return 0;
-    cursor_size = win32_window_frame->cursor_size;
-    if (cursor_size == 0u || cursor_size > 100u) cursor_size = 100u;
-    cursor_height = (int)((cell_height * cursor_size + 99u) / 100u);
+    cursor_percent = win32_window_frame->cursor_bottom >=
+        win32_window_frame->cursor_top && win32_window_frame->font_height != 0u ?
+        (win32_window_frame->cursor_bottom - win32_window_frame->cursor_top + 1u) *
+            100u / win32_window_frame->font_height : 100u;
+    if (cursor_percent == 0u || cursor_percent > 100u) cursor_percent = 100u;
+    cursor_height = (int)((cell_height * cursor_percent + 99u) / 100u);
     if (cursor_height > cell_height) cursor_height = cell_height;
     cursor->left = display.left + win32_window_frame->cursor_column * width /
-        UX_TEXT_COLUMNS;
+        win32_window_frame->text_columns;
     cursor->right = display.left + (win32_window_frame->cursor_column + 1) * width /
-        UX_TEXT_COLUMNS;
+        win32_window_frame->text_columns;
     cursor->top = display.top + (win32_window_frame->cursor_row + 1) * cell_height -
         cursor_height;
     cursor->bottom = display.top + (win32_window_frame->cursor_row + 1) * height /
-        UX_TEXT_ROWS;
+        win32_window_frame->text_rows;
     return cursor->right > cursor->left && cursor->bottom > cursor->top;
 }
 
@@ -441,11 +480,14 @@ static void win32_window_paint(HWND window, HDC dc)
         return;
     }
     win32_window_update_text_surface();
-    if (!win32_window_display_rect(window, WIN32_WINDOW_TEXT_SURFACE_WIDTH,
-            WIN32_WINDOW_TEXT_SURFACE_HEIGHT, &display)) return;
+    if (!win32_window_display_rect(window,
+            win32_window_frame->text_columns * WIN32_WINDOW_TEXT_CELL_WIDTH,
+            win32_window_frame->text_rows * WIN32_WINDOW_TEXT_CELL_HEIGHT,
+            &display)) return;
     StretchBlt(dc, display.left, display.top, display.right - display.left,
         display.bottom - display.top, win32_window_text_dc, 0, 0,
-        WIN32_WINDOW_TEXT_SURFACE_WIDTH, WIN32_WINDOW_TEXT_SURFACE_HEIGHT, SRCCOPY);
+        win32_window_frame->text_columns * WIN32_WINDOW_TEXT_CELL_WIDTH,
+        win32_window_frame->text_rows * WIN32_WINDOW_TEXT_CELL_HEIGHT, SRCCOPY);
     if (win32_window_cursor_blink_visible) {
         RECT cursor;
         /* nt_graph publishes the original controller-selected text cursor
@@ -493,8 +535,10 @@ static void win32_window_mouse(LPARAM position)
         event.type = UX_EVENT_MOUSE;
         event.data.mouse.delta_x = dx;
         event.data.mouse.delta_y = dy;
-        event.data.mouse.left_down = (uint8_t)win32_window_left_button;
-        event.data.mouse.right_down = (uint8_t)win32_window_right_button;
+        event.data.mouse.relative = 1u;
+        event.data.mouse.buttons =
+            (win32_window_left_button ? UX_MOUSE_BUTTON_LEFT : 0u) |
+            (win32_window_right_button ? UX_MOUSE_BUTTON_RIGHT : 0u);
         (void)win32_window_binding->input_sink(win32_window_binding->context,
             &event);
     }
@@ -503,8 +547,9 @@ static void win32_window_mouse(LPARAM position)
 /* Windowed mouse input is a relative guest device.  Once the user explicitly
  * clicks the guest surface, keep the host pointer in that surface so it cannot
  * accidentally operate the desktop while its deltas are being delivered to
- * the original Bus Mouse controller.  Ctrl+Alt+M (and loss of window focus)
- * releases this purely frontend capture; no guest controller state changes. */
+ * the original Bus Mouse controller.  An explicit product release action
+ * (and loss of window focus) releases this purely frontend capture; no guest
+ * controller state changes. */
 static void win32_window_release_mouse_capture(void)
 {
     ux_win32_mouse_release(&win32_window_mouse_state);
@@ -532,8 +577,8 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
                 ux_mailbox_capture(win32_window_binding->mailbox,
                     win32_window_frame) == LIB_STATUS_OK) {
                 win32_window_displayed_sequence = win32_window_frame->sequence;
-                if (ux_router_observe(win32_window_binding->router,
-                        win32_window_frame) == UX_TARGET_CONSOLE) {
+                if (ux_router_target(win32_window_binding->router) ==
+                    UX_TARGET_CONSOLE) {
                     win32_window_result = UX_RUN_SWITCH_CONSOLE;
                     DestroyWindow(window);
                     return 0;
@@ -591,9 +636,9 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
             modifiers);
         if (action != UX_ACTION_NONE) {
             ux_run_result action_result;
-            if (action == UX_ACTION_PAUSE_TOGGLE ||
-                action == UX_ACTION_RELEASE_MOUSE)
-                win32_window_release_mouse_capture();
+            win32_window_release_mouse_capture();
+            /* Registered actions always release the host capture before the
+               product callback, regardless of what that callback does. */
             action_result = ux_binding_invoke_action(win32_window_binding,
                 action, modifiers);
             if (action_result != UX_RUN_CONTINUE)
@@ -665,9 +710,8 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         win32_window_release_mouse_capture();
         return 0;
     case WM_CLOSE:
-        /* Closing the presentation is the product pause action.  Retain this
-           loop and its last copied frame: a resumed VM uses the same sole
-           presenter, while only a terminal lifecycle state destroys it. */
+        /* The product owns the close decision.  Retain this loop and its last
+           copied frame whenever that callback keeps the session resumable. */
         win32_window_release_mouse_capture();
         win32_window_result = win32_window_binding->handle_close(
             win32_window_binding->context,

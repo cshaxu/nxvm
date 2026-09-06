@@ -3,15 +3,12 @@
 
 #include "lib/base/base.h"
 
-typedef enum ux_action {
-    UX_ACTION_NONE,
-    UX_ACTION_PAUSE_TOGGLE,
-    UX_ACTION_SEND_CTRL_ALT_DEL,
-    UX_ACTION_SEND_ALT_ENTER,
-    UX_ACTION_RELEASE_MOUSE
-} ux_action;
+/* The value belongs to the product registration.  The library only matches a
+ * chord, releases host input, and invokes the registered product callback. */
+typedef lib_u32 ux_action;
 
 enum {
+    UX_ACTION_NONE = 0u,
     UX_MODIFIER_CONTROL = 0x01u,
     UX_MODIFIER_ALT = 0x02u,
     UX_MODIFIER_SHIFT = 0x04u,

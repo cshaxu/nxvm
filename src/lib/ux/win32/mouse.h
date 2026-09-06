@@ -2,6 +2,7 @@
 #define UX_WIN32_MOUSE_H
 
 #ifdef _WIN32
+#include "lib/ux/capture.h"
 #include <windows.h>
 
 /* Host-only relative-pointer state.  The caller owns guest-device buttons and
@@ -10,7 +11,7 @@ typedef struct ux_win32_mouse {
     int x;
     int y;
     int valid;
-    int captured;
+    ux_capture capture;
     int host_cursor_hidden;
 } ux_win32_mouse;
 

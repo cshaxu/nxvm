@@ -136,6 +136,7 @@ static void win32_console_mouse(const ux_binding *binding,
     if (previous == NULL || previous_valid == NULL || mouse == NULL) return;
     memset(&event, 0, sizeof(event));
     event.type = UX_EVENT_MOUSE;
+    event.data.mouse.relative = 1u;
     if (*previous_valid) {
         event.data.mouse.delta_x = ((int32_t)mouse->dwMousePosition.X -
             previous->X) * 8;
@@ -144,16 +145,18 @@ static void win32_console_mouse(const ux_binding *binding,
     }
     *previous = mouse->dwMousePosition;
     *previous_valid = 1;
-    event.data.mouse.left_down =
-        (mouse->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) != 0u;
-    event.data.mouse.right_down =
-        (mouse->dwButtonState & RIGHTMOST_BUTTON_PRESSED) != 0u;
+    event.data.mouse.buttons =
+        (mouse->dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) != 0u ?
+            UX_MOUSE_BUTTON_LEFT : 0u;
+    if ((mouse->dwButtonState & RIGHTMOST_BUTTON_PRESSED) != 0u)
+        event.data.mouse.buttons |= UX_MOUSE_BUTTON_RIGHT;
     (void)binding->input_sink(binding->context, &event);
 }
 
 static int win32_console_paint(HANDLE output,
     const ux_frame *frame, unsigned char *previous,
-    unsigned short *previous_attributes, uint32_t *previous_palette)
+    unsigned short *previous_attributes, uint32_t *previous_palette,
+    unsigned int *previous_columns, unsigned int *previous_rows)
 {
     CHAR_INFO cells[UX_TEXT_COLUMNS *
         UX_TEXT_ROWS];
@@ -163,8 +166,16 @@ static int win32_console_paint(HANDLE output,
     SMALL_RECT region = { 0, 0, UX_TEXT_COLUMNS - 1,
         UX_TEXT_ROWS - 1 };
     unsigned int row;
+    unsigned int columns;
+    unsigned int rows;
 
-    if (frame->valid == 0u || frame->graphics != 0u) return 1;
+    if (frame->valid == 0u || frame->graphics != 0u ||
+        previous_columns == NULL || previous_rows == NULL) return 1;
+    if (frame->text_columns == 0u || frame->text_rows == 0u ||
+        frame->text_columns > UX_TEXT_COLUMNS ||
+        frame->text_rows > UX_TEXT_ROWS) return 0;
+    columns = frame->text_columns;
+    rows = frame->text_rows;
     if (memcmp(frame->text_palette, previous_palette,
             sizeof(frame->text_palette)) != 0) {
         CONSOLE_SCREEN_BUFFER_INFOEX info;
@@ -180,29 +191,37 @@ static int win32_console_paint(HANDLE output,
         memcpy(previous_palette, frame->text_palette,
             sizeof(frame->text_palette));
     }
-    if (memcmp(frame->text, previous, sizeof(frame->text)) == 0 &&
+    if (*previous_columns == columns && *previous_rows == rows &&
+        memcmp(frame->text, previous, sizeof(frame->text)) == 0 &&
         memcmp(frame->attributes, previous_attributes,
             sizeof(frame->attributes)) == 0) return 1;
     for (row = 0; row < UX_TEXT_ROWS; ++row) {
         unsigned int column;
         for (column = 0; column < UX_TEXT_COLUMNS; ++column) {
             size_t offset = row * UX_TEXT_COLUMNS + column;
-            unsigned char character = frame->text[offset];
+            unsigned char character = row < rows && column < columns ?
+                frame->text[offset] : ' ';
             cells[offset].Char.AsciiChar = character >= 0x20u &&
                 character < 0x7fu ? (CHAR)character : ' ';
-            cells[offset].Attributes = (WORD)frame->attributes[offset];
+            cells[offset].Attributes = (WORD)(row < rows && column < columns ?
+                frame->attributes[offset] : 0u);
         }
     }
     if (!WriteConsoleOutputA(output, cells, size, position, &region)) return 0;
     memcpy(previous, frame->text, sizeof(frame->text));
     memcpy(previous_attributes, frame->attributes, sizeof(frame->attributes));
+    *previous_columns = columns;
+    *previous_rows = rows;
     {
         CONSOLE_CURSOR_INFO cursor;
-        cursor.dwSize = frame->cursor_size;
+        cursor.dwSize = frame->cursor_bottom >= frame->cursor_top &&
+            frame->font_height != 0u ? (DWORD)((frame->cursor_bottom -
+                frame->cursor_top + 1u) * 100u / frame->font_height) : 100u;
         if (cursor.dwSize == 0u || cursor.dwSize > 100u) cursor.dwSize = 100u;
-        cursor.bVisible = frame->cursor_column >= 0 && frame->cursor_row >= 0 &&
-            frame->cursor_column < (int32_t)UX_TEXT_COLUMNS &&
-            frame->cursor_row < (int32_t)UX_TEXT_ROWS;
+        cursor.bVisible = frame->cursor_visible != 0u &&
+            frame->cursor_phase != 0u && frame->cursor_column >= 0 && frame->cursor_row >= 0 &&
+            frame->cursor_column < (int32_t)columns &&
+            frame->cursor_row < (int32_t)rows;
         if (cursor.bVisible) {
             position.X = (SHORT)frame->cursor_column;
             position.Y = (SHORT)frame->cursor_row;
@@ -224,6 +243,8 @@ ux_run_result ux_win32_run_console(
     unsigned short previous_attributes[UX_TEXT_COLUMNS *
         UX_TEXT_ROWS];
     uint32_t previous_palette[16u];
+    unsigned int previous_columns = 0u;
+    unsigned int previous_rows = 0u;
     ux_frame *frame;
     uint32_t displayed_sequence = 0u;
     ux_win32_keyboard_normalizer keyboard_normalizer = { 0 };
@@ -287,14 +308,15 @@ ux_run_result ux_win32_run_console(
         }
         if (ux_mailbox_generation(binding->mailbox) != displayed_sequence &&
             ux_mailbox_capture(binding->mailbox, frame) == LIB_STATUS_OK) {
-            if (ux_router_observe(binding->router, frame) ==
+            if (ux_router_target(binding->router) ==
                 UX_TARGET_WINDOW) {
                 result = UX_RUN_SWITCH_WINDOW;
                 running = 0;
                 break;
             }
             if (win32_console_paint(output, frame, previous,
-                    previous_attributes, previous_palette))
+                    previous_attributes, previous_palette, &previous_columns,
+                    &previous_rows))
                 displayed_sequence = frame->sequence;
         }
         if (WaitForMultipleObjects(2u, wait_handles, FALSE, INFINITE) ==

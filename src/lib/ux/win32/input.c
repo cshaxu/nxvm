@@ -37,45 +37,6 @@ int ux_win32_keyboard_submit_transition(void *context,
         control_state, pressed);
 }
 
-int ux_win32_keyboard_submit_ctrl_alt_del(void *context,
-    ux_event_sink sink)
-{
-    /* Del is an extended Set-1 key.  Do not treat this as a monitor command:
-       the guest BIOS/OS observes the same six transitions as physical PC
-       hardware. */
-    return ux_win32_keyboard_emit(context, sink, 0x1du, VK_CONTROL, 0u, 1) &&
-        ux_win32_keyboard_emit(context, sink, 0x38u, VK_MENU, 0u, 1) &&
-        ux_win32_keyboard_emit(context, sink, 0x0153u, VK_DELETE, 0u, 1) &&
-        ux_win32_keyboard_emit(context, sink, 0x0153u, VK_DELETE, 0u, 0) &&
-        ux_win32_keyboard_emit(context, sink, 0x38u, VK_MENU, 0u, 0) &&
-        ux_win32_keyboard_emit(context, sink, 0x1du, VK_CONTROL, 0u, 0);
-}
-
-int ux_win32_keyboard_release_ctrl_alt(void *context,
-    ux_event_sink sink)
-{
-    /* The host shortcut's Ctrl/Alt makes have already travelled through the
-       ordinary path.  `host_key_up` deliberately ignores a later duplicate
-       release, so it is safe to normalize both traditional consoles and RDP
-       packets that coalesce modifier state into the chord record. */
-    return ux_win32_keyboard_emit(context, sink, 0x1du, VK_CONTROL, 0u, 0) &&
-        ux_win32_keyboard_emit(context, sink, 0x38u, VK_MENU, 0u, 0);
-}
-
-int ux_win32_keyboard_submit_alt_enter(void *context,
-    ux_event_sink sink)
-{
-    /* Ctrl+Alt+F is a host chord, not guest Ctrl+Alt+Enter.  First clear the
-       already-forwarded host modifiers, then generate a fresh physical guest
-       Alt+Enter.  The host's eventual Ctrl/Alt key-ups are harmless duplicate
-       releases in the original keyba implementation. */
-    return ux_win32_keyboard_release_ctrl_alt(context, sink) &&
-        ux_win32_keyboard_emit(context, sink, 0x38u, VK_MENU, 0u, 1) &&
-        ux_win32_keyboard_emit(context, sink, 0x1cu, VK_RETURN, 0u, 1) &&
-        ux_win32_keyboard_emit(context, sink, 0x1cu, VK_RETURN, 0u, 0) &&
-        ux_win32_keyboard_emit(context, sink, 0x38u, VK_MENU, 0u, 0);
-}
-
 void ux_win32_keyboard_note_recovered_key(
     ux_win32_keyboard_normalizer *state, WORD virtual_key)
 {

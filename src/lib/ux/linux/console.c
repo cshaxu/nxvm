@@ -67,10 +67,13 @@ static void ux_linux_console_paint(const ux_frame *frame)
     if (frame == LIB_NULL || frame->valid == 0u || frame->graphics != 0u)
         return;
     erase();
-    for (row = 0u; row < UX_TEXT_ROWS && row < (lib_u32)LINES; ++row) {
+    if (frame->text_columns == 0u || frame->text_rows == 0u ||
+        frame->text_columns > UX_TEXT_COLUMNS ||
+        frame->text_rows > UX_TEXT_ROWS) return;
+    for (row = 0u; row < frame->text_rows && row < (lib_u32)LINES; ++row) {
         lib_u32 column;
 
-        for (column = 0u; column < UX_TEXT_COLUMNS &&
+        for (column = 0u; column < frame->text_columns &&
             column < (lib_u32)COLS; ++column) {
             lib_u32 offset = row * UX_TEXT_COLUMNS + column;
             lib_u8 character = frame->text[offset];
@@ -81,7 +84,10 @@ static void ux_linux_console_paint(const ux_frame *frame)
                 character >= 0x20u && character < 0x7fu ? character : ' ');
         }
     }
-    if (frame->cursor_column >= 0 && frame->cursor_row >= 0 &&
+    if (frame->cursor_visible != 0u && frame->cursor_phase != 0u &&
+        frame->cursor_column >= 0 && frame->cursor_row >= 0 &&
+        frame->cursor_column < (lib_i32)frame->text_columns &&
+        frame->cursor_row < (lib_i32)frame->text_rows &&
         frame->cursor_column < COLS && frame->cursor_row < LINES)
         move(frame->cursor_row, frame->cursor_column);
     refresh();
@@ -157,7 +163,7 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
         if ((waits[1].revents & POLLIN) != 0 &&
             ux_mailbox_generation(binding->mailbox) != displayed_generation &&
             ux_mailbox_capture(binding->mailbox, frame) == LIB_STATUS_OK) {
-            if (ux_router_observe(binding->router, frame) == UX_TARGET_WINDOW) {
+            if (ux_router_target(binding->router) == UX_TARGET_WINDOW) {
                 result = UX_RUN_SWITCH_WINDOW;
                 break;
             }

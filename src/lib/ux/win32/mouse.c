@@ -7,18 +7,18 @@ void ux_win32_mouse_reset(ux_win32_mouse *mouse)
     mouse->x = 0;
     mouse->y = 0;
     mouse->valid = 0;
-    mouse->captured = 0;
+    ux_capture_initialize(&mouse->capture);
     mouse->host_cursor_hidden = 0;
 }
 
 void ux_win32_mouse_release(ux_win32_mouse *mouse)
 {
-    if (mouse == NULL || !mouse->captured) return;
+    if (mouse == NULL || !ux_capture_is_active(&mouse->capture)) return;
     ClipCursor(NULL);
     ReleaseCapture();
     mouse->host_cursor_hidden = 0;
     SetCursor(LoadCursorA(NULL, IDC_ARROW));
-    mouse->captured = 0;
+    ux_capture_release(&mouse->capture);
     mouse->valid = 0;
 }
 
@@ -49,7 +49,7 @@ int ux_win32_mouse_capture(ux_win32_mouse *mouse,
     mouse->x = (int)(short)LOWORD(position);
     mouse->y = (int)(short)HIWORD(position);
     mouse->valid = 1;
-    mouse->captured = 1;
+    ux_capture_activate(&mouse->capture);
     mouse->host_cursor_hidden = 1;
     return 1;
 }
@@ -78,7 +78,7 @@ int ux_win32_mouse_move(ux_win32_mouse *mouse,
 
 int ux_win32_mouse_captured(const ux_win32_mouse *mouse)
 {
-    return mouse != NULL && mouse->captured;
+    return mouse != NULL && ux_capture_is_active(&mouse->capture);
 }
 
 int ux_win32_mouse_hides_host_cursor(
