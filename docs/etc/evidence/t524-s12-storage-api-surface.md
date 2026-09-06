@@ -38,3 +38,12 @@ reopening the file-backed medium.
 - The tracked source/test change adds 21 and removes 120 lines, net minus 99.
   The retained paths are file reading/text recording, file-backed byte-medium
   I/O, immediate Direct persistence, replacement and lease discard only.
+
+## P2 Linux gate repair
+
+The existing Linux platform-contract gate still read the removed
+`linuxcon.c` and asserted the pre-library pthread ownership model. It now
+checks the real split: root CMake selects `linux.c`, library CMake owns
+Curses/Threads, and `linux.c` owns its host-sync task, UX presenter, one
+execution-stop request, join and finalize path. This is a gate-only correction:
+no Linux runtime source or behavior changes.

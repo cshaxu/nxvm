@@ -3,17 +3,24 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linuxcon.c" linuxcon_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/lib/CMakeLists.txt" library_cmake_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.c" linux_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/vm/machine/vm_platform_linux_run_handle_smoke.c"
     linux_smoke_source)
 
 foreach(required
-    "src/vm/platform/linux/linux.c"
-    "src/vm/platform/linux/linuxcon.c"
+    "src/vm/platform/linux/linux.c")
+    string(FIND "${cmake_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "Linux platform CMake contract is missing: ${required}")
+    endif()
+endforeach()
+
+foreach(required
     "find_package(Curses REQUIRED)"
     "find_package(Threads REQUIRED)"
     "Threads::Threads")
-    string(FIND "${cmake_source}" "${required}" position)
+    string(FIND "${library_cmake_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux platform CMake contract is missing: ${required}")
     endif()
@@ -30,26 +37,27 @@ endforeach()
 
 foreach(required
     "VM_PLATFORM_RUN_EVENT_STARTUP_FAILED"
-    "pthread_join"
-    "vm_platform_linuxcon_run_handle_finalize")
-    string(FIND "${linuxcon_source}" "${required}" position)
+    "ux_linux_run_console"
+    "host_sync_task_join"
+    "vm_platform_linux_run_handle_finalize")
+    string(FIND "${linux_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux run-handle contract is missing: ${required}")
     endif()
 endforeach()
 
-string(FIND "${linuxcon_source}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
+string(FIND "${linux_source}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
     keyboard_stop_position)
 if(NOT keyboard_stop_position EQUAL -1)
     message(FATAL_ERROR "Linux keyboard platform must not own a lifecycle stop path")
 endif()
 
-string(REGEX MATCHALL "vm_platform_execution_stop_for" direct_stop_calls
-    "${linuxcon_source}")
+string(REGEX MATCHALL "context->execution->stop\\(" direct_stop_calls
+    "${linux_source}")
 list(LENGTH direct_stop_calls direct_stop_count)
 if(NOT direct_stop_count EQUAL 1)
     message(FATAL_ERROR
-        "Linux platform must have exactly one explicit request-stop call; found ${direct_stop_count}")
+        "Linux platform must have exactly one execution stop request; found ${direct_stop_count}")
 endif()
 
 foreach(required

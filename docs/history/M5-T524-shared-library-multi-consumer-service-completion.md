@@ -240,3 +240,10 @@ Direct `write_at` remains the sole immediate write-through boundary; FDD/HDD
 eject retain `medium_discard` as their destruction-and-null lease path. The
 complete evidence is [S12 storage API surface cleanup](../etc/evidence/t524-s12-storage-api-surface.md).
 T524 remains open for coordinator review and owner audit.
+
+## S12 Implementation P2
+
+The stale Linux platform-contract gate now verifies the current `linux.c`
+host-sync/UX lifecycle and library CMake platform dependencies, rather than a
+removed pre-library source file. No runtime code changes. The S12 evidence
+records the corrected contract and gate result.

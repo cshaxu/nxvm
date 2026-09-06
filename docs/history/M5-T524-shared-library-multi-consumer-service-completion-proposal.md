@@ -111,7 +111,9 @@ owner; it does not create a product dependency.
    public flush. Retain `medium_discard` because FDD/HDD eject uses it to
    destroy and null the sole lease. Direct `write_at` remains the one
    immediate-persistence boundary. No overlay commit or delayed-write policy
-   is admitted.
+   is admitted. Repair the discovered stale Linux platform-contract gate to
+   inspect its current `linux.c` host-sync/UX lifecycle, without changing
+   Linux runtime behavior.
 
 ## Acceptance
 
