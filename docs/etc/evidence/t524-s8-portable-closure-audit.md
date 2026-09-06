@@ -38,16 +38,13 @@ of a retained library capability.
 - Standalone Windows MinGW configure/build: pass; manifest plus neutral
   consumer CTest: 2/2 pass.
 - Strict Linux C11 syntax of every selected common/Linux library source plus
-  the neutral consumer: pass.  There is no local Linux runtime: WSL is not
-  installed.
-- The first upstream matrix for `724027ed` is red. Windows selected the
-  runner's MSVC compiler, which rejects the C11 atomic contract before the
-  library can build; Ubuntu stopped at the text-string manifest verifier.
-  P2 corrected the verifier but used an invalid dynamic GitHub Actions shell;
-  Actions rejected it before creating a job. P3 now uses two explicit jobs:
-  Windows selects the MSYS2 UCRT64 GCC C11 toolchain and Ubuntu uses its native
-  shell. The revised matrix must pass before this evidence can become S8
-  acceptance proof.
+  the neutral consumer: pass. There is no local Linux runtime: WSL is not
+  installed, and the owner explicitly does not require a remote Linux runtime
+  CI gate.
+- The first upstream Windows attempt selected MSVC, which rejects the retained
+  C11 atomic contract before the library can build. The Windows workflow now
+  selects the MSYS2 UCRT64 GCC C11 toolchain. The separate Linux workflow job
+  is removed because it exceeded the owner-required static-only Linux scope.
 - Full repository unit: 311/311 pass in 22.36 seconds.
 - Full integration was started.  Its first row,
   `compaq-deskpro-386-model-40-1200k.yaml`, failed after 180.09 seconds before
@@ -55,15 +52,14 @@ of a retained library capability.
   remaining.  The run was stopped after this decisive red gate rather than
   consume the remaining serial matrix under a known failing T-level gate.
 
-## Closure Disposition
+## Owner-Directed S8 Closure And Transfer
 
-The library corpus and local unit/standalone evidence are ready for S8
-acceptance, but T524 is **not closable**.  The product integration row must be
-repaired by its FDC/Model-40 owner and the complete integration gate rerun;
-the Linux runtime CI matrix must then report its standalone CTest result.  No
-library compatibility path or product-specific workaround is admitted to make
-either gate appear green.
+The owner directed S8 closure on 2026-09-06 despite the red Model-40 FDC
+integration row. The owner separately removed remote Linux CI from the S8
+scope; strict Linux source syntax remains the required Linux proof. This is an
+explicit recorded exception to the proposal's normal all-green S8 acceptance
+predicate, not a claim that the Model-40 row passed.
 
-The owner approved a committed S8 P1 checkpoint for the completed local library
-batch.  That approval preserves this red gate and does not constitute S8 or
-T524 acceptance.
+T524 remains open. S9 receives the Model-40 repair and complete integration
+replay. No library compatibility path or product-specific workaround is
+admitted to make that gate appear green.

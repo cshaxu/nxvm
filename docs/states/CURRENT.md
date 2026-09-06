@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S8 |
-| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06; the T524 proposal admits S8 after accepted S7. On 2026-09-06 the owner also approves committing the completed library-local S8 batch while its separately recorded Model-40 integration gate remains red; this does not accept or close S8/T524. |
-| Objective | Close the complete T524 corpus: prove every retained library root is source-identical, independently buildable on Windows/Linux, base-only in peer dependencies, free of product/machine vocabulary, and used through one NXVM binding. |
-| Non-goals | No new library service, product behavior change, compatibility layer, third-party import, source copy to a sibling repository, or artifact release. |
-| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md) freezes the corpus and gap universe; S2--S7 accepted records establish each root contract. |
+| Identifier Mode | Continuation - M5 T524 S9 |
+| Admission And Approval | Owner explicitly directed S8 closure and S9 admission on 2026-09-06. The Model-40 FDC integration failure remains a recorded transfer, not passing evidence; remote Linux CI is explicitly out of scope. |
+| Objective | Restore the Model-40 external boot integration row through the owning FDC/board/product route, then rerun the complete integration suite without adding any library compatibility behavior. |
+| Non-goals | No new `lib` service, product vocabulary in `src/lib`, firmware/profile/BIOS workaround, controller alias, third-party import, or artifact release. |
+| Reference Baseline | [T524 S8 audit](../etc/evidence/t524-s8-portable-closure-audit.md), the `compaq-deskpro-386-model-40-1200k.yaml` 180-second FDC terminal, and the retained S1--S7 library contracts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
-| Files And ABI Surface | Entire `src/lib` corpus, manifest/CMake/CI/conformance tests, and every existing NXVM binding. Source edits are permitted only to eliminate a verified whole-corpus defect. |
+| Files And ABI Surface | The Model-40 board/FDC/product integration owner and its focused regression evidence; `src/lib` may change only to correct a separately demonstrated publish-boundary defect. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Exact manifest plus tracked-corpus comparison; public/full-tree vocabulary and native-SDK sweeps; root dependency and product-binding ledger; standalone Windows and Linux builds/tests; full unit and full integration; documentation governance and actual-diff review. |
-| Expected Markers | Every retained root has two public neutral consumers; the manifest and CMake select the same corpus; no forbidden vocabulary or peer-root edge remains; each NXVM binding is the sole retained route. |
-| Asset Needs | None. |
-| Reporting Requirements | Report every current-corpus defect and whether it is repaired or blocks closure; state exact Windows/Linux and NXVM gate evidence. |
-| Stop Conditions | Stop for an owner decision only if portability requires a consumer-specific API or a second library-root dependency. |
-| Exit Criteria | The proposal's full acceptance set is proven, each current library file has a neutral disposition and conformance proof, and the T-level closure audit is accepted. |
-| Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
-| Similar-Issue Sweep | Any finding triggers its complete root and binding-class sweep before closure; no one-off compatibility repair is accepted. |
+| Verification | Reproduce the exact Model-40 YAML failure; establish its sole owner and all affected profile variants; run focused owner proof, complete repository-only unit suite, complete external integration suite, governance and actual-diff review. |
+| Expected Markers | The Model-40 row reaches its declared terminal; no new FDC/media/board state owner, BIOS special case, or library/product duplicate route exists; previously passing boot rows remain green. |
+| Asset Needs | Existing owner-managed Model-40 external ROM/CMOS/media only. |
+| Reporting Requirements | Report the root cause, every affected profile variant, actual changes and exact gate outcomes. |
+| Stop Conditions | Stop for an owner decision only if repair requires a second controller owner, a firmware/profile workaround, or a new `lib` product concept. |
+| Exit Criteria | The complete Model-40 integration mechanism and affected profile class are repaired at their sole owner and all required gates pass. |
+| Original Owner Request | Owner requires `lib` peer independence and one NXVM route, and explicitly directed S9 to repair the Model-40 integration failure without a lib workaround. |
+| Similar-Issue Sweep | Sweep every Model-40/AT FDC board binding and each external boot-matrix row affected by the repaired mechanism before closure. |
 
 ## Current Technical Baseline
 

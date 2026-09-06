@@ -16,8 +16,16 @@ Model-40 FDC integration row remains red. See
 The first upstream P1 matrix exposed two publication defects: MSVC cannot
 compile the retained C11 atomic contract, and the previous manifest verifier
 depended on CMake text hashing. The active S8 correction selects UCRT64 GCC on
-Windows and verifies LF-only raw source bytes. It remains pending its upstream
-matrix and the unrelated Model-40 integration gate.
+Windows and verifies LF-only raw source bytes. The owner does not require a
+remote Linux runtime gate; strict Linux source syntax remains the Linux proof.
+
+## S8 Owner-Directed Closure
+
+On 2026-09-06 the owner explicitly directed S8 to close and admitted S9 for
+the Model-40 repair. The S8 corpus result is accepted with the known red
+Model-40 FDC integration row recorded as a transfer, not passing evidence.
+T524 remains open; S9 may repair only the Model-40 owner and must not add a
+`lib` workaround.
 
 ## S1 Admission
 

@@ -78,10 +78,14 @@ owner; it does not create a product dependency.
 7. **S7 - observability disposition.** Prove two neutral consumers of copied
    outcomes. Add a bounded diagnostic event only if both require the same
    fixed copied facts; otherwise retain product diagnostics outside `lib`.
-8. **S8 - portable closure.** Run lib-only Windows/Linux build-and-test paths,
-   the full NXVM unit and integration gates, full vocabulary/source sweeps and
-   actual-diff review. Record the exact source revision and manifest hash used
-   for later SoftPC adoption.
+8. **S8 - portable closure.** Run the lib-only Windows build/test path, strict
+   Linux source syntax, the full NXVM unit and integration gates, full
+   vocabulary/source sweeps and actual-diff review. Record the exact source
+   revision and manifest hash used for later SoftPC adoption.
+9. **S9 - Model-40 integration-gate repair.** Under explicit owner direction,
+   repair the failing Model-40 external boot row only at its FDC/board/product
+   owner, then rerun the complete integration gate. It may not add a library
+   compatibility route or product vocabulary.
 
 ## Acceptance
 
@@ -92,8 +96,8 @@ owner; it does not create a product dependency.
 - Public library headers and the full library tree contain no product or
   machine ownership concept, native SDK type, raw product pointer or implicit
   product policy.
-- Windows and Linux lib-only build/test evidence passes, and the full NXVM
-  unit/integration gates remain green.
+- Windows lib-only build/test evidence and strict Linux source syntax pass,
+  and the full NXVM unit/integration gates remain green.
 - The later SoftPC task imports the recorded manifest unchanged and supplies
   only a product binding.
 
