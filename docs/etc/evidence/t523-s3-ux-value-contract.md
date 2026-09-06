@@ -40,5 +40,5 @@ where three text frames may explicitly request Console again.
   action-before-callback release and capture release.
 - Complete repository-only x64 unit replay:
   `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8 --output-on-failure`:
-  `309/309` pass in 14.56 seconds.
+  `309/309` pass in 14.74 seconds.
 - `git diff --check` and the public-vocabulary/automatic-route sweeps pass.

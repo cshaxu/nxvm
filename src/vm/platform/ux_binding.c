@@ -57,9 +57,6 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
         input.data.key.scan_code = event->data.key.scan_code;
         input.data.key.virtual_key = event->data.key.virtual_key;
         input.data.key.pressed = event->data.key.pressed;
-        if (event->data.key.scan_code < 512u)
-            handle->ux_pressed_keys[event->data.key.scan_code] =
-                event->data.key.pressed != 0u;
     } else if (event->type == UX_EVENT_MOUSE) {
         input.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
         input.data.relative_mouse.delta_x = vm_platform_ux_mouse_delta(
@@ -84,8 +81,12 @@ static C_INT vm_platform_ux_input(C_VOID *opaque, const ux_event *event)
     }
 #endif
     else return TYPE_FALSE;
-    return vm_platform_host_input_sink_submit(&context->input_sink, &input) ==
-        TYPE_STATUS_OK;
+    if (vm_platform_host_input_sink_submit(&context->input_sink, &input) !=
+        TYPE_STATUS_OK) return TYPE_FALSE;
+    if (event->type == UX_EVENT_KEY && event->data.key.scan_code < 512u)
+        handle->ux_pressed_keys[event->data.key.scan_code] =
+            event->data.key.pressed != 0u;
+    return TYPE_TRUE;
 }
 
 static C_INT vm_platform_ux_action_key(vm_platform_run_handle *handle,
