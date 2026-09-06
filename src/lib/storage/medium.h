@@ -20,7 +20,8 @@ lib_status lib_storage_medium_create_overlay(const void *bytes, size_t byte_coun
     lib_storage_medium **out_medium);
 lib_status lib_storage_medium_create_zero_overlay(size_t byte_count,
     lib_storage_medium **out_medium);
-void lib_storage_medium_destroy(lib_storage_medium *medium);
+/* Destroy one exclusive lease and clear its owner pointer. */
+void lib_storage_medium_destroy(lib_storage_medium **medium);
 
 size_t lib_storage_medium_byte_count(const lib_storage_medium *medium);
 lib_status lib_storage_medium_read_at(const lib_storage_medium *medium,
@@ -29,7 +30,6 @@ lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
     size_t offset, const void *bytes, size_t byte_count);
 lib_status lib_storage_medium_fill_at(lib_storage_medium *medium,
     size_t offset, size_t byte_count, lib_u8 value);
-void lib_storage_medium_discard(lib_storage_medium **medium);
 
 /* Replacement is the sole generic transfer of a live medium lease. */
 lib_status lib_storage_medium_replace(lib_storage_medium **lease,

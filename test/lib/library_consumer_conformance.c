@@ -104,7 +104,7 @@ static int library_consumer_storage_and_outcome(void)
         snapshot.status != LIB_STATUS_IO_ERROR) goto done;
     passed = 1;
 done:
-    lib_storage_medium_discard(&medium);
+    lib_storage_medium_destroy(&medium);
     lib_observability_outcome_destroy(outcome);
     return passed;
 }

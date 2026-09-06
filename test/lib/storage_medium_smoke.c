@@ -33,15 +33,15 @@ int main(void)
         lib_storage_medium_write_at(direct, 1u, "Z", 1u) != LIB_STATUS_OK ||
         lib_storage_medium_read_at(direct, 1u, &value, 1u) != LIB_STATUS_OK ||
         value != (lib_u8)'Z') failed = 1;
-    lib_storage_medium_destroy(direct);
-    direct = LIB_NULL;
+    lib_storage_medium_destroy(&direct);
+    if (direct != LIB_NULL) failed = 1;
     if (!failed && (lib_storage_medium_open(storage_medium_path,
             LIB_STORAGE_MEDIUM_READONLY, &readonly) != LIB_STATUS_OK ||
         lib_storage_medium_read_at(readonly, 1u, &value, 1u) != LIB_STATUS_OK ||
         value != (lib_u8)'Z' || lib_storage_medium_write_at(readonly, 1u,
             "Q", 1u) != LIB_STATUS_INVALID_STATE)) failed = 1;
-    lib_storage_medium_destroy(readonly);
-    readonly = LIB_NULL;
+    lib_storage_medium_destroy(&readonly);
+    if (readonly != LIB_NULL) failed = 1;
     if (!failed && (lib_storage_medium_open(storage_medium_path,
             LIB_STORAGE_MEDIUM_OVERLAY, &overlay) != LIB_STATUS_OK ||
         lib_storage_medium_open(storage_medium_path, LIB_STORAGE_MEDIUM_DIRECT,
@@ -57,8 +57,9 @@ int main(void)
         value != 0x11u ||
         lib_storage_medium_read_at(direct, 1u, &value, 1u) != LIB_STATUS_OK ||
         value != (lib_u8)'Z')) failed = 1;
-    lib_storage_medium_destroy(direct);
-    lib_storage_medium_destroy(overlay);
+    lib_storage_medium_destroy(&direct);
+    lib_storage_medium_destroy(&overlay);
+    if (direct != LIB_NULL || overlay != LIB_NULL) failed = 1;
     (void)remove(storage_medium_path);
     return failed;
 }

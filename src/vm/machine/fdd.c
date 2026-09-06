@@ -196,7 +196,7 @@ static C_VOID vm_machine_fdd_install_medium(t_fdd *fdd,
     fdd->connect.pAddressMarks = marks;
     fdd->connect.flagDiskExist = TYPE_TRUE;
     ++fdd->connect.media_generation;
-    lib_storage_medium_destroy(old_medium);
+    lib_storage_medium_destroy(&old_medium);
     if (old_marks != (type_virtual_address)STD_NULL) {
         STD_FREE((C_VOID *)old_marks);
     }
@@ -216,7 +216,7 @@ C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
         (marks = (type_virtual_address)STD_CALLOC((STD_SIZE_T)fdd->data.ncyl *
             fdd->data.nhead * fdd->data.nsector, sizeof(type_unsigned_8))) ==
             (type_virtual_address)STD_NULL) {
-        lib_storage_medium_destroy(candidate);
+        lib_storage_medium_destroy(&candidate);
         return TYPE_TRUE;
     }
     vm_machine_fdd_install_medium(fdd, candidate, marks);
@@ -320,10 +320,9 @@ C_VOID vm_machine_fdd_reset(t_fdd *fdd)
 
 C_VOID vm_machine_fdd_finalize(t_fdd *fdd)
 {
-    if (fdd != STD_NULL) lib_storage_medium_destroy(fdd->connect.medium);
+    if (fdd != STD_NULL) lib_storage_medium_destroy(&fdd->connect.medium);
     if (fdd != STD_NULL && fdd->connect.pAddressMarks)
         STD_FREE((C_VOID *)fdd->connect.pAddressMarks);
-    if (fdd != STD_NULL) fdd->connect.medium = STD_NULL;
     if (fdd != STD_NULL) fdd->connect.pAddressMarks = (type_virtual_address)STD_NULL;
 }
 
@@ -350,7 +349,7 @@ static C_INT vm_machine_fdd_insert_medium_for(t_fdd *fdd, const C_CHAR *file_nam
         (marks = (type_virtual_address)STD_CALLOC((STD_SIZE_T)fdd->data.ncyl *
             fdd->data.nhead * fdd->data.nsector, sizeof(type_unsigned_8))) ==
             (type_virtual_address)STD_NULL) {
-        lib_storage_medium_destroy(candidate);
+        lib_storage_medium_destroy(&candidate);
         return TYPE_TRUE;
     }
     vm_machine_fdd_install_medium(fdd, candidate, marks);
@@ -371,7 +370,7 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
 {
     (C_VOID)file_name;
     if (fdd == STD_NULL) return TYPE_TRUE;
-    lib_storage_medium_discard(&fdd->connect.medium);
+    lib_storage_medium_destroy(&fdd->connect.medium);
     fdd->connect.flagDiskExist = TYPE_FALSE;
     fdd->connect.flagReadOnly = TYPE_FALSE;
     fdd->connect.media_generation++;

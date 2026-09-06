@@ -179,7 +179,7 @@ static C_VOID vm_machine_hdd_install_medium(t_hdd *hdd,
     hdd->data.sector = 1u;
     hdd->connect.flagDiskExist = TYPE_TRUE;
     ++hdd->connect.media_generation;
-    lib_storage_medium_destroy(old_medium);
+    lib_storage_medium_destroy(&old_medium);
 }
 
 C_VOID vm_machine_hdd_initialize(t_hdd *hdd) {
@@ -204,9 +204,8 @@ C_VOID vm_machine_hdd_reset(t_hdd *hdd) {
     }
 }
 C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
-    if (hdd != STD_NULL) lib_storage_medium_destroy(hdd->connect.medium);
+    if (hdd != STD_NULL) lib_storage_medium_destroy(&hdd->connect.medium);
     if (hdd != STD_NULL) {
-        hdd->connect.medium = STD_NULL;
         hdd->connect.raw_byte_count = 0u;
         hdd->connect.virtual_byte_count = 0u;
     }
@@ -244,7 +243,7 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     if (raw_byte_count != 0u) {
         if (lib_storage_medium_write_at(candidate, 0u, bytes, raw_byte_count) !=
             LIB_STATUS_OK) {
-            lib_storage_medium_destroy(candidate);
+            lib_storage_medium_destroy(&candidate);
             return TYPE_TRUE;
         }
     }
@@ -267,7 +266,7 @@ static C_INT vm_machine_hdd_insert_medium(t_hdd *hdd, const C_CHAR *file_name,
     if (vm_machine_hdd_capacity_from_raw(raw_byte_count, &virtual_byte_count,
             &cylinders) ||
         raw_byte_count == 0u || raw_byte_count != virtual_byte_count) {
-        lib_storage_medium_destroy(candidate);
+        lib_storage_medium_destroy(&candidate);
         return TYPE_TRUE;
     }
     vm_machine_hdd_install_medium(hdd, candidate, raw_byte_count,
@@ -286,7 +285,7 @@ C_INT vm_machine_hdd_insert_direct(t_hdd *hdd, const C_CHAR *file_name)
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
     (C_VOID)file_name;
     if (hdd == STD_NULL) return TYPE_TRUE;
-    lib_storage_medium_discard(&hdd->connect.medium);
+    lib_storage_medium_destroy(&hdd->connect.medium);
     hdd->connect.flagDiskExist = TYPE_FALSE;
     hdd->connect.flagReadOnly = TYPE_FALSE;
     hdd->connect.raw_byte_count = 0u;

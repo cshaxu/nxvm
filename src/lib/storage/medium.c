@@ -67,7 +67,7 @@ lib_status lib_storage_medium_create_overlay(const void *bytes, size_t byte_coun
         LIB_STORAGE_MEDIUM_OVERLAY, out_medium);
     if (status != LIB_STATUS_OK || byte_count == 0u) return status;
     status = lib_storage_medium_write_at(*out_medium, 0u, bytes, byte_count);
-    if (status != LIB_STATUS_OK) lib_storage_medium_discard(out_medium);
+    if (status != LIB_STATUS_OK) lib_storage_medium_destroy(out_medium);
     return status;
 }
 
@@ -87,12 +87,17 @@ static void lib_storage_medium_pages_destroy(lib_storage_medium_page *page)
     }
 }
 
-void lib_storage_medium_destroy(lib_storage_medium *medium)
+void lib_storage_medium_destroy(lib_storage_medium **medium)
 {
+    lib_storage_medium *value;
+
     if (medium == LIB_NULL) return;
-    if (medium->file != LIB_NULL) (void)fclose(medium->file);
-    lib_storage_medium_pages_destroy(medium->pages);
-    free(medium);
+    value = *medium;
+    *medium = LIB_NULL;
+    if (value == LIB_NULL) return;
+    if (value->file != LIB_NULL) (void)fclose(value->file);
+    lib_storage_medium_pages_destroy(value->pages);
+    free(value);
 }
 
 size_t lib_storage_medium_byte_count(const lib_storage_medium *medium)
@@ -237,13 +242,6 @@ lib_status lib_storage_medium_fill_at(lib_storage_medium *medium,
         byte_count -= count;
     }
     return LIB_STATUS_OK;
-}
-
-void lib_storage_medium_discard(lib_storage_medium **medium)
-{
-    if (medium == LIB_NULL) return;
-    lib_storage_medium_destroy(*medium);
-    *medium = LIB_NULL;
 }
 
 lib_status lib_storage_medium_replace(lib_storage_medium **lease,

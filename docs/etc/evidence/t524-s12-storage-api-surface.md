@@ -8,8 +8,10 @@ The complete current call sweep identifies no production caller for
 remove functions exist only to implement those public helpers, so they are the
 same dead surface and are removed with it.
 
-`medium_discard` is different: FDD and HDD eject both call it. It remains the
-single operation that destroys a medium and nulls the owner lease.
+`medium_destroy` is the sole lease-release operation: FDD and HDD eject, error
+cleanup, replacement retirement and finalization all pass the owner pointer.
+It closes the backing file where present, frees overlay pages and clears that
+pointer for every medium mode. `medium_discard` is deleted as a duplicate name.
 
 ## Persistence contract
 
@@ -37,7 +39,7 @@ reopening the file-backed medium.
   diff-hygiene checks pass.
 - The tracked source/test change adds 21 and removes 120 lines, net minus 99.
   The retained paths are file reading/text recording, file-backed byte-medium
-  I/O, immediate Direct persistence, replacement and lease discard only.
+  I/O, immediate Direct persistence, replacement and one lease-destruction route.
 
 ## P2 Linux gate repair
 
@@ -56,3 +58,13 @@ that API. P3 removes the reader type, declarations and implementation. The
 file smoke keeps only live behavior: writer output is observed through the
 production `read_owned` route, using newline-free text so it does not assert a
 host-specific text line-ending conversion.
+
+## P4 sole destruction operation
+
+`medium_destroy(&lease)` now consumes and clears every owner lease. The former
+`medium_discard` wrapper is deleted; no medium mode has distinct destruction
+semantics. The storage smoke proves the caller pointers are null after Direct,
+Readonly and Overlay destruction. Focused storage/FDD/HDD/media tests pass
+5/5; the standalone library build/CTest passes 2/2; the complete unit suite
+passes 311/311 in 57.38 seconds. Manifest, Linux platform-contract,
+documentation-governance and diff-hygiene checks pass.

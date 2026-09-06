@@ -254,3 +254,11 @@ The unused line-reader public API and its test-only consumer are deleted.
 `read_owned` and writer remain because profile/session loading and debugger
 recording use them in production. The revised smoke asserts that live pair
 without a host-specific newline assumption.
+
+## S12 Implementation P4
+
+`medium_destroy(&lease)` is now the one complete lease-release operation for
+Direct, Readonly and Overlay media: it releases resources and clears the owner
+pointer. The duplicate `medium_discard` name and all separate post-destroy
+null assignments are removed. FDD/HDD eject, finalization, replacement
+retirement and error cleanup use that same route.

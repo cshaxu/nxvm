@@ -108,8 +108,9 @@ owner; it does not create a product dependency.
    creation, existence, replacement, removal and line-reader helpers, together
    with their native-only implementations. Delete `medium_mode_of` and `medium_flush`;
    tests prove Direct persistence by reopen behavior rather than a redundant
-   public flush. Retain `medium_discard` because FDD/HDD eject uses it to
-   destroy and null the sole lease. Direct `write_at` remains the one
+   public flush. Retain one pointer-clearing `medium_destroy` because FDD/HDD
+   eject uses it to destroy and null the sole lease. Direct `write_at` remains
+   the one
    immediate-persistence boundary. No overlay commit or delayed-write policy
    is admitted. Repair the discovered stale Linux platform-contract gate to
    inspect its current `linux.c` host-sync/UX lifecycle, without changing
