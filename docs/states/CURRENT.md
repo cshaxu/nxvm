@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S7 |
-| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06; the T524 proposal admits S7 after accepted S6. |
-| Objective | Disposition the entire `lib/observability` root: prove a neutral copied-outcome owner, define its lifetime/concurrency boundary, and retain only public API behavior demonstrated by independent consumers. |
-| Non-goals | No logging, diagnostic event framework, text formatting, paths, trace policy, product pointers, machine state or cross-root dependency. |
-| Reference Baseline | [T524 S1 audit](../etc/evidence/t524-s1-shared-library-readiness-audit.md) records an undefined outcome synchronization/lifetime contract and no justification for diagnostic-event expansion; S6 is accepted at `ef604b3d`. |
+| Identifier Mode | Progress - M5 T524 S7 accepted |
+| Admission And Approval | Owner directed single-agent dual-role execution on 2026-09-06. Coordinator actual-diff review accepts S7 P1 `91fb0218`. |
+| Objective | T524 remains open only for its complete portable closure: verify every retained neutral library root as a source-identical corpus with no product ownership or cross-root dependency. |
+| Non-goals | No product/machine behavior in `lib`, consumer-specific binding, speculative generic capability or third-party import. |
+| Reference Baseline | [T524 S7 evidence](../etc/evidence/t524-s7-observability-disposition.md): sole neutral copied outcome and complete consumer sweep. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../proposals/m5-shared-library-multi-consumer-service-completion.md). |
-| Files And ABI Surface | `src/lib/observability/*`, its manifest/CMake/tests, and the existing NXVM start-outcome binding only. Public API may define only copied-outcome synchronization and lifetime semantics proved by this root's consumers. |
+| Files And ABI Surface | S7 closes the complete observability-root disposition only; S8 defines the all-root portable closure surface. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused outcome and start-lifecycle proof; full unit; standalone lib build; manifest; observability vocabulary/direct-dependency sweeps; strict Linux syntax; documentation governance and actual-diff review. |
-| Expected Markers | Observability depends only on `base`; copied publish/capture/lifetime rules are explicit; NXVM retains one binding; no unproven diagnostic capability enters lib. |
+| Verification | S7 actual review: focused outcome/run-handle proof, complete unit 311/311, standalone lib build, manifest, Linux syntax, observability vocabulary/direct-dependency sweeps, documentation governance and diff checks pass. |
+| Expected Markers | S7 is accepted; S8 must establish all-root portable closure rather than reopen individual root contracts. |
 | Asset Needs | None. |
-| Reporting Requirements | Report whether copied outcome can be fully neutral and every consumer that needs more than status/sequence/validity. |
-| Stop Conditions | Stop for an owner decision if any required observability caller needs product diagnostics rather than a fixed copied outcome. |
-| Exit Criteria | One complete observability-root disposition is implemented, verified and accepted; T524 remains open only for S8. |
+| Reporting Requirements | Before S8, report any remaining whole-corpus portability or vocabulary defect and every product binding not covered by a retained root sweep. |
+| Stop Conditions | No T closure without S8's complete current-corpus proof. |
+| Exit Criteria | S7 met: copied outcome is sole neutral observability state, no unproven diagnostic facility entered `lib`, and all stated gates pass. T524 remains open. |
 | Original Owner Request | Owner requires byte-identical NXVM/SoftPC sharing and library peer independence except `base`. |
-| Similar-Issue Sweep | Sweep every `lib_observability_outcome` user and product diagnostic publication; S8 rechecks the current 61-file corpus and every product binding. |
+| Similar-Issue Sweep | S8 rechecks the whole current corpus, all public headers, every retained root and every NXVM binding. |
 
 ## Current Technical Baseline
 

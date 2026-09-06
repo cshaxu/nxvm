@@ -135,3 +135,14 @@ exclusive caller serialization and copied snapshot behavior, confirms the
 whole consumer set requires only sequence/status/validity, and rejects an
 unproven diagnostic-event framework.  The supporting result is [T524 S7
 observability disposition](../etc/evidence/t524-s7-observability-disposition.md).
+
+## S7 Acceptance
+
+Coordinator actual-diff review accepts `91fb0218`: the result is an explicit
+single-owner copied status object, not an untested synchronization or logging
+framework.  Both public neutral consumers and the sole NXVM start-result
+binding are accounted for; invalid API entry is covered.  Focused outcome and
+run-handle integration proof, complete unit 311/311 in 21.45 seconds,
+standalone library build/CTest, manifest, strict Linux syntax,
+observability-root vocabulary/dependency sweeps, documentation governance and
+diff checks pass. T524 remains open only for S8.
