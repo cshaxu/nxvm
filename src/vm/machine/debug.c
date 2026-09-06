@@ -241,7 +241,8 @@ type_status vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_nam
         return TYPE_STATUS_FAULT;
     }
     debug->connect.record_status = debug_storage_status(
-        lib_storage_file_writer_open(file_name, &debug->connect.recordFile));
+        lib_storage_file_writer_open(file_name, LIB_STORAGE_FILE_WRITER_TRUNCATE,
+            &debug->connect.recordFile));
     if (debug->connect.record_status != TYPE_STATUS_OK) {
         STD_PRINTF("ERROR:\tcannot write dump file.\n");
     } else {

@@ -68,3 +68,13 @@ Readonly and Overlay destruction. Focused storage/FDD/HDD/media tests pass
 5/5; the standalone library build/CTest passes 2/2; the complete unit suite
 passes 311/311 in 57.38 seconds. Manifest, Linux platform-contract,
 documentation-governance and diff-hygiene checks pass.
+
+## P5 parameterized writer mode
+
+The opaque neutral writer now accepts `TRUNCATE` or `APPEND` at open. NXVM
+explicitly selects truncate for a new debugger recording; neither its record
+format nor its write cadence enters `lib`. The file smoke proves append retains
+existing bytes and truncate replaces them.
+Focused writer/debug/storage tests pass 4/4; standalone library CTest passes
+2/2; complete unit passes 311/311 in 15.56 seconds. Manifest, Linux
+platform-contract, documentation-governance and diff-hygiene checks pass.

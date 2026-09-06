@@ -39,15 +39,18 @@ lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
 }
 
 lib_status lib_storage_file_writer_open(const char *path,
+    lib_storage_file_writer_mode mode,
     lib_storage_file_writer **out_writer)
 {
     lib_storage_file_writer *writer;
 
-    if (out_writer == LIB_NULL || path == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (out_writer == LIB_NULL || path == LIB_NULL ||
+        mode < LIB_STORAGE_FILE_WRITER_TRUNCATE ||
+        mode > LIB_STORAGE_FILE_WRITER_APPEND) return LIB_STATUS_INVALID_ARGUMENT;
     *out_writer = LIB_NULL;
     writer = malloc(sizeof(*writer));
     if (writer == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    writer->file = fopen(path, "w");
+    writer->file = fopen(path, mode == LIB_STORAGE_FILE_WRITER_TRUNCATE ? "w" : "a");
     if (writer->file == LIB_NULL) {
         free(writer);
         return LIB_STATUS_IO_ERROR;

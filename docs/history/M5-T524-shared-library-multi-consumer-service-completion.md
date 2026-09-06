@@ -262,3 +262,9 @@ Direct, Readonly and Overlay media: it releases resources and clears the owner
 pointer. The duplicate `medium_discard` name and all separate post-destroy
 null assignments are removed. FDD/HDD eject, finalization, replacement
 retirement and error cleanup use that same route.
+
+## S12 Implementation P5
+
+The neutral file writer now takes a `TRUNCATE` or `APPEND` opening mode. NXVM
+selects truncate for a new recorder; the library does not acquire record
+format, reset or write-cadence policy. Its smoke proves both file modes.

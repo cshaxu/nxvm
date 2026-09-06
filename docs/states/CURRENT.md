@@ -6,14 +6,14 @@
 | --- | --- |
 | Identifier Mode | Continuation - M5 T524 S12 |
 | Admission And Approval | Owner explicitly closed S11 and admitted S12 on 2026-09-06. Remote Linux CI remains explicitly out of scope. |
-| Objective | Remove dead shared-storage API surface: delete unconsumed exclusive/exists/replace/remove and line-reader helpers, `medium_mode_of`, `medium_flush` and duplicate `medium_discard`; preserve only immediate Direct persistence and one pointer-clearing `medium_destroy` lease-destruction route. Correct the discovered Linux platform-contract gate to validate the current host-sync/UX lifecycle owner. |
+| Objective | Remove dead shared-storage API surface: delete unconsumed exclusive/exists/replace/remove and line-reader helpers, `medium_mode_of`, `medium_flush` and duplicate `medium_discard`; preserve immediate Direct persistence, one pointer-clearing `medium_destroy` lease-destruction route and one parameterized writer open mode. Correct the discovered Linux platform-contract gate to validate the current host-sync/UX lifecycle owner. |
 | Non-goals | No overlay commit, delayed persistence policy, controller/media-topology change, SoftPC import, generic executor work, product-specific storage API or Linux runtime behavior change. |
 | Reference Baseline | S10 P1 `509f2f77`, accepted S11 P1 `879e4838`, the reopened [T524 proposal](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md), and the complete current storage-call sweep. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
 | Files And ABI Surface | `src/lib/storage/{file,medium,native}.[ch]`, native Windows/Linux file mechanics, FDD/HDD eject consumers, repository-only storage/debug fixtures, and `cmake/verify_linux_platform_contract.cmake`. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
 | Verification | Focused storage/file/FDD/HDD/debug fixture tests, complete unit suite, lib-only build/CTest, repaired Linux platform-contract and strict Linux syntax, manifest, governance and actual-diff review pass. |
-| Expected Markers | No public or native dead helper/query/flush/reader/discard symbol remains; Direct `write_at` is the sole immediate `fflush` point; pointer-clearing `medium_destroy` is the one destruction-and-null route; the Linux gate names current `linux.c` host-sync/UX ownership only. |
+| Expected Markers | No public or native dead helper/query/flush/reader/discard symbol remains; Direct `write_at` is the sole immediate `fflush` point; pointer-clearing `medium_destroy` is the one destruction-and-null route; writer open selects either truncate or append without product record policy; the Linux gate names current `linux.c` host-sync/UX ownership only. |
 | Asset Needs | No new assets or third-party source. |
 | Reporting Requirements | Report every deleted API and its caller disposition, retained Direct/destroy path, repaired gate ownership, code-size result and exact gates. |
 | Stop Conditions | Stop only if a helper has a distinct live production consumer, deleting it requires an unapproved commit/persistence semantic, or current Linux owner evidence requires a behavior change. |

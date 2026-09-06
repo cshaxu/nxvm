@@ -114,7 +114,9 @@ owner; it does not create a product dependency.
    immediate-persistence boundary. No overlay commit or delayed-write policy
    is admitted. Repair the discovered stale Linux platform-contract gate to
    inspect its current `linux.c` host-sync/UX lifecycle, without changing
-   Linux runtime behavior.
+   Linux runtime behavior. The retained neutral text writer exposes one open
+   parameter for truncate or append; product record formats, reset timing and
+   write cadence remain outside `lib`.
 
 ## Acceptance
 

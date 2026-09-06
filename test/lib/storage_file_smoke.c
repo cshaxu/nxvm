@@ -10,16 +10,33 @@ int main(void)
     size_t byte_count = 0u;
     int result = 1;
 
-    if (lib_storage_file_writer_open(LIB_NULL, &writer) !=
+    if (lib_storage_file_writer_open(LIB_NULL, LIB_STORAGE_FILE_WRITER_TRUNCATE,
+            &writer) !=
             LIB_STATUS_INVALID_ARGUMENT ||
-        lib_storage_file_writer_open(path, &writer) != LIB_STATUS_OK ||
+        lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_APPEND,
+            &writer) != LIB_STATUS_OK ||
         lib_storage_file_writer_write(writer, "first") != LIB_STATUS_OK ||
         lib_storage_file_writer_write(writer, "second") != LIB_STATUS_OK ||
         lib_storage_file_writer_close(writer) != LIB_STATUS_OK) goto done;
     writer = LIB_NULL;
+    if (lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_APPEND,
+            &writer) != LIB_STATUS_OK ||
+        lib_storage_file_writer_write(writer, "third") != LIB_STATUS_OK ||
+        lib_storage_file_writer_close(writer) != LIB_STATUS_OK) goto done;
+    writer = LIB_NULL;
     if (lib_storage_file_read_owned(path, 32u, &bytes, &byte_count) !=
-            LIB_STATUS_OK || byte_count != 11u ||
-        memcmp(bytes, "firstsecond", byte_count) != 0) goto done;
+            LIB_STATUS_OK || byte_count != 16u ||
+        memcmp(bytes, "firstsecondthird", byte_count) != 0) goto done;
+    free(bytes);
+    bytes = LIB_NULL;
+    if (lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_TRUNCATE,
+            &writer) != LIB_STATUS_OK ||
+        lib_storage_file_writer_write(writer, "last") != LIB_STATUS_OK ||
+        lib_storage_file_writer_close(writer) != LIB_STATUS_OK) goto done;
+    writer = LIB_NULL;
+    if (lib_storage_file_read_owned(path, 32u, &bytes, &byte_count) !=
+            LIB_STATUS_OK || byte_count != 4u ||
+        memcmp(bytes, "last", byte_count) != 0) goto done;
     result = 0;
 done:
     free(bytes);
