@@ -48,3 +48,13 @@ owner and verification record is retained in
 
 A full rebuilt x64 repository-only replay passes `309/309`; focused mailbox
 and manifest checks, documentation governance and `git diff --check` pass.
+
+## S2 Acceptance
+
+Coordinator actual-diff review accepts `22ff221f`.  It confirms that the sole
+publication path is `ux_mailbox` and its native-private event/pipe, that the
+two former fixed presentation waits are gone, and that the public mailbox
+contract has no native handle.  The complete unit replay passes `309/309` in
+17.20 seconds; documentation governance and the full library dependency and
+legacy-vocabulary sweeps pass.  S3 is the next bounded UX-value and explicit
+presenter batch.

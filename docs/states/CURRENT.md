@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T523 S2 |
-| Admission And Approval | S1 is accepted at `b16c10f7`; the owner-approved T523 proposal authorizes its stated S2 batch. No exception authorizes product coupling, imported SoftPC code, or a second generic route. |
-| Objective | Replace the library's NXVM public-type dependency with one library-private base vocabulary and replace the fixed native presentation polling with mailbox publication wakeups. |
-| Non-goals | No frame/input/action expansion, presenter policy redesign, product lifecycle/storage change, machine/controller/profile change, asset change, or speculative public framework. |
-| Reference Baseline | `b16c10f7` / accepted T523 S1 ledger and current `src/lib` implementation. |
+| Identifier Mode | Continuation - M5 T523 S3 |
+| Admission And Approval | S2 is accepted at `22ff221f`; the owner-approved T523 proposal authorizes its stated S3 batch. No exception authorizes product coupling, imported SoftPC code, a second generic route, automatic display policy, or guest-state access. |
+| Objective | Complete the product-neutral UX value contracts and explicit presenter operations needed by NXVM and SoftPC-shaped consumers. |
+| Non-goals | No machine/controller/profile change, guest input protocol, automatic text/graphics routing policy, lifecycle/storage redesign, asset change, Linux graphics backend, or speculative framework. |
+| Reference Baseline | `22ff221f` / accepted T523 S2 evidence and current `src/lib` implementation. |
 | Candidate Proposal | [T523 proposal](../history/M5-T523-cross-product-library-contract-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/base/**`, public `src/lib/**` headers and implementations, native `src/lib/ux/{win32,linux}/**`, CMake and repository-only `test/lib/**`; library public ABI remains value/callback-only and cannot expose product, machine, VM, profile, native SDK, or guest pointer. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): S1 ledger batch, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): neutral dependency direction and sole ownership; [Coding](../rules/CODING.md): bounded durable public capability and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. The T523 proposal authorizes the library-local base vocabulary as the exception to the product-wide `src/type.*` convention. |
-| Verification | Compile library targets without `type-facade`; static full-`src/lib` include sweep; mailbox wake/no-idle-poll unit tests; focused native presenter tests; full repository-only unit suite; documentation governance; `git diff --check`. |
-| Expected Markers | No `type.h` or `type_*` public ABI dependency in `src/lib`; mailbox publication wakes one waiting native loop; neither Console nor Window uses a fixed frame-poll wait. |
+| Files And ABI Surface | Public `src/lib/ux/{frame,event,actions,router,mailbox,presenter}.h`, native `src/lib/ux/{win32,linux}/**`, NXVM UX binding call sites, CMake and repository-only `test/lib/**`; public ABI remains copied values, opaque handles and callbacks only, with no product, machine, VM, profile, native SDK, or guest pointer. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): accepted S2 baseline, full unit closure and actual-diff review; [Architecture](../rules/ARCHITECTURE.md): neutral dependency direction, single copied-frame owner and product-only policy; [Coding](../rules/CODING.md): durable bounded value contracts and replacement cleanup; [Documentation](../rules/DOCUMENT.md): history/current authority separation. |
+| Verification | Compile affected library/native targets; table-driven repository-only UX conformance for text, graphics, palette, font, dirty rectangle, normalized input, action and capture/release shapes; explicit-target/no-auto-route proof; focused NXVM binding proof; complete repository-only unit suite; documentation governance; `git diff --check`. |
+| Expected Markers | A frame type change alone cannot create/switch/hide a presenter; all text/graphics/input fields are copied values; actions are registered callbacks after release-all; capture has one state owner and releases on focus loss/pause/terminal/explicit release. |
 | Asset Needs | None. No ROM, media, firmware, or guest asset is read or changed. |
-| Reporting Requirements | Record the retired polling routes, one mailbox wake owner, code-size delta, exact sweep commands and focused proof. Report any feature that requires guest/product ownership before implementation. |
-| Stop Conditions | Stop and report if an event-driven wait needs an exposed native handle, a peer-library dependency, guest state, or product policy. |
-| Exit Criteria | `lib/base` is the only library public type/status/atomic dependency; `src/lib` has no `type.h` include; publication wakes Console/Window without periodic frame polling; library targets and full unit/governance pass. |
+| Reporting Requirements | Record each contract-field disposition, retained product policy boundary, code-size delta, exact sweep commands and focused proof. Report any feature that requires guest/product ownership before implementation. |
+| Stop Conditions | Stop and report if a required shape cannot be represented by copied values, opaque callbacks and native-private state, or if preserving NXVM behavior requires automatic routing in the library. |
+| Exit Criteria | The declared copied frame/input/action/capture surface is complete and table-driven; presenter target changes only by explicit product request; no public contract needs product or guest ownership; affected targets and full unit/governance pass. |
 | Original Owner Request | Owner requests a single-agent completion of all library components: peers remain independent, code stays flat for review, and the result follows minimalism without additive patching; the owner then approved implementation of the audited Queue-head task. |
-| Similar-Issue Sweep | Sweep all tracked `src/lib`, its CMake targets and native presenter loops for `type.h`, `type_*`, `Sleep`, fixed timed waits, timers and polling-driven mailbox capture; replace every in-scope production hit or record its distinct non-frame reason. |
+| Similar-Issue Sweep | Sweep tracked `src/lib`, its CMake targets, NXVM bindings and native presenters for frame-kind routing, borrowed guest buffers, product-defined action values, native types in public headers, duplicated capture state and action paths that do not release input first; replace every in-scope production hit or record its distinct non-UX reason. |
 
 ## Current Technical Baseline
 
