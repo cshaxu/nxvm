@@ -185,18 +185,6 @@ static ux_run_result vm_platform_ux_action(C_VOID *opaque, ux_action action,
     return UX_RUN_CONTINUE;
 }
 
-static C_VOID vm_platform_ux_title(C_VOID *opaque, C_CHAR *buffer,
-    type_unsigned_32 buffer_size)
-{
-    const ux_run_state state = vm_platform_ux_state(opaque);
-    const C_CHAR *suffix = state == UX_RUN_RUNNING ? "Running" :
-        state == UX_RUN_PAUSED ? "Paused" : state == UX_RUN_ERROR ? "Error" :
-        "Stopped";
-
-    if (buffer == STD_NULL || buffer_size == 0u) return;
-    (C_VOID)snprintf(buffer, buffer_size, "NXVM (%s)", suffix);
-}
-
 static ux_run_result vm_platform_ux_close(C_VOID *opaque, ux_event_sink input_sink)
 {
     return vm_platform_ux_action(opaque, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE,
@@ -222,6 +210,7 @@ type_status vm_platform_ux_binding_initialize(vm_platform_run_context *context,
     out_binding->get_state = vm_platform_ux_state;
     out_binding->handle_action = vm_platform_ux_action;
     out_binding->handle_close = vm_platform_ux_close;
-    out_binding->get_title = vm_platform_ux_title;
+    (C_VOID)snprintf(out_binding->window_initial_title,
+        sizeof(out_binding->window_initial_title), "NXVM (Running)");
     return TYPE_STATUS_OK;
 }

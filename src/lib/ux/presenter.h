@@ -19,7 +19,7 @@ typedef struct ux_binding {
     ux_run_state (*get_state)(void *context);
     ux_run_result (*handle_action)(void *context, ux_action action, ux_event_sink input_sink);
     ux_run_result (*handle_close)(void *context, ux_event_sink input_sink);
-    void (*get_title)(void *context, char *buffer, lib_u32 buffer_size);
+    char window_initial_title[UX_WINDOW_TITLE_CAPACITY];
 } ux_binding;
 
 lib_status ux_binding_validate(const ux_binding *binding);

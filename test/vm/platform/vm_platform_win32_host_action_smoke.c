@@ -1,8 +1,10 @@
 #include "type.h"
 
 #include "lib/ux/presenter.h"
+#include "lib/ux/router.h"
 #include "lib/ux/win32/input.h"
 #include "vm/platform/platform.h"
+#include "vm/platform/platform_internal.h"
 #include "vm/platform/ux_binding.h"
 
 #include <string.h>
@@ -32,7 +34,8 @@ int main(C_INT argc, C_CHAR **argv)
     ux_binding binding;
     ux_win32_keyboard_normalizer normalizer = { 0 };
     ux_event event = { 0 };
-    C_CHAR title[32];
+    C_CHAR title[UX_WINDOW_TITLE_CAPACITY];
+    type_unsigned_32 title_generation = 0u;
 
     (C_VOID)argc;
     (C_VOID)argv;
@@ -85,8 +88,20 @@ int main(C_INT argc, C_CHAR **argv)
         !capture.events[17].data.key.pressed ||
         capture.events[18].data.key.virtual_key != 'B' ||
         capture.events[18].data.key.pressed) goto fail;
-    binding.get_title(binding.context, title, sizeof(title));
-    if (strcmp(title, "NXVM (Stopped)") != 0) goto fail;
+    if (strcmp(binding.window_initial_title, "NXVM (Running)") != 0) goto fail;
+    vm_platform_run_context_set_window_title(context, "ignored");
+    if (ux_router_capture_window_title(&context->ux_router, title, sizeof(title),
+            &title_generation) != LIB_STATUS_OK || title_generation != 0u) goto fail;
+    vm_platform_run_context_set_display_mode(context, VM_PLATFORM_DISPLAY_WINDOW);
+    ux_router_set_active_target(&context->ux_router, UX_TARGET_WINDOW);
+    vm_platform_run_context_set_window_title(context, "NXVM (Paused)");
+    if (ux_router_capture_window_title(&context->ux_router, title, sizeof(title),
+            &title_generation) != LIB_STATUS_OK || title_generation == 0u ||
+        strcmp(title, "NXVM (Paused)") != 0) goto fail;
+    ux_router_set_active_target(&context->ux_router, UX_TARGET_CONSOLE);
+    vm_platform_run_context_set_window_title(context, "ignored");
+    if (ux_router_capture_window_title(&context->ux_router, title, sizeof(title),
+            &title_generation) != LIB_STATUS_OK || title_generation != 0u) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
     puts("M5:T522:S4:UX-BINDING:OK");

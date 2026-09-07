@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active subtask - M5 T524 S16 closed; T524 remains open pending task-level disposition. |
-| Admission And Approval | Owner approved and S16 completed on 2026-09-06: eliminate redundant presenter-route requests during ordinary copied-frame publication. |
-| Objective | Closed: retain mailbox publication, request a Console/Window route only on target change, and make the shared palette encoding unambiguous. |
-| Non-goals | No guest/Core display change, presenter-owned routing decision, extra router state, polling/event queue, mode-policy change, external asset change, SoftPC import, or integration run. |
-| Reference Baseline | Accepted S16 P1 `9e7697e1`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
+| Identifier Mode | Continuation - M5 T524 S17 |
+| Admission And Approval | Owner approved S17 on 2026-09-06: replace callback-driven titles with an explicit Window-only request. |
+| Objective | Let the app provide a copied initial Window title and explicitly request later Window-title changes; Console must never receive a title mutation. |
+| Non-goals | No guest/Core display change, Console title, presenter-derived title policy, event queue/polling route, external asset change, SoftPC import, or integration run. |
+| Reference Baseline | Accepted S16 P2 `83bb4e02`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/vm/platform/platform.c`, `src/lib/ux/{frame,win32/{window,console,geometry}}.*`, their repository-only tests, lib manifest/README, T524 proposal and state records. `ux_frame` documentation now fixes its existing palette ABI; no data-layout change. |
+| Files And ABI Surface | `src/lib/ux/{presenter,router,win32/{window,console}}.*`, `src/vm/platform/{platform,ux_binding}.*`, session lifecycle/runner title call sites, their repository-only tests, lib manifest/README, T524 proposal and state records. The binding replaces one pull callback with copied initial-title data; router gains an explicit, active-Window-only request. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused platform mode/UX-frame and Win32 palette tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts pass. No integration test ran in this S, by owner direction. |
-| Expected Markers | Frame publication always reaches the mailbox; `ux_router_request()` is called from publication only after a desired-target transition; both palette arrays are `0x00RRGGBB`; Window writes those values directly to DIB and Console alone maps them to `COLORREF`. |
+| Verification | Focused neutral router/title and NXVM UX-binding tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
+| Expected Markers | The binding has no title callback; a Window starts with app-supplied copied title; title request is accepted only while a Window surface is active; Console never calls a console-title API. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report the retained mailbox path, target-transition rule, code-size result and exact gates. |
-| Stop Conditions | Stop if removing the redundant request would change the target policy, require a second target owner, or make a presenter infer a lifecycle action. |
-| Exit Criteria | Met: redundant per-frame requests are absent, every intended target transition remains explicit, palette byte order is uniform across both presenters, all named S16 gates pass and T524 remains open. |
-| Original Owner Request | Presenter switching must follow display-mode target changes, not every frame publication; the shared palette must not be interpreted as two byte orders. |
-| Similar-Issue Sweep | Inspect all VM router requests and frame-publication callers for repeated same-target route writes. |
+| Reporting Requirements | Report the exact title owner, no-op condition, removed callback path, code-size result and exact gates. |
+| Stop Conditions | Stop if a title request would require Console mutation, infer a title from lifecycle in lib, or add a second presentation-state owner. |
+| Exit Criteria | The app supplies the initial Window title, active Window accepts later explicit requests, inactive Window/Console is no-op, no callback/Console title route remains, all named gates pass and T524 remains open. |
+| Original Owner Request | Window title is app-requested only; it is ignored outside Window presentation, while Console title is never mutable. |
+| Similar-Issue Sweep | Sweep all title callbacks, native title calls and presenter lifecycle paths for a second title owner or Console title mutation. |
 
 ## Current Technical Baseline
 

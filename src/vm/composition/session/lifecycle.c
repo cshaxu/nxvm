@@ -237,6 +237,8 @@ type_status vm_session_resume(vm_session *machine) {
     type_status status;
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    vm_platform_run_context_set_window_title(machine->platform_run_context,
+        "NXVM (Running)");
     if (vm_session_control_is_running(&machine->control)) {
         return vm_session_start_outcome_record(machine, TYPE_STATUS_INVALID_STATE);
     }

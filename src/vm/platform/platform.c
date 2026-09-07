@@ -139,6 +139,15 @@ C_VOID vm_platform_run_context_set_window_display(
         VM_PLATFORM_DISPLAY_WINDOW : VM_PLATFORM_DISPLAY_CONSOLE);
 }
 
+C_VOID vm_platform_run_context_set_window_title(
+    vm_platform_run_context *context, const C_CHAR *title)
+{
+    if (context != STD_NULL && title != STD_NULL &&
+        ux_router_request_window_title(&context->ux_router, title)) {
+        ux_mailbox_wake(context->ux_mailbox);
+    }
+}
+
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle)
 {
     vm_platform_run_handle *handle;

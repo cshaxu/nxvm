@@ -210,6 +210,7 @@ int main(void)
     binding.get_state = ux_contract_state;
     binding.handle_action = ux_contract_action;
     binding.handle_close = ux_contract_close;
+    strcpy(binding.window_initial_title, "Neutral Presentation");
     if (ux_binding_validate(&binding) != LIB_STATUS_OK) return 1;
     if (ux_binding_invoke_action(&binding, UX_CONTRACT_ACTION) !=
             UX_RUN_CONTINUE || capture.action_count != 1u ||
@@ -225,6 +226,30 @@ int main(void)
     if (ux_router_target(&router) != UX_TARGET_CONSOLE) return 1;
     ux_router_request(&router, UX_TARGET_WINDOW);
     if (ux_router_target(&router) != UX_TARGET_WINDOW) {
+        ux_mailbox_destroy(mailbox);
+        return 1;
+    }
+    if (ux_router_request_window_title(&router, "ignored") ||
+        ux_router_active_target(&router) != UX_TARGET_NONE) {
+        ux_mailbox_destroy(mailbox);
+        return 1;
+    }
+    ux_router_set_active_target(&router, UX_TARGET_WINDOW);
+    {
+        char title[UX_WINDOW_TITLE_CAPACITY];
+        lib_u32 title_generation = 0u;
+
+        if (!ux_router_request_window_title(&router, "Neutral Window") ||
+            ux_router_capture_window_title(&router, title, sizeof(title),
+                &title_generation) != LIB_STATUS_OK || title_generation == 0u ||
+            strcmp(title, "Neutral Window") != 0) {
+            ux_mailbox_destroy(mailbox);
+            return 1;
+        }
+    }
+    ux_router_set_active_target(&router, UX_TARGET_CONSOLE);
+    if (ux_router_request_window_title(&router, "ignored") ||
+        ux_router_active_target(&router) != UX_TARGET_CONSOLE) {
         ux_mailbox_destroy(mailbox);
         return 1;
     }

@@ -49,6 +49,8 @@ C_VOID vm_session_runner_run(vm_session *session)
              * or presenter never observes a stale mailbox frame. */
             (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
             vm_session_state_acknowledge_pause(control->state);
+            vm_platform_run_context_set_window_title(session->platform_run_context,
+                "NXVM (Paused)");
             /* A Console session owns the one process Console surface while
              * running. End its runner at a paused boundary so the display
              * thread releases that lease and START returns to the NXVM

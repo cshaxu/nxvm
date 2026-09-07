@@ -1,13 +1,18 @@
 #include "lib/base/base.h"
 #include "lib/ux/presenter.h"
 
+#include <string.h>
+
 lib_status ux_binding_validate(const ux_binding *binding)
 {
     return binding == LIB_NULL || binding->mailbox == LIB_NULL ||
         binding->router == LIB_NULL || binding->actions == LIB_NULL ||
         binding->input_sink == LIB_NULL || binding->get_state == LIB_NULL ||
         binding->release_inputs == LIB_NULL ||
-        binding->handle_action == LIB_NULL || binding->handle_close == LIB_NULL ?
+        binding->handle_action == LIB_NULL || binding->handle_close == LIB_NULL ||
+        binding->window_initial_title[0] == '\0' || memchr(
+            binding->window_initial_title, '\0',
+            sizeof(binding->window_initial_title)) == LIB_NULL ?
         LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK;
 }
 

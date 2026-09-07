@@ -37,6 +37,7 @@ typedef struct ux_win32_window_context {
     WPARAM suppressed_hotkey;
     uint32_t client_surface_width;
     uint32_t client_surface_height;
+    uint32_t title_generation;
     int client_width;
     int client_height;
     int cursor_blink_visible;
@@ -55,15 +56,18 @@ static int win32_window_content_running(const ux_win32_window_context *context)
         context->binding->get_state(context->binding->context) == UX_RUN_RUNNING;
 }
 
-static void win32_window_update_title(HWND window,
-    const ux_win32_window_context *context)
+static void win32_window_consume_title(HWND window,
+    ux_win32_window_context *context)
 {
     char title[128];
+    lib_u32 generation;
 
-    if (window == NULL || context == NULL || context->binding->get_title == NULL)
-        return;
-    context->binding->get_title(context->binding->context, title, sizeof(title));
+    if (window == NULL || context == NULL || ux_router_capture_window_title(
+            context->binding->router, title, sizeof(title), &generation) !=
+            LIB_STATUS_OK || generation == 0u || generation ==
+            context->title_generation) return;
     SetWindowTextA(window, title);
+    context->title_generation = generation;
 }
 
 static void win32_window_destroy_surface(ux_win32_window_context *context)
@@ -419,7 +423,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
     case WIN32_WINDOW_FRAME_READY:
         win32_window_consume_frame(window, context);
         win32_window_advance_cursor_blink(window, context);
-        win32_window_update_title(window, context);
+        win32_window_consume_title(window, context);
         return 0;
     case WM_PAINT:
         { PAINTSTRUCT paint; HDC dc = BeginPaint(window, &paint);
@@ -455,7 +459,6 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
             win32_window_release_mouse(context);
             result = ux_binding_invoke_action(context->binding, action);
             if (result != UX_RUN_CONTINUE) context->result = result;
-            win32_window_update_title(window, context);
             context->suppressed_hotkey = wparam;
         } else if (win32_window_content_running(context)) {
             win32_window_transition(context, wparam, lparam, 0);
@@ -522,6 +525,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         return 0;
     case WM_DESTROY:
         win32_window_release_mouse(context);
+        ux_router_set_active_target(context->binding->router, UX_TARGET_NONE);
         SetWindowLongPtrA(window, GWLP_USERDATA, 0);
         return 0;
     }
@@ -566,10 +570,8 @@ ux_run_result ux_win32_run_window(const ux_binding *binding)
     context->cursor_blink_due = GetTickCount() + WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS;
     ux_win32_mouse_reset(&context->mouse);
     {
-        char title[128] = "Presentation";
-        if (binding->get_title != NULL)
-            binding->get_title(binding->context, title, sizeof(title));
-        window = CreateWindowExA(0, klass.lpszClassName, title,
+        window = CreateWindowExA(0, klass.lpszClassName,
+            binding->window_initial_title,
             WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
             WS_MINIMIZEBOX | WS_MAXIMIZEBOX, CW_USEDEFAULT, 0, 680, 560,
             NULL, NULL, klass.hInstance, context);
@@ -578,6 +580,7 @@ ux_run_result ux_win32_run_window(const ux_binding *binding)
         win32_window_destroy(context, NULL);
         return UX_RUN_ERROR_RESULT;
     }
+    ux_router_set_active_target(binding->router, UX_TARGET_WINDOW);
     ShowWindow(window, SW_SHOW);
     UpdateWindow(window);
     SetForegroundWindow(window);

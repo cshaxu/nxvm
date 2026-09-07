@@ -73,6 +73,9 @@ C_VOID vm_platform_run_context_set_display_mode(
     vm_platform_run_context *context, vm_platform_display_mode mode);
 C_VOID vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled);
+/* A title request updates only an active Window presenter; Console is a no-op. */
+C_VOID vm_platform_run_context_set_window_title(
+    vm_platform_run_context *context, const C_CHAR *title);
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle);
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);

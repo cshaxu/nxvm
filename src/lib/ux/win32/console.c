@@ -74,11 +74,6 @@ static int win32_console_open(const ux_binding *binding,
             return 0;
         }
     }
-    if (binding->get_title != NULL) {
-        char title[128] = "Presentation";
-        binding->get_title(binding->context, title, sizeof(title));
-        SetConsoleTitleA(title);
-    }
     console->input = input;
     console->output = output;
     console->original_mode = original_mode;
@@ -293,6 +288,7 @@ static lib_status ux_win32_console_create(const ux_binding *binding,
     memset(console->previous, 0xff, sizeof(console->previous));
     memset(console->previous_attributes, 0xff, sizeof(console->previous_attributes));
     memset(console->previous_palette, 0xff, sizeof(console->previous_palette));
+    ux_router_set_active_target(binding->router, UX_TARGET_CONSOLE);
     *out_console = console;
     return LIB_STATUS_OK;
 }
@@ -355,6 +351,7 @@ static void ux_win32_console_destroy(ux_win32_console *console)
 {
     if (console == NULL) return;
     (void)SetConsoleMode(console->input, console->original_mode);
+    ux_router_set_active_target(console->binding->router, UX_TARGET_NONE);
     win32_console_close(console);
     free(console->frame);
     free(console);

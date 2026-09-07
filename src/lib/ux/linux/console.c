@@ -146,6 +146,7 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
         ux_linux_console_release();
         return UX_RUN_ERROR_RESULT;
     }
+    ux_router_set_active_target(binding->router, UX_TARGET_CONSOLE);
     while (result == UX_RUN_CONTINUE) {
         struct pollfd waits[2] = {
             { STDIN_FILENO, POLLIN, 0 },
@@ -182,6 +183,7 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
         }
     }
     free(frame);
+    ux_router_set_active_target(binding->router, UX_TARGET_NONE);
     endwin();
     ux_linux_console_release();
     return result;

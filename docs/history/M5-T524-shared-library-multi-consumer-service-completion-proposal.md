@@ -198,6 +198,20 @@ owner; it does not create a product dependency.
    converts to `COLORREF` only at its native boundary. Blue, red and yellow
    prove both shared values and the Console conversion. No integration run is
    admitted.
+17. **S17 - explicit Window-title request.** Remove the pull-style title
+   callback from the shared binding. The product supplies a copied initial
+   Window title while constructing a presenter binding, then may issue an
+   explicit title request. The router accepts that request only while a native
+   Window surface reports itself active; Console and transition gaps are
+   deliberate no-ops. The Window consumes the request after its mailbox wake;
+   Console never calls a console-title API. NXVM supplies `NXVM (Running)` as
+   its initial title and explicitly requests `NXVM (Paused)` only after its
+   session reaches the paused boundary, returning to `NXVM (Running)` on
+   resume. This keeps title policy in the product, active-surface truth in the
+   presenter, and native title mutation in the Window adapter. Add neutral
+   request/active-surface proof and NXVM binding proof, run the complete unit,
+   lib-only corpus, static platform gates, governance and dual stripped
+   artifacts. No integration run is admitted.
 
 ## Acceptance
 
