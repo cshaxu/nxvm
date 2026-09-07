@@ -16,7 +16,6 @@
 
 struct core_product_debugger {
     const core_product_debug_target *target;
-    const core_product_debug_input_provider *input_provider;
     const core_utils_wait_scope *wait_scope;
     STD_SIZE_T error_position;
     STD_SIZE_T argument_count;
@@ -36,16 +35,6 @@ struct core_product_debugger {
 };
 
 typedef core_product_debugger core_product_debug_context;
-
-static C_VOID core_product_debug_flush_console_input(core_product_debug_context *debugContext)
-{
-    if (debugContext->input_provider != STD_NULL &&
-        debugContext->input_provider->flush_console_input != STD_NULL)
-    {
-        debugContext->input_provider->flush_console_input(
-            debugContext->input_provider->context);
-    }
-}
 
 static C_INT core_product_debug_read_line(C_CHAR *buffer, STD_SIZE_T buffer_size)
 {
@@ -316,7 +305,6 @@ static C_VOID aconsole(core_product_debug_context *debugContext)
     while (!flagExitAsm)
     {
         STD_PRINTF("%04X:%04X ", asmSegRec, asmPtrRec);
-        core_product_debug_flush_console_input(debugContext);
         if (!core_product_debug_read_line(cmdAsmBuff, sizeof(cmdAsmBuff))) return;
         type_string_lower(cmdAsmBuff);
         if (!STD_STRLEN(cmdAsmBuff))
@@ -1499,7 +1487,6 @@ static C_VOID xaconsole(core_product_debug_context *debugContext, type_unsigned_
     {
         STD_PRINTF("L%08X ", linear);
         if (!core_product_debug_read_line(astmt, sizeof(astmt))) return;
-        core_product_debug_flush_console_input(debugContext);
         astmt[STD_STRLEN(astmt) - 1] = 0;
         if (!STD_STRLEN(astmt))
         {
@@ -2647,7 +2634,6 @@ C_VOID core_product_debugger_destroy(core_product_debugger *debugger)
 
 C_VOID core_product_debugger_run(core_product_debugger *context,
     const core_product_debug_target *target,
-    const core_product_debug_input_provider *input_provider,
     const core_utils_wait_scope *wait_scope)
 {
     core_product_debug_context *debugContext = context;
@@ -2658,7 +2644,6 @@ C_VOID core_product_debugger_run(core_product_debugger *context,
         return;
     core_product_debug_context_initialize(context);
     context->target = target;
-    context->input_provider = input_provider;
     context->wait_scope = wait_scope;
     if (core_product_debug_get_fault_outcome(target, &fault) && fault.valid) {
         STD_PRINTF("fault: detail=%08X pc=%08X", fault.detail, fault.linear_pc);
@@ -2679,13 +2664,11 @@ C_VOID core_product_debugger_run(core_product_debugger *context,
     arg = (C_CHAR **)STD_MALLOC(DEBUG_MAXNARG * sizeof(C_CHAR *));
     if (arg == STD_NULL) {
         context->target = STD_NULL;
-        context->input_provider = STD_NULL;
         return;
     }
     flagExit = 0;
     while (!flagExit)
     {
-        core_product_debug_flush_console_input(debugContext);
         STD_PRINTF("-");
         if (!core_product_debug_read_line(strCmdBuff, sizeof(strCmdBuff))) break;
         parse(debugContext);
@@ -2701,5 +2684,4 @@ C_VOID core_product_debugger_run(core_product_debugger *context,
     }
     core_product_debug_finalize_arguments(context);
     context->target = STD_NULL;
-    context->input_provider = STD_NULL;
 }

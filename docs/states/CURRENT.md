@@ -4,8 +4,8 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S18 |
-| Admission And Approval | Owner approved S18 on 2026-09-06: make the dual presenter mailbox private and control-driven. |
+| Identifier Mode | Continuation - M5 T524 S18 presenter ownership and product-boundary closure. |
+| Admission And Approval | Owner approved S18 on 2026-09-06: make the dual presenter mailbox private and control-driven, then explicitly required NXVM to remove every duplicate lib-provided native UX ability. The initial implementation must be corrected: no console-input flush API or Core debugger flush hook; tests construct guest input events and use the existing input sink. |
 | Objective | Replace public frame/router state with an opaque presenter that owns a latest-frame slot, FIFO control commands and one wake mechanism; remove NXVM's duplicate native UX runner and input-adapter implementation. |
 | Non-goals | No guest/Core display change, Console title, presenter-derived title policy, event queue/polling route, external asset change, SoftPC import, or integration run. |
 | Reference Baseline | Accepted S17 P2 `d7ebf854`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
@@ -26,8 +26,9 @@
 - **Current developer artifacts:** T524 advances the active CMake target to
   `vm-0-5-0524`, which emits `nxvm_0_5_0524_x64.exe` and
   `nxvm_0_5_0524_x86.exe` in stripped Release builds. They retain the runtime
-  debugger and contain no compiler debug information. S13 records their
-  verified hashes before its P closure.
+  debugger and contain no compiler debug information. S18 verifies x64
+  `14C801A17C1CE2C7B8110E332578B209DCD89CCEFB1DA163449C9FB8BE62CDE1`
+  and x86 `A8B36FAF908F6D28B1A31EC774E5E3F532A7A189F74ABE964DAEBE8C4E553838`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

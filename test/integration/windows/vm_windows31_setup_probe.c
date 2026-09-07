@@ -28,6 +28,19 @@ static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
     return 0u;
 }
 
+static C_INT vm_t287_submit_input(vm_session *session,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+{
+    core_machine_guest_input_event event = { 0 };
+
+    if (session == STD_NULL) return 0;
+    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.data.key.scan_code = scan_code;
+    event.data.key.virtual_key = virtual_key;
+    event.data.key.pressed = pressed != 0;
+    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+}
+
 static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
@@ -111,9 +124,13 @@ static C_INT vm_t287_type_setup(vm_session *session)
 
     if (session == STD_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 1);
+        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
+            return 0;
+        }
         Sleep(25u);
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 0);
+        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 0)) {
+            return 0;
+        }
         Sleep(25u);
     }
     return 1;
@@ -131,9 +148,13 @@ static C_INT vm_t288_type_windows(vm_session *session)
 
     if (session == STD_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 1);
+        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
+            return 0;
+        }
         Sleep(25u);
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 0);
+        if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 0)) {
+            return 0;
+        }
         Sleep(25u);
     }
     return 1;

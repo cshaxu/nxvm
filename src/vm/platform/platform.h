@@ -65,8 +65,6 @@ type_status vm_platform_run_context_publish_ux_frame(
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,
     const core_machine_guest_input_event *event);
-type_status vm_platform_host_key_submit(const vm_platform_run_context *context,
-    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
 C_INT vm_platform_run_context_get_display_mode(

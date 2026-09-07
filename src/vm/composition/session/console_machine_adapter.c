@@ -190,8 +190,7 @@ static type_status vm_session_machine_set_speed(C_VOID *context,
 static type_status vm_session_machine_debug_selected(vm_session *session,
     C_VOID *context)
 {
-    const core_product_debug_input_provider *input =
-        (const core_product_debug_input_provider *)context;
+    (C_VOID)context;
 
     if (vm_session_control_is_running(&session->control)) {
         vm_session_control_request_pause(&session->control,
@@ -201,18 +200,14 @@ static type_status vm_session_machine_debug_selected(vm_session *session,
         }
     }
     core_product_debugger_run(session->debugger, vm_session_debug_target(session),
-        input, &session->wait_scope);
+        &session->wait_scope);
     return TYPE_STATUS_OK;
 }
 
 static C_VOID vm_session_machine_debug(C_VOID *context)
 {
-    static const core_product_debug_input_provider input = {
-        vm_session_debug_flush_console_input,
-        STD_NULL
-    };
     (C_VOID)vm_session_machine_apply(context, vm_session_machine_debug_selected,
-        (C_VOID *)&input);
+        STD_NULL);
 }
 
 static type_status vm_session_machine_record_start_selected(vm_session *session,

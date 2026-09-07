@@ -27,6 +27,7 @@ static C_INT vm_platform_run_handle_wait_for_keyboard(vm_session *session,
 int main(C_INT argc, C_CHAR **argv)
 {
     vm_session *session = STD_NULL;
+    core_machine_guest_input_event input = { 0 };
     vm_platform_run_handle *event_handle = STD_NULL;
     integration_yaml_session yaml_session;
 
@@ -53,7 +54,11 @@ int main(C_INT argc, C_CHAR **argv)
         session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     host_sync_sleep_milliseconds(50u);
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x43u, VK_F9, 1);
+    input.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    input.data.key.scan_code = 0x43u;
+    input.data.key.virtual_key = 0x78u;
+    input.data.key.pressed = TYPE_TRUE;
+    if (vm_session_submit_host_input(session, &input) != TYPE_STATUS_OK) goto fail;
     host_sync_sleep_milliseconds(50u);
     if (!vm_session_control_is_running(&session->control) ||
         vm_platform_run_handle_take_stop_report(session->platform_run_handle)) goto fail;
@@ -73,7 +78,10 @@ int main(C_INT argc, C_CHAR **argv)
         type_unsigned_8 previous =
             session->core_machine->shared_kbc.data.last_keyboard_output_byte;
 
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x1eu, 'A', 1);
+        input.data.key.scan_code = 0x1eu;
+        input.data.key.virtual_key = 'A';
+        input.data.key.pressed = TYPE_TRUE;
+        if (vm_session_submit_host_input(session, &input) != TYPE_STATUS_OK) goto fail;
         if (!vm_platform_run_handle_wait_for_keyboard(session, previous)) goto fail;
     }
     vm_session_stop(session);

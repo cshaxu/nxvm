@@ -25,23 +25,25 @@ C_INT main(C_VOID)
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x2au, 0x10u, TYPE_TRUE);
+    if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK) goto fail;
     if (vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) != TYPE_STATUS_OK ||
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x3bu, 0x70u,
-        TYPE_TRUE);
+    event.data.key.scan_code = 0x3bu;
+    event.data.key.virtual_key = 0x70u;
+    if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK) goto fail;
     if (vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) != TYPE_STATUS_OK ||
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x3bu ||
         !request.data.key_event.pressed) goto fail;
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x1eu, 'A',
-        TYPE_TRUE);
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x1eu, 'A',
-        TYPE_FALSE);
+    event.data.key.scan_code = 0x1eu;
+    event.data.key.virtual_key = 'A';
+    if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK) goto fail;
+    event.data.key.pressed = TYPE_FALSE;
+    if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK) goto fail;
     while (vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) == TYPE_STATUS_OK) {
         if (request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||

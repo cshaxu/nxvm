@@ -23,6 +23,19 @@ static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
     return 0u;
 }
 
+static C_INT vm_t287_submit_input(vm_session *session,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+{
+    core_machine_guest_input_event event = { 0 };
+
+    if (session == STD_NULL) return 0;
+    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.data.key.scan_code = scan_code;
+    event.data.key.virtual_key = virtual_key;
+    event.data.key.pressed = pressed != 0;
+    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+}
+
 static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
@@ -78,19 +91,19 @@ static C_VOID vm_t287_submit_key(const vm_session *session, type_unsigned_16 sca
     type_unsigned_16 virtual_key)
 {
     if (session == STD_NULL) return;
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_code, virtual_key, 1);
+    if (!vm_t287_submit_input((vm_session *)session, scan_code, virtual_key, 1)) return;
     Sleep(25u);
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_code, virtual_key, 0);
+    (C_VOID)vm_t287_submit_input((vm_session *)session, scan_code, virtual_key, 0);
     Sleep(25u);
 }
 
 static C_VOID vm_t287_submit_colon(const vm_session *session)
 {
     if (session == STD_NULL) return;
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x2au, VK_SHIFT, 1);
+    if (!vm_t287_submit_input((vm_session *)session, 0x2au, VK_SHIFT, 1)) return;
     Sleep(25u);
     vm_t287_submit_key(session, 0x27u, VK_OEM_1);
-    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x2au, VK_SHIFT, 0);
+    (C_VOID)vm_t287_submit_input((vm_session *)session, 0x2au, VK_SHIFT, 0);
     Sleep(25u);
 }
 

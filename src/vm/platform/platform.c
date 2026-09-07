@@ -114,19 +114,6 @@ type_status vm_platform_host_input_sink_submit(
     return sink->submit(sink->context, event);
 }
 
-type_status vm_platform_host_key_submit(const vm_platform_run_context *context,
-    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
-{
-    core_machine_guest_input_event event = { 0 };
-
-    if (context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
-    event.data.key.scan_code = scan_code;
-    event.data.key.virtual_key = virtual_key;
-    event.data.key.pressed = pressed != 0;
-    return vm_platform_host_input_sink_submit(&context->input_sink, &event);
-}
-
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context)
 {

@@ -20,6 +20,19 @@ static DWORD WINAPI run_machine(C_VOID *opaque)
     return 0u;
 }
 
+static C_INT vm_dos_keyboard_submit_key(vm_session *session,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+{
+    core_machine_guest_input_event event = { 0 };
+
+    if (session == STD_NULL) return 0;
+    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.data.key.scan_code = scan_code;
+    event.data.key.virtual_key = virtual_key;
+    event.data.key.pressed = pressed != 0;
+    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+}
+
 static C_INT vm_dos_keyboard_has_text(const vm_session *session,
     const C_CHAR *text)
 {
@@ -222,9 +235,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 1);
+        if (!vm_dos_keyboard_submit_key(session, scan_codes[index],
+                virtual_keys[index], 1)) goto fail;
         Sleep(25u);
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 0);
+        if (!vm_dos_keyboard_submit_key(session, scan_codes[index],
+                virtual_keys[index], 0)) goto fail;
         Sleep(25u);
     }
     for (elapsed = 0u; elapsed < edit_timeout; elapsed += 10u) {

@@ -77,14 +77,14 @@ static C_INT run_case(const C_CHAR *text, C_INT fail_allocation)
     clearerr(STD_STDIN);
     allocation_failure = fail_allocation;
     allocation_attempts = 0u;
-    core_product_debugger_run(debugger, &target, STD_NULL, STD_NULL);
+    core_product_debugger_run(debugger, &target, STD_NULL);
     if (allocation_attempts != 1u || writes != 0u) {
         goto done;
     }
     if (!fail_allocation) {
         if (STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) goto done;
         clearerr(STD_STDIN);
-        core_product_debugger_run(debugger, &target, STD_NULL, STD_NULL);
+        core_product_debugger_run(debugger, &target, STD_NULL);
         if (allocation_attempts != 2u || writes != 0u) {
             goto done;
         }

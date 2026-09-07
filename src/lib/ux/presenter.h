@@ -37,9 +37,6 @@ lib_status ux_presenter_set_target(ux_presenter *presenter, ux_target target);
 lib_status ux_presenter_set_window_title(ux_presenter *presenter,
     const char *title);
 lib_status ux_presenter_stop(ux_presenter *presenter);
-/* Discards pending host-console input without exposing a native console handle.
- * It is harmless when no console backend is active. */
-void ux_discard_console_input(void);
 ux_run_result ux_run(const ux_binding *binding);
 lib_status ux_binding_validate(const ux_binding *binding);
 ux_run_result ux_binding_invoke_action(const ux_binding *binding,

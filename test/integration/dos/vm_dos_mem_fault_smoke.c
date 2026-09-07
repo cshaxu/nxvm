@@ -21,6 +21,19 @@ static DWORD WINAPI vm_dos_mem_fault_run_machine(C_VOID *opaque)
     return 0u;
 }
 
+static C_INT vm_dos_mem_fault_submit_key(vm_session *session,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key)
+{
+    core_machine_guest_input_event event = { 0 };
+
+    if (session == STD_NULL) return 0;
+    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.data.key.scan_code = scan_code;
+    event.data.key.virtual_key = virtual_key;
+    event.data.key.pressed = TYPE_TRUE;
+    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+}
+
 static C_INT vm_dos_mem_fault_has_prompt(const vm_session *session)
 {
     core_machine_guest_display_frame frame;
@@ -84,7 +97,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (elapsed == DOS_PROMPT_TIMEOUT_MILLISECONDS) goto fail;
     stage = "MEM command completion";
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 1);
+        if (!vm_dos_mem_fault_submit_key(session, scan_codes[index],
+                virtual_keys[index])) goto fail;
     }
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
     if (result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) goto fail;

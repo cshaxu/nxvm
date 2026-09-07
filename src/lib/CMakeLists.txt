@@ -16,7 +16,6 @@ endfunction()
 
 set(LIBRARY_UX_SOURCES
     ux/actions.c
-    ux/console_input.c
     ux/linux/input.c
     ux/presenter.c)
 if(WIN32)
