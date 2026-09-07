@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active subtask - M5 T524 S18 closed; T524 remains open pending task-level disposition. |
-| Admission And Approval | Owner approved S18 on 2026-09-06: make the dual presenter mailbox private and control-driven, then explicitly required NXVM to remove every duplicate lib-provided native UX ability. The owner corrected the initial implementation: no console-input flush API or Core debugger flush hook; tests construct guest input events through the existing product ingress. |
-| Objective | Replace public frame/router state with an opaque presenter that owns a latest-frame slot, FIFO control commands and one wake mechanism; remove NXVM's duplicate native UX runner and input-adapter implementation. |
-| Non-goals | No guest/Core display change, Console title, presenter-derived title policy, event queue/polling route, external asset change, SoftPC import, or integration run. |
+| Identifier Mode | No active subtask - M5 T524 S19 closed; T524 remains open. |
+| Admission And Approval | Owner approved S19 on 2026-09-06: state and enforce lib platform encapsulation, peer independence through base, and base-owned type aliases, beginning with `size_t`. |
+| Objective | Remove standard/native type leakage from the public lib ABI without changing product behavior. |
+| Non-goals | No guest/Core, storage-mode, presenter behavior, host runtime, or external asset change. |
 | Reference Baseline | Accepted S17 P2 `d7ebf854`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/ux/{presenter,internal,linux,win32}/*`, `src/vm/platform/*`, session runner/lifecycle title call sites, repository-only tests, lib manifest/README, T524 proposal and state records. Public control is exactly target, title and stop; frame publication is copied-value only; VM has no native presenter or host-input implementation. |
+| Files And ABI Surface | `src/lib/base/base.h`, public storage headers, private storage native helper, README, manifest and public-header/static tests. `lib_size` replaces public `size_t`; `FILE` remains internal. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused presenter FIFO/priority and NXVM UX tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
-| Expected Markers | Public control has only target/title/stop, no app mailbox/router/wake access remains, FIFO full is explicit, control drains before a frame and stop bypasses frame work; no VM platform Win32/Linux runner or native-input adapter remains. |
+| Verification | Public-header leak sweep, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
+| Expected Markers | Public headers expose no `size_t` or native file handle; all peer roots depend only on `base`; native file mechanics reside under `storage/internal`. |
 | Asset Needs | No new assets or third-party source. |
 | Reporting Requirements | Report FIFO capacity/failure, one-wake ownership, control-before-frame order, removed public state and exact gates. |
-| Stop Conditions | Stop if a command is overwritten/dropped, a platform object leaks to app code, control/frame acquire separate wake mechanisms, or old router/mailbox remains live. |
-| Exit Criteria | Opaque presenter owns both mailboxes and one wake; only target/title/stop control APIs are app-visible; control ordering and full/no-op semantics are proven; NXVM has one neutral lib-host/lib-UX route with no duplicate native presentation/input code; all named gates pass and T524 remains open. |
-| Original Owner Request | Presenter uses private latest-frame and FIFO control mailboxes with shared wake; app issues only target, title and stop controls. |
-| Similar-Issue Sweep | Sweep public headers, VM, native runners and tests for direct mailbox/router access and manual wake calls. |
+| Stop Conditions | Stop if eliminating an exposed type requires a second type system or changes byte/offset semantics. |
+| Exit Criteria | README records the three invariants, public ABI uses base aliases, native file handles are private, and all named gates pass. |
+| Original Owner Request | lib fully encapsulates platform logic/API, peer components depend only on base, and base owns type redefinitions. |
+| Similar-Issue Sweep | Sweep every public header for raw standard/native ABI types and every peer root for non-base lib includes. |
 
 ## Current Technical Baseline
 
@@ -69,6 +69,11 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S19 P2:** `base` is the sole public type facade: storage byte
+  counts and offsets use `lib_size`, and the native `FILE` helper is private
+  under `storage/internal`. README records platform encapsulation and peer-root
+  independence. Unit 310/310, manifest and dual stripped artifacts pass.
 
 - **M5 T524 S18 P3:** coordinator actual-diff review accepts `01a431b4` and
   `e5b1bdcf`. One opaque presenter retains the latest copied frame, a bounded

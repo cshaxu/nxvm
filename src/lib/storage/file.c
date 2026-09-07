@@ -1,7 +1,7 @@
 #include "lib/base/base.h"
 
 #include "lib/storage/file.h"
-#include "lib/storage/native.h"
+#include "lib/storage/internal/native.h"
 
 struct lib_storage_file_writer { FILE *file; };
 

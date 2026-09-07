@@ -1,7 +1,7 @@
 #include "lib/base/base.h"
 
 #include "lib/storage/medium.h"
-#include "lib/storage/native.h"
+#include "lib/storage/internal/native.h"
 
 #define LIB_STORAGE_MEDIUM_PAGE_BYTES 4096u
 

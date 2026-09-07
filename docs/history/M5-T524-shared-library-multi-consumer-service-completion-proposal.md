@@ -228,6 +228,15 @@ owner; it does not create a product dependency.
    Add repository-only FIFO, priority, full/no-op and NXVM integration proofs;
    run full unit, lib-only corpus, static gates, governance and dual stripped
    artifacts. No integration run is admitted.
+19. **S19 - base-type and native-boundary closure.** State the library's three
+   publish invariants in its README: products use only lib contracts; platform
+   APIs remain private to lib native implementations; and peer roots depend
+   only on `base`. Make `base` the sole library type facade by defining
+   `lib_size` and using it for every public byte-count/offset ABI. Move the
+   storage `FILE` helper beneath `storage/internal`, so no public include path
+   exposes a native file handle. Add a narrow static public-header sweep and
+   retain the full unit and lib-only manifest proof. No product, storage-mode,
+   or host-runtime behavior changes.
 
 ## Acceptance
 

@@ -10,8 +10,8 @@ typedef enum lib_storage_file_writer_mode {
     LIB_STORAGE_FILE_WRITER_APPEND
 } lib_storage_file_writer_mode;
 
-lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
-    void **out_bytes, size_t *out_byte_count);
+lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
+    void **out_bytes, lib_size *out_byte_count);
 lib_status lib_storage_file_writer_open(const char *path,
     lib_storage_file_writer_mode mode,
     lib_storage_file_writer **out_writer);

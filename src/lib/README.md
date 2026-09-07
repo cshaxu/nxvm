@@ -1,5 +1,16 @@
 # Shared Library
 
+## Publish Invariants
+
+- `src/lib` completely encapsulates host/platform code, symbols and handles.
+  A product includes only documented lib contracts; native headers and APIs are
+  lib-private implementation detail.
+- First-level components are peers. They may depend on `base`, never on one
+  another; a product composition root is the only place that combines them.
+- `base` is the sole library type facade. Public lib contracts use its `lib_*`
+  aliases (`lib_size` for byte counts and offsets), never raw standard-library
+  or host SDK types.
+
 Each first-level directory is an independent capability. A product composition
 root may combine them; a library component may not include another component.
 
