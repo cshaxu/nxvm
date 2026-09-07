@@ -15,6 +15,14 @@
 static type_status vm_platform_run_context_request_ux_target(
     vm_platform_run_context *context, ux_target target);
 
+static C_INT vm_platform_run_context_target_is_mouse_capturable(
+    const vm_platform_run_context *context, ux_target target)
+{
+    return context != STD_NULL && target == UX_TARGET_WINDOW &&
+        context->execution != STD_NULL && context->execution->state != STD_NULL &&
+        vm_session_state_lifecycle(context->execution->state) == VM_SESSION_RUNNING;
+}
+
 type_status vm_platform_run_context_create(
     const vm_platform_execution *execution,
     const vm_platform_host_input_sink *input_sink,
@@ -75,8 +83,12 @@ static type_status vm_platform_run_context_request_ux_target(
     vm_platform_run_context *context, ux_target target)
 {
     lib_status status;
+    type_status capture_status;
 
     if (context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    capture_status = vm_platform_run_context_set_mouse_capturable(context,
+        vm_platform_run_context_target_is_mouse_capturable(context, target));
+    if (capture_status != TYPE_STATUS_OK) return capture_status;
     if (context->requested_target == target) return TYPE_STATUS_OK;
     status = ux_presenter_set_target(context->ux_presenter, target);
     if (status != LIB_STATUS_OK) return (type_status)status;
@@ -125,8 +137,7 @@ type_status vm_platform_host_input_sink_submit(
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context)
 {
-    return context != STD_NULL && context->display_mode ==
-        VM_PLATFORM_DISPLAY_WINDOW;
+    return context != STD_NULL && context->requested_target == UX_TARGET_WINDOW;
 }
 
 C_INT vm_platform_run_context_get_display_mode(
@@ -147,7 +158,8 @@ type_status vm_platform_run_context_set_display_mode(
     context->console_text_frames = 0u;
     status = vm_platform_run_context_request_ux_target(context,
         mode == VM_PLATFORM_DISPLAY_WINDOW ? UX_TARGET_WINDOW : UX_TARGET_CONSOLE);
-    return status;
+    if (status != TYPE_STATUS_OK) return status;
+    return TYPE_STATUS_OK;
 }
 
 type_status vm_platform_run_context_set_window_display(
@@ -162,6 +174,20 @@ type_status vm_platform_run_context_set_window_title(
 {
     if (context == STD_NULL || title == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     return (type_status)ux_presenter_set_window_title(context->ux_presenter, title);
+}
+
+type_status vm_platform_run_context_set_mouse_capturable(
+    vm_platform_run_context *context, C_INT capturable)
+{
+    if (context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    return (type_status)ux_presenter_set_mouse_capturable(context->ux_presenter,
+        capturable ? LIB_TRUE : LIB_FALSE);
+}
+
+type_status vm_platform_run_context_release_mouse(vm_platform_run_context *context)
+{
+    if (context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    return (type_status)ux_presenter_release_mouse(context->ux_presenter);
 }
 
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle)
@@ -184,7 +210,6 @@ C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
     STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE);
     STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE);
     STD_ATOMIC_INIT(&handle->pause_reported, TYPE_FALSE);
-    STD_ATOMIC_INIT(&handle->mouse_release_reported, TYPE_FALSE);
 }
 
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle)
@@ -202,8 +227,7 @@ C_INT vm_platform_run_handle_is_window_display(
     const vm_platform_run_handle *handle)
 {
     return handle != STD_NULL && handle->context != STD_NULL &&
-        vm_platform_run_context_get_display_mode(handle->context) ==
-            VM_PLATFORM_DISPLAY_WINDOW;
+        vm_platform_run_context_get_window_display(handle->context);
 }
 
 C_VOID vm_platform_run_handle_report(
@@ -216,8 +240,6 @@ C_VOID vm_platform_run_handle_report(
         STD_ATOMIC_STORE(&handle->stop_reported, TYPE_TRUE);
     } else if (event == VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED) {
         STD_ATOMIC_STORE(&handle->pause_reported, TYPE_TRUE);
-    } else if (event == VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED) {
-        STD_ATOMIC_STORE(&handle->mouse_release_reported, TYPE_TRUE);
     }
 }
 
@@ -242,16 +264,11 @@ C_INT vm_platform_run_handle_take_pause_report(
         TYPE_FALSE);
 }
 
-C_INT vm_platform_run_handle_take_mouse_release_report(
-    vm_platform_run_handle *handle)
-{
-    return handle != STD_NULL && STD_ATOMIC_EXCHANGE(
-        &handle->mouse_release_reported, TYPE_FALSE);
-}
-
 C_VOID vm_platform_run_handle_request_presenter_stop(
     vm_platform_run_handle *handle)
 {
     if (handle == STD_NULL || handle->context == STD_NULL) return;
+    (C_VOID)vm_platform_run_context_set_mouse_capturable(handle->context,
+        TYPE_FALSE);
     (C_VOID)ux_presenter_set_target(handle->context->ux_presenter, UX_TARGET_NONE);
 }

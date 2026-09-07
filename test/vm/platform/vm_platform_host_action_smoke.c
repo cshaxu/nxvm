@@ -32,6 +32,7 @@ int main(C_INT argc, C_CHAR **argv)
     ux_binding binding;
     ux_event event = { 0 };
     ux_target target;
+    lib_bool mouse_capturable;
     char title[UX_WINDOW_TITLE_CAPACITY];
 
     (C_VOID)argc;
@@ -52,27 +53,19 @@ int main(C_INT argc, C_CHAR **argv)
         capture.events[0].data.key.virtual_key != 0x70u) goto fail;
     if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE) !=
             UX_RUN_CONTINUE ||
-        !vm_platform_run_handle_take_pause_report(handle) || capture.count != 3u ||
-        capture.events[1].kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE ||
-        capture.events[1].data.relative_mouse.buttons != 0u ||
-        capture.events[2].data.key.scan_code != 0x3bu ||
-        capture.events[2].data.key.pressed) goto fail;
+        !vm_platform_run_handle_take_pause_report(handle) || capture.count != 2u ||
+        capture.events[1].data.key.scan_code != 0x3bu ||
+        capture.events[1].data.key.pressed) goto fail;
     if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL) !=
             UX_RUN_CONTINUE ||
-        capture.count != 10u ||
-        capture.events[3].kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE ||
-        capture.events[3].data.relative_mouse.buttons != 0u ||
-        capture.events[6].data.key.scan_code != 0x0153u ||
-        !capture.events[6].data.key.pressed ||
-        capture.events[6].data.key.virtual_key != 0x2eu) goto fail;
+        capture.count != 8u || capture.events[4].data.key.scan_code != 0x0153u ||
+        !capture.events[4].data.key.pressed ||
+        capture.events[4].data.key.virtual_key != 0x2eu) goto fail;
     if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER) !=
             UX_RUN_CONTINUE ||
-        capture.count != 15u ||
-        capture.events[10].kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE ||
-        capture.events[10].data.relative_mouse.buttons != 0u ||
-        capture.events[12].data.key.scan_code != 0x1cu ||
-        !capture.events[12].data.key.pressed ||
-        capture.events[12].data.key.virtual_key != 0x0du) goto fail;
+        capture.count != 12u || capture.events[9].data.key.scan_code != 0x1cu ||
+        !capture.events[9].data.key.pressed ||
+        capture.events[9].data.key.virtual_key != 0x0du) goto fail;
     if (strcmp(binding.window_initial_title, "NXVM (Running)") != 0) goto fail;
     if (vm_platform_run_context_set_window_title(context, "ignored") !=
             TYPE_STATUS_OK || ux_presenter_capture_window_title(
@@ -84,7 +77,13 @@ int main(C_INT argc, C_CHAR **argv)
         vm_platform_run_context_set_window_title(context, "NXVM (Paused)") !=
             TYPE_STATUS_OK || ux_presenter_capture_window_title(
             context->ux_presenter, title) != 2u ||
-        strcmp(title, "NXVM (Paused)") != 0) goto fail;
+        strcmp(title, "NXVM (Paused)") != 0 ||
+        ux_presenter_capture_mouse_capturable(context->ux_presenter,
+            &mouse_capturable) == 0u ||
+        mouse_capturable != LIB_FALSE || ux_binding_invoke_action(&binding,
+            VM_PLATFORM_UX_ACTION_RELEASE_MOUSE) != UX_RUN_CONTINUE ||
+        !ux_presenter_take_mouse_release(context->ux_presenter) ||
+        capture.count != 12u) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
     puts("M5:T522:S4:UX-BINDING:OK");

@@ -1943,6 +1943,11 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     }
     out_snapshot->columns = columns;
     out_snapshot->rows = rows;
+    for (column = 0u; column < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES;
+        ++column) {
+        out_snapshot->palette_rgb[column] = core_machine_vadp_rgbi_color(
+            (type_unsigned_8)column);
+    }
     out_snapshot->cursor_top = adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_CURSOR_TOP] & 0x1fu;
     out_snapshot->cursor_bottom = adapter->data.crtc[
@@ -1957,9 +1962,15 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
         out_snapshot->cursor_x = (type_unsigned_8)(relative_cursor % columns);
         out_snapshot->cursor_y = (type_unsigned_8)(relative_cursor / columns);
     }
+    /* Geometry is part of a copied text frame.  Firmware legitimately
+     * programs CRTC geometry before it writes a lower row; comparing only the
+     * overlapping cell bytes would otherwise retain a stale short frame in
+     * every presentation consumer. */
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
-        CORE_MACHINE_DISPLAY_KIND_TEXT || STD_MEMCMP(adapter->data.text_cells,
-        cells, visible_bytes) != 0;
+        CORE_MACHINE_DISPLAY_KIND_TEXT ||
+        adapter->data.captured_columns != columns ||
+        adapter->data.captured_rows != rows ||
+        STD_MEMCMP(adapter->data.text_cells, cells, visible_bytes) != 0;
     if (buffer_changed) {
         STD_MEMCPY(adapter->data.text_cells, cells, visible_bytes);
         for (row = 0u; row < rows; ++row) {
@@ -1991,6 +2002,8 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     adapter->data.captured_cursor_address = cursor;
     adapter->data.captured_cursor_x = out_snapshot->cursor_x;
     adapter->data.captured_cursor_y = out_snapshot->cursor_y;
+    adapter->data.captured_columns = columns;
+    adapter->data.captured_rows = rows;
     adapter->data.captured_cursor_visible = out_snapshot->cursor_visible;
     adapter->data.captured = TYPE_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_TEXT;

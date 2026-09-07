@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S22 task closure audit. |
-| Admission And Approval | Owner approved S22 on 2026-09-06 to perform the required final task-level closure checks. |
-| Objective | Verify the final T524 source graph and close the task only if its full acceptance contract holds. |
-| Non-goals | No product behavior, Core, asset, storage, public ABI or new implementation scope is admitted. |
-| Reference Baseline | Accepted S21 P2: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
+| Identifier Mode | Continuation - M5 T524 S25 Win32 Window-to-Console foreground restoration. |
+| Admission And Approval | Owner approved S25 on 2026-09-06 after direct use found that a Window-to-Console target transition left the Console visible but unfocused. |
+| Objective | Make the lib-owned Window-to-Console transition restore the Console foreground and keyboard focus, while NXVM derives mouse eligibility from the actual presenter target and session lifecycle. |
+| Non-goals | No NXVM focus API, guest input route, native handle exposure, controller behavior, profile/YAML, asset, or new public library API. |
+| Reference Baseline | S23 remains open for direct text/frame acceptance; its current corrected artifacts are the S24 source baseline. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | Audit only: all T524 `src/lib`, NXVM bindings, build/test declarations, manifest, task records and current artifacts. |
+| Files And ABI Surface | `src/lib/ux/win32/{runner,console,window}.c`, `src/vm/platform/platform.c`, owner-local tests, lib manifest and task records; no public lib ABI addition. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Complete repository-only unit and owner-managed integration suites; lib-only manifest/CTest; Linux/build-ownership and ownership/vocabulary sweeps; documentation governance; clean worktree; acceptance and actual-diff review; current stripped x64/x86 artifact verification. |
-| Expected Markers | Every proposal acceptance condition has current evidence; all 44 integration rows and all unit rows pass; only `ux`, `host-sync` and `storage-medium` remain in lib; and no undocumented open task-scope defect remains. |
+| Verification | Owner-local presenter-control and NXVM policy proofs; every S runs full repository-only unit. Corrected T closure reruns full unit, owner-managed integration, lib manifest/CTest, static gates, documentation governance, and dual stripped artifacts. |
+| Expected Markers | When Window consumes `SetTarget(Console)`, it destroys the Window; the next Console surface is then made foreground and keyboard-focused by its native lib owner before accepting guest input. NXVM enables capture only for a running Window target and disables it before Console/NONE. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report exact unit/integration counts, manifest/source-boundary result, artifact hashes, any remaining defect/debt, and either closure or the precise blocker. |
-| Stop Conditions | Stop rather than close for a failing gate, an unverified acceptance condition, a product/machine concept in lib, a duplicate path, dirty worktree, or a task-scope defect needing implementation. |
-| Exit Criteria | All acceptance clauses and named gates pass, the final audit finds no task-scope defect or untracked deferral, and a task-level closure record truthfully replaces retained T524 progress. |
-| Original Owner Request | Perform the T524 closure S now. |
-| Similar-Issue Sweep | Sweep every retained library root, public header, manifest entry, NXVM binding, build declaration, test route and T524 acceptance clause for a second implementation or unverified claim. |
+| Reporting Requirements | Record the Window-to-Console native ordering and the search disposition of every Window/Console transition; do not claim T closure until S23 direct presentation acceptance and all gates agree. |
+| Stop Conditions | Stop if focus restoration requires an app-owned native handle, creates a second switch path, or needs an undocumented cross-process focus bypass. |
+| Exit Criteria | The sole Win32 runner path restores the Console foreground and keyboard focus after a Window-to-Console transition; no public host ABI is added; focused and full repository-only unit gates pass. |
+| Original Owner Request | Repair the severe lib defect where a returned Console displays a frame but does not receive keyboard input. |
+| Similar-Issue Sweep | Inspect every Window-to-Console switch and Console surface creation path; retain one native focus-restoration owner. |
 
 ## Current Technical Baseline
 
@@ -59,7 +59,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T524 | Open: S15 removed the one-product `session` and `observability` roots; S16 retains one mailbox publication path, coalesces route requests at target transitions and makes both palette arrays unambiguously `0x00RRGGBB`; S17 makes Window titles explicit app requests and removes Console title mutation. `src/lib` publishes only `ux`, `host-sync` and `storage-medium`. T-level closure remains a separate owner-led decision. |
+| T524 S23 | Active corrective repair: direct host use found incomplete native text presentation and Window pause/resume behavior despite S22's structural gates. |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
@@ -69,6 +69,13 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S23:** owner-reported direct Windows use rejects the S22 P2
+  closure claim: Console exposed only 13 text rows, Window showed a cursor
+  without text, and the Window pause chord could not resume a paused session.
+  The structural/integration gates remain baseline evidence, not proof of
+  native presentation. S23 owns the common copied-frame and action boundary
+  repair before T524 can close.
 
 - **M5 T524 S21 P2:** coordinator actual-diff review accepts `6fae5531`.
   The FIFO and public `stop()` surface are deleted. One opaque presenter now

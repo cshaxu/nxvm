@@ -8,6 +8,7 @@ int main(void)
 {
     ux_presenter *presenter = NULL;
     ux_target target;
+    lib_bool mouse_capturable;
     char title[UX_WINDOW_TITLE_CAPACITY];
     static ux_frame first;
     static ux_frame second;
@@ -25,6 +26,18 @@ int main(void)
         ux_presenter_publish_frame(presenter, &second) != LIB_STATUS_OK ||
         ux_presenter_capture_frame(presenter, &captured) != LIB_STATUS_OK ||
         captured.sequence != 2u || captured.text[0] != 'B') goto fail;
+    if (ux_presenter_mouse_capture_state(presenter) != UX_MOUSE_CAPTURE_RELEASED ||
+        ux_presenter_set_mouse_capturable(presenter, LIB_TRUE) != LIB_STATUS_OK ||
+        ux_presenter_capture_mouse_capturable(presenter, &mouse_capturable) == 0u ||
+        mouse_capturable != LIB_TRUE || ux_presenter_release_mouse(presenter) !=
+            LIB_STATUS_OK || !ux_presenter_take_mouse_release(presenter) ||
+        ux_presenter_take_mouse_release(presenter) || ux_presenter_set_mouse_capturable(
+            presenter, LIB_FALSE) != LIB_STATUS_OK ||
+        ux_presenter_capture_mouse_capturable(presenter, &mouse_capturable) == 0u ||
+        mouse_capturable != LIB_FALSE || ux_presenter_take_mouse_release(presenter) ||
+        ux_presenter_set_mouse_capturable(presenter, LIB_TRUE) != LIB_STATUS_OK ||
+        ux_presenter_capture_mouse_capturable(presenter, &mouse_capturable) == 0u ||
+        mouse_capturable != LIB_TRUE) goto fail;
     if (ux_presenter_set_window_title(presenter, "first") != LIB_STATUS_OK ||
         ux_presenter_set_window_title(presenter, "Neutral Window") != LIB_STATUS_OK ||
         ux_presenter_capture_window_title(presenter, title) != 2u ||

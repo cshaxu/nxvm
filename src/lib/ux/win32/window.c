@@ -44,6 +44,7 @@ typedef struct ux_win32_window_context {
     DWORD cursor_blink_due;
     lib_u32 target_generation;
     lib_u32 title_generation;
+    lib_bool mouse_capturable;
 } ux_win32_window_context;
 
 static ux_win32_window_context *win32_window_context(HWND window)
@@ -339,15 +340,40 @@ static void win32_window_mouse(ux_win32_window_context *context,
 
 static void win32_window_release_mouse(ux_win32_window_context *context)
 {
-    if (context != NULL) ux_win32_mouse_release(&context->mouse);
+    if (context == NULL) return;
+    ux_win32_mouse_release(&context->mouse);
+    ux_presenter_set_mouse_capture_state(context->binding->presenter,
+        UX_MOUSE_CAPTURE_RELEASED);
 }
 
 static void win32_window_capture_mouse(HWND window,
     ux_win32_window_context *context, LPARAM position)
 {
-    if (!win32_window_content_running(context)) return;
-    (void)ux_win32_mouse_capture(&context->mouse, window, position);
+    if (!win32_window_content_running(context) || context->mouse_capturable ==
+        LIB_FALSE) return;
+    if (!ux_win32_mouse_capture(&context->mouse, window, position)) return;
+    ux_presenter_set_mouse_capture_state(context->binding->presenter,
+        UX_MOUSE_CAPTURE_CAPTURED);
     SetCursor(NULL);
+}
+
+static void win32_window_consume_mouse_control(
+    ux_win32_window_context *context)
+{
+    lib_bool capturable;
+    lib_u32 generation;
+    lib_bool release_requested;
+
+    if (context == NULL) return;
+    generation = ux_presenter_capture_mouse_capturable(
+        context->binding->presenter, &capturable);
+    if (generation == 0u) return;
+    context->mouse_capturable = capturable;
+    release_requested = ux_presenter_take_mouse_release(
+        context->binding->presenter);
+    if (capturable == LIB_FALSE || release_requested != LIB_FALSE) {
+        win32_window_release_mouse(context);
+    }
 }
 
 static void win32_window_consume_frame(HWND window,
@@ -412,6 +438,7 @@ static int win32_window_consume_mailboxes(HWND window,
         context->title_generation = generation;
         SetWindowTextA(window, title);
     }
+    win32_window_consume_mouse_control(context);
     return 1;
 }
 
@@ -464,7 +491,6 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
             (WORD)wparam, modifiers);
         if (action != UX_ACTION_NONE) {
             ux_run_result result;
-            win32_window_release_mouse(context);
             result = ux_binding_invoke_action(context->binding, action);
             if (result != UX_RUN_CONTINUE) context->result = result;
             context->suppressed_hotkey = wparam;
@@ -501,6 +527,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         }
         break;
     case WM_LBUTTONDOWN:
+        win32_window_consume_mouse_control(context);
         if (!win32_window_content_running(context)) return 0;
         context->left_button = 1;
         win32_window_capture_mouse(window, context, lparam);
@@ -512,6 +539,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         if (ux_win32_mouse_captured(&context->mouse)) win32_window_mouse(context, lparam);
         return 0;
     case WM_RBUTTONDOWN:
+        win32_window_consume_mouse_control(context);
         if (!win32_window_content_running(context)) return 0;
         context->right_button = 1;
         win32_window_capture_mouse(window, context, lparam);

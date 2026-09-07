@@ -19,10 +19,11 @@ root may combine them; a library component may not include another component.
   code belongs below its host directory and depends only on the public `ux`
   contract. Both palette arrays use platform-neutral `0x00RRGGBB`; native
   adapters convert only at their own host boundary. The opaque presenter owns
-  independent latest-frame, target and Window-title slots with one private
-  native wake. Console consumes target then frame; Window consumes target,
-  title then frame. `NONE` is the target that stops a presenter; Console title
-  mutation is never part of the contract.
+  independent latest-frame, target, Window-title, capturable and release slots
+  with one private native wake. The two mouse slots expose only copied capture
+  state, never a native handle. Console consumes target then frame; Window
+  consumes target, title, capturable, release then frame. `NONE` is the target
+  that stops a presenter; Console title mutation is never part of the contract.
 - `host-sync` provides opaque native events, clocks and cancellable joined
   tasks. It contains no guest-time or product execution policy.
 - `storage-medium` owns exclusive byte-medium leases. Direct and readonly media retain

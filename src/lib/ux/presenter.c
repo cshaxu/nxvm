@@ -6,9 +6,16 @@ struct ux_presenter {
     atomic_flag frame_lock;
     atomic_flag target_lock;
     atomic_flag title_lock;
+    atomic_flag mouse_capturable_lock;
+    atomic_flag mouse_release_lock;
+    atomic_flag mouse_state_lock;
     lib_u32 frame_generation;
     lib_u32 target_generation;
     lib_u32 title_generation;
+    lib_u32 mouse_capturable_generation;
+    lib_bool mouse_capturable;
+    lib_bool mouse_release_pending;
+    ux_mouse_capture_state mouse_capture_state;
     ux_frame frame;
     ux_target target;
     char title[UX_WINDOW_TITLE_CAPACITY];
@@ -36,10 +43,21 @@ lib_status ux_presenter_create(ux_presenter **out_presenter)
     presenter->frame_lock = (atomic_flag)ATOMIC_FLAG_INIT;
     presenter->target_lock = (atomic_flag)ATOMIC_FLAG_INIT;
     presenter->title_lock = (atomic_flag)ATOMIC_FLAG_INIT;
+    presenter->mouse_capturable_lock = (atomic_flag)ATOMIC_FLAG_INIT;
+    presenter->mouse_release_lock = (atomic_flag)ATOMIC_FLAG_INIT;
+    presenter->mouse_state_lock = (atomic_flag)ATOMIC_FLAG_INIT;
     atomic_flag_clear_explicit(&presenter->frame_lock, memory_order_release);
     atomic_flag_clear_explicit(&presenter->target_lock, memory_order_release);
     atomic_flag_clear_explicit(&presenter->title_lock, memory_order_release);
+    atomic_flag_clear_explicit(&presenter->mouse_capturable_lock,
+        memory_order_release);
+    atomic_flag_clear_explicit(&presenter->mouse_release_lock,
+        memory_order_release);
+    atomic_flag_clear_explicit(&presenter->mouse_state_lock,
+        memory_order_release);
     presenter->target_generation = 1u;
+    presenter->mouse_capturable = LIB_FALSE;
+    presenter->mouse_capture_state = UX_MOUSE_CAPTURE_RELEASED;
     presenter->native_mailbox = ux_mailbox_native_create();
     if (presenter->native_mailbox == LIB_NULL) {
         free(presenter);
@@ -100,6 +118,41 @@ lib_status ux_presenter_set_window_title(ux_presenter *presenter,
     return LIB_STATUS_OK;
 }
 
+lib_status ux_presenter_set_mouse_capturable(ux_presenter *presenter,
+    lib_bool capturable)
+{
+    if (presenter == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    ux_presenter_lock(&presenter->mouse_capturable_lock);
+    presenter->mouse_capturable = capturable != LIB_FALSE;
+    ++presenter->mouse_capturable_generation;
+    ux_presenter_unlock(&presenter->mouse_capturable_lock);
+    ux_mailbox_native_signal(presenter->native_mailbox);
+    return LIB_STATUS_OK;
+}
+
+lib_status ux_presenter_release_mouse(ux_presenter *presenter)
+{
+    if (presenter == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    ux_presenter_lock(&presenter->mouse_release_lock);
+    presenter->mouse_release_pending = LIB_TRUE;
+    ux_presenter_unlock(&presenter->mouse_release_lock);
+    ux_mailbox_native_signal(presenter->native_mailbox);
+    return LIB_STATUS_OK;
+}
+
+ux_mouse_capture_state ux_presenter_mouse_capture_state(
+    const ux_presenter *presenter)
+{
+    ux_presenter *mutable_presenter = (ux_presenter *)presenter;
+    ux_mouse_capture_state state;
+
+    if (presenter == LIB_NULL) return UX_MOUSE_CAPTURE_RELEASED;
+    ux_presenter_lock(&mutable_presenter->mouse_state_lock);
+    state = presenter->mouse_capture_state;
+    ux_presenter_unlock(&mutable_presenter->mouse_state_lock);
+    return state;
+}
+
 lib_u32 ux_presenter_capture_target(const ux_presenter *presenter,
     ux_target *out_target)
 {
@@ -153,6 +206,41 @@ lib_u32 ux_presenter_frame_generation(const ux_presenter *presenter)
     return generation;
 }
 
+lib_u32 ux_presenter_capture_mouse_capturable(const ux_presenter *presenter,
+    lib_bool *out_capturable)
+{
+    ux_presenter *mutable_presenter = (ux_presenter *)presenter;
+    lib_u32 generation;
+
+    if (presenter == LIB_NULL || out_capturable == LIB_NULL) return 0u;
+    ux_presenter_lock(&mutable_presenter->mouse_capturable_lock);
+    *out_capturable = presenter->mouse_capturable;
+    generation = presenter->mouse_capturable_generation;
+    ux_presenter_unlock(&mutable_presenter->mouse_capturable_lock);
+    return generation;
+}
+
+lib_bool ux_presenter_take_mouse_release(ux_presenter *presenter)
+{
+    lib_bool pending;
+
+    if (presenter == LIB_NULL) return LIB_FALSE;
+    ux_presenter_lock(&presenter->mouse_release_lock);
+    pending = presenter->mouse_release_pending;
+    presenter->mouse_release_pending = LIB_FALSE;
+    ux_presenter_unlock(&presenter->mouse_release_lock);
+    return pending;
+}
+
+void ux_presenter_set_mouse_capture_state(ux_presenter *presenter,
+    ux_mouse_capture_state state)
+{
+    if (presenter == LIB_NULL) return;
+    ux_presenter_lock(&presenter->mouse_state_lock);
+    presenter->mouse_capture_state = state;
+    ux_presenter_unlock(&presenter->mouse_state_lock);
+}
+
 ux_mailbox_native *ux_mailbox_native_for_presenter(const ux_presenter *presenter)
 {
     return presenter == LIB_NULL ? LIB_NULL : presenter->native_mailbox;
@@ -162,7 +250,7 @@ lib_status ux_binding_validate(const ux_binding *binding)
 {
     return binding == LIB_NULL || binding->presenter == LIB_NULL ||
         binding->actions == LIB_NULL || binding->input_sink == LIB_NULL ||
-        binding->get_state == LIB_NULL || binding->release_inputs == LIB_NULL ||
+        binding->get_state == LIB_NULL || binding->release_pressed_keys == LIB_NULL ||
         binding->handle_action == LIB_NULL || binding->handle_close == LIB_NULL ||
         binding->window_initial_title[0] == '\0' || memchr(
             binding->window_initial_title, '\0',
@@ -175,7 +263,7 @@ ux_run_result ux_binding_invoke_action(const ux_binding *binding,
 {
     if (ux_binding_validate(binding) != LIB_STATUS_OK || action == UX_ACTION_NONE)
         return UX_RUN_ERROR_RESULT;
-    if (!binding->release_inputs(binding->context, binding->input_sink))
+    if (!binding->release_pressed_keys(binding->context, binding->input_sink))
         return UX_RUN_ERROR_RESULT;
     return binding->handle_action(binding->context, action, binding->input_sink);
 }

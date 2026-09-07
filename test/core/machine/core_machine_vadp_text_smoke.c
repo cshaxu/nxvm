@@ -53,7 +53,23 @@ C_INT main(C_VOID)
     failed |= snapshot.columns != 80u || snapshot.rows != 25u ||
         snapshot.characters[0] != 'A' || snapshot.attributes[0] != 0x1fu ||
         !snapshot.buffer_changed || !snapshot.text_glyphs_present ||
-        snapshot.text_glyphs['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] != 0x81u;
+        snapshot.text_glyphs['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] != 0x81u ||
+        snapshot.palette_rgb[0u] != 0x000000u ||
+        snapshot.palette_rgb[1u] != 0x0000aau ||
+        snapshot.palette_rgb[15u] != 0xffffffu;
+
+    /* A CRTC geometry transition must publish even when newly visible cells
+     * are unchanged.  Otherwise a presenter can retain the preceding short
+     * text frame indefinitely. */
+    core_machine_vadp_write_crtc(&port, 0x01u, 80u);
+    core_machine_vadp_write_crtc(&port, 0x06u, 13u);
+    failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.columns != 80u || snapshot.rows != 13u || !snapshot.buffer_changed;
+    core_machine_vadp_write_crtc(&port, 0x06u, 25u);
+    failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.columns != 80u || snapshot.rows != 25u || !snapshot.buffer_changed;
+    core_machine_vadp_write_crtc(&port, 0x01u, 0u);
+    core_machine_vadp_write_crtc(&port, 0x06u, 0u);
 
     core_machine_vadp_write_crtc(&port, 0x0eu, 0u);
     core_machine_vadp_write_crtc(&port, 0x0fu, 1u);

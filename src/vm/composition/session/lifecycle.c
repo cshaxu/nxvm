@@ -246,6 +246,8 @@ type_status vm_session_resume(vm_session *machine) {
         vm_session_control_continue(&machine->control);
         if (vm_platform_run_handle_is_window_display(machine->platform_run_handle) &&
             vm_platform_run_handle_is_active(machine->platform_run_handle)) {
+            (C_VOID)vm_platform_run_context_set_mouse_capturable(
+                machine->platform_run_context, TYPE_TRUE);
             return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
         }
     }

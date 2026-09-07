@@ -27,7 +27,6 @@ struct vm_platform_run_handle {
     STD_ATOMIC_INT last_event;
     STD_ATOMIC_BOOL stop_reported;
     STD_ATOMIC_BOOL pause_reported;
-    STD_ATOMIC_BOOL mouse_release_reported;
     C_INT active;
     type_bool ux_pressed_keys[512u];
 };

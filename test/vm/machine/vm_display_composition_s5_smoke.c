@@ -67,7 +67,8 @@ C_INT main(C_VOID)
     STD_MEMSET(&frame, 0, sizeof(frame));
     failed |= !vm_display_s5_capture(session, &frame, CORE_MACHINE_DISPLAY_KIND_TEXT) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
-        frame.rows != 25u;
+        frame.rows != 25u || frame.palette_rgb[0u] != 0x000000u ||
+        frame.palette_rgb[15u] != 0xffffffu;
     text_generation = frame.generation;
 
     vm_display_s5_port_write(session, 0x03d8u, 0x0au);
@@ -139,7 +140,7 @@ C_INT main(C_VOID)
             &frame) != TYPE_STATUS_OK ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
-        frame.pixels[0] != 0u || frame.palette_rgb[15] != 0u ||
+        frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
             TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
 

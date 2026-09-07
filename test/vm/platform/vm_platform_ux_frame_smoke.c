@@ -17,8 +17,11 @@ C_INT main(C_VOID)
     core_machine_guest_presentation_mailbox *core_mailbox = STD_NULL;
     vm_platform_run_context *context = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
+    vm_session_state *state = STD_NULL;
+    vm_platform_execution execution;
     ux_binding binding;
     type_unsigned_32 first_sequence;
+    lib_bool mouse_capturable;
 
     source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
     source.generation = 7u;
@@ -31,11 +34,15 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK || !destination.valid || destination.graphics ||
         destination.text[0] != 'A' || destination.text_palette[14u] !=
             0x00ffff00u) return 1;
+    if (vm_session_state_create(&state) != TYPE_STATUS_OK) goto fail;
+    vm_session_state_start(state);
+    execution = (vm_platform_execution){ state, STD_NULL, STD_NULL, STD_NULL };
     if (core_machine_guest_presentation_mailbox_create(&core_mailbox) !=
-            TYPE_STATUS_OK || vm_platform_run_context_create(STD_NULL, STD_NULL,
+            TYPE_STATUS_OK || vm_platform_run_context_create(&execution, STD_NULL,
             core_mailbox, STD_NULL, &context) != TYPE_STATUS_OK ||
-        vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK ||
-        vm_platform_ux_binding_initialize(context, handle, &binding) !=
+        vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK) goto fail;
+    handle->context = context;
+    if (vm_platform_ux_binding_initialize(context, handle, &binding) !=
             TYPE_STATUS_OK || core_machine_guest_presentation_mailbox_publish(
             core_mailbox, &source) != TYPE_STATUS_OK ||
         vm_platform_run_context_publish_ux_frame(context) != TYPE_STATUS_OK ||
@@ -55,16 +62,38 @@ C_INT main(C_VOID)
     source.pixel_height = 200u;
     if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
             TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
-            TYPE_STATUS_OK || context->requested_target != UX_TARGET_WINDOW)
+            TYPE_STATUS_OK) goto fail;
+    if (ux_presenter_capture_mouse_capturable(context->ux_presenter,
+            &mouse_capturable) == 0u) goto fail;
+    if (context->requested_target != UX_TARGET_WINDOW ||
+        !vm_platform_run_handle_is_window_display(handle) || mouse_capturable != LIB_TRUE)
         goto fail;
+    source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
+    source.generation = 10u;
+    if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
+            TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
+            TYPE_STATUS_OK) goto fail;
+    ++source.generation;
+    if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
+            TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
+            TYPE_STATUS_OK) goto fail;
+    ++source.generation;
+    if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
+            TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
+            TYPE_STATUS_OK || context->requested_target != UX_TARGET_CONSOLE ||
+        vm_platform_run_handle_is_window_display(handle) ||
+        ux_presenter_capture_mouse_capturable(context->ux_presenter,
+            &mouse_capturable) == 0u || mouse_capturable != LIB_FALSE) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
     core_machine_guest_presentation_mailbox_destroy(core_mailbox);
+    vm_session_state_destroy(state);
     return 0;
 
 fail:
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
     core_machine_guest_presentation_mailbox_destroy(core_mailbox);
+    vm_session_state_destroy(state);
     return 1;
 }

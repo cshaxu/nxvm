@@ -19,6 +19,32 @@
 #define VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS 256u
 #define VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS 4096u
 
+static C_VOID vm_session_runner_update_mouse_policy(vm_session *session,
+    const vm_session_control_state *control)
+{
+    C_INT capturable;
+
+    if (session == STD_NULL || control == STD_NULL) return;
+    capturable = vm_session_control_is_running(control) &&
+        vm_platform_run_context_get_window_display(session->platform_run_context);
+    (C_VOID)vm_platform_run_context_set_mouse_capturable(
+        session->platform_run_context, capturable);
+}
+
+static C_VOID vm_session_runner_toggle_pause(vm_session *session,
+    vm_session_control_state *control)
+{
+    if (session == STD_NULL || control == STD_NULL) return;
+    if (vm_session_state_is_paused(control->state)) {
+        vm_session_control_continue(control);
+        vm_session_runner_update_mouse_policy(session, control);
+        (C_VOID)vm_platform_run_context_set_window_title(
+            session->platform_run_context, "NXVM (Running)");
+    } else {
+        vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
+    }
+}
+
 C_VOID vm_session_runner_run(vm_session *session)
 {
     core_machine_run_budget budget;
@@ -27,13 +53,14 @@ C_VOID vm_session_runner_run(vm_session *session)
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
+    vm_session_runner_update_mouse_policy(session, control);
     while (vm_session_state_is_active(control->state)) {
         if (vm_platform_run_handle_take_stop_report(session->platform_run_handle)) {
             vm_session_control_stop(control);
             continue;
         }
         if (vm_platform_run_handle_take_pause_report(session->platform_run_handle)) {
-            vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
+            vm_session_runner_toggle_pause(session, control);
             continue;
         }
         if (vm_session_state_take_reset(control->state)) {
@@ -48,6 +75,8 @@ C_VOID vm_session_runner_run(vm_session *session)
              * VADP snapshot before acknowledging pause, so a paused debugger
              * or presenter never observes a stale mailbox frame. */
             (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
+            (C_VOID)vm_platform_run_context_set_mouse_capturable(
+                session->platform_run_context, TYPE_FALSE);
             vm_session_state_acknowledge_pause(control->state);
             vm_platform_run_context_set_window_title(session->platform_run_context,
                 "NXVM (Paused)");
@@ -67,6 +96,14 @@ C_VOID vm_session_runner_run(vm_session *session)
         }
         while (vm_session_state_is_active(control->state) &&
             vm_session_state_is_paused(control->state)) {
+            if (vm_platform_run_handle_take_stop_report(session->platform_run_handle)) {
+                vm_session_control_stop(control);
+                continue;
+            }
+            if (vm_platform_run_handle_take_pause_report(session->platform_run_handle)) {
+                vm_session_runner_toggle_pause(session, control);
+                continue;
+            }
             vm_session_execution_context_run_command_boundary(&control->execution_context);
             host_sync_sleep_milliseconds(1u);
         }

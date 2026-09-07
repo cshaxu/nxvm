@@ -12,3 +12,13 @@ packets to `ux_event`; a product binding decides their input meaning. The
 the only process-global UX state; Window state is allocated per presenter run.
 Products adopt this library through their own binding boundary; the native
 implementation never contains a product route.
+
+Window alone applies the opaque presenter's capturable and release slots on
+its UI thread. Disabling capture or requesting release calls the native release
+path; clicks capture only while the latest app-provided policy permits it.
+Focus loss, close and target change also release unconditionally. Console reads
+neither mouse slot nor Window title.
+
+When the sole runner changes from Window to Console, the destroyed Window is
+followed by Console-surface activation in this native owner. The product does
+not restore foreground or keyboard focus through a host handle.

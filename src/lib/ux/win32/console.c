@@ -93,10 +93,27 @@ static void win32_console_close(ux_win32_console *console)
     console->output = NULL;
 }
 
+/* A Window-to-Console switch has already destroyed the Window surface before
+ * this Console runner is created.  The native runner, rather than its product
+ * binding, therefore restores the one process Console as the foreground input
+ * surface before this runner begins consuming guest input. */
+static void win32_console_activate(ux_win32_console *console)
+{
+    HWND window;
+
+    if (console == NULL || console->input == NULL ||
+        console->input == INVALID_HANDLE_VALUE) return;
+    window = GetConsoleWindow();
+    if (window == NULL) return;
+    if (IsIconic(window)) ShowWindow(window, SW_RESTORE);
+    (void)SetForegroundWindow(window);
+    (void)SetActiveWindow(window);
+    (void)SetFocus(window);
+}
+
 static int win32_console_ensure_text_surface(HANDLE output)
 {
     CONSOLE_SCREEN_BUFFER_INFO info;
-    COORD largest;
     COORD required;
     SMALL_RECT viewport = { 0, 0, UX_TEXT_COLUMNS - 1, UX_TEXT_ROWS - 1 };
 
@@ -108,10 +125,12 @@ static int win32_console_ensure_text_surface(HANDLE output)
         (SHORT)UX_TEXT_ROWS : info.dwSize.Y;
     if ((required.X != info.dwSize.X || required.Y != info.dwSize.Y) &&
         !SetConsoleScreenBufferSize(output, required)) return 0;
-    largest = GetLargestConsoleWindowSize(output);
-    if (largest.X < (SHORT)UX_TEXT_COLUMNS || largest.Y < (SHORT)UX_TEXT_ROWS)
-        return 0;
-    return SetConsoleWindowInfo(output, TRUE, &viewport) != 0;
+    /* The host may report a stale or constrained largest viewport (notably
+       through a pseudoconsole).  The requested viewport itself is the only
+       authoritative resize attempt; output remains valid against the full
+       buffer if that host declines to resize its visible viewport. */
+    (void)SetConsoleWindowInfo(output, TRUE, &viewport);
+    return 1;
 }
 
 static ux_run_result win32_console_key(ux_win32_console *console,
@@ -278,6 +297,7 @@ static lib_status ux_win32_console_create(const ux_binding *binding,
         ux_win32_console_release();
         return LIB_STATUS_INVALID_STATE;
     }
+    win32_console_activate(console);
     console->frame = calloc(1u, sizeof(*console->frame));
     if (console->frame == NULL) {
         (void)SetConsoleMode(console->input, console->original_mode);

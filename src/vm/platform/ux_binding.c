@@ -131,17 +131,13 @@ static C_INT vm_platform_ux_action_key(vm_platform_run_handle *handle,
     return input_sink(handle, &event);
 }
 
-static C_INT vm_platform_ux_release_inputs(C_VOID *opaque,
+static C_INT vm_platform_ux_release_pressed_keys(C_VOID *opaque,
     ux_event_sink input_sink)
 {
     vm_platform_run_handle *handle = opaque;
-    ux_event mouse = { 0 };
     type_unsigned_32 scan_code;
 
     if (handle == STD_NULL || input_sink == STD_NULL) return TYPE_FALSE;
-    mouse.type = UX_EVENT_MOUSE;
-    mouse.data.mouse.relative = TYPE_TRUE;
-    if (!input_sink(handle, &mouse)) return TYPE_FALSE;
     for (scan_code = 0u; scan_code < 512u; ++scan_code) {
         if (handle->ux_pressed_keys[scan_code] &&
             !vm_platform_ux_action_key(handle, input_sink,
@@ -161,7 +157,9 @@ static ux_run_result vm_platform_ux_action(C_VOID *opaque, ux_action action,
         return UX_RUN_CONTINUE;
     }
     if (action == VM_PLATFORM_UX_ACTION_RELEASE_MOUSE) {
-        vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED);
+        if (handle->context == STD_NULL ||
+            vm_platform_run_context_release_mouse(handle->context) != TYPE_STATUS_OK)
+            return UX_RUN_ERROR_RESULT;
     } else if (action == VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL ||
         action == VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER) {
         if (action == VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL) {
@@ -201,7 +199,7 @@ type_status vm_platform_ux_binding_initialize(vm_platform_run_context *context,
     out_binding->presenter = context->ux_presenter;
     out_binding->actions = &context->ux_actions;
     out_binding->input_sink = vm_platform_ux_input;
-    out_binding->release_inputs = vm_platform_ux_release_inputs;
+    out_binding->release_pressed_keys = vm_platform_ux_release_pressed_keys;
     out_binding->get_state = vm_platform_ux_state;
     out_binding->handle_action = vm_platform_ux_action;
     out_binding->handle_close = vm_platform_ux_close;

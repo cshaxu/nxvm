@@ -45,7 +45,6 @@ typedef enum vm_platform_run_event {
     VM_PLATFORM_RUN_EVENT_NONE,
     VM_PLATFORM_RUN_EVENT_STOP_REQUESTED,
     VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED,
-    VM_PLATFORM_RUN_EVENT_MOUSE_RELEASE_REQUESTED,
     VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED,
     VM_PLATFORM_RUN_EVENT_DISPLAY_COMPLETED,
     VM_PLATFORM_RUN_EVENT_STARTUP_FAILED
@@ -65,6 +64,8 @@ type_status vm_platform_run_context_publish_ux_frame(
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,
     const core_machine_guest_input_event *event);
+/* The current requested presentation target. This is distinct from the
+ * persistent display preference returned by get_display_mode(). */
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
 C_INT vm_platform_run_context_get_display_mode(
@@ -76,6 +77,9 @@ type_status vm_platform_run_context_set_window_display(
 /* A title request updates only an active Window presenter; Console is a no-op. */
 type_status vm_platform_run_context_set_window_title(
     vm_platform_run_context *context, const C_CHAR *title);
+type_status vm_platform_run_context_set_mouse_capturable(
+    vm_platform_run_context *context, C_INT capturable);
+type_status vm_platform_run_context_release_mouse(vm_platform_run_context *context);
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle);
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
@@ -88,8 +92,6 @@ vm_platform_run_event vm_platform_run_handle_get_last_event(
 C_INT vm_platform_run_handle_take_stop_report(
     vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_take_pause_report(
-    vm_platform_run_handle *handle);
-C_INT vm_platform_run_handle_take_mouse_release_report(
     vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_presenter_stop(
