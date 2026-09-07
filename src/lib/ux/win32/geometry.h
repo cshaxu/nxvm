@@ -12,7 +12,7 @@ int ux_win32_display_rect(int client_width, int client_height,
     uint32_t source_width, uint32_t source_height, RECT *display);
 void ux_win32_map_dirty_rect(const RECT *source, const RECT *display,
     uint32_t source_width, uint32_t source_height, RECT *target);
-uint32_t ux_win32_dib_pixel(COLORREF colour);
+COLORREF ux_win32_colorref_from_rgb(uint32_t rgb);
 int ux_win32_resize_client(HWND window, uint32_t width,
     uint32_t height);
 void ux_win32_constrain_sizing(HWND window, WPARAM edge,

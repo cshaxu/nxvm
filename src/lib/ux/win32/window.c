@@ -165,11 +165,6 @@ static int win32_window_frame_size(const ux_frame *frame, uint32_t *width,
     return 1;
 }
 
-static uint32_t win32_window_dib_pixel(COLORREF colour)
-{
-    return ux_win32_dib_pixel(colour);
-}
-
 static void win32_window_update_text(ux_win32_window_context *context)
 {
     ux_frame *frame;
@@ -195,9 +190,9 @@ static void win32_window_update_text(ux_win32_window_context *context)
                     context->surface_width + column * WIN32_WINDOW_TEXT_CELL_WIDTH;
                 uint32_t bit;
                 for (bit = 0u; bit < WIN32_WINDOW_TEXT_CELL_WIDTH; ++bit)
-                    pixels[bit] = win32_window_dib_pixel((COLORREF)
-                        frame->text_palette[(bits & (0x80u >> bit)) != 0u ?
-                            attribute & 0x0fu : (attribute >> 4) & 0x0fu]);
+                    pixels[bit] = frame->text_palette[
+                        (bits & (0x80u >> bit)) != 0u ? attribute & 0x0fu :
+                            (attribute >> 4) & 0x0fu];
             }
         }
     }

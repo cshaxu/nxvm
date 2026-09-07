@@ -3,6 +3,7 @@
 
 #ifdef _WIN32
 #include "actions.h"
+#include "geometry.h"
 #include "input.h"
 #include "mailbox.h"
 
@@ -201,7 +202,8 @@ static int win32_console_paint(ux_win32_console *console)
         info.cbSize = sizeof(info);
         if (GetConsoleScreenBufferInfoEx(console->output, &info)) {
             for (index = 0u; index < 16u; ++index)
-                info.ColorTable[index] = (COLORREF)frame->text_palette[index];
+                info.ColorTable[index] = ux_win32_colorref_from_rgb(
+                    frame->text_palette[index]);
             (void)SetConsoleScreenBufferInfoEx(console->output, &info);
         }
         memcpy(console->previous_palette, frame->text_palette,

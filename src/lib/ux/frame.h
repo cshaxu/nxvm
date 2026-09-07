@@ -5,6 +5,8 @@
 
 /* Value-only ABI shared between a project runtime and the Win32 presenter.
  * It intentionally carries no renderer pointer, machine pointer, or lock. */
+/* Palette entries are platform-neutral 0x00RRGGBB values. They never carry
+ * Win32 COLORREF byte order; a native presenter converts only at its boundary. */
 #define UX_TEXT_COLUMNS 80u
 #define UX_TEXT_ROWS 25u
 #define UX_GRAPHICS_MAX_WIDTH 1280u
@@ -26,7 +28,7 @@ typedef struct ux_frame {
     lib_u8 cursor_phase;
     lib_u8 text[UX_TEXT_COLUMNS * UX_TEXT_ROWS];
     lib_u16 attributes[UX_TEXT_COLUMNS * UX_TEXT_ROWS];
-    lib_u32 text_palette[16u];
+    lib_u32 text_palette[16u]; /* 0x00RRGGBB */
     lib_u8 font[256u * 16u];
     lib_u8 secondary_font[256u * 16u];
     lib_u32 font_height;
@@ -38,7 +40,7 @@ typedef struct ux_frame {
     lib_i32 dirty_top;
     lib_i32 dirty_right;
     lib_i32 dirty_bottom;
-    lib_u32 graphics_palette[UX_GRAPHICS_PALETTE_ENTRIES];
+    lib_u32 graphics_palette[UX_GRAPHICS_PALETTE_ENTRIES]; /* 0x00RRGGBB */
     lib_u8 graphics_pixels[UX_GRAPHICS_MAX_PIXELS];
 } ux_frame;
 

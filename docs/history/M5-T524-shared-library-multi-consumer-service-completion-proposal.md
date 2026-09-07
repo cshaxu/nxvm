@@ -184,6 +184,20 @@ owner; it does not create a product dependency.
    build declarations, includes and tests for the retired names; verify focused
    lifecycle/startup behavior, full repository-only unit, the reduced lib-only
    corpus and dual stripped artifacts before P closure.
+16. **S16 - route only on presentation-target transitions.** Keep copied-frame
+   publication on its existing mailbox route, but make VM platform request a
+   `CONSOLE` or `WINDOW` presentation target only when it differs from the
+   target already requested. Preserve the established explicit Window policy,
+   graphics-to-Window path and three-stable-text-frame Console return; do not
+   add a counter, mirror, presenter decision, event queue or public ABI. Mode
+   setters and explicit presenter stop remain separate explicit authorities.
+   Verify the existing mode-context and UX-frame proofs, full repository-only
+   unit, lib-only corpus, platform gates, governance and dual stripped
+   artifacts. The owner-added palette repair fixes the existing shared
+   `0x00RRGGBB` contract: Window text DIB values are direct, while Console
+   converts to `COLORREF` only at its native boundary. Blue, red and yellow
+   prove both shared values and the Console conversion. No integration run is
+   admitted.
 
 ## Acceptance
 

@@ -63,6 +63,14 @@ C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context)
     STD_FREE(context);
 }
 
+static C_VOID vm_platform_run_context_request_ux_target(
+    vm_platform_run_context *context, ux_target target)
+{
+    if (context != STD_NULL && ux_router_target(&context->ux_router) != target) {
+        ux_router_request(&context->ux_router, target);
+    }
+}
+
 type_status vm_platform_run_context_publish_ux_frame(
     vm_platform_run_context *context)
 {
@@ -77,14 +85,14 @@ type_status vm_platform_run_context_publish_ux_frame(
     status = vm_platform_ux_frame_from_core(context->core_frame, context->ux_frame);
     if (status != TYPE_STATUS_OK) return status;
     if (context->display_mode == VM_PLATFORM_DISPLAY_WINDOW) {
-        ux_router_request(&context->ux_router, UX_TARGET_WINDOW);
+        vm_platform_run_context_request_ux_target(context, UX_TARGET_WINDOW);
     } else if (context->ux_frame->graphics != 0u) {
         context->console_text_frames = 0u;
-        ux_router_request(&context->ux_router, UX_TARGET_WINDOW);
+        vm_platform_run_context_request_ux_target(context, UX_TARGET_WINDOW);
     } else if (ux_router_target(&context->ux_router) == UX_TARGET_WINDOW &&
         ++context->console_text_frames >= 3u) {
         context->console_text_frames = 0u;
-        ux_router_request(&context->ux_router, UX_TARGET_CONSOLE);
+        vm_platform_run_context_request_ux_target(context, UX_TARGET_CONSOLE);
     }
     return ux_mailbox_publish(context->ux_mailbox, context->ux_frame);
 }

@@ -3,7 +3,9 @@
 #include "core/machine/guest_display_frame.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "lib/ux/presenter.h"
+#include "lib/ux/router.h"
 #include "vm/platform/platform.h"
+#include "vm/platform/platform_internal.h"
 #include "vm/platform/ux_binding.h"
 #include "vm/platform/ux_frame.h"
 
@@ -16,6 +18,7 @@ C_INT main(C_VOID)
     vm_platform_run_context *context = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
     ux_binding binding;
+    type_unsigned_32 first_sequence;
 
     source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
     source.generation = 7u;
@@ -50,7 +53,30 @@ C_INT main(C_VOID)
         vm_platform_run_context_publish_ux_frame(context) != TYPE_STATUS_OK ||
         ux_mailbox_capture(binding.mailbox, &captured) != LIB_STATUS_OK ||
         captured.sequence == 0u || captured.text[0] != 'A' ||
-        captured.text_palette[14u] != 0x00ffff00u) goto fail;
+        captured.text_palette[14u] != 0x00ffff00u ||
+        ux_router_target(&context->ux_router) != UX_TARGET_CONSOLE) goto fail;
+    first_sequence = captured.sequence;
+    source.generation = 8u;
+    source.characters[0] = 'B';
+    if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
+            TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
+            TYPE_STATUS_OK || ux_mailbox_capture(binding.mailbox, &captured) !=
+            LIB_STATUS_OK || captured.sequence <= first_sequence ||
+        captured.text[0] != 'B' ||
+        ux_router_target(&context->ux_router) != UX_TARGET_CONSOLE) goto fail;
+    source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
+    source.generation = 9u;
+    source.pixel_width = 320u;
+    source.pixel_height = 200u;
+    if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
+            TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
+            TYPE_STATUS_OK || ux_router_target(&context->ux_router) !=
+            UX_TARGET_WINDOW) goto fail;
+    source.generation = 10u;
+    if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
+            TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
+            TYPE_STATUS_OK || ux_router_target(&context->ux_router) !=
+            UX_TARGET_WINDOW) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
     core_machine_guest_presentation_mailbox_destroy(core_mailbox);

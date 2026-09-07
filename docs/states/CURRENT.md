@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active subtask - M5 T524 S15 closed; T524 remains open pending task-level disposition. |
-| Admission And Approval | Owner explicitly closed S14 after P1 `3e4d62da` and admitted S15 on 2026-09-06: remove the thin `lib/session` and `lib/observability` roots and return their sole product behavior to NXVM. |
-| Objective | Remove non-reusable session lifecycle and outcome components from `src/lib`, leaving NXVM as their sole state and behavior owner. |
-| Non-goals | No lifecycle semantic change, second state/outcome owner, compatibility wrapper, UX/host/storage change, external asset change, SoftPC import, or new generic library abstraction. |
-| Reference Baseline | Accepted S14 P1 `3e4d62da`, its 311/311 unit, lib-only 2/2, static platform gates and dual 0524 artifacts. |
+| Identifier Mode | Continuation - M5 T524 S16 |
+| Admission And Approval | Owner approved S16 on 2026-09-06: eliminate redundant presenter-route requests during ordinary copied-frame publication. |
+| Objective | Publish every copied frame through the mailbox, request a Console/Window route only when its desired target changes, and make the shared palette encoding unambiguous. |
+| Non-goals | No guest/Core display change, presenter-owned routing decision, extra router state, polling/event queue, mode-policy change, external asset change, or SoftPC import. |
+| Reference Baseline | Accepted S15 P4 `71e59ec0`: unit 309/309, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/{CMakeLists,MANIFEST.sha256,session,observability}/*`, `src/vm/composition/session/*`, VM platform/execution consumers, root and lib CMake declarations, and repository-only lifecycle/startup tests. |
+| Files And ABI Surface | `src/vm/platform/platform.c`, `src/lib/ux/{frame,win32/{window,console,geometry}}.*`, their repository-only tests, lib manifest/README, T524 proposal and state records. `ux_frame` documentation now fixes its existing palette ABI; no data-layout change. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused lifecycle, start-outcome and platform startup tests; complete unit suite; reduced lib-only build/CTest; manifest, governance, actual-diff review and stripped x64/x86 T524 artifacts. |
-| Expected Markers | No `lib_session_*`, `lib_observability_*`, `session-lifecycle` or `observability-outcome` production path remains; NXVM owns one lifecycle state and one start-outcome record; lib retains only `ux`, `host-sync` and `storage-medium`. |
+| Verification | Focused platform mode/UX-frame and Win32 palette tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
+| Expected Markers | Frame publication always reaches the mailbox; `ux_router_request()` is called from publication only after a desired-target transition; both palette arrays are `0x00RRGGBB`; Window writes those values directly to DIB and Console alone maps them to `COLORREF`. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report every deleted lib root/file/target, retained NXVM owner, code-size result and exact gates. |
-| Stop Conditions | Stop if either component has a second genuine product-neutral consumer or moving it changes lifecycle/outcome semantics. |
-| Exit Criteria | Both roots and all wrappers are deleted; NXVM has one direct owner route for each behavior; every caller/test/build declaration is migrated; all named gates pass and T524 remains open. |
-| Original Owner Request | Owner judged the session and observability lib components too thin to justify shared-library existence and requires their removal. |
-| Similar-Issue Sweep | Search all `src/lib`, `src/vm`, `test`, manifests and CMake declarations for remaining one-product thin roots, retired symbols and stale targets. |
+| Reporting Requirements | Report the retained mailbox path, target-transition rule, code-size result and exact gates. |
+| Stop Conditions | Stop if removing the redundant request would change the target policy, require a second target owner, or make a presenter infer a lifecycle action. |
+| Exit Criteria | Redundant per-frame requests are absent, every intended target transition remains explicit, palette byte order is uniform across both presenters, all named gates pass and T524 remains open. |
+| Original Owner Request | Presenter switching must follow display-mode target changes, not every frame publication; the shared palette must not be interpreted as two byte orders. |
+| Similar-Issue Sweep | Inspect all VM router requests and frame-publication callers for repeated same-target route writes. |
 
 ## Current Technical Baseline
 

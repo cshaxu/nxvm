@@ -33,10 +33,9 @@ void ux_win32_map_dirty_rect(const RECT *source, const RECT *display,
     if (target->bottom <= target->top) target->bottom = target->top + 1;
 }
 
-uint32_t ux_win32_dib_pixel(COLORREF colour)
+COLORREF ux_win32_colorref_from_rgb(uint32_t rgb)
 {
-    return ((uint32_t)GetRValue(colour) << 16) |
-        ((uint32_t)GetGValue(colour) << 8) | (uint32_t)GetBValue(colour);
+    return RGB((rgb >> 16u) & 0xffu, (rgb >> 8u) & 0xffu, rgb & 0xffu);
 }
 
 int ux_win32_resize_client(HWND window, uint32_t width,
