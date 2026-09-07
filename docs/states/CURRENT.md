@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S16 |
-| Admission And Approval | Owner approved S16 on 2026-09-06: eliminate redundant presenter-route requests during ordinary copied-frame publication. |
-| Objective | Publish every copied frame through the mailbox, request a Console/Window route only when its desired target changes, and make the shared palette encoding unambiguous. |
-| Non-goals | No guest/Core display change, presenter-owned routing decision, extra router state, polling/event queue, mode-policy change, external asset change, or SoftPC import. |
-| Reference Baseline | Accepted S15 P4 `71e59ec0`: unit 309/309, lib-only manifest, static platform gates and dual 0524 artifacts. |
+| Identifier Mode | No active subtask - M5 T524 S16 closed; T524 remains open pending task-level disposition. |
+| Admission And Approval | Owner approved and S16 completed on 2026-09-06: eliminate redundant presenter-route requests during ordinary copied-frame publication. |
+| Objective | Closed: retain mailbox publication, request a Console/Window route only on target change, and make the shared palette encoding unambiguous. |
+| Non-goals | No guest/Core display change, presenter-owned routing decision, extra router state, polling/event queue, mode-policy change, external asset change, SoftPC import, or integration run. |
+| Reference Baseline | Accepted S16 P1 `9e7697e1`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
 | Files And ABI Surface | `src/vm/platform/platform.c`, `src/lib/ux/{frame,win32/{window,console,geometry}}.*`, their repository-only tests, lib manifest/README, T524 proposal and state records. `ux_frame` documentation now fixes its existing palette ABI; no data-layout change. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused platform mode/UX-frame and Win32 palette tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
+| Verification | Focused platform mode/UX-frame and Win32 palette tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts pass. No integration test ran in this S, by owner direction. |
 | Expected Markers | Frame publication always reaches the mailbox; `ux_router_request()` is called from publication only after a desired-target transition; both palette arrays are `0x00RRGGBB`; Window writes those values directly to DIB and Console alone maps them to `COLORREF`. |
 | Asset Needs | No new assets or third-party source. |
 | Reporting Requirements | Report the retained mailbox path, target-transition rule, code-size result and exact gates. |
 | Stop Conditions | Stop if removing the redundant request would change the target policy, require a second target owner, or make a presenter infer a lifecycle action. |
-| Exit Criteria | Redundant per-frame requests are absent, every intended target transition remains explicit, palette byte order is uniform across both presenters, all named gates pass and T524 remains open. |
+| Exit Criteria | Met: redundant per-frame requests are absent, every intended target transition remains explicit, palette byte order is uniform across both presenters, all named S16 gates pass and T524 remains open. |
 | Original Owner Request | Presenter switching must follow display-mode target changes, not every frame publication; the shared palette must not be interpreted as two byte orders. |
 | Similar-Issue Sweep | Inspect all VM router requests and frame-publication callers for repeated same-target route writes. |
 
@@ -58,7 +58,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T524 | Open: S15 removed the one-product `session` and `observability` roots; `src/lib` now publishes only `ux`, `host-sync` and `storage-medium`. T-level closure remains a separate owner-led decision. |
+| T524 | Open: S15 removed the one-product `session` and `observability` roots; S16 retains one mailbox publication path, coalesces route requests at target transitions and makes both palette arrays unambiguously `0x00RRGGBB`. `src/lib` publishes only `ux`, `host-sync` and `storage-medium`. T-level closure remains a separate owner-led decision. |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
@@ -68,6 +68,16 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S16 P2:** coordinator actual-diff review accepts `9e7697e1`.
+  The 96 added / 27 removed source, test and CMake lines retain every mailbox
+  publication while requesting a route only at an actual target transition.
+  The shared frame palette is explicitly `0x00RRGGBB`; Window writes it
+  directly to its DIB and Console is the sole `COLORREF` conversion boundary.
+  The fixed blue/red/yellow proof, focused 3/3, complete unit 310/310,
+  lib-only manifest/CTest, Linux platform static checks, governance and
+  stripped 0524 x64/x86 artifacts pass. Integration did not run by the S16
+  packet's explicit scope. S16 is closed; T524 remains open.
 
 - **M5 Td S165 P2:** completes removal of the NXVM-side SoftPC shared-library
   adoption candidate from Queue and repairs its historical reference. The
