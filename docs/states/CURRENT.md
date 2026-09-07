@@ -4,31 +4,31 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S21 latest-state presenter mailboxes. |
-| Admission And Approval | Owner approved S21 on 2026-09-06: make target, title and frame independent latest-wins mailboxes; target NONE replaces stop. |
-| Objective | Remove FIFO presenter control in favor of three latest-state mailboxes with target/title/frame priority. |
-| Non-goals | No guest display, host-input, renderer, profile, Core, asset or storage behavior change. |
-| Reference Baseline | Accepted S20 P2 `de687103`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
+| Identifier Mode | Progress - M5 T524 remains open; S21 latest-state presenter mailboxes is accepted. |
+| Admission And Approval | Owner approved S21 on 2026-09-06; implementation P1 `6fae5531` is accepted after all named gates. |
+| Objective | Retain compact accepted progress while T524 awaits a later owner-approved S. |
+| Non-goals | No new S, product behavior, Core, asset or storage scope is admitted. |
+| Reference Baseline | Accepted S21 P2: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/ux/{presenter,internal,win32,linux}/*`, NXVM's presenter binding, focused UX tests, README and manifest. Public target adds `NONE`; the public `stop()` operation and all FIFO-control internals are removed. |
+| Files And ABI Surface | No active S. S21 changed `src/lib/ux/{presenter,internal,win32,linux}/*`, NXVM's presenter binding, focused UX tests, README and manifest. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Latest-wins/coalescing, priority and target-`NONE` presenter regressions; complete repository-only unit suite; lib-only build/CTest; platform static gates; governance; actual-diff review; and stripped x64/x86 artifacts. No integration test runs in this S. |
-| Expected Markers | Target, title and frame retain only their latest value; target/frame wake their runner, title wakes only the Window target; target is handled before title and frame; `NONE` stops; and no public or internal FIFO/stop route remains. |
+| Verification | S21: focused 4/4; repository-only unit 310/310; lib-only manifest/CTest; Linux and build-ownership static gates; documentation governance; actual-diff review; and stripped x64/x86 artifacts. Integration did not run by S scope. |
+| Expected Markers | S21 retains only latest target/title/frame values; Console consumes target then frame, Window consumes target, title then frame; target `NONE` stops and FIFO/stop routes are absent. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report the three private mailbox invariants, persistent-target switching, title behavior while Window is absent, removed FIFO/stop surface, and exact gates. |
-| Stop Conditions | Stop if one of the supported native runners cannot consume the shared mailbox without a platform API crossing the lib boundary. |
-| Exit Criteria | The three latest-state mailboxes are the sole presenter control/publication mechanism, native runners honor their declared priority, obsolete routes are deleted, and all named gates pass. |
-| Original Owner Request | Use independent latest-wins target (`CONSOLE`, `WINDOW`, `NONE`), title and frame mailboxes; target has priority and replaces `stop()`. |
-| Similar-Issue Sweep | Sweep all lib runners, NXVM presenter callers and focused tests for FIFO-control access, `stop()` calls, or frame-derived routing. |
+| Reporting Requirements | Retain the accepted S21 mailbox invariants and gate result. |
+| Stop Conditions | No active S. |
+| Exit Criteria | S21 closed: the three latest-state mailboxes are the sole presenter control/publication mechanism, native runners honor their declared priority, obsolete routes are deleted, and all named gates passed. |
+| Original Owner Request | S21 used independent latest-wins target (`CONSOLE`, `WINDOW`, `NONE`), title and frame mailboxes; target replaced `stop()`. |
+| Similar-Issue Sweep | S21 sweep found no FIFO-control access, `stop()` call or frame-derived routing in lib runners, NXVM callers or focused tests. |
 
 ## Current Technical Baseline
 
 - **Current developer artifacts:** T524 advances the active CMake target to
   `vm-0-5-0524`, which emits `nxvm_0_5_0524_x64.exe` and
   `nxvm_0_5_0524_x86.exe` in stripped Release builds. They retain the runtime
-  debugger and contain no compiler debug information. S18 verifies x64
-  `20092D7FE51400C7EED418254B5B9C7435F3E68BE6F00301D16AA4D64C448B31`
-  and x86 `2CAC43805C50D0F85FAC330507864286B513E8AFB4AC4B11737B486E68E160B7`.
+  debugger and contain no compiler debug information. S21 verifies x64
+  `F9883C39EF1447206122FE7CBAB647124599CDD953311700BCE08A0FE9D86283`
+  and x86 `21F6173B394CDB330572F7ECCA3D0972C25B9C3C91C0F45E270401579E2CD769`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -69,6 +69,18 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S21 P2:** coordinator actual-diff review accepts `6fae5531`.
+  The FIFO and public `stop()` surface are deleted. One opaque presenter now
+  owns independent latest target, Window-title and copied-frame slots; Console
+  reads target then frame, while Window reads target, title then frame.
+  `NONE` is the persistent stop target, and a title stored while Console is
+  active is retained without waking it for the next Window surface. The
+  Window runner captures persistent state immediately after a switch, so the
+  prior runner consuming the shared wake cannot lose title or frame state.
+  Focused 4/4, unit 310/310, lib manifest/CTest, Linux and build-ownership
+  gates, governance and stripped dual artifacts pass. S21 is closed; T524
+  remains open.
 
 - **M5 T524 S20 P2:** native `storage-medium` acquisition is one OS lease:
   Windows `DIRECT` excludes readers and writers, while `READONLY`/`OVERLAY`
