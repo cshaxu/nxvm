@@ -237,6 +237,16 @@ owner; it does not create a product dependency.
    exposes a native file handle. Add a narrow static public-header sweep and
    retain the full unit and lib-only manifest proof. No product, storage-mode,
    or host-runtime behavior changes.
+20. **S20 - OS-backed storage lease.** Replace the process-local-only
+   "exclusive lease" claim with one opened-file contract. `DIRECT` opens with
+   exclusive OS access: no other process may read or write while its medium is
+   live. `READONLY` and `OVERLAY` open a shared-read lease: concurrent readers
+   are allowed while writers are refused. Windows uses file share modes at the
+   sole native-open boundary. Linux uses the corresponding `fcntl` read/write
+   advisory locks and documents that POSIX cannot forcibly stop a process that
+   deliberately ignores advisory locking. A failed lock opens no medium and
+   closes every acquired handle. No controller, topology, overlay-page, or
+   persistence behavior changes.
 
 ## Acceptance
 

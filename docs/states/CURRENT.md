@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active subtask - M5 T524 S19 closed; T524 remains open. |
-| Admission And Approval | Owner approved S19 on 2026-09-06: state and enforce lib platform encapsulation, peer independence through base, and base-owned type aliases, beginning with `size_t`. |
-| Objective | Remove standard/native type leakage from the public lib ABI without changing product behavior. |
-| Non-goals | No guest/Core, storage-mode, presenter behavior, host runtime, or external asset change. |
+| Identifier Mode | No active subtask - M5 T524 S20 closed; T524 remains open. |
+| Admission And Approval | Owner approved S20 on 2026-09-06: all lib-opened files acquire OS-level exclusive or shared-read access by storage mode. |
+| Objective | Make `DIRECT` deny other-process reads/writes and make `READONLY`/`OVERLAY` allow readers while refusing writers. |
+| Non-goals | No controller, media topology, overlay-page, commit/discard, guest/Core, or presentation behavior change. |
 | Reference Baseline | Accepted S17 P2 `d7ebf854`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/base/base.h`, public storage headers, private storage native helper, README, manifest and public-header/static tests. `lib_size` replaces public `size_t`; `FILE` remains internal. |
+| Files And ABI Surface | `src/lib/storage/{medium,internal,win32,linux}/*`, README, manifest and storage tests. OS handles/locks remain private. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Public-header leak sweep, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
-| Expected Markers | Public headers expose no `size_t` or native file handle; all peer roots depend only on `base`; native file mechanics reside under `storage/internal`. |
+| Verification | Native lock-mode tests, failed-acquisition cleanup proof, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 artifacts. No integration test runs in this S. |
+| Expected Markers | Direct has one exclusive native acquisition; readonly/overlay use one shared-read acquisition; failed acquisition returns no lease and leaks no handle. |
 | Asset Needs | No new assets or third-party source. |
 | Reporting Requirements | Report FIFO capacity/failure, one-wake ownership, control-before-frame order, removed public state and exact gates. |
-| Stop Conditions | Stop if eliminating an exposed type requires a second type system or changes byte/offset semantics. |
-| Exit Criteria | README records the three invariants, public ABI uses base aliases, native file handles are private, and all named gates pass. |
-| Original Owner Request | lib fully encapsulates platform logic/API, peer components depend only on base, and base owns type redefinitions. |
-| Similar-Issue Sweep | Sweep every public header for raw standard/native ABI types and every peer root for non-base lib includes. |
+| Stop Conditions | Stop for an OS semantic that cannot meet the declared guarantee without an owner-approved degraded contract; specifically report POSIX advisory-lock limits rather than claim mandatory denial. |
+| Exit Criteria | Every open mode has one native lock/share acquisition and release path, Windows behavior is enforced, Linux advisory behavior is explicit, and all named gates pass. |
+| Original Owner Request | Direct must reject other-process reads/writes; readonly and overlay must reject writers while allowing readers. |
+| Similar-Issue Sweep | Sweep every lib file-open route, error cleanup route and storage test for bypassed native acquisition or retained unprotected handle. |
 
 ## Current Technical Baseline
 
@@ -27,8 +27,8 @@
   `vm-0-5-0524`, which emits `nxvm_0_5_0524_x64.exe` and
   `nxvm_0_5_0524_x86.exe` in stripped Release builds. They retain the runtime
   debugger and contain no compiler debug information. S18 verifies x64
-  `14C801A17C1CE2C7B8110E332578B209DCD89CCEFB1DA163449C9FB8BE62CDE1`
-  and x86 `A8B36FAF908F6D28B1A31EC774E5E3F532A7A189F74ABE964DAEBE8C4E553838`.
+  `20092D7FE51400C7EED418254B5B9C7435F3E68BE6F00301D16AA4D64C448B31`
+  and x86 `2CAC43805C50D0F85FAC330507864286B513E8AFB4AC4B11737B486E68E160B7`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -69,6 +69,12 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S20 P2:** native `storage-medium` acquisition is one OS lease:
+  Windows `DIRECT` excludes readers and writers, while `READONLY`/`OVERLAY`
+  share readers and reject writers. Linux uses the matching advisory `fcntl`
+  lock contract. Parent/child process regression proves the Windows cases;
+  unit 310/310, manifest and dual artifacts pass.
 
 - **M5 T524 S19 P2:** `base` is the sole public type facade: storage byte
   counts and offsets use `lib_size`, and the native `FILE` helper is private

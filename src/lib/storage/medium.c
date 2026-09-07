@@ -45,7 +45,7 @@ lib_status lib_storage_medium_open(const char *path, lib_storage_medium_mode mod
         mode > LIB_STORAGE_MEDIUM_OVERLAY)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_medium = LIB_NULL;
-    file = fopen(path, mode == LIB_STORAGE_MEDIUM_DIRECT ? "rb+" : "rb");
+    file = lib_storage_native_open(path, mode);
     if (file == LIB_NULL || lib_storage_native_seek_64(file, 0, SEEK_END) != 0 ||
         (length = lib_storage_native_tell_64(file)) < 0 ||
         (uint64_t)length > SIZE_MAX || lib_storage_native_seek_64(file, 0, SEEK_SET) != 0) {
