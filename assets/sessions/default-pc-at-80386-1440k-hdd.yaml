@@ -1,16 +1,16 @@
 schema: nxvm-session
 profile: default-pc-at
 cpu: 80386
-display: console
+display: window
 floppy_format: 1440k
 firmware:
-  bios:
-    - path: ../../../nxvm-assets/profiles/default-pc-at/firmware/default-pc-at-1440k-hdd.rom
-  video: null
-  cmos: ../../../nxvm-assets/profiles/default-pc-at/cmos/default-pc-at-1440k-hdd.cmos
-  font: ../../../nxvm-assets/profiles/ibm-mda/firmware/ibm-mda-cp437-character-generator.rom
+    bios:
+        - path: ../../../nxvm-assets/profiles/default-pc-at/firmware/default-pc-at-1440k-hdd.rom
+    video: null
+    cmos: ../../../nxvm-assets/profiles/default-pc-at/cmos/default-pc-at-1440k-hdd.cmos
+    font: ../../../nxvm-assets/profiles/ibm-mda/firmware/ibm-mda-cp437-character-generator.rom
 media:
-  floppy:
-    - path: ../../../nxvm-assets/media/fdd_1440k_msdos_500.img
-  fixed_disk:
-    - path: ../../../nxvm-assets/media/hdd_50m_win31.img
+    floppy:
+        - path: ../../../nxvm-assets/media/fdd_1440k_msdos_500.img
+    fixed_disk:
+        - path: ../../../nxvm-assets/media/hdd_50m_win31.img
