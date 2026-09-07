@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S17 |
-| Admission And Approval | Owner approved S17 on 2026-09-06: replace callback-driven titles with an explicit Window-only request. |
-| Objective | Let the app provide a copied initial Window title and explicitly request later Window-title changes; Console must never receive a title mutation. |
+| Identifier Mode | No active subtask - M5 T524 S17 closed; T524 remains open pending task-level disposition. |
+| Admission And Approval | Owner approved and S17 completed on 2026-09-06: replace callback-driven titles with an explicit Window-only request. |
+| Objective | Closed: app supplies a copied initial Window title and explicitly requests later Window-title changes; Console receives no title mutation. |
 | Non-goals | No guest/Core display change, Console title, presenter-derived title policy, event queue/polling route, external asset change, SoftPC import, or integration run. |
-| Reference Baseline | Accepted S16 P2 `83bb4e02`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
+| Reference Baseline | Accepted S17 P1 `671b4c25`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
 | Files And ABI Surface | `src/lib/ux/{presenter,router,win32/{window,console}}.*`, `src/vm/platform/{platform,ux_binding}.*`, session lifecycle/runner title call sites, their repository-only tests, lib manifest/README, T524 proposal and state records. The binding replaces one pull callback with copied initial-title data; router gains an explicit, active-Window-only request. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused neutral router/title and NXVM UX-binding tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
+| Verification | Focused neutral router/title and NXVM UX-binding tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts pass. No integration test ran in this S, by owner scope. |
 | Expected Markers | The binding has no title callback; a Window starts with app-supplied copied title; title request is accepted only while a Window surface is active; Console never calls a console-title API. |
 | Asset Needs | No new assets or third-party source. |
 | Reporting Requirements | Report the exact title owner, no-op condition, removed callback path, code-size result and exact gates. |
 | Stop Conditions | Stop if a title request would require Console mutation, infer a title from lifecycle in lib, or add a second presentation-state owner. |
-| Exit Criteria | The app supplies the initial Window title, active Window accepts later explicit requests, inactive Window/Console is no-op, no callback/Console title route remains, all named gates pass and T524 remains open. |
+| Exit Criteria | Met: the app supplies the initial Window title, active Window accepts later explicit requests, inactive Window/Console is no-op, no callback/Console title route remains, all named gates pass and T524 remains open. |
 | Original Owner Request | Window title is app-requested only; it is ignored outside Window presentation, while Console title is never mutable. |
 | Similar-Issue Sweep | Sweep all title callbacks, native title calls and presenter lifecycle paths for a second title owner or Console title mutation. |
 
@@ -58,7 +58,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T524 | Open: S15 removed the one-product `session` and `observability` roots; S16 retains one mailbox publication path, coalesces route requests at target transitions and makes both palette arrays unambiguously `0x00RRGGBB`. `src/lib` publishes only `ux`, `host-sync` and `storage-medium`. T-level closure remains a separate owner-led decision. |
+| T524 | Open: S15 removed the one-product `session` and `observability` roots; S16 retains one mailbox publication path, coalesces route requests at target transitions and makes both palette arrays unambiguously `0x00RRGGBB`; S17 makes Window titles explicit app requests and removes Console title mutation. `src/lib` publishes only `ux`, `host-sync` and `storage-medium`. T-level closure remains a separate owner-led decision. |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
@@ -68,6 +68,16 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S17 P2:** coordinator actual-diff review accepts `671b4c25`.
+  The 189 added / 44 removed source and test lines replace the callback title
+  pull with a copied initial binding value and one router title request that
+  succeeds only for an actual active Window. Window alone applies the request;
+  Console title mutation and all callback call sites are gone. Neutral
+  no-op/active-Window proof, NXVM binding proof, complete unit 310/310,
+  lib-only manifest/CTest, Linux platform static checks, governance and
+  stripped 0524 x64/x86 artifacts pass. Integration did not run by the S17
+  packet's explicit scope. S17 is closed; T524 remains open.
 
 - **M5 T524 S16 P2:** coordinator actual-diff review accepts `9e7697e1`.
   The 96 added / 27 removed source, test and CMake lines retain every mailbox
