@@ -4,8 +4,8 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T524 S18 presenter ownership and product-boundary closure. |
-| Admission And Approval | Owner approved S18 on 2026-09-06: make the dual presenter mailbox private and control-driven, then explicitly required NXVM to remove every duplicate lib-provided native UX ability. The initial implementation must be corrected: no console-input flush API or Core debugger flush hook; tests construct guest input events and use the existing input sink. |
+| Identifier Mode | No active subtask - M5 T524 S18 closed; T524 remains open pending task-level disposition. |
+| Admission And Approval | Owner approved S18 on 2026-09-06: make the dual presenter mailbox private and control-driven, then explicitly required NXVM to remove every duplicate lib-provided native UX ability. The owner corrected the initial implementation: no console-input flush API or Core debugger flush hook; tests construct guest input events through the existing product ingress. |
 | Objective | Replace public frame/router state with an opaque presenter that owns a latest-frame slot, FIFO control commands and one wake mechanism; remove NXVM's duplicate native UX runner and input-adapter implementation. |
 | Non-goals | No guest/Core display change, Console title, presenter-derived title policy, event queue/polling route, external asset change, SoftPC import, or integration run. |
 | Reference Baseline | Accepted S17 P2 `d7ebf854`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
@@ -69,6 +69,19 @@
 | T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
+
+- **M5 T524 S18 P3:** coordinator actual-diff review accepts `01a431b4` and
+  `e5b1bdcf`. One opaque presenter retains the latest copied frame, a bounded
+  32-command FIFO and a single private native wake; target, Window title and
+  stop remain its only public controls. The corrective commit deletes the
+  attempted console-buffer flush API, its Core debugger provider and its
+  temporary VM key wrapper. Shortcut classification consumes the triggering
+  action before guest delivery; all later debugger input remains intact. Tests
+  now construct guest input events through existing ingress only. Complete unit
+  310/310, lib-only manifest/CTest, affected integration-target compilation,
+  native-boundary/Linux static gates, governance, source sweeps and stripped
+  0524 x64/x86 artifacts pass. No integration test ran by packet scope. S18 is
+  closed; T524 remains open.
 
 - **M5 T524 S17 P2:** coordinator actual-diff review accepts `671b4c25`.
   The 189 added / 44 removed source and test lines replace the callback title
