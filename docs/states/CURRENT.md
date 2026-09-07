@@ -69,6 +69,11 @@
 
 ## Recent Governance
 
+- **M5 Td S165 P2:** completes removal of the NXVM-side SoftPC shared-library
+  adoption candidate from Queue and repairs its historical reference. The
+  remaining consumer binding transfers to SoftPC governance; no NXVM source,
+  asset, ABI or task baseline changes.
+
 - **M5 T524 S15 P4:** coordinator actual-diff audit accepts `cb3ce7b6`,
   `4cf0c3e0` and `3fa8c937`.  The shared corpus deletes both one-product
   roots without wrappers; NXVM owns lifecycle state in `vm/platform`, while

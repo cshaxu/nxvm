@@ -106,9 +106,9 @@ The retained [S5 ledger](../etc/evidence/t523-s5-neutral-consumer-and-route-ledg
 also records the one NXVM generic route per capability and the different
 machine-owned reason for each retained Core/VM boundary. The manifest remains
 source-identical; public-header, product-vocabulary and peer-root sweeps have
-no hits. The Queue-only [SoftPC adoption proposal](../proposals/m5-softpc-shared-library-binding-adoption.md)
-requires a byte-identical copy plus a product-local binding, never a source
-edit inside `lib`.
+no hits. SoftPC consumer adoption transfers outside the NXVM queue and retains
+the same byte-identical-copy and product-local-binding requirement; it never
+permits a source edit inside `lib`.
 
 Coordinator actual-diff review accepts `fcdc7e99`. The neutral marker and the
 native run-handle marker pass; repository-only unit passes `310/310`, and
