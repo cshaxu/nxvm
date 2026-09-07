@@ -256,6 +256,15 @@ owner; it does not create a product dependency.
    Window surface without waking a Console runner. Native runners compare mailbox generations and never infer
    a target from frame contents. Add mailbox ordering/coalescing and target-
    none regressions; run full unit, lib verification and dual artifacts.
+22. **S22 - task closure audit.** Do not add implementation scope. Rebuild no
+   alternate route: verify the accepted S1--S21 source graph, complete lib
+   corpus and manifest, direct-consumer boundary, clean worktree and all
+   proposal acceptance clauses against the current source. Run the complete
+   repository-only unit suite and complete owner-managed external-ROM/media
+   integration suite, then run task-level documentation, architecture, code
+   quality and debt review. Record the current dual-artifact hashes and close
+   T524 only if no task-scope defect, unsupported portability claim, duplicate
+   owner or untracked deferral remains.
 
 ## Acceptance
 

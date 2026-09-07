@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Progress - M5 T524 remains open; S21 latest-state presenter mailboxes is accepted. |
-| Admission And Approval | Owner approved S21 on 2026-09-06; implementation P1 `6fae5531` is accepted after all named gates. |
-| Objective | Retain compact accepted progress while T524 awaits a later owner-approved S. |
-| Non-goals | No new S, product behavior, Core, asset or storage scope is admitted. |
+| Identifier Mode | Continuation - M5 T524 S22 task closure audit. |
+| Admission And Approval | Owner approved S22 on 2026-09-06 to perform the required final task-level closure checks. |
+| Objective | Verify the final T524 source graph and close the task only if its full acceptance contract holds. |
+| Non-goals | No product behavior, Core, asset, storage, public ABI or new implementation scope is admitted. |
 | Reference Baseline | Accepted S21 P2: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | No active S. S21 changed `src/lib/ux/{presenter,internal,win32,linux}/*`, NXVM's presenter binding, focused UX tests, README and manifest. |
+| Files And ABI Surface | Audit only: all T524 `src/lib`, NXVM bindings, build/test declarations, manifest, task records and current artifacts. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | S21: focused 4/4; repository-only unit 310/310; lib-only manifest/CTest; Linux and build-ownership static gates; documentation governance; actual-diff review; and stripped x64/x86 artifacts. Integration did not run by S scope. |
-| Expected Markers | S21 retains only latest target/title/frame values; Console consumes target then frame, Window consumes target, title then frame; target `NONE` stops and FIFO/stop routes are absent. |
+| Verification | Complete repository-only unit and owner-managed integration suites; lib-only manifest/CTest; Linux/build-ownership and ownership/vocabulary sweeps; documentation governance; clean worktree; acceptance and actual-diff review; current stripped x64/x86 artifact verification. |
+| Expected Markers | Every proposal acceptance condition has current evidence; all 44 integration rows and all unit rows pass; only `ux`, `host-sync` and `storage-medium` remain in lib; and no undocumented open task-scope defect remains. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Retain the accepted S21 mailbox invariants and gate result. |
-| Stop Conditions | No active S. |
-| Exit Criteria | S21 closed: the three latest-state mailboxes are the sole presenter control/publication mechanism, native runners honor their declared priority, obsolete routes are deleted, and all named gates passed. |
-| Original Owner Request | S21 used independent latest-wins target (`CONSOLE`, `WINDOW`, `NONE`), title and frame mailboxes; target replaced `stop()`. |
-| Similar-Issue Sweep | S21 sweep found no FIFO-control access, `stop()` call or frame-derived routing in lib runners, NXVM callers or focused tests. |
+| Reporting Requirements | Report exact unit/integration counts, manifest/source-boundary result, artifact hashes, any remaining defect/debt, and either closure or the precise blocker. |
+| Stop Conditions | Stop rather than close for a failing gate, an unverified acceptance condition, a product/machine concept in lib, a duplicate path, dirty worktree, or a task-scope defect needing implementation. |
+| Exit Criteria | All acceptance clauses and named gates pass, the final audit finds no task-scope defect or untracked deferral, and a task-level closure record truthfully replaces retained T524 progress. |
+| Original Owner Request | Perform the T524 closure S now. |
+| Similar-Issue Sweep | Sweep every retained library root, public header, manifest entry, NXVM binding, build declaration, test route and T524 acceptance clause for a second implementation or unverified claim. |
 
 ## Current Technical Baseline
 

@@ -289,3 +289,26 @@ both nonblocking fds. The stale Linux adapter hygiene gate now inspects the
 actual lib Linux console instead of a deleted VM implementation. Evidence:
 [T524 S13 UX owner and lifecycle closure](../etc/evidence/t524-s13-ux-owner-lifecycle.md).
 T524 remains open for owner re-audit and task-level closure.
+
+## S22 Task Closure Audit
+
+The accepted final source graph is `6fae5531`; `c7077105` records only S21
+governance. The complete `src/lib` manifest verifies and its standalone CMake
+CTest passes. Static sweeps find no cross-root include between `ux`,
+`host-sync` and `storage-medium`; no retained product or machine vocabulary
+outside the documented neutral README wording; and no retired session,
+observability, presenter-FIFO or presenter-stop route in source, tests or
+build declarations.
+
+The current x64 repository-only unit suite passes 310/310. The owner-managed
+external-ROM/media integration suite passes 44/44, including Model 40, IBM
+5160, IBM 5170 and the default-PC/AT CPU/floppy matrix. Manifest CTest,
+Linux-platform and build-ownership gates, documentation governance and diff
+checks pass. The x64 stripped artifact is
+`F9883C39EF1447206122FE7CBAB647124599CDD953311700BCE08A0FE9D86283`; the
+x86 stripped artifact is
+`21F6173B394CDB330572F7ECCA3D0972C25B9C3C91C0F45E270401579E2CD769`.
+
+No T524-scope defect, duplicate implementation path, unsupported portability
+claim or untracked deferral remains. This result is ready for coordinator
+acceptance and task closure.
