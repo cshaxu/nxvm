@@ -115,6 +115,7 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
 {
     ux_frame *frame;
     lib_u32 displayed_generation = 0u;
+    lib_u32 target_generation = 0u;
     ux_run_result result = UX_RUN_STOPPED_RESULT;
 
     if (ux_binding_validate(binding) != LIB_STATUS_OK ||
@@ -153,7 +154,7 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
             { STDIN_FILENO, POLLIN, 0 }
         };
         int ready = poll(waits, 2u, -1);
-        ux_presenter_control control;
+        ux_target target;
 
         if (ready < 0) {
             result = UX_RUN_ERROR_RESULT;
@@ -162,15 +163,13 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
         if ((waits[0].revents & POLLIN) != 0) {
             ux_linux_presenter_consume(binding->presenter);
         }
-        while (ux_presenter_take_control(binding->presenter, &control)) {
-            if (control.kind == UX_PRESENTER_CONTROL_STOP) {
-                result = UX_RUN_STOPPED_RESULT;
-                break;
-            }
-            if (control.kind == UX_PRESENTER_CONTROL_TARGET &&
-                control.target != UX_TARGET_CONSOLE) {
-                result = UX_RUN_SWITCH_WINDOW;
-                break;
+        {
+            lib_u32 generation = ux_presenter_capture_target(binding->presenter,
+                &target);
+            if (generation != target_generation) {
+                target_generation = generation;
+                if (target == UX_TARGET_NONE) result = UX_RUN_STOPPED_RESULT;
+                else if (target == UX_TARGET_WINDOW) result = UX_RUN_SWITCH_WINDOW;
             }
         }
         if (result != UX_RUN_CONTINUE) break;

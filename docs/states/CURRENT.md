@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active subtask - M5 T524 S20 closed; T524 remains open. |
-| Admission And Approval | Owner approved S20 on 2026-09-06: all lib-opened files acquire OS-level exclusive or shared-read access by storage mode. |
-| Objective | Make `DIRECT` deny other-process reads/writes and make `READONLY`/`OVERLAY` allow readers while refusing writers. |
-| Non-goals | No controller, media topology, overlay-page, commit/discard, guest/Core, or presentation behavior change. |
-| Reference Baseline | Accepted S17 P2 `d7ebf854`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
+| Identifier Mode | Continuation - M5 T524 S21 latest-state presenter mailboxes. |
+| Admission And Approval | Owner approved S21 on 2026-09-06: make target, title and frame independent latest-wins mailboxes; target NONE replaces stop. |
+| Objective | Remove FIFO presenter control in favor of three latest-state mailboxes with target/title/frame priority. |
+| Non-goals | No guest display, host-input, renderer, profile, Core, asset or storage behavior change. |
+| Reference Baseline | Accepted S20 P2 `de687103`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/storage/{medium,internal,win32,linux}/*`, README, manifest and storage tests. OS handles/locks remain private. |
+| Files And ABI Surface | `src/lib/ux/{presenter,internal,win32,linux}/*`, NXVM's presenter binding, focused UX tests, README and manifest. Public target adds `NONE`; the public `stop()` operation and all FIFO-control internals are removed. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Native lock-mode tests, failed-acquisition cleanup proof, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 artifacts. No integration test runs in this S. |
-| Expected Markers | Direct has one exclusive native acquisition; readonly/overlay use one shared-read acquisition; failed acquisition returns no lease and leaks no handle. |
+| Verification | Latest-wins/coalescing, priority and target-`NONE` presenter regressions; complete repository-only unit suite; lib-only build/CTest; platform static gates; governance; actual-diff review; and stripped x64/x86 artifacts. No integration test runs in this S. |
+| Expected Markers | Target, title and frame retain only their latest value; target/frame wake their runner, title wakes only the Window target; target is handled before title and frame; `NONE` stops; and no public or internal FIFO/stop route remains. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report FIFO capacity/failure, one-wake ownership, control-before-frame order, removed public state and exact gates. |
-| Stop Conditions | Stop for an OS semantic that cannot meet the declared guarantee without an owner-approved degraded contract; specifically report POSIX advisory-lock limits rather than claim mandatory denial. |
-| Exit Criteria | Every open mode has one native lock/share acquisition and release path, Windows behavior is enforced, Linux advisory behavior is explicit, and all named gates pass. |
-| Original Owner Request | Direct must reject other-process reads/writes; readonly and overlay must reject writers while allowing readers. |
-| Similar-Issue Sweep | Sweep every lib file-open route, error cleanup route and storage test for bypassed native acquisition or retained unprotected handle. |
+| Reporting Requirements | Report the three private mailbox invariants, persistent-target switching, title behavior while Window is absent, removed FIFO/stop surface, and exact gates. |
+| Stop Conditions | Stop if one of the supported native runners cannot consume the shared mailbox without a platform API crossing the lib boundary. |
+| Exit Criteria | The three latest-state mailboxes are the sole presenter control/publication mechanism, native runners honor their declared priority, obsolete routes are deleted, and all named gates pass. |
+| Original Owner Request | Use independent latest-wins target (`CONSOLE`, `WINDOW`, `NONE`), title and frame mailboxes; target has priority and replaces `stop()`. |
+| Similar-Issue Sweep | Sweep all lib runners, NXVM presenter callers and focused tests for FIFO-control access, `stop()` calls, or frame-derived routing. |
 
 ## Current Technical Baseline
 

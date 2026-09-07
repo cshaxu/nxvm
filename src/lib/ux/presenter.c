@@ -4,12 +4,14 @@
 
 struct ux_presenter {
     atomic_flag frame_lock;
-    atomic_flag control_lock;
+    atomic_flag target_lock;
+    atomic_flag title_lock;
     lib_u32 frame_generation;
+    lib_u32 target_generation;
+    lib_u32 title_generation;
     ux_frame frame;
-    ux_presenter_control controls[UX_PRESENTER_CONTROL_CAPACITY];
-    lib_u32 control_head;
-    lib_u32 control_count;
+    ux_target target;
+    char title[UX_WINDOW_TITLE_CAPACITY];
     ux_mailbox_native *native_mailbox;
 };
 
@@ -23,27 +25,6 @@ static void ux_presenter_unlock(atomic_flag *lock)
     atomic_flag_clear_explicit(lock, memory_order_release);
 }
 
-static lib_status ux_presenter_enqueue(ux_presenter *presenter,
-    const ux_presenter_control *control)
-{
-    lib_u32 tail;
-
-    if (presenter == LIB_NULL || control == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    ux_presenter_lock(&presenter->control_lock);
-    if (presenter->control_count == UX_PRESENTER_CONTROL_CAPACITY) {
-        ux_presenter_unlock(&presenter->control_lock);
-        return LIB_STATUS_INVALID_STATE;
-    }
-    tail = (presenter->control_head + presenter->control_count) %
-        UX_PRESENTER_CONTROL_CAPACITY;
-    presenter->controls[tail] = *control;
-    ++presenter->control_count;
-    ux_presenter_unlock(&presenter->control_lock);
-    ux_mailbox_native_signal(presenter->native_mailbox);
-    return LIB_STATUS_OK;
-}
-
 lib_status ux_presenter_create(ux_presenter **out_presenter)
 {
     ux_presenter *presenter;
@@ -53,9 +34,12 @@ lib_status ux_presenter_create(ux_presenter **out_presenter)
     presenter = calloc(1u, sizeof(*presenter));
     if (presenter == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     presenter->frame_lock = (atomic_flag)ATOMIC_FLAG_INIT;
-    presenter->control_lock = (atomic_flag)ATOMIC_FLAG_INIT;
+    presenter->target_lock = (atomic_flag)ATOMIC_FLAG_INIT;
+    presenter->title_lock = (atomic_flag)ATOMIC_FLAG_INIT;
     atomic_flag_clear_explicit(&presenter->frame_lock, memory_order_release);
-    atomic_flag_clear_explicit(&presenter->control_lock, memory_order_release);
+    atomic_flag_clear_explicit(&presenter->target_lock, memory_order_release);
+    atomic_flag_clear_explicit(&presenter->title_lock, memory_order_release);
+    presenter->target_generation = 1u;
     presenter->native_mailbox = ux_mailbox_native_create();
     if (presenter->native_mailbox == LIB_NULL) {
         free(presenter);
@@ -87,55 +71,61 @@ lib_status ux_presenter_publish_frame(ux_presenter *presenter,
 
 lib_status ux_presenter_set_target(ux_presenter *presenter, ux_target target)
 {
-    ux_presenter_control control = { 0 };
-
-    if (target != UX_TARGET_CONSOLE && target != UX_TARGET_WINDOW)
+    if (presenter == LIB_NULL || (target != UX_TARGET_NONE &&
+        target != UX_TARGET_CONSOLE && target != UX_TARGET_WINDOW))
         return LIB_STATUS_INVALID_ARGUMENT;
-    control.kind = UX_PRESENTER_CONTROL_TARGET;
-    control.target = target;
-    return ux_presenter_enqueue(presenter, &control);
+    ux_presenter_lock(&presenter->target_lock);
+    presenter->target = target;
+    ++presenter->target_generation;
+    ux_presenter_unlock(&presenter->target_lock);
+    ux_mailbox_native_signal(presenter->native_mailbox);
+    return LIB_STATUS_OK;
 }
 
 lib_status ux_presenter_set_window_title(ux_presenter *presenter,
     const char *title)
 {
-    ux_presenter_control control = { 0 };
     const char *end;
+    ux_target target;
 
-    if (title == LIB_NULL || (end = memchr(title, '\0',
+    if (presenter == LIB_NULL || title == LIB_NULL || (end = memchr(title, '\0',
             UX_WINDOW_TITLE_CAPACITY)) == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    control.kind = UX_PRESENTER_CONTROL_WINDOW_TITLE;
-    memcpy(control.title, title, (size_t)(end - title) + 1u);
-    return ux_presenter_enqueue(presenter, &control);
+    ux_presenter_lock(&presenter->title_lock);
+    memcpy(presenter->title, title, (size_t)(end - title) + 1u);
+    ++presenter->title_generation;
+    ux_presenter_unlock(&presenter->title_lock);
+    (void)ux_presenter_capture_target(presenter, &target);
+    if (target == UX_TARGET_WINDOW)
+        ux_mailbox_native_signal(presenter->native_mailbox);
+    return LIB_STATUS_OK;
 }
 
-lib_status ux_presenter_stop(ux_presenter *presenter)
+lib_u32 ux_presenter_capture_target(const ux_presenter *presenter,
+    ux_target *out_target)
 {
-    const ux_presenter_control control = { UX_PRESENTER_CONTROL_STOP,
-        UX_TARGET_CONSOLE, { 0 } };
+    ux_presenter *mutable_presenter = (ux_presenter *)presenter;
+    lib_u32 generation;
 
-    return ux_presenter_enqueue(presenter, &control);
+    if (presenter == LIB_NULL || out_target == LIB_NULL) return 0u;
+    ux_presenter_lock(&mutable_presenter->target_lock);
+    *out_target = presenter->target;
+    generation = presenter->target_generation;
+    ux_presenter_unlock(&mutable_presenter->target_lock);
+    return generation;
 }
 
-lib_bool ux_presenter_take_control(ux_presenter *presenter,
-    ux_presenter_control *out_control)
+lib_u32 ux_presenter_capture_window_title(const ux_presenter *presenter,
+    char out_title[UX_WINDOW_TITLE_CAPACITY])
 {
-    lib_bool more;
+    ux_presenter *mutable_presenter = (ux_presenter *)presenter;
+    lib_u32 generation;
 
-    if (presenter == LIB_NULL || out_control == LIB_NULL) return LIB_FALSE;
-    ux_presenter_lock(&presenter->control_lock);
-    if (presenter->control_count == 0u) {
-        ux_presenter_unlock(&presenter->control_lock);
-        return LIB_FALSE;
-    }
-    *out_control = presenter->controls[presenter->control_head];
-    presenter->control_head = (presenter->control_head + 1u) %
-        UX_PRESENTER_CONTROL_CAPACITY;
-    --presenter->control_count;
-    more = presenter->control_count != 0u;
-    ux_presenter_unlock(&presenter->control_lock);
-    if (more) ux_mailbox_native_signal(presenter->native_mailbox);
-    return LIB_TRUE;
+    if (presenter == LIB_NULL || out_title == LIB_NULL) return 0u;
+    ux_presenter_lock(&mutable_presenter->title_lock);
+    memcpy(out_title, presenter->title, UX_WINDOW_TITLE_CAPACITY);
+    generation = presenter->title_generation;
+    ux_presenter_unlock(&mutable_presenter->title_lock);
+    return generation;
 }
 
 lib_status ux_presenter_capture_frame(const ux_presenter *presenter,

@@ -7,12 +7,12 @@
 int main(void)
 {
     ux_presenter *presenter = NULL;
-    ux_presenter_control control;
+    ux_target target;
+    char title[UX_WINDOW_TITLE_CAPACITY];
     static ux_frame first;
     static ux_frame second;
     static ux_frame captured;
     ux_action_registry actions;
-    lib_u32 index;
 
     first.valid = LIB_TRUE;
     first.text_columns = UX_TEXT_COLUMNS;
@@ -25,23 +25,15 @@ int main(void)
         ux_presenter_publish_frame(presenter, &second) != LIB_STATUS_OK ||
         ux_presenter_capture_frame(presenter, &captured) != LIB_STATUS_OK ||
         captured.sequence != 2u || captured.text[0] != 'B') goto fail;
-    if (ux_presenter_set_window_title(presenter, "Neutral Window") !=
-            LIB_STATUS_OK || ux_presenter_set_target(presenter, UX_TARGET_WINDOW) !=
-            LIB_STATUS_OK || ux_presenter_stop(presenter) != LIB_STATUS_OK ||
-        !ux_presenter_take_control(presenter, &control) ||
-        control.kind != UX_PRESENTER_CONTROL_WINDOW_TITLE ||
-        strcmp(control.title, "Neutral Window") != 0 ||
-        !ux_presenter_take_control(presenter, &control) ||
-        control.kind != UX_PRESENTER_CONTROL_TARGET ||
-        control.target != UX_TARGET_WINDOW ||
-        !ux_presenter_take_control(presenter, &control) ||
-        control.kind != UX_PRESENTER_CONTROL_STOP ||
-        ux_presenter_take_control(presenter, &control)) goto fail;
-    for (index = 0u; index < UX_PRESENTER_CONTROL_CAPACITY; ++index) {
-        if (ux_presenter_set_target(presenter, UX_TARGET_CONSOLE) != LIB_STATUS_OK)
-            goto fail;
-    }
-    if (ux_presenter_stop(presenter) != LIB_STATUS_INVALID_STATE) goto fail;
+    if (ux_presenter_set_window_title(presenter, "first") != LIB_STATUS_OK ||
+        ux_presenter_set_window_title(presenter, "Neutral Window") != LIB_STATUS_OK ||
+        ux_presenter_capture_window_title(presenter, title) != 2u ||
+        strcmp(title, "Neutral Window") != 0 ||
+        ux_presenter_set_target(presenter, UX_TARGET_CONSOLE) != LIB_STATUS_OK ||
+        ux_presenter_set_target(presenter, UX_TARGET_WINDOW) != LIB_STATUS_OK ||
+        ux_presenter_set_target(presenter, UX_TARGET_NONE) != LIB_STATUS_OK ||
+        ux_presenter_capture_target(presenter, &target) != 4u ||
+        target != UX_TARGET_NONE) goto fail;
     ux_actions_initialize(&actions);
     if (ux_actions_register(&actions, 'P', UX_MODIFIER_CONTROL | UX_MODIFIER_ALT,
             1u) != LIB_STATUS_OK || ux_actions_match(&actions, 'P',

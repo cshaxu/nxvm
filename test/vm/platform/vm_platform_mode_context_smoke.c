@@ -8,6 +8,7 @@ C_INT main(C_VOID)
     vm_platform_run_context *first = STD_NULL;
     vm_platform_run_context *second = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
+    ux_target target;
 
     if (vm_platform_run_context_create(STD_NULL, STD_NULL, STD_NULL, STD_NULL,
             &first) != TYPE_STATUS_OK || vm_platform_run_context_create(STD_NULL,
@@ -42,15 +43,8 @@ C_INT main(C_VOID)
             VM_PLATFORM_DISPLAY_CONSOLE) != TYPE_STATUS_OK) goto fail;
     if (vm_platform_run_handle_is_window_display(handle)) goto fail;
     vm_platform_run_handle_request_presenter_stop(handle);
-    {
-        ux_presenter_control control;
-        C_INT saw_stop = TYPE_FALSE;
-
-        while (ux_presenter_take_control(first->ux_presenter, &control)) {
-            if (control.kind == UX_PRESENTER_CONTROL_STOP) saw_stop = TYPE_TRUE;
-        }
-        if (!saw_stop) goto fail;
-    }
+    if (ux_presenter_capture_target(first->ux_presenter, &target) == 0u ||
+        target != UX_TARGET_NONE) goto fail;
     vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
     if (vm_platform_run_handle_get_last_event(handle) !=
             VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED ||

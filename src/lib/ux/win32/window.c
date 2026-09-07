@@ -42,6 +42,8 @@ typedef struct ux_win32_window_context {
     int client_height;
     int cursor_blink_visible;
     DWORD cursor_blink_due;
+    lib_u32 target_generation;
+    lib_u32 title_generation;
 } ux_win32_window_context;
 
 static ux_win32_window_context *win32_window_context(HWND window)
@@ -383,25 +385,32 @@ static void win32_window_consume_frame(HWND window,
     }
 }
 
-static int win32_window_consume_controls(HWND window,
+static int win32_window_consume_mailboxes(HWND window,
     ux_win32_window_context *context)
 {
-    ux_presenter_control control;
+    char title[UX_WINDOW_TITLE_CAPACITY];
+    ux_target target;
+    lib_u32 generation = ux_presenter_capture_target(
+        context->binding->presenter, &target);
 
-    while (ux_presenter_take_control(context->binding->presenter, &control)) {
-        if (control.kind == UX_PRESENTER_CONTROL_STOP) {
+    if (generation != context->target_generation) {
+        context->target_generation = generation;
+        if (target == UX_TARGET_NONE) {
             context->result = UX_RUN_STOPPED_RESULT;
             DestroyWindow(window);
             return 0;
         }
-        if (control.kind == UX_PRESENTER_CONTROL_TARGET &&
-            control.target != UX_TARGET_WINDOW) {
+        if (target == UX_TARGET_CONSOLE) {
             context->result = UX_RUN_SWITCH_CONSOLE;
             DestroyWindow(window);
             return 0;
         }
-        if (control.kind == UX_PRESENTER_CONTROL_WINDOW_TITLE)
-            SetWindowTextA(window, control.title);
+    }
+    generation = ux_presenter_capture_window_title(context->binding->presenter,
+        title);
+    if (generation != context->title_generation) {
+        context->title_generation = generation;
+        SetWindowTextA(window, title);
     }
     return 1;
 }
@@ -419,7 +428,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
     if (context == NULL) return DefWindowProcA(window, message, wparam, lparam);
     switch (message) {
     case WIN32_WINDOW_FRAME_READY:
-        if (win32_window_consume_controls(window, context)) {
+        if (win32_window_consume_mailboxes(window, context)) {
             win32_window_consume_frame(window, context);
             win32_window_advance_cursor_blink(window, context);
         }
@@ -577,6 +586,14 @@ ux_run_result ux_win32_run_window(const ux_binding *binding)
     if (window == NULL) {
         win32_window_destroy(context, NULL);
         return UX_RUN_ERROR_RESULT;
+    }
+    /* A switch consumes the shared wake in the prior runner. Capture the
+     * persistent target/title/frame state before waiting for another wake. */
+    SendMessageA(window, WIN32_WINDOW_FRAME_READY, 0, 0);
+    if (!IsWindow(window)) {
+        result = context->result;
+        win32_window_destroy(context, NULL);
+        return result;
     }
     ShowWindow(window, SW_SHOW);
     UpdateWindow(window);

@@ -31,7 +31,8 @@ int main(C_INT argc, C_CHAR **argv)
     host_action_capture capture = { 0 };
     ux_binding binding;
     ux_event event = { 0 };
-    ux_presenter_control control;
+    ux_target target;
+    char title[UX_WINDOW_TITLE_CAPACITY];
 
     (C_VOID)argc;
     (C_VOID)argv;
@@ -74,18 +75,16 @@ int main(C_INT argc, C_CHAR **argv)
         capture.events[12].data.key.virtual_key != 0x0du) goto fail;
     if (strcmp(binding.window_initial_title, "NXVM (Running)") != 0) goto fail;
     if (vm_platform_run_context_set_window_title(context, "ignored") !=
-            TYPE_STATUS_OK || !ux_presenter_take_control(context->ux_presenter,
-            &control) || control.kind != UX_PRESENTER_CONTROL_WINDOW_TITLE ||
-        strcmp(control.title, "ignored") != 0 ||
+            TYPE_STATUS_OK || ux_presenter_capture_window_title(
+            context->ux_presenter, title) != 1u || strcmp(title, "ignored") != 0 ||
         vm_platform_run_context_set_display_mode(context,
             VM_PLATFORM_DISPLAY_WINDOW) != TYPE_STATUS_OK ||
-        !ux_presenter_take_control(context->ux_presenter, &control) ||
-        control.kind != UX_PRESENTER_CONTROL_TARGET ||
-        control.target != UX_TARGET_WINDOW ||
+        ux_presenter_capture_target(context->ux_presenter, &target) != 3u ||
+        target != UX_TARGET_WINDOW ||
         vm_platform_run_context_set_window_title(context, "NXVM (Paused)") !=
-            TYPE_STATUS_OK || !ux_presenter_take_control(context->ux_presenter,
-            &control) || control.kind != UX_PRESENTER_CONTROL_WINDOW_TITLE ||
-        strcmp(control.title, "NXVM (Paused)") != 0) goto fail;
+            TYPE_STATUS_OK || ux_presenter_capture_window_title(
+            context->ux_presenter, title) != 2u ||
+        strcmp(title, "NXVM (Paused)") != 0) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
     puts("M5:T522:S4:UX-BINDING:OK");

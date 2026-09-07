@@ -247,6 +247,15 @@ owner; it does not create a product dependency.
    deliberately ignores advisory locking. A failed lock opens no medium and
    closes every acquired handle. No controller, topology, overlay-page, or
    persistence behavior changes.
+21. **S21 - latest-state presenter mailboxes.** Replace the presenter control
+   FIFO with three private single-slot latest-state mailboxes sharing one wake:
+   target (`CONSOLE`, `WINDOW`, `NONE`), Window title and copied frame. Target
+   is processed first, then title, then frame. `NONE` replaces the public
+   `stop()` API; do not retain a forwarding wrapper. A title published while
+   no Window is active remains the latest desired Window title for the next
+   Window surface without waking a Console runner. Native runners compare mailbox generations and never infer
+   a target from frame contents. Add mailbox ordering/coalescing and target-
+   none regressions; run full unit, lib verification and dual artifacts.
 
 ## Acceptance
 

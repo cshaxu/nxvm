@@ -12,6 +12,9 @@
 #include "vm/platform/ux_binding.h"
 #include "vm/platform/ux_frame.h"
 
+static type_status vm_platform_run_context_request_ux_target(
+    vm_platform_run_context *context, ux_target target);
+
 type_status vm_platform_run_context_create(
     const vm_platform_execution *execution,
     const vm_platform_host_input_sink *input_sink,
@@ -48,9 +51,14 @@ type_status vm_platform_run_context_create(
         UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER);
     (C_VOID)ux_actions_register(&context->ux_actions, 'M',
         UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_RELEASE_MOUSE);
-    context->requested_target = UX_TARGET_CONSOLE;
+    context->requested_target = UX_TARGET_NONE;
     context->console_text_frames = 0u;
     context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
+    if (vm_platform_run_context_request_ux_target(context, UX_TARGET_CONSOLE) !=
+        TYPE_STATUS_OK) {
+        vm_platform_run_context_destroy(context);
+        return TYPE_STATUS_INVALID_STATE;
+    }
     *out_context = context;
     return TYPE_STATUS_OK;
 }
@@ -245,5 +253,5 @@ C_VOID vm_platform_run_handle_request_presenter_stop(
     vm_platform_run_handle *handle)
 {
     if (handle == STD_NULL || handle->context == STD_NULL) return;
-    (C_VOID)ux_presenter_stop(handle->context->ux_presenter);
+    (C_VOID)ux_presenter_set_target(handle->context->ux_presenter, UX_TARGET_NONE);
 }

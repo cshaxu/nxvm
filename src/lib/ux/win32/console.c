@@ -298,6 +298,7 @@ static ux_run_result ux_win32_console_run(ux_win32_console *console)
     HANDLE wait_handles[2];
     ux_run_result result = UX_RUN_STOPPED_RESULT;
     int running = 1;
+    lib_u32 target_generation = 0u;
 
     if (console == NULL) return UX_RUN_ERROR_RESULT;
     wait_handles[0] = ux_win32_presenter_wait_handle(console->binding->presenter);
@@ -306,19 +307,18 @@ static ux_run_result ux_win32_console_run(ux_win32_console *console)
         INPUT_RECORD record;
         DWORD available;
         DWORD read;
-        ux_presenter_control control;
+        ux_target target;
+        lib_u32 generation = ux_presenter_capture_target(
+            console->binding->presenter, &target);
 
-        while (ux_presenter_take_control(console->binding->presenter, &control)) {
-            if (control.kind == UX_PRESENTER_CONTROL_STOP) {
+        if (generation != target_generation) {
+            target_generation = generation;
+            if (target == UX_TARGET_NONE) {
                 running = 0;
                 result = UX_RUN_STOPPED_RESULT;
-                break;
-            }
-            if (control.kind == UX_PRESENTER_CONTROL_TARGET &&
-                control.target != UX_TARGET_CONSOLE) {
+            } else if (target == UX_TARGET_WINDOW) {
                 result = UX_RUN_SWITCH_WINDOW;
                 running = 0;
-                break;
             }
         }
         if (!running) break;
