@@ -4,12 +4,12 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/lib/CMakeLists.txt" library_cmake_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.c" linux_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/vm/machine/vm_platform_linux_run_handle_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/run_handle.c" runner_source)
+file(READ "${PROJECT_SOURCE_DIR}/test/vm/machine/vm_platform_run_handle_contract_smoke.c"
     linux_smoke_source)
 
 foreach(required
-    "src/vm/platform/linux/linux.c")
+    "src/vm/platform/run_handle.c")
     string(FIND "${cmake_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux platform CMake contract is missing: ${required}")
@@ -27,8 +27,8 @@ foreach(required
 endforeach()
 
 foreach(required
-    "vm-platform-linux-run-handle-smoke"
-    "test/vm/machine/vm_platform_linux_run_handle_smoke.c")
+    "vm-platform-run-handle-contract-smoke"
+    "test/vm/machine/vm_platform_run_handle_contract_smoke.c")
     string(FIND "${cmake_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux runtime probe is missing: ${required}")
@@ -37,23 +37,23 @@ endforeach()
 
 foreach(required
     "VM_PLATFORM_RUN_EVENT_STARTUP_FAILED"
-    "ux_linux_run_console"
+    "ux_run"
     "host_sync_task_join"
-    "vm_platform_linux_run_handle_finalize")
-    string(FIND "${linux_source}" "${required}" position)
+    "vm_platform_run_handle_finalize")
+    string(FIND "${runner_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux run-handle contract is missing: ${required}")
     endif()
 endforeach()
 
-string(FIND "${linux_source}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
+string(FIND "${runner_source}" "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
     keyboard_stop_position)
 if(NOT keyboard_stop_position EQUAL -1)
     message(FATAL_ERROR "Linux keyboard platform must not own a lifecycle stop path")
 endif()
 
 string(REGEX MATCHALL "context->execution->stop\\(" direct_stop_calls
-    "${linux_source}")
+    "${runner_source}")
 list(LENGTH direct_stop_calls direct_stop_count)
 if(NOT direct_stop_count EQUAL 1)
     message(FATAL_ERROR

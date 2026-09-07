@@ -94,15 +94,11 @@ C_INT vm_platform_ux_event_submit(const vm_platform_run_context *context,
             (event->data.mouse.buttons & UX_MOUSE_BUTTON_LEFT ? 1u : 0u) |
             (event->data.mouse.buttons & UX_MOUSE_BUTTON_RIGHT ? 2u : 0u);
     }
-#ifdef _WIN32
-    else if (event->type == UX_EVENT_TEXT) return TYPE_FALSE;
-#else
     else if (event->type == UX_EVENT_TEXT && event->data.text.scalar <= 0xffffu) {
         input.kind = CORE_MACHINE_GUEST_INPUT_KEY;
         input.data.key.virtual_key = (type_unsigned_16)event->data.text.scalar;
         input.data.key.pressed = TYPE_TRUE;
     }
-#endif
     else return TYPE_FALSE;
     if (vm_platform_host_input_sink_submit(&context->input_sink, &input) !=
         TYPE_STATUS_OK) return TYPE_FALSE;
@@ -202,8 +198,7 @@ type_status vm_platform_ux_binding_initialize(vm_platform_run_context *context,
        a UX loop; both callbacks dereference this private, VM-owned link. */
     handle->context = context;
     out_binding->context = handle;
-    out_binding->mailbox = context->ux_mailbox;
-    out_binding->router = &context->ux_router;
+    out_binding->presenter = context->ux_presenter;
     out_binding->actions = &context->ux_actions;
     out_binding->input_sink = vm_platform_ux_input;
     out_binding->release_inputs = vm_platform_ux_release_inputs;

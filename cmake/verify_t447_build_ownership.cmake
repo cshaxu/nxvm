@@ -3,6 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" project_cmake)
+file(READ "${PROJECT_SOURCE_DIR}/src/lib/CMakeLists.txt" library_cmake)
 
 foreach(forbidden "VM_RUNTIME_SOURCES")
     string(FIND "${project_cmake}" "${forbidden}" position)
@@ -18,11 +19,16 @@ if(composition_native)
     message(FATAL_ERROR "T447 vm-composition must not propagate a host-native dependency")
 endif()
 
-string(REGEX MATCH
-    "if\\(WIN32\\)[ \t\r\n]+target_link_libraries\\(vm-platform PUBLIC user32 gdi32\\)"
-    native_owner "${project_cmake}")
-if(NOT native_owner)
-    message(FATAL_ERROR "T447 requires vm-platform to own Win32 GUI libraries")
+string(FIND "${library_cmake}" "target_link_libraries(ux PRIVATE user32 gdi32)"
+    native_owner)
+if(native_owner EQUAL -1)
+    message(FATAL_ERROR "T447 requires lib UX to own Win32 GUI libraries")
+endif()
+string(FIND "${project_cmake}"
+    "target_link_libraries(vm-platform PUBLIC ux-win32-native)"
+    vm_native_bypass)
+if(NOT vm_native_bypass EQUAL -1)
+    message(FATAL_ERROR "T524 vm-platform must consume only neutral UX contracts")
 endif()
 
 string(REGEX MATCH

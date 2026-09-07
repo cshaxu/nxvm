@@ -15,12 +15,12 @@
 #include "core/machine/debug_interface.h"
 
 #include "vm/machine/debug.h"
-#include "vm/platform/input_flush.h"
+#include "lib/ux/presenter.h"
 
 C_VOID vm_session_debug_flush_console_input(C_VOID *context)
 {
     (C_VOID)context;
-    vm_platform_input_flush_console_input();
+    ux_discard_console_input();
 }
 
 static C_INT vm_debug_running(C_VOID *context) { return vm_session_control_is_running(&((vm_session *)context)->control); }

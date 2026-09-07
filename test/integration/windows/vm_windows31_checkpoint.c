@@ -11,7 +11,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/platform/win32/win32.h"
+#include "vm/platform/platform.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
@@ -78,23 +78,19 @@ static C_VOID vm_t287_submit_key(const vm_session *session, type_unsigned_16 sca
     type_unsigned_16 virtual_key)
 {
     if (session == STD_NULL) return;
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-        session->platform_run_handle, scan_code, virtual_key, 1);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_code, virtual_key, 1);
     Sleep(25u);
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-        session->platform_run_handle, scan_code, virtual_key, 0);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_code, virtual_key, 0);
     Sleep(25u);
 }
 
 static C_VOID vm_t287_submit_colon(const vm_session *session)
 {
     if (session == STD_NULL) return;
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-        session->platform_run_handle, 0x2au, VK_SHIFT, 1);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x2au, VK_SHIFT, 1);
     Sleep(25u);
     vm_t287_submit_key(session, 0x27u, VK_OEM_1);
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-        session->platform_run_handle, 0x2au, VK_SHIFT, 0);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x2au, VK_SHIFT, 0);
     Sleep(25u);
 }
 

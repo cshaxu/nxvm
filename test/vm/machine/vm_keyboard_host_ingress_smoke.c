@@ -3,7 +3,7 @@
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/platform/vm_request_transport.h"
-#include "vm/platform/win32/win32.h"
+#include "vm/platform/platform.h"
 #include "../support/rom/session_assets.h"
 
 C_INT main(C_VOID)
@@ -25,21 +25,23 @@ C_INT main(C_VOID)
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-        session->platform_run_handle, 0x2au, 0x10u, TYPE_TRUE);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x2au, 0x10u, TYPE_TRUE);
     if (vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) != TYPE_STATUS_OK ||
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-        session->platform_run_handle, 0u, 0x70u, TYPE_TRUE);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x3bu, 0x70u,
+        TYPE_TRUE);
     if (vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) != TYPE_STATUS_OK ||
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x3bu ||
         !request.data.key_event.pressed) goto fail;
-    vm_platform_win32_keyboard_make_character_for(session->platform_run_context, 'a');
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x1eu, 'A',
+        TYPE_TRUE);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x1eu, 'A',
+        TYPE_FALSE);
     while (vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) == TYPE_STATUS_OK) {
         if (request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||

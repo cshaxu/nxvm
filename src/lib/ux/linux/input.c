@@ -1,5 +1,5 @@
 #include "lib/base/base.h"
-#include "lib/ux/linux/input.h"
+#include "lib/ux/internal/linux_input.h"
 
 lib_bool ux_linux_key_to_event(ux_linux_key key, ux_event *out_event)
 {

@@ -2,9 +2,8 @@
 #define VM_PLATFORM_INTERNAL_H
 
 #include "vm/platform/platform.h"
-#include "lib/ux/mailbox.h"
 #include "lib/ux/actions.h"
-#include "lib/ux/router.h"
+#include "lib/ux/presenter.h"
 
 #define VM_PLATFORM_START_TIMEOUT_MILLISECONDS 5000u
 
@@ -13,11 +12,11 @@ struct vm_platform_run_context {
     vm_platform_host_input_sink input_sink;
     const core_machine_guest_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;
-    ux_mailbox *ux_mailbox;
+    ux_presenter *ux_presenter;
     core_machine_guest_display_frame *core_frame;
     ux_frame *ux_frame;
     ux_action_registry ux_actions;
-    ux_router ux_router;
+    ux_target requested_target;
     type_unsigned_32 console_text_frames;
     vm_platform_display_mode display_mode;
 };

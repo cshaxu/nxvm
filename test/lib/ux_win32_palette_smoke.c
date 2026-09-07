@@ -1,5 +1,5 @@
 #include "lib/ux/frame.h"
-#include "lib/ux/win32/geometry.h"
+#include "lib/ux/internal/win32_geometry.h"
 
 #include <stdio.h>
 

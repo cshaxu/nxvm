@@ -1,4 +1,4 @@
-#include "geometry.h"
+#include "lib/ux/internal/win32_geometry.h"
 
 #ifdef _WIN32
 int ux_win32_display_rect(int client_width, int client_height,

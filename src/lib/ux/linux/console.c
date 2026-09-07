@@ -1,7 +1,8 @@
 #include "lib/base/base.h"
-#include "lib/ux/linux/console.h"
-#include "lib/ux/linux/input.h"
-#include "lib/ux/linux/mailbox.h"
+#include "lib/ux/internal/linux_console.h"
+#include "lib/ux/internal/linux_input.h"
+#include "lib/ux/internal/linux_presenter_wake.h"
+#include "lib/ux/internal/presenter_internal.h"
 
 #if !defined(_WIN32)
 #include <curses.h>
@@ -146,46 +147,52 @@ ux_run_result ux_linux_run_console(const ux_binding *binding)
         ux_linux_console_release();
         return UX_RUN_ERROR_RESULT;
     }
-    ux_router_set_active_target(binding->router, UX_TARGET_CONSOLE);
     while (result == UX_RUN_CONTINUE) {
         struct pollfd waits[2] = {
-            { STDIN_FILENO, POLLIN, 0 },
-            { ux_linux_mailbox_wait_fd(binding->mailbox), POLLIN, 0 }
+            { ux_linux_presenter_wait_fd(binding->presenter), POLLIN, 0 },
+            { STDIN_FILENO, POLLIN, 0 }
         };
         int ready = poll(waits, 2u, -1);
+        ux_presenter_control control;
 
         if (ready < 0) {
             result = UX_RUN_ERROR_RESULT;
             break;
         }
-        if ((waits[1].revents & POLLIN) != 0) {
-            ux_linux_mailbox_consume(binding->mailbox);
+        if ((waits[0].revents & POLLIN) != 0) {
+            ux_linux_presenter_consume(binding->presenter);
         }
-        if ((waits[1].revents & POLLIN) != 0 &&
-            ux_router_target(binding->router) == UX_TARGET_NONE) {
-            result = UX_RUN_STOPPED_RESULT;
-            break;
+        while (ux_presenter_take_control(binding->presenter, &control)) {
+            if (control.kind == UX_PRESENTER_CONTROL_STOP) {
+                result = UX_RUN_STOPPED_RESULT;
+                break;
+            }
+            if (control.kind == UX_PRESENTER_CONTROL_TARGET &&
+                control.target != UX_TARGET_CONSOLE) {
+                result = UX_RUN_SWITCH_WINDOW;
+                break;
+            }
         }
-        if ((waits[1].revents & POLLIN) != 0 &&
-            ux_router_target(binding->router) == UX_TARGET_WINDOW) {
-            result = UX_RUN_SWITCH_WINDOW;
-            break;
-        }
-        if ((waits[1].revents & POLLIN) != 0 &&
-            ux_mailbox_generation(binding->mailbox) != displayed_generation &&
-            ux_mailbox_capture(binding->mailbox, frame) == LIB_STATUS_OK) {
+        if (result != UX_RUN_CONTINUE) break;
+        if ((waits[0].revents & POLLIN) != 0 &&
+            ux_presenter_frame_generation(binding->presenter) != displayed_generation &&
+            ux_presenter_capture_frame(binding->presenter, frame) == LIB_STATUS_OK) {
             ux_linux_console_paint(frame);
             displayed_generation = frame->sequence;
         }
-        if ((waits[0].revents & POLLIN) != 0) {
+        if ((waits[1].revents & POLLIN) != 0) {
             result = ux_linux_console_key(binding, getch());
             if (result != UX_RUN_CONTINUE) break;
         }
     }
     free(frame);
-    ux_router_set_active_target(binding->router, UX_TARGET_NONE);
     endwin();
     ux_linux_console_release();
     return result;
+}
+
+ux_run_result ux_run(const ux_binding *binding)
+{
+    return ux_linux_run_console(binding);
 }
 #endif

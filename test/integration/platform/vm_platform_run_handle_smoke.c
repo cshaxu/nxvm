@@ -6,7 +6,7 @@
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/platform/platform.h"
-#include "vm/platform/win32/win32.h"
+#include "vm/platform/platform.h"
 #include "test/integration/support/session_yaml.h"
 
 static C_INT vm_platform_run_handle_wait_for_keyboard(vm_session *session,
@@ -53,8 +53,7 @@ int main(C_INT argc, C_CHAR **argv)
         session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     host_sync_sleep_milliseconds(50u);
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-        session->platform_run_handle, 0x43u, VK_F9, 1);
+    (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x43u, VK_F9, 1);
     host_sync_sleep_milliseconds(50u);
     if (!vm_session_control_is_running(&session->control) ||
         vm_platform_run_handle_take_stop_report(session->platform_run_handle)) goto fail;
@@ -74,8 +73,7 @@ int main(C_INT argc, C_CHAR **argv)
         type_unsigned_8 previous =
             session->core_machine->shared_kbc.data.last_keyboard_output_byte;
 
-        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-            session->platform_run_handle, 0x1eu, 'A', 1);
+        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, 0x1eu, 'A', 1);
         if (!vm_platform_run_handle_wait_for_keyboard(session, previous)) goto fail;
     }
     vm_session_stop(session);

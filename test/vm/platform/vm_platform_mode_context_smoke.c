@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "vm/platform/platform_internal.h"
+#include "lib/ux/internal/presenter_internal.h"
 
 C_INT main(C_VOID)
 {
@@ -14,16 +15,19 @@ C_INT main(C_VOID)
     if (vm_platform_run_context_get_display_mode(first) !=
             VM_PLATFORM_DISPLAY_CONSOLE ||
         vm_platform_run_context_get_window_display(first)) goto fail;
-    vm_platform_run_context_set_window_display(first, 1);
+    if (vm_platform_run_context_set_window_display(first, 1) != TYPE_STATUS_OK)
+        goto fail;
     if (!vm_platform_run_context_get_window_display(first) ||
         vm_platform_run_context_get_window_display(second)) goto fail;
-    vm_platform_run_context_set_window_display(second, 1);
-    vm_platform_run_context_set_window_display(first, 0);
+    if (vm_platform_run_context_set_window_display(second, 1) != TYPE_STATUS_OK ||
+        vm_platform_run_context_set_window_display(first, 0) != TYPE_STATUS_OK)
+        goto fail;
     if (vm_platform_run_context_get_window_display(first) ||
         vm_platform_run_context_get_display_mode(first) !=
             VM_PLATFORM_DISPLAY_CONSOLE ||
         !vm_platform_run_context_get_window_display(second)) goto fail;
-    vm_platform_run_context_set_display_mode(first, VM_PLATFORM_DISPLAY_CONSOLE);
+    if (vm_platform_run_context_set_display_mode(first,
+            VM_PLATFORM_DISPLAY_CONSOLE) != TYPE_STATUS_OK) goto fail;
     if (vm_platform_run_context_get_display_mode(first) !=
             VM_PLATFORM_DISPLAY_CONSOLE ||
         vm_platform_run_context_get_window_display(first) ||
@@ -31,12 +35,22 @@ C_INT main(C_VOID)
     if (vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK) goto fail;
     handle->context = first;
     if (vm_platform_run_handle_is_window_display(handle)) goto fail;
-    vm_platform_run_context_set_display_mode(first, VM_PLATFORM_DISPLAY_WINDOW);
+    if (vm_platform_run_context_set_display_mode(first,
+            VM_PLATFORM_DISPLAY_WINDOW) != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_window_display(handle)) goto fail;
-    vm_platform_run_context_set_display_mode(first, VM_PLATFORM_DISPLAY_CONSOLE);
+    if (vm_platform_run_context_set_display_mode(first,
+            VM_PLATFORM_DISPLAY_CONSOLE) != TYPE_STATUS_OK) goto fail;
     if (vm_platform_run_handle_is_window_display(handle)) goto fail;
     vm_platform_run_handle_request_presenter_stop(handle);
-    if (ux_router_target(&first->ux_router) != UX_TARGET_NONE) goto fail;
+    {
+        ux_presenter_control control;
+        C_INT saw_stop = TYPE_FALSE;
+
+        while (ux_presenter_take_control(first->ux_presenter, &control)) {
+            if (control.kind == UX_PRESENTER_CONTROL_STOP) saw_stop = TYPE_TRUE;
+        }
+        if (!saw_stop) goto fail;
+    }
     vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
     if (vm_platform_run_handle_get_last_event(handle) !=
             VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED ||

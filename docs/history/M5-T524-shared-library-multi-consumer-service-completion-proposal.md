@@ -212,6 +212,22 @@ owner; it does not create a product dependency.
    request/active-surface proof and NXVM binding proof, run the complete unit,
    lib-only corpus, static platform gates, governance and dual stripped
    artifacts. No integration run is admitted.
+18. **S18 - private dual presenter mailbox.** Replace the public latest-frame
+   mailbox and atomic router with one opaque presenter object. Its private
+   frame mailbox is one latest copied frame; its private control mailbox is a
+   32-command FIFO. They share one native wake. Public control consists only
+   of `set_target(Console|Window)`, `set_window_title(text)` and `stop()`;
+   every accepted control command is FIFO-preserved, while a full FIFO returns
+   a checkable failure. Frame publication remains a separate copied-value API.
+   Native runners drain control before a frame, stop immediately, switch on a
+   changed target without consuming later commands, and apply titles only in a
+   live Window. Remove router/mailbox public access and all manual app wake
+   calls. NXVM retains only its display policy and sends the three controls;
+   it removes duplicate native presenter-runner and host-input adapter code in
+   favor of neutral lib UX and host contracts.
+   Add repository-only FIFO, priority, full/no-op and NXVM integration proofs;
+   run full unit, lib-only corpus, static gates, governance and dual stripped
+   artifacts. No integration run is admitted.
 
 ## Acceptance
 

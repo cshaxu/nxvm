@@ -7,10 +7,10 @@ root may combine them; a library component may not include another component.
   Its public headers contain no host SDK type or product-owned pointer. Native
   code belongs below its host directory and depends only on the public `ux`
   contract. Both palette arrays use platform-neutral `0x00RRGGBB`; native
-  adapters convert only at their own host boundary. A product supplies a
-  copied initial Window title and may later request a title only while a
-  Window surface is active; Console title mutation is never part of the
-  contract.
+  adapters convert only at their own host boundary. The opaque presenter owns
+  a latest-frame slot, a 32-command FIFO and their sole native wake. Products
+  publish frames and request only target, Window title or stop; Console title
+  mutation is never part of the contract.
 - `host-sync` provides opaque native events, clocks and cancellable joined
   tasks. It contains no guest-time or product execution policy.
 - `storage-medium` owns exclusive byte-medium leases. Direct and readonly media retain

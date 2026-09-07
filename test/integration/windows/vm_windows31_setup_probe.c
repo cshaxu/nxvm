@@ -13,7 +13,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/platform/win32/win32.h"
+#include "vm/platform/platform.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
@@ -111,11 +111,9 @@ static C_INT vm_t287_type_setup(vm_session *session)
 
     if (session == STD_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-            session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
+        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 1);
         Sleep(25u);
-        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-            session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
+        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 0);
         Sleep(25u);
     }
     return 1;
@@ -133,11 +131,9 @@ static C_INT vm_t288_type_windows(vm_session *session)
 
     if (session == STD_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-            session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
+        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 1);
         Sleep(25u);
-        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-            session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
+        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 0);
         Sleep(25u);
     }
     return 1;

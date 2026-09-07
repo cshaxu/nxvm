@@ -33,7 +33,7 @@ type_status vm_platform_run_context_create(
     context->core_frame = STD_MALLOC(sizeof(*context->core_frame));
     context->ux_frame = STD_MALLOC(sizeof(*context->ux_frame));
     if (context->core_frame == STD_NULL || context->ux_frame == STD_NULL ||
-        ux_mailbox_create(&context->ux_mailbox) != LIB_STATUS_OK) {
+        ux_presenter_create(&context->ux_presenter) != LIB_STATUS_OK) {
         STD_FREE(context->ux_frame);
         STD_FREE(context->core_frame);
         STD_FREE(context);
@@ -48,7 +48,7 @@ type_status vm_platform_run_context_create(
         UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER);
     (C_VOID)ux_actions_register(&context->ux_actions, 'M',
         UX_MODIFIER_CONTROL | UX_MODIFIER_ALT, VM_PLATFORM_UX_ACTION_RELEASE_MOUSE);
-    ux_router_initialize(&context->ux_router, UX_TARGET_CONSOLE);
+    context->requested_target = UX_TARGET_CONSOLE;
     context->console_text_frames = 0u;
     context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
     *out_context = context;
@@ -57,18 +57,23 @@ type_status vm_platform_run_context_create(
 
 C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context)
 {
-    if (context != STD_NULL) ux_mailbox_destroy(context->ux_mailbox);
+    if (context != STD_NULL) ux_presenter_destroy(context->ux_presenter);
     if (context != STD_NULL) STD_FREE(context->ux_frame);
     if (context != STD_NULL) STD_FREE(context->core_frame);
     STD_FREE(context);
 }
 
-static C_VOID vm_platform_run_context_request_ux_target(
+static type_status vm_platform_run_context_request_ux_target(
     vm_platform_run_context *context, ux_target target)
 {
-    if (context != STD_NULL && ux_router_target(&context->ux_router) != target) {
-        ux_router_request(&context->ux_router, target);
-    }
+    lib_status status;
+
+    if (context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (context->requested_target == target) return TYPE_STATUS_OK;
+    status = ux_presenter_set_target(context->ux_presenter, target);
+    if (status != LIB_STATUS_OK) return (type_status)status;
+    context->requested_target = target;
+    return TYPE_STATUS_OK;
 }
 
 type_status vm_platform_run_context_publish_ux_frame(
@@ -85,16 +90,18 @@ type_status vm_platform_run_context_publish_ux_frame(
     status = vm_platform_ux_frame_from_core(context->core_frame, context->ux_frame);
     if (status != TYPE_STATUS_OK) return status;
     if (context->display_mode == VM_PLATFORM_DISPLAY_WINDOW) {
-        vm_platform_run_context_request_ux_target(context, UX_TARGET_WINDOW);
+        status = vm_platform_run_context_request_ux_target(context, UX_TARGET_WINDOW);
     } else if (context->ux_frame->graphics != 0u) {
         context->console_text_frames = 0u;
-        vm_platform_run_context_request_ux_target(context, UX_TARGET_WINDOW);
-    } else if (ux_router_target(&context->ux_router) == UX_TARGET_WINDOW &&
+        status = vm_platform_run_context_request_ux_target(context, UX_TARGET_WINDOW);
+    } else if (context->requested_target == UX_TARGET_WINDOW &&
         ++context->console_text_frames >= 3u) {
         context->console_text_frames = 0u;
-        vm_platform_run_context_request_ux_target(context, UX_TARGET_CONSOLE);
+        status = vm_platform_run_context_request_ux_target(context, UX_TARGET_CONSOLE);
     }
-    return ux_mailbox_publish(context->ux_mailbox, context->ux_frame);
+    if (status != TYPE_STATUS_OK) return status;
+    return (type_status)ux_presenter_publish_frame(context->ux_presenter,
+        context->ux_frame);
 }
 
 type_status vm_platform_host_input_sink_submit(
@@ -105,6 +112,19 @@ type_status vm_platform_host_input_sink_submit(
         return TYPE_STATUS_INVALID_STATE;
     }
     return sink->submit(sink->context, event);
+}
+
+type_status vm_platform_host_key_submit(const vm_platform_run_context *context,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+{
+    core_machine_guest_input_event event = { 0 };
+
+    if (context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+    event.data.key.scan_code = scan_code;
+    event.data.key.virtual_key = virtual_key;
+    event.data.key.pressed = pressed != 0;
+    return vm_platform_host_input_sink_submit(&context->input_sink, &event);
 }
 
 C_INT vm_platform_run_context_get_window_display(
@@ -121,31 +141,32 @@ C_INT vm_platform_run_context_get_display_mode(
         context->display_mode;
 }
 
-C_VOID vm_platform_run_context_set_display_mode(
+type_status vm_platform_run_context_set_display_mode(
     vm_platform_run_context *context, vm_platform_display_mode mode)
 {
+    type_status status;
+
     if (context == STD_NULL || mode < VM_PLATFORM_DISPLAY_CONSOLE ||
-        mode > VM_PLATFORM_DISPLAY_WINDOW) return;
+        mode > VM_PLATFORM_DISPLAY_WINDOW) return TYPE_STATUS_INVALID_ARGUMENT;
     context->display_mode = mode;
     context->console_text_frames = 0u;
-    ux_router_request(&context->ux_router, mode == VM_PLATFORM_DISPLAY_WINDOW ?
-        UX_TARGET_WINDOW : UX_TARGET_CONSOLE);
+    status = vm_platform_run_context_request_ux_target(context,
+        mode == VM_PLATFORM_DISPLAY_WINDOW ? UX_TARGET_WINDOW : UX_TARGET_CONSOLE);
+    return status;
 }
 
-C_VOID vm_platform_run_context_set_window_display(
+type_status vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled)
 {
-    vm_platform_run_context_set_display_mode(context, enabled ?
+    return vm_platform_run_context_set_display_mode(context, enabled ?
         VM_PLATFORM_DISPLAY_WINDOW : VM_PLATFORM_DISPLAY_CONSOLE);
 }
 
-C_VOID vm_platform_run_context_set_window_title(
+type_status vm_platform_run_context_set_window_title(
     vm_platform_run_context *context, const C_CHAR *title)
 {
-    if (context != STD_NULL && title != STD_NULL &&
-        ux_router_request_window_title(&context->ux_router, title)) {
-        ux_mailbox_wake(context->ux_mailbox);
-    }
+    if (context == STD_NULL || title == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    return (type_status)ux_presenter_set_window_title(context->ux_presenter, title);
 }
 
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle)
@@ -233,50 +254,9 @@ C_INT vm_platform_run_handle_take_mouse_release_report(
         &handle->mouse_release_reported, TYPE_FALSE);
 }
 
-#if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
-
-#include "vm/platform/win32/win32.h"
-type_status vm_platform_start(vm_platform_run_context *context,
-    vm_platform_run_handle *handle) {
-    return vm_platform_win32_run_handle_start(context, handle);
-}
-C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle) {
-    vm_platform_win32_run_handle_request_stop(handle);
-}
 C_VOID vm_platform_run_handle_request_presenter_stop(
     vm_platform_run_handle *handle)
 {
     if (handle == STD_NULL || handle->context == STD_NULL) return;
-    ux_router_request(&handle->context->ux_router, UX_TARGET_NONE);
-    ux_mailbox_wake(handle->context->ux_mailbox);
+    (C_VOID)ux_presenter_stop(handle->context->ux_presenter);
 }
-C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle) {
-    vm_platform_win32_run_handle_join(handle);
-}
-C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle) {
-    vm_platform_win32_run_handle_finalize(handle);
-}
-#elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
-
-#include "vm/platform/linux/linux.h"
-type_status vm_platform_start(vm_platform_run_context *context,
-    vm_platform_run_handle *handle) {
-    return vm_platform_linux_run_handle_start(context, handle);
-}
-C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle) {
-    vm_platform_linux_run_handle_request_stop(handle);
-}
-C_VOID vm_platform_run_handle_request_presenter_stop(
-    vm_platform_run_handle *handle)
-{
-    if (handle == STD_NULL || handle->context == STD_NULL) return;
-    ux_router_request(&handle->context->ux_router, UX_TARGET_NONE);
-    ux_mailbox_wake(handle->context->ux_mailbox);
-}
-C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle) {
-    vm_platform_linux_run_handle_join(handle);
-}
-C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle) {
-    vm_platform_linux_run_handle_finalize(handle);
-}
-#endif

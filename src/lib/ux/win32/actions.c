@@ -1,5 +1,5 @@
 #include "lib/base/base.h"
-#include "lib/ux/win32/actions.h"
+#include "lib/ux/internal/win32_actions.h"
 
 #ifdef _WIN32
 #include <windows.h>

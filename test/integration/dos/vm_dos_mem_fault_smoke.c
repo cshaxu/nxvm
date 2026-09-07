@@ -7,7 +7,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/platform/win32/win32.h"
+#include "vm/platform/platform.h"
 #include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
@@ -84,8 +84,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (elapsed == DOS_PROMPT_TIMEOUT_MILLISECONDS) goto fail;
     stage = "MEM command completion";
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
-            session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
+        (C_VOID)vm_platform_host_key_submit(session->platform_run_context, scan_codes[index], virtual_keys[index], 1);
     }
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
     if (result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) goto fail;

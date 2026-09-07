@@ -1272,20 +1272,11 @@ target_include_directories(core-machine-boundary PUBLIC
 target_link_libraries(core-machine-boundary PUBLIC type-facade host-sync)
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
+    src/vm/platform/run_handle.c
     src/vm/platform/session_state.c
-    src/vm/platform/input_flush.c
     src/vm/platform/ux_frame.c
     src/vm/platform/ux_binding.c
 )
-if(WIN32)
-    list(APPEND VM_PLATFORM_SOURCES
-        src/vm/platform/win32/win32.c
-    )
-else()
-    list(APPEND VM_PLATFORM_SOURCES
-        src/vm/platform/linux/linux.c
-    )
-endif()
 add_library(vm-platform-requests STATIC
     src/vm/platform/request_bridge.c
 )
@@ -1488,9 +1479,6 @@ target_link_libraries(vm-platform PUBLIC
     core-utils
     core-machine-boundary
     ux-contract)
-if(WIN32)
-    target_link_libraries(vm-platform PUBLIC ux-win32-native user32 gdi32)
-endif()
 
 add_executable(vm-platform-ux-frame-smoke
     test/vm/platform/vm_platform_ux_frame_smoke.c)
@@ -1519,9 +1507,9 @@ add_executable(vm-keyboard-host-ingress-smoke
 target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
     vm-composition)
 if(WIN32)
-    add_executable(vm-platform-win32-host-action-smoke
-        test/vm/platform/vm_platform_win32_host_action_smoke.c)
-    target_link_libraries(vm-platform-win32-host-action-smoke PRIVATE
+    add_executable(vm-platform-host-action-smoke
+        test/vm/platform/vm_platform_host_action_smoke.c)
+    target_link_libraries(vm-platform-host-action-smoke PRIVATE
         vm-platform)
 endif()
 add_executable(vm-host-cancellation-smoke
@@ -1536,10 +1524,10 @@ add_executable(vm-platform-run-handle-smoke
 target_link_libraries(vm-platform-run-handle-smoke PRIVATE
     integration-session-yaml-support)
 if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
-    add_executable(vm-platform-win32-startup-failure-smoke
-        test/vm/machine/vm_platform_win32_startup_failure_smoke.c
+    add_executable(vm-platform-startup-failure-smoke
+        test/vm/machine/vm_platform_startup_failure_smoke.c
     )
-    target_link_libraries(vm-platform-win32-startup-failure-smoke PRIVATE
+    target_link_libraries(vm-platform-startup-failure-smoke PRIVATE
         vm-composition)
     add_executable(vm-session-startup-failure-smoke
         test/vm/machine/vm_session_startup_failure_smoke.c
@@ -1548,10 +1536,10 @@ if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
         vm-product vm-composition)
 endif()
 if(NOT WIN32)
-    add_executable(vm-platform-linux-run-handle-smoke
-        test/vm/machine/vm_platform_linux_run_handle_smoke.c
+    add_executable(vm-platform-run-handle-contract-smoke
+        test/vm/machine/vm_platform_run_handle_contract_smoke.c
     )
-    target_link_libraries(vm-platform-linux-run-handle-smoke PRIVATE
+    target_link_libraries(vm-platform-run-handle-contract-smoke PRIVATE
         vm-composition)
 endif()
 add_executable(vm-multi-window-session-smoke
@@ -2635,7 +2623,7 @@ endforeach()
 endfunction()
 if(WIN32)
     list(APPEND PROJECT_UNIT_TEST_TARGETS
-        vm-platform-win32-host-action-smoke)
+        vm-platform-host-action-smoke)
 endif()
 list(APPEND PROJECT_UNIT_TEST_TARGETS vm-platform-ux-frame-smoke)
 
@@ -3896,9 +3884,8 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product-console-exit-smoke|src/vm/product/session_catalog.c|console-exit"
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
-    "vm-platform|src/vm/platform/platform.c|win32-platform"
-    "vm-platform|src/vm/platform/input_flush.c|win32-platform"
-    "vm-platform|src/vm/platform/win32/win32.c|win32-platform"
+    "vm-platform|src/vm/platform/platform.c|vm-platform"
+    "vm-platform|src/vm/platform/run_handle.c|vm-platform"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"

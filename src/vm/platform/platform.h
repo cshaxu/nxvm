@@ -65,16 +65,18 @@ type_status vm_platform_run_context_publish_ux_frame(
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,
     const core_machine_guest_input_event *event);
+type_status vm_platform_host_key_submit(const vm_platform_run_context *context,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
 C_INT vm_platform_run_context_get_display_mode(
     const vm_platform_run_context *context);
-C_VOID vm_platform_run_context_set_display_mode(
+type_status vm_platform_run_context_set_display_mode(
     vm_platform_run_context *context, vm_platform_display_mode mode);
-C_VOID vm_platform_run_context_set_window_display(
+type_status vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled);
 /* A title request updates only an active Window presenter; Console is a no-op. */
-C_VOID vm_platform_run_context_set_window_title(
+type_status vm_platform_run_context_set_window_title(
     vm_platform_run_context *context, const C_CHAR *title);
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle);
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);

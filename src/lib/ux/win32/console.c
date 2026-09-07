@@ -1,11 +1,12 @@
 #include "lib/base/base.h"
-#include "console.h"
+#include "lib/ux/internal/win32_console.h"
 
 #ifdef _WIN32
-#include "actions.h"
-#include "geometry.h"
-#include "input.h"
-#include "mailbox.h"
+#include "lib/ux/internal/win32_actions.h"
+#include "lib/ux/internal/win32_geometry.h"
+#include "lib/ux/internal/win32_input.h"
+#include "lib/ux/internal/presenter_internal.h"
+#include "lib/ux/internal/win32_presenter_wake.h"
 
 #include <windows.h>
 #include <stdlib.h>
@@ -288,7 +289,6 @@ static lib_status ux_win32_console_create(const ux_binding *binding,
     memset(console->previous, 0xff, sizeof(console->previous));
     memset(console->previous_attributes, 0xff, sizeof(console->previous_attributes));
     memset(console->previous_palette, 0xff, sizeof(console->previous_palette));
-    ux_router_set_active_target(binding->router, UX_TARGET_CONSOLE);
     *out_console = console;
     return LIB_STATUS_OK;
 }
@@ -300,48 +300,56 @@ static ux_run_result ux_win32_console_run(ux_win32_console *console)
     int running = 1;
 
     if (console == NULL) return UX_RUN_ERROR_RESULT;
-    wait_handles[0] = console->input;
-    wait_handles[1] = ux_win32_mailbox_wait_handle(console->binding->mailbox);
+    wait_handles[0] = ux_win32_presenter_wait_handle(console->binding->presenter);
+    wait_handles[1] = console->input;
     while (running) {
         INPUT_RECORD record;
         DWORD available;
         DWORD read;
+        ux_presenter_control control;
 
-        while (PeekConsoleInputA(console->input, &record, 1u, &available) &&
-            available != 0u) {
-            if (!ReadConsoleInputA(console->input, &record, 1u, &read)) {
+        while (ux_presenter_take_control(console->binding->presenter, &control)) {
+            if (control.kind == UX_PRESENTER_CONTROL_STOP) {
+                running = 0;
+                result = UX_RUN_STOPPED_RESULT;
+                break;
+            }
+            if (control.kind == UX_PRESENTER_CONTROL_TARGET &&
+                control.target != UX_TARGET_CONSOLE) {
+                result = UX_RUN_SWITCH_WINDOW;
                 running = 0;
                 break;
             }
-            if (record.EventType == KEY_EVENT) {
-                result = win32_console_key(console, &record.Event.KeyEvent);
-                if (result != UX_RUN_CONTINUE) {
-                    running = 0;
-                    break;
-                }
-            } else if (record.EventType == MOUSE_EVENT) {
-                win32_console_mouse(console, &record.Event.MouseEvent);
-            }
         }
-        if (ux_router_target(console->binding->router) == UX_TARGET_NONE) {
-            result = UX_RUN_STOPPED_RESULT;
-            break;
-        }
-        if (ux_router_target(console->binding->router) == UX_TARGET_WINDOW) {
-            result = UX_RUN_SWITCH_WINDOW;
-            break;
-        }
-        if (ux_mailbox_generation(console->binding->mailbox) !=
+        if (!running) break;
+        if (ux_presenter_frame_generation(console->binding->presenter) !=
                 console->displayed_sequence &&
-            ux_mailbox_capture(console->binding->mailbox, console->frame) ==
+            ux_presenter_capture_frame(console->binding->presenter, console->frame) ==
                 LIB_STATUS_OK) {
             if (win32_console_paint(console))
                 console->displayed_sequence = console->frame->sequence;
         }
-        if (WaitForMultipleObjects(2u, wait_handles, FALSE, INFINITE) ==
-            WAIT_FAILED) {
-            result = UX_RUN_ERROR_RESULT;
-            running = 0;
+        {
+            DWORD wait = WaitForMultipleObjects(2u, wait_handles, FALSE, INFINITE);
+
+            if (wait == WAIT_FAILED) {
+                result = UX_RUN_ERROR_RESULT;
+                running = 0;
+            } else if (wait == WAIT_OBJECT_0 + 1u) {
+                while (PeekConsoleInputA(console->input, &record, 1u, &available) &&
+                    available != 0u) {
+                    if (!ReadConsoleInputA(console->input, &record, 1u, &read)) {
+                        running = 0;
+                        break;
+                    }
+                    if (record.EventType == KEY_EVENT) {
+                        result = win32_console_key(console, &record.Event.KeyEvent);
+                        if (result != UX_RUN_CONTINUE) { running = 0; break; }
+                    } else if (record.EventType == MOUSE_EVENT) {
+                        win32_console_mouse(console, &record.Event.MouseEvent);
+                    }
+                }
+            }
         }
     }
     return result;
@@ -351,7 +359,6 @@ static void ux_win32_console_destroy(ux_win32_console *console)
 {
     if (console == NULL) return;
     (void)SetConsoleMode(console->input, console->original_mode);
-    ux_router_set_active_target(console->binding->router, UX_TARGET_NONE);
     win32_console_close(console);
     free(console->frame);
     free(console);

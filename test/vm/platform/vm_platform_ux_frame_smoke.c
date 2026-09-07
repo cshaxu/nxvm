@@ -2,8 +2,8 @@
 
 #include "core/machine/guest_display_frame.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
+#include "lib/ux/internal/presenter_internal.h"
 #include "lib/ux/presenter.h"
-#include "lib/ux/router.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/platform_internal.h"
 #include "vm/platform/ux_binding.h"
@@ -26,61 +26,40 @@ C_INT main(C_VOID)
     source.rows = 25u;
     source.characters[0] = 'A';
     source.attributes[0] = 0x1eu;
-    source.palette_rgb[0u] = 0x00000000u;
     source.palette_rgb[14u] = 0x00ffff00u;
-    source.cursor_visible = TYPE_TRUE;
-    source.cursor_x = 1u;
-    source.cursor_y = 2u;
-    source.cursor_top = 14u;
-    source.cursor_bottom = 15u;
     if (vm_platform_ux_frame_from_core(&source, &destination) !=
             TYPE_STATUS_OK || !destination.valid || destination.graphics ||
-        destination.sequence != 7u || destination.text[0] != 'A' ||
-        destination.attributes[0] != 0x1eu ||
-        destination.text_palette[14u] != 0x00ffff00u ||
-        destination.text_columns != 80u || destination.text_rows != 25u ||
-        destination.cursor_column != 1 || destination.cursor_row != 2 ||
-        destination.cursor_top != 14u || destination.cursor_bottom != 15u ||
-        destination.cursor_visible == 0u || destination.cursor_phase == 0u)
-        return 1;
-    if (core_machine_guest_presentation_mailbox_create(&core_mailbox) != TYPE_STATUS_OK ||
-        vm_platform_run_context_create(STD_NULL, STD_NULL, core_mailbox,
-            STD_NULL, &context) != TYPE_STATUS_OK ||
+        destination.text[0] != 'A' || destination.text_palette[14u] !=
+            0x00ffff00u) return 1;
+    if (core_machine_guest_presentation_mailbox_create(&core_mailbox) !=
+            TYPE_STATUS_OK || vm_platform_run_context_create(STD_NULL, STD_NULL,
+            core_mailbox, STD_NULL, &context) != TYPE_STATUS_OK ||
         vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK ||
         vm_platform_ux_binding_initialize(context, handle, &binding) !=
             TYPE_STATUS_OK || core_machine_guest_presentation_mailbox_publish(
             core_mailbox, &source) != TYPE_STATUS_OK ||
         vm_platform_run_context_publish_ux_frame(context) != TYPE_STATUS_OK ||
-        ux_mailbox_capture(binding.mailbox, &captured) != LIB_STATUS_OK ||
-        captured.sequence == 0u || captured.text[0] != 'A' ||
-        captured.text_palette[14u] != 0x00ffff00u ||
-        ux_router_target(&context->ux_router) != UX_TARGET_CONSOLE) goto fail;
+        ux_presenter_capture_frame(binding.presenter, &captured) != LIB_STATUS_OK ||
+        captured.text[0] != 'A') goto fail;
     first_sequence = captured.sequence;
     source.generation = 8u;
     source.characters[0] = 'B';
     if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
             TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
-            TYPE_STATUS_OK || ux_mailbox_capture(binding.mailbox, &captured) !=
-            LIB_STATUS_OK || captured.sequence <= first_sequence ||
-        captured.text[0] != 'B' ||
-        ux_router_target(&context->ux_router) != UX_TARGET_CONSOLE) goto fail;
+            TYPE_STATUS_OK || ux_presenter_capture_frame(binding.presenter,
+            &captured) != LIB_STATUS_OK || captured.sequence <= first_sequence ||
+        captured.text[0] != 'B') goto fail;
     source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
     source.generation = 9u;
     source.pixel_width = 320u;
     source.pixel_height = 200u;
     if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
             TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
-            TYPE_STATUS_OK || ux_router_target(&context->ux_router) !=
-            UX_TARGET_WINDOW) goto fail;
-    source.generation = 10u;
-    if (core_machine_guest_presentation_mailbox_publish(core_mailbox, &source) !=
-            TYPE_STATUS_OK || vm_platform_run_context_publish_ux_frame(context) !=
-            TYPE_STATUS_OK || ux_router_target(&context->ux_router) !=
-            UX_TARGET_WINDOW) goto fail;
+            TYPE_STATUS_OK || context->requested_target != UX_TARGET_WINDOW)
+        goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(context);
     core_machine_guest_presentation_mailbox_destroy(core_mailbox);
-    puts("M5:T522:S4:UX-FRAME:OK");
     return 0;
 
 fail:

@@ -1,6 +1,6 @@
 #include "lib/base/base.h"
 #include "lib/ux/internal/mailbox_native.h"
-#include "mailbox.h"
+#include "lib/ux/internal/linux_presenter_wake.h"
 
 struct ux_mailbox_native {
     int read_fd;
@@ -51,17 +51,17 @@ void ux_mailbox_native_signal(ux_mailbox_native *native_mailbox)
         (void)write(native_mailbox->write_fd, &wake, sizeof(wake));
 }
 
-int ux_linux_mailbox_wait_fd(const ux_mailbox *mailbox)
+int ux_linux_presenter_wait_fd(const ux_presenter *presenter)
 {
-    ux_mailbox_native *native_mailbox = ux_mailbox_native_for_mailbox(mailbox);
+    ux_mailbox_native *native_mailbox = ux_mailbox_native_for_presenter(presenter);
 
     return native_mailbox == NULL ? -1 : native_mailbox->read_fd;
 }
 
-void ux_linux_mailbox_consume(const ux_mailbox *mailbox)
+void ux_linux_presenter_consume(const ux_presenter *presenter)
 {
     char bytes[64];
-    int fd = ux_linux_mailbox_wait_fd(mailbox);
+    int fd = ux_linux_presenter_wait_fd(presenter);
 
     while (fd >= 0 && read(fd, bytes, sizeof(bytes)) > 0) {}
 }

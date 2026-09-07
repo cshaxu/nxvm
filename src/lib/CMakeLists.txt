@@ -16,10 +16,9 @@ endfunction()
 
 set(LIBRARY_UX_SOURCES
     ux/actions.c
+    ux/console_input.c
     ux/linux/input.c
-    ux/mailbox.c
-    ux/presenter.c
-    ux/router.c)
+    ux/presenter.c)
 if(WIN32)
     list(APPEND LIBRARY_UX_SOURCES
         ux/win32/mailbox.c
@@ -57,6 +56,7 @@ library_root(storage-medium)
 
 if(WIN32)
     add_library(ux-win32-native ALIAS ux)
+    target_link_libraries(ux PRIVATE user32 gdi32)
 else()
     add_library(ux-linux-native ALIAS ux)
     find_package(Curses REQUIRED)

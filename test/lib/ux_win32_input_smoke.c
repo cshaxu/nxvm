@@ -1,4 +1,4 @@
-#include "lib/ux/win32/input.h"
+#include "lib/ux/internal/win32_input.h"
 
 typedef struct ux_keyboard_capture {
     ux_event events[24u];

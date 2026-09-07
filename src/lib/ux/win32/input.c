@@ -1,4 +1,4 @@
-#include "input.h"
+#include "lib/ux/internal/win32_input.h"
 
 #ifdef _WIN32
 static WORD ux_win32_keyboard_decode_scan(WORD raw_scan)

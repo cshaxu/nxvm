@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active subtask - M5 T524 S17 closed; T524 remains open pending task-level disposition. |
-| Admission And Approval | Owner approved and S17 completed on 2026-09-06: replace callback-driven titles with an explicit Window-only request. |
-| Objective | Closed: app supplies a copied initial Window title and explicitly requests later Window-title changes; Console receives no title mutation. |
+| Identifier Mode | Continuation - M5 T524 S18 |
+| Admission And Approval | Owner approved S18 on 2026-09-06: make the dual presenter mailbox private and control-driven. |
+| Objective | Replace public frame/router state with an opaque presenter that owns a latest-frame slot, FIFO control commands and one wake mechanism; remove NXVM's duplicate native UX runner and input-adapter implementation. |
 | Non-goals | No guest/Core display change, Console title, presenter-derived title policy, event queue/polling route, external asset change, SoftPC import, or integration run. |
-| Reference Baseline | Accepted S17 P1 `671b4c25`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
+| Reference Baseline | Accepted S17 P2 `d7ebf854`: unit 310/310, lib-only manifest, static platform gates and dual 0524 artifacts. |
 | Candidate Proposal | [M5 shared-library multi-consumer service completion](../history/M5-T524-shared-library-multi-consumer-service-completion-proposal.md). |
-| Files And ABI Surface | `src/lib/ux/{presenter,router,win32/{window,console}}.*`, `src/vm/platform/{platform,ux_binding}.*`, session lifecycle/runner title call sites, their repository-only tests, lib manifest/README, T524 proposal and state records. The binding replaces one pull callback with copied initial-title data; router gains an explicit, active-Window-only request. |
+| Files And ABI Surface | `src/lib/ux/{presenter,internal,linux,win32}/*`, `src/vm/platform/*`, session runner/lifecycle title call sites, repository-only tests, lib manifest/README, T524 proposal and state records. Public control is exactly target, title and stop; frame publication is copied-value only; VM has no native presenter or host-input implementation. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md) and [Documentation](../rules/DOCUMENT.md). |
-| Verification | Focused neutral router/title and NXVM UX-binding tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts pass. No integration test ran in this S, by owner scope. |
-| Expected Markers | The binding has no title callback; a Window starts with app-supplied copied title; title request is accepted only while a Window surface is active; Console never calls a console-title API. |
+| Verification | Focused presenter FIFO/priority and NXVM UX tests, complete repository-only unit suite, lib-only build/CTest, platform static gates, governance, actual-diff review and stripped x64/x86 T524 artifacts. No integration test runs in this S. |
+| Expected Markers | Public control has only target/title/stop, no app mailbox/router/wake access remains, FIFO full is explicit, control drains before a frame and stop bypasses frame work; no VM platform Win32/Linux runner or native-input adapter remains. |
 | Asset Needs | No new assets or third-party source. |
-| Reporting Requirements | Report the exact title owner, no-op condition, removed callback path, code-size result and exact gates. |
-| Stop Conditions | Stop if a title request would require Console mutation, infer a title from lifecycle in lib, or add a second presentation-state owner. |
-| Exit Criteria | Met: the app supplies the initial Window title, active Window accepts later explicit requests, inactive Window/Console is no-op, no callback/Console title route remains, all named gates pass and T524 remains open. |
-| Original Owner Request | Window title is app-requested only; it is ignored outside Window presentation, while Console title is never mutable. |
-| Similar-Issue Sweep | Sweep all title callbacks, native title calls and presenter lifecycle paths for a second title owner or Console title mutation. |
+| Reporting Requirements | Report FIFO capacity/failure, one-wake ownership, control-before-frame order, removed public state and exact gates. |
+| Stop Conditions | Stop if a command is overwritten/dropped, a platform object leaks to app code, control/frame acquire separate wake mechanisms, or old router/mailbox remains live. |
+| Exit Criteria | Opaque presenter owns both mailboxes and one wake; only target/title/stop control APIs are app-visible; control ordering and full/no-op semantics are proven; NXVM has one neutral lib-host/lib-UX route with no duplicate native presentation/input code; all named gates pass and T524 remains open. |
+| Original Owner Request | Presenter uses private latest-frame and FIFO control mailboxes with shared wake; app issues only target, title and stop controls. |
+| Similar-Issue Sweep | Sweep public headers, VM, native runners and tests for direct mailbox/router access and manual wake calls. |
 
 ## Current Technical Baseline
 

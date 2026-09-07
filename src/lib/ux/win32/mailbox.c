@@ -1,5 +1,5 @@
 #include "lib/ux/internal/mailbox_native.h"
-#include "mailbox.h"
+#include "lib/ux/internal/win32_presenter_wake.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -32,9 +32,9 @@ void ux_mailbox_native_signal(ux_mailbox_native *native_mailbox)
         (void)SetEvent(native_mailbox->event);
 }
 
-HANDLE ux_win32_mailbox_wait_handle(const ux_mailbox *mailbox)
+HANDLE ux_win32_presenter_wait_handle(const ux_presenter *presenter)
 {
-    ux_mailbox_native *native_mailbox = ux_mailbox_native_for_mailbox(mailbox);
+    ux_mailbox_native *native_mailbox = ux_mailbox_native_for_presenter(presenter);
 
     return native_mailbox == NULL ? NULL : native_mailbox->event;
 }

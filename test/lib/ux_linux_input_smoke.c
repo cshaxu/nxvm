@@ -1,4 +1,4 @@
-#include "lib/ux/linux/input.h"
+#include "lib/ux/internal/linux_input.h"
 
 int main(void)
 {

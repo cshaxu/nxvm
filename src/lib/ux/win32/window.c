@@ -1,12 +1,13 @@
 #include "lib/base/base.h"
-#include "window.h"
+#include "lib/ux/internal/win32_window.h"
 
 #ifdef _WIN32
-#include "actions.h"
-#include "geometry.h"
-#include "input.h"
-#include "mailbox.h"
-#include "mouse.h"
+#include "lib/ux/internal/win32_actions.h"
+#include "lib/ux/internal/win32_geometry.h"
+#include "lib/ux/internal/win32_input.h"
+#include "lib/ux/internal/presenter_internal.h"
+#include "lib/ux/internal/win32_presenter_wake.h"
+#include "lib/ux/internal/win32_mouse.h"
 
 #include <windows.h>
 #include <stdlib.h>
@@ -37,7 +38,6 @@ typedef struct ux_win32_window_context {
     WPARAM suppressed_hotkey;
     uint32_t client_surface_width;
     uint32_t client_surface_height;
-    uint32_t title_generation;
     int client_width;
     int client_height;
     int cursor_blink_visible;
@@ -54,20 +54,6 @@ static int win32_window_content_running(const ux_win32_window_context *context)
 {
     return context != NULL && context->binding != NULL &&
         context->binding->get_state(context->binding->context) == UX_RUN_RUNNING;
-}
-
-static void win32_window_consume_title(HWND window,
-    ux_win32_window_context *context)
-{
-    char title[128];
-    lib_u32 generation;
-
-    if (window == NULL || context == NULL || ux_router_capture_window_title(
-            context->binding->router, title, sizeof(title), &generation) !=
-            LIB_STATUS_OK || generation == 0u || generation ==
-            context->title_generation) return;
-    SetWindowTextA(window, title);
-    context->title_generation = generation;
 }
 
 static void win32_window_destroy_surface(ux_win32_window_context *context)
@@ -365,25 +351,14 @@ static void win32_window_capture_mouse(HWND window,
 static void win32_window_consume_frame(HWND window,
     ux_win32_window_context *context)
 {
-    ux_target target;
     uint32_t width;
     uint32_t height;
 
     if (context == NULL) return;
-    target = ux_router_target(context->binding->router);
-    if (target == UX_TARGET_NONE) {
-        context->result = UX_RUN_STOPPED_RESULT;
-        DestroyWindow(window);
-        return;
-    }
-    if (target == UX_TARGET_CONSOLE) {
-        context->result = UX_RUN_SWITCH_CONSOLE;
-        DestroyWindow(window);
-        return;
-    }
-    if (ux_mailbox_generation(context->binding->mailbox) ==
+    if (ux_presenter_frame_generation(context->binding->presenter) ==
             context->displayed_sequence ||
-        ux_mailbox_capture(context->binding->mailbox, context->frame) != LIB_STATUS_OK)
+        ux_presenter_capture_frame(context->binding->presenter, context->frame) !=
+            LIB_STATUS_OK)
         return;
     context->displayed_sequence = context->frame->sequence;
     if (!win32_window_frame_size(context->frame, &width, &height) ||
@@ -408,6 +383,29 @@ static void win32_window_consume_frame(HWND window,
     }
 }
 
+static int win32_window_consume_controls(HWND window,
+    ux_win32_window_context *context)
+{
+    ux_presenter_control control;
+
+    while (ux_presenter_take_control(context->binding->presenter, &control)) {
+        if (control.kind == UX_PRESENTER_CONTROL_STOP) {
+            context->result = UX_RUN_STOPPED_RESULT;
+            DestroyWindow(window);
+            return 0;
+        }
+        if (control.kind == UX_PRESENTER_CONTROL_TARGET &&
+            control.target != UX_TARGET_WINDOW) {
+            context->result = UX_RUN_SWITCH_CONSOLE;
+            DestroyWindow(window);
+            return 0;
+        }
+        if (control.kind == UX_PRESENTER_CONTROL_WINDOW_TITLE)
+            SetWindowTextA(window, control.title);
+    }
+    return 1;
+}
+
 static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
     WPARAM wparam, LPARAM lparam)
 {
@@ -421,9 +419,10 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
     if (context == NULL) return DefWindowProcA(window, message, wparam, lparam);
     switch (message) {
     case WIN32_WINDOW_FRAME_READY:
-        win32_window_consume_frame(window, context);
-        win32_window_advance_cursor_blink(window, context);
-        win32_window_consume_title(window, context);
+        if (win32_window_consume_controls(window, context)) {
+            win32_window_consume_frame(window, context);
+            win32_window_advance_cursor_blink(window, context);
+        }
         return 0;
     case WM_PAINT:
         { PAINTSTRUCT paint; HDC dc = BeginPaint(window, &paint);
@@ -525,7 +524,6 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         return 0;
     case WM_DESTROY:
         win32_window_release_mouse(context);
-        ux_router_set_active_target(context->binding->router, UX_TARGET_NONE);
         SetWindowLongPtrA(window, GWLP_USERDATA, 0);
         return 0;
     }
@@ -580,13 +578,12 @@ ux_run_result ux_win32_run_window(const ux_binding *binding)
         win32_window_destroy(context, NULL);
         return UX_RUN_ERROR_RESULT;
     }
-    ux_router_set_active_target(binding->router, UX_TARGET_WINDOW);
     ShowWindow(window, SW_SHOW);
     UpdateWindow(window);
     SetForegroundWindow(window);
     SetFocus(window);
     while (IsWindow(window)) {
-        HANDLE wait_handle = ux_win32_mailbox_wait_handle(binding->mailbox);
+        HANDLE wait_handle = ux_win32_presenter_wait_handle(binding->presenter);
         DWORD wait = MsgWaitForMultipleObjects(1u, &wait_handle, FALSE,
             INFINITE, QS_ALLINPUT);
 

@@ -1,4 +1,4 @@
-#include "mouse.h"
+#include "lib/ux/internal/win32_mouse.h"
 
 #ifdef _WIN32
 void ux_win32_mouse_reset(ux_win32_mouse *mouse)
