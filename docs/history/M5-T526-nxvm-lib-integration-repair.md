@@ -138,7 +138,7 @@ the IBM 5170 rows also reached their terminals. The full static closure set
 now records the actual architecture: the three independent lib CTest routes
 are part of the sole T344 registration partition, the migrated
 `vm/product/session_factory.c` is the product-to-composition construction
-boundary, and NXVM's type/header gates do not impose its private façade on the
+boundary, and NXVM's type/header gates do not impose its private facade on the
 manifest-verified standalone `src/lib` corpus and its neutral consumers.
 
 Fresh stripped Release artifacts are `nxvm_0_5_0526_x64.exe`
