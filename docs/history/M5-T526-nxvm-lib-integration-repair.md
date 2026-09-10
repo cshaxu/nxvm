@@ -110,3 +110,12 @@ The product Console remains the only lifecycle formatter; it receives reset,
 started, paused, resumed and stopped facts only after the composition session
 has reached them. The static single-session and readiness gates pass, as do
 the complete 305-case repository-only unit suite and owner native UX test.
+
+### S5 progress
+
+P1 replaces the Console-private line/lifecycle queue with one bounded
+`vm_product_control` FIFO. P2 moves the completed-fact reduction that names a
+running transition `started` or `resumed` into that control owner; Console now
+only formats the result. The focused Console regressions and the complete
+305-case repository-only unit suite pass. UX input, Window-close and presenter
+completion routing remain active S5 work.
