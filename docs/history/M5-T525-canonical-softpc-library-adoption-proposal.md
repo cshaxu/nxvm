@@ -45,21 +45,21 @@ media, binaries, tests and product configuration are excluded.
 
 ## Subtask Plan
 
-1. **S1 — Freeze and admission audit.** Record the exact SoftPC commit,
+1. **S1 - Freeze and admission audit.** Record the exact SoftPC commit,
    manifest hash, path inventory, licence/provenance disposition and public
    ABI comparison.  Resolve every current-NXVM to canonical-lib mapping,
    including the approved raw-Console input-discard capability.  Stop for any
    product vocabulary, unreviewed source notice, API leak or semantic gap.
-2. **S2 — Exact corpus replacement.** Copy only the frozen `src/lib` tree
+2. **S2 - Exact corpus replacement.** Copy only the frozen `src/lib` tree
    byte-for-byte, replace NXVM lib CMake/manifest verification with the
    canonical build entry, and prove no local lib file diverges.  Do not yet
    retain a second NXVM adapter path.
-3. **S3 — NXVM single-path binding.** Replace NXVM's old presenter/platform
+3. **S3 - NXVM single-path binding.** Replace NXVM's old presenter/platform
    paths with one product coordinator using the canonical Window, Console and
    broker contracts.  Remove obsolete source, tests and build declarations;
    map source retirement into NXVM-owned session generations and preserve
    multi-session Console ownership without native handles in product code.
-4. **S4 — Product and closure proof.** Run focused native Console/Window,
+4. **S4 - Product and closure proof.** Run focused native Console/Window,
    ownership, input, title, mouse and source-retirement proofs; full
    repository-only unit; lib manifest/build/CTest; static boundary sweeps;
    owner-managed integration; and fresh stripped x64/x86 artifacts.  Review

@@ -2,7 +2,7 @@
 
 ## Frozen Candidate
 
-- **Repository:** owner-controlled `O:\repos.hobby\softpc`.
+- **Repository:** owner-controlled SoftPC checkout.
 - **Commit:** `140af7ab9b988ef5613c1702036f387b282603c3`.
 - **Corpus:** exactly its 70 tracked `src/lib` paths.
 - **Manifest file SHA-256:**

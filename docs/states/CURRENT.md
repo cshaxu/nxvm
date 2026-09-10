@@ -2,33 +2,17 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T525 S3 canonical SoftPC library product binding. |
-| Admission And Approval | Owner approved T525 on 2026-09-09. S1 acceptance is `ae178bbb`; the owner-approved raw-Console replacement discard remains limited to new logical Console ownership. |
-| Objective | Replace NXVM's deleted unified presenter and old UX-only product binding with one NXVM coordinator over the canonical Window, Console and host-broker contracts. |
-| Non-goals | No Core change, SoftPC application/MVDM/asset import, local library fork, wrapper or compatibility route. |
-| Reference Baseline | [S2 evidence](../etc/evidence/t525-s2-canonical-corpus-replacement.md): S1-frozen SoftPC corpus copied byte-identically; standalone canonical Win32 root build and manifest pass. |
-| Candidate Proposal | [M5 canonical SoftPC library adoption and NXVM cutover](../proposals/m5-canonical-softpc-library-adoption.md). |
-| Files And ABI Surface | NXVM VM product coordinator, input/frame conversion, run lifecycle, CMake target/test declarations and current task evidence; the canonical `src/lib` corpus is immutable. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [source policy](../etc/operations/policy/source-policy.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md) and [Product UX](../design/UI.md). The owner-approved raw-Console replacement discard is the explicit exception to the general input-flush prohibition; it is limited to a new logical Console ownership boundary. |
-| Verification | Canonical manifest equality, fresh x64/x86 configuration/build, full repository-only unit, focused native Console/Window/broker/input/title/mouse/source-retirement proof, static direct-platform and duplicate-route sweeps, owner-managed integration and stripped artifacts. |
-| Expected Markers | NXVM product code calls only canonical public lib APIs; one process Console broker has one product-selected raw Console owner; every Window/Console component is product-created and product-destroyed; no `ux_presenter`, `ux_run`, old lib UX header, native SDK call or compatibility bridge remains. |
-| Asset Needs | Only the S1-frozen owner-authorized SoftPC `src/lib` source corpus. No firmware, media, ROM, binary, configuration or test-fixture import. |
-| Reporting Requirements | Record each deleted old product route, retained canonical owner, native-focus/Console-ownership semantics, exact corpus equality and all test/artifact evidence. |
-| Stop Conditions | Stop for a canonical API inability to preserve multi-session Console ownership, required product direct platform call, corpus divergence, or any new duplicate presentation/input route. |
-| Exit Criteria | Canonical corpus remains exact; NXVM has one product binding and no old route; full required verification and dual artifacts pass; actual diff shows no wrapper or duplicate owner. |
-| Original Owner Request | Admit and execute the SoftPC canonical-library import task until its task-level closure standard is met. |
-| Similar-Issue Sweep | Sweep all NXVM lib roots, VM platform/presentation/input/mouse paths, CMake source lists, public headers and tests for every current shared-library or platform implementation that could survive as a duplicate after cutover. |
+No active task. T525 is closed; its retained implementation and closure evidence
+are in [history](../history/M5-T525-canonical-softpc-library-adoption.md).
 
 ## Current Technical Baseline
 
-- **Current developer artifacts:** T524 advances the active CMake target to
+- **Current developer artifacts:** T525 retains the active CMake target
   `vm-0-5-0524`, which emits `nxvm_0_5_0524_x64.exe` and
   `nxvm_0_5_0524_x86.exe` in stripped Release builds. They retain the runtime
-  debugger and contain no compiler debug information. S21 verifies x64
-  `F9883C39EF1447206122FE7CBAB647124599CDD953311700BCE08A0FE9D86283`
-  and x86 `21F6173B394CDB330572F7ECCA3D0972C25B9C3C91C0F45E270401579E2CD769`.
+  debugger and contain no compiler debug information. T525 verifies x64
+  `470E9C34939385C2FA04BFF6CD4A531BF5A15087476BC5C406CC47D5025B02FC`
+  and x86 `6F40C9C218180F938B31F90A9646E72B800CD04EF2D790D02EBE6A73D274312D`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -59,6 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T525 | Closed: canonical SoftPC `src/lib` remains byte-identical, while NXVM has one coordinator with a product-owned Console broker, session-local Window ownership and a headless composition path. `d6f8578a` passes 306/306 unit, 44/44 integration, manifest/static gates and stripped dual artifacts. [History](../history/M5-T525-canonical-softpc-library-adoption.md). |
 | T524 | Closed: `78d81776` retains one lib-owned Window-to-Console focus handoff and NXVM derives capture from actual target/lifecycle; `c7b5e668` selects the Window default session. Retained 310/310 unit, 44/44 integration, manifest/platform/governance and dual-artifact evidence is indexed in [history](../history/M5-T524-shared-library-multi-consumer-service-completion.md). A later canonical SoftPC-lib replacement is a new task, not a T524 compatibility path. |
 | T522 | Closed: `ux`, `host`, `session`, `storage` and `observability` are independent library roots with one NXVM route each. Storage supplies direct-readonly and overlay modes with Win32/Linux file mechanics; outcome is the sole generic copied start-result owner. Unit 308/308, integration 44/44, governance, owner sweep and stripped dual 0522 artifacts pass. [History](../history/M5-T522-shared-ux-host-library.md). |
 | T521 | Closed: List 1/List 2 and S3/S4 establish the sole external glyph-to-VADP path; MDA glyph normalization remains Other-L2 and the external EGA option ROM remains unselected/archive-only. Unit 304/304, integration 44/44, governance and stripped dual 0521 artifacts pass. [History](../history/M5-T521-ibm-5170-video-adapter-corpus.md). |
@@ -66,7 +51,6 @@
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 | T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
-| T516 | Closed: YAML-declared external ROM/CMOS/media uses one VM overlay route; 5170 360K/1.2M and DeskPro Model 40 reach their installer terminal without BIOS-specific paths. Unit 302/302, Release integration 44/44, governance and stripped Release 0516 pass. [History](../history/M5-T516-external-rom-boot-contract-repair.md). |
 
 ## Recent Governance
 
