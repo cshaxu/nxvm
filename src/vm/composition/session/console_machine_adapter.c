@@ -117,6 +117,20 @@ static C_VOID vm_session_machine_set_display_mode(C_VOID *context,
         &mode);
 }
 
+static type_status vm_session_machine_set_console_binding_selected(
+    vm_session *session, C_VOID *context)
+{
+    return vm_session_set_console_binding(session,
+        (const struct vm_platform_console_binding *)context);
+}
+
+static C_VOID vm_session_machine_set_console_binding(C_VOID *context,
+    const struct vm_platform_console_binding *binding)
+{
+    (C_VOID)vm_session_machine_apply(context,
+        vm_session_machine_set_console_binding_selected, (C_VOID *)binding);
+}
+
 static type_status vm_session_machine_print_bios_selected(vm_session *session,
     C_VOID *context)
 {
@@ -349,6 +363,7 @@ static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_print,
     vm_session_machine_get_display_mode,
     vm_session_machine_set_display_mode,
+    vm_session_machine_set_console_binding,
     vm_session_machine_print_bios,
     vm_session_machine_print_status,
     vm_session_machine_get_speed,

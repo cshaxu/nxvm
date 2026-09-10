@@ -224,13 +224,28 @@ type_status vm_session_reset(vm_session *machine) {
 }
 
 C_VOID vm_session_stop(vm_session *machine) {
+    C_INT was_window;
+    C_INT was_console;
+
     if (machine == STD_NULL) return;
+    was_window = vm_platform_run_handle_is_window_display(
+        machine->platform_run_handle);
+    was_console = vm_platform_run_handle_is_console_display(
+        machine->platform_run_handle);
     vm_session_platform_request_stop(machine);
     /* Console runs synchronously in vm_session_resume(), which remains its
      * sole joiner. Window runs return here and need their async teardown. */
-    if (vm_platform_run_handle_is_window_display(machine->platform_run_handle)) {
+    if (was_window || !was_console) {
         vm_session_platform_join_and_finalize(machine);
     }
+}
+
+type_status vm_session_set_console_binding(vm_session *machine,
+    const struct vm_platform_console_binding *binding)
+{
+    return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        vm_platform_run_context_set_console_binding(machine->platform_run_context,
+            binding);
 }
 
 type_status vm_session_resume(vm_session *machine) {
@@ -256,9 +271,10 @@ type_status vm_session_resume(vm_session *machine) {
     if (status != TYPE_STATUS_OK) {
         return vm_session_start_outcome_record(machine, status);
     }
-    if (!vm_platform_run_handle_is_window_display(
-            machine->platform_run_handle)) {
-        vm_session_platform_join_and_finalize(machine);
+    if (vm_platform_run_handle_is_console_display(machine->platform_run_handle)) {
+        vm_platform_run_handle_wait_console_release(machine->platform_run_handle);
+        if (!vm_platform_run_handle_is_window_display(machine->platform_run_handle))
+            vm_session_platform_join_and_finalize(machine);
     }
     return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
 }

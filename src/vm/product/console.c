@@ -8,6 +8,8 @@
 #include "type.h"
 
 #include "vm/product/console.h"
+#include "vm/product/console_host.h"
+#include "lib/host/sync.h"
 
 struct vm_product_console_context {
     STD_SIZE_T argument_count;
@@ -17,6 +19,10 @@ struct vm_product_console_context {
     const vm_session_machine_provider *machine_provider;
     core_product_session_manager *session_manager;
     vm_product_session_catalog *catalog;
+    vm_product_console_host *console_host;
+    host_sync_event *line_ready;
+    C_CHAR *pending_line;
+    STD_SIZE_T pending_line_size;
 };
 #include "core/product/session/command_interface.h"
 
@@ -30,6 +36,25 @@ struct vm_product_console_context {
 #define strCmdBuff (consoleContext->command_buffer)
 #define machineProvider (consoleContext->machine_provider)
 #define sessionManager (consoleContext->session_manager)
+
+static C_INT vm_product_console_printf(const vm_product_console_context *context,
+    const C_CHAR *format, ...)
+{
+    C_CHAR text[4096];
+    STD_VA_LIST arguments;
+    C_INT written;
+
+    if (context == STD_NULL || format == STD_NULL) return -1;
+    va_start(arguments, format);
+    written = vsnprintf(text, sizeof(text), format, arguments);
+    va_end(arguments);
+    if (written < 0 || (STD_SIZE_T)written >= sizeof(text)) return -1;
+    return vm_product_console_host_write((vm_product_console_host *)
+        context->console_host, text) ==
+        TYPE_STATUS_OK ? written : -1;
+}
+
+#define STD_PRINTF(...) vm_product_console_printf(context, __VA_ARGS__)
 
 /*
  * Parses command-line input.
@@ -61,20 +86,51 @@ static C_VOID parse(vm_product_console_context *context)
     }
 }
 
-static C_INT vm_product_console_read_line(C_CHAR *buffer, STD_SIZE_T buffer_size)
+static C_VOID vm_product_console_line_received(C_VOID *opaque,
+    const C_CHAR *text)
 {
-    return buffer != STD_NULL && buffer_size != 0u && buffer_size <= 0x7fffffffu &&
-        STD_FGETS(buffer, (C_INT)buffer_size, STD_STDIN) != STD_NULL;
+    vm_product_console_context *context = opaque;
+    STD_SIZE_T length;
+
+    if (context == STD_NULL || context->pending_line == STD_NULL ||
+        context->pending_line_size == 0u || text == STD_NULL) return;
+    length = STD_STRLEN(text);
+    if (length >= context->pending_line_size)
+        length = context->pending_line_size - 1u;
+    STD_MEMCPY(context->pending_line, text, length);
+    context->pending_line[length] = '\0';
+    host_sync_event_signal(context->line_ready);
+}
+
+static C_INT vm_product_console_read_line(vm_product_console_context *context,
+    C_CHAR *buffer, STD_SIZE_T buffer_size)
+{
+    if (context == STD_NULL || buffer == STD_NULL || buffer_size == 0u ||
+        context->console_host == STD_NULL || context->line_ready == STD_NULL)
+        return 0;
+    buffer[0] = '\0';
+    context->pending_line = buffer;
+    context->pending_line_size = buffer_size;
+    host_sync_event_reset(context->line_ready);
+    if (vm_product_console_host_request_line(context->console_host) !=
+        TYPE_STATUS_OK) {
+        context->pending_line = STD_NULL;
+        context->pending_line_size = 0u;
+        return 0;
+    }
+    if (host_sync_event_wait(context->line_ready, 0xffffffffu) !=
+        HOST_SYNC_WAIT_SIGNALED) {
+        context->pending_line = STD_NULL;
+        context->pending_line_size = 0u;
+        return 0;
+    }
+    context->pending_line = STD_NULL;
+    context->pending_line_size = 0u;
+    return 1;
 }
 
 /* Prints help commands. */
-#define GetHelp          \
-    if (1)               \
-    {                    \
-        doHelp(context); \
-        return;          \
-    }                    \
-    else
+#define GetHelp do { doHelp(context); return; } while (0)
 static C_VOID doHelp(vm_product_console_context *context)
 {
     if (STD_STRCMP(argArray[0], "help"))
@@ -174,6 +230,7 @@ static C_VOID doHelp(vm_product_console_context *context)
             STD_PRINTF("\nRESUME\n");
             break;
         }
+        break;
     case 1:
     default:
         STD_PRINTF("VM Console Commands\n");
@@ -368,7 +425,8 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
     }
     STD_PRINTF("Select profile [1-%u, Enter to cancel]: ",
         (unsigned int)count);
-    if (!vm_product_console_read_line(selection, sizeof(selection))) return 0;
+    if (!vm_product_console_read_line((vm_product_console_context *)context,
+            selection, sizeof(selection))) return 0;
     if (selection[0] == '\n' || selection[0] == '\r' || selection[0] == '\0') return 0;
     choice = STD_ATOI(selection);
     if (choice > 0 && (STD_SIZE_T)choice <= count) {
@@ -401,6 +459,8 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
     output.context = STD_NULL;
     if (!core_product_session_command_execute(context->session_manager, 2,
             arguments, &options, &output)) return;
+    machineProvider->set_console_binding(machineProvider->context,
+        vm_product_console_host_binding(context->console_host));
     machineProvider->set_display_mode(machineProvider->context,
         !STD_STRCMP(entry->display, "window") ? VM_SESSION_DISPLAY_WINDOW :
         VM_SESSION_DISPLAY_CONSOLE);
@@ -410,18 +470,22 @@ static C_VOID vm_product_console_session(vm_product_console_context *context)
 {
     const C_CHAR *arguments[CONSOLE_MAXNARG];
     core_product_session_output_provider output;
-    C_INT index;
+    STD_SIZE_T index;
 
     if (context == STD_NULL || numArgs < 2u) { GetHelp; return; }
     if (!STD_STRCMP(argArray[1], "open") && numArgs == 2u) {
         vm_product_console_open_profile(context);
         return;
     }
-    for (index = 0; index < numArgs; ++index) arguments[index] = argArray[index];
+    for (index = 0u; index < numArgs; ++index) arguments[index] = argArray[index];
     output.write_line = vm_product_console_write_line;
     output.context = STD_NULL;
     (C_VOID)core_product_session_command_execute(context->session_manager,
         numArgs, arguments, STD_NULL, &output);
+    if (!STD_STRCMP(argArray[1], "open")) {
+        machineProvider->set_console_binding(machineProvider->context,
+            vm_product_console_host_binding(context->console_host));
+    }
 }
 
 /* Executes commands */
@@ -502,8 +566,19 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     argArray = (C_CHAR **)STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
+    if (host_sync_event_create(&context->line_ready) != LIB_STATUS_OK ||
+        vm_product_console_host_create(&context->console_host, context,
+            vm_product_console_line_received) != TYPE_STATUS_OK) {
+        host_sync_event_destroy(context->line_ready);
+        context->line_ready = STD_NULL;
+        return TYPE_FALSE;
+    }
     if (vm_product_session_catalog_create(profile_directory, &context->catalog) ==
             TYPE_STATUS_OK) return TYPE_TRUE;
+    vm_product_console_host_destroy(context->console_host);
+    host_sync_event_destroy(context->line_ready);
+    context->console_host = STD_NULL;
+    context->line_ready = STD_NULL;
     STD_FREE(argArray);
     argArray = STD_NULL;
     return TYPE_FALSE;
@@ -519,6 +594,10 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
     argArray = STD_NULL;
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
+    vm_product_console_host_destroy(context->console_host);
+    host_sync_event_destroy(context->line_ready);
+    context->console_host = STD_NULL;
+    context->line_ready = STD_NULL;
 }
 
 type_status vm_product_console_context_create(
@@ -557,7 +636,8 @@ C_VOID vm_product_console_main(vm_product_console_context *context,
     while (!flagExit)
     {
         STD_PRINTF("Console> ");
-        if (!vm_product_console_read_line(strCmdBuff, sizeof(strCmdBuff))) break;
+        if (!vm_product_console_read_line(context, strCmdBuff,
+                sizeof(strCmdBuff))) break;
         parse(context);
         execute(context);
     }

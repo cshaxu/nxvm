@@ -11,11 +11,15 @@ extern "C" {
 
 #include "vm/composition/session/session_interface.h"
 
+struct vm_platform_console_binding;
+
 type_status vm_session_start(vm_session *machine);
 type_status vm_session_reset(vm_session *machine);
 type_status vm_session_finish_reset(vm_session *machine, type_status status);
 C_VOID vm_session_stop(vm_session *machine);
 type_status vm_session_resume(vm_session *machine);
+type_status vm_session_set_console_binding(vm_session *machine,
+    const struct vm_platform_console_binding *binding);
 
 type_status vm_session_initialize(vm_session *machine);
 C_VOID vm_session_finalize(vm_session *machine);

@@ -77,28 +77,10 @@ add_custom_target(cpu-timing-manifest-catalog
         "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
 add_subdirectory(src/lib)
-if(WIN32)
-    add_executable(ux-win32-input-smoke test/lib/ux_win32_input_smoke.c)
-    target_link_libraries(ux-win32-input-smoke PRIVATE ux-win32-native)
-    add_test(NAME unit.ux-win32-input-smoke COMMAND ux-win32-input-smoke)
-    set_tests_properties(unit.ux-win32-input-smoke PROPERTIES LABELS "unit")
-    add_executable(ux-win32-palette-smoke test/lib/ux_win32_palette_smoke.c)
-    target_link_libraries(ux-win32-palette-smoke PRIVATE ux-win32-native)
-    add_test(NAME unit.ux-win32-palette-smoke COMMAND ux-win32-palette-smoke)
-    set_tests_properties(unit.ux-win32-palette-smoke PROPERTIES LABELS "unit")
-endif()
-add_executable(ux-contract-smoke test/lib/ux_contract_smoke.c)
-target_link_libraries(ux-contract-smoke PRIVATE ux-contract)
-add_test(NAME unit.ux-contract-smoke COMMAND ux-contract-smoke)
-set_tests_properties(unit.ux-contract-smoke PROPERTIES LABELS "unit")
-add_executable(ux-linux-input-smoke test/lib/ux_linux_input_smoke.c)
-target_link_libraries(ux-linux-input-smoke PRIVATE ux-contract)
-add_test(NAME unit.ux-linux-input-smoke COMMAND ux-linux-input-smoke)
-set_tests_properties(unit.ux-linux-input-smoke PROPERTIES LABELS "unit")
-add_executable(ux-mailbox-wake-smoke test/lib/ux_mailbox_wake_smoke.c)
-target_link_libraries(ux-mailbox-wake-smoke PRIVATE ux-contract)
-add_test(NAME unit.ux-mailbox-wake-smoke COMMAND ux-mailbox-wake-smoke)
-set_tests_properties(unit.ux-mailbox-wake-smoke PROPERTIES LABELS "unit")
+add_executable(ux-base-contract-smoke test/lib/ux_base_contract_smoke.c)
+target_link_libraries(ux-base-contract-smoke PRIVATE ux-base)
+add_test(NAME unit.ux-base-contract-smoke COMMAND ux-base-contract-smoke)
+set_tests_properties(unit.ux-base-contract-smoke PROPERTIES LABELS "unit")
 add_test(NAME unit.library-manifest
     COMMAND ${CMAKE_COMMAND}
         -DLIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
@@ -257,7 +239,9 @@ add_executable(vm-model40-hdc-s26-smoke
     test/vm/machine/vm_model40_hdc_s26_smoke.c)
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-composition)
 add_executable(vm-model40-console-s20-smoke
-    test/integration/product/vm_model40_console_s20_smoke.c)
+    test/integration/product/vm_model40_console_s20_smoke.c
+    src/vm/product/console.c
+    test/vm/product/console_host_fake.c)
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-composition)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
@@ -296,7 +280,9 @@ target_include_directories(vm-product-console-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
 add_executable(vm-product-console-lifecycle-smoke
-    test/integration/product/nxvm_console_lifecycle_smoke.c)
+    test/integration/product/nxvm_console_lifecycle_smoke.c
+    src/vm/product/console.c
+    test/vm/product/console_host_fake.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-composition)
 add_executable(vm-yaml-cmos-seed-smoke
@@ -1214,6 +1200,7 @@ set(VM_PROFILE_SOURCES
 
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
+    src/vm/product/console_host.c
     src/vm/product/session_catalog.c
 )
 set(CORE_PRODUCT_DEBUG_SOURCES
@@ -1398,6 +1385,7 @@ target_link_libraries(core-product-debug-input-failure-smoke PRIVATE
 add_executable(vm-product-console-input-failure-smoke
     test/vm/product/vm_product_console_input_failure_smoke.c
     src/vm/product/console.c
+    test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )
 target_include_directories(vm-product-console-input-failure-smoke PRIVATE
@@ -1417,6 +1405,7 @@ target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
 add_executable(vm-product-console-exit-smoke
     test/vm/product/vm_product_console_exit_smoke.c
     src/vm/product/console.c
+    test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )
 target_include_directories(vm-product-console-exit-smoke PRIVATE
@@ -1478,14 +1467,12 @@ target_link_libraries(vm-platform PUBLIC
     type-facade
     core-utils
     core-machine-boundary
-    ux-contract)
+    ux
+    host-sync)
 
 add_executable(vm-platform-ux-frame-smoke
     test/vm/platform/vm_platform_ux_frame_smoke.c)
 target_link_libraries(vm-platform-ux-frame-smoke PRIVATE vm-platform)
-if(NOT WIN32)
-    target_link_libraries(vm-platform PUBLIC ux-linux-native)
-endif()
 
 add_executable(core-machine-guest-input-source-smoke
     test/core/machine/core_machine_guest_input_source_smoke.c
@@ -2955,15 +2942,9 @@ set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
 get_property(project_t344_registered_targets GLOBAL
     PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
 set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
-# This platform-local smoke predates project_add_test(), but remains a unit
-# route and a dependency of run-unit-tests.  Account for it once here rather
-# than creating a second registration path.
-if(WIN32)
-    list(APPEND project_t344_single_test_targets ux-win32-input-smoke)
-    list(APPEND project_t344_registered_targets ux-win32-input-smoke)
-    list(APPEND project_t344_single_test_targets ux-win32-palette-smoke)
-    list(APPEND project_t344_registered_targets ux-win32-palette-smoke)
-endif()
+# This direct lib target remains an explicit unit route.
+list(APPEND project_t344_single_test_targets ux-base-contract-smoke)
+list(APPEND project_t344_registered_targets ux-base-contract-smoke)
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
 foreach(project_t344_target IN LISTS project_t344_single_test_targets)
@@ -3879,10 +3860,17 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
+    "vm-product-console-input-failure-smoke|test/vm/product/console_host_fake.c|console-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/session_catalog.c|console-input-failure"
     "vm-product-console-exit-smoke|src/vm/product/console.c|console-exit"
+    "vm-product-console-exit-smoke|test/vm/product/console_host_fake.c|console-exit"
     "vm-product-console-exit-smoke|src/vm/product/session_catalog.c|console-exit"
+    "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
+    "vm-model40-console-s20-smoke|test/vm/product/console_host_fake.c|console-integration"
+    "vm-product-console-lifecycle-smoke|src/vm/product/console.c|console-integration"
+    "vm-product-console-lifecycle-smoke|test/vm/product/console_host_fake.c|console-integration"
     "vm-product|src/vm/product/console.c|console-product"
+    "vm-product|src/vm/product/console_host.c|console-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
     "vm-platform|src/vm/platform/platform.c|vm-platform"
     "vm-platform|src/vm/platform/run_handle.c|vm-platform"

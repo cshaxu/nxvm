@@ -2,11 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.h" linux_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.c" linux_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/lib/ux-console/linux/component.c" linux_console_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/win32/win32.h" win32_header)
-set(adapter_source "${linux_header}\n${linux_source}\n${linux_console_source}\n${win32_header}")
+file(READ "${PROJECT_SOURCE_DIR}/src/lib/ux-window/linux/component.c" linux_window_source)
+set(adapter_source "${linux_console_source}\n${linux_window_source}")
 
 foreach(forbidden
     "vm_platform_linux_sleep"

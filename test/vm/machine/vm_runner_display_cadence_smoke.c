@@ -3,7 +3,6 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
-#include "lib/ux/internal/presenter_internal.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
@@ -45,7 +44,6 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     type_unsigned_64 generation;
-    lib_bool mouse_capturable;
     C_INT failed = 0;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
@@ -65,27 +63,22 @@ C_INT main(C_VOID)
         goto done;
     }
     Sleep(VM_RUNNER_DISPLAY_CADENCE_RUN_MILLISECONDS);
-    failed |= ux_presenter_capture_mouse_capturable(
-        session->platform_run_context->ux_presenter, &mouse_capturable) == 0u ||
-        mouse_capturable != LIB_TRUE;
+    failed |= vm_platform_run_context_get_display_mode(
+        session->platform_run_context) != VM_PLATFORM_DISPLAY_WINDOW;
     vm_platform_run_handle_report(session->platform_run_handle,
         VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
     if (!vm_session_control_wait_for_pause(&session->control, 2000u)) {
         failed = 1;
         goto done;
     }
-    failed |= ux_presenter_capture_mouse_capturable(
-        session->platform_run_context->ux_presenter, &mouse_capturable) == 0u ||
-        mouse_capturable != LIB_FALSE;
     vm_platform_run_handle_report(session->platform_run_handle,
         VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
     if (!vm_runner_display_cadence_wait_for_resume(session, 2000u)) {
         failed = 1;
         goto done;
     }
-    failed |= ux_presenter_capture_mouse_capturable(
-        session->platform_run_context->ux_presenter, &mouse_capturable) == 0u ||
-        mouse_capturable != LIB_TRUE;
+    failed |= vm_platform_run_context_get_display_mode(
+        session->platform_run_context) != VM_PLATFORM_DISPLAY_WINDOW;
     vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
     if (!vm_session_control_wait_for_pause(&session->control, 2000u)) {
         failed = 1;

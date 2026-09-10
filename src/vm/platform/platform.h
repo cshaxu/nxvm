@@ -40,6 +40,15 @@ typedef enum vm_platform_display_mode {
 } vm_platform_display_mode;
 
 typedef struct vm_platform_run_context vm_platform_run_context;
+typedef type_status (*vm_platform_console_claim)(C_VOID *context,
+    C_VOID *logical_console);
+typedef type_status (*vm_platform_console_release)(C_VOID *context,
+    C_VOID *logical_console);
+typedef struct vm_platform_console_binding {
+    C_VOID *context;
+    vm_platform_console_claim claim;
+    vm_platform_console_release release;
+} vm_platform_console_binding;
 
 typedef enum vm_platform_run_event {
     VM_PLATFORM_RUN_EVENT_NONE,
@@ -59,6 +68,11 @@ type_status vm_platform_run_context_create(
     const core_utils_wait_scope *wait_scope,
     vm_platform_run_context **out_context);
 C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context);
+/* The product owns the one process Console host. A session borrows it through
+ * these neutral callbacks; Core and the platform never own a native Console. */
+type_status vm_platform_run_context_set_console_binding(
+    vm_platform_run_context *context,
+    const vm_platform_console_binding *binding);
 type_status vm_platform_run_context_publish_ux_frame(
     vm_platform_run_context *context);
 type_status vm_platform_host_input_sink_submit(
@@ -85,6 +99,8 @@ C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_window_display(
     const vm_platform_run_handle *handle);
+C_INT vm_platform_run_handle_is_console_display(
+    const vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_report(
     vm_platform_run_handle *handle, vm_platform_run_event event);
 vm_platform_run_event vm_platform_run_handle_get_last_event(
@@ -95,6 +111,10 @@ C_INT vm_platform_run_handle_take_pause_report(
     vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_presenter_stop(
+    vm_platform_run_handle *handle);
+C_VOID vm_platform_run_handle_note_console_released(
+    vm_platform_run_handle *handle);
+C_VOID vm_platform_run_handle_wait_console_release(
     vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle);

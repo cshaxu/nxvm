@@ -5,6 +5,7 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/lib/CMakeLists.txt" library_cmake_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/run_handle.c" runner_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/platform.c" coordinator_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/vm/machine/vm_platform_run_handle_contract_smoke.c"
     linux_smoke_source)
 
@@ -36,13 +37,20 @@ foreach(required
 endforeach()
 
 foreach(required
-    "VM_PLATFORM_RUN_EVENT_STARTUP_FAILED"
-    "ux_run"
     "host_sync_task_join"
     "vm_platform_run_handle_finalize")
     string(FIND "${runner_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux run-handle contract is missing: ${required}")
+    endif()
+endforeach()
+
+foreach(required
+    "VM_PLATFORM_RUN_EVENT_STARTUP_FAILED"
+    "vm_platform_run_context_set_display_mode")
+    string(FIND "${coordinator_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "Linux platform coordinator contract is missing: ${required}")
     endif()
 endforeach()
 

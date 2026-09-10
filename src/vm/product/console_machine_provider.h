@@ -3,6 +3,8 @@
 
 #include "type.h"
 
+struct vm_platform_console_binding;
+
 typedef enum vm_session_display_mode {
     VM_SESSION_DISPLAY_CONSOLE,
     VM_SESSION_DISPLAY_WINDOW
@@ -18,6 +20,8 @@ typedef struct vm_session_machine_provider {
     C_VOID (*print_machine)(C_VOID *context);
     vm_session_display_mode (*get_display_mode)(C_VOID *context);
     C_VOID (*set_display_mode)(C_VOID *context, vm_session_display_mode mode);
+    C_VOID (*set_console_binding)(C_VOID *context,
+        const struct vm_platform_console_binding *binding);
     C_VOID (*print_bios)(C_VOID *context);
     C_VOID (*print_status)(C_VOID *context);
     type_status (*get_speed)(C_VOID *context, vm_product_console_speed *out_speed);

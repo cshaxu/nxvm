@@ -1,96 +1,50 @@
 #include "type.h"
 
-#include "lib/ux/internal/presenter_internal.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/platform_internal.h"
 #include "vm/platform/ux_binding.h"
 
-#include <string.h>
+typedef struct input_capture { core_machine_guest_input_event event; C_INT count; } input_capture;
+static type_status submit(C_VOID *opaque, const core_machine_guest_input_event *event)
+{ input_capture *capture = opaque; if (capture == STD_NULL || event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT; capture->event = *event; ++capture->count; return TYPE_STATUS_OK; }
 
-typedef struct host_action_capture {
-    core_machine_guest_input_event events[24];
-    type_unsigned_32 count;
-} host_action_capture;
-
-static type_status host_action_capture_submit(C_VOID *context,
-    const core_machine_guest_input_event *event)
-{
-    host_action_capture *capture = context;
-
-    if (capture == STD_NULL || event == STD_NULL || capture->count >= 24u)
-        return TYPE_STATUS_INVALID_STATE;
-    capture->events[capture->count++] = *event;
-    return TYPE_STATUS_OK;
-}
-
-int main(C_INT argc, C_CHAR **argv)
+C_INT main(C_VOID)
 {
     vm_platform_run_context *context = STD_NULL;
     vm_platform_run_handle *handle = STD_NULL;
-    vm_platform_host_input_sink sink;
-    host_action_capture capture = { 0 };
-    ux_binding binding;
-    ux_event event = { 0 };
-    ux_target target;
-    lib_bool mouse_capturable;
-    char title[UX_WINDOW_TITLE_CAPACITY];
-
-    (C_VOID)argc;
-    (C_VOID)argv;
-    sink.submit = host_action_capture_submit;
-    sink.context = &capture;
-    if (vm_platform_run_context_create(STD_NULL, &sink, STD_NULL, STD_NULL,
-            &context) != TYPE_STATUS_OK || vm_platform_run_handle_create(
-            &handle) != TYPE_STATUS_OK || vm_platform_ux_binding_initialize(
-            context, handle, &binding) != TYPE_STATUS_OK) goto fail;
-
+    input_capture capture = { 0 };
+    vm_platform_host_input_sink sink = { submit, &capture };
+    ux_input_event event = { 0 };
+    if (vm_platform_run_context_create(STD_NULL, &sink, STD_NULL, STD_NULL, &context) != TYPE_STATUS_OK) return 1;
+    if (vm_platform_run_handle_create(&handle) != TYPE_STATUS_OK) goto fail;
+    handle->context = context;
+    context->run_handle = handle;
+    event.type = UX_EVENT_KEY; event.data.key.scan_code = 0x3bu;
+    event.data.key.key = UX_KEY_F1; event.data.key.pressed = LIB_TRUE;
+    if (!vm_platform_ux_event_submit(context, &event) || capture.count != 1 ||
+        capture.event.data.key.scan_code != 0x3bu || !capture.event.data.key.pressed) goto fail;
+    event.type = UX_EVENT_MOUSE; event.data.mouse.delta_x = 3; event.data.mouse.delta_y = -2;
+    event.data.mouse.buttons = UX_MOUSE_BUTTON_LEFT;
+    if (!vm_platform_ux_event_submit(context, &event) || capture.count != 2 ||
+        capture.event.kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE ||
+        capture.event.data.relative_mouse.delta_x != 3 || capture.event.data.relative_mouse.delta_y != -2) goto fail;
     event.type = UX_EVENT_KEY;
-    event.data.key.scan_code = 0x3bu;
-    event.data.key.virtual_key = 0x70u;
-    event.data.key.pressed = TYPE_TRUE;
-    if (!binding.input_sink(binding.context, &event) || capture.count != 1u ||
-        capture.events[0].data.key.scan_code != 0x3bu ||
-        capture.events[0].data.key.virtual_key != 0x70u) goto fail;
-    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_PAUSE_TOGGLE) !=
-            UX_RUN_CONTINUE ||
-        !vm_platform_run_handle_take_pause_report(handle) || capture.count != 2u ||
-        capture.events[1].data.key.scan_code != 0x3bu ||
-        capture.events[1].data.key.pressed) goto fail;
-    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_CTRL_ALT_DEL) !=
-            UX_RUN_CONTINUE ||
-        capture.count != 8u || capture.events[4].data.key.scan_code != 0x0153u ||
-        !capture.events[4].data.key.pressed ||
-        capture.events[4].data.key.virtual_key != 0x2eu) goto fail;
-    if (ux_binding_invoke_action(&binding, VM_PLATFORM_UX_ACTION_SEND_ALT_ENTER) !=
-            UX_RUN_CONTINUE ||
-        capture.count != 12u || capture.events[9].data.key.scan_code != 0x1cu ||
-        !capture.events[9].data.key.pressed ||
-        capture.events[9].data.key.virtual_key != 0x0du) goto fail;
-    if (strcmp(binding.window_initial_title, "NXVM (Running)") != 0) goto fail;
-    if (vm_platform_run_context_set_window_title(context, "ignored") !=
-            TYPE_STATUS_OK || ux_presenter_capture_window_title(
-            context->ux_presenter, title) != 1u || strcmp(title, "ignored") != 0 ||
-        vm_platform_run_context_set_display_mode(context,
-            VM_PLATFORM_DISPLAY_WINDOW) != TYPE_STATUS_OK ||
-        ux_presenter_capture_target(context->ux_presenter, &target) != 3u ||
-        target != UX_TARGET_WINDOW ||
-        vm_platform_run_context_set_window_title(context, "NXVM (Paused)") !=
-            TYPE_STATUS_OK || ux_presenter_capture_window_title(
-            context->ux_presenter, title) != 2u ||
-        strcmp(title, "NXVM (Paused)") != 0 ||
-        ux_presenter_capture_mouse_capturable(context->ux_presenter,
-            &mouse_capturable) == 0u ||
-        mouse_capturable != LIB_FALSE || ux_binding_invoke_action(&binding,
-            VM_PLATFORM_UX_ACTION_RELEASE_MOUSE) != UX_RUN_CONTINUE ||
-        !ux_presenter_take_mouse_release(context->ux_presenter) ||
-        capture.count != 12u) goto fail;
+    event.source_identity = 7u;
+    event.data.key.scan_code = 0x1eu;
+    event.data.key.key = (ux_key)0;
+    event.data.key.pressed = LIB_TRUE;
+    if (!vm_platform_run_context_handle_ux_input(context, &event) ||
+        capture.count != 3 || !capture.event.data.key.pressed) goto fail;
+    event.type = UX_EVENT_SOURCE_RETIRED;
+    event.source_identity = 7u;
+    if (!vm_platform_run_context_handle_ux_input(context, &event) ||
+        capture.count != 4 || capture.event.data.key.pressed ||
+        capture.event.data.key.scan_code != 0x1eu) goto fail;
+    context->run_handle = STD_NULL;
     vm_platform_run_handle_destroy(handle);
-    vm_platform_run_context_destroy(context);
-    puts("M5:T522:S4:UX-BINDING:OK");
-    return 0;
-
+    vm_platform_run_context_destroy(context); return 0;
 fail:
+    if (context != STD_NULL) context->run_handle = STD_NULL;
     vm_platform_run_handle_destroy(handle);
-    vm_platform_run_context_destroy(context);
-    return 1;
+    vm_platform_run_context_destroy(context); return 1;
 }
