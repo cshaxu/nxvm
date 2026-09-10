@@ -1405,6 +1405,15 @@ target_link_libraries(vm-product-console-lifecycle-report-smoke PRIVATE
     type-facade
 )
 
+add_executable(vm-product-control-smoke
+    test/vm/product/vm_product_control_smoke.c
+    src/vm/product/control.c
+)
+target_include_directories(vm-product-control-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-product-control-smoke PRIVATE type-facade host-sync)
+
 add_executable(core-product-xasm-smoke
     test/core/product/core_product_xasm_smoke.c
 )
@@ -2342,6 +2351,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
     vm-product-console-lifecycle-report-smoke
+    vm-product-control-smoke
     vm-console-lifecycle-adapter-smoke
     core-machine-guest-input-source-smoke
     host-sync-smoke
