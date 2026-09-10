@@ -1952,6 +1952,9 @@ target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
 add_executable(vm-console-pause-resume-smoke
     test/vm/machine/vm_console_pause_resume_smoke.c)
 target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-composition)
+add_executable(vm-console-lifecycle-adapter-smoke
+    test/vm/machine/vm_console_lifecycle_adapter_smoke.c)
+target_link_libraries(vm-console-lifecycle-adapter-smoke PRIVATE vm-composition)
 add_executable(vm-dos-video-port-smoke
     test/integration/dos/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-yaml-support)
@@ -2373,6 +2376,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
     vm-product-console-lifecycle-report-smoke
+    vm-console-lifecycle-adapter-smoke
     core-machine-guest-input-source-smoke
     host-sync-smoke
     vm-session-state-smoke

@@ -151,10 +151,13 @@ static C_VOID vm_session_machine_set_lifecycle_reporter(C_VOID *context,
     vm_product_console_lifecycle_reporter reporter, C_VOID *reporter_context)
 {
     vm_session_machine_lifecycle_reporter_call call = {reporter, reporter_context};
+    vm_session_machine_selected_call selected_call = {
+        vm_session_machine_set_lifecycle_reporter_selected, &call
+    };
     core_product_session_manager *manager = (core_product_session_manager *)context;
 
     if (manager != STD_NULL) (C_VOID)core_product_session_manager_apply_all(manager,
-        vm_session_machine_apply_selected, &call);
+        vm_session_machine_apply_selected, &selected_call);
 }
 
 static type_status vm_session_machine_print_bios_selected(vm_session *session,

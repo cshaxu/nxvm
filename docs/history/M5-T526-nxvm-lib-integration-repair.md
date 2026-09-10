@@ -49,6 +49,16 @@ A Console pause ends only the synchronous presenter runner after the lease is
 released.  It does not emit `stopped`; the later `STOP` command owns that
 completion when no runner remains.
 
+### P2 correction
+
+Owner native use rejected P1: lifecycle text was absent although the machine
+transition itself completed. The product Console queue and formatter were not
+the missing route. The composition adapter incorrectly passed a lifecycle
+reporter as a session-manager operation, so no session received its reporter.
+P2 installs the reporter through the same selected-session setter used by the
+other all-session operations and adds a real-adapter regression. It does not
+add a second Console output path or let a runner write host text.
+
 ### Owner-approved canonical-refresh amendment
 
 The owner admitted canonical SoftPC revision
