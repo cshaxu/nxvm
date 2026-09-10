@@ -45,7 +45,7 @@ function(project_t317_type_facade_is_foundational content out_found)
     set(project_t317_remaining "${content}")
     foreach(project_t317_type IN LISTS project_t317_forbidden_types)
         string(REGEX REPLACE
-            "[ \t]*typedef[ \t]+${project_t317_type}[ \t]+type_[A-Za-z0-9_]+;[ \t\r\n]*"
+            "[ \t]*typedef[ \t]+${project_t317_type}[ \t]+(type_|lib_)[A-Za-z0-9_]+;[ \t\r\n]*"
             "" project_t317_remaining "${project_t317_remaining}")
     endforeach()
     project_t317_content_has_forbidden("${project_t317_remaining}"
@@ -107,12 +107,18 @@ endif()
 
 set(project_t317_checked_files 0)
 foreach(project_t317_file IN LISTS project_t317_code_files)
+    # src/lib is an independently buildable shared corpus with its own
+    # base facade and manifest; it must not inherit NXVM's type vocabulary.
+    if(project_t317_file MATCHES "^src/lib/")
+        continue()
+    endif()
     set(project_t317_path "${PROJECT_T317_TYPE_SOURCE_DIR}/${project_t317_file}")
     if(NOT EXISTS "${project_t317_path}")
         continue()
     endif()
     file(READ "${project_t317_path}" project_t317_content)
-    if(project_t317_file STREQUAL "src/type.h")
+    if(project_t317_file STREQUAL "src/type.h" OR
+            project_t317_file STREQUAL "src/lib/base/base_interface.h")
         project_t317_type_facade_is_foundational("${project_t317_content}"
             project_t317_forbidden_found)
     else()

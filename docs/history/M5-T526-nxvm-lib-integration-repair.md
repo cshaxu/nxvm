@@ -5,7 +5,7 @@
 - **Identifier mode:** New
 - **Owner admission:** repair NXVM/lib integration defects while preserving the
   admitted canonical SoftPC `src/lib` corpus byte-identical.
-- **Current subtask:** S6 - task closure.
+- **Current subtask:** S7 - debugger completion-event migration.
 
 ## S1 Contract
 
@@ -128,3 +128,31 @@ switch or run boundary. The product conversion regression proves the final
 80x25 cell, and control regressions prove fact priority, stale input/frame
 rejection and retirement cleanup. Focused product tests and the complete
 304-case repository-only x64 unit suite pass.
+
+### S6 result
+
+The complete 304-case repository-only unit suite and all 42 registered
+external-ROM/media integration cases completed. The initially long Model-40
+matrix row was rerun in the clean aggregate and reached its installer terminal;
+the IBM 5170 rows also reached their terminals. The full static closure set
+now records the actual architecture: the three independent lib CTest routes
+are part of the sole T344 registration partition, the migrated
+`vm/product/session_factory.c` is the product-to-composition construction
+boundary, and NXVM's type/header gates do not impose its private façade on the
+manifest-verified standalone `src/lib` corpus and its neutral consumers.
+
+Fresh stripped Release artifacts are `nxvm_0_5_0526_x64.exe`
+`01158AD5CBC081DBAB194CC0C0CDF73CA9F9D08B3B325BE3612417D2A5CDD54C`
+and `nxvm_0_5_0526_x86.exe`
+`1AB7DFC26B8D85771255BCAB5199EA53BF7FD78A486091521C12FDB93F9B49E0`.
+
+### S7 contract
+
+Remove `core/utils/wait.*` and every debugger `Sleep(10)` polling loop. Core's
+debugger must not know a host wait primitive. Its target instead receives one
+neutral, bounded completion-wait operation; composition implements that
+operation by waiting for the runner's actual pause-or-stop completion event.
+The runner remains the sole owner of execution and signals completion only
+after its state transition. The debugger must neither busy-wait nor advance the
+machine, and no Windows/Linux API may enter Core. Cover `GO` and trace waits,
+timeout/failure, reset/stop and teardown so no waiter can outlive its session.

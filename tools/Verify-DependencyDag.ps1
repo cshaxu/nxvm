@@ -47,6 +47,7 @@ Get-ChildItem $sourceRoot -Recurse -File | Where-Object {
                 (($sourceOwner -match '^(vm|vdm)/') -and
                     ($sourceOwner -notmatch '^(vm|vdm)/composition$') -and
                     ($targetOwner -match '^(vm|vdm)/') -and
+                    ($targetOwner -ne 'vm/composition') -and
                     ($targetOwner -ne $sourceOwner))
             if ($forbidden) {
                 [void]$observed.Add("src/$source|$targetOwner")

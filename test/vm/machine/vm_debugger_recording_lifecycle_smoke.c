@@ -1,7 +1,5 @@
 #include "type.h"
 
-#include <stdio.h>
-
 #include "lib/storage/file_interface.h"
 #include "vm/machine/debug.h"
 

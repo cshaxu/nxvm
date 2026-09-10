@@ -1,8 +1,6 @@
 #ifndef VM_SESSION_CONTROL_H
 #define VM_SESSION_CONTROL_H
 
-#include <stdatomic.h>
-
 #include "type.h"
 #include "vm/composition/session/session_state.h"
 #include "vm/composition/session/execution.h"

@@ -64,6 +64,12 @@ wrapper, compatibility copy, or local lib patch.
    proofs, the external integration suite, manifest/boundary gates and fresh
    optimized stripped x64/x86 `0526` artifacts.  Review the actual diff for a
    second presentation path before closure.
+7. **S7 - debugger completion event.** Delete the Core sleep callback and
+   its polling loops. Extend only the neutral debugger target contract with a
+   bounded wait for the next completed execution transition; composition owns
+   the host event and runner signal. The debugger remains host-neutral and
+   never owns execution, while pause, trace, reset, stop and teardown each
+   release a waiter exactly once.
 
 ## Acceptance
 
@@ -82,3 +88,5 @@ wrapper, compatibility copy, or local lib patch.
   product control/presentation route.
 - Complete unit and external integration gates pass, and both stripped
   developer artifacts are produced for revision 0526.
+- Runtime debugger `GO` and trace commands wait on composition completion
+  events rather than a periodic Core-to-host sleep callback.

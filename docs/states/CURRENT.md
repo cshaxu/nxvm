@@ -4,35 +4,35 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S6 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): close the completed single-session product-control migration with integration, boundary evidence and dual stripped artifacts. |
+| T526 S7 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): replace Core debugger polling with a composition-owned completion event. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S6. |
+| Identifier Mode | Continuation - M5 T526 S7. |
 | Admission And Approval | Owner approved continuation through all remaining T526 subtasks after accepting S4 native single-session behavior. |
-| Objective | Verify and close the one-session product-control migration: retain one Core snapshot route, one product presentation owner and the canonical shared lib, then produce verified T526 developer artifacts. |
-| Non-goals | No Core policy change, local lib patch, native SDK call from VM code, firmware/media/profile semantic change, or second presenter path. |
+| Objective | Retain the completed one-session product-control migration while removing the Core debugger's polling wait through one composition-owned execution-completion event. |
+| Non-goals | No local lib patch, native SDK call from Core, firmware/media/profile semantic change, second presenter path, or debugger-owned machine execution. |
 | Reference Baseline | Accepted S4 direct session, canonical SoftPC `7cc408ec`, and SoftPC's control/reconciler/presentation separation. |
 | Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S6. |
-| Files And ABI Surface | Current `vm/product` control/presentation/Console host and composition session fact contracts; the canonical `src/lib` public interface boundary and T526 artifact target. |
+| Files And ABI Surface | Current `vm/product` control/presentation/Console host, composition session completion contract, Core debugger target boundary, and T526 artifact target. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/rules/EXECUTION.md`: one product control owner, one presentation owner, one Console broker and no platform leakage. |
-| Verification | Re-run complete repository-only unit and external-ROM/media integration suites; public-header, manifest and product-boundary sweeps; build, identify and hash stripped x64/x86 `0526` artifacts. |
-| Expected Markers | Each actual lifecycle transition is printed once; a Window close becomes a product pause intent, no stale prior-run input changes the current run, no `vm/platform` source remains, and both `nxvm_0_5_0526_*` artifacts are verified. |
+| Verification | Focused debugger completion regressions plus complete repository-only unit; at T closure rerun external-ROM/media integration and boundary/documentation gates, then rebuild and hash stripped x64/x86 `0526` artifacts. |
+| Expected Markers | Debugger `GO`/trace has no `core_utils_wait` or 10ms poll; its target blocks only for a runner-completed pause/stop transition; no `vm/platform` source remains. |
 | Asset Needs | None; repository-only unit inputs only. |
 | Reporting Requirements | Report each replaced `vm/platform` path, the resulting fact/action flow, focused and complete unit verification, and net source/test change. |
 | Stop Conditions | Stop if the canonical lib requires an NXVM-local patch, a product event cannot be made lifecycle-safe, or any accepted native presentation path regresses. |
-| Exit Criteria | One control FIFO consumes all product facts; product presentation is the only lib leaf and completion producer; `vm/platform` no longer owns lib UX, Console broker, hotkey or presentation policy; focused and complete unit tests pass. |
+| Exit Criteria | One control FIFO consumes all product facts; product presentation is the only lib leaf and completion producer; `vm/platform` no longer owns lib UX, Console broker, hotkey or presentation policy; debugger completion waits have one composition owner and all polling helpers are gone. |
 | Original Owner Request | Compare NXVM with the neighboring SoftPC project and close the gaps. |
 | Similar-Issue Sweep | Audit all `vm_platform_*` UX, run-handle, Console-binding, Window-close, title, mouse, action and lib presenter references across production, tests and CMake. Replace each product-owned hit or record it as neutral composition-only behavior with a reason. |
 
 ## Current Technical Baseline
 
-- **Current developer artifacts:** T525 retains the active CMake target
-  `vm-0-5-0524`, which emits `nxvm_0_5_0524_x64.exe` and
-  `nxvm_0_5_0524_x86.exe` in stripped Release builds. They retain the runtime
-  debugger and contain no compiler debug information. T525 verifies x64
-  `470E9C34939385C2FA04BFF6CD4A531BF5A15087476BC5C406CC47D5025B02FC`
-  and x86 `6F40C9C218180F938B31F90A9646E72B800CD04EF2D790D02EBE6A73D274312D`.
+- **Current developer artifacts:** T526 owns the active CMake target
+  `vm-0-5-0526`, which emits `nxvm_0_5_0526_x64.exe` and
+  `nxvm_0_5_0526_x86.exe` in stripped Release builds. They retain the runtime
+  debugger and contain no compiler debug information. The fresh x64 artifact is
+  `01158AD5CBC081DBAB194CC0C0CDF73CA9F9D08B3B325BE3612417D2A5CDD54C`
+  and x86 is `1AB7DFC26B8D85771255BCAB5199EA53BF7FD78A486091521C12FDB93F9B49E0`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

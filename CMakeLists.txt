@@ -2904,6 +2904,10 @@ if(NOT project_t515_registered_case_count EQUAL 20)
     message(FATAL_ERROR "T515 YAML boot matrix must retain exactly twenty historical rows.")
 endif()
 set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS)
+list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
+    library-manifest
+    library-manifest-fixtures
+    storage-file-smoke)
 if(POWERSHELL_EXECUTABLE)
     list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
         core-machine-8086-timing-results-s5
