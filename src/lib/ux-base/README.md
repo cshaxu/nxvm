@@ -6,5 +6,5 @@ mechanics to `ux-window` and `ux-console`.
 
 Its internal component emission helper may let a leaf filter matcher output,
 but source attribution and chord matching always remain in this component.
-This permits a frozen Window to discard ordinary guest input while forwarding
+This permits a frozen Window to discard ordinary content input while forwarding
 registered hotkeys without creating a second matcher path.

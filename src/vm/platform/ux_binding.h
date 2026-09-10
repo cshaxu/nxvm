@@ -2,7 +2,7 @@
 #define VM_PLATFORM_UX_BINDING_H
 
 #include "type.h"
-#include "lib/ux-base/event.h"
+#include "lib/ux-base/event_interface.h"
 
 struct vm_platform_run_context;
 struct vm_platform_run_handle;

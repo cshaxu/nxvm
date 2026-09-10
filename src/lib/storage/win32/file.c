@@ -1,12 +1,13 @@
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 #include <fcntl.h>
 #include <io.h>
+#include <stdio.h>
 #include <windows.h>
 
-#include "lib/storage/internal/native.h"
+#include "lib/storage/file_backend.h"
 
-FILE *lib_storage_native_open(const char *path, lib_storage_medium_mode mode)
+FILE *lib_storage_file_backend_open(const char *path, lib_storage_medium_mode mode)
 {
     HANDLE handle;
     DWORD access = mode == LIB_STORAGE_MEDIUM_DIRECT ?
@@ -29,8 +30,8 @@ FILE *lib_storage_native_open(const char *path, lib_storage_medium_mode mode)
     return file;
 }
 
-int lib_storage_native_seek_64(FILE *file, lib_i64 offset, int origin)
+int lib_storage_file_backend_seek_64(FILE *file, lib_i64 offset, int origin)
 { return _fseeki64(file, offset, origin); }
 
-lib_i64 lib_storage_native_tell_64(FILE *file)
+lib_i64 lib_storage_file_backend_tell_64(FILE *file)
 { return _ftelli64(file); }

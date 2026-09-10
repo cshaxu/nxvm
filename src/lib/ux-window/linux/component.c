@@ -1,4 +1,4 @@
-#include "lib/ux-window/internal.h"
+#include "lib/ux-window/window.h"
 
 /* The public Window contract is platform-neutral. Linux native window
  * integration is deliberately deferred; callers receive an explicit status

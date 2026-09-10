@@ -1,37 +1,42 @@
 #ifndef UX_BASE_COMPONENT_H
 #define UX_BASE_COMPONENT_H
 
-#include "lib/ux-base/hotkey.h"
-#include "lib/ux-base/frame.h"
+#include "lib/ux-base/component_interface.h"
+#include "lib/ux-base/mailbox.h"
 
-typedef struct ux_component ux_component;
+#include <stdatomic.h>
 
-/* Delivery is deliberately reported without exposing an application queue.
- * The callback must be non-blocking; it is the application's fault boundary
- * for an input record that could not be copied into its control path. */
-typedef void (*ux_component_failure_sink)(void *context,
-    lib_u64 source_identity, lib_status status);
+typedef void (*ux_component_native_stop_fn)(ux_component *component);
+typedef void (*ux_component_dispose_fn)(ux_component *component);
 
-/* Identical creation contract for every UX leaf. Leaf-specific capability is
- * deliberately absent here: Window title/mouse and Console logical-handle
- * access remain explicit leaf APIs. */
-typedef struct ux_component_options {
+struct ux_component {
+    ux_component_mailboxes mailboxes;
     void *input_context;
     ux_input_sink input_sink;
     void *failure_context;
     ux_component_failure_sink failure_sink;
-    ux_hotkey_registry hotkeys;
-} ux_component_options;
+    ux_hotkey_matcher hotkey_matcher;
+    lib_u64 source_identity;
+    atomic_int stopping;
+    ux_component_native_stop_fn native_stop;
+    ux_component_dispose_fn dispose;
+};
 
-/* Copies into this component's one-slot latest-wins frame mailbox. */
-lib_status ux_component_publish_frame(ux_component *component,
-    const ux_frame *frame);
-/* Appends one FIFO STOP record. A repeated request is idempotent; a full
- * ordinary control queue still has its reserved STOP slot. Other control
- * enqueue failures are returned and reported through the failure sink. */
-lib_status ux_component_request_stop(ux_component *component);
-/* Synchronous destruction: returns only after the worker consumed STOP,
- * emitted SOURCE_RETIRED, and no worker remains. */
-void ux_component_destroy(ux_component *component);
+lib_status ux_component_initialize(ux_component *component,
+    const ux_component_options *options, ux_component_native_stop_fn native_stop,
+    ux_component_dispose_fn dispose);
+/* A source identity is never recycled.  Zero is the permanent exhausted
+ * sentinel, rather than the beginning of a second allocation epoch. */
+lib_status ux_component_allocate_source_identity(atomic_uint_fast64_t *next,
+    lib_u64 *out_identity);
+int ux_component_emit(ux_component *component, const ux_input_event *event);
+/* Uses the component's normal source attribution and source-local matcher,
+ * but lets a leaf choose how to deliver matcher output.  This is internal:
+ * leaves may filter delivery but never replace matching semantics. */
+int ux_component_emit_to(ux_component *component, const ux_input_event *event,
+    ux_input_sink delivery_sink, void *delivery_context);
+lib_status ux_component_enqueue_controls(ux_component *component,
+    const ux_component_control *controls, lib_u32 control_count);
+void ux_component_emit_source_retired(ux_component *component);
 
 #endif

@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/media_interface.h"
-#include "lib/storage/medium.h"
+#include "lib/storage/medium_interface.h"
 #include "vm/machine/fdd.h"
 
 typedef struct t_latch t_latch;

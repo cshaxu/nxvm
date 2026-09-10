@@ -1,10 +1,12 @@
-#include "lib/base/internal/console.h"
-#include "lib/host/internal/console_native.h"
+#include "lib/base/console.h"
+#include "lib/host/console_backend.h"
 
 #ifdef _WIN32
 #include <windows.h>
+#include <stdlib.h>
+#include <string.h>
 
-struct host_console_native {
+struct host_console_backend {
     HANDLE input;
     HANDLE output;
     HANDLE stop_event;
@@ -68,12 +70,12 @@ static lib_u8 host_console_modifiers(DWORD state)
     return modifiers;
 }
 
-static void host_console_emit_key(host_console_native *native_console,
+static void host_console_emit_key(host_console_backend *backend,
     const KEY_EVENT_RECORD *key)
 {
     lib_console_event event = { 0 };
     event.kind = LIB_CONSOLE_EVENT_RAW_KEY;
-    event.binding_generation = native_console->generation;
+    event.binding_generation = backend->generation;
     event.value.raw_key.key = key->wVirtualKeyCode;
     event.value.raw_key.unicode = key->uChar.UnicodeChar;
     event.value.raw_key.scan_code = key->wVirtualScanCode;
@@ -81,129 +83,129 @@ static void host_console_emit_key(host_console_native *native_console,
     event.value.raw_key.extended =
         (key->dwControlKeyState & ENHANCED_KEY) != 0u ? LIB_TRUE : LIB_FALSE;
     event.value.raw_key.pressed = key->bKeyDown ? LIB_TRUE : LIB_FALSE;
-    (void)lib_console_deliver_event(native_console->console, &event);
+    (void)lib_console_deliver_event(backend->console, &event);
 }
 
-static void host_console_emit_mouse(host_console_native *native_console,
+static void host_console_emit_mouse(host_console_backend *backend,
     const MOUSE_EVENT_RECORD *mouse)
 {
     lib_console_event event = { 0 };
     event.kind = LIB_CONSOLE_EVENT_RAW_MOUSE;
-    event.binding_generation = native_console->generation;
+    event.binding_generation = backend->generation;
     event.value.raw_mouse.delta_x = mouse->dwMousePosition.X;
     event.value.raw_mouse.delta_y = mouse->dwMousePosition.Y;
     event.value.raw_mouse.buttons = mouse->dwButtonState;
-    (void)lib_console_deliver_event(native_console->console, &event);
+    (void)lib_console_deliver_event(backend->console, &event);
 }
 
 static DWORD WINAPI host_console_reader(void *context)
 {
-    host_console_native *native_console = (host_console_native *)context;
-    if (native_console->mode == HOST_CONSOLE_COOKED_LINES) {
+    host_console_backend *backend = (host_console_backend *)context;
+    if (backend->mode == HOST_CONSOLE_COOKED_LINES) {
         char text[LIB_CONSOLE_LINE_MAX];
         DWORD read = 0u;
         lib_console_event event = { 0 };
-        if (!ReadConsoleA(native_console->input, text,
+        if (!ReadConsoleA(backend->input, text,
                 LIB_CONSOLE_LINE_MAX - 1u, &read, NULL)) {
-            InterlockedExchange(&native_console->cooked_line_pending, 0);
+            InterlockedExchange(&backend->cooked_line_pending, 0);
             return 0u;
         }
-        InterlockedExchange(&native_console->cooked_line_pending, 0);
-        if (WaitForSingleObject(native_console->stop_event, 0u) == WAIT_OBJECT_0)
+        InterlockedExchange(&backend->cooked_line_pending, 0);
+        if (WaitForSingleObject(backend->stop_event, 0u) == WAIT_OBJECT_0)
             return 0u;
         while (read != 0u && (text[read - 1u] == '\r' || text[read - 1u] == '\n'))
             --read;
         event.kind = LIB_CONSOLE_EVENT_COOKED_LINE;
-        event.binding_generation = native_console->generation;
+        event.binding_generation = backend->generation;
         event.value.line.length = read;
         memcpy(event.value.line.text, text, read);
         event.value.line.text[read] = '\0';
-        (void)lib_console_deliver_event(native_console->console, &event);
+        (void)lib_console_deliver_event(backend->console, &event);
     } else {
-        HANDLE waits[2] = { native_console->stop_event, native_console->input };
+        HANDLE waits[2] = { backend->stop_event, backend->input };
         while (WaitForMultipleObjects(2u, waits, FALSE, INFINITE) == WAIT_OBJECT_0 + 1u) {
             INPUT_RECORD record;
             DWORD read = 0u;
-            if (!ReadConsoleInputA(native_console->input, &record, 1u, &read)) break;
-            if (record.EventType == KEY_EVENT) host_console_emit_key(native_console,
+            if (!ReadConsoleInputA(backend->input, &record, 1u, &read)) break;
+            if (record.EventType == KEY_EVENT) host_console_emit_key(backend,
                 &record.Event.KeyEvent);
-            else if (record.EventType == MOUSE_EVENT) host_console_emit_mouse(native_console,
+            else if (record.EventType == MOUSE_EVENT) host_console_emit_mouse(backend,
                 &record.Event.MouseEvent);
         }
     }
     return 0u;
 }
 
-lib_status host_console_native_create(host_console_native **out_native)
+lib_status host_console_backend_create(host_console_backend **out_backend)
 {
-    host_console_native *native_console;
+    host_console_backend *backend;
     DWORD mode;
-    if (out_native == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_native = LIB_NULL;
-    native_console = calloc(1u, sizeof(*native_console));
-    if (native_console == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    native_console->input = CreateFileA("CONIN$", GENERIC_READ | GENERIC_WRITE,
+    if (out_backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_backend = LIB_NULL;
+    backend = calloc(1u, sizeof(*backend));
+    if (backend == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    backend->input = CreateFileA("CONIN$", GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-    native_console->output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
+    backend->output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-    if (native_console->input == INVALID_HANDLE_VALUE ||
-        native_console->output == INVALID_HANDLE_VALUE ||
-        !GetConsoleMode(native_console->input, &mode)) {
-        if (native_console->input != INVALID_HANDLE_VALUE) CloseHandle(native_console->input);
-        if (native_console->output != INVALID_HANDLE_VALUE) CloseHandle(native_console->output);
-        free(native_console);
+    if (backend->input == INVALID_HANDLE_VALUE ||
+        backend->output == INVALID_HANDLE_VALUE ||
+        !GetConsoleMode(backend->input, &mode)) {
+        if (backend->input != INVALID_HANDLE_VALUE) CloseHandle(backend->input);
+        if (backend->output != INVALID_HANDLE_VALUE) CloseHandle(backend->output);
+        free(backend);
         return LIB_STATUS_UNSUPPORTED;
     }
-    native_console->original_mode = mode;
-    InitializeCriticalSection(&native_console->output_lock);
-    *out_native = native_console;
+    backend->original_mode = mode;
+    InitializeCriticalSection(&backend->output_lock);
+    *out_backend = backend;
     return LIB_STATUS_OK;
 }
 
-void host_console_native_destroy(host_console_native *native_console)
+void host_console_backend_destroy(host_console_backend *backend)
 {
     lib_status status;
-    if (native_console == LIB_NULL) return;
-    status = host_console_native_deactivate(native_console);
+    if (backend == LIB_NULL) return;
+    status = host_console_backend_deactivate(backend);
     if (status != LIB_STATUS_OK) {
-        /* A live reader still owns native_console and its logical Console.
+        /* A live reader still owns backend and its logical Console.
            Broker failure is terminal and the process must exit; intentionally
            retain these process-lifetime resources rather than free storage
            underneath a live native worker. */
         return;
     }
-    if (native_console->input != INVALID_HANDLE_VALUE) CloseHandle(native_console->input);
-    if (native_console->output != INVALID_HANDLE_VALUE) CloseHandle(native_console->output);
-    DeleteCriticalSection(&native_console->output_lock);
-    free(native_console);
+    if (backend->input != INVALID_HANDLE_VALUE) CloseHandle(backend->input);
+    if (backend->output != INVALID_HANDLE_VALUE) CloseHandle(backend->output);
+    DeleteCriticalSection(&backend->output_lock);
+    free(backend);
 }
 
-static lib_status host_console_start_reader(host_console_native *native_console)
+static lib_status host_console_start_reader(host_console_backend *backend)
 {
-    if (native_console->mode == HOST_CONSOLE_COOKED_LINES)
-        InterlockedExchange(&native_console->cooked_line_pending, 1);
-    native_console->reader = CreateThread(NULL, 0u, host_console_reader,
-        native_console, 0u, NULL);
-    if (native_console->reader == NULL) {
-        InterlockedExchange(&native_console->cooked_line_pending, 0);
+    if (backend->mode == HOST_CONSOLE_COOKED_LINES)
+        InterlockedExchange(&backend->cooked_line_pending, 1);
+    backend->reader = CreateThread(NULL, 0u, host_console_reader,
+        backend, 0u, NULL);
+    if (backend->reader == NULL) {
+        InterlockedExchange(&backend->cooked_line_pending, 0);
         return LIB_STATUS_NO_MEMORY;
     }
     return LIB_STATUS_OK;
 }
 
-/* The native raw VM Console is the input surface.  This historical behavior
+/* The native raw Console is the input surface. This behavior
  * is coupled to successful raw activation rather than exposed as a product
  * API: the broker owns the one process Console handle and knows whether a
  * live raw reader exists.  Cooked activation intentionally does not make a
  * native foreground request. */
 static void host_console_activate_raw_input_surface(
-    host_console_native *native_console)
+    host_console_backend *backend)
 {
     HWND window;
 
-    if (native_console == LIB_NULL ||
-        native_console->mode != HOST_CONSOLE_RAW_EVENTS ||
-        native_console->console == LIB_NULL || native_console->reader == NULL)
+    if (backend == LIB_NULL ||
+        backend->mode != HOST_CONSOLE_RAW_EVENTS ||
+        backend->console == LIB_NULL || backend->reader == NULL)
         return;
     window = GetConsoleWindow();
     if (window == NULL) return;
@@ -213,28 +215,28 @@ static void host_console_activate_raw_input_surface(
     (void)SetFocus(window);
 }
 
-lib_status host_console_native_prepare(host_console_native *native_console,
+lib_status host_console_backend_prepare(host_console_backend *backend,
     lib_console *console, host_console_mode mode)
 {
     DWORD ignored;
-    if (native_console == LIB_NULL || console == LIB_NULL ||
+    if (backend == LIB_NULL || console == LIB_NULL ||
         (mode != HOST_CONSOLE_RAW_EVENTS && mode != HOST_CONSOLE_COOKED_LINES))
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (native_console->input == INVALID_HANDLE_VALUE ||
-        native_console->output == INVALID_HANDLE_VALUE ||
-        !GetConsoleMode(native_console->input, &ignored)) return LIB_STATUS_IO_ERROR;
+    if (backend->input == INVALID_HANDLE_VALUE ||
+        backend->output == INVALID_HANDLE_VALUE ||
+        !GetConsoleMode(backend->input, &ignored)) return LIB_STATUS_IO_ERROR;
     return LIB_STATUS_OK;
 }
 
-void host_console_native_discard_prepare(host_console_native *native_console)
-{ (void)native_console; }
+void host_console_backend_discard_prepare(host_console_backend *backend)
+{ (void)backend; }
 
-lib_status host_console_native_activate(host_console_native *native_console,
+lib_status host_console_backend_activate(host_console_backend *backend,
     lib_console *console, host_console_mode mode, lib_u32 generation)
 {
     DWORD configured;
-    if (native_console == LIB_NULL || console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    configured = native_console->original_mode;
+    if (backend == LIB_NULL || console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    configured = backend->original_mode;
     if (mode == HOST_CONSOLE_RAW_EVENTS)
         /* ReadConsoleInput consumes classic INPUT_RECORD values.  A parent
          * Windows Terminal may have enabled VT input; retaining that flag
@@ -245,81 +247,81 @@ lib_status host_console_native_activate(host_console_native *native_console,
             ENABLE_VIRTUAL_TERMINAL_INPUT)) |
             ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS;
     else configured |= ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT;
-    if (!SetConsoleMode(native_console->input, configured)) return LIB_STATUS_IO_ERROR;
+    if (!SetConsoleMode(backend->input, configured)) return LIB_STATUS_IO_ERROR;
     /* A Current-Console cutover has one ownership boundary regardless of
      * input mode.  Records already buffered before it belong to neither the
      * old nor the newly activated logical Console, so discard them before
      * starting the new reader. */
-    if (!FlushConsoleInputBuffer(native_console->input))
+    if (!FlushConsoleInputBuffer(backend->input))
         return LIB_STATUS_IO_ERROR;
-    native_console->stop_event = CreateEventA(NULL, TRUE, FALSE, NULL);
-    if (native_console->stop_event == NULL) return LIB_STATUS_NO_MEMORY;
-    native_console->console = console;
-    native_console->mode = mode;
-    native_console->generation = generation;
-    memset(native_console->previous, 0xff, sizeof(native_console->previous));
-    memset(native_console->previous_attributes, 0xff,
-        sizeof(native_console->previous_attributes));
-    memset(native_console->previous_palette, 0xff,
-        sizeof(native_console->previous_palette));
-    native_console->previous_columns = 0u;
-    native_console->previous_rows = 0u;
+    backend->stop_event = CreateEventA(NULL, TRUE, FALSE, NULL);
+    if (backend->stop_event == NULL) return LIB_STATUS_NO_MEMORY;
+    backend->console = console;
+    backend->mode = mode;
+    backend->generation = generation;
+    memset(backend->previous, 0xff, sizeof(backend->previous));
+    memset(backend->previous_attributes, 0xff,
+        sizeof(backend->previous_attributes));
+    memset(backend->previous_palette, 0xff,
+        sizeof(backend->previous_palette));
+    backend->previous_columns = 0u;
+    backend->previous_rows = 0u;
     /* Cooked mode is a monitor surface, not an input request.  Its reader is
-       armed solely by host_console_native_request_cooked_line() after the app
+       armed solely by host_console_backend_request_cooked_line() after the app
        has actually published a prompt.  Starting ReadConsoleA here leaves a
        hidden line reader alive while a graphic Window is running; it can eat
        the first Enter after the later raw takeover. */
     if (mode == HOST_CONSOLE_RAW_EVENTS) {
-        if (host_console_start_reader(native_console) != LIB_STATUS_OK) {
-            CloseHandle(native_console->stop_event);
-            native_console->stop_event = NULL;
-            native_console->console = LIB_NULL;
+        if (host_console_start_reader(backend) != LIB_STATUS_OK) {
+            CloseHandle(backend->stop_event);
+            backend->stop_event = NULL;
+            backend->console = LIB_NULL;
             return LIB_STATUS_NO_MEMORY;
         }
-        host_console_activate_raw_input_surface(native_console);
+        host_console_activate_raw_input_surface(backend);
     }
     return LIB_STATUS_OK;
 }
 
-lib_status host_console_native_request_cooked_line(
-    host_console_native *native_console)
+lib_status host_console_backend_request_cooked_line(
+    host_console_backend *backend)
 {
     DWORD completed;
 
-    if (native_console == LIB_NULL ||
-        native_console->mode != HOST_CONSOLE_COOKED_LINES ||
-        native_console->console == LIB_NULL || native_console->stop_event == NULL)
+    if (backend == LIB_NULL ||
+        backend->mode != HOST_CONSOLE_COOKED_LINES ||
+        backend->console == LIB_NULL || backend->stop_event == NULL)
         return LIB_STATUS_INVALID_STATE;
-    if (native_console->reader != NULL) {
-        if (InterlockedCompareExchange(&native_console->cooked_line_pending,
+    if (backend->reader != NULL) {
+        if (InterlockedCompareExchange(&backend->cooked_line_pending,
                 0, 0) != 0)
             return LIB_STATUS_OK;
-        completed = WaitForSingleObject(native_console->reader, 0u);
+        completed = WaitForSingleObject(backend->reader, 0u);
         if (completed == WAIT_TIMEOUT) {
-            completed = WaitForSingleObject(native_console->reader, INFINITE);
+            completed = WaitForSingleObject(backend->reader, INFINITE);
         }
         if (completed != WAIT_OBJECT_0) return LIB_STATUS_IO_ERROR;
-        CloseHandle(native_console->reader);
-        native_console->reader = NULL;
+        CloseHandle(backend->reader);
+        backend->reader = NULL;
     }
-    return host_console_start_reader(native_console);
+    return host_console_start_reader(backend);
 }
 
-static lib_status host_console_retire_reader(host_console_native *native_console)
+static lib_status host_console_retire_reader(host_console_backend *backend)
 {
     DWORD completed;
 
-    if (native_console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (native_console->reader == NULL) return LIB_STATUS_OK;
-    if (native_console->stop_event == NULL ||
-        !SetEvent(native_console->stop_event)) return LIB_STATUS_IO_ERROR;
+    if (backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (backend->reader == NULL) return LIB_STATUS_OK;
+    if (backend->stop_event == NULL ||
+        !SetEvent(backend->stop_event)) return LIB_STATUS_IO_ERROR;
     /* A reader owns the process Console until it has exited.  Cancellation is
        deliberately best effort because Console implementations differ; the
        completion observation below is the actual ownership proof. */
-    (void)CancelIoEx(native_console->input, NULL);
-    (void)CancelSynchronousIo(native_console->reader);
-    completed = WaitForSingleObject(native_console->reader, 0u);
-    if (completed == WAIT_TIMEOUT && native_console->mode == HOST_CONSOLE_COOKED_LINES) {
+    (void)CancelIoEx(backend->input, NULL);
+    (void)CancelSynchronousIo(backend->reader);
+    completed = WaitForSingleObject(backend->reader, 0u);
+    if (completed == WAIT_TIMEOUT && backend->mode == HOST_CONSOLE_COOKED_LINES) {
         INPUT_RECORD wake = { 0 };
         DWORD written = 0u;
         /* Some terminal hosts do not interrupt a line-buffered ReadConsoleA
@@ -334,65 +336,65 @@ static lib_status host_console_retire_reader(host_console_native *native_console
         wake.Event.KeyEvent.wVirtualScanCode = (WORD)MapVirtualKeyA(VK_RETURN,
             MAPVK_VK_TO_VSC);
         wake.Event.KeyEvent.uChar.AsciiChar = '\r';
-        if (!WriteConsoleInputA(native_console->input, &wake, 1u, &written) ||
+        if (!WriteConsoleInputA(backend->input, &wake, 1u, &written) ||
             written != 1u) return LIB_STATUS_IO_ERROR;
     }
-    completed = WaitForSingleObject(native_console->reader,
+    completed = WaitForSingleObject(backend->reader,
         HOST_CONSOLE_READER_RETIRE_TIMEOUT_MS);
     if (completed != WAIT_OBJECT_0) return LIB_STATUS_IO_ERROR;
-    CloseHandle(native_console->reader);
-    native_console->reader = NULL;
-    InterlockedExchange(&native_console->cooked_line_pending, 0);
+    CloseHandle(backend->reader);
+    backend->reader = NULL;
+    InterlockedExchange(&backend->cooked_line_pending, 0);
     return LIB_STATUS_OK;
 }
 
-lib_status host_console_native_deactivate(host_console_native *native_console)
+lib_status host_console_backend_deactivate(host_console_backend *backend)
 {
     lib_status status;
 
-    if (native_console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = host_console_retire_reader(native_console);
+    if (backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = host_console_retire_reader(backend);
     if (status != LIB_STATUS_OK) return status;
-    if (native_console->stop_event != NULL) CloseHandle(native_console->stop_event);
-    native_console->stop_event = NULL;
-    native_console->console = LIB_NULL;
-    native_console->generation = 0u;
-    return SetConsoleMode(native_console->input, native_console->original_mode) ?
+    if (backend->stop_event != NULL) CloseHandle(backend->stop_event);
+    backend->stop_event = NULL;
+    backend->console = LIB_NULL;
+    backend->generation = 0u;
+    return SetConsoleMode(backend->input, backend->original_mode) ?
         LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-void host_console_native_lock_output(host_console_native *native_console)
+void host_console_backend_lock_output(host_console_backend *backend)
 {
-    if (native_console != LIB_NULL) EnterCriticalSection(&native_console->output_lock);
+    if (backend != LIB_NULL) EnterCriticalSection(&backend->output_lock);
 }
 
-void host_console_native_unlock_output(host_console_native *native_console)
+void host_console_backend_unlock_output(host_console_backend *backend)
 {
-    if (native_console != LIB_NULL) LeaveCriticalSection(&native_console->output_lock);
+    if (backend != LIB_NULL) LeaveCriticalSection(&backend->output_lock);
 }
 
-lib_status host_console_native_write_bound(host_console_native *native_console,
+lib_status host_console_backend_write_bound(host_console_backend *backend,
     lib_console *expected_console, lib_u32 expected_generation, const char *text,
     lib_size length)
 {
     DWORD written = 0u;
-    if (native_console == LIB_NULL || (text == LIB_NULL && length != 0u) ||
+    if (backend == LIB_NULL || (text == LIB_NULL && length != 0u) ||
         length > (lib_size)UINT32_MAX) return LIB_STATUS_INVALID_ARGUMENT;
-    host_console_native_lock_output(native_console);
-    if (native_console->console != expected_console ||
-        native_console->generation != expected_generation) {
-        host_console_native_unlock_output(native_console);
+    host_console_backend_lock_output(backend);
+    if (backend->console != expected_console ||
+        backend->generation != expected_generation) {
+        host_console_backend_unlock_output(backend);
         return LIB_STATUS_NOT_CURRENT;
     }
     {
-        lib_status status = WriteConsoleA(native_console->output, text, (DWORD)length,
+        lib_status status = WriteConsoleA(backend->output, text, (DWORD)length,
             &written, NULL) && written == (DWORD)length ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
-        host_console_native_unlock_output(native_console);
+        host_console_backend_unlock_output(backend);
         return status;
     }
 }
 
-lib_status host_console_native_write_text_frame_bound(host_console_native *native_console,
+lib_status host_console_backend_write_text_frame_bound(host_console_backend *backend,
     lib_console *expected_console, lib_u32 expected_generation,
     const lib_console_text_frame *frame)
 {
@@ -403,39 +405,39 @@ lib_status host_console_native_write_text_frame_bound(host_console_native *nativ
         LIB_CONSOLE_TEXT_ROWS - 1 };
     lib_u32 row;
 
-    if (native_console == LIB_NULL || frame == LIB_NULL)
+    if (backend == LIB_NULL || frame == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    host_console_native_lock_output(native_console);
-    if (native_console->console != expected_console ||
-        native_console->generation != expected_generation) {
-        host_console_native_unlock_output(native_console);
+    host_console_backend_lock_output(backend);
+    if (backend->console != expected_console ||
+        backend->generation != expected_generation) {
+        host_console_backend_unlock_output(backend);
         return LIB_STATUS_NOT_CURRENT;
     }
-    if (!host_console_ensure_text_surface(native_console->output)) {
-        host_console_native_unlock_output(native_console);
+    if (!host_console_ensure_text_surface(backend->output)) {
+        host_console_backend_unlock_output(backend);
         return LIB_STATUS_IO_ERROR;
     }
-    if (memcmp(frame->palette, native_console->previous_palette,
+    if (memcmp(frame->palette, backend->previous_palette,
             sizeof(frame->palette)) != 0) {
         CONSOLE_SCREEN_BUFFER_INFOEX info;
         lib_u32 index;
 
         memset(&info, 0, sizeof(info));
         info.cbSize = sizeof(info);
-        if (GetConsoleScreenBufferInfoEx(native_console->output, &info)) {
+        if (GetConsoleScreenBufferInfoEx(backend->output, &info)) {
             for (index = 0u; index < 16u; ++index)
                 info.ColorTable[index] = host_console_colorref_from_rgb(
                     frame->palette[index]);
-            (void)SetConsoleScreenBufferInfoEx(native_console->output, &info);
+            (void)SetConsoleScreenBufferInfoEx(backend->output, &info);
         }
-        memcpy(native_console->previous_palette, frame->palette,
+        memcpy(backend->previous_palette, frame->palette,
             sizeof(frame->palette));
     }
-    if (native_console->previous_columns != frame->columns ||
-        native_console->previous_rows != frame->rows ||
-        memcmp(frame->text, native_console->previous,
+    if (backend->previous_columns != frame->columns ||
+        backend->previous_rows != frame->rows ||
+        memcmp(frame->text, backend->previous,
             sizeof(frame->text)) != 0 ||
-        memcmp(frame->attributes, native_console->previous_attributes,
+        memcmp(frame->attributes, backend->previous_attributes,
             sizeof(frame->attributes)) != 0) {
         for (row = 0u; row < LIB_CONSOLE_TEXT_ROWS; ++row) {
             lib_u32 column;
@@ -448,16 +450,16 @@ lib_status host_console_native_write_text_frame_bound(host_console_native *nativ
                     column < frame->columns ? frame->attributes[offset] : 0u);
             }
         }
-        if (!WriteConsoleOutputA(native_console->output, cells, size, position,
+        if (!WriteConsoleOutputA(backend->output, cells, size, position,
                 &region)) {
-            host_console_native_unlock_output(native_console);
+            host_console_backend_unlock_output(backend);
             return LIB_STATUS_IO_ERROR;
         }
-        memcpy(native_console->previous, frame->text, sizeof(frame->text));
-        memcpy(native_console->previous_attributes, frame->attributes,
+        memcpy(backend->previous, frame->text, sizeof(frame->text));
+        memcpy(backend->previous_attributes, frame->attributes,
             sizeof(frame->attributes));
-        native_console->previous_columns = frame->columns;
-        native_console->previous_rows = frame->rows;
+        backend->previous_columns = frame->columns;
+        backend->previous_rows = frame->rows;
     }
     {
         CONSOLE_CURSOR_INFO cursor;
@@ -472,11 +474,11 @@ lib_status host_console_native_write_text_frame_bound(host_console_native *nativ
         if (cursor.bVisible) {
             position.X = (SHORT)frame->cursor_column;
             position.Y = (SHORT)frame->cursor_row;
-            (void)SetConsoleCursorPosition(native_console->output, position);
+            (void)SetConsoleCursorPosition(backend->output, position);
         }
-        (void)SetConsoleCursorInfo(native_console->output, &cursor);
+        (void)SetConsoleCursorInfo(backend->output, &cursor);
     }
-    host_console_native_unlock_output(native_console);
+    host_console_backend_unlock_output(backend);
     return LIB_STATUS_OK;
 }
 #endif

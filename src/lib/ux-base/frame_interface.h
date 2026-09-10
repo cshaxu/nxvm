@@ -1,10 +1,10 @@
-#ifndef UX_FRAME_H
-#define UX_FRAME_H
+#ifndef UX_FRAME_INTERFACE_H
+#define UX_FRAME_INTERFACE_H
 
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 /* Value-only ABI shared between a project runtime and the Win32 presenter.
- * It intentionally carries no renderer pointer, machine pointer, or lock. */
+ * It intentionally carries no renderer pointer, application-state pointer, or lock. */
 /* Palette entries are platform-neutral 0x00RRGGBB values. They never carry
  * Win32 COLORREF byte order; a native presenter converts only at its boundary. */
 #define UX_TEXT_COLUMNS 80u

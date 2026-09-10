@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/debug_interface.h"
-#include "lib/storage/file.h"
+#include "lib/storage/file_interface.h"
 
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 

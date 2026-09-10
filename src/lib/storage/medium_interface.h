@@ -1,7 +1,7 @@
-#ifndef LIB_STORAGE_MEDIUM_H
-#define LIB_STORAGE_MEDIUM_H
+#ifndef LIB_STORAGE_MEDIUM_INTERFACE_H
+#define LIB_STORAGE_MEDIUM_INTERFACE_H
 
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 typedef enum lib_storage_medium_mode {
     LIB_STORAGE_MEDIUM_DIRECT,

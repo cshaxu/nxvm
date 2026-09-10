@@ -1,4 +1,4 @@
-#include "lib/host/clock_internal.h"
+#include "lib/host/clock.h"
 
 lib_status host_clock_monotonic_counter(lib_u64 *out_units,
     lib_u64 *out_units_per_second)

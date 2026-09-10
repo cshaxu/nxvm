@@ -1,39 +1,41 @@
-#include "lib/ux-base/mailbox_native.h"
+#include "lib/ux-base/mailbox_wake.h"
 #include "lib/ux-base/win32/mailbox_wake.h"
+
+#include <stdlib.h>
 
 #ifdef _WIN32
 #include <windows.h>
 
-struct ux_mailbox_native {
+struct ux_mailbox_wake {
     HANDLE event;
 };
 
-ux_mailbox_native *ux_mailbox_native_create(void)
+ux_mailbox_wake *ux_mailbox_wake_create(void)
 {
-    ux_mailbox_native *native_mailbox = calloc(1u, sizeof(*native_mailbox));
+    ux_mailbox_wake *wake = calloc(1u, sizeof(*wake));
 
-    if (native_mailbox == NULL) return NULL;
-    native_mailbox->event = CreateEventA(NULL, FALSE, FALSE, NULL);
-    if (native_mailbox->event != NULL) return native_mailbox;
-    free(native_mailbox);
+    if (wake == NULL) return NULL;
+    wake->event = CreateEventA(NULL, FALSE, FALSE, NULL);
+    if (wake->event != NULL) return wake;
+    free(wake);
     return NULL;
 }
 
-void ux_mailbox_native_destroy(ux_mailbox_native *native_mailbox)
+void ux_mailbox_wake_destroy(ux_mailbox_wake *wake)
 {
-    if (native_mailbox == NULL) return;
-    if (native_mailbox->event != NULL) CloseHandle(native_mailbox->event);
-    free(native_mailbox);
+    if (wake == NULL) return;
+    if (wake->event != NULL) CloseHandle(wake->event);
+    free(wake);
 }
 
-void ux_mailbox_native_signal(ux_mailbox_native *native_mailbox)
+void ux_mailbox_wake_signal(ux_mailbox_wake *wake)
 {
-    if (native_mailbox != NULL && native_mailbox->event != NULL)
-        (void)SetEvent(native_mailbox->event);
+    if (wake != NULL && wake->event != NULL)
+        (void)SetEvent(wake->event);
 }
 
-HANDLE ux_win32_mailbox_wait_handle(const ux_mailbox_native *native_mailbox)
+HANDLE ux_win32_mailbox_wait_handle(const ux_mailbox_wake *wake)
 {
-    return native_mailbox == NULL ? NULL : native_mailbox->event;
+    return wake == NULL ? NULL : wake->event;
 }
 #endif

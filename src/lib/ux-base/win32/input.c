@@ -1,5 +1,5 @@
 #include "lib/ux-base/win32/input.h"
-#include "lib/ux-base/hotkey.h"
+#include "lib/ux-base/hotkey_interface.h"
 
 #ifdef _WIN32
 static WORD ux_win32_keyboard_decode_scan(WORD raw_scan)
@@ -112,12 +112,12 @@ int ux_win32_keyboard_consume_duplicate_character(
 }
 
 static int ux_win32_keyboard_submit_character(void *context,
-    ux_event_sink sink, uint32_t scalar)
+    ux_event_sink sink, lib_u32 scalar)
 {
     SHORT mapped;
     WORD virtual_key;
     WORD scan;
-    uint8_t modifiers;
+    lib_u8 modifiers;
     lib_u8 hotkey_modifiers = 0u;
 
     if (scalar == 0u || scalar > 0xffffu ||
@@ -133,7 +133,7 @@ static int ux_win32_keyboard_submit_character(void *context,
     virtual_key = (WORD)(mapped & 0xffu);
     scan = ux_win32_keyboard_resolve_scan(virtual_key);
     if (scan == 0u) return 0;
-    modifiers = (uint8_t)((mapped >> 8u) & 0xffu);
+    modifiers = (lib_u8)((mapped >> 8u) & 0xffu);
     if ((modifiers & 2u) != 0u) {
         hotkey_modifiers |= UX_HOTKEY_MODIFIER_CONTROL;
         if (!ux_win32_keyboard_emit(context, sink, 0x1du, VK_CONTROL, 0u,
@@ -175,7 +175,7 @@ static int ux_win32_keyboard_submit_character(void *context,
 int ux_win32_keyboard_submit_utf16(ux_win32_keyboard_normalizer *state,
     void *context, ux_event_sink sink, WORD code_unit)
 {
-    uint32_t scalar;
+    lib_u32 scalar;
 
     if (state == NULL) return 0;
     if (code_unit >= 0xd800u && code_unit <= 0xdbffu) {
@@ -185,8 +185,8 @@ int ux_win32_keyboard_submit_utf16(ux_win32_keyboard_normalizer *state,
     }
     if (code_unit >= 0xdc00u && code_unit <= 0xdfffu) {
         if (state->pending_high_surrogate == 0u) return 0;
-        scalar = 0x10000u + (((uint32_t)state->pending_high_surrogate -
-            0xd800u) << 10u) + ((uint32_t)code_unit - 0xdc00u);
+        scalar = 0x10000u + (((lib_u32)state->pending_high_surrogate -
+            0xd800u) << 10u) + ((lib_u32)code_unit - 0xdc00u);
         state->pending_high_surrogate = 0u;
         return ux_win32_keyboard_submit_character(context, sink, scalar);
     }

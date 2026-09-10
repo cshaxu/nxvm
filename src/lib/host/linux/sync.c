@@ -1,11 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "lib/base/base.h"
-#include "lib/host/sync.h"
+#include "lib/base/base_interface.h"
+#include "lib/host/sync_interface.h"
 
 #include <errno.h>
 #include <pthread.h>
 #include <sched.h>
+#include <stdlib.h>
 #include <time.h>
 
 struct host_sync_event {

@@ -1,10 +1,13 @@
-#include "lib/base/internal/console.h"
-#include "lib/host/console.h"
-#include "lib/host/internal/console_native.h"
+#include "lib/base/console.h"
+#include "lib/host/console_interface.h"
+#include "lib/host/console_backend.h"
+
+#include <stdatomic.h>
+#include <stdlib.h>
 
 struct host_console_broker {
     atomic_flag lock;
-    host_console_native *native_console;
+    host_console_backend *backend;
     lib_console *current;
     host_console_mode current_mode;
     lib_u32 generation;
@@ -16,7 +19,7 @@ struct host_console_broker {
 };
 
 typedef struct host_console_output_binding {
-    host_console_native *native_console;
+    host_console_backend *backend;
     lib_console *console;
     lib_u32 generation;
 } host_console_output_binding;
@@ -39,7 +42,7 @@ static lib_status host_console_write_bound(void *context, const char *text,
 {
     host_console_output_binding *binding = (host_console_output_binding *)context;
     if (binding == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return host_console_native_write_bound(binding->native_console,
+    return host_console_backend_write_bound(binding->backend,
         binding->console, binding->generation, text, length);
 }
 
@@ -48,7 +51,7 @@ static lib_status host_console_write_text_frame_bound(void *context,
 {
     host_console_output_binding *binding = (host_console_output_binding *)context;
     if (binding == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return host_console_native_write_text_frame_bound(binding->native_console,
+    return host_console_backend_write_text_frame_bound(binding->backend,
         binding->console, binding->generation, frame);
 }
 
@@ -60,7 +63,7 @@ static host_console_output_binding *host_console_output_binding_create(
         return LIB_NULL;
     binding = calloc(1u, sizeof(*binding));
     if (binding != LIB_NULL) {
-        binding->native_console = broker->native_console;
+        binding->backend = broker->backend;
         binding->console = console;
         binding->generation = generation;
     }
@@ -96,7 +99,7 @@ static lib_status host_console_activate_bound(host_console_broker *broker,
     lib_status status;
     status = lib_console_bind_generation(console, generation);
     if (status != LIB_STATUS_OK) return status;
-    status = host_console_native_activate(broker->native_console, console, mode,
+    status = host_console_backend_activate(broker->backend, console, mode,
         generation);
     if (status != LIB_STATUS_OK) lib_console_invalidate_binding(console);
     return status;
@@ -120,7 +123,7 @@ lib_status host_console_broker_create(host_console_broker **out_broker,
         return LIB_STATUS_NO_MEMORY;
     }
     atomic_flag_clear(&broker->lock);
-    status = host_console_native_create(&broker->native_console);
+    status = host_console_backend_create(&broker->backend);
     if (status == LIB_STATUS_OK) {
         broker->current = lib_console_retain(initial_console);
         broker->current_mode = initial_mode;
@@ -132,16 +135,16 @@ lib_status host_console_broker_create(host_console_broker **out_broker,
             status = host_console_install_output_binding(broker->current,
                 broker->current_output);
         if (status == LIB_STATUS_OK) {
-            host_console_native_lock_output(broker->native_console);
+            host_console_backend_lock_output(broker->backend);
             status = host_console_activate_bound(broker, broker->current,
                 initial_mode, broker->generation);
-            host_console_native_unlock_output(broker->native_console);
+            host_console_backend_unlock_output(broker->backend);
         }
     }
     if (status != LIB_STATUS_OK) {
         host_console_remove_output_binding(broker->current, broker->current_output);
         if (broker->current != LIB_NULL) lib_console_release(broker->current);
-        host_console_native_destroy(broker->native_console);
+        host_console_backend_destroy(broker->backend);
         free(broker);
         atomic_flag_clear_explicit(&host_console_process_claimed,
             memory_order_release);
@@ -179,7 +182,7 @@ lib_status host_console_broker_replace(host_console_broker *broker,
     next = lib_console_retain(next_console);
     /* A failed next binding must leave the old native reader wholly active.
      * This is the non-disruptive phase of the replacement transaction. */
-    status = host_console_native_prepare(broker->native_console, next, next_mode);
+    status = host_console_backend_prepare(broker->backend, next, next_mode);
     if (status != LIB_STATUS_OK) {
         lib_console_release(next);
         host_console_unlock(broker);
@@ -187,14 +190,14 @@ lib_status host_console_broker_replace(host_console_broker *broker,
     }
     next_output = host_console_output_binding_create(broker, next, next_generation);
     if (next_output == LIB_NULL) {
-        host_console_native_discard_prepare(broker->native_console);
+        host_console_backend_discard_prepare(broker->backend);
         lib_console_release(next);
         host_console_unlock(broker);
         return LIB_STATUS_NO_MEMORY;
     }
     status = host_console_install_output_binding(next, next_output);
     if (status != LIB_STATUS_OK) {
-        host_console_native_discard_prepare(broker->native_console);
+        host_console_backend_discard_prepare(broker->backend);
         free(next_output);
         lib_console_release(next);
         host_console_unlock(broker);
@@ -202,8 +205,8 @@ lib_status host_console_broker_replace(host_console_broker *broker,
     }
     /* Every bound writer blocks behind this native gate. Once it opens,
        validation makes an old write NOT_CURRENT and a next write current. */
-    host_console_native_lock_output(broker->native_console);
-    status = host_console_native_deactivate(broker->native_console);
+    host_console_backend_lock_output(broker->backend);
+    status = host_console_backend_deactivate(broker->backend);
     if (status != LIB_STATUS_OK) {
         /* A cancellation request whose reader never completed has no
            trustworthy Current Console.  Do not start next, and do not claim
@@ -214,8 +217,8 @@ lib_status host_console_broker_replace(host_console_broker *broker,
         lib_console_invalidate_binding(old);
         old_output = broker->current_output;
         broker->current_output = LIB_NULL;
-        host_console_native_unlock_output(broker->native_console);
-        host_console_native_discard_prepare(broker->native_console);
+        host_console_backend_unlock_output(broker->backend);
+        host_console_backend_discard_prepare(broker->backend);
         host_console_remove_output_binding(next, next_output);
         lib_console_release(next);
         host_console_unlock(broker);
@@ -232,8 +235,8 @@ lib_status host_console_broker_replace(host_console_broker *broker,
          * that old remains active. */
         restore_status = host_console_activate_bound(broker, old, broker->current_mode,
             broker->generation);
-        host_console_native_discard_prepare(broker->native_console);
-        host_console_native_unlock_output(broker->native_console);
+        host_console_backend_discard_prepare(broker->backend);
+        host_console_backend_unlock_output(broker->backend);
         host_console_remove_output_binding(next, next_output);
         lib_console_release(next);
         if (restore_status != LIB_STATUS_OK) {
@@ -252,7 +255,7 @@ lib_status host_console_broker_replace(host_console_broker *broker,
     broker->generation = next_generation;
     old_output = broker->current_output;
     broker->current_output = next_output;
-    host_console_native_unlock_output(broker->native_console);
+    host_console_backend_unlock_output(broker->backend);
     host_console_unlock(broker);
     /* The old binding is still safe until this setter has waited out any
        already-entered base write. Its native validation now rejects it. */
@@ -274,7 +277,7 @@ lib_status host_console_broker_request_cooked_line(host_console_broker *broker,
         host_console_unlock(broker);
         return LIB_STATUS_NOT_CURRENT;
     }
-    status = host_console_native_request_cooked_line(broker->native_console);
+    status = host_console_backend_request_cooked_line(broker->backend);
     host_console_unlock(broker);
     return status;
 }
@@ -288,24 +291,24 @@ void host_console_broker_destroy(host_console_broker *broker)
     host_console_lock(broker);
     current = broker->current;
     output = broker->current_output;
-    host_console_native_lock_output(broker->native_console);
-    status = host_console_native_deactivate(broker->native_console);
+    host_console_backend_lock_output(broker->backend);
+    status = host_console_backend_deactivate(broker->backend);
     if (status != LIB_STATUS_OK) {
-        /* A live reader still references native_console and current.  This is
+        /* A live reader still references backend and current.  This is
            already a terminal broker failure; retain its process-lifetime
            state rather than releasing either object underneath that worker. */
-        host_console_native_unlock_output(broker->native_console);
+        host_console_backend_unlock_output(broker->backend);
         host_console_unlock(broker);
         return;
     }
     broker->current = LIB_NULL;
     broker->current_output = LIB_NULL;
     if (current != LIB_NULL) lib_console_invalidate_binding(current);
-    host_console_native_unlock_output(broker->native_console);
+    host_console_backend_unlock_output(broker->backend);
     host_console_unlock(broker);
     host_console_remove_output_binding(current, output);
     if (current != LIB_NULL) lib_console_release(current);
-    host_console_native_destroy(broker->native_console);
+    host_console_backend_destroy(broker->backend);
     free(broker);
     atomic_flag_clear_explicit(&host_console_process_claimed, memory_order_release);
 }

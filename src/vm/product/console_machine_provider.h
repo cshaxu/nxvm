@@ -3,6 +3,9 @@
 
 #include "type.h"
 
+#include "core/product/session/session_interface.h"
+#include "vm/platform/session_state.h"
+
 struct vm_platform_console_binding;
 
 typedef enum vm_session_display_mode {
@@ -15,6 +18,9 @@ typedef enum vm_product_console_speed {
     VM_PRODUCT_CONSOLE_SPEED_TURBO
 } vm_product_console_speed;
 
+typedef C_VOID (*vm_product_console_lifecycle_reporter)(C_VOID *context,
+    core_product_session_id id, vm_session_lifecycle lifecycle);
+
 typedef struct vm_session_machine_provider {
     C_INT (*is_running)(C_VOID *context);
     C_VOID (*print_machine)(C_VOID *context);
@@ -22,6 +28,8 @@ typedef struct vm_session_machine_provider {
     C_VOID (*set_display_mode)(C_VOID *context, vm_session_display_mode mode);
     C_VOID (*set_console_binding)(C_VOID *context,
         const struct vm_platform_console_binding *binding);
+    C_VOID (*set_lifecycle_reporter)(C_VOID *context,
+        vm_product_console_lifecycle_reporter reporter, C_VOID *reporter_context);
     C_VOID (*print_bios)(C_VOID *context);
     C_VOID (*print_status)(C_VOID *context);
     type_status (*get_speed)(C_VOID *context, vm_product_console_speed *out_speed);

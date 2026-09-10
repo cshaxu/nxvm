@@ -11,9 +11,12 @@ C_INT main(C_VOID)
     source.generation = 7u;
     source.columns = 80u; source.rows = 25u;
     source.characters[0] = 'A'; source.attributes[0] = 0x1eu;
+    source.characters[1999u] = 'Z'; source.attributes[1999u] = 0x4fu;
     source.palette_rgb[14u] = 0x00ffff00u;
     if (vm_platform_ux_frame_from_core(&source, &destination) != TYPE_STATUS_OK ||
         !destination.valid || destination.graphics || destination.text[0] != 'A' ||
+        destination.attributes[0] != 0x1eu || destination.text[1999u] != 'Z' ||
+        destination.attributes[1999u] != 0x4fu ||
         destination.text_palette[14u] != 0x00ffff00u) return 1;
     source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
     source.pixel_width = 320u; source.pixel_height = 200u;

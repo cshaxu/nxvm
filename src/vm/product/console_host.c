@@ -1,7 +1,7 @@
 #include "type.h"
 
-#include "lib/base/console.h"
-#include "lib/host/console.h"
+#include "lib/base/console_interface.h"
+#include "lib/host/console_interface.h"
 #include "vm/product/console_host.h"
 
 struct vm_product_console_host {

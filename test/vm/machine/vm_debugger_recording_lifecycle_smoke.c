@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "lib/storage/file.h"
+#include "lib/storage/file_interface.h"
 #include "vm/machine/debug.h"
 
 C_INT main(C_VOID)

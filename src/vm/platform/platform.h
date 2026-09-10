@@ -54,6 +54,7 @@ typedef enum vm_platform_run_event {
     VM_PLATFORM_RUN_EVENT_NONE,
     VM_PLATFORM_RUN_EVENT_STOP_REQUESTED,
     VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED,
+    VM_PLATFORM_RUN_EVENT_WINDOW_CLOSE_REQUESTED,
     VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED,
     VM_PLATFORM_RUN_EVENT_DISPLAY_COMPLETED,
     VM_PLATFORM_RUN_EVENT_STARTUP_FAILED
@@ -94,6 +95,8 @@ type_status vm_platform_run_context_set_window_title(
 type_status vm_platform_run_context_set_mouse_capturable(
     vm_platform_run_context *context, C_INT capturable);
 type_status vm_platform_run_context_release_mouse(vm_platform_run_context *context);
+/* Product lifecycle consumes a native Window-close request at a safe point. */
+type_status vm_platform_run_context_close_window(vm_platform_run_context *context);
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle);
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
@@ -108,6 +111,8 @@ vm_platform_run_event vm_platform_run_handle_get_last_event(
 C_INT vm_platform_run_handle_take_stop_report(
     vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_take_pause_report(
+    vm_platform_run_handle *handle);
+C_INT vm_platform_run_handle_take_window_close_report(
     vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_presenter_stop(

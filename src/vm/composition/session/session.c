@@ -2,7 +2,7 @@
 
 #include "vm/composition/session/session_private.h"
 
-#include "lib/storage/file.h"
+#include "lib/storage/file_interface.h"
 #include "vm/profile/byob/blob.h"
 
 static type_status vm_session_asset_copy(type_unsigned_8 *destination,

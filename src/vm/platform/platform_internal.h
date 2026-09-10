@@ -2,11 +2,11 @@
 #define VM_PLATFORM_INTERNAL_H
 
 #include "vm/platform/platform.h"
-#include "lib/host/console.h"
-#include "lib/base/console.h"
-#include "lib/ux-base/hotkey.h"
-#include "lib/ux-console/console.h"
-#include "lib/ux-window/window.h"
+#include "lib/host/console_interface.h"
+#include "lib/base/console_interface.h"
+#include "lib/ux-base/hotkey_interface.h"
+#include "lib/ux-console/console_interface.h"
+#include "lib/ux-window/window_interface.h"
 
 #define VM_PLATFORM_START_TIMEOUT_MILLISECONDS 5000u
 
@@ -33,6 +33,7 @@ struct vm_platform_run_handle {
     STD_ATOMIC_INT last_event;
     STD_ATOMIC_BOOL stop_reported;
     STD_ATOMIC_BOOL pause_reported;
+    STD_ATOMIC_BOOL window_close_reported;
     C_INT active;
     type_bool ux_pressed_keys[512u];
     type_unsigned_64 ux_key_sources[512u];

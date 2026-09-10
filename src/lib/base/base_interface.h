@@ -1,12 +1,8 @@
-#ifndef LIB_BASE_H
-#define LIB_BASE_H
+#ifndef LIB_BASE_INTERFACE_H
+#define LIB_BASE_INTERFACE_H
 
-#include <stdatomic.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef uint8_t lib_u8;
 typedef uint16_t lib_u16;

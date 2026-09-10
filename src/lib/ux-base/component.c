@@ -1,4 +1,4 @@
-#include "lib/ux-base/internal/component.h"
+#include "lib/ux-base/component.h"
 
 static atomic_uint_fast64_t ux_component_next_source_identity = 1u;
 
@@ -93,9 +93,8 @@ lib_status ux_component_enqueue_controls(ux_component *component,
 
 void ux_component_emit_source_retired(ux_component *component)
 {
-    ux_input_event event = { 0 };
+    ux_input_event event = { .type = UX_EVENT_SOURCE_RETIRED };
     if (component == LIB_NULL || component->input_sink == LIB_NULL) return;
-    event.type = UX_EVENT_SOURCE_RETIRED;
     ux_input_event_set_source(&event, component, component->source_identity);
     atomic_store_explicit(&component->stopping, 1, memory_order_release);
     if (!component->input_sink(component->input_context, &event))
@@ -110,7 +109,7 @@ lib_status ux_component_publish_frame(ux_component *component, const ux_frame *f
 
 lib_status ux_component_request_stop(ux_component *component)
 {
-    ux_component_control control = { UX_COMPONENT_CONTROL_STOP, { 0 } };
+    ux_component_control control = { .kind = UX_COMPONENT_CONTROL_STOP };
     return component == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         ux_component_enqueue_controls(component, &control, 1u);
 }

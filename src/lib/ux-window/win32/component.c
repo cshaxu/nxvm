@@ -1,11 +1,11 @@
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 #include "lib/ux-window/win32/component.h"
 
 #ifdef _WIN32
 #include "lib/ux-window/win32/geometry.h"
 #include "lib/ux-base/win32/input.h"
 #include "lib/ux-base/win32/actions.h"
-#include "lib/ux-base/internal/mailbox.h"
+#include "lib/ux-base/mailbox.h"
 #include "lib/ux-base/win32/mailbox_wake.h"
 #include "lib/ux-window/win32/mouse.h"
 
@@ -27,12 +27,12 @@ typedef struct ux_win32_window_context {
     HDC surface_dc;
     HBITMAP surface_bitmap;
     HGDIOBJ surface_previous_bitmap;
-    uint32_t *surface_pixels;
-    uint32_t surface_width;
-    uint32_t surface_height;
-    uint32_t graphics_palette[UX_GRAPHICS_PALETTE_ENTRIES];
+    lib_u32 *surface_pixels;
+    lib_u32 surface_width;
+    lib_u32 surface_height;
+    lib_u32 graphics_palette[UX_GRAPHICS_PALETTE_ENTRIES];
     int graphics_valid;
-    uint32_t displayed_sequence;
+    lib_u32 displayed_sequence;
     ux_win32_keyboard_normalizer keyboard_normalizer;
     int left_button;
     int right_button;
@@ -41,10 +41,11 @@ typedef struct ux_win32_window_context {
     lib_u32 pending_mouse_buttons;
     int mouse_delivery_posted;
     ux_win32_mouse mouse;
-    uint32_t client_surface_width;
-    uint32_t client_surface_height;
+    lib_u32 client_surface_width;
+    lib_u32 client_surface_height;
     int client_width;
     int client_height;
+    lib_bool correcting_aspect;
     lib_bool frozen;
     lib_bool cursor_blink_visible;
     DWORD cursor_blink_due;
@@ -63,11 +64,11 @@ static int win32_window_accepting_input(const ux_win32_window_context *context)
         atomic_load_explicit(&context->component->base.stopping, memory_order_acquire) == 0;
 }
 
-/* Frozen is an application-requested guest-input boundary. It is deliberately
+/* Frozen is an application-requested content-input boundary. It is deliberately
  * separate from component lifetime: Window close and capture-release cleanup
  * still use accepting_input(). Native key transitions still reach ux-base's
  * generic matcher so a registered product hotkey can be delivered. */
-static int win32_window_accepting_guest_input(
+static int win32_window_accepting_content_input(
     const ux_win32_window_context *context)
 {
     return win32_window_accepting_input(context) &&
@@ -77,7 +78,7 @@ static int win32_window_accepting_guest_input(
 static int win32_window_emit(ux_win32_window_context *context,
     const ux_input_event *event)
 {
-    return !win32_window_accepting_guest_input(context) ? 0 :
+    return !win32_window_accepting_content_input(context) ? 0 :
         ux_component_emit(&context->component->base, event);
 }
 
@@ -178,7 +179,7 @@ static void win32_window_destroy_surface(ux_win32_window_context *context)
 }
 
 static int win32_window_ensure_surface(HWND window,
-    ux_win32_window_context *context, uint32_t width, uint32_t height)
+    ux_win32_window_context *context, lib_u32 width, lib_u32 height)
 {
     BITMAPINFO info;
     HDC dc;
@@ -213,12 +214,12 @@ static int win32_window_ensure_surface(HWND window,
     context->surface_height = height;
     context->graphics_valid = 0;
     memset(context->surface_pixels, 0,
-        (size_t)width * height * sizeof(*context->surface_pixels));
+        (lib_size)width * height * sizeof(*context->surface_pixels));
     return 1;
 }
 
 static int win32_window_display_rect(const ux_win32_window_context *context,
-    uint32_t source_width, uint32_t source_height, RECT *display)
+    lib_u32 source_width, lib_u32 source_height, RECT *display)
 {
     return context != NULL && ux_win32_display_rect(context->client_width,
         context->client_height, source_width, source_height, display);
@@ -235,8 +236,19 @@ static void win32_window_capture_client_size(HWND window,
     context->client_height = client.bottom - client.top;
 }
 
+static void win32_window_enforce_aspect(HWND window,
+    ux_win32_window_context *context)
+{
+    if (context == NULL || context->correcting_aspect != LIB_FALSE ||
+        context->surface_width == 0u || context->surface_height == 0u) return;
+    context->correcting_aspect = LIB_TRUE;
+    (void)ux_win32_enforce_client_aspect(window, context->surface_width,
+        context->surface_height);
+    context->correcting_aspect = LIB_FALSE;
+}
+
 static void win32_window_resize_client(HWND window,
-    ux_win32_window_context *context, uint32_t width, uint32_t height)
+    ux_win32_window_context *context, lib_u32 width, lib_u32 height)
 {
     if (window == NULL || context == NULL || width == 0u || height == 0u ||
         (context->client_surface_width == width &&
@@ -246,8 +258,8 @@ static void win32_window_resize_client(HWND window,
     context->client_surface_height = height;
 }
 
-static int win32_window_frame_size(const ux_frame *frame, uint32_t *width,
-    uint32_t *height)
+static int win32_window_frame_size(const ux_frame *frame, lib_u32 *width,
+    lib_u32 *height)
 {
     if (!ux_frame_is_valid(frame) || width == NULL || height == NULL) return 0;
     if (frame->graphics != 0u) {
@@ -263,27 +275,27 @@ static int win32_window_frame_size(const ux_frame *frame, uint32_t *width,
 static void win32_window_update_text(ux_win32_window_context *context)
 {
     ux_frame *frame;
-    uint32_t row;
+    lib_u32 row;
 
     if (context == NULL || context->surface_pixels == NULL ||
         (frame = context->frame) == NULL || frame->graphics != 0u) return;
-    memset(context->surface_pixels, 0, (size_t)context->surface_width *
+    memset(context->surface_pixels, 0, (lib_size)context->surface_width *
         context->surface_height * sizeof(*context->surface_pixels));
     for (row = 0u; row < frame->text_rows; ++row) {
-        uint32_t column;
+        lib_u32 column;
         for (column = 0u; column < frame->text_columns; ++column) {
-            size_t index = (size_t)row * UX_TEXT_COLUMNS + column;
+            lib_size index = (lib_size)row * UX_TEXT_COLUMNS + column;
             lib_u8 character = frame->text[index];
             lib_u16 attribute = frame->attributes[index];
-            uint32_t scan;
+            lib_u32 scan;
             for (scan = 0u; scan < WIN32_WINDOW_TEXT_CELL_HEIGHT; ++scan) {
                 const lib_u8 *font = frame->attribute_font_select != 0u &&
                     (attribute & 0x08u) != 0u ? frame->secondary_font : frame->font;
-                lib_u8 bits = font[(size_t)character * 16u + scan];
-                uint32_t *pixels = context->surface_pixels +
-                    ((size_t)row * WIN32_WINDOW_TEXT_CELL_HEIGHT + scan) *
+                lib_u8 bits = font[(lib_size)character * 16u + scan];
+                lib_u32 *pixels = context->surface_pixels +
+                    ((lib_size)row * WIN32_WINDOW_TEXT_CELL_HEIGHT + scan) *
                     context->surface_width + column * WIN32_WINDOW_TEXT_CELL_WIDTH;
-                uint32_t bit;
+                lib_u32 bit;
                 for (bit = 0u; bit < WIN32_WINDOW_TEXT_CELL_WIDTH; ++bit)
                     pixels[bit] = frame->text_palette[
                         (bits & (0x80u >> bit)) != 0u ? attribute & 0x0fu :
@@ -298,11 +310,11 @@ static int win32_window_update_graphics(ux_win32_window_context *context,
 {
     ux_frame *frame;
     int full_refresh;
-    int32_t left;
-    int32_t top;
-    int32_t right;
-    int32_t bottom;
-    uint32_t row;
+    lib_i32 left;
+    lib_i32 top;
+    lib_i32 right;
+    lib_i32 bottom;
+    lib_u32 row;
 
     if (context == NULL || context->surface_pixels == NULL || changed == NULL ||
         (frame = context->frame) == NULL || frame->graphics == 0u ||
@@ -312,18 +324,18 @@ static int win32_window_update_graphics(ux_win32_window_context *context,
         frame->graphics_palette, sizeof(context->graphics_palette)) != 0;
     left = full_refresh ? 0 : frame->dirty_left;
     top = full_refresh ? 0 : frame->dirty_top;
-    right = full_refresh ? (int32_t)frame->graphics_width - 1 : frame->dirty_right;
-    bottom = full_refresh ? (int32_t)frame->graphics_height - 1 : frame->dirty_bottom;
+    right = full_refresh ? (lib_i32)frame->graphics_width - 1 : frame->dirty_right;
+    bottom = full_refresh ? (lib_i32)frame->graphics_height - 1 : frame->dirty_bottom;
     if (left < 0) left = 0;
     if (top < 0) top = 0;
-    if (right >= (int32_t)frame->graphics_width) right = (int32_t)frame->graphics_width - 1;
-    if (bottom >= (int32_t)frame->graphics_height) bottom = (int32_t)frame->graphics_height - 1;
+    if (right >= (lib_i32)frame->graphics_width) right = (lib_i32)frame->graphics_width - 1;
+    if (bottom >= (lib_i32)frame->graphics_height) bottom = (lib_i32)frame->graphics_height - 1;
     if (right < left || bottom < top) return 0;
-    for (row = (uint32_t)top; row <= (uint32_t)bottom; ++row) {
+    for (row = (lib_u32)top; row <= (lib_u32)bottom; ++row) {
         const lib_u8 *source = frame->graphics_pixels + row * frame->graphics_stride;
-        uint32_t *destination = context->surface_pixels + row * context->surface_width;
-        uint32_t column;
-        for (column = (uint32_t)left; column <= (uint32_t)right; ++column)
+        lib_u32 *destination = context->surface_pixels + row * context->surface_width;
+        lib_u32 column;
+        for (column = (lib_u32)left; column <= (lib_u32)right; ++column)
             destination[column] = frame->graphics_palette[source[column]];
     }
     memcpy(context->graphics_palette, frame->graphics_palette,
@@ -345,7 +357,7 @@ static int win32_window_cursor_rect(HWND window,
     int height;
     int cell_height;
     int cursor_height;
-    uint32_t cursor_percent;
+    lib_u32 cursor_percent;
 
     if (window == NULL || context == NULL || cursor == NULL ||
         (frame = context->frame) == NULL || !ux_frame_is_valid(frame) ||
@@ -447,7 +459,7 @@ static void win32_window_emit_mouse(ux_win32_window_context *context,
 {
     ux_event event = { 0 };
 
-    if (!win32_window_accepting_guest_input(context)) return;
+    if (!win32_window_accepting_content_input(context)) return;
     event.type = UX_EVENT_MOUSE;
     event.data.mouse.delta_x = dx;
     event.data.mouse.delta_y = dy;
@@ -489,7 +501,7 @@ static void win32_window_mouse(HWND window, ux_win32_window_context *context,
     int dx = 0;
     int dy = 0;
 
-    if (!win32_window_accepting_guest_input(context) ||
+    if (!win32_window_accepting_content_input(context) ||
         !ux_win32_mouse_move(&context->mouse, position, context->client_width,
             context->client_height, context->surface_width, context->surface_height,
             &dx, &dy)) return;
@@ -505,7 +517,7 @@ static void win32_window_release_mouse(ux_win32_window_context *context)
 {
     if (context == NULL) return;
     win32_window_flush_mouse(context);
-    /* left/right_button is guest state only.  A real guest press must never
+    /* left/right_button is content state only. A real content press must never
      * survive a host capture release, whereas the host-only capture gesture
      * leaves both bits clear and therefore emits nothing here. */
     if ((context->left_button || context->right_button) &&
@@ -523,7 +535,7 @@ static void win32_window_release_mouse(ux_win32_window_context *context)
 static void win32_window_capture_mouse(HWND window,
     ux_win32_window_context *context, LPARAM position)
 {
-    if (!win32_window_accepting_guest_input(context))
+    if (!win32_window_accepting_content_input(context))
         return;
     if (!ux_win32_mouse_capture(&context->mouse, window, position)) return;
     win32_window_set_client_cursor(context, 1);
@@ -532,8 +544,8 @@ static void win32_window_capture_mouse(HWND window,
 static void win32_window_consume_frame(HWND window,
     ux_win32_window_context *context)
 {
-    uint32_t width;
-    uint32_t height;
+    lib_u32 width;
+    lib_u32 height;
 
     if (context == NULL || context->component == LIB_NULL ||
         !ux_component_mailboxes_capture_frame(&context->component->base.mailboxes,
@@ -620,6 +632,8 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         return 0;
     case WM_SIZE:
         win32_window_capture_client_size(window, context);
+        win32_window_enforce_aspect(window, context);
+        InvalidateRect(window, NULL, FALSE);
         return 0;
     case WM_ERASEBKGND:
         return 1;
@@ -630,6 +644,14 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
             context->client_surface_height = 0u;
             if (context->surface_width != 0u)
                 win32_window_resize_client(window, context, context->surface_width,
+                    context->surface_height);
+            return 0;
+        }
+        break;
+    case WM_SYSCOMMAND:
+        if ((wparam & 0xfff0u) == SC_MAXIMIZE) {
+            if (context->surface_width != 0u && context->surface_height != 0u)
+                (void)ux_win32_maximize_client(window, context->surface_width,
                     context->surface_height);
             return 0;
         }
@@ -649,8 +671,8 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
             win32_window_transition(context, wparam, lparam, 1);
         return 0;
     case WM_CHAR:
-        if (win32_window_accepting_guest_input(context) &&
-            ((uint32_t)lparam >> 16u & 0xffu) == 0u &&
+        if (win32_window_accepting_content_input(context) &&
+            ((lib_u32)lparam >> 16u & 0xffu) == 0u &&
             !ux_win32_keyboard_consume_duplicate_character(&context->keyboard_normalizer,
                 (WORD)wparam))
             (void)ux_win32_keyboard_submit_utf16(&context->keyboard_normalizer,
@@ -668,8 +690,8 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         }
         break;
     case WM_LBUTTONDOWN:
-        if (!win32_window_accepting_guest_input(context)) return 0;
-        /* The first client click is the host-only capture gesture.  Guest
+        if (!win32_window_accepting_content_input(context)) return 0;
+        /* The first client click is the host-only capture gesture. Content
          * button state starts only with a later click while already captured. */
         if (!ux_win32_mouse_captured(&context->mouse)) {
             win32_window_capture_mouse(window, context, lparam);
@@ -680,8 +702,8 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         win32_window_mouse(window, context, lparam, 1);
         return 0;
     case WM_LBUTTONUP:
-        if (!win32_window_accepting_guest_input(context)) return 0;
-        /* A button which was never made guest-visible is the matching
+        if (!win32_window_accepting_content_input(context)) return 0;
+        /* A button which was never made content-visible is the matching
          * release of the host-only capture gesture. */
         if (!ux_win32_mouse_captured(&context->mouse) || !context->left_button)
             return 0;
@@ -690,7 +712,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         win32_window_mouse(window, context, lparam, 1);
         return 0;
     case WM_RBUTTONDOWN:
-        if (!win32_window_accepting_guest_input(context)) return 0;
+        if (!win32_window_accepting_content_input(context)) return 0;
         if (!ux_win32_mouse_captured(&context->mouse)) {
             win32_window_capture_mouse(window, context, lparam);
             return 0;
@@ -700,7 +722,7 @@ static LRESULT CALLBACK win32_window_proc(HWND window, UINT message,
         win32_window_mouse(window, context, lparam, 1);
         return 0;
     case WM_RBUTTONUP:
-        if (!win32_window_accepting_guest_input(context)) return 0;
+        if (!win32_window_accepting_content_input(context)) return 0;
         if (!ux_win32_mouse_captured(&context->mouse) || !context->right_button)
             return 0;
         win32_window_flush_mouse(context);
@@ -761,7 +783,7 @@ static DWORD WINAPI ux_window_worker(void *opaque)
     klass.hInstance = GetModuleHandleA(NULL);
     /* Client cursor selection is explicit in WM_SETCURSOR.  A class arrow
        would be restored by Windows (and, in practice, an RDP client) as the
-       pointer moves, defeating guest capture. */
+       pointer moves, defeating content capture. */
     klass.hCursor = NULL;
     klass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     klass.lpszClassName = "LibUxWindow";
@@ -826,6 +848,7 @@ static DWORD WINAPI ux_window_worker(void *opaque)
 lib_status ux_window_native_start(ux_window *component)
 {
     ux_window_win32_state *state;
+    lib_status startup_status;
 
     if (component == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     state = calloc(1u, sizeof(*state));
@@ -854,11 +877,12 @@ lib_status ux_window_native_start(ux_window *component)
     }
     (void)WaitForSingleObject(state->ready, INFINITE);
     if (state->startup_status != LIB_STATUS_OK) {
+        startup_status = state->startup_status;
         (void)WaitForSingleObject(state->worker, INFINITE);
         CloseHandle(state->worker); CloseHandle(state->ready);
         if (state->context != LIB_NULL) win32_window_destroy(state->context, NULL);
         component->native_state = LIB_NULL; free(state);
-        return state->startup_status;
+        return startup_status;
     }
     return LIB_STATUS_OK;
 }

@@ -1,4 +1,4 @@
-#include "lib/ux-console/internal.h"
+#include "lib/ux-console/console.h"
 
 #if !defined(_WIN32)
 lib_status ux_console_native_start(ux_console *console)

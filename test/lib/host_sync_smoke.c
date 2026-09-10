@@ -1,4 +1,4 @@
-#include "lib/host/sync.h"
+#include "lib/host/sync_interface.h"
 
 typedef struct host_sync_smoke_state {
     host_sync_event *started;

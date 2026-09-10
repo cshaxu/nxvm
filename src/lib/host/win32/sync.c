@@ -1,5 +1,5 @@
-#include "lib/base/base.h"
-#include "lib/host/sync.h"
+#include "lib/base/base_interface.h"
+#include "lib/host/sync_interface.h"
 
 #include <windows.h>
 
@@ -28,14 +28,15 @@ host_sync_wait_result host_sync_wait_any(host_sync_event *const *events,
     lib_u32 event_count, const host_sync_task *cancel_task,
     lib_u32 timeout_milliseconds, lib_u32 *out_event_index)
 {
-    HANDLE handles[MAXIMUM_WAIT_OBJECTS];
+    HANDLE handles[MAXIMUM_WAIT_OBJECTS] = { NULL };
     DWORD count = 0u;
     DWORD result;
     lib_u32 index;
 
     if ((event_count != 0u && events == LIB_NULL) ||
         (event_count == 0u && cancel_task == LIB_NULL) ||
-        event_count > MAXIMUM_WAIT_OBJECTS - (cancel_task != LIB_NULL ? 1u : 0u))
+        event_count > (lib_u32)(MAXIMUM_WAIT_OBJECTS -
+            (cancel_task != LIB_NULL ? 1u : 0u)))
         return HOST_SYNC_WAIT_INVALID_ARGUMENT;
     if (out_event_index != LIB_NULL) *out_event_index = UINT32_MAX;
     if (cancel_task != LIB_NULL) {
@@ -48,7 +49,7 @@ host_sync_wait_result host_sync_wait_any(host_sync_event *const *events,
         handles[count++] = events[index]->handle;
     }
     result = WaitForMultipleObjects(count, handles, FALSE, timeout_milliseconds);
-    if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + count) {
+    if (result < WAIT_OBJECT_0 + count) {
         if (cancel_task != LIB_NULL && result == WAIT_OBJECT_0)
             return HOST_SYNC_WAIT_CANCELLED;
         if (out_event_index != LIB_NULL)

@@ -131,6 +131,32 @@ static C_VOID vm_session_machine_set_console_binding(C_VOID *context,
         vm_session_machine_set_console_binding_selected, (C_VOID *)binding);
 }
 
+typedef struct vm_session_machine_lifecycle_reporter_call {
+    vm_product_console_lifecycle_reporter reporter;
+    C_VOID *context;
+} vm_session_machine_lifecycle_reporter_call;
+
+static type_status vm_session_machine_set_lifecycle_reporter_selected(
+    vm_session *session, C_VOID *context)
+{
+    vm_session_machine_lifecycle_reporter_call *call = context;
+
+    if (session == STD_NULL || call == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    vm_session_set_lifecycle_reporter(session,
+        (vm_session_lifecycle_reporter)call->reporter, call->context);
+    return TYPE_STATUS_OK;
+}
+
+static C_VOID vm_session_machine_set_lifecycle_reporter(C_VOID *context,
+    vm_product_console_lifecycle_reporter reporter, C_VOID *reporter_context)
+{
+    vm_session_machine_lifecycle_reporter_call call = {reporter, reporter_context};
+    core_product_session_manager *manager = (core_product_session_manager *)context;
+
+    if (manager != STD_NULL) (C_VOID)core_product_session_manager_apply_all(manager,
+        vm_session_machine_apply_selected, &call);
+}
+
 static type_status vm_session_machine_print_bios_selected(vm_session *session,
     C_VOID *context)
 {
@@ -364,6 +390,7 @@ static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_get_display_mode,
     vm_session_machine_set_display_mode,
     vm_session_machine_set_console_binding,
+    vm_session_machine_set_lifecycle_reporter,
     vm_session_machine_print_bios,
     vm_session_machine_print_status,
     vm_session_machine_get_speed,

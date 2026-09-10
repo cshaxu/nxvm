@@ -1,8 +1,10 @@
-#ifndef UX_BASE_INTERNAL_MAILBOX_H
-#define UX_BASE_INTERNAL_MAILBOX_H
+#ifndef UX_BASE_MAILBOX_H
+#define UX_BASE_MAILBOX_H
 
-#include "lib/ux-base/frame.h"
-#include "lib/ux-base/mailbox_native.h"
+#include "lib/ux-base/frame_interface.h"
+#include "lib/ux-base/mailbox_wake.h"
+
+#include <stdatomic.h>
 
 #define UX_COMPONENT_CONTROL_CAPACITY 32u
 #define UX_COMPONENT_CONTROL_STORAGE_CAPACITY (UX_COMPONENT_CONTROL_CAPACITY + 1u)
@@ -35,7 +37,7 @@ typedef struct ux_component_mailboxes {
     lib_u32 control_head;
     lib_u32 control_count;
     lib_bool stop_queued;
-    ux_mailbox_native *wake;
+    ux_mailbox_wake *wake;
 } ux_component_mailboxes;
 
 lib_status ux_component_mailboxes_create(ux_component_mailboxes *mailboxes);
@@ -54,7 +56,7 @@ lib_bool ux_component_mailboxes_take_control(ux_component_mailboxes *mailboxes,
     ux_component_control *out_control);
 lib_bool ux_component_mailboxes_capture_frame(ux_component_mailboxes *mailboxes,
     lib_u32 *in_out_generation, ux_frame *out_frame);
-ux_mailbox_native *ux_component_mailboxes_wake(
+ux_mailbox_wake *ux_component_mailboxes_wake(
     const ux_component_mailboxes *mailboxes);
 
 #endif

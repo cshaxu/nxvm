@@ -1,10 +1,21 @@
 # Shared Library
 
 `src/lib` contains product-neutral, copied-value platform capabilities. It has
-no application machine pointer, runtime queue, monitor command, lifecycle
+no application state pointer, runtime queue, monitor command, lifecycle
 policy, or native SDK type in a public API. `MANIFEST.sha256` lists every source file and
 its exact corpus revision; `verify_manifest.cmake` rejects an unlisted, stale,
 or changed library file.
+
+## Header visibility
+
+Headers named `*_interface.h` are the complete public library ABI. Every
+other library header is implementation-private, including native-platform
+adapters. Private headers use short component-local names and live directly in
+their owning directory; no `internal/` directory exists. Only the owning
+component and an explicitly permitted dependent may include a private header:
+`ux-window` and `ux-console` may consume `ux-base` mailbox and component
+implementation contracts. Application/product code may include only
+`*_interface.h`; an interface header never includes a private header.
 
 ## Component graph
 
@@ -25,11 +36,11 @@ presenter API.
 
 - `base` provides scalar aliases and the logical Console object. A logical
   Console is a neutral copied-value endpoint: it has no native handle, platform
-  input mode, Window, VM, monitor, or product-lifecycle meaning.
+  input mode, Window, raw Console, monitor, or product-lifecycle meaning.
 - `host` exposes an opaque `host_console_broker` that binds one caller-owned
   logical Console to native I/O and provides clock/sync. A caller supplies its
   expected Current Console on every replacement or cooked-line request; host
-  has no monitor, VM, prompt, or lifecycle vocabulary. A replacement first
+  has no monitor, raw Console, prompt, or lifecycle vocabulary. A replacement first
   retires and confirms the old native reader, then activates the next binding;
   it uses the same transaction for every raw/cooked pair. If retirement cannot
   complete, no next reader starts and the broker fails closed with host-I/O
@@ -37,7 +48,7 @@ presenter API.
 - `storage` provides file and byte-medium primitives.
 - `ux-base` provides copied frame/input values, source-local registered-hotkey
   matching, source identities, and private mailbox mechanics.
-- `ux-window` owns one Window lifecycle; `ux-console` owns one VM-Console
+- `ux-window` owns one Window lifecycle; `ux-console` owns one raw-Console
   lifecycle and its logical Console object. Both report copied UX input only;
   neither makes product decisions.
 

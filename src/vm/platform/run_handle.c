@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-#include "lib/host/sync.h"
+#include "lib/host/sync_interface.h"
 #include "vm/platform/platform_internal.h"
 
 typedef struct vm_platform_ux_handle {

@@ -1,7 +1,7 @@
-#ifndef LIB_HOST_CONSOLE_H
-#define LIB_HOST_CONSOLE_H
+#ifndef LIB_HOST_CONSOLE_INTERFACE_H
+#define LIB_HOST_CONSOLE_INTERFACE_H
 
-#include "lib/base/console.h"
+#include "lib/base/console_interface.h"
 
 typedef struct host_console_broker host_console_broker;
 

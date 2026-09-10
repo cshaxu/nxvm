@@ -1,5 +1,5 @@
-#include "lib/base/base.h"
-#include "lib/storage/medium.h"
+#include "lib/base/base_interface.h"
+#include "lib/storage/medium_interface.h"
 
 #include <stdio.h>
 #include <process.h>

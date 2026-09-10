@@ -1,4 +1,6 @@
-#include "lib/ux-console/internal.h"
+#include "lib/ux-console/console.h"
+
+#include <stdlib.h>
 
 static void ux_console_dispose(ux_console *console)
 {

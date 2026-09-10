@@ -1,4 +1,7 @@
-#include "lib/ux-window/internal.h"
+#include "lib/ux-window/window.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 static void ux_window_component_stop(ux_component *base)
 { ux_window_native_stop((ux_window *)base); }
@@ -60,19 +63,21 @@ void ux_window_destroy(ux_window *window)
 
 lib_status ux_window_set_title(ux_window *window, const char *title)
 {
-    ux_component_control control = { 0 };
+    ux_component_control control = {
+        .kind = UX_COMPONENT_CONTROL_SET_WINDOW_TITLE
+    };
     if (title == LIB_NULL || memchr(title, '\0',
             UX_COMPONENT_WINDOW_TITLE_CAPACITY) == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    control.kind = UX_COMPONENT_CONTROL_SET_WINDOW_TITLE;
     memcpy(control.value.title, title, strlen(title) + 1u);
     return ux_window_enqueue(window, control);
 }
 
 lib_status ux_window_unfreeze(ux_window *window)
 {
-    ux_component_control control = { UX_COMPONENT_CONTROL_SET_WINDOW_FROZEN,
-        { 0 } };
+    ux_component_control control = {
+        .kind = UX_COMPONENT_CONTROL_SET_WINDOW_FROZEN
+    };
     control.value.window_frozen = LIB_FALSE;
     return ux_window_enqueue(window, control);
 }
@@ -80,8 +85,8 @@ lib_status ux_window_unfreeze(ux_window *window)
 lib_status ux_window_freeze(ux_window *window)
 {
     ux_component_control controls[2] = {
-        { UX_COMPONENT_CONTROL_SET_WINDOW_FROZEN, { 0 } },
-        { UX_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE, { 0 } }
+        { .kind = UX_COMPONENT_CONTROL_SET_WINDOW_FROZEN },
+        { .kind = UX_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE }
     };
     if (window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     controls[0].value.window_frozen = LIB_TRUE;
@@ -90,7 +95,8 @@ lib_status ux_window_freeze(ux_window *window)
 
 lib_status ux_window_release_mouse(ux_window *window)
 {
-    ux_component_control control = { UX_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE,
-        { 0 } };
+    ux_component_control control = {
+        .kind = UX_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE
+    };
     return ux_window_enqueue(window, control);
 }

@@ -1419,6 +1419,23 @@ target_link_libraries(vm-product-console-exit-smoke PRIVATE
     type-facade
 )
 
+add_executable(vm-product-console-lifecycle-report-smoke
+    test/vm/product/vm_product_console_lifecycle_report_smoke.c
+    src/vm/product/console.c
+    test/vm/product/console_host_fake.c
+    src/vm/product/session_catalog.c
+)
+target_include_directories(vm-product-console-lifecycle-report-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-product-console-lifecycle-report-smoke PRIVATE
+    core-product-session
+    core-product-utils
+    core-machine-boundary
+    storage-medium
+    type-facade
+)
+
 add_executable(core-product-xasm-smoke
     test/core/product/core_product_xasm_smoke.c
 )
@@ -1932,6 +1949,9 @@ target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
 add_executable(vm-runner-display-cadence-smoke
     test/vm/machine/vm_runner_display_cadence_smoke.c)
 target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
+add_executable(vm-console-pause-resume-smoke
+    test/vm/machine/vm_console_pause_resume_smoke.c)
+target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-composition)
 add_executable(vm-dos-video-port-smoke
     test/integration/dos/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-yaml-support)
@@ -2352,6 +2372,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-product-debug-input-failure-smoke
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
+    vm-product-console-lifecycle-report-smoke
     core-machine-guest-input-source-smoke
     host-sync-smoke
     vm-session-state-smoke
@@ -2370,6 +2391,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-fdc-t242-corpus-port-smoke
     vm-hdc-hdd-boot-smoke
     vm-runner-display-cadence-smoke
+    vm-console-pause-resume-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
     vm-product-console-smoke
@@ -3110,8 +3132,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0524)
-add_current_vm_artifact(vm-0-5-0524 "0.5.0524")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0526)
+add_current_vm_artifact(vm-0-5-0526 "0.5.0526")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3865,6 +3887,9 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product-console-exit-smoke|src/vm/product/console.c|console-exit"
     "vm-product-console-exit-smoke|test/vm/product/console_host_fake.c|console-exit"
     "vm-product-console-exit-smoke|src/vm/product/session_catalog.c|console-exit"
+    "vm-product-console-lifecycle-report-smoke|src/vm/product/console.c|console-lifecycle-report"
+    "vm-product-console-lifecycle-report-smoke|test/vm/product/console_host_fake.c|console-lifecycle-report"
+    "vm-product-console-lifecycle-report-smoke|src/vm/product/session_catalog.c|console-lifecycle-report"
     "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
     "vm-model40-console-s20-smoke|test/vm/product/console_host_fake.c|console-integration"
     "vm-product-console-lifecycle-smoke|src/vm/product/console.c|console-integration"

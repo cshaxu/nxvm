@@ -7,7 +7,7 @@
 #include "core/machine/guest_display_frame.h"
 
 #include "vm/platform/platform.h"
-#include "lib/host/clock.h"
+#include "lib/host/clock_interface.h"
 
 #include "vm/composition/session/session_private.h"
 

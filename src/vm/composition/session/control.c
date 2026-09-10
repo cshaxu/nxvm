@@ -16,7 +16,7 @@
 
 #include "core/machine/machine_interface.h"
 
-#include "lib/host/sync.h"
+#include "lib/host/sync_interface.h"
 
 #include "vm/composition/session/control.h"
 

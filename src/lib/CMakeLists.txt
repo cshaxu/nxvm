@@ -10,6 +10,14 @@ endif()
 
 set(LIBRARY_SOURCE_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
 
+set(LIBRARY_STRICT_WARNINGS_DEFAULT OFF)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(LIBRARY_STRICT_WARNINGS_DEFAULT ON)
+endif()
+option(LIBRARY_STRICT_WARNINGS
+    "Build shared-library implementation targets with strict compiler warnings"
+    ${LIBRARY_STRICT_WARNINGS_DEFAULT})
+
 function(library_root target)
     target_include_directories(${target} PUBLIC "${LIBRARY_SOURCE_ROOT}")
 endfunction()
@@ -82,17 +90,22 @@ if(WIN32)
     target_link_libraries(ux-window PRIVATE user32 gdi32)
 else()
     add_library(ux-linux-native ALIAS ux)
-    find_package(Curses REQUIRED)
     find_package(Threads REQUIRED)
-    target_include_directories(ux-window PUBLIC ${CURSES_INCLUDE_DIRS})
-    target_link_libraries(ux-window PUBLIC ${CURSES_LIBRARIES} Threads::Threads)
-    target_link_libraries(ux-console PUBLIC ${CURSES_LIBRARIES} Threads::Threads)
+    target_link_libraries(host-sync PUBLIC Threads::Threads)
 endif()
 
 # This build-only aggregate does not create a library-root dependency. Each
 # peer root remains independently compilable and depends only on `base`.
 add_library(lib-neutral-corpus INTERFACE)
 target_link_libraries(lib-neutral-corpus INTERFACE base-console ux host-sync storage-medium)
+
+if(LIBRARY_STRICT_WARNINGS AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    foreach(library_target IN ITEMS
+            base-console ux-base ux-window ux-console host-sync storage-medium)
+        target_compile_options(${library_target} PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
+endif()
 
 add_custom_target(lib-verify-manifest
     COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}
@@ -102,4 +115,7 @@ if(BUILD_TESTING)
     add_test(NAME library.manifest
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}
             -P "${CMAKE_CURRENT_LIST_DIR}/verify_manifest.cmake")
+    add_test(NAME library.linux-build-contract
+        COMMAND "${CMAKE_COMMAND}" -DLIBRARY_CMAKE:FILEPATH=${CMAKE_CURRENT_LIST_FILE}
+            -P "${CMAKE_CURRENT_LIST_DIR}/verify_linux_build_contract.cmake")
 endif()

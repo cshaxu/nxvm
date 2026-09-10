@@ -70,6 +70,25 @@ Platform integrations report through opaque core contracts. Host policy and
 guest-state mutation occur at the owning product composition boundary, never
 inside a generic platform implementation.
 
+### NXVM Session Control And Presentation
+
+NXVM separates a session's guest execution from process-wide product control.
+`vm/composition/session` owns one session's Core execution, actual lifecycle
+state, copied display capture, and guest-input endpoint.  It neither selects a
+host surface nor owns the process Console.  `vm/product/control` is the sole
+consumer of product commands, host-input facts, lifecycle completions, frame
+facts, and presenter/broker completions.  Every asynchronous record carries a
+session identity and run generation; stale input cannot affect a recreated
+session, while source retirement remains cleanup for its original source.
+
+For each session, `vm/product/presentation` owns the one lib Console or Window
+binding.  Product control derives a desired presentation state from completed
+facts and issues at most one in-flight binding or broker action; the binding
+reports completion back to product control.  `vm/product/console_host` owns
+the process Console broker and may lease it to at most one Console presenter.
+All other sessions are independent Window or headless sessions.  Core and
+`src/lib` do not know session selection, lifecycle policy, or Console leasing.
+
 Native and WASM hosts share these component boundaries. A future TypeScript web
 product layer sits above the WASM platform/product adaptation; it does not move
 browser, network, or storage policy into generic machine behavior.

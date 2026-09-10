@@ -1,7 +1,7 @@
-#ifndef LIB_HOST_SYNC_H
-#define LIB_HOST_SYNC_H
+#ifndef LIB_HOST_SYNC_INTERFACE_H
+#define LIB_HOST_SYNC_INTERFACE_H
 
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 typedef enum host_sync_wait_result {
     HOST_SYNC_WAIT_SIGNALED,

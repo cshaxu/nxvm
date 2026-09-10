@@ -23,6 +23,8 @@ type_status vm_platform_ux_frame_from_core(
         STD_MEMCPY(destination->graphics_palette, source->palette_rgb,
             sizeof(source->palette_rgb));
     } else {
+        STD_SIZE_T cell;
+
         if (source->columns > UX_TEXT_COLUMNS || source->rows > UX_TEXT_ROWS)
             return TYPE_STATUS_UNSUPPORTED;
         destination->text_columns = source->columns;
@@ -34,7 +36,13 @@ type_status vm_platform_ux_frame_from_core(
         destination->cursor_visible = source->cursor_visible;
         destination->cursor_phase = source->cursor_visible;
         STD_MEMCPY(destination->text, source->characters, sizeof(source->characters));
-        STD_MEMCPY(destination->attributes, source->attributes, sizeof(source->attributes));
+        /* Core attributes are one byte per cell; the shared UX value ABI
+         * deliberately reserves a 16-bit attribute per cell.  Copying bytes
+         * would initialise only half of the UX cells and turn rows 13--25
+         * into black-on-black text. */
+        for (cell = 0u; cell < CORE_MACHINE_GUEST_DISPLAY_MAX_CELLS; ++cell) {
+            destination->attributes[cell] = source->attributes[cell];
+        }
         STD_MEMCPY(destination->text_palette, source->palette_rgb,
             sizeof(destination->text_palette));
         if (source->text_glyphs_present) {

@@ -1,7 +1,7 @@
 #include "type.h"
 
-#include "lib/host/sync.h"
-#include "lib/host/clock.h"
+#include "lib/host/sync_interface.h"
+#include "lib/host/clock_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"

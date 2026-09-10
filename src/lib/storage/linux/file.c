@@ -1,12 +1,13 @@
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 #include <sys/types.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "lib/storage/internal/native.h"
+#include "lib/storage/file_backend.h"
 
-FILE *lib_storage_native_open(const char *path, lib_storage_medium_mode mode)
+FILE *lib_storage_file_backend_open(const char *path, lib_storage_medium_mode mode)
 {
     FILE *file = fopen(path, mode == LIB_STORAGE_MEDIUM_DIRECT ? "rb+" : "rb");
     struct flock lock = { 0 };
@@ -21,8 +22,8 @@ FILE *lib_storage_native_open(const char *path, lib_storage_medium_mode mode)
     return file;
 }
 
-int lib_storage_native_seek_64(FILE *file, lib_i64 offset, int origin)
+int lib_storage_file_backend_seek_64(FILE *file, lib_i64 offset, int origin)
 { return fseeko(file, (off_t)offset, origin); }
 
-lib_i64 lib_storage_native_tell_64(FILE *file)
-{ return (int64_t)ftello(file); }
+lib_i64 lib_storage_file_backend_tell_64(FILE *file)
+{ return (lib_i64)ftello(file); }

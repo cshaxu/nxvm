@@ -21,6 +21,11 @@ C_INT main(C_VOID)
     if (!vm_platform_run_handle_take_pause_report(handle) ||
         vm_platform_run_handle_take_pause_report(handle) ||
         vm_platform_run_handle_take_stop_report(handle)) goto fail;
+    vm_platform_run_handle_report(handle,
+        VM_PLATFORM_RUN_EVENT_WINDOW_CLOSE_REQUESTED);
+    if (!vm_platform_run_handle_take_window_close_report(handle) ||
+        vm_platform_run_handle_take_window_close_report(handle) ||
+        vm_platform_run_handle_take_pause_report(handle)) goto fail;
     vm_platform_run_handle_destroy(handle);
     vm_platform_run_context_destroy(second); vm_platform_run_context_destroy(first);
     return 0;

@@ -65,7 +65,8 @@ C_INT vm_platform_run_context_handle_ux_input(C_VOID *opaque,
         return 0;
     }
     if (event->type == UX_EVENT_WINDOW_CLOSE) {
-        vm_platform_run_handle_report(handle, VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
+        vm_platform_run_handle_report(handle,
+            VM_PLATFORM_RUN_EVENT_WINDOW_CLOSE_REQUESTED);
         return 1;
     }
     if (!vm_platform_ux_event_submit(context, event)) return 0;
@@ -208,15 +209,18 @@ type_status vm_platform_run_context_set_mouse_capturable(vm_platform_run_context
 { return context == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT : context->window == STD_NULL ? TYPE_STATUS_OK : (type_status)(capturable ? ux_window_unfreeze(context->window) : ux_window_freeze(context->window)); }
 type_status vm_platform_run_context_release_mouse(vm_platform_run_context *context)
 { return context == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT : context->window == STD_NULL ? TYPE_STATUS_OK : (type_status)ux_window_release_mouse(context->window); }
+type_status vm_platform_run_context_close_window(vm_platform_run_context *context)
+{ if (context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT; if (context->window != STD_NULL) vm_platform_destroy_leaf(context); return TYPE_STATUS_OK; }
 
 type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle) { vm_platform_run_handle *handle; if (out_handle == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT; *out_handle = STD_CALLOC(1u, sizeof(**out_handle)); if (*out_handle == STD_NULL) return TYPE_STATUS_NO_MEMORY; handle = *out_handle; vm_platform_run_handle_initialize(handle); return TYPE_STATUS_OK; }
-C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle) { if (handle != STD_NULL) { STD_MEMSET(handle, 0, sizeof(*handle)); STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE); STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE); STD_ATOMIC_INIT(&handle->pause_reported, TYPE_FALSE); } }
+C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle) { if (handle != STD_NULL) { STD_MEMSET(handle, 0, sizeof(*handle)); STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE); STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE); STD_ATOMIC_INIT(&handle->pause_reported, TYPE_FALSE); STD_ATOMIC_INIT(&handle->window_close_reported, TYPE_FALSE); } }
 C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle) { STD_FREE(handle); }
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle) { return handle != STD_NULL && handle->active; }
 C_INT vm_platform_run_handle_is_window_display(const vm_platform_run_handle *handle) { return handle != STD_NULL && handle->context != STD_NULL && handle->context->window_active; }
 C_INT vm_platform_run_handle_is_console_display(const vm_platform_run_handle *handle) { return handle != STD_NULL && handle->context != STD_NULL && handle->context->console != STD_NULL; }
-C_VOID vm_platform_run_handle_report(vm_platform_run_handle *handle, vm_platform_run_event event) { if (handle == STD_NULL) return; STD_ATOMIC_STORE(&handle->last_event,event); if (event == VM_PLATFORM_RUN_EVENT_STOP_REQUESTED || event == VM_PLATFORM_RUN_EVENT_STARTUP_FAILED) STD_ATOMIC_STORE(&handle->stop_reported,TYPE_TRUE); else if(event == VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED) STD_ATOMIC_STORE(&handle->pause_reported,TYPE_TRUE); }
+C_VOID vm_platform_run_handle_report(vm_platform_run_handle *handle, vm_platform_run_event event) { if (handle == STD_NULL) return; STD_ATOMIC_STORE(&handle->last_event,event); if (event == VM_PLATFORM_RUN_EVENT_STOP_REQUESTED || event == VM_PLATFORM_RUN_EVENT_STARTUP_FAILED) STD_ATOMIC_STORE(&handle->stop_reported,TYPE_TRUE); else if(event == VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED) STD_ATOMIC_STORE(&handle->pause_reported,TYPE_TRUE); else if (event == VM_PLATFORM_RUN_EVENT_WINDOW_CLOSE_REQUESTED) STD_ATOMIC_STORE(&handle->window_close_reported, TYPE_TRUE); }
 vm_platform_run_event vm_platform_run_handle_get_last_event(const vm_platform_run_handle *handle) { return handle == STD_NULL ? VM_PLATFORM_RUN_EVENT_NONE : (vm_platform_run_event)STD_ATOMIC_LOAD(&handle->last_event); }
 C_INT vm_platform_run_handle_take_stop_report(vm_platform_run_handle *handle) { return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->stop_reported,TYPE_FALSE); }
 C_INT vm_platform_run_handle_take_pause_report(vm_platform_run_handle *handle) { return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->pause_reported,TYPE_FALSE); }
+C_INT vm_platform_run_handle_take_window_close_report(vm_platform_run_handle *handle) { return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->window_close_reported, TYPE_FALSE); }
 C_VOID vm_platform_run_handle_request_presenter_stop(vm_platform_run_handle *handle) { if (handle != STD_NULL && handle->context != STD_NULL) vm_platform_destroy_leaf(handle->context); }

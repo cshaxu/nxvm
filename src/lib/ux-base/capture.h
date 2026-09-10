@@ -1,7 +1,7 @@
 #ifndef UX_CAPTURE_H
 #define UX_CAPTURE_H
 
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 /* A presenter records only whether its native capture is active.  The native
  * backend owns the corresponding host calls; products never receive a native

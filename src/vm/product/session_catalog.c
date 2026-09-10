@@ -11,7 +11,7 @@ struct vm_product_session_catalog {
 };
 
 #include "core/product/utils.h"
-#include "lib/storage/file.h"
+#include "lib/storage/file_interface.h"
 
 static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
 {

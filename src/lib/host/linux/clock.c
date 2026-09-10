@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "lib/host/clock_internal.h"
+#include "lib/host/clock.h"
 
 #include <time.h>
 

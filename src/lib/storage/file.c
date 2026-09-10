@@ -1,15 +1,18 @@
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
-#include "lib/storage/file.h"
-#include "lib/storage/internal/native.h"
+#include "lib/storage/file_interface.h"
+#include "lib/storage/file_backend.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 struct lib_storage_file_writer { FILE *file; };
 
-lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
-    void **out_bytes, size_t *out_byte_count)
+lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
+    void **out_bytes, lib_size *out_byte_count)
 {
     FILE *file;
-    int64_t length;
+    lib_i64 length;
     void *bytes = LIB_NULL;
 
     if (path == LIB_NULL || out_bytes == LIB_NULL || out_byte_count == LIB_NULL) {
@@ -19,12 +22,12 @@ lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
     *out_byte_count = 0u;
     file = fopen(path, "rb");
     if (file == LIB_NULL) return LIB_STATUS_IO_ERROR;
-    if (lib_storage_native_seek_64(file, 0, SEEK_END) != 0 ||
-        (length = lib_storage_native_tell_64(file)) < 0 || (lib_u64)length > maximum ||
-        lib_storage_native_seek_64(file, 0, SEEK_SET) != 0 ||
-        (bytes = malloc((size_t)length == 0u ? 1u : (size_t)length)) == LIB_NULL ||
-        ((size_t)length != 0u && fread(bytes, 1u, (size_t)length, file) !=
-            (size_t)length)) {
+    if (lib_storage_file_backend_seek_64(file, 0, SEEK_END) != 0 ||
+        (length = lib_storage_file_backend_tell_64(file)) < 0 || (lib_u64)length > maximum ||
+        lib_storage_file_backend_seek_64(file, 0, SEEK_SET) != 0 ||
+        (bytes = malloc((lib_size)length == 0u ? 1u : (lib_size)length)) == LIB_NULL ||
+        ((lib_size)length != 0u && fread(bytes, 1u, (lib_size)length, file) !=
+            (lib_size)length)) {
         (void)fclose(file);
         free(bytes);
         return LIB_STATUS_IO_ERROR;
@@ -34,7 +37,7 @@ lib_status lib_storage_file_read_owned(const char *path, size_t maximum,
         return LIB_STATUS_IO_ERROR;
     }
     *out_bytes = bytes;
-    *out_byte_count = (size_t)length;
+    *out_byte_count = (lib_size)length;
     return LIB_STATUS_OK;
 }
 

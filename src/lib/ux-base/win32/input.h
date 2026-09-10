@@ -1,7 +1,7 @@
 #ifndef UX_WIN32_INPUT_H
 #define UX_WIN32_INPUT_H
 
-#include "lib/ux-base/event.h"
+#include "lib/ux-base/event_interface.h"
 
 #ifdef _WIN32
 #include <windows.h>

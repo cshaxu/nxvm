@@ -2,8 +2,28 @@
 
 ## Current Work
 
-No active task. T525 is closed; its retained implementation and closure evidence
-are in [history](../history/M5-T525-canonical-softpc-library-adoption.md).
+| Task | Status | Scope |
+| --- | --- | --- |
+| T526 S3 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): refresh the canonical lib and make confirmed NXVM lifecycle changes visible through one multi-session product control route. |
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T526 S3. |
+| Admission And Approval | Owner approved the SoftPC-parity lifecycle/Console gap closure on 2026-09-09, the canonical SoftPC revision `7cc408ec2e27c8243ae2a3f719d313bb7e851e1d` refresh on 2026-09-10, and replacement of the mixed NXVM UX route with the SoftPC-style multi-session product-control/presentation separation. Current S3 scope is the direct lib import plus NXVM product/composition binding and repository-only tests; the replacement itself is the next admitted S. |
+| Objective | Replace `src/lib` byte-for-byte; report actual running, paused and stopped completions through one bounded multi-session product-control route; preserve paused state while a Console presenter releases the product Console. |
+| Non-goals | No local lib patch or compatibility header, native SDK call from VM code, firmware/media/profile change, new debugger behavior, or external integration fixture change. |
+| Reference Baseline | T526 S1 text-frame conversion and T526 S2 Window-close intent worktree, canonical SoftPC `7cc408ec`, and its monitor/reconciler/presentation separation. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S3. |
+| Files And ABI Surface | Direct `src/lib` corpus refresh; NXVM session lifecycle/runner, product control/presentation/Console binding, and repository-only tests. Product code consumes only lib `*_interface.h` headers. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/rules/EXECUTION.md`: one session-state owner, one product output owner, one presenter route, no platform leakage. |
+| Verification | SoftPC manifest/strict standalone audit; focused lifecycle/Console/control tests; complete repository-only unit suite; byte-identity, public-header and canonical-lib manifest checks. Product-control/presentation replacement is S4; T-level integration and dual stripped artifacts remain S5 closure work. |
+| Expected Markers | `Machine running.`, `Machine paused.`, and `Machine stopped.` appear only after their state is true; a Console pause returns the command Console, remains resumable, and does not emit `stopped`. |
+| Asset Needs | None; repository-only unit inputs only. |
+| Reporting Requirements | Report the transition contract, complete-P verification and net source/test change. Stop for the owner's manual native UX test before S3 acceptance. |
+| Stop Conditions | Stop if the canonical lib requires an NXVM-local patch, a product event cannot be made lifecycle-safe, or any pre-existing passing presentation path regresses. |
+| Exit Criteria | Byte-identical canonical lib; one product-owned lifecycle-report/control route covers CLI, hotkey and Window-close transitions; no Console borrow/release writes session state; focused and complete unit tests pass. |
+| Original Owner Request | Compare NXVM with the neighboring SoftPC project and close the gaps. |
+| Similar-Issue Sweep | Audit all lifecycle writers (`start`, `pause`, `resume`, `stop`, reset completion, Window close and Core stop) and all product Console write sites; retain one confirmed-state report route or explicitly defer an out-of-scope semantic. |
 
 ## Current Technical Baseline
 

@@ -1,7 +1,7 @@
-#ifndef LIB_STORAGE_FILE_H
-#define LIB_STORAGE_FILE_H
+#ifndef LIB_STORAGE_FILE_INTERFACE_H
+#define LIB_STORAGE_FILE_INTERFACE_H
 
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 typedef struct lib_storage_file_writer lib_storage_file_writer;
 

@@ -1,7 +1,7 @@
-#ifndef UX_EVENT_H
-#define UX_EVENT_H
+#ifndef UX_EVENT_INTERFACE_H
+#define UX_EVENT_INTERFACE_H
 
-#include "lib/base/base.h"
+#include "lib/base/base_interface.h"
 
 /* Product-neutral host input emitted by the presentation library. Key
  * identities and scan codes describe a host physical transition; text is the

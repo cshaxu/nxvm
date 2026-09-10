@@ -44,7 +44,8 @@ type_status vm_product_console_host_write(vm_product_console_host *host,
     const C_CHAR *text)
 {
     (C_VOID)host;
-    return text == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT : TYPE_STATUS_OK;
+    if (text == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    return STD_FPUTS(text, STD_STDOUT) < 0 ? TYPE_STATUS_FAULT : TYPE_STATUS_OK;
 }
 
 const vm_platform_console_binding *vm_product_console_host_binding(

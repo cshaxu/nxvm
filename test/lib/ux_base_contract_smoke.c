@@ -1,5 +1,5 @@
-#include "lib/ux-base/frame.h"
-#include "lib/ux-base/hotkey.h"
+#include "lib/ux-base/frame_interface.h"
+#include "lib/ux-base/hotkey_interface.h"
 
 #include <string.h>
 

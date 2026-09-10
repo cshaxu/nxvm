@@ -18,7 +18,7 @@
 #include "core/product/utils.h"
 #include "core/utils/wait_provider.h"
 
-#include "lib/host/sync.h"
+#include "lib/host/sync_interface.h"
 
 #include "vm/composition/session/debug_target.h"
 
@@ -224,10 +224,14 @@ type_status vm_session_reset(vm_session *machine) {
 }
 
 C_VOID vm_session_stop(vm_session *machine) {
+    C_INT was_active;
+    C_INT had_runner;
     C_INT was_window;
     C_INT was_console;
 
     if (machine == STD_NULL) return;
+    was_active = vm_session_state_is_active(machine->control.state);
+    had_runner = vm_platform_run_handle_is_active(machine->platform_run_handle);
     was_window = vm_platform_run_handle_is_window_display(
         machine->platform_run_handle);
     was_console = vm_platform_run_handle_is_console_display(
@@ -237,6 +241,13 @@ C_VOID vm_session_stop(vm_session *machine) {
      * sole joiner. Window runs return here and need their async teardown. */
     if (was_window || !was_console) {
         vm_session_platform_join_and_finalize(machine);
+    }
+    /* A Console pause deliberately ended its synchronous runner while keeping
+     * the session paused. STOP therefore owns the one stopped completion for
+     * that runner-less, still-active state. An active runner reports its own
+     * completion after the requested stop reaches its boundary. */
+    if (was_active && !had_runner) {
+        vm_session_report_lifecycle(machine, VM_SESSION_STOPPED);
     }
 }
 
@@ -248,23 +259,62 @@ type_status vm_session_set_console_binding(vm_session *machine,
             binding);
 }
 
+void vm_session_set_lifecycle_reporter(vm_session *machine,
+    vm_session_lifecycle_reporter reporter, C_VOID *context)
+{
+    if (machine == STD_NULL) return;
+    machine->lifecycle_reporter = reporter;
+    machine->lifecycle_reporter_context = context;
+}
+
+void vm_session_report_lifecycle(vm_session *machine,
+    vm_session_lifecycle lifecycle)
+{
+    if (machine != STD_NULL && machine->lifecycle_reporter != STD_NULL) {
+        machine->lifecycle_reporter(machine->lifecycle_reporter_context,
+            machine->product_session_id, lifecycle);
+    }
+}
+
 type_status vm_session_resume(vm_session *machine) {
     type_status status;
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    vm_platform_run_context_set_window_title(machine->platform_run_context,
-        "NXVM (Running)");
     if (vm_session_control_is_running(&machine->control)) {
         return vm_session_start_outcome_record(machine, TYPE_STATUS_INVALID_STATE);
     }
-    if (vm_session_control_is_paused(&machine->control)) {
-        vm_session_control_continue(&machine->control);
-        if (vm_platform_run_handle_is_window_display(machine->platform_run_handle) &&
-            vm_platform_run_handle_is_active(machine->platform_run_handle)) {
+    if (vm_session_control_is_paused(&machine->control) &&
+        vm_platform_run_handle_is_active(machine->platform_run_handle)) {
+        if (vm_platform_run_context_get_display_mode(machine->platform_run_context) ==
+                VM_PLATFORM_DISPLAY_WINDOW) {
+            status = vm_platform_run_context_set_display_mode(
+                machine->platform_run_context, VM_PLATFORM_DISPLAY_WINDOW);
+            if (status != TYPE_STATUS_OK) {
+                return vm_session_start_outcome_record(machine, status);
+            }
+            /* A Window closed while paused has no retained native surface.
+             * Recreate it above, then publish the current copied snapshot
+             * before execution resumes so the new presenter is never blank. */
+            (C_VOID)vm_session_publish_display(machine, TYPE_TRUE);
+            vm_session_control_continue(&machine->control);
             (C_VOID)vm_platform_run_context_set_mouse_capturable(
                 machine->platform_run_context, TYPE_TRUE);
+            (C_VOID)vm_platform_run_context_set_window_title(
+                machine->platform_run_context, "NXVM (Running)");
+            vm_session_report_lifecycle(machine, VM_SESSION_RUNNING);
             return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
         }
+        status = vm_platform_run_context_set_display_mode(machine->platform_run_context,
+            VM_PLATFORM_DISPLAY_CONSOLE);
+        if (status != TYPE_STATUS_OK) {
+            return vm_session_start_outcome_record(machine, status);
+        }
+        vm_session_control_continue(&machine->control);
+        vm_session_report_lifecycle(machine, VM_SESSION_RUNNING);
+        if (vm_platform_run_handle_is_console_display(machine->platform_run_handle)) {
+            vm_platform_run_handle_wait_console_release(machine->platform_run_handle);
+        }
+        return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
     }
     status = vm_platform_start(machine->platform_run_context,
         machine->platform_run_handle);

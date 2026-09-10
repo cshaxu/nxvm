@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine.h"
-#include "lib/host/sync.h"
+#include "lib/host/sync_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/lifecycle.h"

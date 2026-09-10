@@ -2,7 +2,7 @@
 
 #include "vm/profile/byob/blob.h"
 
-#include "lib/storage/file.h"
+#include "lib/storage/file_interface.h"
 
 static type_unsigned_32 vm_profile_byob_sha256_rotate_right(
     type_unsigned_32 value, type_unsigned_8 bits)

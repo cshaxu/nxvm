@@ -3,7 +3,7 @@
 
 #include "type.h"
 #include "core/machine/guest_display_frame.h"
-#include "lib/ux-base/frame.h"
+#include "lib/ux-base/frame_interface.h"
 
 /* VM owns this representation conversion. Neither Core nor lib/ux depends on
  * the other's frame format. */

@@ -11,6 +11,9 @@ extern "C" {
 
 #include "vm/composition/session/session_interface.h"
 
+#include "core/product/session/session_interface.h"
+#include "vm/platform/session_state.h"
+
 struct vm_platform_console_binding;
 
 type_status vm_session_start(vm_session *machine);
@@ -20,6 +23,12 @@ C_VOID vm_session_stop(vm_session *machine);
 type_status vm_session_resume(vm_session *machine);
 type_status vm_session_set_console_binding(vm_session *machine,
     const struct vm_platform_console_binding *binding);
+typedef C_VOID (*vm_session_lifecycle_reporter)(C_VOID *context,
+    core_product_session_id id, vm_session_lifecycle lifecycle);
+void vm_session_set_lifecycle_reporter(vm_session *machine,
+    vm_session_lifecycle_reporter reporter, C_VOID *context);
+void vm_session_report_lifecycle(vm_session *machine,
+    vm_session_lifecycle lifecycle);
 
 type_status vm_session_initialize(vm_session *machine);
 C_VOID vm_session_finalize(vm_session *machine);

@@ -1,7 +1,7 @@
-#ifndef UX_BASE_HOTKEY_H
-#define UX_BASE_HOTKEY_H
+#ifndef UX_BASE_HOTKEY_INTERFACE_H
+#define UX_BASE_HOTKEY_INTERFACE_H
 
-#include "lib/ux-base/event.h"
+#include "lib/ux-base/event_interface.h"
 
 #define UX_HOTKEY_CAPACITY 16u
 #define UX_HOTKEY_PENDING_CAPACITY 4u

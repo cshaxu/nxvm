@@ -12,6 +12,26 @@
 #define VM_RUNNER_DISPLAY_CADENCE_RUN_MILLISECONDS 100u
 #define VM_RUNNER_DISPLAY_CADENCE_MAX_FRAMES 12u
 
+typedef struct vm_runner_display_lifecycle_log {
+    LONG count;
+    vm_session_lifecycle events[5u];
+    core_product_session_id ids[5u];
+} vm_runner_display_lifecycle_log;
+
+static C_VOID vm_runner_display_lifecycle_report(C_VOID *opaque,
+    core_product_session_id id, vm_session_lifecycle lifecycle)
+{
+    vm_runner_display_lifecycle_log *log = opaque;
+    LONG index;
+
+    if (log == STD_NULL) return;
+    index = InterlockedIncrement(&log->count) - 1;
+    if (index >= 0 && index < (LONG)(sizeof(log->events) / sizeof(log->events[0u]))) {
+        log->events[index] = lifecycle;
+        log->ids[index] = id;
+    }
+}
+
 static C_INT vm_runner_display_cadence_wait_for_resume(
     vm_session *session, C_UINT milliseconds)
 {
@@ -44,6 +64,7 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     type_unsigned_64 generation;
+    vm_runner_display_lifecycle_log lifecycle_log = {0};
     C_INT failed = 0;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
@@ -56,6 +77,9 @@ C_INT main(C_VOID)
         failed = 1;
         goto done;
     }
+    session->product_session_id = 7u;
+    vm_session_set_lifecycle_reporter(session, vm_runner_display_lifecycle_report,
+        &lifecycle_log);
     thread = CreateThread(STD_NULL, 0u, vm_runner_display_cadence_run, session,
         0u, STD_NULL);
     if (thread == STD_NULL) {
@@ -93,6 +117,14 @@ done:
         if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) failed = 1;
         CloseHandle(thread);
     }
+    failed |= lifecycle_log.count != 5 || lifecycle_log.ids[0u] != 7u ||
+        lifecycle_log.ids[1u] != 7u || lifecycle_log.ids[2u] != 7u ||
+        lifecycle_log.ids[3u] != 7u || lifecycle_log.ids[4u] != 7u ||
+        lifecycle_log.events[0u] != VM_SESSION_RUNNING ||
+        lifecycle_log.events[1u] != VM_SESSION_PAUSED ||
+        lifecycle_log.events[2u] != VM_SESSION_RUNNING ||
+        lifecycle_log.events[3u] != VM_SESSION_PAUSED ||
+        lifecycle_log.events[4u] != VM_SESSION_STOPPED;
     if (session != STD_NULL) vm_session_destroy(session);
     if (failed) return 1;
     puts("M5:T212:S2:RUNNER-CADENCE:OK");

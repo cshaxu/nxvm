@@ -176,7 +176,7 @@ static type_status vm_session_provider_open(C_VOID *context,
     if (status != TYPE_STATUS_OK) return status;
     status = vm_session_create(&config, &session);
     if (status != TYPE_STATUS_OK) return status;
-    (C_VOID)id;
+    session->product_session_id = id;
     *out_session = session;
     return TYPE_STATUS_OK;
 }

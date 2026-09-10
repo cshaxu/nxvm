@@ -1,4 +1,4 @@
-#include "lib/host/clock_internal.h"
+#include "lib/host/clock.h"
 
 #include <windows.h>
 
