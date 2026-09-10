@@ -28,5 +28,7 @@ type_status vm_product_control_publish(vm_product_control *control,
 type_status vm_product_control_take(vm_product_control *control,
     vm_product_control_fact *out_fact, C_UINT timeout_milliseconds);
 C_VOID vm_product_control_close(vm_product_control *control);
+const C_CHAR *vm_product_control_note_lifecycle(vm_product_control *control,
+    vm_session_lifecycle lifecycle);
 
 #endif

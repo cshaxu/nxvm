@@ -21,7 +21,6 @@ struct vm_product_console_context {
     vm_product_console_host *console_host;
     vm_product_control *control;
     C_INT sessions_stopped;
-    vm_session_lifecycle lifecycle;
 };
 #define CONSOLE_MAXNARG 256
 
@@ -73,19 +72,10 @@ static C_VOID vm_product_console_write_lifecycle(vm_product_console_context *con
     const C_CHAR *state;
 
     if (context == STD_NULL || fact == STD_NULL) return;
-    if (fact->value.lifecycle == VM_SESSION_RESET) {
-        state = "reset";
-    } else if (fact->value.lifecycle == VM_SESSION_RUNNING) {
-        state = context->lifecycle == VM_SESSION_PAUSED ? "resumed" : "started";
-    } else if (fact->value.lifecycle == VM_SESSION_PAUSED) {
-        state = "paused";
-    } else {
-        state = "stopped";
-    }
+    state = vm_product_control_note_lifecycle(context->control,
+        fact->value.lifecycle);
     (C_VOID)vm_product_console_printf(context, restore_prompt ?
         "\r\nMachine %s.\nConsole> " : "Machine %s.\n", state);
-    if (fact->value.lifecycle != VM_SESSION_RESET)
-        context->lifecycle = fact->value.lifecycle;
 }
 
 static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
@@ -571,7 +561,6 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
     context->sessions_stopped = TYPE_FALSE;
-    context->lifecycle = VM_SESSION_STOPPED;
     if (vm_product_control_create(&context->control) != TYPE_STATUS_OK ||
         vm_product_console_host_create(&context->console_host, context,
             vm_product_console_line_received) != TYPE_STATUS_OK) {

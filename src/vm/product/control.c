@@ -13,6 +13,7 @@ struct vm_product_control {
     STD_SIZE_T count;
     C_INT accepting;
     C_INT delivery_failed;
+    vm_session_lifecycle lifecycle;
 };
 
 static C_VOID vm_product_control_lock(vm_product_control *control)
@@ -41,6 +42,7 @@ type_status vm_product_control_create(vm_product_control **out_control)
         return TYPE_STATUS_NO_MEMORY;
     }
     control->accepting = TYPE_TRUE;
+    control->lifecycle = VM_SESSION_STOPPED;
     *out_control = control;
     return TYPE_STATUS_OK;
 }
@@ -107,4 +109,22 @@ C_VOID vm_product_control_close(vm_product_control *control)
     control->accepting = TYPE_FALSE;
     host_sync_event_signal(control->ready);
     vm_product_control_unlock(control);
+}
+
+const C_CHAR *vm_product_control_note_lifecycle(vm_product_control *control,
+    vm_session_lifecycle lifecycle)
+{
+    const C_CHAR *name;
+
+    if (control == STD_NULL) return "stopped";
+    if (lifecycle == VM_SESSION_RESET) return "reset";
+    if (lifecycle == VM_SESSION_RUNNING) {
+        name = control->lifecycle == VM_SESSION_PAUSED ? "resumed" : "started";
+    } else if (lifecycle == VM_SESSION_PAUSED) {
+        name = "paused";
+    } else {
+        name = "stopped";
+    }
+    control->lifecycle = lifecycle;
+    return name;
 }
