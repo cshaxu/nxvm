@@ -1,18 +1,7 @@
 #include "type.h"
 
-#include "vm/composition/session/session_private.h"
-
-#include "vm/composition/session/provider.h"
-
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/debug_target.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/machine_info.h"
-#include "core/product/debug/debug.h"
-#include "vm/machine/debug.h"
-#include "vm/machine/fdd.h"
-#include "vm/machine/hdd.h"
-#include "vm/platform/platform.h"
+#include "vm/composition/session/session_interface.h"
+#include "vm/product/session_factory.h"
 #include "vm/product/session_catalog.h"
 
 static C_INT vm_session_provider_parse_cpu(const C_CHAR *value,

@@ -5,7 +5,6 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
-#include "vm/platform/platform.h"
 #include "test/integration/support/session_yaml.h"
 
 static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
@@ -31,7 +30,6 @@ static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
         integration_yaml_session_close(&yaml_session);
         return 1;
     }
-    vm_platform_run_context_set_window_display(session->platform_run_context, 0);
     integration_yaml_session_close(&yaml_session);
     return 0;
 }

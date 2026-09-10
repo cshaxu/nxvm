@@ -16,17 +16,6 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(PROJECT_ENABLE_BOCHX_RESEARCH
     "Build the local-only Bochx experiment manifest validator" OFF)
 
-set(PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE "0" CACHE STRING
-    "Test-only Win32 platform startup failure stage (0 disables injection)")
-if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
-    if(NOT WIN32 OR NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE MATCHES "^[1-9]$")
-        message(FATAL_ERROR
-            "PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE must be 0 or 1 through 9 on Win32.")
-    endif()
-    add_compile_definitions(
-        VM_PLATFORM_TEST_FAILURE_STAGE=${PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE})
-endif()
-
 if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|MSVC|Clang)$")
     message(FATAL_ERROR "NXVM requires GCC, MSVC, or Clang C11 support.")
 endif()
@@ -1196,6 +1185,10 @@ set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
     src/vm/product/console_host.c
     src/vm/product/control.c
+    src/vm/product/presentation.c
+    src/vm/product/presentation_frame.c
+    src/vm/product/machine_adapter.c
+    src/vm/product/session_factory.c
     src/vm/product/session_catalog.c
 )
 set(CORE_PRODUCT_DEBUG_SOURCES
@@ -1205,8 +1198,6 @@ set(CORE_PRODUCT_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(VM_COMPOSITION_SOURCES
-    src/vm/composition/session/session_factory.c
-    src/vm/composition/session/console_machine_adapter.c
     src/vm/composition/session/debug_target.c
     src/vm/composition/session/media.c
     src/vm/composition/session/display.c
@@ -1216,6 +1207,7 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/fault.c
     src/vm/composition/session/execution.c
     src/vm/composition/session/runner.c
+    src/vm/composition/session/session_state.c
     src/vm/composition/session/waiting.c
     src/vm/composition/session/provider_lifecycle.c
     src/vm/composition/session/machine_devices.c
@@ -1252,40 +1244,33 @@ target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-machine-boundary PUBLIC type-facade host-sync)
-set(VM_PLATFORM_SOURCES
-    src/vm/platform/platform.c
-    src/vm/platform/run_handle.c
-    src/vm/platform/session_state.c
-    src/vm/platform/ux_frame.c
-    src/vm/platform/ux_binding.c
+add_library(vm-session-requests STATIC
+    src/vm/composition/session/request_bridge.c
 )
-add_library(vm-platform-requests STATIC
-    src/vm/platform/request_bridge.c
-)
-target_include_directories(vm-platform-requests PUBLIC
+target_include_directories(vm-session-requests PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-platform-requests PUBLIC type-facade)
-add_executable(vm-platform-request-bridge-smoke
-    test/vm/platform/vm_request_bridge_smoke.c
+target_link_libraries(vm-session-requests PUBLIC type-facade)
+add_executable(vm-session-request-bridge-smoke
+    test/vm/composition/vm_session_request_bridge_smoke.c
 )
-target_link_libraries(vm-platform-request-bridge-smoke PRIVATE
-    vm-platform-requests
+target_link_libraries(vm-session-request-bridge-smoke PRIVATE
+    vm-session-requests
 )
-add_library(vm-request-transport STATIC
-    src/vm/platform/vm_request_transport.c
+add_library(vm-session-request-transport STATIC
+    src/vm/composition/session/request_transport.c
 )
-target_include_directories(vm-request-transport PUBLIC
+target_include_directories(vm-session-request-transport PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-request-transport PUBLIC
-    vm-platform-requests
+target_link_libraries(vm-session-request-transport PUBLIC
+    vm-session-requests
 )
-add_executable(vm-request-transport-smoke
-    test/vm/platform/nxvm_vm_request_transport_smoke.c
+add_executable(vm-session-request-transport-smoke
+    test/vm/composition/vm_session_request_transport_smoke.c
 )
-target_link_libraries(vm-request-transport-smoke PRIVATE
-    vm-request-transport
+target_link_libraries(vm-session-request-transport-smoke PRIVATE
+    vm-session-request-transport
 )
 
 add_library(core-product-debug STATIC ${CORE_PRODUCT_DEBUG_SOURCES})
@@ -1355,6 +1340,8 @@ add_executable(vm-product-console-input-failure-smoke
     test/vm/product/vm_product_console_input_failure_smoke.c
     src/vm/product/console.c
     src/vm/product/control.c
+    src/vm/product/presentation.c
+    src/vm/product/presentation_frame.c
     test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )
@@ -1368,6 +1355,7 @@ target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     core-product-utils
     core-machine-boundary
     storage-medium
+    ux
     type-facade
 )
 
@@ -1375,6 +1363,8 @@ add_executable(vm-product-console-exit-smoke
     test/vm/product/vm_product_console_exit_smoke.c
     src/vm/product/console.c
     src/vm/product/control.c
+    src/vm/product/presentation.c
+    src/vm/product/presentation_frame.c
     test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )
@@ -1385,6 +1375,7 @@ target_link_libraries(vm-product-console-exit-smoke PRIVATE
     core-product-utils
     core-machine-boundary
     storage-medium
+    ux
     type-facade
 )
 
@@ -1392,6 +1383,8 @@ add_executable(vm-product-console-lifecycle-report-smoke
     test/vm/product/vm_product_console_lifecycle_report_smoke.c
     src/vm/product/console.c
     src/vm/product/control.c
+    src/vm/product/presentation.c
+    src/vm/product/presentation_frame.c
     test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )
@@ -1402,6 +1395,7 @@ target_link_libraries(vm-product-console-lifecycle-report-smoke PRIVATE
     core-product-utils
     core-machine-boundary
     storage-medium
+    ux
     type-facade
 )
 
@@ -1413,6 +1407,9 @@ target_include_directories(vm-product-control-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product-control-smoke PRIVATE type-facade host-sync)
+add_executable(vm-product-presentation-frame-smoke
+    test/vm/product/vm_product_presentation_frame_smoke.c)
+target_link_libraries(vm-product-presentation-frame-smoke PRIVATE vm-product)
 
 add_executable(core-product-xasm-smoke
     test/core/product/core_product_xasm_smoke.c
@@ -1454,21 +1451,6 @@ target_link_libraries(vm-profile PUBLIC
     storage-medium
     type-facade)
 
-add_library(vm-platform STATIC ${VM_PLATFORM_SOURCES})
-target_include_directories(vm-platform PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-platform PUBLIC
-    type-facade
-    core-utils
-    core-machine-boundary
-    ux
-    host-sync)
-
-add_executable(vm-platform-ux-frame-smoke
-    test/vm/platform/vm_platform_ux_frame_smoke.c)
-target_link_libraries(vm-platform-ux-frame-smoke PRIVATE vm-platform)
-
 add_executable(core-machine-guest-input-source-smoke
     test/core/machine/core_machine_guest_input_source_smoke.c
 )
@@ -1478,8 +1460,8 @@ add_executable(host-sync-smoke
 )
 target_link_libraries(host-sync-smoke PRIVATE host-sync)
 add_executable(vm-session-state-smoke
-    test/vm/platform/vm_session_state_smoke.c)
-target_link_libraries(vm-session-state-smoke PRIVATE vm-platform)
+    test/vm/composition/vm_session_state_smoke.c)
+target_link_libraries(vm-session-state-smoke PRIVATE vm-composition)
 add_executable(storage-medium-smoke test/lib/storage_medium_smoke.c)
 target_link_libraries(storage-medium-smoke PRIVATE storage-medium)
 
@@ -1488,59 +1470,18 @@ add_executable(vm-keyboard-host-ingress-smoke
 )
 target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
     vm-composition)
-if(WIN32)
-    add_executable(vm-platform-host-action-smoke
-        test/vm/platform/vm_platform_host_action_smoke.c)
-    target_link_libraries(vm-platform-host-action-smoke PRIVATE
-        vm-platform)
-endif()
 add_executable(vm-host-cancellation-smoke
     test/vm/machine/vm_host_cancellation_smoke.c
 )
 target_link_libraries(vm-host-cancellation-smoke PRIVATE
     vm-composition)
 
-add_executable(vm-platform-run-handle-smoke
-    test/integration/platform/vm_platform_run_handle_smoke.c
-)
-target_link_libraries(vm-platform-run-handle-smoke PRIVATE
-    integration-session-yaml-support)
-if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
-    add_executable(vm-platform-startup-failure-smoke
-        test/vm/machine/vm_platform_startup_failure_smoke.c
-    )
-    target_link_libraries(vm-platform-startup-failure-smoke PRIVATE
-        vm-composition)
-    add_executable(vm-session-startup-failure-smoke
-        test/vm/machine/vm_session_startup_failure_smoke.c
-    )
-    target_link_libraries(vm-session-startup-failure-smoke PRIVATE
-        vm-product vm-composition)
-endif()
-if(NOT WIN32)
-    add_executable(vm-platform-run-handle-contract-smoke
-        test/vm/machine/vm_platform_run_handle_contract_smoke.c
-    )
-    target_link_libraries(vm-platform-run-handle-contract-smoke PRIVATE
-        vm-composition)
-endif()
-add_executable(vm-multi-window-session-smoke
-    test/integration/platform/vm_multi_window_session_smoke.c
-)
-target_link_libraries(vm-multi-window-session-smoke PRIVATE
-    integration-session-yaml-support)
 
 add_executable(core-machine-guest-presentation-mailbox-smoke
     test/core/machine/core_machine_guest_presentation_mailbox_smoke.c
 )
 target_link_libraries(core-machine-guest-presentation-mailbox-smoke PRIVATE
     core-machine-boundary)
-
-add_executable(vm-platform-mode-context-smoke
-    test/vm/platform/vm_platform_mode_context_smoke.c
-)
-target_link_libraries(vm-platform-mode-context-smoke PRIVATE
-    vm-composition)
 
 add_library(vm-composition STATIC ${VM_COMPOSITION_SOURCES})
 target_include_directories(vm-composition PUBLIC
@@ -1553,9 +1494,8 @@ target_link_libraries(vm-composition PUBLIC
     "$<LINK_GROUP:RESCAN,core-product-debug,core-product-utils>"
     vm-profile
     vm-product
-    vm-request-transport)
+    vm-session-request-transport)
 target_link_libraries(vm-composition PRIVATE storage-medium)
-target_link_libraries(vm-composition PRIVATE vm-platform)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
 target_include_directories(vm-machine PUBLIC
@@ -1571,6 +1511,8 @@ target_include_directories(vm-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product PUBLIC
+    vm-composition
+    ux
     core-product-utils
     core-machine-boundary
     storage-medium)
@@ -1929,9 +1871,9 @@ target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
 add_executable(vm-console-pause-resume-smoke
     test/vm/machine/vm_console_pause_resume_smoke.c)
 target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-composition)
-add_executable(vm-console-lifecycle-adapter-smoke
-    test/vm/machine/vm_console_lifecycle_adapter_smoke.c)
-target_link_libraries(vm-console-lifecycle-adapter-smoke PRIVATE vm-composition)
+add_executable(vm-product-machine-adapter-smoke
+    test/vm/product/vm_product_machine_adapter_smoke.c)
+target_link_libraries(vm-product-machine-adapter-smoke PRIVATE vm-product vm-composition)
 add_executable(vm-dos-video-port-smoke
     test/integration/dos/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-yaml-support)
@@ -2341,7 +2283,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-entry-plan-smoke
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
-    vm-request-transport-smoke
+    vm-session-request-transport-smoke
     core-utils-wait-smoke
     std-snprintf-smoke
     core-product-xasm-smoke
@@ -2352,7 +2294,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-console-exit-smoke
     vm-product-console-lifecycle-report-smoke
     vm-product-control-smoke
-    vm-console-lifecycle-adapter-smoke
+    vm-product-presentation-frame-smoke
+    vm-product-machine-adapter-smoke
     core-machine-guest-input-source-smoke
     host-sync-smoke
     vm-session-state-smoke
@@ -2360,7 +2303,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-machine-guest-presentation-mailbox-smoke
-    vm-platform-mode-context-smoke
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
@@ -2488,7 +2430,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-80386-timing-manifest-runner
     core-machine-debug-smoke
     core-machine-presentation-smoke
-    vm-platform-request-bridge-smoke
+    vm-session-request-bridge-smoke
     core-machine-cpu-context-smoke
     vm-fdc-authority-smoke
     vm-debug-authority-smoke
@@ -2608,11 +2550,6 @@ foreach(t337_current_target IN LISTS PROJECT_UNIT_TEST_TARGETS)
     endforeach()
 endforeach()
 endfunction()
-if(WIN32)
-    list(APPEND PROJECT_UNIT_TEST_TARGETS
-        vm-platform-host-action-smoke)
-endif()
-list(APPEND PROJECT_UNIT_TEST_TARGETS vm-platform-ux-frame-smoke)
 
 t337_verify_ud_unit_test_inventory()
 
@@ -2644,8 +2581,7 @@ set(PROJECT_INTEGRATION_PRODUCT_TARGETS
     vm-model40-console-s20-smoke
     vm-product-console-lifecycle-smoke
     vm-yaml-cmos-seed-smoke
-    vm-platform-run-handle-smoke
-    vm-multi-window-session-smoke)
+    )
 set(PROJECT_INTEGRATION_TEST_TARGETS
     ${PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS}
     ${PROJECT_INTEGRATION_FDD_TARGETS}
@@ -3712,7 +3648,7 @@ endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-utils PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-session-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3799,7 +3735,7 @@ file(GENERATE
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
     "type-facade|src/type.c"
     "core-product-utils|src/core/product/utils.c"
-    "vm-platform-requests|src/vm/platform/request_bridge.c")
+    "vm-session-requests|src/vm/composition/session/request_bridge.c")
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
 foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
     string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
@@ -3874,20 +3810,18 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/console_host.c|console-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
-    "vm-platform|src/vm/platform/platform.c|vm-platform"
-    "vm-platform|src/vm/platform/run_handle.c|vm-platform"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
-    "vm-composition|src/vm/composition/session/session_factory.c|vm-composition"
-    "vm-composition|src/vm/composition/session/console_machine_adapter.c|vm-composition"
+    "vm-product|src/vm/product/session_factory.c|vm-product"
+    "vm-product|src/vm/product/machine_adapter.c|vm-product"
     "vm-composition|src/vm/composition/session/debug_target.c|vm-composition"
     "vm-composition|src/vm/composition/session/media.c|vm-composition"
     "vm-composition|src/vm/composition/session/display.c|vm-composition"
     "vm-composition|src/vm/composition/session/lifecycle.c|vm-composition"
     "vm-composition|src/vm/composition/session/session.c|vm-composition"
     "vm-composition|src/vm/composition/session/control.c|vm-composition"
-    "vm-platform|src/vm/platform/session_state.c|vm-platform"
+    "vm-composition|src/vm/composition/session/session_state.c|vm-composition"
     "vm-composition|src/vm/composition/session/fault.c|vm-composition"
     "vm-composition|src/vm/composition/session/execution.c|vm-composition"
     "vm-composition|src/vm/composition/session/runner.c|vm-composition"
@@ -3912,12 +3846,11 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
     core-machine-executor
     core-machine-boundary
-    vm-platform-requests
-    vm-request-transport
+    vm-session-requests
+    vm-session-request-transport
     core-product-debug
     core-product-utils
     vm-profile
-    vm-platform
     vm-composition
     vm-machine
     vm-product

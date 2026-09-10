@@ -7,7 +7,6 @@
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/platform/platform.h"
 #include "vm/profile/device/floppy.h"
 #include "test/integration/support/session_yaml.h"
 
@@ -548,9 +547,6 @@ int main(int argc, char **argv)
         STD_FPRINTF(STD_STDERR, "T515:YAML-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
         goto done;
     }
-    vm_platform_run_context_set_display_mode(session->platform_run_context,
-        !STD_STRCMP(yaml_session.request.display, "window") ? VM_PLATFORM_DISPLAY_WINDOW :
-        VM_PLATFORM_DISPLAY_CONSOLE);
     if (vm_session_set_speed(session, standard_speed ? VM_SESSION_SPEED_STANDARD :
             VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK ||
         (thread = CreateThread(STD_NULL, 0u, boot_start, session, 0u, STD_NULL)) == STD_NULL) goto done;

@@ -4,7 +4,7 @@
 #include <stdatomic.h>
 
 #include "type.h"
-#include "vm/platform/session_state.h"
+#include "vm/composition/session/session_state.h"
 #include "vm/composition/session/execution.h"
 
 #ifdef __cplusplus

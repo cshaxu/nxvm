@@ -1,20 +1,13 @@
 #include "type.h"
 
-#include "vm/composition/session/session_private.h"
+#include "vm/composition/session/session_interface.h"
 
-#include "vm/composition/session/console_machine_adapter.h"
+#include "vm/product/machine_adapter.h"
 
-#include "vm/composition/session/provider.h"
+#include "vm/product/session_factory.h"
 
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/debug_target.h"
-#include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/machine_info.h"
-#include "core/product/debug/debug.h"
-#include "vm/machine/debug.h"
-#include "vm/machine/fdd.h"
-#include "vm/platform/platform.h"
+
 #include "vm/product/session_catalog.h"
 
 typedef type_status (*vm_session_machine_selected_operation)(
@@ -33,7 +26,7 @@ static type_status vm_session_machine_apply(C_VOID *context,
 static type_status vm_session_machine_read_running(vm_session *session,
     C_VOID *context)
 {
-    *(C_INT *)context = vm_session_control_is_running(&session->control);
+    *(C_INT *)context = vm_session_is_running(session);
     return TYPE_STATUS_OK;
 }
 
@@ -60,61 +53,6 @@ static C_VOID vm_session_machine_print(C_VOID *context)
         STD_NULL);
 }
 
-static type_status vm_session_machine_read_display_mode(vm_session *session,
-    C_VOID *context)
-{
-    vm_session_display_mode *mode =
-        (vm_session_display_mode *)context;
-    C_INT platform_mode = vm_platform_run_context_get_display_mode(
-        session->platform_run_context);
-
-    *mode = platform_mode == VM_PLATFORM_DISPLAY_WINDOW ?
-        VM_SESSION_DISPLAY_WINDOW : VM_SESSION_DISPLAY_CONSOLE;
-    return TYPE_STATUS_OK;
-}
-
-static vm_session_display_mode vm_session_machine_get_display_mode(C_VOID *context)
-{
-    vm_session_display_mode mode = VM_SESSION_DISPLAY_CONSOLE;
-
-    (C_VOID)vm_session_machine_apply(context, vm_session_machine_read_display_mode,
-        &mode);
-    return mode;
-}
-
-static type_status vm_session_machine_write_display_mode(vm_session *session,
-    C_VOID *context)
-{
-    vm_session_display_mode mode = *(vm_session_display_mode *)context;
-    vm_platform_display_mode platform_mode = mode == VM_SESSION_DISPLAY_WINDOW ?
-        VM_PLATFORM_DISPLAY_WINDOW : VM_PLATFORM_DISPLAY_CONSOLE;
-
-    vm_platform_run_context_set_display_mode(session->platform_run_context,
-        platform_mode);
-    return TYPE_STATUS_OK;
-}
-
-static C_VOID vm_session_machine_set_display_mode(C_VOID *context,
-    vm_session_display_mode mode)
-{
-    (C_VOID)vm_session_machine_apply(context, vm_session_machine_write_display_mode,
-        &mode);
-}
-
-static type_status vm_session_machine_set_console_binding_selected(
-    vm_session *session, C_VOID *context)
-{
-    return vm_session_set_console_binding(session,
-        (const struct vm_platform_console_binding *)context);
-}
-
-static C_VOID vm_session_machine_set_console_binding(C_VOID *context,
-    const struct vm_platform_console_binding *binding)
-{
-    (C_VOID)vm_session_machine_apply(context,
-        vm_session_machine_set_console_binding_selected, (C_VOID *)binding);
-}
-
 static C_VOID vm_session_machine_set_lifecycle_reporter(C_VOID *context,
     vm_product_console_lifecycle_reporter reporter, C_VOID *reporter_context)
 {
@@ -126,14 +64,22 @@ static C_VOID vm_session_machine_set_lifecycle_reporter(C_VOID *context,
     }
 }
 
+static C_VOID vm_session_machine_set_display_reporter(C_VOID *context,
+    vm_product_console_display_reporter reporter, C_VOID *reporter_context)
+{
+    vm_session **slot = (vm_session **)context;
+
+    if (slot != STD_NULL && *slot != STD_NULL) {
+        vm_session_set_display_reporter(*slot,
+            (vm_session_display_reporter)reporter, reporter_context);
+    }
+}
+
 static type_status vm_session_machine_print_bios_selected(vm_session *session,
     C_VOID *context)
 {
     (C_VOID)context;
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    STD_PRINTF("BIOS: %s\n", session->firmware_kind ==
-        VM_SESSION_FIRMWARE_EXTERNAL_PC_AT_ROM && session->pc_at_rom_external ?
-        "external ROM mapped at F0000h" : "profile ROM mapped");
+    vm_session_print_bios(session);
     return TYPE_STATUS_OK;
 }
 
@@ -147,8 +93,7 @@ static type_status vm_session_machine_print_status_selected(vm_session *session,
     C_VOID *context)
 {
     (C_VOID)context;
-    vm_session_control_print_status(&session->control);
-    vm_session_fault_print(session);
+    vm_session_print_status(session);
     return TYPE_STATUS_OK;
 }
 
@@ -201,16 +146,7 @@ static type_status vm_session_machine_debug_selected(vm_session *session,
 {
     (C_VOID)context;
 
-    if (vm_session_control_is_running(&session->control)) {
-        vm_session_control_request_pause(&session->control,
-            VM_SESSION_PAUSE_EXPLICIT);
-        if (!vm_session_control_wait_for_pause(&session->control, 2000u)) {
-            return TYPE_STATUS_INVALID_STATE;
-        }
-    }
-    core_product_debugger_run(session->debugger, vm_session_debug_target(session),
-        &session->wait_scope);
-    return TYPE_STATUS_OK;
+    return vm_session_run_debugger(session);
 }
 
 static C_VOID vm_session_machine_debug(C_VOID *context)
@@ -222,8 +158,7 @@ static C_VOID vm_session_machine_debug(C_VOID *context)
 static type_status vm_session_machine_record_start_selected(vm_session *session,
     C_VOID *context)
 {
-    vm_machine_debug_record_start(&session->debug, (const C_CHAR *)context);
-    return TYPE_STATUS_OK;
+    return vm_session_record_start(session, (const C_CHAR *)context);
 }
 
 static C_VOID vm_session_machine_record_start(C_VOID *context,
@@ -237,8 +172,7 @@ static type_status vm_session_machine_record_stop_selected(vm_session *session,
     C_VOID *context)
 {
     (C_VOID)context;
-    vm_machine_debug_record_stop(&session->debug);
-    return TYPE_STATUS_OK;
+    return vm_session_record_stop(session);
 }
 
 static C_VOID vm_session_machine_record_stop(C_VOID *context)
@@ -351,13 +285,48 @@ static type_status vm_session_machine_resume(C_VOID *context)
         STD_NULL);
 }
 
+static type_status vm_session_machine_request_pause_selected(vm_session *session,
+    C_VOID *context)
+{
+    (C_VOID)context;
+    return vm_session_request_pause(session);
+}
+
+static type_status vm_session_machine_request_pause(C_VOID *context)
+{
+    return vm_session_machine_apply(context,
+        vm_session_machine_request_pause_selected, STD_NULL);
+}
+
+typedef struct vm_session_machine_input_call {
+    const core_machine_guest_input_event *event;
+    type_status status;
+} vm_session_machine_input_call;
+
+static type_status vm_session_machine_submit_host_input_selected(vm_session *session,
+    C_VOID *context)
+{
+    vm_session_machine_input_call *call = context;
+
+    call->status = vm_session_submit_host_input(session, call->event);
+    return call->status;
+}
+
+static type_status vm_session_machine_submit_host_input(C_VOID *context,
+    const core_machine_guest_input_event *event)
+{
+    vm_session_machine_input_call call = {event, TYPE_STATUS_INVALID_ARGUMENT};
+
+    if (event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    return vm_session_machine_apply(context,
+        vm_session_machine_submit_host_input_selected, &call);
+}
+
 static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_is_running,
     vm_session_machine_print,
-    vm_session_machine_get_display_mode,
-    vm_session_machine_set_display_mode,
-    vm_session_machine_set_console_binding,
     vm_session_machine_set_lifecycle_reporter,
+    vm_session_machine_set_display_reporter,
     vm_session_machine_print_bios,
     vm_session_machine_print_status,
     vm_session_machine_get_speed,
@@ -372,10 +341,12 @@ static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_reset,
     vm_session_machine_stop,
     vm_session_machine_resume,
+    vm_session_machine_request_pause,
+    vm_session_machine_submit_host_input,
     STD_NULL
 };
 
-C_VOID vm_composition_console_machine_provider_initialize(
+C_VOID vm_product_machine_provider_initialize(
     vm_session_machine_provider *machine_provider,
     vm_session **session_slot)
 {

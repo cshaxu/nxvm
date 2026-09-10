@@ -2,7 +2,7 @@
 #define VM_PRODUCT_CONSOLE_HOST_H
 
 #include "type.h"
-#include "vm/platform/platform.h"
+#include "lib/base/console_interface.h"
 
 typedef struct vm_product_console_host vm_product_console_host;
 
@@ -13,7 +13,9 @@ C_VOID vm_product_console_host_destroy(vm_product_console_host *host);
 type_status vm_product_console_host_request_line(vm_product_console_host *host);
 type_status vm_product_console_host_write(vm_product_console_host *host,
     const C_CHAR *text);
-const vm_platform_console_binding *vm_product_console_host_binding(
-    const vm_product_console_host *host);
+type_status vm_product_console_host_claim_guest(vm_product_console_host *host,
+    lib_console *guest_console);
+type_status vm_product_console_host_release_guest(vm_product_console_host *host,
+    lib_console *guest_console);
 
 #endif

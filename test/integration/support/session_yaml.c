@@ -3,7 +3,7 @@
 #include <windows.h>
 
 #include "test/integration/support/session_yaml.h"
-#include "vm/composition/session/provider.h"
+#include "vm/product/session_factory.h"
 #include "vm/composition/session/session_private.h"
 
 static C_INT integration_yaml_session_find(const C_CHAR *directory,

@@ -1,0 +1,42 @@
+#ifndef VM_PRODUCT_PRESENTATION_H
+#define VM_PRODUCT_PRESENTATION_H
+
+#include "type.h"
+
+#include "core/machine/guest_display_frame.h"
+#include "core/machine/guest_input_interface.h"
+#include "lib/ux-base/event_interface.h"
+
+typedef struct vm_product_console_host vm_product_console_host;
+typedef struct vm_product_presentation vm_product_presentation;
+
+typedef enum vm_product_presentation_target {
+    VM_PRODUCT_PRESENTATION_NONE,
+    VM_PRODUCT_PRESENTATION_CONSOLE,
+    VM_PRODUCT_PRESENTATION_WINDOW
+} vm_product_presentation_target;
+
+typedef type_status (*vm_product_presentation_event_sink)(C_VOID *context,
+    const ux_input_event *event);
+
+type_status vm_product_presentation_create(vm_product_presentation **out_presentation,
+    vm_product_console_host *console_host,
+    vm_product_presentation_event_sink event_sink, C_VOID *event_context);
+C_VOID vm_product_presentation_destroy(vm_product_presentation *presentation);
+type_status vm_product_presentation_set_target(vm_product_presentation *presentation,
+    vm_product_presentation_target target);
+vm_product_presentation_target vm_product_presentation_get_target(
+    const vm_product_presentation *presentation);
+type_status vm_product_presentation_set_window_title(
+    vm_product_presentation *presentation, const C_CHAR *title);
+type_status vm_product_presentation_set_mouse_capturable(
+    vm_product_presentation *presentation, C_INT capturable);
+type_status vm_product_presentation_release_mouse(
+    vm_product_presentation *presentation);
+type_status vm_product_presentation_publish_frame(
+    vm_product_presentation *presentation,
+    const core_machine_guest_display_frame *frame);
+type_status vm_product_presentation_input_to_guest(const ux_input_event *event,
+    core_machine_guest_input_event *out_event);
+
+#endif

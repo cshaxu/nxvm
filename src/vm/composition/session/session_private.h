@@ -11,6 +11,7 @@
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
 #include "core/utils/wait_provider.h"
+#include "lib/host/sync_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
@@ -19,8 +20,7 @@
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd_private.h"
 #include "vm/machine/hdd_private.h"
-#include "vm/platform/platform.h"
-#include "vm/platform/vm_request_transport.h"
+#include "vm/composition/session/request_transport.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "vm/profile/device/floppy.h"
 #include "vm/profile/model40/model40_private.h"
@@ -36,7 +36,9 @@ struct vm_session {
     C_INT active;
     vm_session_lifecycle_reporter lifecycle_reporter;
     C_VOID *lifecycle_reporter_context;
-    vm_platform_request_transport *request_transport;
+    vm_session_display_reporter display_reporter;
+    C_VOID *display_reporter_context;
+    vm_session_request_transport *request_transport;
     core_machine_config core_machine_config;
     core_machine_controller_timing_rules controller_timing_rules;
     core_machine_plan *core_machine_plan;
@@ -58,11 +60,10 @@ struct vm_session {
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
     core_machine_guest_presentation_mailbox *presentation_mailbox;
-    vm_platform_execution execution;
     core_machine_guest_input_source *input_source;
     core_utils_wait_scope wait_scope;
-    vm_platform_run_context *platform_run_context;
-    vm_platform_run_handle *platform_run_handle;
+    host_sync_task *execution_task;
+    host_sync_event *execution_started;
     struct {
         type_unsigned_64 sequence;
         type_status status;
@@ -112,7 +113,6 @@ type_status vm_session_storage_initialize(vm_session *machine);
 type_status vm_session_apply_cmos_seed(const vm_session *session,
     core_machine_plan_topology *topology);
 C_VOID vm_session_storage_finalize(vm_session *machine);
-C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path);
 C_VOID vm_session_consume_request(C_VOID *opaque,
-    const vm_platform_request *request);
+    const vm_session_request *request);
 #endif

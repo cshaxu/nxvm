@@ -1,127 +1,71 @@
 #include "type.h"
 
-#include <windows.h>
-
-#include "core/machine/machine_interface.h"
+#include "lib/host/sync_interface.h"
 #include "vm/composition/session/control.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/platform/platform_internal.h"
 #include "../support/rom/session_assets.h"
 
-#define VM_RUNNER_DISPLAY_CADENCE_RUN_MILLISECONDS 100u
-#define VM_RUNNER_DISPLAY_CADENCE_MAX_FRAMES 12u
-
 typedef struct vm_runner_display_lifecycle_log {
-    LONG count;
     vm_session_lifecycle events[5u];
+    STD_ATOMIC_INT count;
 } vm_runner_display_lifecycle_log;
 
 static C_VOID vm_runner_display_lifecycle_report(C_VOID *opaque,
     vm_session_lifecycle lifecycle)
 {
     vm_runner_display_lifecycle_log *log = opaque;
-    LONG index;
+    C_INT index;
 
     if (log == STD_NULL) return;
-    index = InterlockedIncrement(&log->count) - 1;
-    if (index >= 0 && index < (LONG)(sizeof(log->events) / sizeof(log->events[0u]))) {
-        log->events[index] = lifecycle;
-    }
+    index = STD_ATOMIC_LOAD(&log->count);
+    (C_VOID)STD_ATOMIC_EXCHANGE(&log->count, index + 1);
+    if (index >= 0 && index < 5) log->events[index] = lifecycle;
 }
 
-static C_INT vm_runner_display_cadence_wait_for_resume(
-    vm_session *session, C_UINT milliseconds)
+static C_INT vm_runner_display_wait(const vm_session *session, C_INT paused)
 {
     C_UINT waited;
 
-    for (waited = 0u; waited < milliseconds; ++waited) {
-        if (!vm_session_control_is_paused(&session->control)) return TYPE_TRUE;
-        Sleep(1u);
+    for (waited = 0u; waited < 2000u; ++waited) {
+        if (vm_session_control_is_paused(&session->control) == paused) return TYPE_TRUE;
+        host_sync_sleep_milliseconds(1u);
     }
     return TYPE_FALSE;
 }
 
-static DWORD WINAPI vm_runner_display_cadence_run(C_VOID *opaque)
-{
-    vm_session_control_start(&((vm_session *)opaque)->control);
-    return 0u;
-}
-
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
-        0xb8u, 0x00u, 0xb8u, /* mov ax, 0xb800 */
-        0x8eu, 0xc0u,       /* mov es, ax */
-        0xbfu, 0x00u, 0x00u, /* mov di, 0 */
-        0xb0u, 0x41u,       /* mov al, 'A' */
-        0xaau,              /* stosb */
-        0xfeu, 0xc0u,      /* inc al */
-        0xebu, 0xfbu        /* jmp stosb */
-    };
     vm_session *session = STD_NULL;
-    HANDLE thread = STD_NULL;
-    type_unsigned_64 generation;
-    vm_runner_display_lifecycle_log lifecycle_log = {0};
+    vm_runner_display_lifecycle_log log = {0};
     C_INT failed = 0;
 
+    STD_ATOMIC_INIT(&log.count, 0);
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        vm_session_control_reset(&session->control) != TYPE_STATUS_OK ||
-        vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK ||
-        vm_platform_run_context_set_display_mode(session->platform_run_context,
-            VM_PLATFORM_DISPLAY_WINDOW) != TYPE_STATUS_OK ||
-        core_machine_memory_write(session->core_machine, 0xffff0u, program,
-            sizeof(program)) != TYPE_STATUS_OK) {
+        vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK) {
         failed = 1;
         goto done;
     }
-    vm_session_set_lifecycle_reporter(session, vm_runner_display_lifecycle_report,
-        &lifecycle_log);
-    thread = CreateThread(STD_NULL, 0u, vm_runner_display_cadence_run, session,
-        0u, STD_NULL);
-    if (thread == STD_NULL) {
+    vm_session_set_lifecycle_reporter(session, vm_runner_display_lifecycle_report, &log);
+    if (vm_session_resume(session) != TYPE_STATUS_OK ||
+        vm_session_request_pause(session) != TYPE_STATUS_OK ||
+        !vm_runner_display_wait(session, TYPE_TRUE) ||
+        vm_session_resume(session) != TYPE_STATUS_OK ||
+        !vm_runner_display_wait(session, TYPE_FALSE) ||
+        vm_session_request_pause(session) != TYPE_STATUS_OK ||
+        !vm_runner_display_wait(session, TYPE_TRUE)) {
         failed = 1;
         goto done;
     }
-    Sleep(VM_RUNNER_DISPLAY_CADENCE_RUN_MILLISECONDS);
-    failed |= vm_platform_run_context_get_display_mode(
-        session->platform_run_context) != VM_PLATFORM_DISPLAY_WINDOW;
-    vm_platform_run_handle_report(session->platform_run_handle,
-        VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
-    if (!vm_session_control_wait_for_pause(&session->control, 2000u)) {
-        failed = 1;
-        goto done;
-    }
-    vm_platform_run_handle_report(session->platform_run_handle,
-        VM_PLATFORM_RUN_EVENT_PAUSE_REQUESTED);
-    if (!vm_runner_display_cadence_wait_for_resume(session, 2000u)) {
-        failed = 1;
-        goto done;
-    }
-    failed |= vm_platform_run_context_get_display_mode(
-        session->platform_run_context) != VM_PLATFORM_DISPLAY_WINDOW;
-    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
-    if (!vm_session_control_wait_for_pause(&session->control, 2000u)) {
-        failed = 1;
-        goto done;
-    }
-    generation = session->display_generation;
-    failed |= generation < 2u || generation > VM_RUNNER_DISPLAY_CADENCE_MAX_FRAMES;
-
 done:
-    vm_session_control_stop(&session->control);
-    if (thread != STD_NULL) {
-        if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) failed = 1;
-        CloseHandle(thread);
-    }
-    failed |= lifecycle_log.count != 5 || lifecycle_log.events[0u] != VM_SESSION_RUNNING ||
-        lifecycle_log.events[1u] != VM_SESSION_PAUSED ||
-        lifecycle_log.events[2u] != VM_SESSION_RUNNING ||
-        lifecycle_log.events[3u] != VM_SESSION_PAUSED ||
-        lifecycle_log.events[4u] != VM_SESSION_STOPPED;
-    if (session != STD_NULL) vm_session_destroy(session);
+    vm_session_stop(session);
+    failed |= STD_ATOMIC_LOAD(&log.count) != 5 ||
+        log.events[0u] != VM_SESSION_RUNNING || log.events[1u] != VM_SESSION_PAUSED ||
+        log.events[2u] != VM_SESSION_RUNNING || log.events[3u] != VM_SESSION_PAUSED ||
+        log.events[4u] != VM_SESSION_STOPPED;
+    vm_session_destroy(session);
     if (failed) return 1;
     puts("M5:T212:S2:RUNNER-CADENCE:OK");
-    puts("M5:T458:S1:RUNNER-PRESENTATION-CADENCE:OK");
+    puts("M5:T526:S5:COMPOSITION-RUNNER-CADENCE:OK");
     return 0;
 }

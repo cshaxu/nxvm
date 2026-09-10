@@ -7,6 +7,8 @@
 #include "vm/composition/session/session_private.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
+#include "vm/composition/session/control.h"
+#include "vm/composition/session/fault.h"
 
 #define VM_SESSION_MACHINE_NAME "IBM PC/AT"
 
@@ -40,4 +42,19 @@ C_VOID vm_session_print_machine(const vm_session *session)
             vm_machine_hdd_image_size(&session->hdd) * 1. / VHDD_BYTE_PER_MB,
             vm_machine_hdd_has_media(&session->hdd) ? "connected" : "disconnected");
     }
+}
+
+C_VOID vm_session_print_bios(const vm_session *session)
+{
+    if (session == STD_NULL) return;
+    STD_PRINTF("BIOS: %s\n", session->firmware_kind ==
+        VM_SESSION_FIRMWARE_EXTERNAL_PC_AT_ROM && session->pc_at_rom_external ?
+        "external ROM mapped at F0000h" : "profile ROM mapped");
+}
+
+C_VOID vm_session_print_status(const vm_session *session)
+{
+    if (session == STD_NULL) return;
+    vm_session_control_print_status(&session->control);
+    vm_session_fault_print(session);
 }

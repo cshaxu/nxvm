@@ -4,20 +4,20 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S5 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): replace the remaining direct `vm/platform` presenter path with a single-session product control FIFO and product presentation owner. |
+| T526 S6 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): close the completed single-session product-control migration with integration, boundary evidence and dual stripped artifacts. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S5. |
+| Identifier Mode | Continuation - M5 T526 S6. |
 | Admission And Approval | Owner approved continuation through all remaining T526 subtasks after accepting S4 native single-session behavior. |
-| Objective | Make one product control FIFO the sole NXVM owner of product commands, lifecycle/display/input facts and presentation decisions; retain one direct `vm_session` and move lib Console/Window actuation out of `vm/platform`. |
+| Objective | Verify and close the one-session product-control migration: retain one Core snapshot route, one product presentation owner and the canonical shared lib, then produce verified T526 developer artifacts. |
 | Non-goals | No Core policy change, local lib patch, native SDK call from VM code, firmware/media/profile semantic change, or second presenter path. |
 | Reference Baseline | Accepted S4 direct session, canonical SoftPC `7cc408ec`, and SoftPC's control/reconciler/presentation separation. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S5. |
-| Files And ABI Surface | `vm/product` control/presentation/Console host and composition session fact contracts; obsolete `vm/platform` UX/run ownership and its tests. Product code continues to consume only lib `*_interface.h` headers. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S6. |
+| Files And ABI Surface | Current `vm/product` control/presentation/Console host and composition session fact contracts; the canonical `src/lib` public interface boundary and T526 artifact target. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/rules/EXECUTION.md`: one product control owner, one presentation owner, one Console broker and no platform leakage. |
-| Verification | Focused command/lifecycle/window-close/input/frame tests, complete repository-only unit suite, public-header/manifest and product-boundary sweeps. T-level integration and dual stripped artifacts remain S6 closure work. |
-| Expected Markers | Each actual lifecycle transition is printed once; a Window close becomes a product pause intent, no stale prior-run input changes the current run, and no `vm/platform` source retains lib UX leaf or product presentation policy. |
+| Verification | Re-run complete repository-only unit and external-ROM/media integration suites; public-header, manifest and product-boundary sweeps; build, identify and hash stripped x64/x86 `0526` artifacts. |
+| Expected Markers | Each actual lifecycle transition is printed once; a Window close becomes a product pause intent, no stale prior-run input changes the current run, no `vm/platform` source remains, and both `nxvm_0_5_0526_*` artifacts are verified. |
 | Asset Needs | None; repository-only unit inputs only. |
 | Reporting Requirements | Report each replaced `vm/platform` path, the resulting fact/action flow, focused and complete unit verification, and net source/test change. |
 | Stop Conditions | Stop if the canonical lib requires an NXVM-local patch, a product event cannot be made lifecycle-safe, or any accepted native presentation path regresses. |

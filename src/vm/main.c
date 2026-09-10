@@ -10,8 +10,8 @@
 #include "vm/product/version.h"
 
 #include "core/product/banner.h"
-#include "vm/composition/session/provider.h"
-#include "vm/composition/session/console_machine_adapter.h"
+#include "vm/composition/session/session_interface.h"
+#include "vm/product/machine_adapter.h"
 #include "vm/product/console.h"
 
 static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
@@ -40,7 +40,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_CHAR profile_directory[1024];
 
     CORE_PRODUCT_PRINT_BANNER();
-    vm_composition_console_machine_provider_initialize(&machine_provider, &session);
+    vm_product_machine_provider_initialize(&machine_provider, &session);
     if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) {
         return 1;
     }

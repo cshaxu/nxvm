@@ -98,12 +98,12 @@ static type_status vm_session_pc_at_rom_copy(vm_session *session,
 #include "vm/profile/default_profile/mouse_mapper.h"
 
 C_VOID vm_session_consume_request(
-    C_VOID *opaque, const vm_platform_request *request)
+    C_VOID *opaque, const vm_session_request *request)
 {
     vm_session *session = (vm_session *)opaque;
 
     if (session == STD_NULL || !session->active || request == STD_NULL) return;
-    if (request->kind == VM_PLATFORM_REQUEST_KEY_EVENT) {
+    if (request->kind == VM_SESSION_REQUEST_KEY_EVENT) {
         vm_profile_default_keyboard_sequence sequence;
         type_unsigned_8 native_scan_set;
 
@@ -117,7 +117,7 @@ C_VOID vm_session_consume_request(
             (C_VOID)core_machine_keyboard_receive_native_bytes(session->core_machine,
                 sequence.bytes, sequence.count);
         }
-    } else if (request->kind == VM_PLATFORM_REQUEST_MOUSE_EVENT) {
+    } else if (request->kind == VM_SESSION_REQUEST_MOUSE_EVENT) {
         vm_profile_default_mouse_report report;
 
         if (vm_profile_default_mouse_map_host_relative(
@@ -887,7 +887,7 @@ type_status vm_session_reconfigure_memory(vm_session *session,
     if (session == STD_NULL ||
         session->model40_private ||
         vm_session_control_is_running(&session->control) ||
-        vm_platform_run_handle_is_active(session->platform_run_handle)) {
+        session->execution_task != STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;
     }
     if (core_machine_reconfigure_memory(session->core_machine, memory_bytes) !=

@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session/console_machine_adapter.h"
+#include "vm/product/machine_adapter.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_private.h"
 #include "../support/rom/session_assets.h"
@@ -29,7 +29,7 @@ int main(C_VOID)
     C_INT passed = TYPE_FALSE;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) goto done;
-    vm_composition_console_machine_provider_initialize(&machine_provider, &session);
+    vm_product_machine_provider_initialize(&machine_provider, &session);
     machine_provider.set_lifecycle_reporter(machine_provider.context,
         vm_console_lifecycle_adapter_report, &fixture);
     vm_session_report_lifecycle(session, VM_SESSION_PAUSED);

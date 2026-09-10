@@ -96,6 +96,7 @@ type_status vm_session_get_speed(const vm_session *session,
     vm_session_speed *out_speed);
 type_status vm_session_set_speed(vm_session *session, vm_session_speed speed);
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path);
+C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path);
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path);
 /* Production host-input ingress.  Events are copied into the session's
  * ordered request transport; they do not mutate guest devices synchronously. */
@@ -103,5 +104,12 @@ type_status vm_session_submit_host_input(vm_session *session,
     const core_machine_guest_input_event *event);
 type_status vm_session_get_reset_vector(const vm_session *session,
     vm_session_reset_vector *out_vector);
+C_INT vm_session_is_running(const vm_session *session);
+C_VOID vm_session_print_machine(const vm_session *session);
+C_VOID vm_session_print_bios(const vm_session *session);
+C_VOID vm_session_print_status(const vm_session *session);
+type_status vm_session_run_debugger(vm_session *session);
+type_status vm_session_record_start(vm_session *session, const C_CHAR *path);
+type_status vm_session_record_stop(vm_session *session);
 
 #endif

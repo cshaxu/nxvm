@@ -13,7 +13,6 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/platform/platform.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)

@@ -13,6 +13,7 @@
 #include "vm/composition/session/control.h"
 
 #include "core/machine/debug_interface.h"
+#include "core/product/debug/debug.h"
 
 #include "vm/machine/debug.h"
 
@@ -273,4 +274,30 @@ C_VOID vm_session_debug_target_finalize(vm_session *machine)
     if (machine == STD_NULL) return;
     STD_FREE(machine->debug_target);
     machine->debug_target = STD_NULL;
+}
+
+type_status vm_session_run_debugger(vm_session *session)
+{
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_session_control_is_running(&session->control)) {
+        vm_session_control_request_pause(&session->control,
+            VM_SESSION_PAUSE_EXPLICIT);
+        if (!vm_session_control_wait_for_pause(&session->control, 2000u))
+            return TYPE_STATUS_INVALID_STATE;
+    }
+    core_product_debugger_run(session->debugger, vm_session_debug_target(session),
+        &session->wait_scope);
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_session_record_start(vm_session *session, const C_CHAR *path)
+{
+    if (session == STD_NULL || path == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    return vm_machine_debug_record_start(&session->debug, path);
+}
+
+type_status vm_session_record_stop(vm_session *session)
+{
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    return vm_machine_debug_record_stop(&session->debug);
 }

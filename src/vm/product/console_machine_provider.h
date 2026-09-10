@@ -3,15 +3,11 @@
 
 #include "type.h"
 
-#include "vm/platform/session_state.h"
+#include "vm/composition/session/session_state.h"
+#include "core/machine/guest_display_frame.h"
+#include "core/machine/guest_input_interface.h"
 
-struct vm_platform_console_binding;
 typedef struct vm_product_session_request vm_product_session_request;
-
-typedef enum vm_session_display_mode {
-    VM_SESSION_DISPLAY_CONSOLE,
-    VM_SESSION_DISPLAY_WINDOW
-} vm_session_display_mode;
 
 typedef enum vm_product_console_speed {
     VM_PRODUCT_CONSOLE_SPEED_STANDARD,
@@ -20,16 +16,16 @@ typedef enum vm_product_console_speed {
 
 typedef C_VOID (*vm_product_console_lifecycle_reporter)(C_VOID *context,
     vm_session_lifecycle lifecycle);
+typedef C_VOID (*vm_product_console_display_reporter)(C_VOID *context,
+    const core_machine_guest_display_frame *frame);
 
 typedef struct vm_session_machine_provider {
     C_INT (*is_running)(C_VOID *context);
     C_VOID (*print_machine)(C_VOID *context);
-    vm_session_display_mode (*get_display_mode)(C_VOID *context);
-    C_VOID (*set_display_mode)(C_VOID *context, vm_session_display_mode mode);
-    C_VOID (*set_console_binding)(C_VOID *context,
-        const struct vm_platform_console_binding *binding);
     C_VOID (*set_lifecycle_reporter)(C_VOID *context,
         vm_product_console_lifecycle_reporter reporter, C_VOID *reporter_context);
+    C_VOID (*set_display_reporter)(C_VOID *context,
+        vm_product_console_display_reporter reporter, C_VOID *reporter_context);
     C_VOID (*print_bios)(C_VOID *context);
     C_VOID (*print_status)(C_VOID *context);
     type_status (*get_speed)(C_VOID *context, vm_product_console_speed *out_speed);
@@ -45,6 +41,9 @@ typedef struct vm_session_machine_provider {
     C_VOID (*reset)(C_VOID *context);
     type_status (*stop)(C_VOID *context);
     type_status (*resume)(C_VOID *context);
+    type_status (*request_pause)(C_VOID *context);
+    type_status (*submit_host_input)(C_VOID *context,
+        const core_machine_guest_input_event *event);
     C_VOID *context;
 } vm_session_machine_provider;
 

@@ -48,9 +48,16 @@ type_status vm_product_console_host_write(vm_product_console_host *host,
     return STD_FPUTS(text, STD_STDOUT) < 0 ? TYPE_STATUS_FAULT : TYPE_STATUS_OK;
 }
 
-const vm_platform_console_binding *vm_product_console_host_binding(
-    const vm_product_console_host *host)
+type_status vm_product_console_host_claim_guest(vm_product_console_host *host,
+    lib_console *guest_console)
 {
-    (C_VOID)host;
-    return STD_NULL;
+    return host == STD_NULL || guest_console == STD_NULL ?
+        TYPE_STATUS_INVALID_ARGUMENT : TYPE_STATUS_OK;
+}
+
+type_status vm_product_console_host_release_guest(vm_product_console_host *host,
+    lib_console *guest_console)
+{
+    return host == STD_NULL || guest_console == STD_NULL ?
+        TYPE_STATUS_INVALID_ARGUMENT : TYPE_STATUS_OK;
 }

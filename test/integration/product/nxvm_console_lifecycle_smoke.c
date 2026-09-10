@@ -18,8 +18,8 @@
 #define TEST_CONSOLE_FILENO fileno
 #endif
 
-#include "vm/composition/session/console_machine_adapter.h"
-#include "vm/composition/session/provider.h"
+#include "vm/product/machine_adapter.h"
+#include "vm/product/session_factory.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/product/console.h"
@@ -68,7 +68,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     saved_stdin = TEST_CONSOLE_DUP(TEST_CONSOLE_FILENO(STD_STDIN));
     if (saved_stdin < 0 || TEST_CONSOLE_DUP2(TEST_CONSOLE_FILENO(input),
             TEST_CONSOLE_FILENO(STD_STDIN)) < 0) goto done;
-    vm_composition_console_machine_provider_initialize(&machine_provider, &session);
+    vm_product_machine_provider_initialize(&machine_provider, &session);
     if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
     vm_product_console_main(console_context, &machine_provider, argv[1]);
     if (session == STD_NULL || vm_session_get_speed(session, &speed) != TYPE_STATUS_OK ||

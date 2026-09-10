@@ -18,8 +18,8 @@
 #define TEST_FILENO fileno
 #endif
 
-#include "vm/composition/session/console_machine_adapter.h"
-#include "vm/composition/session/provider.h"
+#include "vm/product/machine_adapter.h"
+#include "vm/product/session_factory.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/product/console.h"
 #include "vm/product/session_catalog.h"
@@ -64,7 +64,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (!failed && (stdin_copy < 0 || TEST_DUP2(TEST_FILENO(input),
             TEST_FILENO(STD_STDIN)) < 0)) failed = 1;
     if (!failed) {
-        vm_composition_console_machine_provider_initialize(&machine_provider, &session);
+        vm_product_machine_provider_initialize(&machine_provider, &session);
         failed = vm_product_console_context_create(&console) != TYPE_STATUS_OK;
     }
     if (!failed) {

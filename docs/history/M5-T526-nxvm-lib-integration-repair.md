@@ -5,7 +5,7 @@
 - **Identifier mode:** New
 - **Owner admission:** repair NXVM/lib integration defects while preserving the
   admitted canonical SoftPC `src/lib` corpus byte-identical.
-- **Current subtask:** S4 - single-session convergence.
+- **Current subtask:** S6 - task closure.
 
 ## S1 Contract
 
@@ -111,11 +111,20 @@ started, paused, resumed and stopped facts only after the composition session
 has reached them. The static single-session and readiness gates pass, as do
 the complete 305-case repository-only unit suite and owner native UX test.
 
-### S5 progress
+### S5 result
 
-P1 replaces the Console-private line/lifecycle queue with one bounded
-`vm_product_control` FIFO. P2 moves the completed-fact reduction that names a
-running transition `started` or `resumed` into that control owner; Console now
-only formats the result. The focused Console regressions and the complete
-305-case repository-only unit suite pass. UX input, Window-close and presenter
-completion routing remain active S5 work.
+The product now has one bounded `vm_product_control` FIFO for monitor lines,
+lifecycle facts and host input, plus one latest-frame slot which cannot starve
+those facts. `vm/product/presentation` is the sole lib Console/Window leaf;
+it owns target changes, titles, capture policy and copied Core-frame conversion.
+Composition owns execution and emits copied lifecycle/display facts only.
+The old `vm/platform` tree, run handle, host-action path and CMake injection
+knob are deleted rather than forwarded.
+
+Input is generation-filtered at the product boundary. A retiring lib input
+source clears only the keys delivered from that source, emitting their release
+while the guest is running; it never leaves a held guest key across a surface
+switch or run boundary. The product conversion regression proves the final
+80x25 cell, and control regressions prove fact priority, stale input/frame
+rejection and retirement cleanup. Focused product tests and the complete
+304-case repository-only x64 unit suite pass.

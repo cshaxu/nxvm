@@ -28,9 +28,6 @@
 
 #include "core/machine/guest_input_interface.h"
 
-#include "vm/platform/platform.h"
-
-
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/waiting.h"
 
@@ -57,23 +54,23 @@ static C_VOID vm_session_input_submit(C_VOID *context,
     const core_machine_guest_input_event *event)
 {
     vm_session *machine = (vm_session *)context;
-    vm_platform_request request;
+    vm_session_request request;
 
     if (machine == STD_NULL || event == STD_NULL) return;
     if (event->kind == CORE_MACHINE_GUEST_INPUT_KEY) {
-        request.kind = VM_PLATFORM_REQUEST_KEY_EVENT;
+        request.kind = VM_SESSION_REQUEST_KEY_EVENT;
         request.data.key_event.scan_code = event->data.key.scan_code;
         request.data.key_event.virtual_key = event->data.key.virtual_key;
         request.data.key_event.pressed = event->data.key.pressed;
     } else if (event->kind == CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE) {
-        request.kind = VM_PLATFORM_REQUEST_MOUSE_EVENT;
+        request.kind = VM_SESSION_REQUEST_MOUSE_EVENT;
         request.data.mouse_event.delta_x = event->data.relative_mouse.delta_x;
         request.data.mouse_event.delta_y = event->data.relative_mouse.delta_y;
         request.data.mouse_event.buttons = event->data.relative_mouse.buttons;
     } else {
         return;
     }
-    (C_VOID)vm_platform_request_transport_enqueue_ingress(
+    (C_VOID)vm_session_request_transport_enqueue_ingress(
         machine->request_transport, &request);
 }
 
@@ -119,27 +116,6 @@ static const core_machine_guest_input_sink vm_session_input_sink = {
     vm_session_input_submit
 };
 
-static type_status vm_session_host_input_submit(C_VOID *context,
-    const core_machine_guest_input_event *event)
-{
-    return vm_session_submit_host_input((vm_session *)context, event);
-}
-
-static const vm_platform_host_input_sink vm_session_host_input_sink = {
-    vm_session_host_input_submit,
-    STD_NULL
-};
-
-static C_VOID vm_session_execution_start(C_VOID *context)
-{
-    vm_session_control_start(&((vm_session *)context)->control);
-}
-
-static C_VOID vm_session_execution_stop(C_VOID *context)
-{
-    vm_session_control_stop(&((vm_session *)context)->control);
-}
-
 static C_VOID vm_session_debug_request_pause(C_VOID *context,
     vm_machine_debug_pause_reason reason)
 {
@@ -149,23 +125,48 @@ static C_VOID vm_session_debug_request_pause(C_VOID *context,
         VM_SESSION_PAUSE_TRACE : VM_SESSION_PAUSE_BREAKPOINT);
 }
 
-/* Composition is the only owner allowed to tear down its live run handle. */
-static C_VOID vm_session_platform_join_and_finalize(vm_session *machine)
+static C_VOID vm_session_execution_task_main(C_VOID *opaque,
+    const host_sync_task *task)
 {
-    if (machine == STD_NULL || !vm_platform_run_handle_is_active(
-            machine->platform_run_handle)) return;
-    vm_platform_run_handle_join(machine->platform_run_handle);
-    vm_platform_run_handle_finalize(machine->platform_run_handle);
+    vm_session *machine = (vm_session *)opaque;
+
+    (C_VOID)task;
+    if (machine == STD_NULL) return;
+    host_sync_event_signal(machine->execution_started);
+    vm_session_control_start(&machine->control);
 }
 
-static C_VOID vm_session_platform_request_stop(vm_session *machine)
+/* Composition owns the host task that executes its one Core machine.  It is
+ * deliberately not a presenter or product-control resource. */
+static C_VOID vm_session_execution_join(vm_session *machine)
+{
+    if (machine == STD_NULL || machine->execution_task == STD_NULL) return;
+    host_sync_task_join(machine->execution_task);
+    host_sync_task_destroy(machine->execution_task);
+    machine->execution_task = STD_NULL;
+}
+
+static C_VOID vm_session_execution_stop(vm_session *machine)
 {
     if (machine == STD_NULL) return;
-    if (!vm_platform_run_handle_is_active(machine->platform_run_handle)) {
-        vm_session_control_stop(&machine->control);
-        return;
+    vm_session_control_stop(&machine->control);
+}
+
+/* Resume is an observable lifecycle request, not merely successful thread
+ * creation.  The caller may immediately issue pause/input work, so wait until
+ * the session state accepts it before reporting success. */
+static C_INT vm_session_execution_wait_until_active(vm_session *machine)
+{
+    C_UINT elapsed;
+
+    if (machine == STD_NULL) return TYPE_FALSE;
+    for (elapsed = 0u; elapsed < 5000u; ++elapsed) {
+        if (vm_session_control_is_running(&machine->control) ||
+            vm_session_control_is_paused(&machine->control)) return TYPE_TRUE;
+        if (machine->execution_task == STD_NULL) return TYPE_FALSE;
+        host_sync_sleep_milliseconds(1u);
     }
-    vm_platform_run_handle_request_stop(machine->platform_run_handle);
+    return TYPE_FALSE;
 }
 
 static C_VOID vm_session_start_outcome_reset(vm_session *machine)
@@ -214,50 +215,30 @@ type_status vm_session_reset(vm_session *machine) {
     type_status status;
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (vm_platform_run_handle_is_active(machine->platform_run_handle) &&
-        !vm_session_control_is_running(&machine->control)) {
-        vm_session_platform_request_stop(machine);
-        vm_session_platform_join_and_finalize(machine);
-    }
+    if (machine->execution_task != STD_NULL &&
+        !vm_session_control_is_running(&machine->control)) vm_session_execution_join(machine);
     status = vm_session_control_reset(&machine->control);
     if (vm_session_control_is_running(&machine->control)) return status;
     return vm_session_finish_reset(machine, status);
 }
 
 C_VOID vm_session_stop(vm_session *machine) {
-    C_INT was_active;
-    C_INT had_runner;
-    C_INT was_window;
-    C_INT was_console;
-
     if (machine == STD_NULL) return;
-    was_active = vm_session_state_is_active(machine->control.state);
-    had_runner = vm_platform_run_handle_is_active(machine->platform_run_handle);
-    was_window = vm_platform_run_handle_is_window_display(
-        machine->platform_run_handle);
-    was_console = vm_platform_run_handle_is_console_display(
-        machine->platform_run_handle);
-    vm_session_platform_request_stop(machine);
-    /* Console runs synchronously in vm_session_resume(), which remains its
-     * sole joiner. Window runs return here and need their async teardown. */
-    if (was_window || !was_console) {
-        vm_session_platform_join_and_finalize(machine);
-    }
-    /* A Console pause deliberately ended its synchronous runner while keeping
-     * the session paused. STOP therefore owns the one stopped completion for
-     * that runner-less, still-active state. An active runner reports its own
-     * completion after the requested stop reaches its boundary. */
-    if (was_active && !had_runner) {
-        vm_session_report_lifecycle(machine, VM_SESSION_STOPPED);
-    }
+    vm_session_execution_stop(machine);
+    vm_session_execution_join(machine);
 }
 
-type_status vm_session_set_console_binding(vm_session *machine,
-    const struct vm_platform_console_binding *binding)
+type_status vm_session_request_pause(vm_session *machine)
 {
-    return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
-        vm_platform_run_context_set_console_binding(machine->platform_run_context,
-            binding);
+    if (machine == STD_NULL || !vm_session_control_is_running(&machine->control))
+        return TYPE_STATUS_INVALID_STATE;
+    vm_session_control_request_pause(&machine->control, VM_SESSION_PAUSE_EXPLICIT);
+    return TYPE_STATUS_OK;
+}
+
+C_INT vm_session_is_running(const vm_session *machine)
+{
+    return machine != STD_NULL && vm_session_control_is_running(&machine->control);
 }
 
 void vm_session_set_lifecycle_reporter(vm_session *machine,
@@ -266,6 +247,14 @@ void vm_session_set_lifecycle_reporter(vm_session *machine,
     if (machine == STD_NULL) return;
     machine->lifecycle_reporter = reporter;
     machine->lifecycle_reporter_context = context;
+}
+
+void vm_session_set_display_reporter(vm_session *machine,
+    vm_session_display_reporter reporter, C_VOID *context)
+{
+    if (machine == STD_NULL) return;
+    machine->display_reporter = reporter;
+    machine->display_reporter_context = context;
 }
 
 void vm_session_report_lifecycle(vm_session *machine,
@@ -284,55 +273,26 @@ type_status vm_session_resume(vm_session *machine) {
         return vm_session_start_outcome_record(machine, TYPE_STATUS_INVALID_STATE);
     }
     if (vm_session_control_is_paused(&machine->control) &&
-        vm_platform_run_handle_is_active(machine->platform_run_handle)) {
-        if (vm_platform_run_context_get_display_mode(machine->platform_run_context) ==
-                VM_PLATFORM_DISPLAY_WINDOW) {
-            status = vm_platform_run_context_set_display_mode(
-                machine->platform_run_context, VM_PLATFORM_DISPLAY_WINDOW);
-            if (status != TYPE_STATUS_OK) {
-                return vm_session_start_outcome_record(machine, status);
-            }
-            /* A Window closed while paused has no retained native surface.
-             * Recreate it above, then publish the current copied snapshot
-             * before execution resumes so the new presenter is never blank. */
-            (C_VOID)vm_session_publish_display(machine, TYPE_TRUE);
-            vm_session_control_continue(&machine->control);
-            (C_VOID)vm_platform_run_context_set_mouse_capturable(
-                machine->platform_run_context, TYPE_TRUE);
-            (C_VOID)vm_platform_run_context_set_window_title(
-                machine->platform_run_context, "NXVM (Running)");
-            vm_session_report_lifecycle(machine, VM_SESSION_RUNNING);
-            return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
-        }
-        status = vm_platform_run_context_set_display_mode(machine->platform_run_context,
-            VM_PLATFORM_DISPLAY_CONSOLE);
-        if (status != TYPE_STATUS_OK) {
-            return vm_session_start_outcome_record(machine, status);
-        }
+        machine->execution_task != STD_NULL) {
         vm_session_control_continue(&machine->control);
-        vm_session_report_lifecycle(machine, VM_SESSION_RUNNING);
-        if (vm_platform_run_handle_is_console_display(machine->platform_run_handle)) {
-            vm_platform_run_handle_wait_console_release(machine->platform_run_handle);
-        }
         return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
     }
-    status = vm_platform_start(machine->platform_run_context,
-        machine->platform_run_handle);
-    if (status != TYPE_STATUS_OK) {
-        return vm_session_start_outcome_record(machine, status);
-    }
-    if (vm_platform_run_handle_is_console_display(machine->platform_run_handle)) {
-        vm_platform_run_handle_wait_console_release(machine->platform_run_handle);
-        if (!vm_platform_run_handle_is_window_display(machine->platform_run_handle))
-            vm_session_platform_join_and_finalize(machine);
+    if (machine->execution_task != STD_NULL) return vm_session_start_outcome_record(
+        machine, TYPE_STATUS_INVALID_STATE);
+    host_sync_event_reset(machine->execution_started);
+    if (host_sync_task_create(vm_session_execution_task_main, machine,
+            &machine->execution_task) != LIB_STATUS_OK ||
+        host_sync_event_wait(machine->execution_started, 5000u) != HOST_SYNC_WAIT_SIGNALED ||
+        !vm_session_execution_wait_until_active(machine)) {
+        vm_session_execution_stop(machine);
+        vm_session_execution_join(machine);
+        return vm_session_start_outcome_record(machine, TYPE_STATUS_INVALID_STATE);
     }
     return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
 }
 
 type_status vm_session_initialize(vm_session *machine) {
     type_status status;
-    vm_platform_host_input_sink host_input_sink = vm_session_host_input_sink;
-
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (machine->active) return TYPE_STATUS_INVALID_STATE;
     status = vm_session_storage_initialize(machine);
@@ -348,13 +308,9 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
         vm_session_debug_disassemble, STD_NULL);
-    machine->execution.state = machine->control.state;
-    machine->execution.run = vm_session_execution_start;
-    machine->execution.stop = vm_session_execution_stop;
-    machine->execution.context = machine;
-    status = vm_platform_request_transport_create(&machine->request_transport);
+    status = vm_session_request_transport_create(&machine->request_transport);
     if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
-    vm_platform_request_transport_bind_consumer(machine->request_transport,
+    vm_session_request_transport_bind_consumer(machine->request_transport,
         vm_session_consume_request, machine);
     status = core_machine_guest_input_source_create(&vm_session_input_sink, machine,
         &machine->input_source);
@@ -362,17 +318,12 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_finalize(machine);
         return status;
     }
-    host_input_sink.context = machine;
-    status = vm_platform_run_context_create(
-        &machine->execution, &host_input_sink,
-        machine->presentation_mailbox, &machine->wait_scope,
-        &machine->platform_run_context);
-    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
-    status = vm_platform_run_handle_create(&machine->platform_run_handle);
-    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
+    if (host_sync_event_create(&machine->execution_started) != LIB_STATUS_OK) {
+        vm_session_finalize(machine); return TYPE_STATUS_NO_MEMORY;
+    }
     vm_session_start_outcome_reset(machine);
     vm_session_control_bind_command_boundary(&machine->control,
-        vm_platform_request_transport_observe_execution_boundary,
+        vm_session_request_transport_observe_execution_boundary,
         machine->request_transport);
     machine->active = 1;
     return TYPE_STATUS_OK;
@@ -380,18 +331,15 @@ type_status vm_session_initialize(vm_session *machine) {
 
 C_VOID vm_session_finalize(vm_session *machine) {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
-    vm_session_platform_request_stop(machine);
-    vm_session_platform_join_and_finalize(machine);
-    vm_platform_run_handle_destroy(machine->platform_run_handle);
-    machine->platform_run_handle = STD_NULL;
-    vm_platform_run_context_destroy(machine->platform_run_context);
-    machine->platform_run_context = STD_NULL;
-    STD_MEMSET(&machine->execution, 0, sizeof(machine->execution));
+    vm_session_execution_stop(machine);
+    vm_session_execution_join(machine);
+    host_sync_event_destroy(machine->execution_started);
+    machine->execution_started = STD_NULL;
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     core_machine_guest_input_source_destroy(machine->input_source);
     machine->input_source = STD_NULL;
-    vm_platform_request_transport_close(machine->request_transport);
-    vm_platform_request_transport_destroy(machine->request_transport);
+    vm_session_request_transport_close(machine->request_transport);
+    vm_session_request_transport_destroy(machine->request_transport);
     machine->request_transport = STD_NULL;
     machine->active = 0;
     vm_session_control_finalize(&machine->control, machine);

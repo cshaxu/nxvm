@@ -136,7 +136,7 @@ static C_INT verify_failure(const vm_profile_default_pc_at_descriptor *profile)
     initialize_config(&session, profile);
     if (vm_session_initialize(&session) != TYPE_STATUS_INVALID_ARGUMENT ||
         session.active || session.core_machine != STD_NULL ||
-        vm_platform_run_handle_is_active(session.platform_run_handle)) {
+        session.execution_task != STD_NULL) {
         vm_session_finalize(&session);
         return 1;
     }
@@ -168,7 +168,7 @@ static C_INT verify_fdd_initialization_failure(
     session.fdd_media_kind = (vm_profile_floppy_kind)0xffu;
     if (vm_session_initialize(&session) != TYPE_STATUS_FAULT || session.active ||
         session.core_machine != STD_NULL ||
-        vm_platform_run_handle_is_active(session.platform_run_handle)) {
+        session.execution_task != STD_NULL) {
         vm_session_finalize(&session);
         return 1;
     }

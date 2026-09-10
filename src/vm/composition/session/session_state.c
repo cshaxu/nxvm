@@ -1,5 +1,5 @@
 #include "type.h"
-#include "vm/platform/session_state.h"
+#include "vm/composition/session/session_state.h"
 
 struct vm_session_state {
     atomic_bool active;

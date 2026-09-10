@@ -5,7 +5,6 @@
 #include "core/machine/port.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/composition/session/provider.h"
 #include "vm/product/session_catalog.h"
 #include "vm/profile/xt/xt_5160_268.h"
 

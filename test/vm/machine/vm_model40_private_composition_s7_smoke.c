@@ -118,7 +118,7 @@ C_INT main(C_VOID)
         event.data.relative_mouse.buttons = 1u;
         fifo_count = session->core_machine->shared_kbc.data.fifo_count;
         failed |= vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK;
-        vm_platform_request_transport_observe_execution_boundary(
+        vm_session_request_transport_observe_execution_boundary(
             session->request_transport);
         failed |= session->core_machine->shared_kbc.data.fifo_count != fifo_count;
         core_machine_port_write(&session->core_machine->executor_port,

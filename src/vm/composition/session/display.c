@@ -6,7 +6,6 @@
 
 #include "core/machine/guest_display_frame.h"
 
-#include "vm/platform/platform.h"
 #include "lib/host/clock_interface.h"
 
 #include "vm/composition/session/session_private.h"
@@ -107,8 +106,9 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     frame.generation = machine->display_generation + 1u;
     if (core_machine_guest_presentation_mailbox_publish(machine->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return snapshot.kind;
-    if (vm_platform_run_context_publish_ux_frame(machine->platform_run_context) !=
-            TYPE_STATUS_OK) return snapshot.kind;
+    if (machine->display_reporter != STD_NULL) {
+        machine->display_reporter(machine->display_reporter_context, &frame);
+    }
     machine->display_generation = frame.generation;
     if (core_machine_observe_display_snapshot(machine->core_machine,
             TYPE_FALSE, 0u, &observation) == TYPE_STATUS_OK &&

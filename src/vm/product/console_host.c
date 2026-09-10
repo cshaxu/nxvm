@@ -7,7 +7,6 @@
 struct vm_product_console_host {
     lib_console *monitor;
     host_console_broker *broker;
-    vm_platform_console_binding binding;
     C_VOID *line_context;
     void (*line_sink)(C_VOID *context, const C_CHAR *text);
 };
@@ -23,25 +22,21 @@ static C_VOID vm_product_console_host_event(C_VOID *opaque,
     host->line_sink(host->line_context, event->value.line.text);
 }
 
-static type_status vm_product_console_host_claim(C_VOID *opaque,
-    C_VOID *logical_console)
+type_status vm_product_console_host_claim_guest(vm_product_console_host *host,
+    lib_console *guest_console)
 {
-    vm_product_console_host *host = opaque;
-
-    if (host == STD_NULL || logical_console == STD_NULL)
+    if (host == STD_NULL || guest_console == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
     return (type_status)host_console_broker_replace(host->broker, host->monitor,
-        logical_console, HOST_CONSOLE_RAW_EVENTS);
+        guest_console, HOST_CONSOLE_RAW_EVENTS);
 }
 
-static type_status vm_product_console_host_release(C_VOID *opaque,
-    C_VOID *logical_console)
+type_status vm_product_console_host_release_guest(vm_product_console_host *host,
+    lib_console *guest_console)
 {
-    vm_product_console_host *host = opaque;
-
-    if (host == STD_NULL || logical_console == STD_NULL)
+    if (host == STD_NULL || guest_console == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
-    return (type_status)host_console_broker_replace(host->broker, logical_console,
+    return (type_status)host_console_broker_replace(host->broker, guest_console,
         host->monitor, HOST_CONSOLE_COOKED_LINES);
 }
 
@@ -58,9 +53,6 @@ type_status vm_product_console_host_create(vm_product_console_host **out_host,
     if (host == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     host->line_context = line_context;
     host->line_sink = line_sink;
-    host->binding.context = host;
-    host->binding.claim = vm_product_console_host_claim;
-    host->binding.release = vm_product_console_host_release;
     if (lib_console_create(&host->monitor) != LIB_STATUS_OK ||
         lib_console_set_event_sink(host->monitor, vm_product_console_host_event,
             host) != LIB_STATUS_OK ||
@@ -96,10 +88,4 @@ type_status vm_product_console_host_write(vm_product_console_host *host,
 {
     return host == STD_NULL || text == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
         (type_status)lib_console_write_text(host->monitor, text, STD_STRLEN(text));
-}
-
-const vm_platform_console_binding *vm_product_console_host_binding(
-    const vm_product_console_host *host)
-{
-    return host == STD_NULL ? STD_NULL : &host->binding;
 }

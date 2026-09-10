@@ -19,65 +19,18 @@
 #define VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS 256u
 #define VM_SESSION_RUNNER_TURBO_QUANTUM_INSTRUCTIONS 4096u
 
-static C_VOID vm_session_runner_update_mouse_policy(vm_session *session,
-    const vm_session_control_state *control)
-{
-    C_INT capturable;
-
-    if (session == STD_NULL || control == STD_NULL) return;
-    capturable = vm_session_control_is_running(control) &&
-        vm_platform_run_context_get_window_display(session->platform_run_context);
-    (C_VOID)vm_platform_run_context_set_mouse_capturable(
-        session->platform_run_context, capturable);
-}
-
-static C_VOID vm_session_runner_toggle_pause(vm_session *session,
-    vm_session_control_state *control)
-{
-    if (session == STD_NULL || control == STD_NULL) return;
-    if (vm_session_state_is_paused(control->state)) {
-        vm_session_control_continue(control);
-        vm_session_runner_update_mouse_policy(session, control);
-        (C_VOID)vm_platform_run_context_set_window_title(
-            session->platform_run_context, "NXVM (Running)");
-        vm_session_report_lifecycle(session, VM_SESSION_RUNNING);
-    } else {
-        vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
-    }
-}
-
 C_VOID vm_session_runner_run(vm_session *session)
 {
     core_machine_run_budget budget;
     core_machine_run_result result;
     vm_session_control_state *control;
-    C_INT close_window_after_pause = TYPE_FALSE;
-    C_INT release_console_after_pause = TYPE_FALSE;
+    C_INT resumed;
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
-    vm_session_runner_update_mouse_policy(session, control);
     vm_session_report_lifecycle(session, VM_SESSION_RUNNING);
     while (vm_session_state_is_active(control->state)) {
-        if (vm_platform_run_handle_take_window_close_report(
-                session->platform_run_handle)) {
-            if (vm_session_state_is_paused(control->state)) {
-                (C_VOID)vm_platform_run_context_close_window(
-                    session->platform_run_context);
-            } else {
-                close_window_after_pause = TYPE_TRUE;
-                vm_session_control_request_pause(control, VM_SESSION_PAUSE_EXPLICIT);
-            }
-            continue;
-        }
-        if (vm_platform_run_handle_take_stop_report(session->platform_run_handle)) {
-            vm_session_control_stop(control);
-            continue;
-        }
-        if (vm_platform_run_handle_take_pause_report(session->platform_run_handle)) {
-            vm_session_runner_toggle_pause(session, control);
-            continue;
-        }
+        resumed = TYPE_FALSE;
         if (vm_session_state_take_reset(control->state)) {
             type_status reset_status = vm_session_execution_context_reset(
                 &control->execution_context);
@@ -86,62 +39,21 @@ C_VOID vm_session_runner_run(vm_session *session)
             if (reset_status != TYPE_STATUS_OK) continue;
         }
         if (vm_session_state_pause_requested(control->state)) {
-            C_INT closed_window_for_pause = TYPE_FALSE;
-
             /* The runner exclusively owns Core mutation.  Publish the final
              * VADP snapshot before acknowledging pause, so a paused debugger
              * or presenter never observes a stale mailbox frame. */
             (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
-            (C_VOID)vm_platform_run_context_set_mouse_capturable(
-                session->platform_run_context, TYPE_FALSE);
             vm_session_state_acknowledge_pause(control->state);
-            vm_platform_run_context_set_window_title(session->platform_run_context,
-                "NXVM (Paused)");
-            if (close_window_after_pause) {
-                (C_VOID)vm_platform_run_context_close_window(
-                    session->platform_run_context);
-                close_window_after_pause = TYPE_FALSE;
-                closed_window_for_pause = TYPE_TRUE;
-            }
-            /* A Console session owns the one process Console surface while
-             * running. End its runner at a paused boundary so the display
-             * thread releases that lease and START returns to the NXVM
-             * command Console. A Window session keeps its presenter alive for
-             * its paused frame and can resume in place. */
-            if (vm_platform_run_handle_is_active(session->platform_run_handle) &&
-                !vm_platform_run_handle_is_window_display(
-                    session->platform_run_handle) && !closed_window_for_pause) {
-                vm_platform_run_handle_request_presenter_stop(
-                    session->platform_run_handle);
-                release_console_after_pause = TYPE_TRUE;
-            }
             vm_session_report_lifecycle(session, VM_SESSION_PAUSED);
         }
-        /* A Console leaf is synchronously borrowed by START/RESUME. Its
-         * paused completion releases that borrow and ends only this runner
-         * invocation; the session remains paused and can start a new Console
-         * or Window runner through RESUME. */
-        if (release_console_after_pause) break;
         while (vm_session_state_is_active(control->state) &&
             vm_session_state_is_paused(control->state)) {
-            if (vm_platform_run_handle_take_stop_report(session->platform_run_handle)) {
-                vm_session_control_stop(control);
-                continue;
-            }
-            if (vm_platform_run_handle_take_window_close_report(
-                    session->platform_run_handle)) {
-                (C_VOID)vm_platform_run_context_close_window(
-                    session->platform_run_context);
-                continue;
-            }
-            if (vm_platform_run_handle_take_pause_report(session->platform_run_handle)) {
-                vm_session_runner_toggle_pause(session, control);
-                continue;
-            }
+            resumed = TYPE_TRUE;
             vm_session_execution_context_run_command_boundary(&control->execution_context);
             host_sync_sleep_milliseconds(1u);
         }
         if (!vm_session_state_is_active(control->state)) break;
+        if (resumed) vm_session_report_lifecycle(session, VM_SESSION_RUNNING);
         vm_session_execution_context_run_command_boundary(&control->execution_context);
         vm_session_execution_context_debug_refresh(&control->execution_context);
         if (vm_session_state_pause_requested(control->state)) continue;
@@ -203,7 +115,6 @@ C_VOID vm_session_runner_run(vm_session *session)
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_STEP);
         }
     }
-    vm_platform_run_handle_request_presenter_stop(session->platform_run_handle);
     if (!vm_session_state_is_paused(control->state)) {
         vm_session_report_lifecycle(session, VM_SESSION_STOPPED);
     }

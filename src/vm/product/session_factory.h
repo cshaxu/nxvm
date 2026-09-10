@@ -1,5 +1,5 @@
-#ifndef VM_SESSION_PROVIDER_H
-#define VM_SESSION_PROVIDER_H
+#ifndef VM_PRODUCT_SESSION_FACTORY_H
+#define VM_PRODUCT_SESSION_FACTORY_H
 
 #include "type.h"
 
