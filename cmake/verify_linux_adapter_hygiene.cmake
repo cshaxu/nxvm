@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.h" linux_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linux.c" linux_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/lib/ux/linux/console.c" linux_console_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/lib/ux-console/linux/component.c" linux_console_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/win32/win32.h" win32_header)
 set(adapter_source "${linux_header}\n${linux_source}\n${linux_console_source}\n${win32_header}")
 

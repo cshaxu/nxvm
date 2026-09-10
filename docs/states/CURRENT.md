@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New - M5 T525 S1 canonical SoftPC library freeze and admission audit. |
-| Admission And Approval | Owner approved T525 on 2026-09-09 to import the canonical SoftPC library, replace NXVM's current library and product bindings, and continue through task closure. The owner also approved a clean raw-Console input boundary at ownership replacement. |
-| Objective | Freeze an exact, product-neutral SoftPC `src/lib` corpus and exhaustively map the current NXVM library/binding surface before the later byte-identical replacement. |
-| Non-goals | No source copy, CMake cutover, product binding change, Core change, platform SDK exposure, SoftPC application/MVDM/asset import, or compatibility wrapper in S1. |
-| Reference Baseline | SoftPC commit `140af7ab9b988ef5613c1702036f387b282603c3`; `src/lib/MANIFEST.sha256` SHA-256 `665CA0E5AD9A9C9F3B5CB105E3082E3FDDECD80A553A75BD94236FC7A8DDEC37`; accepted T524 closure `459879d4`. |
+| Identifier Mode | Continuation - M5 T525 S3 canonical SoftPC library product binding. |
+| Admission And Approval | Owner approved T525 on 2026-09-09. S1 acceptance is `ae178bbb`; the owner-approved raw-Console replacement discard remains limited to new logical Console ownership. |
+| Objective | Replace NXVM's deleted unified presenter and old UX-only product binding with one NXVM coordinator over the canonical Window, Console and host-broker contracts. |
+| Non-goals | No Core change, SoftPC application/MVDM/asset import, local library fork, wrapper or compatibility route. |
+| Reference Baseline | [S2 evidence](../etc/evidence/t525-s2-canonical-corpus-replacement.md): S1-frozen SoftPC corpus copied byte-identically; standalone canonical Win32 root build and manifest pass. |
 | Candidate Proposal | [M5 canonical SoftPC library adoption and NXVM cutover](../proposals/m5-canonical-softpc-library-adoption.md). |
-| Files And ABI Surface | Read-only S1 inventory of SoftPC `src/lib`, NXVM `src/lib`, NXVM product presentation/platform bindings, CMake and public headers; S1 records no code change. |
+| Files And ABI Surface | NXVM VM product coordinator, input/frame conversion, run lifecycle, CMake target/test declarations and current task evidence; the canonical `src/lib` corpus is immutable. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [source policy](../etc/operations/policy/source-policy.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md) and [Product UX](../design/UI.md). The owner-approved raw-Console replacement discard is the explicit exception to the general input-flush prohibition; it is limited to a new logical Console ownership boundary. |
-| Verification | [S1 evidence](../etc/evidence/t525-s1-canonical-softpc-library-admission.md) records path/hash inventory, manifest verification, public-header/product-vocabulary/platform-API sweeps, licence/provenance disposition and one-to-one old-route mapping. |
-| Expected Markers | Every SoftPC corpus file has an exact hash; every NXVM lib and product route is retained by a named canonical owner, deleted in S2/S3, or rejected with a blocker; no unreviewed source notice or product vocabulary remains. |
-| Asset Needs | No firmware, media, ROM, binary, configuration or test-fixture import. SoftPC source import is owner-authorized only within the frozen `src/lib` corpus after S1 passes. |
-| Reporting Requirements | Report the frozen commit/manifest, every source and ABI disposition, any exception or blocker, and the proposed S2 replacement boundary before copying a file. |
-| Stop Conditions | Stop before S2 for a stale or mismatched manifest, independent licence notice, product/machine vocabulary in the source corpus, public SDK/API leak, semantic gap requiring a second NXVM path, or unapproved change to the frozen corpus. |
-| Exit Criteria | A complete evidence-backed import ledger proves the candidate corpus, its public contract and every NXVM replacement target are admissible; then S2 may copy exactly that frozen corpus and no other SoftPC path. |
+| Verification | Canonical manifest equality, fresh x64/x86 configuration/build, full repository-only unit, focused native Console/Window/broker/input/title/mouse/source-retirement proof, static direct-platform and duplicate-route sweeps, owner-managed integration and stripped artifacts. |
+| Expected Markers | NXVM product code calls only canonical public lib APIs; one process Console broker has one product-selected raw Console owner; every Window/Console component is product-created and product-destroyed; no `ux_presenter`, `ux_run`, old lib UX header, native SDK call or compatibility bridge remains. |
+| Asset Needs | Only the S1-frozen owner-authorized SoftPC `src/lib` source corpus. No firmware, media, ROM, binary, configuration or test-fixture import. |
+| Reporting Requirements | Record each deleted old product route, retained canonical owner, native-focus/Console-ownership semantics, exact corpus equality and all test/artifact evidence. |
+| Stop Conditions | Stop for a canonical API inability to preserve multi-session Console ownership, required product direct platform call, corpus divergence, or any new duplicate presentation/input route. |
+| Exit Criteria | Canonical corpus remains exact; NXVM has one product binding and no old route; full required verification and dual artifacts pass; actual diff shows no wrapper or duplicate owner. |
 | Original Owner Request | Admit and execute the SoftPC canonical-library import task until its task-level closure standard is met. |
 | Similar-Issue Sweep | Sweep all NXVM lib roots, VM platform/presentation/input/mouse paths, CMake source lists, public headers and tests for every current shared-library or platform implementation that could survive as a duplicate after cutover. |
 
