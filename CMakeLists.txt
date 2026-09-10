@@ -1195,6 +1195,7 @@ set(VM_PROFILE_SOURCES
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
     src/vm/product/console_host.c
+    src/vm/product/control.c
     src/vm/product/session_catalog.c
 )
 set(CORE_PRODUCT_DEBUG_SOURCES
@@ -1353,6 +1354,7 @@ target_link_libraries(core-product-debug-input-failure-smoke PRIVATE
 add_executable(vm-product-console-input-failure-smoke
     test/vm/product/vm_product_console_input_failure_smoke.c
     src/vm/product/console.c
+    src/vm/product/control.c
     test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )
@@ -1372,6 +1374,7 @@ target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
 add_executable(vm-product-console-exit-smoke
     test/vm/product/vm_product_console_exit_smoke.c
     src/vm/product/console.c
+    src/vm/product/control.c
     test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )
@@ -1388,6 +1391,7 @@ target_link_libraries(vm-product-console-exit-smoke PRIVATE
 add_executable(vm-product-console-lifecycle-report-smoke
     test/vm/product/vm_product_console_lifecycle_report_smoke.c
     src/vm/product/console.c
+    src/vm/product/control.c
     test/vm/product/console_host_fake.c
     src/vm/product/session_catalog.c
 )

@@ -9,20 +9,7 @@
 
 #include "vm/product/console.h"
 #include "vm/product/console_host.h"
-#include "lib/host/sync_interface.h"
-
-#define VM_PRODUCT_CONSOLE_EVENT_CAPACITY 64u
-
-typedef enum vm_product_console_event_kind {
-    VM_PRODUCT_CONSOLE_EVENT_LINE,
-    VM_PRODUCT_CONSOLE_EVENT_LIFECYCLE
-} vm_product_console_event_kind;
-
-typedef struct vm_product_console_event {
-    vm_product_console_event_kind kind;
-    vm_session_lifecycle lifecycle;
-    C_CHAR line[0x100];
-} vm_product_console_event;
+#include "vm/product/control.h"
 
 struct vm_product_console_context {
     STD_SIZE_T argument_count;
@@ -32,13 +19,7 @@ struct vm_product_console_context {
     const vm_session_machine_provider *machine_provider;
     vm_product_session_catalog *catalog;
     vm_product_console_host *console_host;
-    host_sync_event *event_ready;
-    STD_ATOMIC_FLAG lifecycle_lock;
-    vm_product_console_event events[VM_PRODUCT_CONSOLE_EVENT_CAPACITY];
-    STD_SIZE_T event_first;
-    STD_SIZE_T event_count;
-    C_INT accepting_events;
-    C_INT event_delivery_failed;
+    vm_product_control *control;
     C_INT sessions_stopped;
     vm_session_lifecycle lifecycle;
 };
@@ -69,103 +50,53 @@ static C_INT vm_product_console_printf(const vm_product_console_context *context
         TYPE_STATUS_OK ? written : -1;
 }
 
-static C_VOID vm_product_console_lifecycle_lock(
-    vm_product_console_context *context)
-{
-    while (STD_ATOMIC_FLAG_TEST_AND_SET_EXPLICIT(&context->lifecycle_lock,
-        STD_MEMORY_ORDER_ACQUIRE)) {
-    }
-}
-
-static C_VOID vm_product_console_lifecycle_unlock(
-    vm_product_console_context *context)
-{
-    STD_ATOMIC_FLAG_CLEAR_EXPLICIT(&context->lifecycle_lock,
-        STD_MEMORY_ORDER_RELEASE);
-}
-
 static C_VOID vm_product_console_push(vm_product_console_context *context,
-    const vm_product_console_event *event)
+    const vm_product_control_fact *fact)
 {
-    STD_SIZE_T index;
-
-    if (context == STD_NULL || event == STD_NULL || context->event_ready == STD_NULL) return;
-    vm_product_console_lifecycle_lock(context);
-    if (context->accepting_events) {
-        if (context->event_count == VM_PRODUCT_CONSOLE_EVENT_CAPACITY) {
-            context->event_delivery_failed = TYPE_TRUE;
-        } else {
-            index = (context->event_first + context->event_count) %
-                VM_PRODUCT_CONSOLE_EVENT_CAPACITY;
-            context->events[index] = *event;
-            ++context->event_count;
-        }
-        host_sync_event_signal(context->event_ready);
-    }
-    vm_product_console_lifecycle_unlock(context);
+    if (context != STD_NULL && context->control != STD_NULL && fact != STD_NULL)
+        (C_VOID)vm_product_control_publish(context->control, fact);
 }
 
 static C_VOID vm_product_console_report_lifecycle(C_VOID *opaque,
     vm_session_lifecycle lifecycle)
 {
-    vm_product_console_event event = {0};
+    vm_product_control_fact fact = {0};
 
-    event.kind = VM_PRODUCT_CONSOLE_EVENT_LIFECYCLE;
-    event.lifecycle = lifecycle;
-    vm_product_console_push((vm_product_console_context *)opaque, &event);
-}
-
-static C_INT vm_product_console_take(vm_product_console_context *context,
-    vm_product_console_event *out_event)
-{
-    C_INT result = 0;
-
-    if (context == STD_NULL || out_event == STD_NULL) return -1;
-    vm_product_console_lifecycle_lock(context);
-    if (context->event_delivery_failed) {
-        result = -1;
-    } else if (context->event_count != 0u) {
-        *out_event = context->events[context->event_first];
-        context->event_first = (context->event_first + 1u) % VM_PRODUCT_CONSOLE_EVENT_CAPACITY;
-        --context->event_count;
-        result = 1;
-    }
-    if (context->event_count == 0u && !context->event_delivery_failed) {
-        host_sync_event_reset(context->event_ready);
-    }
-    vm_product_console_lifecycle_unlock(context);
-    return result;
+    fact.kind = VM_PRODUCT_CONTROL_FACT_LIFECYCLE;
+    fact.value.lifecycle = lifecycle;
+    vm_product_console_push((vm_product_console_context *)opaque, &fact);
 }
 
 static C_VOID vm_product_console_write_lifecycle(vm_product_console_context *context,
-    const vm_product_console_event *event, C_INT restore_prompt)
+    const vm_product_control_fact *fact, C_INT restore_prompt)
 {
     const C_CHAR *state;
 
-    if (context == STD_NULL || event == STD_NULL) return;
-    if (event->lifecycle == VM_SESSION_RESET) {
+    if (context == STD_NULL || fact == STD_NULL) return;
+    if (fact->value.lifecycle == VM_SESSION_RESET) {
         state = "reset";
-    } else if (event->lifecycle == VM_SESSION_RUNNING) {
+    } else if (fact->value.lifecycle == VM_SESSION_RUNNING) {
         state = context->lifecycle == VM_SESSION_PAUSED ? "resumed" : "started";
-    } else if (event->lifecycle == VM_SESSION_PAUSED) {
+    } else if (fact->value.lifecycle == VM_SESSION_PAUSED) {
         state = "paused";
     } else {
         state = "stopped";
     }
     (C_VOID)vm_product_console_printf(context, restore_prompt ?
         "\r\nMachine %s.\nConsole> " : "Machine %s.\n", state);
-    if (event->lifecycle != VM_SESSION_RESET) context->lifecycle = event->lifecycle;
+    if (fact->value.lifecycle != VM_SESSION_RESET)
+        context->lifecycle = fact->value.lifecycle;
 }
 
 static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
     C_INT restore_prompt)
 {
-    vm_product_console_event event;
+    vm_product_control_fact fact;
 
     if (context == STD_NULL) return;
-    while (vm_product_console_take(context, &event) > 0) {
-        if (event.kind == VM_PRODUCT_CONSOLE_EVENT_LIFECYCLE) {
-            vm_product_console_write_lifecycle(context, &event, restore_prompt);
+    while (vm_product_control_take(context->control, &fact, 0u) == TYPE_STATUS_OK) {
+        if (fact.kind == VM_PRODUCT_CONTROL_FACT_LIFECYCLE) {
+            vm_product_console_write_lifecycle(context, &fact, restore_prompt);
         }
     }
 }
@@ -207,40 +138,39 @@ static C_VOID vm_product_console_line_received(C_VOID *opaque,
     const C_CHAR *text)
 {
     vm_product_console_context *context = opaque;
-    vm_product_console_event event = {0};
+    vm_product_control_fact fact = {0};
     STD_SIZE_T length;
 
     if (context == STD_NULL || text == STD_NULL) return;
     length = STD_STRLEN(text);
-    if (length >= sizeof(event.line)) length = sizeof(event.line) - 1u;
-    event.kind = VM_PRODUCT_CONSOLE_EVENT_LINE;
-    STD_MEMCPY(event.line, text, length);
-    event.line[length] = '\0';
-    vm_product_console_push(context, &event);
+    if (length >= sizeof(fact.value.line)) length = sizeof(fact.value.line) - 1u;
+    fact.kind = VM_PRODUCT_CONTROL_FACT_MONITOR_LINE;
+    STD_MEMCPY(fact.value.line, text, length);
+    fact.value.line[length] = '\0';
+    vm_product_console_push(context, &fact);
 }
 
 static C_INT vm_product_console_read_line(vm_product_console_context *context,
     C_CHAR *buffer, STD_SIZE_T buffer_size)
 {
-    vm_product_console_event event;
+    vm_product_control_fact fact;
 
     if (context == STD_NULL || buffer == STD_NULL || buffer_size == 0u ||
-        context->console_host == STD_NULL || context->event_ready == STD_NULL)
+        context->console_host == STD_NULL || context->control == STD_NULL)
         return 0;
     buffer[0] = '\0';
     if (vm_product_console_host_request_line(context->console_host) !=
         TYPE_STATUS_OK) return 0;
     for (;;) {
-        if (host_sync_event_wait(context->event_ready, 0xffffffffu) !=
-                HOST_SYNC_WAIT_SIGNALED) return 0;
-        if (vm_product_console_take(context, &event) < 0) return 0;
-        if (event.kind == VM_PRODUCT_CONSOLE_EVENT_LIFECYCLE) {
-            vm_product_console_write_lifecycle(context, &event, TYPE_TRUE);
+        if (vm_product_control_take(context->control, &fact, 0xffffffffu) !=
+                TYPE_STATUS_OK) return 0;
+        if (fact.kind == VM_PRODUCT_CONTROL_FACT_LIFECYCLE) {
+            vm_product_console_write_lifecycle(context, &fact, TYPE_TRUE);
             continue;
         }
-        if (event.kind != VM_PRODUCT_CONSOLE_EVENT_LINE) return 0;
-        if (STD_STRLEN(event.line) >= buffer_size) return 0;
-        STD_MEMCPY(buffer, event.line, STD_STRLEN(event.line) + 1u);
+        if (fact.kind != VM_PRODUCT_CONTROL_FACT_MONITOR_LINE) return 0;
+        if (STD_STRLEN(fact.value.line) >= buffer_size) return 0;
+        STD_MEMCPY(buffer, fact.value.line, STD_STRLEN(fact.value.line) + 1u);
         return 1;
     }
 }
@@ -640,20 +570,13 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     argArray = (C_CHAR **)STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
-    context->lifecycle_lock = (STD_ATOMIC_FLAG)ATOMIC_FLAG_INIT;
-    STD_ATOMIC_FLAG_CLEAR_EXPLICIT(&context->lifecycle_lock,
-        STD_MEMORY_ORDER_RELEASE);
-    context->event_first = 0u;
-    context->event_count = 0u;
-    context->accepting_events = TYPE_TRUE;
-    context->event_delivery_failed = TYPE_FALSE;
     context->sessions_stopped = TYPE_FALSE;
     context->lifecycle = VM_SESSION_STOPPED;
-    if (host_sync_event_create(&context->event_ready) != LIB_STATUS_OK ||
+    if (vm_product_control_create(&context->control) != TYPE_STATUS_OK ||
         vm_product_console_host_create(&context->console_host, context,
             vm_product_console_line_received) != TYPE_STATUS_OK) {
-        host_sync_event_destroy(context->event_ready);
-        context->event_ready = STD_NULL;
+        vm_product_control_destroy(context->control);
+        context->control = STD_NULL;
         return TYPE_FALSE;
     }
     if (vm_product_session_catalog_create(profile_directory, &context->catalog) ==
@@ -661,9 +584,9 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
     vm_product_console_host_destroy(context->console_host);
-    host_sync_event_destroy(context->event_ready);
+    vm_product_control_destroy(context->control);
     context->console_host = STD_NULL;
-    context->event_ready = STD_NULL;
+    context->control = STD_NULL;
     STD_FREE(argArray);
     argArray = STD_NULL;
     return TYPE_FALSE;
@@ -672,7 +595,6 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
 /* Finalizes console */
 static C_VOID vm_product_console_finalize(vm_product_console_context *context)
 {
-    vm_product_console_event event;
     if (argArray)
     {
         STD_FREE((C_VOID *)argArray);
@@ -688,15 +610,13 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
         machineProvider->set_lifecycle_reporter(machineProvider->context,
             STD_NULL, STD_NULL);
     }
-    vm_product_console_lifecycle_lock(context);
-    context->accepting_events = TYPE_FALSE;
-    vm_product_console_lifecycle_unlock(context);
+    vm_product_control_close(context->control);
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
     vm_product_console_host_destroy(context->console_host);
-    host_sync_event_destroy(context->event_ready);
+    vm_product_control_destroy(context->control);
     context->console_host = STD_NULL;
-    context->event_ready = STD_NULL;
+    context->control = STD_NULL;
 }
 
 type_status vm_product_console_context_create(
@@ -716,6 +636,7 @@ C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 {
     if (context == STD_NULL) return;
     vm_product_session_catalog_destroy(context->catalog);
+    vm_product_control_destroy(context->control);
     STD_FREE(context);
 }
 
