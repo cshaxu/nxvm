@@ -4,46 +4,30 @@
 
 #include "vm/composition/session/console_machine_adapter.h"
 
+#include "vm/composition/session/provider.h"
+
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/debug_target.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/machine_info.h"
 #include "core/product/debug/debug.h"
-#include "core/product/session/session_interface.h"
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd.h"
 #include "vm/platform/platform.h"
+#include "vm/product/session_catalog.h"
 
 typedef type_status (*vm_session_machine_selected_operation)(
     vm_session *session, C_VOID *context);
 
-typedef struct vm_session_machine_selected_call {
-    vm_session_machine_selected_operation operation;
-    C_VOID *context;
-} vm_session_machine_selected_call;
-
-static type_status vm_session_machine_apply_selected(C_VOID *context,
-    C_VOID *opaque)
-{
-    vm_session_machine_selected_call *call =
-        (vm_session_machine_selected_call *)context;
-
-    if (call == STD_NULL || call->operation == STD_NULL || opaque == STD_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    return call->operation((vm_session *)opaque, call->context);
-}
-
 static type_status vm_session_machine_apply(C_VOID *context,
     vm_session_machine_selected_operation operation, C_VOID *operation_context)
 {
-    vm_session_machine_selected_call call = {operation, operation_context};
-    core_product_session_manager *manager = (core_product_session_manager *)context;
+    vm_session **slot = (vm_session **)context;
 
-    if (manager == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    return core_product_session_manager_apply_selected(manager,
-        vm_session_machine_apply_selected, &call);
+    if (slot == STD_NULL || *slot == STD_NULL || operation == STD_NULL)
+        return TYPE_STATUS_INVALID_STATE;
+    return operation(*slot, operation_context);
 }
 
 static type_status vm_session_machine_read_running(vm_session *session,
@@ -131,33 +115,15 @@ static C_VOID vm_session_machine_set_console_binding(C_VOID *context,
         vm_session_machine_set_console_binding_selected, (C_VOID *)binding);
 }
 
-typedef struct vm_session_machine_lifecycle_reporter_call {
-    vm_product_console_lifecycle_reporter reporter;
-    C_VOID *context;
-} vm_session_machine_lifecycle_reporter_call;
-
-static type_status vm_session_machine_set_lifecycle_reporter_selected(
-    vm_session *session, C_VOID *context)
-{
-    vm_session_machine_lifecycle_reporter_call *call = context;
-
-    if (session == STD_NULL || call == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    vm_session_set_lifecycle_reporter(session,
-        (vm_session_lifecycle_reporter)call->reporter, call->context);
-    return TYPE_STATUS_OK;
-}
-
 static C_VOID vm_session_machine_set_lifecycle_reporter(C_VOID *context,
     vm_product_console_lifecycle_reporter reporter, C_VOID *reporter_context)
 {
-    vm_session_machine_lifecycle_reporter_call call = {reporter, reporter_context};
-    vm_session_machine_selected_call selected_call = {
-        vm_session_machine_set_lifecycle_reporter_selected, &call
-    };
-    core_product_session_manager *manager = (core_product_session_manager *)context;
+    vm_session **slot = (vm_session **)context;
 
-    if (manager != STD_NULL) (C_VOID)core_product_session_manager_apply_all(manager,
-        vm_session_machine_apply_selected, &selected_call);
+    if (slot != STD_NULL && *slot != STD_NULL) {
+        vm_session_set_lifecycle_reporter(*slot,
+            (vm_session_lifecycle_reporter)reporter, reporter_context);
+    }
 }
 
 static type_status vm_session_machine_print_bios_selected(vm_session *session,
@@ -329,6 +295,15 @@ static type_status vm_session_machine_start_selected(vm_session *session,
     return vm_session_start(session);
 }
 
+static type_status vm_session_machine_open_profile(C_VOID *context,
+    const vm_product_session_request *request)
+{
+    vm_session **slot = (vm_session **)context;
+
+    if (slot == STD_NULL || *slot != STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    return vm_session_create_from_request(request, slot);
+}
+
 static type_status vm_session_machine_start(C_VOID *context)
 {
     return vm_session_machine_apply(context, vm_session_machine_start_selected,
@@ -357,21 +332,10 @@ static type_status vm_session_machine_stop_selected(vm_session *session,
     return TYPE_STATUS_OK;
 }
 
-static C_VOID vm_session_machine_stop(C_VOID *context)
+static type_status vm_session_machine_stop(C_VOID *context)
 {
-    (C_VOID)vm_session_machine_apply(context, vm_session_machine_stop_selected,
+    return vm_session_machine_apply(context, vm_session_machine_stop_selected,
         STD_NULL);
-}
-
-static type_status vm_session_machine_stop_all(C_VOID *context)
-{
-    vm_session_machine_selected_call call = {vm_session_machine_stop_selected,
-        STD_NULL};
-    core_product_session_manager *manager = (core_product_session_manager *)context;
-
-    return manager == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
-        core_product_session_manager_apply_all(manager,
-            vm_session_machine_apply_selected, &call);
 }
 
 static type_status vm_session_machine_resume_selected(vm_session *session,
@@ -403,19 +367,19 @@ static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_record_stop,
     vm_session_machine_insert_fdd,
     vm_session_machine_remove_fdd,
+    vm_session_machine_open_profile,
     vm_session_machine_start,
     vm_session_machine_reset,
     vm_session_machine_stop,
-    vm_session_machine_stop_all,
     vm_session_machine_resume,
     STD_NULL
 };
 
 C_VOID vm_composition_console_machine_provider_initialize(
     vm_session_machine_provider *machine_provider,
-    core_product_session_manager *manager)
+    vm_session **session_slot)
 {
     if (machine_provider == STD_NULL) return;
     *machine_provider = vmSessionMachineProviderTemplate;
-    machine_provider->context = manager;
+    machine_provider->context = session_slot;
 }

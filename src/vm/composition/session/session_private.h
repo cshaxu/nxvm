@@ -10,7 +10,6 @@
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
-#include "core/product/session/session_interface.h"
 #include "core/utils/wait_provider.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
@@ -35,7 +34,6 @@ typedef enum vm_session_firmware_kind {
 
 struct vm_session {
     C_INT active;
-    core_product_session_id product_session_id;
     vm_session_lifecycle_reporter lifecycle_reporter;
     C_VOID *lifecycle_reporter_context;
     vm_platform_request_transport *request_transport;

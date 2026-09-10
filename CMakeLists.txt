@@ -296,12 +296,6 @@ target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
 add_executable(vm-session-initialization-atomicity-smoke
     test/vm/machine/vm_session_initialization_atomicity_smoke.c)
 target_link_libraries(vm-session-initialization-atomicity-smoke PRIVATE vm-composition)
-add_executable(vm-session-manager-smoke
-    test/vm/product/nxvm_session_manager_smoke.c)
-target_link_libraries(vm-session-manager-smoke PRIVATE vm-composition)
-add_executable(vm-session-profile-smoke
-    test/vm/product/nxvm_session_profile_smoke.c)
-target_link_libraries(vm-session-profile-smoke PRIVATE vm-composition)
 add_executable(vm-session-reconfigure-smoke
     test/vm/machine/nxvm_session_reconfigure_smoke.c)
 target_link_libraries(vm-session-reconfigure-smoke PRIVATE vm-composition)
@@ -1317,15 +1311,6 @@ target_include_directories(core-product-utils PUBLIC
 )
 target_link_libraries(core-product-utils PUBLIC core-product-debug)
 
-add_library(core-product-session STATIC
-    src/core/product/session/command.c
-    src/core/product/session/manager.c
-)
-target_include_directories(core-product-session PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-product-session PUBLIC type-facade)
-
 add_executable(core-utils-wait-smoke
     test/core/core_utils_wait_smoke.c
 )
@@ -1337,23 +1322,6 @@ add_executable(std-snprintf-smoke
     test/core/std_snprintf_smoke.c
 )
 target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
-
-add_executable(core-product-session-contract-smoke
-    test/core/product/core_product_session_contract_smoke.c
-)
-target_include_directories(core-product-session-contract-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-product-session-contract-smoke PRIVATE
-    type-facade
-)
-
-add_executable(core-product-session-manager-smoke
-    test/core/product/core_product_session_manager_smoke.c
-)
-target_link_libraries(core-product-session-manager-smoke PRIVATE
-    core-product-session
-)
 
 add_executable(core-product-debug-target-smoke
     test/core/product/core_product_debug_target_smoke.c
@@ -1395,7 +1363,6 @@ target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
     STD_MALLOC=test_console_input_malloc
 )
 target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
-    core-product-session
     core-product-utils
     core-machine-boundary
     storage-medium
@@ -1412,7 +1379,6 @@ target_include_directories(vm-product-console-exit-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product-console-exit-smoke PRIVATE
-    core-product-session
     core-product-utils
     core-machine-boundary
     storage-medium
@@ -1429,7 +1395,6 @@ target_include_directories(vm-product-console-lifecycle-report-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product-console-lifecycle-report-smoke PRIVATE
-    core-product-session
     core-product-utils
     core-machine-boundary
     storage-medium
@@ -1572,7 +1537,6 @@ target_link_libraries(vm-composition PUBLIC
     vm-machine
     core-machine
     core-utils
-    core-product-session
     "$<LINK_GROUP:RESCAN,core-product-debug,core-product-utils>"
     vm-profile
     vm-product
@@ -2369,8 +2333,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     std-snprintf-smoke
     core-product-xasm-smoke
     core-product-xasm-contract-smoke
-    core-product-session-contract-smoke
-    core-product-session-manager-smoke
     core-product-debug-target-smoke
     core-product-debug-input-failure-smoke
     vm-product-console-input-failure-smoke
@@ -2403,7 +2365,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-debugger-recording-lifecycle-smoke
     vm-product-session-smoke
     vm-session-initialization-atomicity-smoke
-    vm-session-manager-smoke
     vm-session-reconfigure-smoke
     vm-session-media-lifecycle-s3-smoke
     vm-session-speed-policy-smoke
@@ -2499,7 +2460,6 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-lifecycle-smoke
     core-machine-trace-smoke
     core-machine-external-time-trace-s18-smoke
-    vm-session-profile-smoke
     vm-model-339-clock-contract-smoke
     core-machine-plan-smoke
     vm-model40-rom-layout-s14-smoke
@@ -3213,7 +3173,7 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
             -File "${CMAKE_SOURCE_DIR}/tools/VerifyProductSessionManager.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
-        COMMENT "Verifying M5 product-session manager closure"
+        COMMENT "Verifying M5 product single-session closure"
         VERBATIM)
 
     add_custom_target(verify-c-facade-headers
@@ -3738,7 +3698,6 @@ endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-utils PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-product-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3943,7 +3902,6 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-request-transport
     core-product-debug
     core-product-utils
-    core-product-session
     vm-profile
     vm-platform
     vm-composition

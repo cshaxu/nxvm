@@ -53,12 +53,11 @@ static type_status vm_console_pause_resume_release(C_VOID *opaque,
 }
 
 static C_VOID vm_console_pause_resume_report_lifecycle(C_VOID *opaque,
-    core_product_session_id id, vm_session_lifecycle lifecycle)
+    vm_session_lifecycle lifecycle)
 {
     vm_console_pause_resume_lifecycle_log *log = opaque;
     C_INT index;
 
-    (C_VOID)id;
     if (log == STD_NULL) return;
     index = STD_ATOMIC_LOAD(&log->count);
     if (index < (C_INT)(sizeof(log->events) / sizeof(log->events[0]))) {

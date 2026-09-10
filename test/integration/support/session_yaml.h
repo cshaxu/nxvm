@@ -1,7 +1,6 @@
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 
-#include "core/product/session/session_provider.h"
 #include "core/machine/media_interface.h"
 #include "vm/composition/session/media.h"
 #include "vm/composition/session/session_interface.h"
@@ -13,7 +12,6 @@ typedef type_status (*integration_yaml_session_overlay_transform)(
     integration_yaml_session *session, C_VOID *opaque);
 
 struct integration_yaml_session {
-    core_product_session_provider provider;
     vm_product_session_request request;
     vm_session *session;
     integration_yaml_session_overlay_transform transform;

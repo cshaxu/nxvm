@@ -8,7 +8,8 @@ typedef struct vm_session_state vm_session_state;
 typedef enum vm_session_lifecycle {
     VM_SESSION_STOPPED,
     VM_SESSION_RUNNING,
-    VM_SESSION_PAUSED
+    VM_SESSION_PAUSED,
+    VM_SESSION_RESET
 } vm_session_lifecycle;
 
 type_status vm_session_state_create(vm_session_state **out_state);

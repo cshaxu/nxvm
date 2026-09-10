@@ -206,6 +206,7 @@ type_status vm_session_finish_reset(vm_session *machine, type_status status)
     if (!vm_session_control_is_running(&machine->control)) {
         vm_session_publish_display(machine, 1);
     }
+    vm_session_report_lifecycle(machine, VM_SESSION_RESET);
     return TYPE_STATUS_OK;
 }
 
@@ -271,8 +272,7 @@ void vm_session_report_lifecycle(vm_session *machine,
     vm_session_lifecycle lifecycle)
 {
     if (machine != STD_NULL && machine->lifecycle_reporter != STD_NULL) {
-        machine->lifecycle_reporter(machine->lifecycle_reporter_context,
-            machine->product_session_id, lifecycle);
+        machine->lifecycle_reporter(machine->lifecycle_reporter_context, lifecycle);
     }
 }
 

@@ -15,11 +15,10 @@
 typedef struct vm_runner_display_lifecycle_log {
     LONG count;
     vm_session_lifecycle events[5u];
-    core_product_session_id ids[5u];
 } vm_runner_display_lifecycle_log;
 
 static C_VOID vm_runner_display_lifecycle_report(C_VOID *opaque,
-    core_product_session_id id, vm_session_lifecycle lifecycle)
+    vm_session_lifecycle lifecycle)
 {
     vm_runner_display_lifecycle_log *log = opaque;
     LONG index;
@@ -28,7 +27,6 @@ static C_VOID vm_runner_display_lifecycle_report(C_VOID *opaque,
     index = InterlockedIncrement(&log->count) - 1;
     if (index >= 0 && index < (LONG)(sizeof(log->events) / sizeof(log->events[0u]))) {
         log->events[index] = lifecycle;
-        log->ids[index] = id;
     }
 }
 
@@ -77,7 +75,6 @@ C_INT main(C_VOID)
         failed = 1;
         goto done;
     }
-    session->product_session_id = 7u;
     vm_session_set_lifecycle_reporter(session, vm_runner_display_lifecycle_report,
         &lifecycle_log);
     thread = CreateThread(STD_NULL, 0u, vm_runner_display_cadence_run, session,
@@ -117,10 +114,7 @@ done:
         if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) failed = 1;
         CloseHandle(thread);
     }
-    failed |= lifecycle_log.count != 5 || lifecycle_log.ids[0u] != 7u ||
-        lifecycle_log.ids[1u] != 7u || lifecycle_log.ids[2u] != 7u ||
-        lifecycle_log.ids[3u] != 7u || lifecycle_log.ids[4u] != 7u ||
-        lifecycle_log.events[0u] != VM_SESSION_RUNNING ||
+    failed |= lifecycle_log.count != 5 || lifecycle_log.events[0u] != VM_SESSION_RUNNING ||
         lifecycle_log.events[1u] != VM_SESSION_PAUSED ||
         lifecycle_log.events[2u] != VM_SESSION_RUNNING ||
         lifecycle_log.events[3u] != VM_SESSION_PAUSED ||

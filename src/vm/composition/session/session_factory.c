@@ -143,78 +143,16 @@ static type_status vm_session_provider_request_configure(
     return TYPE_STATUS_OK;
 }
 
-static type_status vm_session_provider_parse_options(
-    const core_product_session_open_options *options, vm_session_config *config)
+type_status vm_session_create_from_request(
+    const vm_product_session_request *request, vm_session **out_session)
 {
-    if (config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    STD_MEMSET(config, 0, sizeof(*config));
-    config->cpu_profile = CORE_MACHINE_CPU_PROFILE_DEFAULT;
-    config->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
-    if (options == STD_NULL || (options->argument_count == 0 &&
-            options->request == STD_NULL && options->request_bytes == 0u)) {
-        return TYPE_STATUS_OK;
-    }
-    if (options->argument_count != 0 || options->arguments != STD_NULL ||
-        options->request == STD_NULL ||
-        options->request_bytes != sizeof(vm_product_session_request)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    return vm_session_provider_request_configure(
-        (const vm_product_session_request *)options->request, config);
-}
-
-static type_status vm_session_provider_open(C_VOID *context,
-    core_product_session_id id, const core_product_session_open_options *options,
-    C_VOID **out_session)
-{
-    vm_session *session;
-    type_status status;
     vm_session_config config;
+    type_status status;
 
-    (C_VOID)context;
-    status = vm_session_provider_parse_options(options, &config);
+    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_session = STD_NULL;
+    status = vm_session_provider_request_configure(request, &config);
     if (status != TYPE_STATUS_OK) return status;
-    status = vm_session_create(&config, &session);
-    if (status != TYPE_STATUS_OK) return status;
-    session->product_session_id = id;
-    *out_session = session;
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_session_provider_describe(C_VOID *context,
-    const C_VOID *opaque, core_product_session_snapshot *snapshot)
-{
-    const vm_session *session = (const vm_session *)opaque;
-
-    (C_VOID)context;
-    if (session == STD_NULL || snapshot == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    snapshot->state = vm_session_control_is_paused(&session->control) ?
-        CORE_PRODUCT_SESSION_STATE_PAUSED :
-        vm_session_control_is_running(&session->control) ?
-        CORE_PRODUCT_SESSION_STATE_RUNNING : CORE_PRODUCT_SESSION_STATE_STOPPED;
-    snapshot->display = vm_platform_run_context_get_display_mode(
-        session->platform_run_context) == VM_PLATFORM_DISPLAY_WINDOW ?
-        CORE_PRODUCT_SESSION_DISPLAY_WINDOW : CORE_PRODUCT_SESSION_DISPLAY_CONSOLE;
-    STD_SNPRINTF(snapshot->details, sizeof(snapshot->details),
-        "profile=%s cpu=%s fpu=%s",
-        vm_session_profile_name(session->retained_config.profile_kind),
-        core_machine_cpu_profile_name(session->core_machine_config.cpu_profile),
-        core_machine_fpu_profile_name(session->core_machine_config.fpu_profile));
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_session_provider_close(C_VOID *context, C_VOID *opaque)
-{
-    (C_VOID)context;
-    vm_session_destroy((vm_session *)opaque);
-    return TYPE_STATUS_OK;
-}
-
-C_VOID vm_session_provider_initialize(core_product_session_provider *provider)
-{
-    if (provider == STD_NULL) return;
-    provider->open = vm_session_provider_open;
-    provider->describe = vm_session_provider_describe;
-    provider->close = vm_session_provider_close;
-    provider->context = STD_NULL;
+    status = vm_session_create(&config, out_session);
+    return status;
 }

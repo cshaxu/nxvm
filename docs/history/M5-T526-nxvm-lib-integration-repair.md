@@ -5,7 +5,7 @@
 - **Identifier mode:** New
 - **Owner admission:** repair NXVM/lib integration defects while preserving the
   admitted canonical SoftPC `src/lib` corpus byte-identical.
-- **Current subtask:** S3 - lifecycle/Console coherence.
+- **Current subtask:** S4 - single-session convergence.
 
 ## S1 Contract
 
@@ -91,3 +91,22 @@ next S therefore replaces, rather than wraps, the mixed `vm/platform` UX
 route: sessions publish copied facts, process-owned product control owns
 identity/generation-aware decisions, and per-session product presentation owns
 the only lib leaf.  Core and the shared library remain outside product policy.
+
+### Owner-approved single-session amendment
+
+Before that migration, NXVM product converges to one runtime `vm_session`.
+This is a VM/product simplification, not a Core restriction: Core remains a
+cardinality-neutral machine library. One product control FIFO will therefore
+serve one run generation rather than a matrix of session queues and a second
+manager queue. The dynamic product-session manager, selected-session state and
+`SESSION LIST/OPEN/SELECT/CLOSE` surface are deleted rather than capped at one.
+
+### S4 result
+
+NXVM product now owns one direct `vm_session` slot. The obsolete Core product
+session manager, selected-session state, multi-session command grammar and
+their tests are removed rather than retained behind a maximum-one wrapper.
+The product Console remains the only lifecycle formatter; it receives reset,
+started, paused, resumed and stopped facts only after the composition session
+has reached them. The static single-session and readiness gates pass, as do
+the complete 305-case repository-only unit suite and owner native UX test.

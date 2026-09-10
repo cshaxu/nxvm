@@ -1,5 +1,8 @@
 #include "lib/host/sync_interface.h"
 
+#include <stdatomic.h>
+#include <stdio.h>
+
 typedef struct host_sync_smoke_state {
     host_sync_event *started;
     atomic_int cancelled;

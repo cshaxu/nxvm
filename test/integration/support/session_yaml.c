@@ -55,16 +55,14 @@ type_status integration_yaml_session_restart(integration_yaml_session *session)
 
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (session->session != STD_NULL) {
-        (C_VOID)session->provider.close(session->provider.context, session->session);
+        vm_session_destroy(session->session);
         session->session = STD_NULL;
     }
-    status = session->provider.open(session->provider.context, 1u,
-        &(core_product_session_open_options) {0u, STD_NULL, &session->request,
-            sizeof(session->request)}, (C_VOID **)&session->session);
+    status = vm_session_create_from_request(&session->request, &session->session);
     if (status != TYPE_STATUS_OK || session->session == STD_NULL) return TYPE_STATUS_FAULT;
     if (session->transform != STD_NULL && session->transform(session,
             session->transform_opaque) != TYPE_STATUS_OK) {
-        (C_VOID)session->provider.close(session->provider.context, session->session);
+        vm_session_destroy(session->session);
         session->session = STD_NULL;
         return TYPE_STATUS_FAULT;
     }
@@ -96,7 +94,6 @@ type_status integration_yaml_session_open_with_overlay_transform(const C_CHAR *d
             file_name);
         return TYPE_STATUS_UNSUPPORTED;
     }
-    vm_session_provider_initialize(&out_session->provider);
     out_session->transform = transform;
     out_session->transform_opaque = opaque;
     status = integration_yaml_session_restart(out_session);
@@ -154,7 +151,6 @@ type_status integration_yaml_session_overlay_write(integration_yaml_session *ses
 C_VOID integration_yaml_session_close(integration_yaml_session *session)
 {
     if (session == STD_NULL) return;
-    if (session->session != STD_NULL) (C_VOID)session->provider.close(
-        session->provider.context, session->session);
+    vm_session_destroy(session->session);
     STD_MEMSET(session, 0, sizeof(*session));
 }

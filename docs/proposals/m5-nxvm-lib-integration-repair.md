@@ -37,26 +37,30 @@ wrapper, compatibility copy, or local lib patch.
    NXVM product Console observer, not through lib or direct runner printing.
    The observer retains bounded completion facts and is the sole Console-loop
    formatter; an overflow is a visible product failure, never a dropped state.
-   The NXVM multi-session form is a single bounded product-control FIFO of
-   copied command lines, UX input, lifecycle facts, frame facts and delivery
-   failures.  Every asynchronous record carries session identity plus run
-   generation; stale input cannot reach a recreated session, while source
-   retirement remains ledger cleanup.  The product control owner alone derives
-   presenter work; a per-session presentation binding applies that work through
-   lib's public Window/Console APIs and reports completion back to the same
-   FIFO.  Core remains outside this route.
-4. **S4 - product-control and presentation migration.** Replace the mixed
-   `vm/platform` UX route rather than wrapping it.  A session publishes only
-   copied lifecycle/frame/input facts through its composition contract.  One
-   process-owned product-control FIFO stamps every asynchronous fact with
-   `(session_id, run_generation)`, rejects stale ordinary input, and derives
-   the next action from completed facts.  A per-session product presentation
-   binding owns the sole lib Console or Window leaf and reports its completion
-   to that FIFO.  The product Console broker remains process-owned and is the
-   only authority that leases its one Console.  Delete the old direct
-   session-to-leaf, leaf-to-run-handle, and `vm/platform` UX ownership paths;
-   do not leave a forwarding compatibility route.
-5. **S5 - closure.** Run the complete unit suite, focused native-binding
+   The earlier multi-session form is withdrawn before product-control
+   migration. It is neither an implementation requirement nor a compatibility
+   path.
+4. **S4 - single-session convergence.** NXVM's product owns exactly one
+   `vm_session`; it has no runtime session manager, selected-session state,
+   session id, or `SESSION LIST/OPEN/SELECT/CLOSE` command surface. Startup
+   resolves one YAML request before the product control loop begins. Reset,
+   stop and profile construction remain VM/composition concerns. Core still
+   has no cardinality policy and may be instantiated independently by another
+   host. Delete, rather than cap, the product-level multi-session manager and
+   its duplicate command/test paths. Preserve one process Console broker and
+   one session run-generation so stale asynchronous completion from an earlier
+   run cannot affect a later run.
+5. **S5 - product-control and presentation migration.** Replace the mixed
+   `vm/platform` UX route rather than wrapping it. The single session publishes
+   copied lifecycle/frame/input facts through its composition contract. One
+   process-owned product-control FIFO stamps asynchronous facts with the one
+   run generation, rejects stale ordinary input, and derives the next action
+   from completed facts. One product presentation binding owns the sole lib
+   Console or Window leaf and reports completion back to that FIFO. The product
+   Console broker remains process-owned and is the only authority that leases
+   its one Console. Delete the old direct session-to-leaf, leaf-to-run-handle,
+   and `vm/platform` UX ownership paths; do not leave a forwarding route.
+6. **S6 - closure.** Run the complete unit suite, focused native-binding
    proofs, the external integration suite, manifest/boundary gates and fresh
    optimized stripped x64/x86 `0526` artifacts.  Review the actual diff for a
    second presentation path before closure.
@@ -71,8 +75,10 @@ wrapper, compatibility copy, or local lib patch.
   no product-native presenter implementation or compatibility path.
 - A lifecycle completion has exactly one product Console report; Console
   borrowing/release never changes a session's running/paused/stopped truth.
+- NXVM's runtime product admits exactly one session, while Core contains no
+  single-session policy or product manager.
 - `vm/platform` has no lib UX leaf, product hotkey, Console-broker, or
-  presentation-policy ownership after S4; each has exactly one owner in the
+  presentation-policy ownership after S5; each has exactly one owner in the
   product control/presentation route.
 - Complete unit and external integration gates pass, and both stripped
   developer artifacts are produced for revision 0526.

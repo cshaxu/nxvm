@@ -3,10 +3,10 @@
 
 #include "type.h"
 
-#include "core/product/session/session_interface.h"
 #include "vm/platform/session_state.h"
 
 struct vm_platform_console_binding;
+typedef struct vm_product_session_request vm_product_session_request;
 
 typedef enum vm_session_display_mode {
     VM_SESSION_DISPLAY_CONSOLE,
@@ -19,7 +19,7 @@ typedef enum vm_product_console_speed {
 } vm_product_console_speed;
 
 typedef C_VOID (*vm_product_console_lifecycle_reporter)(C_VOID *context,
-    core_product_session_id id, vm_session_lifecycle lifecycle);
+    vm_session_lifecycle lifecycle);
 
 typedef struct vm_session_machine_provider {
     C_INT (*is_running)(C_VOID *context);
@@ -39,10 +39,11 @@ typedef struct vm_session_machine_provider {
     C_VOID (*record_stop)(C_VOID *context);
     C_INT (*insert_fdd)(C_VOID *context, const C_CHAR *path);
     C_INT (*remove_fdd)(C_VOID *context, const C_CHAR *path);
+    type_status (*open_profile)(C_VOID *context,
+        const vm_product_session_request *request);
     type_status (*start)(C_VOID *context);
     C_VOID (*reset)(C_VOID *context);
-    C_VOID (*stop)(C_VOID *context);
-    type_status (*stop_all)(C_VOID *context);
+    type_status (*stop)(C_VOID *context);
     type_status (*resume)(C_VOID *context);
     C_VOID *context;
 } vm_session_machine_provider;

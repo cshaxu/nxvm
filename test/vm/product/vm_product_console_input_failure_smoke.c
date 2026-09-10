@@ -45,13 +45,11 @@ static C_INT run_case(C_INT fail_allocation)
     allocation_failure = fail_allocation;
     allocation_attempts = 0u;
     if (vm_product_console_context_create(&context) != TYPE_STATUS_OK) goto done;
-    vm_product_console_main(context, &provider,
-        (core_product_session_manager *)(type_native_unsigned)1u, ".");
+    vm_product_console_main(context, &provider, ".");
     if (allocation_attempts != 1u) goto done;
     if (!fail_allocation) {
         clearerr(STD_STDIN);
-        vm_product_console_main(context, &provider,
-            (core_product_session_manager *)(type_native_unsigned)1u, ".");
+        vm_product_console_main(context, &provider, ".");
         if (allocation_attempts != 2u) goto done;
     }
     passed = 1;

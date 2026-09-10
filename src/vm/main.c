@@ -10,9 +10,6 @@
 #include "vm/product/version.h"
 
 #include "core/product/banner.h"
-#include "core/product/session/session_interface.h"
-#include "core/product/session/session_provider.h"
-
 #include "vm/composition/session/provider.h"
 #include "vm/composition/session/console_machine_adapter.h"
 #include "vm/product/console.h"
@@ -37,29 +34,20 @@ static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    core_product_session_provider session_provider;
-    core_product_session_manager *session_manager = STD_NULL;
+    vm_session *session = STD_NULL;
     vm_session_machine_provider machine_provider;
     vm_product_console_context *console_context = STD_NULL;
     C_CHAR profile_directory[1024];
 
     CORE_PRODUCT_PRINT_BANNER();
-    vm_session_provider_initialize(&session_provider);
-    if (core_product_session_manager_create(&session_provider,
-                                            &session_manager) != TYPE_STATUS_OK)
-    {
-        core_product_session_manager_destroy(session_manager);
-        return 1;
-    }
-    vm_composition_console_machine_provider_initialize(&machine_provider, session_manager);
+    vm_composition_console_machine_provider_initialize(&machine_provider, &session);
     if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) {
-        core_product_session_manager_destroy(session_manager);
         return 1;
     }
-    vm_product_console_main(console_context, &machine_provider, session_manager,
+    vm_product_console_main(console_context, &machine_provider,
         vm_main_profile_directory(argc, argv, profile_directory,
             sizeof(profile_directory)));
     vm_product_console_context_destroy(console_context);
-    core_product_session_manager_destroy(session_manager);
+    vm_session_destroy(session);
     return 0;
 }

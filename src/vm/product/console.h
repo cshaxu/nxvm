@@ -12,7 +12,6 @@ extern "C"
 
 #include "vm/product/console_machine_provider.h"
 #include "vm/product/session_catalog.h"
-#include "core/product/session/session_interface.h"
 
     typedef struct vm_product_console_context vm_product_console_context;
 
@@ -22,10 +21,9 @@ extern "C"
         vm_product_console_context *context);
 
     /* Entry point of product console */
-    C_VOID vm_product_console_main(vm_product_console_context *context,
-                                   const vm_session_machine_provider *machine_provider,
-                                   core_product_session_manager *session_manager,
-                                   const C_CHAR *profile_directory);
+C_VOID vm_product_console_main(vm_product_console_context *context,
+                               const vm_session_machine_provider *machine_provider,
+                               const C_CHAR *profile_directory);
 
 #ifdef __cplusplus
 } /*_EOCD_*/

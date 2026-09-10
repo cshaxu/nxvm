@@ -8,7 +8,6 @@
 #define TEST_CONSOLE_CLOSE _close
 #define TEST_CONSOLE_FILENO _fileno
 
-#include "core/product/session/session_interface.h"
 #include "vm/composition/session/provider.h"
 #include "vm/composition/session/console_machine_adapter.h"
 #include "vm/composition/session/session_private.h"
@@ -28,35 +27,9 @@ typedef struct startup_failure_session_check {
     C_INT failed;
 } startup_failure_session_check;
 
-static type_status configure_session(C_VOID *context, C_VOID *opaque)
-{
-    startup_failure_session_check *check =
-        (startup_failure_session_check *)context;
-
-    if (check == STD_NULL || opaque == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    vm_platform_run_context_set_window_display(((vm_session *)opaque)->platform_run_context,
-        check->window);
-    return TYPE_STATUS_OK;
-}
-
-static type_status verify_session(C_VOID *context, C_VOID *opaque)
-{
-    startup_failure_session_check *check =
-        (startup_failure_session_check *)context;
-    vm_session *session = (vm_session *)opaque;
-
-    if (check == STD_NULL || session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    check->failed = session->start_outcome.valid &&
-        session->start_outcome.status != TYPE_STATUS_OK &&
-        !vm_session_control_is_running(&session->control) &&
-        !vm_platform_run_handle_is_active(session->platform_run_handle);
-    return TYPE_STATUS_OK;
-}
-
 int main(void)
 {
-    core_product_session_provider session_provider;
-    core_product_session_manager *session_manager = STD_NULL;
+    vm_session *session = STD_NULL;
     vm_session_machine_provider machine_provider;
     vm_product_console_context *console_context = STD_NULL;
     startup_failure_session_check session_check = {
@@ -81,13 +54,12 @@ int main(void)
         TEST_CONSOLE_DUP2(TEST_CONSOLE_FILENO(output), TEST_CONSOLE_FILENO(STD_STDOUT)) < 0) {
         goto done;
     }
-    vm_session_provider_initialize(&session_provider);
-    if (core_product_session_manager_create(&session_provider, &session_manager) !=
-            TYPE_STATUS_OK || core_product_session_manager_apply_selected(
-            session_manager, configure_session, &session_check) != TYPE_STATUS_OK) goto done;
-    vm_composition_console_machine_provider_initialize(&machine_provider, session_manager);
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) goto done;
+    vm_platform_run_context_set_window_display(session->platform_run_context,
+        session_check.window);
+    vm_composition_console_machine_provider_initialize(&machine_provider, &session);
     if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
-    vm_product_console_main(console_context, &machine_provider, session_manager, ".");
+    vm_product_console_main(console_context, &machine_provider, ".");
     fflush(STD_STDOUT);
     if (TEST_CONSOLE_DUP2(saved_stdout, TEST_CONSOLE_FILENO(STD_STDOUT)) < 0) goto done;
     TEST_CONSOLE_CLOSE(saved_stdout);
@@ -95,9 +67,11 @@ int main(void)
     if (STD_FSEEK(output, 0L, STD_SEEK_SET) != 0 ||
         STD_FREAD(text, 1u, sizeof(text) - 1u, output) == 0u) goto done;
     text[sizeof(text) - 1u] = '\0';
-    if (core_product_session_manager_apply_selected(session_manager,
-            verify_session, &session_check) != TYPE_STATUS_OK ||
-        !session_check.failed ||
+    session_check.failed = session->start_outcome.valid &&
+        session->start_outcome.status != TYPE_STATUS_OK &&
+        !vm_session_control_is_running(&session->control) &&
+        !vm_platform_run_handle_is_active(session->platform_run_handle);
+    if (!session_check.failed ||
         strstr(text, "START failed:") == STD_NULL) goto done;
     passed = 1;
 
@@ -110,7 +84,7 @@ done:
         (C_VOID)TEST_CONSOLE_DUP2(saved_stdout, TEST_CONSOLE_FILENO(STD_STDOUT));
         TEST_CONSOLE_CLOSE(saved_stdout);
     }
-    if (session_manager != STD_NULL) core_product_session_manager_destroy(session_manager);
+    vm_session_destroy(session);
     vm_product_console_context_destroy(console_context);
     if (input != STD_NULL) STD_FCLOSE(input);
     if (output != STD_NULL) STD_FCLOSE(output);

@@ -20,7 +20,6 @@ typedef enum vm_product_console_event_kind {
 
 typedef struct vm_product_console_event {
     vm_product_console_event_kind kind;
-    core_product_session_id id;
     vm_session_lifecycle lifecycle;
     C_CHAR line[0x100];
 } vm_product_console_event;
@@ -31,7 +30,6 @@ struct vm_product_console_context {
     C_INT exit_requested;
     C_CHAR command_buffer[0x100];
     const vm_session_machine_provider *machine_provider;
-    core_product_session_manager *session_manager;
     vm_product_session_catalog *catalog;
     vm_product_console_host *console_host;
     host_sync_event *event_ready;
@@ -42,9 +40,8 @@ struct vm_product_console_context {
     C_INT accepting_events;
     C_INT event_delivery_failed;
     C_INT sessions_stopped;
+    vm_session_lifecycle lifecycle;
 };
-#include "core/product/session/command_interface.h"
-
 #define CONSOLE_MAXNARG 256
 
 #define consoleContext context
@@ -54,7 +51,6 @@ struct vm_product_console_context {
 #define flagExit (consoleContext->exit_requested)
 #define strCmdBuff (consoleContext->command_buffer)
 #define machineProvider (consoleContext->machine_provider)
-#define sessionManager (consoleContext->session_manager)
 
 static C_INT vm_product_console_printf(const vm_product_console_context *context,
     const C_CHAR *format, ...)
@@ -110,12 +106,11 @@ static C_VOID vm_product_console_push(vm_product_console_context *context,
 }
 
 static C_VOID vm_product_console_report_lifecycle(C_VOID *opaque,
-    core_product_session_id id, vm_session_lifecycle lifecycle)
+    vm_session_lifecycle lifecycle)
 {
     vm_product_console_event event = {0};
 
     event.kind = VM_PRODUCT_CONSOLE_EVENT_LIFECYCLE;
-    event.id = id;
     event.lifecycle = lifecycle;
     vm_product_console_push((vm_product_console_context *)opaque, &event);
 }
@@ -145,11 +140,34 @@ static C_INT vm_product_console_take(vm_product_console_context *context,
 static C_VOID vm_product_console_write_lifecycle(vm_product_console_context *context,
     const vm_product_console_event *event, C_INT restore_prompt)
 {
-    const C_CHAR *state = event->lifecycle == VM_SESSION_RUNNING ? "running" :
-        event->lifecycle == VM_SESSION_PAUSED ? "paused" : "stopped";
+    const C_CHAR *state;
+
+    if (context == STD_NULL || event == STD_NULL) return;
+    if (event->lifecycle == VM_SESSION_RESET) {
+        state = "reset";
+    } else if (event->lifecycle == VM_SESSION_RUNNING) {
+        state = context->lifecycle == VM_SESSION_PAUSED ? "resumed" : "started";
+    } else if (event->lifecycle == VM_SESSION_PAUSED) {
+        state = "paused";
+    } else {
+        state = "stopped";
+    }
     (C_VOID)vm_product_console_printf(context, restore_prompt ?
-        "\r\nSession %u %s.\nConsole> " : "Session %u %s.\n",
-        (unsigned int)event->id, state);
+        "\r\nMachine %s.\nConsole> " : "Machine %s.\n", state);
+    if (event->lifecycle != VM_SESSION_RESET) context->lifecycle = event->lifecycle;
+}
+
+static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
+    C_INT restore_prompt)
+{
+    vm_product_console_event event;
+
+    if (context == STD_NULL) return;
+    while (vm_product_console_take(context, &event) > 0) {
+        if (event.kind == VM_PRODUCT_CONSOLE_EVENT_LIFECYCLE) {
+            vm_product_console_write_lifecycle(context, &event, restore_prompt);
+        }
+    }
 }
 
 
@@ -250,7 +268,7 @@ static C_VOID doHelp(vm_product_console_context *context)
         }
         else if (!STD_STRCMP(argArray[1], "exit"))
         {
-            STD_PRINTF("Stop all sessions and quit the console\n");
+            STD_PRINTF("Stop the machine and quit the console\n");
             STD_PRINTF("\nEXIT\n");
             break;
         }
@@ -262,17 +280,12 @@ static C_VOID doHelp(vm_product_console_context *context)
         }
         else if (!STD_STRCMP(argArray[1], "session"))
         {
-            STD_PRINTF("Manage VM sessions\n");
-            STD_PRINTF("\nSESSION LIST | OPEN | SELECT <id> | CLOSE [id]\n");
-            STD_PRINTF("  list:   show sessions; * marks the selected session\n");
-            STD_PRINTF("  open:   show the startup-frozen YAML profile file names\n");
-            STD_PRINTF("  select: choose the session for machine commands\n");
-            STD_PRINTF("  close:  destroy one stopped session; the final session stays\n");
+            STD_PRINTF("NXVM runs one startup-selected virtual machine.\n");
             break;
         }
         else if (!STD_STRCMP(argArray[1], "speed"))
         {
-            STD_PRINTF("Show or select the selected session speed\n");
+            STD_PRINTF("Show or select machine speed\n");
             STD_PRINTF("\nSPEED [STANDARD|TURBO]\n");
             STD_PRINTF("  standard: retain L2 HLT host-load backoff\n");
             STD_PRINTF("  turbo:    reserved for Core-deadline fast-forward\n");
@@ -334,10 +347,10 @@ static C_VOID doHelp(vm_product_console_context *context)
         STD_PRINTF("VM Console Commands\n");
         STD_PRINTF("=====================\n");
         STD_PRINTF("HELP    Show help info\n");
-        STD_PRINTF("EXIT    Stop all sessions and quit the console\n");
+        STD_PRINTF("EXIT    Stop the machine and quit the console\n");
         STD_PRINTF("INFO    List all device info\n");
         STD_PRINTF("SESSION Manage sessions\n");
-        STD_PRINTF("SPEED   Show or select selected-session speed\n");
+        STD_PRINTF("SPEED   Show or select machine speed\n");
         STD_PRINTF("\n");
         STD_PRINTF("DEBUG   Launch hardware debugger\n");
         STD_PRINTF("RECORD  Record cpu status for each instruction\n");
@@ -361,9 +374,9 @@ static C_VOID doExit(vm_product_console_context *context)
     {
         GetHelp;
     }
-    if (machineProvider->stop_all == STD_NULL ||
-        machineProvider->stop_all(machineProvider->context) != TYPE_STATUS_OK) {
-        STD_PRINTF("Unable to stop all sessions.\n");
+    if (machineProvider->stop == STD_NULL ||
+        machineProvider->stop(machineProvider->context) != TYPE_STATUS_OK) {
+        STD_PRINTF("Unable to stop machine.\n");
         return;
     }
     context->sessions_stopped = TYPE_TRUE;
@@ -536,28 +549,18 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
     return 0;
 }
 
-static C_VOID vm_product_console_write_line(C_VOID *context, const C_CHAR *line)
-{
-    (C_VOID)context;
-    STD_PRINTF("%s\n", line);
-}
-
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
     vm_product_session_request selected_entry;
-    const vm_product_session_request *entry = &selected_entry;
-    const core_product_session_open_options options = {
-        0, STD_NULL, entry, sizeof(*entry)
-    };
-    const C_CHAR *arguments[] = { "session", "open" };
-    core_product_session_output_provider output;
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,
             &selected_entry)) return;
-    output.write_line = vm_product_console_write_line;
-    output.context = STD_NULL;
-    if (!core_product_session_command_execute(context->session_manager, 2,
-            arguments, &options, &output)) return;
+    if (machineProvider->open_profile == STD_NULL ||
+        machineProvider->open_profile(machineProvider->context, &selected_entry) !=
+            TYPE_STATUS_OK) {
+        STD_PRINTF("Unable to create session from '%s'.\n", selected_entry.file_name);
+        return;
+    }
     machineProvider->set_console_binding(machineProvider->context,
         vm_product_console_host_binding(context->console_host));
     if (machineProvider->set_lifecycle_reporter != STD_NULL) {
@@ -565,57 +568,21 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
             vm_product_console_report_lifecycle, context);
     }
     machineProvider->set_display_mode(machineProvider->context,
-        !STD_STRCMP(entry->display, "window") ? VM_SESSION_DISPLAY_WINDOW :
+        !STD_STRCMP(selected_entry.display, "window") ? VM_SESSION_DISPLAY_WINDOW :
         VM_SESSION_DISPLAY_CONSOLE);
-}
-
-static C_VOID vm_product_console_session(vm_product_console_context *context)
-{
-    const C_CHAR *arguments[CONSOLE_MAXNARG];
-    core_product_session_output_provider output;
-    STD_SIZE_T index;
-
-    if (context == STD_NULL || numArgs < 2u) { GetHelp; return; }
-    if (!STD_STRCMP(argArray[1], "open") && numArgs == 2u) {
-        vm_product_console_open_profile(context);
-        return;
-    }
-    for (index = 0u; index < numArgs; ++index) arguments[index] = argArray[index];
-    output.write_line = vm_product_console_write_line;
-    output.context = STD_NULL;
-    (C_VOID)core_product_session_command_execute(context->session_manager,
-        numArgs, arguments, STD_NULL, &output);
-    if (!STD_STRCMP(argArray[1], "open")) {
-        machineProvider->set_console_binding(machineProvider->context,
-            vm_product_console_host_binding(context->console_host));
-        if (machineProvider->set_lifecycle_reporter != STD_NULL) {
-            machineProvider->set_lifecycle_reporter(machineProvider->context,
-                vm_product_console_report_lifecycle, context);
-        }
-    }
 }
 
 /* Executes commands */
 static C_VOID execute(vm_product_console_context *context)
 {
-    core_product_session_id selected;
     if (!argArray[0] || !STD_STRLEN(argArray[0]))
     {
         return;
-    }
-    else if (!STD_STRCMP(argArray[0], "session"))
-    {
-        vm_product_console_session(context);
     }
     else if (!STD_STRCMP(argArray[0], "help") || !STD_STRCMP(argArray[0], "exit"))
     {
         if (!STD_STRCMP(argArray[0], "help")) doHelp(context);
         else doExit(context);
-    }
-    else if (core_product_session_manager_get_selected_id(sessionManager, &selected) !=
-        TYPE_STATUS_OK)
-    {
-        STD_PRINTF("No session selected. Use SESSION OPEN.\n");
     }
     else if (!STD_STRCMP(argArray[0], "info"))
     {
@@ -681,6 +648,7 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     context->accepting_events = TYPE_TRUE;
     context->event_delivery_failed = TYPE_FALSE;
     context->sessions_stopped = TYPE_FALSE;
+    context->lifecycle = VM_SESSION_STOPPED;
     if (host_sync_event_create(&context->event_ready) != LIB_STATUS_OK ||
         vm_product_console_host_create(&context->console_host, context,
             vm_product_console_line_received) != TYPE_STATUS_OK) {
@@ -711,14 +679,11 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
     }
     argArray = STD_NULL;
     if (!context->sessions_stopped && machineProvider != STD_NULL &&
-        machineProvider->stop_all != STD_NULL &&
-        machineProvider->stop_all(machineProvider->context) == TYPE_STATUS_OK) {
+        machineProvider->stop != STD_NULL &&
+        machineProvider->stop(machineProvider->context) == TYPE_STATUS_OK) {
         context->sessions_stopped = TYPE_TRUE;
     }
-    while (vm_product_console_take(context, &event) > 0) {
-        if (event.kind == VM_PRODUCT_CONSOLE_EVENT_LIFECYCLE)
-            vm_product_console_write_lifecycle(context, &event, TYPE_FALSE);
-    }
+    vm_product_console_drain_lifecycle(context, TYPE_FALSE);
     if (machineProvider != STD_NULL && machineProvider->set_lifecycle_reporter != STD_NULL) {
         machineProvider->set_lifecycle_reporter(machineProvider->context,
             STD_NULL, STD_NULL);
@@ -756,14 +721,12 @@ C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 
 C_VOID vm_product_console_main(vm_product_console_context *context,
                                const vm_session_machine_provider *machine_provider,
-                               core_product_session_manager *session_manager,
                                const C_CHAR *profile_directory)
 {
     if (context == STD_NULL || machine_provider == STD_NULL ||
-        session_manager == STD_NULL)
+        profile_directory == STD_NULL)
         return;
     machineProvider = machine_provider;
-    sessionManager = session_manager;
     if (!vm_product_console_initialize(context, profile_directory)) return;
     if (machineProvider->set_lifecycle_reporter != STD_NULL) {
         machineProvider->set_lifecycle_reporter(machineProvider->context,
@@ -778,6 +741,7 @@ C_VOID vm_product_console_main(vm_product_console_context *context,
                 sizeof(strCmdBuff))) break;
         parse(context);
         execute(context);
+        vm_product_console_drain_lifecycle(context, TYPE_FALSE);
     }
     vm_product_console_finalize(context);
 }

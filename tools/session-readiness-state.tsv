@@ -1,4 +1,5 @@
 # Relative source path<TAB>classification<TAB>closure task<TAB>owner
 src/core/machine/dma.c	process-wide-token-issuer	T300	core/machine
-src/vm/platform/win32/win32con.c	process-exclusive-lease	T90	vm/platform
-src/vm/platform/linux/linuxcon.c	process-exclusive-lease	T90	vm/platform
+src/lib/host/linux/sync.c	process-wide-wait-hub	T523	lib/host
+src/lib/host/console.c	process-exclusive-console-lease	T523	lib/host
+src/lib/ux-base/component.c	process-wide-source-identity	T523	lib/ux-base
