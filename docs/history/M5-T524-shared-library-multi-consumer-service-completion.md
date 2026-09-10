@@ -43,6 +43,22 @@ Model-40 FDC integration row recorded as a transfer, not passing evidence.
 T524 remains open; S9 may repair only the Model-40 owner and must not add a
 `lib` workaround.
 
+## S25 And Task Closure
+
+The owner directed T524 closure after the final native presentation repair.
+`78d81776` retains one lib-owned Window-to-Console foreground/focus handoff;
+NXVM derives capture eligibility from the actual target and session lifecycle.
+`c7b5e668` selects the Window default session.  No second switch path, native
+handle exposure, guest-input route, or compatibility wrapper was retained.
+
+The retained task-level evidence remains the accepted 310/310 repository-only
+unit suite, 44/44 owner-managed integration suite, manifest/platform/governance
+gates and dual stripped artifacts recorded below.  A local repeat against an
+old, repeatedly reconfigured build directory was not accepted as new evidence:
+it exposed missing generated archives in that directory.  The later canonical
+SoftPC-library replacement is explicitly a new queue candidate and must build
+fresh verification evidence rather than inheriting this closure.
+
 ## S9 Clean Model-40 Disposition
 
 The transferred Model-40 row is green without a source change. A concurrent
