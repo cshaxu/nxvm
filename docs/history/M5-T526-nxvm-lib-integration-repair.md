@@ -171,3 +171,8 @@ The completion-target regression executes `GO` twice through the existing
 debugger input harness and verifies the two corresponding resume/completion
 calls. Focused debugger/pause integrations pass, as does the complete 303-case
 repository-only unit suite at eight-way parallelism.
+
+Fresh stripped Release artifacts are `nxvm_0_5_0526_x64.exe`
+`1AAE79A2E84472FBE8969B80E110217FF9942D173D96BEDA462A6C8672D10263`
+and `nxvm_0_5_0526_x86.exe`
+`34582710EC4C3495F19E94270CA0AB2433ED0A0030D6CEA9C58ED153177AEE62`.

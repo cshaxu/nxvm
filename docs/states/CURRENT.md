@@ -31,8 +31,8 @@
   `vm-0-5-0526`, which emits `nxvm_0_5_0526_x64.exe` and
   `nxvm_0_5_0526_x86.exe` in stripped Release builds. They retain the runtime
   debugger and contain no compiler debug information. The fresh x64 artifact is
-  `01158AD5CBC081DBAB194CC0C0CDF73CA9F9D08B3B325BE3612417D2A5CDD54C`
-  and x86 is `1AB7DFC26B8D85771255BCAB5199EA53BF7FD78A486091521C12FDB93F9B49E0`.
+  `1AAE79A2E84472FBE8969B80E110217FF9942D173D96BEDA462A6C8672D10263`
+  and x86 is `34582710EC4C3495F19E94270CA0AB2433ED0A0030D6CEA9C58ED153177AEE62`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
