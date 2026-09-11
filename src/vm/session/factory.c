@@ -1,8 +1,8 @@
 #include "type.h"
 
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/product/session_factory.h"
-#include "vm/product/session_catalog.h"
+#include "vm/session/factory.h"
+#include "vm/session/catalog.h"
 
 static C_INT vm_machine_provider_parse_cpu(const C_CHAR *value,
     core_machine_cpu_profile *out_profile)

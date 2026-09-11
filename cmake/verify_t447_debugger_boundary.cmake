@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/debug/debug.h" interface)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_private.h" session)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/product/machine_adapter.c" product)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/session/session.c" product)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/debug_target.c" composition)
 
 foreach(forbidden

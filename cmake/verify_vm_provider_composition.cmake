@@ -7,7 +7,7 @@ set(coordinator "${session_dir}/provider_lifecycle.c")
 set(devices "${session_dir}/machine_devices.c")
 set(firmware "${session_dir}/rom/external_pc_at.c")
 set(info "${session_dir}/machine_info.c")
-set(factory "${PROJECT_SOURCE_DIR}/src/vm/product/session_factory.c")
+set(factory "${PROJECT_SOURCE_DIR}/src/vm/session/factory.c")
 
 foreach(file IN ITEMS "${coordinator}" "${devices}" "${firmware}" "${info}"
     "${factory}")

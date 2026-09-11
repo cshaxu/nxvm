@@ -7,8 +7,11 @@ src/vm/machine/runtime/rom/external_pc_at.c|vm/profile
 src/vm/machine/runtime/machine_interface.h|vm/profile
 src/vm/machine/runtime/machine_private.h|vm/events
 src/vm/machine/runtime/machine_private.h|vm/profile
-src/vm/product/console_machine_provider.h|vm/machine
-src/vm/product/control.h|vm/machine
-src/vm/product/machine_adapter.c|vm/machine
-src/vm/product/session_factory.c|vm/machine
-src/vm/product/session_factory.h|vm/machine
+src/vm/session/factory.c|vm/machine
+src/vm/session/factory.h|vm/machine
+src/vm/session/session.c|vm/machine
+src/vm/session/control.h|vm/events
+src/vm/product/console.c|vm/session
+src/vm/product/console.h|vm/session
+src/vm/product/presentation.h|vm/events
+src/vm/product/presentation_frame.h|vm/events

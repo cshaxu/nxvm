@@ -83,19 +83,18 @@ and display facts. It neither selects a host surface nor owns the process
 Console. `vm/events` is a value-only ABI below both machine and future product
 owners: it contains no Core, executor, session, or UI pointer.
 
-`vm/product/control` is the temporary product consumer while the admitted
-`vm/session` reducer is introduced. It may translate copied machine facts, but
-cannot access Core or become a second executor route. S11 removes this
-temporary lifecycle/presentation adapter rather than preserving it as a
-compatibility path.
+`vm/session` is the sole product-control reducer. Its one FIFO receives copied
+Console lines, machine results and presentation input; it owns run generation,
+lifecycle and presentation-policy decisions. It emits copied machine requests
+or presentation plans only, and never accesses a Core object or a native/lib
+handle.
 
-For each session, `vm/product/presentation` owns the one lib Console or Window
-binding.  Product control derives a desired presentation state from completed
-facts and issues at most one in-flight binding or broker action; the binding
-reports completion back to product control.  `vm/product/console_host` owns
-the process Console broker and may lease it to at most one Console presenter.
-All other sessions are independent Window or headless sessions.  Core and
-`src/lib` do not know session selection, lifecycle policy, or Console leasing.
+`vm/product/presentation` is the temporary NXVM lib-binding leaf until its
+admitted move to `vm/presentation`. It applies session plans and returns copied
+input facts; it never derives lifecycle or surface policy. `vm/product/console_host`
+owns the process Console broker and may lease it to at most one Console
+presenter. Core and `src/lib` do not know session selection, lifecycle policy,
+or Console leasing.
 
 Native and WASM hosts share these component boundaries. A future TypeScript web
 product layer sits above the WASM platform/product adaptation; it does not move

@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/product/session_catalog.h"
+#include "vm/session/catalog.h"
 
 static C_INT catalog_parse(C_CHAR *document, vm_product_session_request *out_request)
 {

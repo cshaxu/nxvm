@@ -1,14 +1,13 @@
 #include "type.h"
 
-#include "core/machine/guest_display_frame.h"
 #include "vm/product/presentation_frame.h"
 
 C_INT main(C_VOID)
 {
-    core_machine_guest_display_frame source = {0};
+    vm_machine_display_event source = {0};
     ui_frame destination = {0};
 
-    source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
+    source.graphics = TYPE_FALSE;
     source.generation = 7u;
     source.columns = 80u;
     source.rows = 25u;
@@ -23,7 +22,7 @@ C_INT main(C_VOID)
         destination.attributes[1999u] != 0x4fu ||
         destination.text_palette[14u] != 0x00ffff00u) return 1;
 
-    source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
+    source.graphics = TYPE_TRUE;
     source.pixel_width = 320u;
     source.pixel_height = 200u;
     if (vm_product_presentation_frame_from_core(&source, &destination) != TYPE_STATUS_OK ||

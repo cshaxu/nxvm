@@ -4,7 +4,7 @@
 #include "type.h"
 
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/product/console_machine_provider.h"
+#include "vm/session/catalog.h"
 
 typedef struct vm_product_session_request vm_product_session_request;
 

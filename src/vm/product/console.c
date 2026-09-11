@@ -9,20 +9,20 @@
 
 #include "vm/product/console.h"
 #include "vm/product/console_host.h"
-#include "vm/product/control.h"
 #include "vm/product/presentation.h"
+#include "vm/session/catalog.h"
+#include "vm/session/control.h"
 
 struct vm_product_console_context {
     STD_SIZE_T argument_count;
     C_CHAR **arguments;
     C_INT exit_requested;
     C_CHAR command_buffer[0x100];
-    const vm_product_machine_provider *machine_provider;
+    vm_session *session;
     vm_product_session_catalog *catalog;
     vm_product_console_host *console_host;
-    vm_product_control *control;
+    vm_session_control *control;
     vm_product_presentation *presentation;
-    vm_product_presentation_target requested_target;
     C_INT session_stopped;
 };
 #define CONSOLE_MAXNARG 256
@@ -33,7 +33,15 @@ struct vm_product_console_context {
 #define argArray (consoleContext->arguments)
 #define flagExit (consoleContext->exit_requested)
 #define strCmdBuff (consoleContext->command_buffer)
-#define machineProvider (consoleContext->machine_provider)
+#define currentSession (consoleContext->session)
+
+static vm_product_presentation_target vm_product_console_presentation_target(
+    vm_session_presentation_target target)
+{
+    return target == VM_SESSION_PRESENTATION_WINDOW ? VM_PRODUCT_PRESENTATION_WINDOW :
+        target == VM_SESSION_PRESENTATION_CONSOLE ? VM_PRODUCT_PRESENTATION_CONSOLE :
+        VM_PRODUCT_PRESENTATION_NONE;
+}
 
 static C_INT vm_product_console_printf(const vm_product_console_context *context,
     const C_CHAR *format, ...)
@@ -52,173 +60,54 @@ static C_INT vm_product_console_printf(const vm_product_console_context *context
         TYPE_STATUS_OK ? written : -1;
 }
 
-static C_VOID vm_product_console_push(vm_product_console_context *context,
-    const vm_product_control_fact *fact)
+static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
+    const vm_session_presentation_plan *plan, C_INT restore_prompt)
 {
-    if (context != STD_NULL && context->control != STD_NULL && fact != STD_NULL)
-        (C_VOID)vm_product_control_publish(context->control, fact);
-}
+    const C_CHAR *state = STD_NULL;
 
-static C_VOID vm_product_console_report_lifecycle(C_VOID *opaque,
-    vm_machine_lifecycle lifecycle)
-{
-    vm_product_control_fact fact = {0};
-
-    fact.kind = VM_PRODUCT_CONTROL_FACT_LIFECYCLE;
-    fact.value.lifecycle = lifecycle;
-    vm_product_console_push((vm_product_console_context *)opaque, &fact);
-}
-
-static C_VOID vm_product_console_report_display(C_VOID *opaque,
-    const core_machine_guest_display_frame *frame)
-{
-    vm_product_console_context *context = opaque;
-
-    if (context != STD_NULL && context->control != STD_NULL)
-        (C_VOID)vm_product_control_publish_display(context->control, frame);
-}
-
-static type_status vm_product_console_presentation_event(C_VOID *opaque,
-    const ui_input_event *event)
-{
-    vm_product_console_context *context = opaque;
-    vm_product_control_fact fact = {0};
-
-    if (context == STD_NULL || event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    fact.kind = VM_PRODUCT_CONTROL_FACT_HOST_INPUT;
-    fact.value.host_input = *event;
-    return vm_product_control_publish(context->control, &fact);
-}
-
-static C_VOID vm_product_console_write_lifecycle(vm_product_console_context *context,
-    const vm_product_control_fact *fact, C_INT restore_prompt)
-{
-    const C_CHAR *state;
-
-    if (context == STD_NULL || fact == STD_NULL) return;
-    state = vm_product_control_note_lifecycle(context->control,
-        fact->value.lifecycle);
+    if (context == STD_NULL || plan == STD_NULL) return;
     if (context->presentation != STD_NULL) {
-        if (fact->value.lifecycle == VM_MACHINE_RUNNING) {
-            (C_VOID)vm_product_presentation_set_window_title(context->presentation,
-                "NXVM (Running)");
-            (C_VOID)vm_product_presentation_set_mouse_capturable(context->presentation,
-                TYPE_TRUE);
-        } else if (fact->value.lifecycle == VM_MACHINE_PAUSED) {
-            (C_VOID)vm_product_presentation_set_window_title(context->presentation,
-                "NXVM (Paused)");
-            (C_VOID)vm_product_presentation_set_mouse_capturable(context->presentation,
-                TYPE_FALSE);
-            if (vm_product_presentation_get_target(context->presentation) ==
-                    VM_PRODUCT_PRESENTATION_CONSOLE) {
-                (C_VOID)vm_product_presentation_set_target(context->presentation,
-                    VM_PRODUCT_PRESENTATION_NONE);
-            }
-        } else if (fact->value.lifecycle == VM_MACHINE_STOPPED) {
+        if (plan->target_changed) {
             (C_VOID)vm_product_presentation_set_target(context->presentation,
-                VM_PRODUCT_PRESENTATION_NONE);
+                vm_product_console_presentation_target(plan->target));
         }
-    }
-    (C_VOID)vm_product_console_printf(context, restore_prompt ?
-        "\r\nMachine %s.\nConsole> " : "Machine %s.\n", state);
-}
-
-static type_status vm_product_console_submit_host_input(C_VOID *opaque,
-    const ui_input_event *event)
-{
-    vm_product_console_context *context = opaque;
-    core_machine_guest_input_event guest_event;
-    type_status status;
-
-    if (context == STD_NULL || event == STD_NULL || machineProvider == STD_NULL ||
-        machineProvider->submit_host_input == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    status = vm_product_presentation_input_to_guest(event, &guest_event);
-    return status == TYPE_STATUS_OK ? machineProvider->submit_host_input(
-        machineProvider->context, &guest_event) : status;
-}
-
-static C_VOID vm_product_console_handle_host_input(vm_product_console_context *context,
-    const ui_input_event *event)
-{
-    core_machine_guest_input_event guest_event;
-    type_status status;
-
-    if (context == STD_NULL || event == STD_NULL || machineProvider == STD_NULL) return;
-    if (event->type == UI_EVENT_HOTKEY) {
-        if (!STD_STRCMP(event->data.hotkey.identifier, "pause")) {
-            if (machineProvider->is_running(machineProvider->context)) {
-                (C_VOID)machineProvider->request_pause(machineProvider->context);
-            } else {
-                (C_VOID)vm_product_control_begin_run(context->control);
-                (C_VOID)machineProvider->resume(machineProvider->context);
-            }
-            return;
+        if (plan->title_changed) {
+            (C_VOID)vm_product_presentation_set_window_title(context->presentation,
+                plan->title);
         }
-        if (!STD_STRCMP(event->data.hotkey.identifier, "release-mouse")) {
+        if (plan->mouse_capturable_changed) {
+            (C_VOID)vm_product_presentation_set_mouse_capturable(context->presentation,
+                plan->mouse_capturable);
+        }
+        if (plan->release_mouse)
             (C_VOID)vm_product_presentation_release_mouse(context->presentation);
-            return;
-        }
-        if (!STD_STRCMP(event->data.hotkey.identifier, "cad") ||
-            !STD_STRCMP(event->data.hotkey.identifier, "alt-enter")) {
-            const C_INT cad = !STD_STRCMP(event->data.hotkey.identifier, "cad");
-            const type_unsigned_16 scan[] = {cad ? 0x1du : 0x38u, 0x38u, cad ? 0x153u : 0u};
-            const type_unsigned_16 key[] = {cad ? 0x11u : 0x12u, 0x12u, cad ? 0x2eu : 0u};
-            const type_unsigned_32 count = cad ? 3u : 2u;
-            type_unsigned_32 index;
-
-            for (index = 0u; index < count; ++index) {
-                guest_event = (core_machine_guest_input_event){0};
-                guest_event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
-                guest_event.data.key.scan_code = scan[index];
-                guest_event.data.key.virtual_key = key[index];
-                guest_event.data.key.pressed = TYPE_TRUE;
-                (C_VOID)machineProvider->submit_host_input(machineProvider->context,
-                    &guest_event);
-            }
-            for (index = count; index-- != 0u;) {
-                guest_event.data.key.scan_code = scan[index];
-                guest_event.data.key.virtual_key = key[index];
-                guest_event.data.key.pressed = TYPE_FALSE;
-                (C_VOID)machineProvider->submit_host_input(machineProvider->context,
-                    &guest_event);
-            }
-            return;
-        }
-        return;
+        if (plan->frame_ready)
+            (C_VOID)vm_product_presentation_publish_frame(context->presentation,
+                &plan->frame);
     }
-    if (event->type == UI_EVENT_WINDOW_CLOSE) {
-        if (machineProvider->is_running(machineProvider->context)) {
-            (C_VOID)machineProvider->request_pause(machineProvider->context);
-        }
-        (C_VOID)vm_product_presentation_set_target(context->presentation,
-            VM_PRODUCT_PRESENTATION_NONE);
-        return;
+    switch (plan->notice) {
+    case VM_SESSION_NOTICE_STARTED: state = "started"; break;
+    case VM_SESSION_NOTICE_RESUMED: state = "resumed"; break;
+    case VM_SESSION_NOTICE_PAUSED: state = "paused"; break;
+    case VM_SESSION_NOTICE_RESET: state = "reset"; break;
+    case VM_SESSION_NOTICE_STOPPED: state = "stopped"; break;
+    default: break;
     }
-    status = vm_product_control_dispatch_host_input(context->control, event,
-        machineProvider->is_running(machineProvider->context),
-        vm_product_console_submit_host_input, context);
-    if (status != TYPE_STATUS_OK) {
-        (C_VOID)vm_product_console_printf(context, "Host input delivery failed: %d.\n",
-            (C_INT)status);
-    }
+    if (state != STD_NULL) (C_VOID)vm_product_console_printf(context, restore_prompt ?
+        "\r\nMachine %s.\nConsole> " : "Machine %s.\n", state);
 }
 
 static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
     C_INT restore_prompt)
 {
-    vm_product_control_fact fact;
-    core_machine_guest_display_frame display;
+    vm_session_fact fact;
+    vm_machine_display_event display;
+    vm_session_presentation_plan plan;
 
     if (context == STD_NULL) return;
-    while (vm_product_control_take(context->control, &fact, &display, 0u) == TYPE_STATUS_OK) {
-        if (fact.kind == VM_PRODUCT_CONTROL_FACT_LIFECYCLE) {
-            vm_product_console_write_lifecycle(context, &fact, restore_prompt);
-        } else if (fact.kind == VM_PRODUCT_CONTROL_FACT_HOST_INPUT) {
-            vm_product_console_handle_host_input(context, &fact.value.host_input);
-        } else if (fact.kind == VM_PRODUCT_CONTROL_FACT_DISPLAY &&
-            context->presentation != STD_NULL) {
-            (C_VOID)vm_product_presentation_publish_frame(context->presentation, &display);
-        }
+    while (vm_session_control_take(context->control, &fact, &display, 0u) == TYPE_STATUS_OK) {
+        if (vm_session_reduce_fact(context->session, &fact, &display, &plan) ==
+            TYPE_STATUS_OK) vm_product_console_apply_plan(context, &plan, restore_prompt);
     }
 }
 
@@ -259,23 +148,16 @@ static C_VOID vm_product_console_line_received(C_VOID *opaque,
     const C_CHAR *text)
 {
     vm_product_console_context *context = opaque;
-    vm_product_control_fact fact = {0};
-    STD_SIZE_T length;
-
     if (context == STD_NULL || text == STD_NULL) return;
-    length = STD_STRLEN(text);
-    if (length >= sizeof(fact.value.line)) length = sizeof(fact.value.line) - 1u;
-    fact.kind = VM_PRODUCT_CONTROL_FACT_MONITOR_LINE;
-    STD_MEMCPY(fact.value.line, text, length);
-    fact.value.line[length] = '\0';
-    vm_product_console_push(context, &fact);
+    (C_VOID)vm_session_control_publish_console_line(context->control, text);
 }
 
 static C_INT vm_product_console_read_line(vm_product_console_context *context,
     C_CHAR *buffer, STD_SIZE_T buffer_size)
 {
-    vm_product_control_fact fact;
-    core_machine_guest_display_frame display;
+    vm_session_fact fact;
+    vm_machine_display_event display;
+    vm_session_presentation_plan plan;
 
     if (context == STD_NULL || buffer == STD_NULL || buffer_size == 0u ||
         context->console_host == STD_NULL || context->control == STD_NULL)
@@ -284,22 +166,14 @@ static C_INT vm_product_console_read_line(vm_product_console_context *context,
     if (vm_product_console_host_request_line(context->console_host) !=
         TYPE_STATUS_OK) return 0;
     for (;;) {
-        if (vm_product_control_take(context->control, &fact, &display, 0xffffffffu) !=
+        if (vm_session_control_take(context->control, &fact, &display, 0xffffffffu) !=
                 TYPE_STATUS_OK) return 0;
-        if (fact.kind == VM_PRODUCT_CONTROL_FACT_LIFECYCLE) {
-            vm_product_console_write_lifecycle(context, &fact, TYPE_TRUE);
+        if (fact.kind != VM_SESSION_FACT_CONSOLE_LINE) {
+            if (vm_session_reduce_fact(context->session, &fact, &display, &plan) ==
+                TYPE_STATUS_OK) vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
             continue;
         }
-        if (fact.kind == VM_PRODUCT_CONTROL_FACT_HOST_INPUT) {
-            vm_product_console_handle_host_input(context, &fact.value.host_input);
-            continue;
-        }
-        if (fact.kind == VM_PRODUCT_CONTROL_FACT_DISPLAY) {
-            if (context->presentation != STD_NULL)
-                (C_VOID)vm_product_presentation_publish_frame(context->presentation, &display);
-            continue;
-        }
-        if (fact.kind != VM_PRODUCT_CONTROL_FACT_MONITOR_LINE) return 0;
+        if (fact.kind != VM_SESSION_FACT_CONSOLE_LINE) return 0;
         if (STD_STRLEN(fact.value.line) >= buffer_size) return 0;
         STD_MEMCPY(buffer, fact.value.line, STD_STRLEN(fact.value.line) + 1u);
         return 1;
@@ -434,8 +308,7 @@ static C_VOID doExit(vm_product_console_context *context)
     {
         GetHelp;
     }
-    if (machineProvider->stop == STD_NULL ||
-        machineProvider->stop(machineProvider->context) != TYPE_STATUS_OK) {
+    if (vm_session_stop(currentSession) != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to stop machine.\n");
         return;
     }
@@ -452,7 +325,7 @@ static C_VOID doInfo(vm_product_console_context *context)
     }
     STD_PRINTF("Device Info\n");
     STD_PRINTF("================\n");
-    machineProvider->print_machine(machineProvider->context);
+    vm_session_print_machine(currentSession);
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
@@ -468,11 +341,11 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("BIOS Settings\n");
     STD_PRINTF("==================\n");
-    machineProvider->print_bios(machineProvider->context);
+    vm_session_print_bios(currentSession);
     STD_PRINTF("\n");
     STD_PRINTF("Device Status\n");
     STD_PRINTF("==================\n");
-    machineProvider->print_status(machineProvider->context);
+    vm_session_print_status(currentSession);
 }
 
 /* Starts internal debugger */
@@ -482,7 +355,7 @@ static C_VOID doDebug(vm_product_console_context *context)
     {
         GetHelp;
     }
-    machineProvider->debug(machineProvider->context);
+    (C_VOID)vm_session_debug(currentSession);
 }
 
 /* Executes cpu instruction recorder */
@@ -492,7 +365,7 @@ static C_VOID doRecord(vm_product_console_context *context)
     {
         GetHelp;
     }
-    if (machineProvider->is_running(machineProvider->context))
+    if (vm_session_is_running(currentSession))
     {
         STD_PRINTF("Cannot change record status or dump record now.\n");
         return;
@@ -503,11 +376,11 @@ static C_VOID doRecord(vm_product_console_context *context)
         {
             GetHelp;
         }
-        machineProvider->record_start(machineProvider->context, argArray[2]);
+        (C_VOID)vm_session_record_start(currentSession, argArray[2]);
     }
     else if (!STD_STRCMP(argArray[1], "stop"))
     {
-        machineProvider->record_stop(machineProvider->context);
+        (C_VOID)vm_session_record_stop(currentSession);
     }
     else
     {
@@ -515,31 +388,27 @@ static C_VOID doRecord(vm_product_console_context *context)
     }
 }
 
-static const C_CHAR *vm_product_console_speed_name(vm_product_console_speed speed)
+static const C_CHAR *vm_product_console_speed_name(vm_session_speed speed)
 {
-    return speed == VM_PRODUCT_CONSOLE_SPEED_TURBO ? "turbo" : "standard";
+    return speed == VM_SESSION_SPEED_TURBO ? "turbo" : "standard";
 }
 
 static C_VOID doSpeed(vm_product_console_context *context)
 {
-    vm_product_console_speed speed;
+    vm_session_speed speed;
     type_status status;
 
-    if (machineProvider->get_speed == STD_NULL || machineProvider->set_speed == STD_NULL) {
-        STD_PRINTF("Speed control is unavailable.\n");
-        return;
-    }
     if (numArgs == 1u) {
-        if (machineProvider->get_speed(machineProvider->context, &speed) == TYPE_STATUS_OK) {
+        if (vm_session_get_speed(currentSession, &speed) == TYPE_STATUS_OK) {
             STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
         }
         return;
     }
     if (numArgs != 2u) { GetHelp; }
-    if (!STD_STRCMP(argArray[1], "standard")) speed = VM_PRODUCT_CONSOLE_SPEED_STANDARD;
-    else if (!STD_STRCMP(argArray[1], "turbo")) speed = VM_PRODUCT_CONSOLE_SPEED_TURBO;
+    if (!STD_STRCMP(argArray[1], "standard")) speed = VM_SESSION_SPEED_STANDARD;
+    else if (!STD_STRCMP(argArray[1], "turbo")) speed = VM_SESSION_SPEED_TURBO;
     else { GetHelp; }
-    status = machineProvider->set_speed(machineProvider->context, speed);
+    status = vm_session_set_speed(currentSession, speed);
     if (status == TYPE_STATUS_OK) {
         STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
     } else if (status == TYPE_STATUS_INVALID_STATE) {
@@ -553,9 +422,9 @@ static C_VOID doSpeed(vm_product_console_context *context)
 static C_VOID doFloppy(vm_product_console_context *context)
 {
     if (numArgs == 3u && !STD_STRCMP(argArray[1], "insert")) {
-        if (machineProvider->is_running(machineProvider->context)) {
+        if (vm_session_is_running(currentSession)) {
             STD_PRINTF("Cannot change floppy media now.\n");
-        } else if (machineProvider->insert_fdd(machineProvider->context, argArray[2])) {
+        } else if (vm_session_insert_fdd(currentSession, argArray[2])) {
             STD_PRINTF("Cannot read floppy disk from '%s'.\n", argArray[2]);
         } else {
             STD_PRINTF("Floppy disk inserted.\n");
@@ -563,9 +432,9 @@ static C_VOID doFloppy(vm_product_console_context *context)
         return;
     }
     if (numArgs == 2u && !STD_STRCMP(argArray[1], "eject")) {
-        if (machineProvider->is_running(machineProvider->context)) {
+        if (vm_session_is_running(currentSession)) {
             STD_PRINTF("Cannot change floppy media now.\n");
-        } else if (machineProvider->remove_fdd(machineProvider->context, STD_NULL)) {
+        } else if (vm_session_remove_fdd(currentSession, STD_NULL)) {
             STD_PRINTF("Cannot eject floppy disk.\n");
         } else {
             STD_PRINTF("Floppy disk ejected.\n");
@@ -613,32 +482,24 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
     vm_product_session_request selected_entry;
+    vm_session_presentation_target target;
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,
             &selected_entry)) return;
-    if (machineProvider->open_profile == STD_NULL ||
-        machineProvider->open_profile(machineProvider->context, &selected_entry) !=
-            TYPE_STATUS_OK) {
+    if (vm_session_open_profile(currentSession, &selected_entry) != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to create session from '%s'.\n", selected_entry.file_name);
         return;
     }
-    if (machineProvider->set_lifecycle_reporter != STD_NULL) {
-        machineProvider->set_lifecycle_reporter(machineProvider->context,
-            vm_product_console_report_lifecycle, context);
-    }
     if (vm_product_presentation_create(&context->presentation, context->console_host,
-            vm_product_console_presentation_event, context) != TYPE_STATUS_OK) {
+            (vm_product_presentation_event_sink)
+                vm_session_control_publish_presentation_input,
+            context->control) != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to create product presentation.\n");
         return;
     }
-    context->requested_target = !STD_STRCMP(selected_entry.display, "window") ?
-        VM_PRODUCT_PRESENTATION_WINDOW : VM_PRODUCT_PRESENTATION_CONSOLE;
-    (C_VOID)vm_product_presentation_set_target(context->presentation,
-        VM_PRODUCT_PRESENTATION_NONE);
-    if (machineProvider->set_display_reporter != STD_NULL) {
-        machineProvider->set_display_reporter(machineProvider->context,
-            vm_product_console_report_display, context);
-    }
+    target = !STD_STRCMP(selected_entry.display, "window") ?
+        VM_SESSION_PRESENTATION_WINDOW : VM_SESSION_PRESENTATION_CONSOLE;
+    (C_VOID)vm_session_set_presentation_target(currentSession, target);
 }
 
 /* Executes commands */
@@ -675,32 +536,28 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "start"))
     {
-        if (context->presentation != STD_NULL) {
-            (C_VOID)vm_product_presentation_set_target(context->presentation,
-                context->requested_target);
-        }
-        (C_VOID)vm_product_control_begin_run(context->control);
-        type_status status = machineProvider->start(machineProvider->context);
+        vm_session_presentation_plan plan;
+        type_status status = vm_session_start(currentSession, &plan);
+        if (status == TYPE_STATUS_OK)
+            vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
             STD_PRINTF("START failed: %d.\n", (C_INT)status);
         }
     }
     else if (!STD_STRCMP(argArray[0], "reset"))
     {
-        machineProvider->reset(machineProvider->context);
+        (C_VOID)vm_session_reset(currentSession);
     }
     else if (!STD_STRCMP(argArray[0], "stop"))
     {
-        machineProvider->stop(machineProvider->context);
+        (C_VOID)vm_session_stop(currentSession);
     }
     else if (!STD_STRCMP(argArray[0], "resume"))
     {
-        if (context->presentation != STD_NULL) {
-            (C_VOID)vm_product_presentation_set_target(context->presentation,
-                context->requested_target);
-        }
-        (C_VOID)vm_product_control_begin_run(context->control);
-        type_status status = machineProvider->resume(machineProvider->context);
+        vm_session_presentation_plan plan;
+        type_status status = vm_session_resume(currentSession, &plan);
+        if (status == TYPE_STATUS_OK)
+            vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
             STD_PRINTF("RESUME failed: %d.\n", (C_INT)status);
         }
@@ -720,10 +577,9 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
     context->session_stopped = TYPE_FALSE;
-    if (vm_product_control_create(&context->control) != TYPE_STATUS_OK ||
-        vm_product_console_host_create(&context->console_host, context,
+    context->control = vm_session_get_control(currentSession);
+    if (context->control == STD_NULL || vm_product_console_host_create(&context->console_host, context,
             vm_product_console_line_received) != TYPE_STATUS_OK) {
-        vm_product_control_destroy(context->control);
         context->control = STD_NULL;
         return TYPE_FALSE;
     }
@@ -732,7 +588,6 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
     vm_product_console_host_destroy(context->console_host);
-    vm_product_control_destroy(context->control);
     context->console_host = STD_NULL;
     context->control = STD_NULL;
     STD_FREE(argArray);
@@ -748,27 +603,16 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
         STD_FREE((C_VOID *)argArray);
     }
     argArray = STD_NULL;
-    if (!context->session_stopped && machineProvider != STD_NULL &&
-        machineProvider->stop != STD_NULL &&
-        machineProvider->stop(machineProvider->context) == TYPE_STATUS_OK) {
+    if (!context->session_stopped && vm_session_stop(currentSession) == TYPE_STATUS_OK) {
         context->session_stopped = TYPE_TRUE;
     }
     vm_product_console_drain_lifecycle(context, TYPE_FALSE);
-    if (machineProvider != STD_NULL && machineProvider->set_lifecycle_reporter != STD_NULL) {
-        machineProvider->set_lifecycle_reporter(machineProvider->context,
-            STD_NULL, STD_NULL);
-    }
-    if (machineProvider != STD_NULL && machineProvider->set_display_reporter != STD_NULL) {
-        machineProvider->set_display_reporter(machineProvider->context,
-            STD_NULL, STD_NULL);
-    }
-    vm_product_control_close(context->control);
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
     vm_product_presentation_destroy(context->presentation);
     context->presentation = STD_NULL;
+    vm_session_control_close(context->control);
     vm_product_console_host_destroy(context->console_host);
-    vm_product_control_destroy(context->control);
     context->console_host = STD_NULL;
     context->control = STD_NULL;
 }
@@ -792,23 +636,18 @@ C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
     vm_product_presentation_destroy(context->presentation);
     vm_product_console_host_destroy(context->console_host);
     vm_product_session_catalog_destroy(context->catalog);
-    vm_product_control_destroy(context->control);
     STD_FREE(context);
 }
 
 C_VOID vm_product_console_main(vm_product_console_context *context,
-                               const vm_product_machine_provider *machine_provider,
+                               vm_session *machine_session,
                                const C_CHAR *profile_directory)
 {
-    if (context == STD_NULL || machine_provider == STD_NULL ||
+    if (context == STD_NULL || machine_session == STD_NULL ||
         profile_directory == STD_NULL)
         return;
-    machineProvider = machine_provider;
+    context->session = machine_session;
     if (!vm_product_console_initialize(context, profile_directory)) return;
-    if (machineProvider->set_lifecycle_reporter != STD_NULL) {
-        machineProvider->set_lifecycle_reporter(machineProvider->context,
-            vm_product_console_report_lifecycle, context);
-    }
     STD_PRINTF("\nType HELP for help.\n\n");
     vm_product_console_open_profile(context);
     while (!flagExit)

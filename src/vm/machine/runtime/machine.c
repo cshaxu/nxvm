@@ -194,6 +194,26 @@ type_status vm_machine_submit_host_input(vm_machine *session,
     return core_machine_guest_input_source_submit(session->input_source, event);
 }
 
+type_status vm_machine_submit_input(vm_machine *session,
+    const vm_machine_input *input)
+{
+    core_machine_guest_input_event event = {0};
+
+    if (input == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (input->kind == VM_MACHINE_INPUT_KEY_EVENT) {
+        event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
+        event.data.key.scan_code = input->data.key_event.scan_code;
+        event.data.key.virtual_key = input->data.key_event.virtual_key;
+        event.data.key.pressed = input->data.key_event.pressed;
+    } else if (input->kind == VM_MACHINE_INPUT_MOUSE_EVENT) {
+        event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
+        event.data.relative_mouse.delta_x = input->data.mouse_event.delta_x;
+        event.data.relative_mouse.delta_y = input->data.mouse_event.delta_y;
+        event.data.relative_mouse.buttons = input->data.mouse_event.buttons;
+    } else return TYPE_STATUS_INVALID_ARGUMENT;
+    return vm_machine_submit_host_input(session, &event);
+}
+
 static const C_CHAR *vm_machine_config_floppy(const vm_machine_config *config,
     STD_SIZE_T slot)
 {

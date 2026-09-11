@@ -3,7 +3,7 @@
 #include "vm/product/presentation_frame.h"
 
 type_status vm_product_presentation_frame_from_core(
-    const core_machine_guest_display_frame *source, ui_frame *destination)
+    const vm_machine_display_event *source, ui_frame *destination)
 {
     STD_SIZE_T cell;
 
@@ -12,7 +12,7 @@ type_status vm_product_presentation_frame_from_core(
     STD_MEMSET(destination, 0, sizeof(*destination));
     destination->valid = TYPE_TRUE;
     destination->sequence = (type_unsigned_32)source->generation;
-    destination->graphics = source->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
+    destination->graphics = source->graphics;
     if (destination->graphics) {
         if (source->pixel_width > UI_GRAPHICS_MAX_WIDTH ||
             source->pixel_height > UI_GRAPHICS_MAX_HEIGHT)
@@ -37,12 +37,12 @@ type_status vm_product_presentation_frame_from_core(
     destination->cursor_visible = source->cursor_visible;
     destination->cursor_phase = source->cursor_visible;
     STD_MEMCPY(destination->text, source->characters, sizeof(source->characters));
-    for (cell = 0u; cell < CORE_MACHINE_GUEST_DISPLAY_MAX_CELLS; ++cell)
+    for (cell = 0u; cell < VM_MACHINE_EVENT_TEXT_CELLS; ++cell)
         destination->attributes[cell] = source->attributes[cell];
     STD_MEMCPY(destination->text_palette, source->palette_rgb,
         sizeof(destination->text_palette));
-    if (source->text_glyphs_present) {
-        STD_MEMCPY(destination->font, source->text_glyphs,
+    if (source->glyphs_present) {
+        STD_MEMCPY(destination->font, source->glyphs,
             sizeof(destination->font));
         destination->font_height = 16u;
     }

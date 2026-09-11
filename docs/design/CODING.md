@@ -18,7 +18,7 @@ src/
   vm/
     main.c
     events/
-    {machine,platform,product,profile}/
+    {machine,platform,product,profile,session}/
   mantle/
     composition/
     {machine,platform,product}/

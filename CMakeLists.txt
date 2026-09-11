@@ -1178,12 +1178,14 @@ set(VM_PROFILE_SOURCES
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
     src/vm/product/console_host.c
-    src/vm/product/control.c
     src/vm/product/presentation.c
     src/vm/product/presentation_frame.c
-    src/vm/product/machine_adapter.c
-    src/vm/product/session_factory.c
-    src/vm/product/session_catalog.c
+)
+set(VM_SESSION_SOURCES
+    src/vm/session/control.c
+    src/vm/session/factory.c
+    src/vm/session/catalog.c
+    src/vm/session/session.c
 )
 set(CORE_DEBUG_SOURCES
     src/core/debug/debug_access.c
@@ -1324,80 +1326,13 @@ target_link_libraries(core-debug-input-failure-smoke PRIVATE
     type-facade
 )
 
-add_executable(vm-product-console-input-failure-smoke
-    test/vm/product/vm_product_console_input_failure_smoke.c
-    src/vm/product/console.c
-    src/vm/product/control.c
-    src/vm/product/presentation.c
-    src/vm/product/presentation_frame.c
-    test/vm/product/console_host_fake.c
-    src/vm/product/session_catalog.c
+add_executable(vm-session-control-smoke
+    test/vm/session/vm_session_control_smoke.c
 )
-target_include_directories(vm-product-console-input-failure-smoke PRIVATE
+target_include_directories(vm-session-control-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
-    STD_MALLOC=test_console_input_malloc
-)
-target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
-    core-product
-    core-machine-boundary
-    storage
-    ui-window
-    ui-console
-    type-facade
-)
-
-add_executable(vm-product-console-exit-smoke
-    test/vm/product/vm_product_console_exit_smoke.c
-    src/vm/product/console.c
-    src/vm/product/control.c
-    src/vm/product/presentation.c
-    src/vm/product/presentation_frame.c
-    test/vm/product/console_host_fake.c
-    src/vm/product/session_catalog.c
-)
-target_include_directories(vm-product-console-exit-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-product-console-exit-smoke PRIVATE
-    core-product
-    core-machine-boundary
-    storage
-    ui-window
-    ui-console
-    type-facade
-)
-
-add_executable(vm-product-console-lifecycle-report-smoke
-    test/vm/product/vm_product_console_lifecycle_report_smoke.c
-    src/vm/product/console.c
-    src/vm/product/control.c
-    src/vm/product/presentation.c
-    src/vm/product/presentation_frame.c
-    test/vm/product/console_host_fake.c
-    src/vm/product/session_catalog.c
-)
-target_include_directories(vm-product-console-lifecycle-report-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-product-console-lifecycle-report-smoke PRIVATE
-    core-product
-    core-machine-boundary
-    storage
-    ui-window
-    ui-console
-    type-facade
-)
-
-add_executable(vm-product-control-smoke
-    test/vm/product/vm_product_control_smoke.c
-    src/vm/product/control.c
-)
-target_include_directories(vm-product-control-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-product-control-smoke PRIVATE type-facade host)
+target_link_libraries(vm-session-control-smoke PRIVATE vm-session)
 add_executable(vm-product-presentation-frame-smoke
     test/vm/product/vm_product_presentation_frame_smoke.c)
 target_link_libraries(vm-product-presentation-frame-smoke PRIVATE vm-product)
@@ -1487,12 +1422,23 @@ target_link_libraries(vm-machine PUBLIC
     vm-machine-executor-fifo
     storage)
 
+add_library(vm-session STATIC ${VM_SESSION_SOURCES})
+target_include_directories(vm-session PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-session PUBLIC
+    host
+    ui-base
+    vm-machine
+    type-facade)
+
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
 target_include_directories(vm-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product PUBLIC
     vm-machine
+    vm-session
     ui-window
     ui-console
     core-product
@@ -1855,9 +1801,6 @@ target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-machine)
 add_executable(vm-console-pause-resume-smoke
     test/vm/machine/vm_console_pause_resume_smoke.c)
 target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-machine)
-add_executable(vm-product-machine-adapter-smoke
-    test/vm/product/vm_product_machine_adapter_smoke.c)
-target_link_libraries(vm-product-machine-adapter-smoke PRIVATE vm-product vm-machine)
 add_executable(vm-dos-video-port-smoke
     test/integration/dos/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-yaml-support)
@@ -2273,12 +2216,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-debug-xasm-contract-smoke
     core-debug-target-smoke
     core-debug-input-failure-smoke
-    vm-product-console-input-failure-smoke
-    vm-product-console-exit-smoke
-    vm-product-console-lifecycle-report-smoke
-    vm-product-control-smoke
+    vm-session-control-smoke
     vm-product-presentation-frame-smoke
-    vm-product-machine-adapter-smoke
     core-machine-guest-input-source-smoke
     host-smoke
     vm-machine-executor-state-smoke
@@ -3713,34 +3652,18 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-debug-xasm-contract-smoke|src/core/debug/xasm32/dasm32.c|debug-xasm-contract"
     "core-debug-input-failure-smoke|src/core/debug/debug.c|debug-input-failure"
     "core-debug-input-failure-smoke|src/core/debug/debug_access.c|debug-input-failure"
-    "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
-    "vm-product-console-input-failure-smoke|src/vm/product/control.c|console-input-failure"
-    "vm-product-console-input-failure-smoke|src/vm/product/presentation.c|console-input-failure"
-    "vm-product-console-input-failure-smoke|src/vm/product/presentation_frame.c|console-input-failure"
-    "vm-product-console-input-failure-smoke|src/vm/product/session_catalog.c|console-input-failure"
-    "vm-product-console-exit-smoke|src/vm/product/console.c|console-exit"
-    "vm-product-console-exit-smoke|src/vm/product/control.c|console-exit"
-    "vm-product-console-exit-smoke|src/vm/product/presentation.c|console-exit"
-    "vm-product-console-exit-smoke|src/vm/product/presentation_frame.c|console-exit"
-    "vm-product-console-exit-smoke|src/vm/product/session_catalog.c|console-exit"
-    "vm-product-console-lifecycle-report-smoke|src/vm/product/console.c|console-lifecycle-report"
-    "vm-product-console-lifecycle-report-smoke|src/vm/product/control.c|console-lifecycle-report"
-    "vm-product-console-lifecycle-report-smoke|src/vm/product/presentation.c|console-lifecycle-report"
-    "vm-product-console-lifecycle-report-smoke|src/vm/product/presentation_frame.c|console-lifecycle-report"
-    "vm-product-console-lifecycle-report-smoke|src/vm/product/session_catalog.c|console-lifecycle-report"
     "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/console_host.c|console-product"
-    "vm-product|src/vm/product/control.c|vm-product"
     "vm-product|src/vm/product/presentation.c|vm-product"
     "vm-product|src/vm/product/presentation_frame.c|vm-product"
-    "vm-product|src/vm/product/session_catalog.c|console-product"
-    "vm-product-control-smoke|src/vm/product/control.c|control-smoke"
+    "vm-session|src/vm/session/catalog.c|session-catalog"
+    "vm-session|src/vm/session/control.c|session-control"
+    "vm-session|src/vm/session/session.c|session-owner"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
-    "vm-product|src/vm/product/session_factory.c|vm-product"
-    "vm-product|src/vm/product/machine_adapter.c|vm-product"
+    "vm-session|src/vm/session/factory.c|vm-session"
     "vm-machine|src/vm/machine/runtime/debug_target.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/media.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/display.c|vm-machine"
@@ -3778,6 +3701,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-profile
     vm-machine
     vm-machine
+    vm-session
     vm-product
     vdm-machine
     vdm-composition

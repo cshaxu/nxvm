@@ -4,7 +4,7 @@
 #include "core/machine/media_interface.h"
 #include "vm/machine/runtime/media.h"
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/product/session_catalog.h"
+#include "vm/session/catalog.h"
 
 typedef struct integration_yaml_session integration_yaml_session;
 

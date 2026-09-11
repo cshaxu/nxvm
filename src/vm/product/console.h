@@ -10,8 +10,8 @@ extern "C"
 
 #include "type.h"
 
-#include "vm/product/console_machine_provider.h"
-#include "vm/product/session_catalog.h"
+#include "vm/session/session.h"
+#include "vm/session/catalog.h"
 
     typedef struct vm_product_console_context vm_product_console_context;
 
@@ -22,7 +22,7 @@ extern "C"
 
     /* Entry point of product console */
 C_VOID vm_product_console_main(vm_product_console_context *context,
-                               const vm_product_machine_provider *machine_provider,
+                               vm_session *session,
                                const C_CHAR *profile_directory);
 
 #ifdef __cplusplus

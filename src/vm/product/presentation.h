@@ -3,9 +3,8 @@
 
 #include "type.h"
 
-#include "core/machine/guest_display_frame.h"
-#include "core/machine/guest_input_interface.h"
 #include "lib/ui-base/event_interface.h"
+#include "vm/events/machine_event.h"
 
 typedef struct vm_product_console_host vm_product_console_host;
 typedef struct vm_product_presentation vm_product_presentation;
@@ -35,8 +34,6 @@ type_status vm_product_presentation_release_mouse(
     vm_product_presentation *presentation);
 type_status vm_product_presentation_publish_frame(
     vm_product_presentation *presentation,
-    const core_machine_guest_display_frame *frame);
-type_status vm_product_presentation_input_to_guest(const ui_input_event *event,
-    core_machine_guest_input_event *out_event);
+    const vm_machine_display_event *frame);
 
 #endif

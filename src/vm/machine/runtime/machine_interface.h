@@ -103,6 +103,10 @@ C_INT vm_machine_insert_hdd(vm_machine *session, const C_CHAR *path);
  * ordered request transport; they do not mutate guest devices synchronously. */
 type_status vm_machine_submit_host_input(vm_machine *session,
     const core_machine_guest_input_event *event);
+/* vm/session uses this value-only ingress; vm/machine alone translates it to
+ * the Core-owned guest-input source. */
+type_status vm_machine_submit_input(vm_machine *session,
+    const vm_machine_input *input);
 type_status vm_machine_get_reset_vector(const vm_machine *session,
     vm_machine_reset_vector *out_vector);
 C_INT vm_machine_is_running(const vm_machine *session);

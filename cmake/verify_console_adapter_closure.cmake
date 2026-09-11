@@ -8,7 +8,7 @@ if(EXISTS "${obsolete_adapter}")
     message(FATAL_ERROR "Retired Console-to-composition adapter remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/product/machine_adapter.c" product_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/session/session.c" session_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/debug_target.c"
     debug_source)
 
@@ -18,7 +18,7 @@ foreach(obsolete_helper
     "vm_machine_borrow_selected"
     "vm_machine_selection"
     "selected_session.h")
-    string(FIND "${product_source}\n${debug_source}" "${obsolete_helper}" obsolete_position)
+    string(FIND "${session_source}\n${debug_source}" "${obsolete_helper}" obsolete_position)
     if(NOT obsolete_position EQUAL -1)
         message(FATAL_ERROR "Console adapter retained obsolete selected-session wrapper")
     endif()
@@ -33,11 +33,11 @@ foreach(removed_file
 endforeach()
 
 foreach(required
+    "vm_session_debug"
+    "vm_session_request_pause"
     "vm_machine_run_debugger"
-    "vm_machine_request_pause"
-    "vm_machine_control_wait_for_pause"
-    "core_debugger_run")
-    string(FIND "${product_source}\n${debug_source}" "${required}" debug_position)
+    "vm_machine_request_pause")
+    string(FIND "${session_source}\n${debug_source}" "${required}" debug_position)
     if(debug_position EQUAL -1)
         message(FATAL_ERROR "Console debugger callback lost required behavior: ${required}")
     endif()

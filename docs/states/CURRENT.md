@@ -4,24 +4,24 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S11 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): replace the remaining product control route with one `vm/session` FIFO and reducer. |
+| T526 S12 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): move the lib binding to `vm/presentation` and remove the remaining product presentation ownership. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S11. |
-| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S10 was pushed as `697d849a`. |
-| Objective | Create one `vm/session` product-control FIFO and reducer that accepts copied CLI, machine and presentation facts, owns run generation/lifecycle decisions, and emits only machine requests or presentation plans. |
+| Identifier Mode | Continuation - M5 T526 S12. |
+| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S11 is accepted in this packet pending its immutable P1 commit. |
+| Objective | Move the NXVM-facing shared-lib binding to `vm/presentation`; it consumes session plans and returns copied facts without any product-control compatibility route. |
 | Non-goals | No Core behavior change, no second machine executor, no lib modification, no native SDK access from VM, no external asset work, and no compatibility/control-forwarding route. |
-| Reference Baseline | T526 S10 P1 `697d849a`; approved target architecture in the retained proposal. |
+| Reference Baseline | T526 S11 P1 pending commit; approved target architecture in the retained proposal. |
 | Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S11. |
-| Files And ABI Surface | `src/vm/{events,machine,session,product}`, Core/VM CMake targets and mirrored repository-only tests. |
+| Files And ABI Surface | `src/vm/{events,machine,session,presentation,product}`, Core/VM CMake targets and mirrored repository-only tests. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
-| Verification | Prove one `vm/session` FIFO is the sole product decision route, its records are copied values, `vm/session` accesses no Core or lib native object, focused lifecycle/input/presentation tests, full unit, specialized and documentation gates, and actual-diff review. |
-| Expected Markers | One session-control FIFO/reducer, one machine request route, one presentation-plan route, no direct product lifecycle/presentation decisions outside `vm/session`, and no session pointer retained by peer owners. |
+| Verification | Prove one `vm/presentation` lib binding consumes copied session plans, emits copied input facts, retains no session pointer, and leaves no product presentation compatibility path; run focused tests, full unit, specialized and documentation gates, and actual-diff review. |
+| Expected Markers | One presentation owner, one session-plan consumer route, one copied input return route, no product-owned presenter implementation and no native SDK access from VM. |
 | Asset Needs | None. |
-| Reporting Requirements | Record the removed product routes, FIFO fact/plan dispositions, code-size result and verification evidence. |
-| Stop Conditions | Stop for a required non-value fact, a Core semantic change, an unrepresentable product decision, or a temporary forwarding route. |
-| Exit Criteria | The single session reducer replaces mixed product command/report/presentation decisions; all required tests and gates pass. |
+| Reporting Requirements | Record the moved binding routes, removed product presentation ownership, code-size result and verification evidence. |
+| Stop Conditions | Stop for a required non-value fact, a Core semantic change, an unrepresentable presentation decision, or a temporary forwarding route. |
+| Exit Criteria | `vm/presentation` is the sole lib binding owner and all required tests and gates pass. |
 | Original Owner Request | Converge NXVM lifecycle and product experience with SoftPC while simplifying ownership. |
 | Similar-Issue Sweep | Inventory every product command handler, lifecycle/display callback, presentation decision, direct machine call and product queue; migrate every live route or delete it. |
 
@@ -30,7 +30,7 @@
   `vm-0-5-0526`, which emits `nxvm_0_5_0526_x64.exe` and
   `nxvm_0_5_0526_x86.exe` in stripped Release builds. They retain the runtime
   debugger and contain no compiler debug information. The fresh x64 artifact is
-  `1AAE79A2E84472FBE8969B80E110217FF9942D173D96BEDA462A6C8672D10263`
+  `50F59DDA7B124C83109D8C096394B1E6A10522FCBA49C62F4A41E5D7A2F0CED9`
   and x86 is `34582710EC4C3495F19E94270CA0AB2433ED0A0030D6CEA9C58ED153177AEE62`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
@@ -79,6 +79,14 @@
   the temporary product adapter remains explicitly assigned to S11. Complete
   repository unit 303/303, 67 current specialized gates, documentation gate
   and diff checks pass. [Evidence](../etc/evidence/t526-s10-vm-machine-executor-migration.md).
+
+- **M5 T526 S11 P1:** session control convergence is accepted pending its
+  immutable commit. One copied `vm/session` FIFO now receives Console, machine
+  and presentation facts; its reducer emits presentation plans while the
+  Console only applies them. The product control/provider adapters and five
+  duplicate test registrations are removed. Unit 299/299, 69 specialized
+  gates, documentation governance and stripped dual artifacts pass.
+  [Evidence](../etc/evidence/t526-s11-session-control-convergence.md).
 
 - **M5 T524 S23:** owner-reported direct Windows use rejects the S22 P2
   closure claim: Console exposed only 13 text rows, Window showed a cursor
