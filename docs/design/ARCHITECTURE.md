@@ -23,9 +23,12 @@ They are architectural commitments, not current release artifacts.
 
 ## Modules, Ownership, And Assembly
 
-`core` contains independent `debug`, `machine`, and `product` modules.
-`src/type.*` remains the neutral system-wide foundation below them. `vm` uses
-`events`, `machine`, `product`, and `profile` modules.
+`core` contains independent `machine` and `product` modules. `src/lib/types`
+is the shared C type/status foundation. `src/common/xasm32` is the shared x86
+assembler/disassembler component; `src/common/debug` is the shared Debug CLI
+provider. `src/common/session`, `src/common/machine` and `src/common/ui` own
+the shared product runtime mechanisms. `vm` uses `events`, `machine`,
+`product`, and `profile` modules.
 `mantle` uses `machine`, `platform`, and `product`;
 `dos` may use its own `machine`, `platform`, `product`, and `profile` modules.
 
@@ -51,8 +54,12 @@ selects application-runner UX and binds mantle to dos. Product-root composition
 is where the declared machine, platform, product, and profile capabilities are
 combined.
 
-Core debug owns debugger command parsing, assembly/disassembly, and its opaque
-target contract; it does not own or expose machine state. Core machine owns
+Common Debug owns debugger command parsing, assembly/disassembly and its
+continuation state; it is a CLI provider registered with common session, not a
+machine-state owner. Common machine exposes synchronous bounded paused-Debug
+operations through its product driver. NXVM routes those operations through
+`vm/machine` to Core machine; SoftPC may bind its own VM/MVDM driver. Core
+machine owns
 shared instruction decode and execution, checked memory and port
 access, and the CPU/DMA transaction lifecycle. Its current specification-driven L3 instruction and transaction timing direction, L2 fallback discipline, and future Core-to-VM timing-plan boundary are detailed in [Specification-Driven Instruction And Transaction Timing Simulation](../etc/architecture/specification-driven-l3-timing.md). A VM machine profile composes
 those mechanisms with a documented CPU and board contract; it may add only a
@@ -83,7 +90,8 @@ and display facts. It neither selects a host surface nor owns the process
 Console. `vm/events` is a value-only ABI below both machine and future product
 owners: it contains no Core, executor, session, or UI pointer.
 
-`vm/session` is the sole product-control reducer. Its one FIFO receives copied
+Until the M5 common cutover, `vm/session` is the sole product-control reducer.
+Its one FIFO receives copied
 Console lines, machine results and presentation input; it owns run generation,
 lifecycle and presentation-policy decisions. It emits copied machine requests
 or presentation plans only, and never accesses a Core object or a native/lib

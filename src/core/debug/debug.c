@@ -3,8 +3,7 @@
 
 #include "type.h"
 
-#include "core/debug/text_internal.h"
-#include "core/debug/utils.h"
+#include "common/xasm32/xasm32_interface.h"
 
 #include "core/debug/debug_access.h"
 
@@ -43,15 +42,32 @@ static C_INT core_debug_read_line(C_CHAR *buffer, STD_SIZE_T buffer_size)
 static C_INT core_debug_copy_text_checked(C_CHAR *destination,
     STD_SIZE_T destination_capacity, const C_CHAR *source)
 {
-    return core_debug_copy_text(destination, destination_capacity, source) ==
-        TYPE_STATUS_OK;
+    STD_SIZE_T source_bytes;
+
+    if (destination == STD_NULL || source == STD_NULL || destination_capacity == 0u) {
+        return 0;
+    }
+    source_bytes = STD_STRLEN(source);
+    if (source_bytes >= destination_capacity) return 0;
+    STD_MEMCPY(destination, source, source_bytes + 1u);
+    return 1;
 }
 
 static C_INT core_debug_append_text_checked(C_CHAR *destination,
     STD_SIZE_T destination_capacity, const C_CHAR *source)
 {
-    return core_debug_append_text(destination, destination_capacity, source) ==
-        TYPE_STATUS_OK;
+    STD_SIZE_T destination_bytes;
+    STD_SIZE_T source_bytes;
+
+    if (destination == STD_NULL || source == STD_NULL || destination_capacity == 0u) {
+        return 0;
+    }
+    destination_bytes = STD_STRLEN(destination);
+    source_bytes = STD_STRLEN(source);
+    if (destination_bytes >= destination_capacity ||
+        source_bytes >= destination_capacity - destination_bytes) return 0;
+    STD_MEMCPY(destination + destination_bytes, source, source_bytes + 1u);
+    return 1;
 }
 
 #define nErrPos (debugContext->error_position)
@@ -315,7 +331,7 @@ static C_VOID aconsole(core_debug_context *debugContext)
             continue;
         }
         errAsmPos = 0;
-        if (core_debug_assemble(cmdAsmBuff, STD_STRLEN(cmdAsmBuff),
+        if (common_xasm32_assemble(cmdAsmBuff, STD_STRLEN(cmdAsmBuff),
                 acode, sizeof(acode), &len,
                 core_debug_get_code_default_size()) != TYPE_STATUS_OK) {
             len = 0u;
@@ -797,7 +813,7 @@ static type_unsigned_8 uprintins(core_debug_context *debugContext, type_unsigned
     }
     else
     {
-        if (core_debug_disassemble(ucode, sizeof(ucode), stmt,
+        if (common_xasm32_disassemble(ucode, sizeof(ucode), stmt,
                 sizeof(stmt), &i,
                 core_debug_get_code_default_size()) != TYPE_STATUS_OK) {
             len = 0u;
@@ -1419,7 +1435,7 @@ static type_unsigned_8 xuprintins(core_debug_context *debugContext, type_unsigne
     }
     else
     {
-        if (core_debug_disassemble(ucode, sizeof(ucode), stmt,
+        if (common_xasm32_disassemble(ucode, sizeof(ucode), stmt,
                 sizeof(stmt), &i,
                 core_debug_get_code_default_size()) != TYPE_STATUS_OK) {
             len = 0u;
@@ -1483,7 +1499,7 @@ static C_VOID xaconsole(core_debug_context *debugContext, type_unsigned_32 linea
             continue;
         }
         errAsmPos = 0;
-        if (core_debug_assemble(astmt, STD_STRLEN(astmt), acode,
+        if (common_xasm32_assemble(astmt, STD_STRLEN(astmt), acode,
                 sizeof(acode), &len,
                 core_debug_get_code_default_size()) != TYPE_STATUS_OK) {
             len = 0u;

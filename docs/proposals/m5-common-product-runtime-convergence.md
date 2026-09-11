@@ -2,10 +2,11 @@
 
 ## Purpose
 
-Make NXVM's host-side single-machine runtime shareable with SoftPC without
-moving NXVM Core, firmware, profile, debugger, CLI or native platform details
-into a shared layer.  The resulting common corpus is a small runtime mechanism
-layer below each product composition root and above the existing canonical
+Make NXVM's host-side single-machine runtime and its reusable x86 Debug
+product capability shareable with SoftPC without moving NXVM Core, firmware,
+profile, native-platform details, or either product's machine implementation
+into a shared layer.  The resulting common corpus has a small neutral runtime
+layer plus two bounded x86-domain components, all above the existing canonical
 `src/lib` host services.
 
 This is not an import of SoftPC's current `app/runtime` implementation.  That
@@ -17,16 +18,17 @@ evidence for the common contract, not inputs to a copied parallel runtime.
 
 ```text
 src/lib/                         platform and generic host services only
-src/common/                      neutral mechanism; depends only on lib
+src/common/                      shared product capability; depends only on lib
   contracts.h                    copied values and opaque adapter contracts
   ui/                            lib UI binding and copied host-event return
   session/                       lifecycle/control FIFO and reducer
   machine/                       safe-point executor bridge and FIFO
+  xasm32/                        x86 assembler/disassembler; lib/types only
+  debug/                         x86 Debug CLI and neutral paused-target contract
 
 src/core/
   machine/                       Core execution and machine state
   product/                       Core product services
-  debug/                         independent debugger lifecycle and command FIFO
 
 src/vm/
   machine/                       NXVM adapter for core/{machine,product,debug}
@@ -39,40 +41,86 @@ src/vm/
 state owner.  NXVM `vm/app` and SoftPC's corresponding product composition
 each remain the one place allowed to know all three components.
 
-`common/ui`, `common/session`, and `common/machine` may include `lib` and the
-copied declarations in `common/contracts.h`; they do not include or call one
-another.  `core`, `vm`, SoftPC, MVDM, CPU, BIOS, ROM, profile, controller,
-guest, native handles, and platform headers are forbidden from the common
-corpus.
+`common/ui`, `common/session`, and `common/machine` are neutral runtime
+components.  They may include `lib` and copied declarations in
+`common/contracts.h`; they do not include or call one another, `xasm32`, or
+`debug`.  `core`, `vm`, SoftPC, MVDM, CPU, BIOS, ROM, profile, controller,
+guest, native handles, and platform headers are forbidden from that neutral
+runtime subset.
 
-`core/debug` is intentionally not a common component.  It is a complete Core
-component with its own create/start/stop/destroy lifecycle, bounded debugger
-command FIFO, copied request/result API, and explicit queue-full/fault
-outcomes.  It consumes a declared opaque target contract only at a Core-safe
-execution boundary.  It neither includes `core/machine` nor receives a raw
-machine/CPU/RAM pointer; `vm/machine` is the sole NXVM adapter that binds the
-validated target operations.  SoftPC does not bind or depend on `core/debug`
-in this task, but can adopt the same public component later without changing
-the component's ownership or inventing a SoftPC-specific debug route.
+`common/xasm32` and `common/debug` are deliberately separate: they are shared
+*x86 product capabilities*, not generic runtime mechanisms.  `xasm32` depends
+only on the current `lib/types` public definitions (`lib_u*`, `lib_size`,
+`lib_status` and, where needed, lib atomics); it has no platform or higher-layer
+dependency and must not redefine those types.  `debug` may depend only on
+`lib/types`, `xasm32` and the synchronous paused-debug API declared by
+`common/machine`; it cannot include Core, VM, MVDM, UI, Console, storage,
+platform, or native headers.  Its two intentional internal dependencies are
+downward: `common/debug -> common/xasm32` and
+`common/debug -> common/machine`; neither is reversed.
+
+`common/debug` owns bounded Debug command parsing and continuation state, not
+a second input/result queue.  It is itself a `common/session`-registered CLI
+provider: when Debug is active, session delivers its ordered monitor line to
+that provider and writes the returned copied text and prompt to the monitor
+Console.  Product CLI and Debug CLI are peers registered with session; neither
+wraps or calls the other.
+
+For paused inspection/editing, Debug synchronously calls the narrow
+`common/machine` paused-debug API.  That API exposes operations such as
+snapshot/read/write/breakpoint and install-execution-plan, but never exposes a
+machine pointer or layout.  `common/machine` delegates through its single
+product-driver endpoint; `vm/machine` maps that endpoint to `core/machine`,
+and a SoftPC VM/MVDM adapter maps the same endpoint to SoftPC.  This is the
+deliberate path `core/machine -> vm/machine -> common/machine -> common/debug`
+for NXVM, with no direct `common/debug -> core` or per-command product parser
+forwarder.  Session remains independent: it knows only a registered CLI
+callback, not Debug types.
+
+Core machine or the SoftPC adapter validates the paused lease at the bottom of
+that path and invalidates it before resume/reset/stop.  `common/machine` also
+rejects a synchronous Debug operation unless its own lifecycle state is
+paused.  Lifecycle-changing Debug commands never run a machine directly: they
+return a copied ordinary lifecycle request, and session enqueues it through the
+ordinary machine route.  The target owner enforces execution plans, actual
+retirement accounting and the resulting paused/stopped fact, which it reports
+back to session.  Session gives that fact to the active Debug provider when it
+needs Debug-local state transition, then prints the returned text/prompt.  This
+gives SoftPC the same Debug route without making either machine implementation
+public.
+
+`N`, `L`, and `W` remain Debug grammar, but Debug itself never opens a host
+file.  Their result is a bounded typed file request handled by each product's
+injected file service.  That service uses `lib/storage` (or a later shared
+binary-stream extension) and returns copied bytes/status to Debug.  This keeps
+host paths, access policy and file handles out of both `xasm32` and Debug.
+
+The DOS-style Debug trace/step command is mandatory Debug functionality: its
+execution plan is installed through `common/machine`, and each target owner
+enforces it.  NXVM's separate raw instruction recorder is not silently
+promoted to common.  A dedicated later audit must compare it with SoftPC's
+available instruction observation before introducing a shared copied trace-sink
+contract.  If SoftPC cannot provide it, NXVM retains the recorder as an
+explicit optional product capability; it is not removed merely because SoftPC
+lacks it, and a fake shared recorder is prohibited.
 
 ## Ownership And Data Flow
 
 ```text
-monitor / native UI / machine completion
+monitor Console / native UI / machine completion
                   |
                   v
-       common/session control FIFO       (sole ordered product ingress)
-                  |
-            copied effects
-          /                 \
-         v                   v
-common/machine FIFO       common/ui API
-safe-point executor       lib presenter binding
-         |                   |
-         v                   v
-NXVM Core adapter       copied UI facts
-         \                 /
-          +-- vm/app re-publishes facts --+
+       common/session control FIFO       (sole ordered ingress)
+          |                    |
+          |                    +--> registered CLI provider
+          |                              |        |
+          |                         text/prompt   paused Debug target
+          v                                       v
+common/machine FIFO                         common/debug --> common/machine
+safe-point executor
+         |
+         v
+NXVM Core adapter --> copied machine facts --> common/session
 ```
 
 There are deliberately three different transports, each with one owner and
@@ -90,11 +138,13 @@ consumer:
    latest-frame ingress and routes the accepted current-run frame to
    `common/ui`; the underlying lib presenter owns its own latest-frame slot.
    A frame cannot flood or reorder lifecycle control.
-4. `core/debug` owns a distinct bounded debugger-command FIFO.  This is not a
-   duplicate machine transport: it belongs to the debugger component, receives
-   only debugger commands, and is consumed by its bound target at a declared
-   Core-safe boundary.  Debugger outcomes return as copied facts through
-   `vm/machine` to the session ingress.
+4. `common/debug` owns parser continuation state only.  As one registered CLI
+   provider, it synchronously calls `common/machine` for bounded paused-state
+   read/write operations and returns copied results to session; no second Debug
+   transport or queue exists.  Lifecycle-changing Debug commands yield copied
+   ordinary lifecycle requests for session to submit.  Thus `GO`, `TRACE` and
+   `STEP` follow the ordinary session lifecycle route, while Core machine owns
+   the actual execution budget and stop fact.
 
 Every cross-thread request, completion, input event and frame carries a
 non-zero `run_id`.  `common/session` owns incrementing it at a successful new
@@ -127,33 +177,55 @@ common_status common_ui_apply(common_ui *, const common_ui_plan *);
 firmware/media paths or a product pointer.  `common` asks its adapter to act
 on that token; NXVM `vm/product` is solely responsible for resolving it to a
 frozen session request.  Product-specific command grammars and user-visible
-messages remain in `vm/product`.
+messages remain in `vm/product`.  At construction `vm/product` registers
+NXVM's ordinary monitor CLI provider with `common/session`.  `common/debug`
+registers a separate Debug CLI provider when the user enters Debug.  Each
+provider returns text, the next prompt and any ordinary lifecycle request;
+session owns provider selection, ordered line delivery, machine-fact delivery
+and monitor Console output.  It may emit product-neutral lifecycle status text
+itself.
+
+Console presentation policy is the same kind of injected product policy.  It
+maps a session snapshot and copied display fact to `VM_RAW`, `MONITOR_COOKED`
+or `NONE`; `common/session` orders and applies that plan through an opaque UI
+port, while `common/ui` performs the native action.  SoftPC may choose
+`console_control`; NXVM may choose different rules without putting either
+product's policy in common.
 
 The machine adapter is a small product-supplied callback table: create/start,
 safe-point request delivery, stop/leave and copied fact publication.  Its
 context is opaque to common.  NXVM `vm/machine` alone supplies that adapter and
 owns Core assembly; neither `common` nor `lib` sees a Core pointer.
 
-The `core/debug` public shape is likewise explicit and independent:
+When the machine is paused, `common/machine` accepts synchronous bounded Debug
+operations through its approved paused-debug API.  Its product-driver endpoint
+delegates NXVM operations through `vm/machine` to `core/machine`, or delegates
+SoftPC operations to its VM/MVDM adapter.  `common/debug` calls that API;
+neither product CLI nor `vm/machine` parses or forwards individual Debug
+commands.  Debug never changes lifecycle directly.
+
+The shared Debug shape is likewise explicit and independent:
 
 ```c
-core_debug_status core_debug_create(core_debug **);
-core_debug_status core_debug_start(core_debug *,
-    const core_debug_target_contract *);
-core_debug_status core_debug_submit(core_debug *,
-    const core_debug_command *);
-core_debug_status core_debug_observe_safe_point(core_debug *,
-    const core_debug_safe_point *);
-core_debug_status core_debug_take_result(core_debug *, core_debug_result *);
-void core_debug_stop(core_debug *);
-void core_debug_destroy(core_debug *);
+common_debug_status common_debug_create(common_debug **);
+common_debug_status common_debug_open(common_debug *, common_machine *);
+common_debug_status common_debug_submit_line(common_debug *,
+    const common_debug_line *, common_debug_result *);
+common_debug_status common_debug_observe_machine_fact(common_debug *,
+    const common_debug_machine_fact *, common_debug_result *);
+void common_debug_close(common_debug *);
+void common_debug_destroy(common_debug *);
 ```
 
-The target contract is opaque, bounded and copied.  It is implemented in
-`vm/machine`; no function above exposes a mutable Core layout.  The component
-does not own the machine lifecycle, so stopping a debugger clears only its
-pending debugger work and target binding; `common/session` and `common/machine`
-remain the sole owners of product and executor lifecycle respectively.
+`common_machine` exposes the target contract as synchronous bounded operations,
+not as a pointer returned to a caller.  Its lease token is opaque, bounded and
+validated.  NXVM Core machine and a SoftPC VM/MVDM adapter each implement the
+bottom endpoint, issue a lease only while paused, and invalidate it before
+resume/reset/stop; no function exposes mutable Core or MVDM layout.  Each
+result can contain copied text/data plus at most one ordinary lifecycle
+request.  Debug close clears only Debug-local pending work. `common/session`
+and `common/machine` remain sole owners of product and executor lifecycle;
+session activates Debug only after a paused fact.
 
 ## Explicit Non-Goals
 
@@ -161,8 +233,9 @@ remain the sole owners of product and executor lifecycle respectively.
   wrapper, second console broker, or compatibility shim.
 - No Core instruction, device, timing, debug, firmware, media or storage
   semantics change.
-- No move of product command text, YAML policy, profile selection, debugger
-  meaning or SoftPC MVDM behavior into common.
+- No move of product command text, YAML policy, profile selection, machine
+  implementation, or SoftPC MVDM behavior into common.  `common/debug` owns
+  only the shared x86 Debug grammar and target contract.
 - No parallel old/new route remains after each migrated ownership batch.
 - This NXVM task does not modify the sibling SoftPC repository.  A later
   owner-approved SoftPC task may import the verified common corpus byte for
@@ -177,35 +250,48 @@ remain the sole owners of product and executor lifecycle respectively.
    threading boundary, product-only field and deletion receiver.  Freeze the
    common public vocabulary, `run_id` rules, failure behavior and standalone
    CMake/manifest plan before source moves.
-2. **S2 - Core three-way independence and debug component.** Move and correct
-   the current Core structure to independent `core/machine`, `core/product`
-   and `core/debug` roots.  Make `core/debug` a complete lifecycle component
-   with its own command FIFO, safe-point observation and copied result API;
-   define the opaque target contract to be supplied later by `vm/machine`.
-   Remove any former `core/product/debug` dependency rather than forwarding
-   through a compatibility header.  Prove no root depends on a sibling root.
+2. **S2 - xasm32 extraction and Debug-contract freeze.** Move only the x86
+   assembler/disassembler into `common/xasm32` with `lib/types` as its sole
+   dependency, retaining one caller route and its current behavior.  Freeze
+   the synchronous `common/machine` paused-Debug API, the registered CLI
+   provider contract, `N/L/W` product file-service exchange, and recorder
+   disposition before moving the Debug parser.  This order prevents a temporary
+   Debug-to-Core shortcut or a speculative target wrapper.
 3. **S3 - common contracts and session mechanism.** Create the independently
    buildable common corpus and implement the neutral copied ABI plus the sole
-   bounded session FIFO, run-generation validation and lifecycle reducer.
-   It produces effects; it does not call UI, machine or product code.
-4. **S4 - common machine bridge and NXVM adapter.** Implement the neutral
+   bounded session FIFO, run-generation validation and lifecycle reducer.  Add
+   only opaque injected ports for a control Console, UI plan application,
+   machine delivery, presentation policy and registered CLI providers.  Session
+   may invoke those ports in its ordered loop, but includes no product, UI,
+   machine or Debug implementation.
+4. **S4 - common machine bridge and paused-Debug API.** Implement the neutral
    safe-point machine request FIFO and opaque driver contract.  Move NXVM Core
-   assembly plus the only `core/debug` target-contract binding into
-   `vm/machine`; delete the old executor transport at the same time.  Verify
-   ordered requests, debugger-command isolation, wakeups, pause/resume/reset/
-   stop, stale-run rejection and fault propagation.
-5. **S5 - common UI binding.** Move the generic lib-presenter binding to
-   `common/ui`, with copied plans/facts only.  Retain one product-owned Console
-   broker and move NXVM policy/console text out to `vm/product`; delete the
-   obsolete `vm/presentation` path.  Verify Console/Window switching, title,
-   target, focus, mouse and latest-frame semantics without native API leakage.
-6. **S6 - NXVM product and app cutover.** Make `vm/product` own only NXVM
-   command/YAML/profile/debugger policy, and `vm/app` the sole composition
-   root that routes common effects and facts.  Delete the old `vm/session`,
-   `vm/events` and product/host bridge paths rather than retaining adapters.
-   Confirm one session only, one product control FIFO, one machine FIFO and
-   one UI route.
-7. **S7 - reusable-corpus and closure audit.** Build common independently
+   assembly plus its paused-Debug endpoint implementation into `vm/machine`;
+   delete the old executor transport at the same time.  Verify that
+   `common/machine` accepts synchronous Debug operations only while paused,
+   while the Core target owner invalidates leases before run/reset/stop,
+   alongside ordered requests, wakeups, stale-run rejection and fault
+   propagation.
+5. **S5 - common Debug migration and NXVM CLI cutover.** Move the line/fact
+   Debug CLI into `common/debug`, bind it as a registered session provider, and
+   route every paused read/write through `common/machine`.  Delete the former
+   Core Debug parser and VM callback-table route rather than forwarding through
+   compatibility headers.  Preserve DOS-style trace/step; use an injected
+   product file service for `N/L/W`; retain NXVM recorder as explicit optional
+   capability unless the separate portability audit proves a shared sink.
+6. **S6 - common UI binding.** Move the generic lib-presenter binding to
+   `common/ui`, with copied plans/facts only.  Retain one session-driven
+   control Console port while `vm/product` supplies NXVM's immutable
+   raw-VM/monitor/none policy and Console text.  Delete the obsolete
+   `vm/presentation` path.  Verify Console/Window switching, title, target,
+   focus, mouse and latest-frame semantics without native API leakage.
+7. **S7 - NXVM product and app cutover.** Make `vm/product` own only NXVM
+   command/YAML/profile/debugger/presentation policy, injected into session at
+   construction.  Make `vm/app` the sole composition root, with no queue or
+   lifecycle/router state.  Delete the old `vm/session`, `vm/events` and
+   product/host bridge paths rather than retaining adapters.  Confirm one
+   session only, one product control FIFO, one machine FIFO and one UI route.
+8. **S8 - reusable-corpus and closure audit.** Build common independently
    using only `lib` public headers; verify its manifest and forbidden-vocabulary
    sweep.  Add neutral two-adapter conformance doubles (not a second product)
    for session/machine/UI contracts.  Run full repository unit and integration
@@ -217,13 +303,20 @@ remain the sole owners of product and executor lifecycle respectively.
 
 - NXVM has exactly the required `core`, `common`, and `vm` component layout;
   every mutable state and queue has the owner stated above.
-- `common` depends solely on `lib`, has no product or machine vocabulary, no
-  platform API exposure and no sibling-component dependency.
+- `common/{ui,session}` depend solely on `lib`, have no product or machine
+  vocabulary, platform API exposure or sibling dependency. `common/machine`
+  owns the one shared paused-debug API and its opaque product-driver endpoint;
+  it does not parse Debug grammar. `common/xasm32` depends only on `lib/types`;
+  `common/debug` depends only on `lib/types`, `xasm32`, and `common/machine`'s
+  paused-debug API.
 - `vm/machine` is the only NXVM Core adapter; `vm/product` is the only NXVM
   policy owner; `vm/app` is the only composition root.
-- `core/debug` has its own complete lifecycle, command FIFO and copied result
-  path, while remaining independent of `core/machine`, `core/product`, common
-  and SoftPC.  `vm/machine` is its sole NXVM target binder.
+- `common/debug` has one complete lifecycle, synchronous bounded line/fact
+  result path and parser continuation state, usable unchanged by NXVM and
+  SoftPC. It is a session-registered CLI provider and calls only
+  `common/machine`'s paused-debug API. Each product target owner owns lease
+  validity and execution-plan enforcement. Debug has no native, session Core,
+  VM or MVDM dependency beyond its public common interfaces.
 - There is no retained `vm/events`, `vm/session`, `vm/presentation`, legacy
   executor bridge, direct native UI use, or compatibility wrapper that forms a
   second route.

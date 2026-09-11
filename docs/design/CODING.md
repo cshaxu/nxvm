@@ -7,14 +7,18 @@ contract evidence is supporting material indexed in
 
 ## Current And Target Trees
 
-The current M5 tree contains `src/type.*`, `src/core/`, `src/vm/`, and a
-non-runnable `src/vdm/` skeleton. `src/mantle/` and `src/dos/` appear only when
-their admitting milestones begin; empty placeholder roots are prohibited.
+The current M5 tree contains `src/lib/`, `src/core/`, `src/vm/`, and a
+non-runnable `src/vdm/` skeleton. The M5 target adds `src/common/` only for
+shared session, machine, UI, xasm32 and Debug components. `src/mantle/` and
+`src/dos/` appear only when their admitting milestones begin; empty placeholder
+roots are prohibited.
 
 ```text
 src/
-  type.*
-  core/{debug,machine,product}/
+  lib/{types,console,host,storage,ui-base,ui-console,ui-window}/
+  common/
+    {contracts.h,session,machine,ui,xasm32,debug}/
+  core/{machine,product}/
   vm/
     main.c
     events/
@@ -38,8 +42,9 @@ admission and does not become a permanent source root.
 Headers stay beside their implementations. A public cross-module contract is
 named `*_interface.h`; an injected implementation is named `*_provider`.
 Public symbols use their ownership path, for example `core_machine_*`,
-`vm_product_*`, `mantle_platform_*`, `dos_machine_*`, and `vdm_product_*`.
-`src/type.*` is the sole system-wide type and status foundation.
+`common_session_*`, `common_debug_*`, `vm_product_*`, `mantle_platform_*`,
+`dos_machine_*`, and `vdm_product_*`. `src/lib/types` is the sole shared C
+type and status foundation.
 
 Files remain flat within a module until a real multi-file subsystem justifies a
 subdirectory. `main.c` and `composition/` belong at the appropriate component

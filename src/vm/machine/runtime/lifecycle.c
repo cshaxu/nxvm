@@ -15,7 +15,7 @@
 
 #include "core/debug/debug_target.h"
 
-#include "core/debug/utils.h"
+#include "common/xasm32/xasm32_interface.h"
 #include "lib/host/sync_interface.h"
 
 #include "vm/machine/runtime/debug_target.h"
@@ -38,7 +38,7 @@ static type_status vm_machine_debug_disassemble(C_VOID *context,
     STD_SIZE_T *out_code_bytes, C_INT flag32)
 {
     (C_VOID)context;
-    return core_debug_disassemble(code, code_bytes, statement,
+    return common_xasm32_disassemble(code, code_bytes, statement,
         statement_capacity, out_code_bytes, flag32);
 }
 

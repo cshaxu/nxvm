@@ -23,10 +23,17 @@ string(FIND "${target_source}" "wait_for_completion" completion_position)
 if(completion_position EQUAL -1)
     message(FATAL_ERROR "Core debugger target lacks completion contract")
 endif()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/debug/utils.h" utility_interface)
-if(utility_interface MATCHES "core_debug_(copy|append)_text")
-    message(FATAL_ERROR "Core debug exposes debugger-local text helpers")
-endif()
+foreach(retired_file IN ITEMS
+    "${PROJECT_SOURCE_DIR}/src/core/debug/utils.h"
+    "${PROJECT_SOURCE_DIR}/src/core/debug/text_internal.h"
+    "${PROJECT_SOURCE_DIR}/src/core/debug/xasm32/aasm32.c"
+    "${PROJECT_SOURCE_DIR}/src/core/debug/xasm32/aasm32.h"
+    "${PROJECT_SOURCE_DIR}/src/core/debug/xasm32/dasm32.c"
+    "${PROJECT_SOURCE_DIR}/src/core/debug/xasm32/dasm32.h")
+    if(EXISTS "${retired_file}")
+        message(FATAL_ERROR "Core debug retained a retired helper path: ${retired_file}")
+    endif()
+endforeach()
 
 foreach(module IN ITEMS debug machine product)
     file(GLOB_RECURSE module_sources

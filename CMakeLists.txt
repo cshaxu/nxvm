@@ -1191,9 +1191,11 @@ set(VM_SESSION_SOURCES
 set(CORE_DEBUG_SOURCES
     src/core/debug/debug_access.c
     src/core/debug/debug.c
-    src/core/debug/utils.c
-    src/core/debug/xasm32/aasm32.c
-    src/core/debug/xasm32/dasm32.c
+)
+set(COMMON_XASM32_SOURCES
+    src/common/xasm32/xasm32.c
+    src/common/xasm32/aasm32.c
+    src/common/xasm32/dasm32.c
 )
 set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/request_factory.c
@@ -1274,11 +1276,17 @@ target_link_libraries(vm-machine-executor-fifo-smoke PRIVATE
     vm-machine-executor-fifo
 )
 
+add_library(common-xasm32 STATIC ${COMMON_XASM32_SOURCES})
+target_include_directories(common-xasm32 PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(common-xasm32 PUBLIC types)
+
 add_library(core-debug STATIC ${CORE_DEBUG_SOURCES})
 target_include_directories(core-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-debug PUBLIC type-facade)
+target_link_libraries(core-debug PUBLIC type-facade common-xasm32)
 
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
@@ -1340,30 +1348,24 @@ add_executable(vm-presentation-frame-smoke
     test/vm/presentation/vm_presentation_frame_smoke.c)
 target_link_libraries(vm-presentation-frame-smoke PRIVATE vm-presentation)
 
-add_executable(core-debug-xasm-smoke
-    test/core/debug/core_debug_xasm_smoke.c
+add_executable(common-xasm32-smoke
+    test/common/xasm32/xasm32_smoke.c
 )
-target_include_directories(core-debug-xasm-smoke PRIVATE
+target_include_directories(common-xasm32-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-debug-xasm-smoke PRIVATE
-    core-debug
+target_link_libraries(common-xasm32-smoke PRIVATE
+    common-xasm32
 )
 
-add_executable(core-debug-xasm-contract-smoke
-    test/core/debug/core_debug_xasm_contract_smoke.c
-    src/core/debug/utils.c
-    src/core/debug/xasm32/aasm32.c
-    src/core/debug/xasm32/dasm32.c
+add_executable(common-xasm32-contract-smoke
+    test/common/xasm32/xasm32_contract_smoke.c
 )
-target_include_directories(core-debug-xasm-contract-smoke PRIVATE
+target_include_directories(common-xasm32-contract-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_compile_definitions(core-debug-xasm-contract-smoke PRIVATE
-    STD_MALLOC=test_xasm_malloc
-)
-target_link_libraries(core-debug-xasm-contract-smoke PRIVATE
-    type-facade
+target_link_libraries(common-xasm32-contract-smoke PRIVATE
+    common-xasm32
 )
 
 
@@ -2223,8 +2225,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-boot-failure-lifecycle-smoke
     vm-machine-executor-fifo-smoke
     std-snprintf-smoke
-    core-debug-xasm-smoke
-    core-debug-xasm-contract-smoke
+    common-xasm32-smoke
+    common-xasm32-contract-smoke
     core-debug-target-smoke
     core-debug-input-failure-smoke
     vm-session-control-smoke
@@ -3659,12 +3661,10 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/rtc.c|machine-executor"
     "core-debug|src/core/debug/debug_access.c|debug-xasm"
     "core-debug|src/core/debug/debug.c|debug-xasm"
-    "core-debug|src/core/debug/utils.c|debug-xasm"
-    "core-debug|src/core/debug/xasm32/aasm32.c|debug-xasm"
-    "core-debug|src/core/debug/xasm32/dasm32.c|debug-xasm"
-    "core-debug-xasm-contract-smoke|src/core/debug/utils.c|debug-xasm-contract"
-    "core-debug-xasm-contract-smoke|src/core/debug/xasm32/aasm32.c|debug-xasm-contract"
-    "core-debug-xasm-contract-smoke|src/core/debug/xasm32/dasm32.c|debug-xasm-contract"
+    "common-xasm32|src/common/xasm32/xasm32.c|xasm32"
+    "common-xasm32|src/common/xasm32/aasm32.c|xasm32"
+    "common-xasm32|src/common/xasm32/dasm32.c|xasm32"
+    "common-xasm32-contract-smoke|test/common/xasm32/xasm32_contract_smoke.c|xasm32-contract"
     "core-debug-input-failure-smoke|src/core/debug/debug.c|debug-input-failure"
     "core-debug-input-failure-smoke|src/core/debug/debug_access.c|debug-input-failure"
     "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
@@ -3711,6 +3711,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine-boundary
     vm-machine-executor-queue
     vm-machine-executor-fifo
+    common-xasm32
     core-debug
     core-product
     vm-profile
