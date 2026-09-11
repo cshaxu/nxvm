@@ -1,8 +1,7 @@
 #include "type.h"
 
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/session/factory.h"
-#include "vm/session/catalog.h"
+#include "vm/machine/request_factory.h"
 
 static C_INT vm_machine_provider_parse_cpu(const C_CHAR *value,
     core_machine_cpu_profile *out_profile)
@@ -56,7 +55,7 @@ static C_INT vm_machine_provider_parse_profile(const C_CHAR *value,
 }
 
 static type_status vm_machine_provider_request_configure(
-    const vm_product_session_request *request, vm_machine_config *config)
+    const vm_session_request *request, vm_machine_config *config)
 {
     if (request == STD_NULL || config == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -133,7 +132,7 @@ static type_status vm_machine_provider_request_configure(
 }
 
 type_status vm_machine_create_from_request(
-    const vm_product_session_request *request, vm_machine **out_session)
+    const vm_session_request *request, vm_machine **out_session)
 {
     vm_machine_config config;
     type_status status;

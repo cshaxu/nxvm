@@ -471,7 +471,7 @@ static DWORD WINAPI boot_start(C_VOID *opaque)
 }
 
 static C_INT boot_cmos_seed_matches(const vm_machine *session,
-    const vm_product_session_request *request)
+    const vm_session_request *request)
 {
     type_unsigned_8 seed[VM_MACHINE_CMOS_SEED_BYTES];
     t_port *port;

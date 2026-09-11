@@ -7,8 +7,6 @@ src/vm/machine/runtime/rom/external_pc_at.c|vm/profile
 src/vm/machine/runtime/machine_interface.h|vm/profile
 src/vm/machine/runtime/machine_private.h|vm/events
 src/vm/machine/runtime/machine_private.h|vm/profile
-src/vm/session/factory.c|vm/machine
-src/vm/session/factory.h|vm/machine
 src/vm/session/session.c|vm/machine
 src/vm/session/control.h|vm/events
 src/vm/product/console.c|vm/session

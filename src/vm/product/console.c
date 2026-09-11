@@ -445,7 +445,7 @@ static C_VOID doFloppy(vm_product_console_context *context)
 }
 
 static C_INT vm_product_console_choose_profile(const vm_product_console_context *context,
-    vm_product_session_request *out_entry)
+    vm_session_request *out_entry)
 {
     C_CHAR selection[32];
     STD_SIZE_T index;
@@ -459,7 +459,7 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
     }
     STD_PRINTF("Available session profiles:\n");
     for (index = 0u; index < count; ++index) {
-        vm_product_session_request entry;
+        vm_session_request entry;
 
         if (vm_product_session_catalog_get_request(context->catalog, index, &entry) !=
             TYPE_STATUS_OK) return 0;
@@ -481,7 +481,7 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
 
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
-    vm_product_session_request selected_entry;
+    vm_session_request selected_entry;
     vm_session_presentation_target target;
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,

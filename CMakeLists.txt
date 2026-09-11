@@ -1183,7 +1183,6 @@ set(VM_PRODUCT_SOURCES
 )
 set(VM_SESSION_SOURCES
     src/vm/session/control.c
-    src/vm/session/factory.c
     src/vm/session/catalog.c
     src/vm/session/session.c
 )
@@ -1195,6 +1194,7 @@ set(CORE_DEBUG_SOURCES
     src/core/debug/xasm32/dasm32.c
 )
 set(VM_MACHINE_RUNTIME_SOURCES
+    src/vm/machine/request_factory.c
     src/vm/machine/runtime/debug_target.c
     src/vm/machine/runtime/media.c
     src/vm/machine/runtime/display.c
@@ -3663,7 +3663,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
-    "vm-session|src/vm/session/factory.c|vm-session"
+    "vm-machine|src/vm/machine/request_factory.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/debug_target.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/media.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/display.c|vm-machine"

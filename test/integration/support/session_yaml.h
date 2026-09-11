@@ -12,7 +12,7 @@ typedef type_status (*integration_yaml_session_overlay_transform)(
     integration_yaml_session *session, C_VOID *opaque);
 
 struct integration_yaml_session {
-    vm_product_session_request request;
+    vm_session_request request;
     vm_machine *session;
     integration_yaml_session_overlay_transform transform;
     C_VOID *transform_opaque;
@@ -21,7 +21,7 @@ struct integration_yaml_session {
 /* The integration boundary accepts one catalog request. VM opens declared
  * external media as discard-only sparse overlays; tests never alter assets. */
 C_INT integration_yaml_session_assets_present(
-    const vm_product_session_request *request);
+    const vm_session_request *request);
 type_status integration_yaml_session_open(const C_CHAR *directory,
     const C_CHAR *file_name, integration_yaml_session *out_session);
 type_status integration_yaml_session_open_with_overlay_transform(const C_CHAR *directory,

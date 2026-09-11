@@ -30,7 +30,7 @@ static C_INT model40_choice(const C_CHAR *directory)
 
     if (vm_product_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) return 0;
     for (index = 0u; index < vm_product_session_catalog_count(catalog); ++index) {
-        vm_product_session_request request;
+        vm_session_request request;
 
         if (vm_product_session_catalog_get_request(catalog, index, &request) == TYPE_STATUS_OK &&
             !STD_STRCMP(request.file_name, "compaq-deskpro-386-model-40-1200k.yaml")) {

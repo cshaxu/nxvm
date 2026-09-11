@@ -2,9 +2,9 @@
 
 #include "vm/session/catalog.h"
 
-static C_INT catalog_parse(C_CHAR *document, vm_product_session_request *out_request)
+static C_INT catalog_parse(C_CHAR *document, vm_session_request *out_request)
 {
-    return vm_product_session_request_parse("unit-root", "case.yaml", document,
+    return vm_session_request_parse("unit-root", "case.yaml", document,
         out_request) == TYPE_STATUS_OK;
 }
 
@@ -36,7 +36,7 @@ C_INT main(C_VOID)
         "schema: nxvm-session\nprofile: ibm-5160-model-268\ndisplay: console\n"
         "media:\n  floppy: []\n  fixed_disk: []\nfirmware:\n  bios:\n"
         "    - path: xt.rom\n  video: null\n  cmos: null\n  font: font.bin\n";
-    vm_product_session_request request;
+    vm_session_request request;
 
     if (!catalog_parse(valid, &request)) {
         STD_PRINTF("catalog valid parse failed\n");

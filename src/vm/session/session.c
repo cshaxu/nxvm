@@ -4,7 +4,7 @@
 
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/session/factory.h"
+#include "vm/machine/request_factory.h"
 #include "vm/session/session.h"
 
 struct vm_session {
@@ -68,7 +68,7 @@ vm_session_control *vm_session_get_control(vm_session *session)
 }
 
 type_status vm_session_open_profile(vm_session *session,
-    const vm_product_session_request *request)
+    const vm_session_request *request)
 {
     if (session == STD_NULL || request == STD_NULL || session->machine != STD_NULL)
         return TYPE_STATUS_INVALID_STATE;

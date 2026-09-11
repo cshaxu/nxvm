@@ -5,12 +5,11 @@
 #include "vm/session/catalog.h"
 
 struct vm_product_session_catalog {
-    vm_product_session_request entries[VM_PRODUCT_SESSION_CATALOG_MAX];
+    vm_session_request entries[VM_PRODUCT_SESSION_CATALOG_MAX];
     STD_SIZE_T count;
     STD_SIZE_T rejected;
 };
 
-#include "core/product/config.h"
 #include "lib/storage/file_interface.h"
 
 static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
@@ -32,6 +31,20 @@ static C_INT vm_product_session_catalog_copy(C_CHAR *destination,
     if (destination == STD_NULL || capacity == 0u || length >= capacity) return 0;
     if (source != STD_NULL) STD_MEMCPY(destination, source, length + 1u);
     else destination[0] = '\0';
+    return 1;
+}
+
+static C_INT vm_session_catalog_parse_memory_kib(const C_CHAR *value,
+    STD_SIZE_T *out_bytes)
+{
+    C_CHAR *end = STD_NULL;
+    unsigned long long kibibytes;
+
+    if (value == STD_NULL || out_bytes == STD_NULL || *value == '\0') return 0;
+    kibibytes = strtoull(value, &end, 10);
+    if (end == value || *end != '\0' || kibibytes >
+        (unsigned long long)(SIZE_MAX / 1024u)) return 0;
+    *out_bytes = (STD_SIZE_T)kibibytes * 1024u;
     return 1;
 }
 
@@ -66,7 +79,7 @@ static C_INT vm_product_session_catalog_parse_value(C_CHAR *line,
 }
 
 static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
-    const C_CHAR *name, C_CHAR *document, vm_product_session_request *entry)
+    const C_CHAR *name, C_CHAR *document, vm_session_request *entry)
 {
     C_CHAR *cursor;
     C_CHAR *line;
@@ -131,8 +144,8 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
             fpu = 1; continue;
         }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "memory_kib", &value)) {
-            if (memory || core_product_parse_memory_kib(value,
-                    &entry->memory_bytes) != TYPE_STATUS_OK) break;
+            if (memory || !vm_session_catalog_parse_memory_kib(value,
+                    &entry->memory_bytes)) break;
             memory = 1;
             continue;
         }
@@ -162,9 +175,9 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
         if (section == 3 && firmware_bios && text[0] == '-' &&
             vm_product_session_catalog_parse_value(vm_product_session_catalog_trim(text + 1u),
                 "path", &value)) {
-            if (entry->bios_count >= VM_PRODUCT_SESSION_BIOS_SLOT_COUNT ||
+            if (entry->bios_count >= VM_SESSION_REQUEST_BIOS_SLOT_COUNT ||
                 !vm_product_session_catalog_path(entry->bios[entry->bios_count],
-                    VM_PRODUCT_SESSION_CATALOG_PATH_MAX, directory, value)) break;
+                    VM_SESSION_REQUEST_PATH_MAX, directory, value)) break;
             ++entry->bios_count;
             continue;
         }
@@ -195,10 +208,10 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
             vm_product_session_catalog_parse_value(vm_product_session_catalog_trim(text + 1u),
                 "path", &value)) {
             STD_SIZE_T *count = media == 1 ? &entry->floppy_count : &entry->fixed_disk_count;
-            C_CHAR (*target)[VM_PRODUCT_SESSION_CATALOG_PATH_MAX] = media == 1 ?
+            C_CHAR (*target)[VM_SESSION_REQUEST_PATH_MAX] = media == 1 ?
                 entry->floppy : entry->fixed_disk;
-            if (*count >= VM_PRODUCT_SESSION_MEDIA_SLOT_COUNT || !vm_product_session_catalog_path(
-                    target[*count], VM_PRODUCT_SESSION_CATALOG_PATH_MAX, directory, value)) break;
+            if (*count >= VM_SESSION_REQUEST_MEDIA_SLOT_COUNT || !vm_product_session_catalog_path(
+                    target[*count], VM_SESSION_REQUEST_PATH_MAX, directory, value)) break;
             ++*count;
             continue;
         }
@@ -214,17 +227,17 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
     return 1;
 }
 
-type_status vm_product_session_request_parse(const C_CHAR *directory,
-    const C_CHAR *name, C_CHAR *document, vm_product_session_request *out_request)
+type_status vm_session_request_parse(const C_CHAR *directory,
+    const C_CHAR *name, C_CHAR *document, vm_session_request *out_request)
 {
     return vm_product_session_catalog_parse_document(directory, name, document,
         out_request) ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_ARGUMENT;
 }
 
 static C_INT vm_product_session_catalog_parse_file(const C_CHAR *directory,
-    const C_CHAR *name, vm_product_session_request *entry)
+    const C_CHAR *name, vm_session_request *entry)
 {
-    C_CHAR path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR path[VM_SESSION_REQUEST_PATH_MAX];
     C_CHAR *document;
     C_VOID *loaded = STD_NULL;
     STD_SIZE_T bytes = 0u;
@@ -247,8 +260,8 @@ static C_INT vm_product_session_catalog_parse_file(const C_CHAR *directory,
 
 static C_INT vm_product_session_catalog_compare(const C_VOID *left, const C_VOID *right)
 {
-    const vm_product_session_request *a = left;
-    const vm_product_session_request *b = right;
+    const vm_session_request *a = left;
+    const vm_session_request *b = right;
     return STD_STRCMP(a->file_name, b->file_name);
 }
 
@@ -270,7 +283,7 @@ type_status vm_product_session_catalog_create(const C_CHAR *directory,
     while ((item = readdir(dir)) != STD_NULL) {
         STD_SIZE_T length = STD_STRLEN(item->d_name);
         const C_CHAR *extension;
-        vm_product_session_request entry;
+        vm_session_request entry;
 
         if (length < 5u || catalog->count == VM_PRODUCT_SESSION_CATALOG_MAX) continue;
         extension = item->d_name + length - 5u;
@@ -305,7 +318,7 @@ STD_SIZE_T vm_product_session_catalog_rejected(const vm_product_session_catalog 
 }
 
 type_status vm_product_session_catalog_get_request(const vm_product_session_catalog *catalog,
-    STD_SIZE_T index, vm_product_session_request *out_request)
+    STD_SIZE_T index, vm_session_request *out_request)
 {
     if (catalog == STD_NULL || out_request == STD_NULL || index >= catalog->count) {
         return TYPE_STATUS_INVALID_ARGUMENT;

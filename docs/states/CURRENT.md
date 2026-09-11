@@ -9,7 +9,7 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation - M5 T526 S12. |
-| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S11 is accepted in this packet pending its immutable P1 commit. |
+| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S11 P1/P2 is pushed as `5f1968bf` plus its ownership correction. |
 | Objective | Move the NXVM-facing shared-lib binding to `vm/presentation`; it consumes session plans and returns copied facts without any product-control compatibility route. |
 | Non-goals | No Core behavior change, no second machine executor, no lib modification, no native SDK access from VM, no external asset work, and no compatibility/control-forwarding route. |
 | Reference Baseline | T526 S11 P1 pending commit; approved target architecture in the retained proposal. |
@@ -80,12 +80,14 @@
   repository unit 303/303, 67 current specialized gates, documentation gate
   and diff checks pass. [Evidence](../etc/evidence/t526-s10-vm-machine-executor-migration.md).
 
-- **M5 T526 S11 P1:** session control convergence is accepted pending its
-  immutable commit. One copied `vm/session` FIFO now receives Console, machine
-  and presentation facts; its reducer emits presentation plans while the
-  Console only applies them. The product control/provider adapters and five
-  duplicate test registrations are removed. Unit 299/299, 69 specialized
-  gates, documentation governance and stripped dual artifacts pass.
+- **M5 T526 S11 P2:** coordinator review accepts `5f1968bf` and its immediate
+  ownership correction. One copied `vm/session` FIFO now receives Console,
+  machine and presentation facts; its reducer emits presentation plans while
+  the Console only applies them. The request value is `vm/events` and Core
+  configuration translation belongs only to `vm/machine`; product
+  control/provider adapters and five duplicate test registrations are removed.
+  Unit 299/299, 69 specialized gates, documentation governance and stripped
+  dual artifacts pass.
   [Evidence](../etc/evidence/t526-s11-session-control-convergence.md).
 
 - **M5 T524 S23:** owner-reported direct Windows use rejects the S22 P2

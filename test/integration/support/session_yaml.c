@@ -3,11 +3,11 @@
 #include <windows.h>
 
 #include "test/integration/support/session_yaml.h"
-#include "vm/session/factory.h"
+#include "vm/machine/request_factory.h"
 #include "vm/machine/runtime/machine_private.h"
 
 static C_INT integration_yaml_session_find(const C_CHAR *directory,
-    const C_CHAR *file_name, vm_product_session_request *out_request)
+    const C_CHAR *file_name, vm_session_request *out_request)
 {
     vm_product_session_catalog *catalog = STD_NULL;
     STD_SIZE_T index;
@@ -16,7 +16,7 @@ static C_INT integration_yaml_session_find(const C_CHAR *directory,
     if (directory == STD_NULL || file_name == STD_NULL || out_request == STD_NULL ||
         vm_product_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) return 0;
     for (index = 0u; index < vm_product_session_catalog_count(catalog); ++index) {
-        vm_product_session_request request;
+        vm_session_request request;
 
         if (vm_product_session_catalog_get_request(catalog, index, &request) ==
                 TYPE_STATUS_OK && !STD_STRCMP(request.file_name, file_name)) {
@@ -30,7 +30,7 @@ static C_INT integration_yaml_session_find(const C_CHAR *directory,
 }
 
 C_INT integration_yaml_session_assets_present(
-    const vm_product_session_request *request)
+    const vm_session_request *request)
 {
     STD_SIZE_T index;
 

@@ -49,7 +49,7 @@ type_status vm_session_create(vm_session **out_session);
 C_VOID vm_session_destroy(vm_session *session);
 vm_session_control *vm_session_get_control(vm_session *session);
 type_status vm_session_open_profile(vm_session *session,
-    const vm_product_session_request *request);
+    const vm_session_request *request);
 type_status vm_session_set_presentation_target(vm_session *session,
     vm_session_presentation_target target);
 C_INT vm_session_is_running(const vm_session *session);

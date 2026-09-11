@@ -9,6 +9,10 @@ prints text, but only applies a copied session plan; it no longer decides a
 surface target, title, mouse policy, hotkey action, window-close behavior, or
 frame routing.
 
+The immutable YAML-resolved request is a `vm/events` value. `vm/machine`, not
+`vm/session`, translates its CPU/FPU/profile fields into Core configuration.
+Thus session code contains neither Core types nor native/lib objects.
+
 The retired product control and machine-provider adapter, their forwarding
 headers, and five duplicate registrations that executed one smoke source under
 different names are removed. The direct session-owner test now proves copied
