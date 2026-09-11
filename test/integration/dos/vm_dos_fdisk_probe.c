@@ -3,20 +3,20 @@
 #include "type.h"
 
 #include "core/machine/guest_presentation_mailbox_interface.h"
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/control.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_T287_FDISK_CELLS (80u * 25u)
 
 static DWORD WINAPI vm_t287_fdisk_run(C_VOID *opaque)
 {
-    vm_session_control_start(&((vm_session *)opaque)->control);
+    vm_machine_control_start(&((vm_machine *)opaque)->control);
     return 0u;
 }
 
-static C_INT vm_t287_fdisk_has_text(const vm_session *session, const C_CHAR *text)
+static C_INT vm_t287_fdisk_has_text(const vm_machine *session, const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
@@ -35,14 +35,14 @@ static C_INT vm_t287_fdisk_has_text(const vm_session *session, const C_CHAR *tex
     return 0;
 }
 
-static C_INT vm_t287_fdisk_wait(const vm_session *session, const C_CHAR *text,
+static C_INT vm_t287_fdisk_wait(const vm_machine *session, const C_CHAR *text,
     DWORD timeout)
 {
     DWORD elapsed;
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (vm_t287_fdisk_has_text(session, text)) return 1;
-        if (elapsed >= 500u && !vm_session_control_is_running(&session->control)) {
+        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             return 0;
         }
         Sleep(10u);
@@ -50,7 +50,7 @@ static C_INT vm_t287_fdisk_wait(const vm_session *session, const C_CHAR *text,
     return 0;
 }
 
-static C_INT vm_t287_fdisk_submit(const vm_session *session, const type_unsigned_8 *codes,
+static C_INT vm_t287_fdisk_submit(const vm_machine *session, const type_unsigned_8 *codes,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -72,7 +72,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     const type_unsigned_8 fdisk[] = {0x2bu, 0xf0u, 0x2bu, 0x23u, 0xf0u, 0x23u,
         0x43u, 0xf0u, 0x43u, 0x1bu, 0xf0u, 0x1bu, 0x42u, 0xf0u, 0x42u, 0x5au};
     HANDLE thread = STD_NULL;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT passed = 0;
 
     if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
@@ -100,7 +100,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     passed = 1;
 
 done:
-    if (session != STD_NULL) vm_session_stop(session);
+    if (session != STD_NULL) vm_machine_stop(session);
     if (thread != STD_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

@@ -6,9 +6,9 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 
 #define VM_T287_PROBE_FDD_BYTES (1440u * 1024u)
 #define VM_T287_PROBE_BUDGET 500000u
@@ -75,7 +75,7 @@ static type_status vm_t287_probe_install_boot_overlay(
 
     (C_VOID)opaque;
     return yaml_session != STD_NULL && vm_t287_probe_build_fdd(&bytes, &count) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
             bytes, count) == TYPE_STATUS_OK ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
@@ -91,7 +91,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     integration_yaml_session yaml_session = {0};
     core_machine_run_result result;
     core_machine_cpu_state cpu = {0};
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     type_unsigned_8 host_mbr[512] = {0};
     type_unsigned_8 host_vbr[512] = {0};
     type_unsigned_8 guest_mbr[512] = {0};
@@ -123,7 +123,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     session = yaml_session.session;
     if (session == STD_NULL || integration_yaml_session_overlay_read(&yaml_session,
-            VM_SESSION_MEDIA_HDD_ID, (C_VOID **)&hdd_overlay, &hdd_overlay_count) !=
+            VM_MACHINE_MEDIA_HDD_ID, (C_VOID **)&hdd_overlay, &hdd_overlay_count) !=
             TYPE_STATUS_OK || hdd_overlay_count < 1024u * 1024u) goto done;
     STD_MEMCPY(host_mbr, hdd_overlay, sizeof(host_mbr));
     entry = host_mbr + 446u;
@@ -141,7 +141,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) goto done;
         }
         if (values[10] != 0u && first_command_count == 0u) {

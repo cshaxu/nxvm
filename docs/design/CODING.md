@@ -17,7 +17,7 @@ src/
   core/{debug,machine,product}/
   vm/
     main.c
-    composition/
+    events/
     {machine,platform,product,profile}/
   mantle/
     composition/

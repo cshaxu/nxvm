@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t526-s10-vm-machine-executor-migration.md` | VM machine owner | T526 S10 removes the VM composition executor, establishes one copied machine request/result boundary, and records the complete owner-path sweep and repository-only verification. |
 | `evidence/t516-s1-yaml-overlay-baseline.md` | Integration/boot-contract owner | T516 S1 freezes the five YAML-driven external boot inputs, removes copied-media request rewriting in favor of the VM-owned overlay, and records the initial 5170/DeskPro divergence. |
 | `evidence/t516-s2-ibm5170-fdc-terminal-count.md` | Core FDC owner | T516 S2 records the Intel 8272A terminal-count repair, IBM 5170 cross-check and four-row external-YAML regression result. |
 | `evidence/t516-s3-deskpro-kbc-post.md` | Core KBC / Model 40 owners | T516 S3 records the DeskPro ROM's single-BAT POST contract, its seed checksum repair, and cross-profile boot proof. |

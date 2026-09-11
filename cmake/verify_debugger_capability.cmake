@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE debugger_sources
-    "${PROJECT_SOURCE_DIR}/src/vm/composition/session/*.[ch]"
+    "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/*.[ch]"
     "${PROJECT_SOURCE_DIR}/src/vm/machine/debug.[ch]")
 foreach(source IN LISTS debugger_sources)
     file(READ "${source}" contents)

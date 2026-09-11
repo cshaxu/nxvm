@@ -5,8 +5,8 @@
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "vm/profile/device/floppy.h"
 #include "test/integration/support/session_yaml.h"
 
@@ -162,7 +162,7 @@ static C_INT boot_text_has(const core_machine_guest_display_frame *frame, const 
     return 0;
 }
 
-static C_INT boot_terminal(const vm_session *session, const C_CHAR **out_name)
+static C_INT boot_terminal(const vm_machine *session, const C_CHAR **out_name)
 {
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
@@ -186,7 +186,7 @@ static C_INT boot_terminal(const vm_session *session, const C_CHAR **out_name)
     return 0;
 }
 
-static C_INT boot_post_reports_keyboard_failure(const vm_session *session)
+static C_INT boot_post_reports_keyboard_failure(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
 
@@ -196,7 +196,7 @@ static C_INT boot_post_reports_keyboard_failure(const vm_session *session)
         (boot_text_has(&frame, "301-Keyboard") || boot_text_has(&frame, "303-Keyboard"));
 }
 
-static C_VOID boot_timeout_report(const vm_session *session, const C_CHAR *name,
+static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
     const boot_trace_probe *trace_probe)
 {
     core_machine_guest_display_frame frame;
@@ -462,7 +462,7 @@ static C_INT boot_timeout_parse(const C_CHAR *text, DWORD *out_timeout)
 
 static DWORD WINAPI boot_start(C_VOID *opaque)
 {
-    type_status status = vm_session_start((vm_session *)opaque);
+    type_status status = vm_machine_start((vm_machine *)opaque);
 
     if (status != TYPE_STATUS_OK) {
         STD_PRINTF("T515:YAML-BOOT:START-FAILED:%d\n", (C_INT)status);
@@ -470,10 +470,10 @@ static DWORD WINAPI boot_start(C_VOID *opaque)
     return 0u;
 }
 
-static C_INT boot_cmos_seed_matches(const vm_session *session,
+static C_INT boot_cmos_seed_matches(const vm_machine *session,
     const vm_product_session_request *request)
 {
-    type_unsigned_8 seed[VM_SESSION_CMOS_SEED_BYTES];
+    type_unsigned_8 seed[VM_MACHINE_CMOS_SEED_BYTES];
     t_port *port;
     STD_FILE *file;
     type_unsigned_8 index;
@@ -486,7 +486,7 @@ static C_INT boot_cmos_seed_matches(const vm_session *session,
         STD_FCLOSE(file) == 0;
     if (!loaded) return 0;
     port = &session->core_machine->executor_port;
-    for (index = 0x0eu; index < VM_SESSION_CMOS_SEED_BYTES; ++index) {
+    for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
         type_unsigned_8 expected = seed[index];
         type_unsigned_8 actual;
 
@@ -504,7 +504,7 @@ static C_INT boot_cmos_seed_matches(const vm_session *session,
 int main(int argc, char **argv)
 {
     integration_yaml_session yaml_session;
-    vm_session *session;
+    vm_machine *session;
     HANDLE thread = STD_NULL;
     const C_CHAR *terminal = STD_NULL;
     DWORD timeout = BOOT_TIMEOUT;
@@ -547,8 +547,8 @@ int main(int argc, char **argv)
         STD_FPRINTF(STD_STDERR, "T515:YAML-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
         goto done;
     }
-    if (vm_session_set_speed(session, standard_speed ? VM_SESSION_SPEED_STANDARD :
-            VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK ||
+    if (vm_machine_set_speed(session, standard_speed ? VM_MACHINE_SPEED_STANDARD :
+            VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK ||
         (thread = CreateThread(STD_NULL, 0u, boot_start, session, 0u, STD_NULL)) == STD_NULL) goto done;
     started = GetTickCount64();
     while (GetTickCount64() - started < timeout) {
@@ -557,12 +557,12 @@ int main(int argc, char **argv)
         Sleep(BOOT_POLL);
     }
     if (terminal == STD_NULL || keyboard_post_failure_seen) {
-        vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
-        if (vm_session_control_wait_for_pause(&session->control, 2000u)) {
+        vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
+        if (vm_machine_control_wait_for_pause(&session->control, 2000u)) {
             boot_timeout_report(session, argv[2], trace_enabled ? &trace_probe : STD_NULL);
         }
     }
-    vm_session_stop(session);
+    vm_machine_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto done;
     CloseHandle(thread); thread = STD_NULL;
     if (terminal == STD_NULL || keyboard_post_failure_seen) {

@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "vm/composition/session/session_state.h"
+#include "vm/machine/runtime/executor_state.h"
 #include "core/machine/guest_display_frame.h"
 #include "core/machine/guest_input_interface.h"
 
@@ -15,11 +15,11 @@ typedef enum vm_product_console_speed {
 } vm_product_console_speed;
 
 typedef C_VOID (*vm_product_console_lifecycle_reporter)(C_VOID *context,
-    vm_session_lifecycle lifecycle);
+    vm_machine_lifecycle lifecycle);
 typedef C_VOID (*vm_product_console_display_reporter)(C_VOID *context,
     const core_machine_guest_display_frame *frame);
 
-typedef struct vm_session_machine_provider {
+typedef struct vm_product_machine_provider {
     C_INT (*is_running)(C_VOID *context);
     C_VOID (*print_machine)(C_VOID *context);
     C_VOID (*set_lifecycle_reporter)(C_VOID *context,
@@ -45,6 +45,14 @@ typedef struct vm_session_machine_provider {
     type_status (*submit_host_input)(C_VOID *context,
         const core_machine_guest_input_event *event);
     C_VOID *context;
-} vm_session_machine_provider;
+    /* Transitional product binding state.  It is deleted with this adapter
+     * when S11 replaces product control with vm/session; it never crosses the
+     * vm/machine value-result boundary. */
+    C_VOID *machine_slot;
+    vm_product_console_lifecycle_reporter lifecycle_reporter;
+    C_VOID *lifecycle_reporter_context;
+    vm_product_console_display_reporter display_reporter;
+    C_VOID *display_reporter_context;
+} vm_product_machine_provider;
 
 #endif

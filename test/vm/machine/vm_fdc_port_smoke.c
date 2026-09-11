@@ -3,9 +3,9 @@
 #include "core/machine/pic.h"
 #include "core/machine/port.h"
 #include "core/machine/machine.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
 #include "../support/rom/session_assets.h"
@@ -34,7 +34,7 @@ static C_INT fdc_read_result(core_machine_fdc *fdc, t_port *port, type_unsigned_
 
 C_INT main(C_VOID)
 {
-    vm_session *session;
+    vm_machine *session;
     t_port *port;
     type_unsigned_8 result[7];
     static const type_unsigned_8 specify_non_dma[] = { 0x03u, 0xdfu, 0x03u };
@@ -108,7 +108,7 @@ C_INT main(C_VOID)
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= result[0] != core_machine_fdc_ST0_NORMAL;
 
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     puts("M5:T231:S3:FDC-PORT:OK");
     return 0;

@@ -3,7 +3,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 
 static C_INT vm_yaml_cmos_seed_matches(const C_CHAR *directory,
     const C_CHAR *file_name, type_unsigned_8 index, type_unsigned_8 expected)

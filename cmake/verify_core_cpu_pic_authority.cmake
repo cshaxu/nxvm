@@ -2,16 +2,16 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c"
-    session_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c"
+    machine_source)
 
 set(forbidden_vm_cpu_pic_wiring
     "core_machine_(configuration_cpu_execution_borrow|configuration_shared_pic_(master|slave)_borrow|cpu_execution_context_bind_pic)[ \\t\\r\\n]*\\(")
 string(REGEX MATCH "${forbidden_vm_cpu_pic_wiring}" vm_cpu_pic_wiring
-    "${session_source}")
+    "${machine_source}")
 if(vm_cpu_pic_wiring)
     message(FATAL_ERROR
-        "VM session retains T295 CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
+        "VM machine retains T295 CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" core_source)

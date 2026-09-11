@@ -30,19 +30,19 @@ int main(void)
 
     if (vm_product_control_create(&control) != TYPE_STATUS_OK) return 1;
     fact.kind = VM_PRODUCT_CONTROL_FACT_LIFECYCLE;
-    fact.value.lifecycle = VM_SESSION_RUNNING;
+    fact.value.lifecycle = VM_MACHINE_RUNNING;
     display.generation = 7u;
     if (vm_product_control_publish_display(control, &display) != TYPE_STATUS_OK ||
         vm_product_control_publish(control, &fact) != TYPE_STATUS_OK ||
         vm_product_control_take(control, &received, &received_display, 0u) != TYPE_STATUS_OK ||
         received.kind != VM_PRODUCT_CONTROL_FACT_LIFECYCLE ||
-        received.value.lifecycle != VM_SESSION_RUNNING ||
+        received.value.lifecycle != VM_MACHINE_RUNNING ||
         STD_STRCMP(vm_product_control_note_lifecycle(control,
             received.value.lifecycle), "started") != 0 ||
         STD_STRCMP(vm_product_control_note_lifecycle(control,
-            VM_SESSION_PAUSED), "paused") != 0 ||
+            VM_MACHINE_PAUSED), "paused") != 0 ||
         STD_STRCMP(vm_product_control_note_lifecycle(control,
-            VM_SESSION_RUNNING), "resumed") != 0) {
+            VM_MACHINE_RUNNING), "resumed") != 0) {
         vm_product_control_destroy(control);
         return 1;
     }

@@ -3,8 +3,8 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_EGA_DOS_BOOT_BUDGET 800000u
@@ -124,12 +124,12 @@ static type_status vm_ega_dos_install_on_overlay(
 
     (C_VOID)opaque;
     if (yaml_session == STD_NULL || integration_yaml_session_overlay_read(yaml_session,
-            VM_SESSION_MEDIA_FDD_ID, (C_VOID **)&image, &image_size) != TYPE_STATUS_OK ||
+            VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&image, &image_size) != TYPE_STATUS_OK ||
         image_size > MAXDWORD) {
         return TYPE_STATUS_FAULT;
     }
     installed = vm_ega_dos_install_program(image, (DWORD)image_size) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
             image, image_size) == TYPE_STATUS_OK;
     STD_FREE(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
@@ -151,7 +151,7 @@ static C_INT vm_ega_dos_has_prompt(const core_machine_display_snapshot *snapshot
     return 0;
 }
 
-static C_INT vm_ega_dos_run_until(vm_session *session, type_unsigned_32 limit,
+static C_INT vm_ega_dos_run_until(vm_machine *session, type_unsigned_32 limit,
     C_INT want_graphics)
 {
     core_machine_run_budget budget = { 128u, 0u };
@@ -167,7 +167,7 @@ static C_INT vm_ega_dos_run_until(vm_session *session, type_unsigned_32 limit,
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) return 0;
         }
         if (!want_graphics && vm_ega_dos_has_prompt(&snapshot)) return 1;
@@ -191,7 +191,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         0x26u, 0x3eu, 0x5au };
 #endif
     integration_yaml_session yaml_session;
-    vm_session *session;
+    vm_machine *session;
     STD_SIZE_T index;
     C_INT passed = 0;
 

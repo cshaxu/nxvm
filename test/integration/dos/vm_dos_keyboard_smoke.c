@@ -4,10 +4,10 @@
 
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/fault.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/control.h"
+#include "vm/machine/runtime/fault.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
@@ -15,11 +15,11 @@
 
 static DWORD WINAPI run_machine(C_VOID *opaque)
 {
-    vm_session_control_start(&((vm_session *)opaque)->control);
+    vm_machine_control_start(&((vm_machine *)opaque)->control);
     return 0u;
 }
 
-static C_INT vm_dos_keyboard_submit_key(vm_session *session,
+static C_INT vm_dos_keyboard_submit_key(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
     core_machine_guest_input_event event = { 0 };
@@ -29,10 +29,10 @@ static C_INT vm_dos_keyboard_submit_key(vm_session *session,
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed != 0;
-    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+    return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_dos_keyboard_has_text(const vm_session *session,
+static C_INT vm_dos_keyboard_has_text(const vm_machine *session,
     const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
@@ -51,7 +51,7 @@ static C_INT vm_dos_keyboard_has_text(const vm_session *session,
     return 0;
 }
 
-static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
+static C_INT vm_dos_keyboard_has_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
@@ -67,24 +67,24 @@ static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
     return 0;
 }
 
-static C_INT vm_dos_keyboard_has_date_prompt(const vm_session *session)
+static C_INT vm_dos_keyboard_has_date_prompt(const vm_machine *session)
 {
     return vm_dos_keyboard_has_text(session, "Enter new date (mm-dd-yy):");
 }
 
-static C_INT vm_dos_keyboard_has_time_prompt(const vm_session *session)
+static C_INT vm_dos_keyboard_has_time_prompt(const vm_machine *session)
 {
     return vm_dos_keyboard_has_text(session, "Enter new time:");
 }
 
-static C_INT vm_dos_keyboard_has_edit_menu(const vm_session *session)
+static C_INT vm_dos_keyboard_has_edit_menu(const vm_machine *session)
 {
     return vm_dos_keyboard_has_text(session, "File  Edit  Search") &&
         vm_dos_keyboard_has_text(session, "Options") &&
         vm_dos_keyboard_has_text(session, "Help");
 }
 
-static C_INT vm_dos_keyboard_verify_text_frame(const vm_session *session)
+static C_INT vm_dos_keyboard_verify_text_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     type_unsigned_8 text[TEXT_VIDEO_CELLS * 2u];
@@ -126,7 +126,7 @@ static C_INT vm_dos_keyboard_verify_text_frame(const vm_session *session)
     return 1;
 }
 
-static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
+static C_VOID vm_dos_keyboard_report_failure(const vm_machine *session,
     const core_machine_cpu_state *state)
 {
     core_machine_guest_display_frame frame;
@@ -170,7 +170,7 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
     const C_UCHAR scan_codes[] = { 0x12u, 0x20u, 0x17u, 0x14u, 0x1cu };
@@ -193,9 +193,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (elapsed == prompt_timeout) {
         core_machine_cpu_state state;
 
-        vm_session_control_request_pause(&session->control,
-            VM_SESSION_PAUSE_EXPLICIT);
-        if (vm_session_control_wait_for_pause(&session->control, 500u) &&
+        vm_machine_control_request_pause(&session->control,
+            VM_MACHINE_PAUSE_EXPLICIT);
+        if (vm_machine_control_wait_for_pause(&session->control, 500u) &&
             core_machine_debug_read_cpu(session->core_machine, &state) ==
                 TYPE_STATUS_OK) {
             STD_PRINTF("prompt pause: %04x:%08x flags=%08x\n", state.cs,
@@ -221,9 +221,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (elapsed == prompt_timeout) {
             core_machine_cpu_state state;
 
-            vm_session_control_request_pause(&session->control,
-                VM_SESSION_PAUSE_EXPLICIT);
-            if (vm_session_control_wait_for_pause(&session->control, 500u) &&
+            vm_machine_control_request_pause(&session->control,
+                VM_MACHINE_PAUSE_EXPLICIT);
+            if (vm_machine_control_wait_for_pause(&session->control, 500u) &&
                 core_machine_debug_read_cpu(session->core_machine, &state) ==
                     TYPE_STATUS_OK) {
                 STD_PRINTF("date input pause: %04x:%08x flags=%08x\n", state.cs,
@@ -246,12 +246,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         Sleep(10u);
     }
     if (elapsed == edit_timeout) {
-        vm_session_fault_outcome outcome;
+        vm_machine_fault_outcome outcome;
         core_machine_cpu_state state;
 
-        vm_session_control_request_pause(&session->control,
-            VM_SESSION_PAUSE_EXPLICIT);
-        if (vm_session_control_wait_for_pause(&session->control, 500u) &&
+        vm_machine_control_request_pause(&session->control,
+            VM_MACHINE_PAUSE_EXPLICIT);
+        if (vm_machine_control_wait_for_pause(&session->control, 500u) &&
             core_machine_debug_read_cpu(session->core_machine, &state) ==
                 TYPE_STATUS_OK) {
             STD_PRINTF("edit pause: %04x:%08x flags=%08x\n", state.cs,
@@ -259,26 +259,26 @@ C_INT main(C_INT argc, C_CHAR **argv)
             vm_dos_keyboard_report_failure(session, &state);
         }
 
-        if (vm_session_fault_get(session, &outcome) == 0 && outcome.valid) {
+        if (vm_machine_fault_get(session, &outcome) == 0 && outcome.valid) {
             STD_PRINTF("edit fault: detail=%08x pc=%08x mask=%08x code=%08x\n",
                 outcome.run.detail, outcome.run.linear_pc,
                 outcome.diagnostic.first_fault.exception_mask,
                 outcome.diagnostic.first_fault.exception_code);
         } else {
             STD_PRINTF("edit run state: %s\n",
-                vm_session_control_is_running(&session->control) ? "running" : "stopped");
+                vm_machine_control_is_running(&session->control) ? "running" : "stopped");
         }
     }
     if (elapsed != edit_timeout) {
-        vm_session_control_request_pause(&session->control,
-            VM_SESSION_PAUSE_EXPLICIT);
-        if (vm_session_control_wait_for_pause(&session->control, 500u)) {
+        vm_machine_control_request_pause(&session->control,
+            VM_MACHINE_PAUSE_EXPLICIT);
+        if (vm_machine_control_wait_for_pause(&session->control, 500u)) {
             display_ok = vm_dos_keyboard_verify_text_frame(session);
         } else {
             STD_PRINTF("edit display: pause unavailable\n");
         }
     }
-    vm_session_stop(session);
+    vm_machine_stop(session);
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     integration_yaml_session_close(&yaml_session);
@@ -287,7 +287,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     return 0;
 
 fail:
-    if (session != STD_NULL) vm_session_stop(session);
+    if (session != STD_NULL) vm_machine_stop(session);
     if (thread != STD_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

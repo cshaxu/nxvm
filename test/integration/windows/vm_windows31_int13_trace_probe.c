@@ -2,8 +2,8 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_T287_TRACE_BUDGET 2000000u
@@ -13,7 +13,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     const core_machine_run_budget budget = {1u, 0u};
     integration_yaml_session yaml_session;
     core_machine_run_result result;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     type_unsigned_16 int13[2] = {0};
     type_unsigned_32 int13_linear = 0u;
     type_unsigned_32 instruction;
@@ -63,7 +63,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) break;
         }
         cpu = &session->core_machine->executor_cpu;

@@ -2,27 +2,27 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
-#include "vm/composition/session/display.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/display.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 
-static C_VOID vm_display_s5_port_write(vm_session *session, type_unsigned_16 port,
+static C_VOID vm_display_s5_port_write(vm_machine *session, type_unsigned_16 port,
     type_unsigned_8 value)
 {
     core_machine_port_write(&session->core_machine->executor_port, port, value);
 }
 
-static C_INT vm_display_s5_capture(vm_session *session,
+static C_INT vm_display_s5_capture(vm_machine *session,
     core_machine_guest_display_frame *frame, core_machine_display_kind expected_kind)
 {
-    return vm_session_publish_display(session, TYPE_TRUE) == expected_kind &&
+    return vm_machine_publish_display(session, TYPE_TRUE) == expected_kind &&
         core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
             frame) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_display_s5_enable_planar(vm_session *session)
+static C_INT vm_display_s5_enable_planar(vm_machine *session)
 {
     vm_display_s5_port_write(session, 0x03c4u, 2u);
     vm_display_s5_port_write(session, 0x03c5u, 0x0fu);
@@ -47,7 +47,7 @@ static C_INT vm_display_s5_enable_planar(vm_session *session)
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     core_machine_guest_display_frame frame;
     core_machine_display_snapshot snapshot;
     core_machine_display_snapshot_observation observation;
@@ -111,7 +111,7 @@ C_INT main(C_VOID)
         !observation.generation_reliable || observation.capture_required ||
         observation.generation != ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_session_publish_display(session, TYPE_FALSE) !=
+    failed |= vm_machine_publish_display(session, TYPE_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
         core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK || frame.generation <= cga_generation ||
@@ -125,14 +125,14 @@ C_INT main(C_VOID)
         !observation.generation_reliable || !observation.capture_required ||
         observation.generation == ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_session_publish_display(session, TYPE_FALSE) !=
+    failed |= vm_machine_publish_display(session, TYPE_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
         core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK || frame.generation <= cga_generation ||
         frame.pixels[0] != 0u || session->display_snapshot_generation !=
         observation.generation;
 
-    vm_session_reset(session);
+    vm_machine_reset(session);
     failed |= core_machine_get_timeline_observation(session->core_machine,
         &timeline) != TYPE_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
@@ -150,7 +150,7 @@ C_INT main(C_VOID)
         frame.pixels[0] != 0u || frame.pixel_width != 320u ||
         frame.pixel_height != 200u;
 
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T352:S5:DISPLAY-COMPOSITION:OK\n");
     return 0;

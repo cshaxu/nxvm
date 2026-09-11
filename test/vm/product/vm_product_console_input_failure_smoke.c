@@ -32,7 +32,7 @@ C_VOID *test_console_input_malloc(STD_SIZE_T size)
 static C_INT run_case(C_INT fail_allocation)
 {
     vm_product_console_context *context = STD_NULL;
-    vm_session_machine_provider provider = {0};
+    vm_product_machine_provider provider = {0};
     STD_FILE *input = tmpfile();
     C_INT saved = -1;
     C_INT passed = 0;

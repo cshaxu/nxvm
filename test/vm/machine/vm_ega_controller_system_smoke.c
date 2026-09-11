@@ -2,14 +2,14 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/debug_interface.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     type_unsigned_8 value = 0x5au;
     type_unsigned_8 read_value = 0u;
     type_unsigned_32 port_value = 0u;
@@ -19,7 +19,7 @@ C_INT main(C_VOID)
         session == STD_NULL || !session->active || session->core_machine == STD_NULL) {
         return 1;
     }
-    vm_session_reset(session);
+    vm_machine_reset(session);
     failed |= core_machine_debug_write_port(session->core_machine, 0x03ceu, 6u) != TYPE_STATUS_OK;
     failed |= core_machine_debug_read_port(session->core_machine, 0x03cfu, &port_value) != TYPE_STATUS_OK || port_value != 0x05u;
     failed |= core_machine_debug_write_port(session->core_machine, 0x03cfu, 0x09u) != TYPE_STATUS_OK;
@@ -32,7 +32,7 @@ C_INT main(C_VOID)
     failed |= core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != TYPE_STATUS_OK || port_value != 0x0fu;
     (C_VOID)core_machine_debug_read_port(session->core_machine, 0x03dau, &port_value);
     failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x10u) != TYPE_STATUS_OK || core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != TYPE_STATUS_OK || port_value != 0x01u;
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T236:S3:EGA-CONTROLLER:SYSTEM:OK\n");
     STD_PRINTF("M5:T480:S3:REGRESSIONS:OK\n");

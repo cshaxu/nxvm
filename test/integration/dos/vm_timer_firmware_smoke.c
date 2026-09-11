@@ -5,9 +5,9 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/control.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 #include "test/integration/support/session_yaml.h"
 
@@ -17,14 +17,14 @@
 
 static DWORD WINAPI vm_timer_run(C_VOID *opaque)
 {
-    vm_session_control_start((vm_session_control_state *)opaque);
+    vm_machine_control_start((vm_machine_control_state *)opaque);
     return 0u;
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
     type_unsigned_32 bda_ticks = 0u;
@@ -50,7 +50,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     session = yaml_session.session;
     stage = 2;
-    vm_session_control_reset(&session->control);
+    vm_machine_control_reset(&session->control);
     thread = CreateThread(STD_NULL, 0u, vm_timer_run, &session->control,
         0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -64,8 +64,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (bda_ticks == 0u) goto fail;
     stage = 4;
-    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
-    if (!vm_session_control_wait_for_pause(&session->control, 2000u)) goto fail;
+    vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
+    if (!vm_machine_control_wait_for_pause(&session->control, 2000u)) goto fail;
     stage = 5;
     if (core_machine_get_elapsed_ticks(session->core_machine,
             &paused_elapsed_ticks) != TYPE_STATUS_OK) goto fail;
@@ -74,10 +74,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (core_machine_get_elapsed_ticks(session->core_machine,
             &observed_paused_elapsed_ticks) != TYPE_STATUS_OK ||
         observed_paused_elapsed_ticks != paused_elapsed_ticks) goto fail;
-    if (!vm_session_control_step(&session->control) ||
-        !vm_session_control_wait_for_pause(&session->control, 2000u) ||
-        vm_session_control_get_pause_reason(&session->control) !=
-            VM_SESSION_PAUSE_STEP ||
+    if (!vm_machine_control_step(&session->control) ||
+        !vm_machine_control_wait_for_pause(&session->control, 2000u) ||
+        vm_machine_control_get_pause_reason(&session->control) !=
+            VM_MACHINE_PAUSE_STEP ||
         core_machine_get_elapsed_ticks(session->core_machine,
             &stepped_elapsed_ticks) != TYPE_STATUS_OK ||
         stepped_elapsed_ticks <= paused_elapsed_ticks) goto fail;
@@ -113,7 +113,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         core_machine_debug_read_memory(session->core_machine,
             VM_TIMER_BDA_ROLLOVER, &rollover_byte, sizeof(rollover_byte)) !=
             TYPE_STATUS_OK || rollover_byte != 0u) goto fail;
-    vm_session_stop(session);
+    vm_machine_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
     integration_yaml_session_close(&yaml_session);
@@ -123,7 +123,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 fail:
     STD_FPRINTF(STD_STDERR, "M5:T225:S3:TIMER:FAIL:%d:%d:%u\n", stage,
         (C_INT)result.reason, bda_ticks);
-    if (session != STD_NULL) vm_session_stop(session);
+    if (session != STD_NULL) vm_machine_stop(session);
     if (thread != STD_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

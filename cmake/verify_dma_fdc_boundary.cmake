@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c" devices_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c" devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/dma.c" dma_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" board_source)
 

@@ -46,9 +46,9 @@ static type_status vm_product_console_lifecycle_start(C_VOID *opaque)
         return TYPE_STATUS_INVALID_STATE;
     }
     ++fixture->starts;
-    fixture->reporter(fixture->reporter_context, VM_SESSION_RESET);
-    fixture->reporter(fixture->reporter_context, VM_SESSION_RUNNING);
-    fixture->reporter(fixture->reporter_context, VM_SESSION_PAUSED);
+    fixture->reporter(fixture->reporter_context, VM_MACHINE_RESET);
+    fixture->reporter(fixture->reporter_context, VM_MACHINE_RUNNING);
+    fixture->reporter(fixture->reporter_context, VM_MACHINE_PAUSED);
     return TYPE_STATUS_OK;
 }
 
@@ -59,7 +59,7 @@ static type_status vm_product_console_lifecycle_stop(C_VOID *opaque)
     if (fixture == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     ++fixture->stops;
     if (fixture->reporter != STD_NULL) {
-        fixture->reporter(fixture->reporter_context, VM_SESSION_STOPPED);
+        fixture->reporter(fixture->reporter_context, VM_MACHINE_STOPPED);
     }
     return TYPE_STATUS_OK;
 }
@@ -72,7 +72,7 @@ static type_status vm_product_console_lifecycle_resume(C_VOID *opaque)
         return TYPE_STATUS_INVALID_STATE;
     }
     ++fixture->resumes;
-    fixture->reporter(fixture->reporter_context, VM_SESSION_RUNNING);
+    fixture->reporter(fixture->reporter_context, VM_MACHINE_RUNNING);
     return TYPE_STATUS_OK;
 }
 
@@ -85,7 +85,7 @@ static C_INT vm_product_console_lifecycle_contains(const C_CHAR *text,
 int main(C_VOID)
 {
     vm_product_console_lifecycle_fixture fixture = {0};
-    vm_session_machine_provider machine_provider = {0};
+    vm_product_machine_provider machine_provider = {0};
     vm_product_console_context *console_context = STD_NULL;
     STD_FILE *input = STD_NULL;
     STD_FILE *output = STD_NULL;

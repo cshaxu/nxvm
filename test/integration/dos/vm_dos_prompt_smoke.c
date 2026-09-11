@@ -11,22 +11,22 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 
-#include "vm/composition/session/lifecycle.h"
+#include "vm/machine/runtime/lifecycle.h"
 
-#include "vm/composition/session/control.h"
+#include "vm/machine/runtime/control.h"
 
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
 #define DOS_PROMPT_TIMEOUT_MILLISECONDS 5000u
 
-static C_INT has_dos_prompt(const vm_session *session);
+static C_INT has_dos_prompt(const vm_machine *session);
 
 static DWORD WINAPI run_full_pc(C_VOID *opaque)
 {
-    vm_session_control_start(&((vm_session *)opaque)->control);
+    vm_machine_control_start(&((vm_machine *)opaque)->control);
     return 0u;
 }
 
@@ -55,7 +55,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD elapsed;
     C_INT prompt_seen = 0;
     integration_yaml_session yaml_session;
-    vm_session *session;
+    vm_machine *session;
     C_INT turbo = 0;
 
     if ((argc != 3 && argc != 4) || integration_yaml_session_open(argv[1], argv[2],
@@ -63,7 +63,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     session = yaml_session.session;
     turbo = argc == 4;
     if ((turbo && STD_STRCMP(argv[3], "turbo")) ||
-        (turbo && vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK)) {
+        (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK)) {
         goto fail;
     }
     thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
@@ -76,15 +76,15 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         Sleep(10u);
     }
-    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
-    if (!vm_session_control_wait_for_pause(&session->control, 2000u)) goto fail;
+    vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
+    if (!vm_machine_control_wait_for_pause(&session->control, 2000u)) goto fail;
     if (!prompt_seen) prompt_seen = has_dos_prompt(session);
     if (!prompt_seen) {
         dump_first_fault(session->core_machine);
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
-    vm_session_stop(session);
+    vm_machine_stop(session);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0) {
@@ -97,11 +97,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
 fail:
     if (session != STD_NULL) dump_first_fault(session->core_machine);
-    vm_session_stop(session);
+    vm_machine_stop(session);
     integration_yaml_session_close(&yaml_session);
     return 1;
 }
-static C_INT has_dos_prompt(const vm_session *session)
+static C_INT has_dos_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;

@@ -17,7 +17,7 @@ struct vm_product_console_context {
     C_CHAR **arguments;
     C_INT exit_requested;
     C_CHAR command_buffer[0x100];
-    const vm_session_machine_provider *machine_provider;
+    const vm_product_machine_provider *machine_provider;
     vm_product_session_catalog *catalog;
     vm_product_console_host *console_host;
     vm_product_control *control;
@@ -60,7 +60,7 @@ static C_VOID vm_product_console_push(vm_product_console_context *context,
 }
 
 static C_VOID vm_product_console_report_lifecycle(C_VOID *opaque,
-    vm_session_lifecycle lifecycle)
+    vm_machine_lifecycle lifecycle)
 {
     vm_product_control_fact fact = {0};
 
@@ -99,12 +99,12 @@ static C_VOID vm_product_console_write_lifecycle(vm_product_console_context *con
     state = vm_product_control_note_lifecycle(context->control,
         fact->value.lifecycle);
     if (context->presentation != STD_NULL) {
-        if (fact->value.lifecycle == VM_SESSION_RUNNING) {
+        if (fact->value.lifecycle == VM_MACHINE_RUNNING) {
             (C_VOID)vm_product_presentation_set_window_title(context->presentation,
                 "NXVM (Running)");
             (C_VOID)vm_product_presentation_set_mouse_capturable(context->presentation,
                 TYPE_TRUE);
-        } else if (fact->value.lifecycle == VM_SESSION_PAUSED) {
+        } else if (fact->value.lifecycle == VM_MACHINE_PAUSED) {
             (C_VOID)vm_product_presentation_set_window_title(context->presentation,
                 "NXVM (Paused)");
             (C_VOID)vm_product_presentation_set_mouse_capturable(context->presentation,
@@ -114,7 +114,7 @@ static C_VOID vm_product_console_write_lifecycle(vm_product_console_context *con
                 (C_VOID)vm_product_presentation_set_target(context->presentation,
                     VM_PRODUCT_PRESENTATION_NONE);
             }
-        } else if (fact->value.lifecycle == VM_SESSION_STOPPED) {
+        } else if (fact->value.lifecycle == VM_MACHINE_STOPPED) {
             (C_VOID)vm_product_presentation_set_target(context->presentation,
                 VM_PRODUCT_PRESENTATION_NONE);
         }
@@ -797,7 +797,7 @@ C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 }
 
 C_VOID vm_product_console_main(vm_product_console_context *context,
-                               const vm_session_machine_provider *machine_provider,
+                               const vm_product_machine_provider *machine_provider,
                                const C_CHAR *profile_directory)
 {
     if (context == STD_NULL || machine_provider == STD_NULL ||

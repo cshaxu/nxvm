@@ -10,7 +10,7 @@
 #include "vm/product/version.h"
 
 #include "core/product/banner.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "vm/product/machine_adapter.h"
 #include "vm/product/console.h"
 
@@ -34,8 +34,8 @@ static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session *session = STD_NULL;
-    vm_session_machine_provider machine_provider;
+    vm_machine *session = STD_NULL;
+    vm_product_machine_provider machine_provider;
     vm_product_console_context *console_context = STD_NULL;
     C_CHAR profile_directory[1024];
 
@@ -48,6 +48,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         vm_main_profile_directory(argc, argv, profile_directory,
             sizeof(profile_directory)));
     vm_product_console_context_destroy(console_context);
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return 0;
 }

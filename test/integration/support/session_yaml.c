@@ -4,7 +4,7 @@
 
 #include "test/integration/support/session_yaml.h"
 #include "vm/product/session_factory.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 
 static C_INT integration_yaml_session_find(const C_CHAR *directory,
     const C_CHAR *file_name, vm_product_session_request *out_request)
@@ -55,14 +55,14 @@ type_status integration_yaml_session_restart(integration_yaml_session *session)
 
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (session->session != STD_NULL) {
-        vm_session_destroy(session->session);
+        vm_machine_destroy(session->session);
         session->session = STD_NULL;
     }
-    status = vm_session_create_from_request(&session->request, &session->session);
+    status = vm_machine_create_from_request(&session->request, &session->session);
     if (status != TYPE_STATUS_OK || session->session == STD_NULL) return TYPE_STATUS_FAULT;
     if (session->transform != STD_NULL && session->transform(session,
             session->transform_opaque) != TYPE_STATUS_OK) {
-        vm_session_destroy(session->session);
+        vm_machine_destroy(session->session);
         session->session = STD_NULL;
         return TYPE_STATUS_FAULT;
     }
@@ -151,6 +151,6 @@ type_status integration_yaml_session_overlay_write(integration_yaml_session *ses
 C_VOID integration_yaml_session_close(integration_yaml_session *session)
 {
     if (session == STD_NULL) return;
-    vm_session_destroy(session->session);
+    vm_machine_destroy(session->session);
     STD_MEMSET(session, 0, sizeof(*session));
 }

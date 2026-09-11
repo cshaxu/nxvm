@@ -5,9 +5,9 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/provider_lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/provider_lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
@@ -35,7 +35,7 @@ endforeach()
 string(FIND "${scheduler_source}" "core_machine_rtc_advance" machine_advance_position)
 string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
     machine_binding_position)
-string(FIND "${lifecycle_source}" "vm_session_machine_devices_advance"
+string(FIND "${lifecycle_source}" "vm_machine_devices_advance"
     lifecycle_position)
 string(FIND "${devices_source}" "core_machine_rtc_" device_position)
 string(FIND "${profile_source}" "VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS" profile_position)

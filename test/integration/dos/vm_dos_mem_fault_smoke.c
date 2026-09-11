@@ -4,9 +4,9 @@
 
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/control.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
@@ -16,11 +16,11 @@
 
 static DWORD WINAPI vm_dos_mem_fault_run_machine(C_VOID *opaque)
 {
-    vm_session_control_start(&((vm_session *)opaque)->control);
+    vm_machine_control_start(&((vm_machine *)opaque)->control);
     return 0u;
 }
 
-static C_INT vm_dos_mem_fault_submit_key(vm_session *session,
+static C_INT vm_dos_mem_fault_submit_key(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key)
 {
     core_machine_guest_input_event event = { 0 };
@@ -30,10 +30,10 @@ static C_INT vm_dos_mem_fault_submit_key(vm_session *session,
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = TYPE_TRUE;
-    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+    return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_dos_mem_fault_has_prompt(const vm_session *session)
+static C_INT vm_dos_mem_fault_has_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
@@ -68,7 +68,7 @@ static C_VOID vm_dos_mem_fault_print(const core_machine_cpu_diagnostic *diagnost
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
     DWORD result;
@@ -118,7 +118,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     } else {
         STD_PRINTF("M5:T156:S1:DOS-MEM-NEXT:RUNNING\n");
     }
-    vm_session_stop(session);
+    vm_machine_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
     integration_yaml_session_close(&yaml_session);
@@ -132,7 +132,7 @@ fail:
             TYPE_STATUS_OK && diagnostic.first_fault.valid) {
         vm_dos_mem_fault_print(&diagnostic);
     }
-    if (session != STD_NULL) vm_session_stop(session);
+    if (session != STD_NULL) vm_machine_stop(session);
     if (thread != STD_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

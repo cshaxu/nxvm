@@ -2,9 +2,9 @@
 
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "../support/rom/session_assets.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
@@ -31,7 +31,7 @@ static C_INT vm_no_media_snapshot_has_text(
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_observation observation;
@@ -48,7 +48,7 @@ C_INT main(C_VOID)
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     if (!session->active || session->core_machine == STD_NULL) goto fail;
-    vm_session_reset(session);
+    vm_machine_reset(session);
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (core_machine_capture_observation(session->core_machine,
@@ -94,6 +94,6 @@ C_INT main(C_VOID)
     }
 
 fail:
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return failed;
 }

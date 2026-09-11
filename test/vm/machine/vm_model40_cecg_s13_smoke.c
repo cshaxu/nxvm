@@ -3,14 +3,14 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     t_port *port;
     C_INT failed = 0;
 
@@ -26,12 +26,12 @@ C_INT main(C_VOID)
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) != 0xf0u;
     }
     if (!failed) {
-        vm_session_reset(session);
+        vm_machine_reset(session);
         port = &session->core_machine->executor_port;
         failed |= core_machine_port_read(port,
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) != 0xe0u;
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (!failed) {
         STD_PRINTF("M5:T386:S13:MODEL40-INPUT-STATUS-0:OK\n");
         return 0;

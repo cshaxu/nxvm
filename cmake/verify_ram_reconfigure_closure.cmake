@@ -5,9 +5,9 @@ get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" ABSOLUTE)
 
 set(machine_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
 set(memory_source "${PROJECT_SOURCE_DIR}/src/core/machine/memory.c")
-set(session_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c")
+set(machine_runtime_source "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c")
 
-foreach(file IN ITEMS "${machine_source}" "${memory_source}" "${session_source}")
+foreach(file IN ITEMS "${machine_source}" "${memory_source}" "${machine_runtime_source}")
     if(NOT EXISTS "${file}")
         message(FATAL_ERROR "M5 T174 missing RAM closure source: ${file}")
     endif()
@@ -15,7 +15,7 @@ endforeach()
 
 file(READ "${machine_source}" machine)
 file(READ "${memory_source}" memory)
-file(READ "${session_source}" session)
+file(READ "${machine_runtime_source}" machine_runtime)
 
 foreach(required IN ITEMS "core_machine_reconfigure_memory"
     "CORE_MACHINE_STOPPED" "core_machine_cold_reset")
@@ -32,10 +32,10 @@ foreach(forbidden IN ITEMS "core_machine_memory_real_address" "pBase")
     endif()
 endforeach()
 
-string(FIND "${session}" "core_machine_reconfigure_memory" core_route)
-string(FIND "${session}" "STD_MEMSET(session, 0, sizeof(*session))" session_rebuild)
-if(core_route EQUAL -1 OR NOT session_rebuild EQUAL -1)
-    message(FATAL_ERROR "M5 T174 session RAM route is not core-owned")
+string(FIND "${machine_runtime}" "core_machine_reconfigure_memory" core_route)
+string(FIND "${machine_runtime}" "STD_MEMSET(machine, 0, sizeof(*machine))" machine_rebuild)
+if(core_route EQUAL -1 OR NOT machine_rebuild EQUAL -1)
+    message(FATAL_ERROR "M5 T174 VM machine RAM route is not core-owned")
 endif()
 
 file(GLOB_RECURSE source_files "${PROJECT_SOURCE_DIR}/src/*.c"

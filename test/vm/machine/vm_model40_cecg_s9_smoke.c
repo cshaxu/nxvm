@@ -3,14 +3,14 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
@@ -34,13 +34,13 @@ C_INT main(C_VOID)
             CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0xa5u;
     }
     if (!failed) {
-        vm_session_reset(session);
+        vm_machine_reset(session);
         failed |= core_machine_port_read(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x40u ||
             (core_machine_port_read(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_STATUS) & 0x06u) != 0x04u;
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (!failed) {
         STD_PRINTF("M5:T386:S9:MODEL40-CECG:OK\n");
         return 0;

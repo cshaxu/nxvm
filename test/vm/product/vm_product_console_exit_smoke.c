@@ -31,7 +31,7 @@ static type_status vm_product_console_exit_stop(C_VOID *context)
 
 int main(C_VOID)
 {
-    vm_session_machine_provider machine_provider = {0};
+    vm_product_machine_provider machine_provider = {0};
     vm_product_console_context *console_context = STD_NULL;
     STD_FILE *input = STD_NULL;
     C_INT saved_stdin = -1;

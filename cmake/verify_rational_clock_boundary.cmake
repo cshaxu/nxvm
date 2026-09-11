@@ -8,11 +8,11 @@ set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/clock.c" clock_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/execution_provider.h"
     provider_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/provider_lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/provider_lifecycle.c"
     provider_lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile_private.h"
     profile_header)
@@ -36,9 +36,9 @@ foreach(forbidden IN ITEMS "pit_elapsed_tick_remainder"
 endforeach()
 
 string(FIND "${provider_header}" "advance_time" provider_position)
-string(FIND "${lifecycle_source}" "vm_session_execution_provider_advance_time"
+string(FIND "${lifecycle_source}" "vm_machine_execution_provider_advance_time"
     lifecycle_position)
-string(FIND "${provider_lifecycle_source}" "vm_session_machine_devices_advance"
+string(FIND "${provider_lifecycle_source}" "vm_machine_devices_advance"
     provider_lifecycle_position)
 string(FIND "${devices_source}" "core_machine_rtc_advance" cmos_position)
 string(FIND "${machine_source}" "core_machine_rtc_advance" rtc_position)

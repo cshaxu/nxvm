@@ -4,8 +4,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
 /* DeskPro firmware performs a complete multi-pass RAM verification before its
@@ -558,7 +558,7 @@ static type_bool model40_capture_c0a_reached(
 }
 
 static type_bool model40_capture_has_fdc_read_data(
-    const model40_retirement_capture *capture, const vm_session *session)
+    const model40_retirement_capture *capture, const vm_machine *session)
 {
     const core_machine_fdc_terminal_observation *observation;
 
@@ -1189,7 +1189,7 @@ static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
 static C_INT model40_capture_synthetic_fdc_read_data_smoke(C_VOID)
 {
     model40_retirement_capture capture = { 0 };
-    vm_session session = { 0 };
+    vm_machine session = { 0 };
 
     capture.checkpoint_reached = TYPE_TRUE;
     capture.post_c0_io_seen = TYPE_TRUE;
@@ -1258,7 +1258,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_cpu_diagnostic diagnostic = { 0 };
     model40_retirement_capture capture = { 0 };
     integration_yaml_session yaml_session = {0};
-    vm_session *session;
+    vm_machine *session;
     type_status status = TYPE_STATUS_OK;
     type_unsigned_32 index;
     type_unsigned_64 elapsed_before_terminal = 0u;
@@ -1319,7 +1319,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            status = vm_session_waiting_advance(session, &result, &advanced);
+            status = vm_machine_waiting_advance(session, &result, &advanced);
             if (status != TYPE_STATUS_OK || !advanced) break;
         }
         if (capture.last_software_interrupt_valid &&

@@ -7,10 +7,10 @@
 #include "core/machine/machine.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/control.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
@@ -18,11 +18,11 @@
 
 static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
 {
-    vm_session_control_start(&((vm_session *)opaque)->control);
+    vm_machine_control_start(&((vm_machine *)opaque)->control);
     return 0u;
 }
 
-static C_INT vm_t287_submit_input(vm_session *session,
+static C_INT vm_t287_submit_input(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
     core_machine_guest_input_event event = { 0 };
@@ -32,10 +32,10 @@ static C_INT vm_t287_submit_input(vm_session *session,
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed != 0;
-    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+    return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
+static C_INT vm_t287_has_text(const vm_machine *session, const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
@@ -54,7 +54,7 @@ static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
     return 0;
 }
 
-static const C_CHAR *vm_t287_wait_for_text(const vm_session *session,
+static const C_CHAR *vm_t287_wait_for_text(const vm_machine *session,
     const C_CHAR *first, const C_CHAR *second, DWORD timeout)
 {
     DWORD elapsed;
@@ -62,7 +62,7 @@ static const C_CHAR *vm_t287_wait_for_text(const vm_session *session,
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (vm_t287_has_text(session, first)) return first;
         if (second != STD_NULL && vm_t287_has_text(session, second)) return second;
-        if (elapsed >= 500u && !vm_session_control_is_running(&session->control)) {
+        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             return STD_NULL;
         }
         Sleep(10u);
@@ -70,7 +70,7 @@ static const C_CHAR *vm_t287_wait_for_text(const vm_session *session,
     return STD_NULL;
 }
 
-static C_INT vm_t287_wait_for_hdc_command(const vm_session *session,
+static C_INT vm_t287_wait_for_hdc_command(const vm_machine *session,
     DWORD timeout)
 {
     DWORD elapsed;
@@ -78,7 +78,7 @@ static C_INT vm_t287_wait_for_hdc_command(const vm_session *session,
     if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (session->core_machine->hdc.data.command_count != 0u) return 1;
-        if (elapsed >= 500u && !vm_session_control_is_running(&session->control)) {
+        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             return 0;
         }
         Sleep(10u);
@@ -86,27 +86,27 @@ static C_INT vm_t287_wait_for_hdc_command(const vm_session *session,
     return 0;
 }
 
-static C_VOID vm_t287_submit_key(const vm_session *session, type_unsigned_16 scan_code,
+static C_VOID vm_t287_submit_key(const vm_machine *session, type_unsigned_16 scan_code,
     type_unsigned_16 virtual_key)
 {
     if (session == STD_NULL) return;
-    if (!vm_t287_submit_input((vm_session *)session, scan_code, virtual_key, 1)) return;
+    if (!vm_t287_submit_input((vm_machine *)session, scan_code, virtual_key, 1)) return;
     Sleep(25u);
-    (C_VOID)vm_t287_submit_input((vm_session *)session, scan_code, virtual_key, 0);
+    (C_VOID)vm_t287_submit_input((vm_machine *)session, scan_code, virtual_key, 0);
     Sleep(25u);
 }
 
-static C_VOID vm_t287_submit_colon(const vm_session *session)
+static C_VOID vm_t287_submit_colon(const vm_machine *session)
 {
     if (session == STD_NULL) return;
-    if (!vm_t287_submit_input((vm_session *)session, 0x2au, VK_SHIFT, 1)) return;
+    if (!vm_t287_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 1)) return;
     Sleep(25u);
     vm_t287_submit_key(session, 0x27u, VK_OEM_1);
-    (C_VOID)vm_t287_submit_input((vm_session *)session, 0x2au, VK_SHIFT, 0);
+    (C_VOID)vm_t287_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 0);
     Sleep(25u);
 }
 
-static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
+static C_VOID vm_t287_report(const vm_machine *session, const C_CHAR *stage)
 {
     core_machine_guest_display_frame frame;
     core_machine_cpu_diagnostic diagnostic = {0};
@@ -116,7 +116,7 @@ static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
     if (session == STD_NULL) return;
     STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
-        vm_session_control_is_running(&session->control),
+        vm_machine_control_is_running(&session->control),
         session->core_machine->hdc.data.command_count,
         session->core_machine->hdc.data.last_command);
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
@@ -149,7 +149,7 @@ static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
     }
 }
 
-static C_VOID vm_t287_report_frame(const vm_session *session)
+static C_VOID vm_t287_report_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     STD_SIZE_T row;
@@ -170,7 +170,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session = {0};
     HANDLE thread = STD_NULL;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     type_unsigned_8 hdd_count = 0u;
     type_unsigned_8 hdd_bda[4] = {0};
     C_UINT ata_commands = 0u;
@@ -226,7 +226,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) == TYPE_STATUS_OK) hdd_count = hdd_bda[1];
     ata_commands = session->core_machine->hdc.data.command_count;
-    vm_session_control_stop(&session->control);
+    vm_machine_control_stop(&session->control);
     WaitForSingleObject(thread, 2000u);
     vm_t287_report_frame(session);
     CloseHandle(thread);
@@ -241,7 +241,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
 fail:
     vm_t287_report(session, stage);
-    if (session != STD_NULL) vm_session_stop(session);
+    if (session != STD_NULL) vm_machine_stop(session);
     if (thread != STD_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

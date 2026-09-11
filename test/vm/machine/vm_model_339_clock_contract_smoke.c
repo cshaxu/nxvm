@@ -2,8 +2,8 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 #include "../support/rom/session_assets.h"
 
@@ -13,17 +13,17 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         vm_profile_ibm_5170_model_339_descriptor_get();
     const vm_profile_default_pc_at_descriptor *generic =
         vm_profile_default_pc_at_descriptor_get();
-    const vm_session_config config = {
-        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339
+    const vm_machine_config config = {
+        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
     };
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     core_machine_time_observation time_observation;
     C_INT failed = 0;
 
     if (model_339 == STD_NULL || generic == STD_NULL ||
         vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) {
-        vm_session_destroy(session);
+        vm_machine_destroy(session);
         return 1;
     }
 
@@ -104,7 +104,7 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         time_observation.pacing_ticks_per_second != 8000000u ||
         time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u;
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return failed;
 }
 

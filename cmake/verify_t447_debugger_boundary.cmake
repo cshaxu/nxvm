@@ -3,9 +3,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/debug/debug.h" interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_private.h" session)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_private.h" session)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/product/machine_adapter.c" product)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/debug_target.c" composition)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/debug_target.c" composition)
 
 foreach(forbidden
     "typedef struct core_debug_context {"

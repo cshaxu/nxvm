@@ -3,13 +3,13 @@
 #include "core/machine/hdc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "vm/machine/hdd.h"
 #include "../support/rom/model40_session_assets.h"
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
 
-static C_INT read_first_sector(vm_session *session, type_unsigned_8 drive_head,
+static C_INT read_first_sector(vm_machine *session, type_unsigned_8 drive_head,
     type_unsigned_16 expected_word)
 {
     core_machine_hdc *hdc;
@@ -51,7 +51,7 @@ static C_INT read_first_sector(vm_session *session, type_unsigned_8 drive_head,
 C_INT main(C_VOID)
 {
     type_unsigned_8 *image = (type_unsigned_8 *)STD_CALLOC(1u, MODEL40_HDC_BYTES);
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT failed = image == STD_NULL;
 
     if (!failed) {
@@ -69,7 +69,7 @@ C_INT main(C_VOID)
             !read_first_sector(session, 0x20u, 0x5aa5u) ||
             !read_first_sector(session, 0xa0u, 0x5aa5u);
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     STD_FREE(image);
     if (failed) return 1;
     STD_PRINTF("M5:T386:S26:MODEL40-HDC-MEMORY-MEDIA:OK\n");

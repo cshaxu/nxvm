@@ -10,8 +10,9 @@ NXVM does not retain a wrapper, compatibility copy, or local lib patch.
 ## Ownership
 
 - Core remains the sole owner of copied guest display snapshots.
-- `vm/composition/session` owns one session's execution, Core snapshot capture,
-  guest-input submission and actual lifecycle acknowledgements.
+- `vm/machine` owns one machine's execution, Core snapshot capture,
+  guest-input submission and actual lifecycle acknowledgements through its
+  ordered executor FIFO and copied result sink.
 - `vm/product` owns process-wide command/control arbitration and the application
   presentation policy.  It alone binds an actual session to a lib Window or
   Console surface and formats product-visible completion text.
@@ -93,7 +94,7 @@ allowed.
    migration. It is neither an implementation requirement nor a compatibility
    path.
 4. **S4 - single-session convergence.** NXVM's product owns exactly one
-   `vm_session`; it has no runtime session manager, selected-session state,
+   `vm_machine`; it has no runtime session manager, selected-session state,
    session id, or `SESSION LIST/OPEN/SELECT/CLOSE` command surface. Startup
    resolves one YAML request before the product control loop begins. Reset,
    stop and profile construction remain VM/composition concerns. Core still

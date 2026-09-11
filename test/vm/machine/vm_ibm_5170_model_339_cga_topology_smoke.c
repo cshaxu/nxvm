@@ -3,19 +3,19 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT vm_model_339_cga_topology(C_VOID)
 {
-    const vm_session_config config = {
-        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339
+    const vm_machine_config config = {
+        .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
     };
     core_machine_display_snapshot snapshot;
     type_unsigned_8 value = 0x5au;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT failed = vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
 
@@ -43,13 +43,13 @@ static C_INT vm_model_339_cga_topology(C_VOID)
             &value, sizeof(value)) != TYPE_STATUS_OK) << 11 |
         (core_machine_memory_read(session->core_machine, 0x000a0000u,
             &value, sizeof(value)) != TYPE_STATUS_OK || value != 0xffu) << 12;
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return failed;
 }
 
 static C_INT vm_default_ega_topology(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT failed = vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
 
@@ -63,7 +63,7 @@ static C_INT vm_default_ega_topology(C_VOID)
             CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 4) |
         (!session->core_machine->shared_vadp.data.ega_sequencer_configured << 5) |
         (!session->core_machine->shared_vadp.data.ega_controller_configured << 6);
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return failed;
 }
 

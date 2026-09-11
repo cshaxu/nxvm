@@ -5,8 +5,8 @@ endif()
 set(machine_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c")
 set(machine_lifecycle_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
 set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c")
-set(session_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c")
-set(composition_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c")
+set(session_source "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c")
+set(composition_source "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c")
 set(fixture "${PROJECT_SOURCE_DIR}/test/core/machine/core_machine_controller_authority_smoke.c")
 foreach(source IN ITEMS "${machine_source}" "${machine_lifecycle_source}" "${machine_plan_source}" "${session_source}" "${composition_source}" "${fixture}")
     if(NOT EXISTS "${source}")
@@ -30,10 +30,10 @@ foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_h
     endif()
 endforeach()
 
-file(GLOB_RECURSE vm_composition_sources
-    "${PROJECT_SOURCE_DIR}/src/vm/composition/*.c"
-    "${PROJECT_SOURCE_DIR}/src/vm/composition/*.h")
-foreach(source IN LISTS vm_composition_sources)
+file(GLOB_RECURSE vm_machine_sources
+    "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/*.c"
+    "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/*.h")
+foreach(source IN LISTS vm_machine_sources)
     file(READ "${source}" source_text)
     foreach(forbidden IN ITEMS "core_machine_configuration_fdc_borrow"
         "core_machine_configuration_hdc_borrow"
@@ -51,7 +51,7 @@ foreach(source IN LISTS vm_composition_sources)
         "core_machine_hdc_port_provider" "core_machine_install_port_provider")
         string(FIND "${source_text}" "${forbidden}" position)
         if(NOT position EQUAL -1)
-            message(FATAL_ERROR "T296 S4 VM composition retains controller authority: ${source}: ${forbidden}")
+            message(FATAL_ERROR "T296 S4 VM machine retains controller authority: ${source}: ${forbidden}")
         endif()
     endforeach()
 endforeach()

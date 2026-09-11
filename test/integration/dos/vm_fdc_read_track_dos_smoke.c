@@ -6,8 +6,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_FDC242_BOOT_BUDGET 6000000u
@@ -119,10 +119,10 @@ static type_status vm_fdc242_install_on_overlay(
     C_INT installed;
 
     if (yaml_session == STD_NULL || expected == STD_NULL ||
-        integration_yaml_session_overlay_read(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+        integration_yaml_session_overlay_read(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
             (C_VOID **)&image, &size) != TYPE_STATUS_OK || size > MAXDWORD) return TYPE_STATUS_FAULT;
     installed = vm_fdc242_install(image, (DWORD)size) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
             image, size) == TYPE_STATUS_OK;
     if (installed) STD_MEMCPY(expected, image, VM_FDC242_TRACK_BYTES);
     STD_FREE(image);
@@ -140,7 +140,7 @@ static C_INT vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
     return 0;
 }
 
-static C_INT vm_fdc242_run_until(vm_session *session, type_unsigned_32 limit,
+static C_INT vm_fdc242_run_until(vm_machine *session, type_unsigned_32 limit,
     type_unsigned_32 quantum, C_INT require_marker)
 {
     core_machine_run_budget budget = {quantum, 0u}; core_machine_run_result result;
@@ -151,7 +151,7 @@ static C_INT vm_fdc242_run_until(vm_session *session, type_unsigned_32 limit,
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
-            (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
             !advanced)) return 0;
         used += budget.instructions;
         /* Both the prompt and the test program's marker persist.  Sampling
@@ -180,7 +180,7 @@ static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
     type_unsigned_32 quantum, vm_fdc242_result *out_result)
 {
     static const type_unsigned_8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     type_unsigned_16 program_cs = 0u;
     STD_SIZE_T index;
     C_INT ok = 0;
@@ -188,7 +188,7 @@ static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
     if (yaml_session == STD_NULL || out_result == STD_NULL || quantum == 0u ||
         integration_yaml_session_restart(yaml_session) != TYPE_STATUS_OK) goto done;
     session = yaml_session->session;
-    vm_session_state_start(session->control.state);
+    vm_machine_executor_state_start(session->control.state);
     if (!vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
         session->core_machine, command[index]) != TYPE_STATUS_OK) goto done;
@@ -203,7 +203,7 @@ static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
         sizeof(out_result->off_result)) != TYPE_STATUS_OK) goto done;
     ok = 1;
 done:
-    if (session != STD_NULL) vm_session_state_stop(session->control.state);
+    if (session != STD_NULL) vm_machine_executor_state_stop(session->control.state);
     return ok;
 }
 

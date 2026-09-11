@@ -3,9 +3,9 @@
 #include "core/machine/entry_plan_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/guest_input_interface.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/request_transport.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/executor_fifo.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_KBC_AUX_BOOT_BUDGET 500000u
@@ -37,13 +37,13 @@ static const type_unsigned_8 vm_kbc_aux_irq12_handler[] = {
     0xb0u, 0x20u, 0xe6u, 0xa0u, 0xe6u, 0x20u, 0x5bu, 0x58u, 0xcfu
 };
 
-static C_INT vm_kbc_aux_read_count(vm_session *session, type_unsigned_16 *out_count)
+static C_INT vm_kbc_aux_read_count(vm_machine *session, type_unsigned_16 *out_count)
 {
     return core_machine_memory_read(session->core_machine,
         VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_kbc_aux_run_until_count(vm_session *session, type_unsigned_16 expected)
+static C_INT vm_kbc_aux_run_until_count(vm_machine *session, type_unsigned_16 expected)
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
@@ -60,7 +60,7 @@ static C_INT vm_kbc_aux_run_until_count(vm_session *session, type_unsigned_16 ex
 
 C_INT main(C_VOID)
 {
-    const vm_session_config config = {
+    const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
@@ -75,7 +75,7 @@ C_INT main(C_VOID)
         .preloads = preloads,
         .preload_count = sizeof(preloads) / sizeof(preloads[0])
     };
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     type_unsigned_8 bytes[4] = {0};
     type_unsigned_16 count = 0u;
     C_INT passed = 0;
@@ -98,17 +98,17 @@ C_INT main(C_VOID)
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
-        if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK) { stage = 3; goto done; }
+        if (vm_machine_submit_host_input(session, &event) != TYPE_STATUS_OK) { stage = 3; goto done; }
     }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
-    vm_session_request_transport_observe_execution_boundary(session->request_transport);
+    vm_machine_executor_fifo_observe_execution_boundary(session->executor_fifo);
     if (!vm_kbc_aux_run_until_count(session, 4u) ||
         core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, sizeof(bytes)) != TYPE_STATUS_OK || bytes[0] != 0xfau ||
         bytes[1] != 0x29u || bytes[2] != 0x05u || bytes[3] != 0xfdu) { stage = 4; goto done; }
     passed = 1;
 done:
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (!passed) {
         STD_FPRINTF(STD_STDERR, "M5:T515:S3:KBC-AUX-UNIT:stage=%d create=%d plan=%d count=%u bytes=%02X/%02X/%02X/%02X\n",
             stage, create_status, plan_status, count, bytes[0], bytes[1], bytes[2], bytes[3]);

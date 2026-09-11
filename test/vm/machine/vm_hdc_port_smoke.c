@@ -2,9 +2,9 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
-#include "vm/composition/session/media.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/media.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "core/machine/hdc.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "../support/rom/session_assets.h"
@@ -36,7 +36,7 @@ static C_INT vm_hdc_complete_command(core_machine *machine)
     return 1;
 }
 
-static C_INT vm_hdc_program_chs(vm_session *session)
+static C_INT vm_hdc_program_chs(vm_machine *session)
 {
     return vm_hdc_write(session->core_machine, HDC_SECTOR_COUNT_PORT, 1u) &&
         vm_hdc_write(session->core_machine, HDC_SECTOR_NUMBER_PORT, 1u) &&
@@ -45,7 +45,7 @@ static C_INT vm_hdc_program_chs(vm_session *session)
         vm_hdc_write(session->core_machine, HDC_DRIVE_HEAD_PORT, 0u);
 }
 
-static C_INT vm_hdc_program_lba(vm_session *session, type_unsigned_32 lba,
+static C_INT vm_hdc_program_lba(vm_machine *session, type_unsigned_32 lba,
     type_unsigned_8 sector_count)
 {
     return vm_hdc_write(session->core_machine, HDC_SECTOR_COUNT_PORT,
@@ -108,7 +108,7 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
         hdc->bus.task_file.lba28_supported;
 }
 
-static C_INT vm_hdc_progress_probe(vm_session *session)
+static C_INT vm_hdc_progress_probe(vm_machine *session)
 {
     type_unsigned_32 value;
     type_unsigned_16 word;
@@ -147,9 +147,9 @@ static C_INT vm_hdc_progress_probe(vm_session *session)
 
 C_INT main(C_VOID)
 {
-    vm_session_config config = {0};
-    vm_session *session = STD_NULL;
-    vm_session *no_media = STD_NULL;
+    vm_machine_config config = {0};
+    vm_machine *session = STD_NULL;
+    vm_machine *no_media = STD_NULL;
     core_machine_media_info media_info = {0};
     core_machine_media_result media_result = {0};
     type_unsigned_32 value;
@@ -163,7 +163,7 @@ C_INT main(C_VOID)
         session == STD_NULL || session->core_machine == STD_NULL) goto fail;
     invalid_lba = (type_unsigned_32)session->hdd.data.ncyl * session->hdd.data.nhead *
         session->hdd.data.nsector;
-    if (core_machine_media_query(session->media_registry, VM_SESSION_MEDIA_HDD_ID,
+    if (core_machine_media_query(session->media_registry, VM_MACHINE_MEDIA_HDD_ID,
             &media_info, &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK || !media_info.present ||
         media_info.geometry.cylinders != 2u ||
@@ -269,7 +269,7 @@ C_INT main(C_VOID)
         failed = 1;
     }
     if (!failed && !vm_hdc_progress_probe(session)) failed = 1;
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     session = STD_NULL;
 
     if (failed || vm_test_default_pc_at_session_create(STD_NULL, &no_media) != TYPE_STATUS_OK ||
@@ -282,7 +282,7 @@ C_INT main(C_VOID)
         value != CORE_MACHINE_HDC_ERROR_ABORT) {
         failed = 1;
     }
-    vm_session_destroy(no_media);
+    vm_machine_destroy(no_media);
     if (failed) return 1;
     STD_PRINTF("M5:T286:S3:ATA-NIEN:VM-PORT:OK\n");
     STD_PRINTF("M5:T253:S2:ATA-PIO-PROGRESS:PORT:OK lba=%04X irq=14\n",
@@ -290,7 +290,7 @@ C_INT main(C_VOID)
     return 0;
 
 fail:
-    vm_session_destroy(session);
-    vm_session_destroy(no_media);
+    vm_machine_destroy(session);
+    vm_machine_destroy(no_media);
     return 1;
 }

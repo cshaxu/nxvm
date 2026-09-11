@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
 #include "core/machine/fdc.h"
 #include "core/machine/hdc.h"
 #include "core/machine/kbc.h"
@@ -14,11 +14,11 @@ C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_session_config invalid_config = {
-        .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
+    vm_machine_config invalid_config = {
+        .profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
     };
-    vm_session_assets missing_assets = {0};
-    vm_session *session = STD_NULL;
+    vm_machine_assets missing_assets = {0};
+    vm_machine *session = STD_NULL;
     core_machine_cpu_profile cpu_profile;
     STD_SIZE_T memory_bytes;
     core_machine_d4_platform_observation d4;
@@ -33,7 +33,7 @@ C_INT main(C_VOID)
 
     even[0x3ff8u] = 0xa5u;
 
-    failed |= vm_session_create_from_assets(&invalid_config, &missing_assets, &session) !=
+    failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
         TYPE_STATUS_OK || session == STD_NULL || !session->model40_private ||
@@ -68,9 +68,9 @@ C_INT main(C_VOID)
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;
         fifo_count = session->core_machine->shared_kbc.data.fifo_count;
-        failed |= vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK;
-        vm_session_request_transport_observe_execution_boundary(
-            session->request_transport);
+        failed |= vm_machine_submit_host_input(session, &event) != TYPE_STATUS_OK;
+        vm_machine_executor_fifo_observe_execution_boundary(
+            session->executor_fifo);
         failed |= session->core_machine->shared_kbc.data.fifo_count != fifo_count;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xa8u);
@@ -96,7 +96,7 @@ C_INT main(C_VOID)
         if (failed) stage = 2;
     }
     if (!failed) {
-        vm_session_reset(session);
+        vm_machine_reset(session);
         failed |= !session->core_machine->auxiliary_pit_configured ||
             !session->core_machine->fdc_configured ||
             session->core_machine->fdc_topology.config.irq != 6u ||
@@ -173,6 +173,6 @@ C_INT main(C_VOID)
     }
     if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-INTEGRATION:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-CONTROLS:OK\n");
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

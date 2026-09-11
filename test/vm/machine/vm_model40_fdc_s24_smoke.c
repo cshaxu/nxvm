@@ -4,8 +4,8 @@
 #include "core/machine/fdc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/fdd.h"
 #include "../support/rom/model40_session_assets.h"
 
@@ -50,7 +50,7 @@ C_INT main(C_VOID)
     static const type_unsigned_8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
     static const type_unsigned_8 read_last[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
     static const type_unsigned_8 read_oob[] = {0xe6u, 0u, 0u, 0u, 16u, 2u, 16u, 0x1bu, 0xffu};
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     core_machine_fdc *fdc = STD_NULL;
     t_port *port = STD_NULL;
     type_unsigned_8 result[7] = {0};
@@ -148,7 +148,7 @@ C_INT main(C_VOID)
             result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
             !session->model40_fdc_terminal_observation_valid ||
             !session->model40_fdc_terminal_observation.successful;
-        vm_session_reset(session);
+        vm_machine_reset(session);
         failed |= session->model40_fdc_terminal_observation_valid;
         model40_fdc_command(fdc, port, read_oob, sizeof(read_oob));
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
@@ -186,7 +186,7 @@ C_INT main(C_VOID)
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
             result[0] != 0x80u || fdc->connect.irq_source.asserted;
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T386:S24:FDC-12MB-LOGICAL:OK\n");
     STD_PRINTF("M5:T386:S24:FDC-DMA2-IRQ6:OK\n");

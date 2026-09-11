@@ -2,9 +2,9 @@
 
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 #include "test/integration/support/session_yaml.h"
 
@@ -29,7 +29,7 @@ static C_INT vm_dos_video_has_prompt(const core_machine_display_snapshot *snapsh
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session;
-    vm_session *session;
+    vm_machine *session;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = {0};
     core_machine_observation observation;
@@ -47,7 +47,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             &yaml_session) != TYPE_STATUS_OK) return 77;
     session = yaml_session.session;
     if (!session->active) goto fail;
-    vm_session_reset(session);
+    vm_machine_reset(session);
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (core_machine_capture_observation(session->core_machine, &observation) !=
@@ -74,7 +74,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) {
                 failed = 1;
                 break;

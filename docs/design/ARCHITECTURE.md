@@ -24,8 +24,8 @@ They are architectural commitments, not current release artifacts.
 ## Modules, Ownership, And Assembly
 
 `core` contains independent `debug`, `machine`, and `product` modules.
-`src/type.*` remains the neutral system-wide foundation below them. `vm` and
-`vdm` each use `machine`, `platform`, `product`, and `profile` modules.
+`src/type.*` remains the neutral system-wide foundation below them. `vm` uses
+`events`, `machine`, `product`, and `profile` modules.
 `mantle` uses `machine`, `platform`, and `product`;
 `dos` may use its own `machine`, `platform`, `product`, and `profile` modules.
 
@@ -73,16 +73,21 @@ Platform integrations report through opaque core contracts. Host policy and
 guest-state mutation occur at the owning product composition boundary, never
 inside a generic platform implementation.
 
-### NXVM Session Control And Presentation
+### NXVM Machine Execution And Presentation
 
-NXVM separates a session's guest execution from process-wide product control.
-`vm/composition/session` owns one session's Core execution, actual lifecycle
-state, copied display capture, and guest-input endpoint.  It neither selects a
-host surface nor owns the process Console.  `vm/product/control` is the sole
-consumer of product commands, host-input facts, lifecycle completions, frame
-facts, and presenter/broker completions.  Every asynchronous record carries a
-session identity and run generation; stale input cannot affect a recreated
-session, while source retirement remains cleanup for its original source.
+NXVM separates one machine's Core execution from product control.
+`vm/machine` is the sole Core assembly and executor owner. Its one ordered
+executor FIFO consumes copied input and lifecycle requests at execution
+boundaries; its sole result sink publishes copied lifecycle, debugger, fault,
+and display facts. It neither selects a host surface nor owns the process
+Console. `vm/events` is a value-only ABI below both machine and future product
+owners: it contains no Core, executor, session, or UI pointer.
+
+`vm/product/control` is the temporary product consumer while the admitted
+`vm/session` reducer is introduced. It may translate copied machine facts, but
+cannot access Core or become a second executor route. S11 removes this
+temporary lifecycle/presentation adapter rather than preserving it as a
+compatibility path.
 
 For each session, `vm/product/presentation` owns the one lib Console or Window
 binding.  Product control derives a desired presentation state from completed

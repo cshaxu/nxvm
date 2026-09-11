@@ -3,13 +3,13 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "../support/rom/session_assets.h"
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     t_port *port;
     C_INT masked = TYPE_FALSE;
     C_INT failed = 0;
@@ -27,7 +27,7 @@ C_INT main(C_VOID)
         masked) {
         failed = 1;
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     puts("M5:T264:S3:PCAT-OWNERSHIP:OK");
     return 0;

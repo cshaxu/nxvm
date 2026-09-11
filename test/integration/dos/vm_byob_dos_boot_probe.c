@@ -12,11 +12,11 @@
 #include "core/machine/retirement_observation_interface.h"
 #include "core/machine/trace_interface.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/composition/session/control.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/control.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 
 #define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 90000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u
@@ -70,10 +70,10 @@ typedef struct vm_byob_boot_trace {
         model40_video_special_history[VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY];
     type_unsigned_64 model40_video_special_history_count;
     type_unsigned_8 cmos_index;
-    type_unsigned_64 cmos_reads[VM_SESSION_CMOS_SEED_BYTES];
-    type_unsigned_64 cmos_writes[VM_SESSION_CMOS_SEED_BYTES];
-    type_unsigned_8 cmos_last_values[VM_SESSION_CMOS_SEED_BYTES];
-    type_unsigned_32 cmos_last_write_pc[VM_SESSION_CMOS_SEED_BYTES];
+    type_unsigned_64 cmos_reads[VM_MACHINE_CMOS_SEED_BYTES];
+    type_unsigned_64 cmos_writes[VM_MACHINE_CMOS_SEED_BYTES];
+    type_unsigned_8 cmos_last_values[VM_MACHINE_CMOS_SEED_BYTES];
+    type_unsigned_32 cmos_last_write_pc[VM_MACHINE_CMOS_SEED_BYTES];
     type_unsigned_64 xt_ppi_port_accesses;
     type_unsigned_64 pic_port_accesses;
     type_unsigned_64 pit_port_accesses;
@@ -1535,7 +1535,7 @@ static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *sn
     return 0;
 }
 
-static C_INT vm_byob_send_f1(vm_session *session, C_INT pressed,
+static C_INT vm_byob_send_f1(vm_machine *session, C_INT pressed,
     type_unsigned_8 *out_scan_set)
 {
     core_machine_guest_input_event event = {0};
@@ -1550,7 +1550,7 @@ static C_INT vm_byob_send_f1(vm_session *session, C_INT pressed,
     event.data.key.scan_code = 0x3bu;
     event.data.key.virtual_key = 0x70u;
     event.data.key.pressed = pressed != 0;
-    return vm_session_submit_host_input(session, &event) == TYPE_STATUS_OK;
+    return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
 }
 
 static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
@@ -1649,7 +1649,7 @@ int main(C_INT argc, C_CHAR **argv)
        guest instruction is stalled behind an unbounded Core wait path. */
     core_machine_run_budget budget = {256u, 256u};
     integration_yaml_session yaml_session = {0};
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
     core_machine_cpu_diagnostic diagnostic;
@@ -1739,9 +1739,9 @@ int main(C_INT argc, C_CHAR **argv)
     if (session == STD_NULL) goto done;
     /* A diagnostic must begin at the same reset boundary as the delivery
        runner.  Construction performs an initial Core reset, but
-       vm_session_start() deliberately performs another full session reset
+       vm_machine_start() deliberately performs another full session reset
        before it runs guest code. */
-    if (vm_session_reset(session) != TYPE_STATUS_OK) {
+    if (vm_machine_reset(session) != TYPE_STATUS_OK) {
         STD_PRINTF("BOOT-PROBE=reset-failed\n");
         goto done;
     }
@@ -1807,7 +1807,7 @@ int main(C_INT argc, C_CHAR **argv)
             trace.int15_linear = (type_unsigned_32)segment * 16u + offset;
         }
     }
-    if (turbo && vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) != TYPE_STATUS_OK) {
+    if (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK) {
         STD_PRINTF("BOOT-PROBE=setup-failed\n");
         goto done;
     }
@@ -1842,7 +1842,7 @@ int main(C_INT argc, C_CHAR **argv)
             goto done;
         }
     }
-    vm_session_state_start(session->control.state);
+    vm_machine_executor_state_start(session->control.state);
     started = GetTickCount64();
     progress = started;
     next_display_capture = started;
@@ -1866,7 +1866,7 @@ int main(C_INT argc, C_CHAR **argv)
         /* This probe drives Core directly, so it explicitly executes the
          * production runner's command boundary before each Core quantum.
          * Host input stays ordered and Core remains the only state mutator. */
-        vm_session_execution_context_run_command_boundary(
+        vm_machine_execution_context_run_command_boundary(
             &session->control.execution_context);
         if (core_machine_run(session->core_machine, run_budget, &result) != TYPE_STATUS_OK) {
             type_unsigned_8 fault_bytes[4] = {0u};
@@ -1972,7 +1972,7 @@ int main(C_INT argc, C_CHAR **argv)
                 cpu.cs_base + cpu.eip < 0x00100000u;
             waiting_in_low_memory = cpu.cs_base + cpu.eip < 0x00040000u;
             waiting_linear_pc = cpu.cs_base + cpu.eip;
-            if (vm_session_waiting_advance(session, &result, &advanced) !=
+            if (vm_machine_waiting_advance(session, &result, &advanced) !=
                 TYPE_STATUS_OK) {
                 STD_PRINTF("BOOT-PROBE=run-failed\n");
                 goto done;
@@ -3150,7 +3150,7 @@ done:
         {
             type_unsigned_8 index;
 
-            for (index = 0u; index < VM_SESSION_CMOS_SEED_BYTES; ++index) {
+            for (index = 0u; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
                 if (trace.cmos_reads[index] != 0u || trace.cmos_writes[index] != 0u) {
                     STD_PRINTF("BOOT-PROBE=cmos-%02X-r=%llu-w=%llu-last=%02X-write-pc=%05X\n",
                         (unsigned int)index,

@@ -2,11 +2,11 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c" lifecycle)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/rom/external_pc_at.c" provider)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c" lifecycle)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/rom/external_pc_at.c" provider)
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 
-foreach(required "vm_session_external_pc_at_rom_provider"
+foreach(required "vm_machine_external_pc_at_rom_provider"
         "core_machine_bind_firmware_provider")
     string(FIND "${lifecycle}" "${required}" position)
     if(position EQUAL -1)

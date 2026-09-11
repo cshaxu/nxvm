@@ -2,9 +2,9 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 #include "../support/rom/session_assets.h"
@@ -12,7 +12,7 @@
 static C_INT pcat_topology_registry_matches_profile(
     const vm_profile_default_pc_at_descriptor *profile)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     const vm_profile_default_pc_at_route *pit_route;
     const vm_profile_default_pc_at_route *keyboard_route;
     const vm_profile_default_pc_at_route *aux_route;
@@ -23,7 +23,7 @@ static C_INT pcat_topology_registry_matches_profile(
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || session->core_machine == STD_NULL) {
-        vm_session_destroy(session);
+        vm_machine_destroy(session);
         return 1;
     }
     for (index = 0u; index < profile->port_leaf_count; ++index) {
@@ -82,7 +82,7 @@ static C_INT pcat_topology_registry_matches_profile(
             0x03f3u) ||
         core_machine_port_has_write(&session->core_machine->executor_port,
             0x03f3u);
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return failed;
 }
 
@@ -118,7 +118,7 @@ static C_INT pcat_topology_rejects_before_registration(
 {
     vm_profile_default_pc_at_descriptor invalid = *source;
     vm_profile_default_pc_at_port_leaf leaves[96];
-    vm_session session = {0};
+    vm_machine session = {0};
 
     if (source->port_leaf_count > sizeof(leaves) / sizeof(leaves[0])) return 1;
     STD_MEMCPY(leaves, source->port_leaves,
@@ -138,12 +138,12 @@ static C_INT pcat_topology_rejects_before_registration(
         invalid.kbc_typematic_repeat_ticks;
     session.core_machine_config.kbc_command_response_ticks =
         invalid.kbc_command_response_ticks;
-    if (vm_session_initialize(&session) != TYPE_STATUS_INVALID_ARGUMENT ||
+    if (vm_machine_initialize(&session) != TYPE_STATUS_INVALID_ARGUMENT ||
         session.active || session.core_machine != STD_NULL) {
-        vm_session_finalize(&session);
+        vm_machine_finalize(&session);
         return 1;
     }
-    vm_session_finalize(&session);
+    vm_machine_finalize(&session);
     return 0;
 }
 

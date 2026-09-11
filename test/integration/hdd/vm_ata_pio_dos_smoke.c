@@ -5,9 +5,9 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/hdc.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/composition/session/waiting.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 
 #define VM_ATA253_BOOT_BUDGET 800000u
 #define VM_ATA253_RUN_BUDGET 400000u
@@ -185,18 +185,18 @@ static type_status vm_ata253_install_on_overlay(
 
     (C_VOID)opaque;
     if (yaml_session == STD_NULL || integration_yaml_session_overlay_read(yaml_session,
-            VM_SESSION_MEDIA_FDD_ID, (C_VOID **)&fdd_image, &fdd_size) != TYPE_STATUS_OK ||
-        integration_yaml_session_overlay_read(yaml_session, VM_SESSION_MEDIA_HDD_ID,
+            VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&fdd_image, &fdd_size) != TYPE_STATUS_OK ||
+        integration_yaml_session_overlay_read(yaml_session, VM_MACHINE_MEDIA_HDD_ID,
             (C_VOID **)&hdd_image, &hdd_size) != TYPE_STATUS_OK || fdd_size > MAXDWORD ||
         hdd_size > MAXDWORD || !vm_ata253_install(fdd_image, (DWORD)fdd_size) ||
-        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
             fdd_image, fdd_size) != TYPE_STATUS_OK) {
         STD_FREE(fdd_image);
         STD_FREE(hdd_image);
         return TYPE_STATUS_FAULT;
     }
     ok = vm_ata253_zero_image(hdd_image, (DWORD)hdd_size) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_HDD_ID,
+        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_HDD_ID,
             hdd_image, hdd_size) == TYPE_STATUS_OK;
     STD_FREE(fdd_image);
     STD_FREE(hdd_image);
@@ -286,7 +286,7 @@ static C_INT vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
     return 0;
 }
 
-static C_INT vm_ata253_run_until(vm_session *session, type_unsigned_32 limit,
+static C_INT vm_ata253_run_until(vm_machine *session, type_unsigned_32 limit,
     type_unsigned_8 marker)
 {
     const core_machine_run_budget budget = { 128u, 0u };
@@ -302,7 +302,7 @@ static C_INT vm_ata253_run_until(vm_session *session, type_unsigned_32 limit,
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) return 0;
         }
         if (marker != 0u ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
@@ -318,7 +318,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static const type_unsigned_8 command[] = { 0x1cu, 0x2cu, 0x1cu, 0x1eu, 0x2eu,
         0x26u, 0x5au };
     integration_yaml_session yaml_session;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     STD_SIZE_T index;
     C_INT passed = 0;
 

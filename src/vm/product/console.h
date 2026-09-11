@@ -22,7 +22,7 @@ extern "C"
 
     /* Entry point of product console */
 C_VOID vm_product_console_main(vm_product_console_context *context,
-                               const vm_session_machine_provider *machine_provider,
+                               const vm_product_machine_provider *machine_provider,
                                const C_CHAR *profile_directory);
 
 #ifdef __cplusplus

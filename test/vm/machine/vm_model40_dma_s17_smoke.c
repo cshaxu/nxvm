@@ -3,14 +3,14 @@
 #include "core/machine/dma.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT failed = 0;
 
     if (vm_model40_fixture_create(&session) != TYPE_STATUS_OK ||
@@ -54,7 +54,7 @@ C_INT main(C_VOID)
         goto done;
     }
 
-    vm_session_reset(session);
+    vm_machine_reset(session);
     if (session->core_machine->shared_dma_primary.data.request != 0u ||
         session->core_machine->shared_dma_secondary.data.request != 0u ||
         session->core_machine->shared_dma_primary.data.mask != VDMA_MASK_VALID ||
@@ -65,7 +65,7 @@ C_INT main(C_VOID)
     }
 
 done:
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T386:S17:DUAL-DMA-TOPOLOGY:OK\n");
     STD_PRINTF("M5:T386:S17:DMA-WORD-CASCADE:OK\n");

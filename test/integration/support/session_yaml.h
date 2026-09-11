@@ -2,8 +2,8 @@
 #define TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 
 #include "core/machine/media_interface.h"
-#include "vm/composition/session/media.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/media.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "vm/product/session_catalog.h"
 
 typedef struct integration_yaml_session integration_yaml_session;
@@ -13,7 +13,7 @@ typedef type_status (*integration_yaml_session_overlay_transform)(
 
 struct integration_yaml_session {
     vm_product_session_request request;
-    vm_session *session;
+    vm_machine *session;
     integration_yaml_session_overlay_transform transform;
     C_VOID *transform_opaque;
 };

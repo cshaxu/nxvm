@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "../support/rom/model40_session_assets.h"
 
 static C_INT read_byte(core_machine *machine, type_unsigned_32 physical,
@@ -39,7 +39,7 @@ C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     core_machine_d4_platform_observation d4;
     type_unsigned_32 port_value = 0u;
     C_INT failed = 0;
@@ -194,6 +194,6 @@ C_INT main(C_VOID)
     if (!failed) STD_PRINTF("M5:T386:S16:D4-SOLE-ROM-OWNER:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S16:D4-RESET-ALIAS:OK\n");
     if (!failed) STD_PRINTF("M5:T390:S29:MODEL40-ROM-DECODE:OK\n");
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

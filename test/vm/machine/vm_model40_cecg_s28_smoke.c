@@ -5,19 +5,19 @@
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
-static C_INT t386_s28_session_write(vm_session *session, type_unsigned_8 value)
+static C_INT t386_s28_session_write(vm_machine *session, type_unsigned_8 value)
 {
     return core_machine_memory_write_physical(&session->core_machine->executor_memory,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, (type_virtual_address)&value,
         sizeof(value)) == TYPE_STATUS_OK;
 }
 
-static C_VOID t386_s28_select_ega_320(vm_session *session)
+static C_VOID t386_s28_select_ega_320(vm_machine *session)
 {
     core_machine_port_write(&session->core_machine->executor_port,
         CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
@@ -39,7 +39,7 @@ static C_VOID t386_s28_select_ega_320(vm_session *session)
 
 C_INT main(C_VOID)
 {
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     core_machine_display_snapshot snapshot;
     core_machine_display_snapshot_observation observation;
     C_INT failed = 0;
@@ -75,7 +75,7 @@ C_INT main(C_VOID)
         }
     }
     if (!failed) {
-        vm_session_reset(session);
+        vm_machine_reset(session);
         t386_s28_select_ega_320(session);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
@@ -84,7 +84,7 @@ C_INT main(C_VOID)
         failed |= !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u;
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) {
         STD_FPRINTF(STD_STDERR, "M5:T386:S28:MODEL40-CECG-ODD-EVEN:FAIL\n");
         return 1;

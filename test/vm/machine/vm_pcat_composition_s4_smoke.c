@@ -3,16 +3,16 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 #include "../../core/support/core_machine_cpu_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT vm_pcat_s4_topology_matches(
-    const vm_session *session,
+    const vm_machine *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
     const vm_profile_default_pc_at_route *pit_route;
@@ -85,16 +85,16 @@ static C_INT vm_pcat_s4_topology_matches(
     return failed;
 }
 
-static C_INT vm_pcat_s4_reset_state_matches(vm_session *session,
+static C_INT vm_pcat_s4_reset_state_matches(vm_machine *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
     core_machine_timeline_observation timeline;
-    vm_session_reset_vector vector;
+    vm_machine_reset_vector vector;
     C_INT nmi_masked = TYPE_TRUE;
 
     return session == STD_NULL || session->core_machine == STD_NULL ||
         !session->active ||
-        vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
+        vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u ||
         core_machine_get_timeline_observation(session->core_machine,
             &timeline) != TYPE_STATUS_OK ||
@@ -106,7 +106,7 @@ static C_INT vm_pcat_s4_reset_state_matches(vm_session *session,
 }
 
 static C_INT vm_pcat_s4_reset_rearms_selected_machine(
-    vm_session *session,
+    vm_machine *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
     static const type_unsigned_8 nop = 0x90u;
@@ -130,7 +130,7 @@ static C_INT vm_pcat_s4_reset_rearms_selected_machine(
         0x0070u, 0x80u);
     if (core_machine_get_nmi_mask(session->core_machine, &nmi_masked) !=
             TYPE_STATUS_OK || !nmi_masked) return 1;
-    vm_session_reset(session);
+    vm_machine_reset(session);
     return vm_pcat_s4_reset_state_matches(session, profile);
 }
 
@@ -138,19 +138,19 @@ C_INT main(C_VOID)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT failed;
 
     if (profile == STD_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
         vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) {
-        vm_session_destroy(session);
+        vm_machine_destroy(session);
         return 1;
     }
     failed = vm_pcat_s4_reset_state_matches(session, profile) != 0 ||
         vm_pcat_s4_reset_rearms_selected_machine(session, profile) != 0;
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T353:S4:PCAT-COMPOSITION:OK\n");
     return 0;

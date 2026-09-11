@@ -4,8 +4,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/memory_interface.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
 #include "../support/rom/session_assets.h"
@@ -53,11 +53,11 @@ C_INT main(C_VOID)
     static const type_unsigned_8 read_track[] = {
         0x42u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x12u, 0x1bu, 0xffu
     };
-    const vm_session_config config = {
+    const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     t_port *port;
     core_machine_run_result run = {0};
     type_unsigned_8 expected[512u * 18u];
@@ -74,7 +74,7 @@ C_INT main(C_VOID)
     stage = '1';
     vm_fdc_t242_boot_loop();
     {
-        vm_session_config fixture_config = config;
+        vm_machine_config fixture_config = config;
         if (vm_test_default_pc_at_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
             session == STD_NULL) goto done;
         if (vm_machine_fdd_replace_bytes(&session->fdd, vm_fdc_t242_image,
@@ -173,7 +173,7 @@ done:
         final_intr = session->core_machine->fdc.data.flagINTR;
         final_phase = session->core_machine->fdc.data.phase;
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed || session == STD_NULL) {
         STD_FPRINTF(STD_STDERR,
             "T242 read-track failed at %c, reason=%d, executed=%llu data=%02x/%02x result=%02x %02x %02x %02x %02x %02x %02x intr=%d phase=%d\n",

@@ -20,8 +20,8 @@
 
 #include "vm/product/machine_adapter.h"
 #include "vm/product/session_factory.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "vm/product/console.h"
 #include "vm/product/session_catalog.h"
 
@@ -47,15 +47,15 @@ static C_INT session_choice(const C_CHAR *directory, const C_CHAR *file_name)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session *session = STD_NULL;
-    vm_session_machine_provider machine_provider;
+    vm_machine *session = STD_NULL;
+    vm_product_machine_provider machine_provider;
     vm_product_console_context *console_context = STD_NULL;
     STD_FILE *input = STD_NULL;
     C_CHAR commands[128];
     C_INT saved_stdin = -1;
     C_INT choice;
     C_INT result = 1;
-    vm_session_speed speed = VM_SESSION_SPEED_STANDARD;
+    vm_machine_speed speed = VM_MACHINE_SPEED_STANDARD;
 
     if (argc != 2 || (choice = session_choice(argv[1], "ibm-5170-model-339-1200k.yaml")) == 0 ||
         (input = tmpfile()) == STD_NULL ||
@@ -71,9 +71,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_product_machine_provider_initialize(&machine_provider, &session);
     if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
     vm_product_console_main(console_context, &machine_provider, argv[1]);
-    if (session == STD_NULL || vm_session_get_speed(session, &speed) != TYPE_STATUS_OK ||
-        speed != VM_SESSION_SPEED_TURBO ||
-        session->retained_config.profile_kind != VM_SESSION_PROFILE_IBM_5170_MODEL_339 ||
+    if (session == STD_NULL || vm_machine_get_speed(session, &speed) != TYPE_STATUS_OK ||
+        speed != VM_MACHINE_SPEED_TURBO ||
+        session->retained_config.profile_kind != VM_MACHINE_PROFILE_IBM_5170_MODEL_339 ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) {
         goto done;
     }
@@ -85,7 +85,7 @@ done:
     }
     STD_FCLOSE(input);
     vm_product_console_context_destroy(console_context);
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (result == 0) STD_PRINTF("M5:T515:S3:CONSOLE-YAML-LIFECYCLE:OK\n");
     return result;
 }

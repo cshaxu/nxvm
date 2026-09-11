@@ -3,8 +3,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)
@@ -12,11 +12,11 @@ C_INT main(C_VOID)
     type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
     type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     type_unsigned_8 video[VM_PROFILE_MODEL40_VIDEO_ROM_BYTES] = {0};
-    type_unsigned_8 cmos_seed[VM_SESSION_CMOS_SEED_BYTES];
-    vm_session_config config = {0};
-    vm_session_assets assets = {0};
-    vm_session *session = STD_NULL;
-    vm_session_reset_vector reset_vector = {0};
+    type_unsigned_8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
+    vm_machine_config config = {0};
+    vm_machine_assets assets = {0};
+    vm_machine *session = STD_NULL;
+    vm_machine_reset_vector reset_vector = {0};
     core_machine_run_result result = {0};
     core_machine_time_observation time_observation = {0};
     STD_SIZE_T memory_bytes = 0u;
@@ -31,14 +31,14 @@ C_INT main(C_VOID)
     video[1u] = 0xaau;
     video[2u] = 0x20u;
     video[sizeof(video) - 1u] = 0xe1u;
-    config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
+    config.profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.bios_count = 2u;
     vm_model40_fixture_cmos_seed(cmos_seed);
-    assets.bios[0u] = (vm_session_asset_bytes) { even, sizeof(even) };
-    assets.bios[1u] = (vm_session_asset_bytes) { odd, sizeof(odd) };
-    assets.video = (vm_session_asset_bytes) { video, sizeof(video) };
-    assets.cmos_seed = (vm_session_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    failed |= vm_session_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    assets.bios[0u] = (vm_machine_asset_bytes) { even, sizeof(even) };
+    assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
+    assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
+    assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
         session == STD_NULL ||
         !session->model40_private || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
@@ -73,10 +73,10 @@ C_INT main(C_VOID)
         VM_PROFILE_MODEL40_VIDEO_ROM_COMPATIBILITY_ALIAS_START +
             VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES, &observed_memory,
         sizeof(observed_memory)) != TYPE_STATUS_OK || observed_memory != video_body_byte);
-    failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
+    failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     retained_memory_bytes = session->retained_config.memory_bytes;
-    failed |= !failed && vm_session_reconfigure_memory(session, 2u * 1024u * 1024u) !=
+    failed |= !failed && vm_machine_reconfigure_memory(session, 2u * 1024u * 1024u) !=
         TYPE_STATUS_INVALID_STATE;
     failed |= !failed && (core_machine_get_memory_bytes(session->core_machine,
         &memory_bytes) != TYPE_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
@@ -88,15 +88,15 @@ C_INT main(C_VOID)
     failed |= !failed && (core_machine_reset(session->core_machine) != TYPE_STATUS_OK ||
         core_machine_advance_time(session->core_machine, 1u) != TYPE_STATUS_OK ||
         session->core_machine->shared_pit.data.reload[1u] != 18u);
-    failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
+    failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     even[0u] = 2u;
     failed |= !failed && (session->model40_rom.even_bytes[0] != 0u ||
         session->model40_rom.odd_bytes[0] != 1u);
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     session = STD_NULL;
     config.memory_bytes = 2u * 1024u * 1024u;
-    failed |= vm_session_create_from_assets(&config, &assets, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
         session != STD_NULL;
     config.memory_bytes = 0u;
     if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\nM5:T440:S1:MODEL40-IMMUTABLE-CONFIGURATION:OK\n");

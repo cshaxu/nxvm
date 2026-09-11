@@ -3,10 +3,10 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_private.h"
-#include "vm/composition/session/waiting.h"
+#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/runtime/waiting.h"
 #include "core/machine/guest_input_interface.h"
-#include "vm/composition/session/request_transport.h"
+#include "vm/machine/executor_fifo.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 800000u
@@ -235,12 +235,12 @@ static type_status vm_mouse_dos_install_on_overlay(
     C_INT installed;
 
     if (yaml_session == STD_NULL || bytes_offset == STD_NULL ||
-        integration_yaml_session_overlay_read(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+        integration_yaml_session_overlay_read(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
             (C_VOID **)&image, &image_size) != TYPE_STATUS_OK || image_size > MAXDWORD) {
         return TYPE_STATUS_FAULT;
     }
     installed = vm_mouse_dos_install_program(image, (DWORD)image_size, bytes_offset) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_SESSION_MEDIA_FDD_ID,
+        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
             image, image_size) == TYPE_STATUS_OK;
     STD_FREE(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
@@ -260,7 +260,7 @@ static C_INT vm_mouse_dos_has_prompt(const core_machine_display_snapshot *snapsh
     return 0;
 }
 
-static C_INT vm_mouse_dos_run_until(vm_session *session, type_unsigned_32 limit,
+static C_INT vm_mouse_dos_run_until(vm_machine *session, type_unsigned_32 limit,
     type_unsigned_8 wanted)
 {
     core_machine_run_budget budget = { 128u, 0u };
@@ -276,7 +276,7 @@ static C_INT vm_mouse_dos_run_until(vm_session *session, type_unsigned_32 limit,
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) return 0;
         }
         if (wanted == 0u ? vm_mouse_dos_has_prompt(&snapshot) :
@@ -287,7 +287,7 @@ static C_INT vm_mouse_dos_run_until(vm_session *session, type_unsigned_32 limit,
     return 0;
 }
 
-static C_INT vm_mouse_dos_run_until_packet(vm_session *session,
+static C_INT vm_mouse_dos_run_until_packet(vm_machine *session,
     type_unsigned_32 buffer_address, const type_unsigned_8 expected[17])
 {
     core_machine_run_budget budget = { 1u, 0u };
@@ -304,7 +304,7 @@ static C_INT vm_mouse_dos_run_until_packet(vm_session *session,
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
 
-            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
                 !advanced) return 0;
         }
         if (STD_MEMCMP(actual, expected, sizeof(actual)) == 0) return 1;
@@ -317,7 +317,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static const type_unsigned_8 command[] = { 0x3au, 0x44u, 0x3cu, 0x1bu, 0x24u,
         0x1eu, 0x25u, 0x16u, 0x5au };
     integration_yaml_session yaml_session;
-    vm_session *session;
+    vm_machine *session;
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
     static const type_unsigned_8 expected[] = {
@@ -355,10 +355,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
-        if (vm_session_submit_host_input(session, &event) !=
+        if (vm_machine_submit_host_input(session, &event) !=
             TYPE_STATUS_OK) goto done;
     }
-    vm_session_request_transport_observe_execution_boundary(session->request_transport);
+    vm_machine_executor_fifo_observe_execution_boundary(session->executor_fifo);
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
             TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||

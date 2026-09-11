@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(session_dir "${PROJECT_SOURCE_DIR}/src/vm/composition/session")
+set(session_dir "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime")
 set(coordinator "${session_dir}/provider_lifecycle.c")
 set(devices "${session_dir}/machine_devices.c")
 set(firmware "${session_dir}/rom/external_pc_at.c")
@@ -22,7 +22,7 @@ if(EXISTS "${session_dir}/providers.c" OR EXISTS "${session_dir}/providers.h"
 endif()
 
 file(READ "${coordinator}" coordinator_source)
-foreach(forbidden IN ITEMS "vm_machine_" "vm_profile_default_"
+foreach(forbidden IN ITEMS "vm_profile_default_" "core_machine_"
     "core_machine_executor_" "core_machine_shared_")
     string(FIND "${coordinator_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)

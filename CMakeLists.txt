@@ -156,93 +156,93 @@ add_executable(vm-default-pc-at-profile-smoke
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
 add_executable(vm-pcat-topology-s2-smoke
     test/vm/machine/vm_pcat_topology_s2_smoke.c)
-target_link_libraries(vm-pcat-topology-s2-smoke PRIVATE vm-composition)
+target_link_libraries(vm-pcat-topology-s2-smoke PRIVATE vm-machine)
 add_executable(vm-pcat-composition-s4-smoke
     test/vm/machine/vm_pcat_composition_s4_smoke.c)
-target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-composition)
+target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-machine)
 add_executable(vm-ibm-5170-model-339-composition-smoke
     test/vm/machine/vm_ibm_5170_model_339_composition_smoke.c)
-target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-composition)
+target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-machine)
 add_executable(vm-model40-private-composition-s7-smoke
     test/vm/machine/vm_model40_private_composition_s7_smoke.c)
-target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cmos-seed-smoke
     test/vm/machine/vm_model40_cmos_seed_smoke.c)
-target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-machine)
 add_executable(vm-model40-integration-s8-smoke
     test/vm/machine/vm_model40_integration_s8_smoke.c)
-target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s9-smoke
     test/vm/machine/vm_model40_cecg_s9_smoke.c)
-target_link_libraries(vm-model40-cecg-s9-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-cecg-s9-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s10-smoke
     test/vm/machine/vm_model40_cecg_s10_smoke.c)
-target_link_libraries(vm-model40-cecg-s10-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-cecg-s10-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s11-smoke
     test/vm/machine/vm_model40_cecg_s11_smoke.c)
-target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s12-smoke
     test/vm/machine/vm_model40_cecg_s12_smoke.c)
-target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s13-smoke
     test/vm/machine/vm_model40_cecg_s13_smoke.c)
-target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s28-smoke
     test/vm/machine/vm_model40_cecg_s28_smoke.c)
-target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-machine)
 add_executable(vm-model40-rom-layout-s14-smoke
     test/vm/profile/model40/rom/model40_rom_layout_s14_smoke.c)
-target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-machine)
 add_executable(vm-model40-d4-compatibility-s25-smoke
     test/vm/machine/vm_model40_d4_compatibility_s25_smoke.c)
-target_link_libraries(vm-model40-d4-compatibility-s25-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-d4-compatibility-s25-smoke PRIVATE vm-machine)
 add_executable(vm-model40-d4-map-s16-smoke
     test/vm/machine/vm_model40_d4_map_s16_smoke.c)
-target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-machine)
 add_executable(vm-model40-d4-parity-s22-smoke
     test/vm/machine/vm_model40_d4_parity_s22_smoke.c)
-target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-machine)
 add_executable(vm-model40-fdc-s24-smoke
     test/vm/machine/vm_model40_fdc_s24_smoke.c)
-target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-machine)
 add_executable(vm-model40-d4-skey-s23-smoke
     test/vm/machine/vm_model40_d4_skey_s23_smoke.c)
-target_link_libraries(vm-model40-d4-skey-s23-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-d4-skey-s23-smoke PRIVATE vm-machine)
 add_executable(vm-model40-dma-s17-smoke
     test/vm/machine/vm_model40_dma_s17_smoke.c)
-target_link_libraries(vm-model40-dma-s17-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-dma-s17-smoke PRIVATE vm-machine)
 add_executable(vm-model40-fdd-s18-smoke
     test/vm/machine/vm_model40_fdd_s18_smoke.c)
-target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-machine)
 add_executable(vm-model40-byob-s20-smoke
     test/vm/machine/vm_model40_byob_s20_smoke.c)
-target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-machine)
 add_executable(vm-model40-byob-retirement-capture
     test/integration/model40/vm_model40_retirement_capture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-yaml-support)
 add_executable(vm-model40-byob-boot-media-s5-smoke
     test/vm/machine/vm_model40_byob_boot_media_s5_smoke.c)
-target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-machine)
 add_executable(vm-model40-hdc-s26-smoke
     test/vm/machine/vm_model40_hdc_s26_smoke.c)
-target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-machine)
 add_executable(vm-model40-console-s20-smoke
     test/integration/product/vm_model40_console_s20_smoke.c
     src/vm/product/console.c
     test/vm/product/console_host_fake.c)
-target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-composition)
+target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-machine)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
-target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-composition)
+target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-machine)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/vm/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
-target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-composition)
+target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-machine)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     test/vm/profile/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
-target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-composition)
+target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-machine)
 add_executable(vm-hdc-port-smoke test/vm/machine/vm_hdc_port_smoke.c)
-target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
+target_link_libraries(vm-hdc-port-smoke PRIVATE vm-machine)
 add_executable(vm-media-provider-smoke test/vm/machine/vm_media_provider_smoke.c)
 target_link_libraries(vm-media-provider-smoke PRIVATE vm-machine core-machine)
 add_executable(vm-media-direct-readonly-smoke
@@ -252,11 +252,11 @@ add_executable(vm-hdc-hdd-boot-smoke test/integration/hdd/vm_hdc_hdd_boot_smoke.
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-default-pc-at-apply-smoke
     test/vm/machine/vm_default_pc_at_apply_smoke.c)
-target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
+target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-machine)
 
 add_executable(vm-default-pc-at-rom-materialization-smoke
     test/vm/profile/default_pc_at/rom/default_pc_at_rom_materialization_smoke.c)
-target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-composition)
+target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-machine)
 add_executable(vm-timer-firmware-smoke
     test/integration/dos/vm_timer_firmware_smoke.c)
 target_link_libraries(vm-timer-firmware-smoke PRIVATE integration-session-yaml-support)
@@ -264,7 +264,7 @@ add_executable(vm-product-default-profile-smoke test/integration/dos/nxvm_defaul
 target_link_libraries(vm-product-default-profile-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-product-console-smoke
     test/vm/product/nxvm_console_smoke.c
-    test/vm/product/support/vm_session_console.c)
+    test/vm/product/support/vm_machine_console.c)
 target_include_directories(vm-product-console-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
@@ -273,30 +273,30 @@ add_executable(vm-product-console-lifecycle-smoke
     src/vm/product/console.c
     test/vm/product/console_host_fake.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
-    vm-product vm-composition)
+    vm-product vm-machine)
 add_executable(vm-yaml-cmos-seed-smoke
     test/integration/product/vm_yaml_cmos_seed_smoke.c)
 target_link_libraries(vm-yaml-cmos-seed-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-product-session-catalog-smoke
-    test/vm/product/nxvm_session_catalog_smoke.c)
+    test/vm/product/nxvm_machine_catalog_smoke.c)
 target_link_libraries(vm-product-session-catalog-smoke PRIVATE vm-product)
-add_executable(vm-product-session-smoke test/vm/machine/nxvm_session_smoke.c)
-target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
-add_executable(vm-session-initialization-atomicity-smoke
-    test/vm/machine/vm_session_initialization_atomicity_smoke.c)
-target_link_libraries(vm-session-initialization-atomicity-smoke PRIVATE vm-composition)
-add_executable(vm-session-reconfigure-smoke
-    test/vm/machine/nxvm_session_reconfigure_smoke.c)
-target_link_libraries(vm-session-reconfigure-smoke PRIVATE vm-composition)
-add_executable(vm-session-media-lifecycle-s3-smoke
-    test/vm/machine/vm_session_media_lifecycle_s3_smoke.c)
-target_link_libraries(vm-session-media-lifecycle-s3-smoke PRIVATE vm-composition)
-add_executable(vm-session-speed-policy-smoke
-    test/vm/machine/vm_session_speed_policy_smoke.c)
-target_link_libraries(vm-session-speed-policy-smoke PRIVATE vm-composition)
+add_executable(vm-product-session-smoke test/vm/machine/nxvm_machine_smoke.c)
+target_link_libraries(vm-product-session-smoke PRIVATE vm-machine)
+add_executable(vm-machine-initialization-atomicity-smoke
+    test/vm/machine/vm_machine_initialization_atomicity_smoke.c)
+target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-machine)
+add_executable(vm-machine-reconfigure-smoke
+    test/vm/machine/nxvm_machine_reconfigure_smoke.c)
+target_link_libraries(vm-machine-reconfigure-smoke PRIVATE vm-machine)
+add_executable(vm-machine-media-lifecycle-s3-smoke
+    test/vm/machine/vm_machine_media_lifecycle_s3_smoke.c)
+target_link_libraries(vm-machine-media-lifecycle-s3-smoke PRIVATE vm-machine)
+add_executable(vm-machine-speed-policy-smoke
+    test/vm/machine/vm_machine_speed_policy_smoke.c)
+target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-machine)
 add_executable(vm-timing-qualification-smoke
     test/vm/machine/vm_timing_qualification_smoke.c)
-target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-composition)
+target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-machine)
 add_executable(vm-profile-resolver-smoke
     test/vm/machine/vm_profile_resolver_smoke.c)
 target_link_libraries(vm-profile-resolver-smoke PRIVATE vm-profile)
@@ -305,7 +305,7 @@ add_executable(vm-ibm-5170-root-resolver-smoke
 target_link_libraries(vm-ibm-5170-root-resolver-smoke PRIVATE vm-profile)
 add_executable(vm-xt-5160-268-profile-smoke
     test/vm/machine/vm_xt_5160_268_profile_smoke.c)
-target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-composition)
+target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-machine)
 
 target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
 
@@ -1117,7 +1117,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-session-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-machine-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1192,28 +1192,29 @@ set(CORE_DEBUG_SOURCES
     src/core/debug/xasm32/aasm32.c
     src/core/debug/xasm32/dasm32.c
 )
-set(VM_COMPOSITION_SOURCES
-    src/vm/composition/session/debug_target.c
-    src/vm/composition/session/media.c
-    src/vm/composition/session/display.c
-    src/vm/composition/session/lifecycle.c
-    src/vm/composition/session/session.c
-    src/vm/composition/session/control.c
-    src/vm/composition/session/fault.c
-    src/vm/composition/session/execution.c
-    src/vm/composition/session/runner.c
-    src/vm/composition/session/session_state.c
-    src/vm/composition/session/waiting.c
-    src/vm/composition/session/provider_lifecycle.c
-    src/vm/composition/session/machine_devices.c
-    src/vm/composition/session/model40_composition.c
-    src/vm/composition/session/rom/external_pc_at.c
-    src/vm/composition/session/machine_info.c
+set(VM_MACHINE_RUNTIME_SOURCES
+    src/vm/machine/runtime/debug_target.c
+    src/vm/machine/runtime/media.c
+    src/vm/machine/runtime/display.c
+    src/vm/machine/runtime/lifecycle.c
+    src/vm/machine/runtime/machine.c
+    src/vm/machine/runtime/control.c
+    src/vm/machine/runtime/fault.c
+    src/vm/machine/runtime/execution.c
+    src/vm/machine/runtime/runner.c
+    src/vm/machine/runtime/executor_state.c
+    src/vm/machine/runtime/waiting.c
+    src/vm/machine/runtime/provider_lifecycle.c
+    src/vm/machine/runtime/machine_devices.c
+    src/vm/machine/runtime/model40_composition.c
+    src/vm/machine/runtime/rom/external_pc_at.c
+    src/vm/machine/runtime/machine_info.c
 )
 set(VM_MACHINE_SOURCES
     src/vm/machine/fdd.c
     src/vm/machine/hdd.c
     src/vm/machine/debug.c
+    ${VM_MACHINE_RUNTIME_SOURCES}
 )
 set(CORE_MACHINE_SOURCES
     src/core/machine/display.c
@@ -1239,33 +1240,33 @@ target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-machine-boundary PUBLIC type-facade host)
-add_library(vm-session-requests STATIC
-    src/vm/composition/session/request_bridge.c
+add_library(vm-machine-executor-queue STATIC
+    src/vm/machine/executor_queue.c
 )
-target_include_directories(vm-session-requests PUBLIC
+target_include_directories(vm-machine-executor-queue PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-session-requests PUBLIC type-facade)
-add_executable(vm-session-request-bridge-smoke
-    test/vm/composition/vm_session_request_bridge_smoke.c
+target_link_libraries(vm-machine-executor-queue PUBLIC type-facade)
+add_executable(vm-machine-executor-queue-smoke
+    test/vm/machine/vm_machine_executor_queue_smoke.c
 )
-target_link_libraries(vm-session-request-bridge-smoke PRIVATE
-    vm-session-requests
+target_link_libraries(vm-machine-executor-queue-smoke PRIVATE
+    vm-machine-executor-queue
 )
-add_library(vm-session-request-transport STATIC
-    src/vm/composition/session/request_transport.c
+add_library(vm-machine-executor-fifo STATIC
+    src/vm/machine/executor_fifo.c
 )
-target_include_directories(vm-session-request-transport PUBLIC
+target_include_directories(vm-machine-executor-fifo PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-session-request-transport PUBLIC
-    vm-session-requests
+target_link_libraries(vm-machine-executor-fifo PUBLIC
+    vm-machine-executor-queue
 )
-add_executable(vm-session-request-transport-smoke
-    test/vm/composition/vm_session_request_transport_smoke.c
+add_executable(vm-machine-executor-fifo-smoke
+    test/vm/machine/vm_machine_executor_fifo_smoke.c
 )
-target_link_libraries(vm-session-request-transport-smoke PRIVATE
-    vm-session-request-transport
+target_link_libraries(vm-machine-executor-fifo-smoke PRIVATE
+    vm-machine-executor-fifo
 )
 
 add_library(core-debug STATIC ${CORE_DEBUG_SOURCES})
@@ -1449,9 +1450,9 @@ add_executable(host-smoke
     test/lib/host_sync_smoke.c
 )
 target_link_libraries(host-smoke PRIVATE host)
-add_executable(vm-session-state-smoke
-    test/vm/composition/vm_session_state_smoke.c)
-target_link_libraries(vm-session-state-smoke PRIVATE vm-composition)
+add_executable(vm-machine-executor-state-smoke
+    test/vm/machine/runtime/vm_machine_executor_state_smoke.c)
+target_link_libraries(vm-machine-executor-state-smoke PRIVATE vm-machine)
 add_executable(storage-smoke test/lib/storage_medium_smoke.c)
 target_link_libraries(storage-smoke PRIVATE storage)
 
@@ -1459,12 +1460,12 @@ add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
 )
 target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
-    vm-composition)
+    vm-machine)
 add_executable(vm-host-cancellation-smoke
     test/vm/machine/vm_host_cancellation_smoke.c
 )
 target_link_libraries(vm-host-cancellation-smoke PRIVATE
-    vm-composition)
+    vm-machine)
 
 
 add_executable(core-machine-guest-presentation-mailbox-smoke
@@ -1473,20 +1474,6 @@ add_executable(core-machine-guest-presentation-mailbox-smoke
 target_link_libraries(core-machine-guest-presentation-mailbox-smoke PRIVATE
     core-machine-boundary)
 
-add_library(vm-composition STATIC ${VM_COMPOSITION_SOURCES})
-target_include_directories(vm-composition PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-composition PUBLIC
-    vm-machine
-    core-machine
-    core-debug
-    core-product
-    vm-profile
-    vm-product
-    vm-session-request-transport)
-target_link_libraries(vm-composition PRIVATE storage)
-
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
 target_include_directories(vm-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -1494,6 +1481,10 @@ target_include_directories(vm-machine PUBLIC
 target_link_libraries(vm-machine PUBLIC
     core-machine
     core-machine-boundary
+    core-debug
+    core-product
+    vm-profile
+    vm-machine-executor-fifo
     storage)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
@@ -1501,7 +1492,7 @@ target_include_directories(vm-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product PUBLIC
-    vm-composition
+    vm-machine
     ui-window
     ui-console
     core-product
@@ -1647,7 +1638,7 @@ target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-machine-
 add_executable(vm-kbc-aux-guest-smoke
     test/vm/machine/vm_kbc_aux_guest_smoke.c
 )
-target_link_libraries(vm-kbc-aux-guest-smoke PRIVATE vm-composition)
+target_link_libraries(vm-kbc-aux-guest-smoke PRIVATE vm-machine)
 add_executable(vm-mouse-driver-dos-smoke
     test/integration/dos/vm_mouse_driver_dos_smoke.c
 )
@@ -1667,7 +1658,9 @@ target_link_libraries(vm-byob-dos-boot-probe PRIVATE integration-session-yaml-su
 add_library(integration-session-yaml-support STATIC
     test/integration/support/session_yaml.c
 )
-target_link_libraries(integration-session-yaml-support PUBLIC vm-composition)
+target_link_libraries(integration-session-yaml-support PUBLIC
+    vm-machine
+    vm-product)
 target_include_directories(integration-session-yaml-support PUBLIC
     "${CMAKE_SOURCE_DIR}"
 )
@@ -1814,11 +1807,11 @@ target_link_libraries(core-machine-compaq-cecg-s28-smoke PRIVATE core-machine)
 add_executable(vm-ega-controller-system-smoke
     test/vm/machine/vm_ega_controller_system_smoke.c
 )
-target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-composition)
+target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-machine)
 add_executable(vm-display-composition-s5-smoke
     test/vm/machine/vm_display_composition_s5_smoke.c
 )
-target_link_libraries(vm-display-composition-s5-smoke PRIVATE vm-composition)
+target_link_libraries(vm-display-composition-s5-smoke PRIVATE vm-machine)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-display-composition-s5-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -1826,7 +1819,7 @@ endif()
 add_executable(vm-ega-sequencer-system-smoke
     test/vm/machine/vm_ega_sequencer_system_smoke.c
 )
-target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-composition)
+target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-machine)
 add_executable(vm-cga-graphics-dos-smoke
     test/integration/dos/vm_cga_graphics_dos_smoke.c
 )
@@ -1843,33 +1836,33 @@ target_compile_definitions(vm-rom-ega-int10-dos-smoke PRIVATE
 target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE integration-session-yaml-support)
 
 add_executable(vm-cmos-rtc-port-smoke test/vm/machine/vm_cmos_rtc_port_smoke.c)
-target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-composition)
+target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-machine)
 add_executable(vm-pcat-ownership-smoke test/vm/machine/vm_pcat_ownership_smoke.c)
-target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-composition)
+target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-machine)
 add_executable(vm-fdc-authority-smoke test/vm/machine/vm_fdc_authority_smoke.c)
-target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-composition)
+target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-machine)
 add_executable(vm-fdc-port-smoke test/vm/machine/vm_fdc_port_smoke.c)
-target_link_libraries(vm-fdc-port-smoke PRIVATE vm-composition)
+target_link_libraries(vm-fdc-port-smoke PRIVATE vm-machine)
 add_executable(vm-fdc-t242-corpus-port-smoke
     test/vm/machine/vm_fdc_t242_corpus_port_smoke.c)
-target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-composition)
+target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-machine)
 add_executable(vm-boot-failure-lifecycle-smoke
     test/vm/machine/vm_boot_failure_lifecycle_smoke.c)
-target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
+target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-machine)
 add_executable(vm-runner-display-cadence-smoke
     test/vm/machine/vm_runner_display_cadence_smoke.c)
-target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
+target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-machine)
 add_executable(vm-console-pause-resume-smoke
     test/vm/machine/vm_console_pause_resume_smoke.c)
-target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-composition)
+target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-machine)
 add_executable(vm-product-machine-adapter-smoke
     test/vm/product/vm_product_machine_adapter_smoke.c)
-target_link_libraries(vm-product-machine-adapter-smoke PRIVATE vm-product vm-composition)
+target_link_libraries(vm-product-machine-adapter-smoke PRIVATE vm-product vm-machine)
 add_executable(vm-dos-video-port-smoke
     test/integration/dos/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-yaml-support)
 add_executable(vm-debug-authority-smoke test/vm/machine/vm_debug_authority_smoke.c)
-target_link_libraries(vm-debug-authority-smoke PRIVATE vm-composition)
+target_link_libraries(vm-debug-authority-smoke PRIVATE vm-machine)
 add_executable(vm-dos-prompt-smoke
     test/integration/dos/vm_dos_prompt_smoke.c)
 target_link_libraries(vm-dos-prompt-smoke PRIVATE
@@ -1884,7 +1877,7 @@ target_link_libraries(vm-dos-mem-fault-smoke PRIVATE
     integration-session-yaml-support)
 add_executable(vm-fault-outcome-runner-smoke
     test/vm/machine/vm_fault_outcome_runner_smoke.c)
-target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-composition)
+target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-machine)
 add_executable(core-machine-cpu-fpu-profile-smoke
     test/core/machine/cpu_fpu_profile_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
@@ -1964,7 +1957,7 @@ add_custom_target(core-machine-lifecycle-ownership-closure
 add_executable(vm-two-session-isolation-smoke
     test/vm/machine/vm_two_session_isolation_smoke.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
-    vm-composition)
+    vm-machine)
 add_executable(vm-debug-pause-boundary-smoke
     test/integration/dos/vm_debug_pause_boundary_smoke.c)
 target_link_libraries(vm-debug-pause-boundary-smoke PRIVATE
@@ -1977,7 +1970,7 @@ add_executable(vm-debug-target-smoke
     test/vm/machine/vm_debug_target_smoke.c
 )
 target_link_libraries(vm-debug-target-smoke PRIVATE
-    vm-composition
+    vm-machine
 )
 add_executable(vm-debugger-recording-lifecycle-smoke
     test/vm/machine/vm_debugger_recording_lifecycle_smoke.c)
@@ -1992,7 +1985,7 @@ add_executable(vm-core-executor-storage-smoke
     test/vm/machine/vm_core_executor_storage_smoke.c
 )
 target_link_libraries(vm-core-executor-storage-smoke PRIVATE
-    vm-composition)
+    vm-machine)
 add_executable(core-machine-executor-run-smoke
     test/core/machine/core_machine_executor_run_smoke.c
 )
@@ -2274,7 +2267,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-entry-plan-smoke
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
-    vm-session-request-transport-smoke
+    vm-machine-executor-fifo-smoke
     std-snprintf-smoke
     core-debug-xasm-smoke
     core-debug-xasm-contract-smoke
@@ -2288,7 +2281,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-machine-adapter-smoke
     core-machine-guest-input-source-smoke
     host-smoke
-    vm-session-state-smoke
+    vm-machine-executor-state-smoke
     storage-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
@@ -2310,10 +2303,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-debug-target-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-product-session-smoke
-    vm-session-initialization-atomicity-smoke
-    vm-session-reconfigure-smoke
-    vm-session-media-lifecycle-s3-smoke
-    vm-session-speed-policy-smoke
+    vm-machine-initialization-atomicity-smoke
+    vm-machine-reconfigure-smoke
+    vm-machine-media-lifecycle-s3-smoke
+    vm-machine-speed-policy-smoke
     vm-timing-qualification-smoke
     vm-profile-resolver-smoke
     vm-ibm-5170-root-resolver-smoke
@@ -2420,7 +2413,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-80386-timing-manifest-runner
     core-machine-debug-smoke
     core-machine-presentation-smoke
-    vm-session-request-bridge-smoke
+    vm-machine-executor-queue-smoke
     core-machine-cpu-context-smoke
     vm-fdc-authority-smoke
     vm-debug-authority-smoke
@@ -3011,7 +3004,7 @@ function(add_current_vm_artifact target version)
         "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(${target} PRIVATE
         vm-product
-        vm-composition)
+        vm-machine)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3283,12 +3276,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
         VERBATIM)
 
-    add_custom_target(verify-vm-session-owner-closure
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_session_owner_closure.cmake"
-        COMMENT "Verifying M5 VM session direct ownership closure"
-        VERBATIM)
-
     add_custom_target(verify-keyboard-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_portal_closure.cmake"
@@ -3343,13 +3330,23 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying independent Core debug boundary"
         VERBATIM)
 
-
-
-    add_custom_target(verify-vm-composition-lifecycle
+    add_custom_target(verify-vm-machine-owner
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_composition_lifecycle.cmake"
-        COMMENT "Verifying VM composition lifecycle closure"
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_machine_owner.cmake"
+        COMMENT "Verifying VM machine executor ownership"
         VERBATIM)
+    list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
+        verify-vm-machine-owner)
+
+
+
+    add_custom_target(verify-vm-machine-lifecycle
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_machine_lifecycle.cmake"
+        COMMENT "Verifying VM machine lifecycle closure"
+        VERBATIM)
+    list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
+        verify-vm-machine-lifecycle)
 
     add_custom_target(verify-fpu-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -3510,7 +3507,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-ata-pio-feature-boundary
     verify-media-sole-route
     verify-core-debug-completion-boundary
-    verify-vm-composition-lifecycle
+    verify-vm-machine-lifecycle
     verify-t344-unit-registration
     verify-t515-integration-yaml-boundary
     verify-t382-unit-aggregate
@@ -3569,11 +3566,11 @@ endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-session-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-machine-executor-fifo PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-machine-executor-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3656,7 +3653,7 @@ file(GENERATE
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
     "type-facade|src/type.c"
     "core-product|src/core/product/config.c"
-    "vm-session-requests|src/vm/composition/session/request_bridge.c")
+    "vm-machine-executor-queue|src/vm/machine/executor_queue.c")
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
 foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
     string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
@@ -3744,22 +3741,22 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/vm/machine/debug.c|vm-machine"
     "vm-product|src/vm/product/session_factory.c|vm-product"
     "vm-product|src/vm/product/machine_adapter.c|vm-product"
-    "vm-composition|src/vm/composition/session/debug_target.c|vm-composition"
-    "vm-composition|src/vm/composition/session/media.c|vm-composition"
-    "vm-composition|src/vm/composition/session/display.c|vm-composition"
-    "vm-composition|src/vm/composition/session/lifecycle.c|vm-composition"
-    "vm-composition|src/vm/composition/session/session.c|vm-composition"
-    "vm-composition|src/vm/composition/session/control.c|vm-composition"
-    "vm-composition|src/vm/composition/session/session_state.c|vm-composition"
-    "vm-composition|src/vm/composition/session/fault.c|vm-composition"
-    "vm-composition|src/vm/composition/session/execution.c|vm-composition"
-    "vm-composition|src/vm/composition/session/runner.c|vm-composition"
-    "vm-composition|src/vm/composition/session/waiting.c|vm-composition"
-    "vm-composition|src/vm/composition/session/provider_lifecycle.c|vm-composition"
-    "vm-composition|src/vm/composition/session/machine_devices.c|vm-composition"
-    "vm-composition|src/vm/composition/session/model40_composition.c|vm-composition"
-    "vm-composition|src/vm/composition/session/rom/external_pc_at.c|vm-composition"
-    "vm-composition|src/vm/composition/session/machine_info.c|vm-composition")
+    "vm-machine|src/vm/machine/runtime/debug_target.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/media.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/display.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/lifecycle.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/machine.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/control.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/executor_state.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/fault.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/execution.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/runner.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/waiting.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/provider_lifecycle.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/machine_devices.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/model40_composition.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/rom/external_pc_at.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/machine_info.c|vm-machine")
 string(REPLACE ";" "\n" project_t345_s4_residual_contents
     "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")
 file(GENERATE
@@ -3774,12 +3771,12 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
     core-machine-executor
     core-machine-boundary
-    vm-session-requests
-    vm-session-request-transport
+    vm-machine-executor-queue
+    vm-machine-executor-fifo
     core-debug
     core-product
     vm-profile
-    vm-composition
+    vm-machine
     vm-machine
     vm-product
     vdm-machine

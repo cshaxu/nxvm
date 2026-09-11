@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "vm/composition/session/session_state.h"
+#include "vm/machine/runtime/executor_state.h"
 #include "core/machine/guest_display_frame.h"
 #include "lib/ui-base/event_interface.h"
 
@@ -24,7 +24,7 @@ typedef struct vm_product_control_fact {
     type_unsigned_32 run_generation;
     union {
         C_CHAR line[1024];
-        vm_session_lifecycle lifecycle;
+        vm_machine_lifecycle lifecycle;
         ui_input_event host_input;
     } value;
 } vm_product_control_fact;
@@ -49,6 +49,6 @@ type_status vm_product_control_take(vm_product_control *control,
     C_UINT timeout_milliseconds);
 C_VOID vm_product_control_close(vm_product_control *control);
 const C_CHAR *vm_product_control_note_lifecycle(vm_product_control *control,
-    vm_session_lifecycle lifecycle);
+    vm_machine_lifecycle lifecycle);
 
 #endif

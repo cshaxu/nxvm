@@ -1,8 +1,8 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "vm/machine/fdd.h"
 #include "../support/rom/session_assets.h"
 
@@ -29,7 +29,7 @@ static C_VOID vm_cga254_boot_fixture(C_VOID)
 
 C_INT main(C_VOID)
 {
-    const vm_session_config config = {
+    const vm_machine_config config = {
         .floppy_image = { "" },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
@@ -37,7 +37,7 @@ C_INT main(C_VOID)
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     type_unsigned_8 mode = 0u;
     type_unsigned_32 instruction;
     C_INT saw_cga = 0;
@@ -45,7 +45,7 @@ C_INT main(C_VOID)
 
     vm_cga254_boot_fixture();
     {
-        vm_session_config fixture_config = config;
+        vm_machine_config fixture_config = config;
 
         if (vm_test_default_pc_at_session_create(&fixture_config, &session) !=
                 TYPE_STATUS_OK || session == STD_NULL ||
@@ -75,7 +75,7 @@ C_INT main(C_VOID)
     }
 
 done:
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (!saw_cga || !saw_text) return 1;
     STD_PRINTF("M5:T254:S3:CGA-640:SYSTEM:OK\n");
     return 0;

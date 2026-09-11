@@ -13,10 +13,10 @@ foreach(forbidden "VM_RUNTIME_SOURCES")
 endforeach()
 
 string(REGEX MATCH
-    "target_link_libraries\\(vm-composition PUBLIC[^\\)]*(user32|gdi32|vm-platform)"
+    "target_link_libraries\\(vm-machine PUBLIC[^\\)]*(user32|gdi32|vm-platform)"
     composition_native "${project_cmake}")
 if(composition_native)
-    message(FATAL_ERROR "T447 vm-composition must not propagate a host-native dependency")
+    message(FATAL_ERROR "T447 vm-machine must not propagate a host-native dependency")
 endif()
 
 string(FIND "${library_cmake}" "target_link_libraries(ui-window PRIVATE user32 gdi32)"

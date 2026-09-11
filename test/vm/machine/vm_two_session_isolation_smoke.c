@@ -1,29 +1,29 @@
 #include "type.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 
 
 
 
 #include "../../core/support/core_machine_cpu_fixture.h"
 
-#include "vm/composition/session/session_interface.h"
+#include "vm/machine/runtime/machine_interface.h"
 
 C_INT main(C_VOID)
 {
-    vm_session *first;
-    vm_session *second;
+    vm_machine *first;
+    vm_machine *second;
     C_INT failed = 0;
 
-    first = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
-    second = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
+    first = ((vm_machine *)STD_CALLOC(1u, sizeof(vm_machine)));
+    second = ((vm_machine *)STD_CALLOC(1u, sizeof(vm_machine)));
     if (first == STD_NULL || second == STD_NULL) {
         STD_FREE(second);
         STD_FREE(first);
         return 1;
     }
 
-    vm_session_storage_initialize(first);
-    vm_session_storage_initialize(second);
+    vm_machine_storage_initialize(first);
+    vm_machine_storage_initialize(second);
 
     vm_machine_debug_initialize(&first->debug);
     vm_machine_debug_initialize(&second->debug);
@@ -34,8 +34,8 @@ C_INT main(C_VOID)
         first->core_machine, second->core_machine);
     failed |= !first->debug.data.flagTrace || second->debug.data.flagTrace;
 
-    vm_session_storage_finalize(second);
-    vm_session_storage_finalize(first);
+    vm_machine_storage_finalize(second);
+    vm_machine_storage_finalize(first);
     STD_FREE(second);
     STD_FREE(first);
 

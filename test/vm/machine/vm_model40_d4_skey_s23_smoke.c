@@ -2,7 +2,7 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)
@@ -11,7 +11,7 @@ C_INT main(C_VOID)
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     core_machine_run_result result;
     type_unsigned_8 high_rom_byte = 0u;
-    vm_session *session = STD_NULL;
+    vm_machine *session = STD_NULL;
     C_INT failed = 0;
 
     odd[0u] = 0xa5u;
@@ -39,7 +39,7 @@ C_INT main(C_VOID)
             result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||
             session->core_machine->executor_memory.data.flagA20;
     }
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T386:S23:D4-SKEY-A20:OK\n");
     STD_PRINTF("M5:T386:S23:CORE-VM-RESET-OWNER:OK\n");

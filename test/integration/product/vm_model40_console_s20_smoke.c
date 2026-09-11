@@ -20,7 +20,7 @@
 
 #include "vm/product/machine_adapter.h"
 #include "vm/product/session_factory.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "vm/product/console.h"
 #include "vm/product/session_catalog.h"
 
@@ -46,8 +46,8 @@ static C_INT model40_choice(const C_CHAR *directory)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session *session = STD_NULL;
-    vm_session_machine_provider machine_provider;
+    vm_machine *session = STD_NULL;
+    vm_product_machine_provider machine_provider;
     vm_product_console_context *console = STD_NULL;
     STD_FILE *input = STD_NULL;
     C_CHAR commands[48];
@@ -70,7 +70,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (!failed) {
         vm_product_console_main(console, &machine_provider, argv[1]);
         failed = session == STD_NULL || session->retained_config.profile_kind !=
-            VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 ||
+            VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 ||
             session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386;
     }
     if (stdin_copy >= 0) {
@@ -79,7 +79,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (input != STD_NULL) STD_FCLOSE(input);
     vm_product_console_context_destroy(console);
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     if (!failed) STD_PRINTF("M5:T515:S3:MODEL40-CONSOLE-YAML:OK\n");
     return failed;
 }

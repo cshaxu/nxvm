@@ -2,10 +2,28 @@
 
 ## Current Work
 
-T526 remains open with no active subtask. S9 is accepted at `bc5f6131`:
-`core/debug`, `core/machine`, and `core/product` are independently buildable;
-the only debug-to-machine binding remains VM composition. The approved S10 VM
-event and executor migration requires its own admission packet before work.
+| Task | Status | Scope |
+| --- | --- | --- |
+| T526 S10 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): establish the value-only VM event ABI and make `vm/machine` the sole Core executor owner. |
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T526 S10. |
+| Admission And Approval | Owner approved the T526 target architecture and its execution on 2026-09-10, including S10's VM event ABI and machine-executor migration. |
+| Objective | Add value-only `vm/events`; move Core assembly, executor request serialization and copied lifecycle/debug/fault/frame publication into `vm/machine`; delete the displaced composition execution route. |
+| Non-goals | No session-control FIFO, presentation migration, Core behavior change, external asset work, compatibility wrapper or second executor route. |
+| Reference Baseline | Accepted T526 S9 at `bc5f6131`; approved target architecture in the retained proposal. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S10. |
+| Files And ABI Surface | `src/vm/{events,machine,product}`, Core/VM CMake targets and mirrored repository-only tests. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
+| Verification | Prove events contain no pointer or policy state; prove Core is accessed only by `vm/machine`; focused execution/fault/display/debug tests, full unit, specialized and documentation gates, and actual-diff review. |
+| Expected Markers | One `vm/machine` executor FIFO, one copied-result sink, no Core access in `vm/session`/future presentation peers, and no retained composition executor route. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the removed owner/routes, request/result dispositions, code-size result and verification evidence. |
+| Stop Conditions | Stop for an event that cannot be expressed as a copied bounded value, a required Core semantic change, or a temporary forwarding route. |
+| Exit Criteria | Value-only events and one machine executor route replace composition ownership; all required tests and gates pass. |
+| Original Owner Request | Converge NXVM lifecycle and product experience with SoftPC while simplifying ownership. |
+| Similar-Issue Sweep | Inventory every Core include, `vm_machine` executor call, request queue and result callback; migrate every live route or delete it. |
 
 ## Current Technical Baseline
 - **Current developer artifacts:** T526 owns the active CMake target

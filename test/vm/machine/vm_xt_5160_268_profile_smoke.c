@@ -3,8 +3,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/runtime/machine_private.h"
 #include "vm/product/session_catalog.h"
 #include "vm/profile/xt/xt_5160_268.h"
 
@@ -198,35 +198,35 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
     static type_unsigned_8 system[VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES];
     static type_unsigned_8 xebec[VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES];
     static type_unsigned_8 video[512] = {0x55u, 0xaau, 1u};
-    vm_session_config config = {
-        .profile_kind = VM_SESSION_PROFILE_IBM_5160_MODEL_268,
+    vm_machine_config config = {
+        .profile_kind = VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
         .bios_count = 1u
     };
-    vm_session_assets assets = { .bios = {
+    vm_machine_assets assets = { .bios = {
         { system, sizeof(system) }, { xebec, sizeof(xebec) }
     }, .video = { video, sizeof(video) } };
-    vm_session *session = STD_NULL;
-    vm_session_reset_vector vector;
+    vm_machine *session = STD_NULL;
+    vm_machine_reset_vector vector;
     type_unsigned_8 observed[2] = {0};
     C_INT failed = 0;
 
-    failed |= STD_STRCMP(vm_session_profile_name(config.profile_kind),
+    failed |= STD_STRCMP(vm_machine_profile_name(config.profile_kind),
         "ibm-5160-model-268") != 0;
-    failed |= vm_session_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
-    failed |= !failed && vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK;
+    failed |= !failed && vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK;
     failed |= !failed && (core_machine_memory_read(session->core_machine, 0x000c0000u,
         observed, sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x55u ||
         observed[1u] != 0xaau);
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     session = STD_NULL;
     config.bios_count = 2u;
-    failed |= vm_session_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
-    vm_session_destroy(session);
+    vm_machine_destroy(session);
     session = STD_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    failed |= vm_session_create_from_assets(&config, &assets, &session) !=
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT;
     return failed;
 }

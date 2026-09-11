@@ -15,7 +15,7 @@ foreach(source IN LISTS vm_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
     machine_devices)
 foreach(required "core_machine_plan_configure_hdc")
     string(FIND "${machine_devices}" "${required}" position)
