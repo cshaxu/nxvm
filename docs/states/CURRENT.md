@@ -2,31 +2,12 @@
 
 ## Current Work
 
-| Task | Status | Scope |
-| --- | --- | --- |
-| T526 S9 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): extract an independent Core debugger module without a compatibility route. |
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T526 S9. |
-| Admission And Approval | Owner approved T526 S9 on 2026-09-10: extract `core/product/debug` into independent `core/debug`, then retain Core debug, machine and product as mutually independent modules. |
-| Objective | Move debugger parsing, target contract, assembler/disassembler and debugger-local text helpers to `core/debug`; leave `core/product` independent; repair VM's sole machine-side debug adapter and delete the old route. |
-| Non-goals | No Core machine semantic change, no debugger command behavior change, no VM queue/session/presentation migration, no external source import, and no compatibility include, alias, forwarding target or duplicate debugger implementation. |
-| Reference Baseline | T526 S8 exact SoftPC library import at `4c3aa7ad`; owner-approved T526 target architecture in the retained proposal; current Core debug/product/machine source and target graph. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S9. |
-| Files And ABI Surface | `src/core/{debug,machine,product}`, Core/VM CMake targets, VM's sole debug target adapter, all tracked Core/VM includes, and mirrored repository-only debugger tests. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
-| Verification | Audit every Core cross-module include/target edge before and after; prove no retained `core/product/debug` path; prove `core/debug`, `core/machine` and `core/product` have no mutual source or target dependency; run focused debugger/VM-adapter tests, complete repository-only unit, current specialized gates, documentation governance and actual-diff review. |
-| Expected Markers | `core/debug` exposes only its neutral typed target contract; `core/product` has no debugger/assembler dependency; VM's one adapter binds Core debug to Core machine; no Core module contains host API, VM type or session pointer. |
-| Asset Needs | None; this is a tracked source/test/documentation reorganization only. |
-| Reporting Requirements | Record the old-to-new symbol/path disposition, remaining Core module edges, removed routes, source/test net change and verification evidence; stop and report any required public behavior change or dependency cycle. |
-| Stop Conditions | Stop for a debugger API that cannot be separated without changing approved command behavior, a discovered Core machine/product coupling with no same-S removal, or any need for a compatibility path. |
-| Exit Criteria | Old debugger files, target names, symbols and include paths are absent; the three Core modules are independently buildable and directionally isolated; VM has exactly one explicit debug-to-machine adapter; required tests and gates pass. |
-| Original Owner Request | Establish `core/debug`, `core/machine` and `core/product` as independent Core modules, then continue the SoftPC-style VM architecture convergence. |
-| Similar-Issue Sweep | Enumerate all `core/{debug,machine,product}` include and CMake target edges, all debugger consumers and all former mixed utility calls; migrate each to its sole final owner or remove it in this S. |
+T526 remains open with no active subtask. S9 is accepted at `bc5f6131`:
+`core/debug`, `core/machine`, and `core/product` are independently buildable;
+the only debug-to-machine binding remains VM composition. The approved S10 VM
+event and executor migration requires its own admission packet before work.
 
 ## Current Technical Baseline
-
 - **Current developer artifacts:** T526 owns the active CMake target
   `vm-0-5-0526`, which emits `nxvm_0_5_0526_x64.exe` and
   `nxvm_0_5_0526_x86.exe` in stripped Release builds. They retain the runtime
