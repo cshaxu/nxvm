@@ -8,7 +8,7 @@
 
 typedef struct vm_product_control_pressed_key {
     lib_u64 source_identity;
-    ux_input_event event;
+    ui_input_event event;
 } vm_product_control_pressed_key;
 
 struct vm_product_control {
@@ -133,7 +133,7 @@ C_UINT vm_product_control_begin_run(vm_product_control *control)
 }
 
 static STD_SIZE_T vm_product_control_pressed_find(const vm_product_control *control,
-    const ux_input_event *event)
+    const ui_input_event *event)
 {
     STD_SIZE_T index;
 
@@ -149,7 +149,7 @@ static STD_SIZE_T vm_product_control_pressed_find(const vm_product_control *cont
 }
 
 static C_VOID vm_product_control_pressed_forget(vm_product_control *control,
-    const ux_input_event *event)
+    const ui_input_event *event)
 {
     STD_SIZE_T index;
 
@@ -160,7 +160,7 @@ static C_VOID vm_product_control_pressed_forget(vm_product_control *control,
 }
 
 static type_status vm_product_control_pressed_remember(vm_product_control *control,
-    const ux_input_event *event)
+    const ui_input_event *event)
 {
     STD_SIZE_T index;
 
@@ -176,7 +176,7 @@ static type_status vm_product_control_pressed_remember(vm_product_control *contr
 }
 
 type_status vm_product_control_dispatch_host_input(vm_product_control *control,
-    const ux_input_event *event, C_INT session_running,
+    const ui_input_event *event, C_INT session_running,
     vm_product_control_input_sink sink, C_VOID *sink_context)
 {
     STD_SIZE_T index = 0u;
@@ -184,7 +184,7 @@ type_status vm_product_control_dispatch_host_input(vm_product_control *control,
 
     if (control == STD_NULL || event == STD_NULL || sink == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
-    if (event->type == UX_EVENT_SOURCE_RETIRED) {
+    if (event->type == UI_EVENT_SOURCE_RETIRED) {
         while (index < control->pressed_count) {
             vm_product_control_pressed_key *pressed = &control->pressed[index];
 
@@ -200,18 +200,18 @@ type_status vm_product_control_dispatch_host_input(vm_product_control *control,
         return status;
     }
     if (!session_running) return TYPE_STATUS_OK;
-    if (event->type == UX_EVENT_KEY && event->data.key.pressed) {
+    if (event->type == UI_EVENT_KEY && event->data.key.pressed) {
         status = vm_product_control_pressed_remember(control, event);
         if (status != TYPE_STATUS_OK) return status;
         status = sink(sink_context, event);
         if (status != TYPE_STATUS_OK) vm_product_control_pressed_forget(control, event);
         return status;
     }
-    if (event->type == UX_EVENT_KEY && !event->data.key.pressed) {
+    if (event->type == UI_EVENT_KEY && !event->data.key.pressed) {
         vm_product_control_pressed_forget(control, event);
         return sink(sink_context, event);
     }
-    return (event->type == UX_EVENT_MOUSE || event->type == UX_EVENT_TEXT) ?
+    return (event->type == UI_EVENT_MOUSE || event->type == UI_EVENT_TEXT) ?
         sink(sink_context, event) : TYPE_STATUS_OK;
 }
 

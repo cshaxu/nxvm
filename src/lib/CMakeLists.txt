@@ -19,62 +19,66 @@ option(LIBRARY_STRICT_WARNINGS
     ${LIBRARY_STRICT_WARNINGS_DEFAULT})
 
 function(library_root target)
-    target_include_directories(${target} PUBLIC "${LIBRARY_SOURCE_ROOT}")
+    get_target_property(target_type ${target} TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        target_include_directories(${target} INTERFACE "${LIBRARY_SOURCE_ROOT}")
+    else()
+        target_include_directories(${target} PUBLIC "${LIBRARY_SOURCE_ROOT}")
+    endif()
 endfunction()
 
-add_library(base-console STATIC base/console.c)
-library_root(base-console)
+add_library(types INTERFACE)
+library_root(types)
 
-set(LIBRARY_UX_BASE_SOURCES
-    ux-base/component.c
-    ux-base/hotkey.c
-    ux-base/mailbox.c
-    ux-base/linux/input.c)
+add_library(console STATIC console/console.c)
+library_root(console)
+target_link_libraries(console PUBLIC types)
+
+set(LIBRARY_UI_BASE_SOURCES
+    ui-base/component.c
+    ui-base/hotkey.c
+    ui-base/mailbox.c
+    ui-base/linux/input.c)
 if(WIN32)
-    list(APPEND LIBRARY_UX_BASE_SOURCES
-        ux-base/win32/mailbox.c
-        ux-base/win32/color.c
-        ux-base/win32/actions.c
-        ux-base/win32/input.c)
+    list(APPEND LIBRARY_UI_BASE_SOURCES
+        ui-base/win32/mailbox.c
+        ui-base/win32/color.c
+        ui-base/win32/actions.c
+        ui-base/win32/input.c)
 else()
-    list(APPEND LIBRARY_UX_BASE_SOURCES ux-base/linux/mailbox.c)
+    list(APPEND LIBRARY_UI_BASE_SOURCES ui-base/linux/mailbox.c)
 endif()
-add_library(ux-base STATIC ${LIBRARY_UX_BASE_SOURCES})
-library_root(ux-base)
-target_link_libraries(ux-base PUBLIC base-console)
+add_library(ui-base STATIC ${LIBRARY_UI_BASE_SOURCES})
+library_root(ui-base)
+target_link_libraries(ui-base PUBLIC types)
 
-add_library(ux-window STATIC ux-window/window.c)
+add_library(ui-window STATIC ui-window/window.c)
 if(WIN32)
-    target_sources(ux-window PRIVATE ux-window/win32/geometry.c
-        ux-window/win32/mouse.c ux-window/win32/component.c)
+    target_sources(ui-window PRIVATE ui-window/win32/geometry.c
+        ui-window/win32/mouse.c ui-window/win32/component.c)
 else()
-    target_sources(ux-window PRIVATE ux-window/linux/component.c)
+    target_sources(ui-window PRIVATE ui-window/linux/component.c)
 endif()
-library_root(ux-window)
-target_link_libraries(ux-window PUBLIC base-console ux-base)
+library_root(ui-window)
+target_link_libraries(ui-window PUBLIC types ui-base)
 
-add_library(ux-console STATIC ux-console/console.c)
+add_library(ui-console STATIC ui-console/console.c)
 if(WIN32)
-    target_sources(ux-console PRIVATE ux-console/win32/component.c)
+    target_sources(ui-console PRIVATE ui-console/win32/component.c)
 else()
-    target_sources(ux-console PRIVATE ux-console/linux/component.c)
+    target_sources(ui-console PRIVATE ui-console/linux/component.c)
 endif()
-library_root(ux-console)
-target_link_libraries(ux-console PUBLIC base-console ux-base)
-
-add_library(ux INTERFACE)
-target_link_libraries(ux INTERFACE ux-base ux-window ux-console)
-add_library(ux-contract ALIAS ux-base)
-add_library(ux-native ALIAS ux)
+library_root(ui-console)
+target_link_libraries(ui-console PUBLIC types console ui-base)
 
 if(WIN32)
     set(LIBRARY_HOST_SOURCES host/clock.c host/console.c host/win32/clock.c host/win32/sync.c host/win32/console.c)
 else()
     set(LIBRARY_HOST_SOURCES host/clock.c host/console.c host/linux/clock.c host/linux/sync.c host/linux/console.c)
 endif()
-add_library(host-sync STATIC ${LIBRARY_HOST_SOURCES})
-library_root(host-sync)
-target_link_libraries(host-sync PUBLIC base-console)
+add_library(host STATIC ${LIBRARY_HOST_SOURCES})
+library_root(host)
+target_link_libraries(host PUBLIC types console)
 
 set(LIBRARY_STORAGE_SOURCES storage/file.c storage/medium.c)
 if(WIN32)
@@ -82,26 +86,26 @@ if(WIN32)
 else()
     list(APPEND LIBRARY_STORAGE_SOURCES storage/linux/file.c)
 endif()
-add_library(storage-medium STATIC ${LIBRARY_STORAGE_SOURCES})
-library_root(storage-medium)
+add_library(storage STATIC ${LIBRARY_STORAGE_SOURCES})
+library_root(storage)
+target_link_libraries(storage PUBLIC types)
 
 if(WIN32)
-    add_library(ux-win32-native ALIAS ux)
-    target_link_libraries(ux-window PRIVATE user32 gdi32)
+    target_link_libraries(ui-window PRIVATE user32 gdi32)
 else()
-    add_library(ux-linux-native ALIAS ux)
     find_package(Threads REQUIRED)
-    target_link_libraries(host-sync PUBLIC Threads::Threads)
+    target_link_libraries(host PUBLIC Threads::Threads)
 endif()
 
 # This build-only aggregate does not create a library-root dependency. Each
-# peer root remains independently compilable and depends only on `base`.
+# peer root remains independently compilable and names its exact dependencies.
 add_library(lib-neutral-corpus INTERFACE)
-target_link_libraries(lib-neutral-corpus INTERFACE base-console ux host-sync storage-medium)
+target_link_libraries(lib-neutral-corpus INTERFACE
+    types console host storage ui-base ui-window ui-console)
 
 if(LIBRARY_STRICT_WARNINGS AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     foreach(library_target IN ITEMS
-            base-console ux-base ux-window ux-console host-sync storage-medium)
+            console ui-base ui-window ui-console host storage)
         target_compile_options(${library_target} PRIVATE
             -Wall -Wextra -Wpedantic -Werror)
     endforeach()

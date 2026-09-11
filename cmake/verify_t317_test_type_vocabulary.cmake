@@ -118,7 +118,7 @@ foreach(project_t317_file IN LISTS project_t317_code_files)
     endif()
     file(READ "${project_t317_path}" project_t317_content)
     if(project_t317_file STREQUAL "src/type.h" OR
-            project_t317_file STREQUAL "src/lib/base/base_interface.h")
+            project_t317_file STREQUAL "src/lib/types/types_interface.h")
         project_t317_type_facade_is_foundational("${project_t317_content}"
             project_t317_forbidden_found)
     else()

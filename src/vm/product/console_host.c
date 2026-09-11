@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "lib/base/console_interface.h"
+#include "lib/console/console_interface.h"
 #include "lib/host/console_interface.h"
 #include "vm/product/console_host.h"
 

@@ -2,4 +2,4 @@
 src/core/machine/dma.c	process-wide-token-issuer	T300	core/machine
 src/lib/host/linux/sync.c	process-wide-wait-hub	T523	lib/host
 src/lib/host/console.c	process-exclusive-console-lease	T523	lib/host
-src/lib/ux-base/component.c	process-wide-source-identity	T523	lib/ux-base
+src/lib/ui-base/component.c	process-wide-source-identity	T526	lib/ui-base

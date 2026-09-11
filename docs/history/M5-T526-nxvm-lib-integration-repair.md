@@ -2,10 +2,11 @@
 
 ## Active Packet
 
-- **Identifier mode:** New
-- **Owner admission:** repair NXVM/lib integration defects while preserving the
-  admitted canonical SoftPC `src/lib` corpus byte-identical.
-- **Current subtask:** S7 - debugger completion-event migration.
+- **Identifier mode:** Continuation
+- **Owner admission:** owner rejected closure and approved S8 to adopt the
+  current owner-controlled SoftPC `src/lib` corpus without an NXVM fork.
+- **Current subtask:** S8 - canonical SoftPC library refresh and consumer
+  repair.
 
 ## S1 Contract
 
@@ -176,3 +177,39 @@ Fresh stripped Release artifacts are `nxvm_0_5_0526_x64.exe`
 `1AAE79A2E84472FBE8969B80E110217FF9942D173D96BEDA462A6C8672D10263`
 and `nxvm_0_5_0526_x86.exe`
 `34582710EC4C3495F19E94270CA0AB2433ED0A0030D6CEA9C58ED153177AEE62`.
+
+### S7 acceptance
+
+The S7 source/test change is 114 added and 155 removed lines (net -41). It
+removes the sole Core debugger sleep wrapper and its dedicated smoke rather
+than preserving a forwarding compatibility route. The retained execution path
+is `Core debugger -> neutral target completion callback -> VM composition
+completion event`; the runner alone signals that event after pause
+acknowledgement or final exit. The remaining `Sleep(10)` references are
+external integration-harness polling, not Core or debugger production paths.
+
+Verification passed: focused debugger regressions, 303/303 repository-only
+unit cases, the canonical manifest and Core/debugger/composition/documentation
+boundary gates, and `git diff --check`. All 42 x64 Release external integration
+cases passed in the same configuration: 22 non-matrix cases together and the
+20 serial profile-boot rows in bounded individual invocations required by their
+registered shared-host constraint. Fresh optimized stripped x64/x86 0526
+artifacts and their SHA-256 identities are recorded above. This accepts S7;
+T526 remains open for S8's canonical refresh.
+
+### S8 implementation result (active)
+
+NXVM has adopted SoftPC revision `291afe48a0eefb703569a5cc090b7fd54bf81388`
+as an exact `src/lib` corpus. The normalized `types`, `console`, `host`,
+`storage`, `ui-base`, `ui-console`, and `ui-window` public roots replaced the
+retired `base`/`ux-*` contract in every NXVM source, test and CMake consumer;
+no compatibility facade or local library patch remains.
+
+The post-import sweep deleted static gates that opened deleted old routes,
+recorded the renamed `ui-base` process-wide source-identity owner, narrowed
+the debugger rule to its four real composition adapters, and made the
+direct-compilation ledger verify exact classified entries instead of stale
+counts. The corpus is byte-identical to the named SoftPC revision; Debug and
+Release manifest checks, all current specialized gates and 303/303 Debug unit
+tests pass. T526 remains active for its task-level verification and native
+review.

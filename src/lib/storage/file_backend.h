@@ -1,7 +1,7 @@
 #ifndef LIB_STORAGE_FILE_BACKEND_H
 #define LIB_STORAGE_FILE_BACKEND_H
 
-#include "lib/base/base_interface.h"
+#include "lib/types/types_interface.h"
 
 #include "lib/storage/medium_interface.h"
 

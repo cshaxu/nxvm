@@ -13,7 +13,7 @@ other library header is implementation-private, including native-platform
 adapters. Private headers use short component-local names and live directly in
 their owning directory; no `internal/` directory exists. Only the owning
 component and an explicitly permitted dependent may include a private header:
-`ux-window` and `ux-console` may consume `ux-base` mailbox and component
+`ui-window` and `ui-console` may consume `ui-base` mailbox and component
 implementation contracts. Application/product code may include only
 `*_interface.h`; an interface header never includes a private header.
 
@@ -23,20 +23,21 @@ An arrow means the component on the right may use the generic contract of the
 component on the left:
 
 ```text
-base -> ux-base + host + storage
-ux-base -> ux-window + ux-console
-base -> ux-window + ux-console
+types -> console + host + storage + ui-base + ui-window + ui-console
+console -> host + ui-console
+ui-base -> ui-window + ui-console
 ```
 
 No other component edge is allowed. In particular, `host`, `storage`,
-`ux-window`, and `ux-console` are peers. Neither UX leaf includes or calls
-`host`, and `host` does not include UX. The build-only `ux` aggregate links the
-three split UX targets; it is not a lifecycle controller or a public unified
-presenter API.
+`ui-window`, and `ui-console` are peers. `ui-window` neither includes nor
+calls `console` or `host`; `ui-console` consumes only the neutral `console`
+contract. `host` does not include UI. There is no unified UI aggregate,
+lifecycle controller, or public unified presenter API.
 
-- `base` provides scalar aliases and the logical Console object. A logical
-  Console is a neutral copied-value endpoint: it has no native handle, platform
-  input mode, Window, raw Console, monitor, or product-lifecycle meaning.
+- `types` provides scalar aliases, status values, and no behavior.
+- `console` provides the logical Console object. It is a neutral copied-value
+  endpoint: it has no native handle, platform input mode, Window, raw Console,
+  monitor, or product-lifecycle meaning.
 - `host` exposes an opaque `host_console_broker` that binds one caller-owned
   logical Console to native I/O and provides clock/sync. A caller supplies its
   expected Current Console on every replacement or cooked-line request; host
@@ -46,15 +47,15 @@ presenter API.
   complete, no next reader starts and the broker fails closed with host-I/O
   failure rather than claiming either Console is usable.
 - `storage` provides file and byte-medium primitives.
-- `ux-base` provides copied frame/input values, source-local registered-hotkey
+- `ui-base` provides copied frame/input values, source-local registered-hotkey
   matching, source identities, and private mailbox mechanics.
-- `ux-window` owns one Window lifecycle; `ux-console` owns one raw-Console
-  lifecycle and its logical Console object. Both report copied UX input only;
+- `ui-window` owns one Window lifecycle; `ui-console` owns one raw-Console
+  lifecycle and its logical Console object. Both report copied UI input only;
   neither makes product decisions.
 
-## UX mailbox and lifetime contract
+## UI mailbox and lifetime contract
 
-Every `ux-window` and `ux-console` instance owns a separate, private pair of
+Every `ui-window` and `ui-console` instance owns a separate, private pair of
 mailboxes. Callers never share or address a mailbox directly.
 
 - The frame mailbox holds one copied frame. Publishing replaces that value:
@@ -68,12 +69,12 @@ mailboxes. Callers never share or address a mailbox directly.
   non-OK control enqueue is also reported through the component failure sink.
 - A worker drains control records in FIFO order before it considers the latest
   frame. On STOP it consumes no later control or frame: it retires native
-  input/output, emits exactly one `UX_EVENT_SOURCE_RETIRED`, and exits.
+  input/output, emits exactly one `UI_EVENT_SOURCE_RETIRED`, and exits.
 
 Each component receives a process-wide monotonic, never-reused
-`source_identity`. Every `ux_input_event` carries both that identity and a
+`source_identity`. Every `ui_input_event` carries both that identity and a
 borrowed source handle. The identity, not the address, is safe to use after
-component storage can be reused. `UX_EVENT_SOURCE_RETIRED` is the final
+component storage can be reused. `UI_EVENT_SOURCE_RETIRED` is the final
 asynchronous input-lifetime fact for that identity; an application uses it to
 clear source-specific pressed-input state and must not dereference the source
 handle from it.
@@ -81,5 +82,5 @@ handle from it.
 ## Platform scope
 
 The public component contracts are cross-platform. This corpus currently has
-supported Win32 leaves; Linux UX leaves are intentional
+supported Win32 leaves; Linux UI leaves are intentional
 `LIB_STATUS_UNSUPPORTED` placeholders, not claimed presenter implementations.

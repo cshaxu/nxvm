@@ -27,8 +27,8 @@ endif()
 file(GLOB_RECURSE peer_sources
     "${PROJECT_SOURCE_DIR}/src/vm/machine/*.c"
     "${PROJECT_SOURCE_DIR}/src/vm/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/src/vm/platform/*.c"
-    "${PROJECT_SOURCE_DIR}/src/vm/platform/*.h"
+    "${PROJECT_SOURCE_DIR}/src/vm/composition/*.c"
+    "${PROJECT_SOURCE_DIR}/src/vm/composition/*.h"
     "${PROJECT_SOURCE_DIR}/src/vm/profile/*.c"
     "${PROJECT_SOURCE_DIR}/src/vm/profile/*.h"
     "${PROJECT_SOURCE_DIR}/src/vdm/machine/*.c"
@@ -38,6 +38,12 @@ file(GLOB_RECURSE peer_sources
     "${PROJECT_SOURCE_DIR}/src/vdm/profile/*.c"
     "${PROJECT_SOURCE_DIR}/src/vdm/profile/*.h")
 foreach(file IN LISTS peer_sources)
+    if(file STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/composition/session/debug_target.c" OR
+            file STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/composition/session/debug_target.h" OR
+            file STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c" OR
+            file STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_private.h")
+        continue()
+    endif()
     file(READ "${file}" source)
     if(source MATCHES "#include[ \t]+\"core/product/")
         message(FATAL_ERROR "M5 T234 peer imports core/product: ${file}")

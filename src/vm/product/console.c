@@ -79,7 +79,7 @@ static C_VOID vm_product_console_report_display(C_VOID *opaque,
 }
 
 static type_status vm_product_console_presentation_event(C_VOID *opaque,
-    const ux_input_event *event)
+    const ui_input_event *event)
 {
     vm_product_console_context *context = opaque;
     vm_product_control_fact fact = {0};
@@ -124,7 +124,7 @@ static C_VOID vm_product_console_write_lifecycle(vm_product_console_context *con
 }
 
 static type_status vm_product_console_submit_host_input(C_VOID *opaque,
-    const ux_input_event *event)
+    const ui_input_event *event)
 {
     vm_product_console_context *context = opaque;
     core_machine_guest_input_event guest_event;
@@ -138,13 +138,13 @@ static type_status vm_product_console_submit_host_input(C_VOID *opaque,
 }
 
 static C_VOID vm_product_console_handle_host_input(vm_product_console_context *context,
-    const ux_input_event *event)
+    const ui_input_event *event)
 {
     core_machine_guest_input_event guest_event;
     type_status status;
 
     if (context == STD_NULL || event == STD_NULL || machineProvider == STD_NULL) return;
-    if (event->type == UX_EVENT_HOTKEY) {
+    if (event->type == UI_EVENT_HOTKEY) {
         if (!STD_STRCMP(event->data.hotkey.identifier, "pause")) {
             if (machineProvider->is_running(machineProvider->context)) {
                 (C_VOID)machineProvider->request_pause(machineProvider->context);
@@ -186,7 +186,7 @@ static C_VOID vm_product_console_handle_host_input(vm_product_console_context *c
         }
         return;
     }
-    if (event->type == UX_EVENT_WINDOW_CLOSE) {
+    if (event->type == UI_EVENT_WINDOW_CLOSE) {
         if (machineProvider->is_running(machineProvider->context)) {
             (C_VOID)machineProvider->request_pause(machineProvider->context);
         }

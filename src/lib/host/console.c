@@ -1,12 +1,12 @@
-#include "lib/base/console.h"
+#include "lib/console/console.h"
 #include "lib/host/console_interface.h"
 #include "lib/host/console_backend.h"
 
-#include <stdatomic.h>
+#include "lib/types/atomic.h"
 #include <stdlib.h>
 
 struct host_console_broker {
-    atomic_flag lock;
+    lib_atomic_flag lock;
     host_console_backend *backend;
     lib_console *current;
     host_console_mode current_mode;
@@ -24,17 +24,17 @@ typedef struct host_console_output_binding {
     lib_u32 generation;
 } host_console_output_binding;
 
-static atomic_flag host_console_process_claimed = ATOMIC_FLAG_INIT;
+static lib_atomic_flag host_console_process_claimed = LIB_ATOMIC_FLAG_INITIALIZER;
 
 static void host_console_lock(host_console_broker *broker)
 {
-    while (atomic_flag_test_and_set_explicit(&broker->lock,
-        memory_order_acquire)) { }
+    while (lib_atomic_flag_test_and_set_explicit(&broker->lock,
+        LIB_MEMORY_ORDER_ACQUIRE)) { }
 }
 
 static void host_console_unlock(host_console_broker *broker)
 {
-    atomic_flag_clear_explicit(&broker->lock, memory_order_release);
+    lib_atomic_flag_clear_explicit(&broker->lock, LIB_MEMORY_ORDER_RELEASE);
 }
 
 static lib_status host_console_write_bound(void *context, const char *text,
@@ -114,15 +114,15 @@ lib_status host_console_broker_create(host_console_broker **out_broker,
         (initial_mode != HOST_CONSOLE_RAW_EVENTS &&
          initial_mode != HOST_CONSOLE_COOKED_LINES)) return LIB_STATUS_INVALID_ARGUMENT;
     *out_broker = LIB_NULL;
-    if (atomic_flag_test_and_set_explicit(&host_console_process_claimed,
-            memory_order_acq_rel)) return LIB_STATUS_INVALID_STATE;
+    if (lib_atomic_flag_test_and_set_explicit(&host_console_process_claimed,
+            LIB_MEMORY_ORDER_ACQ_REL)) return LIB_STATUS_INVALID_STATE;
     broker = calloc(1u, sizeof(*broker));
     if (broker == LIB_NULL) {
-        atomic_flag_clear_explicit(&host_console_process_claimed,
-            memory_order_release);
+        lib_atomic_flag_clear_explicit(&host_console_process_claimed,
+            LIB_MEMORY_ORDER_RELEASE);
         return LIB_STATUS_NO_MEMORY;
     }
-    atomic_flag_clear(&broker->lock);
+    lib_atomic_flag_clear(&broker->lock);
     status = host_console_backend_create(&broker->backend);
     if (status == LIB_STATUS_OK) {
         broker->current = lib_console_retain(initial_console);
@@ -146,8 +146,8 @@ lib_status host_console_broker_create(host_console_broker **out_broker,
         if (broker->current != LIB_NULL) lib_console_release(broker->current);
         host_console_backend_destroy(broker->backend);
         free(broker);
-        atomic_flag_clear_explicit(&host_console_process_claimed,
-            memory_order_release);
+        lib_atomic_flag_clear_explicit(&host_console_process_claimed,
+            LIB_MEMORY_ORDER_RELEASE);
         return status;
     }
     *out_broker = broker;
@@ -310,5 +310,5 @@ void host_console_broker_destroy(host_console_broker *broker)
     if (current != LIB_NULL) lib_console_release(current);
     host_console_backend_destroy(broker->backend);
     free(broker);
-    atomic_flag_clear_explicit(&host_console_process_claimed, memory_order_release);
+    lib_atomic_flag_clear_explicit(&host_console_process_claimed, LIB_MEMORY_ORDER_RELEASE);
 }

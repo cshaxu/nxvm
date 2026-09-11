@@ -2,12 +2,12 @@
 #include "vm/product/control.h"
 
 typedef struct vm_product_control_input_capture {
-    ux_input_event events[4];
+    ui_input_event events[4];
     STD_SIZE_T count;
 } vm_product_control_input_capture;
 
 static type_status vm_product_control_capture_input(C_VOID *opaque,
-    const ux_input_event *event)
+    const ui_input_event *event)
 {
     vm_product_control_input_capture *capture = opaque;
 
@@ -26,7 +26,7 @@ int main(void)
     core_machine_guest_display_frame display = {0};
     core_machine_guest_display_frame received_display = {0};
     vm_product_control_input_capture capture = {0};
-    ux_input_event input = {0};
+    ui_input_event input = {0};
 
     if (vm_product_control_create(&control) != TYPE_STATUS_OK) return 1;
     fact.kind = VM_PRODUCT_CONTROL_FACT_LIFECYCLE;
@@ -66,7 +66,7 @@ int main(void)
         return 1;
     }
     fact.kind = VM_PRODUCT_CONTROL_FACT_HOST_INPUT;
-    fact.value.host_input.type = UX_EVENT_KEY;
+    fact.value.host_input.type = UI_EVENT_KEY;
     fact.value.host_input.data.key.scan_code = 0x3bu;
     if (vm_product_control_publish(control, &fact) != TYPE_STATUS_OK ||
         vm_product_control_begin_run(control) == 0u ||
@@ -90,7 +90,7 @@ int main(void)
         vm_product_control_destroy(control);
         return 1;
     }
-    input.type = UX_EVENT_KEY;
+    input.type = UI_EVENT_KEY;
     input.source_identity = 17u;
     input.data.key.scan_code = 0x1eu;
     input.data.key.key = 'A';
@@ -101,8 +101,8 @@ int main(void)
         vm_product_control_destroy(control);
         return 1;
     }
-    input = (ux_input_event){0};
-    input.type = UX_EVENT_SOURCE_RETIRED;
+    input = (ui_input_event){0};
+    input.type = UI_EVENT_SOURCE_RETIRED;
     input.source_identity = 17u;
     if (vm_product_control_dispatch_host_input(control, &input, TYPE_TRUE,
             vm_product_control_capture_input, &capture) != TYPE_STATUS_OK ||
@@ -118,8 +118,8 @@ int main(void)
         vm_product_control_destroy(control);
         return 1;
     }
-    input = (ux_input_event){0};
-    input.type = UX_EVENT_SOURCE_RETIRED;
+    input = (ui_input_event){0};
+    input.type = UI_EVENT_SOURCE_RETIRED;
     input.source_identity = 18u;
     if (vm_product_control_dispatch_host_input(control, &input, TYPE_FALSE,
             vm_product_control_capture_input, &capture) != TYPE_STATUS_OK ||

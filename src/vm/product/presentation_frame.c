@@ -3,7 +3,7 @@
 #include "vm/product/presentation_frame.h"
 
 type_status vm_product_presentation_frame_from_core(
-    const core_machine_guest_display_frame *source, ux_frame *destination)
+    const core_machine_guest_display_frame *source, ui_frame *destination)
 {
     STD_SIZE_T cell;
 
@@ -14,8 +14,8 @@ type_status vm_product_presentation_frame_from_core(
     destination->sequence = (type_unsigned_32)source->generation;
     destination->graphics = source->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
     if (destination->graphics) {
-        if (source->pixel_width > UX_GRAPHICS_MAX_WIDTH ||
-            source->pixel_height > UX_GRAPHICS_MAX_HEIGHT)
+        if (source->pixel_width > UI_GRAPHICS_MAX_WIDTH ||
+            source->pixel_height > UI_GRAPHICS_MAX_HEIGHT)
             return TYPE_STATUS_UNSUPPORTED;
         destination->graphics_width = source->pixel_width;
         destination->graphics_height = source->pixel_height;
@@ -26,7 +26,7 @@ type_status vm_product_presentation_frame_from_core(
             sizeof(source->palette_rgb));
         return TYPE_STATUS_OK;
     }
-    if (source->columns > UX_TEXT_COLUMNS || source->rows > UX_TEXT_ROWS)
+    if (source->columns > UI_TEXT_COLUMNS || source->rows > UI_TEXT_ROWS)
         return TYPE_STATUS_UNSUPPORTED;
     destination->text_columns = source->columns;
     destination->text_rows = source->rows;

@@ -66,10 +66,10 @@ add_custom_target(cpu-timing-manifest-catalog
         "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
 add_subdirectory(src/lib)
-add_executable(ux-base-contract-smoke test/lib/ux_base_contract_smoke.c)
-target_link_libraries(ux-base-contract-smoke PRIVATE ux-base)
-add_test(NAME unit.ux-base-contract-smoke COMMAND ux-base-contract-smoke)
-set_tests_properties(unit.ux-base-contract-smoke PROPERTIES LABELS "unit")
+add_executable(ui-base-contract-smoke test/lib/ui_base_contract_smoke.c)
+target_link_libraries(ui-base-contract-smoke PRIVATE ui-base)
+add_test(NAME unit.ui-base-contract-smoke COMMAND ui-base-contract-smoke)
+set_tests_properties(unit.ui-base-contract-smoke PROPERTIES LABELS "unit")
 add_test(NAME unit.library-manifest
     COMMAND ${CMAKE_COMMAND}
         -DLIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
@@ -83,7 +83,7 @@ add_test(NAME unit.library-manifest-fixtures
         -P ${CMAKE_SOURCE_DIR}/test/lib/library_manifest_fixture.cmake)
 set_tests_properties(unit.library-manifest-fixtures PROPERTIES LABELS "unit")
 add_executable(storage-file-smoke test/lib/storage_file_smoke.c)
-target_link_libraries(storage-file-smoke PRIVATE storage-medium)
+target_link_libraries(storage-file-smoke PRIVATE storage)
 add_test(NAME unit.storage-file-smoke COMMAND storage-file-smoke)
 set_tests_properties(unit.storage-file-smoke PROPERTIES LABELS "unit")
 
@@ -1237,7 +1237,7 @@ add_library(core-machine-boundary STATIC
 target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-boundary PUBLIC type-facade host-sync)
+target_link_libraries(core-machine-boundary PUBLIC type-facade host)
 add_library(vm-session-requests STATIC
     src/vm/composition/session/request_bridge.c
 )
@@ -1340,8 +1340,9 @@ target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
 target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     core-product-utils
     core-machine-boundary
-    storage-medium
-    ux
+    storage
+    ui-window
+    ui-console
     type-facade
 )
 
@@ -1360,8 +1361,9 @@ target_include_directories(vm-product-console-exit-smoke PRIVATE
 target_link_libraries(vm-product-console-exit-smoke PRIVATE
     core-product-utils
     core-machine-boundary
-    storage-medium
-    ux
+    storage
+    ui-window
+    ui-console
     type-facade
 )
 
@@ -1380,8 +1382,9 @@ target_include_directories(vm-product-console-lifecycle-report-smoke PRIVATE
 target_link_libraries(vm-product-console-lifecycle-report-smoke PRIVATE
     core-product-utils
     core-machine-boundary
-    storage-medium
-    ux
+    storage
+    ui-window
+    ui-console
     type-facade
 )
 
@@ -1392,7 +1395,7 @@ add_executable(vm-product-control-smoke
 target_include_directories(vm-product-control-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-product-control-smoke PRIVATE type-facade host-sync)
+target_link_libraries(vm-product-control-smoke PRIVATE type-facade host)
 add_executable(vm-product-presentation-frame-smoke
     test/vm/product/vm_product_presentation_frame_smoke.c)
 target_link_libraries(vm-product-presentation-frame-smoke PRIVATE vm-product)
@@ -1434,22 +1437,22 @@ endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
     core-machine-boundary
-    storage-medium
+    storage
     type-facade)
 
 add_executable(core-machine-guest-input-source-smoke
     test/core/machine/core_machine_guest_input_source_smoke.c
 )
 target_link_libraries(core-machine-guest-input-source-smoke PRIVATE core-machine-boundary)
-add_executable(host-sync-smoke
+add_executable(host-smoke
     test/lib/host_sync_smoke.c
 )
-target_link_libraries(host-sync-smoke PRIVATE host-sync)
+target_link_libraries(host-smoke PRIVATE host)
 add_executable(vm-session-state-smoke
     test/vm/composition/vm_session_state_smoke.c)
 target_link_libraries(vm-session-state-smoke PRIVATE vm-composition)
-add_executable(storage-medium-smoke test/lib/storage_medium_smoke.c)
-target_link_libraries(storage-medium-smoke PRIVATE storage-medium)
+add_executable(storage-smoke test/lib/storage_medium_smoke.c)
+target_link_libraries(storage-smoke PRIVATE storage)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -1480,7 +1483,7 @@ target_link_libraries(vm-composition PUBLIC
     vm-profile
     vm-product
     vm-session-request-transport)
-target_link_libraries(vm-composition PRIVATE storage-medium)
+target_link_libraries(vm-composition PRIVATE storage)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
 target_include_directories(vm-machine PUBLIC
@@ -1489,7 +1492,7 @@ target_include_directories(vm-machine PUBLIC
 target_link_libraries(vm-machine PUBLIC
     core-machine
     core-machine-boundary
-    storage-medium)
+    storage)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
 target_include_directories(vm-product PUBLIC
@@ -1497,10 +1500,11 @@ target_include_directories(vm-product PUBLIC
 )
 target_link_libraries(vm-product PUBLIC
     vm-composition
-    ux
+    ui-window
+    ui-console
     core-product-utils
     core-machine-boundary
-    storage-medium)
+    storage)
 
 add_executable(vm-execution-context-smoke
     test/integration/dos/vm_execution_context_smoke.c
@@ -2281,9 +2285,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-product-presentation-frame-smoke
     vm-product-machine-adapter-smoke
     core-machine-guest-input-source-smoke
-    host-sync-smoke
+    host-smoke
     vm-session-state-smoke
-    storage-medium-smoke
+    storage-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-machine-guest-presentation-mailbox-smoke
@@ -2736,7 +2740,7 @@ endforeach()
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
-    storage-medium-smoke
+    storage-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-media-provider-smoke
     vm-media-direct-readonly-smoke
@@ -2863,8 +2867,8 @@ get_property(project_t344_registered_targets GLOBAL
     PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
 set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
 # This direct lib target remains an explicit unit route.
-list(APPEND project_t344_single_test_targets ux-base-contract-smoke)
-list(APPEND project_t344_registered_targets ux-base-contract-smoke)
+list(APPEND project_t344_single_test_targets ui-base-contract-smoke)
+list(APPEND project_t344_registered_targets ui-base-contract-smoke)
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
 foreach(project_t344_target IN LISTS project_t344_single_test_targets)
@@ -3149,17 +3153,7 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 RAM cold-reconfiguration closure"
         VERBATIM)
 
-    add_custom_target(verify-linux-platform-contract
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_platform_contract.cmake"
-        COMMENT "Verifying Linux platform source contract"
-        VERBATIM)
 
-    add_custom_target(verify-t445-vm-native-display-resource-lifetime
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t445_vm_native_display_resource_lifetime.cmake"
-        COMMENT "Verifying VM native display resource lifecycle ownership"
-        VERBATIM)
 
     add_custom_target(verify-t446-vm-debugger-recording-lifecycle
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -3173,29 +3167,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM build source and native-library ownership"
         VERBATIM)
 
-    add_custom_target(verify-t447-session-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_session_boundary.cmake"
-        COMMENT "Verifying product session command and access ownership"
-        VERBATIM)
-
     add_custom_target(verify-t447-debugger-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_debugger_boundary.cmake"
         COMMENT "Verifying Core debugger interpreter ownership"
         VERBATIM)
 
-    add_custom_target(verify-t447-file-resource-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_file_resource_boundary.cmake"
-        COMMENT "Verifying Core file-resource ownership"
-        VERBATIM)
-
-    add_custom_target(verify-t447-platform-lifecycle-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_platform_lifecycle_boundary.cmake"
-        COMMENT "Verifying Core and VM platform lifecycle ownership"
-        VERBATIM)
 
     add_custom_target(verify-t447-collaborator-plan-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -3227,23 +3204,8 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T298 debugger capability closure"
         VERBATIM)
 
-    add_custom_target(verify-request-transport-closure
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_request_transport_closure.cmake"
-        COMMENT "Verifying request transport ingress-only closure"
-        VERBATIM)
 
-    add_custom_target(verify-keyboard-ingress-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_ingress_boundary.cmake"
-        COMMENT "Verifying VM keyboard-state ingress boundary"
-        VERBATIM)
 
-    add_custom_target(verify-aux-mouse-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_aux_mouse_boundary.cmake"
-        COMMENT "Verifying VM AUX mouse ingress boundary"
-        VERBATIM)
 
     add_custom_target(verify-dma-fdc-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -3257,11 +3219,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM FDC/FDD state-machine ownership boundary"
         VERBATIM)
 
-    add_custom_target(verify-host-cancellation-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_host_cancellation_boundary.cmake"
-        COMMENT "Verifying host cancellation report boundary"
-        VERBATIM)
 
     add_custom_target(verify-keyboard-transport-surface
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -3317,11 +3274,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying T314 EGA CRTC boundary closure"
         VERBATIM)
 
-    add_custom_target(verify-ega-planar-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_planar_boundary.cmake"
-        COMMENT "Verifying M5 T238 EGA planar ownership boundary"
-        VERBATIM)
 
     add_custom_target(verify-rom-ega-int10-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -3389,17 +3341,7 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying Core debugger completion boundary"
         VERBATIM)
 
-    add_custom_target(verify-session-layout-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_session_layout_boundary.cmake"
-        COMMENT "Verifying VM session private-layout boundary"
-        VERBATIM)
 
-    add_custom_target(verify-cancellable-wait-boundary
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_cancellable_wait_boundary.cmake"
-        COMMENT "Verifying cancellable host-wait boundary"
-        VERBATIM)
 
     add_custom_target(verify-vm-composition-lifecycle
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -3541,23 +3483,14 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-bounded-formatting
     verify-vm-provider-composition
     verify-ram-reconfigure-closure
-    verify-linux-platform-contract
-    verify-t445-vm-native-display-resource-lifetime
     verify-t446-vm-debugger-recording-lifecycle
     verify-t447-build-ownership
-    verify-t447-session-boundary
     verify-t447-debugger-boundary
-    verify-t447-file-resource-boundary
-    verify-t447-platform-lifecycle-boundary
     verify-t447-collaborator-plan-boundary
     verify-t447-vdm-forwarding-closure
     verify-current-artifact-target
-    verify-request-transport-closure
-    verify-keyboard-ingress-boundary
-    verify-aux-mouse-boundary
     verify-dma-fdc-boundary
     verify-fdc-state-machine-boundary
-    verify-host-cancellation-boundary
     verify-keyboard-transport-surface
     verify-console-adapter-closure
     verify-current-media-smoke-classification
@@ -3575,7 +3508,6 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-ata-pio-feature-boundary
     verify-media-sole-route
     verify-core-debug-completion-boundary
-    verify-cancellable-wait-boundary
     verify-vm-composition-lifecycle
     verify-t344-unit-registration
     verify-t515-integration-yaml-boundary
@@ -3638,9 +3570,9 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-session-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(host-sync-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(host-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-session-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(storage-medium-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3782,21 +3714,28 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
-    "vm-product-console-input-failure-smoke|test/vm/product/console_host_fake.c|console-input-failure"
+    "vm-product-console-input-failure-smoke|src/vm/product/control.c|console-input-failure"
+    "vm-product-console-input-failure-smoke|src/vm/product/presentation.c|console-input-failure"
+    "vm-product-console-input-failure-smoke|src/vm/product/presentation_frame.c|console-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/session_catalog.c|console-input-failure"
     "vm-product-console-exit-smoke|src/vm/product/console.c|console-exit"
-    "vm-product-console-exit-smoke|test/vm/product/console_host_fake.c|console-exit"
+    "vm-product-console-exit-smoke|src/vm/product/control.c|console-exit"
+    "vm-product-console-exit-smoke|src/vm/product/presentation.c|console-exit"
+    "vm-product-console-exit-smoke|src/vm/product/presentation_frame.c|console-exit"
     "vm-product-console-exit-smoke|src/vm/product/session_catalog.c|console-exit"
     "vm-product-console-lifecycle-report-smoke|src/vm/product/console.c|console-lifecycle-report"
-    "vm-product-console-lifecycle-report-smoke|test/vm/product/console_host_fake.c|console-lifecycle-report"
+    "vm-product-console-lifecycle-report-smoke|src/vm/product/control.c|console-lifecycle-report"
+    "vm-product-console-lifecycle-report-smoke|src/vm/product/presentation.c|console-lifecycle-report"
+    "vm-product-console-lifecycle-report-smoke|src/vm/product/presentation_frame.c|console-lifecycle-report"
     "vm-product-console-lifecycle-report-smoke|src/vm/product/session_catalog.c|console-lifecycle-report"
     "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
-    "vm-model40-console-s20-smoke|test/vm/product/console_host_fake.c|console-integration"
-    "vm-product-console-lifecycle-smoke|src/vm/product/console.c|console-integration"
-    "vm-product-console-lifecycle-smoke|test/vm/product/console_host_fake.c|console-integration"
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/console_host.c|console-product"
+    "vm-product|src/vm/product/control.c|vm-product"
+    "vm-product|src/vm/product/presentation.c|vm-product"
+    "vm-product|src/vm/product/presentation_frame.c|vm-product"
     "vm-product|src/vm/product/session_catalog.c|console-product"
+    "vm-product-control-smoke|src/vm/product/control.c|control-smoke"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"

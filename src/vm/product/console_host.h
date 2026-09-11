@@ -2,7 +2,7 @@
 #define VM_PRODUCT_CONSOLE_HOST_H
 
 #include "type.h"
-#include "lib/base/console_interface.h"
+#include "lib/console/console_interface.h"
 
 typedef struct vm_product_console_host vm_product_console_host;
 

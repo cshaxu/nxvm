@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/lib/ux-console/linux/component.c" linux_console_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/lib/ux-window/linux/component.c" linux_window_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/lib/ui-console/linux/component.c" linux_console_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/lib/ui-window/linux/component.c" linux_window_source)
 set(adapter_source "${linux_console_source}\n${linux_window_source}")
 
 foreach(forbidden

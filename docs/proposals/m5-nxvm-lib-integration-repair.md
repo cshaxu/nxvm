@@ -3,9 +3,9 @@
 ## Purpose
 
 Repair NXVM's product-side adaptation to the canonical SoftPC `src/lib`
-corpus.  S3 refreshes NXVM to the owner-approved, byte-identical SoftPC
-revision `7cc408ec2e27c8243ae2a3f719d313bb7e851e1d`; NXVM does not retain a
-wrapper, compatibility copy, or local lib patch.
+corpus. S3 adopted its then-current owner-approved revision; S8 refreshes it
+to the byte-identical SoftPC revision `291afe48a0eefb703569a5cc090b7fd54bf81388`.
+NXVM does not retain a wrapper, compatibility copy, or local lib patch.
 
 ## Ownership
 
@@ -70,11 +70,18 @@ wrapper, compatibility copy, or local lib patch.
    the host event and runner signal. The debugger remains host-neutral and
    never owns execution, while pause, trace, reset, stop and teardown each
    release a waiter exactly once.
+8. **S8 - canonical refresh and complete consumer repair.** Inventory the
+   latest owner-controlled SoftPC `src/lib` manifest and public ABI against the
+   admitted NXVM corpus, preserve the source provenance, then replace the
+   corpus byte-for-byte. Sweep every affected NXVM source, test and CMake
+   consumer in one ledger and migrate it to the canonical contract or delete
+   it as obsolete. No local lib patch, compatibility facade or duplicate
+   presentation/control route may remain.
 
 ## Acceptance
 
 - A Core 80x25 text snapshot preserves every character and attribute through
-  the NXVM `ux_frame` conversion; Console and Window therefore receive the
+  the NXVM `ui_frame` conversion; Console and Window therefore receive the
   same complete copied frame.
 - `src/lib` is byte-identical to the admitted SoftPC revision and manifest-valid.
 - NXVM retains one Core snapshot route and one public-lib binding route, with

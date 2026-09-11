@@ -5,7 +5,7 @@
 
 #include "core/machine/guest_display_frame.h"
 #include "core/machine/guest_input_interface.h"
-#include "lib/ux-base/event_interface.h"
+#include "lib/ui-base/event_interface.h"
 
 typedef struct vm_product_console_host vm_product_console_host;
 typedef struct vm_product_presentation vm_product_presentation;
@@ -17,7 +17,7 @@ typedef enum vm_product_presentation_target {
 } vm_product_presentation_target;
 
 typedef type_status (*vm_product_presentation_event_sink)(C_VOID *context,
-    const ux_input_event *event);
+    const ui_input_event *event);
 
 type_status vm_product_presentation_create(vm_product_presentation **out_presentation,
     vm_product_console_host *console_host,
@@ -36,7 +36,7 @@ type_status vm_product_presentation_release_mouse(
 type_status vm_product_presentation_publish_frame(
     vm_product_presentation *presentation,
     const core_machine_guest_display_frame *frame);
-type_status vm_product_presentation_input_to_guest(const ux_input_event *event,
+type_status vm_product_presentation_input_to_guest(const ui_input_event *event,
     core_machine_guest_input_event *out_event);
 
 #endif

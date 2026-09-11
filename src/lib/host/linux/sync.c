@@ -1,6 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "lib/base/base_interface.h"
+#include "lib/types/types_interface.h"
 #include "lib/host/sync_interface.h"
 
 #include <errno.h>

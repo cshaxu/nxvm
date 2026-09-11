@@ -19,7 +19,7 @@ if(composition_native)
     message(FATAL_ERROR "T447 vm-composition must not propagate a host-native dependency")
 endif()
 
-string(FIND "${library_cmake}" "target_link_libraries(ux-window PRIVATE user32 gdi32)"
+string(FIND "${library_cmake}" "target_link_libraries(ui-window PRIVATE user32 gdi32)"
     native_owner)
 if(native_owner EQUAL -1)
     message(FATAL_ERROR "T447 requires lib UX to own Win32 GUI libraries")

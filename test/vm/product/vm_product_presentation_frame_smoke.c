@@ -6,7 +6,7 @@
 C_INT main(C_VOID)
 {
     core_machine_guest_display_frame source = {0};
-    ux_frame destination = {0};
+    ui_frame destination = {0};
 
     source.kind = CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
     source.generation = 7u;

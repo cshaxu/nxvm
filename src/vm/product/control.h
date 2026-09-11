@@ -5,12 +5,12 @@
 
 #include "vm/composition/session/session_state.h"
 #include "core/machine/guest_display_frame.h"
-#include "lib/ux-base/event_interface.h"
+#include "lib/ui-base/event_interface.h"
 
 typedef struct vm_product_control vm_product_control;
 
 typedef type_status (*vm_product_control_input_sink)(C_VOID *context,
-    const ux_input_event *event);
+    const ui_input_event *event);
 
 typedef enum vm_product_control_fact_kind {
     VM_PRODUCT_CONTROL_FACT_MONITOR_LINE,
@@ -25,7 +25,7 @@ typedef struct vm_product_control_fact {
     union {
         C_CHAR line[1024];
         vm_session_lifecycle lifecycle;
-        ux_input_event host_input;
+        ui_input_event host_input;
     } value;
 } vm_product_control_fact;
 
@@ -41,7 +41,7 @@ C_UINT vm_product_control_begin_run(vm_product_control *control);
  * The callback is deliberately neutral; it is the product's job to translate
  * a UX event into a guest event. */
 type_status vm_product_control_dispatch_host_input(vm_product_control *control,
-    const ux_input_event *event, C_INT session_running,
+    const ui_input_event *event, C_INT session_running,
     vm_product_control_input_sink sink, C_VOID *sink_context);
 type_status vm_product_control_take(vm_product_control *control,
     vm_product_control_fact *out_fact,

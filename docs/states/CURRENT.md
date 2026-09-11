@@ -4,26 +4,26 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S7 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): replace Core debugger polling with a composition-owned completion event. |
+| T526 S8 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): adopt the current canonical SoftPC `src/lib` corpus and repair every affected NXVM binding without a fork. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S7. |
-| Admission And Approval | Owner approved continuation through all remaining T526 subtasks after accepting S4 native single-session behavior. |
-| Objective | Retain the completed one-session product-control migration while removing the Core debugger's polling wait through one composition-owned execution-completion event. |
-| Non-goals | No local lib patch, native SDK call from Core, firmware/media/profile semantic change, second presenter path, or debugger-owned machine execution. |
-| Reference Baseline | Accepted S4 direct session, canonical SoftPC `7cc408ec`, and SoftPC's control/reconciler/presentation separation. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S6. |
-| Files And ABI Surface | Current `vm/product` control/presentation/Console host, composition session completion contract, Core debugger target boundary, and T526 artifact target. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/rules/EXECUTION.md`: one product control owner, one presentation owner, one Console broker and no platform leakage. |
-| Verification | Focused debugger completion regressions plus complete repository-only unit; at T closure rerun external-ROM/media integration and boundary/documentation gates, then rebuild and hash stripped x64/x86 `0526` artifacts. |
-| Expected Markers | Debugger `GO`/trace has no `core_utils_wait` or 10ms poll; its target blocks only for a runner-completed pause/stop transition; no `vm/platform` source remains. |
-| Asset Needs | None; repository-only unit inputs only. |
-| Reporting Requirements | Report each replaced `vm/platform` path, the resulting fact/action flow, focused and complete unit verification, and net source/test change. |
-| Stop Conditions | Stop if the canonical lib requires an NXVM-local patch, a product event cannot be made lifecycle-safe, or any accepted native presentation path regresses. |
-| Exit Criteria | One control FIFO consumes all product facts; product presentation is the only lib leaf and completion producer; `vm/platform` no longer owns lib UX, Console broker, hotkey or presentation policy; debugger completion waits have one composition owner and all polling helpers are gone. |
+| Identifier Mode | Continuation - M5 T526 S8. |
+| Admission And Approval | Owner rejected T526 closure on 2026-09-10 and approved continuation to adopt the latest SoftPC lib. |
+| Objective | Replace NXVM's `src/lib` byte-for-byte with the current SoftPC canonical corpus, then repair all affected NXVM integrations so product behavior remains one control owner, one presentation binding and one composition execution owner. |
+| Non-goals | No NXVM-local lib patch, wrapper, compatibility copy, Core/firmware/profile semantic change, or adoption of SoftPC application code. |
+| Reference Baseline | SoftPC canonical repository revision `291afe4`; existing T526 S1--S7 history and the retained canonical-lib proposal. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S8. |
+| Files And ABI Surface | `src/lib` full manifest/public headers and every NXVM VM product/composition/CMake/test consumer affected by its canonical ABI. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`. |
+| Verification | Establish a tracked manifest/API delta ledger; exact corpus/manifest proof; focused ABI regressions; complete repository-only unit; external integration at T closure; boundary and documentation gates; fresh stripped x64/x86 `0526` artifacts. |
+| Expected Markers | NXVM `src/lib` equals SoftPC `291afe4`; no product code calls native SDK APIs for capabilities exported by lib; no old ABI forwarding or second presentation/control path remains. |
+| Asset Needs | Owner-controlled SoftPC source only; no firmware, media, ROM, binary, configuration or test-fixture import. |
+| Reporting Requirements | Record imported revision, exact file/API delta, every NXVM consumer disposition, provenance, source/test net change and verification evidence. |
+| Stop Conditions | Stop for an incompatible canonical lib license/provenance issue, a required local lib patch, loss of an approved product behavior without a neutral canonical replacement, or a platform API leakage into VM/Core. |
+| Exit Criteria | The refreshed corpus is exact and manifest-valid; every delta consumer is repaired or has a named in-scope disposition; all old routes are deleted; complete T526 verification and dual artifacts pass. |
 | Original Owner Request | Compare NXVM with the neighboring SoftPC project and close the gaps. |
-| Similar-Issue Sweep | Audit all `vm_platform_*` UX, run-handle, Console-binding, Window-close, title, mouse, action and lib presenter references across production, tests and CMake. Replace each product-owned hit or record it as neutral composition-only behavior with a reason. |
+| Similar-Issue Sweep | Enumerate every changed/removed public lib symbol and sweep tracked NXVM source, tests and CMake for its use; each hit is migrated, deleted as obsolete or explicitly deferred through the normal ledger. |
 
 ## Current Technical Baseline
 
@@ -70,7 +70,6 @@
 | T520 | Closed: `session.c` is the single VM lifecycle owner; Model 40 retains board/plan preparation only. Fresh unit 304/304, external-ROM/media integration 44/44, static owner sweep, and stripped dual-architecture 0520 pass. [History](../history/M5-T520-model40-session-lifecycle-consolidation.md). |
 | T519 | Closed: the shared KBC command-byte/BAT/IRQ1 repair removed the IBM 5170 keyboard POST race without a BIOS/profile workaround. Owner product proof, unit 304/304, focused external-ROM rows, governance and stripped dual-architecture 0519 pass. [History](../history/M5-T519-kbc-board-integration-reclosure.md). |
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
-| T517 | Closed: one CMake source target emits architecture-checked 0517 `_x64.exe` and `_x86.exe` artifacts. x64 unit 302/302 and integration 44/44 pass; x86 native smoke passes. [History](../history/M5-T517-dual-architecture-developer-artifacts.md). |
 
 ## Recent Governance
 

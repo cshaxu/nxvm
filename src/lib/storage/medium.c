@@ -1,4 +1,4 @@
-#include "lib/base/base_interface.h"
+#include "lib/types/types_interface.h"
 
 #include "lib/storage/medium_interface.h"
 #include "lib/storage/file_backend.h"

@@ -1,10 +1,10 @@
-#include "lib/base/base_interface.h"
+#include "lib/types/types_interface.h"
 #include "lib/storage/medium_interface.h"
 
 #include <stdio.h>
 #include <process.h>
 
-static const char storage_medium_path[] = "storage-medium-smoke.img";
+static const char storage_medium_path[] = "storage-smoke.img";
 
 static int storage_medium_write_fixture(const void *bytes, size_t byte_count)
 {
