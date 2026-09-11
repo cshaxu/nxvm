@@ -13,9 +13,9 @@
 
 #include "vm/composition/session/session_interface.h"
 
-#include "core/product/debug/debug_target.h"
+#include "core/debug/debug_target.h"
 
-#include "core/product/utils.h"
+#include "core/debug/utils.h"
 #include "lib/host/sync_interface.h"
 
 #include "vm/composition/session/debug_target.h"
@@ -38,7 +38,7 @@ static type_status vm_session_debug_disassemble(C_VOID *context,
     STD_SIZE_T *out_code_bytes, C_INT flag32)
 {
     (C_VOID)context;
-    return core_product_utils_disassemble(code, code_bytes, statement,
+    return core_debug_disassemble(code, code_bytes, statement,
         statement_capacity, out_code_bytes, flag32);
 }
 

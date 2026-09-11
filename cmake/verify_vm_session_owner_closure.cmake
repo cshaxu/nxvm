@@ -19,7 +19,7 @@ endforeach()
 
 foreach(required IN ITEMS
     "core_machine *core_machine;"
-    "core_product_debug_target *debug_target;"
+    "core_debug_target *debug_target;"
     "vm_session_control_state control;")
     string(FIND "${session_header}" "${required}" position)
     if(position EQUAL -1)

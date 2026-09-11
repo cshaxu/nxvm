@@ -14,7 +14,7 @@ their admitting milestones begin; empty placeholder roots are prohibited.
 ```text
 src/
   type.*
-  core/{utils,machine,product}/
+  core/{debug,machine,product}/
   vm/
     main.c
     composition/

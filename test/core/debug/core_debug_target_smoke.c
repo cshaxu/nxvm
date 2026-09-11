@@ -2,9 +2,9 @@
 
 
 
-#include "core/product/debug/debug_access.h"
+#include "core/debug/debug_access.h"
 
-#include "core/product/debug/debug_target.h"
+#include "core/debug/debug_target.h"
 
 typedef struct debug_target_fixture {
     type_unsigned_32 eax;
@@ -13,23 +13,23 @@ typedef struct debug_target_fixture {
 } debug_target_fixture;
 
 static C_INT debug_target_read_register(C_VOID *context,
-                                      core_product_debug_register reg,
+                                      core_debug_register reg,
                                       type_unsigned_32 *value)
 {
     debug_target_fixture *fixture = context;
 
-    if (reg != CORE_PRODUCT_DEBUG_EAX || value == STD_NULL) return 1;
+    if (reg != CORE_DEBUG_EAX || value == STD_NULL) return 1;
     *value = fixture->eax;
     return 0;
 }
 
 static C_INT debug_target_write_register(C_VOID *context,
-                                       core_product_debug_register reg,
+                                       core_debug_register reg,
                                        type_unsigned_32 value)
 {
     debug_target_fixture *fixture = context;
 
-    if (reg != CORE_PRODUCT_DEBUG_EAX) return 1;
+    if (reg != CORE_DEBUG_EAX) return 1;
     fixture->eax = value;
     return 0;
 }
@@ -66,7 +66,7 @@ static type_unsigned_32 debug_target_code_base(C_VOID *context)
 C_INT main(C_VOID)
 {
     debug_target_fixture fixture = {0x12345678u, 7u, 0u};
-    core_product_debug_target target = {0};
+    core_debug_target target = {0};
     type_unsigned_32 value = 0u;
 
     target.is_running = debug_target_is_running;
@@ -77,21 +77,21 @@ C_INT main(C_VOID)
     target.get_code_base = debug_target_code_base;
     target.get_break_count = debug_target_get_break_count;
     target.context = &fixture;
-    if (target.read_register(target.context, CORE_PRODUCT_DEBUG_EAX, &value) ||
+    if (target.read_register(target.context, CORE_DEBUG_EAX, &value) ||
         value != 0x12345678u ||
-        target.write_register(target.context, CORE_PRODUCT_DEBUG_EAX, 0x87654321u) ||
+        target.write_register(target.context, CORE_DEBUG_EAX, 0x87654321u) ||
         fixture.eax != 0x87654321u ||
         target.get_break_count(target.context) != 7u) return 1;
-    if (!core_product_debug_is_running(&target) ||
-        !core_product_debug_wait_for_completion(&target) ||
+    if (!core_debug_is_running(&target) ||
+        !core_debug_wait_for_completion(&target) ||
         fixture.completion_waits != 1u ||
-        core_product_debug_read_register(&target, CORE_PRODUCT_DEBUG_EAX, &value) ||
+        core_debug_read_register(&target, CORE_DEBUG_EAX, &value) ||
         value != fixture.eax ||
-        core_product_debug_write_register(&target, CORE_PRODUCT_DEBUG_EAX, 0x10203040u) ||
+        core_debug_write_register(&target, CORE_DEBUG_EAX, 0x10203040u) ||
         fixture.eax != 0x10203040u ||
-        core_product_debug_get_code_default_size(&target) != 16 ||
-        core_product_debug_get_code_base(&target) != 0xf0000u ||
-        core_product_debug_get_break_count(&target) != 7u) return 1;
+        core_debug_get_code_default_size(&target) != 16 ||
+        core_debug_get_code_base(&target) != 0xf0000u ||
+        core_debug_get_break_count(&target) != 7u) return 1;
     puts("M5:T14:S3:CORE-PRODUCT-DEBUG-TARGET:OK");
     return 0;
 }

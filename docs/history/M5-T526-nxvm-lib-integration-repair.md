@@ -213,3 +213,21 @@ counts. The corpus is byte-identical to the named SoftPC revision; Debug and
 Release manifest checks, all current specialized gates and 303/303 Debug unit
 tests pass. T526 remains active for its task-level verification and native
 review.
+
+### S9 implementation result
+
+`core/debug`, `core/machine`, and `core/product` are now independent Core
+modules. The former product debugger, its opaque target contract, xasm and
+debugger-local bounded text helpers moved to `core/debug` under `core_debug_*`
+names. `core/product` retains only the independent decimal KiB configuration
+parser. The sole VM composition adapter binds the neutral debug target to the
+machine-debug operations; no Core module imports a peer or a host/VM/session
+type.
+
+The old product-debug directory, utility facade, symbols, target names and
+tests are deleted rather than preserved as aliases. The renamed boundary gate
+checks every Core module's source imports and target edges, while the existing
+debugger and VM adapter regressions cover the retained route. Focused 6/6,
+repository-only unit 303/303, all current specialized gates, documentation
+governance and `git diff --check` pass. T526 remains open for the separately
+approved VM event, machine, session and presentation convergence subtasks.

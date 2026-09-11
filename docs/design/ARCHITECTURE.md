@@ -23,9 +23,10 @@ They are architectural commitments, not current release artifacts.
 
 ## Modules, Ownership, And Assembly
 
-`core` contains `machine` and `product` modules plus the neutral
-`utils` foundation. `vm` and `vdm` each use `machine`, `platform`, `product`,
-and `profile` modules. `mantle` uses `machine`, `platform`, and `product`;
+`core` contains independent `debug`, `machine`, and `product` modules.
+`src/type.*` remains the neutral system-wide foundation below them. `vm` and
+`vdm` each use `machine`, `platform`, `product`, and `profile` modules.
+`mantle` uses `machine`, `platform`, and `product`;
 `dos` may use its own `machine`, `platform`, `product`, and `profile` modules.
 
 ```text
@@ -50,7 +51,9 @@ selects application-runner UX and binds mantle to dos. Product-root composition
 is where the declared machine, platform, product, and profile capabilities are
 combined.
 
-Core owns shared instruction decode and execution, checked memory and port
+Core debug owns debugger command parsing, assembly/disassembly, and its opaque
+target contract; it does not own or expose machine state. Core machine owns
+shared instruction decode and execution, checked memory and port
 access, and the CPU/DMA transaction lifecycle. Its current specification-driven L3 instruction and transaction timing direction, L2 fallback discipline, and future Core-to-VM timing-plan boundary are detailed in [Specification-Driven Instruction And Transaction Timing Simulation](../etc/architecture/specification-driven-l3-timing.md). A VM machine profile composes
 those mechanisms with a documented CPU and board contract; it may add only a
 real architectural or physical difference, including CPU feature gates,

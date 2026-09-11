@@ -4,26 +4,26 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S8 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): adopt the current canonical SoftPC `src/lib` corpus and repair every affected NXVM binding without a fork. |
+| T526 S9 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): extract an independent Core debugger module without a compatibility route. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S8. |
-| Admission And Approval | Owner rejected T526 closure on 2026-09-10 and approved continuation to adopt the latest SoftPC lib. |
-| Objective | Replace NXVM's `src/lib` byte-for-byte with the current SoftPC canonical corpus, then repair all affected NXVM integrations so product behavior remains one control owner, one presentation binding and one composition execution owner. |
-| Non-goals | No NXVM-local lib patch, wrapper, compatibility copy, Core/firmware/profile semantic change, or adoption of SoftPC application code. |
-| Reference Baseline | SoftPC canonical repository revision `291afe4`; existing T526 S1--S7 history and the retained canonical-lib proposal. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S8. |
-| Files And ABI Surface | `src/lib` full manifest/public headers and every NXVM VM product/composition/CMake/test consumer affected by its canonical ABI. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Establish a tracked manifest/API delta ledger; exact corpus/manifest proof; focused ABI regressions; complete repository-only unit; external integration at T closure; boundary and documentation gates; fresh stripped x64/x86 `0526` artifacts. |
-| Expected Markers | NXVM `src/lib` equals SoftPC `291afe4`; no product code calls native SDK APIs for capabilities exported by lib; no old ABI forwarding or second presentation/control path remains. |
-| Asset Needs | Owner-controlled SoftPC source only; no firmware, media, ROM, binary, configuration or test-fixture import. |
-| Reporting Requirements | Record imported revision, exact file/API delta, every NXVM consumer disposition, provenance, source/test net change and verification evidence. |
-| Stop Conditions | Stop for an incompatible canonical lib license/provenance issue, a required local lib patch, loss of an approved product behavior without a neutral canonical replacement, or a platform API leakage into VM/Core. |
-| Exit Criteria | The refreshed corpus is exact and manifest-valid; every delta consumer is repaired or has a named in-scope disposition; all old routes are deleted; complete T526 verification and dual artifacts pass. |
-| Original Owner Request | Compare NXVM with the neighboring SoftPC project and close the gaps. |
-| Similar-Issue Sweep | Enumerate every changed/removed public lib symbol and sweep tracked NXVM source, tests and CMake for its use; each hit is migrated, deleted as obsolete or explicitly deferred through the normal ledger. |
+| Identifier Mode | Continuation - M5 T526 S9. |
+| Admission And Approval | Owner approved T526 S9 on 2026-09-10: extract `core/product/debug` into independent `core/debug`, then retain Core debug, machine and product as mutually independent modules. |
+| Objective | Move debugger parsing, target contract, assembler/disassembler and debugger-local text helpers to `core/debug`; leave `core/product` independent; repair VM's sole machine-side debug adapter and delete the old route. |
+| Non-goals | No Core machine semantic change, no debugger command behavior change, no VM queue/session/presentation migration, no external source import, and no compatibility include, alias, forwarding target or duplicate debugger implementation. |
+| Reference Baseline | T526 S8 exact SoftPC library import at `4c3aa7ad`; owner-approved T526 target architecture in the retained proposal; current Core debug/product/machine source and target graph. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S9. |
+| Files And ABI Surface | `src/core/{debug,machine,product}`, Core/VM CMake targets, VM's sole debug target adapter, all tracked Core/VM includes, and mirrored repository-only debugger tests. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
+| Verification | Audit every Core cross-module include/target edge before and after; prove no retained `core/product/debug` path; prove `core/debug`, `core/machine` and `core/product` have no mutual source or target dependency; run focused debugger/VM-adapter tests, complete repository-only unit, current specialized gates, documentation governance and actual-diff review. |
+| Expected Markers | `core/debug` exposes only its neutral typed target contract; `core/product` has no debugger/assembler dependency; VM's one adapter binds Core debug to Core machine; no Core module contains host API, VM type or session pointer. |
+| Asset Needs | None; this is a tracked source/test/documentation reorganization only. |
+| Reporting Requirements | Record the old-to-new symbol/path disposition, remaining Core module edges, removed routes, source/test net change and verification evidence; stop and report any required public behavior change or dependency cycle. |
+| Stop Conditions | Stop for a debugger API that cannot be separated without changing approved command behavior, a discovered Core machine/product coupling with no same-S removal, or any need for a compatibility path. |
+| Exit Criteria | Old debugger files, target names, symbols and include paths are absent; the three Core modules are independently buildable and directionally isolated; VM has exactly one explicit debug-to-machine adapter; required tests and gates pass. |
+| Original Owner Request | Establish `core/debug`, `core/machine` and `core/product` as independent Core modules, then continue the SoftPC-style VM architecture convergence. |
+| Similar-Issue Sweep | Enumerate all `core/{debug,machine,product}` include and CMake target edges, all debugger consumers and all former mixed utility calls; migrate each to its sole final owner or remove it in this S. |
 
 ## Current Technical Baseline
 

@@ -460,7 +460,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
         vm_session_storage_finalize(machine);
         return TYPE_STATUS_NO_MEMORY;
     }
-    status = core_product_debugger_create(&machine->debugger);
+    status = core_debugger_create(&machine->debugger);
     if (status != TYPE_STATUS_OK) {
         vm_session_storage_finalize(machine);
         return status;
@@ -472,7 +472,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
 C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL) return;
-    core_product_debugger_destroy(machine->debugger);
+    core_debugger_destroy(machine->debugger);
     machine->debugger = STD_NULL;
     core_machine_guest_presentation_mailbox_destroy(machine->presentation_mailbox);
     machine->presentation_mailbox = STD_NULL;

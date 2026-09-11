@@ -18,6 +18,58 @@ NXVM does not retain a wrapper, compatibility copy, or local lib patch.
 - `src/lib` remains the canonical, platform-neutral presenter implementation;
   it knows neither session nor machine state.
 
+## Owner-Approved Target Architecture
+
+The current product binding is an intermediate T526 result. The remaining
+subtasks converge it to this shape without importing SoftPC application code:
+
+```text
+core/debug      core/machine      core/product
+     \               |               /
+      \              |              /
+       +---------- vm/machine -----------+
+       |       executor request FIFO     |
+       |  copied machine-result sink     |
+       +-------------+-------------------+
+                     |
+                 vm/events
+                     |
+CLI + presenter input --> vm/session control FIFO --> vm/machine requests
+                                          \-------> vm/presentation plan API
+                                                      |
+                                                   src/lib
+```
+
+- `core/debug`, `core/machine`, and `core/product` are independent Core
+  modules. `core/debug` owns command parsing and a neutral opaque target
+  contract only; it imports neither Core machine state nor host facilities.
+  `core/machine` owns emulated state, and `core/product` retains only its
+  independent product-neutral capabilities.
+- `vm/events` is a value-only leaf ABI: copied request/result records and sink
+  signatures. It owns no queue, state, Core pointer, session pointer, or
+  policy.
+- `vm/machine` is the only Core composition and executor owner. It binds the
+  three Core modules, consumes its executor FIFO, and reports copied lifecycle,
+  debugger, fault, and frame facts through the `vm/events` sink. It does not
+  know or call `vm/session` or `vm/presentation`.
+- `vm/session` is the sole product control/reducer owner. Its one control FIFO
+  receives CLI requests, copied machine facts, and copied presentation input.
+  It owns lifecycle decisions and run generation, submits execution requests
+  to `vm/machine`, and invokes only the public plan API of `vm/presentation`.
+- `vm/presentation` is the sole NXVM integration of `src/lib` UI components.
+  It creates the one active Console or Window leaf, converts copied frames,
+  and returns copied input/completion facts through the `vm/events` sink. It
+  neither chooses machine lifecycle nor accesses Core.
+- `vm/main` is the only VM product composition root. It constructs the three
+  VM owners and supplies their callbacks. `vm/machine` and
+  `vm/presentation` never link back to or retain `vm/session`.
+
+The two FIFOs have non-overlapping purposes: session FIFO serializes product
+decisions; machine FIFO serializes Core access. Neither is a forwarding copy
+of the other. Every replacement deletes the former owner and route in the
+same subtask; no compatibility wrapper or dual presenter/control path is
+allowed.
+
 ## Subtasks
 
 1. **S1 - copied-frame correctness.** Repair the Core-to-UX conversion and
@@ -77,6 +129,39 @@ NXVM does not retain a wrapper, compatibility copy, or local lib patch.
    consumer in one ledger and migrate it to the canonical contract or delete
    it as obsolete. No local lib patch, compatibility facade or duplicate
    presentation/control route may remain.
+9. **S9 - independent Core debug extraction.** Move
+   `core/product/debug` to `core/debug`; make its target contract independent
+   of `core/machine` and `core/product`. Partition the current mixed
+   `core/product/utils` surface at its real ownership boundary: debugger
+   assembler/disassembler and debugger-local text helpers move with
+   `core/debug`, while any retained independent product utility neither
+   includes nor links debug. Then repair VM's one machine-side adapter. Remove
+   the old directory, symbols and target names rather than forwarding them.
+   Prove the three Core modules have no mutual source or target dependency,
+   and run the complete repository-only unit suite.
+10. **S10 - VM event ABI and machine executor ownership.** Establish the
+    value-only `vm/events` contract, move Core assembly/executor ownership to
+    `vm/machine`, and give it one request FIFO plus one copied-result sink.
+    Route debugger completion, lifecycle, fault and copied display facts
+    through that sink. Delete the displaced composition execution route and
+    prove Core is never accessed outside `vm/machine`.
+11. **S11 - session control convergence.** Replace the remaining product
+    Console/control decision path with one `vm/session` FIFO and reducer. It
+    accepts CLI, machine and presentation facts; owns run generation and
+    lifecycle decisions; and emits only machine requests or presentation
+    plans. Delete duplicate command routing, direct leaf decisions, and
+    session-pointer back references from peers.
+12. **S12 - presentation leaf convergence.** Move the NXVM-facing lib binding
+    to `vm/presentation`. It must consume session plans, expose no native SDK
+    API, retain exactly one active UI leaf, and emit copied events back through
+    `vm/events`. Delete retired `vm/product` presentation/Console ownership
+    rather than preserving aliases. Cover target switching, title, mouse,
+    full-frame publication, shortcuts, close and session lifecycle reporting.
+13. **S13 - whole-route closure.** Audit every Core/VM/lib edge against the
+    target architecture; remove stale gates and replace them only with gates
+    over the final owners. Run complete unit and external integration suites,
+    review the actual diff for duplicate state/routes, and produce fresh
+    stripped x64/x86 `0526` artifacts for native UX review.
 
 ## Acceptance
 
@@ -97,3 +182,7 @@ NXVM does not retain a wrapper, compatibility copy, or local lib patch.
   developer artifacts are produced for revision 0526.
 - Runtime debugger `GO` and trace commands wait on composition completion
   events rather than a periodic Core-to-host sleep callback.
+- The S9--S13 architecture has exactly three independent Core modules, a
+  value-only VM event ABI, one machine executor FIFO, one session control FIFO
+  and one lib-facing presentation owner; no peer retains a Core/session/UI
+  internal pointer across its declared boundary.

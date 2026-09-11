@@ -10,7 +10,7 @@ struct vm_product_session_catalog {
     STD_SIZE_T rejected;
 };
 
-#include "core/product/utils.h"
+#include "core/product/config.h"
 #include "lib/storage/file_interface.h"
 
 static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
@@ -131,7 +131,7 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
             fpu = 1; continue;
         }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "memory_kib", &value)) {
-            if (memory || core_product_utils_parse_memory_kib(value,
+            if (memory || core_product_parse_memory_kib(value,
                     &entry->memory_bytes) != TYPE_STATUS_OK) break;
             memory = 1;
             continue;

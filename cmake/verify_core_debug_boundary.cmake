@@ -14,15 +14,34 @@ foreach(file IN ITEMS
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/product/debug/debug.c" debug_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/debug/debug.c" debug_source)
 if(debug_source MATCHES "core_utils_wait|wait_scope|Sleep\\(|host_sync_")
     message(FATAL_ERROR "Core debugger retains a host wait implementation")
 endif()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/product/debug/debug_target.h" target_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/debug/debug_target.h" target_source)
 string(FIND "${target_source}" "wait_for_completion" completion_position)
 if(completion_position EQUAL -1)
     message(FATAL_ERROR "Core debugger target lacks completion contract")
 endif()
+file(READ "${PROJECT_SOURCE_DIR}/src/core/debug/utils.h" utility_interface)
+if(utility_interface MATCHES "core_debug_(copy|append)_text")
+    message(FATAL_ERROR "Core debug exposes debugger-local text helpers")
+endif()
+
+foreach(module IN ITEMS debug machine product)
+    file(GLOB_RECURSE module_sources
+        "${PROJECT_SOURCE_DIR}/src/core/${module}/*.c"
+        "${PROJECT_SOURCE_DIR}/src/core/${module}/*.h")
+    foreach(file IN LISTS module_sources)
+        file(READ "${file}" source)
+        foreach(peer IN ITEMS debug machine product)
+            if(NOT peer STREQUAL module AND
+                source MATCHES "#include[ \t]+\"core/${peer}/")
+                message(FATAL_ERROR "Core ${module} imports peer ${peer}: ${file}")
+            endif()
+        endforeach()
+    endforeach()
+endforeach()
 
 file(GLOB_RECURSE peer_sources
     "${PROJECT_SOURCE_DIR}/src/vm/machine/*.c"
@@ -52,15 +71,27 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 foreach(forbidden IN ITEMS
+    "target_link_libraries(core-debug PUBLIC\n    core-machine"
+    "target_link_libraries(core-debug PUBLIC\n    core-product"
+    "target_link_libraries(core-machine-executor PUBLIC\n    core-debug"
+    "target_link_libraries(core-machine-executor PUBLIC\n    core-product"
+    "target_link_libraries(core-product PUBLIC\n    core-debug"
+    "target_link_libraries(core-product PUBLIC\n    core-machine")
+    string(FIND "${cmake_source}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "Core modules retain a target dependency: ${forbidden}")
+    endif()
+endforeach()
+foreach(forbidden IN ITEMS
     "target_link_libraries(vm-machine PUBLIC\n    core-machine\n    vm-profile)"
-    "target_link_libraries(vm-profile PUBLIC\n    core-product-utils)"
-    "target_link_libraries(core-product-utils PUBLIC\n    core-machine-boundary)"
+    "target_link_libraries(vm-profile PUBLIC\n    core-product)"
+    "target_link_libraries(core-product PUBLIC\n    core-machine-boundary)"
     "target_link_libraries(vm-platform-requests PUBLIC core-machine)"
-    "target_link_libraries(vm-product PUBLIC\n    core-product-utils\n    core-machine)")
+    "target_link_libraries(vm-product PUBLIC\n    core-product\n    core-machine)")
     string(FIND "${cmake_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "M5 T234 forbidden peer target edge remains: ${forbidden}")
     endif()
 endforeach()
 
-message(STATUS "M5 T526 core debugger completion boundary: OK")
+message(STATUS "M5 T526 independent Core debug boundary: OK")

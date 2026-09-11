@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "core/product/utils.h"
+#include "core/debug/text_internal.h"
 
-#include "core/product/debug/xasm32/dasm32.h"
+#include "core/debug/xasm32/dasm32.h"
 
 #define TYPE_TRACE_CONTEXT trace
 #define TYPE_TRACE_ERROR flagError
@@ -89,13 +89,13 @@ struct dasm32_context
 
 #define DASM_COPY_ARRAY(destination, source)                                       \
     do {                                                                            \
-        if (core_product_utils_copy_text((destination), MAXLINE,                   \
+        if (core_debug_copy_text((destination), MAXLINE,                   \
                 (source)) != TYPE_STATUS_OK) TYPE_TRACE_SET_ERROR;                 \
     } while (0)
 
 #define DASM_APPEND_ARRAY(destination, source)                                     \
     do {                                                                            \
-        if (core_product_utils_append_text((destination), MAXLINE,                 \
+        if (core_debug_append_text((destination), MAXLINE,                 \
                 (source)) != TYPE_STATUS_OK) TYPE_TRACE_SET_ERROR;                 \
     } while (0)
 

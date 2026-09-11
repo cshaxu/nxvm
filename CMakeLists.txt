@@ -1153,7 +1153,7 @@ if(POWERSHELL_EXECUTABLE)
 endif()
 
 set(CORE_PRODUCT_SOURCES
-    src/core/product/utils.c
+    src/core/product/config.c
 )
 # The ISO C facade is below every product and module layer. Keep it separate
 # from core-machine so platform-only targets never acquire a machine dependency.
@@ -1185,11 +1185,12 @@ set(VM_PRODUCT_SOURCES
     src/vm/product/session_factory.c
     src/vm/product/session_catalog.c
 )
-set(CORE_PRODUCT_DEBUG_SOURCES
-    src/core/product/debug/debug_access.c
-    src/core/product/debug/debug.c
-    src/core/product/debug/xasm32/aasm32.c
-    src/core/product/debug/xasm32/dasm32.c
+set(CORE_DEBUG_SOURCES
+    src/core/debug/debug_access.c
+    src/core/debug/debug.c
+    src/core/debug/utils.c
+    src/core/debug/xasm32/aasm32.c
+    src/core/debug/xasm32/dasm32.c
 )
 set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/debug_target.c
@@ -1267,11 +1268,11 @@ target_link_libraries(vm-session-request-transport-smoke PRIVATE
     vm-session-request-transport
 )
 
-add_library(core-product-debug STATIC ${CORE_PRODUCT_DEBUG_SOURCES})
-target_include_directories(core-product-debug PUBLIC
+add_library(core-debug STATIC ${CORE_DEBUG_SOURCES})
+target_include_directories(core-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-product-debug PUBLIC type-facade)
+target_link_libraries(core-debug PUBLIC type-facade)
 
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
@@ -1285,40 +1286,40 @@ target_include_directories(core-machine-executor PUBLIC
 target_link_libraries(core-machine-executor PUBLIC type-facade)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
-add_library(core-product-utils STATIC ${CORE_PRODUCT_SOURCES})
-target_include_directories(core-product-utils PUBLIC
+add_library(core-product STATIC ${CORE_PRODUCT_SOURCES})
+target_include_directories(core-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-product-utils PUBLIC core-product-debug)
+target_link_libraries(core-product PUBLIC type-facade)
 
 add_executable(std-snprintf-smoke
     test/core/std_snprintf_smoke.c
 )
 target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
 
-add_executable(core-product-debug-target-smoke
-    test/core/product/core_product_debug_target_smoke.c
+add_executable(core-debug-target-smoke
+    test/core/debug/core_debug_target_smoke.c
 )
-target_include_directories(core-product-debug-target-smoke PRIVATE
+target_include_directories(core-debug-target-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-product-debug-target-smoke PRIVATE
-    core-product-debug
+target_link_libraries(core-debug-target-smoke PRIVATE
+    core-debug
 )
 
-add_executable(core-product-debug-input-failure-smoke
-    test/core/product/core_product_debug_input_failure_smoke.c
-    src/core/product/debug/debug.c
-    src/core/product/debug/debug_access.c
+add_executable(core-debug-input-failure-smoke
+    test/core/debug/core_debug_input_failure_smoke.c
+    src/core/debug/debug.c
+    src/core/debug/debug_access.c
 )
-target_include_directories(core-product-debug-input-failure-smoke PRIVATE
+target_include_directories(core-debug-input-failure-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_compile_definitions(core-product-debug-input-failure-smoke PRIVATE
+target_compile_definitions(core-debug-input-failure-smoke PRIVATE
     STD_MALLOC=test_debug_input_malloc
 )
-target_link_libraries(core-product-debug-input-failure-smoke PRIVATE
-    core-product-utils
+target_link_libraries(core-debug-input-failure-smoke PRIVATE
+    core-debug
     type-facade
 )
 
@@ -1338,7 +1339,7 @@ target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
     STD_MALLOC=test_console_input_malloc
 )
 target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
-    core-product-utils
+    core-product
     core-machine-boundary
     storage
     ui-window
@@ -1359,7 +1360,7 @@ target_include_directories(vm-product-console-exit-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product-console-exit-smoke PRIVATE
-    core-product-utils
+    core-product
     core-machine-boundary
     storage
     ui-window
@@ -1380,7 +1381,7 @@ target_include_directories(vm-product-console-lifecycle-report-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product-console-lifecycle-report-smoke PRIVATE
-    core-product-utils
+    core-product
     core-machine-boundary
     storage
     ui-window
@@ -1400,29 +1401,29 @@ add_executable(vm-product-presentation-frame-smoke
     test/vm/product/vm_product_presentation_frame_smoke.c)
 target_link_libraries(vm-product-presentation-frame-smoke PRIVATE vm-product)
 
-add_executable(core-product-xasm-smoke
-    test/core/product/core_product_xasm_smoke.c
+add_executable(core-debug-xasm-smoke
+    test/core/debug/core_debug_xasm_smoke.c
 )
-target_include_directories(core-product-xasm-smoke PRIVATE
+target_include_directories(core-debug-xasm-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-product-xasm-smoke PRIVATE
-    core-product-utils
+target_link_libraries(core-debug-xasm-smoke PRIVATE
+    core-debug
 )
 
-add_executable(core-product-xasm-contract-smoke
-    test/core/product/core_product_xasm_contract_smoke.c
-    src/core/product/utils.c
-    src/core/product/debug/xasm32/aasm32.c
-    src/core/product/debug/xasm32/dasm32.c
+add_executable(core-debug-xasm-contract-smoke
+    test/core/debug/core_debug_xasm_contract_smoke.c
+    src/core/debug/utils.c
+    src/core/debug/xasm32/aasm32.c
+    src/core/debug/xasm32/dasm32.c
 )
-target_include_directories(core-product-xasm-contract-smoke PRIVATE
+target_include_directories(core-debug-xasm-contract-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_compile_definitions(core-product-xasm-contract-smoke PRIVATE
+target_compile_definitions(core-debug-xasm-contract-smoke PRIVATE
     STD_MALLOC=test_xasm_malloc
 )
-target_link_libraries(core-product-xasm-contract-smoke PRIVATE
+target_link_libraries(core-debug-xasm-contract-smoke PRIVATE
     type-facade
 )
 
@@ -1479,7 +1480,8 @@ target_include_directories(vm-composition PUBLIC
 target_link_libraries(vm-composition PUBLIC
     vm-machine
     core-machine
-    "$<LINK_GROUP:RESCAN,core-product-debug,core-product-utils>"
+    core-debug
+    core-product
     vm-profile
     vm-product
     vm-session-request-transport)
@@ -1502,7 +1504,7 @@ target_link_libraries(vm-product PUBLIC
     vm-composition
     ui-window
     ui-console
-    core-product-utils
+    core-product
     core-machine-boundary
     storage)
 
@@ -2274,10 +2276,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-boot-failure-lifecycle-smoke
     vm-session-request-transport-smoke
     std-snprintf-smoke
-    core-product-xasm-smoke
-    core-product-xasm-contract-smoke
-    core-product-debug-target-smoke
-    core-product-debug-input-failure-smoke
+    core-debug-xasm-smoke
+    core-debug-xasm-contract-smoke
+    core-debug-target-smoke
+    core-debug-input-failure-smoke
     vm-product-console-input-failure-smoke
     vm-product-console-exit-smoke
     vm-product-console-lifecycle-report-smoke
@@ -3337,8 +3339,8 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
     add_custom_target(verify-core-debug-completion-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_utils_boundary.cmake"
-        COMMENT "Verifying Core debugger completion boundary"
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_debug_boundary.cmake"
+        COMMENT "Verifying independent Core debug boundary"
         VERBATIM)
 
 
@@ -3653,7 +3655,7 @@ file(GENERATE
 # production dependency.
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
     "type-facade|src/type.c"
-    "core-product-utils|src/core/product/utils.c"
+    "core-product|src/core/product/config.c"
     "vm-session-requests|src/vm/composition/session/request_bridge.c")
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
 foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
@@ -3704,15 +3706,16 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/xt_ppi_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/xt_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/rtc.c|machine-executor"
-    "core-product-debug|src/core/product/debug/debug_access.c|debug-xasm"
-    "core-product-debug|src/core/product/debug/debug.c|debug-xasm"
-    "core-product-debug|src/core/product/debug/xasm32/aasm32.c|debug-xasm"
-    "core-product-debug|src/core/product/debug/xasm32/dasm32.c|debug-xasm"
-    "core-product-xasm-contract-smoke|src/core/product/utils.c|debug-xasm-contract"
-    "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/aasm32.c|debug-xasm-contract"
-    "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/dasm32.c|debug-xasm-contract"
-    "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
-    "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
+    "core-debug|src/core/debug/debug_access.c|debug-xasm"
+    "core-debug|src/core/debug/debug.c|debug-xasm"
+    "core-debug|src/core/debug/utils.c|debug-xasm"
+    "core-debug|src/core/debug/xasm32/aasm32.c|debug-xasm"
+    "core-debug|src/core/debug/xasm32/dasm32.c|debug-xasm"
+    "core-debug-xasm-contract-smoke|src/core/debug/utils.c|debug-xasm-contract"
+    "core-debug-xasm-contract-smoke|src/core/debug/xasm32/aasm32.c|debug-xasm-contract"
+    "core-debug-xasm-contract-smoke|src/core/debug/xasm32/dasm32.c|debug-xasm-contract"
+    "core-debug-input-failure-smoke|src/core/debug/debug.c|debug-input-failure"
+    "core-debug-input-failure-smoke|src/core/debug/debug_access.c|debug-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/control.c|console-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/presentation.c|console-input-failure"
@@ -3773,8 +3776,8 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine-boundary
     vm-session-requests
     vm-session-request-transport
-    core-product-debug
-    core-product-utils
+    core-debug
+    core-product
     vm-profile
     vm-composition
     vm-machine

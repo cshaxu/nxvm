@@ -13,7 +13,7 @@
 #include "vm/composition/session/control.h"
 
 #include "core/machine/debug_interface.h"
-#include "core/product/debug/debug.h"
+#include "core/debug/debug.h"
 
 #include "vm/machine/debug.h"
 
@@ -27,22 +27,22 @@ static C_INT vm_debug_wait_for_completion(C_VOID *context)
         &session->control);
 }
 static C_INT vm_debug_paused(C_VOID *context) { return vm_session_control_is_paused(&((vm_session *)context)->control); }
-static core_product_debug_pause_reason vm_debug_pause_reason(C_VOID *context)
+static core_debug_pause_reason vm_debug_pause_reason(C_VOID *context)
 {
     switch (vm_session_control_get_pause_reason(&((vm_session *)context)->control)) {
-    case VM_SESSION_PAUSE_EXPLICIT: return CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT;
-    case VM_SESSION_PAUSE_BREAKPOINT: return CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT;
-    case VM_SESSION_PAUSE_TRACE: return CORE_PRODUCT_DEBUG_PAUSE_TRACE;
-    case VM_SESSION_PAUSE_STEP: return CORE_PRODUCT_DEBUG_PAUSE_STEP;
-    default: return CORE_PRODUCT_DEBUG_PAUSE_NONE;
+    case VM_SESSION_PAUSE_EXPLICIT: return CORE_DEBUG_PAUSE_EXPLICIT;
+    case VM_SESSION_PAUSE_BREAKPOINT: return CORE_DEBUG_PAUSE_BREAKPOINT;
+    case VM_SESSION_PAUSE_TRACE: return CORE_DEBUG_PAUSE_TRACE;
+    case VM_SESSION_PAUSE_STEP: return CORE_DEBUG_PAUSE_STEP;
+    default: return CORE_DEBUG_PAUSE_NONE;
     }
 }
-static C_INT vm_debug_request_pause(C_VOID *context, core_product_debug_pause_reason reason)
+static C_INT vm_debug_request_pause(C_VOID *context, core_debug_pause_reason reason)
 {
     vm_session_pause_reason mapped = VM_SESSION_PAUSE_EXPLICIT;
-    if (reason == CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT) mapped = VM_SESSION_PAUSE_BREAKPOINT;
-    else if (reason == CORE_PRODUCT_DEBUG_PAUSE_TRACE) mapped = VM_SESSION_PAUSE_TRACE;
-    else if (reason == CORE_PRODUCT_DEBUG_PAUSE_STEP) mapped = VM_SESSION_PAUSE_STEP;
+    if (reason == CORE_DEBUG_PAUSE_BREAKPOINT) mapped = VM_SESSION_PAUSE_BREAKPOINT;
+    else if (reason == CORE_DEBUG_PAUSE_TRACE) mapped = VM_SESSION_PAUSE_TRACE;
+    else if (reason == CORE_DEBUG_PAUSE_STEP) mapped = VM_SESSION_PAUSE_STEP;
     vm_session_control_request_pause(&((vm_session *)context)->control, mapped);
     return 0;
 }
@@ -51,49 +51,49 @@ static C_VOID vm_debug_continue(C_VOID *context)
 static C_INT vm_debug_step(C_VOID *context)
 { return vm_session_control_step(&((vm_session *)context)->control) ? 0 : 1; }
 
-static type_status vm_debug_map_register(core_product_debug_register source,
+static type_status vm_debug_map_register(core_debug_register source,
     core_machine_debug_register *out_target)
 {
     if (out_target == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     switch (source) {
-    case CORE_PRODUCT_DEBUG_EAX: *out_target = CORE_MACHINE_DEBUG_EAX; break;
-    case CORE_PRODUCT_DEBUG_ECX: *out_target = CORE_MACHINE_DEBUG_ECX; break;
-    case CORE_PRODUCT_DEBUG_EDX: *out_target = CORE_MACHINE_DEBUG_EDX; break;
-    case CORE_PRODUCT_DEBUG_EBX: *out_target = CORE_MACHINE_DEBUG_EBX; break;
-    case CORE_PRODUCT_DEBUG_ESP: *out_target = CORE_MACHINE_DEBUG_ESP; break;
-    case CORE_PRODUCT_DEBUG_EBP: *out_target = CORE_MACHINE_DEBUG_EBP; break;
-    case CORE_PRODUCT_DEBUG_ESI: *out_target = CORE_MACHINE_DEBUG_ESI; break;
-    case CORE_PRODUCT_DEBUG_EDI: *out_target = CORE_MACHINE_DEBUG_EDI; break;
-    case CORE_PRODUCT_DEBUG_EIP: *out_target = CORE_MACHINE_DEBUG_EIP; break;
-    case CORE_PRODUCT_DEBUG_EFLAGS: *out_target = CORE_MACHINE_DEBUG_EFLAGS; break;
-    case CORE_PRODUCT_DEBUG_ES: *out_target = CORE_MACHINE_DEBUG_ES; break;
-    case CORE_PRODUCT_DEBUG_CS: *out_target = CORE_MACHINE_DEBUG_CS; break;
-    case CORE_PRODUCT_DEBUG_SS: *out_target = CORE_MACHINE_DEBUG_SS; break;
-    case CORE_PRODUCT_DEBUG_DS: *out_target = CORE_MACHINE_DEBUG_DS; break;
-    case CORE_PRODUCT_DEBUG_FS: *out_target = CORE_MACHINE_DEBUG_FS; break;
-    case CORE_PRODUCT_DEBUG_GS: *out_target = CORE_MACHINE_DEBUG_GS; break;
-    case CORE_PRODUCT_DEBUG_CR0: *out_target = CORE_MACHINE_DEBUG_CR0; break;
-    case CORE_PRODUCT_DEBUG_CR1: *out_target = CORE_MACHINE_DEBUG_CR1; break;
-    case CORE_PRODUCT_DEBUG_CR2: *out_target = CORE_MACHINE_DEBUG_CR2; break;
-    case CORE_PRODUCT_DEBUG_CR3: *out_target = CORE_MACHINE_DEBUG_CR3; break;
-    case CORE_PRODUCT_DEBUG_CR4: *out_target = CORE_MACHINE_DEBUG_CR4; break;
+    case CORE_DEBUG_EAX: *out_target = CORE_MACHINE_DEBUG_EAX; break;
+    case CORE_DEBUG_ECX: *out_target = CORE_MACHINE_DEBUG_ECX; break;
+    case CORE_DEBUG_EDX: *out_target = CORE_MACHINE_DEBUG_EDX; break;
+    case CORE_DEBUG_EBX: *out_target = CORE_MACHINE_DEBUG_EBX; break;
+    case CORE_DEBUG_ESP: *out_target = CORE_MACHINE_DEBUG_ESP; break;
+    case CORE_DEBUG_EBP: *out_target = CORE_MACHINE_DEBUG_EBP; break;
+    case CORE_DEBUG_ESI: *out_target = CORE_MACHINE_DEBUG_ESI; break;
+    case CORE_DEBUG_EDI: *out_target = CORE_MACHINE_DEBUG_EDI; break;
+    case CORE_DEBUG_EIP: *out_target = CORE_MACHINE_DEBUG_EIP; break;
+    case CORE_DEBUG_EFLAGS: *out_target = CORE_MACHINE_DEBUG_EFLAGS; break;
+    case CORE_DEBUG_ES: *out_target = CORE_MACHINE_DEBUG_ES; break;
+    case CORE_DEBUG_CS: *out_target = CORE_MACHINE_DEBUG_CS; break;
+    case CORE_DEBUG_SS: *out_target = CORE_MACHINE_DEBUG_SS; break;
+    case CORE_DEBUG_DS: *out_target = CORE_MACHINE_DEBUG_DS; break;
+    case CORE_DEBUG_FS: *out_target = CORE_MACHINE_DEBUG_FS; break;
+    case CORE_DEBUG_GS: *out_target = CORE_MACHINE_DEBUG_GS; break;
+    case CORE_DEBUG_CR0: *out_target = CORE_MACHINE_DEBUG_CR0; break;
+    case CORE_DEBUG_CR1: *out_target = CORE_MACHINE_DEBUG_CR1; break;
+    case CORE_DEBUG_CR2: *out_target = CORE_MACHINE_DEBUG_CR2; break;
+    case CORE_DEBUG_CR3: *out_target = CORE_MACHINE_DEBUG_CR3; break;
+    case CORE_DEBUG_CR4: *out_target = CORE_MACHINE_DEBUG_CR4; break;
     default: return TYPE_STATUS_INVALID_ARGUMENT;
     }
     return TYPE_STATUS_OK;
 }
 
-static type_status vm_debug_map_watch(core_product_debug_watch_kind source,
+static type_status vm_debug_map_watch(core_debug_watch_kind source,
     core_machine_debug_watch_kind *out_target)
 {
     if (out_target == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     switch (source) {
-    case CORE_PRODUCT_DEBUG_WATCH_READ:
+    case CORE_DEBUG_WATCH_READ:
         *out_target = CORE_MACHINE_DEBUG_WATCH_READ;
         break;
-    case CORE_PRODUCT_DEBUG_WATCH_WRITE:
+    case CORE_DEBUG_WATCH_WRITE:
         *out_target = CORE_MACHINE_DEBUG_WATCH_WRITE;
         break;
-    case CORE_PRODUCT_DEBUG_WATCH_EXECUTE:
+    case CORE_DEBUG_WATCH_EXECUTE:
         *out_target = CORE_MACHINE_DEBUG_WATCH_EXECUTE;
         break;
     default: return TYPE_STATUS_INVALID_ARGUMENT;
@@ -101,7 +101,7 @@ static type_status vm_debug_map_watch(core_product_debug_watch_kind source,
     return TYPE_STATUS_OK;
 }
 
-static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register reg,
+static C_INT vm_debug_read_register(C_VOID *context, core_debug_register reg,
                                   type_unsigned_32 *value)
 {
     vm_session *machine =
@@ -114,7 +114,7 @@ static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register
         TYPE_STATUS_OK;
 }
 
-static C_INT vm_debug_write_register(C_VOID *context, core_product_debug_register reg,
+static C_INT vm_debug_write_register(C_VOID *context, core_debug_register reg,
                                    type_unsigned_32 value)
 {
     vm_session *machine =
@@ -174,7 +174,7 @@ static C_VOID vm_debug_clear_trace(C_VOID *context)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_clear_trace(&machine->debug); }
 static STD_SIZE_T vm_debug_break_count(C_VOID *context)
 { vm_session *machine = (vm_session *)context; return machine == STD_NULL ? 0u : vm_machine_debug_get_breakpoint_count(&machine->debug); }
-static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind kind, type_unsigned_32 address)
+static C_VOID vm_debug_set_watch(C_VOID *context, core_debug_watch_kind kind, type_unsigned_32 address)
 {
     vm_session *machine = (vm_session *)context;
     core_machine_debug_watch_kind mapped;
@@ -184,7 +184,7 @@ static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind 
     (C_VOID)core_machine_debug_set_watchpoint(machine->core_machine,
         mapped, address);
 }
-static C_VOID vm_debug_clear_watch(C_VOID *context, core_product_debug_watch_kind kind)
+static C_VOID vm_debug_clear_watch(C_VOID *context, core_debug_watch_kind kind)
 {
     vm_session *machine = (vm_session *)context;
     core_machine_debug_watch_kind mapped;
@@ -205,7 +205,7 @@ static C_VOID vm_debug_print_watchpoints(C_VOID *context)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_print_watchpoints(machine->core_machine); }
 
 static C_INT vm_debug_get_fault_outcome(C_VOID *context,
-    core_product_debug_fault_outcome *out_outcome)
+    core_debug_fault_outcome *out_outcome)
 {
     vm_session_fault_outcome outcome;
 
@@ -227,7 +227,7 @@ static C_INT vm_debug_get_fault_outcome(C_VOID *context,
     return 0;
 }
 
-static const core_product_debug_target vmDebugTargetTemplate = {
+static const core_debug_target vmDebugTargetTemplate = {
     .is_running = vm_debug_running,
     .resume = vm_debug_resume,
     .wait_for_completion = vm_debug_wait_for_completion,
@@ -263,12 +263,12 @@ static const core_product_debug_target vmDebugTargetTemplate = {
     .context = STD_NULL
 };
 
-const core_product_debug_target *vm_session_debug_target(
+const core_debug_target *vm_session_debug_target(
     vm_session *machine)
 {
     if (machine == STD_NULL) return STD_NULL;
     if (machine->debug_target == STD_NULL) {
-        machine->debug_target = (core_product_debug_target *)STD_MALLOC(
+        machine->debug_target = (core_debug_target *)STD_MALLOC(
             sizeof(*machine->debug_target));
         if (machine->debug_target == STD_NULL) return STD_NULL;
     }
@@ -293,7 +293,7 @@ type_status vm_session_run_debugger(vm_session *session)
         if (!vm_session_control_wait_for_pause(&session->control, 2000u))
             return TYPE_STATUS_INVALID_STATE;
     }
-    core_product_debugger_run(session->debugger, vm_session_debug_target(session));
+    core_debugger_run(session->debugger, vm_session_debug_target(session));
     return TYPE_STATUS_OK;
 }
 

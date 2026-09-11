@@ -1,6 +1,7 @@
 #include "type.h"
 
-#include "core/product/utils.h"
+#include "core/debug/utils.h"
+#include "core/debug/text_internal.h"
 
 static STD_SIZE_T allocation_attempts;
 static STD_SIZE_T allocation_failure_attempt;
@@ -28,30 +29,30 @@ static C_INT xasm_output_is_unchanged(const type_unsigned_8 *code,
 int main(C_VOID)
 {
     C_CHAR text[4] = "x";
-    C_CHAR exact_statement[CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES];
-    C_CHAR overlong_statement[CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES + 1u];
+    C_CHAR exact_statement[CORE_DEBUG_XASM_MAX_STATEMENT_BYTES];
+    C_CHAR overlong_statement[CORE_DEBUG_XASM_MAX_STATEMENT_BYTES + 1u];
     C_CHAR statement[8];
-    type_unsigned_8 code[CORE_PRODUCT_UTILS_XASM_MAX_CODE_BYTES];
+    type_unsigned_8 code[CORE_DEBUG_XASM_MAX_CODE_BYTES];
     STD_SIZE_T result_bytes = 37u;
 
-    if (core_product_utils_append_text(text, sizeof(text), "yz") !=
+    if (core_debug_append_text(text, sizeof(text), "yz") !=
             TYPE_STATUS_OK || STD_STRCMP(text, "xyz") ||
-        core_product_utils_append_text(text, sizeof(text), "q") !=
+        core_debug_append_text(text, sizeof(text), "q") !=
             TYPE_STATUS_INVALID_ARGUMENT || STD_STRCMP(text, "xyz") ||
-        core_product_utils_copy_text(text, sizeof(text), "abcd") !=
+        core_debug_copy_text(text, sizeof(text), "abcd") !=
             TYPE_STATUS_INVALID_ARGUMENT || STD_STRCMP(text, "xyz")) return 10;
 
     STD_MEMSET(exact_statement, ' ', sizeof(exact_statement));
     exact_statement[0] = 'n';
     exact_statement[1] = 'o';
     exact_statement[2] = 'p';
-    if (core_product_utils_assemble(exact_statement, sizeof(exact_statement),
+    if (core_debug_assemble(exact_statement, sizeof(exact_statement),
             code, sizeof(code), &result_bytes, TYPE_TRUE) != TYPE_STATUS_OK ||
         result_bytes != 1u || code[0] != 0x90u) return 11;
 
     STD_MEMSET(code, 0xa5, sizeof(code));
     result_bytes = 37u;
-    if (core_product_utils_assemble("nop", 3u, code, 0u, &result_bytes,
+    if (core_debug_assemble("nop", 3u, code, 0u, &result_bytes,
             TYPE_TRUE) != TYPE_STATUS_INVALID_ARGUMENT ||
         !xasm_output_is_unchanged(code, sizeof(code), 0xa5u, result_bytes, 37u)) {
         return 12;
@@ -60,7 +61,7 @@ int main(C_VOID)
     STD_MEMSET(overlong_statement, ' ', sizeof(overlong_statement));
     STD_MEMSET(code, 0xa5, sizeof(code));
     result_bytes = 37u;
-    if (core_product_utils_assemble(overlong_statement,
+    if (core_debug_assemble(overlong_statement,
             sizeof(overlong_statement), code, sizeof(code), &result_bytes,
             TYPE_TRUE) != TYPE_STATUS_INVALID_ARGUMENT ||
         !xasm_output_is_unchanged(code, sizeof(code), 0xa5u, result_bytes, 37u)) {
@@ -69,7 +70,7 @@ int main(C_VOID)
 
     STD_MEMSET(code, 0xa5, sizeof(code));
     result_bytes = 37u;
-    if (core_product_utils_assemble_paragraph("nop\nnop", 7u, code, 1u,
+    if (core_debug_assemble_paragraph("nop\nnop", 7u, code, 1u,
             &result_bytes, TYPE_TRUE) != TYPE_STATUS_FAULT ||
         !xasm_output_is_unchanged(code, sizeof(code), 0xa5u, result_bytes, 37u)) {
         return 14;
@@ -78,13 +79,13 @@ int main(C_VOID)
     code[0] = 0x90u;
     STD_MEMSET(statement, 0xa5, sizeof(statement));
     result_bytes = 37u;
-    if (core_product_utils_disassemble(code, sizeof(code), statement, 1u,
+    if (core_debug_disassemble(code, sizeof(code), statement, 1u,
             &result_bytes, TYPE_TRUE) != TYPE_STATUS_FAULT ||
         statement[0] != (C_CHAR)0xa5 || result_bytes != 37u) return 15;
 
     STD_MEMSET(code, 0xa5, sizeof(code));
     result_bytes = 37u;
-    if (core_product_utils_assemble("?", 1u, code, sizeof(code), &result_bytes,
+    if (core_debug_assemble("?", 1u, code, sizeof(code), &result_bytes,
             TYPE_TRUE) != TYPE_STATUS_FAULT ||
         !xasm_output_is_unchanged(code, sizeof(code), 0xa5u, result_bytes, 37u)) {
         return 16;
@@ -94,7 +95,7 @@ int main(C_VOID)
     allocation_failure_attempt = 1u;
     STD_MEMSET(code, 0xa5, sizeof(code));
     result_bytes = 37u;
-    if (core_product_utils_assemble_paragraph("nop\nnop", 7u, code,
+    if (core_debug_assemble_paragraph("nop\nnop", 7u, code,
             sizeof(code), &result_bytes, TYPE_TRUE) != TYPE_STATUS_NO_MEMORY ||
         !xasm_output_is_unchanged(code, sizeof(code), 0xa5u, result_bytes, 37u)) {
         return 17;
@@ -104,7 +105,7 @@ int main(C_VOID)
     allocation_failure_attempt = 2u;
     STD_MEMSET(code, 0xa5, sizeof(code));
     result_bytes = 37u;
-    if (core_product_utils_assemble_paragraph("nop\nnop", 7u, code,
+    if (core_debug_assemble_paragraph("nop\nnop", 7u, code,
             sizeof(code), &result_bytes, TYPE_TRUE) != TYPE_STATUS_NO_MEMORY ||
         !xasm_output_is_unchanged(code, sizeof(code), 0xa5u, result_bytes, 37u)) {
         return 18;

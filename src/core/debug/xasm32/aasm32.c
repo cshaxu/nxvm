@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "core/product/utils.h"
+#include "core/debug/text_internal.h"
 
-#include "core/product/debug/xasm32/aasm32.h"
+#include "core/debug/xasm32/aasm32.h"
 
 #define TYPE_TRACE_CONTEXT trace
 #define TYPE_TRACE_ERROR flagError

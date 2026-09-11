@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 
-/* Internal xasm engine entries.  Public callers use core/product/utils.h. */
+/* Internal xasm engine entries.  Public callers use core/debug/utils.h. */
 type_unsigned_8 aasm32(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
 type_status aasm32x(const C_CHAR *stmt, STD_SIZE_T code_capacity,
     type_unsigned_8 *rcode, STD_SIZE_T *out_code_bytes, C_INT flag32);

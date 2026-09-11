@@ -22,7 +22,7 @@ foreach(required "type_status record_status" "type_status vm_machine_debug_recor
     endif()
 endforeach()
 
-string(FIND "${session_header}" "core_product_debugger *debugger;"
+string(FIND "${session_header}" "core_debugger *debugger;"
     session_debugger_position)
 if(session_debugger_position EQUAL -1)
     message(FATAL_ERROR "VM session no longer owns its debugger lifecycle handle")
