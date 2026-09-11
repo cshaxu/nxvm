@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "lib/host/sync_interface.h"
 #include "vm/machine/executor_fifo.h"
 
 struct vm_machine_executor_fifo {
@@ -9,6 +10,7 @@ struct vm_machine_executor_fifo {
     vm_machine_executor_request_consumer consumer;
     C_VOID *consumer_opaque;
     vm_machine_executor_queue ingress;
+    host_sync_event *ready;
 };
 
 static C_VOID vm_machine_executor_fifo_lock(
@@ -41,6 +43,11 @@ type_status vm_machine_executor_fifo_create(
     transport->consumer = STD_NULL;
     transport->consumer_opaque = STD_NULL;
     vm_machine_executor_queue_initialize(&transport->ingress);
+    if (host_sync_event_create(&transport->ready) != LIB_STATUS_OK) {
+        STD_FREE(transport);
+        *out_transport = STD_NULL;
+        return TYPE_STATUS_NO_MEMORY;
+    }
     return TYPE_STATUS_OK;
 }
 
@@ -49,6 +56,7 @@ C_VOID vm_machine_executor_fifo_destroy(
 {
     if (transport == STD_NULL) return;
     vm_machine_executor_fifo_discard(transport);
+    host_sync_event_destroy(transport->ready);
     STD_FREE(transport);
 }
 
@@ -66,6 +74,7 @@ type_status vm_machine_executor_fifo_enqueue_ingress(
     } else {
         status = vm_machine_executor_queue_enqueue(&transport->ingress,
             request);
+        if (status == TYPE_STATUS_OK) host_sync_event_signal(transport->ready);
     }
     vm_machine_executor_fifo_unlock(transport);
     return status;
@@ -83,6 +92,7 @@ type_status vm_machine_executor_fifo_dequeue_ingress(
     vm_machine_executor_fifo_lock(transport);
     status = vm_machine_executor_queue_dequeue(&transport->ingress,
         out_request);
+    if (transport->ingress.count == 0u) host_sync_event_reset(transport->ready);
     vm_machine_executor_fifo_unlock(transport);
     return status;
 }
@@ -105,6 +115,7 @@ C_VOID vm_machine_executor_fifo_discard(
     vm_machine_executor_fifo_lock(transport);
     transport->accepting = 0;
     vm_machine_executor_queue_initialize(&transport->ingress);
+    host_sync_event_reset(transport->ready);
     vm_machine_executor_fifo_unlock(transport);
 }
 
@@ -142,6 +153,7 @@ C_VOID vm_machine_executor_fifo_observe_execution_boundary(C_VOID *opaque)
         vm_machine_executor_fifo_unlock(transport);
         return;
     }
+    if (transport->ingress.count == 0u) host_sync_event_reset(transport->ready);
     consumer = transport->consumer;
     consumer_opaque = transport->consumer_opaque;
     vm_machine_executor_fifo_unlock(transport);
@@ -152,4 +164,10 @@ C_UINT vm_machine_executor_fifo_execution_boundary_count(
     const vm_machine_executor_fifo *transport)
 {
     return transport != STD_NULL ? transport->execution_boundary_count : 0u;
+}
+
+host_sync_event *vm_machine_executor_fifo_ready_event(
+    const vm_machine_executor_fifo *transport)
+{
+    return transport == STD_NULL ? STD_NULL : transport->ready;
 }

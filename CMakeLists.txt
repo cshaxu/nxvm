@@ -1265,6 +1265,7 @@ target_include_directories(vm-machine-executor-fifo PUBLIC
 )
 target_link_libraries(vm-machine-executor-fifo PUBLIC
     vm-machine-executor-queue
+    host
 )
 add_executable(vm-machine-executor-fifo-smoke
     test/vm/machine/vm_machine_executor_fifo_smoke.c
@@ -2978,7 +2979,11 @@ function(add_current_vm_artifact target version)
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_FILE:${target}>"
-                "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
+                "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/assets/sessions"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:${target}>"
+                "${CMAKE_SOURCE_DIR}/assets/sessions/${task_artifact_filename}")
     endif()
 endfunction()
 

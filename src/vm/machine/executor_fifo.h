@@ -3,6 +3,7 @@
 
 
 #include "type.h"
+#include "lib/host/sync_interface.h"
 #include "vm/machine/executor_queue.h"
 
 typedef C_VOID (*vm_machine_executor_request_consumer)(
@@ -29,6 +30,8 @@ C_VOID vm_machine_executor_fifo_bind_consumer(
     vm_machine_executor_request_consumer consumer, C_VOID *opaque);
 C_VOID vm_machine_executor_fifo_observe_execution_boundary(C_VOID *opaque);
 C_UINT vm_machine_executor_fifo_execution_boundary_count(
+    const vm_machine_executor_fifo *transport);
+host_sync_event *vm_machine_executor_fifo_ready_event(
     const vm_machine_executor_fifo *transport);
 
 #endif

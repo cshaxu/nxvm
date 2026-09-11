@@ -4,24 +4,24 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S12 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): move the lib binding to `vm/presentation` and remove the remaining product presentation ownership. |
+| T526 S13 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): audit the final Core/VM/lib route, remove only stale final-owner gates, and prove whole-route closure. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S12. |
+| Identifier Mode | Continuation - M5 T526 S13. |
 | Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S11 P1/P2 is pushed as `5f1968bf` and `cc043969`. |
-| Objective | Move the NXVM-facing shared-lib binding to `vm/presentation`; it consumes session plans and returns copied facts without any product-control compatibility route. |
-| Non-goals | No Core behavior change, no second machine executor, no lib modification, no native SDK access from VM, no external asset work, and no compatibility/control-forwarding route. |
-| Reference Baseline | T526 S11 P1/P2 is pushed as `5f1968bf` and `cc043969`; the retained proposal supplies the approved target architecture. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S12. |
+| Objective | Audit every final Core/VM/lib owner route against the approved architecture, repair any duplicate or stale route at its owner, and prove full T526 closure. |
+| Non-goals | No Core semantic expansion, no second executor/FIFO, no lib modification, no native SDK access from VM, no external asset change, and no compatibility/control-forwarding route. |
+| Reference Baseline | T526 S10/S11/S12 are pushed as `697d849a`, `5f1968bf`, `cc043969` and `7308684a`; the retained proposal supplies the approved target architecture. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S13. |
 | Files And ABI Surface | `src/vm/{events,machine,session,presentation,product}`, Core/VM CMake targets and mirrored repository-only tests. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
-| Verification | Prove one `vm/presentation` lib binding consumes copied session plans, emits copied input facts, retains no session pointer, and leaves no product presentation compatibility path; run focused tests, full unit, specialized and documentation gates, and actual-diff review. |
-| Expected Markers | One presentation owner, one session-plan consumer route, one copied input return route, no product-owned presenter implementation and no native SDK access from VM. |
+| Verification | Sweep every owner edge and stale name; run full unit, specialized, documentation and external integration gates; actual-diff review final routes; produce and hash stripped x64/x86 artifacts. |
+| Expected Markers | Three independent Core modules, one value ABI, one machine FIFO, one session FIFO, one presentation owner, no product/native compatibility route, no stale gate. |
 | Asset Needs | None. |
-| Reporting Requirements | Record the moved binding routes, removed product presentation ownership, code-size result and verification evidence in [S12 evidence](../etc/evidence/t526-s12-presentation-leaf-convergence.md). |
-| Stop Conditions | Stop for a required non-value fact, a Core semantic change, an unrepresentable presentation decision, or a temporary forwarding route. |
-| Exit Criteria | `vm/presentation` is the sole lib binding owner and all required tests and gates pass. |
+| Reporting Requirements | Record the final route audit, removed stale gates if any, exact verification and dual artifact identity in [S13 evidence](../etc/evidence/t526-s13-route-audit.md). |
+| Stop Conditions | Stop for a required Core semantic change, a new second owner/FIFO, a failing external input with no owner-local cause, or a temporary forwarding route. |
+| Exit Criteria | Every S13 acceptance marker is evidenced; unit, specialized, documentation and integration suites pass; the actual diff has no duplicate ownership or route. |
 | Original Owner Request | Converge NXVM lifecycle and product experience with SoftPC while simplifying ownership. |
 | Similar-Issue Sweep | Inventory every product command handler, lifecycle/display callback, presentation decision, direct machine call and product queue; migrate every live route or delete it. |
 
@@ -29,9 +29,10 @@
 - **Current developer artifacts:** T526 owns the active CMake target
   `vm-0-5-0526`, which emits `nxvm_0_5_0526_x64.exe` and
   `nxvm_0_5_0526_x86.exe` in stripped Release builds. They retain the runtime
-  debugger and contain no compiler debug information. The fresh x64 artifact is
-  `50F59DDA7B124C83109D8C096394B1E6A10522FCBA49C62F4A41E5D7A2F0CED9`
-  and x86 is `34582710EC4C3495F19E94270CA0AB2433ED0A0030D6CEA9C58ED153177AEE62`.
+  debugger and contain no compiler debug information. CMake deploys each to
+  both `build/output` and `assets/sessions`. The fresh x64 artifact is
+  `6639BC3D07196647B443D602DCAA2F229F46135D15C0DF2DF56B49AC4BFB2CCC`
+  and x86 is `EBDACBDD9C9E1FFAB55CEE64AEB7E76D563A030579B37D803BC38531EC5015BB`.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

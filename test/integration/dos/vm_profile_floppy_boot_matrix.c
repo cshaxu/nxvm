@@ -218,8 +218,8 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
     if (session == STD_NULL || name == STD_NULL) return;
     if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK) {
         (C_VOID)core_machine_capture_observation(session->core_machine, &observation);
-        STD_PRINTF("T515:YAML-BOOT:%s:CPU:%04X:%08X:flags=%08X:halted=%u:elapsed=%llu:lifecycle=%u:FDD=%u:%ux%ux%u:CMOS10=%02X\n",
-            name, cpu.cs, cpu.eip, cpu.eflags, cpu.halted,
+        STD_PRINTF("T515:YAML-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:elapsed=%llu:lifecycle=%u:FDD=%u:%ux%ux%u:CMOS10=%02X\n",
+            name, cpu.cs, cpu.eip, cpu.cs_base, cpu.eflags, cpu.halted,
             (unsigned long long)observation.elapsed_ticks, observation.lifecycle,
             session->fdd.connect.flagDiskExist,
             session->fdd.data.ncyl, session->fdd.data.nhead, session->fdd.data.nsector,
@@ -260,6 +260,12 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             session->core_machine->shared_pit.data.remaining[1u],
             session->core_machine->pit_clock.numerator,
             session->core_machine->pit_clock.denominator);
+        STD_PRINTF("T526:S13:YAML-BOOT:%s:PIT0:control=%02X:count=%04X:latch=%04X:latched=%u:read=%u\n",
+            name, session->core_machine->shared_pit.data.cw[0u],
+            session->core_machine->shared_pit.data.count[0u],
+            session->core_machine->shared_pit.data.latch[0u],
+            session->core_machine->shared_pit.data.flagLatch[0u],
+            session->core_machine->shared_pit.data.flagRead[0u]);
         STD_PRINTF("T515:YAML-BOOT:%s:CMOS:diag=%02X:floppy=%02X:fixed=%02X:equip=%02X:base=%02X%02X:extended=%02X%02X\n",
             name, session->core_machine->shared_rtc.registers[0x0eu],
             session->core_machine->shared_rtc.registers[0x10u],
@@ -409,13 +415,15 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             }
             STD_PRINTF("\n");
         }
-        STD_PRINTF("T515:YAML-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X\n",
+        STD_PRINTF("T515:YAML-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X:ESI=%08X:EDI=%08X:EBP=%08X\n",
             name, session->core_machine->executor_cpu.data.eax,
             session->core_machine->executor_cpu.data.ebx,
             session->core_machine->executor_cpu.data.ecx,
-            session->core_machine->executor_cpu.data.edx);
-        if (core_machine_memory_read(session->core_machine,
-                ((type_unsigned_32)cpu.cs << 4u) + cpu.eip, pc_bytes,
+            session->core_machine->executor_cpu.data.edx,
+            session->core_machine->executor_cpu.data.esi,
+            session->core_machine->executor_cpu.data.edi,
+            session->core_machine->executor_cpu.data.ebp);
+        if (core_machine_memory_read(session->core_machine, cpu.cs_base + cpu.eip, pc_bytes,
                 sizeof(pc_bytes)) == TYPE_STATUS_OK) {
             STD_PRINTF("T516:YAML-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",
                 name, pc_bytes[0u], pc_bytes[1u], pc_bytes[2u], pc_bytes[3u],

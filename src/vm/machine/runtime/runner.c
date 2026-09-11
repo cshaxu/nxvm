@@ -49,12 +49,18 @@ C_VOID vm_machine_runner_run(vm_machine *session)
         }
         while (vm_machine_executor_state_is_active(control->state) &&
             vm_machine_executor_state_is_paused(control->state)) {
+            host_sync_event *wake_events[2];
+
             resumed = TYPE_TRUE;
-            vm_machine_execution_context_run_command_boundary(&control->execution_context);
             host_sync_event_reset(control->control_changed);
+            vm_machine_execution_context_run_command_boundary(&control->execution_context);
             if (vm_machine_executor_state_is_active(control->state) &&
                 vm_machine_executor_state_is_paused(control->state)) {
-                (C_VOID)host_sync_event_wait(control->control_changed, UINT32_MAX);
+                wake_events[0] = vm_machine_executor_fifo_ready_event(
+                    session->executor_fifo);
+                wake_events[1] = control->control_changed;
+                (C_VOID)host_sync_wait_any(wake_events, 2u, STD_NULL,
+                    UINT32_MAX, STD_NULL);
             }
         }
         if (!vm_machine_executor_state_is_active(control->state)) break;

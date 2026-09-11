@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "lib/host/sync_interface.h"
 #include "vm/machine/executor_fifo.h"
 
 typedef struct executor_observer {
@@ -31,7 +32,11 @@ int main(void)
     input.input.data.key_event.pressed = TYPE_TRUE;
     if (vm_machine_executor_fifo_create(&fifo) != TYPE_STATUS_OK ||
         vm_machine_executor_fifo_enqueue_ingress(fifo, &input) != TYPE_STATUS_OK ||
+        host_sync_event_wait(vm_machine_executor_fifo_ready_event(fifo), 0u) !=
+            HOST_SYNC_WAIT_SIGNALED ||
         vm_machine_executor_fifo_dequeue_ingress(fifo, &copy) != TYPE_STATUS_OK ||
+        host_sync_event_wait(vm_machine_executor_fifo_ready_event(fifo), 0u) !=
+            HOST_SYNC_WAIT_TIMED_OUT ||
         copy.kind != VM_MACHINE_REQUEST_INPUT ||
         copy.input.data.key_event.scan_code != 0x1eu) return 1;
 
@@ -48,6 +53,8 @@ int main(void)
         observer.requests[0u].kind != VM_MACHINE_REQUEST_INPUT ||
         observer.requests[1u].kind != VM_MACHINE_REQUEST_PAUSE ||
         observer.requests[2u].kind != VM_MACHINE_REQUEST_STOP ||
+        host_sync_event_wait(vm_machine_executor_fifo_ready_event(fifo), 0u) !=
+            HOST_SYNC_WAIT_TIMED_OUT ||
         vm_machine_executor_fifo_execution_boundary_count(fifo) != 3u) return 1;
 
     vm_machine_executor_fifo_close(fifo);

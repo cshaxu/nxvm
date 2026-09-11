@@ -157,8 +157,6 @@ static type_status vm_machine_enqueue_executor_request(vm_machine *machine,
     request.pause_reason = (type_unsigned_8)pause_reason;
     status = vm_machine_executor_fifo_enqueue_ingress(machine->executor_fifo,
         &request);
-    if (status == TYPE_STATUS_OK)
-        host_sync_event_signal(machine->control.control_changed);
     return status;
 }
 
