@@ -5,7 +5,7 @@
 #include "core/machine/port.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/session/catalog.h"
+#include "vm/product/catalog.h"
 #include "vm/profile/xt/xt_5160_268.h"
 
 static core_machine_media_result vm_xt_5160_268_fdd_query(C_VOID *context,

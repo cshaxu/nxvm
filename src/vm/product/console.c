@@ -8,18 +8,19 @@
 #include "type.h"
 
 #include "vm/product/console.h"
+#include "vm/app/app.h"
 #include "vm/presentation/presentation.h"
-#include "vm/session/catalog.h"
-#include "vm/session/control.h"
+#include "vm/product/catalog.h"
+#include "common/session/session_interface.h"
 
 struct vm_product_console_context {
     STD_SIZE_T argument_count;
     C_CHAR **arguments;
     C_INT exit_requested;
     C_CHAR command_buffer[0x100];
-    vm_session *session;
+    vm_app *session;
     vm_product_session_catalog *catalog;
-    vm_session_control *control;
+    common_session *control;
     vm_presentation *presentation;
     C_INT session_stopped;
 };
@@ -49,22 +50,41 @@ static C_INT vm_product_console_printf(const vm_product_console_context *context
         TYPE_STATUS_OK ? written : -1;
 }
 
+static type_status vm_product_console_line_sink(C_VOID *context,
+    const C_CHAR *line)
+{
+    return (type_status)common_session_publish_console_line(context, line);
+}
+
+static type_status vm_product_console_input_sink(C_VOID *context,
+    const ui_input_event *event)
+{
+    return (type_status)common_session_publish_ui_input(context, event);
+}
+
 static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
-    const vm_presentation_plan *plan, C_INT restore_prompt)
+    const common_session_plan *plan, C_INT restore_prompt)
 {
     const C_CHAR *state = STD_NULL;
 
     if (context == STD_NULL || plan == STD_NULL) return;
     if (context->presentation != STD_NULL)
-        (C_VOID)vm_presentation_apply_plan(context->presentation, plan);
+        (C_VOID)vm_presentation_apply_common_plan(context->presentation, plan);
     switch (plan->notice) {
-    case VM_PRESENTATION_NOTICE_STARTED: state = "started"; break;
-    case VM_PRESENTATION_NOTICE_RESUMED: state = "resumed"; break;
-    case VM_PRESENTATION_NOTICE_PAUSED: state = "paused"; break;
-    case VM_PRESENTATION_NOTICE_RESET: state = "reset"; break;
-    case VM_PRESENTATION_NOTICE_STOPPED: state = "stopped"; break;
+    case COMMON_SESSION_NOTICE_STARTED: state = "started"; break;
+    case COMMON_SESSION_NOTICE_RESUMED: state = "resumed"; break;
+    case COMMON_SESSION_NOTICE_PAUSED: state = "paused"; break;
+    case COMMON_SESSION_NOTICE_RESET: state = "reset"; break;
+    case COMMON_SESSION_NOTICE_STOPPED: state = "stopped"; break;
     default: break;
     }
+    if (context->presentation != STD_NULL && state != STD_NULL &&
+        (plan->notice == COMMON_SESSION_NOTICE_STARTED ||
+         plan->notice == COMMON_SESSION_NOTICE_RESUMED ||
+         plan->notice == COMMON_SESSION_NOTICE_PAUSED))
+        (C_VOID)vm_presentation_set_window_title(context->presentation,
+            plan->notice == COMMON_SESSION_NOTICE_PAUSED ? "NXVM (Paused)" :
+            "NXVM (Running)");
     if (state != STD_NULL) (C_VOID)vm_product_console_printf(context, restore_prompt ?
         "\r\nMachine %s.\nConsole> " : "Machine %s.\n", state);
 }
@@ -72,14 +92,17 @@ static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
 static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
     C_INT restore_prompt)
 {
-    vm_session_fact fact;
-    vm_machine_display_event display;
-    vm_presentation_plan plan;
+    common_session_fact fact;
+    ui_frame display;
+    common_session_plan plan;
 
     if (context == STD_NULL) return;
-    while (vm_session_control_take(context->control, &fact, &display, 0u) == TYPE_STATUS_OK) {
-        if (vm_session_reduce_fact(context->session, &fact, &display, &plan) ==
-            TYPE_STATUS_OK) vm_product_console_apply_plan(context, &plan, restore_prompt);
+    while (common_session_take(context->control, &fact, &display, 0u) == TYPE_STATUS_OK) {
+        if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
+            LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, restore_prompt);
+        if (fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
+            vm_app_reduce_input(context->session, &fact.value.input, &plan) == TYPE_STATUS_OK)
+            vm_product_console_apply_plan(context, &plan, restore_prompt);
     }
 }
 
@@ -119,9 +142,9 @@ static C_VOID parse(vm_product_console_context *context)
 static C_INT vm_product_console_read_line(vm_product_console_context *context,
     C_CHAR *buffer, STD_SIZE_T buffer_size)
 {
-    vm_session_fact fact;
-    vm_machine_display_event display;
-    vm_presentation_plan plan;
+    common_session_fact fact;
+    ui_frame display;
+    common_session_plan plan;
 
     if (context == STD_NULL || buffer == STD_NULL || buffer_size == 0u ||
         context->presentation == STD_NULL || context->control == STD_NULL)
@@ -130,14 +153,17 @@ static C_INT vm_product_console_read_line(vm_product_console_context *context,
     if (vm_presentation_request_console_line(context->presentation) !=
         TYPE_STATUS_OK) return 0;
     for (;;) {
-        if (vm_session_control_take(context->control, &fact, &display, 0xffffffffu) !=
+        if (common_session_take(context->control, &fact, &display, 0xffffffffu) !=
                 TYPE_STATUS_OK) return 0;
-        if (fact.kind != VM_SESSION_FACT_CONSOLE_LINE) {
-            if (vm_session_reduce_fact(context->session, &fact, &display, &plan) ==
-                TYPE_STATUS_OK) vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
+        if (fact.kind != COMMON_SESSION_FACT_CONSOLE_LINE) {
+            if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
+                LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
+            if (fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
+                vm_app_reduce_input(context->session, &fact.value.input, &plan) == TYPE_STATUS_OK)
+                vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
             continue;
         }
-        if (fact.kind != VM_SESSION_FACT_CONSOLE_LINE) return 0;
+        if (fact.kind != COMMON_SESSION_FACT_CONSOLE_LINE) return 0;
         if (STD_STRLEN(fact.value.line) >= buffer_size) return 0;
         STD_MEMCPY(buffer, fact.value.line, STD_STRLEN(fact.value.line) + 1u);
         return 1;
@@ -272,7 +298,7 @@ static C_VOID doExit(vm_product_console_context *context)
     {
         GetHelp;
     }
-    if (vm_session_stop(currentSession) != TYPE_STATUS_OK) {
+    if (vm_app_stop(currentSession) != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to stop machine.\n");
         return;
     }
@@ -289,13 +315,13 @@ static C_VOID doInfo(vm_product_console_context *context)
     }
     STD_PRINTF("Device Info\n");
     STD_PRINTF("================\n");
-    vm_session_print_machine(currentSession);
+    vm_app_print_machine(currentSession);
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
-    switch (context->presentation == STD_NULL ? VM_PRESENTATION_SURFACE_NONE :
+    switch (context->presentation == STD_NULL ? COMMON_SESSION_TARGET_NONE :
         vm_presentation_get_target(context->presentation)) {
-    case VM_PRESENTATION_SURFACE_WINDOW:
+    case COMMON_SESSION_TARGET_WINDOW:
         STD_PRINTF("Display Type: Window\n");
         break;
     default:
@@ -305,11 +331,11 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("BIOS Settings\n");
     STD_PRINTF("==================\n");
-    vm_session_print_bios(currentSession);
+    vm_app_print_bios(currentSession);
     STD_PRINTF("\n");
     STD_PRINTF("Device Status\n");
     STD_PRINTF("==================\n");
-    vm_session_print_status(currentSession);
+    vm_app_print_status(currentSession);
 }
 
 /* Starts internal debugger */
@@ -319,7 +345,7 @@ static C_VOID doDebug(vm_product_console_context *context)
     {
         GetHelp;
     }
-    (C_VOID)vm_session_debug(currentSession);
+    (C_VOID)vm_app_debug(currentSession);
 }
 
 /* Executes cpu instruction recorder */
@@ -329,7 +355,7 @@ static C_VOID doRecord(vm_product_console_context *context)
     {
         GetHelp;
     }
-    if (vm_session_is_running(currentSession))
+    if (vm_app_is_running(currentSession))
     {
         STD_PRINTF("Cannot change record status or dump record now.\n");
         return;
@@ -340,11 +366,11 @@ static C_VOID doRecord(vm_product_console_context *context)
         {
             GetHelp;
         }
-        (C_VOID)vm_session_record_start(currentSession, argArray[2]);
+        (C_VOID)vm_app_record_start(currentSession, argArray[2]);
     }
     else if (!STD_STRCMP(argArray[1], "stop"))
     {
-        (C_VOID)vm_session_record_stop(currentSession);
+        (C_VOID)vm_app_record_stop(currentSession);
     }
     else
     {
@@ -352,27 +378,27 @@ static C_VOID doRecord(vm_product_console_context *context)
     }
 }
 
-static const C_CHAR *vm_product_console_speed_name(vm_session_speed speed)
+static const C_CHAR *vm_product_console_speed_name(vm_app_speed speed)
 {
-    return speed == VM_SESSION_SPEED_TURBO ? "turbo" : "standard";
+    return speed == VM_APP_SPEED_TURBO ? "turbo" : "standard";
 }
 
 static C_VOID doSpeed(vm_product_console_context *context)
 {
-    vm_session_speed speed;
+    vm_app_speed speed;
     type_status status;
 
     if (numArgs == 1u) {
-        if (vm_session_get_speed(currentSession, &speed) == TYPE_STATUS_OK) {
+        if (vm_app_get_speed(currentSession, &speed) == TYPE_STATUS_OK) {
             STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
         }
         return;
     }
     if (numArgs != 2u) { GetHelp; }
-    if (!STD_STRCMP(argArray[1], "standard")) speed = VM_SESSION_SPEED_STANDARD;
-    else if (!STD_STRCMP(argArray[1], "turbo")) speed = VM_SESSION_SPEED_TURBO;
+    if (!STD_STRCMP(argArray[1], "standard")) speed = VM_APP_SPEED_STANDARD;
+    else if (!STD_STRCMP(argArray[1], "turbo")) speed = VM_APP_SPEED_TURBO;
     else { GetHelp; }
-    status = vm_session_set_speed(currentSession, speed);
+    status = vm_app_set_speed(currentSession, speed);
     if (status == TYPE_STATUS_OK) {
         STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
     } else if (status == TYPE_STATUS_INVALID_STATE) {
@@ -386,9 +412,9 @@ static C_VOID doSpeed(vm_product_console_context *context)
 static C_VOID doFloppy(vm_product_console_context *context)
 {
     if (numArgs == 3u && !STD_STRCMP(argArray[1], "insert")) {
-        if (vm_session_is_running(currentSession)) {
+        if (vm_app_is_running(currentSession)) {
             STD_PRINTF("Cannot change floppy media now.\n");
-        } else if (vm_session_insert_fdd(currentSession, argArray[2])) {
+        } else if (vm_app_insert_fdd(currentSession, argArray[2])) {
             STD_PRINTF("Cannot read floppy disk from '%s'.\n", argArray[2]);
         } else {
             STD_PRINTF("Floppy disk inserted.\n");
@@ -396,9 +422,9 @@ static C_VOID doFloppy(vm_product_console_context *context)
         return;
     }
     if (numArgs == 2u && !STD_STRCMP(argArray[1], "eject")) {
-        if (vm_session_is_running(currentSession)) {
+        if (vm_app_is_running(currentSession)) {
             STD_PRINTF("Cannot change floppy media now.\n");
-        } else if (vm_session_remove_fdd(currentSession, STD_NULL)) {
+        } else if (vm_app_remove_fdd(currentSession, STD_NULL)) {
             STD_PRINTF("Cannot eject floppy disk.\n");
         } else {
             STD_PRINTF("Floppy disk ejected.\n");
@@ -446,17 +472,17 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
     vm_session_request selected_entry;
-    vm_presentation_surface target;
+    common_session_target target;
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,
             &selected_entry)) return;
-    if (vm_session_open_profile(currentSession, &selected_entry) != TYPE_STATUS_OK) {
+    if (vm_app_open_profile(currentSession, &selected_entry) != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to create session from '%s'.\n", selected_entry.file_name);
         return;
     }
     target = !STD_STRCMP(selected_entry.display, "window") ?
-        VM_PRESENTATION_SURFACE_WINDOW : VM_PRESENTATION_SURFACE_CONSOLE;
-    (C_VOID)vm_session_set_presentation_target(currentSession, target);
+        COMMON_SESSION_TARGET_WINDOW : COMMON_SESSION_TARGET_CONSOLE;
+    (C_VOID)vm_app_set_presentation_target(currentSession, target);
 }
 
 /* Executes commands */
@@ -493,8 +519,8 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "start"))
     {
-        vm_presentation_plan plan;
-        type_status status = vm_session_start(currentSession, &plan);
+        common_session_plan plan;
+        type_status status = vm_app_start(currentSession, &plan);
         if (status == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
@@ -503,16 +529,16 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "reset"))
     {
-        (C_VOID)vm_session_reset(currentSession);
+        (C_VOID)vm_app_reset(currentSession);
     }
     else if (!STD_STRCMP(argArray[0], "stop"))
     {
-        (C_VOID)vm_session_stop(currentSession);
+        (C_VOID)vm_app_stop(currentSession);
     }
     else if (!STD_STRCMP(argArray[0], "resume"))
     {
-        vm_presentation_plan plan;
-        type_status status = vm_session_resume(currentSession, &plan);
+        common_session_plan plan;
+        type_status status = vm_app_resume(currentSession, &plan);
         if (status == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
@@ -534,14 +560,14 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
     context->session_stopped = TYPE_FALSE;
-    context->control = vm_session_get_control(currentSession);
+    context->control = vm_app_session(currentSession);
     if (context->control == STD_NULL) {
         context->control = STD_NULL;
         return TYPE_FALSE;
     }
     if (vm_presentation_create(&context->presentation,
-            vm_session_control_publish_presentation_input,
-            context->control, vm_session_control_publish_console_line,
+            vm_product_console_input_sink,
+            context->control, vm_product_console_line_sink,
             context->control) != TYPE_STATUS_OK) {
         context->control = STD_NULL;
         return TYPE_FALSE;
@@ -566,7 +592,7 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
         STD_FREE((C_VOID *)argArray);
     }
     argArray = STD_NULL;
-    if (!context->session_stopped && vm_session_stop(currentSession) == TYPE_STATUS_OK) {
+    if (!context->session_stopped && vm_app_stop(currentSession) == TYPE_STATUS_OK) {
         context->session_stopped = TYPE_TRUE;
     }
     vm_product_console_drain_lifecycle(context, TYPE_FALSE);
@@ -574,7 +600,7 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
     context->catalog = STD_NULL;
     vm_presentation_destroy(context->presentation);
     context->presentation = STD_NULL;
-    vm_session_control_close(context->control);
+    common_session_close(context->control);
     context->control = STD_NULL;
 }
 
@@ -600,7 +626,7 @@ C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 }
 
 C_VOID vm_product_console_main(vm_product_console_context *context,
-                               vm_session *machine_session,
+                               vm_app *machine_session,
                                const C_CHAR *profile_directory)
 {
     if (context == STD_NULL || machine_session == STD_NULL ||

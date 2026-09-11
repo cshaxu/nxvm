@@ -2,7 +2,7 @@
 
 #include <dirent.h>
 
-#include "vm/session/catalog.h"
+#include "vm/product/catalog.h"
 
 struct vm_product_session_catalog {
     vm_session_request entries[VM_PRODUCT_SESSION_CATALOG_MAX];

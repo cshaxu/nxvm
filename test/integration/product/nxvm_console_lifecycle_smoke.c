@@ -18,9 +18,9 @@
 #define TEST_CONSOLE_FILENO fileno
 #endif
 
-#include "vm/session/session.h"
+#include "vm/app/app.h"
 #include "vm/product/console.h"
-#include "vm/session/catalog.h"
+#include "vm/product/catalog.h"
 
 static C_INT session_choice(const C_CHAR *directory, const C_CHAR *file_name)
 {
@@ -44,14 +44,14 @@ static C_INT session_choice(const C_CHAR *directory, const C_CHAR *file_name)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session *session = STD_NULL;
+    vm_app *session = STD_NULL;
     vm_product_console_context *console_context = STD_NULL;
     STD_FILE *input = STD_NULL;
     C_CHAR commands[128];
     C_INT saved_stdin = -1;
     C_INT choice;
     C_INT result = 1;
-    vm_session_speed speed = VM_SESSION_SPEED_STANDARD;
+    vm_app_speed speed = VM_APP_SPEED_STANDARD;
 
     if (argc != 2 || (choice = session_choice(argv[1], "ibm-5170-model-339-1200k.yaml")) == 0 ||
         (input = tmpfile()) == STD_NULL ||
@@ -64,11 +64,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     saved_stdin = TEST_CONSOLE_DUP(TEST_CONSOLE_FILENO(STD_STDIN));
     if (saved_stdin < 0 || TEST_CONSOLE_DUP2(TEST_CONSOLE_FILENO(input),
             TEST_CONSOLE_FILENO(STD_STDIN)) < 0) goto done;
-    if (vm_session_create(&session) != TYPE_STATUS_OK ||
+    if (vm_app_create(&session) != TYPE_STATUS_OK ||
         vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
     vm_product_console_main(console_context, session, argv[1]);
-    if (vm_session_get_speed(session, &speed) != TYPE_STATUS_OK ||
-        speed != VM_SESSION_SPEED_TURBO) {
+    if (vm_app_get_speed(session, &speed) != TYPE_STATUS_OK ||
+        speed != VM_APP_SPEED_TURBO) {
         goto done;
     }
     result = 0;
@@ -79,7 +79,7 @@ done:
     }
     STD_FCLOSE(input);
     vm_product_console_context_destroy(console_context);
-    vm_session_destroy(session);
+    vm_app_destroy(session);
     if (result == 0) STD_PRINTF("M5:T515:S3:CONSOLE-YAML-LIFECYCLE:OK\n");
     return result;
 }

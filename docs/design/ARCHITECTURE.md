@@ -90,14 +90,15 @@ and display facts. It neither selects a host surface nor owns the process
 Console. `vm/events` is a value-only ABI below both machine and future product
 owners: it contains no Core, executor, session, or UI pointer.
 
-Until the M5 common cutover, `vm/session` is the sole product-control reducer.
-Its one FIFO receives copied
-Console lines, machine results and presentation input; it owns run generation,
-lifecycle and presentation-policy decisions. It emits copied machine requests
-or presentation plans only, and never accesses a Core object or a native/lib
-handle.
+`common/session` is the sole product-control reducer. Its one FIFO receives
+copied Console lines, machine results and presentation input; it owns run
+generation and lifecycle facts. `vm/app` is the NXVM composition binding: it
+converts the existing VM machine result into copied common facts and contains
+no second FIFO, run generation, lifecycle reducer or presentation state.
+Product Console retains NXVM command and title policy until the later
+common-debug/product-CLI migration.
 
-`vm/presentation` is the NXVM shared-lib binding leaf. It applies session plans
+`vm/presentation` is the NXVM shared-lib binding leaf. It applies common-session plans
 and returns copied input facts; it never derives lifecycle or surface policy.
 Its Console host owns the process Console broker and may lease it to at most one
 Console presenter. Core and `src/lib` do not know session selection, lifecycle

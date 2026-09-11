@@ -1177,16 +1177,18 @@ set(VM_PROFILE_SOURCES
 
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
+    src/vm/product/catalog.c
 )
 set(VM_PRESENTATION_SOURCES
     src/vm/presentation/console_host.c
     src/vm/presentation/presentation.c
     src/vm/presentation/frame.c
 )
-set(VM_SESSION_SOURCES
-    src/vm/session/control.c
-    src/vm/session/catalog.c
-    src/vm/session/session.c
+set(COMMON_SESSION_SOURCES
+    src/common/session/session.c
+)
+set(VM_APP_SOURCES
+    src/vm/app/app.c
 )
 set(CORE_DEBUG_SOURCES
     src/core/debug/debug_access.c
@@ -1337,13 +1339,13 @@ target_link_libraries(core-debug-input-failure-smoke PRIVATE
     type-facade
 )
 
-add_executable(vm-session-control-smoke
-    test/vm/session/vm_session_control_smoke.c
+add_executable(common-session-smoke
+    test/common/session/common_session_smoke.c
 )
-target_include_directories(vm-session-control-smoke PRIVATE
+target_include_directories(common-session-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-session-control-smoke PRIVATE vm-session)
+target_link_libraries(common-session-smoke PRIVATE common-session)
 add_executable(vm-presentation-frame-smoke
     test/vm/presentation/vm_presentation_frame_smoke.c)
 target_link_libraries(vm-presentation-frame-smoke PRIVATE vm-presentation)
@@ -1427,14 +1429,22 @@ target_link_libraries(vm-machine PUBLIC
     vm-machine-executor-fifo
     storage)
 
-add_library(vm-session STATIC ${VM_SESSION_SOURCES})
-target_include_directories(vm-session PUBLIC
+add_library(common-session STATIC ${COMMON_SESSION_SOURCES})
+target_include_directories(common-session PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-session PUBLIC
+target_link_libraries(common-session PUBLIC
     host
-    ui-base
+    ui-base)
+
+add_library(vm-app STATIC ${VM_APP_SOURCES})
+target_include_directories(vm-app PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-app PUBLIC
+    common-session
     vm-machine
+    vm-presentation
     type-facade)
 
 add_library(vm-presentation STATIC ${VM_PRESENTATION_SOURCES})
@@ -1452,7 +1462,8 @@ target_include_directories(vm-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product PUBLIC
-    vm-session
+    vm-app
+    common-session
     vm-presentation
     core-product
     core-machine-boundary
@@ -2229,7 +2240,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     common-xasm32-contract-smoke
     core-debug-target-smoke
     core-debug-input-failure-smoke
-    vm-session-control-smoke
+    common-session-smoke
     vm-presentation-frame-smoke
     core-machine-guest-input-source-smoke
     host-smoke
@@ -3672,9 +3683,9 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-presentation|src/vm/presentation/console_host.c|presentation-leaf"
     "vm-presentation|src/vm/presentation/presentation.c|presentation-leaf"
     "vm-presentation|src/vm/presentation/frame.c|presentation-leaf"
-    "vm-session|src/vm/session/catalog.c|session-catalog"
-    "vm-session|src/vm/session/control.c|session-control"
-    "vm-session|src/vm/session/session.c|session-owner"
+    "vm-product|src/vm/product/catalog.c|session-catalog"
+    "common-session|src/common/session/session.c|session-owner"
+    "vm-app|src/vm/app/app.c|session-composition"
     "vm-machine|src/vm/machine/fdd.c|vm-machine"
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
@@ -3717,7 +3728,8 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-profile
     vm-machine
     vm-machine
-    vm-session
+    common-session
+    vm-app
     vm-presentation
     vm-product
     vdm-machine

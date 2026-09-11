@@ -18,9 +18,9 @@
 #define TEST_FILENO fileno
 #endif
 
-#include "vm/session/session.h"
+#include "vm/app/app.h"
 #include "vm/product/console.h"
-#include "vm/session/catalog.h"
+#include "vm/product/catalog.h"
 
 static C_INT model40_choice(const C_CHAR *directory)
 {
@@ -44,7 +44,7 @@ static C_INT model40_choice(const C_CHAR *directory)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session *session = STD_NULL;
+    vm_app *session = STD_NULL;
     vm_product_console_context *console = STD_NULL;
     STD_FILE *input = STD_NULL;
     C_CHAR commands[48];
@@ -61,7 +61,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (!failed && (stdin_copy < 0 || TEST_DUP2(TEST_FILENO(input),
             TEST_FILENO(STD_STDIN)) < 0)) failed = 1;
     if (!failed) {
-        failed = vm_session_create(&session) != TYPE_STATUS_OK ||
+        failed = vm_app_create(&session) != TYPE_STATUS_OK ||
             vm_product_console_context_create(&console) != TYPE_STATUS_OK;
     }
     if (!failed) {
@@ -74,7 +74,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (input != STD_NULL) STD_FCLOSE(input);
     vm_product_console_context_destroy(console);
-    vm_session_destroy(session);
+    vm_app_destroy(session);
     if (!failed) STD_PRINTF("M5:T515:S3:MODEL40-CONSOLE-YAML:OK\n");
     return failed;
 }

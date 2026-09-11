@@ -10,7 +10,7 @@
 #include "vm/product/version.h"
 
 #include "core/product/banner.h"
-#include "vm/session/session.h"
+#include "vm/app/app.h"
 #include "vm/product/console.h"
 
 static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
@@ -33,20 +33,20 @@ static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session *session = STD_NULL;
+    vm_app *session = STD_NULL;
     vm_product_console_context *console_context = STD_NULL;
     C_CHAR profile_directory[1024];
 
     CORE_PRODUCT_PRINT_BANNER();
-    if (vm_session_create(&session) != TYPE_STATUS_OK ||
+    if (vm_app_create(&session) != TYPE_STATUS_OK ||
         vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) {
-        vm_session_destroy(session);
+        vm_app_destroy(session);
         return 1;
     }
     vm_product_console_main(console_context, session,
         vm_main_profile_directory(argc, argv, profile_directory,
             sizeof(profile_directory)));
     vm_product_console_context_destroy(console_context);
-    vm_session_destroy(session);
+    vm_app_destroy(session);
     return 0;
 }

@@ -257,13 +257,17 @@ session activates Debug only after a paused fact.
    provider contract, `N/L/W` product file-service exchange, and recorder
    disposition before moving the Debug parser.  This order prevents a temporary
    Debug-to-Core shortcut or a speculative target wrapper.
-3. **S3 - common contracts and session mechanism.** Create the independently
+3. **S3 - common contracts and session cutover.** Create the independently
    buildable common corpus and implement the neutral copied ABI plus the sole
-   bounded session FIFO, run-generation validation and lifecycle reducer.  Add
-   only opaque injected ports for a control Console, UI plan application,
-   machine delivery, presentation policy and registered CLI providers.  Session
-   may invoke those ports in its ordered loop, but includes no product, UI,
-   machine or Debug implementation.
+   bounded session FIFO, run-generation validation and lifecycle reducer. Add
+   only copied monitor/machine/UI facts and lifecycle plans. Session includes no product, UI,
+   machine or Debug implementation. NXVM immediately binds that owner through
+   a minimal `vm/app` composition leaf and deletes the old `vm/session`
+   lifecycle/FIFO/reducer route in the same S; the YAML catalog moves to
+   `vm/product`. S5 introduces the live CLI-provider registration together
+   with `common/debug` and the product-CLI cutover, rather than exporting an
+   unused callback API in S3. The binding owns no queue, lifecycle state, mirrored fact or
+   retry policy.
 4. **S4 - common machine bridge and paused-Debug API.** Implement the neutral
    safe-point machine request FIFO and opaque driver contract.  Move NXVM Core
    assembly plus its paused-Debug endpoint implementation into `vm/machine`;
@@ -285,11 +289,12 @@ session activates Debug only after a paused fact.
    raw-VM/monitor/none policy and Console text.  Delete the obsolete
    `vm/presentation` path.  Verify Console/Window switching, title, target,
    focus, mouse and latest-frame semantics without native API leakage.
-7. **S7 - NXVM product and app cutover.** Make `vm/product` own only NXVM
+7. **S7 - NXVM product and app completion.** Make `vm/product` own only NXVM
    command/YAML/profile/debugger/presentation policy, injected into session at
    construction.  Make `vm/app` the sole composition root, with no queue or
-   lifecycle/router state.  Delete the old `vm/session`, `vm/events` and
-   product/host bridge paths rather than retaining adapters.  Confirm one
+   lifecycle/router state. Delete the remaining old `vm/events` and
+   product/host bridge paths rather than retaining adapters; S3 already deletes
+   `vm/session`. Confirm one
    session only, one product control FIFO, one machine FIFO and one UI route.
 8. **S8 - reusable-corpus and closure audit.** Build common independently
    using only `lib` public headers; verify its manifest and forbidden-vocabulary

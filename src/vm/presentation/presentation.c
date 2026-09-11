@@ -15,7 +15,7 @@ struct vm_presentation {
     ui_console *console;
     ui_hotkey_registry hotkeys;
     ui_frame frame;
-    vm_presentation_surface target;
+    common_session_target target;
 };
 
 static C_INT vm_presentation_input(C_VOID *opaque,
@@ -44,7 +44,7 @@ static C_VOID vm_presentation_destroy_leaf(
 }
 
 static type_status vm_presentation_create_leaf(
-    vm_presentation *presentation, vm_presentation_surface target)
+    vm_presentation *presentation, common_session_target target)
 {
     ui_component_options component = {0};
     lib_status status;
@@ -52,14 +52,14 @@ static type_status vm_presentation_create_leaf(
     component.input_context = presentation;
     component.input_sink = vm_presentation_input;
     component.hotkeys = presentation->hotkeys;
-    if (target == VM_PRESENTATION_SURFACE_WINDOW) {
+    if (target == COMMON_SESSION_TARGET_WINDOW) {
         ui_window_options options = {0};
 
         options.component = component;
         options.initial_title = "NXVM (Running)";
         options.initial_frozen = LIB_FALSE;
         status = ui_window_create(&presentation->window, &options);
-    } else if (target == VM_PRESENTATION_SURFACE_CONSOLE) {
+    } else if (target == COMMON_SESSION_TARGET_CONSOLE) {
         status = ui_console_create(&presentation->console, &component);
         if (status == LIB_STATUS_OK) {
             status = (lib_status)vm_presentation_console_host_claim_guest(
@@ -127,56 +127,57 @@ type_status vm_presentation_write_console(vm_presentation *presentation,
 }
 
 type_status vm_presentation_set_target(vm_presentation *presentation,
-    vm_presentation_surface target)
+    common_session_target target)
 {
     type_status status;
 
-    if (presentation == STD_NULL || target > VM_PRESENTATION_SURFACE_WINDOW)
+    if (presentation == STD_NULL || target > COMMON_SESSION_TARGET_WINDOW)
         return TYPE_STATUS_INVALID_ARGUMENT;
     if (presentation->target == target) return TYPE_STATUS_OK;
     vm_presentation_destroy_leaf(presentation);
-    presentation->target = VM_PRESENTATION_SURFACE_NONE;
+    presentation->target = COMMON_SESSION_TARGET_NONE;
     status = vm_presentation_create_leaf(presentation, target);
     if (status != TYPE_STATUS_OK) return status;
     presentation->target = target;
     if (presentation->frame.valid) {
-        return target == VM_PRESENTATION_SURFACE_WINDOW ?
+        return target == COMMON_SESSION_TARGET_WINDOW ?
             (type_status)ui_window_publish_frame(presentation->window, &presentation->frame) :
-            target == VM_PRESENTATION_SURFACE_CONSOLE ?
+            target == COMMON_SESSION_TARGET_CONSOLE ?
             (type_status)ui_console_publish_frame(presentation->console, &presentation->frame) :
             TYPE_STATUS_OK;
     }
     return TYPE_STATUS_OK;
 }
 
-vm_presentation_surface vm_presentation_get_target(
+common_session_target vm_presentation_get_target(
     const vm_presentation *presentation)
-{ return presentation == STD_NULL ? VM_PRESENTATION_SURFACE_NONE : presentation->target; }
+{ return presentation == STD_NULL ? COMMON_SESSION_TARGET_NONE : presentation->target; }
 
-type_status vm_presentation_apply_plan(vm_presentation *presentation,
-    const vm_presentation_plan *plan)
+type_status vm_presentation_apply_common_plan(vm_presentation *presentation,
+    const common_session_plan *plan)
 {
     type_status status;
+    common_session_target target;
 
-    if (presentation == STD_NULL || plan == STD_NULL)
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    if (plan->target_changed &&
-        (status = vm_presentation_set_target(presentation, plan->target)) !=
-            TYPE_STATUS_OK)
-        return status;
-    if (plan->title_changed &&
-        (status = vm_presentation_set_window_title(presentation, plan->title)) !=
-            TYPE_STATUS_OK)
-        return status;
+    if (presentation == STD_NULL || plan == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (plan->target_changed) {
+        target = plan->target == COMMON_SESSION_TARGET_WINDOW ?
+            COMMON_SESSION_TARGET_WINDOW : plan->target == COMMON_SESSION_TARGET_CONSOLE ?
+            COMMON_SESSION_TARGET_CONSOLE : COMMON_SESSION_TARGET_NONE;
+        if ((status = vm_presentation_set_target(presentation, target)) != TYPE_STATUS_OK)
+            return status;
+    }
     if (plan->mouse_capturable_changed &&
         (status = vm_presentation_set_mouse_capturable(presentation,
-            plan->mouse_capturable)) != TYPE_STATUS_OK)
-        return status;
+            plan->mouse_capturable)) != TYPE_STATUS_OK) return status;
     if (plan->release_mouse &&
-        (status = vm_presentation_release_mouse(presentation)) != TYPE_STATUS_OK)
-        return status;
-    return plan->frame_ready ? vm_presentation_publish_frame(presentation,
-        &plan->frame) : TYPE_STATUS_OK;
+        (status = vm_presentation_release_mouse(presentation)) != TYPE_STATUS_OK) return status;
+    if (!plan->frame_ready) return TYPE_STATUS_OK;
+    presentation->frame = plan->frame;
+    if (presentation->target == COMMON_SESSION_TARGET_NONE) return TYPE_STATUS_OK;
+    return presentation->target == COMMON_SESSION_TARGET_WINDOW ?
+        (type_status)ui_window_publish_frame(presentation->window, &presentation->frame) :
+        (type_status)ui_console_publish_frame(presentation->console, &presentation->frame);
 }
 
 type_status vm_presentation_set_window_title(
@@ -201,21 +202,4 @@ type_status vm_presentation_release_mouse(
     return presentation == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
         presentation->window == STD_NULL ? TYPE_STATUS_OK :
         (type_status)ui_window_release_mouse(presentation->window);
-}
-
-type_status vm_presentation_publish_frame(
-    vm_presentation *presentation,
-    const vm_machine_display_event *frame)
-{
-    type_status status;
-    vm_presentation_surface target;
-
-    if (presentation == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    status = vm_presentation_frame_from_core(frame, &presentation->frame);
-    if (status != TYPE_STATUS_OK) return status;
-    target = presentation->target;
-    if (target == VM_PRESENTATION_SURFACE_NONE) return TYPE_STATUS_OK;
-    return target == VM_PRESENTATION_SURFACE_WINDOW ?
-        (type_status)ui_window_publish_frame(presentation->window, &presentation->frame) :
-        (type_status)ui_console_publish_frame(presentation->console, &presentation->frame);
 }

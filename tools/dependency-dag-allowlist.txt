@@ -8,12 +8,10 @@ src/vm/machine/runtime/rom/external_pc_at.c|vm/profile
 src/vm/machine/runtime/machine_interface.h|vm/profile
 src/vm/machine/runtime/machine_private.h|vm/events
 src/vm/machine/runtime/machine_private.h|vm/profile
-src/vm/session/session.c|vm/machine
-src/vm/session/catalog.h|vm/events
-src/vm/session/control.h|vm/events
-src/vm/session/session.h|vm/events
-src/vm/product/console.c|vm/session
+src/vm/app/app.c|vm/machine
+src/vm/app/app.c|vm/presentation
+src/vm/product/catalog.h|vm/events
+src/vm/product/console.c|vm/app
 src/vm/product/console.c|vm/presentation
-src/vm/product/console.h|vm/session
-src/vm/presentation/presentation.h|vm/events
+src/vm/product/console.h|vm/app
 src/vm/presentation/frame.h|vm/events
