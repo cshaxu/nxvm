@@ -1,12 +1,11 @@
 # M5 T526: NXVM Canonical-Library Integration Repair
 
-## Active Packet
+## Closure Record
 
-- **Identifier mode:** Continuation
-- **Owner admission:** owner rejected closure and approved S8 to adopt the
-  current owner-controlled SoftPC `src/lib` corpus without an NXVM fork.
-- **Current subtask:** S8 - canonical SoftPC library refresh and consumer
-  repair.
+- **Identifier mode:** Closed after S13.
+- **Owner admission:** owner approved the canonical-library architecture and
+  its final route convergence.
+- **Closure evidence:** [S13 route audit](../etc/evidence/t526-s13-route-audit.md).
 
 ## S1 Contract
 
@@ -231,3 +230,36 @@ debugger and VM adapter regressions cover the retained route. Focused 6/6,
 repository-only unit 303/303, all current specialized gates, documentation
 governance and `git diff --check` pass. T526 remains open for the separately
 approved VM event, machine, session and presentation convergence subtasks.
+
+### S10--S12 implementation result
+
+`vm/events` is now the value-only boundary, `vm/machine` the sole Core
+composition/executor owner, `vm/session` the sole reducer and product-control
+FIFO owner, and `vm/presentation` the sole canonical-library binding owner.
+The retired composition executor, product presentation/Console ownership, and
+their direct compatibility routes were deleted. The route therefore has one
+machine FIFO, one session FIFO, one copied machine-result sink, and one copied
+presentation-plan API.
+
+### S13 implementation result and acceptance
+
+The final route audit found one real paused-runner lost-wake race: a request
+could enter the machine FIFO between the old control wake being consumed and
+the runner waiting again. The FIFO now owns the manual-reset readiness event
+for its own ingress state, and the runner waits on that event together with
+control change. This keeps one executor FIFO and removes the separate
+lifecycle wake. The unified-debug integration was also migrated from its raw
+private thread to the public `vm_machine` lifecycle.
+
+The actual-diff review accepts `b52b7a7d`: no duplicate Core/VM/lib route,
+forwarding queue, native VM UI access, or local `src/lib` change remains.
+Verification passes: focused regression, 299/299 repository-only unit,
+67/67 specialized gates, documentation governance, and 42/42 external
+integration. The Model-40 external-ROM row reaches its installer in 160.99
+seconds; its remaining 60-second throughput limitation is explicitly a later
+Core-performance concern, not a T526 route defect. Stripped Release artifacts
+are deployed identically to `build/output` and `assets/sessions`: x64
+`6639BC3D07196647B443D602DCAA2F229F46135D15C0DF2DF56B49AC4BFB2CCC` and
+x86 `EBDACBDD9C9E1FFAB55CEE64AEB7E76D563A030579B37D803BC38531EC5015BB`.
+
+T526 is closed.

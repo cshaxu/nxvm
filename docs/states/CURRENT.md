@@ -4,26 +4,13 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S13 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): audit the final Core/VM/lib route, remove only stale final-owner gates, and prove whole-route closure. |
+| T526 | Closed | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): Core/VM/lib route convergence accepted through S13. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S13. |
-| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S11 P1/P2 is pushed as `5f1968bf` and `cc043969`. |
-| Objective | Audit every final Core/VM/lib owner route against the approved architecture, repair any duplicate or stale route at its owner, and prove full T526 closure. |
-| Non-goals | No Core semantic expansion, no second executor/FIFO, no lib modification, no native SDK access from VM, no external asset change, and no compatibility/control-forwarding route. |
-| Reference Baseline | T526 S10/S11/S12 are pushed as `697d849a`, `5f1968bf`, `cc043969` and `7308684a`; the retained proposal supplies the approved target architecture. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S13. |
-| Files And ABI Surface | `src/vm/{events,machine,session,presentation,product}`, Core/VM CMake targets and mirrored repository-only tests. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
-| Verification | Sweep every owner edge and stale name; run full unit, specialized, documentation and external integration gates; actual-diff review final routes; produce and hash stripped x64/x86 artifacts. |
-| Expected Markers | Three independent Core modules, one value ABI, one machine FIFO, one session FIFO, one presentation owner, no product/native compatibility route, no stale gate. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the final route audit, removed stale gates if any, exact verification and dual artifact identity in [S13 evidence](../etc/evidence/t526-s13-route-audit.md). |
-| Stop Conditions | Stop for a required Core semantic change, a new second owner/FIFO, a failing external input with no owner-local cause, or a temporary forwarding route. |
-| Exit Criteria | Every S13 acceptance marker is evidenced; unit, specialized, documentation and integration suites pass; the actual diff has no duplicate ownership or route. |
-| Original Owner Request | Converge NXVM lifecycle and product experience with SoftPC while simplifying ownership. |
-| Similar-Issue Sweep | Inventory every product command handler, lifecycle/display callback, presentation decision, direct machine call and product queue; migrate every live route or delete it. |
+| Identifier Mode | Closed - M5 T526 S13 accepted. |
+| Closure | Implementation `b52b7a7d` is accepted after route audit, 299/299 unit, 67/67 specialized, documentation governance, 42/42 external integration, actual-diff review, and dual stripped artifact verification. |
+| History | [T526 history](../history/M5-T526-nxvm-lib-integration-repair.md), [retained proposal](../history/M5-T526-nxvm-lib-integration-repair-proposal.md), and [S13 evidence](../etc/evidence/t526-s13-route-audit.md). |
 
 ## Current Technical Baseline
 - **Current developer artifacts:** T526 owns the active CMake target
