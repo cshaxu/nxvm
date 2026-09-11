@@ -122,8 +122,12 @@ C_INT vm_app_remove_fdd(vm_app *app, const C_CHAR *path)
 
 static type_status vm_app_begin(vm_app *app, common_session_plan *out_plan, C_INT resume)
 {
+    lib_u32 run_id;
+
     if (app == STD_NULL || app->machine == STD_NULL || out_plan == STD_NULL) return TYPE_STATUS_INVALID_STATE;
-    if (common_session_begin_run(app->session, out_plan) == 0u) return TYPE_STATUS_INVALID_STATE;
+    run_id = common_session_begin_run(app->session, out_plan);
+    if (run_id == 0u || vm_machine_bind_run(app->machine, run_id) != TYPE_STATUS_OK)
+        return TYPE_STATUS_INVALID_STATE;
     return resume ? vm_machine_resume(app->machine) : vm_machine_start(app->machine);
 }
 type_status vm_app_start(vm_app *app, common_session_plan *out_plan)

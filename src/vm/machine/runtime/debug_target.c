@@ -227,6 +227,55 @@ static C_INT vm_debug_get_fault_outcome(C_VOID *context,
     return 0;
 }
 
+lib_status vm_machine_common_debug_execute(void *context,
+    const common_machine_debug_request *request,
+    common_machine_debug_result *out_result)
+{
+    vm_machine *machine = context;
+    core_machine_debug_register register_id;
+    type_unsigned_32 value = 0u;
+
+    if (machine == STD_NULL || request == LIB_NULL || out_result == LIB_NULL ||
+        request->bytes > COMMON_MACHINE_DEBUG_BYTES) return LIB_STATUS_INVALID_ARGUMENT;
+    STD_MEMSET(out_result, 0, sizeof(*out_result));
+    if (request->operation == COMMON_MACHINE_DEBUG_READ_REGISTER ||
+        request->operation == COMMON_MACHINE_DEBUG_WRITE_REGISTER) {
+        if (request->register_id >= CORE_MACHINE_DEBUG_REGISTER_COUNT) return LIB_STATUS_INVALID_ARGUMENT;
+        register_id = (core_machine_debug_register)request->register_id;
+        if (request->operation == COMMON_MACHINE_DEBUG_READ_REGISTER) {
+            if (core_machine_debug_read_register(machine->core_machine, register_id,
+                    &out_result->value) != TYPE_STATUS_OK) return LIB_STATUS_INVALID_STATE;
+        } else {
+            if (core_machine_debug_write_register(machine->core_machine, register_id,
+                    request->address) != TYPE_STATUS_OK) return LIB_STATUS_INVALID_STATE;
+        }
+        return LIB_STATUS_OK;
+    }
+    if (request->operation == COMMON_MACHINE_DEBUG_READ_LINEAR ||
+        request->operation == COMMON_MACHINE_DEBUG_WRITE_LINEAR) {
+        if (request->bytes == 0u) return LIB_STATUS_INVALID_ARGUMENT;
+        if ((request->operation == COMMON_MACHINE_DEBUG_READ_LINEAR ?
+                core_machine_debug_read_linear(machine->core_machine, request->address,
+                    out_result->data, request->bytes) :
+                core_machine_debug_write_linear(machine->core_machine, request->address,
+                    request->data, request->bytes)) != TYPE_STATUS_OK) return LIB_STATUS_INVALID_STATE;
+        out_result->bytes = request->bytes;
+        return LIB_STATUS_OK;
+    }
+    if (request->operation == COMMON_MACHINE_DEBUG_READ_PORT) {
+        if (core_machine_debug_read_port(machine->core_machine, request->port,
+                &value) != TYPE_STATUS_OK) return LIB_STATUS_INVALID_STATE;
+        out_result->value = value;
+        return LIB_STATUS_OK;
+    }
+    if (request->operation == COMMON_MACHINE_DEBUG_WRITE_PORT) {
+        if (core_machine_debug_write_port(machine->core_machine, request->port,
+                request->address) != TYPE_STATUS_OK) return LIB_STATUS_INVALID_STATE;
+        return LIB_STATUS_OK;
+    }
+    return LIB_STATUS_INVALID_ARGUMENT;
+}
+
 static const core_debug_target vmDebugTargetTemplate = {
     .is_running = vm_debug_running,
     .resume = vm_debug_resume,

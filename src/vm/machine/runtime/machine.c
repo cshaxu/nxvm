@@ -98,55 +98,55 @@ static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
 #include "vm/profile/default_profile/mouse_mapper.h"
 
 C_VOID vm_machine_consume_request(
-    C_VOID *opaque, const vm_machine_request *request)
+    C_VOID *opaque, const common_machine_request *request)
 {
     vm_machine *session = (vm_machine *)opaque;
 
     if (session == STD_NULL || !session->active || request == STD_NULL) return;
-    if (request->kind == VM_MACHINE_REQUEST_PAUSE) {
+    if (request->kind == COMMON_MACHINE_REQUEST_PAUSE) {
         vm_machine_control_request_pause(&session->control,
             (vm_machine_pause_reason)request->pause_reason);
         return;
     }
-    if (request->kind == VM_MACHINE_REQUEST_RESET) {
+    if (request->kind == COMMON_MACHINE_REQUEST_RESET) {
         (C_VOID)vm_machine_control_reset(&session->control);
         return;
     }
-    if (request->kind == VM_MACHINE_REQUEST_RESUME) {
+    if (request->kind == COMMON_MACHINE_REQUEST_RESUME) {
         vm_machine_control_continue(&session->control);
         return;
     }
-    if (request->kind == VM_MACHINE_REQUEST_STEP) {
+    if (request->kind == COMMON_MACHINE_REQUEST_STEP) {
         (C_VOID)vm_machine_control_step(&session->control);
         return;
     }
-    if (request->kind == VM_MACHINE_REQUEST_STOP) {
+    if (request->kind == COMMON_MACHINE_REQUEST_STOP) {
         vm_machine_control_stop(&session->control);
         return;
     }
-    if (request->kind != VM_MACHINE_REQUEST_INPUT) return;
-    if (request->input.kind == VM_MACHINE_INPUT_KEY_EVENT) {
+    if (request->kind != COMMON_MACHINE_REQUEST_INPUT) return;
+    if (request->input.kind == COMMON_MACHINE_INPUT_KEY) {
         vm_profile_default_keyboard_sequence sequence;
         type_unsigned_8 native_scan_set;
 
         if (core_machine_keyboard_get_native_scan_set(session->core_machine,
                 &native_scan_set) == TYPE_STATUS_OK &&
             vm_profile_default_keyboard_map_host_key_for_scan_set(
-                request->input.data.key_event.scan_code,
-                request->input.data.key_event.virtual_key,
-                request->input.data.key_event.pressed,
+                request->input.value.key.scan_code,
+                request->input.value.key.virtual_key,
+                request->input.value.key.pressed,
                 native_scan_set, &sequence) ==
             TYPE_STATUS_OK) {
             (C_VOID)core_machine_keyboard_receive_native_bytes(session->core_machine,
                 sequence.bytes, sequence.count);
         }
-    } else if (request->input.kind == VM_MACHINE_INPUT_MOUSE_EVENT) {
+    } else if (request->input.kind == COMMON_MACHINE_INPUT_RELATIVE_MOUSE) {
         vm_profile_default_mouse_report report;
 
         if (vm_profile_default_mouse_map_host_relative(
-                request->input.data.mouse_event.delta_x,
-                request->input.data.mouse_event.delta_y,
-                request->input.data.mouse_event.buttons, &report) ==
+                request->input.value.mouse.delta_x,
+                request->input.value.mouse.delta_y,
+                request->input.value.mouse.buttons, &report) ==
             TYPE_STATUS_OK) {
             (C_VOID)core_machine_mouse_receive_relative(session->core_machine,
                 report.delta_x, report.delta_y, report.buttons);
@@ -267,6 +267,12 @@ type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed)
     if (vm_machine_control_is_running(&session->control)) return TYPE_STATUS_INVALID_STATE;
     session->speed = speed;
     return TYPE_STATUS_OK;
+}
+
+type_status vm_machine_bind_run(vm_machine *session, type_unsigned_32 run_id)
+{
+    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
+    return (type_status)common_machine_bind_run(session->executor, run_id);
 }
 
 static type_status vm_machine_default_at_floppy_select(const vm_machine_config *config,

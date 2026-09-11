@@ -96,6 +96,7 @@ type_status vm_machine_reconfigure_memory(vm_machine *session,
 type_status vm_machine_get_speed(const vm_machine *session,
     vm_machine_speed *out_speed);
 type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed);
+type_status vm_machine_bind_run(vm_machine *session, type_unsigned_32 run_id);
 C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path);
 C_INT vm_machine_remove_fdd(vm_machine *session, const C_CHAR *path);
 C_INT vm_machine_insert_hdd(vm_machine *session, const C_CHAR *path);

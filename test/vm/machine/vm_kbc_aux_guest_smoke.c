@@ -5,7 +5,6 @@
 #include "core/machine/guest_input_interface.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/executor_fifo.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_KBC_AUX_BOOT_BUDGET 500000u
@@ -101,7 +100,7 @@ C_INT main(C_VOID)
         if (vm_machine_submit_host_input(session, &event) != TYPE_STATUS_OK) { stage = 3; goto done; }
     }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
-    vm_machine_executor_fifo_observe_execution_boundary(session->executor_fifo);
+    (C_VOID)common_machine_observe_safe_point(session->executor);
     if (!vm_kbc_aux_run_until_count(session, 4u) ||
         core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, sizeof(bytes)) != TYPE_STATUS_OK || bytes[0] != 0xfau ||

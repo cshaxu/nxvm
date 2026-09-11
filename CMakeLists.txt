@@ -1187,6 +1187,9 @@ set(VM_PRESENTATION_SOURCES
 set(COMMON_SESSION_SOURCES
     src/common/session/session.c
 )
+set(COMMON_MACHINE_SOURCES
+    src/common/machine/machine.c
+)
 set(VM_APP_SOURCES
     src/vm/app/app.c
 )
@@ -1248,35 +1251,18 @@ target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-machine-boundary PUBLIC type-facade host)
-add_library(vm-machine-executor-queue STATIC
-    src/vm/machine/executor_queue.c
-)
-target_include_directories(vm-machine-executor-queue PUBLIC
+add_library(common-machine STATIC ${COMMON_MACHINE_SOURCES})
+target_include_directories(common-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-machine-executor-queue PUBLIC type-facade)
-add_executable(vm-machine-executor-queue-smoke
-    test/vm/machine/vm_machine_executor_queue_smoke.c
+target_link_libraries(common-machine PUBLIC host)
+add_executable(common-machine-smoke
+    test/common/machine/common_machine_smoke.c
 )
-target_link_libraries(vm-machine-executor-queue-smoke PRIVATE
-    vm-machine-executor-queue
-)
-add_library(vm-machine-executor-fifo STATIC
-    src/vm/machine/executor_fifo.c
-)
-target_include_directories(vm-machine-executor-fifo PUBLIC
+target_include_directories(common-machine-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-machine-executor-fifo PUBLIC
-    vm-machine-executor-queue
-    host
-)
-add_executable(vm-machine-executor-fifo-smoke
-    test/vm/machine/vm_machine_executor_fifo_smoke.c
-)
-target_link_libraries(vm-machine-executor-fifo-smoke PRIVATE
-    vm-machine-executor-fifo
-)
+target_link_libraries(common-machine-smoke PRIVATE common-machine)
 
 add_library(common-xasm32 STATIC ${COMMON_XASM32_SOURCES})
 target_include_directories(common-xasm32 PUBLIC
@@ -1426,7 +1412,7 @@ target_link_libraries(vm-machine PUBLIC
     core-debug
     core-product
     vm-profile
-    vm-machine-executor-fifo
+    common-machine
     storage)
 
 add_library(common-session STATIC ${COMMON_SESSION_SOURCES})
@@ -2234,7 +2220,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-entry-plan-smoke
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
-    vm-machine-executor-fifo-smoke
+    common-machine-smoke
     std-snprintf-smoke
     common-xasm32-smoke
     common-xasm32-contract-smoke
@@ -2376,7 +2362,6 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-80386-timing-manifest-runner
     core-machine-debug-smoke
     core-machine-presentation-smoke
-    vm-machine-executor-queue-smoke
     core-machine-cpu-context-smoke
     vm-fdc-authority-smoke
     vm-debug-authority-smoke
@@ -3533,7 +3518,6 @@ endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-machine-executor-fifo PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(host-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3620,7 +3604,7 @@ file(GENERATE
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
     "type-facade|src/type.c"
     "core-product|src/core/product/config.c"
-    "vm-machine-executor-queue|src/vm/machine/executor_queue.c")
+    "common-machine|src/common/machine/machine.c")
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
 foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
     string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
@@ -3720,8 +3704,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
     core-machine-executor
     core-machine-boundary
-    vm-machine-executor-queue
-    vm-machine-executor-fifo
+    common-machine
     common-xasm32
     core-debug
     core-product

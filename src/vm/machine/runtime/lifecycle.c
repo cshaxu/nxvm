@@ -46,26 +46,25 @@ static C_VOID vm_machine_input_submit(C_VOID *context,
     const core_machine_guest_input_event *event)
 {
     vm_machine *machine = (vm_machine *)context;
-    vm_machine_request request = {0};
+    common_machine_request request = {0};
 
     if (machine == STD_NULL || event == STD_NULL) return;
     if (event->kind == CORE_MACHINE_GUEST_INPUT_KEY) {
-        request.kind = VM_MACHINE_REQUEST_INPUT;
-        request.input.kind = VM_MACHINE_INPUT_KEY_EVENT;
-        request.input.data.key_event.scan_code = event->data.key.scan_code;
-        request.input.data.key_event.virtual_key = event->data.key.virtual_key;
-        request.input.data.key_event.pressed = event->data.key.pressed;
+        request.kind = COMMON_MACHINE_REQUEST_INPUT;
+        request.input.kind = COMMON_MACHINE_INPUT_KEY;
+        request.input.value.key.scan_code = event->data.key.scan_code;
+        request.input.value.key.virtual_key = event->data.key.virtual_key;
+        request.input.value.key.pressed = event->data.key.pressed;
     } else if (event->kind == CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE) {
-        request.kind = VM_MACHINE_REQUEST_INPUT;
-        request.input.kind = VM_MACHINE_INPUT_MOUSE_EVENT;
-        request.input.data.mouse_event.delta_x = event->data.relative_mouse.delta_x;
-        request.input.data.mouse_event.delta_y = event->data.relative_mouse.delta_y;
-        request.input.data.mouse_event.buttons = event->data.relative_mouse.buttons;
+        request.kind = COMMON_MACHINE_REQUEST_INPUT;
+        request.input.kind = COMMON_MACHINE_INPUT_RELATIVE_MOUSE;
+        request.input.value.mouse.delta_x = event->data.relative_mouse.delta_x;
+        request.input.value.mouse.delta_y = event->data.relative_mouse.delta_y;
+        request.input.value.mouse.buttons = event->data.relative_mouse.buttons;
     } else {
         return;
     }
-    (C_VOID)vm_machine_executor_fifo_enqueue_ingress(
-        machine->executor_fifo, &request);
+    (C_VOID)common_machine_submit(machine->executor, &request);
 }
 
 static C_VOID vm_machine_execution_provider_reset(C_VOID *context)
@@ -118,6 +117,17 @@ static C_VOID vm_machine_debug_request_pause(C_VOID *context,
         VM_MACHINE_PAUSE_BREAKPOINT);
 }
 
+static lib_bool vm_machine_common_is_paused(void *context)
+{
+    return vm_machine_control_is_paused(&((vm_machine *)context)->control) ?
+        LIB_TRUE : LIB_FALSE;
+}
+
+static C_VOID vm_machine_observe_safe_point(C_VOID *context)
+{
+    (C_VOID)common_machine_observe_safe_point((common_machine *)context);
+}
+
 static C_VOID vm_machine_execution_task_main(C_VOID *opaque,
     const host_sync_task *task)
 {
@@ -146,17 +156,16 @@ static C_VOID vm_machine_execution_stop(vm_machine *machine)
 }
 
 static type_status vm_machine_enqueue_executor_request(vm_machine *machine,
-    vm_machine_request_kind kind, vm_machine_pause_reason pause_reason)
+    common_machine_request_kind kind, vm_machine_pause_reason pause_reason)
 {
-    vm_machine_request request = {0};
+    common_machine_request request = {0};
     type_status status;
 
-    if (machine == STD_NULL || machine->executor_fifo == STD_NULL)
+    if (machine == STD_NULL || machine->executor == STD_NULL)
         return TYPE_STATUS_INVALID_STATE;
     request.kind = kind;
     request.pause_reason = (type_unsigned_8)pause_reason;
-    status = vm_machine_executor_fifo_enqueue_ingress(machine->executor_fifo,
-        &request);
+    status = (type_status)common_machine_submit(machine->executor, &request);
     return status;
 }
 
@@ -226,9 +235,10 @@ type_status vm_machine_reset(vm_machine *machine) {
     if (machine->execution_task != STD_NULL &&
         vm_machine_executor_state_is_active(machine->control.state)) {
         return vm_machine_enqueue_executor_request(machine,
-            VM_MACHINE_REQUEST_RESET, VM_MACHINE_PAUSE_NONE);
+            COMMON_MACHINE_REQUEST_RESET, VM_MACHINE_PAUSE_NONE);
     }
     if (machine->execution_task != STD_NULL) vm_machine_execution_join(machine);
+    common_machine_debug_invalidate(machine->executor);
     status = vm_machine_control_reset(&machine->control);
     if (vm_machine_control_is_running(&machine->control)) return status;
     return vm_machine_finish_reset(machine, status);
@@ -236,10 +246,11 @@ type_status vm_machine_reset(vm_machine *machine) {
 
 C_VOID vm_machine_stop(vm_machine *machine) {
     if (machine == STD_NULL) return;
+    common_machine_debug_invalidate(machine->executor);
     if (machine->execution_task != STD_NULL &&
         vm_machine_executor_state_is_active(machine->control.state)) {
         if (vm_machine_enqueue_executor_request(machine,
-                VM_MACHINE_REQUEST_STOP, VM_MACHINE_PAUSE_NONE) != TYPE_STATUS_OK)
+                COMMON_MACHINE_REQUEST_STOP, VM_MACHINE_PAUSE_NONE) != TYPE_STATUS_OK)
             vm_machine_execution_stop(machine);
     } else vm_machine_execution_stop(machine);
     vm_machine_execution_join(machine);
@@ -256,14 +267,14 @@ type_status vm_machine_request_pause_reason(vm_machine *machine,
     if (machine == STD_NULL || !vm_machine_control_is_running(&machine->control))
         return TYPE_STATUS_INVALID_STATE;
     return vm_machine_enqueue_executor_request(machine,
-        VM_MACHINE_REQUEST_PAUSE, reason);
+        COMMON_MACHINE_REQUEST_PAUSE, reason);
 }
 
 type_status vm_machine_request_step(vm_machine *machine)
 {
     if (machine == STD_NULL || !vm_machine_control_is_paused(&machine->control))
         return TYPE_STATUS_INVALID_STATE;
-    return vm_machine_enqueue_executor_request(machine, VM_MACHINE_REQUEST_STEP,
+    return vm_machine_enqueue_executor_request(machine, COMMON_MACHINE_REQUEST_STEP,
         VM_MACHINE_PAUSE_NONE);
 }
 
@@ -314,11 +325,12 @@ type_status vm_machine_resume(vm_machine *machine) {
     if (vm_machine_control_is_paused(&machine->control) &&
         machine->execution_task != STD_NULL) {
         status = vm_machine_enqueue_executor_request(machine,
-            VM_MACHINE_REQUEST_RESUME, VM_MACHINE_PAUSE_NONE);
+            COMMON_MACHINE_REQUEST_RESUME, VM_MACHINE_PAUSE_NONE);
         return vm_machine_start_outcome_record(machine, status);
     }
     if (machine->execution_task != STD_NULL) return vm_machine_start_outcome_record(
         machine, TYPE_STATUS_INVALID_STATE);
+    common_machine_debug_invalidate(machine->executor);
     host_sync_event_reset(machine->execution_started);
     if (host_sync_task_create(vm_machine_execution_task_main, machine,
             &machine->execution_task) != LIB_STATUS_OK ||
@@ -333,6 +345,7 @@ type_status vm_machine_resume(vm_machine *machine) {
 
 type_status vm_machine_initialize(vm_machine *machine) {
     type_status status;
+    common_machine_driver driver;
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (machine->active) return TYPE_STATUS_INVALID_STATE;
     status = vm_machine_storage_initialize(machine);
@@ -346,10 +359,14 @@ type_status vm_machine_initialize(vm_machine *machine) {
         vm_machine_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
         vm_machine_debug_disassemble, STD_NULL);
-    status = vm_machine_executor_fifo_create(&machine->executor_fifo);
+    status = (type_status)common_machine_create(&machine->executor);
     if (status != TYPE_STATUS_OK) { vm_machine_finalize(machine); return status; }
-    vm_machine_executor_fifo_bind_consumer(machine->executor_fifo,
-        vm_machine_consume_request, machine);
+    driver = (common_machine_driver) {
+        vm_machine_consume_request, vm_machine_common_is_paused,
+        vm_machine_common_debug_execute, machine
+    };
+    status = (type_status)common_machine_bind_driver(machine->executor, &driver);
+    if (status != TYPE_STATUS_OK) { vm_machine_finalize(machine); return status; }
     status = core_machine_guest_input_source_create(&vm_machine_input_sink, machine,
         &machine->input_source);
     if (status != TYPE_STATUS_OK) {
@@ -361,8 +378,7 @@ type_status vm_machine_initialize(vm_machine *machine) {
     }
     vm_machine_start_outcome_reset(machine);
     vm_machine_control_bind_command_boundary(&machine->control,
-        vm_machine_executor_fifo_observe_execution_boundary,
-        machine->executor_fifo);
+        vm_machine_observe_safe_point, machine->executor);
     machine->active = 1;
     return TYPE_STATUS_OK;
 }
@@ -376,9 +392,9 @@ C_VOID vm_machine_finalize(vm_machine *machine) {
     vm_machine_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     core_machine_guest_input_source_destroy(machine->input_source);
     machine->input_source = STD_NULL;
-    vm_machine_executor_fifo_close(machine->executor_fifo);
-    vm_machine_executor_fifo_destroy(machine->executor_fifo);
-    machine->executor_fifo = STD_NULL;
+    common_machine_close(machine->executor);
+    common_machine_destroy(machine->executor);
+    machine->executor = STD_NULL;
     machine->active = 0;
     vm_machine_control_finalize(&machine->control, machine);
     vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);

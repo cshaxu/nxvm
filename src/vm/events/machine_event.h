@@ -31,25 +31,6 @@ typedef struct vm_machine_input {
     } data;
 } vm_machine_input;
 
-/* Every mutation requested of the Core executor is copied into its one FIFO.
- * Product control chooses which request to send; only vm/machine consumes it. */
-typedef enum vm_machine_request_kind {
-    VM_MACHINE_REQUEST_INPUT,
-    VM_MACHINE_REQUEST_PAUSE,
-    VM_MACHINE_REQUEST_RESET,
-    VM_MACHINE_REQUEST_RESUME,
-    VM_MACHINE_REQUEST_STEP,
-    VM_MACHINE_REQUEST_STOP
-} vm_machine_request_kind;
-
-typedef struct vm_machine_request {
-    vm_machine_request_kind kind;
-    /* Product-neutral machine pause classification; its numeric meaning is
-     * interpreted only by vm/machine's executor. */
-    type_unsigned_8 pause_reason;
-    vm_machine_input input;
-} vm_machine_request;
-
 typedef enum vm_machine_result_kind {
     VM_MACHINE_RESULT_RUNNING,
     VM_MACHINE_RESULT_PAUSED,

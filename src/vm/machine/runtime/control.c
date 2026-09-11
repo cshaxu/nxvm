@@ -92,6 +92,7 @@ C_VOID vm_machine_control_stop(vm_machine_control_state *control)  {
     if (control == STD_NULL) return;
     machine = control->execution_context.machine;
     if (machine != STD_NULL && machine->core_machine != STD_NULL) {
+        common_machine_debug_invalidate(machine->executor);
         core_machine_request_stop(machine->core_machine);
     }
     atomic_store(&control->step_requested, TYPE_FALSE);
@@ -102,7 +103,11 @@ C_VOID vm_machine_control_stop(vm_machine_control_state *control)  {
 
 C_VOID vm_machine_control_fault(vm_machine_control_state *control)
 {
+    vm_machine *machine;
+
     if (control == STD_NULL) return;
+    machine = control->execution_context.machine;
+    if (machine != STD_NULL) common_machine_debug_invalidate(machine->executor);
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     vm_machine_executor_state_stop(control->state);

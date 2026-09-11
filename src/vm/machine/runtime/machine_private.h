@@ -19,7 +19,7 @@
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd_private.h"
 #include "vm/machine/hdd_private.h"
-#include "vm/machine/executor_fifo.h"
+#include "common/machine/machine_interface.h"
 #include "vm/events/machine_event.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "vm/profile/device/floppy.h"
@@ -36,7 +36,7 @@ struct vm_machine {
     C_INT active;
     vm_machine_result_sink result_sink;
     C_VOID *result_sink_context;
-    vm_machine_executor_fifo *executor_fifo;
+    common_machine *executor;
     core_machine_config core_machine_config;
     core_machine_controller_timing_rules controller_timing_rules;
     core_machine_plan *core_machine_plan;
@@ -111,7 +111,7 @@ type_status vm_machine_apply_cmos_seed(const vm_machine *session,
     core_machine_plan_topology *topology);
 C_VOID vm_machine_storage_finalize(vm_machine *machine);
 C_VOID vm_machine_consume_request(C_VOID *opaque,
-    const vm_machine_request *request);
+    const common_machine_request *request);
 C_VOID vm_machine_publish_result(vm_machine *machine,
     const vm_machine_result *result);
 #endif

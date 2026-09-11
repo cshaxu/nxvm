@@ -6,7 +6,6 @@
 #include "vm/machine/runtime/machine_private.h"
 #include "vm/machine/runtime/waiting.h"
 #include "core/machine/guest_input_interface.h"
-#include "vm/machine/executor_fifo.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 800000u
@@ -358,7 +357,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (vm_machine_submit_host_input(session, &event) !=
             TYPE_STATUS_OK) goto done;
     }
-    vm_machine_executor_fifo_observe_execution_boundary(session->executor_fifo);
+    (C_VOID)common_machine_observe_safe_point(session->executor);
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
             TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||

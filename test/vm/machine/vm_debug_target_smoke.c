@@ -21,10 +21,31 @@ C_INT main(C_VOID)
     type_unsigned_32 before_eax = 0u;
     type_unsigned_8 byte = 0x5au;
     type_unsigned_8 linear_byte = 0xa5u;
+    common_machine_debug_lease lease;
+    common_machine_debug_result debug_result;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) return 1;
     vm_machine_reset(session);
+    vm_machine_executor_state_start(session->control.state);
+    vm_machine_executor_state_acknowledge_pause(session->control.state);
+    if (common_machine_debug_acquire(session->executor, &lease) != LIB_STATUS_OK ||
+        common_machine_debug_execute_with_lease(session->executor, &lease,
+            &(common_machine_debug_request) { .operation =
+                COMMON_MACHINE_DEBUG_READ_REGISTER,
+                .register_id = CORE_MACHINE_DEBUG_EIP }, &debug_result) != LIB_STATUS_OK) {
+        vm_machine_destroy(session);
+        return 1;
+    }
+    common_machine_debug_invalidate(session->executor);
+    if (common_machine_debug_execute_with_lease(session->executor, &lease,
+            &(common_machine_debug_request) { .operation =
+                COMMON_MACHINE_DEBUG_READ_REGISTER,
+                .register_id = CORE_MACHINE_DEBUG_EIP }, &debug_result) !=
+            LIB_STATUS_INVALID_STATE) {
+        vm_machine_destroy(session);
+        return 1;
+    }
     target = vm_machine_debug_target(session);
     if (target == STD_NULL || target->wait_for_completion == STD_NULL ||
         target->read_register(target->context,

@@ -274,8 +274,11 @@ session activates Debug only after a paused fact.
    delete the old executor transport at the same time.  Verify that
    `common/machine` accepts synchronous Debug operations only while paused,
    while the Core target owner invalidates leases before run/reset/stop,
-   alongside ordered requests, wakeups, stale-run rejection and fault
-   propagation.
+   alongside ordered requests, private wakeups, stale-run rejection and fault
+   propagation.  The S4 public API is restricted to copied input/lifecycle
+   requests and bounded register, port or at-most-32-byte linear Debug
+   operations; the Debug parser and its legacy callback-table consumer remain
+   the explicit S5 receiver.
 5. **S5 - common Debug migration and NXVM CLI cutover.** Move the line/fact
    Debug CLI into `common/debug`, bind it as a registered session provider, and
    route every paused read/write through `common/machine`.  Delete the former

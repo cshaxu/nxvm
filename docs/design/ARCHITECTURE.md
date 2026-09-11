@@ -83,11 +83,13 @@ inside a generic platform implementation.
 ### NXVM Machine Execution And Presentation
 
 NXVM separates one machine's Core execution from product control.
-`vm/machine` is the sole Core assembly and executor owner. Its one ordered
-executor FIFO consumes copied input and lifecycle requests at execution
-boundaries; its sole result sink publishes copied lifecycle, debugger, fault,
-and display facts. It neither selects a host surface nor owns the process
-Console. `vm/events` is a value-only ABI below both machine and future product
+`common/machine` owns the one ordered safe-point FIFO. It accepts only copied
+input and lifecycle requests and calls its opaque product driver at execution
+boundaries. `vm/machine` is NXVM's sole driver and Core assembly owner: it
+maps those copied requests to Core, publishes copied lifecycle, fault and
+display facts, and exposes bounded paused-Debug operations through the common
+lease contract. Neither owner selects a host surface or owns the process
+Console. `vm/events` remains a value-only display/input ABI below product
 owners: it contains no Core, executor, session, or UI pointer.
 
 `common/session` is the sole product-control reducer. Its one FIFO receives
