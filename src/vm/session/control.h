@@ -33,9 +33,9 @@ typedef type_status (*vm_session_control_input_sink)(C_VOID *context,
 
 type_status vm_session_control_create(vm_session_control **out_control);
 C_VOID vm_session_control_destroy(vm_session_control *control);
-type_status vm_session_control_publish_console_line(vm_session_control *control,
+type_status vm_session_control_publish_console_line(C_VOID *context,
     const C_CHAR *line);
-type_status vm_session_control_publish_presentation_input(vm_session_control *control,
+type_status vm_session_control_publish_presentation_input(C_VOID *context,
     const ui_input_event *event);
 type_status vm_session_control_publish_machine_result(vm_session_control *control,
     const vm_machine_result *result);

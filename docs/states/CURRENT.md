@@ -9,17 +9,17 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation - M5 T526 S12. |
-| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S11 P1/P2 is pushed as `5f1968bf` plus its ownership correction. |
+| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S11 P1/P2 is pushed as `5f1968bf` and `cc043969`. |
 | Objective | Move the NXVM-facing shared-lib binding to `vm/presentation`; it consumes session plans and returns copied facts without any product-control compatibility route. |
 | Non-goals | No Core behavior change, no second machine executor, no lib modification, no native SDK access from VM, no external asset work, and no compatibility/control-forwarding route. |
-| Reference Baseline | T526 S11 P1 pending commit; approved target architecture in the retained proposal. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S11. |
+| Reference Baseline | T526 S11 P1/P2 is pushed as `5f1968bf` and `cc043969`; the retained proposal supplies the approved target architecture. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S12. |
 | Files And ABI Surface | `src/vm/{events,machine,session,presentation,product}`, Core/VM CMake targets and mirrored repository-only tests. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
 | Verification | Prove one `vm/presentation` lib binding consumes copied session plans, emits copied input facts, retains no session pointer, and leaves no product presentation compatibility path; run focused tests, full unit, specialized and documentation gates, and actual-diff review. |
 | Expected Markers | One presentation owner, one session-plan consumer route, one copied input return route, no product-owned presenter implementation and no native SDK access from VM. |
 | Asset Needs | None. |
-| Reporting Requirements | Record the moved binding routes, removed product presentation ownership, code-size result and verification evidence. |
+| Reporting Requirements | Record the moved binding routes, removed product presentation ownership, code-size result and verification evidence in [S12 evidence](../etc/evidence/t526-s12-presentation-leaf-convergence.md). |
 | Stop Conditions | Stop for a required non-value fact, a Core semantic change, an unrepresentable presentation decision, or a temporary forwarding route. |
 | Exit Criteria | `vm/presentation` is the sole lib binding owner and all required tests and gates pass. |
 | Original Owner Request | Converge NXVM lifecycle and product experience with SoftPC while simplifying ownership. |
@@ -79,6 +79,13 @@
   the temporary product adapter remains explicitly assigned to S11. Complete
   repository unit 303/303, 67 current specialized gates, documentation gate
   and diff checks pass. [Evidence](../etc/evidence/t526-s10-vm-machine-executor-migration.md).
+
+- **M5 T526 S12 P1:** `vm/presentation` now solely owns the shared-lib binding
+  and Console broker, consuming the copied `vm/events` presentation plan while
+  product Console retains CLI text only. Product presentation/frame/host
+  routes are deleted. Focused 4/4, unit 299/299, 67 specialized gates,
+  governance and stripped x64/x86 artifacts pass.
+  [Evidence](../etc/evidence/t526-s12-presentation-leaf-convergence.md).
 
 - **M5 T526 S11 P2:** coordinator review accepts `5f1968bf` and its immediate
   ownership correction. One copied `vm/session` FIFO now receives Console,

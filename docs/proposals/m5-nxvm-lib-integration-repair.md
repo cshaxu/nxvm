@@ -56,7 +56,8 @@ CLI + presenter input --> vm/session control FIFO --> vm/machine requests
 - `vm/session` is the sole product control/reducer owner. Its one control FIFO
   receives CLI requests, copied machine facts, and copied presentation input.
   It owns lifecycle decisions and run generation, submits execution requests
-  to `vm/machine`, and invokes only the public plan API of `vm/presentation`.
+  to `vm/machine`, and publishes only copied presentation plans for the public
+  plan API of `vm/presentation`.
 - `vm/presentation` is the sole NXVM integration of `src/lib` UI components.
   It creates the one active Console or Window leaf, converts copied frames,
   and returns copied input/completion facts through the `vm/events` sink. It

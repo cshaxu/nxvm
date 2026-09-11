@@ -91,11 +91,12 @@ static type_status vm_session_control_publish(vm_session_control *control,
     return TYPE_STATUS_OK;
 }
 
-type_status vm_session_control_publish_console_line(vm_session_control *control,
+type_status vm_session_control_publish_console_line(C_VOID *context,
     const C_CHAR *line)
 {
     vm_session_fact fact = {0};
     STD_SIZE_T length;
+    vm_session_control *control = context;
 
     if (line == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     length = STD_STRLEN(line);
@@ -105,10 +106,11 @@ type_status vm_session_control_publish_console_line(vm_session_control *control,
     return vm_session_control_publish(control, &fact);
 }
 
-type_status vm_session_control_publish_presentation_input(vm_session_control *control,
+type_status vm_session_control_publish_presentation_input(C_VOID *context,
     const ui_input_event *event)
 {
     vm_session_fact fact = {0};
+    vm_session_control *control = context;
 
     if (event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     fact.kind = VM_SESSION_FACT_PRESENTATION_INPUT;

@@ -11,7 +11,7 @@ int main(C_VOID)
     vm_machine_display_event received_display = {0};
     ui_input_event input = {0};
     vm_session *session = STD_NULL;
-    vm_session_presentation_plan plan = {0};
+    vm_presentation_plan plan = {0};
 
     if (vm_session_control_create(&control) != TYPE_STATUS_OK) return 1;
     if (vm_session_create(&session) != TYPE_STATUS_OK) {
@@ -78,7 +78,7 @@ int main(C_VOID)
     received_display.generation = 10u;
     if (vm_session_reduce_fact(session, &received, &received_display, &plan) !=
             TYPE_STATUS_OK || !plan.frame_ready || plan.frame.generation != 10u ||
-        vm_session_set_presentation_target(session, VM_SESSION_PRESENTATION_WINDOW) !=
+        vm_session_set_presentation_target(session, VM_PRESENTATION_SURFACE_WINDOW) !=
             TYPE_STATUS_OK) {
         vm_session_control_destroy(control);
         vm_session_destroy(session);
@@ -88,7 +88,7 @@ int main(C_VOID)
     received.kind = VM_SESSION_FACT_MACHINE_RESULT;
     received.value.machine.kind = VM_MACHINE_RESULT_PAUSED;
     if (vm_session_reduce_fact(session, &received, &received_display, &plan) !=
-            TYPE_STATUS_OK || plan.notice != VM_SESSION_NOTICE_PAUSED ||
+            TYPE_STATUS_OK || plan.notice != VM_PRESENTATION_NOTICE_PAUSED ||
         !plan.title_changed || STD_STRCMP(plan.title, "NXVM (Paused)") != 0 ||
         !plan.mouse_capturable_changed || plan.mouse_capturable) {
         vm_session_control_destroy(control);

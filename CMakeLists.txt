@@ -230,7 +230,7 @@ target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-machine)
 add_executable(vm-model40-console-s20-smoke
     test/integration/product/vm_model40_console_s20_smoke.c
     src/vm/product/console.c
-    test/vm/product/console_host_fake.c)
+    test/vm/presentation/console_host_fake.c)
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-machine)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
@@ -271,7 +271,7 @@ target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
 add_executable(vm-product-console-lifecycle-smoke
     test/integration/product/nxvm_console_lifecycle_smoke.c
     src/vm/product/console.c
-    test/vm/product/console_host_fake.c)
+    test/vm/presentation/console_host_fake.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-machine)
 add_executable(vm-yaml-cmos-seed-smoke
@@ -1177,9 +1177,11 @@ set(VM_PROFILE_SOURCES
 
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
-    src/vm/product/console_host.c
-    src/vm/product/presentation.c
-    src/vm/product/presentation_frame.c
+)
+set(VM_PRESENTATION_SOURCES
+    src/vm/presentation/console_host.c
+    src/vm/presentation/presentation.c
+    src/vm/presentation/frame.c
 )
 set(VM_SESSION_SOURCES
     src/vm/session/control.c
@@ -1333,9 +1335,9 @@ target_include_directories(vm-session-control-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-session-control-smoke PRIVATE vm-session)
-add_executable(vm-product-presentation-frame-smoke
-    test/vm/product/vm_product_presentation_frame_smoke.c)
-target_link_libraries(vm-product-presentation-frame-smoke PRIVATE vm-product)
+add_executable(vm-presentation-frame-smoke
+    test/vm/presentation/vm_presentation_frame_smoke.c)
+target_link_libraries(vm-presentation-frame-smoke PRIVATE vm-presentation)
 
 add_executable(core-debug-xasm-smoke
     test/core/debug/core_debug_xasm_smoke.c
@@ -1432,15 +1434,23 @@ target_link_libraries(vm-session PUBLIC
     vm-machine
     type-facade)
 
+add_library(vm-presentation STATIC ${VM_PRESENTATION_SOURCES})
+target_include_directories(vm-presentation PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-presentation PUBLIC
+    ui-window
+    ui-console
+    ui-base
+    type-facade)
+
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
 target_include_directories(vm-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product PUBLIC
-    vm-machine
     vm-session
-    ui-window
-    ui-console
+    vm-presentation
     core-product
     core-machine-boundary
     storage)
@@ -2217,7 +2227,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-debug-target-smoke
     core-debug-input-failure-smoke
     vm-session-control-smoke
-    vm-product-presentation-frame-smoke
+    vm-presentation-frame-smoke
     core-machine-guest-input-source-smoke
     host-smoke
     vm-machine-executor-state-smoke
@@ -3654,9 +3664,9 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-debug-input-failure-smoke|src/core/debug/debug_access.c|debug-input-failure"
     "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
     "vm-product|src/vm/product/console.c|console-product"
-    "vm-product|src/vm/product/console_host.c|console-product"
-    "vm-product|src/vm/product/presentation.c|vm-product"
-    "vm-product|src/vm/product/presentation_frame.c|vm-product"
+    "vm-presentation|src/vm/presentation/console_host.c|presentation-leaf"
+    "vm-presentation|src/vm/presentation/presentation.c|presentation-leaf"
+    "vm-presentation|src/vm/presentation/frame.c|presentation-leaf"
     "vm-session|src/vm/session/catalog.c|session-catalog"
     "vm-session|src/vm/session/control.c|session-control"
     "vm-session|src/vm/session/session.c|session-owner"
@@ -3702,6 +3712,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-machine
     vm-machine
     vm-session
+    vm-presentation
     vm-product
     vdm-machine
     vdm-composition

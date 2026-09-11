@@ -1,17 +1,16 @@
 #include "type.h"
 
-#include "vm/product/console_host.h"
+#include "vm/presentation/console_host.h"
 
-struct vm_product_console_host {
+struct vm_presentation_console_host {
     C_VOID *line_context;
-    void (*line_sink)(C_VOID *context, const C_CHAR *text);
+    vm_presentation_console_line_sink line_sink;
 };
 
-type_status vm_product_console_host_create(vm_product_console_host **out_host,
-    C_VOID *line_context, void (*line_sink)(C_VOID *context,
-        const C_CHAR *text))
+type_status vm_presentation_console_host_create(vm_presentation_console_host **out_host,
+    C_VOID *line_context, vm_presentation_console_line_sink line_sink)
 {
-    vm_product_console_host *host;
+    vm_presentation_console_host *host;
 
     if (out_host == STD_NULL || line_sink == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -24,12 +23,12 @@ type_status vm_product_console_host_create(vm_product_console_host **out_host,
     return TYPE_STATUS_OK;
 }
 
-C_VOID vm_product_console_host_destroy(vm_product_console_host *host)
+C_VOID vm_presentation_console_host_destroy(vm_presentation_console_host *host)
 {
     STD_FREE(host);
 }
 
-type_status vm_product_console_host_request_line(vm_product_console_host *host)
+type_status vm_presentation_console_host_request_line(vm_presentation_console_host *host)
 {
     C_CHAR line[256];
 
@@ -40,7 +39,7 @@ type_status vm_product_console_host_request_line(vm_product_console_host *host)
     return TYPE_STATUS_OK;
 }
 
-type_status vm_product_console_host_write(vm_product_console_host *host,
+type_status vm_presentation_console_host_write(vm_presentation_console_host *host,
     const C_CHAR *text)
 {
     (C_VOID)host;
@@ -48,14 +47,14 @@ type_status vm_product_console_host_write(vm_product_console_host *host,
     return STD_FPUTS(text, STD_STDOUT) < 0 ? TYPE_STATUS_FAULT : TYPE_STATUS_OK;
 }
 
-type_status vm_product_console_host_claim_guest(vm_product_console_host *host,
+type_status vm_presentation_console_host_claim_guest(vm_presentation_console_host *host,
     lib_console *guest_console)
 {
     return host == STD_NULL || guest_console == STD_NULL ?
         TYPE_STATUS_INVALID_ARGUMENT : TYPE_STATUS_OK;
 }
 
-type_status vm_product_console_host_release_guest(vm_product_console_host *host,
+type_status vm_presentation_console_host_release_guest(vm_presentation_console_host *host,
     lib_console *guest_console)
 {
     return host == STD_NULL || guest_console == STD_NULL ?

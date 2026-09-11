@@ -89,12 +89,11 @@ lifecycle and presentation-policy decisions. It emits copied machine requests
 or presentation plans only, and never accesses a Core object or a native/lib
 handle.
 
-`vm/product/presentation` is the temporary NXVM lib-binding leaf until its
-admitted move to `vm/presentation`. It applies session plans and returns copied
-input facts; it never derives lifecycle or surface policy. `vm/product/console_host`
-owns the process Console broker and may lease it to at most one Console
-presenter. Core and `src/lib` do not know session selection, lifecycle policy,
-or Console leasing.
+`vm/presentation` is the NXVM shared-lib binding leaf. It applies session plans
+and returns copied input facts; it never derives lifecycle or surface policy.
+Its Console host owns the process Console broker and may lease it to at most one
+Console presenter. Core and `src/lib` do not know session selection, lifecycle
+policy, or Console leasing.
 
 Native and WASM hosts share these component boundaries. A future TypeScript web
 product layer sits above the WASM platform/product adaptation; it does not move

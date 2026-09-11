@@ -8,8 +8,7 @@
 #include "type.h"
 
 #include "vm/product/console.h"
-#include "vm/product/console_host.h"
-#include "vm/product/presentation.h"
+#include "vm/presentation/presentation.h"
 #include "vm/session/catalog.h"
 #include "vm/session/control.h"
 
@@ -20,9 +19,8 @@ struct vm_product_console_context {
     C_CHAR command_buffer[0x100];
     vm_session *session;
     vm_product_session_catalog *catalog;
-    vm_product_console_host *console_host;
     vm_session_control *control;
-    vm_product_presentation *presentation;
+    vm_presentation *presentation;
     C_INT session_stopped;
 };
 #define CONSOLE_MAXNARG 256
@@ -34,14 +32,6 @@ struct vm_product_console_context {
 #define flagExit (consoleContext->exit_requested)
 #define strCmdBuff (consoleContext->command_buffer)
 #define currentSession (consoleContext->session)
-
-static vm_product_presentation_target vm_product_console_presentation_target(
-    vm_session_presentation_target target)
-{
-    return target == VM_SESSION_PRESENTATION_WINDOW ? VM_PRODUCT_PRESENTATION_WINDOW :
-        target == VM_SESSION_PRESENTATION_CONSOLE ? VM_PRODUCT_PRESENTATION_CONSOLE :
-        VM_PRODUCT_PRESENTATION_NONE;
-}
 
 static C_INT vm_product_console_printf(const vm_product_console_context *context,
     const C_CHAR *format, ...)
@@ -55,42 +45,24 @@ static C_INT vm_product_console_printf(const vm_product_console_context *context
     written = vsnprintf(text, sizeof(text), format, arguments);
     va_end(arguments);
     if (written < 0 || (STD_SIZE_T)written >= sizeof(text)) return -1;
-    return vm_product_console_host_write((vm_product_console_host *)
-        context->console_host, text) ==
+    return vm_presentation_write_console(context->presentation, text) ==
         TYPE_STATUS_OK ? written : -1;
 }
 
 static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
-    const vm_session_presentation_plan *plan, C_INT restore_prompt)
+    const vm_presentation_plan *plan, C_INT restore_prompt)
 {
     const C_CHAR *state = STD_NULL;
 
     if (context == STD_NULL || plan == STD_NULL) return;
-    if (context->presentation != STD_NULL) {
-        if (plan->target_changed) {
-            (C_VOID)vm_product_presentation_set_target(context->presentation,
-                vm_product_console_presentation_target(plan->target));
-        }
-        if (plan->title_changed) {
-            (C_VOID)vm_product_presentation_set_window_title(context->presentation,
-                plan->title);
-        }
-        if (plan->mouse_capturable_changed) {
-            (C_VOID)vm_product_presentation_set_mouse_capturable(context->presentation,
-                plan->mouse_capturable);
-        }
-        if (plan->release_mouse)
-            (C_VOID)vm_product_presentation_release_mouse(context->presentation);
-        if (plan->frame_ready)
-            (C_VOID)vm_product_presentation_publish_frame(context->presentation,
-                &plan->frame);
-    }
+    if (context->presentation != STD_NULL)
+        (C_VOID)vm_presentation_apply_plan(context->presentation, plan);
     switch (plan->notice) {
-    case VM_SESSION_NOTICE_STARTED: state = "started"; break;
-    case VM_SESSION_NOTICE_RESUMED: state = "resumed"; break;
-    case VM_SESSION_NOTICE_PAUSED: state = "paused"; break;
-    case VM_SESSION_NOTICE_RESET: state = "reset"; break;
-    case VM_SESSION_NOTICE_STOPPED: state = "stopped"; break;
+    case VM_PRESENTATION_NOTICE_STARTED: state = "started"; break;
+    case VM_PRESENTATION_NOTICE_RESUMED: state = "resumed"; break;
+    case VM_PRESENTATION_NOTICE_PAUSED: state = "paused"; break;
+    case VM_PRESENTATION_NOTICE_RESET: state = "reset"; break;
+    case VM_PRESENTATION_NOTICE_STOPPED: state = "stopped"; break;
     default: break;
     }
     if (state != STD_NULL) (C_VOID)vm_product_console_printf(context, restore_prompt ?
@@ -102,7 +74,7 @@ static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *con
 {
     vm_session_fact fact;
     vm_machine_display_event display;
-    vm_session_presentation_plan plan;
+    vm_presentation_plan plan;
 
     if (context == STD_NULL) return;
     while (vm_session_control_take(context->control, &fact, &display, 0u) == TYPE_STATUS_OK) {
@@ -144,26 +116,18 @@ static C_VOID parse(vm_product_console_context *context)
     }
 }
 
-static C_VOID vm_product_console_line_received(C_VOID *opaque,
-    const C_CHAR *text)
-{
-    vm_product_console_context *context = opaque;
-    if (context == STD_NULL || text == STD_NULL) return;
-    (C_VOID)vm_session_control_publish_console_line(context->control, text);
-}
-
 static C_INT vm_product_console_read_line(vm_product_console_context *context,
     C_CHAR *buffer, STD_SIZE_T buffer_size)
 {
     vm_session_fact fact;
     vm_machine_display_event display;
-    vm_session_presentation_plan plan;
+    vm_presentation_plan plan;
 
     if (context == STD_NULL || buffer == STD_NULL || buffer_size == 0u ||
-        context->console_host == STD_NULL || context->control == STD_NULL)
+        context->presentation == STD_NULL || context->control == STD_NULL)
         return 0;
     buffer[0] = '\0';
-    if (vm_product_console_host_request_line(context->console_host) !=
+    if (vm_presentation_request_console_line(context->presentation) !=
         TYPE_STATUS_OK) return 0;
     for (;;) {
         if (vm_session_control_take(context->control, &fact, &display, 0xffffffffu) !=
@@ -329,9 +293,9 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
-    switch (context->presentation == STD_NULL ? VM_PRODUCT_PRESENTATION_NONE :
-        vm_product_presentation_get_target(context->presentation)) {
-    case VM_PRODUCT_PRESENTATION_WINDOW:
+    switch (context->presentation == STD_NULL ? VM_PRESENTATION_SURFACE_NONE :
+        vm_presentation_get_target(context->presentation)) {
+    case VM_PRESENTATION_SURFACE_WINDOW:
         STD_PRINTF("Display Type: Window\n");
         break;
     default:
@@ -482,7 +446,7 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
     vm_session_request selected_entry;
-    vm_session_presentation_target target;
+    vm_presentation_surface target;
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,
             &selected_entry)) return;
@@ -490,15 +454,8 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
         STD_PRINTF("Unable to create session from '%s'.\n", selected_entry.file_name);
         return;
     }
-    if (vm_product_presentation_create(&context->presentation, context->console_host,
-            (vm_product_presentation_event_sink)
-                vm_session_control_publish_presentation_input,
-            context->control) != TYPE_STATUS_OK) {
-        STD_PRINTF("Unable to create product presentation.\n");
-        return;
-    }
     target = !STD_STRCMP(selected_entry.display, "window") ?
-        VM_SESSION_PRESENTATION_WINDOW : VM_SESSION_PRESENTATION_CONSOLE;
+        VM_PRESENTATION_SURFACE_WINDOW : VM_PRESENTATION_SURFACE_CONSOLE;
     (C_VOID)vm_session_set_presentation_target(currentSession, target);
 }
 
@@ -536,7 +493,7 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "start"))
     {
-        vm_session_presentation_plan plan;
+        vm_presentation_plan plan;
         type_status status = vm_session_start(currentSession, &plan);
         if (status == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
@@ -554,7 +511,7 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "resume"))
     {
-        vm_session_presentation_plan plan;
+        vm_presentation_plan plan;
         type_status status = vm_session_resume(currentSession, &plan);
         if (status == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
@@ -578,8 +535,14 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     flagExit = 0;
     context->session_stopped = TYPE_FALSE;
     context->control = vm_session_get_control(currentSession);
-    if (context->control == STD_NULL || vm_product_console_host_create(&context->console_host, context,
-            vm_product_console_line_received) != TYPE_STATUS_OK) {
+    if (context->control == STD_NULL) {
+        context->control = STD_NULL;
+        return TYPE_FALSE;
+    }
+    if (vm_presentation_create(&context->presentation,
+            vm_session_control_publish_presentation_input,
+            context->control, vm_session_control_publish_console_line,
+            context->control) != TYPE_STATUS_OK) {
         context->control = STD_NULL;
         return TYPE_FALSE;
     }
@@ -587,8 +550,8 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
             TYPE_STATUS_OK) return TYPE_TRUE;
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
-    vm_product_console_host_destroy(context->console_host);
-    context->console_host = STD_NULL;
+    vm_presentation_destroy(context->presentation);
+    context->presentation = STD_NULL;
     context->control = STD_NULL;
     STD_FREE(argArray);
     argArray = STD_NULL;
@@ -609,11 +572,9 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
     vm_product_console_drain_lifecycle(context, TYPE_FALSE);
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
-    vm_product_presentation_destroy(context->presentation);
+    vm_presentation_destroy(context->presentation);
     context->presentation = STD_NULL;
     vm_session_control_close(context->control);
-    vm_product_console_host_destroy(context->console_host);
-    context->console_host = STD_NULL;
     context->control = STD_NULL;
 }
 
@@ -633,8 +594,7 @@ type_status vm_product_console_context_create(
 C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 {
     if (context == STD_NULL) return;
-    vm_product_presentation_destroy(context->presentation);
-    vm_product_console_host_destroy(context->console_host);
+    vm_presentation_destroy(context->presentation);
     vm_product_session_catalog_destroy(context->catalog);
     STD_FREE(context);
 }

@@ -10,18 +10,18 @@
 struct vm_session {
     vm_machine *machine;
     vm_session_control *control;
-    vm_session_presentation_target requested_target;
-    vm_session_presentation_target active_target;
+    vm_presentation_surface requested_target;
+    vm_presentation_surface active_target;
     vm_machine_result_kind lifecycle;
 };
 
-static C_VOID vm_session_plan_clear(vm_session_presentation_plan *plan)
+static C_VOID vm_session_plan_clear(vm_presentation_plan *plan)
 {
     if (plan != STD_NULL) STD_MEMSET(plan, 0, sizeof(*plan));
 }
 
 static C_VOID vm_session_plan_target(vm_session *session,
-    vm_session_presentation_plan *plan, vm_session_presentation_target target)
+    vm_presentation_plan *plan, vm_presentation_surface target)
 {
     if (session == STD_NULL || plan == STD_NULL || session->active_target == target)
         return;
@@ -30,7 +30,7 @@ static C_VOID vm_session_plan_target(vm_session *session,
     plan->target = target;
 }
 
-static C_VOID vm_session_plan_title(vm_session_presentation_plan *plan,
+static C_VOID vm_session_plan_title(vm_presentation_plan *plan,
     const C_CHAR *title)
 {
     if (plan == STD_NULL || title == STD_NULL) return;
@@ -80,9 +80,9 @@ type_status vm_session_open_profile(vm_session *session,
 }
 
 type_status vm_session_set_presentation_target(vm_session *session,
-    vm_session_presentation_target target)
+    vm_presentation_surface target)
 {
-    if (session == STD_NULL || target > VM_SESSION_PRESENTATION_WINDOW)
+    if (session == STD_NULL || target > VM_PRESENTATION_SURFACE_WINDOW)
         return TYPE_STATUS_INVALID_ARGUMENT;
     session->requested_target = target;
     return TYPE_STATUS_OK;
@@ -170,7 +170,7 @@ C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path)
 }
 
 type_status vm_session_start(vm_session *session,
-    vm_session_presentation_plan *out_plan)
+    vm_presentation_plan *out_plan)
 {
     vm_machine *machine = vm_session_machine(session);
     if (machine == STD_NULL || out_plan == STD_NULL) return TYPE_STATUS_INVALID_STATE;
@@ -195,7 +195,7 @@ type_status vm_session_stop(vm_session *session)
 }
 
 type_status vm_session_resume(vm_session *session,
-    vm_session_presentation_plan *out_plan)
+    vm_presentation_plan *out_plan)
 {
     vm_machine *machine = vm_session_machine(session);
     if (machine == STD_NULL || out_plan == STD_NULL) return TYPE_STATUS_INVALID_STATE;
@@ -302,7 +302,7 @@ static C_VOID vm_session_submit_chord(vm_session *session, C_INT cad)
 
 type_status vm_session_reduce_fact(vm_session *session,
     const vm_session_fact *fact, const vm_machine_display_event *display,
-    vm_session_presentation_plan *out_plan)
+    vm_presentation_plan *out_plan)
 {
     type_status status;
 
@@ -319,29 +319,29 @@ type_status vm_session_reduce_fact(vm_session *session,
         switch (fact->value.machine.kind) {
         case VM_MACHINE_RESULT_RUNNING:
             out_plan->notice = session->lifecycle == VM_MACHINE_RESULT_PAUSED ?
-                VM_SESSION_NOTICE_RESUMED : VM_SESSION_NOTICE_STARTED;
+                VM_PRESENTATION_NOTICE_RESUMED : VM_PRESENTATION_NOTICE_STARTED;
             vm_session_plan_title(out_plan, "NXVM (Running)");
             out_plan->mouse_capturable_changed = TYPE_TRUE;
             out_plan->mouse_capturable = TYPE_TRUE;
             break;
         case VM_MACHINE_RESULT_PAUSED:
-            out_plan->notice = VM_SESSION_NOTICE_PAUSED;
+            out_plan->notice = VM_PRESENTATION_NOTICE_PAUSED;
             vm_session_plan_title(out_plan, "NXVM (Paused)");
             out_plan->mouse_capturable_changed = TYPE_TRUE;
             out_plan->mouse_capturable = TYPE_FALSE;
             out_plan->release_mouse = TYPE_TRUE;
-            if (session->active_target == VM_SESSION_PRESENTATION_CONSOLE)
-                vm_session_plan_target(session, out_plan, VM_SESSION_PRESENTATION_NONE);
+            if (session->active_target == VM_PRESENTATION_SURFACE_CONSOLE)
+                vm_session_plan_target(session, out_plan, VM_PRESENTATION_SURFACE_NONE);
             break;
         case VM_MACHINE_RESULT_RESET:
-            out_plan->notice = VM_SESSION_NOTICE_RESET;
+            out_plan->notice = VM_PRESENTATION_NOTICE_RESET;
             break;
         case VM_MACHINE_RESULT_STOPPED:
-            out_plan->notice = VM_SESSION_NOTICE_STOPPED;
+            out_plan->notice = VM_PRESENTATION_NOTICE_STOPPED;
             out_plan->mouse_capturable_changed = TYPE_TRUE;
             out_plan->mouse_capturable = TYPE_FALSE;
             out_plan->release_mouse = TYPE_TRUE;
-            vm_session_plan_target(session, out_plan, VM_SESSION_PRESENTATION_NONE);
+            vm_session_plan_target(session, out_plan, VM_PRESENTATION_SURFACE_NONE);
             break;
         default:
             break;
@@ -369,7 +369,7 @@ type_status vm_session_reduce_fact(vm_session *session,
     }
     if (fact->value.presentation_input.type == UI_EVENT_WINDOW_CLOSE) {
         if (vm_session_is_running(session)) (C_VOID)vm_session_request_pause(session);
-        vm_session_plan_target(session, out_plan, VM_SESSION_PRESENTATION_NONE);
+        vm_session_plan_target(session, out_plan, VM_PRESENTATION_SURFACE_NONE);
         out_plan->mouse_capturable_changed = TYPE_TRUE;
         out_plan->mouse_capturable = TYPE_FALSE;
         out_plan->release_mouse = TYPE_TRUE;
