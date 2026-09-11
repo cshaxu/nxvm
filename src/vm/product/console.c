@@ -11,6 +11,7 @@
 #include "vm/app/app.h"
 #include "vm/presentation/presentation.h"
 #include "vm/product/catalog.h"
+#include "vm/product/recorder.h"
 #include "common/session/session_interface.h"
 
 struct vm_product_console_context {
@@ -22,6 +23,7 @@ struct vm_product_console_context {
     vm_product_session_catalog *catalog;
     common_session *control;
     vm_presentation *presentation;
+    vm_product_recorder *recorder;
     C_INT session_stopped;
 };
 #define CONSOLE_MAXNARG 256
@@ -87,6 +89,10 @@ static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
             "NXVM (Running)");
     if (state != STD_NULL) (C_VOID)vm_product_console_printf(context, restore_prompt ?
         "\r\nMachine %s.\nConsole> " : "Machine %s.\n", state);
+    if (plan->console_text[0] != '\0')
+        (C_VOID)vm_product_console_printf(context, "%s", plan->console_text);
+    if (plan->console_prompt_ready)
+        (C_VOID)vm_product_console_printf(context, "%s", plan->console_prompt);
 }
 
 static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
@@ -161,6 +167,11 @@ static C_INT vm_product_console_read_line(vm_product_console_context *context,
             if (fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
                 vm_app_reduce_input(context->session, &fact.value.input, &plan) == TYPE_STATUS_OK)
                 vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
+            continue;
+        }
+        if (common_session_has_cli_provider(context->control)) {
+            if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
+                LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
             continue;
         }
         if (fact.kind != COMMON_SESSION_FACT_CONSOLE_LINE) return 0;
@@ -366,11 +377,15 @@ static C_VOID doRecord(vm_product_console_context *context)
         {
             GetHelp;
         }
-        (C_VOID)vm_app_record_start(currentSession, argArray[2]);
+        if (vm_product_recorder_start(context->recorder, argArray[2]) ==
+            TYPE_STATUS_OK) STD_PRINTF("Record started.\n");
+        else STD_PRINTF("ERROR:\trecorder cannot open output file.\n");
     }
     else if (!STD_STRCMP(argArray[1], "stop"))
     {
-        (C_VOID)vm_app_record_stop(currentSession);
+        if (vm_product_recorder_stop(context->recorder) == TYPE_STATUS_OK)
+            STD_PRINTF("Record finished.\n");
+        else STD_PRINTF("ERROR:\trecorder not turned on.\n");
     }
     else
     {
@@ -572,6 +587,14 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
         context->control = STD_NULL;
         return TYPE_FALSE;
     }
+    if (vm_product_recorder_create(&context->recorder) != TYPE_STATUS_OK) {
+        vm_presentation_destroy(context->presentation);
+        context->presentation = STD_NULL;
+        context->control = STD_NULL;
+        return TYPE_FALSE;
+    }
+    vm_app_bind_product_debug_observer(context->session,
+        vm_product_recorder_observe, context->recorder);
     if (vm_product_session_catalog_create(profile_directory, &context->catalog) ==
             TYPE_STATUS_OK) return TYPE_TRUE;
     vm_product_session_catalog_destroy(context->catalog);
@@ -579,6 +602,9 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     vm_presentation_destroy(context->presentation);
     context->presentation = STD_NULL;
     context->control = STD_NULL;
+    vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
+    vm_product_recorder_destroy(context->recorder);
+    context->recorder = STD_NULL;
     STD_FREE(argArray);
     argArray = STD_NULL;
     return TYPE_FALSE;
@@ -598,7 +624,10 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
     vm_product_console_drain_lifecycle(context, TYPE_FALSE);
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
+    vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
     vm_presentation_destroy(context->presentation);
+    vm_product_recorder_destroy(context->recorder);
+    context->recorder = STD_NULL;
     context->presentation = STD_NULL;
     common_session_close(context->control);
     context->control = STD_NULL;
@@ -620,8 +649,10 @@ type_status vm_product_console_context_create(
 C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 {
     if (context == STD_NULL) return;
+    vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
     vm_presentation_destroy(context->presentation);
     vm_product_session_catalog_destroy(context->catalog);
+    vm_product_recorder_destroy(context->recorder);
     STD_FREE(context);
 }
 

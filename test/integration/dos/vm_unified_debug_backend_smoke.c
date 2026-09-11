@@ -2,64 +2,56 @@
 #include <windows.h>
 #include "vm/machine/runtime/machine_private.h"
 
-#include "core/debug/debug_access.h"
-
-#include "vm/machine/runtime/debug_target.h"
-
 #include "vm/machine/runtime/lifecycle.h"
 
 #include "test/integration/support/session_yaml.h"
 
-static C_INT wait_for_running(const core_debug_target *target)
+static C_INT wait_for_running(const vm_machine *machine)
 {
     C_UINT waited;
 
     for (waited = 0u; waited < 2000u; ++waited) {
-        if (core_debug_is_running(target)) return 1;
+        if (vm_machine_is_running(machine)) return 1;
         Sleep(1u);
     }
-    return core_debug_is_running(target);
+    return vm_machine_is_running(machine);
 }
 
-static C_INT wait_for_pause_reason(const core_debug_target *target,
-    core_debug_pause_reason reason)
+static C_INT wait_for_pause_reason(const vm_machine *machine,
+    vm_machine_pause_reason reason)
 {
     C_UINT waited;
 
     for (waited = 0u; waited < 2000u; ++waited) {
-        if (core_debug_is_paused(target) &&
-            core_debug_get_pause_reason(target) == reason)
+        if (machine != STD_NULL && vm_machine_control_is_paused(&machine->control) &&
+            vm_machine_control_get_pause_reason(&machine->control) == reason)
             return 1;
         Sleep(1u);
     }
-    return core_debug_is_paused(target) &&
-        core_debug_get_pause_reason(target) == reason;
+    return machine != STD_NULL && vm_machine_control_is_paused(&machine->control) &&
+        vm_machine_control_get_pause_reason(&machine->control) == reason;
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session;
     vm_machine *session;
-    const core_debug_target *target;
 
     if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
             &yaml_session) != TYPE_STATUS_OK) return 77;
     session = yaml_session.session;
-    target = vm_machine_debug_target(session);
-    if (target == STD_NULL) goto fail;
-    if (vm_machine_start(session) != TYPE_STATUS_OK || !wait_for_running(target) ||
-        !core_debug_request_pause(target, CORE_DEBUG_PAUSE_EXPLICIT) ||
+    if (vm_machine_start(session) != TYPE_STATUS_OK || !wait_for_running(session) ||
+        vm_machine_request_pause(session) != TYPE_STATUS_OK ||
         !vm_machine_control_wait_for_pause(&session->control, 2000u) ||
-        !core_debug_is_paused(target) ||
-        core_debug_get_pause_reason(target) != CORE_DEBUG_PAUSE_EXPLICIT ||
-        !core_debug_step(target) ||
-        !wait_for_pause_reason(target, CORE_DEBUG_PAUSE_STEP)) goto fail;
-    core_debug_continue(target);
-    if (!wait_for_running(target) ||
-        !core_debug_request_pause(target, CORE_DEBUG_PAUSE_EXPLICIT) ||
+        !vm_machine_control_is_paused(&session->control) ||
+        vm_machine_control_get_pause_reason(&session->control) != VM_MACHINE_PAUSE_EXPLICIT ||
+        vm_machine_request_step(session) != TYPE_STATUS_OK ||
+        !wait_for_pause_reason(session, VM_MACHINE_PAUSE_STEP)) goto fail;
+    if (vm_machine_resume(session) != TYPE_STATUS_OK || !wait_for_running(session) ||
+        vm_machine_request_pause(session) != TYPE_STATUS_OK ||
         !vm_machine_control_wait_for_pause(&session->control, 2000u) ||
-        !core_debug_is_paused(target) ||
-        core_debug_get_pause_reason(target) != CORE_DEBUG_PAUSE_EXPLICIT) {
+        !vm_machine_control_is_paused(&session->control) ||
+        vm_machine_control_get_pause_reason(&session->control) != VM_MACHINE_PAUSE_EXPLICIT) {
         goto fail;
     }
     vm_machine_stop(session);

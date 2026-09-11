@@ -139,11 +139,9 @@ type_status core_machine_debug_set_watchpoint(core_machine *machine,
     core_machine_debug_watch_kind kind, type_unsigned_32 address);
 type_status core_machine_debug_clear_watchpoint(core_machine *machine,
     core_machine_debug_watch_kind kind);
-type_status core_machine_debug_print_registers(core_machine *machine);
-type_status core_machine_debug_print_segment_registers(core_machine *machine);
-type_status core_machine_debug_print_control_registers(core_machine *machine);
-type_status core_machine_debug_print_memory_accesses(core_machine *machine);
-type_status core_machine_debug_print_watchpoints(core_machine *machine);
+type_status core_machine_debug_get_watchpoint(core_machine *machine,
+    core_machine_debug_watch_kind kind, type_bool *out_enabled,
+    type_unsigned_32 *out_address);
 
 #ifdef __cplusplus
 }

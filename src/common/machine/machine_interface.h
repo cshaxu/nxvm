@@ -48,21 +48,52 @@ typedef enum common_machine_debug_operation {
     COMMON_MACHINE_DEBUG_WRITE_REGISTER,
     COMMON_MACHINE_DEBUG_READ_LINEAR,
     COMMON_MACHINE_DEBUG_WRITE_LINEAR,
+    COMMON_MACHINE_DEBUG_READ_REAL,
+    COMMON_MACHINE_DEBUG_WRITE_REAL,
     COMMON_MACHINE_DEBUG_READ_PORT,
-    COMMON_MACHINE_DEBUG_WRITE_PORT
+    COMMON_MACHINE_DEBUG_WRITE_PORT,
+    COMMON_MACHINE_DEBUG_GET_CODE_DEFAULT_SIZE,
+    COMMON_MACHINE_DEBUG_GET_CODE_BASE,
+    COMMON_MACHINE_DEBUG_SET_WATCH,
+    COMMON_MACHINE_DEBUG_CLEAR_WATCH,
+    COMMON_MACHINE_DEBUG_GET_WATCH,
+    COMMON_MACHINE_DEBUG_SET_EXECUTION_PLAN,
+    COMMON_MACHINE_DEBUG_CLEAR_EXECUTION_PLAN,
+    COMMON_MACHINE_DEBUG_GET_EXECUTION_RESULT
 } common_machine_debug_operation;
+
+typedef enum common_machine_debug_watch_kind {
+    COMMON_MACHINE_DEBUG_WATCH_READ,
+    COMMON_MACHINE_DEBUG_WATCH_WRITE,
+    COMMON_MACHINE_DEBUG_WATCH_EXECUTE
+} common_machine_debug_watch_kind;
+
+/* The target owns enforcement.  Debug supplies only a bounded plan while
+ * paused; it never counts instructions from an observation callback. */
+typedef enum common_machine_debug_execution_plan_kind {
+    COMMON_MACHINE_DEBUG_EXECUTION_NONE,
+    COMMON_MACHINE_DEBUG_EXECUTION_TRACE,
+    COMMON_MACHINE_DEBUG_EXECUTION_BREAK_REAL,
+    COMMON_MACHINE_DEBUG_EXECUTION_BREAK_LINEAR
+} common_machine_debug_execution_plan_kind;
 
 typedef struct common_machine_debug_request {
     common_machine_debug_operation operation;
     lib_u32 register_id;
     lib_u32 address;
+    lib_u16 segment;
+    lib_u16 offset;
     lib_u16 port;
+    common_machine_debug_watch_kind watch_kind;
+    common_machine_debug_execution_plan_kind execution_kind;
+    lib_u64 instruction_count;
     lib_u8 bytes;
     lib_u8 data[COMMON_MACHINE_DEBUG_BYTES];
 } common_machine_debug_request;
 
 typedef struct common_machine_debug_result {
     lib_u32 value;
+    lib_bool enabled;
     lib_u8 bytes;
     lib_u8 data[COMMON_MACHINE_DEBUG_BYTES];
 } common_machine_debug_result;

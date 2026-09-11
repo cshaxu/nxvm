@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/xasm32/xasm32_internal.h"
+#include "common/xasm32/xasm32.h"
 
 #include "common/xasm32/dasm32.h"
 

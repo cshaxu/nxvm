@@ -510,11 +510,6 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
         vm_machine_storage_finalize(machine);
         return TYPE_STATUS_NO_MEMORY;
     }
-    status = core_debugger_create(&machine->debugger);
-    if (status != TYPE_STATUS_OK) {
-        vm_machine_storage_finalize(machine);
-        return status;
-    }
     machine->display_generation = 0u;
     return TYPE_STATUS_OK;
 }
@@ -522,8 +517,6 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
 C_VOID vm_machine_storage_finalize(vm_machine *machine)
 {
     if (machine == STD_NULL) return;
-    core_debugger_destroy(machine->debugger);
-    machine->debugger = STD_NULL;
     core_machine_guest_presentation_mailbox_destroy(machine->presentation_mailbox);
     machine->presentation_mailbox = STD_NULL;
     core_machine_destroy(machine->core_machine);

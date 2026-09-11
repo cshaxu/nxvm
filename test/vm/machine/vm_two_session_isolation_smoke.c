@@ -27,12 +27,10 @@ C_INT main(C_VOID)
 
     vm_machine_debug_initialize(&first->debug);
     vm_machine_debug_initialize(&second->debug);
-    vm_machine_debug_set_trace(&first->debug, 2u);
 
     failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
     failed |= !test_core_machine_fixture_sessions_are_isolated(
         first->core_machine, second->core_machine);
-    failed |= !first->debug.data.flagTrace || second->debug.data.flagTrace;
 
     vm_machine_storage_finalize(second);
     vm_machine_storage_finalize(first);

@@ -4,9 +4,7 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
-#include "core/debug/debug_access.h"
 #include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/debug_target.h"
 #include "vm/machine/runtime/fault.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_interface.h"
@@ -29,18 +27,15 @@ C_INT main(C_VOID)
 {
     vm_machine *session = STD_NULL;
     vm_machine_fault_outcome outcome;
-    core_debug_fault_outcome debug_outcome;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_lifecycle lifecycle;
-    const core_debug_target *target;
     C_INT failed = 0;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         !vm_fault_outcome_prepare(session)) goto fail;
     vm_machine_control_start(&session->control);
-    target = vm_machine_debug_target(session);
     failed |= vm_machine_control_is_running(&session->control);
     failed |= vm_machine_fault_get(session, &outcome) != 0 || !outcome.valid ||
         outcome.run.reason != CORE_MACHINE_STOP_FAULT ||
@@ -48,10 +43,6 @@ C_INT main(C_VOID)
         !outcome.diagnostic.first_fault.valid ||
         !TYPE_GET_BIT(outcome.diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_UD);
-    failed |= !core_debug_get_fault_outcome(target, &debug_outcome) ||
-        !debug_outcome.valid || debug_outcome.detail != VCPUINS_EXCEPT_UD ||
-        !debug_outcome.diagnostic_valid ||
-        !TYPE_GET_BIT(debug_outcome.exception_mask, VCPUINS_EXCEPT_UD);
     failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
         TYPE_STATUS_OK || lifecycle != CORE_MACHINE_FAULTED;
     failed |= core_machine_run(session->core_machine, budget, &run) !=

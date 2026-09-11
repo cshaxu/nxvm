@@ -2,36 +2,26 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/debug.c" debug_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/debug.h" debug_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_private.h" session_header)
-
-foreach(required "debug_record_close" "debug_record_write_failed"
-        "vm_machine_debug_record_status" "vm_machine_debug_finalize")
-    string(FIND "${debug_source}" "${required}" position)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/product/recorder.c" recorder_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/debug.c" machine_source)
+foreach(required IN ITEMS
+    "vm_product_recorder_start"
+    "vm_product_recorder_stop"
+    "vm_product_recorder_observe"
+    "lib_storage_file_writer_open")
+    string(FIND "${recorder_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "VM debugger recorder lifecycle lacks ${required}")
+        message(FATAL_ERROR "Product recorder lacks ${required}")
+    endif()
+endforeach()
+foreach(forbidden IN ITEMS
+    "recordFile"
+    "lib_storage_file_writer"
+    "common_xasm32")
+    string(FIND "${machine_source}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "vm/machine retains recorder policy: ${forbidden}")
     endif()
 endforeach()
 
-foreach(required "type_status record_status" "type_status vm_machine_debug_record_start"
-        "type_status vm_machine_debug_record_stop")
-    string(FIND "${debug_header}" "${required}" position)
-    if(position EQUAL -1)
-        message(FATAL_ERROR "VM debugger recorder status boundary lacks ${required}")
-    endif()
-endforeach()
-
-string(FIND "${session_header}" "core_debugger *debugger;"
-    session_debugger_position)
-if(session_debugger_position EQUAL -1)
-    message(FATAL_ERROR "VM session no longer owns its debugger lifecycle handle")
-endif()
-
-string(REGEX MATCHALL "static[^\n]*dumpSegRec|static[^\n]*asmSegRec|static[^\n]*uasmSegRec"
-    shared_cursor_state "${debug_source}")
-if(shared_cursor_state)
-    message(FATAL_ERROR "Debugger cursor state must remain instance-owned")
-endif()
-
-message("M5:T446:S1:VM-DEBUGGER-RECORDING-LIFECYCLE-STATIC:OK")
+message(STATUS "M5 T527 product recorder ownership: OK")

@@ -13,12 +13,10 @@
 
 #include "vm/machine/runtime/machine_interface.h"
 
-#include "core/debug/debug_target.h"
 
-#include "common/xasm32/xasm32_interface.h"
 #include "lib/host/sync_interface.h"
 
-#include "vm/machine/runtime/debug_target.h"
+#include "vm/machine/runtime/debug_adapter.h"
 
 #include "vm/machine/debug.h"
 
@@ -31,16 +29,6 @@
 
 
 #include "vm/machine/runtime/lifecycle.h"
-
-static type_status vm_machine_debug_disassemble(C_VOID *context,
-    C_CHAR *statement, STD_SIZE_T statement_capacity,
-    const type_unsigned_8 *code, STD_SIZE_T code_bytes,
-    STD_SIZE_T *out_code_bytes, C_INT flag32)
-{
-    (C_VOID)context;
-    return common_xasm32_disassemble(code, code_bytes, statement,
-        statement_capacity, out_code_bytes, flag32);
-}
 
 static C_VOID vm_machine_input_submit(C_VOID *context,
     const core_machine_guest_input_event *event)
@@ -108,14 +96,6 @@ type_status vm_machine_bind_execution_provider(vm_machine *machine)
 static const core_machine_guest_input_sink vm_machine_input_sink = {
     vm_machine_input_submit
 };
-
-static C_VOID vm_machine_debug_request_pause(C_VOID *context,
-    vm_machine_debug_pause_reason reason)
-{
-    (C_VOID)vm_machine_request_pause_reason((vm_machine *)context,
-        reason == VM_MACHINE_DEBUG_PAUSE_TRACE ? VM_MACHINE_PAUSE_TRACE :
-        VM_MACHINE_PAUSE_BREAKPOINT);
-}
 
 static lib_bool vm_machine_common_is_paused(void *context)
 {
@@ -261,6 +241,30 @@ type_status vm_machine_request_pause(vm_machine *machine)
     return vm_machine_request_pause_reason(machine, VM_MACHINE_PAUSE_EXPLICIT);
 }
 
+common_machine *vm_machine_common_machine(vm_machine *machine)
+{
+    return machine == STD_NULL ? LIB_NULL : machine->executor;
+}
+
+void vm_machine_bind_debug_observer(vm_machine *machine,
+    vm_machine_debug_observer observer, C_VOID *context)
+{
+    if (machine == STD_NULL) return;
+    vm_machine_debug_bind_observer(&machine->debug, observer, context);
+}
+
+type_status vm_machine_pause_for_debug(vm_machine *machine,
+    type_unsigned_32 timeout_milliseconds)
+{
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_machine_control_is_running(&machine->control) &&
+        vm_machine_request_pause(machine) != TYPE_STATUS_OK)
+        return TYPE_STATUS_INVALID_STATE;
+    return vm_machine_control_is_paused(&machine->control) ||
+        vm_machine_control_wait_for_pause(&machine->control,
+            timeout_milliseconds) ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
+}
+
 type_status vm_machine_request_pause_reason(vm_machine *machine,
     vm_machine_pause_reason reason)
 {
@@ -355,10 +359,6 @@ type_status vm_machine_initialize(vm_machine *machine) {
         vm_machine_finalize(machine);
         return status;
     }
-    vm_machine_debug_bind_pause(&machine->debug,
-        vm_machine_debug_request_pause, STD_NULL);
-    vm_machine_debug_bind_disassembler(&machine->debug,
-        vm_machine_debug_disassemble, STD_NULL);
     status = (type_status)common_machine_create(&machine->executor);
     if (status != TYPE_STATUS_OK) { vm_machine_finalize(machine); return status; }
     driver = (common_machine_driver) {
@@ -397,8 +397,5 @@ C_VOID vm_machine_finalize(vm_machine *machine) {
     machine->executor = STD_NULL;
     machine->active = 0;
     vm_machine_control_finalize(&machine->control, machine);
-    vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);
-    vm_machine_debug_bind_disassembler(&machine->debug, STD_NULL, STD_NULL);
-    vm_machine_debug_target_finalize(machine);
     vm_machine_storage_finalize(machine);
 }

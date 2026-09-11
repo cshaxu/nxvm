@@ -9,44 +9,30 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/debug_interface.h"
-#include "lib/storage/file_interface.h"
+#include "vm/machine/runtime/control.h"
+#include "vm/machine/runtime/machine_interface.h"
 
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 
-typedef enum vm_machine_debug_pause_reason {
-    VM_MACHINE_DEBUG_PAUSE_BREAKPOINT,
-    VM_MACHINE_DEBUG_PAUSE_TRACE
-} vm_machine_debug_pause_reason;
-
-typedef C_VOID (*vm_machine_debug_pause_callback)(C_VOID *context,
-    vm_machine_debug_pause_reason reason);
-typedef type_status (*vm_machine_debug_disassemble_provider)(C_VOID *context,
-    C_CHAR *statement, STD_SIZE_T statement_capacity,
-    const type_unsigned_8 *code, STD_SIZE_T code_bytes,
-    STD_SIZE_T *out_code_bytes, C_INT flag32);
-
 typedef struct {
-    lib_storage_file_writer *recordFile;
-    vm_machine_debug_pause_callback pauseCallback;
-    C_VOID *pauseContext;
-    vm_machine_debug_disassemble_provider disassembleProvider;
-    C_VOID *disassembleContext;
-    core_machine_debug_instruction_observation observation;
-    type_bool observation_valid;
-    type_status record_status;
+    vm_machine_debug_observer observer;
+    C_VOID *observer_context;
 } t_debug_connect;
 
 typedef struct {
-    type_bool flagBreak; /* breakpoint set (1) or not (0) */
-    type_bool flagBreak32;
-    type_bool flagTrace; /* tracer set(1) or not (0) */
-    type_native_unsigned breakCount, traceCount;
-    type_unsigned_16 breakCS, breakIP;
-    type_unsigned_32 breakLinear;
-} t_debug_data;
+    common_machine_debug_execution_plan_kind kind;
+    type_unsigned_64 remaining;
+    type_unsigned_64 executed;
+    type_unsigned_32 breakpoint_linear;
+    type_bool completion_pending;
+    vm_machine_pause_reason completion_reason;
+    type_unsigned_64 completion_executed;
+} t_debug_execution_plan;
 
 typedef struct {
-    t_debug_data data;
+    t_debug_execution_plan plan;
+    core_machine_debug_instruction_observation observation;
+    type_bool observation_valid;
     t_debug_connect connect;
 } t_debug;
 
@@ -55,21 +41,21 @@ C_VOID vm_machine_debug_reset(t_debug *debug);
 C_VOID vm_machine_debug_refresh(t_debug *debug,
     const core_machine_debug_instruction_observation *observation);
 C_VOID vm_machine_debug_finalize(t_debug *debug);
-C_VOID vm_machine_debug_bind_pause(t_debug *debug,
-    vm_machine_debug_pause_callback callback, C_VOID *context);
-C_VOID vm_machine_debug_bind_disassembler(t_debug *debug,
-    vm_machine_debug_disassemble_provider provider, C_VOID *context);
-C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, type_unsigned_16 segment,
-    type_unsigned_16 offset);
-C_VOID vm_machine_debug_clear_breakpoint_real(t_debug *debug);
-C_VOID vm_machine_debug_set_breakpoint_linear(t_debug *debug, type_unsigned_32 linear);
-C_VOID vm_machine_debug_clear_breakpoint_linear(t_debug *debug);
-STD_SIZE_T vm_machine_debug_get_breakpoint_count(const t_debug *debug);
-C_VOID vm_machine_debug_set_trace(t_debug *debug, STD_SIZE_T instruction_count);
-C_VOID vm_machine_debug_clear_trace(t_debug *debug);
-type_status vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_name);
-type_status vm_machine_debug_record_stop(t_debug *debug);
-type_status vm_machine_debug_record_status(const t_debug *debug);
+C_VOID vm_machine_debug_bind_observer(t_debug *debug,
+    vm_machine_debug_observer observer, void *context);
+type_status vm_machine_debug_set_execution_plan(t_debug *debug,
+    const common_machine_debug_request *request);
+C_VOID vm_machine_debug_clear_execution_plan(t_debug *debug);
+type_unsigned_64 vm_machine_debug_limit_instruction_budget(
+    const t_debug *debug, type_unsigned_64 requested);
+C_INT vm_machine_debug_breakpoint_due(const t_debug *debug);
+C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug);
+C_VOID vm_machine_debug_complete_run(t_debug *debug,
+    type_unsigned_64 executed);
+C_INT vm_machine_debug_completion_pending(const t_debug *debug,
+    vm_machine_pause_reason *out_reason);
+C_INT vm_machine_debug_take_completion(t_debug *debug,
+    vm_machine_pause_reason *out_reason, type_unsigned_64 *out_executed);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

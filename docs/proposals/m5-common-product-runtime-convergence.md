@@ -66,6 +66,36 @@ that provider and writes the returned copied text and prompt to the monitor
 Console.  Product CLI and Debug CLI are peers registered with session; neither
 wraps or calls the other.
 
+## VM Machine Adapter Boundary And Planned Extraction
+
+`vm/machine` is deliberately the NXVM-only Core adapter, not an attempted
+second common runtime. It retains facts that cannot be shared without making
+common know NXVM/Core semantics: Core creation and plan materialization,
+profile-selected firmware and controller topology, Core media/display/input
+provider binding, the actual Core execution runner and timing advancement, and
+translation between Core callbacks and copied machine facts. Its
+`common/machine` driver endpoint likewise remains: it maps neutral safe-point
+and paused-Debug requests to `core/machine`, without exposing a Core pointer.
+
+The current adapter is larger because it also contains product and
+presentation responsibilities. They have explicit deletion receivers; none is
+a reason to enlarge `common/machine`:
+
+| Current mixed responsibility | Final owner | Receiver |
+| --- | --- | --- |
+| Core Debug parser, target callback table, command continuation and shared breakpoint/trace policy | `common/debug` | S5 |
+| NXVM-only raw instruction recorder and file policy | `vm/product` optional capability | S5 audit |
+| YAML/session request parsing, profile choice, asset-path validation and user-visible machine/status text | `vm/product` | S5/S7 |
+| presenter binding, surface target/title/mouse application and copied UI input/facts | `common/ui` plus product presentation policy | S6 |
+| composition-only route selection among product, session, machine and UI | `vm/app` | S7 |
+| old `vm/events` carrier values and product/host bridges | named common contracts or their sole product receiver | S7 |
+
+Split VM files only when doing so removes one of these mixed responsibilities
+or a duplicate route. Profile-selected Core assembly, media bridges, firmware
+providers, execution/pacing and Core-fact adaptation remain adjacent under
+`vm/machine`; moving them into common or splitting solely by file size would
+add indirection without reducing ownership.
+
 For paused inspection/editing, Debug synchronously calls the narrow
 `common/machine` paused-debug API.  That API exposes operations such as
 snapshot/read/write/breakpoint and install-execution-plan, but never exposes a
@@ -281,24 +311,36 @@ session activates Debug only after a paused fact.
    the explicit S5 receiver.
 5. **S5 - common Debug migration and NXVM CLI cutover.** Move the line/fact
    Debug CLI into `common/debug`, bind it as a registered session provider, and
-   route every paused read/write through `common/machine`.  Delete the former
-   Core Debug parser and VM callback-table route rather than forwarding through
-   compatibility headers.  Preserve DOS-style trace/step; use an injected
-   product file service for `N/L/W`; retain NXVM recorder as explicit optional
-   capability unless the separate portability audit proves a shared sink.
+   route every paused read/write through `common/machine`.  Move the existing
+   command handlers and their semantics, then delete the former Core Debug
+   parser address and VM callback-table route rather than forwarding through
+   compatibility headers. Move shared Debug continuation, breakpoint and trace
+   policy with those handlers; retain only the bounded Core-operation mapping in
+   `vm/machine`. Preserve DOS-style trace/step; use an injected product file
+   service for `N/L/W`; move the NXVM-only raw recorder and its path/open
+   policy to `vm/product` as an explicit optional capability unless the
+   separate portability audit proves a shared sink. Move product command text,
+   YAML/profile request parsing and machine/status rendering out of the VM
+   adapter whenever the Debug/CLI cutover reaches their route.
 6. **S6 - common UI binding.** Move the generic lib-presenter binding to
    `common/ui`, with copied plans/facts only.  Retain one session-driven
    control Console port while `vm/product` supplies NXVM's immutable
    raw-VM/monitor/none policy and Console text.  Delete the obsolete
-   `vm/presentation` path.  Verify Console/Window switching, title, target,
-   focus, mouse and latest-frame semantics without native API leakage.
+   `vm/presentation` path and any VM adapter presenter binding. Keep only the
+   Core display-provider/mailbox adaptation in `vm/machine`. Verify
+   Console/Window switching, title, target, focus, mouse and latest-frame
+   semantics without native API leakage.
 7. **S7 - NXVM product and app completion.** Make `vm/product` own only NXVM
    command/YAML/profile/debugger/presentation policy, injected into session at
    construction.  Make `vm/app` the sole composition root, with no queue or
    lifecycle/router state. Delete the remaining old `vm/events` and
    product/host bridge paths rather than retaining adapters; S3 already deletes
-   `vm/session`. Confirm one
-   session only, one product control FIFO, one machine FIFO and one UI route.
+   `vm/session`. Complete the similar-route sweep for `vm/machine`: retain
+   only Core assembly, provider binding, execution/pacing, media bridging and
+   copied Core-fact adaptation; move every remaining product parsing, text,
+   Debug grammar, UI binding or composition decision to its named owner.
+   Confirm one session only, one product control FIFO, one machine FIFO and
+   one UI route.
 8. **S8 - reusable-corpus and closure audit.** Build common independently
    using only `lib` public headers; verify its manifest and forbidden-vocabulary
    sweep.  Add neutral two-adapter conformance doubles (not a second product)

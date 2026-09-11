@@ -8,6 +8,7 @@
 #include "core/machine/guest_input_interface.h"
 #include "vm/events/machine_event.h"
 #include "vm/profile/byob/blob.h"
+#include "common/machine/machine_interface.h"
 
 typedef enum vm_machine_profile_kind {
     VM_MACHINE_PROFILE_DEFAULT_PC_AT,
@@ -82,6 +83,34 @@ typedef struct vm_machine_assets {
 
 typedef struct vm_machine vm_machine;
 
+/* A copied diagnostic observation.  vm/machine maps the existing Core Debug
+ * API record into this product-neutral VM value; consumers never receive a
+ * Core or CPU pointer. */
+#define VM_MACHINE_DEBUG_INSTRUCTION_BYTES 15u
+#define VM_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY 8u
+typedef struct vm_machine_debug_memory_access {
+    type_unsigned_32 linear;
+    type_unsigned_8 bytes;
+    type_bool write;
+    type_unsigned_64 data;
+} vm_machine_debug_memory_access;
+
+typedef struct vm_machine_debug_observation {
+    type_unsigned_16 cs, ss, ds, es, fs, gs;
+    type_unsigned_32 cs_base, ss_base, eip, esp;
+    type_unsigned_32 eax, ecx, edx, ebx, ebp, esi, edi, eflags;
+    C_INT code_default_size;
+    type_unsigned_16 instruction_cs;
+    type_unsigned_32 instruction_eip, instruction_linear;
+    type_unsigned_8 instruction_bytes[VM_MACHINE_DEBUG_INSTRUCTION_BYTES];
+    type_unsigned_8 instruction_byte_count;
+    vm_machine_debug_memory_access
+        memory_accesses[VM_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY];
+    type_unsigned_8 memory_access_count;
+} vm_machine_debug_observation;
+typedef C_VOID (*vm_machine_debug_observer)(C_VOID *context,
+    const vm_machine_debug_observation *observation);
+
 typedef struct vm_machine_reset_vector {
     type_unsigned_16 cs;
     type_unsigned_16 ip;
@@ -91,6 +120,13 @@ C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_sessio
 type_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_session);
 C_VOID vm_machine_destroy(vm_machine *session);
+/* The composition-owned, value-only executor boundary.  It is intentionally
+ * not a Core object and is the sole paused-debug receiver for the app. */
+common_machine *vm_machine_common_machine(vm_machine *session);
+void vm_machine_bind_debug_observer(vm_machine *session,
+    vm_machine_debug_observer observer, C_VOID *context);
+type_status vm_machine_pause_for_debug(vm_machine *session,
+    type_unsigned_32 timeout_milliseconds);
 type_status vm_machine_reconfigure_memory(vm_machine *session,
     STD_SIZE_T memory_bytes);
 type_status vm_machine_get_speed(const vm_machine *session,
@@ -114,9 +150,6 @@ C_INT vm_machine_is_running(const vm_machine *session);
 C_VOID vm_machine_print_machine(const vm_machine *session);
 C_VOID vm_machine_print_bios(const vm_machine *session);
 C_VOID vm_machine_print_status(const vm_machine *session);
-type_status vm_machine_run_debugger(vm_machine *session);
-type_status vm_machine_record_start(vm_machine *session, const C_CHAR *path);
-type_status vm_machine_record_stop(vm_machine *session);
 /* The sole copied completion route.  It transfers neither a Core object nor
  * an executor or UI handle across this boundary. */
 C_VOID vm_machine_set_result_sink(vm_machine *machine,

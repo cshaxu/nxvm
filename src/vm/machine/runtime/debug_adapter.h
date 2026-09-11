@@ -3,14 +3,10 @@
 
 #include "type.h"
 
-#include "core/debug/debug_target.h"
 #include "common/machine/machine_interface.h"
 
 #include "vm/machine/runtime/machine_interface.h"
 
-const core_debug_target *vm_machine_debug_target(
-    vm_machine *machine);
-C_VOID vm_machine_debug_target_finalize(vm_machine *machine);
 lib_status vm_machine_common_debug_execute(void *context,
     const common_machine_debug_request *request,
     common_machine_debug_result *out_result);

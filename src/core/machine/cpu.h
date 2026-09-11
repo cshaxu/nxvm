@@ -496,16 +496,9 @@ C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *conte
     core_machine_cpu_watchpoint kind, type_unsigned_32 linear);
 C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind);
-C_VOID core_machine_cpu_print_registers(
-    const core_machine_cpu_execution_context *context);
-C_VOID core_machine_cpu_print_segment_registers(
-    const core_machine_cpu_execution_context *context);
-C_VOID core_machine_cpu_print_control_registers(
-    const core_machine_cpu_execution_context *context);
-C_VOID core_machine_cpu_print_memory_accesses(
-    const core_machine_cpu_execution_context *context);
-C_VOID core_machine_cpu_print_watchpoints(
-    const core_machine_cpu_execution_context *context);
+C_VOID core_machine_cpu_get_watchpoint(const core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind, type_bool *out_enabled,
+    type_unsigned_32 *out_linear);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

@@ -8,8 +8,6 @@
 #include "core/machine/display_interface.h"
 #include "core/machine/guest_input_interface.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
-#include "core/debug/debug.h"
-#include "core/debug/debug_target.h"
 #include "lib/host/sync_interface.h"
 #include "vm/machine/runtime/control.h"
 #include "vm/machine/runtime/fault.h"
@@ -66,13 +64,11 @@ struct vm_machine {
         type_status status;
         type_bool valid;
     } start_outcome;
-    core_debugger *debugger;
     type_unsigned_64 display_generation;
     type_unsigned_64 display_snapshot_generation;
     type_bool display_snapshot_generation_valid;
     type_unsigned_64 last_display_publish_milliseconds;
     core_machine_display_kind display_kind;
-    core_debug_target *debug_target;
     vm_machine_fault_outcome fault_outcome;
     vm_machine_control_state control;
     vm_machine_speed speed;

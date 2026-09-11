@@ -24,6 +24,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
     core_machine_run_budget budget;
     core_machine_run_result result;
     vm_machine_control_state *control;
+    vm_machine_pause_reason debug_pause_reason;
     C_INT resumed;
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
@@ -60,11 +61,21 @@ C_VOID vm_machine_runner_run(vm_machine *session)
         if (resumed) vm_machine_report_lifecycle(session, VM_MACHINE_RUNNING);
         vm_machine_execution_context_run_command_boundary(&control->execution_context);
         vm_machine_execution_context_debug_refresh(&control->execution_context);
+        if (vm_machine_debug_breakpoint_due(&session->debug)) {
+            vm_machine_debug_complete_breakpoint(&session->debug);
+            if (vm_machine_debug_completion_pending(&session->debug,
+                    &debug_pause_reason)) {
+                vm_machine_control_request_pause(control, debug_pause_reason);
+            }
+            continue;
+        }
         if (vm_machine_executor_state_pause_requested(control->state)) continue;
         budget.instructions = vm_machine_control_step_requested(control) ? 1u :
             session->speed == VM_MACHINE_SPEED_TURBO ?
             VM_MACHINE_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
             VM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS;
+        budget.instructions = vm_machine_debug_limit_instruction_budget(
+            &session->debug, budget.instructions);
         /* Turbo remains bounded by instructions so control and presentation
          * stay responsive, but it must not impose a second tick throttle.
          * Core still advances every retired instruction and every device
@@ -86,6 +97,11 @@ C_VOID vm_machine_runner_run(vm_machine *session)
                 vm_machine_control_stop(control);
                 continue;
             }
+        }
+        vm_machine_debug_complete_run(&session->debug, result.executed);
+        if (vm_machine_debug_completion_pending(&session->debug,
+                &debug_pause_reason)) {
+            vm_machine_control_request_pause(control, debug_pause_reason);
         }
         {
             if (vm_machine_pacing_wait(session) != TYPE_STATUS_OK) {

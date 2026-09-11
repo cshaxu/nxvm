@@ -4,6 +4,7 @@
 #include "type.h"
 
 #include "common/session/session_interface.h"
+#include "vm/machine/runtime/machine_interface.h"
 typedef struct vm_app vm_app;
 typedef struct vm_session_request vm_session_request;
 
@@ -18,6 +19,8 @@ common_session *vm_app_session(vm_app *app);
 type_status vm_app_open_profile(vm_app *app, const vm_session_request *request);
 type_status vm_app_set_presentation_target(vm_app *app,
     common_session_target target);
+void vm_app_bind_product_debug_observer(vm_app *app,
+    vm_machine_debug_observer observer, C_VOID *context);
 C_INT vm_app_is_running(const vm_app *app);
 C_VOID vm_app_print_machine(const vm_app *app);
 C_VOID vm_app_print_bios(const vm_app *app);
@@ -25,8 +28,6 @@ C_VOID vm_app_print_status(const vm_app *app);
 type_status vm_app_get_speed(const vm_app *app, vm_app_speed *out_speed);
 type_status vm_app_set_speed(vm_app *app, vm_app_speed speed);
 type_status vm_app_debug(vm_app *app);
-type_status vm_app_record_start(vm_app *app, const C_CHAR *path);
-type_status vm_app_record_stop(vm_app *app);
 C_INT vm_app_insert_fdd(vm_app *app, const C_CHAR *path);
 C_INT vm_app_remove_fdd(vm_app *app, const C_CHAR *path);
 type_status vm_app_start(vm_app *app, common_session_plan *out_plan);

@@ -1178,6 +1178,7 @@ set(VM_PROFILE_SOURCES
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
     src/vm/product/catalog.c
+    src/vm/product/recorder.c
 )
 set(VM_PRESENTATION_SOURCES
     src/vm/presentation/console_host.c
@@ -1190,12 +1191,12 @@ set(COMMON_SESSION_SOURCES
 set(COMMON_MACHINE_SOURCES
     src/common/machine/machine.c
 )
+set(COMMON_DEBUG_SOURCES
+    src/common/debug/command.c
+    src/common/debug/debug.c
+)
 set(VM_APP_SOURCES
     src/vm/app/app.c
-)
-set(CORE_DEBUG_SOURCES
-    src/core/debug/debug_access.c
-    src/core/debug/debug.c
 )
 set(COMMON_XASM32_SOURCES
     src/common/xasm32/xasm32.c
@@ -1204,7 +1205,7 @@ set(COMMON_XASM32_SOURCES
 )
 set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/request_factory.c
-    src/vm/machine/runtime/debug_target.c
+    src/vm/machine/runtime/debug_adapter.c
     src/vm/machine/runtime/media.c
     src/vm/machine/runtime/display.c
     src/vm/machine/runtime/lifecycle.c
@@ -1270,11 +1271,15 @@ target_include_directories(common-xasm32 PUBLIC
 )
 target_link_libraries(common-xasm32 PUBLIC types)
 
-add_library(core-debug STATIC ${CORE_DEBUG_SOURCES})
-target_include_directories(core-debug PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
+add_library(common-debug STATIC ${COMMON_DEBUG_SOURCES})
+target_include_directories(common-debug PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(common-debug PUBLIC common-machine common-xasm32)
+
+add_executable(common-debug-smoke
+    test/common/debug/common_debug_smoke.c
 )
-target_link_libraries(core-debug PUBLIC type-facade common-xasm32)
+target_include_directories(common-debug-smoke PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(common-debug-smoke PRIVATE common-debug)
 
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
@@ -1298,32 +1303,6 @@ add_executable(std-snprintf-smoke
     test/core/std_snprintf_smoke.c
 )
 target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
-
-add_executable(core-debug-target-smoke
-    test/core/debug/core_debug_target_smoke.c
-)
-target_include_directories(core-debug-target-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-debug-target-smoke PRIVATE
-    core-debug
-)
-
-add_executable(core-debug-input-failure-smoke
-    test/core/debug/core_debug_input_failure_smoke.c
-    src/core/debug/debug.c
-    src/core/debug/debug_access.c
-)
-target_include_directories(core-debug-input-failure-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_compile_definitions(core-debug-input-failure-smoke PRIVATE
-    STD_MALLOC=test_debug_input_malloc
-)
-target_link_libraries(core-debug-input-failure-smoke PRIVATE
-    core-debug
-    type-facade
-)
 
 add_executable(common-session-smoke
     test/common/session/common_session_smoke.c
@@ -1409,7 +1388,6 @@ target_include_directories(vm-machine PUBLIC
 target_link_libraries(vm-machine PUBLIC
     core-machine
     core-machine-boundary
-    core-debug
     core-product
     vm-profile
     common-machine
@@ -1429,6 +1407,7 @@ target_include_directories(vm-app PUBLIC
 )
 target_link_libraries(vm-app PUBLIC
     common-session
+    common-debug
     vm-machine
     vm-presentation
     type-facade)
@@ -1814,8 +1793,6 @@ target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-machine)
 add_executable(vm-dos-video-port-smoke
     test/integration/dos/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-yaml-support)
-add_executable(vm-debug-authority-smoke test/vm/machine/vm_debug_authority_smoke.c)
-target_link_libraries(vm-debug-authority-smoke PRIVATE vm-machine)
 add_executable(vm-dos-prompt-smoke
     test/integration/dos/vm_dos_prompt_smoke.c)
 target_link_libraries(vm-dos-prompt-smoke PRIVATE
@@ -1919,15 +1896,15 @@ add_executable(vm-unified-debug-backend-smoke
     test/integration/dos/vm_unified_debug_backend_smoke.c)
 target_link_libraries(vm-unified-debug-backend-smoke PRIVATE
     integration-session-yaml-support)
-add_executable(vm-debug-target-smoke
-    test/vm/machine/vm_debug_target_smoke.c
+add_executable(vm-common-debug-mapping-smoke
+    test/vm/machine/vm_common_debug_mapping_smoke.c
 )
-target_link_libraries(vm-debug-target-smoke PRIVATE
+target_link_libraries(vm-common-debug-mapping-smoke PRIVATE
     vm-machine
 )
 add_executable(vm-debugger-recording-lifecycle-smoke
-    test/vm/machine/vm_debugger_recording_lifecycle_smoke.c)
-target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-machine)
+    test/vm/product/vm_product_recorder_smoke.c)
+target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-product)
 
 add_executable(vm-full-pc-session-smoke
     test/integration/dos/nxvm_full_pc_session_smoke.c
@@ -2224,8 +2201,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     std-snprintf-smoke
     common-xasm32-smoke
     common-xasm32-contract-smoke
-    core-debug-target-smoke
-    core-debug-input-failure-smoke
+    common-debug-smoke
     common-session-smoke
     vm-presentation-frame-smoke
     core-machine-guest-input-source-smoke
@@ -2249,7 +2225,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
     vm-product-console-smoke
-    vm-debug-target-smoke
+    vm-common-debug-mapping-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-product-session-smoke
     vm-machine-initialization-atomicity-smoke
@@ -2364,7 +2340,6 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-presentation-smoke
     core-machine-cpu-context-smoke
     vm-fdc-authority-smoke
-    vm-debug-authority-smoke
     core-machine-cpu-fpu-profile-smoke
     core-machine-cpu-fpu-profile-closure-smoke)
 
@@ -3654,14 +3629,12 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/xt_ppi_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/xt_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/rtc.c|machine-executor"
-    "core-debug|src/core/debug/debug_access.c|debug-xasm"
-    "core-debug|src/core/debug/debug.c|debug-xasm"
+    "common-debug|src/common/debug/command.c|debug-command"
+    "common-debug|src/common/debug/debug.c|debug-provider"
     "common-xasm32|src/common/xasm32/xasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/aasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/dasm32.c|xasm32"
     "common-xasm32-contract-smoke|test/common/xasm32/xasm32_contract_smoke.c|xasm32-contract"
-    "core-debug-input-failure-smoke|src/core/debug/debug.c|debug-input-failure"
-    "core-debug-input-failure-smoke|src/core/debug/debug_access.c|debug-input-failure"
     "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
     "vm-product|src/vm/product/console.c|console-product"
     "vm-presentation|src/vm/presentation/console_host.c|presentation-leaf"
@@ -3674,7 +3647,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/vm/machine/hdd.c|vm-machine"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
     "vm-machine|src/vm/machine/request_factory.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/debug_target.c|vm-machine"
+    "vm-machine|src/vm/machine/runtime/debug_adapter.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/media.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/display.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/lifecycle.c|vm-machine"
@@ -3706,7 +3679,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine-boundary
     common-machine
     common-xasm32
-    core-debug
+    common-debug
     core-product
     vm-profile
     vm-machine

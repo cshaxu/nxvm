@@ -452,102 +452,26 @@ C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *con
     }
 }
 
-/* Prints user segment registers (ES, CS, SS, DS, FS, GS) */
-static C_VOID print_sreg_seg(t_cpu_data_sreg *rsreg, const type_string_pointer label) {
-    STD_PRINTF("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, %s, ", label,
-           rsreg->selector, rsreg->base, rsreg->limit,
-           rsreg->dpl, rsreg->seg.accessed ? "A" : "a");
-    if (rsreg->seg.executable) {
-        STD_PRINTF("Code, %s, %s, %s\n",
-               rsreg->seg.exec.conform ? "C" : "c",
-               rsreg->seg.exec.readable ? "Rw" : "rw",
-               rsreg->seg.exec.defsize ? "32" : "16");
-    } else {
-        STD_PRINTF("Data, %s, %s, %s\n",
-               rsreg->seg.data.expdown ? "E" : "e",
-               rsreg->seg.data.writable ? "RW" : "Rw",
-               rsreg->seg.data.big ? "BIG" : "big");
-    }
-}
-/* Prints system segment registers (TR, LDTR) */
-static C_VOID print_sreg_sys(t_cpu_data_sreg *rsreg, const type_string_pointer label) {
-    STD_PRINTF("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
-           rsreg->selector, rsreg->base, rsreg->limit,
-           rsreg->dpl, rsreg->sys.type);
-}
-/* Prints segment registers */
-C_VOID core_machine_cpu_print_segment_registers(const core_machine_cpu_execution_context *context) {
-    print_sreg_seg(&cpu_state.data.es, "ES");
-    print_sreg_seg(&cpu_state.data.cs, "CS");
-    print_sreg_seg(&cpu_state.data.ss, "SS");
-    print_sreg_seg(&cpu_state.data.ds, "DS");
-    print_sreg_seg(&cpu_state.data.fs, "FS");
-    print_sreg_seg(&cpu_state.data.gs, "GS");
-    print_sreg_sys(&cpu_state.data.tr, "TR  ");
-    print_sreg_sys(&cpu_state.data.ldtr, "LDTR");
-    STD_PRINTF("GDTR Base=%08X, Limit=%04X\n",
-           cpu_state.data.gdtr.base, cpu_state.data.gdtr.limit);
-    STD_PRINTF("IDTR Base=%08X, Limit=%04X\n",
-           cpu_state.data.idtr.base, cpu_state.data.idtr.limit);
-}
-/* Prints control registers */
-C_VOID core_machine_cpu_print_control_registers(const core_machine_cpu_execution_context *context) {
-    STD_PRINTF("CR0=%08X: %s %s %s %s %s %s\n", cpu_state.data.cr0,
-           _GetCR0_PG ? "PG" : "pg",
-           _GetCR0_ET ? "ET" : "et",
-           _GetCR0_TS ? "TS" : "ts",
-           _GetCR0_EM ? "EM" : "em",
-           _GetCR0_MP ? "MP" : "mp",
-           _GetCR0_PE ? "PE" : "pe");
-    STD_PRINTF("CR2=PFLR=%08X\n", cpu_state.data.cr2);
-    STD_PRINTF("CR3=PDBR=%08X\n", cpu_state.data.cr3);
-}
-/* Prints regular registers */
-C_VOID core_machine_cpu_print_registers(const core_machine_cpu_execution_context *context) {
-    STD_PRINTF( "EAX=%08X", cpu_state.data.eax);
-    STD_PRINTF(" EBX=%08X", cpu_state.data.ebx);
-    STD_PRINTF(" ECX=%08X", cpu_state.data.ecx);
-    STD_PRINTF(" EDX=%08X", cpu_state.data.edx);
-    STD_PRINTF("\nESP=%08X",cpu_state.data.esp);
-    STD_PRINTF(" EBP=%08X", cpu_state.data.ebp);
-    STD_PRINTF(" ESI=%08X", cpu_state.data.esi);
-    STD_PRINTF(" EDI=%08X", cpu_state.data.edi);
-    STD_PRINTF("\nEIP=%08X",cpu_state.data.eip);
-    STD_PRINTF(" EFL=%08X", cpu_state.data.eflags);
-    STD_PRINTF(": ");
-    STD_PRINTF("%s ", _GetEFLAGS_VM ? "VM" : "vm");
-    STD_PRINTF("%s ", _GetEFLAGS_RF ? "RF" : "rf");
-    STD_PRINTF("%s ", _GetEFLAGS_NT ? "NT" : "nt");
-    STD_PRINTF("IOPL=%01X ", _GetEFLAGS_IOPL);
-    STD_PRINTF("%s ", _GetEFLAGS_OF ? "OF" : "of");
-    STD_PRINTF("%s ", _GetEFLAGS_DF ? "DF" : "df");
-    STD_PRINTF("%s ", _GetEFLAGS_IF ? "IF" : "if");
-    STD_PRINTF("%s ", _GetEFLAGS_TF ? "TF" : "tf");
-    STD_PRINTF("%s ", _GetEFLAGS_SF ? "SF" : "sf");
-    STD_PRINTF("%s ", _GetEFLAGS_ZF ? "ZF" : "zf");
-    STD_PRINTF("%s ", _GetEFLAGS_AF ? "AF" : "af");
-    STD_PRINTF("%s ", _GetEFLAGS_PF ? "PF" : "pf");
-    STD_PRINTF("%s ", _GetEFLAGS_CF ? "CF" : "cf");
-    STD_PRINTF("\n");
-}
-/* Prints active memory info */
-C_VOID core_machine_cpu_print_memory_accesses(const core_machine_cpu_execution_context *context) {
-    type_native_unsigned i;
-    for (i = 0; i < instruction_state.data.msize; ++i) {
-        STD_PRINTF("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
-               instruction_state.data.mem[i].flagWrite ? "Write" : "Read",
-               instruction_state.data.mem[i].linear, instruction_state.data.mem[i].data, instruction_state.data.mem[i].byte);
-    }
-}
-C_VOID core_machine_cpu_print_watchpoints(const core_machine_cpu_execution_context *context) {
-    if (instruction_state.data.flagWR) {
-        STD_PRINTF("Watch-read point: Lin=%08x\n", instruction_state.data.wrLinear);
-    }
-    if (instruction_state.data.flagWW) {
-        STD_PRINTF("Watch-write point: Lin=%08x\n", instruction_state.data.wwLinear);
-    }
-    if (instruction_state.data.flagWE) {
-        STD_PRINTF("Watch-exec point: Lin=%08x\n", instruction_state.data.weLinear);
+C_VOID core_machine_cpu_get_watchpoint(const core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind, type_bool *out_enabled,
+    type_unsigned_32 *out_linear)
+{
+    if (out_enabled == STD_NULL || out_linear == STD_NULL) return;
+    *out_enabled = TYPE_FALSE;
+    *out_linear = 0u;
+    switch (kind) {
+    case CORE_MACHINE_CPU_WATCH_READ:
+        *out_enabled = instruction_state.data.flagWR;
+        *out_linear = instruction_state.data.wrLinear;
+        break;
+    case CORE_MACHINE_CPU_WATCH_WRITE:
+        *out_enabled = instruction_state.data.flagWW;
+        *out_linear = instruction_state.data.wwLinear;
+        break;
+    case CORE_MACHINE_CPU_WATCH_EXECUTE:
+        *out_enabled = instruction_state.data.flagWE;
+        *out_linear = instruction_state.data.weLinear;
+        break;
     }
 }
 

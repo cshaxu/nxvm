@@ -31,6 +31,12 @@ struct common_session {
     common_session_target active_target;
     common_session_pressed_key pressed[COMMON_SESSION_PRESSED_CAPACITY];
     lib_size pressed_count;
+    common_session_cli_provider cli_provider;
+    void *cli_provider_context;
+    common_session_cli_machine_observer cli_machine_observer;
+    void *cli_machine_observer_context;
+    common_session_lifecycle_sink lifecycle_sink;
+    void *lifecycle_sink_context;
 };
 
 static void common_session_lock(common_session *session)
@@ -99,6 +105,56 @@ lib_status common_session_set_target(common_session *session,
     if (session == LIB_NULL || target > COMMON_SESSION_TARGET_WINDOW)
         return LIB_STATUS_INVALID_ARGUMENT;
     session->requested_target = target;
+    return LIB_STATUS_OK;
+}
+
+lib_status common_session_set_cli_provider(common_session *session,
+    common_session_cli_provider provider, void *context)
+{
+    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_lock(session);
+    if (!session->accepting) {
+        common_session_unlock(session);
+        return LIB_STATUS_INVALID_STATE;
+    }
+    session->cli_provider = provider;
+    session->cli_provider_context = context;
+    common_session_unlock(session);
+    return LIB_STATUS_OK;
+}
+
+lib_status common_session_set_cli_machine_observer(common_session *session,
+    common_session_cli_machine_observer observer, void *context)
+{
+    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_lock(session);
+    if (!session->accepting) {
+        common_session_unlock(session);
+        return LIB_STATUS_INVALID_STATE;
+    }
+    session->cli_machine_observer = observer;
+    session->cli_machine_observer_context = context;
+    common_session_unlock(session);
+    return LIB_STATUS_OK;
+}
+
+lib_bool common_session_has_cli_provider(const common_session *session)
+{
+    return session != LIB_NULL && session->cli_provider != LIB_NULL;
+}
+
+lib_status common_session_set_lifecycle_sink(common_session *session,
+    common_session_lifecycle_sink sink, void *context)
+{
+    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_lock(session);
+    if (!session->accepting) {
+        common_session_unlock(session);
+        return LIB_STATUS_INVALID_STATE;
+    }
+    session->lifecycle_sink = sink;
+    session->lifecycle_sink_context = context;
+    common_session_unlock(session);
     return LIB_STATUS_OK;
 }
 
@@ -271,6 +327,15 @@ lib_status common_session_reduce_fact(common_session *session,
     const common_session_fact *fact, const ui_frame *frame,
     common_session_plan *out_plan)
 {
+    common_session_cli_provider provider;
+    common_session_cli_machine_observer machine_observer;
+    common_session_lifecycle_sink lifecycle_sink;
+    common_session_cli_result cli_result;
+    void *provider_context;
+    void *machine_observer_context;
+    void *lifecycle_sink_context;
+    lib_status status;
+
     if (session == LIB_NULL || fact == LIB_NULL || out_plan == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     common_session_plan_clear(out_plan);
@@ -280,6 +345,41 @@ lib_status common_session_reduce_fact(common_session *session,
         if (frame == LIB_NULL || !ui_frame_is_valid(frame)) return LIB_STATUS_INVALID_ARGUMENT;
         out_plan->frame_ready = LIB_TRUE;
         out_plan->frame = *frame;
+        return LIB_STATUS_OK;
+    }
+    if (fact->kind == COMMON_SESSION_FACT_CONSOLE_LINE) {
+        common_session_lock(session);
+        provider = session->cli_provider;
+        provider_context = session->cli_provider_context;
+        lifecycle_sink = session->lifecycle_sink;
+        lifecycle_sink_context = session->lifecycle_sink_context;
+        common_session_unlock(session);
+        if (provider == LIB_NULL) return LIB_STATUS_NOT_CURRENT;
+        memset(&cli_result, 0, sizeof(cli_result));
+        status = provider(provider_context, fact->value.line, &cli_result);
+        if (status != LIB_STATUS_OK) return status;
+        memcpy(out_plan->console_text, cli_result.text,
+            sizeof(out_plan->console_text));
+        out_plan->console_prompt_ready = cli_result.prompt_ready;
+        if (cli_result.prompt_ready) memcpy(out_plan->console_prompt,
+            cli_result.prompt, sizeof(out_plan->console_prompt));
+        if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
+            if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+            status = lifecycle_sink(lifecycle_sink_context,
+                cli_result.lifecycle_request);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        if (!cli_result.keep_active) {
+            common_session_lock(session);
+            if (session->cli_provider == provider &&
+                session->cli_provider_context == provider_context) {
+                session->cli_provider = LIB_NULL;
+                session->cli_provider_context = LIB_NULL;
+                session->cli_machine_observer = LIB_NULL;
+                session->cli_machine_observer_context = LIB_NULL;
+            }
+            common_session_unlock(session);
+        }
         return LIB_STATUS_OK;
     }
     if (fact->kind != COMMON_SESSION_FACT_MACHINE) return LIB_STATUS_OK;
@@ -313,6 +413,28 @@ lib_status common_session_reduce_fact(common_session *session,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     session->lifecycle = fact->value.machine.state;
+    common_session_lock(session);
+    machine_observer = session->cli_machine_observer;
+    machine_observer_context = session->cli_machine_observer_context;
+    lifecycle_sink = session->lifecycle_sink;
+    lifecycle_sink_context = session->lifecycle_sink_context;
+    common_session_unlock(session);
+    if (machine_observer != LIB_NULL) {
+        memset(&cli_result, 0, sizeof(cli_result));
+        status = machine_observer(machine_observer_context,
+            fact->value.machine.state, fact->value.machine.status, &cli_result);
+        if (status != LIB_STATUS_OK) return status;
+        memcpy(out_plan->console_text, cli_result.text,
+            sizeof(out_plan->console_text));
+        out_plan->console_prompt_ready = cli_result.prompt_ready;
+        if (cli_result.prompt_ready) memcpy(out_plan->console_prompt,
+            cli_result.prompt, sizeof(out_plan->console_prompt));
+        if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
+            if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;
+            return lifecycle_sink(lifecycle_sink_context,
+                cli_result.lifecycle_request);
+        }
+    }
     return LIB_STATUS_OK;
 }
 

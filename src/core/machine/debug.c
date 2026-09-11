@@ -348,26 +348,19 @@ type_status core_machine_debug_clear_watchpoint(core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
-#define CORE_MACHINE_DEBUG_PRINT(name, function) \
-type_status name(core_machine *machine) { \
-    type_status status = core_machine_debug_require_boundary(machine); \
-    if (status != TYPE_STATUS_OK) return status; \
-    function(&machine->executor_cpu_execution); \
-    return TYPE_STATUS_OK; \
+type_status core_machine_debug_get_watchpoint(core_machine *machine,
+    core_machine_debug_watch_kind kind, type_bool *out_enabled,
+    type_unsigned_32 *out_address)
+{
+    type_status status = core_machine_debug_require_boundary(machine);
+
+    if (status != TYPE_STATUS_OK || kind > CORE_MACHINE_DEBUG_WATCH_EXECUTE ||
+        out_enabled == STD_NULL || out_address == STD_NULL)
+        return status != TYPE_STATUS_OK ? status : TYPE_STATUS_INVALID_ARGUMENT;
+    core_machine_cpu_get_watchpoint(&machine->executor_cpu_execution,
+        (core_machine_cpu_watchpoint)kind, out_enabled, out_address);
+    return TYPE_STATUS_OK;
 }
-
-CORE_MACHINE_DEBUG_PRINT(core_machine_debug_print_registers,
-    core_machine_cpu_print_registers)
-CORE_MACHINE_DEBUG_PRINT(core_machine_debug_print_segment_registers,
-    core_machine_cpu_print_segment_registers)
-CORE_MACHINE_DEBUG_PRINT(core_machine_debug_print_control_registers,
-    core_machine_cpu_print_control_registers)
-CORE_MACHINE_DEBUG_PRINT(core_machine_debug_print_memory_accesses,
-    core_machine_cpu_print_memory_accesses)
-CORE_MACHINE_DEBUG_PRINT(core_machine_debug_print_watchpoints,
-    core_machine_cpu_print_watchpoints)
-
-#undef CORE_MACHINE_DEBUG_PRINT
 
 static C_VOID core_machine_cpu_diagnostic_copy_point(
     core_machine_cpu_execution_point *point, const t_cpu *cpu,
