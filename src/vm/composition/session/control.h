@@ -2,6 +2,7 @@
 #define VM_SESSION_CONTROL_H
 
 #include "type.h"
+#include "lib/host/sync_interface.h"
 #include "vm/composition/session/session_state.h"
 #include "vm/composition/session/execution.h"
 
@@ -23,6 +24,8 @@ typedef struct vm_session_control_state {
     vm_session_state *state;
     atomic_bool step_requested;
     atomic_int pause_reason;
+    host_sync_event *completion_ready;
+    host_sync_event *control_changed;
     vm_session_execution_context execution_context;
 } vm_session_control_state;
 
@@ -36,6 +39,10 @@ C_VOID vm_session_control_request_pause(vm_session_control_state *control,
     vm_session_pause_reason reason);
 C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,
     C_UINT milliseconds);
+C_INT vm_session_control_wait_for_completion(
+    vm_session_control_state *control);
+C_VOID vm_session_control_signal_completion(
+    vm_session_control_state *control);
 C_INT vm_session_control_is_paused(const vm_session_control_state *control);
 vm_session_pause_reason vm_session_control_get_pause_reason(
     const vm_session_control_state *control);

@@ -4,20 +4,15 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c" source)
 
-foreach(operation IN ITEMS request_stop join finalize)
-    string(REGEX MATCHALL "vm_platform_run_handle_${operation}" calls "${source}")
-    list(LENGTH calls call_count)
-    if(NOT call_count EQUAL 1)
-        message(FATAL_ERROR "Composition lifecycle must have one ${operation} backend call")
-    endif()
-endforeach()
+if(source MATCHES "vm_platform_|run_handle")
+    message(FATAL_ERROR "Composition lifecycle retains a platform run-handle path")
+endif()
 
-foreach(helper IN ITEMS vm_session_platform_request_stop
-        vm_session_platform_join_and_finalize)
+foreach(helper IN ITEMS vm_session_execution_stop vm_session_execution_join)
     string(FIND "${source}" "${helper}" helper_position)
     if(helper_position EQUAL -1)
         message(FATAL_ERROR "Composition lifecycle helper is missing: ${helper}")
     endif()
 endforeach()
 
-message("M5:T252:S3:COMPOSITION-LIFECYCLE-BOUNDARY:OK")
+message("M5:T526:COMPOSITION-LIFECYCLE-BOUNDARY:OK")

@@ -3,8 +3,6 @@
 
 #include "type.h"
 
-#include "core/utils/wait.h"
-
 #include "core/product/utils.h"
 
 #include "core/product/debug/debug_access.h"
@@ -16,7 +14,6 @@
 
 struct core_product_debugger {
     const core_product_debug_target *target;
-    const core_utils_wait_scope *wait_scope;
     STD_SIZE_T error_position;
     STD_SIZE_T argument_count;
     C_CHAR **arguments;
@@ -626,10 +623,7 @@ static C_VOID g(core_product_debug_context *debugContext)
         return;
     }
     core_product_debug_resume();
-    while (core_product_debug_is_running())
-    {
-        core_utils_wait_milliseconds(debugContext->wait_scope, 10);
-    }
+    (C_VOID)core_product_debug_wait_for_completion(debugContext->target);
     core_product_debug_clear_break(0);
     rprintregs(debugContext);
 }
@@ -1239,10 +1233,7 @@ static C_VOID t(core_product_debug_context *debugContext)
         {
             core_product_debug_set_trace(1);
             core_product_debug_resume();
-            while (core_product_debug_is_running())
-            {
-                core_utils_wait_milliseconds(debugContext->wait_scope, 10);
-            }
+            (C_VOID)core_product_debug_wait_for_completion(debugContext->target);
             rprintregs(debugContext);
             if (i != count - 1)
             {
@@ -1254,10 +1245,7 @@ static C_VOID t(core_product_debug_context *debugContext)
     {
         core_product_debug_set_trace(count);
         core_product_debug_resume();
-        while (core_product_debug_is_running())
-        {
-            core_utils_wait_milliseconds(debugContext->wait_scope, 10);
-        }
+        (C_VOID)core_product_debug_wait_for_completion(debugContext->target);
         rprintregs(debugContext);
     }
     core_product_debug_clear_trace();
@@ -1819,10 +1807,7 @@ static C_VOID xg(core_product_debug_context *debugContext)
     {
         core_product_debug_set_break_linear(linear);
         core_product_debug_resume();
-        while (core_product_debug_is_running())
-        {
-            core_utils_wait_milliseconds(debugContext->wait_scope, 10);
-        }
+        (C_VOID)core_product_debug_wait_for_completion(debugContext->target);
         STD_PRINTF("%d instructions executed before the break point.\n",
                    core_product_debug_get_break_count());
         xrprintreg(debugContext);
@@ -1950,10 +1935,7 @@ static C_VOID xt(core_product_debug_context *debugContext)
         {
             core_product_debug_set_trace(1);
             core_product_debug_resume();
-            while (core_product_debug_is_running())
-            {
-                core_utils_wait_milliseconds(debugContext->wait_scope, 10);
-            }
+            (C_VOID)core_product_debug_wait_for_completion(debugContext->target);
             core_product_debug_print_memory();
             xrprintreg(debugContext);
             if (i != count - 1)
@@ -1966,10 +1948,7 @@ static C_VOID xt(core_product_debug_context *debugContext)
     {
         core_product_debug_set_trace(count);
         core_product_debug_resume();
-        while (core_product_debug_is_running())
-        {
-            core_utils_wait_milliseconds(debugContext->wait_scope, 10);
-        }
+        (C_VOID)core_product_debug_wait_for_completion(debugContext->target);
         core_product_debug_print_memory();
         xrprintreg(debugContext);
     }
@@ -2633,8 +2612,7 @@ C_VOID core_product_debugger_destroy(core_product_debugger *debugger)
 }
 
 C_VOID core_product_debugger_run(core_product_debugger *context,
-    const core_product_debug_target *target,
-    const core_utils_wait_scope *wait_scope)
+    const core_product_debug_target *target)
 {
     core_product_debug_context *debugContext = context;
     STD_SIZE_T i;
@@ -2644,7 +2622,6 @@ C_VOID core_product_debugger_run(core_product_debugger *context,
         return;
     core_product_debug_context_initialize(context);
     context->target = target;
-    context->wait_scope = wait_scope;
     if (core_product_debug_get_fault_outcome(target, &fault) && fault.valid) {
         STD_PRINTF("fault: detail=%08X pc=%08X", fault.detail, fault.linear_pc);
         if (fault.diagnostic_valid) {

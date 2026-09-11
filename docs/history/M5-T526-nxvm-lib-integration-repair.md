@@ -150,9 +150,24 @@ and `nxvm_0_5_0526_x86.exe`
 
 Remove `core/utils/wait.*` and every debugger `Sleep(10)` polling loop. Core's
 debugger must not know a host wait primitive. Its target instead receives one
-neutral, bounded completion-wait operation; composition implements that
+neutral, cancellable completion-wait operation; composition implements that
 operation by waiting for the runner's actual pause-or-stop completion event.
 The runner remains the sole owner of execution and signals completion only
 after its state transition. The debugger must neither busy-wait nor advance the
 machine, and no Windows/Linux API may enter Core. Cover `GO` and trace waits,
 timeout/failure, reset/stop and teardown so no waiter can outlive its session.
+
+### S7 implementation result
+
+The retired sleep callback, its dedicated Core utility target and its test are
+deleted. A debugger target now has exactly one neutral completion operation.
+Composition owns two manual-reset events: `completion_ready` is signalled only
+after the runner has acknowledged pause or completed exit, while
+`control_changed` wakes a paused runner for resume or stop. Thus `GO` and all
+trace paths block on a completed execution transition rather than polling a
+host delay; Core contains neither a host event nor a platform include.
+
+The completion-target regression executes `GO` twice through the existing
+debugger input harness and verifies the two corresponding resume/completion
+calls. Focused debugger/pause integrations pass, as does the complete 303-case
+repository-only unit suite at eight-way parallelism.

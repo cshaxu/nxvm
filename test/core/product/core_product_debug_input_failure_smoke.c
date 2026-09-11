@@ -22,6 +22,8 @@
 
 static C_INT allocation_failure;
 static STD_SIZE_T allocation_attempts;
+static STD_SIZE_T resume_calls;
+static STD_SIZE_T completion_waits;
 
 C_VOID *test_debug_input_malloc(STD_SIZE_T size)
 {
@@ -56,6 +58,19 @@ static C_INT write_register(C_VOID *context, core_product_debug_register reg,
     return 0;
 }
 
+static C_VOID resume(C_VOID *context)
+{
+    (C_VOID)context;
+    resume_calls++;
+}
+
+static C_INT wait_for_completion(C_VOID *context)
+{
+    (C_VOID)context;
+    completion_waits++;
+    return 0;
+}
+
 static C_INT run_case(const C_CHAR *text, C_INT fail_allocation)
 {
     core_product_debugger *debugger = STD_NULL;
@@ -67,6 +82,8 @@ static C_INT run_case(const C_CHAR *text, C_INT fail_allocation)
 
     target.read_register = read_register;
     target.write_register = write_register;
+    target.resume = resume;
+    target.wait_for_completion = wait_for_completion;
     target.get_code_base = code_base;
     target.context = &writes;
     if (input == STD_NULL || (text != STD_NULL && STD_FPUTS(text, input) < 0) ||
@@ -77,18 +94,22 @@ static C_INT run_case(const C_CHAR *text, C_INT fail_allocation)
     clearerr(STD_STDIN);
     allocation_failure = fail_allocation;
     allocation_attempts = 0u;
-    core_product_debugger_run(debugger, &target, STD_NULL);
+    resume_calls = 0u;
+    completion_waits = 0u;
+    core_product_debugger_run(debugger, &target);
     if (allocation_attempts != 1u || writes != 0u) {
         goto done;
     }
     if (!fail_allocation) {
         if (STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) goto done;
         clearerr(STD_STDIN);
-        core_product_debugger_run(debugger, &target, STD_NULL);
+        core_product_debugger_run(debugger, &target);
         if (allocation_attempts != 2u || writes != 0u) {
             goto done;
         }
     }
+    if (text != STD_NULL && STD_STRCMP(text, "g\n") == 0 &&
+        (resume_calls != 2u || completion_waits != 2u)) goto done;
     passed = 1;
 done:
     allocation_failure = 0;
@@ -106,7 +127,7 @@ C_INT main(C_VOID)
 {
     if (!run_case(STD_NULL, 0) || !run_case(STD_NULL, 1) ||
         !run_case("a\n", 0) || !run_case("v\n", 0) ||
-        !run_case("r ax\n", 0)) return 1;
+        !run_case("r ax\n", 0) || !run_case("g\n", 0)) return 1;
     puts("M5:T333:S3:DEBUG-INPUT:OK");
     return 0;
 }

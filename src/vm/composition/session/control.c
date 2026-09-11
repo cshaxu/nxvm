@@ -63,6 +63,7 @@ C_VOID vm_session_control_start(vm_session_control_state *control) {
     if (control == STD_NULL) return;
     machine = control->execution_context.session;
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
+    host_sync_event_reset(control->completion_ready);
     vm_session_state_start(control->state);
     vm_session_execution_context_activate(&control->execution_context);
     vm_session_runner_run(machine);
@@ -96,6 +97,7 @@ C_VOID vm_session_control_stop(vm_session_control_state *control)  {
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
     vm_session_state_stop(control->state);
+    host_sync_event_signal(control->control_changed);
 }
 
 C_VOID vm_session_control_fault(vm_session_control_state *control)
@@ -104,6 +106,7 @@ C_VOID vm_session_control_fault(vm_session_control_state *control)
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
     vm_session_state_stop(control->state);
+    host_sync_event_signal(control->control_changed);
 }
 
 C_VOID vm_session_control_request_pause(vm_session_control_state *control,
@@ -113,20 +116,29 @@ C_VOID vm_session_control_request_pause(vm_session_control_state *control,
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, reason);
     vm_session_state_request_pause(control->state);
+    host_sync_event_signal(control->control_changed);
 }
 
 C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,
     C_UINT milliseconds)
 {
-    C_UINT waited = 0u;
-
     if (control == STD_NULL) return TYPE_FALSE;
-    while (vm_session_state_is_active(control->state) && !vm_session_state_is_paused(control->state) &&
-           waited < milliseconds) {
-        host_sync_sleep_milliseconds(1u);
-        ++waited;
-    }
+    if (!vm_session_state_is_paused(control->state)) (C_VOID)host_sync_event_wait(
+        control->completion_ready, milliseconds);
     return vm_session_state_is_paused(control->state);
+}
+
+C_INT vm_session_control_wait_for_completion(
+    vm_session_control_state *control)
+{
+    return control != STD_NULL && host_sync_event_wait(control->completion_ready,
+        UINT32_MAX) == HOST_SYNC_WAIT_SIGNALED;
+}
+
+C_VOID vm_session_control_signal_completion(
+    vm_session_control_state *control)
+{
+    if (control != STD_NULL) host_sync_event_signal(control->completion_ready);
 }
 
 C_INT vm_session_control_is_paused(const vm_session_control_state *control)
@@ -146,7 +158,9 @@ C_VOID vm_session_control_continue(vm_session_control_state *control)
     if (control == STD_NULL) return;
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
+    host_sync_event_reset(control->completion_ready);
     vm_session_state_resume(control->state);
+    host_sync_event_signal(control->control_changed);
 }
 
 C_INT vm_session_control_step(vm_session_control_state *control)
@@ -156,7 +170,9 @@ C_INT vm_session_control_step(vm_session_control_state *control)
     }
     atomic_store(&control->step_requested, TYPE_TRUE);
     atomic_store(&control->pause_reason, VM_SESSION_PAUSE_NONE);
+    host_sync_event_reset(control->completion_ready);
     vm_session_state_resume(control->state);
+    host_sync_event_signal(control->control_changed);
     return TYPE_TRUE;
 }
 
@@ -187,6 +203,14 @@ type_status vm_session_control_initialize(vm_session_control_state *control,
     atomic_init(&control->pause_reason, VM_SESSION_PAUSE_NONE);
     status = vm_session_state_create(&control->state);
     if (status != LIB_STATUS_OK) return TYPE_STATUS_NO_MEMORY;
+    if (host_sync_event_create(&control->completion_ready) != LIB_STATUS_OK ||
+        host_sync_event_create(&control->control_changed) != LIB_STATUS_OK) {
+        host_sync_event_destroy(control->completion_ready);
+        host_sync_event_destroy(control->control_changed);
+        vm_session_state_destroy(control->state);
+        control->state = STD_NULL;
+        return TYPE_STATUS_NO_MEMORY;
+    }
     vm_session_execution_context_initialize(&control->execution_context);
     vm_session_execution_context_bind_session(&control->execution_context,
         machine);
@@ -211,6 +235,10 @@ C_VOID vm_session_control_finalize(vm_session_control_state *control,
     vm_session_execution_context_deactivate(&control->execution_context);
     vm_session_provider_lifecycle_finalize(machine);
     vm_machine_debug_finalize(&machine->debug);
+    host_sync_event_destroy(control->completion_ready);
+    host_sync_event_destroy(control->control_changed);
+    control->completion_ready = STD_NULL;
+    control->control_changed = STD_NULL;
     vm_session_state_destroy(control->state);
     control->state = STD_NULL;
 }

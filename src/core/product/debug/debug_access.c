@@ -18,6 +18,13 @@ C_VOID core_product_debug_resume(const core_product_debug_target *target)
     }
 }
 
+C_INT core_product_debug_wait_for_completion(
+    const core_product_debug_target *target)
+{
+    return target != STD_NULL && target->wait_for_completion != STD_NULL &&
+        target->wait_for_completion(target->context) == 0;
+}
+
 C_INT core_product_debug_is_paused(const core_product_debug_target *target)
 {
     return target != STD_NULL && target->is_paused != STD_NULL &&
@@ -179,4 +186,3 @@ C_INT core_product_debug_get_fault_outcome(const core_product_debug_target *targ
     return target != STD_NULL && target->get_fault_outcome != STD_NULL &&
         target->get_fault_outcome(target->context, out_outcome) == 0;
 }
-

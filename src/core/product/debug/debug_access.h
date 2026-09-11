@@ -7,6 +7,8 @@
 
 C_INT core_product_debug_is_running(const core_product_debug_target *target);
 C_VOID core_product_debug_resume(const core_product_debug_target *target);
+C_INT core_product_debug_wait_for_completion(
+    const core_product_debug_target *target);
 C_INT core_product_debug_is_paused(const core_product_debug_target *target);
 core_product_debug_pause_reason core_product_debug_get_pause_reason(const core_product_debug_target *target);
 C_INT core_product_debug_request_pause(const core_product_debug_target *target, core_product_debug_pause_reason reason);
@@ -39,4 +41,3 @@ C_INT core_product_debug_get_fault_outcome(const core_product_debug_target *targ
     core_product_debug_fault_outcome *out_outcome);
 
 #endif
-

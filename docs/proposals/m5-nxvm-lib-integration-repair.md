@@ -66,7 +66,7 @@ wrapper, compatibility copy, or local lib patch.
    second presentation path before closure.
 7. **S7 - debugger completion event.** Delete the Core sleep callback and
    its polling loops. Extend only the neutral debugger target contract with a
-   bounded wait for the next completed execution transition; composition owns
+   cancellable wait for the next completed execution transition; composition owns
    the host event and runner signal. The debugger remains host-neutral and
    never owns execution, while pause, trace, reset, stop and teardown each
    release a waiter exactly once.

@@ -1162,12 +1162,6 @@ target_include_directories(type-facade PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-add_library(core-utils STATIC src/core/utils/wait.c)
-target_include_directories(core-utils PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-utils PUBLIC type-facade)
-
 set(VM_PROFILE_SOURCES
     src/vm/profile/profile_resolver.c
     src/vm/profile/byob/blob.c
@@ -1277,7 +1271,7 @@ add_library(core-product-debug STATIC ${CORE_PRODUCT_DEBUG_SOURCES})
 target_include_directories(core-product-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-product-debug PUBLIC type-facade core-utils)
+target_link_libraries(core-product-debug PUBLIC type-facade)
 
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
@@ -1296,13 +1290,6 @@ target_include_directories(core-product-utils PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-product-utils PUBLIC core-product-debug)
-
-add_executable(core-utils-wait-smoke
-    test/core/core_utils_wait_smoke.c
-)
-target_link_libraries(core-utils-wait-smoke PRIVATE
-    core-utils
-)
 
 add_executable(std-snprintf-smoke
     test/core/std_snprintf_smoke.c
@@ -1332,7 +1319,6 @@ target_compile_definitions(core-product-debug-input-failure-smoke PRIVATE
 )
 target_link_libraries(core-product-debug-input-failure-smoke PRIVATE
     core-product-utils
-    core-utils
     type-facade
 )
 
@@ -1490,7 +1476,6 @@ target_include_directories(vm-composition PUBLIC
 target_link_libraries(vm-composition PUBLIC
     vm-machine
     core-machine
-    core-utils
     "$<LINK_GROUP:RESCAN,core-product-debug,core-product-utils>"
     vm-profile
     vm-product
@@ -2284,7 +2269,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
     vm-session-request-transport-smoke
-    core-utils-wait-smoke
     std-snprintf-smoke
     core-product-xasm-smoke
     core-product-xasm-contract-smoke
@@ -3399,10 +3383,10 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying the sole FDD/HDD media route"
         VERBATIM)
 
-    add_custom_target(verify-core-utils-boundary
+    add_custom_target(verify-core-debug-completion-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_utils_boundary.cmake"
-        COMMENT "Verifying M5 T234 neutral core utility boundary"
+        COMMENT "Verifying Core debugger completion boundary"
         VERBATIM)
 
     add_custom_target(verify-session-layout-boundary
@@ -3590,7 +3574,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary
     verify-media-sole-route
-    verify-core-utils-boundary
+    verify-core-debug-completion-boundary
     verify-cancellable-wait-boundary
     verify-vm-composition-lifecycle
     verify-t344-unit-registration
@@ -3651,7 +3635,6 @@ endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-utils PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-session-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3846,7 +3829,6 @@ file(GENERATE
 # substitutes for the direct compile command of a smoke source.
 set(PROJECT_T344_PRODUCTION_TARGETS
     type-facade
-    core-utils
     core-machine
     core-machine-executor
     core-machine-boundary

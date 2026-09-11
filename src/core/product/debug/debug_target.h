@@ -44,6 +44,9 @@ typedef struct core_product_debug_fault_outcome {
 typedef struct core_product_debug_target {
     C_INT (*is_running)(C_VOID *context);
     C_VOID (*resume)(C_VOID *context);
+    /* Blocks until the target runner has actually paused or stopped.  The
+     * target owns synchronization; Core never polls or sleeps. */
+    C_INT (*wait_for_completion)(C_VOID *context);
     C_INT (*is_paused)(C_VOID *context);
     core_product_debug_pause_reason (*get_pause_reason)(C_VOID *context);
     C_INT (*request_pause)(C_VOID *context, core_product_debug_pause_reason reason);

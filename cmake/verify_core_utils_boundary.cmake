@@ -2,29 +2,27 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(utils_dir "${PROJECT_SOURCE_DIR}/src/core/utils")
-foreach(file IN ITEMS wait.c wait.h wait_provider.h)
-    if(NOT EXISTS "${utils_dir}/${file}")
-        message(FATAL_ERROR "M5 T234 missing core/utils contract: ${file}")
-    endif()
-endforeach()
-
-file(GLOB_RECURSE utils_sources "${utils_dir}/*.c" "${utils_dir}/*.h")
-foreach(file IN LISTS utils_sources)
-    file(READ "${file}" source)
-    if(source MATCHES "#include[ \t]+\"(core/(machine|platform|product)|vm/|vdm/)")
-        message(FATAL_ERROR "M5 T234 core/utils imports a policy owner: ${file}")
-    endif()
-endforeach()
-
 foreach(file IN ITEMS
+    "${PROJECT_SOURCE_DIR}/src/core/utils/wait.c"
+    "${PROJECT_SOURCE_DIR}/src/core/utils/wait.h"
+    "${PROJECT_SOURCE_DIR}/src/core/utils/wait_provider.h"
     "${PROJECT_SOURCE_DIR}/src/core/product/wait.c"
     "${PROJECT_SOURCE_DIR}/src/core/product/wait.h"
     "${PROJECT_SOURCE_DIR}/src/core/product/wait_provider.h")
     if(EXISTS "${file}")
-        message(FATAL_ERROR "M5 T234 retained product-owned wait path: ${file}")
+        message(FATAL_ERROR "Core retained a polling wait helper: ${file}")
     endif()
 endforeach()
+
+file(READ "${PROJECT_SOURCE_DIR}/src/core/product/debug/debug.c" debug_source)
+if(debug_source MATCHES "core_utils_wait|wait_scope|Sleep\\(|host_sync_")
+    message(FATAL_ERROR "Core debugger retains a host wait implementation")
+endif()
+file(READ "${PROJECT_SOURCE_DIR}/src/core/product/debug/debug_target.h" target_source)
+string(FIND "${target_source}" "wait_for_completion" completion_position)
+if(completion_position EQUAL -1)
+    message(FATAL_ERROR "Core debugger target lacks completion contract")
+endif()
 
 file(GLOB_RECURSE peer_sources
     "${PROJECT_SOURCE_DIR}/src/vm/machine/*.c"
@@ -59,4 +57,4 @@ foreach(forbidden IN ITEMS
     endif()
 endforeach()
 
-message(STATUS "M5 T234 core utility boundary: OK")
+message(STATUS "M5 T526 core debugger completion boundary: OK")

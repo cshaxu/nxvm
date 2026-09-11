@@ -9,6 +9,7 @@
 typedef struct debug_target_fixture {
     type_unsigned_32 eax;
     STD_SIZE_T break_count;
+    STD_SIZE_T completion_waits;
 } debug_target_fixture;
 
 static C_INT debug_target_read_register(C_VOID *context,
@@ -44,6 +45,12 @@ static C_INT debug_target_is_running(C_VOID *context)
     return 1;
 }
 
+static C_INT debug_target_wait_for_completion(C_VOID *context)
+{
+    ((debug_target_fixture *)context)->completion_waits++;
+    return 0;
+}
+
 static C_INT debug_target_code_default_size(C_VOID *context)
 {
     (C_VOID)context;
@@ -58,11 +65,12 @@ static type_unsigned_32 debug_target_code_base(C_VOID *context)
 
 C_INT main(C_VOID)
 {
-    debug_target_fixture fixture = {0x12345678u, 7u};
+    debug_target_fixture fixture = {0x12345678u, 7u, 0u};
     core_product_debug_target target = {0};
     type_unsigned_32 value = 0u;
 
     target.is_running = debug_target_is_running;
+    target.wait_for_completion = debug_target_wait_for_completion;
     target.read_register = debug_target_read_register;
     target.write_register = debug_target_write_register;
     target.get_code_default_size = debug_target_code_default_size;
@@ -75,6 +83,8 @@ C_INT main(C_VOID)
         fixture.eax != 0x87654321u ||
         target.get_break_count(target.context) != 7u) return 1;
     if (!core_product_debug_is_running(&target) ||
+        !core_product_debug_wait_for_completion(&target) ||
+        fixture.completion_waits != 1u ||
         core_product_debug_read_register(&target, CORE_PRODUCT_DEBUG_EAX, &value) ||
         value != fixture.eax ||
         core_product_debug_write_register(&target, CORE_PRODUCT_DEBUG_EAX, 0x10203040u) ||

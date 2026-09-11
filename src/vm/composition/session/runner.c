@@ -44,13 +44,18 @@ C_VOID vm_session_runner_run(vm_session *session)
              * or presenter never observes a stale mailbox frame. */
             (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
             vm_session_state_acknowledge_pause(control->state);
+            vm_session_control_signal_completion(control);
             vm_session_report_lifecycle(session, VM_SESSION_PAUSED);
         }
         while (vm_session_state_is_active(control->state) &&
             vm_session_state_is_paused(control->state)) {
             resumed = TYPE_TRUE;
             vm_session_execution_context_run_command_boundary(&control->execution_context);
-            host_sync_sleep_milliseconds(1u);
+            host_sync_event_reset(control->control_changed);
+            if (vm_session_state_is_active(control->state) &&
+                vm_session_state_is_paused(control->state)) {
+                (C_VOID)host_sync_event_wait(control->control_changed, UINT32_MAX);
+            }
         }
         if (!vm_session_state_is_active(control->state)) break;
         if (resumed) vm_session_report_lifecycle(session, VM_SESSION_RUNNING);
@@ -118,4 +123,5 @@ C_VOID vm_session_runner_run(vm_session *session)
     if (!vm_session_state_is_paused(control->state)) {
         vm_session_report_lifecycle(session, VM_SESSION_STOPPED);
     }
+    vm_session_control_signal_completion(control);
 }

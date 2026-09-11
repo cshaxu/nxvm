@@ -26,7 +26,7 @@ C_INT main(C_VOID)
         session == STD_NULL) return 1;
     vm_session_reset(session);
     target = vm_session_debug_target(session);
-    if (target == STD_NULL ||
+    if (target == STD_NULL || target->wait_for_completion == STD_NULL ||
         target->read_register(target->context,
             CORE_PRODUCT_DEBUG_EIP, &value) ||
         target->write_register(target->context,

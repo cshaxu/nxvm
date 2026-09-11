@@ -19,6 +19,13 @@
 
 static C_INT vm_debug_running(C_VOID *context) { return vm_session_control_is_running(&((vm_session *)context)->control); }
 static C_VOID vm_debug_resume(C_VOID *context) { (C_VOID)vm_session_resume((vm_session *)context); }
+static C_INT vm_debug_wait_for_completion(C_VOID *context)
+{
+    vm_session *session = (vm_session *)context;
+
+    return session == STD_NULL || !vm_session_control_wait_for_completion(
+        &session->control);
+}
 static C_INT vm_debug_paused(C_VOID *context) { return vm_session_control_is_paused(&((vm_session *)context)->control); }
 static core_product_debug_pause_reason vm_debug_pause_reason(C_VOID *context)
 {
@@ -223,6 +230,7 @@ static C_INT vm_debug_get_fault_outcome(C_VOID *context,
 static const core_product_debug_target vmDebugTargetTemplate = {
     .is_running = vm_debug_running,
     .resume = vm_debug_resume,
+    .wait_for_completion = vm_debug_wait_for_completion,
     .is_paused = vm_debug_paused,
     .get_pause_reason = vm_debug_pause_reason,
     .request_pause = vm_debug_request_pause,
@@ -285,8 +293,7 @@ type_status vm_session_run_debugger(vm_session *session)
         if (!vm_session_control_wait_for_pause(&session->control, 2000u))
             return TYPE_STATUS_INVALID_STATE;
     }
-    core_product_debugger_run(session->debugger, vm_session_debug_target(session),
-        &session->wait_scope);
+    core_product_debugger_run(session->debugger, vm_session_debug_target(session));
     return TYPE_STATUS_OK;
 }
 

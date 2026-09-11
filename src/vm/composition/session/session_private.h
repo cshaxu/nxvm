@@ -10,7 +10,6 @@
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
-#include "core/utils/wait_provider.h"
 #include "lib/host/sync_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
@@ -61,7 +60,6 @@ struct vm_session {
     core_machine_display_provider_slot *display_provider;
     core_machine_guest_presentation_mailbox *presentation_mailbox;
     core_machine_guest_input_source *input_source;
-    core_utils_wait_scope wait_scope;
     host_sync_task *execution_task;
     host_sync_event *execution_started;
     struct {

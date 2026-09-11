@@ -4,13 +4,14 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/product/debug/debug.h" interface)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_private.h" session)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/console_machine_adapter.c" adapter)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/product/machine_adapter.c" product)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/debug_target.c" composition)
 
 foreach(forbidden
     "typedef struct core_product_debug_context {"
     "debugger_context"
     "core_product_debug_main")
-    string(FIND "${interface}\n${session}\n${adapter}" "${forbidden}" position)
+    string(FIND "${interface}\n${session}\n${product}\n${composition}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "T447 debugger boundary retains ${forbidden}")
     endif()
@@ -27,9 +28,9 @@ foreach(required
     endif()
 endforeach()
 
-string(FIND "${adapter}" "core_product_debugger_run" position)
+string(FIND "${composition}" "core_product_debugger_run" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T447 debugger boundary lacks VM debugger invocation")
+    message(FATAL_ERROR "T447 debugger boundary lacks composition debugger invocation")
 endif()
 
 message("M5:T447:S3:DEBUGGER-BOUNDARY:OK")

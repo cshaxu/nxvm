@@ -16,8 +16,6 @@
 #include "core/product/debug/debug_target.h"
 
 #include "core/product/utils.h"
-#include "core/utils/wait_provider.h"
-
 #include "lib/host/sync_interface.h"
 
 #include "vm/composition/session/debug_target.h"
@@ -33,12 +31,6 @@
 
 
 #include "vm/composition/session/lifecycle.h"
-
-static C_VOID vm_session_wait(C_VOID *context, type_unsigned_32 milliseconds)
-{
-    (C_VOID)context;
-    host_sync_sleep_milliseconds(milliseconds);
-}
 
 static type_status vm_session_debug_disassemble(C_VOID *context,
     C_CHAR *statement, STD_SIZE_T statement_capacity,
@@ -297,8 +289,6 @@ type_status vm_session_initialize(vm_session *machine) {
     if (machine->active) return TYPE_STATUS_INVALID_STATE;
     status = vm_session_storage_initialize(machine);
     if (status != TYPE_STATUS_OK) return status;
-    core_utils_wait_scope_initialize(&machine->wait_scope,
-        vm_session_wait, STD_NULL);
     status = vm_session_control_initialize(&machine->control, machine);
     if (status != TYPE_STATUS_OK) {
         vm_session_finalize(machine);
