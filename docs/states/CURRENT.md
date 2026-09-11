@@ -4,26 +4,26 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T526 S10 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): establish the value-only VM event ABI and make `vm/machine` the sole Core executor owner. |
+| T526 S11 | Active | [NXVM canonical-library integration repair](../history/M5-T526-nxvm-lib-integration-repair.md): replace the remaining product control route with one `vm/session` FIFO and reducer. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T526 S10. |
-| Admission And Approval | Owner approved the T526 target architecture and its execution on 2026-09-10, including S10's VM event ABI and machine-executor migration. |
-| Objective | Add value-only `vm/events`; move Core assembly, executor request serialization and copied lifecycle/debug/fault/frame publication into `vm/machine`; delete the displaced composition execution route. |
-| Non-goals | No session-control FIFO, presentation migration, Core behavior change, external asset work, compatibility wrapper or second executor route. |
-| Reference Baseline | Accepted T526 S9 at `bc5f6131`; approved target architecture in the retained proposal. |
-| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S10. |
-| Files And ABI Surface | `src/vm/{events,machine,product}`, Core/VM CMake targets and mirrored repository-only tests. |
+| Identifier Mode | Continuation - M5 T526 S11. |
+| Admission And Approval | Owner approved the T526 target architecture and continuing all admitted subtasks on 2026-09-10; S10 was pushed as `697d849a`. |
+| Objective | Create one `vm/session` product-control FIFO and reducer that accepts copied CLI, machine and presentation facts, owns run generation/lifecycle decisions, and emits only machine requests or presentation plans. |
+| Non-goals | No Core behavior change, no second machine executor, no lib modification, no native SDK access from VM, no external asset work, and no compatibility/control-forwarding route. |
+| Reference Baseline | T526 S10 P1 `697d849a`; approved target architecture in the retained proposal. |
+| Candidate Proposal | [M5 NXVM canonical-library integration repair](../proposals/m5-nxvm-lib-integration-repair.md), S11. |
+| Files And ABI Surface | `src/vm/{events,machine,session,product}`, Core/VM CMake targets and mirrored repository-only tests. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`. |
-| Verification | Prove events contain no pointer or policy state; prove Core is accessed only by `vm/machine`; focused execution/fault/display/debug tests, full unit, specialized and documentation gates, and actual-diff review. |
-| Expected Markers | One `vm/machine` executor FIFO, one copied-result sink, no Core access in `vm/session`/future presentation peers, and no retained composition executor route. |
+| Verification | Prove one `vm/session` FIFO is the sole product decision route, its records are copied values, `vm/session` accesses no Core or lib native object, focused lifecycle/input/presentation tests, full unit, specialized and documentation gates, and actual-diff review. |
+| Expected Markers | One session-control FIFO/reducer, one machine request route, one presentation-plan route, no direct product lifecycle/presentation decisions outside `vm/session`, and no session pointer retained by peer owners. |
 | Asset Needs | None. |
-| Reporting Requirements | Record the removed owner/routes, request/result dispositions, code-size result and verification evidence. |
-| Stop Conditions | Stop for an event that cannot be expressed as a copied bounded value, a required Core semantic change, or a temporary forwarding route. |
-| Exit Criteria | Value-only events and one machine executor route replace composition ownership; all required tests and gates pass. |
+| Reporting Requirements | Record the removed product routes, FIFO fact/plan dispositions, code-size result and verification evidence. |
+| Stop Conditions | Stop for a required non-value fact, a Core semantic change, an unrepresentable product decision, or a temporary forwarding route. |
+| Exit Criteria | The single session reducer replaces mixed product command/report/presentation decisions; all required tests and gates pass. |
 | Original Owner Request | Converge NXVM lifecycle and product experience with SoftPC while simplifying ownership. |
-| Similar-Issue Sweep | Inventory every Core include, `vm_machine` executor call, request queue and result callback; migrate every live route or delete it. |
+| Similar-Issue Sweep | Inventory every product command handler, lifecycle/display callback, presentation decision, direct machine call and product queue; migrate every live route or delete it. |
 
 ## Current Technical Baseline
 - **Current developer artifacts:** T526 owns the active CMake target
@@ -71,6 +71,14 @@
 | T518 | Closed: SoftPC-parity UX has one Console lease, independent Windows, one host-input classifier, session-local capture/pause, explicit debugger entry and orderly `EXIT`. Owner Windows-host acceptance, unit 304/304, specialized gates, governance and stripped dual-architecture 0518 pass. [History](../history/M5-T518-nxvm-host-input-capture-status-ux.md). |
 
 ## Recent Governance
+
+- **M5 T526 S10 P2:** coordinator actual-diff review accepts `697d849a`.
+  `vm/machine` is now the sole Core assembly and executor owner: its one FIFO
+  receives copied requests and its one copied result sink publishes outcomes.
+  The obsolete composition/session executor and request bridge are removed;
+  the temporary product adapter remains explicitly assigned to S11. Complete
+  repository unit 303/303, 67 current specialized gates, documentation gate
+  and diff checks pass. [Evidence](../etc/evidence/t526-s10-vm-machine-executor-migration.md).
 
 - **M5 T524 S23:** owner-reported direct Windows use rejects the S22 P2
   closure claim: Console exposed only 13 text rows, Window showed a cursor
