@@ -61,7 +61,7 @@ static C_INT default_at_cmos_seed_is_loaded(C_VOID)
     seed[0x2eu] = TYPE_MASK_UNSIGNED_8(checksum >> 8u);
     seed[0x2fu] = TYPE_MASK_UNSIGNED_8(checksum);
     vm_test_default_pc_at_assets(&assets,
-        (type_unsigned_8[VM_MACHINE_PC_AT_ROM_BYTES]) {0});
+        (type_unsigned_8[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES]) {0});
     /* The helper's ROM array must outlive composition only; session copies it. */
     assets.cmos_seed = (vm_machine_asset_bytes) { seed, sizeof(seed) };
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;

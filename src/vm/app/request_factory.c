@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/request_factory.h"
+#include "vm/app/request_factory.h"
 
 static C_INT vm_machine_provider_parse_cpu(const C_CHAR *value,
     core_machine_cpu_profile *out_profile)

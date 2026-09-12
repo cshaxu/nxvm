@@ -3,7 +3,7 @@
 #include <windows.h>
 
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/request_factory.h"
+#include "vm/app/request_factory.h"
 #include "vm/machine/runtime/machine_private.h"
 
 static C_INT integration_yaml_session_find(const C_CHAR *directory,

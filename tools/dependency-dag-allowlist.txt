@@ -1,7 +1,6 @@
 # Exact temporary source-owner edges recorded by M5 T14 S2.
 # Remove an entry in the same change that removes its direct include.
 src/vm/machine/runtime/machine.c|vm/profile
-src/vm/machine/runtime/rom/external_pc_at.c|vm/profile
 src/vm/machine/runtime/machine_interface.h|vm/profile
 src/vm/machine/runtime/machine_private.h|vm/profile
 src/vm/machine/runtime/machine.c|vm/media
@@ -11,6 +10,8 @@ src/vm/machine/runtime/machine_private.h|vm/media
 src/vm/machine/runtime/model40_composition.c|vm/media
 src/vm/app/app.c|vm/machine
 src/vm/app/app.h|vm/machine
+src/vm/app/request_factory.c|vm/machine
+src/vm/app/request_factory.h|vm/machine
 src/vm/product/catalog.h|vm/machine
 src/vm/product/console.c|vm/app
 src/vm/product/console.c|vm/machine

@@ -1193,6 +1193,7 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c
     src/vm/profile/default_profile/mouse_mapper.c
+    src/vm/profile/default_profile/external_pc_at_rom.c
     src/vm/profile/device/floppy.c
     src/vm/profile/model40/model40.c
     src/vm/profile/model40/rom/model40_rom.c
@@ -1205,9 +1206,9 @@ set(VM_PRODUCT_SOURCES
 )
 set(VM_APP_SOURCES
     src/vm/app/app.c
+    src/vm/app/request_factory.c
 )
 set(VM_MACHINE_RUNTIME_SOURCES
-    src/vm/machine/request_factory.c
     src/vm/machine/runtime/debug_adapter.c
     src/vm/machine/runtime/display.c
     src/vm/machine/runtime/frame.c
@@ -1221,7 +1222,6 @@ set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/runtime/waiting.c
     src/vm/machine/runtime/machine_devices.c
     src/vm/machine/runtime/model40_composition.c
-    src/vm/machine/runtime/rom/external_pc_at.c
     src/vm/machine/runtime/machine_info.c
 )
 set(VM_MACHINE_SOURCES
@@ -3595,7 +3595,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-media|src/vm/media/fdd.c|vm-media"
     "vm-media|src/vm/media/hdd.c|vm-media"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
-    "vm-machine|src/vm/machine/request_factory.c|vm-machine"
+    "vm-app|src/vm/app/request_factory.c|session-composition"
     "vm-machine|src/vm/machine/runtime/debug_adapter.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/display.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/lifecycle.c|vm-machine"
@@ -3608,7 +3608,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/vm/machine/runtime/waiting.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/machine_devices.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/model40_composition.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/rom/external_pc_at.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/machine_info.c|vm-machine")
 string(REPLACE ";" "\n" project_t345_s4_residual_contents
     "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")

@@ -4,9 +4,9 @@ endif()
 
 set(session_dir "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime")
 set(devices "${session_dir}/machine_devices.c")
-set(firmware "${session_dir}/rom/external_pc_at.c")
+set(firmware "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/external_pc_at_rom.c")
 set(info "${session_dir}/machine_info.c")
-set(factory "${PROJECT_SOURCE_DIR}/src/vm/machine/request_factory.c")
+set(factory "${PROJECT_SOURCE_DIR}/src/vm/app/request_factory.c")
 
 foreach(file IN ITEMS "${devices}" "${firmware}" "${info}"
     "${factory}")

@@ -8,6 +8,7 @@
 #include "core/machine/guest_input_interface.h"
 #include "vm/machine/runtime/event_interface.h"
 #include "vm/profile/byob/blob.h"
+#include "vm/profile/default_profile/external_pc_at_rom.h"
 #include "common/machine/machine_interface.h"
 
 typedef enum vm_machine_profile_kind {
@@ -36,9 +37,6 @@ typedef enum vm_machine_floppy_format {
 #define VM_MACHINE_FLOPPY_SLOT_COUNT 2u
 #define VM_MACHINE_FIXED_DISK_SLOT_COUNT 2u
 #define VM_MACHINE_CMOS_SEED_BYTES 64u
-#define VM_MACHINE_PC_AT_ROM_BYTES (64u * 1024u)
-#define VM_MACHINE_PC_AT_ROM_CHIP_BYTES (32u * 1024u)
-#define VM_MACHINE_PC_AT_VIDEO_ROM_MAX_BYTES VM_PROFILE_BYOB_OPTION_ROM_MAX_BYTES
 #define VM_MACHINE_TEXT_GLYPH_ROW_PLANE_BYTES (2u * 1024u)
 #define VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES \
     (4u * VM_MACHINE_TEXT_GLYPH_ROW_PLANE_BYTES)

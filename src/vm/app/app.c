@@ -2,7 +2,7 @@
 
 #include "vm/app/app.h"
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/request_factory.h"
+#include "vm/app/request_factory.h"
 #include "vm/machine/runtime/frame.h"
 
 struct vm_app {

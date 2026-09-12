@@ -12,8 +12,8 @@
 static type_status vm_test_create_5170(const vm_machine_config *config,
     vm_machine **out_session)
 {
-    type_unsigned_8 even[VM_MACHINE_PC_AT_ROM_CHIP_BYTES];
-    type_unsigned_8 odd[VM_MACHINE_PC_AT_ROM_CHIP_BYTES];
+    type_unsigned_8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    type_unsigned_8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
     type_unsigned_8 font[VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES] = {0};
     vm_machine_assets assets;
 
@@ -27,7 +27,7 @@ static type_status vm_test_create_5170(const vm_machine_config *config,
 static type_status vm_test_create_default(const vm_machine_config *config,
     vm_machine **out_session)
 {
-    type_unsigned_8 rom[VM_MACHINE_PC_AT_ROM_BYTES];
+    type_unsigned_8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
     vm_machine_assets assets;
 
     vm_test_default_pc_at_assets(&assets, rom);
@@ -278,8 +278,8 @@ static C_INT vm_model_339_dma_page_word_io_is_converted(C_VOID)
 
 static C_INT vm_model_339_external_rom_route(C_VOID)
 {
-    type_unsigned_8 even[VM_MACHINE_PC_AT_ROM_CHIP_BYTES];
-    type_unsigned_8 odd[VM_MACHINE_PC_AT_ROM_CHIP_BYTES];
+    type_unsigned_8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    type_unsigned_8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
     type_unsigned_8 video[512] = {0x55u, 0xaau, 1u};
     vm_machine_assets assets;
     const vm_machine_config config = {

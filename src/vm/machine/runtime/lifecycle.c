@@ -5,8 +5,6 @@
 #include "type.h"
 
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/rom/external_pc_at.h"
-
 #include "vm/machine/runtime/control.h"
 
 #include "vm/machine/runtime/machine_devices.h"
@@ -81,7 +79,7 @@ type_status vm_machine_bind_execution_provider(vm_machine *machine)
         firmware_provider = vm_profile_xt_5160_268_firmware_provider();
         firmware_context = &machine->xt_rom;
     } else {
-        firmware_provider = vm_machine_external_pc_at_rom_provider();
+        firmware_provider = vm_profile_external_pc_at_rom_provider();
         firmware_context = &machine->pc_at_rom_context;
     }
     status = core_machine_bind_firmware_provider(machine->core_machine,

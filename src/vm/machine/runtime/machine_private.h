@@ -13,7 +13,7 @@
 #include "vm/machine/runtime/fault.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/model40_composition.h"
-#include "vm/machine/runtime/rom/external_pc_at.h"
+#include "vm/profile/default_profile/external_pc_at_rom.h"
 #include "vm/machine/debug.h"
 #include "vm/media/fdd_private.h"
 #include "vm/media/hdd_private.h"
@@ -48,11 +48,11 @@ struct vm_machine {
     union { t_fdd fdd; t_fdd floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };
     union { t_hdd hdd; t_hdd fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT]; };
     t_debug debug;
-    type_unsigned_8 pc_at_rom[VM_MACHINE_PC_AT_ROM_BYTES];
-    type_unsigned_8 pc_at_video_rom[VM_MACHINE_PC_AT_VIDEO_ROM_MAX_BYTES];
+    type_unsigned_8 pc_at_rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
+    type_unsigned_8 pc_at_video_rom[VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES];
     STD_SIZE_T pc_at_video_rom_bytes;
     type_bool pc_at_rom_external;
-    vm_machine_external_pc_at_rom_context pc_at_rom_context;
+    vm_profile_external_pc_at_rom_context pc_at_rom_context;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
     core_machine_guest_presentation_mailbox *presentation_mailbox;

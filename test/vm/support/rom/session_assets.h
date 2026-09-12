@@ -6,18 +6,18 @@
 #include "vm/machine/runtime/machine_interface.h"
 
 static inline C_VOID vm_test_default_pc_at_assets(vm_machine_assets *assets,
-    type_unsigned_8 rom[VM_MACHINE_PC_AT_ROM_BYTES])
+    type_unsigned_8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES])
 {
     if (assets == STD_NULL || rom == STD_NULL) return;
-    STD_MEMSET(rom, 0, VM_MACHINE_PC_AT_ROM_BYTES);
-    rom[VM_MACHINE_PC_AT_ROM_BYTES - 16u] = 0xf4u;
-    *assets = (vm_machine_assets) { .bios = { { rom, VM_MACHINE_PC_AT_ROM_BYTES } } };
+    STD_MEMSET(rom, 0, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES);
+    rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
+    *assets = (vm_machine_assets) { .bios = { { rom, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES } } };
 }
 
 static inline type_status vm_test_default_pc_at_session_create(
     const vm_machine_config *requested, vm_machine **out_session)
 {
-    type_unsigned_8 rom[VM_MACHINE_PC_AT_ROM_BYTES];
+    type_unsigned_8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
     vm_machine_assets assets;
     vm_machine_config config = requested == STD_NULL ? (vm_machine_config) {0} :
         *requested;
@@ -33,24 +33,24 @@ static inline type_status vm_test_default_pc_at_session_create(
 }
 
 static inline C_VOID vm_test_ibm_5170_assets(vm_machine_assets *assets,
-    type_unsigned_8 even[VM_MACHINE_PC_AT_ROM_CHIP_BYTES],
-    type_unsigned_8 odd[VM_MACHINE_PC_AT_ROM_CHIP_BYTES])
+    type_unsigned_8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES],
+    type_unsigned_8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES])
 {
     if (assets == STD_NULL || even == STD_NULL || odd == STD_NULL) return;
-    STD_MEMSET(even, 0xff, VM_MACHINE_PC_AT_ROM_CHIP_BYTES);
-    STD_MEMSET(odd, 0xff, VM_MACHINE_PC_AT_ROM_CHIP_BYTES);
-    even[VM_MACHINE_PC_AT_ROM_CHIP_BYTES - 8u] = 0xf4u;
+    STD_MEMSET(even, 0xff, VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES);
+    STD_MEMSET(odd, 0xff, VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES);
+    even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES - 8u] = 0xf4u;
     *assets = (vm_machine_assets) { .bios = {
-        { even, VM_MACHINE_PC_AT_ROM_CHIP_BYTES },
-        { odd, VM_MACHINE_PC_AT_ROM_CHIP_BYTES }
+        { even, VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES },
+        { odd, VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES }
     } };
 }
 
 static inline type_status vm_test_ibm_5170_session_create(
     const vm_machine_config *requested, vm_machine **out_session)
 {
-    type_unsigned_8 even[VM_MACHINE_PC_AT_ROM_CHIP_BYTES];
-    type_unsigned_8 odd[VM_MACHINE_PC_AT_ROM_CHIP_BYTES];
+    type_unsigned_8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    type_unsigned_8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
     vm_machine_assets assets;
     vm_machine_config config = requested == STD_NULL ? (vm_machine_config) {0} :
         *requested;

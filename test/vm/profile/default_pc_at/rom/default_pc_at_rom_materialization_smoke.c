@@ -6,7 +6,7 @@
 
 int main(C_VOID)
 {
-    type_unsigned_8 image[VM_MACHINE_PC_AT_ROM_BYTES] = {0};
+    type_unsigned_8 image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES] = {0};
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         .bios_count = 1u
@@ -20,7 +20,7 @@ int main(C_VOID)
 
     image[0u] = 0x56u;
     image[1u] = 0x78u;
-    image[VM_MACHINE_PC_AT_ROM_BYTES - 16u] = 0xf4u;
+    image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
     assets.bios[0u] = (vm_machine_asset_bytes) { image, sizeof(image) };
     failed = vm_machine_create_from_assets(&config, &assets, &session) !=
             TYPE_STATUS_OK || session == STD_NULL || !session->pc_at_rom_external;

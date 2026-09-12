@@ -58,22 +58,22 @@ static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (config->bios_count == 1u) {
-        if (vm_machine_asset_copy(session->pc_at_rom, VM_MACHINE_PC_AT_ROM_BYTES,
+        if (vm_machine_asset_copy(session->pc_at_rom, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES,
                 assets->bios[0u]) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
     } else {
         if (assets->bios[0u].data == STD_NULL || assets->bios[1u].data == STD_NULL ||
-            assets->bios[0u].bytes != VM_MACHINE_PC_AT_ROM_CHIP_BYTES ||
-            assets->bios[1u].bytes != VM_MACHINE_PC_AT_ROM_CHIP_BYTES) {
+            assets->bios[0u].bytes != VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES ||
+            assets->bios[1u].bytes != VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES) {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
-        for (index = 0u; index < VM_MACHINE_PC_AT_ROM_CHIP_BYTES; ++index) {
+        for (index = 0u; index < VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES; ++index) {
             session->pc_at_rom[index * 2u] = assets->bios[0u].data[index];
             session->pc_at_rom[index * 2u + 1u] = assets->bios[1u].data[index];
         }
     }
     if (assets->video.data != STD_NULL) {
         if (assets->video.bytes == 0u ||
-            assets->video.bytes > VM_MACHINE_PC_AT_VIDEO_ROM_MAX_BYTES) {
+            assets->video.bytes > VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES) {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
         STD_MEMCPY(session->pc_at_video_rom, assets->video.data,
@@ -867,8 +867,8 @@ static type_status vm_machine_file_assets_load(const vm_machine_config *config,
     } else if (config->profile_kind == VM_MACHINE_PROFILE_IBM_5160_MODEL_268) {
         bios_bytes = VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES;
     } else {
-        bios_bytes = config->bios_count == 1u ? VM_MACHINE_PC_AT_ROM_BYTES :
-            VM_MACHINE_PC_AT_ROM_CHIP_BYTES;
+        bios_bytes = config->bios_count == 1u ? VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES :
+            VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES;
     }
     status = vm_machine_file_asset_load(config->bios_path[0u], bios_bytes,
         &assets->view.bios[0u], &assets->bios[0u]);
@@ -889,7 +889,7 @@ static type_status vm_machine_file_assets_load(const vm_machine_config *config,
             vm_machine_file_asset_load(config->video_path,
                 VM_PROFILE_MODEL40_VIDEO_ROM_BYTES, &assets->view.video,
                 &assets->video) : vm_machine_file_variable_asset_load(config->video_path,
-                VM_MACHINE_PC_AT_VIDEO_ROM_MAX_BYTES, &assets->view.video,
+                VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES, &assets->view.video,
                 &assets->video);
     }
     if (status == TYPE_STATUS_OK && config->font_path != STD_NULL) {

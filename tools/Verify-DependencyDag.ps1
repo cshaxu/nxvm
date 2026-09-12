@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
     $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 }
+$RepositoryRoot = (Resolve-Path $RepositoryRoot).Path
 if ([string]::IsNullOrWhiteSpace($AllowlistPath)) {
     $AllowlistPath = Join-Path $PSScriptRoot "dependency-dag-allowlist.txt"
 }
@@ -34,23 +35,23 @@ Get-ChildItem $sourceRoot -Recurse -File | Where-Object {
 } | ForEach-Object {
     $source = $_.FullName.Substring($sourceRoot.Length + 1).Replace('\', '/')
     $sourceOwner = Get-Owner $source
-    if ($null -eq $sourceOwner) { return }
-
-    Get-Content $_.FullName | ForEach-Object {
-        if ($_ -match '^\s*#include\s+"([^"]+)"') {
-            $targetOwner = Get-Owner $Matches[1]
-            if ($null -eq $targetOwner) { return }
-
-            $forbidden =
-                (($sourceOwner -like "core/*") -and ($targetOwner -ne $sourceOwner) -and
-                    ($targetOwner -ne "core/utils")) -or
-                (($sourceOwner -match '^(vm|vdm)/') -and
-                    ($sourceOwner -notmatch '^(vm|vdm)/composition$') -and
-                    ($targetOwner -match '^(vm|vdm)/') -and
-                    ($targetOwner -ne 'vm/composition') -and
-                    ($targetOwner -ne $sourceOwner))
-            if ($forbidden) {
-                [void]$observed.Add("src/$source|$targetOwner")
+    if ($null -ne $sourceOwner) {
+        Get-Content $_.FullName | ForEach-Object {
+            if ($_ -match '^\s*#include\s+"([^"]+)"') {
+                $targetOwner = Get-Owner $Matches[1]
+                if ($null -ne $targetOwner) {
+                    $forbidden =
+                        (($sourceOwner -like "core/*") -and ($targetOwner -ne $sourceOwner) -and
+                            ($targetOwner -ne "core/utils")) -or
+                        (($sourceOwner -match '^(vm|vdm)/') -and
+                            ($sourceOwner -notmatch '^(vm|vdm)/composition$') -and
+                            ($targetOwner -match '^(vm|vdm)/') -and
+                            ($targetOwner -ne 'vm/composition') -and
+                            ($targetOwner -ne $sourceOwner))
+                    if ($forbidden) {
+                        [void]$observed.Add("src/$source|$targetOwner")
+                    }
+                }
             }
         }
     }
