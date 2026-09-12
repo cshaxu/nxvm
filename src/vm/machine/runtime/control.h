@@ -25,7 +25,6 @@ typedef struct vm_machine_control_state {
     atomic_bool step_requested;
     atomic_int pause_reason;
     host_sync_event *completion_ready;
-    host_sync_event *control_changed;
 } vm_machine_control_state;
 
 #include "vm/machine/runtime/machine_interface.h"
@@ -38,8 +37,6 @@ C_VOID vm_machine_control_request_pause(vm_machine_control_state *control,
     vm_machine_pause_reason reason);
 C_INT vm_machine_control_wait_for_pause(vm_machine_control_state *control,
     C_UINT milliseconds);
-C_INT vm_machine_control_wait_for_completion(
-    vm_machine_control_state *control);
 C_VOID vm_machine_control_signal_completion(
     vm_machine_control_state *control);
 C_INT vm_machine_control_is_paused(const vm_machine_control_state *control);
