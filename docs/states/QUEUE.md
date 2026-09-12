@@ -5,7 +5,7 @@ reserve a numeric task identifier, or define a technical baseline.
 
 ## M5 Candidates
 
-1. [M5 Common-machine executor completion](../proposals/m5-common-machine-executor-completion.md)
+1. [M5 Common-machine residual audit and conditional completion](../proposals/m5-common-machine-executor-completion.md)
 2. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
 3. [M5 YAML asset and read-only CMOS seed contract](../proposals/m5-yaml-image-load-mode-contract.md)
 4. [M5 PIC8259A manual and board-integration reclosure](../proposals/m5-pic-board-integration-reclosure.md)
