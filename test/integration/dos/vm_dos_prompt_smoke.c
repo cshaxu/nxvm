@@ -24,12 +24,6 @@
 
 static C_INT has_dos_prompt(const vm_machine *session);
 
-static DWORD WINAPI run_full_pc(C_VOID *opaque)
-{
-    vm_machine_control_start(&((vm_machine *)opaque)->control);
-    return 0u;
-}
-
 static C_VOID dump_first_fault(core_machine *machine)
 {
     core_machine_cpu_diagnostic diagnostic;
@@ -50,8 +44,6 @@ static C_VOID dump_first_fault(core_machine *machine)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    HANDLE thread;
-    DWORD result;
     DWORD elapsed;
     C_INT prompt_seen = 0;
     integration_yaml_session yaml_session;
@@ -66,8 +58,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK)) {
         goto fail;
     }
-    thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
-    if (thread == STD_NULL) goto fail;
+    if (vm_machine_start(session) != TYPE_STATUS_OK) goto fail;
 
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         if (has_dos_prompt(session)) {
@@ -76,8 +67,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         Sleep(10u);
     }
-    vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
-    if (!vm_machine_control_wait_for_pause(&session->control, 2000u)) goto fail;
+    if (vm_machine_pause_for_debug(session, 2000u) != TYPE_STATUS_OK) goto fail;
     if (!prompt_seen) prompt_seen = has_dos_prompt(session);
     if (!prompt_seen) {
         dump_first_fault(session->core_machine);
@@ -85,12 +75,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         goto fail;
     }
     vm_machine_stop(session);
-    result = WaitForSingleObject(thread, 2000u);
-    CloseHandle(thread);
-    if (result != WAIT_OBJECT_0) {
-        STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
-        goto fail;
-    }
     integration_yaml_session_close(&yaml_session);
     puts(turbo ? "M5:T459:S1:DOS-PROMPT-TURBO:OK" : "M5:T70:S2:DOS-PROMPT:OK");
     return 0;

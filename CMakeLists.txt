@@ -66,6 +66,28 @@ add_custom_target(cpu-timing-manifest-catalog
         "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
 add_subdirectory(src/lib)
+add_subdirectory(src/common)
+add_executable(common-machine-smoke test/common/machine/common_machine_smoke.c)
+target_link_libraries(common-machine-smoke PRIVATE common-machine)
+add_executable(common-debug-smoke test/common/debug/common_debug_smoke.c)
+target_link_libraries(common-debug-smoke PRIVATE common-debug)
+add_executable(common-session-smoke test/common/session/common_session_smoke.c)
+target_link_libraries(common-session-smoke PRIVATE common-session)
+add_executable(common-ui-smoke
+    test/common/ui/common_ui_smoke.c
+    test/common/ui/common_ui_console_host_fake.c)
+target_link_libraries(common-ui-smoke PRIVATE common-ui)
+add_executable(common-xasm32-smoke test/common/xasm32/xasm32_smoke.c)
+target_link_libraries(common-xasm32-smoke PRIVATE common-xasm32)
+add_executable(common-xasm32-contract-smoke
+    test/common/xasm32/xasm32_contract_smoke.c)
+target_link_libraries(common-xasm32-contract-smoke PRIVATE common-xasm32)
+add_executable(common-adapter-conformance
+    test/common/common_adapter_conformance.c
+    test/common/ui/common_ui_console_host_fake.c)
+target_link_libraries(common-adapter-conformance PRIVATE
+    common-machine common-session common-ui)
+add_dependencies(common-adapter-conformance common-verify-corpus)
 add_executable(types-smoke test/lib/types_smoke.c)
 target_link_libraries(types-smoke PRIVATE types)
 add_test(NAME unit.types-smoke COMMAND types-smoke)
@@ -1184,27 +1206,8 @@ set(VM_PRODUCT_SOURCES
     src/vm/product/catalog.c
     src/vm/product/recorder.c
 )
-set(COMMON_UI_SOURCES
-    src/common/ui/console_host.c
-    src/common/ui/presentation.c
-)
-set(COMMON_SESSION_SOURCES
-    src/common/session/session.c
-)
-set(COMMON_MACHINE_SOURCES
-    src/common/machine/machine.c
-)
-set(COMMON_DEBUG_SOURCES
-    src/common/debug/command.c
-    src/common/debug/debug.c
-)
 set(VM_APP_SOURCES
     src/vm/app/app.c
-)
-set(COMMON_XASM32_SOURCES
-    src/common/xasm32/xasm32.c
-    src/common/xasm32/aasm32.c
-    src/common/xasm32/dasm32.c
 )
 set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/request_factory.c
@@ -1256,35 +1259,6 @@ target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-machine-boundary PUBLIC type-facade host)
-add_library(common-machine STATIC ${COMMON_MACHINE_SOURCES})
-target_include_directories(common-machine PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-machine PUBLIC host)
-add_executable(common-machine-smoke
-    test/common/machine/common_machine_smoke.c
-)
-target_include_directories(common-machine-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-machine-smoke PRIVATE common-machine)
-
-add_library(common-xasm32 STATIC ${COMMON_XASM32_SOURCES})
-target_include_directories(common-xasm32 PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-xasm32 PUBLIC types)
-
-add_library(common-debug STATIC ${COMMON_DEBUG_SOURCES})
-target_include_directories(common-debug PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(common-debug PUBLIC common-machine common-xasm32 storage)
-
-add_executable(common-debug-smoke
-    test/common/debug/common_debug_smoke.c
-)
-target_include_directories(common-debug-smoke PRIVATE "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(common-debug-smoke PRIVATE common-debug)
-
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
 )
@@ -1308,41 +1282,9 @@ add_executable(std-snprintf-smoke
 )
 target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
 
-add_executable(common-session-smoke
-    test/common/session/common_session_smoke.c
-)
-target_include_directories(common-session-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-session-smoke PRIVATE common-session)
-add_executable(common-ui-smoke
-    test/common/ui/common_ui_smoke.c
-    test/common/ui/common_ui_console_host_fake.c)
-target_link_libraries(common-ui-smoke PRIVATE common-ui type-facade)
 add_executable(vm-machine-frame-smoke
     test/vm/machine/vm_machine_frame_smoke.c)
 target_link_libraries(vm-machine-frame-smoke PRIVATE vm-machine)
-
-add_executable(common-xasm32-smoke
-    test/common/xasm32/xasm32_smoke.c
-)
-target_include_directories(common-xasm32-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-xasm32-smoke PRIVATE
-    common-xasm32
-)
-
-add_executable(common-xasm32-contract-smoke
-    test/common/xasm32/xasm32_contract_smoke.c
-)
-target_include_directories(common-xasm32-contract-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-xasm32-contract-smoke PRIVATE
-    common-xasm32
-)
-
 
 add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
 target_include_directories(vm-profile PUBLIC
@@ -1400,24 +1342,6 @@ target_link_libraries(vm-machine PUBLIC
     vm-profile
     common-machine
     storage)
-
-add_library(common-session STATIC ${COMMON_SESSION_SOURCES})
-target_include_directories(common-session PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-session PUBLIC
-    host
-    ui-base)
-
-add_library(common-ui STATIC ${COMMON_UI_SOURCES})
-target_include_directories(common-ui PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(common-ui PUBLIC
-    host
-    ui-window
-    ui-console
-    ui-base)
 
 add_library(vm-app STATIC ${VM_APP_SOURCES})
 target_include_directories(vm-app PUBLIC
@@ -2211,6 +2135,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     common-debug-smoke
     common-session-smoke
     common-ui-smoke
+    common-adapter-conformance
     vm-machine-frame-smoke
     core-machine-guest-input-source-smoke
     host-smoke
@@ -2972,8 +2897,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0526)
-add_current_vm_artifact(vm-0-5-0526 "0.5.0526")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0527)
+add_current_vm_artifact(vm-0-5-0527 "0.5.0527")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3598,8 +3523,23 @@ foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_EN
     list(GET project_t345_s3_fields 0 project_t345_s3_target)
     list(GET project_t345_s3_fields 1 project_t345_s3_source)
     get_target_property(project_t345_s3_sources ${project_t345_s3_target} SOURCES)
+    get_target_property(project_t345_s3_source_dir ${project_t345_s3_target} SOURCE_DIR)
+    set(project_t345_s3_normalized_sources)
+    foreach(project_t345_s3_current_source IN LISTS project_t345_s3_sources)
+        if(IS_ABSOLUTE "${project_t345_s3_current_source}")
+            set(project_t345_s3_absolute_source "${project_t345_s3_current_source}")
+        else()
+            get_filename_component(project_t345_s3_absolute_source
+                "${project_t345_s3_current_source}" ABSOLUTE
+                BASE_DIR "${project_t345_s3_source_dir}")
+        endif()
+        file(RELATIVE_PATH project_t345_s3_relative_source
+            "${CMAKE_SOURCE_DIR}" "${project_t345_s3_absolute_source}")
+        list(APPEND project_t345_s3_normalized_sources
+            "${project_t345_s3_relative_source}")
+    endforeach()
     list(LENGTH project_t345_s3_sources project_t345_s3_source_count)
-    list(FIND project_t345_s3_sources "${project_t345_s3_source}"
+    list(FIND project_t345_s3_normalized_sources "${project_t345_s3_source}"
         project_t345_s3_source_index)
     if(NOT project_t345_s3_source_count EQUAL 1 OR
             project_t345_s3_source_index EQUAL -1)
@@ -3715,6 +3655,7 @@ foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
         message(FATAL_ERROR "T344 direct-compilation target is missing: ${project_t344_target}")
     endif()
     get_target_property(project_t344_target_sources ${project_t344_target} SOURCES)
+    get_target_property(project_t344_target_source_dir ${project_t344_target} SOURCE_DIR)
     get_target_property(project_t344_target_options ${project_t344_target} COMPILE_OPTIONS)
     set(project_t344_target_strict TRUE)
     foreach(project_t344_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
@@ -3728,12 +3669,16 @@ foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
         if(IS_ABSOLUTE "${project_t344_source}")
             set(project_t344_source_path "${project_t344_source}")
         else()
-            set(project_t344_source_path "${CMAKE_SOURCE_DIR}/${project_t344_source}")
+            get_filename_component(project_t344_source_path
+                "${project_t344_source}" ABSOLUTE
+                BASE_DIR "${project_t344_target_source_dir}")
         endif()
         if(NOT project_t344_source_path MATCHES "\\.c$" OR
                 NOT EXISTS "${project_t344_source_path}")
             continue()
         endif()
+        file(RELATIVE_PATH project_t344_source
+            "${CMAKE_SOURCE_DIR}" "${project_t344_source_path}")
         if(project_t344_target_strict)
             set(project_t344_status retained-strict)
             set(project_t344_reason target-local-strict-options)

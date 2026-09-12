@@ -1,4 +1,6 @@
-#include "type.h"
+#include "lib/types/types_interface.h"
+
+#include <stdio.h>
 
 #include "common/ui/console_host.h"
 
@@ -27,10 +29,10 @@ void common_ui_console_host_destroy(common_ui_console_host *host)
 
 lib_status common_ui_console_host_request_line(common_ui_console_host *host)
 {
-    C_CHAR line[256];
+    char line[256];
 
     if (host == LIB_NULL || host->line_sink == LIB_NULL ||
-        STD_FGETS(line, sizeof(line), STD_STDIN) == STD_NULL)
+        fgets(line, sizeof(line), stdin) == LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
     return host->line_sink(host->line_context, line);
 }
@@ -39,7 +41,7 @@ lib_status common_ui_console_host_write(common_ui_console_host *host, const char
 {
     (void)host;
     return text == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
-        STD_FPUTS(text, STD_STDOUT) < 0 ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+        fputs(text, stdout) < 0 ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 
 lib_status common_ui_console_host_claim_guest(common_ui_console_host *host,
