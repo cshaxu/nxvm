@@ -27,6 +27,9 @@ copied Core-fact adapter owner.
 - Focused Model 40 Console integration smoke passes.
 - Source/CMake scans find no `vm/events` path or former product-policy
   `vm_app_*` bridge.
-- The specialized ownership-gate aggregate is rebuilt in an isolated x64
-  directory before S8 closure; full repository-only unit verification remains
-  required by the active packet.
+- Full x64 Release repository-only unit suite passed: **298/298**.
+- The specialized ownership-gate aggregate, dependency DAG, documentation
+  governance and `git diff --check` all passed in the isolated x64 build.
+
+Implementation commits: `a8d17a39` and corrective ownership commit
+`1a6bb158`. Coordinator closure: S8 P3.
