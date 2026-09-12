@@ -51,7 +51,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT saved_stdin = -1;
     C_INT choice;
     C_INT result = 1;
-    vm_app_speed speed = VM_APP_SPEED_STANDARD;
+    vm_machine_speed speed = VM_MACHINE_SPEED_STANDARD;
 
     if (argc != 2 || (choice = session_choice(argv[1], "ibm-5170-model-339-1200k.yaml")) == 0 ||
         (input = tmpfile()) == STD_NULL ||
@@ -67,8 +67,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (vm_app_create(&session) != TYPE_STATUS_OK ||
         vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
     vm_product_console_main(console_context, session, argv[1]);
-    if (vm_app_get_speed(session, &speed) != TYPE_STATUS_OK ||
-        speed != VM_APP_SPEED_TURBO) {
+    if (vm_app_machine(session) == STD_NULL ||
+        vm_machine_get_speed(vm_app_machine(session), &speed) != TYPE_STATUS_OK ||
+        speed != VM_MACHINE_SPEED_TURBO) {
         goto done;
     }
     result = 0;

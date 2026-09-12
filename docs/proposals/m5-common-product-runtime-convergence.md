@@ -9,10 +9,9 @@ into a shared layer.  The resulting common corpus has a small neutral runtime
 layer plus two bounded x86-domain components, all above the existing canonical
 `src/lib` host services.
 
-This is not an import of SoftPC's current `app/runtime` implementation.  That
-code still calls SoftPC-machine APIs directly, just as NXVM's current
-`vm/events` records still carry NXVM/Core-shaped values.  Both products are
-evidence for the common contract, not inputs to a copied parallel runtime.
+This is not an import of SoftPC's current `app/runtime` implementation. That
+code still calls SoftPC-machine APIs directly; both products are evidence for
+the common contract, not inputs to a copied parallel runtime.
 
 ## Required NXVM End State
 
@@ -88,10 +87,10 @@ a reason to enlarge `common/machine`:
 | --- | --- | --- |
 | Core Debug parser, target callback table, command continuation and shared breakpoint/trace policy | `common/debug` | S5 |
 | NXVM-only raw instruction recorder and file policy | `vm/product` optional capability | S5 audit |
-| YAML/session request parsing, profile choice, asset-path validation and user-visible machine/status text | `vm/product` | S5/S7 |
+| YAML/session request parsing, profile choice, asset-path validation and user-visible machine/status text | `vm/product` | S8 |
 | presenter binding, surface target/title/mouse application and copied UI input/facts | `common/ui` plus product presentation policy | S6 |
-| composition-only route selection among product, session, machine and UI | `vm/app` | S7 |
-| old `vm/events` carrier values and product/host bridges | named common contracts or their sole product receiver | S7 |
+| composition-only route selection among product, session, machine and UI | `vm/app` | S8 |
+| old `vm/events` carrier values and product/host bridges | machine-adjacent copied contracts or their sole product receiver | S8 |
 
 Split VM files only when doing so removes one of these mixed responsibilities
 or a duplicate route. Profile-selected Core assembly, media bridges, firmware

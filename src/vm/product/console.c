@@ -7,12 +7,16 @@
 
 #include "type.h"
 
+#include <limits.h>
+
 #include "vm/product/console.h"
 #include "vm/app/app.h"
+#include "common/debug/debug_interface.h"
 #include "common/ui/ui_interface.h"
 #include "vm/product/catalog.h"
 #include "vm/product/recorder.h"
 #include "common/session/session_interface.h"
+#include "vm/machine/runtime/lifecycle.h"
 
 struct vm_product_console_context {
     STD_SIZE_T argument_count;
@@ -23,6 +27,7 @@ struct vm_product_console_context {
     vm_product_session_catalog *catalog;
     common_session *control;
     common_ui *presentation;
+    common_debug *debug;
     vm_product_recorder *recorder;
     C_INT session_stopped;
 };
@@ -62,6 +67,292 @@ static lib_status vm_product_console_input_sink(void *context,
     const ui_input_event *event)
 {
     return common_session_publish_ui_input(context, event);
+}
+
+static vm_machine *vm_product_console_machine(
+    const vm_product_console_context *context)
+{
+    return context == STD_NULL ? STD_NULL : vm_app_machine(context->session);
+}
+
+static C_INT vm_product_console_is_running(
+    const vm_product_console_context *context)
+{
+    vm_machine *machine = vm_product_console_machine(context);
+    return machine != STD_NULL && vm_machine_is_running(machine);
+}
+
+static common_debug_machine_state vm_product_console_debug_state(
+    common_session_machine_state state)
+{
+    switch (state) {
+    case COMMON_SESSION_MACHINE_RUNNING: return COMMON_DEBUG_MACHINE_RUNNING;
+    case COMMON_SESSION_MACHINE_PAUSED: return COMMON_DEBUG_MACHINE_PAUSED;
+    case COMMON_SESSION_MACHINE_RESET: return COMMON_DEBUG_MACHINE_RESET;
+    case COMMON_SESSION_MACHINE_STOPPED: return COMMON_DEBUG_MACHINE_STOPPED;
+    default: return COMMON_DEBUG_MACHINE_FAULT;
+    }
+}
+
+static common_session_lifecycle_request_kind
+vm_product_console_debug_lifecycle_request(
+    common_debug_lifecycle_request request)
+{
+    switch (request) {
+    case COMMON_DEBUG_LIFECYCLE_RESUME: return COMMON_SESSION_LIFECYCLE_RESUME;
+    case COMMON_DEBUG_LIFECYCLE_STEP: return COMMON_SESSION_LIFECYCLE_STEP;
+    case COMMON_DEBUG_LIFECYCLE_STOP: return COMMON_SESSION_LIFECYCLE_STOP;
+    default: return COMMON_SESSION_LIFECYCLE_NONE;
+    }
+}
+
+static void vm_product_console_debug_result(common_session_cli_result *destination,
+    const common_debug_result *source)
+{
+    if (destination == LIB_NULL || source == LIB_NULL) return;
+    STD_MEMSET(destination, 0, sizeof(*destination));
+    STD_MEMCPY(destination->text, source->text, sizeof(destination->text));
+    STD_MEMCPY(destination->prompt, source->prompt, sizeof(destination->prompt));
+    destination->prompt_ready = source->prompt_ready;
+    destination->keep_active = source->keep_active;
+    destination->lifecycle_request =
+        vm_product_console_debug_lifecycle_request(source->lifecycle_request);
+}
+
+static lib_status vm_product_console_debug_provider(void *opaque,
+    const char *line, common_session_cli_result *out_result)
+{
+    vm_product_console_context *context = opaque;
+    common_debug_result result;
+    lib_status status;
+
+    if (context == STD_NULL || context->debug == STD_NULL || out_result == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    status = common_debug_submit_line(context->debug, line, &result);
+    if (status != LIB_STATUS_OK) return status;
+    vm_product_console_debug_result(out_result, &result);
+    if (!result.keep_active) common_debug_close(context->debug);
+    return LIB_STATUS_OK;
+}
+
+static lib_status vm_product_console_debug_machine(void *opaque,
+    common_session_machine_state state, lib_status status,
+    common_session_cli_result *out_result)
+{
+    vm_product_console_context *context = opaque;
+    common_debug_result result;
+    lib_status debug_status;
+
+    if (context == STD_NULL || context->debug == STD_NULL || out_result == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    debug_status = common_debug_observe_machine(context->debug,
+        vm_product_console_debug_state(state), status, &result);
+    if (debug_status != LIB_STATUS_OK) return debug_status;
+    vm_product_console_debug_result(out_result, &result);
+    return LIB_STATUS_OK;
+}
+
+static C_VOID vm_product_console_debug_observe(C_VOID *opaque,
+    const vm_machine_debug_observation *observation)
+{
+    vm_product_console_context *context = opaque;
+    common_debug_instruction_observation copied = {0};
+    type_unsigned_8 index;
+
+    if (context == STD_NULL || context->debug == STD_NULL || observation == STD_NULL)
+        return;
+    copied.memory_access_count = observation->memory_access_count <
+        COMMON_DEBUG_MEMORY_ACCESS_CAPACITY ? observation->memory_access_count :
+        COMMON_DEBUG_MEMORY_ACCESS_CAPACITY;
+    for (index = 0u; index < copied.memory_access_count; ++index) {
+        copied.memory_accesses[index].write = observation->memory_accesses[index].write ?
+            LIB_TRUE : LIB_FALSE;
+        copied.memory_accesses[index].linear = observation->memory_accesses[index].linear;
+        copied.memory_accesses[index].bytes = observation->memory_accesses[index].bytes;
+        copied.memory_accesses[index].data = observation->memory_accesses[index].data;
+    }
+    common_debug_observe_instruction(context->debug, &copied);
+    if (context->recorder != STD_NULL)
+        vm_product_recorder_observe(context->recorder, observation);
+}
+
+static lib_status vm_product_console_lifecycle(void *opaque,
+    common_session_lifecycle_request_kind request)
+{
+    vm_machine *machine = vm_product_console_machine(opaque);
+
+    if (machine == STD_NULL) return LIB_STATUS_INVALID_STATE;
+    switch (request) {
+    case COMMON_SESSION_LIFECYCLE_RESUME: return (lib_status)vm_machine_resume(machine);
+    case COMMON_SESSION_LIFECYCLE_STEP: return (lib_status)vm_machine_request_step(machine);
+    case COMMON_SESSION_LIFECYCLE_STOP: vm_machine_stop(machine); return LIB_STATUS_OK;
+    default: return LIB_STATUS_UNSUPPORTED;
+    }
+}
+
+static type_status vm_product_console_begin(vm_product_console_context *context,
+    common_session_plan *out_plan, C_INT resume)
+{
+    vm_machine *machine = vm_product_console_machine(context);
+    lib_u32 run_id;
+
+    if (machine == STD_NULL || context == STD_NULL || out_plan == STD_NULL)
+        return TYPE_STATUS_INVALID_STATE;
+    run_id = common_session_begin_run(context->control, out_plan);
+    if (run_id == 0u || vm_machine_bind_run(machine, run_id) != TYPE_STATUS_OK)
+        return TYPE_STATUS_INVALID_STATE;
+    return resume ? vm_machine_resume(machine) : vm_machine_start(machine);
+}
+
+static type_status vm_product_console_start(vm_product_console_context *context,
+    common_session_plan *out_plan)
+{ return vm_product_console_begin(context, out_plan, TYPE_FALSE); }
+
+static type_status vm_product_console_resume(vm_product_console_context *context,
+    common_session_plan *out_plan)
+{ return vm_product_console_begin(context, out_plan, TYPE_TRUE); }
+
+static type_status vm_product_console_request_pause(vm_product_console_context *context)
+{
+    vm_machine *machine = vm_product_console_machine(context);
+    return machine == STD_NULL ? TYPE_STATUS_INVALID_STATE :
+        vm_machine_request_pause(machine);
+}
+
+static type_status vm_product_console_stop(vm_product_console_context *context)
+{
+    vm_machine *machine = vm_product_console_machine(context);
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    vm_machine_stop(machine);
+    return TYPE_STATUS_OK;
+}
+
+static C_INT vm_product_console_key_scan(ui_key key, type_unsigned_16 *scan)
+{
+    static const struct { ui_key key; type_unsigned_16 scan; } map[] = {
+        { UI_KEY_ENTER, 0x1cu }, { UI_KEY_BACKSPACE, 0x0eu }, { UI_KEY_F1, 0x3bu },
+        { UI_KEY_F2, 0x3cu }, { UI_KEY_F3, 0x3du }, { UI_KEY_F4, 0x3eu },
+        { UI_KEY_F5, 0x3fu }, { UI_KEY_F6, 0x40u }, { UI_KEY_F7, 0x41u },
+        { UI_KEY_F8, 0x42u }, { UI_KEY_F9, 0x43u }, { UI_KEY_F10, 0x44u },
+        { UI_KEY_F11, 0x57u }, { UI_KEY_F12, 0x58u }, { UI_KEY_UP, 0x48u },
+        { UI_KEY_DOWN, 0x50u }, { UI_KEY_LEFT, 0x4bu }, { UI_KEY_RIGHT, 0x4du },
+        { UI_KEY_HOME, 0x47u }, { UI_KEY_END, 0x4fu }, { UI_KEY_PAGE_UP, 0x49u },
+        { UI_KEY_PAGE_DOWN, 0x51u }, { UI_KEY_INSERT, 0x52u }, { UI_KEY_DELETE, 0x53u }
+    };
+    STD_SIZE_T index;
+
+    if (scan == STD_NULL) return TYPE_FALSE;
+    for (index = 0u; index < sizeof(map) / sizeof(map[0]); ++index)
+        if (map[index].key == key) {
+            *scan = map[index].scan;
+            return TYPE_TRUE;
+        }
+    return TYPE_FALSE;
+}
+
+static type_status vm_product_console_submit_key(vm_product_console_context *context,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+{
+    vm_machine_input input = {0};
+    vm_machine *machine = vm_product_console_machine(context);
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    input.kind = VM_MACHINE_INPUT_KEY_EVENT;
+    input.data.key_event.scan_code = scan_code;
+    input.data.key_event.virtual_key = virtual_key;
+    input.data.key_event.pressed = pressed;
+    return vm_machine_submit_input(machine, &input);
+}
+
+static type_status vm_product_console_submit_input(vm_product_console_context *context,
+    const ui_input_event *event)
+{
+    vm_machine_input input = {0};
+    vm_machine *machine = vm_product_console_machine(context);
+    type_unsigned_16 scan = 0u;
+
+    if (machine == STD_NULL || event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (event->type == UI_EVENT_KEY) {
+        scan = event->data.key.scan_code;
+        if (scan == 0u && !vm_product_console_key_scan(event->data.key.key, &scan))
+            return TYPE_STATUS_UNSUPPORTED;
+        input.kind = VM_MACHINE_INPUT_KEY_EVENT;
+        input.data.key_event.scan_code = scan;
+        input.data.key_event.virtual_key = (type_unsigned_16)event->data.key.key;
+        input.data.key_event.pressed = event->data.key.pressed;
+    } else if (event->type == UI_EVENT_TEXT && event->data.text.scalar <= 0xffffu) {
+        input.kind = VM_MACHINE_INPUT_KEY_EVENT;
+        input.data.key_event.virtual_key = (type_unsigned_16)event->data.text.scalar;
+        input.data.key_event.pressed = TYPE_TRUE;
+    } else if (event->type == UI_EVENT_MOUSE) {
+        input.kind = VM_MACHINE_INPUT_MOUSE_EVENT;
+        input.data.mouse_event.delta_x = event->data.mouse.delta_x < INT16_MIN ? INT16_MIN :
+            event->data.mouse.delta_x > INT16_MAX ? INT16_MAX : event->data.mouse.delta_x;
+        input.data.mouse_event.delta_y = event->data.mouse.delta_y < INT16_MIN ? INT16_MIN :
+            event->data.mouse.delta_y > INT16_MAX ? INT16_MAX : event->data.mouse.delta_y;
+        input.data.mouse_event.buttons =
+            (event->data.mouse.buttons & UI_MOUSE_BUTTON_LEFT ? 1u : 0u) |
+            (event->data.mouse.buttons & UI_MOUSE_BUTTON_RIGHT ? 2u : 0u);
+    } else return TYPE_STATUS_UNSUPPORTED;
+    return vm_machine_submit_input(machine, &input);
+}
+
+static lib_status vm_product_console_input_dispatch(void *opaque,
+    const ui_input_event *event)
+{ return (lib_status)vm_product_console_submit_input(opaque, event); }
+
+static C_VOID vm_product_console_submit_chord(vm_product_console_context *context,
+    C_INT cad)
+{
+    const type_unsigned_16 scan[] = { cad ? 0x1du : 0x38u, 0x38u,
+        cad ? 0x153u : 0u };
+    const type_unsigned_16 key[] = { cad ? 0x11u : 0x12u, 0x12u,
+        cad ? 0x2eu : 0u };
+    const type_unsigned_32 count = cad ? 3u : 2u;
+    type_unsigned_32 index;
+
+    for (index = 0u; index < count; ++index)
+        (C_VOID)vm_product_console_submit_key(context, scan[index], key[index], TYPE_TRUE);
+    for (index = count; index-- != 0u;)
+        (C_VOID)vm_product_console_submit_key(context, scan[index], key[index], TYPE_FALSE);
+}
+
+static type_status vm_product_console_reduce_input(vm_product_console_context *context,
+    const ui_input_event *event, common_session_plan *out_plan)
+{
+    const C_CHAR *name;
+
+    if (context == STD_NULL || event == STD_NULL || out_plan == STD_NULL)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    if (event->type == UI_EVENT_HOTKEY) {
+        name = event->data.hotkey.identifier;
+        if (!STD_STRCMP(name, "pause"))
+            return vm_product_console_is_running(context) ?
+                vm_product_console_request_pause(context) :
+                vm_product_console_resume(context, out_plan);
+        if (!STD_STRCMP(name, "release-mouse")) {
+            out_plan->release_mouse = LIB_TRUE;
+            return TYPE_STATUS_OK;
+        }
+        if (!STD_STRCMP(name, "cad") || !STD_STRCMP(name, "alt-enter")) {
+            vm_product_console_submit_chord(context, !STD_STRCMP(name, "cad"));
+            return TYPE_STATUS_OK;
+        }
+        return TYPE_STATUS_OK;
+    }
+    if (event->type == UI_EVENT_WINDOW_CLOSE) {
+        if (vm_product_console_is_running(context))
+            (C_VOID)vm_product_console_request_pause(context);
+        (C_VOID)common_session_set_target(context->control, COMMON_SESSION_TARGET_NONE);
+        out_plan->target_changed = LIB_TRUE;
+        out_plan->target = COMMON_SESSION_TARGET_NONE;
+        out_plan->mouse_capturable_changed = LIB_TRUE;
+        out_plan->mouse_capturable = LIB_FALSE;
+        out_plan->release_mouse = LIB_TRUE;
+        return TYPE_STATUS_OK;
+    }
+    return (type_status)common_session_dispatch_host_input(context->control, event,
+        vm_product_console_input_dispatch, context);
 }
 
 static void vm_product_console_ui_failure(void *context, lib_u64 source_identity,
@@ -140,7 +431,7 @@ static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *con
         if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
             LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, restore_prompt);
         if (fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
-            vm_app_reduce_input(context->session, &fact.value.input, &plan) == TYPE_STATUS_OK)
+            vm_product_console_reduce_input(context, &fact.value.input, &plan) == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &plan, restore_prompt);
     }
 }
@@ -197,7 +488,7 @@ static C_INT vm_product_console_read_line(vm_product_console_context *context,
             if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
                 LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
             if (fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
-                vm_app_reduce_input(context->session, &fact.value.input, &plan) == TYPE_STATUS_OK)
+                vm_product_console_reduce_input(context, &fact.value.input, &plan) == TYPE_STATUS_OK)
                 vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
             continue;
         }
@@ -341,7 +632,7 @@ static C_VOID doExit(vm_product_console_context *context)
     {
         GetHelp;
     }
-    if (vm_app_stop(currentSession) != TYPE_STATUS_OK) {
+    if (vm_product_console_stop(context) != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to stop machine.\n");
         return;
     }
@@ -358,7 +649,7 @@ static C_VOID doInfo(vm_product_console_context *context)
     }
     STD_PRINTF("Device Info\n");
     STD_PRINTF("================\n");
-    vm_app_print_machine(currentSession);
+    vm_machine_print_machine(vm_product_console_machine(context));
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
@@ -374,11 +665,11 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("BIOS Settings\n");
     STD_PRINTF("==================\n");
-    vm_app_print_bios(currentSession);
+    vm_machine_print_bios(vm_product_console_machine(context));
     STD_PRINTF("\n");
     STD_PRINTF("Device Status\n");
     STD_PRINTF("==================\n");
-    vm_app_print_status(currentSession);
+    vm_machine_print_status(vm_product_console_machine(context));
 }
 
 /* Starts internal debugger */
@@ -388,7 +679,16 @@ static C_VOID doDebug(vm_product_console_context *context)
     {
         GetHelp;
     }
-    (C_VOID)vm_app_debug(currentSession);
+    if (vm_product_console_machine(context) == STD_NULL || context->debug == STD_NULL ||
+        vm_machine_pause_for_debug(vm_product_console_machine(context), 2000u) !=
+            TYPE_STATUS_OK ||
+        common_debug_open(context->debug, vm_machine_common_machine(
+            vm_product_console_machine(context))) != LIB_STATUS_OK ||
+        common_session_set_cli_provider(context->control,
+            vm_product_console_debug_provider, context) != LIB_STATUS_OK ||
+        common_session_set_cli_machine_observer(context->control,
+            vm_product_console_debug_machine, context) != LIB_STATUS_OK)
+        STD_PRINTF("Unable to enter debugger.\n");
 }
 
 /* Executes cpu instruction recorder */
@@ -398,7 +698,7 @@ static C_VOID doRecord(vm_product_console_context *context)
     {
         GetHelp;
     }
-    if (vm_app_is_running(currentSession))
+    if (vm_product_console_is_running(context))
     {
         STD_PRINTF("Cannot change record status or dump record now.\n");
         return;
@@ -425,27 +725,29 @@ static C_VOID doRecord(vm_product_console_context *context)
     }
 }
 
-static const C_CHAR *vm_product_console_speed_name(vm_app_speed speed)
+static const C_CHAR *vm_product_console_speed_name(vm_machine_speed speed)
 {
-    return speed == VM_APP_SPEED_TURBO ? "turbo" : "standard";
+    return speed == VM_MACHINE_SPEED_TURBO ? "turbo" : "standard";
 }
 
 static C_VOID doSpeed(vm_product_console_context *context)
 {
-    vm_app_speed speed;
+    vm_machine_speed speed;
     type_status status;
 
     if (numArgs == 1u) {
-        if (vm_app_get_speed(currentSession, &speed) == TYPE_STATUS_OK) {
+        if (vm_product_console_machine(context) != STD_NULL &&
+            vm_machine_get_speed(vm_product_console_machine(context), &speed) == TYPE_STATUS_OK) {
             STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
         }
         return;
     }
     if (numArgs != 2u) { GetHelp; }
-    if (!STD_STRCMP(argArray[1], "standard")) speed = VM_APP_SPEED_STANDARD;
-    else if (!STD_STRCMP(argArray[1], "turbo")) speed = VM_APP_SPEED_TURBO;
+    if (!STD_STRCMP(argArray[1], "standard")) speed = VM_MACHINE_SPEED_STANDARD;
+    else if (!STD_STRCMP(argArray[1], "turbo")) speed = VM_MACHINE_SPEED_TURBO;
     else { GetHelp; }
-    status = vm_app_set_speed(currentSession, speed);
+    status = vm_product_console_machine(context) == STD_NULL ? TYPE_STATUS_INVALID_STATE :
+        vm_machine_set_speed(vm_product_console_machine(context), speed);
     if (status == TYPE_STATUS_OK) {
         STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
     } else if (status == TYPE_STATUS_INVALID_STATE) {
@@ -459,9 +761,9 @@ static C_VOID doSpeed(vm_product_console_context *context)
 static C_VOID doFloppy(vm_product_console_context *context)
 {
     if (numArgs == 3u && !STD_STRCMP(argArray[1], "insert")) {
-        if (vm_app_is_running(currentSession)) {
+        if (vm_product_console_is_running(context)) {
             STD_PRINTF("Cannot change floppy media now.\n");
-        } else if (vm_app_insert_fdd(currentSession, argArray[2])) {
+        } else if (vm_machine_insert_fdd(vm_product_console_machine(context), argArray[2])) {
             STD_PRINTF("Cannot read floppy disk from '%s'.\n", argArray[2]);
         } else {
             STD_PRINTF("Floppy disk inserted.\n");
@@ -469,9 +771,9 @@ static C_VOID doFloppy(vm_product_console_context *context)
         return;
     }
     if (numArgs == 2u && !STD_STRCMP(argArray[1], "eject")) {
-        if (vm_app_is_running(currentSession)) {
+        if (vm_product_console_is_running(context)) {
             STD_PRINTF("Cannot change floppy media now.\n");
-        } else if (vm_app_remove_fdd(currentSession, STD_NULL)) {
+        } else if (vm_machine_remove_fdd(vm_product_console_machine(context), STD_NULL)) {
             STD_PRINTF("Cannot eject floppy disk.\n");
         } else {
             STD_PRINTF("Floppy disk ejected.\n");
@@ -523,13 +825,16 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,
             &selected_entry)) return;
-    if (vm_app_open_profile(currentSession, &selected_entry) != TYPE_STATUS_OK) {
+    if (vm_app_compose_machine(currentSession, &selected_entry) != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to create session from '%s'.\n", selected_entry.file_name);
         return;
     }
     target = !STD_STRCMP(selected_entry.display, "window") ?
         COMMON_SESSION_TARGET_WINDOW : COMMON_SESSION_TARGET_CONSOLE;
-    (C_VOID)vm_app_set_presentation_target(currentSession, target);
+    (C_VOID)common_session_set_target(context->control, target);
+    if (context->debug != STD_NULL)
+        vm_machine_bind_debug_observer(vm_product_console_machine(context),
+            vm_product_console_debug_observe, context);
 }
 
 /* Executes commands */
@@ -567,7 +872,7 @@ static C_VOID execute(vm_product_console_context *context)
     else if (!STD_STRCMP(argArray[0], "start"))
     {
         common_session_plan plan;
-        type_status status = vm_app_start(currentSession, &plan);
+        type_status status = vm_product_console_start(context, &plan);
         if (status == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
@@ -576,16 +881,17 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "reset"))
     {
-        (C_VOID)vm_app_reset(currentSession);
+        if (vm_product_console_machine(context) != STD_NULL)
+            (C_VOID)vm_machine_reset(vm_product_console_machine(context));
     }
     else if (!STD_STRCMP(argArray[0], "stop"))
     {
-        (C_VOID)vm_app_stop(currentSession);
+        (C_VOID)vm_product_console_stop(context);
     }
     else if (!STD_STRCMP(argArray[0], "resume"))
     {
         common_session_plan plan;
-        type_status status = vm_app_resume(currentSession, &plan);
+        type_status status = vm_product_console_resume(context, &plan);
         if (status == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
@@ -640,8 +946,20 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
         context->control = STD_NULL;
         return TYPE_FALSE;
     }
-    vm_app_bind_product_debug_observer(context->session,
-        vm_product_recorder_observe, context->recorder);
+    if (common_debug_create(&context->debug) != LIB_STATUS_OK ||
+        common_session_set_lifecycle_sink(context->control,
+            vm_product_console_lifecycle, context) != LIB_STATUS_OK) {
+        common_debug_destroy(context->debug);
+        context->debug = STD_NULL;
+        common_ui_destroy(context->presentation);
+        context->presentation = STD_NULL;
+        vm_product_recorder_destroy(context->recorder);
+        context->recorder = STD_NULL;
+        context->control = STD_NULL;
+        STD_FREE(argArray);
+        argArray = STD_NULL;
+        return TYPE_FALSE;
+    }
     if (vm_product_session_catalog_create(profile_directory, &context->catalog) ==
             TYPE_STATUS_OK) return TYPE_TRUE;
     vm_product_session_catalog_destroy(context->catalog);
@@ -649,7 +967,8 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     common_ui_destroy(context->presentation);
     context->presentation = STD_NULL;
     context->control = STD_NULL;
-    vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
+    common_debug_destroy(context->debug);
+    context->debug = STD_NULL;
     vm_product_recorder_destroy(context->recorder);
     context->recorder = STD_NULL;
     STD_FREE(argArray);
@@ -665,17 +984,21 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
         STD_FREE((C_VOID *)argArray);
     }
     argArray = STD_NULL;
-    if (!context->session_stopped && vm_app_stop(currentSession) == TYPE_STATUS_OK) {
+    if (!context->session_stopped && vm_product_console_stop(context) == TYPE_STATUS_OK) {
         context->session_stopped = TYPE_TRUE;
     }
     vm_product_console_drain_lifecycle(context, TYPE_FALSE);
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
-    vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
+    if (vm_product_console_machine(context) != STD_NULL)
+        vm_machine_bind_debug_observer(vm_product_console_machine(context), STD_NULL,
+            STD_NULL);
     common_ui_destroy(context->presentation);
+    common_debug_destroy(context->debug);
     vm_product_recorder_destroy(context->recorder);
     context->recorder = STD_NULL;
     context->presentation = STD_NULL;
+    context->debug = STD_NULL;
     common_session_close(context->control);
     context->control = STD_NULL;
 }
@@ -696,8 +1019,11 @@ type_status vm_product_console_context_create(
 C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 {
     if (context == STD_NULL) return;
-    vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
+    if (vm_product_console_machine(context) != STD_NULL)
+        vm_machine_bind_debug_observer(vm_product_console_machine(context), STD_NULL,
+            STD_NULL);
     common_ui_destroy(context->presentation);
+    common_debug_destroy(context->debug);
     vm_product_session_catalog_destroy(context->catalog);
     vm_product_recorder_destroy(context->recorder);
     STD_FREE(context);

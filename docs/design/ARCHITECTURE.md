@@ -89,16 +89,17 @@ boundaries. `vm/machine` is NXVM's sole driver and Core assembly owner: it
 maps those copied requests to Core, publishes copied lifecycle, fault and
 display facts, and exposes bounded paused-Debug operations through the common
 lease contract. Neither owner selects a host surface or owns the process
-Console. `vm/events` remains a value-only display/input ABI below product
-owners: it contains no Core, executor, session, or UI pointer.
+Console. The copied display/input ABI sits with `vm/machine/runtime`, beside
+the adapter that produces and consumes it; it contains no Core, executor,
+session, or UI pointer.
 
 `common/session` is the sole product-control reducer. Its one FIFO receives
 copied Console lines, machine results and presentation input; it owns run
 generation and lifecycle facts. `vm/app` is the NXVM composition binding: it
-converts the existing VM machine result into copied common facts and contains
-no second FIFO, run generation, lifecycle reducer or presentation state.
-Product Console retains NXVM command and title policy until the later
-common-debug/product-CLI migration.
+creates the Common session and NXVM machine adapter, converts machine results
+into copied Common facts, and contains no second FIFO, run generation,
+lifecycle reducer or presentation state. `vm/product` retains NXVM command,
+YAML/profile, Debugger, title and input policy.
 
 `common/ui` is the sole shared-lib presenter binding. It owns the process
 Console broker, may lease it to at most one Console presenter, applies only

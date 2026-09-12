@@ -2,7 +2,7 @@
 #define VM_PRODUCT_SESSION_CATALOG_H
 
 #include "type.h"
-#include "vm/events/session_request.h"
+#include "vm/machine/request_interface.h"
 
 #define VM_PRODUCT_SESSION_CATALOG_MAX 64u
 

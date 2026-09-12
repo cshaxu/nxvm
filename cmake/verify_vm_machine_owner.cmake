@@ -12,7 +12,7 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/src/vm/composition/session")
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/executor_fifo.c" fifo_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/events/machine_event.h" event_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/event_interface.h" event_header)
 foreach(required IN ITEMS
     "vm_machine_request"
     "VM_MACHINE_REQUEST_PAUSE"
@@ -29,7 +29,7 @@ endforeach()
 foreach(forbidden IN ITEMS "core_machine *" "vm_machine *" "HWND" "HANDLE")
     string(FIND "${event_header}" "${forbidden}" position)
     if(NOT position EQUAL -1)
-        message(FATAL_ERROR "vm/events leaked an owner or native handle: ${forbidden}")
+        message(FATAL_ERROR "VM machine event ABI leaked an owner or native handle: ${forbidden}")
     endif()
 endforeach()
 

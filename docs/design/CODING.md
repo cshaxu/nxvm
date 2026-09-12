@@ -21,8 +21,7 @@ src/
   core/{machine,product}/
   vm/
     main.c
-    events/
-    {events,machine,platform,product,profile,session}/
+    {app,machine,platform,product,profile,session}/
   mantle/
     composition/
     {machine,platform,product}/

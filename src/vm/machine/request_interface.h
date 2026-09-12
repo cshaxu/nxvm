@@ -1,10 +1,11 @@
-#ifndef VM_EVENTS_SESSION_REQUEST_H
-#define VM_EVENTS_SESSION_REQUEST_H
+#ifndef VM_MACHINE_REQUEST_INTERFACE_H
+#define VM_MACHINE_REQUEST_INTERFACE_H
 
 #include "type.h"
 
-/* Immutable copied session-selection value. It carries YAML-resolved paths
- * but no Core, executor, presentation or native object. */
+/* Immutable copied machine-construction value. Product YAML selection resolves
+ * this before composition; it carries no Core, executor, presentation or
+ * native object. */
 #define VM_SESSION_REQUEST_PATH_MAX 1024u
 #define VM_SESSION_REQUEST_MEDIA_SLOT_COUNT 2u
 #define VM_SESSION_REQUEST_BIOS_SLOT_COUNT 2u
