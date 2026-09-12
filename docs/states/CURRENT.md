@@ -22,6 +22,11 @@ No implementation packet is active.
 
 ## Recent Governance
 
+- **M5 Td S166 P1:** queued two owner-approved, unnumbered candidates in
+  dependency order: VM-machine owner cleanup, then Common-machine executor
+  completion. Both use the audited NXVM/SoftPC two-consumer criterion; neither
+  allocates or admits a numeric implementation task.
+
 - **M5 T527 S9 P2:** records independent corpus verification, complete test
   closure, artifact identity, proposal retention, and task closure after
   implementation `2c596f2c`.
