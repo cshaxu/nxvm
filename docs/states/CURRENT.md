@@ -19,7 +19,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T528 S2 | Accepted at `27b27298`: `vm/product` is the only monitor-text owner; `vm/machine` exposes copied information only; dead Core-product config is deleted and Core contains only `machine`. [Evidence](../etc/evidence/t528-s2-product-boundary-cleanup.md) transfers the executor receiver to T529. |
 | T528 S3 | Accepted at `1a1e9e90`: `vm/media` is the sole FDD/HDD geometry, Lib-storage and Core-provider owner; device composition has the one registry bind/freeze route, and no reverse dependency remains. [Evidence](../etc/evidence/t528-s3-media-owner-relocation.md) records 299/299 unit and specialized-gate proof. |
 | T527 | Common product-runtime convergence closed at `2c596f2c`: one Common corpus owns xasm32, Debug, session, machine and UI; NXVM retains one VM Core adapter, product policy owner and App composition root. Independent Common verification, 299/299 unit, 42/42 external integration, specialized gates and stripped x64/x86 artifacts pass. [History](../history/M5-T527-common-product-runtime-convergence.md) and [evidence](../etc/evidence/t527-s9-reusable-common-closure.md). |
 | T526 | Canonical-library integration repair closed at `98ac51a4`: 299/299 unit, 67/67 specialized gates, 42/42 external integration, actual-diff review and stripped x64/x86 artifacts accepted. |
