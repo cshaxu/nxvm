@@ -30,6 +30,10 @@ struct vm_product_console_context {
     common_debug *debug;
     vm_product_recorder *recorder;
     C_INT session_stopped;
+    common_session_fact fact;
+    ui_frame display;
+    common_session_plan plan;
+    common_ui_plan ui_plan;
 };
 #define CONSOLE_MAXNARG 256
 
@@ -384,18 +388,20 @@ static common_ui_target vm_product_console_ui_target(common_session_target targe
 static void vm_product_console_apply_ui_plan(vm_product_console_context *context,
     const common_session_plan *plan)
 {
-    common_ui_plan ui_plan = {0};
+    common_ui_plan *ui_plan;
 
     if (context == STD_NULL || vm_product_console_ui(context) == LIB_NULL || plan == STD_NULL)
         return;
-    ui_plan.target_changed = plan->target_changed;
-    ui_plan.target = vm_product_console_ui_target(plan->target);
-    ui_plan.mouse_capturable_changed = plan->mouse_capturable_changed;
-    ui_plan.mouse_capturable = plan->mouse_capturable;
-    ui_plan.release_mouse = plan->release_mouse;
-    ui_plan.frame_ready = plan->frame_ready;
-    ui_plan.frame = plan->frame;
-    (void)common_ui_apply(vm_product_console_ui(context), &ui_plan);
+    ui_plan = &context->ui_plan;
+    STD_MEMSET(ui_plan, 0, sizeof(*ui_plan));
+    ui_plan->target_changed = plan->target_changed;
+    ui_plan->target = vm_product_console_ui_target(plan->target);
+    ui_plan->mouse_capturable_changed = plan->mouse_capturable_changed;
+    ui_plan->mouse_capturable = plan->mouse_capturable;
+    ui_plan->release_mouse = plan->release_mouse;
+    ui_plan->frame_ready = plan->frame_ready;
+    ui_plan->frame = plan->frame;
+    (void)common_ui_apply(vm_product_console_ui(context), ui_plan);
 }
 
 static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
@@ -431,17 +437,16 @@ static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
 static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
     C_INT restore_prompt)
 {
-    common_session_fact fact;
-    ui_frame display;
-    common_session_plan plan;
-
     if (context == STD_NULL) return;
-    while (common_session_take(context->control, &fact, &display, 0u) == TYPE_STATUS_OK) {
-        if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
-            LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, restore_prompt);
-        if (fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
-            vm_product_console_reduce_input(context, &fact.value.input, &plan) == TYPE_STATUS_OK)
-            vm_product_console_apply_plan(context, &plan, restore_prompt);
+    while (common_session_take(context->control, &context->fact, &context->display,
+            0u) == TYPE_STATUS_OK) {
+        if (common_session_reduce_fact(context->control, &context->fact,
+                &context->display, &context->plan) == LIB_STATUS_OK)
+            vm_product_console_apply_plan(context, &context->plan, restore_prompt);
+        if (context->fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
+            vm_product_console_reduce_input(context, &context->fact.value.input,
+                &context->plan) == TYPE_STATUS_OK)
+            vm_product_console_apply_plan(context, &context->plan, restore_prompt);
     }
 }
 
@@ -481,34 +486,34 @@ static C_VOID parse(vm_product_console_context *context)
 static C_INT vm_product_console_read_line(vm_product_console_context *context,
     C_CHAR *buffer, STD_SIZE_T buffer_size)
 {
-    common_session_fact fact;
-    ui_frame display;
-    common_session_plan plan;
-
     if (context == STD_NULL || buffer == STD_NULL || buffer_size == 0u ||
         vm_product_console_ui(context) == LIB_NULL || context->control == STD_NULL)
         return 0;
     buffer[0] = '\0';
     if (common_ui_request_console_line(vm_product_console_ui(context)) != LIB_STATUS_OK) return 0;
     for (;;) {
-        if (common_session_take(context->control, &fact, &display, 0xffffffffu) !=
-                TYPE_STATUS_OK) return 0;
-        if (fact.kind != COMMON_SESSION_FACT_CONSOLE_LINE) {
-            if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
-                LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
-            if (fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
-                vm_product_console_reduce_input(context, &fact.value.input, &plan) == TYPE_STATUS_OK)
-                vm_product_console_apply_plan(context, &plan, TYPE_TRUE);
+        if (common_session_take(context->control, &context->fact, &context->display,
+                0xffffffffu) != TYPE_STATUS_OK) return 0;
+        if (context->fact.kind != COMMON_SESSION_FACT_CONSOLE_LINE) {
+            if (common_session_reduce_fact(context->control, &context->fact,
+                    &context->display, &context->plan) == LIB_STATUS_OK)
+                vm_product_console_apply_plan(context, &context->plan, TYPE_TRUE);
+            if (context->fact.kind == COMMON_SESSION_FACT_UI_INPUT &&
+                vm_product_console_reduce_input(context, &context->fact.value.input,
+                    &context->plan) == TYPE_STATUS_OK)
+                vm_product_console_apply_plan(context, &context->plan, TYPE_TRUE);
             continue;
         }
         if (common_session_has_cli_provider(context->control)) {
-            if (common_session_reduce_fact(context->control, &fact, &display, &plan) ==
-                LIB_STATUS_OK) vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
+            if (common_session_reduce_fact(context->control, &context->fact,
+                    &context->display, &context->plan) == LIB_STATUS_OK)
+                vm_product_console_apply_plan(context, &context->plan, TYPE_FALSE);
             continue;
         }
-        if (fact.kind != COMMON_SESSION_FACT_CONSOLE_LINE) return 0;
-        if (STD_STRLEN(fact.value.line) >= buffer_size) return 0;
-        STD_MEMCPY(buffer, fact.value.line, STD_STRLEN(fact.value.line) + 1u);
+        if (context->fact.kind != COMMON_SESSION_FACT_CONSOLE_LINE) return 0;
+        if (STD_STRLEN(context->fact.value.line) >= buffer_size) return 0;
+        STD_MEMCPY(buffer, context->fact.value.line,
+            STD_STRLEN(context->fact.value.line) + 1u);
         return 1;
     }
 }
@@ -917,10 +922,9 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "start"))
     {
-        common_session_plan plan;
-        type_status status = vm_product_console_start(context, &plan);
+        type_status status = vm_product_console_start(context, &context->plan);
         if (status == TYPE_STATUS_OK)
-            vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
+            vm_product_console_apply_plan(context, &context->plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
             STD_PRINTF("START failed: %d.\n", (C_INT)status);
         }
@@ -936,10 +940,9 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "resume"))
     {
-        common_session_plan plan;
-        type_status status = vm_product_console_resume(context, &plan);
+        type_status status = vm_product_console_resume(context, &context->plan);
         if (status == TYPE_STATUS_OK)
-            vm_product_console_apply_plan(context, &plan, TYPE_FALSE);
+            vm_product_console_apply_plan(context, &context->plan, TYPE_FALSE);
         if (status != TYPE_STATUS_OK) {
             STD_PRINTF("RESUME failed: %d.\n", (C_INT)status);
         }

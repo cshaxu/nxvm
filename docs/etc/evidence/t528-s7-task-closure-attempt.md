@@ -7,24 +7,40 @@ NXVM-bounded-runner owner disposition.
 ## Required Artifact Identity
 
 `CMakeLists.txt` now declares only `vm-0-5-0528` as the current artifact
-target.  Its x64 optimized, stripped Release build succeeded and copied the
-same executable to all required destinations:
+target.  Both optimized, stripped Release builds succeeded and copied their
+same-architecture executables to all required destinations:
 
 | Architecture | SHA-256 | Verified locations |
 | --- | --- | --- |
-| x64 | `6994CEA26F926B8D892351D4F84AF4D94716B7902494F9CE97820F8139F0C6F2` | `build/mingw-gcc-x64-release/output/nxvm_0_5_0528_x64.exe`, `build/output/nxvm_0_5_0528_x64.exe`, `assets/sessions/nxvm_0_5_0528_x64.exe` |
+| x86 | `72B371DB6DC9A2837F0392924530DDE8A0F7C414B478C31A6408F37C64623E4E` | `build/mingw-clang-x86-release/output/nxvm_0_5_0528_x86.exe`, `build/output/nxvm_0_5_0528_x86.exe`, `assets/sessions/nxvm_0_5_0528_x86.exe` |
+| x64 | `A0DAFA99892AF426515102621AB32D4A509F3552CC0007D9BB6E2BF674AB007B` | `build/mingw-gcc-x64-release/output/nxvm_0_5_0528_x64.exe`, `build/output/nxvm_0_5_0528_x64.exe`, `assets/sessions/nxvm_0_5_0528_x64.exe` |
 
-The required x86 artifact was **not** produced.  This is an environment
-failure before NXVM source compilation: the configured MSYS2 i686 GCC frontend
+The configured MSYS2 i686 GCC frontend remains unusable:
 `D:\programs\msys64\mingw32\lib\gcc\i686-w64-mingw32\16.2.0\cc1.exe`
 exits with Windows status `0xC000007B`, including for a trivial preprocessing
-probe.  `gcc --version` and `as --version` succeed, but no C source can pass
-the frontend.  The task may not claim dual-architecture artifact closure until
-that toolchain is repaired or replaced and the x86 artifact is rebuilt.
+probe.  The installed Clang 22 toolchain successfully targets
+`i686-w64-windows-gnu` against the existing MSYS2 sysroot instead.  Its PE
+verifier reports x86, its `SizeOfStackReserve` is the historical 2 MiB, and
+`objdump` finds no `.debug`/`.zdebug` compiler-debug sections.
+The checked-in `mingw-clang-x86-release` configure preset and the required
+`current-gcc-x86` build-preset identity reconstruct that route using the
+caller-provided `NXVM_I686_CLANG` and `NXVM_I686_SYSROOT` environment values.
+
+The first Clang artifact exposed a real portability defect: the product Console
+put multiple complete copied `ui_frame`/`common_session_plan` payloads on one
+32-bit call stack.  The existing 2 MiB stack was insufficient.  Those
+single-console transient values now belong to the one heap-allocated Console
+context; no Common contract, mailbox, API or behavior changed.  Focused Console
+and lifecycle integration tests pass, and a controlled x86 debugger launch
+reaches its interactive input wait without the prior `_alloca` fault.
+
+The x64 build was rebuilt after the prior output-file holder exited; its PE
+architecture verifier and no-debug-section scan pass.
 
 ## Gates Run
 
-- Full repository-only unit aggregate: passed (299 registered unit cases).
+- Full repository-only unit aggregate: passed (299 registered unit cases),
+  including the Console stack-owner change.
 - `verify-current-specialized-gates`: passed.
 - Documentation governance: passed.
 - x64 current artifact optimized/stripped architecture verifier: passed.
@@ -49,5 +65,5 @@ the non-boot Model-40 integration probes.
 These failures concern model-specific firmware/board/FDC/KBC/video-ROM boot
 paths.  They are not caused by, and cannot be repaired by, the T528 owner
 cleanup without violating its explicit non-goals.  T528 S7 remains active and
-T528 remains open.  A revised, separately approved boot-repair packet is
+T528 remains open. A revised, separately approved boot-repair packet is
 required before attempting task closure again.

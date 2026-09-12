@@ -85,8 +85,11 @@ dependency.
 7. **S7 - task-level closure and artifact verification.** Keep the proven
    Common-protocol/NXVM-runner boundary unchanged; run the complete unit and
    external integration suites, all closure gates, and build the required
-   stripped Release x64/x86 `0.5.0528` artifacts.  Review the actual final
-   diff and map every task exit criterion to retained evidence.
+   stripped Release x64/x86 `0.5.0528` artifacts.  If artifact parity exposes
+   a product-console stack copy of an existing Common copied value, move that
+   transient storage to its one heap-owned console context without changing
+   Common contracts or product behavior. Review the actual final diff and map
+   every task exit criterion to retained evidence.
 
 ## Exit Criteria
 

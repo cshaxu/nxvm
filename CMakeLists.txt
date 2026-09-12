@@ -2865,7 +2865,12 @@ function(add_current_vm_artifact target version)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
         target_link_options(${target} PRIVATE -Wl,--strip-debug)
+    endif()
+    if(PROJECT_ARTIFACT_ARCHITECTURE STREQUAL "x86")
+        target_link_options(${target} PRIVATE -Wl,--stack,2097152)
     endif()
 
     if(CMAKE_BUILD_TYPE STREQUAL "Release")

@@ -54,6 +54,19 @@
         "CMAKE_C_COMPILER": "$env{NXVM_I686_GCC}",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86"
       }
+    },
+    {
+      "name": "mingw-clang-x86-release",
+      "displayName": "LLVM Clang MinGW x86 optimized release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/mingw-clang-x86-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "$env{NXVM_I686_CLANG}",
+        "CMAKE_C_COMPILER_TARGET": "i686-w64-windows-gnu",
+        "CMAKE_SYSROOT": "$env{NXVM_I686_SYSROOT}",
+        "PROJECT_ARTIFACT_ARCHITECTURE": "x86"
+      }
     }
   ],
   "buildPresets": [
@@ -69,7 +82,7 @@
     },
     {
       "name": "current-gcc-x86",
-      "configurePreset": "mingw-gcc-x86-release",
+      "configurePreset": "mingw-clang-x86-release",
       "targets": ["vm-0-5-0528"]
     },
     {
