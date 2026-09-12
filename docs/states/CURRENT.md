@@ -2,7 +2,9 @@
 
 ## Current Work
 
-No implementation packet is active.
+| Task | Status | Scope |
+| --- | --- | --- |
+| T528 S1 | Accepted | Ownership ledger accepted: existing Common FIFO/lease is sole request ingress; incomplete shared executor mechanisms transfer to the queued Common-machine task. [Ledger](../etc/evidence/t528-s1-vm-machine-owner-ledger.md) |
 
 ## Current Technical Baseline
 
