@@ -4,33 +4,33 @@
 
 | Task | Status | Scope |
 | --- | --- | --- |
-| T528 S6 | Active | [M5 VM-machine owner cleanup](../proposals/m5-vm-machine-owner-cleanup.md): exhaustively classify the remaining VM-machine corpus and close only if no duplicate, forwarding or wrong-owner path remains. |
+| T528 S7 | Active | [M5 VM-machine owner cleanup](../proposals/m5-vm-machine-owner-cleanup.md): complete task-level closure proof and produce the required `0.5.0528` dual-architecture artifacts without changing the established executor boundary. |
 
-## M5 T528 S6 Packet
+## M5 T528 S7 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T528 implementation on 2026-09-11: "准入实施两个T任务". This final audit consumes the proposal's owner-cleanup exit criteria; it allocates no unproven relocation. |
-| Objective | Audit every remaining `src/vm/machine` production file and direct owner edge; either prove its single NXVM adapter responsibility or repair any in-scope forwarding/duplicate/wrong-owner mechanism before task closure. |
-| Non-goals | Do not unify NXVM's bounded-quantum Core runner with SoftPC's CCPU/timer runtime; do not alter Core behavior, Common FIFO/lease, profile topology, media, firmware, YAML grammar, public ABI or host synchronization unless a demonstrated duplicate requires a separately revised packet. |
-| Reference Baseline | `36d51a29`; [T528 S1 ledger](../etc/evidence/t528-s1-vm-machine-owner-ledger.md); [S4 evidence](../etc/evidence/t528-s4-provider-lifecycle-cleanup.md); [S5 evidence](../etc/evidence/t528-s5-profile-firmware-owner-disposition.md). |
-| Candidate Proposal | [M5 VM-machine owner cleanup](../proposals/m5-vm-machine-owner-cleanup.md), task exit criteria and retained owner boundary. |
-| Files And ABI Surface | Every tracked `.c`/`.h` below `src/vm/machine`, its CMake source ownership rows and direct project-owner includes. Audit only; an actual new mechanism defect stops this S for a revised repair brief. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): exhaustive exit audit and evidence-based transfer. [Architecture](../rules/ARCHITECTURE.md): one state/route owner and no reverse dependency. [Coding](../rules/CODING.md): no forwarding facade or duplicate abstraction. [Documentation](../rules/DOCUMENT.md): truthful task closure. |
-| Verification | Generate a complete file/symbol/owner ledger; sweep forwarding-only and old paths; run dependency DAG and build-owner gates; full repository-only unit suite; specialized gates; documentation governance; actual-diff review. |
-| Expected Markers | Every retained file has a distinct NXVM Core adapter, Core-plan composition, copied event/frame adapter or Core-time responsibility. No second request FIFO, lifecycle reducer, presenter/mailbox, media provider, parser, firmware provider or generic executor remains. |
+| Admission And Approval | Owner approved T528 implementation on 2026-09-11: "准入实施两个T任务"; this is its next continuation after accepted S6 `05408699`. The owner has repeatedly approved normal commits and pushes. |
+| Objective | Close T528 only if its complete proposal exit criteria remain proven, with current task identity `0.5.0528` stripped Release artifacts for both Windows architectures. |
+| Non-goals | Do not change the established Common-protocol/NXVM-bounded-runner boundary; do not create a generic executor worker, alter Core behavior, profile topology, media, firmware, YAML grammar, public ABI or host synchronization. |
+| Reference Baseline | `05408699`; [S1 ledger](../etc/evidence/t528-s1-vm-machine-owner-ledger.md); [S6 evidence](../etc/evidence/t528-s6-vm-machine-owner-closure-audit.md); the owner-confirmed NXVM versus SoftPC executor distinction. |
+| Candidate Proposal | [M5 VM-machine owner cleanup](../proposals/m5-vm-machine-owner-cleanup.md), especially S7 and all task exit criteria. |
+| Files And ABI Surface | Current-artifact CMake declaration, task/history/status/evidence records, and generated ignored `build/output`/`assets/sessions` artifacts only. No runtime API or behavior change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): T-level unit/integration/artifact proof and actual-diff review. [Architecture](../rules/ARCHITECTURE.md): one execution owner. [Coding](../rules/CODING.md): no forwarding facade. [Documentation](../rules/DOCUMENT.md): truthful task closure. |
+| Verification | Reconfigure/build current Release x64/x86 artifacts; full repository-only unit suite; full owner-managed external integration suite; specialized gates; documentation governance; PE architecture/version/SHA-256 records; actual-diff and final-exit audit. |
+| Expected Markers | `nxvm_0_5_0528_x64.exe` and `nxvm_0_5_0528_x86.exe` exist in both mandated ignored directories, are stripped optimized Release PE files of their stated architecture, and all proposal exit criteria map to evidence. |
 | Asset Needs | None. Repository-only analysis and tests only. |
-| Reporting Requirements | Record every file's current owner/reason, exact retained NXVM-vs-SoftPC executor distinction, all searches/gates, code-size delta and any transfer. A clean audit may close T528; any actual defect requires its own revised repair brief. |
-| Stop Conditions | Stop and revise before code change if a finding needs Core/Common API changes, a new profile dependency, behavior change, external asset or executor-model change. Do not close on an incomplete inventory. |
-| Exit Criteria | The complete residual corpus is classified with evidence; every duplicate category in the proposal is absent or has a distinct documented owner; all gates pass; task-level closure truthfully maps each proposal exit criterion to evidence. |
+| Reporting Requirements | Record commands and outcomes, both artifact identities/architectures/SHA-256 values, the final actual-diff review, and the exit-criterion-to-evidence map. Any new runtime defect requires a revised packet rather than a false closure. |
+| Stop Conditions | Stop and revise if full integration exposes a runtime defect, either required architecture cannot build, artifacts do not meet identity/strip/architecture criteria, or final review finds a duplicate owner. |
+| Exit Criteria | Every proposal exit criterion is mapped to retained evidence; unit, integration, specialized and documentation gates pass; both artifacts are verified; actual final diff is scoped; the proposal is retained in task history and T528 status is truthfully closed. |
 | Original Owner Request | "清理 vm/machine 的重复实现". |
-| Similar-Issue Sweep | Search every retained source/header, CMake target/source row and include edge for mirrored state, direct request queues, lifecycle state, host waits, native presentation, media providers, YAML parsing, firmware mapping, forwarding functions and profile-to-machine reverse dependencies. |
+| Similar-Issue Sweep | Re-run the S6 corpus/forwarding and target-owner checks through specialized gates; inspect the final CMake target declaration, all current-artifact references, artifact output paths and task records for stale `0527` identity or a second executor route. |
 
 ## Current Technical Baseline
 
-- `vm-0-5-0527` is the current target. Its stripped Release artifacts are
-  `nxvm_0_5_0527_x64.exe` and `nxvm_0_5_0527_x86.exe` in both
+- `vm-0-5-0528` is the current target. Its stripped Release artifacts will be
+  `nxvm_0_5_0528_x64.exe` and `nxvm_0_5_0528_x86.exe` in both
   `build/output` and `assets/sessions`.
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:

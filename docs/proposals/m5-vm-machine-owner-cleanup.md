@@ -82,6 +82,11 @@ dependency.
    assembly, copied Core adaptation, Core-time pacing, or NXVM's bounded
    quantum runner. Common continues to own copied FIFO/run/lease semantics;
    it does not acquire an executor worker.
+7. **S7 - task-level closure and artifact verification.** Keep the proven
+   Common-protocol/NXVM-runner boundary unchanged; run the complete unit and
+   external integration suites, all closure gates, and build the required
+   stripped Release x64/x86 `0.5.0528` artifacts.  Review the actual final
+   diff and map every task exit criterion to retained evidence.
 
 ## Exit Criteria
 
