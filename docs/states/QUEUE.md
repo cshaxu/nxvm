@@ -24,7 +24,6 @@ reserve a numeric task identifier, or define a technical baseline.
 17. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md)
 
 Shared M5 admission context:
-[VM-machine owner cleanup](../proposals/m5-vm-machine-owner-cleanup.md),
 [Four-profile CPU completeness](../proposals/m5-four-profile-cpu-completeness-program.md),
 [complete simulation admission](../proposals/m5-specification-driven-complete-simulation-admission-program.md),
 [IBM 5160 XT keyboard device](../proposals/ibm-5160-xt-keyboard-device.md),

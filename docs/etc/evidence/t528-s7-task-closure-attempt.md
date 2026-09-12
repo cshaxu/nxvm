@@ -60,10 +60,13 @@ All other 39 integration rows passed, including every default-PC/AT CPU/media
 matrix row, IBM 5160, DOS, video, ATA, Windows checkpoint, Common Debug, and
 the non-boot Model-40 integration probes.
 
-## Disposition
+## Owner-Approved Closure Disposition
 
 These failures concern model-specific firmware/board/FDC/KBC/video-ROM boot
 paths.  They are not caused by, and cannot be repaired by, the T528 owner
-cleanup without violating its explicit non-goals.  T528 S7 remains active and
-T528 remains open. A revised, separately approved boot-repair packet is
-required before attempting task closure again.
+cleanup without violating its explicit non-goals. On 2026-09-12 the owner
+approved closing T528 without admitting another task. This is an explicit,
+narrow exception to its all-green external-integration exit criterion: it
+accepts the completed owner-cleanup scope and transfers the three failures
+unchanged to `TODO(High) External-ROM Model-40 and IBM 5170 boot-chain repair`.
+It does not claim that those boot configurations pass.
