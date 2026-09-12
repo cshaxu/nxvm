@@ -10,7 +10,7 @@ while preserving its sole NXVM role as Core/profile/assets/media adapter.
 | Subtask | Status | Compact result |
 | --- | --- | --- |
 | S1 | Complete | `833b920c` inventory proves the current Common FIFO/lease boundary, exhausts every VM-machine file and transfers only the incomplete shared executor mechanism to the queued second candidate. [Ledger](../etc/evidence/t528-s1-vm-machine-owner-ledger.md) |
-| S2 | Active | Move NXVM monitor formatting out of `vm/machine`, remove the stale Core-product corpus, and relocate the NXVM banner; the executor cutover cannot safely occur until T529 supplies the Common executor receiver. |
+| S2 | Complete | `27b27298` deletes all VM-machine monitor printing and stale Core-product config, retains one copied information query, and moves the NXVM-only banner to `src/`. [Evidence](../etc/evidence/t528-s2-product-boundary-cleanup.md) records 299/299 unit and full gate proof. T529 remains the executor receiver. |
 
 ## Proposal
 
