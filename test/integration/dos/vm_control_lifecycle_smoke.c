@@ -7,7 +7,6 @@
 
 #include "vm/machine/runtime/control.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/execution.h"
 #include "test/integration/support/session_yaml.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)

@@ -101,11 +101,6 @@ static lib_bool vm_machine_common_is_paused(void *context)
         LIB_TRUE : LIB_FALSE;
 }
 
-static C_VOID vm_machine_observe_safe_point(C_VOID *context)
-{
-    (C_VOID)common_machine_observe_safe_point((common_machine *)context);
-}
-
 static C_VOID vm_machine_execution_task_main(C_VOID *opaque,
     const host_sync_task *task)
 {
@@ -375,8 +370,6 @@ type_status vm_machine_initialize(vm_machine *machine) {
         vm_machine_finalize(machine); return TYPE_STATUS_NO_MEMORY;
     }
     vm_machine_start_outcome_reset(machine);
-    vm_machine_control_bind_command_boundary(&machine->control,
-        vm_machine_observe_safe_point, machine->executor);
     machine->active = 1;
     return TYPE_STATUS_OK;
 }
@@ -387,7 +380,6 @@ C_VOID vm_machine_finalize(vm_machine *machine) {
     vm_machine_execution_join(machine);
     host_sync_event_destroy(machine->execution_started);
     machine->execution_started = STD_NULL;
-    vm_machine_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     core_machine_guest_input_source_destroy(machine->input_source);
     machine->input_source = STD_NULL;
     common_machine_close(machine->executor);

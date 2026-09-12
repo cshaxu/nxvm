@@ -4,7 +4,7 @@
 #include "type.h"
 
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/request_interface.h"
+#include "vm/request_interface.h"
 
 type_status vm_machine_create_from_request(
     const vm_session_request *request, vm_machine **out_session);

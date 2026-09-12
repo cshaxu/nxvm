@@ -2,7 +2,6 @@
 
 #include "core/machine/machine_interface.h"
 #include "lib/host/sync_interface.h"
-#include "vm/machine/runtime/execution.h"
 #include "vm/machine/runtime/display.h"
 #include "vm/machine/runtime/fault.h"
 #include "vm/machine/runtime/lifecycle.h"
@@ -33,8 +32,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
     while (vm_machine_executor_state_is_active(control->state)) {
         resumed = TYPE_FALSE;
         if (vm_machine_executor_state_take_reset(control->state)) {
-            type_status reset_status = vm_machine_execution_context_reset(
-                &control->execution_context);
+            type_status reset_status = vm_machine_control_reset_at_boundary(control);
 
             (C_VOID)vm_machine_finish_reset(session, reset_status);
             if (reset_status != TYPE_STATUS_OK) continue;
@@ -51,7 +49,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
         while (vm_machine_executor_state_is_active(control->state) &&
             vm_machine_executor_state_is_paused(control->state)) {
             resumed = TYPE_TRUE;
-            vm_machine_execution_context_run_command_boundary(&control->execution_context);
+            (C_VOID)common_machine_observe_safe_point(session->executor);
             if (vm_machine_executor_state_is_active(control->state) &&
                 vm_machine_executor_state_is_paused(control->state)) {
                 (C_VOID)common_machine_wait(session->executor, UINT32_MAX);
@@ -59,8 +57,8 @@ C_VOID vm_machine_runner_run(vm_machine *session)
         }
         if (!vm_machine_executor_state_is_active(control->state)) break;
         if (resumed) vm_machine_report_lifecycle(session, VM_MACHINE_RUNNING);
-        vm_machine_execution_context_run_command_boundary(&control->execution_context);
-        vm_machine_execution_context_debug_refresh(&control->execution_context);
+        (C_VOID)common_machine_observe_safe_point(session->executor);
+        vm_machine_control_refresh_debug(control);
         if (vm_machine_debug_breakpoint_due(&session->debug)) {
             vm_machine_debug_complete_breakpoint(&session->debug);
             if (vm_machine_debug_completion_pending(&session->debug,

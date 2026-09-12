@@ -1216,7 +1216,6 @@ set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/runtime/machine.c
     src/vm/machine/runtime/control.c
     src/vm/machine/runtime/fault.c
-    src/vm/machine/runtime/execution.c
     src/vm/machine/runtime/runner.c
     src/vm/machine/runtime/executor_state.c
     src/vm/machine/runtime/waiting.c
@@ -1363,10 +1362,10 @@ target_link_libraries(vm-product PUBLIC
     core-machine-boundary
     storage)
 
-add_executable(vm-execution-context-smoke
-    test/integration/dos/vm_execution_context_smoke.c
+add_executable(vm-control-lifecycle-smoke
+    test/integration/dos/vm_control_lifecycle_smoke.c
 )
-target_link_libraries(vm-execution-context-smoke PRIVATE
+target_link_libraries(vm-control-lifecycle-smoke PRIVATE
     integration-session-yaml-support
 )
 
@@ -2404,7 +2403,7 @@ set(PROJECT_INTEGRATION_FDD_TARGETS
     vm-timer-firmware-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
-    vm-execution-context-smoke)
+    vm-control-lifecycle-smoke)
 set(PROJECT_INTEGRATION_FDD_HDD_TARGETS
     vm-product-default-profile-smoke
     vm-full-pc-session-smoke
@@ -3443,7 +3442,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-minimal-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-control-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 # T345 S2 promotes only non-strict unit executables whose complete
@@ -3603,7 +3602,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/vm/machine/runtime/control.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/executor_state.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/fault.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/execution.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/runner.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/waiting.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/machine_devices.c|vm-machine"

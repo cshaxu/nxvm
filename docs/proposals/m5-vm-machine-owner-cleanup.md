@@ -76,6 +76,12 @@ dependency.
    Executor/worker ownership is explicitly excluded: Common owns the copied
    FIFO/lease contract, while NXVM and SoftPC retain their distinct execution
    loops unless a separately approved two-consumer design proves otherwise.
+6. **S6 - residual owner closure audit.** Reclassify the actual remaining
+   corpus after S2--S5, remove a demonstrated local forwarding facade or
+   wrong-owner value contract, and prove every retained file is either Core
+   assembly, copied Core adaptation, Core-time pacing, or NXVM's bounded
+   quantum runner. Common continues to own copied FIFO/run/lease semantics;
+   it does not acquire an executor worker.
 
 ## Exit Criteria
 

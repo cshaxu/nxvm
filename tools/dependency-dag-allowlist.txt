@@ -12,7 +12,6 @@ src/vm/app/app.c|vm/machine
 src/vm/app/app.h|vm/machine
 src/vm/app/request_factory.c|vm/machine
 src/vm/app/request_factory.h|vm/machine
-src/vm/product/catalog.h|vm/machine
 src/vm/product/console.c|vm/app
 src/vm/product/console.c|vm/machine
 src/vm/product/console.h|vm/app

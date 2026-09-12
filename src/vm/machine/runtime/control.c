@@ -11,7 +11,6 @@
 
 #include "vm/machine/runtime/machine_devices.h"
 
-#include "vm/machine/runtime/execution.h"
 #include "vm/machine/runtime/fault.h"
 
 #include "core/machine/machine_interface.h"
@@ -27,7 +26,7 @@
 
 #include "vm/machine/runtime/display.h"
 
-static type_status vm_machine_execution_context_reset_callback(vm_machine *machine)
+static type_status vm_machine_control_reset_machine(vm_machine *machine)
 {
     type_status status;
 
@@ -42,7 +41,7 @@ static type_status vm_machine_execution_context_reset_callback(vm_machine *machi
     return status;
 }
 
-static C_VOID vm_machine_execution_context_debug_refresh_callback(
+static C_VOID vm_machine_control_refresh_machine_debug(
     vm_machine *machine)
 {
     core_machine_debug_instruction_observation observation;
@@ -52,22 +51,15 @@ static C_VOID vm_machine_execution_context_debug_refresh_callback(
     vm_machine_debug_refresh(&machine->debug, &observation);
 }
 
-static const vm_machine_execution_context_callbacks vm_machine_execution_callbacks = {
-    vm_machine_execution_context_reset_callback,
-    vm_machine_execution_context_debug_refresh_callback
-};
-
 C_VOID vm_machine_control_start(vm_machine_control_state *control) {
     vm_machine *machine;
 
     if (control == STD_NULL) return;
-    machine = control->execution_context.machine;
+    machine = control->machine;
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     host_sync_event_reset(control->completion_ready);
     vm_machine_executor_state_start(control->state);
-    vm_machine_execution_context_activate(&control->execution_context);
     vm_machine_runner_run(machine);
-    vm_machine_execution_context_deactivate(&control->execution_context);
 }
 
 /* Issues resetting signal to device thread */
@@ -77,8 +69,7 @@ type_status vm_machine_control_reset(vm_machine_control_state *control) {
         vm_machine_executor_state_request_reset(control->state);
         return TYPE_STATUS_OK;
     } else {
-        type_status status = vm_machine_execution_context_reset(
-            &control->execution_context);
+        type_status status = vm_machine_control_reset_machine(control->machine);
 
         (C_VOID)vm_machine_executor_state_take_reset(control->state);
         return status;
@@ -90,7 +81,7 @@ C_VOID vm_machine_control_stop(vm_machine_control_state *control)  {
     vm_machine *machine;
 
     if (control == STD_NULL) return;
-    machine = control->execution_context.machine;
+    machine = control->machine;
     if (machine != STD_NULL && machine->core_machine != STD_NULL) {
         common_machine_debug_invalidate(machine->executor);
         core_machine_request_stop(machine->core_machine);
@@ -106,7 +97,7 @@ C_VOID vm_machine_control_fault(vm_machine_control_state *control)
     vm_machine *machine;
 
     if (control == STD_NULL) return;
-    machine = control->execution_context.machine;
+    machine = control->machine;
     if (machine != STD_NULL) common_machine_debug_invalidate(machine->executor);
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
@@ -187,12 +178,15 @@ C_INT vm_machine_control_step_requested(const vm_machine_control_state *control)
 C_INT vm_machine_control_take_step(vm_machine_control_state *control)
 { return control != STD_NULL && atomic_exchange(&control->step_requested, TYPE_FALSE); }
 
-C_VOID vm_machine_control_bind_command_boundary(
-    vm_machine_control_state *control,
-    C_VOID (*callback)(C_VOID *opaque), C_VOID *opaque)
+type_status vm_machine_control_reset_at_boundary(vm_machine_control_state *control)
 {
-    vm_machine_execution_context_bind_command_boundary(
-        control == STD_NULL ? STD_NULL : &control->execution_context, callback, opaque);
+    return control == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        vm_machine_control_reset_machine(control->machine);
+}
+
+C_VOID vm_machine_control_refresh_debug(vm_machine_control_state *control)
+{
+    if (control != STD_NULL) vm_machine_control_refresh_machine_debug(control->machine);
 }
 
 /* Initializes devices */
@@ -216,12 +210,7 @@ type_status vm_machine_control_initialize(vm_machine_control_state *control,
         control->state = STD_NULL;
         return TYPE_STATUS_NO_MEMORY;
     }
-    vm_machine_execution_context_initialize(&control->execution_context);
-    vm_machine_execution_context_bind_machine(&control->execution_context,
-        machine);
-    vm_machine_execution_context_bind_callbacks(
-        &control->execution_context, &vm_machine_execution_callbacks);
-    vm_machine_execution_context_activate(&control->execution_context);
+    control->machine = machine;
     vm_machine_debug_initialize(&machine->debug);
     status = vm_machine_devices_initialize_media(machine);
     if (status == TYPE_STATUS_OK) status = vm_machine_devices_bind_media(machine);
@@ -238,7 +227,6 @@ type_status vm_machine_control_initialize(vm_machine_control_state *control,
 C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
     vm_machine *machine) {
     if (control == STD_NULL || machine == STD_NULL) return;
-    vm_machine_execution_context_deactivate(&control->execution_context);
     vm_machine_devices_finalize(machine);
     vm_machine_debug_finalize(&machine->debug);
     host_sync_event_destroy(control->completion_ready);
