@@ -36,11 +36,15 @@ static C_INT verify_created(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
+    vm_machine_information information;
     vm_machine *session = STD_NULL;
 
     if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        !session->fdd.connect.flagDiskExist || !session->hdd.connect.flagDiskExist ||
-        session->hdd.data.ncyl != 1u) {
+        vm_machine_get_information(session, &information) != TYPE_STATUS_OK ||
+        !information.floppy_media_inserted || !information.fixed_disk_media_connected ||
+        information.fixed_disk_cylinders != 1u || !information.fixed_disk_present ||
+        information.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        information.active || information.fault_valid) {
         vm_machine_destroy(session);
         return 1;
     }

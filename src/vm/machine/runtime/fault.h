@@ -18,6 +18,5 @@ C_VOID vm_machine_fault_capture(vm_machine *session,
     const core_machine_run_result *run);
 C_INT vm_machine_fault_get(const vm_machine *session,
     vm_machine_fault_outcome *out_outcome);
-C_VOID vm_machine_fault_print(const vm_machine *session);
 
 #endif

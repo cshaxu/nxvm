@@ -76,7 +76,7 @@ target_link_libraries(common-session-smoke PRIVATE common-session)
 add_executable(common-ui-smoke
     test/common/ui/common_ui_smoke.c
     test/common/ui/common_ui_console_host_fake.c)
-target_link_libraries(common-ui-smoke PRIVATE common-ui)
+target_link_libraries(common-ui-smoke PRIVATE common-ui type-facade)
 add_executable(common-xasm32-smoke test/common/xasm32/xasm32_smoke.c)
 target_link_libraries(common-xasm32-smoke PRIVATE common-xasm32)
 add_executable(common-xasm32-contract-smoke
@@ -86,7 +86,7 @@ add_executable(common-adapter-conformance
     test/common/common_adapter_conformance.c
     test/common/ui/common_ui_console_host_fake.c)
 target_link_libraries(common-adapter-conformance PRIVATE
-    common-machine common-session common-ui)
+    common-machine common-session common-ui type-facade)
 add_dependencies(common-adapter-conformance common-verify-corpus)
 add_executable(types-smoke test/lib/types_smoke.c)
 target_link_libraries(types-smoke PRIVATE types)
@@ -1178,9 +1178,6 @@ if(POWERSHELL_EXECUTABLE)
     )
 endif()
 
-set(CORE_PRODUCT_SOURCES
-    src/core/product/config.c
-)
 # The ISO C facade is below every product and module layer. Keep it separate
 # from core-machine so platform-only targets never acquire a machine dependency.
 add_library(type-facade STATIC src/type.c)
@@ -1271,12 +1268,6 @@ target_include_directories(core-machine-executor PUBLIC
 target_link_libraries(core-machine-executor PUBLIC type-facade)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
-add_library(core-product STATIC ${CORE_PRODUCT_SOURCES})
-target_include_directories(core-product PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-product PUBLIC type-facade)
-
 add_executable(std-snprintf-smoke
     test/core/std_snprintf_smoke.c
 )
@@ -1338,7 +1329,6 @@ target_include_directories(vm-machine PUBLIC
 target_link_libraries(vm-machine PUBLIC
     core-machine
     core-machine-boundary
-    core-product
     vm-profile
     common-machine
     storage)
@@ -1361,7 +1351,6 @@ target_link_libraries(vm-product PUBLIC
     vm-app
     common-session
     common-ui
-    core-product
     core-machine-boundary
     storage)
 
@@ -3515,7 +3504,6 @@ file(GENERATE
 # production dependency.
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
     "type-facade|src/type.c"
-    "core-product|src/core/product/config.c"
     "common-machine|src/common/machine/machine.c")
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
 foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
@@ -3632,7 +3620,6 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     common-machine
     common-xasm32
     common-debug
-    core-product
     vm-profile
     vm-machine
     vm-machine

@@ -105,13 +105,13 @@ disassembler, debugger UX, registries, device code, platform implementation,
 and product policy remain with their named owners. Public symbols use the
 `core_utils_*` prefix.
 
-Each product module owns its compile-time `PRODUCT_NAME`; the shared
-core-product banner helper supplies version, copyright, and build time. No
+NXVM's root `src/banner.h` supplies its entry banner's version, copyright and
+build time. No
 module contract contains an ABI version, timestamp, or compatibility probe;
 the repository is one synchronously built system.
 
 Public C symbols use their source ownership path: `core_machine_*`,
-`core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
+`core_platform_*`, `vm_machine_*`, `vm_platform_*`,
 `vm_product_*`, `vm_profile_*`, `mantle_*`, `dos_*`, and `vdm_*`. Root
 composition exports its concrete session as `vm_session_*` or
 `mantle_session_*`. Internal composition helpers remain private to their
@@ -122,16 +122,12 @@ Composition implementation and private headers live under
 it is not a fourth module and does not relax the directed module dependency
 rules. Product entry points remain directly under `vm/main.c` and `vdm/main.c`.
 
-Common product-session tooling belongs in `core/product/session/`: opaque
-entry registration, selection, copied snapshots, shared commands, and explicit
-provider contracts. It never creates or understands a concrete VM/VDM session.
-VM and mantle composition own their concrete session construction, provider
-implementation, selected-item adaptation, and teardown under
-`composition/session/`. Product UI receives copied snapshots and calls the
-core-product contract; it never owns or caches a selected session pointer or
-ID. `core/composition/` is forbidden because it would be an accidental second
-product assembly layer. The completed implementation is summarized in
-[M5 History](../history/legacy/m5.md).
+`common/session` owns only generic session reduction and copied facts; it never
+creates or understands an NXVM machine. VM owns its concrete construction,
+provider implementation, selected-item adaptation and teardown. Product UI
+receives copied snapshots and never owns or caches a Core machine pointer.
+`core/composition/` is forbidden because it would be an accidental second
+product assembly layer.
 
 A composition session's complete layout is private to its product root. Its
 public header declares an opaque `vm_session` or `mantle_session` handle, stable
@@ -183,27 +179,16 @@ firmware-service registry. The registry describes POST, ROM, and interrupt
 services but contains no PC/AT handler, ROM image, product policy, or host OS
 call.
 
-`core/platform` contains product-neutral host-capability contracts and shared
-host facilities. It never mutates guest state. `core/product` contains generic
-command, debug/trace, registry, result, assembler, and disassembler tooling,
-but no session composition, VM Console, VDM CLI, profile, boot/media, or
-host-policy decision. Product-neutral callback contracts shared by otherwise
-independent owners belong in `core/utils`; root composition owns any concrete
-host implementation and its lifetime.
+`lib` contains product-neutral C and host facilities. `common` contains generic
+command, debug, assembler, disassembler, session and UI contracts, but no
+session composition, NXVM Console, profile, boot/media or host-policy decision.
+Its components depend only on Lib, never on one another. Root composition owns
+concrete product binding and lifetime.
 
-A `core/platform` host-surface context contains only a surface kind and an
-opaque native handle. A host resource that cannot be shared, such as a process
-terminal, is represented by a caller-owned `core_platform_host_surface_lease`.
-It atomically names one explicit composition owner; acquire by a second owner
-fails, and only that owner can release it. The contract has no guest state,
-renderer state, process singleton, or product policy. VM and mantle composition
-choose whether to create a context, acquire a lease, or reject a request.
-
-The retained hardware debugger command language, prompt, help, and text
-presentation are shared product UX and belong in `core/product/debug`. Its
-core-owned debug target declares the machine effects it needs; VM and mantle
-composition bind that target to their respective machines. Product forms may
-add capability-specific commands, but they do not fork the common debugger UI.
+The hardware-debugger command language, prompt and pure assembler/disassembler
+capability belong in `common/debug` and `common/xasm32`. The common machine
+contract declares the copied operations it needs; each product adapter binds
+those operations to its own machine without forking the shared grammar.
 
 Machine snapshots and platform frames are distinct contracts. A product-machine
 snapshot may contain text cells, attributes, geometry, cursor, generation, and
@@ -216,15 +201,11 @@ snapshot to a frame and submits it. Product-private diagnostics such as
 DOS-minimal PIT state or pending keyboard IRQ remain in that product's machine
 module and require a separate diagnostic contract if they must be exposed.
 
-Ownership is determined by reuse, not by abstraction level or the source's
-current directory. Small policy-free utilities and callback contracts belong in
-`core/utils`; all other logic used by both products belongs in the matching
-`core/{machine,platform,product}` owner, including concrete host code:
-shared Win32 and Linux providers live in `core/platform/win32` and
-`core/platform/linux`; platform-neutral platform code lives directly in
-`core/platform`. A product-only implementation belongs under its `vm/*` or
-`mantle/*`, `dos/*`, or `vdm/*` counterpart. The same rule applies to machine
-and product code.
+Ownership is determined by reuse, not abstraction level or legacy directory.
+Policy-free host and C capabilities belong in `lib`; reusable product capability
+belongs in `common`; guest execution belongs in `core/machine`; product-only
+implementation belongs in `vm/*`. No legacy `core/utils`, `core/platform` or
+`core/product` owner remains.
 
 `core/machine` may provide optional profile-neutral controller mechanisms,
 including MC146818-compatible RTC, FDC, and ATA PIO models, through explicit
@@ -236,16 +217,11 @@ copy of a core controller. The `vm/` root composition selects a profile,
 submits typed frozen configuration/provider bindings, owns provider lifetime
 and the bounded product execution pump, and never duplicates the core
 scheduler or borrows raw core state.
-`core/platform` owns the synchronous file route used by VM media, profile,
-catalog, and recorder lifecycles, plus policy-free copied input, presentation,
-and wait/cancellation surfaces. It owns native file handles and returns copied
-bytes or opaque reader/writer lifecycles; it does not interpret mount, profile,
-or product policy. T282 audits the host-surface lease: it must keep native
-handles opaque to core or move that VM-specific contract to `vm/platform`.
-`vm/platform` owns only full-machine
-policy adapters: image selection, mount/persistence, Console/window behavior,
-and PC/AT host choices. `vm/product` owns retained NXVM user experience: Console, hardware
-debugger UX, media commands, and presentation policy. `vm/profile` owns VM
+`lib/storage`, `lib/host` and `lib/ui-*` own opaque host files, waits and native
+presentation. They return copied values or opaque Lib handles and never
+interpret mount, profile or product policy. `vm/product` owns retained NXVM
+user experience: Console, debugger integration, media commands and presentation
+policy. `vm/profile` owns VM
 topology, boot policy, ROM assets, and declarative firmware-provider metadata.
 The `vm/` root composition selects that profile, creates the providers, and
 binds their callbacks and lifetime. The retained Console receives a
@@ -306,55 +282,26 @@ and no lower component may depend on a higher component. VM and mantle
 composition are the only permitted integration points.
 
 ```text
-             core/utils
-                 |
-core/machine      core/platform      core/product
-     (independent libraries with public provider contracts)
-
-vm/{machine,platform,product,profile} -> core contracts -> vm/compose -> nxvm.exe
-mantle/{machine,platform,product}      -> core contracts -> mantle/compose
-dos/{machine,platform,product,profile} -> no component dependency -> dos.dll
-mantle.dll + dos.dll + vdm/{machine,platform,product,profile} -> nxvdm.exe
+lib                 common
+ |                   |
+ +---- core/machine -+---- vm/{app,machine,product,profile} -> nxvm.exe
 ```
 
-`core/machine` is the leaf for mutable guest state and guest-domain contracts.
-It must not include `core/platform`, `core/product`, `vm/*`, `mantle/*`,
-`dos/*`, or `vdm/*`.
-`core/platform` is the leaf for host-capability contracts and shared host
-providers. It must not mutate guest state or include `core/product`, `vm/*`,
-`mantle/*`, `dos/*`, or `vdm/*`; it also does not include `core/machine` or
-`core/product`.
-Platform-facing frames and events are platform contracts. Only the relevant
-product root composition translates a machine-owned snapshot into such a frame
-when required; no platform header may name a machine snapshot type.
+`core/machine` is the sole Core owner for mutable guest state and guest-domain
+contracts. It depends on neither VM nor Common. `lib` wraps native facilities;
+its public surface carries no native handle. `common` depends only on Lib and
+contains no Core, VM, profile, media or native-platform type. VM is the one
+product composition point that binds Core to Common and Lib.
 
-`core/product` contains reusable product tooling only: generic command,
-registry, trace, debug, assembler, and disassembler facilities. It may depend
-only on its own public callback contracts and `core/utils`; it may not select a
-product, own a product profile, instantiate a VM/mantle session, or include
-`core/machine`, `core/platform`, `vm/*`, `mantle/*`, `dos/*`, or `vdm/*`. A
-root composition adapts
-a concrete machine or platform provider to a generic product-tool target.
+Within VM, `machine`, `product`, and `profile` retain distinct owners. A profile
+is declarative data and provider metadata, not a machine constructor. Adapters
+which translate input, display snapshots or callbacks belong to VM, rather than
+creating a cross-owner dependency. VM owns host threads, pacing and product
+exit policy.
 
-Within VM, DOS, or VDM, `machine`, `platform`, `product`, and `profile`
-are peer providers. They may depend on matching core contracts but must not
-include one another. A profile is declarative data and provider metadata, not
-a machine constructor. It may contain a profile-specific ROM or firmware
-override only through a public core callback contract. VM composition may
-depend on its four modules and core; mantle composition may depend on its three
-modules and core; VDM binds mantle to dos. Adapters which translate input,
-display snapshots, or callbacks belong to that root composition, rather than
-creating a `machine <-> platform` dependency. Root composition repeatedly
-drives bounded synchronous machine quanta; it owns host threads, wall-clock
-watchdogs, pacing, and product exit policy.
-
-`core/utils` is below the three independent core modules. The three core
-modules have zero compile-time dependency on one another; each may use the
-strictly neutral `core/utils` contract where needed.
 Cross-domain data is carried through public provider contracts and translated
-by a product-form root composition; a platform never imports a machine snapshot
-type. All guest-state mutation occurs on the machine execution thread at a
-command boundary.
+by the product root. All guest-state mutation occurs on the machine execution
+thread at a command boundary.
 
 Forbidden dependencies are any core-to-VM/mantle/dos/VDM path, any VM-to-mantle,
 DOS, or VDM path, any mantle-to-DOS or VDM path except its declared provider

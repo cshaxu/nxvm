@@ -116,6 +116,30 @@ typedef struct vm_machine_reset_vector {
     type_unsigned_16 ip;
 } vm_machine_reset_vector;
 
+/* Copied monitor facts.  The product formats these facts; vm/machine never
+ * writes monitor text or exposes its Core, media or control objects. */
+typedef struct vm_machine_information {
+    vm_machine_profile_kind profile_kind;
+    core_machine_cpu_profile cpu_profile;
+    STD_SIZE_T memory_bytes;
+    STD_SIZE_T floppy_image_bytes;
+    C_INT floppy_media_inserted;
+    C_INT fixed_disk_present;
+    type_unsigned_32 fixed_disk_cylinders;
+    STD_SIZE_T fixed_disk_image_bytes;
+    C_INT fixed_disk_media_connected;
+    C_INT external_firmware;
+    C_INT active;
+    C_INT fault_valid;
+    type_unsigned_32 fault_detail;
+    type_unsigned_32 fault_linear_pc;
+    C_INT fault_exception_valid;
+    type_unsigned_32 fault_exception_mask;
+    type_unsigned_32 fault_exception_code;
+    type_unsigned_16 fault_exception_cs;
+    type_unsigned_32 fault_exception_eip;
+} vm_machine_information;
+
 C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_session);
 type_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_session);
@@ -146,10 +170,9 @@ type_status vm_machine_submit_input(vm_machine *session,
     const vm_machine_input *input);
 type_status vm_machine_get_reset_vector(const vm_machine *session,
     vm_machine_reset_vector *out_vector);
+type_status vm_machine_get_information(const vm_machine *session,
+    vm_machine_information *out_information);
 C_INT vm_machine_is_running(const vm_machine *session);
-C_VOID vm_machine_print_machine(const vm_machine *session);
-C_VOID vm_machine_print_bios(const vm_machine *session);
-C_VOID vm_machine_print_status(const vm_machine *session);
 /* The sole copied completion route.  It transfers neither a Core object nor
  * an executor or UI handle across this boundary. */
 C_VOID vm_machine_set_result_sink(vm_machine *machine,

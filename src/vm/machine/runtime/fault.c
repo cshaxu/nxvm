@@ -33,20 +33,3 @@ C_INT vm_machine_fault_get(const vm_machine *session,
     *out_outcome = session->fault_outcome;
     return 0;
 }
-
-C_VOID vm_machine_fault_print(const vm_machine *session)
-{
-    const vm_machine_fault_outcome *outcome;
-    const core_machine_cpu_fault_snapshot *fault;
-
-    if (session == STD_NULL || !session->fault_outcome.valid) return;
-    outcome = &session->fault_outcome;
-    STD_PRINTF("Fault:     detail=%08X pc=%08X\n", outcome->run.detail,
-        outcome->run.linear_pc);
-    fault = &outcome->diagnostic.first_fault;
-    if (fault->valid) {
-        STD_PRINTF("Exception: mask=%08X code=%08X at %04X:%08X\n",
-            fault->exception_mask, fault->exception_code, fault->point.cs,
-            fault->point.eip);
-    }
-}

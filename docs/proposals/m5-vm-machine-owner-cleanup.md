@@ -56,17 +56,19 @@ dependency.
    relocate.  Compare every claimed common category with SoftPC's equivalent
    owner and record its consumer.  Establish focused regressions before any
    deletion.
-2. **S2 - control/lifecycle/wait cutover.** Remove the old VM control,
-   executor-state, lifecycle and wait paths where existing Common/Lib already
-   supplies the mechanism.  Bind the NXVM Core adapter to the sole Common
+2. **S2 - product-output and stale-Core cleanup.** Move monitor/status text
+   out of `vm/machine`; replace its print helpers with one copied information
+   query; relocate the NXVM banner to `src/`; and delete the uncalled
+   Core-product configuration corpus.  This independent subtraction proceeds
+   before executor cutover because S1 proved Common has no executor receiver.
+3. **S3 - control/lifecycle/wait cutover.** After the queued Common executor
+   task supplies the consumer, remove old VM control, executor-state,
+   lifecycle and wait paths. Bind the NXVM Core adapter to the sole Common
    request path; remove obsolete tests and forwarding APIs in the same change.
-3. **S3 - presentation/debug/product cutover.** Move frame/presentation
-   dispatch to the existing Common UI route, retain only copied Core-frame
-   adaptation, and reduce debug to its Core target bridge.  Move monitor text
-   and product policy out of `vm/machine`; delete parallel state and callbacks.
-4. **S4 - NXVM-owner cleanup and closure.** Relocate remaining profile/media
-   composition to NXVM-local owners where file placement obscures ownership,
-   prove one production route per mechanism, run the full unit and external
+4. **S4 - presentation/debug and NXVM-owner closure.** Retain only copied
+   Core-frame adaptation and the Core debug target bridge, then relocate any
+   remaining profile/media composition whose placement obscures ownership.
+   Prove one production route per mechanism, run the full unit and external
    integration suites, and build stripped x64/x86 task artifacts.
 
 ## Exit Criteria

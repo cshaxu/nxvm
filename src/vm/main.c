@@ -9,7 +9,7 @@
 
 #include "vm/product/version.h"
 
-#include "core/product/banner.h"
+#include "banner.h"
 #include "vm/app/app.h"
 #include "vm/product/console.h"
 
@@ -37,7 +37,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_product_console_context *console_context = STD_NULL;
     C_CHAR profile_directory[1024];
 
-    CORE_PRODUCT_PRINT_BANNER();
+    PRODUCT_PRINT_BANNER();
     if (vm_app_create(&session) != TYPE_STATUS_OK ||
         vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) {
         vm_app_destroy(session);

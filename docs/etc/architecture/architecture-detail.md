@@ -101,30 +101,18 @@ encoding through a separate owner-approved release policy.
 
 ## Shared Foundation
 
-The target component topology is `core`, `vm`, `mantle`, `dos`, and `vdm`.
-The current tracked source tree contains `core/`, `vm/`, and a non-runnable M3
-`vdm/` skeleton only; `mantle/` and `dos/` remain architecture-only until their
-admission milestones. `core` has a strictly neutral `core/utils` layer below
-`core/machine`, `core/platform`, and `core/product`. `vm/` owns NXVM
-composition, lifecycle, and teardown. `mantle/` will own the reusable VDM
-composition mechanism over core. `dos/` will be an independent DOS
-implementation. The eventual `vdm/` is the NXVDM product shell over mantle and
-dos; its `product` module owns user experience rather than composition.
-Cross-module adaptation, including display and input bridging, occurs only in
-the relevant product root composition. Peer machine and platform modules do
-not adapt each other's contracts directly.
-
-`core/product/session` is a shared opaque registry and command facility for
-product sessions. It owns neither a concrete VM/VDM session nor composition;
-VM and mantle composition provide concrete lifecycle callbacks. No
-`core/composition` layer exists or is permitted.
+The current component topology is `lib`, `common`, `core/machine` and `vm`.
+`lib` owns neutral C and host services; `common` owns reusable product-capacity
+contracts; `core/machine` owns guest execution and devices; `vm` owns NXVM
+composition, profile and product policy. Cross-component adaptation, including
+display and input bridging, occurs only in VM. No `core/composition` layer is
+permitted.
 
 `src/type.h` is the system-wide type, `nxvm_core_status`, retained alias, and
-legacy helper foundation. Each product module owns its compile-time name; the
-shared `core/product/banner.h` helper supplies the common version, copyright,
-build time, and printing format. Public symbols use their ownership path, for
-example `core_machine_*`, `vm_product_*`, `mantle_product_*`, `dos_machine_*`,
-and `vdm_platform_*`. The detailed
+legacy helper foundation. NXVM's root `src/banner.h` supplies its entry version,
+copyright, build time and printing format. Public symbols use their ownership
+path, for example `core_machine_*`, `vm_product_*`, `mantle_product_*`,
+`dos_machine_*`, and `vdm_platform_*`. The detailed
 registry and dependency rules live only in
 [Source Layout](../../design/CODING.md) and
 [Machine Contract Details](machine-contract-details.md).

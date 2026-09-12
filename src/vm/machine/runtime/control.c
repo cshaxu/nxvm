@@ -248,11 +248,6 @@ C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
     control->state = STD_NULL;
 }
 
-C_VOID vm_machine_control_print_status(const vm_machine_control_state *control) {
-    STD_PRINTF("Running:   %s\n", control != STD_NULL && vm_machine_executor_state_is_active(control->state) ?
-        "Yes" : "No");
-}
-
 C_INT vm_machine_control_is_running(const vm_machine_control_state *control)
 {
     return control != STD_NULL && vm_machine_executor_state_is_active(control->state) &&

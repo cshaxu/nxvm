@@ -55,7 +55,6 @@ type_status vm_machine_control_initialize(vm_machine_control_state *control,
 C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
     vm_machine *machine);
 C_INT vm_machine_control_is_running(const vm_machine_control_state *control);
-C_VOID vm_machine_control_print_status(const vm_machine_control_state *control);
 C_VOID vm_machine_control_bind_command_boundary(
     vm_machine_control_state *control,
     C_VOID (*callback)(C_VOID *opaque), C_VOID *opaque);

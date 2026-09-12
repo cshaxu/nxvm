@@ -1,5 +1,5 @@
-#ifndef CORE_PRODUCT_BANNER_H
-#define CORE_PRODUCT_BANNER_H
+#ifndef NXVM_BANNER_H
+#define NXVM_BANNER_H
 
 #include "type.h"
 
@@ -11,7 +11,7 @@
 #define PRODUCT_COPYRIGHT "Copyright (c) 2012-2026 Neko."
 #define PRODUCT_BUILD_TIME __DATE__ " " __TIME__
 
-#define CORE_PRODUCT_PRINT_BANNER()                          \
+#define PRODUCT_PRINT_BANNER()                               \
     STD_PRINTF("%s [%s]\n%s\n\nBuilt on %s\n", PRODUCT_NAME, \
                PRODUCT_VERSION, PRODUCT_COPYRIGHT, PRODUCT_BUILD_TIME)
 

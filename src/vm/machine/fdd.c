@@ -380,16 +380,3 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
     }
     return TYPE_FALSE;
 }
-
-C_VOID vm_machine_fdd_print(const t_fdd *fdd) {
-    if (fdd == STD_NULL) return;
-    STD_PRINTF("FDD INFO\n========\n");
-    STD_PRINTF("cyl = %x, head = %x, sector = %x, gpl = %x\n",
-           fdd->data.cyl, fdd->data.head, fdd->data.sector, fdd->data.gpl);
-    STD_PRINTF("nsector = %x, nbyte = %x, ncyl = %x, nhead = %x\n",
-           fdd->data.nsector, fdd->data.nbyte, fdd->data.ncyl,
-           fdd->data.nhead);
-    STD_PRINTF("ReadOnly = %x, Exist = %x\n",
-           fdd->connect.flagReadOnly, fdd->connect.flagDiskExist);
-    STD_PRINTF("media generation = %u\n", fdd->connect.media_generation);
-}

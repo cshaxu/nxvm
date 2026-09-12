@@ -17,6 +17,7 @@
 #include "vm/product/recorder.h"
 #include "common/session/session_interface.h"
 #include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/runtime/machine_interface.h"
 
 struct vm_product_console_context {
     STD_SIZE_T argument_count;
@@ -651,13 +652,40 @@ static C_VOID doExit(vm_product_console_context *context)
 /* Prints virtual machine status */
 static C_VOID doInfo(vm_product_console_context *context)
 {
+    vm_machine_information information;
+
     if (numArgs != 1)
     {
         GetHelp;
     }
+    if (vm_machine_get_information(vm_product_console_machine(context),
+            &information) != TYPE_STATUS_OK) {
+        STD_PRINTF("Machine information unavailable.\n");
+        return;
+    }
     STD_PRINTF("Device Info\n");
     STD_PRINTF("================\n");
-    vm_machine_print_machine(vm_product_console_machine(context));
+    STD_PRINTF("Machine:           IBM PC/AT\n");
+    STD_PRINTF("Profile:           %s\n",
+        vm_machine_profile_name(information.profile_kind));
+    STD_PRINTF("CPU:               Intel %s\n",
+        core_machine_cpu_profile_name(information.cpu_profile));
+    if (information.memory_bytes < (1u << 20)) {
+        STD_PRINTF("RAM Size:          %u KB\n",
+            (unsigned int)(information.memory_bytes >> 10));
+    } else {
+        STD_PRINTF("RAM Size:          %u MB\n",
+            (unsigned int)(information.memory_bytes >> 20));
+    }
+    STD_PRINTF("Floppy Disk Drive: Floppy Disk Drive, %.2f MB, %s\n",
+        information.floppy_image_bytes * 1. / ((1 << 10) * 1000),
+        information.floppy_media_inserted ? "inserted" : "not inserted");
+    if (information.fixed_disk_present) {
+        STD_PRINTF("Hard Disk Drive:   %u cylinders, %.2f MB, %s\n",
+            (unsigned int)information.fixed_disk_cylinders,
+            information.fixed_disk_image_bytes * 1. / (1 << 20),
+            information.fixed_disk_media_connected ? "connected" : "disconnected");
+    }
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
@@ -673,11 +701,21 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("BIOS Settings\n");
     STD_PRINTF("==================\n");
-    vm_machine_print_bios(vm_product_console_machine(context));
+    STD_PRINTF("BIOS: %s\n", information.external_firmware ?
+        "external ROM mapped at F0000h" : "profile ROM mapped");
     STD_PRINTF("\n");
     STD_PRINTF("Device Status\n");
     STD_PRINTF("==================\n");
-    vm_machine_print_status(vm_product_console_machine(context));
+    STD_PRINTF("Running:   %s\n", information.active ? "Yes" : "No");
+    if (information.fault_valid) {
+        STD_PRINTF("Fault:     detail=%08X pc=%08X\n", information.fault_detail,
+            information.fault_linear_pc);
+        if (information.fault_exception_valid) {
+            STD_PRINTF("Exception: mask=%08X code=%08X at %04X:%08X\n",
+                information.fault_exception_mask, information.fault_exception_code,
+                information.fault_exception_cs, information.fault_exception_eip);
+        }
+    }
 }
 
 /* Starts internal debugger */

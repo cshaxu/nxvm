@@ -3,58 +3,50 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_info.h"
 #include "vm/machine/runtime/machine_private.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/machine/runtime/control.h"
 #include "vm/machine/runtime/fault.h"
 
-#define VM_MACHINE_MACHINE_NAME "IBM PC/AT"
-
-C_VOID vm_machine_print_machine(const vm_machine *session)
+type_status vm_machine_get_information(const vm_machine *session,
+    vm_machine_information *out_information)
 {
     core_machine_cpu_profile cpu_profile;
+    const vm_machine_fault_outcome *fault;
     STD_SIZE_T memory_bytes = 0u;
 
-    if (session == STD_NULL) return;
+    if (session == STD_NULL || out_information == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     if (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             TYPE_STATUS_OK || core_machine_get_cpu_profile(session->core_machine,
-            &cpu_profile) != TYPE_STATUS_OK) return;
-    STD_PRINTF("Machine:           %s\n", VM_MACHINE_MACHINE_NAME);
-    STD_PRINTF("Profile:           %s\n",
-        vm_machine_profile_name(session->retained_config.profile_kind));
-    STD_PRINTF("CPU:               Intel %s\n",
-        core_machine_cpu_profile_name(cpu_profile));
-    if (memory_bytes < (1u << 20)) {
-        STD_PRINTF("RAM Size:          %u KB\n",
-            (unsigned int)(memory_bytes >> 10));
-    } else {
-        STD_PRINTF("RAM Size:          %u MB\n",
-            (unsigned int)(memory_bytes >> 20));
+            &cpu_profile) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+    STD_MEMSET(out_information, 0, sizeof(*out_information));
+    out_information->profile_kind = session->retained_config.profile_kind;
+    out_information->cpu_profile = cpu_profile;
+    out_information->memory_bytes = memory_bytes;
+    out_information->floppy_image_bytes = vm_machine_fdd_image_size(&session->fdd);
+    out_information->floppy_media_inserted = vm_machine_fdd_has_media(&session->fdd);
+    out_information->fixed_disk_present = session->profile != STD_NULL &&
+        session->profile->hdc_present;
+    out_information->fixed_disk_cylinders = vm_machine_hdd_cylinders(&session->hdd);
+    out_information->fixed_disk_image_bytes = vm_machine_hdd_image_size(&session->hdd);
+    out_information->fixed_disk_media_connected = vm_machine_hdd_has_media(&session->hdd);
+    out_information->external_firmware = session->firmware_kind ==
+        VM_MACHINE_FIRMWARE_EXTERNAL_PC_AT_ROM && session->pc_at_rom_external;
+    out_information->active = vm_machine_executor_state_is_active(
+        session->control.state);
+    fault = &session->fault_outcome;
+    out_information->fault_valid = fault->valid;
+    if (fault->valid) {
+        out_information->fault_detail = fault->run.detail;
+        out_information->fault_linear_pc = fault->run.linear_pc;
+        out_information->fault_exception_valid = fault->diagnostic.first_fault.valid;
+        out_information->fault_exception_mask = fault->diagnostic.first_fault.exception_mask;
+        out_information->fault_exception_code = fault->diagnostic.first_fault.exception_code;
+        out_information->fault_exception_cs = fault->diagnostic.first_fault.point.cs;
+        out_information->fault_exception_eip = fault->diagnostic.first_fault.point.eip;
     }
-    STD_PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", VM_MACHINE_DEVICE_FDD,
-        vm_machine_fdd_image_size(&session->fdd) * 1. / VFDD_BYTE_PER_MB,
-        vm_machine_fdd_has_media(&session->fdd) ? "inserted" : "not inserted");
-    if (session->profile != STD_NULL && session->profile->hdc_present) {
-        STD_PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
-            vm_machine_hdd_cylinders(&session->hdd),
-            vm_machine_hdd_image_size(&session->hdd) * 1. / VHDD_BYTE_PER_MB,
-            vm_machine_hdd_has_media(&session->hdd) ? "connected" : "disconnected");
-    }
-}
-
-C_VOID vm_machine_print_bios(const vm_machine *session)
-{
-    if (session == STD_NULL) return;
-    STD_PRINTF("BIOS: %s\n", session->firmware_kind ==
-        VM_MACHINE_FIRMWARE_EXTERNAL_PC_AT_ROM && session->pc_at_rom_external ?
-        "external ROM mapped at F0000h" : "profile ROM mapped");
-}
-
-C_VOID vm_machine_print_status(const vm_machine *session)
-{
-    if (session == STD_NULL) return;
-    vm_machine_control_print_status(&session->control);
-    vm_machine_fault_print(session);
+    return TYPE_STATUS_OK;
 }

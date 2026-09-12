@@ -20,14 +20,12 @@ implementations. [rules/CODING.md](../../rules/CODING.md) defines the current C
 vocabulary and header boundary; [C-Library Facade Detail Record](../history/m5/c-library-facade.md)
 preserves the M5 inventory and rationale.
 
-Each product module owns its `PRODUCT_NAME`. The shared core-product banner
-helper defines `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, and
-`PRODUCT_BUILD_TIME`; the product entry includes both before printing. No
+NXVM's root `src/banner.h` defines `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, and
+`PRODUCT_BUILD_TIME`; its entry includes it before printing. No
 module contract contains an ABI version, timestamp, compatibility probe, or
 module-local status type.
 
-Public symbols use source-path ownership: `core_machine_*`,
-`core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
+Public symbols use source-path ownership: `core_machine_*`, `vm_machine_*`,
 `vm_product_*`, `vm_profile_*`, `mantle_*`, `dos_*`, and `vdm_*`. Root
 composition uses `vm_session_*` and `mantle_session_*` for its concrete
 session contracts.
@@ -51,49 +49,25 @@ continues to define the semantics of those public contracts.
 - Callbacks state their thread, synchronization, ownership, and teardown rule.
   They do not re-enter mutable operations on their originating object.
 
-## Product Session Management
+## Session Control
 
-`core/product/session` is shared product tooling, not a product composition.
-`core_product_session_manager` owns the opaque entry table, numerical IDs,
-selection, copied snapshots, and generic `SESSION` grammar. It may retain an
-opaque concrete-session handle only to return it to its provider; it never
-constructs, mutates, runs, or interprets a VM or mantle session.
-
-The manager has a nonempty-table invariant: after initial creation it always
-contains at least one live entry and exactly one selected entry. `close` on the
-last entry returns a defined invalid-state result without calling the concrete
-provider. Closing the selected entry selects the lowest remaining ID.
-
-Each product-root composition provides a `core_product_session_provider` with
-`open`, `describe`, and synchronous `close` callbacks. `open` creates the
-concrete session; `describe` copies its generic state; `close` must stop, join,
-finalize, and destroy it before returning success. The manager removes an entry
-only after successful close. A selected-machine provider remains composition
-owned and resolves the selected opaque entry to its product's concrete session.
-
-The shared command facility receives caller-owned tokens and output callback;
-it does not depend on an NXVM Console or VDM CLI. Product UI may route the
-`SESSION` verb to that facility, but must not cache a selected machine/session
-pointer or selected ID. Workers and guest execution paths receive only their
-own session and never access a manager. `core/composition/` is not a valid
-home for this mechanism. This record preserves the M5 contract detail; its
-completed NXVM implementation sequence is summarized in
-[M5 History](../history/legacy/m5.md).
+`common/session` owns generic lifecycle reduction, ordered facts and product
+callback coordination. It never constructs, mutates or interprets an NXVM Core
+machine. `vm/app` owns concrete composition; `vm/product` owns catalog and
+monitor policy. Workers receive only their one machine instance and never
+access product selection state. `core/composition/` is not a valid home for
+these responsibilities.
 
 ## Contract Sequence
 
 The following sections are completed in order before a migration changes the
 corresponding runtime path:
 
-1. `core/machine`: lifecycle, execution, memory/port/interrupt, provider, and
+1. `lib` and `common`: neutral host services and product-capability contracts.
+2. `core/machine`: lifecycle, execution, memory/port/interrupt, provider, and
    read-only state contracts.
-2. `core/platform`: host capability providers plus platform frame/event
-   contracts, with no machine type dependency.
-3. `core/product`: generic command, debug, trace, and registry target
-   contracts, with no machine or platform type dependency.
-4. Root composition: VM/mantle adapters for machine snapshots, platform events,
-   product targets, callback binding, and teardown.
-5. Profile override: ROM assets, declarative metadata, and limited firmware
+3. VM adapters: Core snapshots, input, callback binding and teardown.
+4. Profile override: ROM assets, declarative metadata, and limited firmware
    callbacks against public core contracts.
 
 No implementation detail or old M2/M4 contract becomes current merely because
@@ -203,11 +177,10 @@ publish output, then run another quantum. A debugger step uses the same path
 with a budget of one. This prevents an unbounded guest loop from owning the
 host control flow while preserving one execution implementation.
 
-VM and mantle composition may share a `core/product` queue, wake, and drain
-primitive only after both loops have a demonstrated identical mechanism. Such
-a primitive knows no machine or platform type and never decides scheduling,
-display policy, cancellation, boot continuation, or program exit. Those remain
-VM/mantle root-composition policy.
+Products may share a `common` queue, wake and drain primitive only after both
+loops demonstrate identical mechanics. That primitive knows no machine or
+platform type and never decides scheduling, display policy, cancellation, boot
+continuation or program exit. Those remain product-composition policy.
 
 ## Core Machine: Configuration, State, And Run Result
 
@@ -295,9 +268,9 @@ under paging, 32-bit TSS switching, task gates, far CALL, nested task return,
 or host-assisted recovery.
 
 CPU and memory mutation occurs only at an execution boundary. A debugger, DOS
-loader, firmware override, or root composition uses these APIs only after the
-current quantum has returned; `core/product` receives an adapted debug target,
-not a `core_machine` handle.
+loader, firmware override or root composition uses these APIs only after the
+current quantum has returned; `common/debug` receives an adapted target, not a
+`core_machine` handle.
 
 ### Core Configuration And Provider Boundary
 
@@ -813,12 +786,11 @@ provider view, translates it to a frame, and submits it to platform. This
 replaces profile firmware directly calling a display implementation while
 preserving the same refresh cycle.
 
-## Core Platform: Host-Capability Boundary
+## Lib: Host-Capability Boundary
 
-`core/platform` defines reusable host-capability, platform-event, and
-presentation-frame contracts. It has no `core_machine` dependency and knows no
-DOS service, VM profile, CLI, debugger policy, product exit status, or window
-ownership decision.
+`lib` defines reusable host-capability, presentation and storage contracts. It
+has no `core_machine` dependency and knows no DOS service, VM profile, CLI,
+debugger policy, product exit status or window-ownership decision.
 
 A platform provider may produce copied, normalized host events on a host
 thread and may consume copied presentation, audio, or log frames. It may not
@@ -827,37 +799,31 @@ platform events into its product-owned queue, consumes them at a machine
 execution boundary, and translates machine/provider views into platform frames
 before submission.
 
-Concrete host implementations reused by both products belong in
-`core/platform/win32` or `core/platform/linux`; platform-neutral contracts and
-helpers live directly in `core/platform`. Full-machine window policy remains
-in `vm/platform`. VDM parent-Console protection, cancellation semantics, and
-drive/path containment remain in `vdm/platform`. A core platform capability
-provides a mechanism, never a product policy or a hidden second composition
-layer.
+Concrete host implementations reused by both products belong in Lib. Full
+machine window policy remains in `vm/product`. A Lib capability provides a
+mechanism, never product policy or a hidden composition layer.
 
-## Core Platform: Capability Granularity
+## Lib: Capability Granularity
 
-Core platform begins with independent, narrow capabilities rather than one
+Lib begins with independent, narrow capabilities rather than one
 global host-services object:
 
 - An event source produces copied, normalized keyboard, mouse, window, and
   system events.
 - Presentation sinks consume copied display frames, audio blocks, and, where
   needed, diagnostic output.
-- Host clock capability belongs in `core/platform`; the policy-free injected
-  wait callback used across independent owners belongs in `core/utils`.
-  Composition owns pacing, waiting, and watchdog policy; `core/machine` never
-  reads host time.
+- Host clock and wait capabilities belong in `lib/host`. Composition owns
+  pacing, waiting and watchdog policy; `core/machine` never reads host time.
 
 Filesystem product policy, drive visibility, serial/parallel policy, and
-printing do not enter `core/platform` merely because they touch the host. T271
+printing do not enter Lib merely because they touch the host. T271
 admits only the underlying opaque file/directory/stream primitives because the
 known external-consumer evidence establishes reuse. It exposes no DOS path,
 drive-letter, wildcard, sandbox, sharing, lock, mount, or UI policy. VM media
 attachment and VDM containment remain composition/product decisions;
-composition adapts a core/platform resource into a core/machine media result.
+composition adapts a Lib resource into a Core-machine media result.
 
-## Core Platform: Event, Frame, And Teardown Ownership
+## Lib: Event, Frame, And Teardown Ownership
 
 An event source creates a copied normalized event on its host thread.
 Composition's event callback may only enqueue or otherwise record that copied
@@ -877,31 +843,18 @@ Window close, Ctrl+C, and host-device loss enter this boundary only as
 normalized platform events. VM/VDM composition decides whether each event
 pauses, exits, cancels, or produces a product result.
 
-## Core Product: Reusable Product Tooling
+## Common Product Capabilities
 
-`core/product` is a reusable product-tool library, not a third product
-composition layer. It may contain pure assembler/disassembler operations,
-generic command dispatch, abstract debugger operations, structured trace,
-bounded trace storage, and explicit registries.
+`common/debug`, `common/xasm32`, `common/session`, `common/machine` and
+`common/ui` are reusable product capabilities, not a third composition layer.
+They act only through copied values and abstract targets; Common never selects
+a profile, creates a machine, owns an execution loop, receives native handles
+or determines product exit semantics. `lib` supplies its only dependency.
 
-Generic command and debugger tools act only through abstract targets, such as
-read CPU state, read memory, step, continue, or set a breakpoint. Root
-composition adapts a real machine or provider to that target. Core product
-does not include a machine or platform type and never selects a profile,
-creates a session, owns an execution loop, receives host events, or determines
-product exit semantics.
-
-An explicit registry is a narrow registration/query utility, not a global
-service locator through which a module may discover sibling objects. Trace
-events are structured, filterable, and capacity-bounded. Their collection,
-clearing, and export remain composition and product-UX policy; an unbounded
-raw instruction recorder is not a core-product facility.
-
-NXVM Console commands, NXVDM CLI parsing, display/Console ownership, and
-product-specific debug interaction belong in `vm/product` or `vdm/product`.
-Assembler/disassembler code whose inputs and outputs are pure data belongs in
-core product because it accesses neither a machine, a platform provider, nor a
-global session.
+NXVM Console commands, recording policy, display/Console ownership and
+product-specific debugger integration belong in `vm/product`. The pure
+assembler/disassembler capability belongs in Common because it accesses neither
+a machine nor a native host provider.
 
 ## Root Composition: Product Integration
 
