@@ -46,4 +46,4 @@ preventing Console/Window creation.
   strict `common-xasm32-contract-smoke` route.
 
 `git diff --check`, documentation governance and the source-boundary sweeps
-also passed. The active packet names the remaining coordinator review.
+also passed. Implementation commit: `bcb8346a`.
