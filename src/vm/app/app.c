@@ -8,6 +8,7 @@
 struct vm_app {
     vm_machine *machine;
     common_session *session;
+    common_ui *ui;
 };
 
 static common_session_machine_state vm_app_machine_state(vm_machine_result_kind kind)
@@ -55,6 +56,7 @@ type_status vm_app_create(vm_app **out_app)
 C_VOID vm_app_destroy(vm_app *app)
 {
     if (app == STD_NULL) return;
+    common_ui_destroy(app->ui);
     vm_machine_destroy(app->machine);
     common_session_destroy(app->session);
     STD_FREE(app);
@@ -66,6 +68,9 @@ common_session *vm_app_session(vm_app *app)
 vm_machine *vm_app_machine(vm_app *app)
 { return app == STD_NULL ? STD_NULL : app->machine; }
 
+common_ui *vm_app_ui(vm_app *app)
+{ return app == STD_NULL ? LIB_NULL : app->ui; }
+
 type_status vm_app_compose_machine(vm_app *app, const vm_session_request *request)
 {
     if (app == STD_NULL || request == STD_NULL || app->machine != STD_NULL)
@@ -74,4 +79,12 @@ type_status vm_app_compose_machine(vm_app *app, const vm_session_request *reques
         return TYPE_STATUS_INVALID_STATE;
     vm_machine_set_result_sink(app->machine, vm_app_machine_result, app);
     return TYPE_STATUS_OK;
+}
+
+type_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
+{
+    if (app == STD_NULL || options == LIB_NULL || app->ui != LIB_NULL)
+        return TYPE_STATUS_INVALID_STATE;
+    return common_ui_create(&app->ui, options) == LIB_STATUS_OK ?
+        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }

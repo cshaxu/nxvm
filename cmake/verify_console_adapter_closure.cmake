@@ -37,10 +37,20 @@ foreach(required
     "vm_product_console_debug_provider"
     "vm_product_console_request_pause"
     "vm_machine_common_debug_execute"
-    "vm_machine_request_pause")
+    "vm_machine_request_pause"
+    "vm_app_compose_ui"
+    "common_ui_create"
+    "common_ui_destroy")
     string(FIND "${app_source}\n${product_source}\n${debug_source}" "${required}" debug_position)
     if(debug_position EQUAL -1)
         message(FATAL_ERROR "Console debugger callback lost required behavior: ${required}")
+    endif()
+endforeach()
+
+foreach(forbidden "common_ui_create(" "common_ui_destroy(")
+    string(FIND "${product_source}" "${forbidden}" product_ui_position)
+    if(NOT product_ui_position EQUAL -1)
+        message(FATAL_ERROR "Product retains Common UI lifetime ownership: ${forbidden}")
     endif()
 endforeach()
 
