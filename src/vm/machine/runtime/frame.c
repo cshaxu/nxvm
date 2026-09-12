@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "vm/presentation/frame.h"
+#include "vm/machine/runtime/frame.h"
 
-type_status vm_presentation_frame_from_core(
+type_status vm_machine_frame_from_display(
     const vm_machine_display_event *source, ui_frame *destination)
 {
     STD_SIZE_T cell;

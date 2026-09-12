@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/presentation/frame.h"
+#include "vm/machine/runtime/frame.h"
 
 C_INT main(C_VOID)
 {
@@ -16,7 +16,7 @@ C_INT main(C_VOID)
     source.characters[1999u] = 'Z';
     source.attributes[1999u] = 0x4fu;
     source.palette_rgb[14u] = 0x00ffff00u;
-    if (vm_presentation_frame_from_core(&source, &destination) != TYPE_STATUS_OK ||
+    if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_OK ||
         !destination.valid || destination.graphics || destination.text[0u] != 'A' ||
         destination.attributes[0u] != 0x1eu || destination.text[1999u] != 'Z' ||
         destination.attributes[1999u] != 0x4fu ||
@@ -25,7 +25,7 @@ C_INT main(C_VOID)
     source.graphics = TYPE_TRUE;
     source.pixel_width = 320u;
     source.pixel_height = 200u;
-    if (vm_presentation_frame_from_core(&source, &destination) != TYPE_STATUS_OK ||
+    if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_OK ||
         !destination.graphics || destination.graphics_width != 320u ||
         destination.graphics_height != 200u) return 1;
     return 0;

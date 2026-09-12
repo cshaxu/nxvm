@@ -7,7 +7,7 @@
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/request_factory.h"
-#include "vm/presentation/frame.h"
+#include "vm/machine/runtime/frame.h"
 
 struct vm_app {
     vm_machine *machine;
@@ -128,7 +128,7 @@ static C_VOID vm_app_machine_result(void *context, const vm_machine_result *resu
 
     if (app == STD_NULL || result == STD_NULL) return;
     if (result->kind == VM_MACHINE_RESULT_DISPLAY) {
-        if (vm_presentation_frame_from_core(&result->value.display, &frame) ==
+        if (vm_machine_frame_from_display(&result->value.display, &frame) ==
             TYPE_STATUS_OK) (C_VOID)common_session_publish_frame(app->session, &frame);
         return;
     }

@@ -9,7 +9,7 @@
 
 #include "vm/product/console.h"
 #include "vm/app/app.h"
-#include "vm/presentation/presentation.h"
+#include "common/ui/ui_interface.h"
 #include "vm/product/catalog.h"
 #include "vm/product/recorder.h"
 #include "common/session/session_interface.h"
@@ -22,7 +22,7 @@ struct vm_product_console_context {
     vm_app *session;
     vm_product_session_catalog *catalog;
     common_session *control;
-    vm_presentation *presentation;
+    common_ui *presentation;
     vm_product_recorder *recorder;
     C_INT session_stopped;
 };
@@ -48,20 +48,54 @@ static C_INT vm_product_console_printf(const vm_product_console_context *context
     written = vsnprintf(text, sizeof(text), format, arguments);
     va_end(arguments);
     if (written < 0 || (STD_SIZE_T)written >= sizeof(text)) return -1;
-    return vm_presentation_write_console(context->presentation, text) ==
-        TYPE_STATUS_OK ? written : -1;
+    return common_ui_write_console(context->presentation, text) ==
+        LIB_STATUS_OK ? written : -1;
 }
 
-static type_status vm_product_console_line_sink(C_VOID *context,
+static lib_status vm_product_console_line_sink(void *context,
     const C_CHAR *line)
 {
-    return (type_status)common_session_publish_console_line(context, line);
+    return common_session_publish_console_line(context, line);
 }
 
-static type_status vm_product_console_input_sink(C_VOID *context,
+static lib_status vm_product_console_input_sink(void *context,
     const ui_input_event *event)
 {
-    return (type_status)common_session_publish_ui_input(context, event);
+    return common_session_publish_ui_input(context, event);
+}
+
+static void vm_product_console_ui_failure(void *context, lib_u64 source_identity,
+    lib_status status)
+{
+    vm_product_console_context *console = context;
+
+    (void)source_identity;
+    if (console != STD_NULL)
+        (void)vm_product_console_printf(console, "UI failure: %d.\n", (C_INT)status);
+}
+
+static common_ui_target vm_product_console_ui_target(common_session_target target)
+{
+    return target == COMMON_SESSION_TARGET_WINDOW ? COMMON_UI_TARGET_WINDOW :
+        target == COMMON_SESSION_TARGET_CONSOLE ? COMMON_UI_TARGET_CONSOLE :
+        COMMON_UI_TARGET_NONE;
+}
+
+static void vm_product_console_apply_ui_plan(vm_product_console_context *context,
+    const common_session_plan *plan)
+{
+    common_ui_plan ui_plan = {0};
+
+    if (context == STD_NULL || context->presentation == STD_NULL || plan == STD_NULL)
+        return;
+    ui_plan.target_changed = plan->target_changed;
+    ui_plan.target = vm_product_console_ui_target(plan->target);
+    ui_plan.mouse_capturable_changed = plan->mouse_capturable_changed;
+    ui_plan.mouse_capturable = plan->mouse_capturable;
+    ui_plan.release_mouse = plan->release_mouse;
+    ui_plan.frame_ready = plan->frame_ready;
+    ui_plan.frame = plan->frame;
+    (void)common_ui_apply(context->presentation, &ui_plan);
 }
 
 static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
@@ -70,8 +104,7 @@ static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
     const C_CHAR *state = STD_NULL;
 
     if (context == STD_NULL || plan == STD_NULL) return;
-    if (context->presentation != STD_NULL)
-        (C_VOID)vm_presentation_apply_common_plan(context->presentation, plan);
+    vm_product_console_apply_ui_plan(context, plan);
     switch (plan->notice) {
     case COMMON_SESSION_NOTICE_STARTED: state = "started"; break;
     case COMMON_SESSION_NOTICE_RESUMED: state = "resumed"; break;
@@ -84,7 +117,7 @@ static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
         (plan->notice == COMMON_SESSION_NOTICE_STARTED ||
          plan->notice == COMMON_SESSION_NOTICE_RESUMED ||
          plan->notice == COMMON_SESSION_NOTICE_PAUSED))
-        (C_VOID)vm_presentation_set_window_title(context->presentation,
+        (void)common_ui_set_window_title(context->presentation,
             plan->notice == COMMON_SESSION_NOTICE_PAUSED ? "NXVM (Paused)" :
             "NXVM (Running)");
     if (state != STD_NULL) (C_VOID)vm_product_console_printf(context, restore_prompt ?
@@ -156,8 +189,7 @@ static C_INT vm_product_console_read_line(vm_product_console_context *context,
         context->presentation == STD_NULL || context->control == STD_NULL)
         return 0;
     buffer[0] = '\0';
-    if (vm_presentation_request_console_line(context->presentation) !=
-        TYPE_STATUS_OK) return 0;
+    if (common_ui_request_console_line(context->presentation) != LIB_STATUS_OK) return 0;
     for (;;) {
         if (common_session_take(context->control, &fact, &display, 0xffffffffu) !=
                 TYPE_STATUS_OK) return 0;
@@ -330,9 +362,9 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
-    switch (context->presentation == STD_NULL ? COMMON_SESSION_TARGET_NONE :
-        vm_presentation_get_target(context->presentation)) {
-    case COMMON_SESSION_TARGET_WINDOW:
+    switch (context->presentation == STD_NULL ? COMMON_UI_TARGET_NONE :
+        common_ui_get_target(context->presentation)) {
+    case COMMON_UI_TARGET_WINDOW:
         STD_PRINTF("Display Type: Window\n");
         break;
     default:
@@ -571,6 +603,8 @@ static C_VOID execute(vm_product_console_context *context)
 static C_INT vm_product_console_initialize(vm_product_console_context *context,
     const C_CHAR *profile_directory)
 {
+    common_ui_options ui_options = {0};
+
     argArray = (C_CHAR **)STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
@@ -580,15 +614,28 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
         context->control = STD_NULL;
         return TYPE_FALSE;
     }
-    if (vm_presentation_create(&context->presentation,
-            vm_product_console_input_sink,
-            context->control, vm_product_console_line_sink,
-            context->control) != TYPE_STATUS_OK) {
+    ui_options.input_context = context->control;
+    ui_options.input_sink = vm_product_console_input_sink;
+    ui_options.console_line_context = context->control;
+    ui_options.console_line_sink = vm_product_console_line_sink;
+    ui_options.failure_context = context;
+    ui_options.failure_sink = vm_product_console_ui_failure;
+    ui_hotkey_registry_initialize(&ui_options.hotkeys);
+    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'P',
+        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "pause");
+    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'D',
+        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "cad");
+    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'F',
+        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "alt-enter");
+    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'M',
+        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "release-mouse");
+    ui_options.initial_window_title = "NXVM (Running)";
+    if (common_ui_create(&context->presentation, &ui_options) != LIB_STATUS_OK) {
         context->control = STD_NULL;
         return TYPE_FALSE;
     }
     if (vm_product_recorder_create(&context->recorder) != TYPE_STATUS_OK) {
-        vm_presentation_destroy(context->presentation);
+        common_ui_destroy(context->presentation);
         context->presentation = STD_NULL;
         context->control = STD_NULL;
         return TYPE_FALSE;
@@ -599,7 +646,7 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
             TYPE_STATUS_OK) return TYPE_TRUE;
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
-    vm_presentation_destroy(context->presentation);
+    common_ui_destroy(context->presentation);
     context->presentation = STD_NULL;
     context->control = STD_NULL;
     vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
@@ -625,7 +672,7 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
     vm_product_session_catalog_destroy(context->catalog);
     context->catalog = STD_NULL;
     vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
-    vm_presentation_destroy(context->presentation);
+    common_ui_destroy(context->presentation);
     vm_product_recorder_destroy(context->recorder);
     context->recorder = STD_NULL;
     context->presentation = STD_NULL;
@@ -650,7 +697,7 @@ C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
 {
     if (context == STD_NULL) return;
     vm_app_bind_product_debug_observer(context->session, STD_NULL, STD_NULL);
-    vm_presentation_destroy(context->presentation);
+    common_ui_destroy(context->presentation);
     vm_product_session_catalog_destroy(context->catalog);
     vm_product_recorder_destroy(context->recorder);
     STD_FREE(context);

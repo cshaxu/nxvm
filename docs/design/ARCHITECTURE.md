@@ -100,11 +100,13 @@ no second FIFO, run generation, lifecycle reducer or presentation state.
 Product Console retains NXVM command and title policy until the later
 common-debug/product-CLI migration.
 
-`vm/presentation` is the NXVM shared-lib binding leaf. It applies common-session plans
-and returns copied input facts; it never derives lifecycle or surface policy.
-Its Console host owns the process Console broker and may lease it to at most one
-Console presenter. Core and `src/lib` do not know session selection, lifecycle
-policy, or Console leasing.
+`common/ui` is the sole shared-lib presenter binding. It owns the process
+Console broker, may lease it to at most one Console presenter, applies only
+copied target/frame/title/mouse operations, and returns only copied Console or
+native-input facts. It does not select a target, derive lifecycle policy or
+format product text. `vm/product` supplies NXVM's raw-VM/monitor/none policy,
+hotkeys, title and Console text; `vm/app` remains composition only. Core and
+`src/lib` do not know session selection or NXVM policy.
 
 Native and WASM hosts share these component boundaries. A future TypeScript web
 product layer sits above the WASM platform/product adaptation; it does not move

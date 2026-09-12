@@ -8,9 +8,9 @@ src/vm/machine/runtime/machine_interface.h|vm/profile
 src/vm/machine/runtime/machine_private.h|vm/events
 src/vm/machine/runtime/machine_private.h|vm/profile
 src/vm/app/app.c|vm/machine
-src/vm/app/app.c|vm/presentation
+src/vm/app/app.h|vm/machine
 src/vm/product/catalog.h|vm/events
 src/vm/product/console.c|vm/app
-src/vm/product/console.c|vm/presentation
 src/vm/product/console.h|vm/app
-src/vm/presentation/frame.h|vm/events
+src/vm/product/recorder.h|vm/machine
+src/vm/machine/runtime/frame.h|vm/events

@@ -234,7 +234,7 @@ target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-machine)
 add_executable(vm-model40-console-s20-smoke
     test/integration/product/vm_model40_console_s20_smoke.c
     src/vm/product/console.c
-    test/vm/presentation/console_host_fake.c)
+    test/common/ui/common_ui_console_host_fake.c)
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-machine)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
@@ -275,7 +275,7 @@ target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
 add_executable(vm-product-console-lifecycle-smoke
     test/integration/product/nxvm_console_lifecycle_smoke.c
     src/vm/product/console.c
-    test/vm/presentation/console_host_fake.c)
+    test/common/ui/common_ui_console_host_fake.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-machine)
 add_executable(vm-yaml-cmos-seed-smoke
@@ -1184,10 +1184,9 @@ set(VM_PRODUCT_SOURCES
     src/vm/product/catalog.c
     src/vm/product/recorder.c
 )
-set(VM_PRESENTATION_SOURCES
-    src/vm/presentation/console_host.c
-    src/vm/presentation/presentation.c
-    src/vm/presentation/frame.c
+set(COMMON_UI_SOURCES
+    src/common/ui/console_host.c
+    src/common/ui/presentation.c
 )
 set(COMMON_SESSION_SOURCES
     src/common/session/session.c
@@ -1212,6 +1211,7 @@ set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/runtime/debug_adapter.c
     src/vm/machine/runtime/media.c
     src/vm/machine/runtime/display.c
+    src/vm/machine/runtime/frame.c
     src/vm/machine/runtime/lifecycle.c
     src/vm/machine/runtime/machine.c
     src/vm/machine/runtime/control.c
@@ -1315,9 +1315,13 @@ target_include_directories(common-session-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(common-session-smoke PRIVATE common-session)
-add_executable(vm-presentation-frame-smoke
-    test/vm/presentation/vm_presentation_frame_smoke.c)
-target_link_libraries(vm-presentation-frame-smoke PRIVATE vm-presentation)
+add_executable(common-ui-smoke
+    test/common/ui/common_ui_smoke.c
+    test/common/ui/common_ui_console_host_fake.c)
+target_link_libraries(common-ui-smoke PRIVATE common-ui type-facade)
+add_executable(vm-machine-frame-smoke
+    test/vm/machine/vm_machine_frame_smoke.c)
+target_link_libraries(vm-machine-frame-smoke PRIVATE vm-machine)
 
 add_executable(common-xasm32-smoke
     test/common/xasm32/xasm32_smoke.c
@@ -1405,6 +1409,16 @@ target_link_libraries(common-session PUBLIC
     host
     ui-base)
 
+add_library(common-ui STATIC ${COMMON_UI_SOURCES})
+target_include_directories(common-ui PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(common-ui PUBLIC
+    host
+    ui-window
+    ui-console
+    ui-base)
+
 add_library(vm-app STATIC ${VM_APP_SOURCES})
 target_include_directories(vm-app PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -1413,17 +1427,6 @@ target_link_libraries(vm-app PUBLIC
     common-session
     common-debug
     vm-machine
-    vm-presentation
-    type-facade)
-
-add_library(vm-presentation STATIC ${VM_PRESENTATION_SOURCES})
-target_include_directories(vm-presentation PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-presentation PUBLIC
-    ui-window
-    ui-console
-    ui-base
     type-facade)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
@@ -1433,7 +1436,7 @@ target_include_directories(vm-product PUBLIC
 target_link_libraries(vm-product PUBLIC
     vm-app
     common-session
-    vm-presentation
+    common-ui
     core-product
     core-machine-boundary
     storage)
@@ -2207,7 +2210,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     common-xasm32-contract-smoke
     common-debug-smoke
     common-session-smoke
-    vm-presentation-frame-smoke
+    common-ui-smoke
+    vm-machine-frame-smoke
     core-machine-guest-input-source-smoke
     host-smoke
     vm-machine-executor-state-smoke
@@ -2788,9 +2792,13 @@ set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
 get_property(project_t344_registered_targets GLOBAL
     PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
 set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
-# This direct lib target remains an explicit unit route.
-list(APPEND project_t344_single_test_targets ui-base-contract-smoke)
-list(APPEND project_t344_registered_targets ui-base-contract-smoke)
+# These direct lib targets remain explicit unit routes.
+list(APPEND project_t344_single_test_targets
+    types-smoke
+    ui-base-contract-smoke)
+list(APPEND project_t344_registered_targets
+    types-smoke
+    ui-base-contract-smoke)
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
 foreach(project_t344_target IN LISTS project_t344_single_test_targets)
@@ -3638,12 +3646,12 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "common-xasm32|src/common/xasm32/xasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/aasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/dasm32.c|xasm32"
-    "common-xasm32-contract-smoke|test/common/xasm32/xasm32_contract_smoke.c|xasm32-contract"
     "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
     "vm-product|src/vm/product/console.c|console-product"
-    "vm-presentation|src/vm/presentation/console_host.c|presentation-leaf"
-    "vm-presentation|src/vm/presentation/presentation.c|presentation-leaf"
-    "vm-presentation|src/vm/presentation/frame.c|presentation-leaf"
+    "vm-product|src/vm/product/recorder.c|recorder-product"
+    "common-ui|src/common/ui/console_host.c|presentation-leaf"
+    "common-ui|src/common/ui/presentation.c|presentation-leaf"
+    "vm-machine|src/vm/machine/runtime/frame.c|display-adaptation"
     "vm-product|src/vm/product/catalog.c|session-catalog"
     "common-session|src/common/session/session.c|session-owner"
     "vm-app|src/vm/app/app.c|session-composition"
@@ -3690,7 +3698,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-machine
     common-session
     vm-app
-    vm-presentation
+    common-ui
     vm-product
     vdm-machine
     vdm-composition

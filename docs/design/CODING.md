@@ -22,7 +22,7 @@ src/
   vm/
     main.c
     events/
-    {events,machine,platform,presentation,product,profile,session}/
+    {events,machine,platform,product,profile,session}/
   mantle/
     composition/
     {machine,platform,product}/
@@ -53,8 +53,9 @@ root.
 ## Source Organization
 
 The retained test layout uses one repository-root `test/` directory.
-Repository-only test modules mirror their source owner: `test/core/` follows
-`src/core/` and `test/vm/` follows `src/vm/`; a directory is introduced only
-for a real source subsystem or cross-owner composition boundary. `test/support/`
+Repository-only test modules mirror their source owner: `test/core/`,
+`test/common/` and `test/vm/` follow their corresponding source roots; a
+directory is introduced only for a real source subsystem or cross-owner
+composition boundary. `test/support/`
 contains setup-only helpers, never a second product path. External-asset
 product scenarios live only in `test/integration/`; they are not unit tests.
