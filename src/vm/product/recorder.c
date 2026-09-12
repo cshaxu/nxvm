@@ -30,7 +30,8 @@ static C_INT recorder_write(vm_product_recorder *recorder,
     written = vsnprintf(text, sizeof(text), format, arguments);
     va_end(arguments);
     return written >= 0 && (STD_SIZE_T)written < sizeof(text) &&
-        lib_storage_file_writer_write(recorder->writer, text) == LIB_STATUS_OK;
+        lib_storage_file_writer_write(recorder->writer, text,
+            (lib_size)written) == LIB_STATUS_OK;
 }
 
 type_status vm_product_recorder_create(vm_product_recorder **out_recorder)

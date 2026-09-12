@@ -2,14 +2,11 @@
 
 #include "lib/host/sync_interface.h"
 
-#include <stdatomic.h>
-#include <stdlib.h>
-
 #define COMMON_MACHINE_QUEUE_CAPACITY 32u
 
 struct common_machine {
     host_sync_event *ready;
-    atomic_flag lock;
+    lib_atomic_flag lock;
     common_machine_request requests[COMMON_MACHINE_QUEUE_CAPACITY];
     lib_size first;
     lib_size count;
@@ -21,12 +18,13 @@ struct common_machine {
 
 static void common_machine_lock(common_machine *machine)
 {
-    while (atomic_flag_test_and_set_explicit(&machine->lock, memory_order_acquire)) { }
+    while (lib_atomic_flag_test_and_set_explicit(&machine->lock,
+        LIB_MEMORY_ORDER_ACQUIRE)) { }
 }
 
 static void common_machine_unlock(common_machine *machine)
 {
-    atomic_flag_clear_explicit(&machine->lock, memory_order_release);
+    lib_atomic_flag_clear_explicit(&machine->lock, LIB_MEMORY_ORDER_RELEASE);
 }
 
 lib_status common_machine_create(common_machine **out_machine)
@@ -35,12 +33,12 @@ lib_status common_machine_create(common_machine **out_machine)
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
-    machine = calloc(1u, sizeof(*machine));
+    machine = lib_allocate_zero(1u, sizeof(*machine));
     if (machine == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    machine->lock = (atomic_flag)ATOMIC_FLAG_INIT;
-    atomic_flag_clear_explicit(&machine->lock, memory_order_release);
+    machine->lock = (lib_atomic_flag)LIB_ATOMIC_FLAG_INITIALIZER;
+    lib_atomic_flag_clear_explicit(&machine->lock, LIB_MEMORY_ORDER_RELEASE);
     if (host_sync_event_create(&machine->ready) != LIB_STATUS_OK) {
-        free(machine);
+        lib_release(machine);
         return LIB_STATUS_NO_MEMORY;
     }
     machine->accepting = LIB_TRUE;
@@ -53,7 +51,7 @@ void common_machine_destroy(common_machine *machine)
 {
     if (machine == LIB_NULL) return;
     host_sync_event_destroy(machine->ready);
-    free(machine);
+    lib_release(machine);
 }
 
 void common_machine_close(common_machine *machine)

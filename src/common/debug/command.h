@@ -10,7 +10,7 @@ typedef struct common_debug_command common_debug_command;
 lib_status common_debug_command_create(common_debug_command **out_command);
 void common_debug_command_destroy(common_debug_command *command);
 lib_status common_debug_command_open(common_debug_command *command,
-    common_machine *machine, const common_debug_file_service *files);
+    common_machine *machine);
 void common_debug_command_close(common_debug_command *command);
 lib_status common_debug_command_submit_line(common_debug_command *command,
     const char *line, common_debug_result *out_result);

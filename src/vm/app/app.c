@@ -4,7 +4,6 @@
 
 #include "vm/app/app.h"
 #include "common/debug/debug_interface.h"
-#include "lib/storage/medium_interface.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/request_factory.h"
@@ -17,47 +16,6 @@ struct vm_app {
     vm_machine_debug_observer product_observer;
     C_VOID *product_observer_context;
 };
-
-static lib_status vm_app_debug_read_file(void *context, const char *path,
-    lib_u64 offset, lib_u8 *bytes, lib_size capacity, lib_size *out_bytes)
-{
-    lib_storage_medium *medium = LIB_NULL;
-    lib_size byte_count;
-    lib_status status;
-
-    (void)context;
-    if (path == LIB_NULL || bytes == LIB_NULL || out_bytes == LIB_NULL ||
-        offset > (lib_u64)SIZE_MAX) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_bytes = 0u;
-    status = lib_storage_medium_open(path, LIB_STORAGE_MEDIUM_READONLY, &medium);
-    if (status != LIB_STATUS_OK) return status;
-    byte_count = lib_storage_medium_byte_count(medium);
-    if ((lib_size)offset < byte_count) {
-        *out_bytes = byte_count - (lib_size)offset < capacity ?
-            byte_count - (lib_size)offset : capacity;
-        status = lib_storage_medium_read_at(medium, (lib_size)offset, bytes,
-            *out_bytes);
-    }
-    lib_storage_medium_destroy(&medium);
-    return status;
-}
-
-static lib_status vm_app_debug_write_file(void *context, const char *path,
-    lib_u64 offset, const lib_u8 *bytes, lib_size byte_count)
-{
-    lib_storage_medium *medium = LIB_NULL;
-    lib_status status;
-
-    (void)context;
-    if (path == LIB_NULL || bytes == LIB_NULL || offset > (lib_u64)SIZE_MAX)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    status = lib_storage_medium_open(path, LIB_STORAGE_MEDIUM_DIRECT, &medium);
-    if (status == LIB_STATUS_OK)
-        status = lib_storage_medium_write_at(medium, (lib_size)offset, bytes,
-            byte_count);
-    lib_storage_medium_destroy(&medium);
-    return status;
-}
 
 static lib_status vm_app_debug_provider(void *context, const char *line,
     common_session_cli_result *out_result)
@@ -269,10 +227,8 @@ type_status vm_app_debug(vm_app *app)
 {
     if (app == STD_NULL || app->machine == STD_NULL || app->debug == STD_NULL ||
         vm_machine_pause_for_debug(app->machine, 2000u) != TYPE_STATUS_OK ||
-        common_debug_open(app->debug, vm_machine_common_machine(app->machine),
-            &(common_debug_file_service){
-                vm_app_debug_read_file, vm_app_debug_write_file, app
-            }) != LIB_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+        common_debug_open(app->debug, vm_machine_common_machine(app->machine)) !=
+            LIB_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     if (common_session_set_cli_provider(app->session, vm_app_debug_provider,
             app) != LIB_STATUS_OK ||
         common_session_set_cli_machine_observer(app->session,

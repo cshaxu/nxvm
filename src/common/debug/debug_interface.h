@@ -59,21 +59,9 @@ typedef enum common_debug_machine_state {
     COMMON_DEBUG_MACHINE_FAULT
 } common_debug_machine_state;
 
-typedef lib_status (*common_debug_file_read)(void *context, const char *path,
-    lib_u64 offset, lib_u8 *out_data, lib_size capacity, lib_size *out_bytes);
-typedef lib_status (*common_debug_file_write)(void *context, const char *path,
-    lib_u64 offset, const lib_u8 *data, lib_size bytes);
-
-typedef struct common_debug_file_service {
-    common_debug_file_read read;
-    common_debug_file_write write;
-    void *context;
-} common_debug_file_service;
-
 lib_status common_debug_create(common_debug **out_debug);
 void common_debug_destroy(common_debug *debug);
-lib_status common_debug_open(common_debug *debug, common_machine *machine,
-    const common_debug_file_service *files);
+lib_status common_debug_open(common_debug *debug, common_machine *machine);
 void common_debug_close(common_debug *debug);
 lib_status common_debug_submit_line(common_debug *debug, const char *line,
     common_debug_result *out_result);

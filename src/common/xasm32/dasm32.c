@@ -1,15 +1,12 @@
-#include "lib/types/types_interface.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "common/xasm32/xasm32.h"
 
 #include "common/xasm32/dasm32.h"
 
-#define XASM32_TRACE_CONTEXT trace
-#define XASM32_TRACE_ERROR flagError
+/* Retain the original decoder tables; only their C-runtime vocabulary is
+ * provided by lib/types. */
+#define memset lib_memory_set
+#define strlen lib_text_length
+#define snprintf lib_text_format
 
 typedef lib_u8 t_dasm_prefix;
 
@@ -19,7 +16,6 @@ typedef void (*dasm32_handler)(dasm32_context *);
 
 struct dasm32_context
 {
-    xasm32_trace trace;
     lib_u8 defsize;
     lib_u8 flagError;
     lib_u8 *drcode;
@@ -6258,9 +6254,6 @@ static lib_u8 dasm32_execute(dasm32_context *dasmContext, char *stmt, lib_u8 *rc
 {
     lib_size i;
     lib_u8 opcode, oldiop;
-#if DASM_TRACE == 1
-    xasm32_trace_initialize(&trace);
-#endif
     if (!dasmContext->initialized)
     {
         dtable[0x00] = ADD_RM8_R8;
@@ -6812,13 +6805,6 @@ static lib_u8 dasm32_execute(dasm32_context *dasmContext, char *stmt, lib_u8 *rc
         }
         XASM32_TRACE_CALL_END;
     } while (_kdf_check_prefix(dasmContext, opcode));
-#if DASM_TRACE == 1
-    if (trace.callCount || trace.flagError)
-    {
-        printf("dasm32: bad machine code.\n");
-    }
-    xasm32_trace_finalize(&trace);
-#endif
     if (flagError) {
         stmt[0] = 0;
         return 0u;

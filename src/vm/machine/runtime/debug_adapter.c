@@ -17,6 +17,47 @@ static type_status vm_machine_common_debug_map_watch(
     }
 }
 
+static void vm_machine_common_debug_copy_segment(
+    common_machine_debug_segment_snapshot *out_segment,
+    const core_machine_debug_segment_snapshot *source)
+{
+    if (out_segment == STD_NULL || source == STD_NULL) return;
+    *out_segment = (common_machine_debug_segment_snapshot) {
+        .selector = source->selector, .base = source->base,
+        .limit = source->limit, .dpl = source->dpl,
+        .type = source->type, .accessed = source->accessed,
+        .executable = source->executable, .conform = source->conform,
+        .readable = source->readable, .defsize = source->defsize,
+        .big = source->big, .expdown = source->expdown,
+        .writable = source->writable
+    };
+}
+
+static lib_status vm_machine_common_debug_capture_cpu(vm_machine *machine,
+    common_machine_debug_cpu_snapshot *out_snapshot)
+{
+    core_machine_debug_cpu_snapshot state;
+
+    if (machine == STD_NULL || out_snapshot == LIB_NULL ||
+        core_machine_debug_capture_cpu_snapshot(machine->core_machine, &state) !=
+            TYPE_STATUS_OK) return LIB_STATUS_INVALID_STATE;
+    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    vm_machine_common_debug_copy_segment(&out_snapshot->es, &state.es);
+    vm_machine_common_debug_copy_segment(&out_snapshot->cs, &state.cs);
+    vm_machine_common_debug_copy_segment(&out_snapshot->ss, &state.ss);
+    vm_machine_common_debug_copy_segment(&out_snapshot->ds, &state.ds);
+    vm_machine_common_debug_copy_segment(&out_snapshot->fs, &state.fs);
+    vm_machine_common_debug_copy_segment(&out_snapshot->gs, &state.gs);
+    vm_machine_common_debug_copy_segment(&out_snapshot->tr, &state.tr);
+    vm_machine_common_debug_copy_segment(&out_snapshot->ldtr, &state.ldtr);
+    vm_machine_common_debug_copy_segment(&out_snapshot->gdtr, &state.gdtr);
+    vm_machine_common_debug_copy_segment(&out_snapshot->idtr, &state.idtr);
+    out_snapshot->cr0 = state.cr0;
+    out_snapshot->cr2 = state.cr2;
+    out_snapshot->cr3 = state.cr3;
+    return LIB_STATUS_OK;
+}
+
 lib_status vm_machine_common_debug_execute(void *context,
     const common_machine_debug_request *request,
     common_machine_debug_result *out_result)
@@ -57,6 +98,8 @@ lib_status vm_machine_common_debug_execute(void *context,
         out_result->value = (type_unsigned_32)code_size; return LIB_STATUS_OK;
     }
     if (request->operation == COMMON_MACHINE_DEBUG_GET_CODE_BASE) return core_machine_debug_get_code_base(machine->core_machine, &out_result->value) == TYPE_STATUS_OK ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
+    if (request->operation == COMMON_MACHINE_DEBUG_GET_CPU_SNAPSHOT)
+        return vm_machine_common_debug_capture_cpu(machine, &out_result->cpu);
     if (request->operation == COMMON_MACHINE_DEBUG_SET_WATCH || request->operation == COMMON_MACHINE_DEBUG_CLEAR_WATCH) {
         if (vm_machine_common_debug_map_watch(request->watch_kind, &watch_kind) != TYPE_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
         return (request->operation == COMMON_MACHINE_DEBUG_SET_WATCH ? core_machine_debug_set_watchpoint(machine->core_machine, watch_kind, request->address) : core_machine_debug_clear_watchpoint(machine->core_machine, watch_kind)) == TYPE_STATUS_OK ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;

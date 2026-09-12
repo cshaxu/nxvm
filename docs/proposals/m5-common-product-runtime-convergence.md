@@ -50,14 +50,17 @@ runtime subset.
 
 `common/xasm32` and `common/debug` are deliberately separate: they are shared
 *x86 product capabilities*, not generic runtime mechanisms.  `xasm32` depends
-only on the current `lib/types` public definitions (`lib_u*`, `lib_size`,
-`lib_status` and, where needed, lib atomics); it has no platform or higher-layer
-dependency and must not redefine those types.  `debug` may depend only on
-`lib/types`, `xasm32` and the synchronous paused-debug API declared by
-`common/machine`; it cannot include Core, VM, MVDM, UI, Console, storage,
-platform, or native headers.  Its two intentional internal dependencies are
-downward: `common/debug -> common/xasm32` and
-`common/debug -> common/machine`; neither is reversed.
+only on the current `lib/types` public vocabulary (`lib_u*`, `lib_size`,
+`lib_status`, atomics and basic memory/text/allocation/formatting); it has no
+platform or higher-layer dependency and must not redefine that vocabulary.
+`debug` may depend only on
+`lib/types`, `lib/storage`, `xasm32` and the synchronous paused-debug API
+declared by `common/machine`; it cannot include Core, VM, MVDM, UI, Console,
+platform, or native headers.  Its three intentional internal dependencies are
+downward: `common/debug -> lib/storage`, `common/debug -> common/xasm32` and
+`common/debug -> common/machine`; neither is reversed.  Storage serves only
+the original Debug `N/L/W` behavior; Debug neither exports a file handle nor
+accepts a product-injected parallel route.
 
 `common/debug` owns bounded Debug command parsing and continuation state, not
 a second input/result queue.  It is itself a `common/session`-registered CLI
@@ -119,11 +122,10 @@ needs Debug-local state transition, then prints the returned text/prompt.  This
 gives SoftPC the same Debug route without making either machine implementation
 public.
 
-`N`, `L`, and `W` remain Debug grammar, but Debug itself never opens a host
-file.  Their result is a bounded typed file request handled by each product's
-injected file service.  That service uses `lib/storage` (or a later shared
-binary-stream extension) and returns copied bytes/status to Debug.  This keeps
-host paths, access policy and file handles out of both `xasm32` and Debug.
+`N`, `L`, and `W` remain Debug grammar. `common/debug` uses the one neutral
+`lib/storage` file route, retaining original load and truncating-write
+semantics without a product callback, an exposed handle or a second file
+owner.
 
 The DOS-style Debug trace/step command is mandatory Debug functionality: its
 execution plan is installed through `common/machine`, and each target owner
@@ -284,7 +286,7 @@ session activates Debug only after a paused fact.
    assembler/disassembler into `common/xasm32` with `lib/types` as its sole
    dependency, retaining one caller route and its current behavior.  Freeze
    the synchronous `common/machine` paused-Debug API, the registered CLI
-   provider contract, `N/L/W` product file-service exchange, and recorder
+   provider contract, `N/L/W` direct neutral-storage contract, and recorder
    disposition before moving the Debug parser.  This order prevents a temporary
    Debug-to-Core shortcut or a speculative target wrapper.
 3. **S3 - common contracts and session cutover.** Create the independently
@@ -316,13 +318,21 @@ session activates Debug only after a paused fact.
    parser address and VM callback-table route rather than forwarding through
    compatibility headers. Move shared Debug continuation, breakpoint and trace
    policy with those handlers; retain only the bounded Core-operation mapping in
-   `vm/machine`. Preserve DOS-style trace/step; use an injected product file
-   service for `N/L/W`; move the NXVM-only raw recorder and its path/open
+   `vm/machine`. Preserve DOS-style trace/step; use direct `lib/storage`
+   operations for `N/L/W`; move the NXVM-only raw recorder and its path/open
    policy to `vm/product` as an explicit optional capability unless the
    separate portability audit proves a shared sink. Move product command text,
    YAML/profile request parsing and machine/status rendering out of the VM
    adapter whenever the Debug/CLI cutover reaches their route.
-6. **S6 - common UI binding.** Move the generic lib-presenter binding to
+6. **S6 - Debug source-preservation correction.** Retain the established
+   `aasm32x` status classifications; delete dead compile-time trace scaffolding, uncalled
+   token printing and every direct host-stdout path from xasm32; replace the
+   temporary injected `N/L/W` file service with the sole `lib/storage` route;
+   and restore the exact retained `XSREG` and `XCREG` information and formatting
+   through one bounded copied paused-debug snapshot. Add original-versus-current
+   regressions for classifications, representative encoding/decoding, `N/L/W`, and
+   complete register output.
+7. **S7 - common UI binding.** Move the generic lib-presenter binding to
    `common/ui`, with copied plans/facts only.  Retain one session-driven
    control Console port while `vm/product` supplies NXVM's immutable
    raw-VM/monitor/none policy and Console text.  Delete the obsolete
@@ -330,7 +340,7 @@ session activates Debug only after a paused fact.
    Core display-provider/mailbox adaptation in `vm/machine`. Verify
    Console/Window switching, title, target, focus, mouse and latest-frame
    semantics without native API leakage.
-7. **S7 - NXVM product and app completion.** Make `vm/product` own only NXVM
+8. **S8 - NXVM product and app completion.** Make `vm/product` own only NXVM
    command/YAML/profile/debugger/presentation policy, injected into session at
    construction.  Make `vm/app` the sole composition root, with no queue or
    lifecycle/router state. Delete the remaining old `vm/events` and
@@ -341,7 +351,7 @@ session activates Debug only after a paused fact.
    Debug grammar, UI binding or composition decision to its named owner.
    Confirm one session only, one product control FIFO, one machine FIFO and
    one UI route.
-8. **S8 - reusable-corpus and closure audit.** Build common independently
+9. **S9 - reusable-corpus and closure audit.** Build common independently
    using only `lib` public headers; verify its manifest and forbidden-vocabulary
    sweep.  Add neutral two-adapter conformance doubles (not a second product)
    for session/machine/UI contracts.  Run full repository unit and integration

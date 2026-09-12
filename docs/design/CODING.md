@@ -44,7 +44,7 @@ named `*_interface.h`; an injected implementation is named `*_provider`.
 Public symbols use their ownership path, for example `core_machine_*`,
 `common_session_*`, `common_debug_*`, `vm_product_*`, `mantle_platform_*`,
 `dos_machine_*`, and `vdm_product_*`. `src/lib/types` is the sole shared C
-type and status foundation.
+type, status, atomic, and basic C-runtime vocabulary foundation.
 
 Files remain flat within a module until a real multi-file subsystem justifies a
 subdirectory. `main.c` and `composition/` belong at the appropriate component

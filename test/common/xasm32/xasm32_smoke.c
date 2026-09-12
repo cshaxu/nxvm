@@ -1,7 +1,5 @@
 #include "common/xasm32/xasm32_interface.h"
 
-#include <stdio.h>
-
 int main(void)
 {
     lib_u8 code[16] = {0};
@@ -20,6 +18,5 @@ int main(void)
             sizeof(code), &paragraph_length, LIB_TRUE) != LIB_STATUS_OK ||
         paragraph_length != 2u || code[0] != 0x90u || code[1] != 0x90u) return 13;
 
-    puts("M5:T527:S2:XASM32:OK");
     return 0;
 }

@@ -54,6 +54,7 @@ typedef enum common_machine_debug_operation {
     COMMON_MACHINE_DEBUG_WRITE_PORT,
     COMMON_MACHINE_DEBUG_GET_CODE_DEFAULT_SIZE,
     COMMON_MACHINE_DEBUG_GET_CODE_BASE,
+    COMMON_MACHINE_DEBUG_GET_CPU_SNAPSHOT,
     COMMON_MACHINE_DEBUG_SET_WATCH,
     COMMON_MACHINE_DEBUG_CLEAR_WATCH,
     COMMON_MACHINE_DEBUG_GET_WATCH,
@@ -77,6 +78,38 @@ typedef enum common_machine_debug_execution_plan_kind {
     COMMON_MACHINE_DEBUG_EXECUTION_BREAK_LINEAR
 } common_machine_debug_execution_plan_kind;
 
+typedef struct common_machine_debug_segment_snapshot {
+    lib_u16 selector;
+    lib_u32 base;
+    lib_u32 limit;
+    lib_u8 dpl;
+    lib_u8 type;
+    lib_bool accessed;
+    lib_bool executable;
+    lib_bool conform;
+    lib_bool readable;
+    lib_bool defsize;
+    lib_bool big;
+    lib_bool expdown;
+    lib_bool writable;
+} common_machine_debug_segment_snapshot;
+
+typedef struct common_machine_debug_cpu_snapshot {
+    common_machine_debug_segment_snapshot es;
+    common_machine_debug_segment_snapshot cs;
+    common_machine_debug_segment_snapshot ss;
+    common_machine_debug_segment_snapshot ds;
+    common_machine_debug_segment_snapshot fs;
+    common_machine_debug_segment_snapshot gs;
+    common_machine_debug_segment_snapshot tr;
+    common_machine_debug_segment_snapshot ldtr;
+    common_machine_debug_segment_snapshot gdtr;
+    common_machine_debug_segment_snapshot idtr;
+    lib_u32 cr0;
+    lib_u32 cr2;
+    lib_u32 cr3;
+} common_machine_debug_cpu_snapshot;
+
 typedef struct common_machine_debug_request {
     common_machine_debug_operation operation;
     lib_u32 register_id;
@@ -96,6 +129,7 @@ typedef struct common_machine_debug_result {
     lib_bool enabled;
     lib_u8 bytes;
     lib_u8 data[COMMON_MACHINE_DEBUG_BYTES];
+    common_machine_debug_cpu_snapshot cpu;
 } common_machine_debug_result;
 
 typedef struct common_machine_debug_lease {

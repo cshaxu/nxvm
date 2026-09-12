@@ -49,6 +49,28 @@ typedef struct core_machine_debug_memory_access {
     type_unsigned_64 data;
 } core_machine_debug_memory_access;
 
+typedef struct core_machine_debug_segment_snapshot {
+    type_unsigned_16 selector;
+    type_unsigned_32 base;
+    type_unsigned_32 limit;
+    type_unsigned_8 dpl;
+    type_unsigned_8 type;
+    type_bool accessed;
+    type_bool executable;
+    type_bool conform;
+    type_bool readable;
+    type_bool defsize;
+    type_bool big;
+    type_bool expdown;
+    type_bool writable;
+} core_machine_debug_segment_snapshot;
+
+typedef struct core_machine_debug_cpu_snapshot {
+    core_machine_debug_segment_snapshot es, cs, ss, ds, fs, gs;
+    core_machine_debug_segment_snapshot tr, ldtr, gdtr, idtr;
+    type_unsigned_32 cr0, cr2, cr3;
+} core_machine_debug_cpu_snapshot;
+
 /* A copied debugger record names only the fields consumed by the retained
  * debugger. It is not a CPU, decoder, or executor layout. */
 typedef struct core_machine_debug_instruction_observation {
@@ -111,6 +133,8 @@ typedef enum core_machine_debug_watch_kind {
 type_status core_machine_debug_capture_instruction_observation(
     const core_machine *machine,
     core_machine_debug_instruction_observation *out_observation);
+type_status core_machine_debug_capture_cpu_snapshot(const core_machine *machine,
+    core_machine_debug_cpu_snapshot *out_snapshot);
 type_status core_machine_debug_read_register(
     const core_machine *machine, core_machine_debug_register register_id,
     type_unsigned_32 *out_value);

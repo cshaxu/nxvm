@@ -16,7 +16,7 @@ lib_status lib_storage_file_writer_open(const char *path,
     lib_storage_file_writer_mode mode,
     lib_storage_file_writer **out_writer);
 lib_status lib_storage_file_writer_write(lib_storage_file_writer *writer,
-    const char *text);
+    const void *bytes, lib_size byte_count);
 lib_status lib_storage_file_writer_close(lib_storage_file_writer *writer);
 
 #endif

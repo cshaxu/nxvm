@@ -2,8 +2,6 @@
 
 #include "common/debug/command.h"
 
-#include <stdlib.h>
-
 struct common_debug {
     common_debug_command *command;
 };
@@ -14,10 +12,10 @@ lib_status common_debug_create(common_debug **out_debug)
 
     if (out_debug == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_debug = LIB_NULL;
-    debug = calloc(1u, sizeof(*debug));
+    debug = lib_allocate_zero(1u, sizeof(*debug));
     if (debug == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     if (common_debug_command_create(&debug->command) != LIB_STATUS_OK) {
-        free(debug);
+        lib_release(debug);
         return LIB_STATUS_NO_MEMORY;
     }
     *out_debug = debug;
@@ -28,14 +26,13 @@ void common_debug_destroy(common_debug *debug)
 {
     if (debug == LIB_NULL) return;
     common_debug_command_destroy(debug->command);
-    free(debug);
+    lib_release(debug);
 }
 
-lib_status common_debug_open(common_debug *debug, common_machine *machine,
-    const common_debug_file_service *files)
+lib_status common_debug_open(common_debug *debug, common_machine *machine)
 {
     if (debug == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    return common_debug_command_open(debug->command, machine, files);
+    return common_debug_command_open(debug->command, machine);
 }
 
 void common_debug_close(common_debug *debug)

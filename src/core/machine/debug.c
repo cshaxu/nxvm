@@ -28,6 +28,47 @@ type_status core_machine_debug_read_cpu(
                core_machine_get_cpu_state(machine, out_state) : status;
 }
 
+static C_VOID core_machine_debug_copy_segment(
+    core_machine_debug_segment_snapshot *out_segment,
+    const t_cpu_data_sreg *source)
+{
+    if (out_segment == STD_NULL || source == STD_NULL) return;
+    *out_segment = (core_machine_debug_segment_snapshot) {
+        .selector = source->selector, .base = source->base,
+        .limit = source->limit, .dpl = source->dpl, .type = source->sys.type,
+        .accessed = source->seg.accessed, .executable = source->seg.executable,
+        .conform = source->seg.exec.conform, .readable = source->seg.exec.readable,
+        .defsize = source->seg.exec.defsize, .big = source->seg.data.big,
+        .expdown = source->seg.data.expdown, .writable = source->seg.data.writable
+    };
+}
+
+type_status core_machine_debug_capture_cpu_snapshot(const core_machine *machine,
+    core_machine_debug_cpu_snapshot *out_snapshot)
+{
+    type_status status = core_machine_debug_require_boundary(machine);
+    const t_cpu *cpu;
+
+    if (out_snapshot == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (status != TYPE_STATUS_OK) return status;
+    cpu = &machine->executor_cpu;
+    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    core_machine_debug_copy_segment(&out_snapshot->es, &cpu->data.es);
+    core_machine_debug_copy_segment(&out_snapshot->cs, &cpu->data.cs);
+    core_machine_debug_copy_segment(&out_snapshot->ss, &cpu->data.ss);
+    core_machine_debug_copy_segment(&out_snapshot->ds, &cpu->data.ds);
+    core_machine_debug_copy_segment(&out_snapshot->fs, &cpu->data.fs);
+    core_machine_debug_copy_segment(&out_snapshot->gs, &cpu->data.gs);
+    core_machine_debug_copy_segment(&out_snapshot->tr, &cpu->data.tr);
+    core_machine_debug_copy_segment(&out_snapshot->ldtr, &cpu->data.ldtr);
+    core_machine_debug_copy_segment(&out_snapshot->gdtr, &cpu->data.gdtr);
+    core_machine_debug_copy_segment(&out_snapshot->idtr, &cpu->data.idtr);
+    out_snapshot->cr0 = cpu->data.cr0;
+    out_snapshot->cr2 = cpu->data.cr2;
+    out_snapshot->cr3 = cpu->data.cr3;
+    return TYPE_STATUS_OK;
+}
+
 type_status core_machine_debug_read_memory(
     const core_machine *machine,
     type_unsigned_32 physical,

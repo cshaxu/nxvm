@@ -1,8 +1,5 @@
 #include "common/xasm32/xasm32_interface.h"
 
-#include <stdio.h>
-#include <string.h>
-
 static int xasm_output_is_unchanged(const lib_u8 *code,
     lib_size code_bytes, lib_u8 expected, lib_size output_bytes,
     lib_size expected_bytes)
@@ -24,7 +21,7 @@ int main(void)
     lib_u8 code[COMMON_XASM32_MAX_CODE_BYTES];
     lib_size result_bytes = 37u;
 
-    memset(exact_statement, ' ', sizeof(exact_statement));
+    lib_memory_set(exact_statement, ' ', sizeof(exact_statement));
     exact_statement[0] = 'n';
     exact_statement[1] = 'o';
     exact_statement[2] = 'p';
@@ -32,7 +29,7 @@ int main(void)
             code, sizeof(code), &result_bytes, LIB_TRUE) != LIB_STATUS_OK ||
         result_bytes != 1u || code[0] != 0x90u) return 11;
 
-    memset(code, 0xa5, sizeof(code));
+    lib_memory_set(code, 0xa5, sizeof(code));
     result_bytes = 37u;
     if (common_xasm32_assemble("nop", 3u, code, 0u, &result_bytes,
             LIB_TRUE) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -40,8 +37,8 @@ int main(void)
         return 12;
     }
 
-    memset(overlong_statement, ' ', sizeof(overlong_statement));
-    memset(code, 0xa5, sizeof(code));
+    lib_memory_set(overlong_statement, ' ', sizeof(overlong_statement));
+    lib_memory_set(code, 0xa5, sizeof(code));
     result_bytes = 37u;
     if (common_xasm32_assemble(overlong_statement,
             sizeof(overlong_statement), code, sizeof(code), &result_bytes,
@@ -50,7 +47,7 @@ int main(void)
         return 13;
     }
 
-    memset(code, 0xa5, sizeof(code));
+    lib_memory_set(code, 0xa5, sizeof(code));
     result_bytes = 37u;
     if (common_xasm32_assemble_paragraph("nop\nnop", 7u, code, 1u,
             &result_bytes, LIB_TRUE) != LIB_STATUS_LIMIT_EXCEEDED ||
@@ -59,13 +56,13 @@ int main(void)
     }
 
     code[0] = 0x90u;
-    memset(statement, 0xa5, sizeof(statement));
+    lib_memory_set(statement, 0xa5, sizeof(statement));
     result_bytes = 37u;
     if (common_xasm32_disassemble(code, sizeof(code), statement, 1u,
             &result_bytes, LIB_TRUE) != LIB_STATUS_LIMIT_EXCEEDED ||
         statement[0] != (char)0xa5 || result_bytes != 37u) return 15;
 
-    memset(code, 0xa5, sizeof(code));
+    lib_memory_set(code, 0xa5, sizeof(code));
     result_bytes = 37u;
     if (common_xasm32_assemble("?", 1u, code, sizeof(code), &result_bytes,
             LIB_TRUE) != LIB_STATUS_UNSUPPORTED ||
@@ -73,6 +70,5 @@ int main(void)
         return 16;
     }
 
-    puts("M5:T527:S2:XASM32-CONTRACT:OK");
     return 0;
 }

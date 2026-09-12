@@ -53,7 +53,7 @@ lib_status lib_storage_file_writer_open(const char *path,
     *out_writer = LIB_NULL;
     writer = malloc(sizeof(*writer));
     if (writer == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    writer->file = fopen(path, mode == LIB_STORAGE_FILE_WRITER_TRUNCATE ? "w" : "a");
+    writer->file = fopen(path, mode == LIB_STORAGE_FILE_WRITER_TRUNCATE ? "wb" : "ab");
     if (writer->file == LIB_NULL) {
         free(writer);
         return LIB_STATUS_IO_ERROR;
@@ -63,10 +63,12 @@ lib_status lib_storage_file_writer_open(const char *path,
 }
 
 lib_status lib_storage_file_writer_write(lib_storage_file_writer *writer,
-    const char *text)
+    const void *bytes, lib_size byte_count)
 {
-    return writer == LIB_NULL || text == LIB_NULL || fputs(text, writer->file) < 0 ?
-        LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+    if (writer == LIB_NULL || (bytes == LIB_NULL && byte_count != 0u))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    return byte_count == 0u || fwrite(bytes, 1u, byte_count, writer->file) ==
+        byte_count ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
 lib_status lib_storage_file_writer_close(lib_storage_file_writer *writer)

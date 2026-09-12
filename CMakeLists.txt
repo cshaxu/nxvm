@@ -66,6 +66,10 @@ add_custom_target(cpu-timing-manifest-catalog
         "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
 add_subdirectory(src/lib)
+add_executable(types-smoke test/lib/types_smoke.c)
+target_link_libraries(types-smoke PRIVATE types)
+add_test(NAME unit.types-smoke COMMAND types-smoke)
+set_tests_properties(unit.types-smoke PROPERTIES LABELS "unit")
 add_executable(ui-base-contract-smoke test/lib/ui_base_contract_smoke.c)
 target_link_libraries(ui-base-contract-smoke PRIVATE ui-base)
 add_test(NAME unit.ui-base-contract-smoke COMMAND ui-base-contract-smoke)
@@ -1273,7 +1277,7 @@ target_link_libraries(common-xasm32 PUBLIC types)
 
 add_library(common-debug STATIC ${COMMON_DEBUG_SOURCES})
 target_include_directories(common-debug PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(common-debug PUBLIC common-machine common-xasm32)
+target_link_libraries(common-debug PUBLIC common-machine common-xasm32 storage)
 
 add_executable(common-debug-smoke
     test/common/debug/common_debug_smoke.c

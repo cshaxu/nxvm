@@ -27,7 +27,7 @@ function(library_root target)
     endif()
 endfunction()
 
-add_library(types INTERFACE)
+add_library(types STATIC types/runtime.c)
 library_root(types)
 
 add_library(console STATIC console/console.c)
@@ -105,7 +105,7 @@ target_link_libraries(lib-neutral-corpus INTERFACE
 
 if(LIBRARY_STRICT_WARNINGS AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     foreach(library_target IN ITEMS
-            console ui-base ui-window ui-console host storage)
+            types console ui-base ui-window ui-console host storage)
         target_compile_options(${library_target} PRIVATE
             -Wall -Wextra -Wpedantic -Werror)
     endforeach()

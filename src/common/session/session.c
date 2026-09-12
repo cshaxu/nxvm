@@ -2,10 +2,6 @@
 
 #include "lib/host/sync_interface.h"
 
-#include <stdatomic.h>
-#include <stdlib.h>
-#include <string.h>
-
 #define COMMON_SESSION_FACT_CAPACITY 64u
 #define COMMON_SESSION_PRESSED_CAPACITY 256u
 
@@ -16,7 +12,7 @@ typedef struct common_session_pressed_key {
 
 struct common_session {
     host_sync_event *ready;
-    atomic_flag lock;
+    lib_atomic_flag lock;
     common_session_fact facts[COMMON_SESSION_FACT_CAPACITY];
     lib_size first;
     lib_size count;
@@ -41,17 +37,18 @@ struct common_session {
 
 static void common_session_lock(common_session *session)
 {
-    while (atomic_flag_test_and_set_explicit(&session->lock, memory_order_acquire)) { }
+    while (lib_atomic_flag_test_and_set_explicit(&session->lock,
+        LIB_MEMORY_ORDER_ACQUIRE)) { }
 }
 
 static void common_session_unlock(common_session *session)
 {
-    atomic_flag_clear_explicit(&session->lock, memory_order_release);
+    lib_atomic_flag_clear_explicit(&session->lock, LIB_MEMORY_ORDER_RELEASE);
 }
 
 static void common_session_plan_clear(common_session_plan *plan)
 {
-    if (plan != LIB_NULL) memset(plan, 0, sizeof(*plan));
+    if (plan != LIB_NULL) lib_memory_set(plan, 0, sizeof(*plan));
 }
 
 static void common_session_plan_target(common_session *session,
@@ -69,12 +66,12 @@ lib_status common_session_create(common_session **out_session)
 
     if (out_session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_session = LIB_NULL;
-    session = calloc(1u, sizeof(*session));
+    session = lib_allocate_zero(1u, sizeof(*session));
     if (session == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    session->lock = (atomic_flag)ATOMIC_FLAG_INIT;
-    atomic_flag_clear_explicit(&session->lock, memory_order_release);
+    session->lock = (lib_atomic_flag)LIB_ATOMIC_FLAG_INITIALIZER;
+    lib_atomic_flag_clear_explicit(&session->lock, LIB_MEMORY_ORDER_RELEASE);
     if (host_sync_event_create(&session->ready) != LIB_STATUS_OK) {
-        free(session);
+        lib_release(session);
         return LIB_STATUS_NO_MEMORY;
     }
     session->accepting = LIB_TRUE;
@@ -87,7 +84,7 @@ void common_session_destroy(common_session *session)
 {
     if (session == LIB_NULL) return;
     host_sync_event_destroy(session->ready);
-    free(session);
+    lib_release(session);
 }
 
 void common_session_close(common_session *session)
@@ -210,10 +207,10 @@ lib_status common_session_publish_console_line(void *context, const char *line)
     lib_size bytes;
 
     if (context == LIB_NULL || line == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    bytes = strlen(line);
+    bytes = lib_text_length(line);
     if (bytes >= sizeof(fact.value.line)) return LIB_STATUS_LIMIT_EXCEEDED;
     fact.kind = COMMON_SESSION_FACT_CONSOLE_LINE;
-    memcpy(fact.value.line, line, bytes + 1u);
+    lib_memory_copy(fact.value.line, line, bytes + 1u);
     return common_session_publish((common_session *)context, &fact);
 }
 
@@ -304,7 +301,7 @@ lib_status common_session_take(common_session *session,
                 *out_frame = session->latest_frame;
                 session->frame_ready = LIB_FALSE;
             } else {
-                memset(out_frame, 0, sizeof(*out_frame));
+                lib_memory_set(out_frame, 0, sizeof(*out_frame));
             }
             if (session->count == 0u && !session->frame_ready)
                 host_sync_event_reset(session->ready);
@@ -355,13 +352,13 @@ lib_status common_session_reduce_fact(common_session *session,
         lifecycle_sink_context = session->lifecycle_sink_context;
         common_session_unlock(session);
         if (provider == LIB_NULL) return LIB_STATUS_NOT_CURRENT;
-        memset(&cli_result, 0, sizeof(cli_result));
+        lib_memory_set(&cli_result, 0, sizeof(cli_result));
         status = provider(provider_context, fact->value.line, &cli_result);
         if (status != LIB_STATUS_OK) return status;
-        memcpy(out_plan->console_text, cli_result.text,
+        lib_memory_copy(out_plan->console_text, cli_result.text,
             sizeof(out_plan->console_text));
         out_plan->console_prompt_ready = cli_result.prompt_ready;
-        if (cli_result.prompt_ready) memcpy(out_plan->console_prompt,
+        if (cli_result.prompt_ready) lib_memory_copy(out_plan->console_prompt,
             cli_result.prompt, sizeof(out_plan->console_prompt));
         if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
             if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;
@@ -420,14 +417,14 @@ lib_status common_session_reduce_fact(common_session *session,
     lifecycle_sink_context = session->lifecycle_sink_context;
     common_session_unlock(session);
     if (machine_observer != LIB_NULL) {
-        memset(&cli_result, 0, sizeof(cli_result));
+        lib_memory_set(&cli_result, 0, sizeof(cli_result));
         status = machine_observer(machine_observer_context,
             fact->value.machine.state, fact->value.machine.status, &cli_result);
         if (status != LIB_STATUS_OK) return status;
-        memcpy(out_plan->console_text, cli_result.text,
+        lib_memory_copy(out_plan->console_text, cli_result.text,
             sizeof(out_plan->console_text));
         out_plan->console_prompt_ready = cli_result.prompt_ready;
-        if (cli_result.prompt_ready) memcpy(out_plan->console_prompt,
+        if (cli_result.prompt_ready) lib_memory_copy(out_plan->console_prompt,
             cli_result.prompt, sizeof(out_plan->console_prompt));
         if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
             if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;

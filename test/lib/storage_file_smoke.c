@@ -7,6 +7,7 @@
 int main(void)
 {
     static const char path[] = "storage-file-smoke.tmp";
+    static const unsigned char binary[] = { 0x00u, 0xffu, 0x41u };
     lib_storage_file_writer *writer = LIB_NULL;
     void *bytes = LIB_NULL;
     size_t byte_count = 0u;
@@ -17,13 +18,13 @@ int main(void)
             LIB_STATUS_INVALID_ARGUMENT ||
         lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_APPEND,
             &writer) != LIB_STATUS_OK ||
-        lib_storage_file_writer_write(writer, "first") != LIB_STATUS_OK ||
-        lib_storage_file_writer_write(writer, "second") != LIB_STATUS_OK ||
+        lib_storage_file_writer_write(writer, "first", 5u) != LIB_STATUS_OK ||
+        lib_storage_file_writer_write(writer, "second", 6u) != LIB_STATUS_OK ||
         lib_storage_file_writer_close(writer) != LIB_STATUS_OK) goto done;
     writer = LIB_NULL;
     if (lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_APPEND,
             &writer) != LIB_STATUS_OK ||
-        lib_storage_file_writer_write(writer, "third") != LIB_STATUS_OK ||
+        lib_storage_file_writer_write(writer, "third", 5u) != LIB_STATUS_OK ||
         lib_storage_file_writer_close(writer) != LIB_STATUS_OK) goto done;
     writer = LIB_NULL;
     if (lib_storage_file_read_owned(path, 32u, &bytes, &byte_count) !=
@@ -33,12 +34,12 @@ int main(void)
     bytes = LIB_NULL;
     if (lib_storage_file_writer_open(path, LIB_STORAGE_FILE_WRITER_TRUNCATE,
             &writer) != LIB_STATUS_OK ||
-        lib_storage_file_writer_write(writer, "last") != LIB_STATUS_OK ||
+        lib_storage_file_writer_write(writer, binary, sizeof(binary)) != LIB_STATUS_OK ||
         lib_storage_file_writer_close(writer) != LIB_STATUS_OK) goto done;
     writer = LIB_NULL;
     if (lib_storage_file_read_owned(path, 32u, &bytes, &byte_count) !=
-            LIB_STATUS_OK || byte_count != 4u ||
-        memcmp(bytes, "last", byte_count) != 0) goto done;
+            LIB_STATUS_OK || byte_count != sizeof(binary) ||
+        memcmp(bytes, binary, byte_count) != 0) goto done;
     result = 0;
 done:
     free(bytes);

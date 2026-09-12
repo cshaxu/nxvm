@@ -1,29 +1,17 @@
-#include "lib/types/types_interface.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "common/xasm32/xasm32.h"
 
 #include "common/xasm32/aasm32.h"
 
-#define XASM32_TRACE_CONTEXT trace
-#define XASM32_TRACE_ERROR flagError
+/* Preserve the original assembler table body while routing every C-runtime
+ * operation through the sole public lib/types vocabulary. */
+#define memset lib_memory_set
+#define memcpy lib_memory_copy
+#define strlen lib_text_length
+#define strcmp lib_text_compare
+#define malloc lib_allocate
+#define free lib_release
+#define snprintf lib_text_format
 
-#if XASM32_TRACE_ENABLED == 1
-#define _chrf(n)                                        \
-    do                                                  \
-    {                                                   \
-        (n);                                            \
-        if (XASM32_TRACE_ERROR)                           \
-        {                                               \
-            (XASM32_TRACE_CONTEXT).flagError = 1;         \
-            xasm32_trace_finalize(&(XASM32_TRACE_CONTEXT)); \
-            return info;                                \
-        }                                               \
-    } while (0)
-#else
 #define _chrf(n)              \
     do                        \
     {                         \
@@ -33,7 +21,6 @@
             return info;      \
         }                     \
     } while (0)
-#endif
 
 /* set error and return */
 #define _ser_          \
@@ -240,7 +227,6 @@ typedef lib_u8 t_aasm_prefix;
 
 typedef struct aasm32_context
 {
-    xasm32_trace trace;
     lib_u8 defsize;
     t_aasm_prefix prefix_oprsizeg, prefix_addrsizeg;
     t_aasm_prefix prefix_oprsize, prefix_addrsize;
@@ -772,12 +758,10 @@ typedef enum
 #define take(n) (flagend = 1, token = (n))
 static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
 {
-    lib_u8 toklen = 0;
     lib_u32 tokimm = 0;
     lib_u8 flagend = 0;
     t_aasm_token token = TOKEN_NULL;
     t_aasm_scan_state state = STATE_START;
-    char *tokptrbak;
     XASM32_TRACE_CALL_BEGIN("gettoken");
     tokimm8 = 0x00;
     tokimm16 = 0x0000;
@@ -789,7 +773,6 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
         XASM32_TRACE_CALL_END;
         return token;
     }
-    tokptrbak = tokptr;
     do
     {
         switch (state)
@@ -821,87 +804,70 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
                 break;
             case '0':
                 tokimm = 0x0;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '1':
                 tokimm = 0x1;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '2':
                 tokimm = 0x2;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '3':
                 tokimm = 0x3;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '4':
                 tokimm = 0x4;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '5':
                 tokimm = 0x5;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '6':
                 tokimm = 0x6;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '7':
                 tokimm = 0x7;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '8':
                 tokimm = 0x8;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case '9':
                 tokimm = 0x9;
-                toklen = 1;
                 state = STATE_NUM1;
                 break;
             case 'a':
                 tokimm = 0xa;
-                toklen = 1;
                 state = STATE_A;
                 break;
             case 'b':
                 tokimm = 0xb;
-                toklen = 1;
                 state = STATE_B;
                 break;
             case 'c':
                 tokimm = 0xc;
-                toklen = 1;
                 state = STATE_C;
                 break;
             case 'd':
                 tokimm = 0xd;
-                toklen = 1;
                 state = STATE_D;
                 break;
             case 'e':
                 tokimm = 0xe;
-                toklen = 1;
                 state = STATE_E;
                 break;
             case 'f':
                 tokimm = 0xf;
-                toklen = 1;
                 state = STATE_F;
                 break;
             case 'g':
                 tokimm = 0xf;
-                toklen = 1;
                 state = STATE_G;
                 break;
             case 'n':
@@ -939,82 +905,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             default:
@@ -1030,82 +980,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             default:
@@ -1122,82 +1056,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 4;
                 state = STATE_NUM4;
                 break;
             default:
@@ -1213,82 +1131,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 5;
                 state = STATE_NUM5;
                 break;
             default:
@@ -1305,82 +1207,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 6;
                 state = STATE_NUM6;
                 break;
             default:
@@ -1396,82 +1282,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 7;
                 state = STATE_NUM7;
                 break;
             default:
@@ -1487,82 +1357,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 8;
                 state = STATE_NUM8;
                 break;
             default:
@@ -1610,82 +1464,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'x':
@@ -1710,82 +1548,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'x':
@@ -1816,82 +1638,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'x':
@@ -1922,82 +1728,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'x':
@@ -2034,82 +1824,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 2;
                 state = STATE_EA;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 2;
                 state = STATE_EB;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 2;
                 state = STATE_EC;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 2;
                 state = STATE_ED;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 's':
@@ -2128,82 +1902,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 2;
                 state = STATE_FA;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 2;
                 state = STATE_NUM2;
                 break;
             case 's':
@@ -2475,82 +2233,66 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
             {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '1':
                 tokimm = (tokimm << 4) | 0x1;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '2':
                 tokimm = (tokimm << 4) | 0x2;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '3':
                 tokimm = (tokimm << 4) | 0x3;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '4':
                 tokimm = (tokimm << 4) | 0x4;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '5':
                 tokimm = (tokimm << 4) | 0x5;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '6':
                 tokimm = (tokimm << 4) | 0x6;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '7':
                 tokimm = (tokimm << 4) | 0x7;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '8':
                 tokimm = (tokimm << 4) | 0x8;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case '9':
                 tokimm = (tokimm << 4) | 0x9;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'a':
                 tokimm = (tokimm << 4) | 0xa;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'b':
                 tokimm = (tokimm << 4) | 0xb;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'c':
                 tokimm = (tokimm << 4) | 0xc;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'd':
                 tokimm = (tokimm << 4) | 0xd;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'e':
                 tokimm = (tokimm << 4) | 0xe;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'f':
                 tokimm = (tokimm << 4) | 0xf;
-                toklen = 3;
                 state = STATE_NUM3;
                 break;
             case 'r':
@@ -2746,193 +2488,6 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
     } while (!flagend);
     XASM32_TRACE_CALL_END;
     return token;
-}
-static void printtoken(aasm32_context *aasmContext, t_aasm_token token)
-{
-    switch (token)
-    {
-    case TOKEN_NULL:
-        printf(" NULL ");
-        break;
-    case TOKEN_END:
-        printf(" END ");
-        break;
-    case TOKEN_LSPAREN:
-        printf(" [[ ");
-        break;
-    case TOKEN_RSPAREN:
-        printf(" ]] ");
-        break;
-    case TOKEN_COLON:
-        printf(" :: ");
-        break;
-    case TOKEN_PLUS:
-        printf(" ++ ");
-        break;
-    case TOKEN_MINUS:
-        printf(" -- ");
-        break;
-    case TOKEN_TIMES:
-        printf(" ** ");
-        break;
-    case TOKEN_BYTE:
-        printf(" BYTE ");
-        break;
-    case TOKEN_WORD:
-        printf(" WORD ");
-        break;
-    case TOKEN_DWORD:
-        printf(" DWORD ");
-        break;
-    case TOKEN_PTR:
-        printf(" PTR ");
-        break;
-    case TOKEN_NEAR:
-        printf(" NEAR ");
-        break;
-    case TOKEN_FAR:
-        printf(" FAR ");
-        break;
-    case TOKEN_SHORT:
-        printf(" SHORT ");
-        break;
-    case TOKEN_IMM8:
-        printf(" I8(%02X) ", tokimm8);
-        break;
-    case TOKEN_IMM16:
-        printf(" I16(%04X) ", tokimm16);
-        break;
-    case TOKEN_IMM32:
-        printf(" I32(%08X) ", tokimm32);
-        break;
-    case TOKEN_AH:
-        printf(" AH ");
-        break;
-    case TOKEN_BH:
-        printf(" BH ");
-        break;
-    case TOKEN_CH:
-        printf(" CH ");
-        break;
-    case TOKEN_DH:
-        printf(" DH ");
-        break;
-    case TOKEN_AL:
-        printf(" AL ");
-        break;
-    case TOKEN_BL:
-        printf(" BL ");
-        break;
-    case TOKEN_CL:
-        printf(" CL ");
-        break;
-    case TOKEN_DL:
-        printf(" DL ");
-        break;
-    case TOKEN_AX:
-        printf(" AX ");
-        break;
-    case TOKEN_BX:
-        printf(" BX ");
-        break;
-    case TOKEN_CX:
-        printf(" CX ");
-        break;
-    case TOKEN_DX:
-        printf(" DX ");
-        break;
-    case TOKEN_SP:
-        printf(" SP ");
-        break;
-    case TOKEN_BP:
-        printf(" BP ");
-        break;
-    case TOKEN_SI:
-        printf(" SI ");
-        break;
-    case TOKEN_DI:
-        printf(" DI ");
-        break;
-    case TOKEN_ES:
-        printf(" ES ");
-        break;
-    case TOKEN_CS:
-        printf(" CS ");
-        break;
-    case TOKEN_SS:
-        printf(" SS ");
-        break;
-    case TOKEN_DS:
-        printf(" DS ");
-        break;
-    case TOKEN_FS:
-        printf(" FS ");
-        break;
-    case TOKEN_GS:
-        printf(" GS ");
-        break;
-    case TOKEN_EAX:
-        printf(" EAX ");
-        break;
-    case TOKEN_EBX:
-        printf(" EBX ");
-        break;
-    case TOKEN_ECX:
-        printf(" ECX ");
-        break;
-    case TOKEN_EDX:
-        printf(" EDX ");
-        break;
-    case TOKEN_ESP:
-        printf(" ESP ");
-        break;
-    case TOKEN_EBP:
-        printf(" EBP ");
-        break;
-    case TOKEN_ESI:
-        printf(" ESI ");
-        break;
-    case TOKEN_EDI:
-        printf(" EDI ");
-        break;
-    case TOKEN_CR0:
-        printf(" CR0 ");
-        break;
-    case TOKEN_CR2:
-        printf(" CR2 ");
-        break;
-    case TOKEN_CR3:
-        printf(" CR3 ");
-        break;
-    case TOKEN_DR0:
-        printf(" DR0 ");
-        break;
-    case TOKEN_DR1:
-        printf(" DR1 ");
-        break;
-    case TOKEN_DR2:
-        printf(" DR2 ");
-        break;
-    case TOKEN_DR3:
-        printf(" DR3 ");
-        break;
-    case TOKEN_DR6:
-        printf(" DR6 ");
-        break;
-    case TOKEN_DR7:
-        printf(" DR7 ");
-        break;
-    case TOKEN_TR6:
-        printf(" TR6 ");
-        break;
-    case TOKEN_TR7:
-        printf(" TR7 ");
-        break;
-    default:
-        printf(" <ERROR> ");
-        break;
-        break;
-    }
 }
 static void matchtoken(aasm32_context *aasmContext, t_aasm_token token)
 {
@@ -10228,10 +9783,6 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
         return 0;
     }
 
-#if AASM_TRACE == 1
-    xasm32_trace_initialize(&trace);
-#endif
-
     memcpy((void *)astmt, (void *)stmt, 0x100);
     xasm32_string_lower(astmt);
     rstmt = astmt;
@@ -10364,23 +9915,6 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
         memcpy((void *)(rcode + len), (void *)acode, iop);
         len += iop;
     }
-    else
-    {
-#if AASM_TRACE == 1
-        printf("aasm32: bad instruction '%s'\n", stmt);
-        printf("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
-                   rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
-#endif
-    }
-
-#if AASM_TRACE == 1
-    if (trace.callCount || trace.flagError)
-    {
-        printf("aasm32: bad instruction '%s'\n", stmt);
-    }
-    xasm32_trace_finalize(&trace);
-#endif
-
     return len;
 }
 
@@ -10683,23 +10217,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         if (!instr[i].code_len)
         {
             flagError = 1;
-            printf("bad instruction in first round:\n#%d: [%s], %x", instr[i].stmt_id, instr[i].stmt, instr[i].code_len);
-            if (instr[i].code_len)
-            {
-                printf(", code: [");
-                for (j = 0; j < instr[i].code_len; ++j)
-                {
-                    printf("%02X", instr[i].code_array[j]);
-                }
-                printf("]");
-            }
-            if (instr[i].flag_has_label)
-            {
-                printf(", label: [%s], is=%s",
-                           instr[i].label_str,
-                           instr[i].flag_is_label ? "yes" : "no");
-            }
-            printf("\n");
         }
         if (flagError)
         {
@@ -10723,7 +10240,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                     if (instr[j].flag_is_label)
                     {
                         flagError = 1;
-                        printf("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
                     }
                     else
                     {
@@ -10745,7 +10261,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             else
                             {
                                 flagError = 1;
-                                printf("aasm32x: invalid short pointer 8+.\n");
                             }
                             break;
                         case PTR_NEAR:
@@ -10759,7 +10274,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 else
                                 {
                                     flagError = 1;
-                                    printf("aasm32x: invalid near pointer 16+.\n");
                                 }
                                 break;
                             case 4:
@@ -10770,7 +10284,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 else
                                 {
                                     flagError = 1;
-                                    printf("aasm32x: invalid near pointer 32+.\n");
                                 }
                                 break;
                             default:
@@ -10808,7 +10321,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                     if (instr[j].flag_is_label)
                     {
                         flagError = 1;
-                        printf("aasm32x: duplicated label '%s'.\n", instr[i].label_str);
                     }
                     else
                     {
@@ -10827,7 +10339,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             else
                             {
                                 flagError = 1;
-                                printf("aasm32x: invalid short pointer 8-.\n");
                             }
                             break;
                         case PTR_NEAR:
@@ -10841,7 +10352,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 else
                                 {
                                     flagError = 1;
-                                    printf("aasm32x: invalid near pointer 16-.\n");
                                 }
                                 break;
                             case 4:
@@ -10852,7 +10362,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 else
                                 {
                                     flagError = 1;
-                                    printf("aasm32x: invalid near pointer 32-.\n");
                                 }
                                 break;
                             default:
@@ -10883,11 +10392,6 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     len = 0;
     for (i = 0; i < count; ++i)
     {
-        /*printf("%04X: %s", len, instr[i].stmt);
-        for (j = (lib_i32) strlen(instr[i].stmt);j < 50;++j) printf(" ");
-        printf("[");
-        for (j = 0;j < instr[i].code_len;++j) printf("%02X", instr[i].code_array[j]);
-        printf("]\n");*/
         if ((lib_size)instr[i].code_len > code_capacity - len) {
             free((void *)instr);
             return LIB_STATUS_LIMIT_EXCEEDED;
