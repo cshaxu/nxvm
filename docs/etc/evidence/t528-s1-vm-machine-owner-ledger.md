@@ -27,7 +27,7 @@ wake event, one-request safe-point dispatch and a paused-debug lease. It does
 not yet own a complete executor state machine, reset loop, completion facts or
 worker lifetime. T528 may delete only paths genuinely duplicated by the
 existing owner. The residual executor mechanism has the named receiver T529,
-[Common-machine executor completion](../../proposals/m5-common-machine-executor-completion.md); it must not be copied or prematurely deleted.
+[Common-machine residual audit proposal companion](../../history/M5-T529-common-machine-residual-audit-proposal.md); it must not be copied or prematurely deleted.
 
 ## File Dispositions
 
