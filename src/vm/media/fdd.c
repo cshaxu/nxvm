@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "vm/machine/fdd_private.h"
+#include "vm/media/fdd_private.h"
 
 static core_machine_media_result vm_machine_fdd_media_query(C_VOID *context,
     core_machine_media_info *out_info)

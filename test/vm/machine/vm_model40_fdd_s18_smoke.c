@@ -3,7 +3,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/media_interface.h"
 #include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/media.h"
+#include "vm/media/media.h"
 #include "vm/machine/runtime/machine_private.h"
 #include "../support/rom/model40_session_assets.h"
 #include "../support/rom/session_assets.h"

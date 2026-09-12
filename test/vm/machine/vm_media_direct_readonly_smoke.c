@@ -1,8 +1,8 @@
 #include "type.h"
 
 #include "core/machine/media_interface.h"
-#include "vm/machine/fdd_private.h"
-#include "vm/machine/hdd_private.h"
+#include "vm/media/fdd_private.h"
+#include "vm/media/hdd_private.h"
 
 static const C_CHAR vm_media_direct_fdd_path[] = "vm_media_direct_fdd.img";
 static const C_CHAR vm_media_direct_hdd_path[] = "vm_media_direct_hdd.img";

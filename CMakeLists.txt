@@ -1209,7 +1209,6 @@ set(VM_APP_SOURCES
 set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/request_factory.c
     src/vm/machine/runtime/debug_adapter.c
-    src/vm/machine/runtime/media.c
     src/vm/machine/runtime/display.c
     src/vm/machine/runtime/frame.c
     src/vm/machine/runtime/lifecycle.c
@@ -1227,10 +1226,12 @@ set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/runtime/machine_info.c
 )
 set(VM_MACHINE_SOURCES
-    src/vm/machine/fdd.c
-    src/vm/machine/hdd.c
     src/vm/machine/debug.c
     ${VM_MACHINE_RUNTIME_SOURCES}
+)
+set(VM_MEDIA_SOURCES
+    src/vm/media/fdd.c
+    src/vm/media/hdd.c
 )
 set(CORE_MACHINE_SOURCES
     src/core/machine/display.c
@@ -1322,6 +1323,14 @@ add_executable(core-machine-guest-presentation-mailbox-smoke
 target_link_libraries(core-machine-guest-presentation-mailbox-smoke PRIVATE
     core-machine-boundary)
 
+add_library(vm-media STATIC ${VM_MEDIA_SOURCES})
+target_include_directories(vm-media PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-media PUBLIC
+    core-machine
+    storage)
+
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
 target_include_directories(vm-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -1331,7 +1340,8 @@ target_link_libraries(vm-machine PUBLIC
     core-machine-boundary
     vm-profile
     common-machine
-    storage)
+    storage
+    vm-media)
 
 add_library(vm-app STATIC ${VM_APP_SOURCES})
 target_include_directories(vm-app PUBLIC
@@ -3583,12 +3593,11 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-product|src/vm/product/catalog.c|session-catalog"
     "common-session|src/common/session/session.c|session-owner"
     "vm-app|src/vm/app/app.c|session-composition"
-    "vm-machine|src/vm/machine/fdd.c|vm-machine"
-    "vm-machine|src/vm/machine/hdd.c|vm-machine"
+    "vm-media|src/vm/media/fdd.c|vm-media"
+    "vm-media|src/vm/media/hdd.c|vm-media"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
     "vm-machine|src/vm/machine/request_factory.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/debug_adapter.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/media.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/display.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/lifecycle.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/machine.c|vm-machine"
@@ -3621,6 +3630,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     common-xasm32
     common-debug
     vm-profile
+    vm-media
     vm-machine
     vm-machine
     common-session

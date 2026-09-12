@@ -3,7 +3,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/fdd.h"
+#include "vm/media/fdd.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_CGA254_IMAGE_BYTES (1440u * 1024u)

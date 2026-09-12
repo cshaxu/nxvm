@@ -6,8 +6,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/test/core/machine/core_machine_fdc_smoke.c"
     core_fixture)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.h" fdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/fdd.h" fdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/fdd.c" fdd_source)
 
 foreach(forbidden IN ITEMS "pImgBase" "pCurrByte" "transCount"
     "core_machine_memory_" "core_machine_pic_set_irq" "t_fdd"

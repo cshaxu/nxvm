@@ -61,13 +61,14 @@ dependency.
    query; relocate the NXVM banner to `src/`; and delete the uncalled
    Core-product configuration corpus.  This independent subtraction proceeds
    before executor cutover because S1 proved Common has no executor receiver.
-3. **S3 - control/lifecycle/wait cutover.** After the queued Common executor
-   task supplies the consumer, remove old VM control, executor-state,
-   lifecycle and wait paths. Bind the NXVM Core adapter to the sole Common
-   request path; remove obsolete tests and forwarding APIs in the same change.
-4. **S4 - presentation/debug and NXVM-owner closure.** Retain only copied
-   Core-frame adaptation and the Core debug target bridge, then relocate any
-   remaining profile/media composition whose placement obscures ownership.
+3. **S3 - NXVM media-owner relocation.** Move the generic FDD/HDD
+   Lib-storage-to-Core-media adapters out of `vm/machine` into `vm/media`.
+   Preserve one Core provider route and all media behaviour; this does not
+   depend on the executor decision.
+4. **S4 - control/lifecycle and profile-owner disposition.** Resolve the
+   executor evidence before removing control/lifecycle/wait code; relocate
+   remaining profile/firmware composition whose placement obscures ownership.
+   Retain only copied Core-frame adaptation and the Core debug target bridge.
    Prove one production route per mechanism, run the full unit and external
    integration suites, and build stripped x64/x86 task artifacts.
 

@@ -6,7 +6,7 @@
 
 
 
-#include "vm/machine/hdd_private.h"
+#include "vm/media/hdd_private.h"
 
 static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
     core_machine_media_info *out_info)

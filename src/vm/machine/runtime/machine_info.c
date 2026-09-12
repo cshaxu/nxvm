@@ -4,8 +4,8 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/fdd.h"
-#include "vm/machine/hdd.h"
+#include "vm/media/fdd.h"
+#include "vm/media/hdd.h"
 #include "vm/machine/runtime/control.h"
 #include "vm/machine/runtime/fault.h"
 

@@ -6,7 +6,6 @@
 
 #include "vm/machine/runtime/machine_private.h"
 
-#include "vm/machine/runtime/media.h"
 #include "vm/machine/runtime/machine_devices.h"
 #include "vm/machine/runtime/provider_lifecycle.h"
 #include "vm/machine/runtime/machine_interface.h"
@@ -19,7 +18,7 @@ type_status vm_machine_provider_lifecycle_initialize(vm_machine *session)
 
     status = vm_machine_devices_initialize_media(session);
     if (status != TYPE_STATUS_OK) return status;
-    return vm_machine_bind_media(session);
+    return vm_machine_devices_bind_media(session);
 }
 
 C_VOID vm_machine_provider_lifecycle_reset(vm_machine *session)

@@ -4,7 +4,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/hdd.h"
+#include "vm/media/hdd.h"
 #include "../support/rom/model40_session_assets.h"
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)

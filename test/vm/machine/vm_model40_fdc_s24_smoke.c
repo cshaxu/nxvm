@@ -6,7 +6,7 @@
 #include "core/machine/port.h"
 #include "vm/machine/runtime/machine_private.h"
 #include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/fdd.h"
+#include "vm/media/fdd.h"
 #include "../support/rom/model40_session_assets.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)

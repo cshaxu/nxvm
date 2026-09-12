@@ -16,8 +16,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/provider_lifecycle.c"
     provider_lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
     machine_devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.c" fdd_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/hdd.c" hdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/hdd.c" hdd_source)
 set(core_source "${machine_source}${scheduler_source}${kbc_source}")
 
 foreach(forbidden IN ITEMS "core_machine_arbitration_tick"

@@ -2,9 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/hdd.c" hdd_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/hdd.h" hdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/hdd.c" hdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/hdd.h" hdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/fdd.c" fdd_source)
 
 foreach(forbidden IN ITEMS "pCurrByte" "transCount"
     "vm_machine_hdd_set_pointer" "vm_machine_hdd_transfer_read"

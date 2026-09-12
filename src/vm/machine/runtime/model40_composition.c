@@ -1,7 +1,7 @@
 #include "vm/machine/runtime/model40_composition.h"
 
 #include "vm/machine/runtime/display.h"
-#include "vm/machine/runtime/media.h"
+#include "vm/media/media.h"
 #include "vm/machine/runtime/machine_private.h"
 
 static C_VOID vm_machine_model40_capture_fdc_terminal(C_VOID *opaque,

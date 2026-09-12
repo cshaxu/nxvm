@@ -9,6 +9,7 @@
 typedef struct vm_machine vm_machine;
 
 type_status vm_machine_devices_initialize_media(vm_machine *session);
+type_status vm_machine_devices_bind_media(vm_machine *session);
 type_status vm_machine_devices_materialize_plan(vm_machine *session,
     core_machine_plan *plan);
 C_VOID vm_machine_devices_reset(vm_machine *session);

@@ -2,7 +2,7 @@
 #define TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 
 #include "core/machine/media_interface.h"
-#include "vm/machine/runtime/media.h"
+#include "vm/media/media.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/product/catalog.h"
 

@@ -90,10 +90,10 @@ static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
 #include "vm/machine/runtime/control.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/display.h"
-#include "vm/machine/runtime/media.h"
+#include "vm/media/media.h"
 #include "vm/machine/runtime/machine_devices.h"
-#include "vm/machine/fdd.h"
-#include "vm/machine/hdd.h"
+#include "vm/media/fdd.h"
+#include "vm/media/hdd.h"
 #include "vm/profile/default_profile/keyboard_mapper.h"
 #include "vm/profile/default_profile/mouse_mapper.h"
 

@@ -2,7 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
-#include "vm/machine/runtime/media.h"
+#include "vm/media/media.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/runtime/machine_private.h"
 #include "core/machine/hdc.h"

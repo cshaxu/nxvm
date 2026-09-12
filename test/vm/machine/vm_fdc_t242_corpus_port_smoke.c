@@ -7,7 +7,7 @@
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/runtime/machine_private.h"
 #include "core/machine/fdc.h"
-#include "vm/machine/fdd.h"
+#include "vm/media/fdd.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_FDC_T242_IMAGE_BYTES (1440u * 1024u)

@@ -2,8 +2,30 @@
 
 ## Current Work
 
-No S packet is active. T528 retains accepted progress while the admitted
-Common-machine executor completion prepares the receiver required by T528 S3.
+| Task | Status | Scope |
+| --- | --- | --- |
+| T528 S3 | Active | [M5 VM-machine owner cleanup](../proposals/m5-vm-machine-owner-cleanup.md): relocate NXVM FDD/HDD storage-to-Core media adaptation to `vm/media`, without executor or lifecycle changes. |
+
+## M5 T528 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T528 implementation on 2026-09-11: "准入实施两个T任务". S1 classified FDD/HDD as NXVM-local media adapters; S2 completed independent product/Core cleanup. This reordered next S remains within the approved T528 owner-cleanup boundary and does not consume the unresolved executor claim. |
+| Objective | Make `vm/media` the sole NXVM owner for FDD/HDD geometry, Lib storage medium and Core-media-provider adaptation; remove those generic media implementation files from `vm/machine`. |
+| Non-goals | Do not change media formats, image policy, read-only/direct/overlay semantics, Core media provider ABI, profile topology, Model-40 composition, firmware/ROM mapping, lifecycle/executor control or Common APIs. Do not move tests outside `test/vm/`. |
+| Reference Baseline | `67902bf6`; [T528 S1 ledger](../etc/evidence/t528-s1-vm-machine-owner-ledger.md); [T528 proposal](../proposals/m5-vm-machine-owner-cleanup.md); Lib storage interface. |
+| Candidate Proposal | [M5 VM-machine owner cleanup](../proposals/m5-vm-machine-owner-cleanup.md), reordered S3 media-owner batch. |
+| Files And ABI Surface | `src/vm/machine/{fdd,hdd}{,_private}.h/.c`, `src/vm/machine/runtime/media.*`, their private VM callers and CMake paths; `test/vm/machine/*media*` plus affected Core-media/profile tests. Public symbols retain `vm_machine_*` names only where Core-machine integration consumes them; no new public capability. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): structural relocation and code-size accounting. [Architecture](../rules/ARCHITECTURE.md): one media-state owner, one Core provider route. [Coding](../rules/CODING.md): use `git mv`, remove old include paths together. [Documentation](../rules/DOCUMENT.md): packet/evidence consistency. |
+| Verification | Focused FDD/HDD storage/provider/media lifecycle tests; source sweep for old paths and duplicate Core media provider definitions; full repository-only unit suite; specialized gates; documentation governance; actual-diff review. |
+| Expected Markers | `src/vm/media/` owns each FDD/HDD medium and Core provider adapter; `vm/machine` contains no FDD/HDD implementation or storage medium owner; all Core provider bindings retain exactly one producer route. |
+| Asset Needs | None. Repository-only test fixtures only. |
+| Reporting Requirements | Record every moved file/caller, retained symbol name, media-provider uniqueness sweep, code-size delta and gate results. State that executor disposition remains separate. |
+| Stop Conditions | Stop and report if relocation requires a Core/Lib/Common API change, alters a profile's media topology, exposes media state across a public boundary, or finds a second production media owner. |
+| Exit Criteria | All scoped media implementation files are under `vm/media`; no old include/source path or duplicate implementation remains; Core receives the same sole providers; all required tests/gates pass; current S evidence names retained adapter vs transferred executor boundary. |
+| Original Owner Request | "清理 vm/machine 的重复实现" and "vm/machine里面，哪些是和 common/machine 或者其他common和lib组件重复的部分应当清除？" |
+| Similar-Issue Sweep | Search all production/test/CMake references to FDD/HDD media providers, `lib_storage_medium`, media mount/eject and image-geometry helpers; classify every result as `vm/media`, Core, Lib storage or profile policy. |
 
 ## Current Technical Baseline
 
