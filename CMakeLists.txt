@@ -1219,7 +1219,6 @@ set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/runtime/runner.c
     src/vm/machine/runtime/executor_state.c
     src/vm/machine/runtime/waiting.c
-    src/vm/machine/runtime/provider_lifecycle.c
     src/vm/machine/runtime/machine_devices.c
     src/vm/machine/runtime/model40_composition.c
     src/vm/machine/runtime/rom/external_pc_at.c
@@ -3607,7 +3606,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/vm/machine/runtime/execution.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/runner.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/waiting.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/provider_lifecycle.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/machine_devices.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/model40_composition.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/rom/external_pc_at.c|vm-machine"

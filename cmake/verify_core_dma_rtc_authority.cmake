@@ -10,8 +10,6 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_head
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/provider_lifecycle.c"
-    provider_lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c"
     lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
@@ -43,8 +41,7 @@ foreach(required IN ITEMS "topology->dma_present && (status = core_machine_confi
     endif()
 endforeach()
 
-foreach(vm_source IN ITEMS "${machine_source}" "${provider_lifecycle_source}"
-    "${lifecycle_source}")
+foreach(vm_source IN ITEMS "${machine_source}" "${lifecycle_source}")
     foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
         "core_machine_dma_bind_channel" "core_machine_rtc_initialize"
         "core_machine_rtc_reset" "core_machine_rtc_advance"

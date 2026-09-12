@@ -9,7 +9,7 @@
 
 #include "vm/machine/debug.h"
 
-#include "vm/machine/runtime/provider_lifecycle.h"
+#include "vm/machine/runtime/machine_devices.h"
 
 #include "vm/machine/runtime/execution.h"
 #include "vm/machine/runtime/fault.h"
@@ -223,7 +223,8 @@ type_status vm_machine_control_initialize(vm_machine_control_state *control,
         &control->execution_context, &vm_machine_execution_callbacks);
     vm_machine_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(&machine->debug);
-    status = vm_machine_provider_lifecycle_initialize(machine);
+    status = vm_machine_devices_initialize_media(machine);
+    if (status == TYPE_STATUS_OK) status = vm_machine_devices_bind_media(machine);
     if (status == TYPE_STATUS_OK) {
         status = vm_machine_bind_execution_provider(machine);
     }
@@ -238,7 +239,7 @@ C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
     vm_machine *machine) {
     if (control == STD_NULL || machine == STD_NULL) return;
     vm_machine_execution_context_deactivate(&control->execution_context);
-    vm_machine_provider_lifecycle_finalize(machine);
+    vm_machine_devices_finalize(machine);
     vm_machine_debug_finalize(&machine->debug);
     host_sync_event_destroy(control->completion_ready);
     host_sync_event_destroy(control->control_changed);

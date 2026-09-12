@@ -65,12 +65,17 @@ dependency.
    Lib-storage-to-Core-media adapters out of `vm/machine` into `vm/media`.
    Preserve one Core provider route and all media behaviour; this does not
    depend on the executor decision.
-4. **S4 - control/lifecycle and profile-owner disposition.** Resolve the
-   executor evidence before removing control/lifecycle/wait code; relocate
-   remaining profile/firmware composition whose placement obscures ownership.
-   Retain only copied Core-frame adaptation and the Core debug target bridge.
-   Prove one production route per mechanism, run the full unit and external
-   integration suites, and build stripped x64/x86 task artifacts.
+4. **S4 - provider-lifecycle forwarding cleanup.** Delete the demonstrated
+   zero-state `provider_lifecycle` facade and have the existing
+   device-composition owner directly initialize, reset and finalize FDD/HDD
+   providers.  Preserve call order and every Core/Common boundary.
+5. **S5 - profile/firmware-owner disposition.** Audit the remaining
+   profile/firmware composition for a demonstrated wrong owner, then relocate
+   only code that can move without a reverse profile-to-machine dependency.
+   Retain copied Core-frame adaptation and the Core debug target bridge.
+   Executor/worker ownership is explicitly excluded: Common owns the copied
+   FIFO/lease contract, while NXVM and SoftPC retain their distinct execution
+   loops unless a separately approved two-consumer design proves otherwise.
 
 ## Exit Criteria
 

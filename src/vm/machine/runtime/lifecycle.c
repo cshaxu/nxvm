@@ -9,7 +9,7 @@
 
 #include "vm/machine/runtime/control.h"
 
-#include "vm/machine/runtime/provider_lifecycle.h"
+#include "vm/machine/runtime/machine_devices.h"
 
 #include "vm/machine/runtime/machine_interface.h"
 
@@ -57,7 +57,7 @@ static C_VOID vm_machine_input_submit(C_VOID *context,
 
 static C_VOID vm_machine_execution_provider_reset(C_VOID *context)
 {
-    vm_machine_provider_lifecycle_reset((vm_machine *)context);
+    vm_machine_devices_reset((vm_machine *)context);
 }
 
 static const core_machine_execution_provider vm_machine_execution_provider = {

@@ -12,8 +12,6 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h"
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/kbc.c" kbc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/provider_lifecycle.c"
-    provider_lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
     machine_devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/media/fdd.c" fdd_source)
@@ -79,7 +77,7 @@ if(NOT vm_provider_position EQUAL -1)
     message(FATAL_ERROR "VM execution provider must not write guest time")
 endif()
 
-set(vm_refresh_source "${lifecycle_source}${provider_lifecycle_source}${machine_devices_source}${fdd_source}${hdd_source}")
+set(vm_refresh_source "${lifecycle_source}${machine_devices_source}${fdd_source}${hdd_source}")
 foreach(forbidden IN ITEMS "vm_machine_execution_provider_refresh"
     "vm_machine_provider_lifecycle_refresh" "vm_machine_devices_refresh"
     "vm_machine_fdd_refresh" "vm_machine_hdd_refresh")

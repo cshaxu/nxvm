@@ -5,8 +5,6 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/provider_lifecycle.c"
-    lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
@@ -35,13 +33,11 @@ endforeach()
 string(FIND "${scheduler_source}" "core_machine_rtc_advance" machine_advance_position)
 string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
     machine_binding_position)
-string(FIND "${lifecycle_source}" "vm_machine_devices_advance"
-    lifecycle_position)
 string(FIND "${devices_source}" "core_machine_rtc_" device_position)
 string(FIND "${profile_source}" "VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS" profile_position)
 string(FIND "${profile_header}" "rtc_ticks_per_second" clock_position)
 if(machine_advance_position EQUAL -1 OR machine_binding_position EQUAL -1 OR
-    NOT lifecycle_position EQUAL -1 OR NOT device_position EQUAL -1 OR
+    NOT device_position EQUAL -1 OR
     profile_position EQUAL -1 OR clock_position EQUAL -1)
     message(FATAL_ERROR "CMOS RTC clock binding is incomplete")
 endif()
