@@ -21,3 +21,11 @@ Console and monitor Console binding. It does not select product policy. Its
 [completion proof](../etc/evidence/t531-s3-common-ui-completion.md) records
 copied facts, injected native failure coverage, the finite target-plan bridge
 that S4 will remove, and the full 299/299 unit result.
+
+S4 removes that bridge. Common Session now owns the requested target, one
+in-flight UI action and acknowledged surface facts, and accepts copied UI
+completion/failure facts through its existing FIFO before selecting another
+action. The injected NXVM CLI now requests monitor lines and writes monitor
+text through Session. [S4 evidence](../etc/evidence/t531-s4-common-session-control.md)
+records both ordered topology directions, an injected failure/reconcile retry,
+strict changed-source compilation and the 299/299 repository-only unit result.
