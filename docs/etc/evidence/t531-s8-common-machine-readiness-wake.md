@@ -30,3 +30,10 @@ fully copied removable-media request, proving Common releases its lock before
 notifying an executor. `test/common/common_adapter_conformance.c` proves a
 real neutral driver can bind the hook alongside the unchanged synchronous
 paused-Debug callback.
+
+The corpus was also configured and built directly from `src/common` with
+`cmake -S src/common -B build/common-standalone -G Ninja
+-DCMAKE_BUILD_TYPE=Release`, not through NXVM's root target. It verified the
+manifest and Lib-only boundary, then built `common-machine`, `common-session`,
+`common-ui`, `common-xasm32`, and `common-debug` against the adjacent shared
+Lib corpus.
