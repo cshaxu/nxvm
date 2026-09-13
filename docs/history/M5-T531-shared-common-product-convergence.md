@@ -15,3 +15,9 @@ live task authority.
 S2 supersedes the earlier pinned Lib baseline with the exact 93-file SoftPC
 `e140ec5` corpus. It required no NXVM consumer adaptation and its full proof
 is retained in [canonical-Lib evidence](../etc/evidence/t531-s2-canonical-lib-refresh.md).
+
+S3 gives Common UI a sole mechanical action/completion owner for Window, raw
+Console and monitor Console binding. It does not select product policy. Its
+[completion proof](../etc/evidence/t531-s3-common-ui-completion.md) records
+copied facts, injected native failure coverage, the finite target-plan bridge
+that S4 will remove, and the full 299/299 unit result.

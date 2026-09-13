@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T531 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T531 implementation on 2026-09-13; S1 ledger and accepted S2 identify the Common UI completion model as the next bounded receiver. Single-session coordinator/executor review. |
+| Objective | Give Common UI one explicit action/completion protocol for Window, raw VM Console and monitor Console binding, without selecting presentation policy. |
+| Non-goals | No SoftPC repository write, no CLI grammar, lifecycle reducer, console_control parse, machine executor change, Debug change or product-specific display rule. |
+| Reference Baseline | NXVM `566903e6`; exact canonical Lib SoftPC `e140ec55bbc4cd40956948e57e58dc678e54f699`; T531 S1 ledger. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md) and [two-product ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md). |
+| Files And ABI Surface | `src/common/ui/*`, its public interface and owner-local tests; NXVM callers only where needed to preserve build while S4 remains the sole policy/reducer migration receiver. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution and Documentation Rules; Product UX; T531 UI/topology/frame/title/mouse/failure ledger rows. |
+| Verification | Owner-local UI unit tests for every create/destroy/bind completion/failure and frame-after-recreate path; complete repository-only unit suite; Common manifest/corpus and documentation gates; actual-diff review. |
+| Expected Markers | One action vocabulary; copied actual facts; no action assumed complete before its completion; Console broker replacement returns failure; every leaf uses one Common UI owner. |
+| Asset Needs | None. No external asset or sibling source import. |
+| Reporting Requirements | Record action/fact contract, retained temporary caller boundary, source/test line accounting and all failure-path results. |
+| Stop Conditions | A required effect needs product policy, native handle leakage, a second UI loop, Lib public ABI change, or any consumer cannot migrate without an unapproved lifecycle change. |
+| Exit Criteria | Common UI exposes and internally uses the explicit protocol; focused and full unit/gates pass; any transitional caller is finite, documented and assigned to S4; complete P pushed then coordinator-reviewed. |
+| Original Owner Request | Both products share SoftPC control experience and only vary in composition/startup config, injected CLI and injected machine. Common, not a product policy callback, owns shared UI mechanics. |
+| Similar-Issue Sweep | Inspect all Common UI, NXVM UI callers and SoftPC presentation action forms for target/action, component existence, broker binding, frame delivery, title, mouse and failure handling. |
+
 
 ## Current Technical Baseline
 

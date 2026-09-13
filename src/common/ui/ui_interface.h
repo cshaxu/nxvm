@@ -14,6 +14,39 @@ typedef enum common_ui_target {
     COMMON_UI_TARGET_WINDOW
 } common_ui_target;
 
+/* A presentation policy asks for one mechanical operation.  Common UI reports
+ * its completed surface facts only after the Lib operation returns. */
+typedef enum common_ui_action_kind {
+    COMMON_UI_ACTION_CREATE_WINDOW,
+    COMMON_UI_ACTION_DESTROY_WINDOW,
+    COMMON_UI_ACTION_CREATE_RAW_CONSOLE,
+    COMMON_UI_ACTION_DESTROY_RAW_CONSOLE,
+    COMMON_UI_ACTION_BIND_RAW_CONSOLE,
+    COMMON_UI_ACTION_BIND_MONITOR_CONSOLE,
+    COMMON_UI_ACTION_SET_WINDOW_TITLE,
+    COMMON_UI_ACTION_SET_MOUSE_CAPTURABLE,
+    COMMON_UI_ACTION_RELEASE_MOUSE
+} common_ui_action_kind;
+
+typedef struct common_ui_action {
+    common_ui_action_kind kind;
+    union {
+        const char *title;
+        lib_bool mouse_capturable;
+    } value;
+} common_ui_action;
+
+typedef struct common_ui_surface_facts {
+    lib_bool window_exists;
+    lib_bool raw_console_exists;
+    lib_bool raw_console_current;
+} common_ui_surface_facts;
+
+typedef struct common_ui_completion {
+    common_ui_action_kind action;
+    common_ui_surface_facts facts;
+} common_ui_completion;
+
 typedef lib_status (*common_ui_input_sink)(void *context,
     const ui_input_event *event);
 typedef lib_status (*common_ui_console_line_sink)(void *context,
@@ -46,6 +79,11 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
 void common_ui_destroy(common_ui *ui);
 lib_status common_ui_request_console_line(common_ui *ui);
 lib_status common_ui_write_console(common_ui *ui, const char *text);
+lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
+    common_ui_completion *out_completion);
+common_ui_surface_facts common_ui_get_surface_facts(const common_ui *ui);
+/* Legacy target helpers only translate their single-surface request into the
+ * action protocol. Session policy migrates to independent surface facts in S4. */
 lib_status common_ui_set_target(common_ui *ui, common_ui_target target);
 common_ui_target common_ui_get_target(const common_ui *ui);
 lib_status common_ui_apply(common_ui *ui, const common_ui_plan *plan);
