@@ -38,3 +38,12 @@ request because neither distinct executor exists before it is accepted.  The
 [S5 evidence](../etc/evidence/t531-s5-common-machine-protocol.md) records the
 read-only SoftPC crosswalk and the later real-binding receiver; it makes no
 claim that SoftPC has been modified by this NXVM task.
+
+S9 removes the three audit-proven unused Common entry points and the
+unconfigured presentation fallback, then documents the remaining borrowed
+binding and reducer contracts.  It repairs the finite XASM32 diagnostic set
+and two unreachable TR dispatch rows without changing the original table-driven
+shape.  [S9 evidence](../etc/evidence/t531-s9-common-api-xasm32-cleanup.md)
+records the complete consumer sweep, standalone x64/x86 proof, 299/299 unit
+result and stripped 0531 artifacts.  T531 remains open for its real SoftPC
+CCPU-affine paused-Debug receiver and two-product execution evidence.
