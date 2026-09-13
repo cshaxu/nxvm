@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T531 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continued T531 implementation toward the Common reuse standard. Single-session coordinator/executor review. |
+| Objective | Reconcile the finite Common Debug/XASM32 command, paused-target and lifecycle universe against both actual NXVM and read-only SoftPC adapters; implement only a proven NXVM/Common correction and record the exact SoftPC receiver required for real two-consumer Debug. |
+| Non-goals | No sibling-repository write, no optional Debug stub, no generic executor, no second CLI loop, no change to original table-driven command grammar, and no product-native API in Common. |
+| Reference Baseline | NXVM `d4a1c3c2`; read-only SoftPC `e140ec55bbc4cd40956948e57e58dc678e54f699`; T531 proposal and S1 ledger. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md) and [two-product ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md). |
+| Files And ABI Surface | Read-only audit of SoftPC `src/app`/`src/host`; NXVM `src/common/debug/*`, `src/common/xasm32/*`, `src/common/machine/*`, `src/vm/machine/runtime/debug_adapter.*`, owner tests and direct evidence only if an in-scope proven correction exists. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution and Documentation Rules; T531 Debug/XASM32 ledger rows. |
+| Verification | Finite operation matrix covering CPU snapshot, memory, port, watch/break, execution plans, lifecycle hand-off, continuation and file commands; direct NXVM owner tests; read-only SoftPC capability crosswalk; full unit suite for any code change. |
+| Expected Markers | Common Debug remains the sole parser/state owner; Common Machine remains the sole paused typed-operation boundary; each product adapter has a real receiver or a named receiver gap. |
+| Asset Needs | None. No source import, external asset or sibling write. |
+| Reporting Requirements | Record every operation's NXVM proof and SoftPC disposition; stop before any SoftPC source change or any new Common operation unsupported by the original command corpus. |
+| Stop Conditions | A required SoftPC receiver needs sibling write, a new unsupported Common capability, a raw machine pointer, a second control queue, or a synthetic no-op result. |
+| Exit Criteria | The full finite S7 matrix is reconciled, every NXVM/Common gap is repaired if found, and any required SoftPC work is transferred explicitly rather than accepted by mock proof. |
+| Original Owner Request | Both products use Common Debug/XASM32; product differences remain injected startup composition, CLI and machine adapter only. |
+| Similar-Issue Sweep | Inspect all Common Debug/XASM32 command paths, Common Machine debug requests, NXVM Core adapter operations, and SoftPC app/host machine APIs for duplicated parser state, direct Core access, unsupported operation masking and lifecycle bypass. |
+
 ## Current Technical Baseline
 
 - `vm-0-5-0530` is the current target. Its recorded stripped Release artifacts are
