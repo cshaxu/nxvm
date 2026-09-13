@@ -37,3 +37,12 @@ The corpus was also configured and built directly from `src/common` with
 manifest and Lib-only boundary, then built `common-machine`, `common-session`,
 `common-ui`, `common-xasm32`, and `common-debug` against the adjacent shared
 Lib corpus.
+
+The same independent build also completed for x86 with the installed LLVM
+`i686-w64-windows-gnu` target and MSYS2 i686 sysroot. It produced the same five
+Common libraries and passed the same manifest/Lib-only checks. The compiler
+reported 16 pre-existing XASM32 warnings: two bounded-format truncation
+diagnostics in `dasm32.c` and fourteen legacy enum-comparison diagnostics in
+`aasm32.c`. They are not hidden or treated as a successful warning-clean audit;
+their preservation-sensitive resolution belongs to a dedicated XASM32 review,
+not this executor-binding change.
