@@ -47,3 +47,9 @@ shape.  [S9 evidence](../etc/evidence/t531-s9-common-api-xasm32-cleanup.md)
 records the complete consumer sweep, standalone x64/x86 proof, 299/299 unit
 result and stripped 0531 artifacts.  T531 remains open for its real SoftPC
 CCPU-affine paused-Debug receiver and two-product execution evidence.
+
+S10 replaces the complete Lib corpus with the current SoftPC `2ea35ce`
+revision, retaining exact 93-file equality and requiring no NXVM consumer
+shim.  [S10 evidence](../etc/evidence/t531-s10-canonical-lib-refresh.md)
+records the source boundary, Lib gates, dual 0531 artifacts and 299/299 unit
+proof.  T531 remains open for the same two-product execution boundary.
