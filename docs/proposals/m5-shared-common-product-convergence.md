@@ -31,6 +31,11 @@ merging NXVM's bounded Core runner with SoftPC's continuous CCPU executor.
   debug access contract. Start and media operations join the shared protocol
   where the two real adapters require them; no arbitrary command envelope or
   generic executor framework is introduced.
+- `common_machine_debug_execute_with_lease()` remains a synchronous typed
+  adapter call. Each product adapter owns any thread-affinity bridge behind
+  that callback: NXVM may access its paused Core boundary directly, while
+  SoftPC synchronously relays to its existing CCPU rendezvous and returns the
+  copied result. Common does not gain a second Debug queue or executor.
 - Debug state access follows `common/debug -> common/machine -> product machine
   adapter -> machine implementation`. Lifecycle requests go through session.
   Debug never mutates a running machine, fabricates register support, or owns
@@ -74,8 +79,10 @@ recorded evidence, never by following successive isolated failures.
    preserve the original command tables. Unsupported adapter operations are
    reported as unfinished work, not accepted as two-product Debug support.
 8. **S8: full consumer integration and subtraction.** NXVM adds startup
-   console_control input and uses the common behavior. Verify the SoftPC
-   binding against the same package; remove replaced product control/UI paths.
+   console_control input and uses the common behavior. Specify SoftPC's
+   synchronous CCPU-affinity adapter behind the unchanged Common Debug API,
+   then verify the SoftPC binding against the same package and remove replaced
+   product control/UI paths.
 9. **S9: package and whole-task acceptance.** Independent build/manifest,
    byte-identical consumer corpus, full matrix and failure-path review, full
    unit and integration, optimized stripped x64/x86 release artifacts.
