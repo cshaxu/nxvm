@@ -40,8 +40,7 @@ int main(void)
     if (common_ui_create(&ui, &options) != LIB_STATUS_INVALID_ARGUMENT) return 1;
     options.failure_sink = common_ui_smoke_failure;
     common_ui_fake_reset();
-    if (common_ui_create(&ui, &options) != LIB_STATUS_OK ||
-        common_ui_get_target(ui) != COMMON_UI_TARGET_NONE) return 2;
+    if (common_ui_create(&ui, &options) != LIB_STATUS_OK) return 2;
     facts = common_ui_get_surface_facts(ui);
     if (facts.window_exists || facts.raw_console_exists || facts.raw_console_current)
         return 3;

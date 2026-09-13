@@ -33,7 +33,6 @@ struct vm_product_console_context {
     common_session_fact fact;
     ui_frame display;
     common_session_plan plan;
-    common_ui_plan ui_plan;
 };
 #define CONSOLE_MAXNARG 256
 
@@ -60,7 +59,7 @@ static C_INT vm_product_console_printf(const vm_product_console_context *context
     written = vsnprintf(text, sizeof(text), format, arguments);
     va_end(arguments);
     if (written < 0 || (STD_SIZE_T)written >= sizeof(text)) return -1;
-    return common_ui_write_console(vm_app_ui(context->session), text) ==
+    return common_session_write_monitor(context->control, text) ==
         LIB_STATUS_OK ? written : -1;
 }
 
@@ -357,8 +356,7 @@ static type_status vm_product_console_reduce_input(vm_product_console_context *c
         if (vm_product_console_is_running(context))
             (C_VOID)vm_product_console_request_pause(context);
         (C_VOID)common_session_set_target(context->control, COMMON_SESSION_TARGET_NONE);
-        out_plan->target_changed = LIB_TRUE;
-        out_plan->target = COMMON_SESSION_TARGET_NONE;
+        (C_VOID)common_session_reconcile(context->control, out_plan);
         out_plan->mouse_capturable_changed = LIB_TRUE;
         out_plan->mouse_capturable = LIB_FALSE;
         out_plan->release_mouse = LIB_TRUE;
@@ -378,30 +376,30 @@ static void vm_product_console_ui_failure(void *context, lib_u64 source_identity
         (void)vm_product_console_printf(console, "UI failure: %d.\n", (C_INT)status);
 }
 
-static common_ui_target vm_product_console_ui_target(common_session_target target)
-{
-    return target == COMMON_SESSION_TARGET_WINDOW ? COMMON_UI_TARGET_WINDOW :
-        target == COMMON_SESSION_TARGET_CONSOLE ? COMMON_UI_TARGET_CONSOLE :
-        COMMON_UI_TARGET_NONE;
-}
-
 static void vm_product_console_apply_ui_plan(vm_product_console_context *context,
     const common_session_plan *plan)
 {
-    common_ui_plan *ui_plan;
+    common_ui_completion completion = {0};
+    common_ui_plan frame_plan = {0};
+    lib_status status;
 
     if (context == STD_NULL || vm_product_console_ui(context) == LIB_NULL || plan == STD_NULL)
         return;
-    ui_plan = &context->ui_plan;
-    STD_MEMSET(ui_plan, 0, sizeof(*ui_plan));
-    ui_plan->target_changed = plan->target_changed;
-    ui_plan->target = vm_product_console_ui_target(plan->target);
-    ui_plan->mouse_capturable_changed = plan->mouse_capturable_changed;
-    ui_plan->mouse_capturable = plan->mouse_capturable;
-    ui_plan->release_mouse = plan->release_mouse;
-    ui_plan->frame_ready = plan->frame_ready;
-    ui_plan->frame = plan->frame;
-    (void)common_ui_apply(vm_product_console_ui(context), ui_plan);
+    if (plan->ui_action_ready) {
+        completion.action = plan->ui_action.kind;
+        status = common_ui_apply_action(vm_product_console_ui(context),
+            &plan->ui_action, &completion);
+        if (common_session_publish_ui_completion(context->control, status,
+                &completion) != LIB_STATUS_OK)
+            (void)vm_product_console_printf(context, "UI completion failed: %d.\n",
+                (C_INT)status);
+    }
+    frame_plan.mouse_capturable_changed = plan->mouse_capturable_changed;
+    frame_plan.mouse_capturable = plan->mouse_capturable;
+    frame_plan.release_mouse = plan->release_mouse;
+    frame_plan.frame_ready = plan->frame_ready;
+    frame_plan.frame = plan->frame;
+    (void)common_ui_apply(vm_product_console_ui(context), &frame_plan);
 }
 
 static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
@@ -411,6 +409,9 @@ static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
 
     if (context == STD_NULL || plan == STD_NULL) return;
     vm_product_console_apply_ui_plan(context, plan);
+    if (plan->ui_failure)
+        (void)vm_product_console_printf(context, "UI failure: %d.\n",
+            (C_INT)plan->ui_failure_status);
     switch (plan->notice) {
     case COMMON_SESSION_NOTICE_STARTED: state = "started"; break;
     case COMMON_SESSION_NOTICE_RESUMED: state = "resumed"; break;
@@ -490,7 +491,7 @@ static C_INT vm_product_console_read_line(vm_product_console_context *context,
         vm_product_console_ui(context) == LIB_NULL || context->control == STD_NULL)
         return 0;
     buffer[0] = '\0';
-    if (common_ui_request_console_line(vm_product_console_ui(context)) != LIB_STATUS_OK) return 0;
+    if (common_session_request_monitor_line(context->control) != LIB_STATUS_OK) return 0;
     for (;;) {
         if (common_session_take(context->control, &context->fact, &context->display,
                 0xffffffffu) != TYPE_STATUS_OK) return 0;
@@ -694,14 +695,11 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
-    switch (vm_product_console_ui(context) == LIB_NULL ? COMMON_UI_TARGET_NONE :
-        common_ui_get_target(vm_product_console_ui(context))) {
-    case COMMON_UI_TARGET_WINDOW:
+    if (vm_product_console_ui(context) != LIB_NULL &&
+        common_ui_get_surface_facts(vm_product_console_ui(context)).window_exists) {
         STD_PRINTF("Display Type: Window\n");
-        break;
-    default:
+    } else {
         STD_PRINTF("Display Type: Console\n");
-        break;
     }
     STD_PRINTF("\n");
     STD_PRINTF("BIOS Settings\n");

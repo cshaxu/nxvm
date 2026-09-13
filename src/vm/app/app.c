@@ -85,6 +85,11 @@ type_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
 {
     if (app == STD_NULL || options == LIB_NULL || app->ui != LIB_NULL)
         return TYPE_STATUS_INVALID_STATE;
-    return common_ui_create(&app->ui, options) == LIB_STATUS_OK ?
-        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
+    if (common_ui_create(&app->ui, options) != LIB_STATUS_OK ||
+        common_session_bind_ui(app->session, app->ui) != LIB_STATUS_OK) {
+        common_ui_destroy(app->ui);
+        app->ui = LIB_NULL;
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return TYPE_STATUS_OK;
 }

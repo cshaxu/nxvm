@@ -1,5 +1,28 @@
 # Project Status
 
+## Current Work
+
+## M5 T531 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T531 implementation; accepted S1-S3 establish the finite Common session/control gap. Single-session coordinator/executor review. |
+| Objective | Make Common session the one FIFO/reducer and monitor scheduler for requested, in-flight and acknowledged machine and UI facts, using the completed Common UI action protocol. |
+| Non-goals | No SoftPC write, no generic executor, no Core/CCPU execution-loop merge, no Debug behavior change, no external asset change and no product-specific display-policy callback. |
+| Reference Baseline | NXVM `9550da4b`; SoftPC `e140ec55bbc4cd40956948e57e58dc678e54f699`; T531 S1 ledger; accepted S3 action/fact evidence. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md), [two-product ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md), [S3 evidence](../etc/evidence/t531-s3-common-ui-completion.md) and [S4 evidence](../etc/evidence/t531-s4-common-session-control.md). |
+| Files And ABI Surface | `src/common/session/*`, Common UI/session owner tests, and NXVM integration only where the old direct control loop must submit or consume the Common protocol. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution and Documentation Rules; Product UX; T531 monitor/lifecycle/UI topology rows. |
+| Verification | Owner-local requested/in-flight/acknowledged transition and failure tests; monitor line, prompt and lifecycle-notice tests; full repository-only unit suite; Common manifest/corpus and documentation gates; actual-diff review. |
+| Expected Markers | One session FIFO; actions remain pending until completion facts; Common session owns monitor scheduling and lifecycle notices; product seams remain composition/config, injected CLI and injected machine only. |
+| Asset Needs | None. No external asset or sibling source import. |
+| Reporting Requirements | Record the state model, retained executor boundary, exact removed target-plan route, source/test accounting and transition/failure results. |
+| Stop Conditions | A needed operation requires a second product control loop, native API/handle, generic executor, unapproved product policy, or cannot preserve the existing CLI injection seam. |
+| Exit Criteria | Common session consumes the full S4 ledger batch through one reducer; replaced target-plan control is removed; required tests/gates pass; complete P is pushed then coordinator-reviewed. |
+| Original Owner Request | Shared product experience follows SoftPC; product variation is only startup composition/config, injected CLI and injected machine. Common session coordinates selected raw Console, Window and cooked monitor transitions. |
+| Similar-Issue Sweep | Inspect all Common session facts/reducers, Common UI actions, NXVM console/session callers and SoftPC control/reconciler transitions for duplicate requested/current/in-flight state, monitor ownership and direct lifecycle notices. |
+
 ## Current Technical Baseline
 
 - `vm-0-5-0530` is the current target. Its recorded stripped Release artifacts are

@@ -22,9 +22,12 @@ struct common_session {
     lib_bool frame_ready;
     lib_u32 latest_frame_run_id;
     lib_u32 run_id;
+    common_ui *ui;
     common_session_machine_state lifecycle;
     common_session_target requested_target;
-    common_session_target active_target;
+    common_ui_surface_facts surface_facts;
+    lib_bool ui_action_in_flight;
+    common_ui_action_kind ui_action_in_flight_kind;
     common_session_pressed_key pressed[COMMON_SESSION_PRESSED_CAPACITY];
     lib_size pressed_count;
     common_session_cli_provider cli_provider;
@@ -51,13 +54,50 @@ static void common_session_plan_clear(common_session_plan *plan)
     if (plan != LIB_NULL) lib_memory_set(plan, 0, sizeof(*plan));
 }
 
-static void common_session_plan_target(common_session *session,
-    common_session_plan *plan, common_session_target target)
+static void common_session_plan_action(common_session *session,
+    common_session_plan *plan, common_ui_action_kind kind)
 {
-    if (session == LIB_NULL || plan == LIB_NULL || session->active_target == target) return;
-    session->active_target = target;
-    plan->target_changed = LIB_TRUE;
-    plan->target = target;
+    if (session == LIB_NULL || plan == LIB_NULL || session->ui_action_in_flight)
+        return;
+    plan->ui_action_ready = LIB_TRUE;
+    plan->ui_action.kind = kind;
+    session->ui_action_in_flight = LIB_TRUE;
+    session->ui_action_in_flight_kind = kind;
+}
+
+static void common_session_plan_surface(common_session *session,
+    common_session_plan *plan)
+{
+    common_ui_surface_facts facts;
+
+    if (session == LIB_NULL || plan == LIB_NULL || session->ui_action_in_flight)
+        return;
+    facts = session->surface_facts;
+    if (session->requested_target == COMMON_SESSION_TARGET_CONSOLE) {
+        if (!facts.raw_console_exists)
+            common_session_plan_action(session, plan,
+                COMMON_UI_ACTION_CREATE_RAW_CONSOLE);
+        else if (!facts.raw_console_current)
+            common_session_plan_action(session, plan,
+                COMMON_UI_ACTION_BIND_RAW_CONSOLE);
+        else if (facts.window_exists)
+            common_session_plan_action(session, plan,
+                COMMON_UI_ACTION_DESTROY_WINDOW);
+        return;
+    }
+    if (facts.raw_console_current) {
+        common_session_plan_action(session, plan,
+            COMMON_UI_ACTION_BIND_MONITOR_CONSOLE);
+    } else if (facts.raw_console_exists) {
+        common_session_plan_action(session, plan,
+            COMMON_UI_ACTION_DESTROY_RAW_CONSOLE);
+    } else if (session->requested_target == COMMON_SESSION_TARGET_WINDOW &&
+        !facts.window_exists) {
+        common_session_plan_action(session, plan, COMMON_UI_ACTION_CREATE_WINDOW);
+    } else if (session->requested_target == COMMON_SESSION_TARGET_NONE &&
+        facts.window_exists) {
+        common_session_plan_action(session, plan, COMMON_UI_ACTION_DESTROY_WINDOW);
+    }
 }
 
 lib_status common_session_create(common_session **out_session)
@@ -96,12 +136,46 @@ void common_session_close(common_session *session)
     common_session_unlock(session);
 }
 
+lib_status common_session_bind_ui(common_session *session, common_ui *ui)
+{
+    if (session == LIB_NULL || ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_lock(session);
+    if (!session->accepting || session->ui != LIB_NULL) {
+        common_session_unlock(session);
+        return LIB_STATUS_INVALID_STATE;
+    }
+    session->ui = ui;
+    common_session_unlock(session);
+    return LIB_STATUS_OK;
+}
+
+lib_status common_session_request_monitor_line(common_session *session)
+{
+    return session == LIB_NULL || session->ui == LIB_NULL ? LIB_STATUS_INVALID_STATE :
+        common_ui_request_console_line(session->ui);
+}
+
+lib_status common_session_write_monitor(common_session *session, const char *text)
+{
+    return session == LIB_NULL || session->ui == LIB_NULL ? LIB_STATUS_INVALID_STATE :
+        common_ui_write_console(session->ui, text);
+}
+
 lib_status common_session_set_target(common_session *session,
     common_session_target target)
 {
     if (session == LIB_NULL || target > COMMON_SESSION_TARGET_WINDOW)
         return LIB_STATUS_INVALID_ARGUMENT;
     session->requested_target = target;
+    return LIB_STATUS_OK;
+}
+
+lib_status common_session_reconcile(common_session *session,
+    common_session_plan *out_plan)
+{
+    if (session == LIB_NULL || out_plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_plan_clear(out_plan);
+    common_session_plan_surface(session, out_plan);
     return LIB_STATUS_OK;
 }
 
@@ -166,7 +240,7 @@ lib_u32 common_session_begin_run(common_session *session,
         return 0u;
     }
     ++session->run_id;
-    common_session_plan_target(session, out_plan, session->requested_target);
+    common_session_plan_surface(session, out_plan);
     common_session_unlock(session);
     return session->run_id;
 }
@@ -237,6 +311,21 @@ lib_status common_session_publish_machine(common_session *session,
     fact.run_id = session->run_id;
     fact.value.machine.state = state;
     fact.value.machine.status = status;
+    common_session_unlock(session);
+    return common_session_publish(session, &fact);
+}
+
+lib_status common_session_publish_ui_completion(common_session *session,
+    lib_status status, const common_ui_completion *completion)
+{
+    common_session_fact fact = {0};
+
+    if (session == LIB_NULL || completion == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_lock(session);
+    fact.kind = COMMON_SESSION_FACT_UI_COMPLETION;
+    fact.run_id = session->run_id;
+    fact.value.ui_completion.status = status;
+    fact.value.ui_completion.completion = *completion;
     common_session_unlock(session);
     return common_session_publish(session, &fact);
 }
@@ -344,6 +433,20 @@ lib_status common_session_reduce_fact(common_session *session,
         out_plan->frame = *frame;
         return LIB_STATUS_OK;
     }
+    if (fact->kind == COMMON_SESSION_FACT_UI_COMPLETION) {
+        if (!session->ui_action_in_flight ||
+            fact->value.ui_completion.completion.action !=
+                session->ui_action_in_flight_kind) return LIB_STATUS_INVALID_STATE;
+        session->ui_action_in_flight = LIB_FALSE;
+        if (fact->value.ui_completion.status != LIB_STATUS_OK) {
+            out_plan->ui_failure = LIB_TRUE;
+            out_plan->ui_failure_status = fact->value.ui_completion.status;
+            return LIB_STATUS_OK;
+        }
+        session->surface_facts = fact->value.ui_completion.completion.facts;
+        common_session_plan_surface(session, out_plan);
+        return LIB_STATUS_OK;
+    }
     if (fact->kind == COMMON_SESSION_FACT_CONSOLE_LINE) {
         common_session_lock(session);
         provider = session->cli_provider;
@@ -392,8 +495,8 @@ lib_status common_session_reduce_fact(common_session *session,
         out_plan->mouse_capturable_changed = LIB_TRUE;
         out_plan->mouse_capturable = LIB_FALSE;
         out_plan->release_mouse = LIB_TRUE;
-        if (session->active_target == COMMON_SESSION_TARGET_CONSOLE)
-            common_session_plan_target(session, out_plan, COMMON_SESSION_TARGET_NONE);
+        if (session->requested_target == COMMON_SESSION_TARGET_CONSOLE)
+            session->requested_target = COMMON_SESSION_TARGET_NONE;
         break;
     case COMMON_SESSION_MACHINE_RESET:
         out_plan->notice = COMMON_SESSION_NOTICE_RESET;
@@ -404,7 +507,7 @@ lib_status common_session_reduce_fact(common_session *session,
         out_plan->mouse_capturable_changed = LIB_TRUE;
         out_plan->mouse_capturable = LIB_FALSE;
         out_plan->release_mouse = LIB_TRUE;
-        common_session_plan_target(session, out_plan, COMMON_SESSION_TARGET_NONE);
+        session->requested_target = COMMON_SESSION_TARGET_NONE;
         break;
     default:
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -432,6 +535,7 @@ lib_status common_session_reduce_fact(common_session *session,
                 cli_result.lifecycle_request);
         }
     }
+    common_session_plan_surface(session, out_plan);
     return LIB_STATUS_OK;
 }
 

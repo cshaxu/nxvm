@@ -4,6 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "lib/ui-base/event_interface.h"
 #include "lib/ui-base/frame_interface.h"
+#include "common/ui/ui_interface.h"
 
 #define COMMON_SESSION_LINE_CAPACITY 1024u
 #define COMMON_SESSION_CLI_TEXT_CAPACITY 8192u
@@ -54,6 +55,7 @@ typedef enum common_session_fact_kind {
     COMMON_SESSION_FACT_CONSOLE_LINE,
     COMMON_SESSION_FACT_MACHINE,
     COMMON_SESSION_FACT_UI_INPUT,
+    COMMON_SESSION_FACT_UI_COMPLETION,
     COMMON_SESSION_FACT_FRAME
 } common_session_fact_kind;
 
@@ -66,6 +68,10 @@ typedef struct common_session_fact {
             common_session_machine_state state;
             lib_status status;
         } machine;
+        struct {
+            lib_status status;
+            common_ui_completion completion;
+        } ui_completion;
         ui_input_event input;
     } value;
 } common_session_fact;
@@ -80,8 +86,10 @@ typedef enum common_session_notice {
 } common_session_notice;
 
 typedef struct common_session_plan {
-    lib_bool target_changed;
-    common_session_target target;
+    lib_bool ui_action_ready;
+    common_ui_action ui_action;
+    lib_bool ui_failure;
+    lib_status ui_failure_status;
     lib_bool mouse_capturable_changed;
     lib_bool mouse_capturable;
     lib_bool release_mouse;
@@ -99,8 +107,13 @@ typedef lib_status (*common_session_input_sink)(void *context,
 lib_status common_session_create(common_session **out_session);
 void common_session_destroy(common_session *session);
 void common_session_close(common_session *session);
+lib_status common_session_bind_ui(common_session *session, common_ui *ui);
+lib_status common_session_request_monitor_line(common_session *session);
+lib_status common_session_write_monitor(common_session *session, const char *text);
 lib_status common_session_set_target(common_session *session,
     common_session_target target);
+lib_status common_session_reconcile(common_session *session,
+    common_session_plan *out_plan);
 lib_status common_session_set_cli_provider(common_session *session,
     common_session_cli_provider provider, void *context);
 lib_status common_session_set_cli_machine_observer(common_session *session,
@@ -116,6 +129,8 @@ lib_status common_session_publish_ui_input(void *context,
     const ui_input_event *event);
 lib_status common_session_publish_machine(common_session *session,
     common_session_machine_state state, lib_status status);
+lib_status common_session_publish_ui_completion(common_session *session,
+    lib_status status, const common_ui_completion *completion);
 lib_status common_session_publish_frame(common_session *session,
     const ui_frame *frame);
 lib_status common_session_take(common_session *session,

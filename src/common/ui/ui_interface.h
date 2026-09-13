@@ -8,12 +8,6 @@
 
 typedef struct common_ui common_ui;
 
-typedef enum common_ui_target {
-    COMMON_UI_TARGET_NONE,
-    COMMON_UI_TARGET_CONSOLE,
-    COMMON_UI_TARGET_WINDOW
-} common_ui_target;
-
 /* A presentation policy asks for one mechanical operation.  Common UI reports
  * its completed surface facts only after the Lib operation returns. */
 typedef enum common_ui_action_kind {
@@ -66,8 +60,6 @@ typedef struct common_ui_options {
 } common_ui_options;
 
 typedef struct common_ui_plan {
-    lib_bool target_changed;
-    common_ui_target target;
     lib_bool mouse_capturable_changed;
     lib_bool mouse_capturable;
     lib_bool release_mouse;
@@ -82,10 +74,6 @@ lib_status common_ui_write_console(common_ui *ui, const char *text);
 lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
     common_ui_completion *out_completion);
 common_ui_surface_facts common_ui_get_surface_facts(const common_ui *ui);
-/* Legacy target helpers only translate their single-surface request into the
- * action protocol. Session policy migrates to independent surface facts in S4. */
-lib_status common_ui_set_target(common_ui *ui, common_ui_target target);
-common_ui_target common_ui_get_target(const common_ui *ui);
 lib_status common_ui_apply(common_ui *ui, const common_ui_plan *plan);
 lib_status common_ui_set_window_title(common_ui *ui, const char *title);
 lib_status common_ui_set_mouse_capturable(common_ui *ui, lib_bool capturable);

@@ -134,7 +134,7 @@ static int common_adapter_conform(common_adapter *adapter, lib_u32 run_id)
         common_session_take(session, &fact, &frame, 0u) != LIB_STATUS_OK ||
         common_session_reduce_fact(session, &fact, &frame, &plan) != LIB_STATUS_OK ||
         common_ui_create(&ui, &ui_options) != LIB_STATUS_OK ||
-        common_ui_get_target(ui) != COMMON_UI_TARGET_NONE) {
+        common_session_bind_ui(session, ui) != LIB_STATUS_OK) {
         common_ui_destroy(ui);
         common_session_destroy(session);
         common_machine_destroy(machine);

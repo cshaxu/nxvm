@@ -221,58 +221,11 @@ lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
     return LIB_STATUS_OK;
 }
 
-lib_status common_ui_set_target(common_ui *ui, common_ui_target target)
-{
-    common_ui_action action = {0};
-    common_ui_completion completion;
-    lib_status status;
-
-    if (ui == LIB_NULL || target > COMMON_UI_TARGET_WINDOW)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    if (target != COMMON_UI_TARGET_CONSOLE) {
-        action.kind = COMMON_UI_ACTION_BIND_MONITOR_CONSOLE;
-        if ((status = common_ui_apply_action(ui, &action, &completion)) != LIB_STATUS_OK)
-            return status;
-        action.kind = COMMON_UI_ACTION_DESTROY_RAW_CONSOLE;
-        if ((status = common_ui_apply_action(ui, &action, &completion)) != LIB_STATUS_OK)
-            return status;
-    }
-    if (target != COMMON_UI_TARGET_WINDOW) {
-        action.kind = COMMON_UI_ACTION_DESTROY_WINDOW;
-        if ((status = common_ui_apply_action(ui, &action, &completion)) != LIB_STATUS_OK)
-            return status;
-    }
-    if (target == COMMON_UI_TARGET_WINDOW) {
-        action.kind = COMMON_UI_ACTION_CREATE_WINDOW;
-    } else if (target == COMMON_UI_TARGET_CONSOLE) {
-        action.kind = COMMON_UI_ACTION_CREATE_RAW_CONSOLE;
-    } else {
-        return LIB_STATUS_OK;
-    }
-    if ((status = common_ui_apply_action(ui, &action, &completion)) != LIB_STATUS_OK)
-        return status;
-    if (target == COMMON_UI_TARGET_CONSOLE) {
-        action.kind = COMMON_UI_ACTION_BIND_RAW_CONSOLE;
-        if ((status = common_ui_apply_action(ui, &action, &completion)) != LIB_STATUS_OK)
-            return status;
-    }
-    return ui->frame.valid ? common_ui_publish_frame(ui) : LIB_STATUS_OK;
-}
-
-common_ui_target common_ui_get_target(const common_ui *ui)
-{
-    common_ui_surface_facts facts = common_ui_surface_facts_of(ui);
-    return facts.window_exists ? COMMON_UI_TARGET_WINDOW : facts.raw_console_exists ?
-        COMMON_UI_TARGET_CONSOLE : COMMON_UI_TARGET_NONE;
-}
-
 lib_status common_ui_apply(common_ui *ui, const common_ui_plan *plan)
 {
     lib_status status;
 
     if (ui == LIB_NULL || plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (plan->target_changed &&
-        (status = common_ui_set_target(ui, plan->target)) != LIB_STATUS_OK) return status;
     if (plan->mouse_capturable_changed &&
         (status = common_ui_set_mouse_capturable(ui, plan->mouse_capturable)) != LIB_STATUS_OK)
         return status;

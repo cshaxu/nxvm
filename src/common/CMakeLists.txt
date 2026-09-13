@@ -34,7 +34,7 @@ target_link_libraries(common-debug PUBLIC common-machine common-xasm32 storage)
 
 add_library(common-session STATIC session/session.c)
 common_root(common-session)
-target_link_libraries(common-session PUBLIC host ui-base)
+target_link_libraries(common-session PUBLIC common-ui host ui-base)
 
 add_library(common-ui STATIC
     ui/console_host.c
