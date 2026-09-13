@@ -23,7 +23,8 @@ typedef struct ui_component_options {
     ui_hotkey_registry hotkeys;
 } ui_component_options;
 
-/* Copies into this component's one-slot latest-wins frame mailbox. */
+/* Copies into this component's one-slot latest-wins frame mailbox.
+ * STOP admission or a terminal fault rejects later frames with INVALID_STATE. */
 lib_status ui_component_publish_frame(ui_component *component,
     const ui_frame *frame);
 /* Appends one FIFO STOP record. A repeated request is idempotent; a full

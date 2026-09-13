@@ -2,14 +2,31 @@
 
 ## Current Work
 
-| Task | Status | Scope |
-| --- | --- | --- |
-| No implementation task is active. | Queue candidate 1 is eligible for owner admission. |
+## M5 T530 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved T530 in this thread on 2026-09-13: exact SoftPC Lib import, Common-first adaptation, enumerated necessary non-Common adaptation, build/test/push then owner test; one-session coordinator/executor mode is approved. |
+| Objective | Replace NXVM `src/lib` byte-for-byte with SoftPC `3cabea6a6a0ce931a5480f3549599ebb74f3681d` (`shared-t55-s13-p1`), adapt all consumers through public contracts, and deliver x64/x86 0530 artifacts for owner testing. |
+| Non-goals | No SoftPC app/MVDM/media/firmware/test import; no Lib fork, compatibility facade, duplicate host path or unrelated Core/profile semantic change. |
+| Reference Baseline | NXVM `cc5fd4a7`; SoftPC `3cabea6a6a0ce931a5480f3549599ebb74f3681d`, clean worktree, verified manifest and component DAG. |
+| Candidate Proposal | [M5 canonical SoftPC Lib refresh](../proposals/m5-canonical-softpc-lib-refresh.md). |
+| Files And ABI Surface | Entire `src/lib/`; its CMake/manifest/verification scripts; all `src/common`, NXVM source/test/CMake public-Lib consumers; provenance, evidence and current task records. |
+| Applicable Rules | Task Reading Set; source policy; System Architecture; Source Layout; Architecture, Coding, Execution and Documentation Rules. |
+| Verification | Exact tree hash comparison and manifest/DAG; private-header and duplicate-route sweeps; fresh x64/x86 build; complete repository-only unit suite; applicable Lib/Common/static/documentation gates; external integration suite; stripped 0530 artifact SHA/PE checks. |
+| Expected Markers | 93 imported files match SoftPC exactly; no external private-Lib include; Common consumes only `*_interface.h`; every non-Common adaptation is in evidence with contract cause. |
+| Asset Needs | No assets imported.  Existing owner-managed integration assets only; 0530 artifacts in ignored `build/output` and `assets/sessions`. |
+| Reporting Requirements | Report import provenance, complete consumer ledger, all non-Common adaptations, verification, source/test line accounting and pushed P commit; await owner artifact testing before T closure. |
+| Stop Conditions | Stop for source/license conflict, an unreviewed public ABI semantic gap, direct platform leakage, duplicate production route, or changed integration failure class. |
+| Exit Criteria | Exact corpus plus all consumer cutover is committed/pushed; required verification and 0530 artifacts exist; T remains open awaiting owner test response. |
+| Original Owner Request | Import SoftPC Lib byte-identically, update Common, report any non-Common adaptation caused by Lib, then build, test, push and await owner testing before closure. |
+| Similar-Issue Sweep | Scan all tracked production/test/CMake consumers of old Lib public/private headers and direct platform calls; classify every hit as migrated, deleted or not applicable in evidence. |
 
 ## Current Technical Baseline
 
-- `vm-0-5-0528` is the current target. Its stripped Release artifacts will be
-  `nxvm_0_5_0528_x64.exe` and `nxvm_0_5_0528_x86.exe` in both
+- `vm-0-5-0530` is the current target. Its stripped Release artifacts will be
+  `nxvm_0_5_0530_x64.exe` and `nxvm_0_5_0530_x86.exe` in both
   `build/output` and `assets/sessions`.
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:

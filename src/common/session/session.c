@@ -315,7 +315,7 @@ lib_status common_session_take(common_session *session,
         host_sync_event_reset(session->ready);
         common_session_unlock(session);
         wait = host_sync_event_wait(session->ready, timeout_milliseconds);
-        if (wait == HOST_SYNC_WAIT_TIMED_OUT) return LIB_STATUS_NOT_CURRENT;
+        if (wait == HOST_SYNC_WAIT_TIMED_OUT) return LIB_STATUS_INVALID_STATE;
         if (wait != HOST_SYNC_WAIT_SIGNALED) return LIB_STATUS_INVALID_STATE;
     }
 }
@@ -337,7 +337,7 @@ lib_status common_session_reduce_fact(common_session *session,
         return LIB_STATUS_INVALID_ARGUMENT;
     common_session_plan_clear(out_plan);
     if (fact->run_id != 0u && fact->run_id != session->run_id)
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_INVALID_STATE;
     if (fact->kind == COMMON_SESSION_FACT_FRAME) {
         if (frame == LIB_NULL || !ui_frame_is_valid(frame)) return LIB_STATUS_INVALID_ARGUMENT;
         out_plan->frame_ready = LIB_TRUE;
@@ -351,7 +351,7 @@ lib_status common_session_reduce_fact(common_session *session,
         lifecycle_sink = session->lifecycle_sink;
         lifecycle_sink_context = session->lifecycle_sink_context;
         common_session_unlock(session);
-        if (provider == LIB_NULL) return LIB_STATUS_NOT_CURRENT;
+        if (provider == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         lib_memory_set(&cli_result, 0, sizeof(cli_result));
         status = provider(provider_context, fact->value.line, &cli_result);
         if (status != LIB_STATUS_OK) return status;

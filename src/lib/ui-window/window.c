@@ -1,16 +1,13 @@
 #include "lib/ui-window/window.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 static void ui_window_component_stop(ui_component *base)
-{ ui_window_native_stop((ui_window *)base); }
+{ ui_window_worker_join((ui_window *)base); }
 
 static void ui_window_component_dispose(ui_component *base)
 {
     ui_window *window = (ui_window *)base;
     ui_component_mailboxes_destroy(&window->base.mailboxes);
-    free(window);
+    lib_release(window);
 }
 
 static lib_status ui_window_enqueue(ui_window *window,
@@ -28,22 +25,22 @@ lib_status ui_window_create(ui_window **out_window,
 
     if (out_window == LIB_NULL || options == LIB_NULL ||
         options->initial_title == LIB_NULL ||
-        memchr(options->initial_title, '\0', UI_WINDOW_TITLE_CAPACITY) == LIB_NULL ||
+        lib_memory_find(options->initial_title, '\0', UI_WINDOW_TITLE_CAPACITY) == LIB_NULL ||
         options->component.input_sink == LIB_NULL ||
         options->component.failure_sink == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_window = LIB_NULL;
-    window = calloc(1u, sizeof(*window));
+    window = lib_allocate_zero(1u, sizeof(*window));
     if (window == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    memcpy(window->initial_title, options->initial_title,
-        strlen(options->initial_title) + 1u);
+    lib_memory_copy(window->initial_title, options->initial_title,
+        lib_text_length(options->initial_title) + 1u);
     window->initial_frozen = options->initial_frozen != LIB_FALSE;
     status = ui_component_initialize(&window->base, &options->component,
         ui_window_component_stop, ui_window_component_dispose);
-    if (status == LIB_STATUS_OK) status = ui_window_native_start(window);
+    if (status == LIB_STATUS_OK) status = ui_window_worker_start(window);
     if (status != LIB_STATUS_OK) {
         ui_component_mailboxes_destroy(&window->base.mailboxes);
-        free(window);
+        lib_release(window);
         return status;
     }
     *out_window = window;
@@ -66,10 +63,10 @@ lib_status ui_window_set_title(ui_window *window, const char *title)
     ui_component_control control = {
         .kind = UI_COMPONENT_CONTROL_SET_WINDOW_TITLE
     };
-    if (title == LIB_NULL || memchr(title, '\0',
+    if (title == LIB_NULL || lib_memory_find(title, '\0',
             UI_COMPONENT_WINDOW_TITLE_CAPACITY) == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    memcpy(control.value.title, title, strlen(title) + 1u);
+    lib_memory_copy(control.value.title, title, lib_text_length(title) + 1u);
     return ui_window_enqueue(window, control);
 }
 

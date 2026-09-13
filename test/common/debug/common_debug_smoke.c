@@ -1,4 +1,5 @@
 #include "common/debug/debug_interface.h"
+
 #include "lib/storage/file_interface.h"
 
 typedef struct debug_fixture {
@@ -138,7 +139,7 @@ static int debug_expect(common_debug *debug, const char *line,
     if (common_debug_submit_line(debug, line, &result) != LIB_STATUS_OK ||
         (expected_text != LIB_NULL && !debug_text_contains(result.text, expected_text)) ||
         (expected_prompt != LIB_NULL && (!result.prompt_ready ||
-            lib_text_compare(result.prompt, expected_prompt) != 0))) {
+            strcmp(result.prompt, expected_prompt) != 0))) {
         return 0;
     }
     return 1;

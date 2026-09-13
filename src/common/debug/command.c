@@ -92,23 +92,21 @@ static C_INT command_copy_text_checked(C_CHAR *destination,
 #define COMMAND_REGISTER_WATCH_WRITE COMMON_MACHINE_DEBUG_WATCH_WRITE
 #define COMMAND_REGISTER_WATCH_EXECUTE COMMON_MACHINE_DEBUG_WATCH_EXECUTE
 
-static C_INT command_printf(command_context *debugContext,
-    const C_CHAR *format, ...)
+static C_INT command_printf_capacity(const command_context *debugContext)
 {
     STD_SIZE_T used;
-    C_INT written;
-    va_list arguments;
 
-    if (debugContext == STD_NULL || debugContext->result == STD_NULL ||
-        format == STD_NULL) return -1;
+    if (debugContext == STD_NULL || debugContext->result == STD_NULL) return 0;
     used = STD_STRLEN(debugContext->result->text);
-    if (used >= sizeof(debugContext->result->text)) return -1;
-    va_start(arguments, format);
-    written = lib_text_format_v(debugContext->result->text + used,
-        sizeof(debugContext->result->text) - used, format, arguments);
-    va_end(arguments);
-    return written;
+    return used < sizeof(debugContext->result->text) ?
+        (C_INT)(sizeof(debugContext->result->text) - used) : 0;
 }
+
+#define command_printf(debugContext, ...) \
+    ((debugContext) == STD_NULL || (debugContext)->result == STD_NULL || \
+        command_printf_capacity(debugContext) == 0 ? -1 : snprintf( \
+            (debugContext)->result->text + STD_STRLEN((debugContext)->result->text), \
+            (STD_SIZE_T)command_printf_capacity(debugContext), __VA_ARGS__))
 
 static C_INT command_read_line(command_context *debugContext,
     C_CHAR *buffer, STD_SIZE_T buffer_size)

@@ -1,174 +1,89 @@
-#include "lib/types/types_interface.h"
-#include "lib/host/sync_interface.h"
+#include "lib/types/win32/scalar.h"
+#include "lib/host/sync.h"
 
-#include <windows.h>
+#include "lib/types/win32/sync.h"
 
-struct host_sync_event {
-    HANDLE handle;
-};
-
-struct host_sync_task {
-    HANDLE thread;
-    HANDLE cancellation;
-    host_sync_task_entry entry;
+struct host_sync_event { lib_win32_handle handle; };
+struct host_sync_platform_task {
+    lib_win32_handle thread;
+    host_sync_platform_task_entry entry;
     void *context;
 };
 
-static DWORD WINAPI host_sync_task_main(LPVOID opaque)
+static lib_win32_dword LIB_WIN32_WINAPI host_sync_platform_main(lib_win32_lpvoid opaque)
 {
-    host_sync_task *task = opaque;
-
-    if (task != LIB_NULL && task->entry != LIB_NULL) {
-        task->entry(task->context, task);
-    }
+    host_sync_platform_task *task = opaque;
+    task->entry(task->context);
     return 0u;
 }
 
-host_sync_wait_result host_sync_wait_any(host_sync_event *const *events,
-    lib_u32 event_count, const host_sync_task *cancel_task,
-    lib_u32 timeout_milliseconds, lib_u32 *out_event_index)
-{
-    HANDLE handles[MAXIMUM_WAIT_OBJECTS] = { NULL };
-    DWORD count = 0u;
-    DWORD result;
-    lib_u32 index;
+void host_sync_platform_sleep_milliseconds(lib_u32 milliseconds)
+{ lib_win32_sleep((lib_win32_dword)milliseconds); }
+void host_sync_platform_yield(void) { lib_win32_sleep(0u); }
 
-    if ((event_count != 0u && events == LIB_NULL) ||
-        (event_count == 0u && cancel_task == LIB_NULL) ||
-        event_count > (lib_u32)(MAXIMUM_WAIT_OBJECTS -
-            (cancel_task != LIB_NULL ? 1u : 0u)))
-        return HOST_SYNC_WAIT_INVALID_ARGUMENT;
-    if (out_event_index != LIB_NULL) *out_event_index = UINT32_MAX;
-    if (cancel_task != LIB_NULL) {
-        if (cancel_task->cancellation == NULL) return HOST_SYNC_WAIT_INVALID_ARGUMENT;
-        handles[count++] = cancel_task->cancellation;
-    }
-    for (index = 0u; index < event_count; ++index) {
-        if (events[index] == LIB_NULL || events[index]->handle == NULL)
-            return HOST_SYNC_WAIT_INVALID_ARGUMENT;
-        handles[count++] = events[index]->handle;
-    }
-    result = WaitForMultipleObjects(count, handles, FALSE, timeout_milliseconds);
-    if (result < WAIT_OBJECT_0 + count) {
-        if (cancel_task != LIB_NULL && result == WAIT_OBJECT_0)
-            return HOST_SYNC_WAIT_CANCELLED;
-        if (out_event_index != LIB_NULL)
-            *out_event_index = result - WAIT_OBJECT_0 -
-                (cancel_task != LIB_NULL ? 1u : 0u);
-        return HOST_SYNC_WAIT_SIGNALED;
-    }
-    return result == WAIT_TIMEOUT ? HOST_SYNC_WAIT_TIMED_OUT : HOST_SYNC_WAIT_FAULT;
-}
-
-void host_sync_sleep_milliseconds(lib_u32 milliseconds)
-{
-    Sleep(milliseconds);
-}
-
-void host_sync_yield(void)
-{
-    Sleep(0u);
-}
-
-lib_status host_sync_event_create(host_sync_event **out_event)
+lib_status host_sync_platform_event_create(lib_bool manual_reset,
+    host_sync_event **out_event)
 {
     host_sync_event *event;
-
     if (out_event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_event = LIB_NULL;
-    event = calloc(1u, sizeof(*event));
+    event = lib_allocate_zero(1u, sizeof(*event));
     if (event == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    event->handle = CreateEventA(NULL, TRUE, FALSE, NULL);
-    if (event->handle == NULL) {
-        free(event);
-        return LIB_STATUS_IO_ERROR;
-    }
+    event->handle = lib_win32_create_event_a(LIB_NULL, manual_reset != LIB_FALSE, LIB_WIN32_FALSE, LIB_NULL);
+    if (event->handle == LIB_NULL) { lib_release(event); return LIB_STATUS_IO_ERROR; }
     *out_event = event;
     return LIB_STATUS_OK;
 }
 
-void host_sync_event_destroy(host_sync_event *event)
+void host_sync_platform_event_destroy(host_sync_event *event)
+{ if (event != LIB_NULL) { if (event->handle != LIB_NULL) (void)lib_win32_close_handle(event->handle); lib_release(event); } }
+void host_sync_platform_event_signal(host_sync_event *event)
+{ if (event != LIB_NULL && event->handle != LIB_NULL) (void)lib_win32_set_event(event->handle); }
+void host_sync_platform_event_reset(host_sync_event *event)
+{ if (event != LIB_NULL && event->handle != LIB_NULL) (void)lib_win32_reset_event(event->handle); }
+
+lib_status host_sync_platform_event_wait_many(
+    const host_sync_event *const *events, lib_u32 event_count,
+    lib_u32 timeout_milliseconds, lib_bool *out_signaled,
+    lib_u32 *out_event_index)
 {
-    if (event == LIB_NULL) return;
-    if (event->handle != NULL) (void)CloseHandle(event->handle);
-    free(event);
+    lib_win32_handle handles[LIB_WIN32_MAXIMUM_WAIT_OBJECTS];
+    lib_win32_dword result;
+    lib_u32 index;
+    if (events == LIB_NULL || out_signaled == LIB_NULL || event_count == 0u ||
+        event_count > (lib_u32)LIB_WIN32_MAXIMUM_WAIT_OBJECTS) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_signaled = LIB_FALSE;
+    for (index = 0u; index < event_count; ++index) {
+        if (events[index] == LIB_NULL || events[index]->handle == LIB_NULL)
+            return LIB_STATUS_INVALID_ARGUMENT;
+        handles[index] = events[index]->handle;
+    }
+    result = lib_win32_wait_for_multiple_objects((lib_win32_dword)event_count, handles, LIB_WIN32_FALSE,
+        (lib_win32_dword)timeout_milliseconds);
+    if (result < LIB_WIN32_WAIT_OBJECT_0 + event_count) {
+        if (out_event_index != LIB_NULL) *out_event_index = result - LIB_WIN32_WAIT_OBJECT_0;
+        *out_signaled = LIB_TRUE;
+        return LIB_STATUS_OK;
+    }
+    return result == LIB_WIN32_WAIT_TIMEOUT ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-void host_sync_event_signal(host_sync_event *event)
+lib_status host_sync_platform_task_create(host_sync_platform_task_entry entry,
+    void *context, host_sync_platform_task **out_task)
 {
-    if (event != LIB_NULL && event->handle != NULL) (void)SetEvent(event->handle);
-}
-
-void host_sync_event_reset(host_sync_event *event)
-{
-    if (event != LIB_NULL && event->handle != NULL) (void)ResetEvent(event->handle);
-}
-
-host_sync_wait_result host_sync_event_wait(host_sync_event *event,
-    lib_u32 timeout_milliseconds)
-{
-    return host_sync_wait_any(&event, 1u, LIB_NULL, timeout_milliseconds, LIB_NULL);
-}
-
-lib_status host_sync_task_create(host_sync_task_entry entry, void *context,
-    host_sync_task **out_task)
-{
-    host_sync_task *task;
-
+    host_sync_platform_task *task;
     if (entry == LIB_NULL || out_task == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_task = LIB_NULL;
-    task = calloc(1u, sizeof(*task));
+    task = lib_allocate_zero(1u, sizeof(*task));
     if (task == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    task->entry = entry;
-    task->context = context;
-    task->cancellation = CreateEventA(NULL, TRUE, FALSE, NULL);
-    task->thread = task->cancellation == NULL ? NULL : CreateThread(NULL, 0u,
-        host_sync_task_main, task, 0u, NULL);
-    if (task->thread == NULL) {
-        if (task->cancellation != NULL) (void)CloseHandle(task->cancellation);
-        free(task);
-        return LIB_STATUS_IO_ERROR;
-    }
+    task->entry = entry; task->context = context;
+    task->thread = lib_win32_create_thread(LIB_NULL, 0u, host_sync_platform_main, task, 0u, LIB_NULL);
+    if (task->thread == LIB_NULL) { lib_release(task); return LIB_STATUS_IO_ERROR; }
     *out_task = task;
     return LIB_STATUS_OK;
 }
 
-void host_sync_task_request_cancel(host_sync_task *task)
-{
-    if (task != LIB_NULL && task->cancellation != NULL) {
-        (void)SetEvent(task->cancellation);
-    }
-}
-
-int host_sync_task_cancelled(const host_sync_task *task)
-{
-    return task != LIB_NULL && task->cancellation != NULL &&
-        WaitForSingleObject(task->cancellation, 0u) == WAIT_OBJECT_0;
-}
-
-host_sync_wait_result host_sync_task_wait_cancel(const host_sync_task *task,
-    lib_u32 timeout_milliseconds)
-{
-    host_sync_wait_result result;
-
-    if (task == LIB_NULL) return HOST_SYNC_WAIT_INVALID_ARGUMENT;
-    result = host_sync_wait_any(LIB_NULL, 0u, task, timeout_milliseconds, LIB_NULL);
-    return result;
-}
-
-void host_sync_task_join(host_sync_task *task)
-{
-    if (task != LIB_NULL && task->thread != NULL) {
-        (void)WaitForSingleObject(task->thread, INFINITE);
-    }
-}
-
-void host_sync_task_destroy(host_sync_task *task)
-{
-    if (task == LIB_NULL) return;
-    host_sync_task_request_cancel(task);
-    host_sync_task_join(task);
-    if (task->thread != NULL) (void)CloseHandle(task->thread);
-    if (task->cancellation != NULL) (void)CloseHandle(task->cancellation);
-    free(task);
-}
+void host_sync_platform_task_join(host_sync_platform_task *task)
+{ if (task != LIB_NULL && task->thread != LIB_NULL) (void)lib_win32_wait_for_single_object(task->thread, LIB_WIN32_INFINITE); }
+void host_sync_platform_task_destroy(host_sync_platform_task *task)
+{ if (task != LIB_NULL) { if (task->thread != LIB_NULL) (void)lib_win32_close_handle(task->thread); lib_release(task); } }

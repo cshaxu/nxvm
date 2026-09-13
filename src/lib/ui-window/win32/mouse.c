@@ -1,88 +1,74 @@
+#include "lib/types/win32/window.h"
 #include "lib/ui-window/win32/mouse.h"
 
-#ifdef _WIN32
 void ui_win32_mouse_reset(ui_win32_mouse *mouse)
 {
-    if (mouse == NULL) return;
-    mouse->x = 0;
-    mouse->y = 0;
-    mouse->valid = 0;
-    ui_capture_initialize(&mouse->capture);
+    if (mouse == LIB_NULL) return;
+    lib_memory_set(mouse, 0, sizeof(*mouse));
 }
 
 void ui_win32_mouse_release(ui_win32_mouse *mouse)
 {
-    if (mouse == NULL || !ui_capture_is_active(&mouse->capture)) return;
-    ClipCursor(NULL);
-    ReleaseCapture();
-    SetCursor(LoadCursorA(NULL, IDC_ARROW));
-    ui_capture_release(&mouse->capture);
-    mouse->valid = 0;
+    if (mouse == LIB_NULL || !mouse->captured) return;
+    /* Clear ownership before ReleaseCapture synchronously notifies the window. */
+    mouse->captured = LIB_FALSE;
+    lib_win32_clip_cursor(LIB_NULL);
+    if (lib_win32_get_capture() == mouse->window) lib_win32_release_capture();
+    mouse->window = LIB_NULL;
+    lib_win32_set_cursor(lib_win32_load_cursor_a(LIB_NULL, LIB_WIN32_IDC_ARROW));
+    mouse->motion.valid = 0;
+    mouse->motion.remainder_x = mouse->motion.remainder_y = 0;
+}
+
+int ui_win32_mouse_refresh_bounds(ui_win32_mouse *mouse)
+{
+    lib_win32_rect client, bounds;
+    lib_win32_point upper_left, lower_right;
+    if (mouse == LIB_NULL) return 0;
+    if (!mouse->captured) return 1;
+    if (lib_win32_get_capture() != mouse->window ||
+        !lib_win32_get_client_rect(mouse->window, &client) ||
+        client.right <= client.left || client.bottom <= client.top) return 0;
+    upper_left.x = client.left; upper_left.y = client.top;
+    lower_right.x = client.right; lower_right.y = client.bottom;
+    if (!lib_win32_client_to_screen(mouse->window, &upper_left) ||
+        !lib_win32_client_to_screen(mouse->window, &lower_right)) return 0;
+    bounds.left = upper_left.x; bounds.top = upper_left.y;
+    bounds.right = lower_right.x; bounds.bottom = lower_right.y;
+    return lib_win32_clip_cursor(&bounds) != 0;
 }
 
 int ui_win32_mouse_capture(ui_win32_mouse *mouse,
-    HWND window, LPARAM position)
+    lib_win32_hwnd window, lib_win32_lparam position)
 {
-    RECT client;
-    POINT upper_left;
-    POINT lower_right;
-    RECT bounds;
-
-    if (mouse == NULL || window == NULL || !GetClientRect(window, &client) ||
-        client.right <= client.left || client.bottom <= client.top) return 0;
-    SetFocus(window);
-    if (GetFocus() != window) return 0;
-    SetCapture(window);
-    if (GetCapture() != window) return 0;
-    upper_left.x = client.left;
-    upper_left.y = client.top;
-    lower_right.x = client.right;
-    lower_right.y = client.bottom;
-    if (!ClientToScreen(window, &upper_left) ||
-        !ClientToScreen(window, &lower_right)) {
-        ReleaseCapture();
+    if (mouse == LIB_NULL || window == LIB_NULL) return 0;
+    lib_win32_set_focus(window);
+    if (lib_win32_get_focus() != window) return 0;
+    lib_win32_set_capture(window);
+    if (lib_win32_get_capture() != window) return 0;
+    mouse->window = window;
+    mouse->captured = LIB_TRUE;
+    if (!ui_win32_mouse_refresh_bounds(mouse)) {
+        ui_win32_mouse_release(mouse);
         return 0;
     }
-    bounds.left = upper_left.x;
-    bounds.top = upper_left.y;
-    bounds.right = lower_right.x;
-    bounds.bottom = lower_right.y;
-    if (!ClipCursor(&bounds)) {
-        ReleaseCapture();
-        return 0;
-    }
-    mouse->x = (int)(short)LOWORD(position);
-    mouse->y = (int)(short)HIWORD(position);
-    mouse->valid = 1;
-    ui_capture_activate(&mouse->capture);
+    mouse->motion.x = (int)(short)lib_win32_loword(position);
+    mouse->motion.y = (int)(short)lib_win32_hiword(position);
+    mouse->motion.valid = 1;
+    mouse->motion.remainder_x = mouse->motion.remainder_y = 0;
     return 1;
 }
 
 int ui_win32_mouse_move(ui_win32_mouse *mouse,
-    LPARAM position, int client_width, int client_height,
+    lib_win32_lparam position, int client_width, int client_height,
     unsigned int content_width, unsigned int content_height, int *dx, int *dy)
 {
-    int x;
-    int y;
-
-    if (mouse == NULL || dx == NULL || dy == NULL) return 0;
-    x = (int)(short)LOWORD(position);
-    y = (int)(short)HIWORD(position);
-    *dx = mouse->valid ? x - mouse->x : 0;
-    *dy = mouse->valid ? y - mouse->y : 0;
-    mouse->x = x;
-    mouse->y = y;
-    mouse->valid = 1;
-    if (client_width > 0 && content_width != 0u)
-        *dx = (int)((long long)*dx * (long long)content_width / client_width);
-    if (client_height > 0 && content_height != 0u)
-        *dy = (int)((long long)*dy * (long long)content_height / client_height);
-    return 1;
+    return mouse != LIB_NULL && ui_window_motion_move(&mouse->motion,
+        (int)(short)lib_win32_loword(position), (int)(short)lib_win32_hiword(position),
+        client_width, client_height, content_width, content_height, dx, dy);
 }
 
 int ui_win32_mouse_captured(const ui_win32_mouse *mouse)
 {
-    return mouse != NULL && ui_capture_is_active(&mouse->capture);
+    return mouse != LIB_NULL && mouse->captured;
 }
-
-#endif

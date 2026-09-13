@@ -2,12 +2,6 @@
 
 #include "common/xasm32/dasm32.h"
 
-/* Retain the original decoder tables; only their C-runtime vocabulary is
- * provided by lib/types. */
-#define memset lib_memory_set
-#define strlen lib_text_length
-#define snprintf lib_text_format
-
 typedef lib_u8 t_dasm_prefix;
 
 typedef struct dasm32_context dasm32_context;

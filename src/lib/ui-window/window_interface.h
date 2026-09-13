@@ -26,7 +26,9 @@ lib_status ui_window_set_title(ui_window *window, const char *title);
  * blink, and releases any current capture in FIFO order. */
 lib_status ui_window_freeze(ui_window *window);
 /* Unfreeze permits a later client-area click to capture. It never captures
- * the mouse itself and resumes the Window-local cursor blink. */
+ * the mouse itself and resumes the Window-local cursor blink. The actual
+ * frozen-to-unfrozen transition requests activation once; repeated unfreeze
+ * does not request focus again. Activation remains subject to host policy. */
 lib_status ui_window_unfreeze(ui_window *window);
 lib_status ui_window_release_mouse(ui_window *window);
 

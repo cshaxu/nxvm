@@ -2,16 +2,6 @@
 
 #include "common/xasm32/aasm32.h"
 
-/* Preserve the original assembler table body while routing every C-runtime
- * operation through the sole public lib/types vocabulary. */
-#define memset lib_memory_set
-#define memcpy lib_memory_copy
-#define strlen lib_text_length
-#define strcmp lib_text_compare
-#define malloc lib_allocate
-#define free lib_release
-#define snprintf lib_text_format
-
 #define _chrf(n)              \
     do                        \
     {                         \

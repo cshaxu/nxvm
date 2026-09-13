@@ -127,7 +127,7 @@ lib_status common_machine_observe_safe_point(common_machine *machine)
     common_machine_lock(machine);
     if (machine->count == 0u) {
         common_machine_unlock(machine);
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_INVALID_STATE;
     }
     request = machine->requests[machine->first];
     machine->first = (machine->first + 1u) % COMMON_MACHINE_QUEUE_CAPACITY;
@@ -136,7 +136,7 @@ lib_status common_machine_observe_safe_point(common_machine *machine)
     driver = machine->driver;
     if (request.run_id != 0u && request.run_id != machine->run_id) {
         common_machine_unlock(machine);
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (request.kind == COMMON_MACHINE_REQUEST_RESUME ||
         request.kind == COMMON_MACHINE_REQUEST_RESET ||
@@ -164,8 +164,7 @@ lib_status common_machine_wait(common_machine *machine,
     host_sync_event_reset(machine->ready);
     common_machine_unlock(machine);
     result = host_sync_event_wait(machine->ready, timeout_milliseconds);
-    return result == HOST_SYNC_WAIT_SIGNALED ? LIB_STATUS_OK :
-        result == HOST_SYNC_WAIT_TIMED_OUT ? LIB_STATUS_NOT_CURRENT : LIB_STATUS_INVALID_STATE;
+    return result == HOST_SYNC_WAIT_SIGNALED ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
 }
 
 lib_status common_machine_debug_acquire(common_machine *machine,

@@ -1,5 +1,5 @@
-#ifndef LIB_BASE_ATOMIC_H
-#define LIB_BASE_ATOMIC_H
+#ifndef LIB_TYPES_ATOMIC_H
+#define LIB_TYPES_ATOMIC_H
 
 #include "lib/types/types_interface.h"
 
@@ -13,7 +13,8 @@ typedef volatile long lib_atomic_i32;
 typedef volatile long lib_atomic_u32;
 typedef volatile long long lib_atomic_u64;
 
-typedef enum lib_memory_order {
+typedef enum lib_memory_order
+{
     LIB_MEMORY_ORDER_RELAXED,
     LIB_MEMORY_ORDER_ACQUIRE,
     LIB_MEMORY_ORDER_RELEASE,
@@ -28,14 +29,14 @@ static inline void lib_atomic_flag_clear(lib_atomic_flag *object)
 }
 
 static inline int lib_atomic_flag_test_and_set_explicit(lib_atomic_flag *object,
-    lib_memory_order order)
+                                                        lib_memory_order order)
 {
     (void)order;
     return _InterlockedExchange(object, 1L) != 0L;
 }
 
 static inline void lib_atomic_flag_clear_explicit(lib_atomic_flag *object,
-    lib_memory_order order)
+                                                  lib_memory_order order)
 {
     (void)order;
     (void)_InterlockedExchange(object, 0L);
@@ -47,14 +48,14 @@ static inline void lib_atomic_i32_initialize(lib_atomic_i32 *object, lib_i32 val
 }
 
 static inline lib_i32 lib_atomic_i32_load_explicit(const lib_atomic_i32 *object,
-    lib_memory_order order)
+                                                   lib_memory_order order)
 {
     (void)order;
     return (lib_i32)_InterlockedCompareExchange((volatile long *)object, 0L, 0L);
 }
 
 static inline void lib_atomic_i32_store_explicit(lib_atomic_i32 *object,
-    lib_i32 value, lib_memory_order order)
+                                                 lib_i32 value, lib_memory_order order)
 {
     (void)order;
     (void)_InterlockedExchange(object, (long)value);
@@ -66,14 +67,14 @@ static inline void lib_atomic_u32_initialize(lib_atomic_u32 *object, lib_u32 val
 }
 
 static inline lib_u32 lib_atomic_u32_fetch_add_explicit(lib_atomic_u32 *object,
-    lib_u32 value, lib_memory_order order)
+                                                        lib_u32 value, lib_memory_order order)
 {
     (void)order;
     return (lib_u32)_InterlockedExchangeAdd(object, (long)value);
 }
 
 static inline lib_u32 lib_atomic_u32_fetch_sub_explicit(lib_atomic_u32 *object,
-    lib_u32 value, lib_memory_order order)
+                                                        lib_u32 value, lib_memory_order order)
 {
     (void)order;
     return (lib_u32)_InterlockedExchangeAdd(object, -(long)value);
@@ -85,11 +86,11 @@ static inline void lib_atomic_u64_initialize(lib_atomic_u64 *object, lib_u64 val
 }
 
 static inline lib_u64 lib_atomic_u64_load_explicit(const lib_atomic_u64 *object,
-    lib_memory_order order)
+                                                   lib_memory_order order)
 {
     (void)order;
     return (lib_u64)_InterlockedCompareExchange64((volatile long long *)object,
-        0LL, 0LL);
+                                                  0LL, 0LL);
 }
 
 static inline lib_bool lib_atomic_u64_compare_exchange_weak_explicit(
@@ -100,8 +101,9 @@ static inline lib_bool lib_atomic_u64_compare_exchange_weak_explicit(
     (void)success_order;
     (void)failure_order;
     observed = _InterlockedCompareExchange64(object, (long long)desired,
-        (long long)*expected);
-    if ((lib_u64)observed == *expected) return LIB_TRUE;
+                                             (long long)*expected);
+    if ((lib_u64)observed == *expected)
+        return LIB_TRUE;
     *expected = (lib_u64)observed;
     return LIB_FALSE;
 }

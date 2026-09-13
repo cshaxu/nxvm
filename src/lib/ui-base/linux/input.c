@@ -1,13 +1,11 @@
 #include "lib/types/types_interface.h"
 #include "lib/ui-base/linux/input.h"
+#include "lib/ui-base/input.h"
 
-#include <string.h>
-
-lib_bool ui_linui_key_to_event(ui_linui_key key, ui_event *out_event)
+static lib_u32 ui_linui_key_identity(ui_linui_key key)
 {
     lib_u32 key_identity;
 
-    if (out_event == LIB_NULL) return LIB_FALSE;
     switch (key) {
     case UI_LINUI_KEY_ENTER: key_identity = UI_KEY_ENTER; break;
     case UI_LINUI_KEY_BACKSPACE: key_identity = UI_KEY_BACKSPACE; break;
@@ -33,11 +31,24 @@ lib_bool ui_linui_key_to_event(ui_linui_key key, ui_event *out_event)
     case UI_LINUI_KEY_PAGE_DOWN: key_identity = UI_KEY_PAGE_DOWN; break;
     case UI_LINUI_KEY_INSERT: key_identity = UI_KEY_INSERT; break;
     case UI_LINUI_KEY_DELETE: key_identity = UI_KEY_DELETE; break;
-    default: return LIB_FALSE;
+    default: return 0u;
     }
-    memset(out_event, 0, sizeof(*out_event));
-    out_event->type = UI_EVENT_KEY;
-    out_event->data.key.key = key_identity;
-    out_event->data.key.pressed = LIB_TRUE;
-    return LIB_TRUE;
+    return key_identity;
+}
+
+lib_bool ui_keyboard_platform_transition(lib_u16 scan, lib_u16 raw_key,
+    lib_u16 *out_scan, lib_u32 *out_key)
+{
+    (void)scan;
+    *out_scan = 0u;
+    *out_key = ui_linui_key_identity((ui_linui_key)raw_key);
+    return *out_key != 0u;
+}
+
+lib_bool ui_keyboard_platform_map_scalar(lib_u32 scalar,
+    lib_u16 *out_raw_key, lib_u8 *out_modifiers)
+{
+    /* Terminal text has no portable physical-key layout: use TEXT delivery. */
+    (void)scalar; (void)out_raw_key; (void)out_modifiers;
+    return LIB_FALSE;
 }

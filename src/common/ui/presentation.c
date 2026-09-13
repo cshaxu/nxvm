@@ -104,11 +104,13 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
     ui->failure_sink = options->failure_sink;
     ui->failure_context = options->failure_context;
     ui->hotkeys = options->hotkeys;
-    if (lib_text_format(ui->initial_window_title, sizeof(ui->initial_window_title),
-            "%s", options->initial_window_title) < 0) {
+    if (lib_text_length(options->initial_window_title) >=
+            sizeof(ui->initial_window_title)) {
         lib_release(ui);
         return LIB_STATUS_LIMIT_EXCEEDED;
     }
+    lib_memory_copy(ui->initial_window_title, options->initial_window_title,
+        lib_text_length(options->initial_window_title) + 1u);
     status = common_ui_console_host_create(&ui->console_host,
         options->console_line_context, options->console_line_sink);
     if (status != LIB_STATUS_OK) {

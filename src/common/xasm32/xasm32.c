@@ -3,11 +3,6 @@
 #include "common/xasm32/aasm32.h"
 #include "common/xasm32/dasm32.h"
 
-#define memcpy lib_memory_copy
-#define malloc lib_allocate
-#define free lib_release
-#define strlen lib_text_length
-
 static lib_status common_xasm32_validate_statement(const char *statement,
     lib_size statement_bytes, int paragraph)
 {

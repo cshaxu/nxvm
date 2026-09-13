@@ -19,3 +19,14 @@ when needed, `git log --all -- docs/etc/research/provenance/`. New imports must 
 same facts in their commit and in this index's next bounded update. The current
 distributable notice set is [`THIRD_PARTY_NOTICES.md`](../../../../THIRD_PARTY_NOTICES.md).
 Independent third-party notices still require a separate review before import.
+
+## Canonical Shared Library
+
+M5 T530 imports the project-owner-provided shared library from SoftPC commit
+`3cabea6a6a0ce931a5480f3549599ebb74f3681d`, source path `src/lib/`, to this
+repository's `src/lib/` byte-for-byte. The frozen source manifest revision is
+`shared-t55-s13-p1`; its manifest and component-dependency verifiers passed
+before import. It is project-owned MIT material and carries no independent
+third-party notice. The import excludes every other SoftPC path, including
+app/MVDM code, tests, firmware, media and binaries. T530 evidence records the
+destination consumer adaptations and verification.

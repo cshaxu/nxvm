@@ -60,7 +60,7 @@ int main(void)
     }
     if (common_machine_submit(machine, &(common_machine_request) { .kind =
             COMMON_MACHINE_REQUEST_INPUT, .run_id = 6u }) != LIB_STATUS_OK ||
-        common_machine_observe_safe_point(machine) != LIB_STATUS_NOT_CURRENT ||
+        common_machine_observe_safe_point(machine) != LIB_STATUS_INVALID_STATE ||
         observer.count != 1u || common_machine_submit(machine, &(common_machine_request) { .kind =
             COMMON_MACHINE_REQUEST_RESUME }) != LIB_STATUS_OK ||
         common_machine_observe_safe_point(machine) != LIB_STATUS_OK ||

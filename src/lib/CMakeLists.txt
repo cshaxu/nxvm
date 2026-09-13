@@ -27,34 +27,39 @@ function(library_root target)
     endif()
 endfunction()
 
-add_library(types STATIC types/runtime.c)
+add_library(types INTERFACE)
 library_root(types)
 
 add_library(console STATIC console/console.c)
+if(WIN32)
+    target_sources(console PRIVATE console/win32/mutex.c)
+else()
+    target_sources(console PRIVATE console/linux/mutex.c)
+endif()
 library_root(console)
 target_link_libraries(console PUBLIC types)
 
 set(LIBRARY_UI_BASE_SOURCES
     ui-base/component.c
     ui-base/hotkey.c
-    ui-base/mailbox.c
-    ui-base/linux/input.c)
+    ui-base/input.c
+    ui-base/mailbox.c)
 if(WIN32)
     list(APPEND LIBRARY_UI_BASE_SOURCES
         ui-base/win32/mailbox.c
-        ui-base/win32/color.c
-        ui-base/win32/actions.c
         ui-base/win32/input.c)
 else()
-    list(APPEND LIBRARY_UI_BASE_SOURCES ui-base/linux/mailbox.c)
+    list(APPEND LIBRARY_UI_BASE_SOURCES
+        ui-base/linux/mailbox.c
+        ui-base/linux/input.c)
 endif()
 add_library(ui-base STATIC ${LIBRARY_UI_BASE_SOURCES})
 library_root(ui-base)
 target_link_libraries(ui-base PUBLIC types)
 
-add_library(ui-window STATIC ui-window/window.c)
+add_library(ui-window STATIC ui-window/window.c ui-window/geometry.c ui-window/render.c ui-window/motion.c)
 if(WIN32)
-    target_sources(ui-window PRIVATE ui-window/win32/geometry.c
+    target_sources(ui-window PRIVATE ui-window/win32/geometry.c ui-window/win32/input.c
         ui-window/win32/mouse.c ui-window/win32/component.c)
 else()
     target_sources(ui-window PRIVATE ui-window/linux/component.c)
@@ -72,9 +77,11 @@ library_root(ui-console)
 target_link_libraries(ui-console PUBLIC types console ui-base)
 
 if(WIN32)
-    set(LIBRARY_HOST_SOURCES host/clock.c host/console.c host/win32/clock.c host/win32/sync.c host/win32/console.c)
+    set(LIBRARY_HOST_SOURCES host/clock.c host/console.c host/sync.c
+        host/win32/clock.c host/win32/console.c host/win32/sync.c)
 else()
-    set(LIBRARY_HOST_SOURCES host/clock.c host/console.c host/linux/clock.c host/linux/sync.c host/linux/console.c)
+    set(LIBRARY_HOST_SOURCES host/clock.c host/console.c host/sync.c
+        host/linux/clock.c host/linux/console.c host/linux/sync.c)
 endif()
 add_library(host STATIC ${LIBRARY_HOST_SOURCES})
 library_root(host)
@@ -91,10 +98,14 @@ library_root(storage)
 target_link_libraries(storage PUBLIC types)
 
 if(WIN32)
+    target_link_libraries(ui-base PRIVATE user32)
     target_link_libraries(ui-window PRIVATE user32 gdi32)
+    target_link_libraries(host PRIVATE user32)
 else()
     find_package(Threads REQUIRED)
-    target_link_libraries(host PUBLIC Threads::Threads)
+    target_link_libraries(console PRIVATE Threads::Threads)
+    target_link_libraries(host PRIVATE Threads::Threads)
+    target_link_libraries(ui-base PRIVATE Threads::Threads)
 endif()
 
 # This build-only aggregate does not create a library-root dependency. Each
@@ -105,7 +116,7 @@ target_link_libraries(lib-neutral-corpus INTERFACE
 
 if(LIBRARY_STRICT_WARNINGS AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     foreach(library_target IN ITEMS
-            types console ui-base ui-window ui-console host storage)
+            console ui-base ui-window ui-console host storage)
         target_compile_options(${library_target} PRIVATE
             -Wall -Wextra -Wpedantic -Werror)
     endforeach()
@@ -116,6 +127,9 @@ add_custom_target(lib-verify-manifest
         -P "${CMAKE_CURRENT_LIST_DIR}/verify_manifest.cmake"
     VERBATIM)
 if(BUILD_TESTING)
+    add_test(NAME library.types-layout
+        COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}
+            -P "${CMAKE_CURRENT_LIST_DIR}/verify_types_layout.cmake")
     add_test(NAME library.manifest
         COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}
             -P "${CMAKE_CURRENT_LIST_DIR}/verify_manifest.cmake")

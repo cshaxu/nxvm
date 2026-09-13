@@ -12,21 +12,23 @@ void host_console_backend_destroy(host_console_backend *backend);
  * creates a competing reader. */
 lib_status host_console_backend_prepare(host_console_backend *backend,
     lib_console *console, host_console_mode mode);
-void host_console_backend_discard_prepare(host_console_backend *backend);
 lib_status host_console_backend_activate(host_console_backend *backend,
-    lib_console *console, host_console_mode mode, lib_u32 generation);
-/* Cooked input is deliberately one line per reader.  The product asks for
- * the next native line only when its monitor is actually ready for it; this
- * keeps a completed `start` line from racing a later raw-Console takeover. */
+    lib_console *console, host_console_mode mode, lib_u32 generation,
+    lib_bool restore_cooked_request);
+/* Cooked activation alone does not request a line. Each explicit request
+ * arms one line; rollback restores only an unfinished retired request. */
 lib_status host_console_backend_request_cooked_line(
     host_console_backend *backend);
-/* Retire the current native reader before a broker can invalidate its logical
- * binding or activate another one.  Failure leaves the current native object
- * intact, so a replacement remains an all-or-nothing ownership transaction. */
-lib_status host_console_backend_deactivate(host_console_backend *backend);
+/* Retire and join the current reader before invalidating its binding or
+ * activating another. Retirement failure is terminal: do not start next or
+ * claim that old remains usable. The broker fails closed. */
+lib_status host_console_backend_deactivate(host_console_backend *backend,
+    lib_bool *out_cooked_request);
 /* The broker holds this gate across an indivisible native takeover.  Bound
  * writers take the same gate and validate their logical Console/generation
  * after it opens, so an old write can never land on a new Current Console. */
+void host_console_backend_lock_transaction(host_console_backend *backend);
+void host_console_backend_unlock_transaction(host_console_backend *backend);
 void host_console_backend_lock_output(host_console_backend *backend);
 void host_console_backend_unlock_output(host_console_backend *backend);
 lib_status host_console_backend_write_bound(host_console_backend *backend,

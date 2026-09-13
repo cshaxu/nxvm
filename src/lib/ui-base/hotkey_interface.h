@@ -4,8 +4,6 @@
 #include "lib/ui-base/event_interface.h"
 
 #define UI_HOTKEY_CAPACITY 16u
-#define UI_HOTKEY_PENDING_CAPACITY 4u
-#define UI_HOTKEY_SUPPRESSED_CAPACITY (UI_HOTKEY_PENDING_CAPACITY + 1u)
 
 enum {
     UI_HOTKEY_MODIFIER_CONTROL = UI_KEY_MODIFIER_CONTROL,
@@ -27,20 +25,25 @@ typedef struct ui_hotkey_registry {
     lib_u32 count;
 } ui_hotkey_registry;
 
-typedef struct ui_hotkey_suppressed_key {
-    ui_key key;
-    lib_u16 scan_code;
-} ui_hotkey_suppressed_key;
+typedef enum ui_hotkey_key_state {
+    UI_HOTKEY_PENDING,
+    UI_HOTKEY_DELIVERED,
+    UI_HOTKEY_CONSUMED
+} ui_hotkey_key_state;
+
+typedef struct ui_hotkey_held_key {
+    ui_input_event make;
+    ui_hotkey_key_state state;
+    lib_bool allow_replay;
+} ui_hotkey_held_key;
 
 typedef struct ui_hotkey_matcher {
     ui_hotkey_registry registry;
-    ui_input_event pending[UI_HOTKEY_PENDING_CAPACITY];
-    lib_u32 pending_count;
-    /* A matched chord suppresses every make and every later break belonging
-     * to that chord.  Each physical pending make is retained: key identity
-     * alone is not an identity because left/right modifiers share it. */
-    ui_hotkey_suppressed_key suppressed_keys[UI_HOTKEY_SUPPRESSED_CAPACITY];
-    lib_u32 suppressed_count;
+    /* In make order; every held physical key has exactly one disposition. */
+    ui_hotkey_held_key *held;
+    lib_size held_count;
+    lib_size held_capacity;
+    lib_bool failed;
 } ui_hotkey_matcher;
 
 void ui_hotkey_registry_initialize(ui_hotkey_registry *registry);
@@ -48,11 +51,19 @@ lib_status ui_hotkey_registry_register(ui_hotkey_registry *registry,
     ui_key key, lib_u8 modifiers, const char *identifier);
 void ui_hotkey_matcher_initialize(ui_hotkey_matcher *matcher,
     const ui_hotkey_registry *registry);
-/* Emits ordinary events and matched UI_EVENT_HOTKEY values through `sink`.
- * A false return means the sink rejected an event; no background retry path
- * exists, so caller owns its component-local failure policy. */
+/* Emits ordinary events and matched UI_EVENT_HOTKEY values through sink.
+ * Repeats retain their original disposition; delivered makes retain breaks.
+ * Failure is terminal until discard; no partial replay is retried.
+ * allow_replay is captured on the first make, not refreshed by repeats.
+ * False suppresses only delayed ordinary make replay, never chord matching
+ * or later releases. Initialize once; discard releases held storage. */
 int ui_hotkey_matcher_submit(ui_hotkey_matcher *matcher,
-    const ui_input_event *event, ui_input_sink sink, void *context);
+    const ui_input_event *event, ui_input_sink sink, void *context,
+    lib_bool allow_replay);
 void ui_hotkey_matcher_discard(ui_hotkey_matcher *matcher);
+/* Borrowed until the next submit/discard. Includes either physical side of a
+ * modifier; synthesis must not release a key already owned by this ledger. */
+const ui_input_event *ui_hotkey_matcher_held_key(
+    const ui_hotkey_matcher *matcher, ui_key key);
 
 #endif

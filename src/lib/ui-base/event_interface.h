@@ -141,13 +141,7 @@ typedef struct ui_input_event {
     } data;
 } ui_input_event;
 
-/* Legacy spellings preserve the existing input producer ABI while split
- * components and the application FIFO migrate to the explicit input-event
- * name. */
-typedef ui_input_event ui_event;
-
 typedef int (*ui_input_sink)(void *context, const ui_input_event *event);
-typedef ui_input_sink ui_event_sink;
 
 static inline void ui_input_event_set_source(ui_input_event *event,
     const void *source, lib_u64 source_identity)

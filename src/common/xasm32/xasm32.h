@@ -2,12 +2,17 @@
 #define COMMON_XASM32_INTERNAL_H
 
 #include "lib/types/types_interface.h"
+#include "lib/types/file.h"
 
 #define XASM32_TEXT_CAPACITY 0x100u
 
 static inline void xasm32_string_lower(char *text)
 {
-    lib_text_ascii_lower(text);
+    while (text != LIB_NULL && *text != '\0') {
+        if (*text >= 'A' && *text <= 'Z')
+            *text = (char)(*text + ('a' - 'A'));
+        ++text;
+    }
 }
 
 static inline lib_status xasm32_copy_text(char *destination,
@@ -18,9 +23,9 @@ static inline lib_status xasm32_copy_text(char *destination,
     if (destination == LIB_NULL || source == LIB_NULL || destination_capacity == 0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    source_bytes = lib_text_length(source);
+    source_bytes = strlen(source);
     if (source_bytes >= destination_capacity) return LIB_STATUS_LIMIT_EXCEEDED;
-    lib_memory_copy(destination, source, source_bytes + 1u);
+    memcpy(destination, source, source_bytes + 1u);
     return LIB_STATUS_OK;
 }
 
@@ -33,13 +38,13 @@ static inline lib_status xasm32_append_text(char *destination,
     if (destination == LIB_NULL || source == LIB_NULL || destination_capacity == 0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    destination_bytes = lib_text_length(destination);
-    source_bytes = lib_text_length(source);
+    destination_bytes = strlen(destination);
+    source_bytes = strlen(source);
     if (destination_bytes >= destination_capacity ||
         source_bytes >= destination_capacity - destination_bytes) {
         return LIB_STATUS_LIMIT_EXCEEDED;
     }
-    lib_memory_copy(destination + destination_bytes, source, source_bytes + 1u);
+    memcpy(destination + destination_bytes, source, source_bytes + 1u);
     return LIB_STATUS_OK;
 }
 

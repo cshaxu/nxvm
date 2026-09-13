@@ -1,5 +1,5 @@
-#ifndef LIB_BASE_CONSOLE_H
-#define LIB_BASE_CONSOLE_H
+#ifndef LIB_CONSOLE_BINDING_INTERFACE_H
+#define LIB_CONSOLE_BINDING_INTERFACE_H
 
 #include "lib/console/console_interface.h"
 

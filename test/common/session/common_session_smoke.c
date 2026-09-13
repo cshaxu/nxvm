@@ -115,7 +115,7 @@ int main(void)
     fact.kind = COMMON_SESSION_FACT_MACHINE;
     fact.run_id = 0x12345678u;
     if (common_session_reduce_fact(session, &fact, &frame, &plan) !=
-        LIB_STATUS_NOT_CURRENT) return 1;
+        LIB_STATUS_INVALID_STATE) return 1;
     for (index = 0u; index < 64u; ++index)
         if (common_session_publish_console_line(session, "line") != LIB_STATUS_OK) return 1;
     if (common_session_publish_console_line(session, "overflow") != LIB_STATUS_LIMIT_EXCEEDED)

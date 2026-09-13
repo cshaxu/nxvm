@@ -1,0 +1,37 @@
+#ifndef LIB_TYPES_LINUX_SYNC_H
+#define LIB_TYPES_LINUX_SYNC_H
+
+/* POSIX threading, scheduling and wait-error declarations. */
+#include <errno.h>
+#include <pthread.h>
+#include <sched.h>
+
+typedef pthread_mutex_t lib_linux_pthread_mutex_t;
+typedef pthread_cond_t lib_linux_pthread_cond_t;
+typedef pthread_t lib_linux_pthread_t;
+typedef pthread_condattr_t lib_linux_pthread_condattr_t;
+typedef pthread_once_t lib_linux_pthread_once_t;
+#define LIB_LINUX_PTHREAD_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
+#define LIB_LINUX_PTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
+#define LIB_LINUX_ETIMEDOUT ETIMEDOUT
+#define LIB_LINUX_EINTR EINTR
+#define lib_linux_errno errno
+#define lib_linux_pthread_once pthread_once
+#define lib_linux_pthread_mutex_init pthread_mutex_init
+#define lib_linux_pthread_mutex_destroy pthread_mutex_destroy
+#define lib_linux_pthread_mutex_lock pthread_mutex_lock
+#define lib_linux_pthread_mutex_unlock pthread_mutex_unlock
+#define lib_linux_pthread_cond_init pthread_cond_init
+#define lib_linux_pthread_cond_destroy pthread_cond_destroy
+#define lib_linux_pthread_cond_signal pthread_cond_signal
+#define lib_linux_pthread_cond_broadcast pthread_cond_broadcast
+#define lib_linux_pthread_cond_wait pthread_cond_wait
+#define lib_linux_pthread_cond_timedwait pthread_cond_timedwait
+#define lib_linux_pthread_condattr_init pthread_condattr_init
+#define lib_linux_pthread_condattr_destroy pthread_condattr_destroy
+#define lib_linux_pthread_condattr_setclock pthread_condattr_setclock
+#define lib_linux_pthread_create pthread_create
+#define lib_linux_pthread_join pthread_join
+#define lib_linux_sched_yield sched_yield
+
+#endif

@@ -30,9 +30,5 @@ typedef enum ui_linui_key {
     UI_LINUI_KEY_DELETE
 } ui_linui_key;
 
-/* Translate a terminal key to a neutral key identity. Native scan_code is
- * zero because a terminal reports no portable physical transition. Printable
- * text remains Unicode at the native terminal boundary. */
-lib_bool ui_linui_key_to_event(ui_linui_key key, ui_event *out_event);
 
 #endif
