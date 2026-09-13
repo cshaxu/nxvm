@@ -25,5 +25,8 @@ point. This preserves one executor and one ordered request owner per product.
 
 `test/common/machine/common_machine_smoke.c` proves the first enqueue wakes,
 the following nonempty enqueue does not, and a later enqueue after drain wakes
-again. `test/common/common_adapter_conformance.c` proves a real neutral driver
-can bind the hook alongside the unchanged synchronous paused-Debug callback.
+again. Its final wake immediately enters `observe_safe_point()` and sees the
+fully copied removable-media request, proving Common releases its lock before
+notifying an executor. `test/common/common_adapter_conformance.c` proves a
+real neutral driver can bind the hook alongside the unchanged synchronous
+paused-Debug callback.

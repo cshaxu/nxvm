@@ -1,10 +1,13 @@
 #include "common/machine/machine_interface.h"
 
 typedef struct common_machine_observer {
+    common_machine *machine;
     common_machine_request requests[4u];
     lib_size count;
     lib_size wake_count;
     lib_bool paused;
+    lib_bool consume_on_wake;
+    lib_status wake_status;
 } common_machine_observer;
 
 static lib_status common_machine_observe(void *context,
@@ -30,6 +33,9 @@ static void common_machine_observer_wake(void *context)
     common_machine_observer *observer = context;
 
     if (observer != LIB_NULL) ++observer->wake_count;
+    if (observer != LIB_NULL && observer->consume_on_wake) {
+        observer->wake_status = common_machine_observe_safe_point(observer->machine);
+    }
 }
 
 static lib_status common_machine_observer_debug(void *context,
@@ -88,13 +94,15 @@ int main(void)
         common_machine_destroy(machine);
         return 1;
     }
+    observer.machine = machine;
+    observer.consume_on_wake = LIB_TRUE;
     if (common_machine_submit(machine, &(common_machine_request) {
             .kind = COMMON_MACHINE_REQUEST_REMOVABLE_MEDIA,
             .removable_media = {
                 .kind = COMMON_MACHINE_REMOVABLE_MEDIA_FLOPPY,
                 .slot = 0u, .present = LIB_TRUE, .path = "disk.img" } }) !=
             LIB_STATUS_OK || observer.wake_count != 4u ||
-        common_machine_observe_safe_point(machine) != LIB_STATUS_IO_ERROR ||
+        observer.wake_status != LIB_STATUS_IO_ERROR ||
         observer.count != 4u ||
         observer.requests[3u].removable_media.path[0u] != 'd') {
         common_machine_destroy(machine);
