@@ -12,6 +12,9 @@ typedef enum host_console_mode {
 
 /* The broker owns one process-native Console I/O path. The caller owns every
  * logical Console and remains the product-state owner. */
+/* Failure leaves *out_broker NULL.  An activation that cannot retire its
+ * native reader is terminal at the application boundary, not a half-broker
+ * protocol for ordinary callers. */
 lib_status host_console_broker_create(host_console_broker **out_broker,
     lib_console *initial_console, host_console_mode initial_mode);
 /* Replaces Current Console only when expected_current is still current. This
@@ -23,6 +26,7 @@ lib_status host_console_broker_replace(host_console_broker *broker,
  * Current Console in cooked mode. */
 lib_status host_console_broker_request_cooked_line(host_console_broker *broker,
     lib_console *expected_current);
-void host_console_broker_destroy(host_console_broker *broker);
+/* OK consumes the object. Failure is a terminal infrastructure failure. */
+lib_status host_console_broker_destroy(host_console_broker *broker);
 
 #endif

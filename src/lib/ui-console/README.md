@@ -17,6 +17,9 @@ retires the source. The next mouse record establishes a zero-motion baseline.
 
 Successful host binding delivers a neutral Console activation event. The callback
 only signals the existing worker's wake; it neither renders nor reenters host.
+A failed activation notification enters the same terminal failure path as a
+failed frame/control notification. Checked destroy uses the shared bounded-join
+contract; failure retains the component and its callback dependencies.
 The worker draws a pending mailbox frame, or does nothing if empty. NOT_CURRENT
 does not acknowledge a frame: the next publication or activation wakes it again.
 STOP retains priority over frame consumption. No separate activation renderer,

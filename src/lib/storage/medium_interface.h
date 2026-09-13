@@ -21,7 +21,8 @@ lib_status lib_storage_medium_create_overlay(const void *bytes, lib_size byte_co
 lib_status lib_storage_medium_create_zero_overlay(lib_size byte_count,
     lib_storage_medium **out_medium);
 /* Destroy one exclusive lease and clear its owner pointer. */
-void lib_storage_medium_destroy(lib_storage_medium **medium);
+/* Consumes *medium (sets NULL), even when final file close reports failure. */
+lib_status lib_storage_medium_destroy(lib_storage_medium **medium);
 
 lib_size lib_storage_medium_byte_count(const lib_storage_medium *medium);
 lib_status lib_storage_medium_read_at(const lib_storage_medium *medium,

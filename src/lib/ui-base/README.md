@@ -4,6 +4,17 @@
 copied frame/input values, source-local hotkey matching, and private mailbox
 mechanics to `ui-window` and `ui-console`.
 
+Each mailbox selects one notification implementation exactly once before caller publication.
+Console retains the default wait primitive; Window replaces it with a native
+message notifier and releases the unused wait primitive. A second selection is
+rejected without changing the active notifier. Frame, control and
+terminal fault all use that selected entry, outside mailbox locks. Context
+remains valid through worker join; as with destruction, callers must quiesce
+concurrent API use before releasing the component. A notification failure after
+enqueue closes component admission and is not permission to replay.
+The detecting thread reports the first failure through the existing failure
+sink even if notification cannot wake the worker. Retirement is separate.
+
 Its internal component emission helper may let a leaf filter matcher output,
 but source attribution and chord matching always remain in this component.
 This permits a frozen Window to discard ordinary content input while forwarding
@@ -34,7 +45,7 @@ restoring a stale copy over newer content or signalling another retry.
 Mouse and close events never flush a keyboard prefix. Mismatch/keyboard release
 replays pending keyboard events in order; keyboard/mouse interleaving is not
 buffered. A rejected input sink closes the source and clears pending state;
-only the worker's quiesced exit reports failure and retirement. STOP/fault closes
+the first failure is reported immediately; only quiesced exit reports retirement. STOP/fault closes
 frame and control admission by taking the independent frame then control locks;
 ordinary control never waits for frame copying. FIFO processing up to
 STOP is unchanged. Window's sole final filter discards ordinary frozen input,
@@ -45,6 +56,10 @@ only when the scan is absent. A held key retains its original logical key across
 lock/layout changes. Both leaves share this ledger. Ordinary keys and modifiers follow the same lifetime: a
 delivered make always retains its break and never becomes consumed later.
 The ledger is released at retirement; destroy also handles workerless cleanup.
+Destroy performs one bounded join. An unjoinable live worker is an importing
+application terminal infrastructure failure; the library does not terminate or
+add a fallback wake channel. A selected wake failure after a request has been
+accepted reports through the failure sink; it does not roll back or replay it.
 
 Both leaves submit copied keyboard records through ui_keyboard_submit_record:
 Window supplies separate transitions/characters, Console combined records.

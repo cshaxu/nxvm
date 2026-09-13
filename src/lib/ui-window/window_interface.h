@@ -17,10 +17,13 @@ typedef struct ui_window_options {
     lib_bool initial_frozen;
 } ui_window_options;
 
+/* On failure *out_window remains NULL. A live worker that cannot be joined is
+ * a terminal application infrastructure fault, not a caller-owned half object. */
 lib_status ui_window_create(ui_window **out_window,
     const ui_window_options *options);
 lib_status ui_window_publish_frame(ui_window *window, const ui_frame *frame);
-void ui_window_destroy(ui_window *window);
+/* Same checked destruction contract as ui_component_destroy. */
+lib_status ui_window_destroy(ui_window *window);
 lib_status ui_window_set_title(ui_window *window, const char *title);
 /* Freeze atomically prevents future capture, stops the Window-local cursor
  * blink, and releases any current capture in FIFO order. */

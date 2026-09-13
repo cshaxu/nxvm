@@ -75,6 +75,18 @@ lifecycle controller, or public unified presenter API.
 
 ## UI mailbox and lifetime contract
 
+Synchronous request rejection returns `lib_status`; normal wait outcomes are
+separate values. Pure value/predicate helpers and copied-input acceptance
+callbacks retain their value/boolean protocols. Once a UI mailbox owns a copied
+request, it is accepted: a later wake failure reports once through the existing
+component failure sink and is never replayed.
+
+A successful public create returns one complete object; a failed create leaves
+its output null. UI and native Console destruction join their live worker once.
+An unjoinable worker is handled at the importing application's terminal
+infrastructure boundary rather than exposed as a half-object recovery protocol.
+Storage close retains its documented consumed-stream behavior.
+
 Every `ui-window` and `ui-console` instance owns a separate, private pair of
 mailboxes. Callers never share or address a mailbox directly.
 
@@ -89,7 +101,9 @@ mailboxes. Callers never share or address a mailbox directly.
   frame and non-STOP control requests return
   `LIB_STATUS_INVALID_STATE`. A multi-record operation is all-or-nothing:
   insufficient ordinary capacity leaves every requested record unqueued. A
-  non-OK control enqueue is also reported through the component failure sink.
+  rejected control enqueue is returned to its caller without faulting the
+  component. Notification failure after acceptance is terminal and also
+  reported through the component failure sink; it is not permission to replay.
 - A worker drains control records in FIFO order before it considers the latest
   frame. On STOP it consumes no later control or frame: it retires native
   input/output, emits exactly one `UI_EVENT_SOURCE_RETIRED`, and exits.
@@ -130,7 +144,8 @@ supported Win32 leaves; Linux UI leaves are intentional
 `LIB_STATUS_UNSUPPORTED` placeholders, not claimed presenter implementations.
 
 Unrecoverable input delivery rejection closes the source immediately; the
-worker wakes, quiesces input, reports the failure and retires once. Pending
+detecting thread reports the first failure once independently of wake success;
+the worker quiesces input and retires once. Pending
 keyboard replay is never retried after a partial sink failure. Mouse/close
 records do not flush keyboard prefixes; only keyboard order, not key/mouse
 interleaving, is retained while a prefix is pending.

@@ -7,17 +7,20 @@ void ui_win32_mouse_reset(ui_win32_mouse *mouse)
     lib_memory_set(mouse, 0, sizeof(*mouse));
 }
 
-void ui_win32_mouse_release(ui_win32_mouse *mouse)
+lib_status ui_win32_mouse_release(ui_win32_mouse *mouse)
 {
-    if (mouse == LIB_NULL || !mouse->captured) return;
+    lib_status status = LIB_STATUS_OK;
+    if (mouse == LIB_NULL || !mouse->captured) return LIB_STATUS_OK;
     /* Clear ownership before ReleaseCapture synchronously notifies the window. */
     mouse->captured = LIB_FALSE;
-    lib_win32_clip_cursor(LIB_NULL);
-    if (lib_win32_get_capture() == mouse->window) lib_win32_release_capture();
+    if (!lib_win32_clip_cursor(LIB_NULL)) status = LIB_STATUS_IO_ERROR;
+    if (lib_win32_get_capture() == mouse->window && !lib_win32_release_capture())
+        status = LIB_STATUS_IO_ERROR;
     mouse->window = LIB_NULL;
     lib_win32_set_cursor(lib_win32_load_cursor_a(LIB_NULL, LIB_WIN32_IDC_ARROW));
     mouse->motion.valid = 0;
     mouse->motion.remainder_x = mouse->motion.remainder_y = 0;
+    return status;
 }
 
 int ui_win32_mouse_refresh_bounds(ui_win32_mouse *mouse)
@@ -38,25 +41,26 @@ int ui_win32_mouse_refresh_bounds(ui_win32_mouse *mouse)
     return lib_win32_clip_cursor(&bounds) != 0;
 }
 
-int ui_win32_mouse_capture(ui_win32_mouse *mouse,
+lib_status ui_win32_mouse_capture(ui_win32_mouse *mouse,
     lib_win32_hwnd window, lib_win32_lparam position)
 {
-    if (mouse == LIB_NULL || window == LIB_NULL) return 0;
+    if (mouse == LIB_NULL || window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     lib_win32_set_focus(window);
-    if (lib_win32_get_focus() != window) return 0;
+    if (lib_win32_get_focus() != window) return LIB_STATUS_INVALID_STATE;
     lib_win32_set_capture(window);
-    if (lib_win32_get_capture() != window) return 0;
+    if (lib_win32_get_capture() != window) return LIB_STATUS_INVALID_STATE;
     mouse->window = window;
     mouse->captured = LIB_TRUE;
     if (!ui_win32_mouse_refresh_bounds(mouse)) {
-        ui_win32_mouse_release(mouse);
-        return 0;
+        /* Capture failed; release is attempted once, without hiding failure. */
+        (void)ui_win32_mouse_release(mouse);
+        return LIB_STATUS_IO_ERROR;
     }
     mouse->motion.x = (int)(short)lib_win32_loword(position);
     mouse->motion.y = (int)(short)lib_win32_hiword(position);
     mouse->motion.valid = 1;
     mouse->motion.remainder_x = mouse->motion.remainder_y = 0;
-    return 1;
+    return LIB_STATUS_OK;
 }
 
 int ui_win32_mouse_move(ui_win32_mouse *mouse,

@@ -19,12 +19,12 @@ static inline void ui_win32_rect_store(lib_win32_rect *to, const ui_window_rect 
     to->right = r->right;
     to->bottom = r->bottom;
 }
-int ui_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
+lib_status ui_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
     lib_u32 height);
-int ui_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source_width,
+lib_status ui_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source_width,
     lib_u32 source_height);
-int ui_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width,
+lib_status ui_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width,
     lib_u32 source_height);
-void ui_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam edge,
+lib_status ui_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam edge,
     lib_win32_rect *outer, lib_u32 source_width, lib_u32 source_height);
 #endif

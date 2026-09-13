@@ -31,3 +31,9 @@ review. Both source revisions are project-owned MIT material and carry no
 independent third-party notice. These imports exclude every other SoftPC path,
 including app/MVDM code, tests, firmware, media and binaries. T530/T531
 evidence records consumer adaptations and verification.
+
+M5 T531 S10 replaces the same complete 93-file corpus byte-for-byte with
+SoftPC commit `2ea35ce87bb538a6cc520be1353641a99a94d427`, revision
+`shared-t55-s20-p2`. The source remains project-owned MIT material with no
+independent third-party notice. The import again excludes every SoftPC path
+outside `src/lib/`; its unrelated working-tree asset change is not an input.

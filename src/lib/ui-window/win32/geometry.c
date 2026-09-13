@@ -15,7 +15,7 @@ static int ui_win32_window_decoration(lib_win32_hwnd window, int *width, int *he
     return *width >= 0 && *height >= 0;
 }
 
-int ui_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source_width,
+lib_status ui_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source_width,
     lib_u32 source_height)
 {
     lib_win32_rect client;
@@ -24,20 +24,21 @@ int ui_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source_width,
     int target_width;
     int target_height;
 
-    if (window == LIB_NULL || source_width == 0u || source_height == 0u ||
-        !lib_win32_get_client_rect(window, &client) || !ui_win32_window_decoration(window,
+    if (window == LIB_NULL || !lib_win32_get_client_rect(window, &client)) return LIB_STATUS_IO_ERROR;
+    if (client.right <= client.left || client.bottom <= client.top) return LIB_STATUS_OK;
+    if (source_width == 0u || source_height == 0u || !ui_win32_window_decoration(window,
             &decoration_width, &decoration_height) ||
         !ui_window_fit_aspect_size(client.right - client.left,
             client.bottom - client.top, source_width, source_height,
-            &target_width, &target_height)) return 0;
+            &target_width, &target_height)) return LIB_STATUS_IO_ERROR;
     if (target_width == client.right - client.left &&
-        target_height == client.bottom - client.top) return 1;
+        target_height == client.bottom - client.top) return LIB_STATUS_OK;
     return lib_win32_set_window_pos(window, LIB_NULL, 0, 0, target_width + decoration_width,
         target_height + decoration_height,
-        LIB_WIN32_SWP_NOMOVE | LIB_WIN32_SWP_NOZORDER | LIB_WIN32_SWP_NOACTIVATE) != LIB_WIN32_FALSE;
+        LIB_WIN32_SWP_NOMOVE | LIB_WIN32_SWP_NOZORDER | LIB_WIN32_SWP_NOACTIVATE) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-int ui_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width,
+lib_status ui_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width,
     lib_u32 source_height)
 {
     lib_win32_monitorinfo monitor_info;
@@ -53,17 +54,17 @@ int ui_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width,
 
     if (window == LIB_NULL || source_width == 0u || source_height == 0u ||
         !ui_win32_window_decoration(window, &decoration_width,
-            &decoration_height)) return 0;
+            &decoration_height)) return LIB_STATUS_IO_ERROR;
     monitor = lib_win32_monitor_from_window(window, LIB_WIN32_MONITOR_DEFAULTTONEAREST);
     lib_win32_zero_memory(&monitor_info, sizeof(monitor_info));
     monitor_info.cbSize = sizeof(monitor_info);
-    if (monitor == LIB_NULL || !lib_win32_get_monitor_info_a(monitor, &monitor_info)) return 0;
+    if (monitor == LIB_NULL || !lib_win32_get_monitor_info_a(monitor, &monitor_info)) return LIB_STATUS_IO_ERROR;
     available_width = (monitor_info.rcWork.right - monitor_info.rcWork.left) -
         decoration_width;
     available_height = (monitor_info.rcWork.bottom - monitor_info.rcWork.top) -
         decoration_height;
     if (!ui_window_fit_aspect_size(available_width, available_height,
-            source_width, source_height, &client_width, &client_height)) return 0;
+            source_width, source_height, &client_width, &client_height)) return LIB_STATUS_IO_ERROR;
     outer_width = client_width + decoration_width;
     outer_height = client_height + decoration_height;
     return lib_win32_set_window_pos(window, LIB_NULL,
@@ -71,10 +72,10 @@ int ui_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width,
             monitor_info.rcWork.left) - outer_width) / 2,
         monitor_info.rcWork.top + ((monitor_info.rcWork.bottom -
             monitor_info.rcWork.top) - outer_height) / 2,
-        outer_width, outer_height, LIB_WIN32_SWP_NOZORDER | LIB_WIN32_SWP_NOACTIVATE) != LIB_WIN32_FALSE;
+        outer_width, outer_height, LIB_WIN32_SWP_NOZORDER | LIB_WIN32_SWP_NOACTIVATE) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-int ui_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
+lib_status ui_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
     lib_u32 height)
 {
     lib_win32_rect outer;
@@ -83,11 +84,11 @@ int ui_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
     lib_win32_dword style;
     lib_win32_dword extended_style;
 
-    if (window == LIB_NULL || width == 0u || height == 0u) return 0;
+    if (window == LIB_NULL || width == 0u || height == 0u) return LIB_STATUS_IO_ERROR;
     lib_win32_set_rect(&outer, 0, 0, (int)width, (int)height);
     style = (lib_win32_dword)lib_win32_get_window_long_ptr_a(window, LIB_WIN32_GWL_STYLE);
     extended_style = (lib_win32_dword)lib_win32_get_window_long_ptr_a(window, LIB_WIN32_GWL_EXSTYLE);
-    if (!lib_win32_adjust_window_rect_ex(&outer, style, LIB_WIN32_FALSE, extended_style)) return 0;
+    if (!lib_win32_adjust_window_rect_ex(&outer, style, LIB_WIN32_FALSE, extended_style)) return LIB_STATUS_IO_ERROR;
     monitor = lib_win32_monitor_from_window(window, LIB_WIN32_MONITOR_DEFAULTTONEAREST);
     lib_win32_zero_memory(&monitor_info, sizeof(monitor_info));
     monitor_info.cbSize = sizeof(monitor_info);
@@ -105,16 +106,17 @@ int ui_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
     }
     return lib_win32_set_window_pos(window, LIB_NULL, 0, 0, outer.right - outer.left,
         outer.bottom - outer.top, LIB_WIN32_SWP_NOMOVE | LIB_WIN32_SWP_NOZORDER |
-        LIB_WIN32_SWP_NOACTIVATE) != LIB_WIN32_FALSE;
+        LIB_WIN32_SWP_NOACTIVATE) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-void ui_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam edge,
+lib_status ui_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam edge,
     lib_win32_rect *outer, lib_u32 source_width, lib_u32 source_height)
 {
     int frame_width, frame_height;
     ui_window_edge direction;
     ui_window_rect value;
-    if (!outer || !ui_win32_window_decoration(window, &frame_width, &frame_height)) return;
+    if (source_width == 0u || source_height == 0u) return LIB_STATUS_OK;
+    if (!outer || !ui_win32_window_decoration(window, &frame_width, &frame_height)) return LIB_STATUS_IO_ERROR;
     switch (edge) {
     case LIB_WIN32_WMSZ_LEFT: direction = UI_WINDOW_EDGE_LEFT; break;
     case LIB_WIN32_WMSZ_RIGHT: direction = UI_WINDOW_EDGE_RIGHT; break;
@@ -124,10 +126,11 @@ void ui_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam edge,
     case LIB_WIN32_WMSZ_TOPRIGHT: direction = UI_WINDOW_EDGE_TOPRIGHT; break;
     case LIB_WIN32_WMSZ_BOTTOMLEFT: direction = UI_WINDOW_EDGE_BOTTOMLEFT; break;
     case LIB_WIN32_WMSZ_BOTTOMRIGHT: direction = UI_WINDOW_EDGE_BOTTOMRIGHT; break;
-    default: return;
+    default: return LIB_STATUS_IO_ERROR;
     }
     value = ui_win32_rect_value(outer);
     ui_window_constrain_sizing(&value, direction, frame_width, frame_height,
         source_width, source_height);
     ui_win32_rect_store(outer, &value);
+    return LIB_STATUS_OK;
 }

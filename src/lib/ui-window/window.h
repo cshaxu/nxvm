@@ -12,6 +12,6 @@ struct ui_window {
 };
 
 lib_status ui_window_worker_start(ui_window *window);
-void ui_window_worker_join(ui_window *window);
+lib_status ui_window_worker_join(ui_window *window, lib_u32 timeout_ms);
 
 #endif

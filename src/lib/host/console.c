@@ -76,18 +76,20 @@ static lib_status host_console_install_output_binding(lib_console *console,
     if (status == LIB_STATUS_OK)
         status = lib_console_set_text_frame_sink(console,
             host_console_write_text_frame_bound, binding);
-    if (status != LIB_STATUS_OK)
-        (void)lib_console_set_output_sink(console, LIB_NULL, LIB_NULL);
     return status;
 }
 
-static void host_console_remove_output_binding(lib_console *console,
+static lib_status host_console_remove_output_binding(lib_console *console,
     host_console_output_binding *binding)
 {
-    if (console == LIB_NULL) return;
-    (void)lib_console_set_output_sink(console, LIB_NULL, LIB_NULL);
-    (void)lib_console_set_text_frame_sink(console, LIB_NULL, LIB_NULL);
+    lib_status status;
+    if (console == LIB_NULL) return LIB_STATUS_OK;
+    status = lib_console_set_output_sink(console, LIB_NULL, LIB_NULL);
+    if (status != LIB_STATUS_OK) return status;
+    status = lib_console_set_text_frame_sink(console, LIB_NULL, LIB_NULL);
+    if (status != LIB_STATUS_OK) return status;
     lib_release(binding);
+    return LIB_STATUS_OK;
 }
 
 static lib_status host_console_activate_bound(host_console_broker *broker,
@@ -101,19 +103,23 @@ static lib_status host_console_activate_bound(host_console_broker *broker,
     /* Old reader is quiescent. Reset local input before any next reader can
      * deliver; a logical Console without an input sink needs no reset work. */
     reset.binding_generation = generation;
-    (void)lib_console_deliver_event(console, &reset);
+    status = lib_console_deliver_event(console, &reset);
+    if (status != LIB_STATUS_OK && status != LIB_STATUS_INVALID_STATE) return status;
     status = host_console_backend_activate(broker->backend, console, mode,
         generation, restore_cooked_request);
     if (status != LIB_STATUS_OK) lib_console_invalidate_binding(console);
     return status;
 }
 
-static void host_console_notify_activation(host_console_broker *broker)
+static lib_status host_console_notify_activation(host_console_broker *broker)
 {
     lib_console_event event = { 0 };
+    lib_status status;
     event.kind = LIB_CONSOLE_EVENT_ACTIVATED;
     event.binding_generation = broker->generation;
-    (void)lib_console_deliver_event(broker->current, &event);
+    status = lib_console_deliver_event(broker->current, &event);
+    /* A logical Console may deliberately have no input sink. */
+    return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_OK : status;
 }
 
 lib_status host_console_broker_create(host_console_broker **out_broker,
@@ -121,10 +127,11 @@ lib_status host_console_broker_create(host_console_broker **out_broker,
 {
     host_console_broker *broker;
     lib_status status;
-    if (out_broker == LIB_NULL || initial_console == LIB_NULL ||
+    if (out_broker == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_broker = LIB_NULL;
+    if (initial_console == LIB_NULL ||
         (initial_mode != HOST_CONSOLE_RAW_EVENTS &&
          initial_mode != HOST_CONSOLE_COOKED_LINES)) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_broker = LIB_NULL;
     if (lib_atomic_flag_test_and_set_explicit(&host_console_process_claimed,
             LIB_MEMORY_ORDER_ACQ_REL)) return LIB_STATUS_INVALID_STATE;
     broker = lib_allocate_zero(1u, sizeof(*broker));
@@ -155,19 +162,26 @@ lib_status host_console_broker_create(host_console_broker **out_broker,
         /* Activation can change native mode before failing. Broker owns the
          * same quiesce-before-dispose sequence here as in normal destruction. */
         if (broker->backend != LIB_NULL &&
-            host_console_backend_deactivate(broker->backend, LIB_NULL) != LIB_STATUS_OK)
-            return status; /* Retain a backend whose reader is not proven stopped. */
-        host_console_remove_output_binding(broker->current, broker->current_output);
-        if (broker->current != LIB_NULL) lib_console_release(broker->current);
-        host_console_backend_destroy(broker->backend);
+            host_console_backend_deactivate(broker->backend, LIB_NULL) != LIB_STATUS_OK) {
+            /* No public broker exists yet.  The application treats this
+             * impossible-to-quiesce native reader as terminal; do not invent
+             * a half-broker ownership protocol for ordinary callers. */
+            return status;
+        }
+        if (host_console_remove_output_binding(broker->current, broker->current_output) != LIB_STATUS_OK) {
+            return status;
+        }
+        broker->current_output = LIB_NULL;
+        lib_console_release(broker->current);
+        broker->current = LIB_NULL;
+        (void)host_console_backend_destroy(broker->backend);
         lib_release(broker);
         lib_atomic_flag_clear_explicit(&host_console_process_claimed,
             LIB_MEMORY_ORDER_RELEASE);
         return status;
     }
     *out_broker = broker;
-    host_console_notify_activation(broker);
-    return LIB_STATUS_OK;
+    return host_console_notify_activation(broker);
 }
 
 lib_status host_console_broker_replace(host_console_broker *broker,
@@ -213,8 +227,9 @@ lib_status host_console_broker_replace(host_console_broker *broker,
     }
     status = host_console_install_output_binding(next, next_output);
     if (status != LIB_STATUS_OK) {
-        lib_release(next_output);
-        lib_console_release(next);
+        if (host_console_remove_output_binding(next, next_output) == LIB_STATUS_OK)
+            lib_console_release(next); /* Caller still owns next. */
+        else broker->broken = LIB_TRUE;
         host_console_unlock(broker);
         return status;
     }
@@ -233,9 +248,12 @@ lib_status host_console_broker_replace(host_console_broker *broker,
         old_output = broker->current_output;
         broker->current_output = LIB_NULL;
         host_console_backend_unlock_output(broker->backend);
-        host_console_remove_output_binding(next, next_output);
-        lib_console_release(next);
-        host_console_remove_output_binding(old, old_output);
+        if (host_console_remove_output_binding(next, next_output) == LIB_STATUS_OK)
+            lib_console_release(next); /* Caller still owns next. */
+        /* Retain any binding whose sink could not be detached. This failure
+         * is already terminal; no live sink may point at released storage. */
+        if (host_console_remove_output_binding(old, old_output) != LIB_STATUS_OK)
+            broker->current_output = old_output;
         host_console_unlock(broker);
         return status;
     }
@@ -251,19 +269,21 @@ lib_status host_console_broker_replace(host_console_broker *broker,
         restore_status = host_console_activate_bound(broker, old, broker->current_mode,
             broker->generation, old_cooked_request);
         host_console_backend_unlock_output(broker->backend);
-        host_console_remove_output_binding(next, next_output);
-        lib_console_release(next);
+        if (host_console_remove_output_binding(next, next_output) == LIB_STATUS_OK)
+            lib_console_release(next); /* Caller still owns next. */
+        else restore_status = LIB_STATUS_IO_ERROR;
         if (restore_status != LIB_STATUS_OK) {
             broker->broken = LIB_TRUE;
             old_output = broker->current_output;
             broker->current_output = LIB_NULL;
-            host_console_remove_output_binding(old, old_output);
+            if (host_console_remove_output_binding(old, old_output) != LIB_STATUS_OK)
+                broker->current_output = old_output;
             host_console_unlock(broker);
             return restore_status;
         }
-        host_console_notify_activation(broker);
+        restore_status = host_console_notify_activation(broker);
         host_console_unlock(broker);
-        return LIB_STATUS_IO_ERROR;
+        return restore_status == LIB_STATUS_OK ? status : restore_status;
     }
     broker->current = next;
     broker->current_mode = next_mode;
@@ -273,11 +293,12 @@ lib_status host_console_broker_replace(host_console_broker *broker,
     host_console_backend_unlock_output(broker->backend);
     /* The old binding is still safe until this setter has waited out any
        already-entered base write. Its native validation now rejects it. */
-    host_console_remove_output_binding(old, old_output);
-    lib_console_release(old);
-    host_console_notify_activation(broker);
+    status = host_console_remove_output_binding(old, old_output);
+    if (status == LIB_STATUS_OK) lib_console_release(old);
+    if (status == LIB_STATUS_OK) status = host_console_notify_activation(broker);
+    if (status != LIB_STATUS_OK) broker->broken = LIB_TRUE;
     host_console_unlock(broker);
-    return LIB_STATUS_OK;
+    return status;
 }
 
 lib_status host_console_broker_request_cooked_line(host_console_broker *broker,
@@ -298,12 +319,12 @@ lib_status host_console_broker_request_cooked_line(host_console_broker *broker,
     return status;
 }
 
-void host_console_broker_destroy(host_console_broker *broker)
+lib_status host_console_broker_destroy(host_console_broker *broker)
 {
     lib_console *current;
     host_console_output_binding *output;
     lib_status status;
-    if (broker == LIB_NULL) return;
+    if (broker == LIB_NULL) return LIB_STATUS_OK;
     host_console_lock(broker);
     current = broker->current;
     output = broker->current_output;
@@ -315,16 +336,19 @@ void host_console_broker_destroy(host_console_broker *broker)
            state rather than releasing either object underneath that worker. */
         host_console_backend_unlock_output(broker->backend);
         host_console_unlock(broker);
-        return;
+        return status;
     }
     broker->current = LIB_NULL;
     broker->current_output = LIB_NULL;
     if (current != LIB_NULL) lib_console_invalidate_binding(current);
     host_console_backend_unlock_output(broker->backend);
     host_console_unlock(broker);
-    host_console_remove_output_binding(current, output);
-    if (current != LIB_NULL) lib_console_release(current);
-    host_console_backend_destroy(broker->backend);
+    status = host_console_remove_output_binding(current, output);
+    if (status != LIB_STATUS_OK) return status;
+    lib_console_release(current);
+    status = host_console_backend_destroy(broker->backend);
+    if (status != LIB_STATUS_OK) return status;
     lib_release(broker);
     lib_atomic_flag_clear_explicit(&host_console_process_claimed, LIB_MEMORY_ORDER_RELEASE);
+    return LIB_STATUS_OK;
 }

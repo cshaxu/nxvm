@@ -4,8 +4,10 @@
 struct console_mutex { lib_linux_pthread_mutex_t gate; };
 lib_status console_mutex_create(console_mutex **out_mutex)
 {
-    console_mutex *mutex = lib_allocate(sizeof(*mutex));
+    console_mutex *mutex;
+    if (out_mutex == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_mutex = LIB_NULL;
+    mutex = lib_allocate(sizeof(*mutex));
     if (mutex == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     if (lib_linux_pthread_mutex_init(&mutex->gate, LIB_NULL) != 0) {
         lib_release(mutex);
@@ -21,6 +23,6 @@ void console_mutex_destroy(console_mutex *mutex)
     lib_release(mutex);
 }
 void console_mutex_enter(console_mutex *mutex)
-{ (void)lib_linux_pthread_mutex_lock(&mutex->gate); }
+{ if (mutex != LIB_NULL) (void)lib_linux_pthread_mutex_lock(&mutex->gate); }
 void console_mutex_leave(console_mutex *mutex)
-{ (void)lib_linux_pthread_mutex_unlock(&mutex->gate); }
+{ if (mutex != LIB_NULL) (void)lib_linux_pthread_mutex_unlock(&mutex->gate); }

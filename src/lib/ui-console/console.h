@@ -13,6 +13,6 @@ struct ui_console {
 lib_status ui_console_publish_text_frame(ui_console *console, const ui_frame *frame);
 
 lib_status ui_console_worker_start(ui_console *console);
-void ui_console_worker_join(ui_console *console);
+lib_status ui_console_worker_join(ui_console *console, lib_u32 timeout_ms);
 
 #endif

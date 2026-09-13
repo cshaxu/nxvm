@@ -61,6 +61,19 @@ static inline void lib_atomic_i32_store_explicit(lib_atomic_i32 *object,
     (void)_InterlockedExchange(object, (long)value);
 }
 
+static inline lib_bool lib_atomic_i32_compare_exchange_strong_explicit(
+    lib_atomic_i32 *object, lib_i32 *expected, lib_i32 desired,
+    lib_memory_order success_order, lib_memory_order failure_order)
+{
+    long observed;
+    (void)success_order;
+    (void)failure_order;
+    observed = _InterlockedCompareExchange(object, (long)desired, (long)*expected);
+    if ((lib_i32)observed == *expected) return LIB_TRUE;
+    *expected = (lib_i32)observed;
+    return LIB_FALSE;
+}
+
 static inline void lib_atomic_u32_initialize(lib_atomic_u32 *object, lib_u32 value)
 {
     *object = (long)value;
@@ -130,6 +143,7 @@ typedef memory_order lib_memory_order;
 #define lib_atomic_i32_initialize atomic_init
 #define lib_atomic_i32_load_explicit atomic_load_explicit
 #define lib_atomic_i32_store_explicit atomic_store_explicit
+#define lib_atomic_i32_compare_exchange_strong_explicit atomic_compare_exchange_strong_explicit
 #define lib_atomic_u32_initialize atomic_init
 #define lib_atomic_u32_fetch_add_explicit atomic_fetch_add_explicit
 #define lib_atomic_u32_fetch_sub_explicit atomic_fetch_sub_explicit

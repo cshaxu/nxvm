@@ -104,9 +104,9 @@ lib_status host_sync_task_create(host_sync_task_entry entry, void *context,
     host_sync_task *task;
     lib_status status;
 
-    if (entry == LIB_NULL || out_task == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
+    if (out_task == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_task = LIB_NULL;
+    if (entry == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     task = (host_sync_task *)lib_allocate_zero(1u, sizeof(*task));
     if (task == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     task->entry = entry;

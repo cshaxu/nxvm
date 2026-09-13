@@ -3,16 +3,16 @@
 static void ui_console_dispose(ui_console *console)
 {
     if (console == LIB_NULL) return;
+    ui_component_mailboxes_destroy(&console->base.mailboxes);
     if (console->logical_console != LIB_NULL) {
         /* The worker (or failed start) already detached and drained its sink. */
         lib_console_release(console->logical_console);
     }
-    ui_component_mailboxes_destroy(&console->base.mailboxes);
     lib_release(console);
 }
 
-static void ui_console_component_stop(ui_component *base)
-{ ui_console_worker_join((ui_console *)base); }
+static lib_status ui_console_component_stop(ui_component *base, lib_u32 timeout_ms)
+{ return ui_console_worker_join((ui_console *)base, timeout_ms); }
 
 static void ui_console_component_dispose(ui_component *base)
 { ui_console_dispose((ui_console *)base); }
@@ -23,10 +23,11 @@ lib_status ui_console_create(ui_console **out_console,
     ui_console *console;
     lib_status status;
 
-    if (out_console == LIB_NULL || options == LIB_NULL ||
+    if (out_console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_console = LIB_NULL;
+    if (options == LIB_NULL ||
         options->input_sink == LIB_NULL || options->failure_sink == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_console = LIB_NULL;
     console = lib_allocate_zero(1u, sizeof(*console));
     if (console == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     status = ui_component_initialize(&console->base, options,
@@ -35,7 +36,8 @@ lib_status ui_console_create(ui_console **out_console,
         status = lib_console_create(&console->logical_console);
     if (status == LIB_STATUS_OK) status = ui_console_worker_start(console);
     if (status != LIB_STATUS_OK) {
-        ui_console_dispose(console);
+        if (console->worker_state == LIB_NULL)
+            ui_console_dispose(console);
         return status;
     }
     *out_console = console;
@@ -48,9 +50,9 @@ lib_status ui_console_publish_frame(ui_console *console, const ui_frame *frame)
         ui_component_publish_frame(&console->base, frame);
 }
 
-void ui_console_destroy(ui_console *console)
+lib_status ui_console_destroy(ui_console *console)
 {
-    if (console != LIB_NULL) ui_component_destroy(&console->base);
+    return console == LIB_NULL ? LIB_STATUS_OK : ui_component_destroy(&console->base);
 }
 
 lib_console *ui_console_get_console(const ui_console *console)
@@ -63,8 +65,8 @@ lib_status ui_console_publish_text_frame(ui_console *console,
 {
     lib_console_text_frame text_frame = { 0 };
 
-    if (console == LIB_NULL || frame == LIB_NULL || frame->graphics != 0u)
-        return LIB_STATUS_OK;
+    if (console == LIB_NULL || frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (frame->graphics != 0u) return LIB_STATUS_OK;
     text_frame.columns = frame->text_columns;
     text_frame.rows = frame->text_rows;
     lib_memory_copy(text_frame.text, frame->text, sizeof(text_frame.text));

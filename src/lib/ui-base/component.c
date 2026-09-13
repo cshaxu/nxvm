@@ -27,8 +27,11 @@ lib_status ui_component_allocate_source_identity(lib_atomic_u64 *next,
 
 static void ui_component_report_failure(ui_component *component, lib_status status)
 {
+    lib_i32 expected = LIB_STATUS_OK;
     if (component != LIB_NULL && component->failure_sink != LIB_NULL &&
-        status != LIB_STATUS_OK)
+        status != LIB_STATUS_OK &&
+        lib_atomic_i32_compare_exchange_strong_explicit(&component->failure,
+            &expected, status, LIB_MEMORY_ORDER_ACQ_REL, LIB_MEMORY_ORDER_ACQUIRE))
         component->failure_sink(component->failure_context,
             component->source_identity, status);
 }
@@ -90,8 +93,14 @@ lib_status ui_component_enqueue_controls(ui_component *component,
     if (component == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = ui_component_mailboxes_enqueue_controls(&component->mailboxes,
         controls, control_count);
-    if (status != LIB_STATUS_OK) ui_component_report_failure(component, status);
-    return status;
+    if (status != LIB_STATUS_OK) return status;
+
+    /* Enqueue is the acceptance boundary.  Once the FIFO owns a request, a
+     * failed wake is an asynchronous component fault, not a second rejection
+     * which every application caller must interpret specially. */
+    status = ui_component_mailboxes_notify(&component->mailboxes);
+    if (status != LIB_STATUS_OK) ui_component_fail(component, status);
+    return LIB_STATUS_OK;
 }
 
 void ui_component_retire(ui_component *component, lib_status status)
@@ -103,8 +112,6 @@ void ui_component_retire(ui_component *component, lib_status status)
         LIB_MEMORY_ORDER_RELEASE);
     ui_component_mailboxes_close(&component->mailboxes);
     ui_hotkey_matcher_discard(&component->hotkey_matcher);
-    if (lib_atomic_i32_load_explicit(&component->failure, LIB_MEMORY_ORDER_ACQUIRE) != LIB_STATUS_OK)
-        status = lib_atomic_i32_load_explicit(&component->failure, LIB_MEMORY_ORDER_ACQUIRE);
     ui_component_report_failure(component, status);
     if (!component->input_sink(component->input_context, &event) && status == LIB_STATUS_OK)
         ui_component_report_failure(component, LIB_STATUS_IO_ERROR);
@@ -112,8 +119,13 @@ void ui_component_retire(ui_component *component, lib_status status)
 
 lib_status ui_component_publish_frame(ui_component *component, const ui_frame *frame)
 {
-    return component == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
-        ui_component_mailboxes_publish_frame(&component->mailboxes, frame);
+    lib_status status;
+    if (component == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = ui_component_mailboxes_publish_frame(&component->mailboxes, frame);
+    if (status != LIB_STATUS_OK) return status;
+    status = ui_component_mailboxes_notify(&component->mailboxes);
+    if (status != LIB_STATUS_OK) ui_component_fail(component, status);
+    return LIB_STATUS_OK;
 }
 
 lib_status ui_component_request_stop(ui_component *component)
@@ -123,22 +135,29 @@ lib_status ui_component_request_stop(ui_component *component)
         ui_component_enqueue_controls(component, &control, 1u);
 }
 
-void ui_component_destroy(ui_component *component)
+lib_status ui_component_destroy(ui_component *component)
 {
-    if (component == LIB_NULL) return;
-    if (ui_component_request_stop(component) != LIB_STATUS_OK) {
+    lib_status status;
+    if (component == LIB_NULL) return LIB_STATUS_OK;
+    status = ui_component_request_stop(component);
+    /* A terminal fault has already closed admission.  It still has one
+     * worker to join; do not make destruction depend on a second STOP. */
+    if (status != LIB_STATUS_OK && status != LIB_STATUS_INVALID_STATE) {
         ui_component_report_failure(component, LIB_STATUS_INVALID_STATE);
-        return;
+        return status;
     }
-    component->join_worker(component);
+    status = component->join_worker(component, UI_COMPONENT_DESTROY_TIMEOUT_MS);
+    if (status != LIB_STATUS_OK) return status;
     ui_hotkey_matcher_discard(&component->hotkey_matcher);
     component->dispose(component);
+    return LIB_STATUS_OK;
 }
 
 void ui_component_fail(ui_component *component, lib_status status)
 {
-    lib_atomic_i32_store_explicit(&component->failure, status, LIB_MEMORY_ORDER_RELEASE);
     ui_component_mailboxes_close(&component->mailboxes);
     lib_atomic_i32_store_explicit(&component->stopping, 1, LIB_MEMORY_ORDER_RELEASE);
-    ui_mailbox_wake_signal(ui_component_mailboxes_wake(&component->mailboxes));
+    /* Failure delivery must not depend on waking the worker. */
+    ui_component_report_failure(component, status);
+    (void)ui_component_mailboxes_notify(&component->mailboxes);
 }

@@ -91,7 +91,12 @@ recorded evidence, never by following successive isolated failures.
    and reducer-thread contracts; then remove all current XASM32 compiler
    diagnostics without changing its original table-driven parsing,
    assembly/disassembly or user-visible Debug behavior.
-10. **S10: package and whole-task acceptance.** Independent build/manifest,
+10. **S10: canonical Lib refresh.** Freeze SoftPC's current project-owned
+    `src/lib/` revision, replace NXVM's complete Lib corpus byte-for-byte and
+    make only the necessary Common/VM consumer adaptations.  Prove exactness,
+    manifest/component boundaries and both NXVM architectures; do not claim
+    whole-task two-product execution acceptance.
+11. **S11: package and whole-task acceptance.** Independent build/manifest,
     byte-identical consumer corpus, full matrix and failure-path review, full
     unit and integration, optimized stripped x64/x86 release artifacts.
 

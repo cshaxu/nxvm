@@ -1,17 +1,5 @@
 #include "lib/ui-window/geometry.h"
 
-int ui_window_display_rect(int client_width, int client_height,
-    lib_u32 source_width, lib_u32 source_height, ui_window_rect *display)
-{
-    if (display == LIB_NULL || source_width == 0u || source_height == 0u ||
-        client_width <= 0 || client_height <= 0) return 0;
-    display->left = 0;
-    display->top = 0;
-    display->right = client_width;
-    display->bottom = client_height;
-    return 1;
-}
-
 void ui_window_map_dirty_rect(const ui_window_rect *source, const ui_window_rect *display,
     lib_u32 source_width, lib_u32 source_height, ui_window_rect *target)
 {

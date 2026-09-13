@@ -41,21 +41,27 @@ lib_status lib_storage_medium_open(const char *path, lib_storage_medium_mode mod
     lib_i64 length;
     lib_status status;
 
-    if (path == LIB_NULL || out_medium == LIB_NULL || mode < LIB_STORAGE_MEDIUM_DIRECT ||
+    if (out_medium == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_medium = LIB_NULL;
+    if (path == LIB_NULL || mode < LIB_STORAGE_MEDIUM_DIRECT ||
         mode > LIB_STORAGE_MEDIUM_OVERLAY)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_medium = LIB_NULL;
-    if ((mode == LIB_STORAGE_MEDIUM_DIRECT ?
-            lib_storage_file_open_readwrite(path, &file) :
-            lib_storage_file_open_readonly(path, &file)) != LIB_STATUS_OK ||
-        lib_storage_file_byte_count(file, &length) != LIB_STATUS_OK || length < 0 ||
-        (lib_u64)length > (lib_u64)(lib_size)-1) {
-        (void)lib_storage_file_close(&file);
-        return LIB_STATUS_IO_ERROR;
+    status = mode == LIB_STORAGE_MEDIUM_DIRECT ?
+        lib_storage_file_open_readwrite(path, &file) :
+        lib_storage_file_open_readonly(path, &file);
+    if (status == LIB_STATUS_OK)
+        status = lib_storage_file_byte_count(file, &length);
+    if (status == LIB_STATUS_OK && (length < 0 || (lib_u64)length > (lib_u64)(lib_size)-1))
+        status = LIB_STATUS_LIMIT_EXCEEDED;
+    if (status == LIB_STATUS_OK) {
+        status = lib_storage_medium_create(file, (lib_size)length, mode, out_medium);
+        if (status == LIB_STATUS_OK) file = LIB_NULL;
     }
-    status = lib_storage_medium_create(file, (lib_size)length, mode, out_medium);
-    if (status != LIB_STATUS_OK) (void)lib_storage_file_close(&file);
-    return status;
+    if (file == LIB_NULL) return status;
+    {
+        lib_status close_status = lib_storage_file_close(&file);
+        return status == LIB_STATUS_OK ? close_status : status;
+    }
 }
 
 lib_status lib_storage_medium_create_overlay(const void *bytes, lib_size byte_count,
@@ -63,6 +69,8 @@ lib_status lib_storage_medium_create_overlay(const void *bytes, lib_size byte_co
 {
     lib_status status;
 
+    if (out_medium == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_medium = LIB_NULL;
     if (byte_count != 0u && bytes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = lib_storage_medium_create(LIB_NULL, byte_count,
         LIB_STORAGE_MEDIUM_OVERLAY, out_medium);
@@ -88,17 +96,19 @@ static void lib_storage_medium_pages_destroy(lib_storage_medium_page *page)
     }
 }
 
-void lib_storage_medium_destroy(lib_storage_medium **medium)
+lib_status lib_storage_medium_destroy(lib_storage_medium **medium)
 {
     lib_storage_medium *value;
+    lib_status status;
 
-    if (medium == LIB_NULL) return;
+    if (medium == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     value = *medium;
     *medium = LIB_NULL;
-    if (value == LIB_NULL) return;
-    if (value->file != LIB_NULL) (void)lib_storage_file_close(&value->file);
+    if (value == LIB_NULL) return LIB_STATUS_OK;
+    status = lib_storage_file_close(&value->file);
     lib_storage_medium_pages_destroy(value->pages);
     lib_release(value);
+    return status;
 }
 
 lib_size lib_storage_medium_byte_count(const lib_storage_medium *medium)
@@ -131,9 +141,12 @@ static lib_status lib_storage_medium_read_base(const lib_storage_medium *medium,
         lib_memory_set(bytes, 0, byte_count);
         return LIB_STATUS_OK;
     }
-    return lib_storage_file_seek_absolute(medium->file, (lib_i64)offset) != LIB_STATUS_OK ||
-        lib_storage_file_read_exact(medium->file, bytes, byte_count) != LIB_STATUS_OK ?
-        LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+    {
+        lib_status status = lib_storage_file_seek_absolute(medium->file, (lib_i64)offset);
+        if (status == LIB_STATUS_OK)
+            status = lib_storage_file_read_exact(medium->file, bytes, byte_count);
+        return status;
+    }
 }
 
 static lib_status lib_storage_medium_page_for_write(lib_storage_medium *medium,
@@ -153,9 +166,12 @@ static lib_status lib_storage_medium_page_for_write(lib_storage_medium *medium,
     offset = index * LIB_STORAGE_MEDIUM_PAGE_BYTES;
     count = medium->byte_count - offset;
     if (count > LIB_STORAGE_MEDIUM_PAGE_BYTES) count = LIB_STORAGE_MEDIUM_PAGE_BYTES;
-    if (lib_storage_medium_read_base(medium, offset, page->bytes, count) != LIB_STATUS_OK) {
-        lib_release(page);
-        return LIB_STATUS_IO_ERROR;
+    {
+        lib_status status = lib_storage_medium_read_base(medium, offset, page->bytes, count);
+        if (status != LIB_STATUS_OK) {
+            lib_release(page);
+            return status;
+        }
     }
     if (count < LIB_STORAGE_MEDIUM_PAGE_BYTES)
         lib_memory_set(page->bytes + count, 0, LIB_STORAGE_MEDIUM_PAGE_BYTES - count);
@@ -184,8 +200,10 @@ lib_status lib_storage_medium_read_at(const lib_storage_medium *medium,
         if (count > byte_count) count = byte_count;
         page = lib_storage_medium_find_page(medium, page_index);
         if (page != LIB_NULL) lib_memory_copy(cursor, page->bytes + page_offset, count);
-        else if (lib_storage_medium_read_base(medium, offset, cursor, count) != LIB_STATUS_OK)
-            return LIB_STATUS_IO_ERROR;
+        else {
+            lib_status status = lib_storage_medium_read_base(medium, offset, cursor, count);
+            if (status != LIB_STATUS_OK) return status;
+        }
         cursor += count;
         offset += count;
         byte_count -= count;
@@ -202,9 +220,11 @@ lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
         return LIB_STATUS_INVALID_ARGUMENT;
     if (medium->mode == LIB_STORAGE_MEDIUM_READONLY) return LIB_STATUS_INVALID_STATE;
     if (medium->mode == LIB_STORAGE_MEDIUM_DIRECT) {
-        return lib_storage_file_seek_absolute(medium->file, (lib_i64)offset) != LIB_STATUS_OK ||
-            lib_storage_file_write_exact(medium->file, bytes, byte_count) != LIB_STATUS_OK ||
-            lib_storage_file_flush(medium->file) != LIB_STATUS_OK ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
+        lib_status status = lib_storage_file_seek_absolute(medium->file, (lib_i64)offset);
+        if (status == LIB_STATUS_OK)
+            status = lib_storage_file_write_exact(medium->file, bytes, byte_count);
+        if (status == LIB_STATUS_OK) status = lib_storage_file_flush(medium->file);
+        return status;
     }
     while (byte_count != 0u) {
         lib_size page_index = offset / LIB_STORAGE_MEDIUM_PAGE_BYTES;
@@ -237,8 +257,10 @@ lib_status lib_storage_medium_fill_at(lib_storage_medium *medium,
     lib_memory_set(buffer, value, sizeof(buffer));
     while (byte_count != 0u) {
         count = byte_count > sizeof(buffer) ? sizeof(buffer) : byte_count;
-        if (lib_storage_medium_write_at(medium, offset, buffer, count) != LIB_STATUS_OK)
-            return LIB_STATUS_IO_ERROR;
+        {
+            lib_status status = lib_storage_medium_write_at(medium, offset, buffer, count);
+            if (status != LIB_STATUS_OK) return status;
+        }
         offset += count;
         byte_count -= count;
     }

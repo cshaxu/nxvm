@@ -1,7 +1,7 @@
 #include "lib/ui-window/window.h"
 
-static void ui_window_component_stop(ui_component *base)
-{ ui_window_worker_join((ui_window *)base); }
+static lib_status ui_window_component_stop(ui_component *base, lib_u32 timeout_ms)
+{ return ui_window_worker_join((ui_window *)base, timeout_ms); }
 
 static void ui_window_component_dispose(ui_component *base)
 {
@@ -23,13 +23,14 @@ lib_status ui_window_create(ui_window **out_window,
     ui_window *window;
     lib_status status;
 
-    if (out_window == LIB_NULL || options == LIB_NULL ||
+    if (out_window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_window = LIB_NULL;
+    if (options == LIB_NULL ||
         options->initial_title == LIB_NULL ||
         lib_memory_find(options->initial_title, '\0', UI_WINDOW_TITLE_CAPACITY) == LIB_NULL ||
         options->component.input_sink == LIB_NULL ||
         options->component.failure_sink == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_window = LIB_NULL;
     window = lib_allocate_zero(1u, sizeof(*window));
     if (window == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     lib_memory_copy(window->initial_title, options->initial_title,
@@ -39,8 +40,11 @@ lib_status ui_window_create(ui_window **out_window,
         ui_window_component_stop, ui_window_component_dispose);
     if (status == LIB_STATUS_OK) status = ui_window_worker_start(window);
     if (status != LIB_STATUS_OK) {
-        ui_component_mailboxes_destroy(&window->base.mailboxes);
-        lib_release(window);
+        /* The worker start path has either joined its failed worker or has
+         * entered the process-terminal failure path at the application edge.
+         * A normal create failure never exposes a half-created Window. */
+        if (window->worker_state == LIB_NULL)
+            ui_window_component_dispose(&window->base);
         return status;
     }
     *out_window = window;
@@ -53,9 +57,9 @@ lib_status ui_window_publish_frame(ui_window *window, const ui_frame *frame)
         ui_component_publish_frame(&window->base, frame);
 }
 
-void ui_window_destroy(ui_window *window)
+lib_status ui_window_destroy(ui_window *window)
 {
-    if (window != LIB_NULL) ui_component_destroy(&window->base);
+    return window == LIB_NULL ? LIB_STATUS_OK : ui_component_destroy(&window->base);
 }
 
 lib_status ui_window_set_title(ui_window *window, const char *title)

@@ -4,15 +4,19 @@ int ui_window_frame_size(const ui_frame *frame, lib_u32 *width, lib_u32 *height)
 {
     if (!ui_frame_is_valid(frame) || !width || !height) return 0;
     *width = frame->graphics ? frame->graphics_width : frame->text_columns * 8u;
-    *height = frame->graphics ? frame->graphics_height : frame->text_rows * 16u;
+    *height = frame->graphics ? frame->graphics_height : frame->text_rows *
+        (frame->font_height != 0u && frame->font_height <= 16u ? frame->font_height : 16u);
     return 1;
 }
 
 void ui_window_render_text(const ui_frame *frame, lib_u32 *pixels, lib_u32 width, lib_u32 height)
 {
     lib_u32 row;
+    lib_u32 cell_height;
 
     if (!frame || !pixels || frame->graphics) return;
+    cell_height = frame->font_height != 0u && frame->font_height <= 16u ? frame->font_height : 16u;
+    if (width != frame->text_columns * 8u || height != frame->text_rows * cell_height) return;
     lib_memory_set(pixels, 0, (lib_size)width *
         height * sizeof(*pixels));
     for (row = 0u; row < frame->text_rows; ++row) {
@@ -22,12 +26,12 @@ void ui_window_render_text(const ui_frame *frame, lib_u32 *pixels, lib_u32 width
             lib_u8 character = frame->text[index];
             lib_u16 attribute = frame->attributes[index];
             lib_u32 scan;
-            for (scan = 0u; scan < 16u; ++scan) {
+            for (scan = 0u; scan < cell_height; ++scan) {
                 const lib_u8 *font = frame->attribute_font_select != 0u &&
                     (attribute & 0x08u) != 0u ? frame->secondary_font : frame->font;
                 lib_u8 bits = font[(lib_size)character * 16u + scan];
                 lib_u32 *row_pixels = pixels +
-                    ((lib_size)row * 16u + scan) *
+                    ((lib_size)row * cell_height + scan) *
                     width + column * 8u;
                 lib_u32 bit;
                 for (bit = 0u; bit < 8u; ++bit)

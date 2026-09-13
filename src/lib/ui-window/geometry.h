@@ -10,8 +10,6 @@ typedef enum ui_window_edge {
 } ui_window_edge;
 void ui_window_constrain_sizing(ui_window_rect *outer, ui_window_edge edge,
     int frame_width, int frame_height, lib_u32 source_width, lib_u32 source_height);
-int ui_window_display_rect(int width, int height, lib_u32 source_width,
-    lib_u32 source_height, ui_window_rect *out);
 void ui_window_map_dirty_rect(const ui_window_rect *source, const ui_window_rect *display,
     lib_u32 width, lib_u32 height, ui_window_rect *out);
 int ui_window_fit_outer_rect(const ui_window_rect *work, int width, int height,

@@ -2,8 +2,26 @@
 
 ## Current Work
 
-No subtask packet is active. T531 remains open; its latest accepted progress is
-recorded below.
+## M5 T531 S10 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved this 2026-09-13 the next T531 subtask: import the current SoftPC Lib. One-session coordinator/executor review. |
+| Objective | Import the complete current project-owned SoftPC `src/lib/` corpus into NXVM byte-for-byte, then make only source-proven NXVM consumer adaptations required to compile and use that canonical Lib. |
+| Non-goals | No SoftPC write; no import of SoftPC app/MVDM, tests, assets, firmware, media or binaries; no NXVM-local Lib patch; no Common/VM redesign beyond direct compile-required adaptation; no T531 closure. |
+| Reference Baseline | NXVM `b7783386`; SoftPC `2ea35ce87bb538a6cc520be1353641a99a94d427`; source path `src/lib`; SoftPC's sole dirty file is outside the corpus. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md), S10. |
+| Files And ABI Surface | Entire `src/lib/` 93-file corpus, its manifest/build metadata, and only direct NXVM Common/VM consumers, tests, CMake/provenance/evidence/status needed by audited API deltas. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution and Documentation rules; source policy; Lib remains product-neutral and original SoftPC source is copied unchanged. |
+| Verification | Compare every tracked Lib path and SHA-256 with the frozen SoftPC revision; verify Lib manifest/component dependencies; build x64/x86; run focused affected tests and full repository-only unit suite; inspect all consumer changes and run documentation governance. |
+| Expected Markers | Exactly one 93-file NXVM Lib corpus matches SoftPC; no product terminology enters Lib; any consumer adaptation is outside Lib and has one retained route; no ignored SoftPC working-tree input is imported. |
+| Asset Needs | Build the existing stripped optimized 0531 x64/x86 executables in `build/output` and `assets/sessions`; do not edit YAML or external assets. |
+| Reporting Requirements | Record source revision, exact file/hash comparison, imported versus adapted path inventory, ABI delta dispositions, code-size accounting, verification and artifact hashes. |
+| Stop Conditions | SoftPC Lib is dirty, contains independent third-party material, needs a product/native API in Lib, has an API delta requiring a parallel NXVM path, or a consumer cannot adapt without a separate approved design change. |
+| Exit Criteria | Every 93 Lib path matches the frozen SoftPC corpus; provenance/index/evidence are complete; all needed NXVM consumers use the imported API with no parallel Lib route; required x64/x86 builds, full unit and governance gates pass; reviewed implementation is committed and pushed. T531 remains open. |
+| Original Owner Request | Add an S task to import the latest SoftPC Lib. |
+| Similar-Issue Sweep | Compare all Lib paths, CMake source lists, manifests, public headers and every NXVM include/call site of changed Lib APIs; inspect the entire SoftPC status so only the frozen Lib corpus is imported. |
 
 ## Current Technical Baseline
 
