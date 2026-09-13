@@ -355,8 +355,11 @@ type_status vm_machine_initialize(vm_machine *machine) {
     status = (type_status)common_machine_create(&machine->executor);
     if (status != TYPE_STATUS_OK) { vm_machine_finalize(machine); return status; }
     driver = (common_machine_driver) {
-        vm_machine_consume_request, vm_machine_common_is_paused,
-        vm_machine_common_debug_execute, machine
+        .consume_request = vm_machine_consume_request,
+        .is_paused = vm_machine_common_is_paused,
+        .wake_request = LIB_NULL,
+        .execute_debug = vm_machine_common_debug_execute,
+        .context = machine
     };
     status = (type_status)common_machine_bind_driver(machine->executor, &driver);
     if (status != TYPE_STATUS_OK) { vm_machine_finalize(machine); return status; }

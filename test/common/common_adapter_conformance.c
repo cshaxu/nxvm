@@ -6,6 +6,7 @@ typedef struct common_adapter {
     lib_u32 input_count;
     lib_u32 line_count;
     lib_u32 request_count;
+    lib_u32 wake_count;
     lib_u32 lifecycle_count;
     lib_bool paused;
     lib_u32 marker;
@@ -25,6 +26,13 @@ static lib_bool common_adapter_paused(void *context)
 {
     const common_adapter *adapter = context;
     return adapter != LIB_NULL && adapter->paused;
+}
+
+static void common_adapter_wake(void *context)
+{
+    common_adapter *adapter = context;
+
+    if (adapter != LIB_NULL) ++adapter->wake_count;
 }
 
 static lib_status common_adapter_debug(void *context,
@@ -103,6 +111,7 @@ static int common_adapter_conform(common_adapter *adapter, lib_u32 run_id)
     common_machine_driver driver = {
         .consume_request = common_adapter_consume,
         .is_paused = common_adapter_paused,
+        .wake_request = common_adapter_wake,
         .execute_debug = common_adapter_debug,
         .context = adapter
     };
@@ -120,6 +129,7 @@ static int common_adapter_conform(common_adapter *adapter, lib_u32 run_id)
         common_machine_bind_run(machine, run_id) != LIB_STATUS_OK ||
         common_machine_submit(machine, &(common_machine_request) {
             .kind = COMMON_MACHINE_REQUEST_PAUSE, .run_id = run_id }) != LIB_STATUS_OK ||
+        adapter->wake_count != 1u ||
         common_machine_observe_safe_point(machine) != LIB_STATUS_OK ||
         common_machine_debug_acquire(machine, &lease) != LIB_STATUS_OK ||
         common_machine_debug_execute_with_lease(machine, &lease,
@@ -145,7 +155,8 @@ static int common_adapter_conform(common_adapter *adapter, lib_u32 run_id)
     common_ui_destroy(ui);
     common_session_destroy(session);
     common_machine_destroy(machine);
-    return adapter->request_count == 1u && adapter->line_count == 1u &&
+    return adapter->request_count == 1u && adapter->wake_count == 1u &&
+        adapter->line_count == 1u &&
         adapter->lifecycle_count == 1u ? 0 : 1;
 }
 

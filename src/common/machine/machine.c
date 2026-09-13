@@ -97,6 +97,9 @@ lib_status common_machine_submit(common_machine *machine,
     const common_machine_request *request)
 {
     lib_size index;
+    common_machine_request_wake wake_request;
+    void *context;
+    lib_bool notify;
 
     if (machine == LIB_NULL || request == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     common_machine_lock(machine);
@@ -109,12 +112,16 @@ lib_status common_machine_submit(common_machine *machine,
         return LIB_STATUS_LIMIT_EXCEEDED;
     }
     index = (machine->first + machine->count) % COMMON_MACHINE_QUEUE_CAPACITY;
+    notify = machine->count == 0u;
     machine->requests[index] = *request;
     if (machine->requests[index].run_id == 0u) machine->requests[index].run_id =
         machine->run_id;
     ++machine->count;
     host_sync_event_signal(machine->ready);
+    wake_request = machine->driver.wake_request;
+    context = machine->driver.context;
     common_machine_unlock(machine);
+    if (notify && wake_request != LIB_NULL) wake_request(context);
     return LIB_STATUS_OK;
 }
 

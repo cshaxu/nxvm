@@ -171,10 +171,11 @@ int main(void)
     lib_size file_output_bytes = 0u;
     lib_storage_file_writer *writer = LIB_NULL;
     common_machine_driver driver = {
-        debug_fixture_consume,
-        debug_fixture_paused,
-        debug_fixture_execute,
-        &fixture
+        .consume_request = debug_fixture_consume,
+        .is_paused = debug_fixture_paused,
+        .wake_request = LIB_NULL,
+        .execute_debug = debug_fixture_execute,
+        .context = &fixture
     };
 
     fixture.registers[COMMON_DEBUG_EAX] = 0x12345678u;

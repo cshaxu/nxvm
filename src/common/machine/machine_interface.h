@@ -156,6 +156,10 @@ typedef struct common_machine_debug_lease {
 typedef lib_status (*common_machine_request_consumer)(void *context,
     const common_machine_request *request);
 typedef lib_bool (*common_machine_is_paused)(void *context);
+/* Called after a copied request changes the FIFO from empty to nonempty.
+ * This is only an infallible notification to an already-owned executor; it
+ * carries no request and does not establish a second execution path. */
+typedef void (*common_machine_request_wake)(void *context);
 /* Synchronous typed boundary: Common calls this from its Debug caller and
  * receives the copied result before returning. An adapter with stricter CPU
  * affinity may synchronously relay internally, but Common owns no such queue
@@ -167,6 +171,7 @@ typedef lib_status (*common_machine_debug_execute)(void *context,
 typedef struct common_machine_driver {
     common_machine_request_consumer consume_request;
     common_machine_is_paused is_paused;
+    common_machine_request_wake wake_request;
     common_machine_debug_execute execute_debug;
     void *context;
 } common_machine_driver;

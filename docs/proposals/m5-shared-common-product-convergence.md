@@ -28,7 +28,10 @@ merging NXVM's bounded Core runner with SoftPC's continuous CCPU executor.
   The product CLI and Common Debug register handlers with this same monitor;
   neither creates a second control loop or reads native Console handles.
 - `common/machine` owns the copied request protocol, generation and paused
-  debug access contract. Start and media operations join the shared protocol
+  debug access contract. It optionally notifies the bound product driver only
+  when a copied request makes its FIFO nonempty, so the product can wake its
+  existing executor; the notification carries no request or state and Common
+  creates no executor. Start and media operations join the shared protocol
   where the two real adapters require them; no arbitrary command envelope or
   generic executor framework is introduced.
 - `common_machine_debug_execute_with_lease()` remains a synchronous typed
