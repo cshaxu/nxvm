@@ -15,7 +15,7 @@ roots are prohibited.
 
 ```text
 src/
-  lib/{types,console,host,storage,ui-base,ui-console,ui-window}/
+  lib/{types,console,host,storage,kvm-base,kvm-console,kvm-window}/
   common/
     {contracts.h,session,machine,ui,xasm32,debug}/
   core/{machine,product}/

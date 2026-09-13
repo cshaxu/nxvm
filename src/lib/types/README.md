@@ -9,7 +9,7 @@ resource policy, platform worker, or product behavior.
 one-to-one wrappers, but does not compile a platform implementation. Each
 owning component supplies its own selected `win32` or `linux` source behind a
 uniform component-private contract: `host` owns synchronization and Console
-native work, `storage` owns file native work, and `ui-base`/the UI leaves own
+native work, `storage` owns file native work, and `kvm-base`/the KVM leaves own
 their own wake, input, and rendering work. `types` never interprets a
 consumer's state machine or input protocol.
 
@@ -37,7 +37,7 @@ error behavior. They do not add component semantics. The layout gate derives
 forbidden raw tokens from these declarations and checks every consumer.
 
 The number of consumers does not decide ownership: even a single-use original
-SDK definition belongs here. Conversely, Console statuses, UI modifier
+SDK definition belongs here. Conversely, Console statuses, KVM modifier
 mapping, storage open policy and worker state belong to their components.
 `lib_text_length` has the same non-null precondition as `strlen`; nullable
 input is validated by its consumer, not silently reinterpreted here.
@@ -45,6 +45,6 @@ input is validated by its consumer, not silently reinterpreted here.
 `file.h` contains common C stream declarations. `win32/file.h` and
 `linux/file.h` add their platform declarations. File operations and ownership
 remain in storage. Counter validation/composition belongs to host; input
-normalization belongs to ui-base and Window key-state queries to ui-window.
+normalization belongs to kvm-base and Window key-state queries to kvm-window.
 There is no runtime layer or zero-result
 fallback pretending to implement another platform's input query.

@@ -3,9 +3,9 @@
 void common_ui_fake_reset(void);
 void common_ui_fake_fail_window_create(lib_status status);
 void common_ui_fake_fail_claim(lib_status status);
-int common_ui_fake_emit_window_input(const ui_input_event *event);
+int common_ui_fake_emit_window_input(const kvm_input_event *event);
 
-static lib_status common_ui_smoke_input(void *context, const ui_input_event *event)
+static lib_status common_ui_smoke_input(void *context, const kvm_input_event *event)
 {
     (void)context;
     return event == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK;
@@ -32,13 +32,13 @@ int main(void)
     common_ui_action action = {0};
     common_ui_completion completion = {0};
     common_ui_surface_facts facts;
-    ui_input_event event = {0};
+    kvm_input_event event = {0};
     common_ui *ui;
 
     options.input_sink = common_ui_smoke_input;
     options.console_line_sink = common_ui_smoke_line;
     options.initial_window_title = "Common UI smoke";
-    ui_hotkey_registry_initialize(&options.hotkeys);
+    kvm_hotkey_registry_initialize(&options.hotkeys);
     if (common_ui_create(&ui, &options) != LIB_STATUS_INVALID_ARGUMENT) return 1;
     options.failure_sink = common_ui_smoke_failure;
     common_ui_fake_reset();
@@ -72,7 +72,7 @@ int main(void)
         common_ui_destroy(ui);
         return 7;
     }
-    event.type = UI_EVENT_KEY;
+    event.type = KVM_EVENT_KEY;
     event.data.key.pressed = LIB_TRUE;
     if (!common_ui_fake_emit_window_input(&event)) {
         common_ui_destroy(ui);

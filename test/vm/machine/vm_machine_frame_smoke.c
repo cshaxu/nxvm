@@ -5,7 +5,7 @@
 C_INT main(C_VOID)
 {
     vm_machine_display_event source = {0};
-    ui_frame destination = {0};
+    kvm_frame destination = {0};
 
     source.graphics = TYPE_FALSE;
     source.generation = 7u;

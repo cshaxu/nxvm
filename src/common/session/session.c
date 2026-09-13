@@ -7,7 +7,7 @@
 
 typedef struct common_session_pressed_key {
     lib_u64 source_identity;
-    ui_input_event event;
+    kvm_input_event event;
 } common_session_pressed_key;
 
 struct common_session {
@@ -18,7 +18,7 @@ struct common_session {
     lib_size count;
     lib_bool accepting;
     lib_bool delivery_failed;
-    ui_frame latest_frame;
+    kvm_frame latest_frame;
     lib_bool frame_ready;
     lib_u32 latest_frame_run_id;
     lib_u32 run_id;
@@ -359,7 +359,7 @@ lib_status common_session_publish_monitor_text(common_session *session,
 }
 
 lib_status common_session_publish_ui_input(void *context,
-    const ui_input_event *event)
+    const kvm_input_event *event)
 {
     common_session_fact fact = {0};
     common_session *session = context;
@@ -421,11 +421,11 @@ lib_status common_session_publish_ui_completion(common_session *session,
 }
 
 lib_status common_session_publish_frame(common_session *session,
-    const ui_frame *frame)
+    const kvm_frame *frame)
 {
     common_session_fact fact = {0};
 
-    if (session == LIB_NULL || frame == LIB_NULL || !ui_frame_is_valid(frame))
+    if (session == LIB_NULL || frame == LIB_NULL || !kvm_frame_is_valid(frame))
         return LIB_STATUS_INVALID_ARGUMENT;
     common_session_lock(session);
     if (!session->accepting) {
@@ -452,7 +452,7 @@ lib_status common_session_publish_frame(common_session *session,
 }
 
 lib_status common_session_take(common_session *session,
-    common_session_fact *out_fact, ui_frame *out_frame,
+    common_session_fact *out_fact, kvm_frame *out_frame,
     lib_u32 timeout_milliseconds)
 {
     host_sync_wait_result wait;
@@ -500,7 +500,7 @@ lib_status common_session_take(common_session *session,
 }
 
 lib_status common_session_reduce_fact(common_session *session,
-    const common_session_fact *fact, const ui_frame *frame,
+    const common_session_fact *fact, const kvm_frame *frame,
     common_session_plan *out_plan)
 {
     common_session_cli_provider provider;
@@ -517,7 +517,7 @@ lib_status common_session_reduce_fact(common_session *session,
     if (fact->run_id != 0u && fact->run_id != session->run_id)
         return LIB_STATUS_INVALID_STATE;
     if (fact->kind == COMMON_SESSION_FACT_FRAME) {
-        if (frame == LIB_NULL || !ui_frame_is_valid(frame)) return LIB_STATUS_INVALID_ARGUMENT;
+        if (frame == LIB_NULL || !kvm_frame_is_valid(frame)) return LIB_STATUS_INVALID_ARGUMENT;
         session->presentation_frame_available = LIB_TRUE;
         session->presentation_frame_graphics = frame->graphics != LIB_FALSE;
         out_plan->frame_ready = LIB_TRUE;
@@ -637,7 +637,7 @@ lib_status common_session_reduce_fact(common_session *session,
 }
 
 static lib_size common_session_pressed_find(const common_session *session,
-    const ui_input_event *event)
+    const kvm_input_event *event)
 {
     lib_size index;
 
@@ -651,7 +651,7 @@ static lib_size common_session_pressed_find(const common_session *session,
 }
 
 static void common_session_pressed_forget(common_session *session,
-    const ui_input_event *event)
+    const kvm_input_event *event)
 {
     lib_size index = common_session_pressed_find(session, event);
     if (index != session->pressed_count)
@@ -659,7 +659,7 @@ static void common_session_pressed_forget(common_session *session,
 }
 
 static lib_status common_session_pressed_remember(common_session *session,
-    const ui_input_event *event)
+    const kvm_input_event *event)
 {
     if (common_session_pressed_find(session, event) != session->pressed_count)
         return LIB_STATUS_OK;
@@ -672,7 +672,7 @@ static lib_status common_session_pressed_remember(common_session *session,
 }
 
 lib_status common_session_dispatch_host_input(common_session *session,
-    const ui_input_event *event, common_session_input_sink sink,
+    const kvm_input_event *event, common_session_input_sink sink,
     void *sink_context)
 {
     lib_size index = 0u;
@@ -680,7 +680,7 @@ lib_status common_session_dispatch_host_input(common_session *session,
 
     if (session == LIB_NULL || event == LIB_NULL || sink == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (event->type == UI_EVENT_SOURCE_RETIRED) {
+    if (event->type == KVM_EVENT_SOURCE_RETIRED) {
         while (index < session->pressed_count) {
             common_session_pressed_key *pressed = &session->pressed[index];
             if (pressed->source_identity != event->source_identity) { ++index; continue; }
@@ -692,17 +692,17 @@ lib_status common_session_dispatch_host_input(common_session *session,
         return status;
     }
     if (!common_session_is_running(session)) return LIB_STATUS_OK;
-    if (event->type == UI_EVENT_KEY && event->data.key.pressed) {
+    if (event->type == KVM_EVENT_KEY && event->data.key.pressed) {
         status = common_session_pressed_remember(session, event);
         if (status != LIB_STATUS_OK) return status;
         status = sink(sink_context, event);
         if (status != LIB_STATUS_OK) common_session_pressed_forget(session, event);
         return status;
     }
-    if (event->type == UI_EVENT_KEY && !event->data.key.pressed) {
+    if (event->type == KVM_EVENT_KEY && !event->data.key.pressed) {
         common_session_pressed_forget(session, event);
         return sink(sink_context, event);
     }
-    return (event->type == UI_EVENT_MOUSE || event->type == UI_EVENT_TEXT) ?
+    return (event->type == KVM_EVENT_MOUSE || event->type == KVM_EVENT_TEXT) ?
         sink(sink_context, event) : LIB_STATUS_OK;
 }

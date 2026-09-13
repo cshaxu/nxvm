@@ -15,8 +15,8 @@ not from a sibling component or a forwarding root header. The sole exception
 is `types/{win32,linux}`: these shared external declarations may be included
 by matching platform implementations. Application-facing
 copied-value APIs are distinct from the leaf-support contracts:
-`ui-base/worker_interface.h`, `mailbox_interface.h`, `mailbox_wake_interface.h`,
-`ui-base/input_interface.h` serves only the UI leaves;
+`kvm-base/worker_interface.h`, `mailbox_interface.h`, `mailbox_wake_interface.h`,
+`kvm-base/input_interface.h` serves only the KVM leaves;
 `console/binding_interface.h` serves host binding implementations.
 Other component headers are exclusively component-local. They use short
 names and live directly in their owning directory; no filename carries a
@@ -26,7 +26,7 @@ only application-facing `*_interface.h`, not the leaf-support contracts.
 Types declaration headers are the explicit naming exception. The common types interface includes its own atomic
 vocabulary helper; it never imports platform SDK headers.
 
-Input support owns common normalization and copied-event delivery in ui-base.
+Input support owns common normalization and copied-event delivery in kvm-base.
 Its same-signature platform operations decode keys and query physical text
 layout. Window message flags and key-state queries are Window-local. External
 declarations remain types-owned; actual consumers declare OS link libraries.
@@ -37,15 +37,15 @@ An arrow means the component on the right may use the generic contract of the
 component on the left:
 
 ```text
-types -> console + host + storage + ui-base + ui-window + ui-console
-console -> host + ui-console
-ui-base -> ui-window + ui-console
+types -> console + host + storage + kvm-base + kvm-window + kvm-console
+console -> host + kvm-console
+kvm-base -> kvm-window + kvm-console
 ```
 
 No other component edge is allowed. In particular, `host`, `storage`,
-`ui-window`, and `ui-console` are peers. `ui-window` neither includes nor
-calls `console` or `host`; `ui-console` consumes only the neutral `console`
-contract. `host` does not include UI. There is no unified UI aggregate,
+`kvm-window`, and `kvm-console` are peers. `kvm-window` neither includes nor
+calls `console` or `host`; `kvm-console` consumes only the neutral `console`
+contract. `host` does not include KVM. There is no unified KVM aggregate,
 lifecycle controller, or public unified presenter API.
 
 - `types` is header-only and provides scalar aliases, status values, atomic
@@ -67,27 +67,27 @@ lifecycle controller, or public unified presenter API.
   complete, no next reader starts and the broker fails closed with host-I/O
   failure rather than claiming either Console is usable.
 - `storage` provides file and byte-medium primitives.
-- `ui-base` provides copied frame/input values, source-local registered-hotkey
+- `kvm-base` provides copied frame/input values, source-local registered-hotkey
   matching, source identities, and private mailbox mechanics.
-- `ui-window` owns one Window lifecycle; `ui-console` owns one raw-Console
-  lifecycle and its logical Console object. Both report copied UI input only;
+- `kvm-window` owns one Window lifecycle; `kvm-console` owns one raw-Console
+  lifecycle and its logical Console object. Both report copied KVM input only;
   neither makes product decisions.
 
-## UI mailbox and lifetime contract
+## KVM mailbox and lifetime contract
 
 Synchronous request rejection returns `lib_status`; normal wait outcomes are
 separate values. Pure value/predicate helpers and copied-input acceptance
-callbacks retain their value/boolean protocols. Once a UI mailbox owns a copied
+callbacks retain their value/boolean protocols. Once a KVM mailbox owns a copied
 request, it is accepted: a later wake failure reports once through the existing
 component failure sink and is never replayed.
 
 A successful public create returns one complete object; a failed create leaves
-its output null. UI and native Console destruction join their live worker once.
+its output null. KVM and native Console destruction join their live worker once.
 An unjoinable worker is handled at the importing application's terminal
 infrastructure boundary rather than exposed as a half-object recovery protocol.
 Storage close retains its documented consumed-stream behavior.
 
-Every `ui-window` and `ui-console` instance owns a separate, private pair of
+Every `kvm-window` and `kvm-console` instance owns a separate, private pair of
 mailboxes. Callers never share or address a mailbox directly.
 
 - The frame mailbox holds one copied frame. Publishing replaces that value:
@@ -106,7 +106,7 @@ mailboxes. Callers never share or address a mailbox directly.
   reported through the component failure sink; it is not permission to replay.
 - A worker drains control records in FIFO order before it considers the latest
   frame. On STOP it consumes no later control or frame: it retires native
-  input/output, emits exactly one `UI_EVENT_SOURCE_RETIRED`, and exits.
+  input/output, emits exactly one `KVM_EVENT_SOURCE_RETIRED`, and exits.
   Post-start Window failures use that same cleanup path, reporting the fault;
   creation failure is distinct and does not retire an uncreated source.
 
@@ -114,17 +114,17 @@ Unexpected native Console reader errors emit `LIB_CONSOLE_EVENT_IO_FAILURE`.
 Before native activation, after old input quiesces, host delivers INPUT_RESET
 synchronously through the logical Console. Consumers clear local input history
 before the next reader starts; this is distinct from successful ACTIVATED and
-permanent UI source retirement. Rollback uses the same reset-before-reader path.
-Normal replacement cancellation is not failure. A UI Console reports genuine
+permanent KVM source retirement. Rollback uses the same reset-before-reader path.
+Normal replacement cancellation is not failure. A KVM Console reports genuine
 input/output errors through its failure sink and retires; NOT_CURRENT output
 is an expected inactive-object write. Neither path makes application decisions.
 Broker replacement holds its transaction lock through old output-sink cleanup;
 the backend output lock is released first so in-flight writes can complete.
 
 Each component receives a process-wide monotonic, never-reused
-`source_identity`. Every `ui_input_event` carries both that identity and a
+`source_identity`. Every `kvm_input_event` carries both that identity and a
 borrowed source handle. The identity, not the address, is safe to use after
-component storage can be reused. `UI_EVENT_SOURCE_RETIRED` is the final
+component storage can be reused. `KVM_EVENT_SOURCE_RETIRED` is the final
 asynchronous input-lifetime fact for that identity; an application uses it to
 clear source-specific pressed-input state and must not dereference the source
 handle from it.
@@ -140,7 +140,7 @@ contains no application context. Mailbox waits use a per-mailbox monotonic
 condition with the same timeout and spurious-wake semantics.
 
 The public component contracts are cross-platform. This corpus currently has
-supported Win32 leaves; Linux UI leaves are intentional
+supported Win32 leaves; Linux KVM leaves are intentional
 `LIB_STATUS_UNSUPPORTED` placeholders, not claimed presenter implementations.
 
 Unrecoverable input delivery rejection closes the source immediately; the
@@ -175,5 +175,5 @@ Surface size is established after palette application, which can change native
 buffer geometry; output does not rely on a precondition invalidated by metadata.
 The broker alone sequences deactivation, including failed initial activation.
 Backend disposal frees inactive resources without repeating mode restoration
-or reader retirement. UI Console disposal similarly follows its worker's sink
+or reader retirement. KVM Console disposal similarly follows its worker's sink
 detachment; it does not detach a second time.

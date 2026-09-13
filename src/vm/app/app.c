@@ -35,7 +35,7 @@ static lib_status vm_app_status_as_lib(type_status status)
 static C_VOID vm_app_machine_result(void *context, const vm_machine_result *result)
 {
     vm_app *app = context;
-    ui_frame frame;
+    kvm_frame frame;
 
     if (app == STD_NULL || result == STD_NULL) return;
     if (result->kind == VM_MACHINE_RESULT_DISPLAY) {

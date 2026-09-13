@@ -31,7 +31,7 @@ struct vm_product_console_context {
     vm_product_recorder *recorder;
     C_INT session_stopped;
     common_session_fact fact;
-    ui_frame display;
+    kvm_frame display;
     common_session_plan plan;
 };
 #define CONSOLE_MAXNARG 256
@@ -70,7 +70,7 @@ static lib_status vm_product_console_line_sink(void *context,
 }
 
 static lib_status vm_product_console_input_sink(void *context,
-    const ui_input_event *event)
+    const kvm_input_event *event)
 {
     return common_session_publish_ui_input(context, event);
 }
@@ -244,17 +244,17 @@ static type_status vm_product_console_stop(vm_product_console_context *context)
         COMMON_SESSION_LIFECYCLE_STOP);
 }
 
-static C_INT vm_product_console_key_scan(ui_key key, type_unsigned_16 *scan)
+static C_INT vm_product_console_key_scan(kvm_key key, type_unsigned_16 *scan)
 {
-    static const struct { ui_key key; type_unsigned_16 scan; } map[] = {
-        { UI_KEY_ENTER, 0x1cu }, { UI_KEY_BACKSPACE, 0x0eu }, { UI_KEY_F1, 0x3bu },
-        { UI_KEY_F2, 0x3cu }, { UI_KEY_F3, 0x3du }, { UI_KEY_F4, 0x3eu },
-        { UI_KEY_F5, 0x3fu }, { UI_KEY_F6, 0x40u }, { UI_KEY_F7, 0x41u },
-        { UI_KEY_F8, 0x42u }, { UI_KEY_F9, 0x43u }, { UI_KEY_F10, 0x44u },
-        { UI_KEY_F11, 0x57u }, { UI_KEY_F12, 0x58u }, { UI_KEY_UP, 0x48u },
-        { UI_KEY_DOWN, 0x50u }, { UI_KEY_LEFT, 0x4bu }, { UI_KEY_RIGHT, 0x4du },
-        { UI_KEY_HOME, 0x47u }, { UI_KEY_END, 0x4fu }, { UI_KEY_PAGE_UP, 0x49u },
-        { UI_KEY_PAGE_DOWN, 0x51u }, { UI_KEY_INSERT, 0x52u }, { UI_KEY_DELETE, 0x53u }
+    static const struct { kvm_key key; type_unsigned_16 scan; } map[] = {
+        { KVM_KEY_ENTER, 0x1cu }, { KVM_KEY_BACKSPACE, 0x0eu }, { KVM_KEY_F1, 0x3bu },
+        { KVM_KEY_F2, 0x3cu }, { KVM_KEY_F3, 0x3du }, { KVM_KEY_F4, 0x3eu },
+        { KVM_KEY_F5, 0x3fu }, { KVM_KEY_F6, 0x40u }, { KVM_KEY_F7, 0x41u },
+        { KVM_KEY_F8, 0x42u }, { KVM_KEY_F9, 0x43u }, { KVM_KEY_F10, 0x44u },
+        { KVM_KEY_F11, 0x57u }, { KVM_KEY_F12, 0x58u }, { KVM_KEY_UP, 0x48u },
+        { KVM_KEY_DOWN, 0x50u }, { KVM_KEY_LEFT, 0x4bu }, { KVM_KEY_RIGHT, 0x4du },
+        { KVM_KEY_HOME, 0x47u }, { KVM_KEY_END, 0x4fu }, { KVM_KEY_PAGE_UP, 0x49u },
+        { KVM_KEY_PAGE_DOWN, 0x51u }, { KVM_KEY_INSERT, 0x52u }, { KVM_KEY_DELETE, 0x53u }
     };
     STD_SIZE_T index;
 
@@ -282,14 +282,14 @@ static type_status vm_product_console_submit_key(vm_product_console_context *con
 }
 
 static type_status vm_product_console_submit_input(vm_product_console_context *context,
-    const ui_input_event *event)
+    const kvm_input_event *event)
 {
     vm_machine_input input = {0};
     vm_machine *machine = vm_product_console_machine(context);
     type_unsigned_16 scan = 0u;
 
     if (machine == STD_NULL || event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (event->type == UI_EVENT_KEY) {
+    if (event->type == KVM_EVENT_KEY) {
         scan = event->data.key.scan_code;
         if (scan == 0u && !vm_product_console_key_scan(event->data.key.key, &scan))
             return TYPE_STATUS_UNSUPPORTED;
@@ -297,25 +297,25 @@ static type_status vm_product_console_submit_input(vm_product_console_context *c
         input.data.key_event.scan_code = scan;
         input.data.key_event.virtual_key = (type_unsigned_16)event->data.key.key;
         input.data.key_event.pressed = event->data.key.pressed;
-    } else if (event->type == UI_EVENT_TEXT && event->data.text.scalar <= 0xffffu) {
+    } else if (event->type == KVM_EVENT_TEXT && event->data.text.scalar <= 0xffffu) {
         input.kind = VM_MACHINE_INPUT_KEY_EVENT;
         input.data.key_event.virtual_key = (type_unsigned_16)event->data.text.scalar;
         input.data.key_event.pressed = TYPE_TRUE;
-    } else if (event->type == UI_EVENT_MOUSE) {
+    } else if (event->type == KVM_EVENT_MOUSE) {
         input.kind = VM_MACHINE_INPUT_MOUSE_EVENT;
         input.data.mouse_event.delta_x = event->data.mouse.delta_x < INT16_MIN ? INT16_MIN :
             event->data.mouse.delta_x > INT16_MAX ? INT16_MAX : event->data.mouse.delta_x;
         input.data.mouse_event.delta_y = event->data.mouse.delta_y < INT16_MIN ? INT16_MIN :
             event->data.mouse.delta_y > INT16_MAX ? INT16_MAX : event->data.mouse.delta_y;
         input.data.mouse_event.buttons =
-            (event->data.mouse.buttons & UI_MOUSE_BUTTON_LEFT ? 1u : 0u) |
-            (event->data.mouse.buttons & UI_MOUSE_BUTTON_RIGHT ? 2u : 0u);
+            (event->data.mouse.buttons & KVM_MOUSE_BUTTON_LEFT ? 1u : 0u) |
+            (event->data.mouse.buttons & KVM_MOUSE_BUTTON_RIGHT ? 2u : 0u);
     } else return TYPE_STATUS_UNSUPPORTED;
     return vm_machine_submit_input(machine, &input);
 }
 
 static lib_status vm_product_console_input_dispatch(void *opaque,
-    const ui_input_event *event)
+    const kvm_input_event *event)
 { return (lib_status)vm_product_console_submit_input(opaque, event); }
 
 static C_VOID vm_product_console_submit_chord(vm_product_console_context *context,
@@ -335,13 +335,13 @@ static C_VOID vm_product_console_submit_chord(vm_product_console_context *contex
 }
 
 static type_status vm_product_console_reduce_input(vm_product_console_context *context,
-    const ui_input_event *event, common_session_plan *out_plan)
+    const kvm_input_event *event, common_session_plan *out_plan)
 {
     const C_CHAR *name;
 
     if (context == STD_NULL || event == STD_NULL || out_plan == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
-    if (event->type == UI_EVENT_HOTKEY) {
+    if (event->type == KVM_EVENT_HOTKEY) {
         name = event->data.hotkey.identifier;
         if (!STD_STRCMP(name, "pause"))
             return vm_product_console_is_running(context) ?
@@ -357,7 +357,7 @@ static type_status vm_product_console_reduce_input(vm_product_console_context *c
         }
         return TYPE_STATUS_OK;
     }
-    if (event->type == UI_EVENT_WINDOW_CLOSE) {
+    if (event->type == KVM_EVENT_WINDOW_CLOSE) {
         if (vm_product_console_is_running(context))
             (C_VOID)vm_product_console_request_pause(context);
         (C_VOID)common_session_hide_presentation(context->control);
@@ -984,15 +984,15 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     ui_options.console_line_sink = vm_product_console_line_sink;
     ui_options.failure_context = context;
     ui_options.failure_sink = vm_product_console_ui_failure;
-    ui_hotkey_registry_initialize(&ui_options.hotkeys);
-    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'P',
-        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "pause");
-    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'D',
-        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "cad");
-    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'F',
-        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "alt-enter");
-    (void)ui_hotkey_registry_register(&ui_options.hotkeys, 'M',
-        UI_HOTKEY_MODIFIER_CONTROL | UI_HOTKEY_MODIFIER_ALT, "release-mouse");
+    kvm_hotkey_registry_initialize(&ui_options.hotkeys);
+    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'P',
+        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "pause");
+    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'D',
+        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "cad");
+    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'F',
+        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "alt-enter");
+    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'M',
+        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "release-mouse");
     ui_options.initial_window_title = "NXVM (Running)";
     if (vm_app_compose_ui(context->session, &ui_options) != TYPE_STATUS_OK) {
         context->control = STD_NULL;

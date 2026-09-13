@@ -53,3 +53,11 @@ revision, retaining exact 93-file equality and requiring no NXVM consumer
 shim.  [S10 evidence](../etc/evidence/t531-s10-canonical-lib-refresh.md)
 records the source boundary, Lib gates, dual 0531 artifacts and 299/299 unit
 proof.  T531 remains open for the same two-product execution boundary.
+
+S11 replaces the complete Lib corpus with SoftPC `987d82e`, retaining exact
+94-file equality while adopting its sole `kvm-base`, `kvm-window` and
+`kvm-console` component vocabulary.  Common, VM, CMake and tests directly use
+that ABI; the retired UI component corpus and every compatibility alias are
+removed. [S11 evidence](../etc/evidence/t531-s11-canonical-kvm-lib-refresh.md)
+records the source boundary, KVM-name gate, dual 0531 artifacts and 299/299
+unit proof. T531 remains open for the same two-product execution boundary.

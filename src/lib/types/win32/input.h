@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-/* Exact SDK queries. Key/modifier interpretation belongs to ui-base. */
+/* Exact SDK queries. Key/modifier interpretation belongs to kvm-base. */
 typedef SHORT lib_win32_key_state;
 #define lib_win32_get_key_state GetKeyState
 #define lib_win32_map_virtual_key MapVirtualKeyA

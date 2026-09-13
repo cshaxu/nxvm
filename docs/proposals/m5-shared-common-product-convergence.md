@@ -96,7 +96,15 @@ recorded evidence, never by following successive isolated failures.
     make only the necessary Common/VM consumer adaptations.  Prove exactness,
     manifest/component boundaries and both NXVM architectures; do not claim
     whole-task two-product execution acceptance.
-11. **S11: package and whole-task acceptance.** Independent build/manifest,
+11. **S11: canonical KVM Lib refresh.** Freeze SoftPC's current project-owned
+    `src/lib/` revision; atomically replace NXVM's complete Lib corpus
+    byte-for-byte; accept the source-proven `ui-*` to `kvm-*` component rename
+    through CMake, Common, VM and test consumers; and delete every retired
+    component target/include/path rather than retaining a compatibility alias.
+    Prove exact corpus equality, KVM-name gate, manifest/component boundaries
+    and both NXVM architectures. This does not claim whole-task two-product
+    execution acceptance.
+12. **S12: package and whole-task acceptance.** Independent build/manifest,
     byte-identical consumer corpus, full matrix and failure-path review, full
     unit and integration, optimized stripped x64/x86 release artifacts.
 

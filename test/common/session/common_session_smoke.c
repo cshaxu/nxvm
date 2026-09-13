@@ -1,6 +1,6 @@
 #include "common/session/session_interface.h"
 
-static lib_status sink(void *context, const ui_input_event *event)
+static lib_status sink(void *context, const kvm_input_event *event)
 {
     lib_u32 *count = context;
     if (event == LIB_NULL || count == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -59,14 +59,14 @@ static lib_status cli_machine(void *context, common_session_machine_state state,
 }
 
 static int take_and_reduce(common_session *session, common_session_fact *fact,
-    ui_frame *frame, common_session_plan *plan)
+    kvm_frame *frame, common_session_plan *plan)
 {
     return common_session_take(session, fact, frame, 0u) == LIB_STATUS_OK &&
         common_session_reduce_fact(session, fact, frame, plan) == LIB_STATUS_OK;
 }
 
 static int complete_action(common_session *session, common_ui_action_kind action,
-    common_ui_surface_facts facts, common_session_fact *fact, ui_frame *frame,
+    common_ui_surface_facts facts, common_session_fact *fact, kvm_frame *frame,
     common_session_plan *plan)
 {
     common_ui_completion completion = {0};
@@ -82,8 +82,8 @@ int main(void)
     common_session *session = LIB_NULL;
     common_session_fact fact = {0};
     common_session_plan plan = {0};
-    static ui_frame frame = {0};
-    ui_input_event input = {0};
+    static kvm_frame frame = {0};
+    kvm_input_event input = {0};
     lib_u32 delivered = 0u;
     lib_u32 cli_calls = 0u;
     lib_u32 lifecycle_calls = 0u;
@@ -114,16 +114,16 @@ int main(void)
         cli_calls != 1u || lifecycle_calls != 2u || plan.console_text[0] != 'o' ||
         !plan.console_prompt_ready || plan.console_prompt[0] != '-' ||
         common_session_has_cli_provider(session)) return 1;
-    input.type = UI_EVENT_KEY;
+    input.type = KVM_EVENT_KEY;
     input.source_identity = 1u;
-    input.data.key.key = UI_KEY_F1;
+    input.data.key.key = KVM_KEY_F1;
     input.data.key.pressed = LIB_TRUE;
     if (common_session_dispatch_host_input(session, &input, sink, &delivered) !=
         LIB_STATUS_OK || delivered != 1u) return 1;
-    input.type = UI_EVENT_SOURCE_RETIRED;
+    input.type = KVM_EVENT_SOURCE_RETIRED;
     if (common_session_dispatch_host_input(session, &input, sink, &delivered) !=
         LIB_STATUS_OK || delivered != 2u) return 1;
-    input.type = UI_EVENT_MOUSE;
+    input.type = KVM_EVENT_MOUSE;
     if (common_session_publish_ui_input(session, &input) != LIB_STATUS_OK ||
         common_session_take(session, &fact, &frame, 0u) != LIB_STATUS_OK ||
         fact.kind != COMMON_SESSION_FACT_UI_INPUT || fact.run_id == 0u) return 1;
@@ -173,7 +173,7 @@ int main(void)
         common_session_publish_machine(policy, COMMON_SESSION_MACHINE_RUNNING,
             LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
             &frame, &policy_plan) || policy_plan.ui_action_ready) return 1;
-    frame = (ui_frame) {0};
+    frame = (kvm_frame) {0};
     frame.valid = 1u;
     frame.text_columns = 80u;
     frame.text_rows = 25u;
@@ -228,7 +228,7 @@ int main(void)
             &policy_plan) == 0u || common_session_publish_machine(policy,
             COMMON_SESSION_MACHINE_RUNNING, LIB_STATUS_OK) != LIB_STATUS_OK ||
         !take_and_reduce(policy, &fact, &frame, &policy_plan)) return 1;
-    frame = (ui_frame) {0};
+    frame = (kvm_frame) {0};
     frame.valid = 1u;
     frame.graphics = 1u;
     frame.graphics_width = 1u;

@@ -3,7 +3,7 @@
 #include "vm/machine/runtime/frame.h"
 
 type_status vm_machine_frame_from_display(
-    const vm_machine_display_event *source, ui_frame *destination)
+    const vm_machine_display_event *source, kvm_frame *destination)
 {
     STD_SIZE_T cell;
 
@@ -14,8 +14,8 @@ type_status vm_machine_frame_from_display(
     destination->sequence = (type_unsigned_32)source->generation;
     destination->graphics = source->graphics;
     if (destination->graphics) {
-        if (source->pixel_width > UI_GRAPHICS_MAX_WIDTH ||
-            source->pixel_height > UI_GRAPHICS_MAX_HEIGHT)
+        if (source->pixel_width > KVM_GRAPHICS_MAX_WIDTH ||
+            source->pixel_height > KVM_GRAPHICS_MAX_HEIGHT)
             return TYPE_STATUS_UNSUPPORTED;
         destination->graphics_width = source->pixel_width;
         destination->graphics_height = source->pixel_height;
@@ -26,7 +26,7 @@ type_status vm_machine_frame_from_display(
             sizeof(source->palette_rgb));
         return TYPE_STATUS_OK;
     }
-    if (source->columns > UI_TEXT_COLUMNS || source->rows > UI_TEXT_ROWS)
+    if (source->columns > KVM_TEXT_COLUMNS || source->rows > KVM_TEXT_ROWS)
         return TYPE_STATUS_UNSUPPORTED;
     destination->text_columns = source->columns;
     destination->text_rows = source->rows;

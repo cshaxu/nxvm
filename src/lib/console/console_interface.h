@@ -44,7 +44,7 @@ enum {
 };
 
 typedef struct lib_console_raw_key {
-    /* Opaque platform key value, interpreted by the matching UI adapter.
+    /* Opaque platform key value, interpreted by the matching KVM adapter.
      * Windows producers use the SDK virtual-key vocabulary wrapped in types. */
     lib_u32 key;
     lib_u32 unicode;
@@ -58,9 +58,9 @@ typedef struct lib_console_raw_key {
 } lib_console_raw_key;
 
 typedef struct lib_console_raw_mouse {
-    /* Raw Console cell position (historical field names), not UI motion.
-     * buttons is the platform input-record mask. The matching UI adapter
-     * computes motion and translates buttons before emitting a UI event. */
+    /* Raw Console cell position (historical field names), not KVM motion.
+     * buttons is the platform input-record mask. The matching KVM adapter
+     * computes motion and translates buttons before emitting a KVM event. */
     lib_i32 delta_x;
     lib_i32 delta_y;
     lib_u32 buttons;
@@ -82,7 +82,7 @@ typedef struct lib_console_event {
 } lib_console_event;
 
 /* Copied text output for a logical Console. It is deliberately a
- * Console value rather than a UI/window frame: native host renderers consume
+ * Console value rather than a KVM/window frame: native host renderers consume
  * it without learning an application or Window protocol. Palette values use
  * 0x00RRGGBB. */
 typedef struct lib_console_text_frame {

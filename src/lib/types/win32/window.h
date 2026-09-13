@@ -1,7 +1,7 @@
 #ifndef LIB_TYPES_WIN32_WINDOW_H
 #define LIB_TYPES_WIN32_WINDOW_H
 
-/* Win32 window, pointer and drawing declarations; no UI policy. */
+/* Win32 window, pointer and drawing declarations; no KVM policy. */
 #include <windows.h>
 
 typedef HWND lib_win32_hwnd;

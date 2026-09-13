@@ -1,12 +1,12 @@
 # One exact direct-edge map for source includes and build linkage.
-set(library_components types console host storage ui-base ui-window ui-console)
+set(library_components types console host storage kvm-base kvm-window kvm-console)
 set(library_dependencies_types "")
 set(library_dependencies_console types)
 set(library_dependencies_host types console)
 set(library_dependencies_storage types)
-set(library_dependencies_ui-base types)
-set(library_dependencies_ui-window types ui-base)
-set(library_dependencies_ui-console types console ui-base)
+set(library_dependencies_kvm-base types)
+set(library_dependencies_kvm-window types kvm-base)
+set(library_dependencies_kvm-console types console kvm-base)
 
 function(library_check_edge owner dependency)
     if(NOT owner IN_LIST library_components OR NOT dependency IN_LIST library_components)
@@ -45,9 +45,9 @@ foreach(source IN LISTS library_component_sources)
     endforeach()
 endforeach()
 
-if(EXISTS "${LIBRARY_ROOT}/ui-window/win32/component.c")
-    file(READ "${LIBRARY_ROOT}/ui-window/win32/component.c" window_worker)
-    if(window_worker MATCHES "ui_mailbox_wake_wait|ui_component_mailboxes_wake")
+if(EXISTS "${LIBRARY_ROOT}/kvm-window/win32/component.c")
+    file(READ "${LIBRARY_ROOT}/kvm-window/win32/component.c" window_worker)
+    if(window_worker MATCHES "kvm_mailbox_wake_wait|kvm_component_mailboxes_wake")
         message(FATAL_ERROR "Window must use its selected message notifier, not an Event bridge")
     endif()
     if(window_worker MATCHES "win32_window_cursor_blink_timeout")
@@ -83,9 +83,9 @@ if(EXISTS "${LIBRARY_ROOT}/CMakeLists.txt")
             endif()
             if(dependency IN_LIST library_components)
                 library_check_edge("${owner}" "${dependency}")
-            elseif((dependency STREQUAL "user32" AND owner MATCHES "^(host|ui-base|ui-window)$") OR
-                   (dependency STREQUAL "gdi32" AND owner STREQUAL "ui-window") OR
-                   (dependency STREQUAL "threads::threads" AND owner MATCHES "^(console|host|ui-base)$"))
+            elseif((dependency STREQUAL "user32" AND owner MATCHES "^(host|kvm-base|kvm-window)$") OR
+                   (dependency STREQUAL "gdi32" AND owner STREQUAL "kvm-window") OR
+                   (dependency STREQUAL "threads::threads" AND owner MATCHES "^(console|host|kvm-base)$"))
                 continue()
             else()
                 message(FATAL_ERROR "Unadmitted link: ${owner} -> ${dependency}")

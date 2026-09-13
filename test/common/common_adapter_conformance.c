@@ -47,7 +47,7 @@ static lib_status common_adapter_debug(void *context,
     return LIB_STATUS_OK;
 }
 
-static lib_status common_adapter_input(void *context, const ui_input_event *event)
+static lib_status common_adapter_input(void *context, const kvm_input_event *event)
 {
     common_adapter *adapter = context;
 
@@ -106,7 +106,7 @@ static int common_adapter_conform(common_adapter *adapter, lib_u32 run_id)
     common_machine_debug_result debug_result;
     common_session_fact fact;
     common_session_plan plan;
-    ui_frame frame = {0};
+    kvm_frame frame = {0};
     common_ui_options ui_options = {0};
     common_machine_driver driver = {
         .consume_request = common_adapter_consume,
@@ -123,7 +123,7 @@ static int common_adapter_conform(common_adapter *adapter, lib_u32 run_id)
     ui_options.failure_context = adapter;
     ui_options.failure_sink = common_adapter_failure;
     ui_options.initial_window_title = "Common adapter conformance";
-    ui_hotkey_registry_initialize(&ui_options.hotkeys);
+    kvm_hotkey_registry_initialize(&ui_options.hotkeys);
     if (common_machine_create(&machine) != LIB_STATUS_OK ||
         common_machine_bind_driver(machine, &driver) != LIB_STATUS_OK ||
         common_machine_bind_run(machine, run_id) != LIB_STATUS_OK ||

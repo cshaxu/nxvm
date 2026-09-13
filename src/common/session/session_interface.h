@@ -2,8 +2,8 @@
 #define COMMON_SESSION_INTERFACE_H
 
 #include "lib/types/types_interface.h"
-#include "lib/ui-base/event_interface.h"
-#include "lib/ui-base/frame_interface.h"
+#include "lib/kvm-base/event_interface.h"
+#include "lib/kvm-base/frame_interface.h"
 #include "common/ui/ui_interface.h"
 
 #define COMMON_SESSION_LINE_CAPACITY 1024u
@@ -79,7 +79,7 @@ typedef struct common_session_fact {
             lib_status status;
             common_ui_completion completion;
         } ui_completion;
-        ui_input_event input;
+        kvm_input_event input;
     } value;
 } common_session_fact;
 
@@ -101,7 +101,7 @@ typedef struct common_session_plan {
     lib_bool mouse_capturable;
     lib_bool release_mouse;
     lib_bool frame_ready;
-    ui_frame frame;
+    kvm_frame frame;
     common_session_notice notice;
     char console_text[COMMON_SESSION_CLI_TEXT_CAPACITY];
     char console_prompt[COMMON_SESSION_CLI_PROMPT_CAPACITY];
@@ -109,7 +109,7 @@ typedef struct common_session_plan {
 } common_session_plan;
 
 typedef lib_status (*common_session_input_sink)(void *context,
-    const ui_input_event *event);
+    const kvm_input_event *event);
 
 /* One reducer owner serially configures, takes and reduces facts, reconciles
  * presentation and dispatches input. The publish APIs copy their payloads and
@@ -150,7 +150,7 @@ lib_status common_session_publish_console_line(void *context, const char *line);
 lib_status common_session_publish_monitor_text(common_session *session,
     const char *text);
 lib_status common_session_publish_ui_input(void *context,
-    const ui_input_event *event);
+    const kvm_input_event *event);
 lib_status common_session_publish_ui_delivery_failed(common_session *session,
     lib_u64 source_identity, lib_status status);
 lib_status common_session_publish_machine(common_session *session,
@@ -158,14 +158,14 @@ lib_status common_session_publish_machine(common_session *session,
 lib_status common_session_publish_ui_completion(common_session *session,
     lib_status status, const common_ui_completion *completion);
 lib_status common_session_publish_frame(common_session *session,
-    const ui_frame *frame);
+    const kvm_frame *frame);
 lib_status common_session_take(common_session *session,
-    common_session_fact *out_fact, ui_frame *out_frame,
+    common_session_fact *out_fact, kvm_frame *out_frame,
     lib_u32 timeout_milliseconds);
 lib_status common_session_reduce_fact(common_session *session,
-    const common_session_fact *fact, const ui_frame *frame,
+    const common_session_fact *fact, const kvm_frame *frame,
     common_session_plan *out_plan);
 lib_status common_session_dispatch_host_input(common_session *session,
-    const ui_input_event *event, common_session_input_sink sink,
+    const kvm_input_event *event, common_session_input_sink sink,
     void *sink_context);
 #endif

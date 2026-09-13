@@ -39,42 +39,42 @@ endif()
 library_root(console)
 target_link_libraries(console PUBLIC types)
 
-set(LIBRARY_UI_BASE_SOURCES
-    ui-base/component.c
-    ui-base/hotkey.c
-    ui-base/input.c
-    ui-base/mailbox.c)
+set(LIBRARY_KVM_BASE_SOURCES
+    kvm-base/component.c
+    kvm-base/hotkey.c
+    kvm-base/input.c
+    kvm-base/mailbox.c)
 if(WIN32)
-    list(APPEND LIBRARY_UI_BASE_SOURCES
-        ui-base/win32/mailbox.c
-        ui-base/win32/input.c)
+    list(APPEND LIBRARY_KVM_BASE_SOURCES
+        kvm-base/win32/mailbox.c
+        kvm-base/win32/input.c)
 else()
-    list(APPEND LIBRARY_UI_BASE_SOURCES
-        ui-base/linux/mailbox.c
-        ui-base/linux/input.c)
+    list(APPEND LIBRARY_KVM_BASE_SOURCES
+        kvm-base/linux/mailbox.c
+        kvm-base/linux/input.c)
 endif()
-add_library(ui-base STATIC ${LIBRARY_UI_BASE_SOURCES})
-library_root(ui-base)
-target_link_libraries(ui-base PUBLIC types)
+add_library(kvm-base STATIC ${LIBRARY_KVM_BASE_SOURCES})
+library_root(kvm-base)
+target_link_libraries(kvm-base PUBLIC types)
 
-add_library(ui-window STATIC ui-window/window.c ui-window/geometry.c ui-window/render.c ui-window/motion.c)
+add_library(kvm-window STATIC kvm-window/window.c kvm-window/geometry.c kvm-window/render.c kvm-window/motion.c)
 if(WIN32)
-    target_sources(ui-window PRIVATE ui-window/win32/geometry.c ui-window/win32/input.c
-        ui-window/win32/mouse.c ui-window/win32/component.c)
+    target_sources(kvm-window PRIVATE kvm-window/win32/geometry.c kvm-window/win32/input.c
+        kvm-window/win32/mouse.c kvm-window/win32/component.c)
 else()
-    target_sources(ui-window PRIVATE ui-window/linux/component.c)
+    target_sources(kvm-window PRIVATE kvm-window/linux/component.c)
 endif()
-library_root(ui-window)
-target_link_libraries(ui-window PUBLIC types ui-base)
+library_root(kvm-window)
+target_link_libraries(kvm-window PUBLIC types kvm-base)
 
-add_library(ui-console STATIC ui-console/console.c)
+add_library(kvm-console STATIC kvm-console/console.c)
 if(WIN32)
-    target_sources(ui-console PRIVATE ui-console/win32/component.c)
+    target_sources(kvm-console PRIVATE kvm-console/win32/component.c)
 else()
-    target_sources(ui-console PRIVATE ui-console/linux/component.c)
+    target_sources(kvm-console PRIVATE kvm-console/linux/component.c)
 endif()
-library_root(ui-console)
-target_link_libraries(ui-console PUBLIC types console ui-base)
+library_root(kvm-console)
+target_link_libraries(kvm-console PUBLIC types console kvm-base)
 
 if(WIN32)
     set(LIBRARY_HOST_SOURCES host/clock.c host/console.c host/sync.c
@@ -98,25 +98,25 @@ library_root(storage)
 target_link_libraries(storage PUBLIC types)
 
 if(WIN32)
-    target_link_libraries(ui-base PRIVATE user32)
-    target_link_libraries(ui-window PRIVATE user32 gdi32)
+    target_link_libraries(kvm-base PRIVATE user32)
+    target_link_libraries(kvm-window PRIVATE user32 gdi32)
     target_link_libraries(host PRIVATE user32)
 else()
     find_package(Threads REQUIRED)
     target_link_libraries(console PRIVATE Threads::Threads)
     target_link_libraries(host PRIVATE Threads::Threads)
-    target_link_libraries(ui-base PRIVATE Threads::Threads)
+    target_link_libraries(kvm-base PRIVATE Threads::Threads)
 endif()
 
 # This build-only aggregate does not create a library-root dependency. Each
 # peer root remains independently compilable and names its exact dependencies.
 add_library(lib-neutral-corpus INTERFACE)
 target_link_libraries(lib-neutral-corpus INTERFACE
-    types console host storage ui-base ui-window ui-console)
+    types console host storage kvm-base kvm-window kvm-console)
 
 if(LIBRARY_STRICT_WARNINGS AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     foreach(library_target IN ITEMS
-            console ui-base ui-window ui-console host storage)
+            console kvm-base kvm-window kvm-console host storage)
         target_compile_options(${library_target} PRIVATE
             -Wall -Wextra -Wpedantic -Werror)
     endforeach()
@@ -143,7 +143,7 @@ if(BUILD_TESTING)
         COMMAND "${CMAKE_COMMAND}"
             -DLIBRARY_ROOT:PATH=${LIBRARY_SOURCE_ROOT}/../test/fixtures/lib-component-dag
             -DLIBRARY_VERIFIER:FILEPATH=${CMAKE_CURRENT_LIST_DIR}/verify_component_dependencies.cmake
-            "-DLIBRARY_EXPECTED_ERROR:STRING=Forbidden component edge: host -> ui-window"
+            "-DLIBRARY_EXPECTED_ERROR:STRING=Forbidden component edge: host -> kvm-window"
             -P "${LIBRARY_SOURCE_ROOT}/../test/support/component_dag_forbidden_include_smoke.cmake")
     add_test(NAME library.component-dag-relative-include
         COMMAND "${CMAKE_COMMAND}"
@@ -151,4 +151,12 @@ if(BUILD_TESTING)
             -DLIBRARY_VERIFIER:FILEPATH=${CMAKE_CURRENT_LIST_DIR}/verify_component_dependencies.cmake
             "-DLIBRARY_EXPECTED_ERROR:STRING=canonical lib/"
             -P "${LIBRARY_SOURCE_ROOT}/../test/support/component_dag_forbidden_include_smoke.cmake")
+    add_test(NAME library.kvm-naming
+        COMMAND "${CMAKE_COMMAND}" -DKVM_NAMING_ROOT:PATH=${LIBRARY_SOURCE_ROOT}
+            -P "${CMAKE_CURRENT_LIST_DIR}/verify_kvm_naming.cmake")
+    add_test(NAME library.kvm-naming-forbidden
+        COMMAND "${CMAKE_COMMAND}"
+            -DKVM_NAMING_ROOT:PATH=${LIBRARY_SOURCE_ROOT}/../test/fixtures/kvm-naming
+            -DKVM_NAMING_VERIFIER:FILEPATH=${CMAKE_CURRENT_LIST_DIR}/verify_kvm_naming.cmake
+            -P "${LIBRARY_SOURCE_ROOT}/../test/support/kvm_naming_forbidden_smoke.cmake")
 endif()

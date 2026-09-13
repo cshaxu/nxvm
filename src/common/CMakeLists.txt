@@ -34,13 +34,13 @@ target_link_libraries(common-debug PUBLIC common-machine common-xasm32 storage)
 
 add_library(common-session STATIC session/session.c)
 common_root(common-session)
-target_link_libraries(common-session PUBLIC common-ui host ui-base)
+target_link_libraries(common-session PUBLIC common-ui host kvm-base)
 
 add_library(common-ui STATIC
     ui/console_host.c
     ui/presentation.c)
 common_root(common-ui)
-target_link_libraries(common-ui PUBLIC host ui-window ui-console ui-base)
+target_link_libraries(common-ui PUBLIC host kvm-window kvm-console kvm-base)
 
 add_custom_target(common-verify-corpus
     COMMAND "${CMAKE_COMMAND}"

@@ -6,7 +6,7 @@
 struct lib_console {
     lib_atomic_flag lock;
     /* Serializes sink replacement against an in-flight copied event callback.
-       A retiring UI source waits here before publishing SOURCE_RETIRED. */
+       A retiring KVM source waits here before publishing SOURCE_RETIRED. */
     console_mutex *event_gate;
     console_mutex *output_lock;
     lib_atomic_u32 references;

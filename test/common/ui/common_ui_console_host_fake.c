@@ -3,18 +3,18 @@
 #include "lib/types/types_interface.h"
 
 #include "common/ui/console_host.h"
-#include "lib/ui-console/console_interface.h"
-#include "lib/ui-window/window_interface.h"
+#include "lib/kvm-console/console_interface.h"
+#include "lib/kvm-window/window_interface.h"
 
-struct ui_console { lib_console *logical_console; };
-struct ui_window {
+struct kvm_console { lib_console *logical_console; };
+struct kvm_window {
     lib_bool frozen;
-    ui_component_options component;
+    kvm_component_options component;
 };
 
 static lib_status common_ui_fake_window_create_status;
 static lib_status common_ui_fake_claim_status;
-static ui_window *common_ui_fake_window;
+static kvm_window *common_ui_fake_window;
 
 void common_ui_fake_reset(void)
 {
@@ -89,10 +89,10 @@ lib_status common_ui_console_host_release_guest(common_ui_console_host *host,
         LIB_STATUS_OK;
 }
 
-lib_status ui_console_create(ui_console **out_console,
-    const ui_console_options *options)
+lib_status kvm_console_create(kvm_console **out_console,
+    const kvm_console_options *options)
 {
-    ui_console *console;
+    kvm_console *console;
 
     if (out_console == LIB_NULL || options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_console = LIB_NULL;
@@ -103,18 +103,21 @@ lib_status ui_console_create(ui_console **out_console,
     return LIB_STATUS_OK;
 }
 
-lib_status ui_console_publish_frame(ui_console *console, const ui_frame *frame)
+lib_status kvm_console_publish_frame(kvm_console *console, const kvm_frame *frame)
 { return console == LIB_NULL || frame == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK; }
 
-void ui_console_destroy(ui_console *console)
-{ lib_release(console); }
+lib_status kvm_console_destroy(kvm_console *console)
+{
+    lib_release(console);
+    return LIB_STATUS_OK;
+}
 
-lib_console *ui_console_get_console(const ui_console *console)
+lib_console *kvm_console_get_console(const kvm_console *console)
 { return console == LIB_NULL ? LIB_NULL : console->logical_console; }
 
-lib_status ui_window_create(ui_window **out_window, const ui_window_options *options)
+lib_status kvm_window_create(kvm_window **out_window, const kvm_window_options *options)
 {
-    ui_window *window;
+    kvm_window *window;
 
     if (out_window == LIB_NULL || options == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_window = LIB_NULL;
@@ -129,36 +132,37 @@ lib_status ui_window_create(ui_window **out_window, const ui_window_options *opt
     return LIB_STATUS_OK;
 }
 
-lib_status ui_window_publish_frame(ui_window *window, const ui_frame *frame)
+lib_status kvm_window_publish_frame(kvm_window *window, const kvm_frame *frame)
 { return window == LIB_NULL || frame == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK; }
 
-void ui_window_destroy(ui_window *window)
+lib_status kvm_window_destroy(kvm_window *window)
 {
     if (common_ui_fake_window == window) common_ui_fake_window = LIB_NULL;
     lib_release(window);
+    return LIB_STATUS_OK;
 }
 
-lib_status ui_window_set_title(ui_window *window, const char *title)
+lib_status kvm_window_set_title(kvm_window *window, const char *title)
 { return window == LIB_NULL || title == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK; }
 
-lib_status ui_window_freeze(ui_window *window)
+lib_status kvm_window_freeze(kvm_window *window)
 {
     if (window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     window->frozen = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
-lib_status ui_window_unfreeze(ui_window *window)
+lib_status kvm_window_unfreeze(kvm_window *window)
 {
     if (window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     window->frozen = LIB_FALSE;
     return LIB_STATUS_OK;
 }
 
-lib_status ui_window_release_mouse(ui_window *window)
+lib_status kvm_window_release_mouse(kvm_window *window)
 { return window == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_OK; }
 
-int common_ui_fake_emit_window_input(const ui_input_event *event)
+int common_ui_fake_emit_window_input(const kvm_input_event *event)
 {
     return common_ui_fake_window == LIB_NULL ||
         common_ui_fake_window->component.input_sink == LIB_NULL ? 0 :

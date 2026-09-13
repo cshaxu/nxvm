@@ -2,9 +2,9 @@
 #define COMMON_UI_INTERFACE_H
 
 #include "lib/types/types_interface.h"
-#include "lib/ui-base/event_interface.h"
-#include "lib/ui-base/frame_interface.h"
-#include "lib/ui-base/hotkey_interface.h"
+#include "lib/kvm-base/event_interface.h"
+#include "lib/kvm-base/frame_interface.h"
+#include "lib/kvm-base/hotkey_interface.h"
 
 typedef struct common_ui common_ui;
 
@@ -42,7 +42,7 @@ typedef struct common_ui_completion {
 } common_ui_completion;
 
 typedef lib_status (*common_ui_input_sink)(void *context,
-    const ui_input_event *event);
+    const kvm_input_event *event);
 typedef lib_status (*common_ui_console_line_sink)(void *context,
     const char *line);
 typedef void (*common_ui_failure_sink)(void *context, lib_u64 source_identity,
@@ -55,7 +55,7 @@ typedef struct common_ui_options {
     common_ui_console_line_sink console_line_sink;
     void *failure_context;
     common_ui_failure_sink failure_sink;
-    ui_hotkey_registry hotkeys;
+    kvm_hotkey_registry hotkeys;
     const char *initial_window_title;
 } common_ui_options;
 
@@ -64,7 +64,7 @@ typedef struct common_ui_plan {
     lib_bool mouse_capturable;
     lib_bool release_mouse;
     lib_bool frame_ready;
-    ui_frame frame;
+    kvm_frame frame;
 } common_ui_plan;
 
 lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options);

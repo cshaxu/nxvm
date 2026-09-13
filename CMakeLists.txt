@@ -92,10 +92,10 @@ add_executable(types-smoke test/lib/types_smoke.c)
 target_link_libraries(types-smoke PRIVATE types)
 add_test(NAME unit.types-smoke COMMAND types-smoke)
 set_tests_properties(unit.types-smoke PROPERTIES LABELS "unit")
-add_executable(ui-base-contract-smoke test/lib/ui_base_contract_smoke.c)
-target_link_libraries(ui-base-contract-smoke PRIVATE ui-base)
-add_test(NAME unit.ui-base-contract-smoke COMMAND ui-base-contract-smoke)
-set_tests_properties(unit.ui-base-contract-smoke PROPERTIES LABELS "unit")
+add_executable(kvm-base-contract-smoke test/lib/kvm_base_contract_smoke.c)
+target_link_libraries(kvm-base-contract-smoke PRIVATE kvm-base)
+add_test(NAME unit.kvm-base-contract-smoke COMMAND kvm-base-contract-smoke)
+set_tests_properties(unit.kvm-base-contract-smoke PROPERTIES LABELS "unit")
 add_test(NAME unit.library-manifest
     COMMAND ${CMAKE_COMMAND}
         -DLIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
@@ -2717,10 +2717,10 @@ set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
 # These direct lib targets remain explicit unit routes.
 list(APPEND project_t344_single_test_targets
     types-smoke
-    ui-base-contract-smoke)
+    kvm-base-contract-smoke)
 list(APPEND project_t344_registered_targets
     types-smoke
-    ui-base-contract-smoke)
+    kvm-base-contract-smoke)
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
 foreach(project_t344_target IN LISTS project_t344_single_test_targets)
@@ -2790,6 +2790,7 @@ if(POWERSHELL_EXECUTABLE)
         COMMENT "Building and executing repository-only unit tests"
         VERBATIM)
     add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS})
+    add_dependencies(run-unit-tests kvm-base-contract-smoke)
 
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass

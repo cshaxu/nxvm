@@ -1,8 +1,8 @@
 #include "common/ui/ui_interface.h"
 
 #include "common/ui/console_host.h"
-#include "lib/ui-console/console_interface.h"
-#include "lib/ui-window/window_interface.h"
+#include "lib/kvm-console/console_interface.h"
+#include "lib/kvm-window/window_interface.h"
 
 struct common_ui {
     common_ui_console_host *console_host;
@@ -10,15 +10,15 @@ struct common_ui {
     void *input_context;
     common_ui_failure_sink failure_sink;
     void *failure_context;
-    ui_window *window;
-    ui_console *console;
-    ui_hotkey_registry hotkeys;
-    char initial_window_title[UI_WINDOW_TITLE_CAPACITY];
-    ui_frame frame;
+    kvm_window *window;
+    kvm_console *console;
+    kvm_hotkey_registry hotkeys;
+    char initial_window_title[KVM_WINDOW_TITLE_CAPACITY];
+    kvm_frame frame;
     lib_bool raw_console_current;
 };
 
-static int common_ui_input(void *opaque, const ui_input_event *event)
+static int common_ui_input(void *opaque, const kvm_input_event *event)
 {
     common_ui *ui = opaque;
 
@@ -52,8 +52,8 @@ static void common_ui_destroy_raw_console(common_ui *ui)
     if (ui->console != LIB_NULL) {
         if (ui->raw_console_current)
             (void)common_ui_console_host_release_guest(ui->console_host,
-                ui_console_get_console(ui->console));
-        ui_console_destroy(ui->console);
+                kvm_console_get_console(ui->console));
+        kvm_console_destroy(ui->console);
         ui->console = LIB_NULL;
         ui->raw_console_current = LIB_FALSE;
     }
@@ -62,15 +62,15 @@ static void common_ui_destroy_raw_console(common_ui *ui)
 static void common_ui_destroy_window(common_ui *ui)
 {
     if (ui != LIB_NULL && ui->window != LIB_NULL) {
-        ui_window_destroy(ui->window);
+        kvm_window_destroy(ui->window);
         ui->window = LIB_NULL;
     }
 }
 
 static lib_status common_ui_create_window(common_ui *ui)
 {
-    ui_component_options component = {0};
-    ui_window_options options = {0};
+    kvm_component_options component = {0};
+    kvm_window_options options = {0};
 
     if (ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (ui->window != LIB_NULL) return LIB_STATUS_OK;
@@ -82,12 +82,12 @@ static lib_status common_ui_create_window(common_ui *ui)
     options.component = component;
     options.initial_title = ui->initial_window_title;
     options.initial_frozen = LIB_FALSE;
-    return ui_window_create(&ui->window, &options);
+    return kvm_window_create(&ui->window, &options);
 }
 
 static lib_status common_ui_create_raw_console(common_ui *ui)
 {
-    ui_component_options component = {0};
+    kvm_component_options component = {0};
 
     if (ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (ui->console != LIB_NULL) return LIB_STATUS_OK;
@@ -96,7 +96,7 @@ static lib_status common_ui_create_raw_console(common_ui *ui)
     component.failure_context = ui;
     component.failure_sink = common_ui_failure;
     component.hotkeys = ui->hotkeys;
-    return ui_console_create(&ui->console, &component);
+    return kvm_console_create(&ui->console, &component);
 }
 
 static lib_status common_ui_publish_frame(common_ui *ui)
@@ -105,10 +105,10 @@ static lib_status common_ui_publish_frame(common_ui *ui)
 
     if (ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (ui->window != LIB_NULL &&
-        (status = ui_window_publish_frame(ui->window, &ui->frame)) != LIB_STATUS_OK)
+        (status = kvm_window_publish_frame(ui->window, &ui->frame)) != LIB_STATUS_OK)
         return status;
     return ui->console == LIB_NULL ? LIB_STATUS_OK :
-        ui_console_publish_frame(ui->console, &ui->frame);
+        kvm_console_publish_frame(ui->console, &ui->frame);
 }
 
 lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options)
@@ -195,25 +195,25 @@ lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
     case COMMON_UI_ACTION_BIND_RAW_CONSOLE:
         if (ui->console == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         status = common_ui_console_host_claim_guest(ui->console_host,
-            ui_console_get_console(ui->console));
+            kvm_console_get_console(ui->console));
         if (status == LIB_STATUS_OK) ui->raw_console_current = LIB_TRUE;
         break;
     case COMMON_UI_ACTION_BIND_MONITOR_CONSOLE:
         if (ui->console != LIB_NULL) status = common_ui_console_host_release_guest(
-            ui->console_host, ui_console_get_console(ui->console));
+            ui->console_host, kvm_console_get_console(ui->console));
         if (status == LIB_STATUS_OK) ui->raw_console_current = LIB_FALSE;
         break;
     case COMMON_UI_ACTION_SET_WINDOW_TITLE:
         if (action->value.title == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
         if (ui->window != LIB_NULL)
-            status = ui_window_set_title(ui->window, action->value.title);
+            status = kvm_window_set_title(ui->window, action->value.title);
         break;
     case COMMON_UI_ACTION_SET_MOUSE_CAPTURABLE:
         if (ui->window != LIB_NULL) status = action->value.mouse_capturable ?
-            ui_window_unfreeze(ui->window) : ui_window_freeze(ui->window);
+            kvm_window_unfreeze(ui->window) : kvm_window_freeze(ui->window);
         break;
     case COMMON_UI_ACTION_RELEASE_MOUSE:
-        if (ui->window != LIB_NULL) status = ui_window_release_mouse(ui->window);
+        if (ui->window != LIB_NULL) status = kvm_window_release_mouse(ui->window);
         break;
     default:
         return LIB_STATUS_INVALID_ARGUMENT;

@@ -37,3 +37,10 @@ SoftPC commit `2ea35ce87bb538a6cc520be1353641a99a94d427`, revision
 `shared-t55-s20-p2`. The source remains project-owned MIT material with no
 independent third-party notice. The import again excludes every SoftPC path
 outside `src/lib/`; its unrelated working-tree asset change is not an input.
+
+M5 T531 S11 replaces the complete corpus byte-for-byte with SoftPC commit
+`987d82e5e87559a00b910a21d2c715d4b844dcae`, revision
+`shared-t55-s21-p2`. This 94-file project-owned MIT corpus renames the neutral
+`ui-*` component roots to `kvm-*`; it remains free of independent third-party
+notices. The import excludes every SoftPC path outside `src/lib/`, including
+the unrelated dirty `assets/binary/softpc.ini` worktree asset.
