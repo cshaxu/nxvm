@@ -53,26 +53,30 @@ recorded evidence, never by following successive isolated failures.
    display/console_control, lifecycle, frame, input, monitor, media and Debug
    transitions. Distinguish missing implementation from already shared code.
    Produce a reviewed implementation ledger before changing runtime code.
-2. **S2: UI actions and acknowledged completion.** Implement component/broker
+2. **S2: canonical Lib refresh prerequisite.** Freeze the audited canonical
+   SoftPC Lib revision and replace NXVM Lib as one exact corpus if the source
+   review admits it.  No Common or product workaround may compensate for a
+   Lib semantic delta.
+3. **S3: UI actions and acknowledged completion.** Implement component/broker
    transitions and failures; preserve frame/title/mouse semantics across
    creation, switching, close and resume. Delete the replaced target-only path.
-3. **S3: common control and monitor.** Converge FIFO/reducer/reconciliation,
+4. **S4: common control and monitor.** Converge FIFO/reducer/reconciliation,
    shared console_control behavior, notifications and prompt scheduling;
    retain only the three approved product injection seams.
-4. **S4: machine protocol and adapter cutover.** Reconcile start, lifecycle,
+5. **S5: machine protocol and adapter cutover.** Reconcile start, lifecycle,
    input, media and completion contracts for both execution models. Delete
    duplicate transport/generation state, not the necessary native executors.
-5. **S5: input and failure closure.** Cover source revocation, held keys,
+6. **S6: input and failure closure.** Cover source revocation, held keys,
    hotkeys, mouse capture, stale facts, queue full, broker and component errors
    across all presentation modes and lifecycle states.
-6. **S6: Debug and XASM32 for both adapters.** Complete paused register/memory/
+7. **S7: Debug and XASM32 for both adapters.** Complete paused register/memory/
    port access, breakpoints and execution plans, continuation and file commands;
    preserve the original command tables. Unsupported adapter operations are
    reported as unfinished work, not accepted as two-product Debug support.
-7. **S7: full consumer integration and subtraction.** NXVM adds startup
+8. **S8: full consumer integration and subtraction.** NXVM adds startup
    console_control input and uses the common behavior. Verify the SoftPC
    binding against the same package; remove replaced product control/UI paths.
-8. **S8: package and whole-task acceptance.** Independent build/manifest,
+9. **S9: package and whole-task acceptance.** Independent build/manifest,
    byte-identical consumer corpus, full matrix and failure-path review, full
    unit and integration, optimized stripped x64/x86 release artifacts.
 
