@@ -64,5 +64,19 @@ facade, and task/provenance governance records.
   - `nxvm_0_5_0530_x86.exe` SHA-256
     `C65DB7F24086D1513EC0FE7DE37CC27FF86B0882BB8EEF140F4773391EFCB2E2`.
 
-The task remains open for owner testing; this evidence does not claim T530
-closure.
+At implementation delivery the task remained open for owner testing.
+
+## Coordinator Closure
+
+On 2026-09-13 the owner explicitly directed current-task closure before the
+Common convergence admission. This replaces the pending owner-test response;
+it does not assert an additional manual run. Coordinator review checked the
+actual consumer status/title/formatting adaptations, imported-corpus boundary,
+and retained artifact hashes. The hashes still match those above. This
+governance-only delivery does not change the tested runnable source and reuses
+the recorded implementation results rather than claiming a new runtime run.
+Documentation governance passes for `vm-0-5-0530`.
+
+The successor proposal now requires the same control behavior for both
+products, including console_control and full Debug/XASM32. Those new outcomes
+are not credited to this pinned-library import.
