@@ -156,6 +156,10 @@ typedef struct common_machine_debug_lease {
 typedef lib_status (*common_machine_request_consumer)(void *context,
     const common_machine_request *request);
 typedef lib_bool (*common_machine_is_paused)(void *context);
+/* Synchronous typed boundary: Common calls this from its Debug caller and
+ * receives the copied result before returning. An adapter with stricter CPU
+ * affinity may synchronously relay internally, but Common owns no such queue
+ * or executor. */
 typedef lib_status (*common_machine_debug_execute)(void *context,
     const common_machine_debug_request *request,
     common_machine_debug_result *out_result);
