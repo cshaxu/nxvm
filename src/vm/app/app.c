@@ -22,6 +22,16 @@ static common_session_machine_state vm_app_machine_state(vm_machine_result_kind 
     }
 }
 
+static lib_status vm_app_status_as_lib(type_status status)
+{
+    if (status == TYPE_STATUS_OK) return LIB_STATUS_OK;
+    if (status == TYPE_STATUS_INVALID_ARGUMENT) return LIB_STATUS_INVALID_ARGUMENT;
+    if (status == TYPE_STATUS_INVALID_STATE) return LIB_STATUS_INVALID_STATE;
+    if (status == TYPE_STATUS_UNSUPPORTED) return LIB_STATUS_UNSUPPORTED;
+    if (status == TYPE_STATUS_NO_MEMORY) return LIB_STATUS_NO_MEMORY;
+    return LIB_STATUS_IO_ERROR;
+}
+
 static C_VOID vm_app_machine_result(void *context, const vm_machine_result *result)
 {
     vm_app *app = context;
@@ -33,8 +43,17 @@ static C_VOID vm_app_machine_result(void *context, const vm_machine_result *resu
             TYPE_STATUS_OK) (C_VOID)common_session_publish_frame(app->session, &frame);
         return;
     }
+    if (result->kind == VM_MACHINE_RESULT_REMOVABLE_MEDIA) {
+        (C_VOID)common_session_publish_monitor_text(app->session,
+            result->status == TYPE_STATUS_OK ?
+            (result->value.removable_media.present ? "Floppy disk inserted.\n" :
+                "Floppy disk ejected.\n") :
+            (result->value.removable_media.present ?
+                "Cannot read floppy disk.\n" : "Cannot eject floppy disk.\n"));
+        return;
+    }
     (C_VOID)common_session_publish_machine(app->session,
-        vm_app_machine_state(result->kind), (lib_status)result->status);
+        vm_app_machine_state(result->kind), vm_app_status_as_lib(result->status));
 }
 
 type_status vm_app_create(vm_app **out_app)

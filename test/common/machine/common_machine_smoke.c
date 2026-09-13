@@ -6,13 +6,16 @@ typedef struct common_machine_observer {
     lib_bool paused;
 } common_machine_observer;
 
-static void common_machine_observe(void *context,
+static lib_status common_machine_observe(void *context,
     const common_machine_request *request)
 {
     common_machine_observer *observer = context;
 
     if (observer != LIB_NULL && request != LIB_NULL && observer->count < 3u)
         observer->requests[observer->count++] = *request;
+    if (request != LIB_NULL && request->kind == COMMON_MACHINE_REQUEST_REMOVABLE_MEDIA)
+        return LIB_STATUS_IO_ERROR;
+    return LIB_STATUS_OK;
 }
 
 static lib_bool common_machine_observer_paused(void *context)
@@ -66,6 +69,17 @@ int main(void)
         common_machine_observe_safe_point(machine) != LIB_STATUS_OK ||
         common_machine_debug_execute_with_lease(machine, &lease,
             &(common_machine_debug_request) {0}, &result) != LIB_STATUS_INVALID_STATE) {
+        common_machine_destroy(machine);
+        return 1;
+    }
+    if (common_machine_submit(machine, &(common_machine_request) {
+            .kind = COMMON_MACHINE_REQUEST_REMOVABLE_MEDIA,
+            .removable_media = {
+                .kind = COMMON_MACHINE_REMOVABLE_MEDIA_FLOPPY,
+                .slot = 0u, .present = LIB_TRUE, .path = "disk.img" } }) !=
+            LIB_STATUS_OK || common_machine_observe_safe_point(machine) !=
+            LIB_STATUS_IO_ERROR || observer.count != 3u ||
+        observer.requests[2u].removable_media.path[0u] != 'd') {
         common_machine_destroy(machine);
         return 1;
     }

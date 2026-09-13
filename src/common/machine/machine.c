@@ -142,8 +142,7 @@ lib_status common_machine_observe_safe_point(common_machine *machine)
         request.kind == COMMON_MACHINE_REQUEST_RESET ||
         request.kind == COMMON_MACHINE_REQUEST_STOP) ++machine->debug_generation;
     common_machine_unlock(machine);
-    driver.consume_request(driver.context, &request);
-    return LIB_STATUS_OK;
+    return driver.consume_request(driver.context, &request);
 }
 
 lib_status common_machine_wait(common_machine *machine,

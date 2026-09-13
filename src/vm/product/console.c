@@ -195,6 +195,9 @@ static lib_status vm_product_console_lifecycle(void *opaque,
 
     if (machine == STD_NULL) return LIB_STATUS_INVALID_STATE;
     switch (request) {
+    case COMMON_SESSION_LIFECYCLE_START: return (lib_status)vm_machine_start(machine);
+    case COMMON_SESSION_LIFECYCLE_PAUSE: return (lib_status)vm_machine_request_pause(machine);
+    case COMMON_SESSION_LIFECYCLE_RESET: return (lib_status)vm_machine_reset(machine);
     case COMMON_SESSION_LIFECYCLE_RESUME: return (lib_status)vm_machine_resume(machine);
     case COMMON_SESSION_LIFECYCLE_STEP: return (lib_status)vm_machine_request_step(machine);
     case COMMON_SESSION_LIFECYCLE_STOP: vm_machine_stop(machine); return LIB_STATUS_OK;
@@ -213,7 +216,8 @@ static type_status vm_product_console_begin(vm_product_console_context *context,
     run_id = common_session_begin_run(context->control, out_plan);
     if (run_id == 0u || vm_machine_bind_run(machine, run_id) != TYPE_STATUS_OK)
         return TYPE_STATUS_INVALID_STATE;
-    return resume ? vm_machine_resume(machine) : vm_machine_start(machine);
+    return (type_status)common_session_request_lifecycle(context->control,
+        resume ? COMMON_SESSION_LIFECYCLE_RESUME : COMMON_SESSION_LIFECYCLE_START);
 }
 
 static type_status vm_product_console_start(vm_product_console_context *context,
@@ -228,15 +232,16 @@ static type_status vm_product_console_request_pause(vm_product_console_context *
 {
     vm_machine *machine = vm_product_console_machine(context);
     return machine == STD_NULL ? TYPE_STATUS_INVALID_STATE :
-        vm_machine_request_pause(machine);
+        (type_status)common_session_request_lifecycle(context->control,
+            COMMON_SESSION_LIFECYCLE_PAUSE);
 }
 
 static type_status vm_product_console_stop(vm_product_console_context *context)
 {
     vm_machine *machine = vm_product_console_machine(context);
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_STATE;
-    vm_machine_stop(machine);
-    return TYPE_STATUS_OK;
+    return (type_status)common_session_request_lifecycle(context->control,
+        COMMON_SESSION_LIFECYCLE_STOP);
 }
 
 static C_INT vm_product_console_key_scan(ui_key key, type_unsigned_16 *scan)
@@ -814,8 +819,6 @@ static C_VOID doFloppy(vm_product_console_context *context)
             STD_PRINTF("Cannot change floppy media now.\n");
         } else if (vm_machine_insert_fdd(vm_product_console_machine(context), argArray[2])) {
             STD_PRINTF("Cannot read floppy disk from '%s'.\n", argArray[2]);
-        } else {
-            STD_PRINTF("Floppy disk inserted.\n");
         }
         return;
     }
@@ -824,8 +827,6 @@ static C_VOID doFloppy(vm_product_console_context *context)
             STD_PRINTF("Cannot change floppy media now.\n");
         } else if (vm_machine_remove_fdd(vm_product_console_machine(context), STD_NULL)) {
             STD_PRINTF("Cannot eject floppy disk.\n");
-        } else {
-            STD_PRINTF("Floppy disk ejected.\n");
         }
         return;
     }
@@ -929,8 +930,8 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "reset"))
     {
-        if (vm_product_console_machine(context) != STD_NULL)
-            (C_VOID)vm_machine_reset(vm_product_console_machine(context));
+        (C_VOID)common_session_request_lifecycle(context->control,
+            COMMON_SESSION_LIFECYCLE_RESET);
     }
     else if (!STD_STRCMP(argArray[0], "stop"))
     {

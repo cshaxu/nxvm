@@ -229,6 +229,21 @@ lib_status common_session_set_lifecycle_sink(common_session *session,
     return LIB_STATUS_OK;
 }
 
+lib_status common_session_request_lifecycle(common_session *session,
+    common_session_lifecycle_request_kind request)
+{
+    common_session_lifecycle_sink sink;
+    void *context;
+
+    if (session == LIB_NULL || request == COMMON_SESSION_LIFECYCLE_NONE ||
+        request > COMMON_SESSION_LIFECYCLE_STOP) return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_lock(session);
+    sink = session->lifecycle_sink;
+    context = session->lifecycle_sink_context;
+    common_session_unlock(session);
+    return sink == LIB_NULL ? LIB_STATUS_INVALID_STATE : sink(context, request);
+}
+
 lib_u32 common_session_begin_run(common_session *session,
     common_session_plan *out_plan)
 {
@@ -286,6 +301,20 @@ lib_status common_session_publish_console_line(void *context, const char *line)
     fact.kind = COMMON_SESSION_FACT_CONSOLE_LINE;
     lib_memory_copy(fact.value.line, line, bytes + 1u);
     return common_session_publish((common_session *)context, &fact);
+}
+
+lib_status common_session_publish_monitor_text(common_session *session,
+    const char *text)
+{
+    common_session_fact fact = {0};
+    lib_size bytes;
+
+    if (session == LIB_NULL || text == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    bytes = lib_text_length(text);
+    if (bytes >= sizeof(fact.value.line)) return LIB_STATUS_LIMIT_EXCEEDED;
+    fact.kind = COMMON_SESSION_FACT_MONITOR_TEXT;
+    lib_memory_copy(fact.value.line, text, bytes + 1u);
+    return common_session_publish(session, &fact);
 }
 
 lib_status common_session_publish_ui_input(void *context,
@@ -419,7 +448,6 @@ lib_status common_session_reduce_fact(common_session *session,
     common_session_cli_result cli_result;
     void *provider_context;
     void *machine_observer_context;
-    void *lifecycle_sink_context;
     lib_status status;
 
     if (session == LIB_NULL || fact == LIB_NULL || out_plan == LIB_NULL)
@@ -447,12 +475,16 @@ lib_status common_session_reduce_fact(common_session *session,
         common_session_plan_surface(session, out_plan);
         return LIB_STATUS_OK;
     }
+    if (fact->kind == COMMON_SESSION_FACT_MONITOR_TEXT) {
+        lib_memory_copy(out_plan->console_text, fact->value.line,
+            lib_text_length(fact->value.line) + 1u);
+        return LIB_STATUS_OK;
+    }
     if (fact->kind == COMMON_SESSION_FACT_CONSOLE_LINE) {
         common_session_lock(session);
         provider = session->cli_provider;
         provider_context = session->cli_provider_context;
         lifecycle_sink = session->lifecycle_sink;
-        lifecycle_sink_context = session->lifecycle_sink_context;
         common_session_unlock(session);
         if (provider == LIB_NULL) return LIB_STATUS_INVALID_STATE;
         lib_memory_set(&cli_result, 0, sizeof(cli_result));
@@ -465,7 +497,7 @@ lib_status common_session_reduce_fact(common_session *session,
             cli_result.prompt, sizeof(out_plan->console_prompt));
         if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
             if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-            status = lifecycle_sink(lifecycle_sink_context,
+            status = common_session_request_lifecycle(session,
                 cli_result.lifecycle_request);
             if (status != LIB_STATUS_OK) return status;
         }
@@ -517,7 +549,6 @@ lib_status common_session_reduce_fact(common_session *session,
     machine_observer = session->cli_machine_observer;
     machine_observer_context = session->cli_machine_observer_context;
     lifecycle_sink = session->lifecycle_sink;
-    lifecycle_sink_context = session->lifecycle_sink_context;
     common_session_unlock(session);
     if (machine_observer != LIB_NULL) {
         lib_memory_set(&cli_result, 0, sizeof(cli_result));
@@ -531,7 +562,7 @@ lib_status common_session_reduce_fact(common_session *session,
             cli_result.prompt, sizeof(out_plan->console_prompt));
         if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
             if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-            return lifecycle_sink(lifecycle_sink_context,
+            return common_session_request_lifecycle(session,
                 cli_result.lifecycle_request);
         }
     }

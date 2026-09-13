@@ -84,14 +84,14 @@ inside a generic platform implementation.
 
 NXVM separates one machine's Core execution from product control.
 `common/machine` owns the one ordered safe-point FIFO. It accepts only copied
-input and lifecycle requests and calls its opaque product driver at execution
-boundaries. `vm/machine` is NXVM's sole driver and Core assembly owner: it
-maps those copied requests to Core, publishes copied lifecycle, fault and
-display facts, and exposes bounded paused-Debug operations through the common
-lease contract. Neither owner selects a host surface or owns the process
-Console. The copied display/input ABI sits with `vm/machine/runtime`, beside
-the adapter that produces and consumes it; it contains no Core, executor,
-session, or UI pointer.
+input, lifecycle and removable-media requests and calls its opaque product
+driver at execution boundaries. `vm/machine` is NXVM's sole driver and Core
+assembly owner: it maps those copied requests to Core, publishes copied
+lifecycle, media-completion, fault and display facts, and exposes bounded
+paused-Debug operations through the common lease contract. Neither owner
+selects a host surface or owns the process Console. The copied display/input
+ABI sits with `vm/machine/runtime`, beside the adapter that produces and
+consumes it; it contains no Core, executor, session, or UI pointer.
 
 `common/session` is the sole product-control reducer. Its one FIFO receives
 copied Console lines, machine results and presentation input; it owns run

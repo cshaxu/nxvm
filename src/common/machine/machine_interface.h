@@ -4,6 +4,7 @@
 #include "lib/types/types_interface.h"
 
 #define COMMON_MACHINE_DEBUG_BYTES 32u
+#define COMMON_MACHINE_MEDIA_PATH_CAPACITY 1024u
 
 typedef struct common_machine common_machine;
 
@@ -26,8 +27,23 @@ typedef enum common_machine_request_kind {
     COMMON_MACHINE_REQUEST_RESET,
     COMMON_MACHINE_REQUEST_RESUME,
     COMMON_MACHINE_REQUEST_STEP,
-    COMMON_MACHINE_REQUEST_STOP
+    COMMON_MACHINE_REQUEST_STOP,
+    /* A removable-medium request is copied into the same ordered, run-bound
+     * queue as host input and lifecycle control.  Its driver, not Session or
+     * UI, owns the eventual controller mutation at a safe point. */
+    COMMON_MACHINE_REQUEST_REMOVABLE_MEDIA
 } common_machine_request_kind;
+
+typedef enum common_machine_removable_media_kind {
+    COMMON_MACHINE_REMOVABLE_MEDIA_FLOPPY
+} common_machine_removable_media_kind;
+
+typedef struct common_machine_removable_media {
+    common_machine_removable_media_kind kind;
+    lib_u8 slot;
+    lib_bool present;
+    char path[COMMON_MACHINE_MEDIA_PATH_CAPACITY];
+} common_machine_removable_media;
 
 typedef enum common_machine_pause_reason {
     COMMON_MACHINE_PAUSE_EXPLICIT,
@@ -41,6 +57,7 @@ typedef struct common_machine_request {
     common_machine_pause_reason pause_reason;
     lib_u32 run_id;
     common_machine_input input;
+    common_machine_removable_media removable_media;
 } common_machine_request;
 
 typedef enum common_machine_debug_operation {
@@ -136,7 +153,7 @@ typedef struct common_machine_debug_lease {
     lib_u64 generation;
 } common_machine_debug_lease;
 
-typedef void (*common_machine_request_consumer)(void *context,
+typedef lib_status (*common_machine_request_consumer)(void *context,
     const common_machine_request *request);
 typedef lib_bool (*common_machine_is_paused)(void *context);
 typedef lib_status (*common_machine_debug_execute)(void *context,

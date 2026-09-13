@@ -11,12 +11,14 @@ typedef struct common_adapter {
     lib_u32 marker;
 } common_adapter;
 
-static void common_adapter_consume(void *context,
+static lib_status common_adapter_consume(void *context,
     const common_machine_request *request)
 {
     common_adapter *adapter = context;
 
     if (adapter != LIB_NULL && request != LIB_NULL) ++adapter->request_count;
+    return adapter == LIB_NULL || request == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
+        LIB_STATUS_OK;
 }
 
 static lib_bool common_adapter_paused(void *context)

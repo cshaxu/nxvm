@@ -29,3 +29,12 @@ action. The injected NXVM CLI now requests monitor lines and writes monitor
 text through Session. [S4 evidence](../etc/evidence/t531-s4-common-session-control.md)
 records both ordered topology directions, an injected failure/reconcile retry,
 strict changed-source compilation and the 299/299 repository-only unit result.
+
+S5 gives Common Machine an explicit consumed-request status and adds copied
+removable-floppy requests.  NXVM now processes FDD replacement only through
+the stopped composition or paused Core safe point, then returns a copied
+completion through Common Session.  `START` remains a Session lifecycle
+request because neither distinct executor exists before it is accepted.  The
+[S5 evidence](../etc/evidence/t531-s5-common-machine-protocol.md) records the
+read-only SoftPC crosswalk and the later real-binding receiver; it makes no
+claim that SoftPC has been modified by this NXVM task.

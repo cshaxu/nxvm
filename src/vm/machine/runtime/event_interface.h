@@ -3,6 +3,8 @@
 
 #include "type.h"
 
+#include "common/machine/machine_interface.h"
+
 /* Value-only records exchanged across VM owners.  They retain neither an
  * executor, a session nor a Core object; each receiver owns its own queue and
  * decides how to consume the copied fact. */
@@ -36,6 +38,7 @@ typedef enum vm_machine_result_kind {
     VM_MACHINE_RESULT_PAUSED,
     VM_MACHINE_RESULT_RESET,
     VM_MACHINE_RESULT_STOPPED,
+    VM_MACHINE_RESULT_REMOVABLE_MEDIA,
     VM_MACHINE_RESULT_DEBUG_COMPLETED,
     VM_MACHINE_RESULT_FAULT,
     VM_MACHINE_RESULT_DISPLAY
@@ -76,6 +79,7 @@ typedef struct vm_machine_result {
     type_status status;
     union {
         vm_machine_display_event display;
+        common_machine_removable_media removable_media;
     } value;
 } vm_machine_result;
 

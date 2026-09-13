@@ -2,8 +2,26 @@
 
 ## Current Work
 
-T531 remains open after accepted S4; the next admitted batch will continue the
-finite two-product convergence ledger.
+## M5 T531 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T531 implementation and directed continued execution after accepted S4. Single-session coordinator/executor review. |
+| Objective | Complete the Common machine request/result boundary needed by both existing adapters for start, lifecycle, host input and safe-point media operations, while retaining their distinct Core and CCPU executors. |
+| Non-goals | No SoftPC write, no generic executor worker, no Core/CCPU merge, no direct controller/media mutation from Session or UI, no Debug grammar change and no external asset change. |
+| Reference Baseline | NXVM `947fed3e`; read-only SoftPC `e140ec55bbc4cd40956948e57e58dc678e54f699`; T531 proposal and S1 ledger. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md) and [two-product ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md). |
+| Files And ABI Surface | `src/common/machine/*` and `src/common/session/*` copied contracts, NXVM `src/vm/machine/*` and `src/vm/app/*` adapter callers, `src/vm/product/console.c` command cutover, owner-local machine/session tests and only directly required Common documentation/manifest records. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution and Documentation Rules; Product UX; T531 lifecycle, executor and product-seam ledger rows. |
+| Verification | Complete request-kind and stale-generation matrix; NXVM Core safe-point start/lifecycle/input/media regressions; explicit read-only SoftPC adapter crosswalk; full repository-only unit suite; Common manifest/corpus, documentation and actual-diff gates. |
+| Expected Markers | One Common copied request FIFO and run generation; machine adapters consume requests only at their own safe point; no second worker or UI-to-machine bypass; media completion is explicit rather than inferred. |
+| Asset Needs | None. No external asset or sibling source import. |
+| Reporting Requirements | Record every request/result disposition, actual adapter owner, retained executor distinction, source/test accounting and any SoftPC integration receiver that cannot be proved in this repository. |
+| Stop Conditions | A required request cannot be represented without a product command envelope, a common executor, a direct Core/CCPU mutation bypass, a sibling-repository write, or a new unapproved product-policy seam. |
+| Exit Criteria | The full S5 ledger batch has one disposition per request/result; NXVM uses the completed Common protocol with obsolete duplicate transport removed; all required verification passes; complete P is pushed then coordinator-reviewed. |
+| Original Owner Request | The two products differ only in startup composition/configuration, injected CLI and injected machine; common control behavior follows SoftPC while executors remain distinct adapters. |
+| Similar-Issue Sweep | Inspect all Common-machine queue/generation/lease paths, NXVM runner/control/media callers, and read-only SoftPC runtime/input/media safe points for duplicate transport state, direct mutations, stale generations and hidden synchronous completion. |
 
 ## Current Technical Baseline
 

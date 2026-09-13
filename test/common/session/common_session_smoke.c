@@ -31,7 +31,8 @@ static lib_status lifecycle(void *context,
 {
     lib_u32 *count = context;
 
-    if (count == LIB_NULL || request != COMMON_SESSION_LIFECYCLE_STEP)
+    if (count == LIB_NULL || (request != COMMON_SESSION_LIFECYCLE_STEP &&
+        request != COMMON_SESSION_LIFECYCLE_START))
         return LIB_STATUS_INVALID_ARGUMENT;
     ++*count;
     return LIB_STATUS_OK;
@@ -152,12 +153,14 @@ int main(void)
         &plan) != LIB_STATUS_OK || plan.notice != COMMON_SESSION_NOTICE_STARTED ||
         !plan.mouse_capturable) return 1;
     if (common_session_set_lifecycle_sink(session, lifecycle, &lifecycle_calls) !=
-            LIB_STATUS_OK || common_session_set_cli_provider(session, cli,
+            LIB_STATUS_OK || common_session_request_lifecycle(session,
+                COMMON_SESSION_LIFECYCLE_START) != LIB_STATUS_OK || lifecycle_calls != 1u ||
+        common_session_set_cli_provider(session, cli,
                 &cli_calls) != LIB_STATUS_OK || !common_session_has_cli_provider(session) ||
         common_session_publish_console_line(session, "d") != LIB_STATUS_OK ||
         common_session_take(session, &fact, &frame, 0u) != LIB_STATUS_OK ||
         common_session_reduce_fact(session, &fact, &frame, &plan) != LIB_STATUS_OK ||
-        cli_calls != 1u || lifecycle_calls != 1u || plan.console_text[0] != 'o' ||
+        cli_calls != 1u || lifecycle_calls != 2u || plan.console_text[0] != 'o' ||
         !plan.console_prompt_ready || plan.console_prompt[0] != '-' ||
         common_session_has_cli_provider(session)) return 1;
     input.type = UI_EVENT_KEY;
@@ -184,6 +187,11 @@ int main(void)
             session, &fact, &frame, &plan) != LIB_STATUS_OK ||
         machine_calls != 1u || plan.console_text[0] != 'p' ||
         !plan.console_prompt_ready || plan.console_prompt[0] != '-') return 1;
+    if (common_session_publish_monitor_text(session, "media done\n") != LIB_STATUS_OK ||
+        common_session_take(session, &fact, &frame, 0u) != LIB_STATUS_OK ||
+        fact.kind != COMMON_SESSION_FACT_MONITOR_TEXT || common_session_reduce_fact(
+            session, &fact, &frame, &plan) != LIB_STATUS_OK ||
+        plan.console_text[0] != 'm' || plan.console_prompt_ready) return 1;
     fact.kind = COMMON_SESSION_FACT_MACHINE;
     fact.run_id = 0x12345678u;
     if (common_session_reduce_fact(session, &fact, &frame, &plan) !=

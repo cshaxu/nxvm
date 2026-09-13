@@ -12,9 +12,9 @@ typedef struct debug_fixture {
     lib_u32 watch_addresses[3];
 } debug_fixture;
 
-static void debug_fixture_consume(void *context,
+static lib_status debug_fixture_consume(void *context,
     const common_machine_request *request)
-{ (void)context; (void)request; }
+{ (void)context; (void)request; return LIB_STATUS_OK; }
 
 static lib_bool debug_fixture_paused(void *context)
 {

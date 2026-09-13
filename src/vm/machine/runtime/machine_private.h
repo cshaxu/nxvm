@@ -106,7 +106,7 @@ type_status vm_machine_storage_initialize(vm_machine *machine);
 type_status vm_machine_apply_cmos_seed(const vm_machine *session,
     core_machine_plan_topology *topology);
 C_VOID vm_machine_storage_finalize(vm_machine *machine);
-C_VOID vm_machine_consume_request(C_VOID *opaque,
+lib_status vm_machine_consume_request(C_VOID *opaque,
     const common_machine_request *request);
 C_VOID vm_machine_publish_result(vm_machine *machine,
     const vm_machine_result *result);

@@ -14,6 +14,7 @@ typedef struct common_session common_session;
 
 typedef enum common_session_lifecycle_request_kind {
     COMMON_SESSION_LIFECYCLE_NONE,
+    COMMON_SESSION_LIFECYCLE_START,
     COMMON_SESSION_LIFECYCLE_PAUSE,
     COMMON_SESSION_LIFECYCLE_RESET,
     COMMON_SESSION_LIFECYCLE_RESUME,
@@ -53,6 +54,7 @@ typedef lib_status (*common_session_lifecycle_sink)(void *context,
 
 typedef enum common_session_fact_kind {
     COMMON_SESSION_FACT_CONSOLE_LINE,
+    COMMON_SESSION_FACT_MONITOR_TEXT,
     COMMON_SESSION_FACT_MACHINE,
     COMMON_SESSION_FACT_UI_INPUT,
     COMMON_SESSION_FACT_UI_COMPLETION,
@@ -121,10 +123,16 @@ lib_status common_session_set_cli_machine_observer(common_session *session,
 lib_bool common_session_has_cli_provider(const common_session *session);
 lib_status common_session_set_lifecycle_sink(common_session *session,
     common_session_lifecycle_sink sink, void *context);
+lib_status common_session_request_lifecycle(common_session *session,
+    common_session_lifecycle_request_kind request);
 lib_u32 common_session_begin_run(common_session *session,
     common_session_plan *out_plan);
 lib_bool common_session_is_running(const common_session *session);
 lib_status common_session_publish_console_line(void *context, const char *line);
+/* A copied machine completion message.  It is not command input and therefore
+ * cannot be reinterpreted by the injected product CLI. */
+lib_status common_session_publish_monitor_text(common_session *session,
+    const char *text);
 lib_status common_session_publish_ui_input(void *context,
     const ui_input_event *event);
 lib_status common_session_publish_machine(common_session *session,
