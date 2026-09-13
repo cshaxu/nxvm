@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T531 S1 Packet
-
-| Field | Required record |
+| Task | Compact accepted progress |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved on 2026-09-13: close T530, admit the queue-first Common convergence task; both products share SoftPC control UX, console_control, Debug and XASM32. Single-session coordinator/executor review. |
-| Objective | Freeze a complete two-product capability and transition ledger, classify actual Common/SoftPC gaps and approve bounded implementation batches before runtime edits. |
-| Non-goals | No runtime implementation in S1; no second policy seam, generic worker, source fork, sibling modification or change to owner YAML. |
-| Reference Baseline | NXVM bc9a1247; T530 pinned Lib 3cabea6a; record the exact current SoftPC app/host and Lib revisions during inventory. |
-| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md). |
-| Files And ABI Surface | Common public interfaces and implementation; NXVM VM bindings; read-only SoftPC app/host/Lib; task proposal and forthcoming indexed transition ledger. |
-| Applicable Rules | Task Reading Set, Execution, Documentation, Architecture and Coding authorities, Product UX and source policy; proposal records approved future design, not completed current capability. |
-| Verification | Read actual code for every ledger family; trace both callers and owners; reconcile finite coverage, proposed removals and adapter gaps; documentation governance and actual-diff coordinator review. S1 makes no runtime change. |
-| Expected Markers | Every required family has both source locations, ownership, gap disposition, implementation batch and regression owner; only three product variability seams. |
-| Asset Needs | No new external asset, source import or artifact version change during this planning batch. |
-| Reporting Requirements | Report full gap inventory, execution order, blockers and exact source revisions; never call two-product support complete from mocks. |
-| Stop Conditions | Missing real adapter capability or inaccessible reference; incompatible source terms; required extra product policy; sibling integration lacks an approved execution boundary. |
-| Exit Criteria | Complete reviewed two-consumer ledger and bounded S plan, governance checks pass and planning delivery committed/pushed. Runtime work begins only under the next admitted packet. |
-| Original Owner Request | Close the current T; queue and admit shared Common convergence. Product differences only startup configuration/composition, injected CLI and injected machine; both include console_control, Debug and XASM32, using SoftPC control UX. |
-| Similar-Issue Sweep | Inventory all lifecycle, presentation, monitor, input, media and Debug owners in both products; classify duplicate paths and existing shared implementations before proposing additions. |
+| T531 S1 | Accepted at `3136645c`: the finite 14-row NXVM/SoftPC/Common ledger freezes the `e140ec5` SoftPC reference, classifies every control, UI, input, machine, Debug and XASM32 path, and inserts exact canonical-Lib refresh as S2. No runtime code changed. [Ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md). |
 
 ## Current Technical Baseline
 
