@@ -262,7 +262,7 @@ static int win32_window_cursor_rect(lib_win32_hwnd window,
     return 1;
 }
 
-static void win32_window_paint(lib_win32_hwnd window, ui_win32_window_context *context,
+static int win32_window_paint(lib_win32_hwnd window, ui_win32_window_context *context,
     lib_win32_hdc dc)
 {
     ui_window_rect display;
@@ -270,15 +270,24 @@ static void win32_window_paint(lib_win32_hwnd window, ui_win32_window_context *c
     if (context == LIB_NULL || context->surface_dc == LIB_NULL ||
         !ui_frame_is_valid(&context->frame) ||
         !win32_window_display_rect(context, context->surface_width,
-            context->surface_height, &display)) return;
-    lib_win32_stretch_blt(dc, display.left, display.top, display.right - display.left,
+            context->surface_height, &display)) return 1;
+    if (!lib_win32_stretch_blt(dc, display.left, display.top, display.right - display.left,
         display.bottom - display.top, context->surface_dc, 0, 0,
-        (int)context->surface_width, (int)context->surface_height, LIB_WIN32_SRCCOPY);
+        (int)context->surface_width, (int)context->surface_height, LIB_WIN32_SRCCOPY)) return 0;
     if (context->cursor_blink_visible) {
         lib_win32_rect cursor;
         if (win32_window_cursor_rect(window, context, &cursor))
-            lib_win32_invert_rect(dc, &cursor);
+            return lib_win32_invert_rect(dc, &cursor) != 0;
     }
+    return 1;
+}
+
+static int win32_window_invalidate(lib_win32_hwnd window,
+    ui_win32_window_context *context, const lib_win32_rect *rect)
+{
+    if (lib_win32_invalidate_rect(window, rect, LIB_WIN32_FALSE)) return 1;
+    ui_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
+    return 0;
 }
 
 static lib_win32_dword win32_window_cursor_blink_timeout(
@@ -305,7 +314,7 @@ static void win32_window_advance_cursor_blink(lib_win32_hwnd window,
     context->cursor_blink_visible = context->cursor_blink_visible == LIB_FALSE;
     context->cursor_blink_due = lib_win32_get_tick_count() + WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS;
     if (win32_window_cursor_rect(window, context, &cursor))
-        lib_win32_invalidate_rect(window, &cursor, LIB_WIN32_FALSE);
+        (void)win32_window_invalidate(window, context, &cursor);
 }
 
 static int win32_window_transition(ui_win32_window_context *context,
@@ -440,12 +449,12 @@ static void win32_window_consume_frame(lib_win32_hwnd window,
             win32_window_display_rect(context, width, height, &display)) {
             ui_window_map_dirty_rect(&changed, &display, width, height, &changed_target);
             ui_win32_rect_store(&target, &changed_target);
-            lib_win32_invalidate_rect(window, &target, LIB_WIN32_FALSE);
+            if (!win32_window_invalidate(window, context, &target)) return;
         }
     } else {
         ui_window_render_text(&context->frame, context->surface_pixels,
             context->surface_width, context->surface_height);
-        lib_win32_invalidate_rect(window, LIB_NULL, LIB_WIN32_FALSE);
+        if (!win32_window_invalidate(window, context, LIB_NULL)) return;
     }
     ui_component_mailboxes_acknowledge_frame(&context->component->base.mailboxes,
         context->displayed_sequence);
@@ -471,6 +480,7 @@ static int win32_window_consume_mailboxes(lib_win32_hwnd window,
             }
         }
         else if (control.kind == UI_COMPONENT_CONTROL_SET_WINDOW_FROZEN) {
+            if (context->frozen == control.value.window_frozen) continue;
             if (context->frozen && !control.value.window_frozen) {
                 (void)lib_win32_set_foreground_window(window);
                 (void)lib_win32_set_focus(window);
@@ -481,7 +491,7 @@ static int win32_window_consume_mailboxes(lib_win32_hwnd window,
                 context->cursor_blink_due = lib_win32_get_tick_count() +
                     WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS;
             }
-            lib_win32_invalidate_rect(window, LIB_NULL, LIB_WIN32_FALSE);
+            if (!win32_window_invalidate(window, context, LIB_NULL)) return 0;
         } else if (control.kind == UI_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE)
             win32_window_release_mouse(context);
     }
@@ -509,15 +519,21 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
         win32_window_flush_mouse(context);
         return 0;
     case LIB_WIN32_WM_PAINT:
-        { lib_win32_paintstruct paint; lib_win32_hdc dc = lib_win32_begin_paint(window, &paint);
-          win32_window_paint(window, context, dc); lib_win32_end_paint(window, &paint); }
+        {
+            lib_win32_paintstruct paint;
+            lib_win32_hdc dc = lib_win32_begin_paint(window, &paint);
+            int painted = dc != LIB_NULL && win32_window_paint(window, context, dc);
+            /* End the paint transaction even if drawing failed. */
+            if (dc != LIB_NULL) lib_win32_end_paint(window, &paint);
+            if (!painted) ui_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
+        }
         return 0;
     case LIB_WIN32_WM_SIZE:
         win32_window_capture_client_size(window, context);
         win32_window_enforce_aspect(window, context);
         if (!ui_win32_mouse_refresh_bounds(&context->mouse))
             win32_window_release_mouse(context);
-        lib_win32_invalidate_rect(window, LIB_NULL, LIB_WIN32_FALSE);
+        (void)win32_window_invalidate(window, context, LIB_NULL);
         return 0;
     case LIB_WIN32_WM_MOVE:
         if (!ui_win32_mouse_refresh_bounds(&context->mouse))
@@ -711,6 +727,12 @@ static lib_win32_dword LIB_WIN32_WINAPI ui_window_worker(void *opaque)
         return 0u;
     }
     context->transparent_cursor = win32_window_create_transparent_cursor();
+    if (context->transparent_cursor == LIB_NULL) {
+        win32_window_destroy(context, window);
+        state->startup_status = LIB_STATUS_IO_ERROR;
+        lib_win32_set_event(state->ready);
+        return 0u;
+    }
     state->startup_status = LIB_STATUS_OK;
     ui_win32_mouse_reset(&context->mouse);
     lib_win32_send_message_a(window, WIN32_WINDOW_MAILBOX_READY, 0, 0);

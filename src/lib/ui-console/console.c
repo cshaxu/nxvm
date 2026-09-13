@@ -4,8 +4,7 @@ static void ui_console_dispose(ui_console *console)
 {
     if (console == LIB_NULL) return;
     if (console->logical_console != LIB_NULL) {
-        (void)lib_console_set_event_sink(console->logical_console, LIB_NULL,
-            LIB_NULL);
+        /* The worker (or failed start) already detached and drained its sink. */
         lib_console_release(console->logical_console);
     }
     ui_component_mailboxes_destroy(&console->base.mailboxes);

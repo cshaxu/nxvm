@@ -195,16 +195,7 @@ lib_status host_console_backend_create(host_console_backend **out_backend)
 
 void host_console_backend_destroy(host_console_backend *backend)
 {
-    lib_status status;
     if (backend == LIB_NULL) return;
-    status = host_console_backend_deactivate(backend, LIB_NULL);
-    if (status != LIB_STATUS_OK) {
-        /* A live reader still owns backend and its logical Console.
-           Broker failure is terminal and the process must exit; intentionally
-           retain these process-lifetime resources rather than free storage
-           underneath a live native worker. */
-        return;
-    }
     if (backend->input != LIB_WIN32_INVALID_HANDLE_VALUE) lib_win32_close_handle(backend->input);
     if (backend->output != LIB_WIN32_INVALID_HANDLE_VALUE) lib_win32_close_handle(backend->output);
     lib_win32_delete_critical_section(&backend->output_lock);
@@ -448,10 +439,6 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
         host_console_backend_unlock_output(backend);
         return LIB_STATUS_NOT_CURRENT;
     }
-    if (!host_console_ensure_text_surface(backend->output)) {
-        host_console_backend_unlock_output(backend);
-        return LIB_STATUS_IO_ERROR;
-    }
     if (lib_memory_compare(frame->palette, backend->previous_palette,
             sizeof(frame->palette)) != 0) {
         lib_win32_console_screen_buffer_infoex info;
@@ -470,6 +457,12 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
         /* Some terminal hosts cannot apply a palette. Do not mark it applied:
          * another frame may retry while text output remains usable. */
     }
+    /* Palette application can also change native buffer/viewport geometry.
+     * Establish the write surface after that operation, never before it. */
+    if (!host_console_ensure_text_surface(backend->output)) {
+        host_console_backend_unlock_output(backend);
+        return LIB_STATUS_IO_ERROR;
+    }
     if (backend->previous_columns != frame->columns ||
         backend->previous_rows != frame->rows ||
         lib_memory_compare(frame->text, backend->previous,
@@ -486,8 +479,12 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
                     column < frame->columns ? frame->attributes[offset] : 0u);
             }
         }
+        /* A failed or clipped write may already have changed some cells. */
+        backend->previous_columns = backend->previous_rows = 0u;
         if (!lib_win32_write_console_output_w(backend->output, cells, size, position,
-                &region)) {
+                &region) || region.Left != 0 || region.Top != 0 ||
+                region.Right != LIB_CONSOLE_TEXT_COLUMNS - 1 ||
+                region.Bottom != LIB_CONSOLE_TEXT_ROWS - 1) {
             host_console_backend_unlock_output(backend);
             return LIB_STATUS_IO_ERROR;
         }

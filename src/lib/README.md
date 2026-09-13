@@ -153,3 +153,12 @@ and cursor I/O failures remain explicit. Window sizing/title completion likewise
 never records an unsuccessful native call as completed.
 Nonempty native text writes invalidate the prior frame cache, even on partial
 failure; an unchanged subsequent frame must overwrite those intervening cells.
+Frame writes likewise invalidate the old cache before touching native cells;
+only a successful write of the entire requested rectangle commits the cache.
+Clipped native success is incomplete output and returns IO_ERROR.
+Surface size is established after palette application, which can change native
+buffer geometry; output does not rely on a precondition invalidated by metadata.
+The broker alone sequences deactivation, including failed initial activation.
+Backend disposal frees inactive resources without repeating mode restoration
+or reader retirement. UI Console disposal similarly follows its worker's sink
+detachment; it does not detach a second time.

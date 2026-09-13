@@ -152,6 +152,11 @@ lib_status host_console_broker_create(host_console_broker **out_broker,
         }
     }
     if (status != LIB_STATUS_OK) {
+        /* Activation can change native mode before failing. Broker owns the
+         * same quiesce-before-dispose sequence here as in normal destruction. */
+        if (broker->backend != LIB_NULL &&
+            host_console_backend_deactivate(broker->backend, LIB_NULL) != LIB_STATUS_OK)
+            return status; /* Retain a backend whose reader is not proven stopped. */
         host_console_remove_output_binding(broker->current, broker->current_output);
         if (broker->current != LIB_NULL) lib_console_release(broker->current);
         host_console_backend_destroy(broker->backend);

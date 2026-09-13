@@ -22,11 +22,12 @@ Independent third-party notices still require a separate review before import.
 
 ## Canonical Shared Library
 
-M5 T530 imports the project-owner-provided shared library from SoftPC commit
-`3cabea6a6a0ce931a5480f3549599ebb74f3681d`, source path `src/lib/`, to this
-repository's `src/lib/` byte-for-byte. The frozen source manifest revision is
-`shared-t55-s13-p1`; its manifest and component-dependency verifiers passed
-before import. It is project-owned MIT material and carries no independent
-third-party notice. The import excludes every other SoftPC path, including
-app/MVDM code, tests, firmware, media and binaries. T530 evidence records the
-destination consumer adaptations and verification.
+M5 T530 initially imports the project-owner-provided shared library from
+SoftPC commit `3cabea6a6a0ce931a5480f3549599ebb74f3681d`, source path
+`src/lib/`, to this repository's `src/lib/` byte-for-byte. M5 T531 S2 then
+replaces that entire 93-file corpus byte-for-byte with the clean
+`e140ec55bbc4cd40956948e57e58dc678e54f699` revision after its exact source
+review. Both source revisions are project-owned MIT material and carry no
+independent third-party notice. These imports exclude every other SoftPC path,
+including app/MVDM code, tests, firmware, media and binaries. T530/T531
+evidence records consumer adaptations and verification.

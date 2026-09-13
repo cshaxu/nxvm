@@ -11,3 +11,7 @@ behavior changes, preserves the two distinct machine executors as adapters,
 and assigns every other gap to a later S. Subsequent acceptance records will
 link actual implementation evidence and the current packet remains the sole
 live task authority.
+
+S2 supersedes the earlier pinned Lib baseline with the exact 93-file SoftPC
+`e140ec5` corpus. It required no NXVM consumer adaptation and its full proof
+is retained in [canonical-Lib evidence](../etc/evidence/t531-s2-canonical-lib-refresh.md).

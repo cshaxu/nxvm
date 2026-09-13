@@ -80,7 +80,7 @@ static int ui_keyboard_submit_character(const ui_hotkey_matcher *held_keys,
     return 1;
 }
 
-int ui_keyboard_submit_utf16(ui_keyboard_normalizer *state,
+static int ui_keyboard_submit_utf16(ui_keyboard_normalizer *state,
     const ui_hotkey_matcher *held_keys, void *context, ui_input_sink sink,
     lib_u16 code_unit, lib_u16 repeat_count)
 {

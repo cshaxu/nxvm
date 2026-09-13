@@ -6,6 +6,8 @@
 typedef struct host_console_backend host_console_backend;
 
 lib_status host_console_backend_create(host_console_backend **out_backend);
+/* Broker must deactivate successfully before disposal, including failed
+ * activation cleanup. Disposal never retires readers or restores modes. */
 void host_console_backend_destroy(host_console_backend *backend);
 /* Validate that the next binding can be activated without changing the
  * current Console's reader, mode, or output ownership.  Preparation never

@@ -24,11 +24,6 @@ typedef struct ui_keyboard_normalizer {
     lib_u16 pending_repeat_count;
 } ui_keyboard_normalizer;
 
-/* These functions only normalize host packets.  A project binding maps each
-   physical record to its own input protocol and owns its input queue. */
-int ui_keyboard_submit_utf16(
-    ui_keyboard_normalizer *state, const ui_hotkey_matcher *held_keys, void *context,
-    ui_input_sink sink, lib_u16 code_unit, lib_u16 repeat_count);
 /* Native adapters copy either separate transition/character messages or one
  * combined record. Translate a separate native transition into characters only
  * on UI_KEYBOARD_UNMAPPED; accepted physical keys must not generate a second

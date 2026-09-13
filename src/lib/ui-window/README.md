@@ -10,7 +10,7 @@ from copied position/shape/enabled frame fields and toggles that drawing every
 capture, and holds the cursor at its current drawn state; `unfreeze()` resumes
 the blink but waits for a later client-area click before it captures. A real
 frozen-to-unfrozen transition requests foreground/focus once, subject to host
-policy. Repeated unfreeze does not steal focus. Native
+policy. Repeated unfreeze changes neither focus nor blink phase/deadline. Native
 Raw Console cursor blinking remains outside this component.
 
 Frozen Window keyboard transitions still enter the shared registered-hotkey
@@ -22,6 +22,11 @@ Relative mouse scaling retains signed integer remainders per axis. Capture,
 release and scale changes reset those remainders; copied event deltas remain
 integers. All post-start worker exits stop input, release capture, close the
 Window, report any failure and retire the source once before releasing storage.
+Paint acquisition, pixel transfer, cursor inversion and redraw-request failures
+use that same terminal path, without retry loops. A successful BeginPaint is
+always paired with EndPaint even if drawing fails. Empty/minimized content
+does not require drawing. Missing transparent-cursor resources fail creation
+rather than silently changing capture visibility.
 
 The public component contract is cross-platform. This corpus currently has a
 supported Win32 implementation only; the Linux leaf is an intentional
