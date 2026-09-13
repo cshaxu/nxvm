@@ -61,3 +61,8 @@ that ABI; the retired UI component corpus and every compatibility alias are
 removed. [S11 evidence](../etc/evidence/t531-s11-canonical-kvm-lib-refresh.md)
 records the source boundary, KVM-name gate, dual 0531 artifacts and 299/299
 unit proof. T531 remains open for the same two-product execution boundary.
+
+S11 is accepted after implementation `3a275380`: the independent closure
+review confirms exact canonical-tree equality, direct consumer adoption, no
+retired compatibility path, and all recorded gates. T531 remains open for S12
+whole-task two-product execution evidence.
