@@ -179,6 +179,9 @@ typedef struct common_machine_driver {
 lib_status common_machine_create(common_machine **out_machine);
 void common_machine_destroy(common_machine *machine);
 void common_machine_close(common_machine *machine);
+/* `driver` is copied but its context is borrowed. Bind exactly once before
+ * requests are published, then keep the adapter and context alive until close
+ * and every safe-point/paused-Debug caller has returned. */
 lib_status common_machine_bind_driver(common_machine *machine,
     const common_machine_driver *driver);
 lib_status common_machine_bind_run(common_machine *machine, lib_u32 run_id);

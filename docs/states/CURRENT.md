@@ -2,15 +2,31 @@
 
 ## Current Work
 
-**No active packet.** T531 remains open; its accepted S8 progress is retained
-below. A future admitted subtask must obtain and verify the real SoftPC
-CCPU-affine Debug adapter against the unchanged shared contract. No synthetic
-receiver or two-product completion is claimed here.
+## M5 T531 S9 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved this 2026-09-13 Common audit cleanup after reviewing the findings. One-session coordinator/executor review. |
+| Objective | Remove the audit-proven unused Common UI exports and Session target fallback, make the remaining borrowed-binding and reducer-thread contracts explicit, and eliminate all current XASM32 compiler warnings while retaining its original table-driven behavior. |
+| Non-goals | No SoftPC write, no new Common API, no product/native API, no new executor or queue, no Debug grammar/output/semantic redesign, and no T531 closure. |
+| Reference Baseline | `2348ab2f`; T531 S8 closure evidence; current NXVM and read-only SoftPC consumer-call audit. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md). |
+| Files And ABI Surface | `src/common/{ui,session,xasm32}` interfaces/implementations, their Common tests and manifest; evidence/index/current progress at closure. Public UI/session symbols may be removed only after the complete NXVM and read-only SoftPC call sweep. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution and Documentation rules; Common remains Lib-only and product-neutral; original XASM32 table structure is a preservation constraint. |
+| Verification | Repeat the complete NXVM and read-only SoftPC consumer sweep; Common standalone corpus/manifest checks; clean x64 and x86 Common builds with zero XASM32 diagnostics; focused Common tests and the full repository-only unit suite. |
+| Expected Markers | No caller or declaration remains for the removed UI/session APIs; only one presentation-policy route remains; public interfaces state ownership/thread/lifetime facts; XASM32 builds warning-free without changing command/parser conformance. |
+| Asset Needs | Build the stripped optimized `0531` x64/x86 executables in `build/output` and `assets/sessions`; do not modify external assets or YAML. |
+| Reporting Requirements | Record the removed API/path inventory, retained owner contracts, exact compiler warning before/after result, code-size accounting, focused/full verification and any behavior-preservation comparison. |
+| Stop Conditions | A checked real consumer needs a removed API, warning removal requires a semantic/table-flow change, or the required lifecycle contract cannot be expressed without exposing product/platform state. |
+| Exit Criteria | Every audit finding has an implemented or evidence-backed non-applicable disposition; Common remains manifest-valid and Lib-only; x64/x86 XASM32 diagnostics are zero; focused/full units pass; actual diff is reviewed, committed and pushed. T531 remains open for its real SoftPC adapter evidence. |
+| Original Owner Request | Repair every Common audit finding, including XASM32. |
+| Similar-Issue Sweep | Inspect every Common public interface for consumer reachability, every public borrowed callback/pointer for lifetime/thread ownership, every unconfigured presentation branch, and every XASM32 diagnostic on both supported architectures. |
 
 ## Current Technical Baseline
 
-- `vm-0-5-0530` is the current target. Its recorded stripped Release artifacts are
-  `nxvm_0_5_0530_x64.exe` and `nxvm_0_5_0530_x86.exe` in both
+- `vm-0-5-0531` is the current target. Its stripped Release artifacts are
+  `nxvm_0_5_0531_x64.exe` and `nxvm_0_5_0531_x86.exe` in both
   `build/output` and `assets/sessions`.
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:

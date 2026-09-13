@@ -137,7 +137,8 @@ static int common_adapter_conform(common_adapter *adapter, lib_u32 run_id)
                 .operation = COMMON_MACHINE_DEBUG_READ_LINEAR, .address = 4u },
             &debug_result) != LIB_STATUS_OK || debug_result.value != adapter->marker + 4u ||
         common_session_create(&session) != LIB_STATUS_OK ||
-        common_session_set_target(session, COMMON_SESSION_TARGET_NONE) != LIB_STATUS_OK ||
+        common_session_set_presentation_policy(session, COMMON_SESSION_TARGET_CONSOLE,
+            LIB_FALSE) != LIB_STATUS_OK ||
         common_session_set_cli_provider(session, common_adapter_cli, adapter) != LIB_STATUS_OK ||
         common_session_set_lifecycle_sink(session, common_adapter_lifecycle, adapter) !=
             LIB_STATUS_OK ||

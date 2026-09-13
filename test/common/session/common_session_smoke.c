@@ -82,7 +82,6 @@ int main(void)
     common_session *session = LIB_NULL;
     common_session_fact fact = {0};
     common_session_plan plan = {0};
-    common_ui_completion completion = {0};
     static ui_frame frame = {0};
     ui_input_event input = {0};
     lib_u32 delivered = 0u;
@@ -95,80 +94,10 @@ int main(void)
     common_session_plan policy_plan = {0};
 
     if (common_session_create(&session) != LIB_STATUS_OK ||
-        common_session_set_target(session, COMMON_SESSION_TARGET_WINDOW) != LIB_STATUS_OK ||
-        common_session_begin_run(session, &plan) == 0u || !plan.ui_action_ready ||
-        plan.ui_action.kind != COMMON_UI_ACTION_CREATE_WINDOW) return 1;
-    completion.action = plan.ui_action.kind;
-    completion.facts.window_exists = LIB_TRUE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || plan.ui_action_ready) return 1;
-    if (common_session_set_target(session, COMMON_SESSION_TARGET_CONSOLE) != LIB_STATUS_OK ||
-        common_session_reconcile(session, &plan) != LIB_STATUS_OK ||
-        !plan.ui_action_ready || plan.ui_action.kind != COMMON_UI_ACTION_CREATE_RAW_CONSOLE)
-        return 1;
-    completion.action = plan.ui_action.kind;
-    completion.facts.raw_console_exists = LIB_TRUE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || !plan.ui_action_ready ||
-        plan.ui_action.kind != COMMON_UI_ACTION_BIND_RAW_CONSOLE) return 1;
-    completion.action = plan.ui_action.kind;
-    completion.facts.raw_console_current = LIB_TRUE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || !plan.ui_action_ready ||
-        plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_WINDOW) return 1;
-    completion.action = plan.ui_action.kind;
-    completion.facts.window_exists = LIB_FALSE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || plan.ui_action_ready) return 1;
-    if (common_session_set_target(session, COMMON_SESSION_TARGET_WINDOW) != LIB_STATUS_OK ||
-        common_session_reconcile(session, &plan) != LIB_STATUS_OK ||
-        !plan.ui_action_ready || plan.ui_action.kind != COMMON_UI_ACTION_BIND_MONITOR_CONSOLE)
-        return 1;
-    completion.action = plan.ui_action.kind;
-    completion.facts.raw_console_current = LIB_FALSE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || !plan.ui_action_ready ||
-        plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_RAW_CONSOLE) return 1;
-    completion.action = plan.ui_action.kind;
-    completion.facts.raw_console_exists = LIB_FALSE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || !plan.ui_action_ready ||
-        plan.ui_action.kind != COMMON_UI_ACTION_CREATE_WINDOW) return 1;
-    completion.action = plan.ui_action.kind;
-    completion.facts.window_exists = LIB_TRUE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || plan.ui_action_ready) return 1;
-    if (common_session_set_target(session, COMMON_SESSION_TARGET_NONE) != LIB_STATUS_OK ||
-        common_session_reconcile(session, &plan) != LIB_STATUS_OK ||
-        !plan.ui_action_ready || plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_WINDOW)
-        return 1;
-    completion.action = plan.ui_action.kind;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_IO_ERROR, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || !plan.ui_failure ||
-        plan.ui_failure_status != LIB_STATUS_IO_ERROR || common_session_reconcile(session,
-                &plan) != LIB_STATUS_OK || !plan.ui_action_ready ||
-        plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_WINDOW) return 1;
-    completion.facts.window_exists = LIB_FALSE;
-    if (common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) !=
-            LIB_STATUS_OK || common_session_take(session, &fact, &frame, 0u) !=
-            LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,
-                &plan) != LIB_STATUS_OK || plan.ui_action_ready) return 1;
+        common_session_begin_run(session, &plan) != 0u ||
+        common_session_set_presentation_policy(session, COMMON_SESSION_TARGET_CONSOLE,
+            LIB_FALSE) != LIB_STATUS_OK || common_session_begin_run(session, &plan) == 0u ||
+        plan.ui_action_ready) return 1;
     if (common_session_publish_machine(session, COMMON_SESSION_MACHINE_RUNNING,
         LIB_STATUS_OK) != LIB_STATUS_OK || common_session_take(session, &fact, &frame,
         0u) != LIB_STATUS_OK || common_session_reduce_fact(session, &fact, &frame,

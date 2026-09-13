@@ -76,7 +76,5 @@ lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
 common_ui_surface_facts common_ui_get_surface_facts(const common_ui *ui);
 lib_status common_ui_apply(common_ui *ui, const common_ui_plan *plan);
 lib_status common_ui_set_window_title(common_ui *ui, const char *title);
-lib_status common_ui_set_mouse_capturable(common_ui *ui, lib_bool capturable);
-lib_status common_ui_release_mouse(common_ui *ui);
 
 #endif

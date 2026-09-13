@@ -111,14 +111,17 @@ typedef struct common_session_plan {
 typedef lib_status (*common_session_input_sink)(void *context,
     const ui_input_event *event);
 
+/* One reducer owner serially configures, takes and reduces facts, reconciles
+ * presentation and dispatches input. The publish APIs copy their payloads and
+ * are the only Session entry points intended for external producers. */
 lib_status common_session_create(common_session **out_session);
 void common_session_destroy(common_session *session);
 void common_session_close(common_session *session);
+/* `ui` is borrowed: it must outlive the bound Session, and composition must
+ * stop all producers before either owner is destroyed. */
 lib_status common_session_bind_ui(common_session *session, common_ui *ui);
 lib_status common_session_request_monitor_line(common_session *session);
 lib_status common_session_write_monitor(common_session *session, const char *text);
-lib_status common_session_set_target(common_session *session,
-    common_session_target target);
 /* Immutable product startup policy.  Console display uses the raw guest
  * Console for text; graphical frames select a Window, while console_control
  * retains the cooked monitor instead of the raw Console. */
@@ -137,6 +140,7 @@ lib_status common_session_set_lifecycle_sink(common_session *session,
     common_session_lifecycle_sink sink, void *context);
 lib_status common_session_request_lifecycle(common_session *session,
     common_session_lifecycle_request_kind request);
+/* A presentation policy must be configured before a run can begin. */
 lib_u32 common_session_begin_run(common_session *session,
     common_session_plan *out_plan);
 lib_bool common_session_is_running(const common_session *session);

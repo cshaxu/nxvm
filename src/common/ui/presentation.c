@@ -225,14 +225,22 @@ lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
 
 lib_status common_ui_apply(common_ui *ui, const common_ui_plan *plan)
 {
+    common_ui_action action = {0};
+    common_ui_completion completion;
     lib_status status;
 
     if (ui == LIB_NULL || plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (plan->mouse_capturable_changed &&
-        (status = common_ui_set_mouse_capturable(ui, plan->mouse_capturable)) != LIB_STATUS_OK)
-        return status;
-    if (plan->release_mouse &&
-        (status = common_ui_release_mouse(ui)) != LIB_STATUS_OK) return status;
+    if (plan->mouse_capturable_changed) {
+        action.kind = COMMON_UI_ACTION_SET_MOUSE_CAPTURABLE;
+        action.value.mouse_capturable = plan->mouse_capturable;
+        status = common_ui_apply_action(ui, &action, &completion);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    if (plan->release_mouse) {
+        action.kind = COMMON_UI_ACTION_RELEASE_MOUSE;
+        status = common_ui_apply_action(ui, &action, &completion);
+        if (status != LIB_STATUS_OK) return status;
+    }
     if (!plan->frame_ready) return LIB_STATUS_OK;
     ui->frame = plan->frame;
     return common_ui_publish_frame(ui);
@@ -243,20 +251,5 @@ lib_status common_ui_set_window_title(common_ui *ui, const char *title)
     common_ui_action action = { COMMON_UI_ACTION_SET_WINDOW_TITLE, {0} };
     common_ui_completion completion;
     action.value.title = title;
-    return common_ui_apply_action(ui, &action, &completion);
-}
-
-lib_status common_ui_set_mouse_capturable(common_ui *ui, lib_bool capturable)
-{
-    common_ui_action action = { COMMON_UI_ACTION_SET_MOUSE_CAPTURABLE, {0} };
-    common_ui_completion completion;
-    action.value.mouse_capturable = capturable;
-    return common_ui_apply_action(ui, &action, &completion);
-}
-
-lib_status common_ui_release_mouse(common_ui *ui)
-{
-    common_ui_action action = { COMMON_UI_ACTION_RELEASE_MOUSE, {0} };
-    common_ui_completion completion;
     return common_ui_apply_action(ui, &action, &completion);
 }

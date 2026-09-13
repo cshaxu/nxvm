@@ -80,6 +80,18 @@ struct dasm32_context
         }                                                                           \
     } while (0)
 
+/* SPRINTFSI receives a pointer to a fixed context text field; unlike local
+ * arrays, `sizeof(str)` there is only pointer width. */
+#define DASM_FORMAT_CONTEXT_TEXT(buffer, ...)                                      \
+    do {                                                                            \
+        int dasm_format_result = snprintf((buffer), XASM32_TEXT_CAPACITY,          \
+            __VA_ARGS__);                                                           \
+        if (dasm_format_result < 0 ||                                               \
+            (lib_size)dasm_format_result >= XASM32_TEXT_CAPACITY) {                \
+            XASM32_TRACE_SET_ERROR;                                                 \
+        }                                                                           \
+    } while (0)
+
 #define DASM_COPY_ARRAY(destination, source)                                       \
     do {                                                                            \
         if (xasm32_copy_text((destination), XASM32_TEXT_CAPACITY,      \
@@ -114,7 +126,7 @@ static void SPRINTFSI(dasm32_context *dasmContext, char *str, lib_u32 imm, lib_u
         {
             sign = '+';
         }
-        DASM_FORMAT_ARRAY(str, "%c%02X", sign, i8u);
+        DASM_FORMAT_CONTEXT_TEXT(str, "%c%02X", sign, i8u);
         break;
     case 2:
         if ((lib_u16)(imm & 0x8000))
@@ -126,7 +138,7 @@ static void SPRINTFSI(dasm32_context *dasmContext, char *str, lib_u32 imm, lib_u
         {
             sign = '+';
         }
-        DASM_FORMAT_ARRAY(str, "%c%04X", sign, i16u);
+        DASM_FORMAT_CONTEXT_TEXT(str, "%c%04X", sign, i16u);
         break;
     case 4:
         if ((lib_u32)(imm & 0x80000000))
@@ -138,7 +150,7 @@ static void SPRINTFSI(dasm32_context *dasmContext, char *str, lib_u32 imm, lib_u
         {
             sign = '+';
         }
-        DASM_FORMAT_ARRAY(str, "%c%08X", sign, i32u);
+        DASM_FORMAT_CONTEXT_TEXT(str, "%c%08X", sign, i32u);
         break;
     default:
         XASM32_TRACE_IMPOSSIBLE_RETURN;

@@ -35,7 +35,8 @@ provide an opt-in isolated build tree. They are an acceleration aid only; the
 default route remains the supported route and never requires ccache.
 
 Every implementation-task closure also builds the same product target for
-32-bit Windows. Set `NXVM_I686_GCC` to an i686 MinGW-w64 `gcc.exe`, then use
+32-bit Windows. Set `NXVM_I686_GCC` to an i686 MinGW-w64 `gcc.exe` and place
+that compiler's `bin` directory first on `PATH`, then use
 `mingw-gcc-x86-release` and `current-gcc-x86`. This is a second compiler
 configuration, not a second source or product route.
 

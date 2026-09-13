@@ -86,9 +86,14 @@ recorded evidence, never by following successive isolated failures.
    synchronous CCPU-affinity adapter behind the unchanged Common Debug API,
    then verify the SoftPC binding against the same package and remove replaced
    product control/UI paths.
-9. **S9: package and whole-task acceptance.** Independent build/manifest,
-   byte-identical consumer corpus, full matrix and failure-path review, full
-   unit and integration, optimized stripped x64/x86 release artifacts.
+9. **S9: Common API and XASM32 cleanup.** Remove every audit-proven unused
+   public Common API and its parallel fallback path; state the borrowed-binding
+   and reducer-thread contracts; then remove all current XASM32 compiler
+   diagnostics without changing its original table-driven parsing,
+   assembly/disassembly or user-visible Debug behavior.
+10. **S10: package and whole-task acceptance.** Independent build/manifest,
+    byte-identical consumer corpus, full matrix and failure-path review, full
+    unit and integration, optimized stripped x64/x86 release artifacts.
 
 ## Verification And Exit
 

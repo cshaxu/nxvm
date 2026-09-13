@@ -24,7 +24,6 @@ struct common_session {
     lib_u32 run_id;
     common_ui *ui;
     common_session_machine_state lifecycle;
-    common_session_target requested_target;
     common_session_target presentation_display;
     lib_bool console_control;
     lib_bool presentation_configured;
@@ -96,9 +95,6 @@ static void common_session_plan_surface(common_session *session,
             want_raw_console = !session->presentation_frame_graphics ||
                 !session->console_control;
         }
-    } else if (!session->presentation_configured) {
-        want_window = session->requested_target == COMMON_SESSION_TARGET_WINDOW;
-        want_raw_console = session->requested_target == COMMON_SESSION_TARGET_CONSOLE;
     }
     if (want_raw_console) {
         if (!facts.raw_console_exists)
@@ -183,15 +179,6 @@ lib_status common_session_write_monitor(common_session *session, const char *tex
 {
     return session == LIB_NULL || session->ui == LIB_NULL ? LIB_STATUS_INVALID_STATE :
         common_ui_write_console(session->ui, text);
-}
-
-lib_status common_session_set_target(common_session *session,
-    common_session_target target)
-{
-    if (session == LIB_NULL || target > COMMON_SESSION_TARGET_WINDOW)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    session->requested_target = target;
-    return LIB_STATUS_OK;
 }
 
 lib_status common_session_set_presentation_policy(common_session *session,
@@ -297,7 +284,8 @@ lib_status common_session_request_lifecycle(common_session *session,
 lib_u32 common_session_begin_run(common_session *session,
     common_session_plan *out_plan)
 {
-    if (session == LIB_NULL || out_plan == LIB_NULL) return 0u;
+    if (session == LIB_NULL || out_plan == LIB_NULL || !session->presentation_configured)
+        return 0u;
     common_session_plan_clear(out_plan);
     common_session_lock(session);
     if (session->run_id == UINT32_MAX) {
@@ -608,8 +596,6 @@ lib_status common_session_reduce_fact(common_session *session,
         out_plan->mouse_capturable_changed = LIB_TRUE;
         out_plan->mouse_capturable = LIB_FALSE;
         out_plan->release_mouse = LIB_TRUE;
-        if (session->requested_target == COMMON_SESSION_TARGET_CONSOLE)
-            session->requested_target = COMMON_SESSION_TARGET_NONE;
         break;
     case COMMON_SESSION_MACHINE_RESET:
         out_plan->notice = COMMON_SESSION_NOTICE_RESET;
@@ -620,7 +606,6 @@ lib_status common_session_reduce_fact(common_session *session,
         out_plan->mouse_capturable_changed = LIB_TRUE;
         out_plan->mouse_capturable = LIB_FALSE;
         out_plan->release_mouse = LIB_TRUE;
-        session->requested_target = COMMON_SESSION_TARGET_NONE;
         break;
     default:
         return LIB_STATUS_INVALID_ARGUMENT;
