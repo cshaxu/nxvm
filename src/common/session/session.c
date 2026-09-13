@@ -321,11 +321,31 @@ lib_status common_session_publish_ui_input(void *context,
     const ui_input_event *event)
 {
     common_session_fact fact = {0};
+    common_session *session = context;
 
     if (context == LIB_NULL || event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     fact.kind = COMMON_SESSION_FACT_UI_INPUT;
     fact.value.input = *event;
-    return common_session_publish((common_session *)context, &fact);
+    common_session_lock(session);
+    fact.run_id = session->run_id;
+    common_session_unlock(session);
+    return common_session_publish(session, &fact);
+}
+
+lib_status common_session_publish_ui_delivery_failed(common_session *session,
+    lib_u64 source_identity, lib_status status)
+{
+    common_session_fact fact = {0};
+
+    if (session == LIB_NULL || status == LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_lock(session);
+    fact.kind = COMMON_SESSION_FACT_UI_DELIVERY_FAILED;
+    fact.run_id = session->run_id;
+    fact.value.ui_delivery_failure.source_identity = source_identity;
+    fact.value.ui_delivery_failure.status = status;
+    common_session_unlock(session);
+    return common_session_publish(session, &fact);
 }
 
 lib_status common_session_publish_machine(common_session *session,
@@ -473,6 +493,11 @@ lib_status common_session_reduce_fact(common_session *session,
         }
         session->surface_facts = fact->value.ui_completion.completion.facts;
         common_session_plan_surface(session, out_plan);
+        return LIB_STATUS_OK;
+    }
+    if (fact->kind == COMMON_SESSION_FACT_UI_DELIVERY_FAILED) {
+        out_plan->ui_failure = LIB_TRUE;
+        out_plan->ui_failure_status = fact->value.ui_delivery_failure.status;
         return LIB_STATUS_OK;
     }
     if (fact->kind == COMMON_SESSION_FACT_MONITOR_TEXT) {

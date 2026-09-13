@@ -18,12 +18,12 @@ struct common_ui {
     lib_bool raw_console_current;
 };
 
-static lib_status common_ui_input(void *opaque, const ui_input_event *event)
+static int common_ui_input(void *opaque, const ui_input_event *event)
 {
     common_ui *ui = opaque;
 
-    return ui == LIB_NULL || ui->input_sink == LIB_NULL ? LIB_STATUS_INVALID_STATE :
-        ui->input_sink(ui->input_context, event);
+    return ui != LIB_NULL && ui->input_sink != LIB_NULL &&
+        ui->input_sink(ui->input_context, event) == LIB_STATUS_OK;
 }
 
 static void common_ui_failure(void *opaque, lib_u64 source_identity,
@@ -136,7 +136,8 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
     lib_memory_copy(ui->initial_window_title, options->initial_window_title,
         lib_text_length(options->initial_window_title) + 1u);
     status = common_ui_console_host_create(&ui->console_host,
-        options->console_line_context, options->console_line_sink);
+        options->console_line_context, options->console_line_sink,
+        ui, common_ui_failure);
     if (status != LIB_STATUS_OK) {
         lib_release(ui);
         return status;
@@ -176,6 +177,8 @@ lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
 
     if (ui == LIB_NULL || action == LIB_NULL || out_completion == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
+    out_completion->action = action->kind;
+    out_completion->facts = common_ui_surface_facts_of(ui);
     switch (action->kind) {
     case COMMON_UI_ACTION_CREATE_WINDOW:
         status = common_ui_create_window(ui);
@@ -216,7 +219,6 @@ lib_status common_ui_apply_action(common_ui *ui, const common_ui_action *action,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (status != LIB_STATUS_OK) return status;
-    out_completion->action = action->kind;
     out_completion->facts = common_ui_surface_facts_of(ui);
     return LIB_STATUS_OK;
 }

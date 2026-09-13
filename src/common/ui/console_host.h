@@ -7,7 +7,8 @@
 typedef struct common_ui_console_host common_ui_console_host;
 
 lib_status common_ui_console_host_create(common_ui_console_host **out_host,
-    void *line_context, common_ui_console_line_sink line_sink);
+    void *line_context, common_ui_console_line_sink line_sink,
+    void *failure_context, common_ui_failure_sink failure_sink);
 void common_ui_console_host_destroy(common_ui_console_host *host);
 lib_status common_ui_console_host_request_line(common_ui_console_host *host);
 lib_status common_ui_console_host_write(common_ui_console_host *host, const char *text);

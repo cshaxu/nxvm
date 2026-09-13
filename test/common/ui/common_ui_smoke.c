@@ -3,6 +3,7 @@
 void common_ui_fake_reset(void);
 void common_ui_fake_fail_window_create(lib_status status);
 void common_ui_fake_fail_claim(lib_status status);
+int common_ui_fake_emit_window_input(const ui_input_event *event);
 
 static lib_status common_ui_smoke_input(void *context, const ui_input_event *event)
 {
@@ -31,6 +32,7 @@ int main(void)
     common_ui_action action = {0};
     common_ui_completion completion = {0};
     common_ui_surface_facts facts;
+    ui_input_event event = {0};
     common_ui *ui;
 
     options.input_sink = common_ui_smoke_input;
@@ -70,6 +72,12 @@ int main(void)
         common_ui_destroy(ui);
         return 7;
     }
+    event.type = UI_EVENT_KEY;
+    event.data.key.pressed = LIB_TRUE;
+    if (!common_ui_fake_emit_window_input(&event)) {
+        common_ui_destroy(ui);
+        return 71;
+    }
     action.kind = COMMON_UI_ACTION_DESTROY_WINDOW;
     if (common_ui_apply_action(ui, &action, &completion) != LIB_STATUS_OK ||
         completion.facts.window_exists) {
@@ -79,6 +87,7 @@ int main(void)
     common_ui_fake_fail_window_create(LIB_STATUS_IO_ERROR);
     action.kind = COMMON_UI_ACTION_CREATE_WINDOW;
     if (common_ui_apply_action(ui, &action, &completion) != LIB_STATUS_IO_ERROR ||
+        completion.action != COMMON_UI_ACTION_CREATE_WINDOW ||
         common_ui_get_surface_facts(ui).window_exists) {
         common_ui_destroy(ui);
         return 9;

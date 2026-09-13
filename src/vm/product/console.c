@@ -376,9 +376,9 @@ static void vm_product_console_ui_failure(void *context, lib_u64 source_identity
 {
     vm_product_console_context *console = context;
 
-    (void)source_identity;
     if (console != STD_NULL)
-        (void)vm_product_console_printf(console, "UI failure: %d.\n", (C_INT)status);
+        (void)common_session_publish_ui_delivery_failed(console->control,
+            source_identity, status);
 }
 
 static void vm_product_console_apply_ui_plan(vm_product_console_context *context,
@@ -404,7 +404,9 @@ static void vm_product_console_apply_ui_plan(vm_product_console_context *context
     frame_plan.release_mouse = plan->release_mouse;
     frame_plan.frame_ready = plan->frame_ready;
     frame_plan.frame = plan->frame;
-    (void)common_ui_apply(vm_product_console_ui(context), &frame_plan);
+    status = common_ui_apply(vm_product_console_ui(context), &frame_plan);
+    if (status != LIB_STATUS_OK)
+        (void)common_session_publish_ui_delivery_failed(context->control, 0u, status);
 }
 
 static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
@@ -443,9 +445,11 @@ static C_VOID vm_product_console_apply_plan(vm_product_console_context *context,
 static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *context,
     C_INT restore_prompt)
 {
+    lib_status status;
+
     if (context == STD_NULL) return;
-    while (common_session_take(context->control, &context->fact, &context->display,
-            0u) == TYPE_STATUS_OK) {
+    while ((status = common_session_take(context->control, &context->fact,
+            &context->display, 0u)) == LIB_STATUS_OK) {
         if (common_session_reduce_fact(context->control, &context->fact,
                 &context->display, &context->plan) == LIB_STATUS_OK)
             vm_product_console_apply_plan(context, &context->plan, restore_prompt);
@@ -454,6 +458,8 @@ static C_VOID vm_product_console_drain_lifecycle(vm_product_console_context *con
                 &context->plan) == TYPE_STATUS_OK)
             vm_product_console_apply_plan(context, &context->plan, restore_prompt);
     }
+    if (status == LIB_STATUS_LIMIT_EXCEEDED)
+        (void)vm_product_console_printf(context, "Session delivery failed.\n");
 }
 
 

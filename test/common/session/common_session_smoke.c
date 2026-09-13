@@ -172,6 +172,10 @@ int main(void)
     input.type = UI_EVENT_SOURCE_RETIRED;
     if (common_session_dispatch_host_input(session, &input, sink, &delivered) !=
         LIB_STATUS_OK || delivered != 2u) return 1;
+    input.type = UI_EVENT_MOUSE;
+    if (common_session_publish_ui_input(session, &input) != LIB_STATUS_OK ||
+        common_session_take(session, &fact, &frame, 0u) != LIB_STATUS_OK ||
+        fact.kind != COMMON_SESSION_FACT_UI_INPUT || fact.run_id == 0u) return 1;
     frame.valid = 1u;
     frame.text_columns = 80u;
     frame.text_rows = 25u;
@@ -192,13 +196,20 @@ int main(void)
         fact.kind != COMMON_SESSION_FACT_MONITOR_TEXT || common_session_reduce_fact(
             session, &fact, &frame, &plan) != LIB_STATUS_OK ||
         plan.console_text[0] != 'm' || plan.console_prompt_ready) return 1;
+    if (common_session_publish_ui_delivery_failed(session, 7u,
+            LIB_STATUS_IO_ERROR) != LIB_STATUS_OK || common_session_take(session,
+            &fact, &frame, 0u) != LIB_STATUS_OK ||
+        fact.kind != COMMON_SESSION_FACT_UI_DELIVERY_FAILED ||
+        common_session_reduce_fact(session, &fact, &frame, &plan) != LIB_STATUS_OK ||
+        !plan.ui_failure || plan.ui_failure_status != LIB_STATUS_IO_ERROR) return 1;
     fact.kind = COMMON_SESSION_FACT_MACHINE;
     fact.run_id = 0x12345678u;
     if (common_session_reduce_fact(session, &fact, &frame, &plan) !=
         LIB_STATUS_INVALID_STATE) return 1;
     for (index = 0u; index < 64u; ++index)
         if (common_session_publish_console_line(session, "line") != LIB_STATUS_OK) return 1;
-    if (common_session_publish_console_line(session, "overflow") != LIB_STATUS_LIMIT_EXCEEDED)
+    if (common_session_publish_console_line(session, "overflow") != LIB_STATUS_LIMIT_EXCEEDED ||
+        common_session_take(session, &fact, &frame, 0u) != LIB_STATUS_LIMIT_EXCEEDED)
         return 1;
     common_session_close(session);
     if (common_session_publish_ui_input(session, &input) != LIB_STATUS_INVALID_STATE) return 1;

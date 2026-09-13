@@ -7,17 +7,22 @@ struct common_ui_console_host {
     host_console_broker *broker;
     void *line_context;
     common_ui_console_line_sink line_sink;
+    void *failure_context;
+    common_ui_failure_sink failure_sink;
 };
 
 static void common_ui_console_host_event(void *opaque,
     const lib_console_event *event)
 {
     common_ui_console_host *host = opaque;
+    lib_status status;
 
     if (host == LIB_NULL || event == LIB_NULL ||
         event->kind != LIB_CONSOLE_EVENT_COOKED_LINE ||
         host->line_sink == LIB_NULL) return;
-    (void)host->line_sink(host->line_context, event->value.line.text);
+    status = host->line_sink(host->line_context, event->value.line.text);
+    if (status != LIB_STATUS_OK && host->failure_sink != LIB_NULL)
+        host->failure_sink(host->failure_context, 0u, status);
 }
 
 lib_status common_ui_console_host_claim_guest(common_ui_console_host *host,
@@ -37,17 +42,21 @@ lib_status common_ui_console_host_release_guest(common_ui_console_host *host,
 }
 
 lib_status common_ui_console_host_create(common_ui_console_host **out_host,
-    void *line_context, common_ui_console_line_sink line_sink)
+    void *line_context, common_ui_console_line_sink line_sink,
+    void *failure_context, common_ui_failure_sink failure_sink)
 {
     common_ui_console_host *host;
     lib_status status;
 
-    if (out_host == LIB_NULL || line_sink == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (out_host == LIB_NULL || line_sink == LIB_NULL || failure_sink == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
     *out_host = LIB_NULL;
     host = lib_allocate_zero(1u, sizeof(*host));
     if (host == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     host->line_context = line_context;
     host->line_sink = line_sink;
+    host->failure_context = failure_context;
+    host->failure_sink = failure_sink;
     status = lib_console_create(&host->monitor);
     if (status == LIB_STATUS_OK)
         status = lib_console_set_event_sink(host->monitor, common_ui_console_host_event,

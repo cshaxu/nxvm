@@ -57,6 +57,7 @@ typedef enum common_session_fact_kind {
     COMMON_SESSION_FACT_MONITOR_TEXT,
     COMMON_SESSION_FACT_MACHINE,
     COMMON_SESSION_FACT_UI_INPUT,
+    COMMON_SESSION_FACT_UI_DELIVERY_FAILED,
     COMMON_SESSION_FACT_UI_COMPLETION,
     COMMON_SESSION_FACT_FRAME
 } common_session_fact_kind;
@@ -70,6 +71,10 @@ typedef struct common_session_fact {
             common_session_machine_state state;
             lib_status status;
         } machine;
+        struct {
+            lib_u64 source_identity;
+            lib_status status;
+        } ui_delivery_failure;
         struct {
             lib_status status;
             common_ui_completion completion;
@@ -135,6 +140,8 @@ lib_status common_session_publish_monitor_text(common_session *session,
     const char *text);
 lib_status common_session_publish_ui_input(void *context,
     const ui_input_event *event);
+lib_status common_session_publish_ui_delivery_failed(common_session *session,
+    lib_u64 source_identity, lib_status status);
 lib_status common_session_publish_machine(common_session *session,
     common_session_machine_state state, lib_status status);
 lib_status common_session_publish_ui_completion(common_session *session,

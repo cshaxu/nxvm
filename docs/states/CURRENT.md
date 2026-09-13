@@ -2,8 +2,26 @@
 
 ## Current Work
 
-T531 remains open after accepted S5; later batches retain the finite
-two-product convergence ledger.
+## M5 T531 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T531 implementation and directed continued execution after accepted S5. Single-session coordinator/executor review. |
+| Objective | Close the finite Common input and asynchronous-failure batch: source retirement, held input, hotkeys, mouse capture, stale facts, queue saturation, and UI/broker/component failure delivery. |
+| Non-goals | No SoftPC write, no executor merge, no new product policy callback, no native API outside Lib, no Debug grammar change, no external asset change and no unrelated machine/controller change. |
+| Reference Baseline | NXVM `386db334`; read-only SoftPC `e140ec55bbc4cd40956948e57e58dc678e54f699`; T531 proposal and S1 ledger. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md) and [two-product ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md). |
+| Files And ABI Surface | `src/common/session/*`, `src/common/ui/*` and their owner tests; NXVM `src/vm/app/*` and `src/vm/product/*` only where a copied Common fact must be bound or a duplicate route removed; only directly required Common manifest/evidence/status records. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution and Documentation Rules; Product UX; T531 input/failure ledger rows. |
+| Verification | Frozen input/failure matrix with one disposition per source/lifecycle/presentation context; owner-local stale/queue/full/failure regressions; read-only SoftPC crosswalk; full repository-only unit suite; Common manifest/corpus, documentation and actual-diff gates. |
+| Expected Markers | One Session FIFO receives all copied facts; source retirement releases only owned keys; Common UI failure reaches Session without product-side polling or swallowed status; no duplicate input or failure state. |
+| Asset Needs | None. No external asset or sibling source import. |
+| Reporting Requirements | Record each matrix disposition, product adapter owner, any retained SoftPC receiver and source/test accounting; stop for a required new product-policy seam or a failure that cannot return as a copied fact. |
+| Stop Conditions | A required case needs a second queue/state owner, direct UI-to-machine mutation, a generic executor, sibling-repository write, native API leakage or unapproved product policy. |
+| Exit Criteria | The complete S6 matrix is reconciled; every NXVM gap is repaired at its Common owner; required verification passes; a complete P is pushed then coordinator-reviewed. |
+| Original Owner Request | The two products differ only in startup composition/configuration, injected CLI and injected machine; Common control behavior follows SoftPC while executors remain distinct adapters. |
+| Similar-Issue Sweep | Inspect all Common Session/UI facts, input dispatch/hotkey/mouse paths, NXVM UI/result bindings and read-only SoftPC control/input/broker failure paths for duplicate state, silent failure, stale delivery and polling. |
 
 ## Current Technical Baseline
 
