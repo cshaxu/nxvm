@@ -98,6 +98,7 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
     C_INT fpu = 0;
     C_INT memory = 0;
     C_INT display = 0;
+    C_INT console_control = 0;
     C_INT floppy_format = 0;
     C_INT floppy = 0;
     C_INT hard_disk = 0;
@@ -152,6 +153,11 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
         if (section == 0 && vm_product_session_catalog_parse_value(text, "display", &value)) {
             if (display || !vm_product_session_catalog_copy(entry->display, sizeof(entry->display), value)) break;
             display = 1; continue;
+        }
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "console_control", &value)) {
+            if (console_control || (STD_STRCMP(value, "0") && STD_STRCMP(value, "1"))) break;
+            entry->console_control = value[0] == '1';
+            console_control = 1; continue;
         }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "floppy_format", &value)) {
             if (floppy_format || !vm_product_session_catalog_copy(entry->floppy_format,

@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T531 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continued Common-reuse implementation; execute the independently complete NXVM `console_control` receiver while SoftPC prepares its real Debug adapter. Single-session coordinator/executor review. |
+| Objective | Add one copied `console_control` startup value to NXVM session YAML and composition, then have Common Session/UI apply the same Console-display graphical-frame behavior already defined by the SoftPC reference. |
+| Non-goals | No SoftPC write, no synthetic Debug receiver, no new product-specific presentation callback, no native API in Common, no second control loop, and no change to raw Console/Window ownership outside the shared reconciliation path. |
+| Reference Baseline | NXVM `fae64665`; read-only SoftPC `4c06235`; T531 proposal, S1 two-product ledger and S7 receiver evidence. |
+| Candidate Proposal | [Shared Common convergence](../proposals/m5-shared-common-product-convergence.md) and [two-product ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md). |
+| Files And ABI Surface | `src/vm/request_interface.h`, session catalog/parser fixtures, VM composition and Common Session/UI policy contracts/tests; only the minimal YAML-to-copied-Common configuration path necessary to represent `console_control=0|1`. |
+| Applicable Rules | Task Reading Set; Architecture, Coding, Execution, Documentation and UX rules; Common remains Lib-only and owns shared control/presentation semantics. |
+| Verification | Parser accepts only `0` or `1`; request/config transport is copied; the Common presentation matrix covers Console/Window, text/graphics, running/paused/stopped and both `console_control` values; focused owner tests plus full repository-only unit suite for code change. |
+| Expected Markers | `console_control` has one immutable startup owner, Common derives presentation behavior from it, NXVM no longer invents a divergent display policy, and existing YAML without the field keeps the documented default. |
+| Asset Needs | None. Unit fixtures are in source; external assets and output YAML are untouched. |
+| Reporting Requirements | Record the SoftPC-reference semantic matrix, every NXVM parser/config/policy route replaced or retained, code-size accounting and full-unit result; report the remaining real SoftPC Debug receiver separately. |
+| Stop Conditions | The required common policy cannot express the SoftPC behavior without a new product callback, existing YAML compatibility has no evidence, a platform object leaks into Common, or any scope requires SoftPC source modification. |
+| Exit Criteria | Valid/invalid configuration, copied composition, and all presentation-state rows have regression proof; no duplicate NXVM policy route remains; the P is actual-diff reviewed, pushed and accepted with the remaining SoftPC adapter accurately transferred. |
+| Original Owner Request | Both products differ only in startup configuration/composition, injected CLI and machine adapter; Common owns control and presentation behavior, and NXVM must also support `console_control`. |
+| Similar-Issue Sweep | Inspect every `display` parse/validation/selection route, Common target/reconcile policy, all session YAML fixtures and all raw/cooked Console versus Window transitions for hard-coded product policy. |
+
 ## Current Technical Baseline
 
 - `vm-0-5-0530` is the current target. Its recorded stripped Release artifacts are

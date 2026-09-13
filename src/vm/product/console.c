@@ -360,7 +360,7 @@ static type_status vm_product_console_reduce_input(vm_product_console_context *c
     if (event->type == UI_EVENT_WINDOW_CLOSE) {
         if (vm_product_console_is_running(context))
             (C_VOID)vm_product_console_request_pause(context);
-        (C_VOID)common_session_set_target(context->control, COMMON_SESSION_TARGET_NONE);
+        (C_VOID)common_session_hide_presentation(context->control);
         (C_VOID)common_session_reconcile(context->control, out_plan);
         out_plan->mouse_capturable_changed = LIB_TRUE;
         out_plan->mouse_capturable = LIB_FALSE;
@@ -887,7 +887,11 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
     }
     target = !STD_STRCMP(selected_entry.display, "window") ?
         COMMON_SESSION_TARGET_WINDOW : COMMON_SESSION_TARGET_CONSOLE;
-    (C_VOID)common_session_set_target(context->control, target);
+    if (common_session_set_presentation_policy(context->control, target,
+            selected_entry.console_control ? LIB_TRUE : LIB_FALSE) != LIB_STATUS_OK) {
+        STD_PRINTF("Unable to configure presentation for '%s'.\n", selected_entry.file_name);
+        return;
+    }
     if (context->debug != STD_NULL)
         vm_machine_bind_debug_observer(vm_product_console_machine(context),
             vm_product_console_debug_observe, context);

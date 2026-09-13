@@ -25,6 +25,12 @@ struct common_session {
     common_ui *ui;
     common_session_machine_state lifecycle;
     common_session_target requested_target;
+    common_session_target presentation_display;
+    lib_bool console_control;
+    lib_bool presentation_configured;
+    lib_bool presentation_hidden;
+    lib_bool presentation_frame_available;
+    lib_bool presentation_frame_graphics;
     common_ui_surface_facts surface_facts;
     lib_bool ui_action_in_flight;
     common_ui_action_kind ui_action_in_flight_kind;
@@ -69,33 +75,51 @@ static void common_session_plan_surface(common_session *session,
     common_session_plan *plan)
 {
     common_ui_surface_facts facts;
+    lib_bool want_window;
+    lib_bool want_raw_console;
 
     if (session == LIB_NULL || plan == LIB_NULL || session->ui_action_in_flight)
         return;
     facts = session->surface_facts;
-    if (session->requested_target == COMMON_SESSION_TARGET_CONSOLE) {
+    want_window = LIB_FALSE;
+    want_raw_console = LIB_FALSE;
+    if (session->presentation_configured && !session->presentation_hidden &&
+        session->lifecycle != COMMON_SESSION_MACHINE_STOPPED &&
+        session->lifecycle != COMMON_SESSION_MACHINE_FAULT) {
+        if (session->lifecycle == COMMON_SESSION_MACHINE_PAUSED) {
+            want_window = session->presentation_display == COMMON_SESSION_TARGET_WINDOW ||
+                session->presentation_frame_graphics;
+        } else if (session->presentation_display == COMMON_SESSION_TARGET_WINDOW) {
+            want_window = LIB_TRUE;
+        } else if (session->presentation_frame_available) {
+            want_window = session->presentation_frame_graphics;
+            want_raw_console = !session->presentation_frame_graphics ||
+                !session->console_control;
+        }
+    } else if (!session->presentation_configured) {
+        want_window = session->requested_target == COMMON_SESSION_TARGET_WINDOW;
+        want_raw_console = session->requested_target == COMMON_SESSION_TARGET_CONSOLE;
+    }
+    if (want_raw_console) {
         if (!facts.raw_console_exists)
             common_session_plan_action(session, plan,
                 COMMON_UI_ACTION_CREATE_RAW_CONSOLE);
         else if (!facts.raw_console_current)
             common_session_plan_action(session, plan,
                 COMMON_UI_ACTION_BIND_RAW_CONSOLE);
-        else if (facts.window_exists)
+        if (plan->ui_action_ready) return;
+    } else {
+        if (facts.raw_console_current)
             common_session_plan_action(session, plan,
-                COMMON_UI_ACTION_DESTROY_WINDOW);
-        return;
+                COMMON_UI_ACTION_BIND_MONITOR_CONSOLE);
+        else if (facts.raw_console_exists)
+            common_session_plan_action(session, plan,
+                COMMON_UI_ACTION_DESTROY_RAW_CONSOLE);
+        if (plan->ui_action_ready) return;
     }
-    if (facts.raw_console_current) {
-        common_session_plan_action(session, plan,
-            COMMON_UI_ACTION_BIND_MONITOR_CONSOLE);
-    } else if (facts.raw_console_exists) {
-        common_session_plan_action(session, plan,
-            COMMON_UI_ACTION_DESTROY_RAW_CONSOLE);
-    } else if (session->requested_target == COMMON_SESSION_TARGET_WINDOW &&
-        !facts.window_exists) {
+    if (want_window && !facts.window_exists) {
         common_session_plan_action(session, plan, COMMON_UI_ACTION_CREATE_WINDOW);
-    } else if (session->requested_target == COMMON_SESSION_TARGET_NONE &&
-        facts.window_exists) {
+    } else if (!want_window && facts.window_exists) {
         common_session_plan_action(session, plan, COMMON_UI_ACTION_DESTROY_WINDOW);
     }
 }
@@ -167,6 +191,32 @@ lib_status common_session_set_target(common_session *session,
     if (session == LIB_NULL || target > COMMON_SESSION_TARGET_WINDOW)
         return LIB_STATUS_INVALID_ARGUMENT;
     session->requested_target = target;
+    return LIB_STATUS_OK;
+}
+
+lib_status common_session_set_presentation_policy(common_session *session,
+    common_session_target display, lib_bool console_control)
+{
+    if (session == LIB_NULL || display == COMMON_SESSION_TARGET_NONE ||
+        display > COMMON_SESSION_TARGET_WINDOW ||
+        (console_control != LIB_FALSE && console_control != LIB_TRUE))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (session->lifecycle != COMMON_SESSION_MACHINE_STOPPED)
+        return LIB_STATUS_INVALID_STATE;
+    session->presentation_display = display;
+    session->console_control = console_control;
+    session->presentation_configured = LIB_TRUE;
+    session->presentation_hidden = LIB_FALSE;
+    session->presentation_frame_available = LIB_FALSE;
+    session->presentation_frame_graphics = LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+
+lib_status common_session_hide_presentation(common_session *session)
+{
+    if (session == LIB_NULL || !session->presentation_configured)
+        return LIB_STATUS_INVALID_STATE;
+    session->presentation_hidden = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -255,6 +305,9 @@ lib_u32 common_session_begin_run(common_session *session,
         return 0u;
     }
     ++session->run_id;
+    session->presentation_hidden = LIB_FALSE;
+    session->presentation_frame_available = LIB_FALSE;
+    session->presentation_frame_graphics = LIB_FALSE;
     common_session_plan_surface(session, out_plan);
     common_session_unlock(session);
     return session->run_id;
@@ -477,8 +530,11 @@ lib_status common_session_reduce_fact(common_session *session,
         return LIB_STATUS_INVALID_STATE;
     if (fact->kind == COMMON_SESSION_FACT_FRAME) {
         if (frame == LIB_NULL || !ui_frame_is_valid(frame)) return LIB_STATUS_INVALID_ARGUMENT;
+        session->presentation_frame_available = LIB_TRUE;
+        session->presentation_frame_graphics = frame->graphics != LIB_FALSE;
         out_plan->frame_ready = LIB_TRUE;
         out_plan->frame = *frame;
+        common_session_plan_surface(session, out_plan);
         return LIB_STATUS_OK;
     }
     if (fact->kind == COMMON_SESSION_FACT_UI_COMPLETION) {

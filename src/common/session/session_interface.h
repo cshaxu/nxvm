@@ -119,6 +119,13 @@ lib_status common_session_request_monitor_line(common_session *session);
 lib_status common_session_write_monitor(common_session *session, const char *text);
 lib_status common_session_set_target(common_session *session,
     common_session_target target);
+/* Immutable product startup policy.  Console display uses the raw guest
+ * Console for text; graphical frames select a Window, while console_control
+ * retains the cooked monitor instead of the raw Console. */
+lib_status common_session_set_presentation_policy(common_session *session,
+    common_session_target display, lib_bool console_control);
+/* A user-visible Window close hides presentation until the next run. */
+lib_status common_session_hide_presentation(common_session *session);
 lib_status common_session_reconcile(common_session *session,
     common_session_plan *out_plan);
 lib_status common_session_set_cli_provider(common_session *session,

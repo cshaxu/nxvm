@@ -58,19 +58,41 @@ static lib_status cli_machine(void *context, common_session_machine_state state,
     return LIB_STATUS_OK;
 }
 
+static int take_and_reduce(common_session *session, common_session_fact *fact,
+    ui_frame *frame, common_session_plan *plan)
+{
+    return common_session_take(session, fact, frame, 0u) == LIB_STATUS_OK &&
+        common_session_reduce_fact(session, fact, frame, plan) == LIB_STATUS_OK;
+}
+
+static int complete_action(common_session *session, common_ui_action_kind action,
+    common_ui_surface_facts facts, common_session_fact *fact, ui_frame *frame,
+    common_session_plan *plan)
+{
+    common_ui_completion completion = {0};
+
+    completion.action = action;
+    completion.facts = facts;
+    return common_session_publish_ui_completion(session, LIB_STATUS_OK, &completion) ==
+        LIB_STATUS_OK && take_and_reduce(session, fact, frame, plan);
+}
+
 int main(void)
 {
     common_session *session = LIB_NULL;
     common_session_fact fact = {0};
     common_session_plan plan = {0};
     common_ui_completion completion = {0};
-    ui_frame frame = {0};
+    static ui_frame frame = {0};
     ui_input_event input = {0};
     lib_u32 delivered = 0u;
     lib_u32 cli_calls = 0u;
     lib_u32 lifecycle_calls = 0u;
     lib_u32 machine_calls = 0u;
     lib_u32 index;
+    common_session *policy = LIB_NULL;
+    common_ui_surface_facts facts = {0};
+    common_session_plan policy_plan = {0};
 
     if (common_session_create(&session) != LIB_STATUS_OK ||
         common_session_set_target(session, COMMON_SESSION_TARGET_WINDOW) != LIB_STATUS_OK ||
@@ -214,5 +236,112 @@ int main(void)
     common_session_close(session);
     if (common_session_publish_ui_input(session, &input) != LIB_STATUS_INVALID_STATE) return 1;
     common_session_destroy(session);
+
+    if (common_session_create(&policy) != LIB_STATUS_OK ||
+        common_session_set_presentation_policy(policy, COMMON_SESSION_TARGET_CONSOLE,
+            LIB_FALSE) != LIB_STATUS_OK || common_session_begin_run(policy,
+            &policy_plan) == 0u || policy_plan.ui_action_ready ||
+        common_session_publish_machine(policy, COMMON_SESSION_MACHINE_RUNNING,
+            LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
+            &frame, &policy_plan) || policy_plan.ui_action_ready) return 1;
+    frame = (ui_frame) {0};
+    frame.valid = 1u;
+    frame.text_columns = 80u;
+    frame.text_rows = 25u;
+    if (common_session_publish_frame(policy, &frame) != LIB_STATUS_OK ||
+        !take_and_reduce(policy, &fact, &frame, &policy_plan) ||
+        !policy_plan.ui_action_ready || policy_plan.ui_action.kind !=
+            COMMON_UI_ACTION_CREATE_RAW_CONSOLE) return 1;
+    facts.raw_console_exists = LIB_TRUE;
+    if (!complete_action(policy, COMMON_UI_ACTION_CREATE_RAW_CONSOLE, facts,
+            &fact, &frame, &policy_plan) || !policy_plan.ui_action_ready ||
+        policy_plan.ui_action.kind != COMMON_UI_ACTION_BIND_RAW_CONSOLE) return 1;
+    facts.raw_console_current = LIB_TRUE;
+    if (!complete_action(policy, COMMON_UI_ACTION_BIND_RAW_CONSOLE, facts,
+            &fact, &frame, &policy_plan) || policy_plan.ui_action_ready) return 1;
+    frame.valid = 1u;
+    frame.graphics = 1u;
+    frame.graphics_width = 1u;
+    frame.graphics_height = 1u;
+    frame.graphics_stride = 1u;
+    if (common_session_publish_frame(policy, &frame) != LIB_STATUS_OK ||
+        !take_and_reduce(policy, &fact, &frame, &policy_plan) ||
+        !policy_plan.ui_action_ready || policy_plan.ui_action.kind !=
+            COMMON_UI_ACTION_CREATE_WINDOW) return 1;
+    facts.window_exists = LIB_TRUE;
+    if (!complete_action(policy, COMMON_UI_ACTION_CREATE_WINDOW, facts,
+            &fact, &frame, &policy_plan) || policy_plan.ui_action_ready ||
+        common_session_publish_machine(policy, COMMON_SESSION_MACHINE_PAUSED,
+            LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
+            &frame, &policy_plan) || !policy_plan.ui_action_ready ||
+        policy_plan.ui_action.kind != COMMON_UI_ACTION_BIND_MONITOR_CONSOLE)
+        return 1;
+    facts.raw_console_current = LIB_FALSE;
+    if (!complete_action(policy, COMMON_UI_ACTION_BIND_MONITOR_CONSOLE, facts,
+            &fact, &frame, &policy_plan) || !policy_plan.ui_action_ready ||
+        policy_plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_RAW_CONSOLE) return 1;
+    facts.raw_console_exists = LIB_FALSE;
+    if (!complete_action(policy, COMMON_UI_ACTION_DESTROY_RAW_CONSOLE, facts,
+            &fact, &frame, &policy_plan) || policy_plan.ui_action_ready ||
+        common_session_publish_machine(policy, COMMON_SESSION_MACHINE_STOPPED,
+            LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
+            &frame, &policy_plan) || !policy_plan.ui_action_ready ||
+        policy_plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_WINDOW) return 1;
+    facts.window_exists = LIB_FALSE;
+    if (!complete_action(policy, COMMON_UI_ACTION_DESTROY_WINDOW, facts,
+            &fact, &frame, &policy_plan) || policy_plan.ui_action_ready) return 1;
+    common_session_destroy(policy);
+
+    facts = (common_ui_surface_facts) {0};
+    if (common_session_create(&policy) != LIB_STATUS_OK ||
+        common_session_set_presentation_policy(policy, COMMON_SESSION_TARGET_CONSOLE,
+            LIB_TRUE) != LIB_STATUS_OK || common_session_begin_run(policy,
+            &policy_plan) == 0u || common_session_publish_machine(policy,
+            COMMON_SESSION_MACHINE_RUNNING, LIB_STATUS_OK) != LIB_STATUS_OK ||
+        !take_and_reduce(policy, &fact, &frame, &policy_plan)) return 1;
+    frame = (ui_frame) {0};
+    frame.valid = 1u;
+    frame.graphics = 1u;
+    frame.graphics_width = 1u;
+    frame.graphics_height = 1u;
+    frame.graphics_stride = 1u;
+    if (common_session_publish_frame(policy, &frame) != LIB_STATUS_OK ||
+        !take_and_reduce(policy, &fact, &frame, &policy_plan) ||
+        !policy_plan.ui_action_ready || policy_plan.ui_action.kind !=
+            COMMON_UI_ACTION_CREATE_WINDOW) return 1;
+    facts.window_exists = LIB_TRUE;
+    if (!complete_action(policy, COMMON_UI_ACTION_CREATE_WINDOW, facts,
+            &fact, &frame, &policy_plan) || policy_plan.ui_action_ready ||
+        common_session_publish_machine(policy, COMMON_SESSION_MACHINE_PAUSED,
+            LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
+            &frame, &policy_plan) || policy_plan.ui_action_ready ||
+        common_session_publish_machine(policy, COMMON_SESSION_MACHINE_STOPPED,
+            LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
+            &frame, &policy_plan) || !policy_plan.ui_action_ready ||
+        policy_plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_WINDOW) return 1;
+    facts.window_exists = LIB_FALSE;
+    if (!complete_action(policy, COMMON_UI_ACTION_DESTROY_WINDOW, facts,
+            &fact, &frame, &policy_plan) || policy_plan.ui_action_ready) return 1;
+    common_session_destroy(policy);
+
+    if (common_session_create(&policy) != LIB_STATUS_OK ||
+        common_session_set_presentation_policy(policy, COMMON_SESSION_TARGET_WINDOW,
+            LIB_FALSE) != LIB_STATUS_OK || common_session_begin_run(policy,
+            &policy_plan) == 0u || common_session_publish_machine(policy,
+            COMMON_SESSION_MACHINE_RUNNING, LIB_STATUS_OK) != LIB_STATUS_OK ||
+        !take_and_reduce(policy, &fact, &frame, &policy_plan) ||
+        !policy_plan.ui_action_ready || policy_plan.ui_action.kind !=
+            COMMON_UI_ACTION_CREATE_WINDOW) return 1;
+    facts = (common_ui_surface_facts) { .window_exists = LIB_TRUE };
+    if (!complete_action(policy, COMMON_UI_ACTION_CREATE_WINDOW, facts,
+            &fact, &frame, &policy_plan) || policy_plan.ui_action_ready ||
+        common_session_publish_machine(policy, COMMON_SESSION_MACHINE_PAUSED,
+            LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
+            &frame, &policy_plan) || policy_plan.ui_action_ready ||
+        common_session_publish_machine(policy, COMMON_SESSION_MACHINE_STOPPED,
+            LIB_STATUS_OK) != LIB_STATUS_OK || !take_and_reduce(policy, &fact,
+            &frame, &policy_plan) || !policy_plan.ui_action_ready ||
+        policy_plan.ui_action.kind != COMMON_UI_ACTION_DESTROY_WINDOW) return 1;
+    common_session_destroy(policy);
     return 0;
 }

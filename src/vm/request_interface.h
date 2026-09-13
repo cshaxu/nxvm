@@ -16,6 +16,7 @@ typedef struct vm_session_request {
     C_CHAR cpu[32];
     C_CHAR fpu[32];
     C_CHAR display[16];
+    C_INT console_control;
     C_CHAR floppy_format[16];
     C_CHAR floppy[VM_SESSION_REQUEST_MEDIA_SLOT_COUNT][VM_SESSION_REQUEST_PATH_MAX];
     C_CHAR fixed_disk[VM_SESSION_REQUEST_MEDIA_SLOT_COUNT][VM_SESSION_REQUEST_PATH_MAX];
