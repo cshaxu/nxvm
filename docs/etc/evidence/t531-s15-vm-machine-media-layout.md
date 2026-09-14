@@ -46,6 +46,5 @@ exceptions and this evidence changed.
 
 ## Disposition
 
-S15 is ready for coordinator acceptance and its implementation commit. T531
-remains open for the owner's requested manual test and later whole-task
-acceptance.
+S15 is accepted after actual-diff review of P1 `5c648c35`. T531 remains open
+for the owner's requested manual test and later whole-task acceptance.
