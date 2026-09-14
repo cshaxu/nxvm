@@ -11,11 +11,11 @@
 #include "common/debug/debug_interface.h"
 #include "common/session/session_interface.h"
 #include "common/ui/ui_interface.h"
-#include "lib/kvm-base/hotkey_interface.h"
 #include "vm/app/composition.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/app/catalog.h"
 #include "vm/app/command.h"
+#include "vm/app/keyboard.h"
 #include "vm/app/recorder.h"
 
 #define CONSOLE_MAXNARG 256u
@@ -343,56 +343,17 @@ static lib_bool vm_app_console_begin_external(C_VOID *opaque,
     return LIB_TRUE;
 }
 
-static C_VOID vm_app_console_submit_chord(vm_app_console_context *context,
-    C_INT cad)
-{
-    const type_unsigned_16 scan[] = { cad ? 0x1du : 0x38u, 0x38u,
-        cad ? 0x153u : 0u };
-    const type_unsigned_16 key[] = { cad ? 0x11u : 0x12u, 0x12u,
-        cad ? 0x2eu : 0u };
-    type_unsigned_32 count = cad ? 3u : 2u;
-    type_unsigned_32 index;
-    vm_machine *machine = vm_app_console_machine(context);
-    if (machine == STD_NULL) return;
-    for (index = 0u; index < count; ++index) {
-        vm_machine_input input = {0};
-        input.kind = VM_MACHINE_INPUT_KEY_EVENT;
-        input.data.key_event.scan_code = scan[index];
-        input.data.key_event.virtual_key = key[index];
-        input.data.key_event.pressed = TYPE_TRUE;
-        (C_VOID)vm_machine_submit_input(machine, &input);
-    }
-    for (index = count; index-- != 0u;) {
-        vm_machine_input input = {0};
-        input.kind = VM_MACHINE_INPUT_KEY_EVENT;
-        input.data.key_event.scan_code = scan[index];
-        input.data.key_event.virtual_key = key[index];
-        input.data.key_event.pressed = TYPE_FALSE;
-        (C_VOID)vm_machine_submit_input(machine, &input);
-    }
-}
-
 static lib_bool vm_app_console_hotkey(C_VOID *opaque,
     common_session_machine_state state, const C_CHAR *identifier,
     common_session_command_result *result)
 {
     vm_app_console_context *context = opaque;
-    vm_app_console_clear_result(result);
-    if (context == STD_NULL || identifier == STD_NULL) return LIB_FALSE;
-    if (!STD_STRCMP(identifier, "pause")) {
-        result->request = state == COMMON_SESSION_MACHINE_RUNNING ?
-            COMMON_SESSION_REQUEST_PAUSE : COMMON_SESSION_REQUEST_RESUME;
-        return LIB_TRUE;
+    if (context == STD_NULL) {
+        vm_app_console_clear_result(result);
+        return LIB_FALSE;
     }
-    if (!STD_STRCMP(identifier, "release-mouse")) {
-        result->release_window_mouse = LIB_TRUE;
-        return LIB_TRUE;
-    }
-    if (!STD_STRCMP(identifier, "cad") || !STD_STRCMP(identifier, "alt-enter")) {
-        vm_app_console_submit_chord(context, !STD_STRCMP(identifier, "cad"));
-        return LIB_TRUE;
-    }
-    return LIB_FALSE;
+    return vm_app_keyboard_handle_hotkey(vm_app_console_machine(context), state,
+        identifier, result);
 }
 
 static C_INT vm_app_console_choose_profile(vm_app_console_context *context,
@@ -450,15 +411,7 @@ static C_INT vm_app_console_compose(vm_app_console_context *context,
     ui_options.running_window_title = "NXVM (Running)";
     ui_options.paused_window_title = "NXVM (Paused)";
     ui_options.graphics_console_status_text = "NXVM graphics output is active in a Window.";
-    kvm_hotkey_registry_initialize(&ui_options.hotkeys);
-    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'P',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "pause");
-    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'D',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "cad");
-    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'F',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "alt-enter");
-    (void)kvm_hotkey_registry_register(&ui_options.hotkeys, 'M',
-        KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "release-mouse");
+    vm_app_keyboard_register_hotkeys(&ui_options.hotkeys);
     return vm_app_compose_ui(context->session, &ui_options) == TYPE_STATUS_OK;
 }
 

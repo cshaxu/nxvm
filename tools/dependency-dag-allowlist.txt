@@ -8,4 +8,5 @@ src/vm/app/composition.h|vm/machine
 src/vm/app/config.c|vm/machine
 src/vm/app/config.h|vm/machine
 src/vm/app/command.c|vm/machine
+src/vm/app/keyboard.c|vm/machine
 src/vm/app/recorder.h|vm/machine

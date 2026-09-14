@@ -1198,6 +1198,7 @@ set(VM_PROFILE_SOURCES
 
 set(VM_APP_SOURCES
     src/vm/app/command.c
+    src/vm/app/keyboard.c
     src/vm/app/catalog.c
     src/vm/app/recorder.c
     src/vm/app/composition.c
@@ -3569,6 +3570,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "common-machine|src/common/machine/machine.c|machine-owner"
     "common-machine|src/common/machine/input_queue.c|machine-input-queue"
     "vm-app|src/vm/app/command.c|console-product"
+    "vm-app|src/vm/app/keyboard.c|keyboard-product"
     "vm-app|src/vm/app/recorder.c|recorder-product"
     "common-ui|src/common/ui/ui.c|presentation-leaf"
     "vm-machine|src/vm/machine/runtime/frame.c|display-adaptation"

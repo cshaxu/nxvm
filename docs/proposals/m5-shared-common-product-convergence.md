@@ -142,7 +142,16 @@ recorded evidence, never by following successive isolated failures.
     hotkey policy may use only public VM-machine operations; it must not
     include runtime lifecycle implementation headers.  This does not move
     Common execution/UI ownership back into NXVM.
-17. **S17: package and whole-task acceptance.** Independently review the
+17. **S17: NXVM App responsibility convergence.** Move NXVM hotkey/input
+    product policy from command parsing into one `app/keyboard` component;
+    leave command grammar/result formatting in `app/command`; and leave
+    catalogue/configuration resolution and App composition at their existing
+    owners. Mirror the relevant SoftPC App responsibility split without
+    importing SoftPC product code, adding a queue, changing Common/VM-machine
+    contracts, or retaining a duplicate hotkey-policy path.  The existing
+    single Common callback context may use one App-local context adapter to
+    reach the keyboard owner; it carries no hotkey policy itself.
+18. **S18: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.

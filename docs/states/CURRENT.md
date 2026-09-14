@@ -8,6 +8,7 @@
 | T531 S14 | Accepted raw-Console prompt correction at P1 `9e7b4eb2`; Common ownership now suppresses prompt publication during guest input. [Evidence](../etc/evidence/t531-s14-raw-console-monitor-ownership.md). |
 | T531 S15 | Accepted P1 `5c648c35`: FDD/HDD Core-media adaptation now resides at `src/vm/machine/media` with the one retained `vm-media` target; direct include/CMake paths and obsolete DAG exceptions are removed. [Evidence](../etc/evidence/t531-s15-vm-machine-media-layout.md). |
 | T531 S16 | Accepted P1 `59ccb57c`: SoftPC commit `00d4461` now exactly supplies `src/lib`, `src/common`, `test/lib` and `test/common`; NXVM's former `vm/product` root and target are retired in favor of one `vm/app` owner. [Evidence](../etc/evidence/t531-s16-app-consolidation.md). |
+| T531 S17 | App keyboard policy is now isolated in `app/keyboard`; `command` retains grammar and the sole callback-context adapter. No Common/Core/VM-machine contract changed. [Evidence](../etc/evidence/t531-s17-app-keyboard-convergence.md). |
 
 ## Current Technical Baseline
 
