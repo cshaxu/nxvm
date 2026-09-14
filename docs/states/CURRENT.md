@@ -4,28 +4,9 @@
 
 | Task | Compact result |
 | --- | --- |
-| T531 S12 | Accepted committed SoftPC `662ed4b` Lib/Common/test-corpus import. P1 is `77eb85c3`; P2 records exact-corpus, direct-cutover, gate and dual-artifact acceptance. T531 remains open for the owner-selected next S. |
+| T531 S13 | Canonical SoftPC `54845ac` Lib/Common/test-corpus refresh accepted. P1 `4e7b4a26` imports the exact four trees and direct NXVM adaptations; P2 records equality, gates and dual-architecture acceptance. T531 remains open. |
 
-## M5 T531 S12 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner authorized the committed SoftPC corpus import on 2026-09-14. The source is frozen by commit, not by later uncommitted SoftPC worktree content; complete this S but keep T531 open for owner direction. |
-| Objective | Replace NXVM's complete Lib, Common and their standalone test corpora with the exact frozen SoftPC corpus, then directly adapt NXVM consumers to its public contracts without a local fork or compatibility layer. |
-| Non-goals | Do not write SoftPC; do not import app, host, MVDM, assets, firmware, media or product tests; do not close T531; do not claim SoftPC runtime integration or whole-task two-product execution acceptance; do not edit output YAML. |
-| Reference Baseline | NXVM `e894ef89`; SoftPC committed shared-corpus source `662ed4b390b886800c202a66eac754d9aac595b6`, consisting of 94 Lib, 36 Common, 38 Lib-test and 14 Common-test files. Uncommitted SoftPC worktree changes are excluded. |
-| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), revised S12. |
-| Files And ABI Surface | Exact `src/lib/`, `src/common/`, `test/lib/` and `test/common/` corpus import; NXVM CMake, VM/App/Common consumer adaptations, test aggregation, provenance, evidence, history and current status. Public source contracts are exclusively the frozen SoftPC interfaces. |
-| Applicable Rules | Task Reading Set; Execution lifecycle and actual-change review; architecture single-owner/one-path/dependency-direction rules; coding public-interface/no-platform-leak rules; documentation closure rules; source-policy project-owned exact-import/provenance requirements. |
-| Verification | Archive the named SoftPC commit; compare each of the four imported trees byte-for-byte; run Lib and Common manifest/DAG/corpus/type/KVM gates; sweep NXVM for retired and duplicate consumer paths; build strict x64/x86 Release; run the full repository-only unit suite; run documentation governance and `git diff --check`; rebuild both 0531 stripped artifacts. |
-| Expected Markers | All four NXVM imported trees exactly equal SoftPC `662ed4b`; Common contains no platform bypass; NXVM uses the imported public contracts directly and retains no compatibility shim or parallel Common control/UI/machine path. |
-| Asset Needs | None. No YAML or binary asset modification is authorized. |
-| Reporting Requirements | Record frozen source commit, provenance, tree counts/equality, removed or adapted NXVM consumer paths, line accounting and every gate in evidence; P1 is the full implementation delivery and P2 is independent acceptance/governance. |
-| Stop Conditions | Stop for a dirty source corpus, license/provenance change, an unconsumable public-contract conflict requiring a local fork/shim, residual product/platform leakage, or a build/unit regression not repairable by direct NXVM consumer adaptation. |
-| Exit Criteria | Exact committed four-tree corpus imported; no local compatibility path remains; required source and NXVM gates plus x64/x86 artifacts pass; evidence/provenance exist; P1 and independent P2 are pushed; working tree is clean while T531 remains open for S13. |
-| Original Owner Request | Import the committed SoftPC corpus, complete modification, build, test, commit, push and S closure, then await the next instruction without closing T531. |
-| Similar-Issue Sweep | Sweep tracked NXVM Lib/Common/Test/CMake/VM/App consumers for direct platform code in Common, retired corpus names, local fork files, aliases and duplicate control/UI/machine implementations; fix every in-scope production/test/build hit or explicitly record its distinct remaining owner. |
+The completed S13 evidence is [canonical Common and Lib refresh](../etc/evidence/t531-s13-canonical-common-lib-refresh.md). T531 remains open for later whole-task convergence acceptance.
 
 ## Current Technical Baseline
 
