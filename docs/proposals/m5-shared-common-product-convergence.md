@@ -151,7 +151,15 @@ recorded evidence, never by following successive isolated failures.
     contracts, or retaining a duplicate hotkey-policy path.  The existing
     single Common callback context may use one App-local context adapter to
     reach the keyboard owner; it carries no hotkey policy itself.
-18. **S18: package and whole-task acceptance.** Independently review the
+18. **S18: Common-machine composition ownership.** Align NXVM with the
+    corrected SoftPC composition model: `vm/machine` constructs only the
+    product driver adapter; `vm/app/composition` creates and owns the one
+    `common_machine`, then creates/binds its Common session and UI.  Teardown
+    is `UI -> session -> common_machine -> VM adapter`; no owner destroys an
+    object still referenced by a live dependent.  Retire the internal
+    VM-machine Common creation/ownership path rather than adding a second
+    construction mode or a compatibility wrapper.
+19. **S19: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.

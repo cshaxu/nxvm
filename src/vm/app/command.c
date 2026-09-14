@@ -40,8 +40,7 @@ static vm_machine *vm_app_console_machine(
 static common_machine *vm_app_console_common_machine(
     const vm_app_console_context *context)
 {
-    vm_machine *machine = vm_app_console_machine(context);
-    return machine == STD_NULL ? LIB_NULL : vm_machine_common_machine(machine);
+    return context == STD_NULL ? LIB_NULL : vm_app_common_machine(context->session);
 }
 
 static C_VOID vm_app_console_clear_result(common_session_command_result *result)

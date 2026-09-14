@@ -142,9 +142,14 @@ C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_sessio
 type_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_session);
 C_VOID vm_machine_destroy(vm_machine *session);
-/* The composition-owned, value-only executor boundary.  It is intentionally
- * not a Core object and is the sole paused-debug receiver for the app. */
-common_machine *vm_machine_common_machine(vm_machine *session);
+/* vm/machine supplies this value-only driver; App composition owns the Common
+ * machine it constructs from it. */
+type_status vm_machine_describe_common_driver(vm_machine *session,
+    common_machine_driver *out_driver);
+/* App binds its Common owner before lifecycle requests.  Passing NULL revokes
+ * that non-owning link during ordered teardown. */
+type_status vm_machine_bind_common_machine(vm_machine *session,
+    common_machine *common_machine);
 void vm_machine_bind_debug_observer(vm_machine *session,
     vm_machine_debug_observer observer, C_VOID *context);
 type_status vm_machine_pause_for_debug(vm_machine *session,

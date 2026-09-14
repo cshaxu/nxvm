@@ -183,7 +183,8 @@ static type_status vm_machine_start_outcome_record(vm_machine *machine,
 }
 
 type_status vm_machine_start(vm_machine *machine) {
-    return machine != STD_NULL && common_machine_start(machine->executor) ?
+    return machine != STD_NULL && machine->executor != LIB_NULL &&
+        common_machine_start(machine->executor) ?
         TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
@@ -209,8 +210,8 @@ type_status vm_machine_reset(vm_machine *machine) {
      * before it is composed into Common.  There is no worker or Common run to
      * rendezvous with in that state, so reset the VM-owned Core directly.
      * Once a Common run exists, lifecycle remains exclusively Common-owned. */
-    if (machine != STD_NULL && common_machine_state_get(machine->executor) ==
-        COMMON_MACHINE_STOPPED) {
+    if (machine != STD_NULL && (machine->executor == LIB_NULL ||
+        common_machine_state_get(machine->executor) == COMMON_MACHINE_STOPPED)) {
         status = vm_machine_control_reset(&machine->control);
         return vm_machine_finish_reset(machine, status);
     }
@@ -219,7 +220,8 @@ type_status vm_machine_reset(vm_machine *machine) {
 }
 
 C_VOID vm_machine_stop(vm_machine *machine) {
-    if (machine != STD_NULL) (C_VOID)common_machine_stop(machine->executor);
+    if (machine != STD_NULL && machine->executor != LIB_NULL)
+        (C_VOID)common_machine_stop(machine->executor);
 }
 
 type_status vm_machine_request_pause(vm_machine *machine)
@@ -227,9 +229,37 @@ type_status vm_machine_request_pause(vm_machine *machine)
     return vm_machine_request_pause_reason(machine, VM_MACHINE_PAUSE_EXPLICIT);
 }
 
-common_machine *vm_machine_common_machine(vm_machine *machine)
+type_status vm_machine_describe_common_driver(vm_machine *machine,
+    common_machine_driver *out_driver)
 {
-    return machine == STD_NULL ? LIB_NULL : machine->executor;
+    if (machine == STD_NULL || out_driver == LIB_NULL || !machine->active)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_driver = (common_machine_driver) {
+        .context = machine,
+        .reset = vm_machine_driver_reset,
+        .run = vm_machine_driver_run,
+        .request_stop = vm_machine_driver_request_stop,
+        .request_wake = vm_machine_driver_request_wake,
+        .set_heartbeat = vm_machine_driver_set_heartbeat,
+        .set_executor_callback = vm_machine_driver_set_executor_callback,
+        .deliver_input = vm_machine_driver_deliver_input,
+        .copy_frame = vm_machine_driver_copy_frame,
+        .set_removable_media = vm_machine_driver_set_removable_media,
+        .execute_debug = vm_machine_common_debug_execute,
+        .take_debug_stop = vm_machine_driver_take_debug_stop,
+        .cancel_debug = vm_machine_driver_cancel_debug
+    };
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_machine_bind_common_machine(vm_machine *machine,
+    common_machine *common_machine)
+{
+    if (machine == STD_NULL || !machine->active ||
+        (machine->executor != LIB_NULL && common_machine != LIB_NULL))
+        return TYPE_STATUS_INVALID_STATE;
+    machine->executor = common_machine;
+    return TYPE_STATUS_OK;
 }
 
 void vm_machine_bind_debug_observer(vm_machine *machine,
@@ -242,7 +272,8 @@ void vm_machine_bind_debug_observer(vm_machine *machine,
 type_status vm_machine_pause_for_debug(vm_machine *machine,
     type_unsigned_32 timeout_milliseconds)
 {
-    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == STD_NULL || machine->executor == LIB_NULL)
+        return TYPE_STATUS_INVALID_ARGUMENT;
     if (common_machine_state_get(machine->executor) == COMMON_MACHINE_RUNNING &&
         !common_machine_pause(machine->executor))
         return TYPE_STATUS_INVALID_STATE;
@@ -258,25 +289,28 @@ type_status vm_machine_request_pause_reason(vm_machine *machine,
     vm_machine_pause_reason reason)
 {
     (C_VOID)reason;
-    return machine != STD_NULL && common_machine_pause(machine->executor) ?
+    return machine != STD_NULL && machine->executor != LIB_NULL &&
+        common_machine_pause(machine->executor) ?
         TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
 type_status vm_machine_request_step(vm_machine *machine)
 {
-    if (machine == STD_NULL || common_machine_state_get(machine->executor) !=
+    if (machine == STD_NULL || machine->executor == LIB_NULL ||
+        common_machine_state_get(machine->executor) !=
         COMMON_MACHINE_PAUSED) return TYPE_STATUS_INVALID_STATE;
     return TYPE_STATUS_UNSUPPORTED;
 }
 
 C_INT vm_machine_is_running(const vm_machine *machine)
 {
-    return machine != STD_NULL && common_machine_state_get(machine->executor) ==
+    return machine != STD_NULL && machine->executor != LIB_NULL &&
+        common_machine_state_get(machine->executor) ==
         COMMON_MACHINE_RUNNING;
 }
 
 type_status vm_machine_resume(vm_machine *machine) {
-    return machine != STD_NULL &&
+    return machine != STD_NULL && machine->executor != LIB_NULL &&
         (common_machine_state_get(machine->executor) == COMMON_MACHINE_STOPPED ?
             common_machine_start(machine->executor) : common_machine_resume(machine->executor)) ?
         TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
@@ -284,7 +318,6 @@ type_status vm_machine_resume(vm_machine *machine) {
 
 type_status vm_machine_initialize(vm_machine *machine) {
     type_status status;
-    common_machine_driver driver;
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (machine->active) return TYPE_STATUS_INVALID_STATE;
     status = vm_machine_storage_initialize(machine);
@@ -294,23 +327,6 @@ type_status vm_machine_initialize(vm_machine *machine) {
         vm_machine_finalize(machine);
         return status;
     }
-    driver = (common_machine_driver) {
-        .context = machine,
-        .reset = vm_machine_driver_reset,
-        .run = vm_machine_driver_run,
-        .request_stop = vm_machine_driver_request_stop,
-        .request_wake = vm_machine_driver_request_wake,
-        .set_heartbeat = vm_machine_driver_set_heartbeat,
-        .set_executor_callback = vm_machine_driver_set_executor_callback,
-        .deliver_input = vm_machine_driver_deliver_input,
-        .copy_frame = vm_machine_driver_copy_frame,
-        .set_removable_media = vm_machine_driver_set_removable_media,
-        .execute_debug = vm_machine_common_debug_execute,
-        .take_debug_stop = vm_machine_driver_take_debug_stop,
-        .cancel_debug = vm_machine_driver_cancel_debug
-    };
-    status = (type_status)common_machine_create(&machine->executor, &driver);
-    if (status != TYPE_STATUS_OK) { vm_machine_finalize(machine); return status; }
     status = core_machine_guest_input_source_create(&vm_machine_input_sink, machine,
         &machine->input_source);
     if (status != TYPE_STATUS_OK) {
@@ -327,7 +343,6 @@ C_VOID vm_machine_finalize(vm_machine *machine) {
     vm_machine_stop(machine);
     core_machine_guest_input_source_destroy(machine->input_source);
     machine->input_source = STD_NULL;
-    common_machine_destroy(machine->executor);
     machine->executor = STD_NULL;
     machine->active = 0;
     vm_machine_control_finalize(&machine->control, machine);

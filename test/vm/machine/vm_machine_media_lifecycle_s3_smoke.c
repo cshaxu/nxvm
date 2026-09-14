@@ -3,6 +3,7 @@
 #include "vm/machine/runtime/control.h"
 #include "vm/machine/runtime/machine_private.h"
 #include "vm/machine/runtime/machine_interface.h"
+#include "../support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT vm_machine_media_create_floppy(const C_CHAR *path)
@@ -39,7 +40,9 @@ C_INT main(C_VOID)
 
     if (vm_machine_media_create_floppy(floppy_path) != 0) return 1;
     if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) {
+        session == STD_NULL || vm_test_common_machine_bind(session) != TYPE_STATUS_OK) {
+        vm_test_common_machine_unbind(session);
+        vm_machine_destroy(session);
         (C_VOID)STD_REMOVE(floppy_path);
         return 1;
     }
@@ -63,6 +66,7 @@ C_INT main(C_VOID)
     failed |= vm_machine_remove_fdd(session, STD_NULL) != 0 ||
         session->fdd.connect.flagDiskExist || session->fdd_image_path[0] != '\0' ||
         session->retained_config.floppy_image[0u] != STD_NULL;
+    vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);
     (C_VOID)STD_REMOVE(floppy_path);
     if (failed) return 1;

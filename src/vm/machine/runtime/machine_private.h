@@ -32,6 +32,7 @@ typedef enum vm_machine_firmware_kind {
 
 struct vm_machine {
     C_INT active;
+    /* Non-owning App-composition link. */
     common_machine *executor;
     core_machine_config core_machine_config;
     core_machine_controller_timing_rules controller_timing_rules;

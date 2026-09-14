@@ -5,6 +5,7 @@
 #include "vm/machine/runtime/display.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_private.h"
+#include "../support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT vm_runner_display_wait(const vm_machine *session, C_INT paused)
@@ -38,6 +39,7 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+        vm_test_common_machine_bind(session) != TYPE_STATUS_OK ||
         vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK) {
         failed = 1;
         goto done;
@@ -59,6 +61,7 @@ C_INT main(C_VOID)
 done:
     vm_machine_stop(session);
     failed |= !vm_runner_display_wait_stopped(session);
+    vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);
     if (failed) return 1;
     puts("M5:T212:S2:RUNNER-CADENCE:OK");

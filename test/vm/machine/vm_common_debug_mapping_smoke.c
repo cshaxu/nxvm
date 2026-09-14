@@ -4,6 +4,7 @@
 #include "lib/host/sync_interface.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_private.h"
+#include "../support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT vm_debug_execute(vm_machine *machine,
@@ -38,7 +39,8 @@ C_INT main(C_VOID)
     type_unsigned_64 executed;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &machine) !=
-            TYPE_STATUS_OK || machine == STD_NULL) return 1;
+            TYPE_STATUS_OK || machine == STD_NULL ||
+        vm_test_common_machine_bind(machine) != TYPE_STATUS_OK) return 1;
     if (!common_machine_reset(machine->executor) || !vm_debug_wait_paused(machine))
         goto failed;
     if (common_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
@@ -136,11 +138,13 @@ C_INT main(C_VOID)
                 .operation = COMMON_MACHINE_DEBUG_READ_REGISTER,
                 .register_id = CORE_MACHINE_DEBUG_EIP
             }, &result) != LIB_STATUS_INVALID_STATE) goto failed;
+    vm_test_common_machine_unbind(machine);
     vm_machine_destroy(machine);
     puts("M5:T527:S5:VM-COMMON-DEBUG-MAPPING:OK");
     return 0;
 
 failed:
+    vm_test_common_machine_unbind(machine);
     vm_machine_destroy(machine);
     return 1;
 }

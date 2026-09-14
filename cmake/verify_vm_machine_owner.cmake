@@ -15,10 +15,9 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/event_interface.h" event
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/composition.c" app_source)
 
-# Common owns the sole lifecycle queue and worker.  NXVM supplies only the
-# bounded Core driver and forwards Common's copied facts to Common Session.
+# Common owns the sole lifecycle queue and worker.  App composition constructs
+# it from the vm/machine driver, then forwards copied facts to Common Session.
 foreach(required IN ITEMS
-    "common_machine_create"
     "common_machine_start"
     "common_machine_pause"
     "common_machine_reset"
@@ -29,6 +28,21 @@ foreach(required IN ITEMS
         message(FATAL_ERROR "VM machine Common lifecycle route lacks ${required}")
     endif()
 endforeach()
+
+foreach(required IN ITEMS
+    "vm_machine_describe_common_driver"
+    "common_machine_create"
+    "vm_machine_bind_common_machine")
+    string(FIND "${app_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "VM app Common composition lacks ${required}")
+    endif()
+endforeach()
+
+string(FIND "${lifecycle_source}" "common_machine_create" position)
+if(NOT position EQUAL -1)
+    message(FATAL_ERROR "vm/machine still constructs Common")
+endif()
 
 foreach(required IN ITEMS
     "common_machine_set_state_sink"

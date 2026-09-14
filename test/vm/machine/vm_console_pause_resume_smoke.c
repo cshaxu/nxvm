@@ -4,6 +4,7 @@
 #include "vm/machine/runtime/control.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_private.h"
+#include "../support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT vm_console_pause_resume_wait(const vm_machine *session, C_INT paused)
@@ -25,6 +26,7 @@ C_INT main(C_VOID)
     C_UINT waited;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+        vm_test_common_machine_bind(session) != TYPE_STATUS_OK ||
         vm_machine_resume(session) != TYPE_STATUS_OK ||
         !vm_console_pause_resume_wait(session, TYPE_FALSE) ||
         vm_machine_request_pause(session) != TYPE_STATUS_OK ||
@@ -37,6 +39,7 @@ C_INT main(C_VOID)
         common_machine_state_get(session->executor) != COMMON_MACHINE_STOPPED; ++waited)
         host_sync_sleep_milliseconds(1u);
     failed |= common_machine_state_get(session->executor) != COMMON_MACHINE_STOPPED;
+    vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);
     if (failed) return 1;
     puts("M5:T526:S5:COMPOSITION-PAUSE-RESUME:OK");

@@ -7,6 +7,7 @@
 
 struct vm_app {
     vm_machine *machine;
+    common_machine *common_machine;
     common_session *session;
     common_ui *ui;
 };
@@ -53,8 +54,10 @@ C_VOID vm_app_destroy(vm_app *app)
 {
     if (app == STD_NULL) return;
     common_ui_destroy(app->ui);
-    vm_machine_destroy(app->machine);
     common_session_destroy(app->session);
+    common_machine_destroy(app->common_machine);
+    (C_VOID)vm_machine_bind_common_machine(app->machine, LIB_NULL);
+    vm_machine_destroy(app->machine);
     STD_FREE(app);
 }
 
@@ -64,17 +67,25 @@ common_session *vm_app_session(vm_app *app)
 vm_machine *vm_app_machine(vm_app *app)
 { return app == STD_NULL ? STD_NULL : app->machine; }
 
+common_machine *vm_app_common_machine(vm_app *app)
+{ return app == STD_NULL ? LIB_NULL : app->common_machine; }
+
 common_ui *vm_app_ui(vm_app *app)
 { return app == STD_NULL ? LIB_NULL : app->ui; }
 
 type_status vm_app_compose_machine(vm_app *app, const vm_session_request *request)
 {
     vm_machine_config config;
+    common_machine_driver driver;
 
     if (app == STD_NULL || request == STD_NULL || app->machine != STD_NULL)
         return TYPE_STATUS_INVALID_STATE;
     if (vm_app_configure_machine(request, &config) != TYPE_STATUS_OK ||
-        vm_machine_create(&config, &app->machine) != TYPE_STATUS_OK)
+        vm_machine_create(&config, &app->machine) != TYPE_STATUS_OK ||
+        vm_machine_describe_common_driver(app->machine, &driver) != TYPE_STATUS_OK ||
+        common_machine_create(&app->common_machine, &driver) != LIB_STATUS_OK ||
+        vm_machine_bind_common_machine(app->machine, app->common_machine) !=
+            TYPE_STATUS_OK)
         return TYPE_STATUS_INVALID_STATE;
     return TYPE_STATUS_OK;
 }
@@ -87,7 +98,7 @@ type_status vm_app_compose_control(vm_app *app,
     if (app == STD_NULL || options == LIB_NULL || app->machine == STD_NULL ||
         app->session != LIB_NULL) return TYPE_STATUS_INVALID_STATE;
     resolved = *options;
-    resolved.machine = vm_machine_common_machine(app->machine);
+    resolved.machine = app->common_machine;
     if (common_session_create(&app->session, &resolved) != LIB_STATUS_OK)
         return TYPE_STATUS_INVALID_STATE;
     common_machine_set_state_sink(resolved.machine, vm_app_machine_state_completed,
