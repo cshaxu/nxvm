@@ -42,3 +42,10 @@ Tracked code/test changes add 81 and remove 4 lines (net +77), principally the
 canonical blocked-callback shutdown proof.  The retained production path is
 one Common worker and one App composition cleanup path; no NXVM-specific
 Common variant or compatibility route remains.
+
+## Acceptance
+
+Coordinator actual-diff review of P1 confirms the imported corpus is exact,
+the only NXVM adaptation is App's dependency-safe shutdown ordering, and the
+test adds the required lifetime proof rather than a parallel lifecycle path.
+S19 is accepted. T531 remains open for its separately admitted package audit.
