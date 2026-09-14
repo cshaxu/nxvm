@@ -21,7 +21,6 @@ typedef enum common_debug_register {
 #define COMMON_DEBUG_LINE_CAPACITY 256u
 #define COMMON_DEBUG_TEXT_CAPACITY 8192u
 #define COMMON_DEBUG_PROMPT_CAPACITY 64u
-#define COMMON_DEBUG_MEMORY_ACCESS_CAPACITY 32u
 
 typedef enum common_debug_lifecycle_request {
     COMMON_DEBUG_LIFECYCLE_NONE,
@@ -38,19 +37,6 @@ typedef struct common_debug_result {
     common_debug_lifecycle_request lifecycle_request;
 } common_debug_result;
 
-typedef struct common_debug_memory_access {
-    lib_bool write;
-    lib_u32 linear;
-    lib_u8 bytes;
-    lib_u64 data;
-} common_debug_memory_access;
-
-typedef struct common_debug_instruction_observation {
-    common_debug_memory_access
-        memory_accesses[COMMON_DEBUG_MEMORY_ACCESS_CAPACITY];
-    lib_u8 memory_access_count;
-} common_debug_instruction_observation;
-
 typedef enum common_debug_machine_state {
     COMMON_DEBUG_MACHINE_RUNNING,
     COMMON_DEBUG_MACHINE_PAUSED,
@@ -65,8 +51,6 @@ lib_status common_debug_open(common_debug *debug, common_machine *machine);
 void common_debug_close(common_debug *debug);
 lib_status common_debug_submit_line(common_debug *debug, const char *line,
     common_debug_result *out_result);
-void common_debug_observe_instruction(common_debug *debug,
-    const common_debug_instruction_observation *observation);
 lib_status common_debug_observe_machine(common_debug *debug,
     common_debug_machine_state state, lib_status status,
     common_debug_result *out_result);

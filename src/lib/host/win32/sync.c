@@ -4,6 +4,35 @@
 #include "lib/types/win32/sync.h"
 
 struct host_sync_event { lib_win32_handle handle; };
+struct host_sync_mutex { lib_win32_critical_section gate; };
+
+lib_status host_sync_mutex_create(host_sync_mutex **out_mutex)
+{
+    host_sync_mutex *mutex;
+    if (out_mutex == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_mutex = LIB_NULL;
+    mutex = lib_allocate(sizeof(*mutex));
+    if (mutex == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    if (!lib_win32_initialize_critical_section_and_spin_count(&mutex->gate, 0u)) {
+        lib_release(mutex);
+        return LIB_STATUS_IO_ERROR;
+    }
+    *out_mutex = mutex;
+    return LIB_STATUS_OK;
+}
+
+void host_sync_mutex_destroy(host_sync_mutex *mutex)
+{
+    if (mutex == LIB_NULL) return;
+    lib_win32_delete_critical_section(&mutex->gate);
+    lib_release(mutex);
+}
+
+void host_sync_mutex_lock(host_sync_mutex *mutex)
+{ lib_win32_enter_critical_section(&mutex->gate); }
+void host_sync_mutex_unlock(host_sync_mutex *mutex)
+{ lib_win32_leave_critical_section(&mutex->gate); }
+
 struct host_sync_platform_task {
     lib_win32_handle thread;
     host_sync_platform_task_entry entry;

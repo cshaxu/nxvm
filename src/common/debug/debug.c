@@ -47,13 +47,6 @@ lib_status common_debug_submit_line(common_debug *debug, const char *line,
     return common_debug_command_submit_line(debug->command, line, out_result);
 }
 
-void common_debug_observe_instruction(common_debug *debug,
-    const common_debug_instruction_observation *observation)
-{
-    if (debug != LIB_NULL)
-        common_debug_command_observe_instruction(debug->command, observation);
-}
-
 lib_status common_debug_observe_machine(common_debug *debug,
     common_debug_machine_state state, lib_status status,
     common_debug_result *out_result)

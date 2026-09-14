@@ -13,6 +13,6 @@ lib_status common_xasm32_assemble_paragraph(const char *statement,
     lib_size *out_code_bytes, int flag32);
 lib_status common_xasm32_disassemble(const lib_u8 *code, lib_size code_bytes,
     char *statement, lib_size statement_capacity, lib_size *out_statement_bytes,
-    int flag32);
+    lib_size *out_code_bytes, int flag32);
 
 #endif

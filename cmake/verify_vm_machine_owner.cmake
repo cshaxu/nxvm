@@ -11,39 +11,48 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/src/vm/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor source root remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/executor_fifo.c" fifo_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/event_interface.h" event_header)
-foreach(required IN ITEMS
-    "vm_machine_request"
-    "VM_MACHINE_REQUEST_PAUSE"
-    "VM_MACHINE_REQUEST_RESET"
-    "VM_MACHINE_REQUEST_RESUME"
-    "VM_MACHINE_REQUEST_STEP"
-    "VM_MACHINE_REQUEST_STOP")
-    string(FIND "${fifo_source}${event_header}" "${required}" position)
-    if(position EQUAL -1)
-        message(FATAL_ERROR "machine executor FIFO lacks ${required}")
-    endif()
-endforeach()
-
-foreach(forbidden IN ITEMS "core_machine *" "vm_machine *" "HWND" "HANDLE")
-    string(FIND "${event_header}" "${forbidden}" position)
-    if(NOT position EQUAL -1)
-        message(FATAL_ERROR "VM machine event ABI leaked an owner or native handle: ${forbidden}")
-    endif()
-endforeach()
-
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/app.c" app_source)
+
+# Common owns the sole lifecycle queue and worker.  NXVM supplies only the
+# bounded Core driver and forwards Common's copied facts to Common Session.
+foreach(required IN ITEMS
+    "common_machine_create"
+    "common_machine_start"
+    "common_machine_pause"
+    "common_machine_reset"
+    "common_machine_resume"
+    "common_machine_stop")
+    string(FIND "${lifecycle_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "VM machine Common lifecycle route lacks ${required}")
+    endif()
+endforeach()
+
+foreach(required IN ITEMS
+    "common_machine_set_state_sink"
+    "common_machine_set_frame_sink"
+    "common_session_enqueue_runtime_completed"
+    "common_session_enqueue_frame_completed")
+    string(FIND "${app_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "VM app does not forward Common fact ${required}")
+    endif()
+endforeach()
+
+foreach(forbidden IN ITEMS "vm_machine_result" "vm_machine_set_result_sink"
+    "vm_machine_publish_result" "HWND" "HANDLE")
+    string(FIND "${event_header}${lifecycle_source}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "obsolete VM result or native-handle route remains: ${forbidden}")
+    endif()
+endforeach()
+
 foreach(forbidden IN ITEMS "set_lifecycle_reporter" "set_display_reporter")
     string(FIND "${lifecycle_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "obsolete split result callback remains: ${forbidden}")
-    endif()
-endforeach()
-foreach(required IN ITEMS "vm_machine_set_result_sink" "vm_machine_publish_result")
-    string(FIND "${lifecycle_source}" "${required}" position)
-    if(position EQUAL -1)
-        message(FATAL_ERROR "machine copied-result route lacks ${required}")
     endif()
 endforeach()
 
@@ -61,4 +70,4 @@ foreach(source IN LISTS vm_sources)
     endif()
 endforeach()
 
-message(STATUS "M5 VM machine owner and copied result boundary verified")
+message(STATUS "M5 VM machine Common-owner and copied-fact boundary verified")

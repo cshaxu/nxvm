@@ -1,5 +1,10 @@
 # Shared Library
 
+Unit tests and fixtures live in `test/lib`, not in the production corpus.
+Configure `cmake -S test/lib -B build/lib-tests`, build that directory, then
+run CTest there. The source-only CMake entry retains its manifest target;
+the external suite owns all test registration and needs no product resources.
+
 `src/lib` contains product-neutral, copied-value platform capabilities. It has
 no application state pointer, runtime queue, monitor command, lifecycle
 policy, or native SDK type in a public API. `MANIFEST.sha256` lists every source file and
@@ -7,6 +12,11 @@ its exact corpus revision; `verify_manifest.cmake` rejects an unlisted, stale,
 or changed library file.
 
 ## Header visibility
+
+Host's public synchronization contract includes opaque blocking mutexes.
+Lock/unlock require a live object, same-thread ownership and no recursive
+locking; destroy requires all users to have stopped. Platform implementations
+own the allocation and native lock directly, without an outer pointer wrapper.
 
 Cross-component contracts live at the component root and are named
 `*_interface.h`. All component `win32/` and `linux/` implementation files are
@@ -160,6 +170,17 @@ Win32 cooked input emits only complete bounded lines. Overflow drains through
 LF, emits one REJECTED_LINE, and never submits a truncated tail. Raw activation
 requests native foreground/focus; cooked activation does not. The reader's
 confirmed retirement, not focus, establishes the input handoff.
+
+Win32 host keeps stream output in the original screen buffer and frame output
+in one lazily allocated alternate buffer, both owned by the same broker.
+Selection and display-metadata restoration are inside the existing output
+transaction, before the next reader starts. Same-mode replacement does not
+switch screens. Raw frame output preserves the native window extent rather
+than shrinking it to the frame; cooked cells, cursor and scrollback therefore
+survive the roundtrip. Native palette/geometry snapshots are restored on switch
+and rollback; an incomplete restore never replaces a saved snapshot. Destruction
+restores the original buffer before closing the alternate. No new public API,
+input owner, reader, or command-specific clearing is involved.
 
 Console text frames use the fixed PC-display mapping documented by `console`.
 Palette caches advance only after successful native palette application;

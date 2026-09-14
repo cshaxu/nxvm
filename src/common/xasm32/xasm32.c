@@ -67,13 +67,14 @@ lib_status common_xasm32_assemble_paragraph(const char *statement,
 
 lib_status common_xasm32_disassemble(const lib_u8 *code, lib_size code_bytes,
     char *statement, lib_size statement_capacity, lib_size *out_statement_bytes,
-    int flag32)
+    lib_size *out_code_bytes, int flag32)
 {
     char local_statement[COMMON_XASM32_MAX_STATEMENT_BYTES + 1u];
     lib_u8 decoded_bytes;
     lib_size statement_bytes;
 
     if (code == LIB_NULL || statement == LIB_NULL || out_statement_bytes == LIB_NULL ||
+        out_code_bytes == LIB_NULL ||
         code_bytes < COMMON_XASM32_MAX_CODE_BYTES || statement_capacity == 0u ||
         (flag32 != LIB_FALSE && flag32 != LIB_TRUE)) return LIB_STATUS_INVALID_ARGUMENT;
     decoded_bytes = dasm32(local_statement, (lib_u8 *)code, flag32);
@@ -82,5 +83,6 @@ lib_status common_xasm32_disassemble(const lib_u8 *code, lib_size code_bytes,
     if (statement_bytes >= statement_capacity) return LIB_STATUS_LIMIT_EXCEEDED;
     memcpy(statement, local_statement, statement_bytes + 1u);
     *out_statement_bytes = statement_bytes;
+    *out_code_bytes = decoded_bytes;
     return LIB_STATUS_OK;
 }

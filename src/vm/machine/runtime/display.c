@@ -3,6 +3,7 @@
 #include "core/machine/display_interface.h"
 
 #include "vm/machine/runtime/display.h"
+#include "vm/machine/runtime/frame.h"
 
 #include "core/machine/guest_display_frame.h"
 
@@ -40,35 +41,30 @@ static C_INT vm_machine_capture_display_snapshot(C_VOID *context,
 static C_VOID vm_machine_display_result(vm_machine *machine,
     const core_machine_guest_display_frame *frame)
 {
-    vm_machine_result result = {0};
-    vm_machine_display_event *display = &result.value.display;
+    vm_machine_display_event display = {0};
 
     if (machine == STD_NULL || frame == STD_NULL) return;
-    result.kind = VM_MACHINE_RESULT_DISPLAY;
-    result.status = TYPE_STATUS_OK;
-    display->graphics = frame->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
-    display->columns = frame->columns;
-    display->rows = frame->rows;
-    display->cursor_top = frame->cursor_top;
-    display->cursor_bottom = frame->cursor_bottom;
-    display->cursor_x = frame->cursor_x;
-    display->cursor_y = frame->cursor_y;
-    display->cursor_visible = frame->cursor_visible;
-    display->buffer_changed = frame->buffer_changed;
-    display->cursor_changed = frame->cursor_changed;
-    display->glyphs_present = frame->text_glyphs_present;
-    display->pixel_width = frame->pixel_width;
-    display->pixel_height = frame->pixel_height;
-    display->generation = frame->generation;
-    STD_MEMCPY(display->characters, frame->characters,
-        sizeof(display->characters));
-    STD_MEMCPY(display->attributes, frame->attributes,
-        sizeof(display->attributes));
-    STD_MEMCPY(display->glyphs, frame->text_glyphs, sizeof(display->glyphs));
-    STD_MEMCPY(display->pixels, frame->pixels, sizeof(display->pixels));
-    STD_MEMCPY(display->palette_rgb, frame->palette_rgb,
-        sizeof(display->palette_rgb));
-    vm_machine_publish_result(machine, &result);
+    display.graphics = frame->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
+    display.columns = frame->columns;
+    display.rows = frame->rows;
+    display.cursor_top = frame->cursor_top;
+    display.cursor_bottom = frame->cursor_bottom;
+    display.cursor_x = frame->cursor_x;
+    display.cursor_y = frame->cursor_y;
+    display.cursor_visible = frame->cursor_visible;
+    display.buffer_changed = frame->buffer_changed;
+    display.cursor_changed = frame->cursor_changed;
+    display.glyphs_present = frame->text_glyphs_present;
+    display.pixel_width = frame->pixel_width;
+    display.pixel_height = frame->pixel_height;
+    display.generation = frame->generation;
+    STD_MEMCPY(display.characters, frame->characters, sizeof(display.characters));
+    STD_MEMCPY(display.attributes, frame->attributes, sizeof(display.attributes));
+    STD_MEMCPY(display.glyphs, frame->text_glyphs, sizeof(display.glyphs));
+    STD_MEMCPY(display.pixels, frame->pixels, sizeof(display.pixels));
+    STD_MEMCPY(display.palette_rgb, frame->palette_rgb, sizeof(display.palette_rgb));
+    if (vm_machine_frame_from_display(&display, &machine->latest_frame) ==
+        TYPE_STATUS_OK) machine->latest_frame_valid = TYPE_TRUE;
 }
 
 core_machine_display_kind vm_machine_publish_display(vm_machine *machine,

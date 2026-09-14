@@ -1863,9 +1863,8 @@ int main(C_INT argc, C_CHAR **argv)
             trace.int6_pre_fault_snapshot_valid = TYPE_TRUE;
             run_budget.instructions = 1u;
         }
-        /* This probe drives Core directly, so it explicitly retires the
-         * production Common request FIFO before each Core quantum. */
-        (C_VOID)common_machine_observe_safe_point(session->executor);
+        /* This probe drives Core directly; its host input is delivered by the
+         * VM adapter before each Core quantum. */
         if (core_machine_run(session->core_machine, run_budget, &result) != TYPE_STATUS_OK) {
             type_unsigned_8 fault_bytes[4] = {0u};
             type_unsigned_8 far_pointer[6] = {0u};

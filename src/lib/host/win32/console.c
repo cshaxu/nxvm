@@ -12,6 +12,13 @@
 struct host_console_backend {
     lib_win32_handle input;
     lib_win32_handle output;
+    /* Stream output retains its native cells, scrollback and cursor while
+     * frame output uses a separate screen buffer. Only output is active. */
+    lib_win32_handle cooked_output;
+    lib_win32_handle raw_output;
+    lib_win32_console_screen_buffer_infoex cooked_display;
+    lib_win32_console_screen_buffer_infoex raw_display;
+    lib_bool output_ready;
     lib_win32_handle stop_event;
     lib_win32_handle reader;
     /* Written by reader, observed only after its completion. */
@@ -50,11 +57,19 @@ static int host_console_ensure_text_surface(host_console_backend *backend)
     lib_win32_handle output = backend->output;
     lib_win32_console_screen_buffer_info info;
     lib_win32_coord required;
-    lib_win32_small_rect viewport = { 0, 0, LIB_CONSOLE_TEXT_COLUMNS - 1,
-        LIB_CONSOLE_TEXT_ROWS - 1 };
+    lib_win32_small_rect viewport;
 
     if (output == LIB_NULL || output == LIB_WIN32_INVALID_HANDLE_VALUE ||
         !lib_win32_get_console_screen_buffer_info(output, &info)) return 0;
+    /* Position first: some hosts resize the backing buffer to the viewport.
+     * Ensure frame capacity only after that operation, never before it. */
+    if (info.srWindow.Left != 0 || info.srWindow.Top != 0) {
+        viewport.Left = viewport.Top = 0;
+        viewport.Right = info.srWindow.Right - info.srWindow.Left;
+        viewport.Bottom = info.srWindow.Bottom - info.srWindow.Top;
+        (void)lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport);
+        if (!lib_win32_get_console_screen_buffer_info(output, &info)) return 0;
+    }
     required.X = info.dwSize.X < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS ?
         (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS : info.dwSize.X;
     required.Y = info.dwSize.Y < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS ?
@@ -64,7 +79,6 @@ static int host_console_ensure_text_surface(host_console_backend *backend)
         backend->previous_columns = backend->previous_rows = 0u;
         if (!lib_win32_set_console_screen_buffer_size(output, required)) return 0;
     }
-    (void)lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport);
     return 1;
 }
 
@@ -197,15 +211,58 @@ lib_status host_console_backend_create(host_console_backend **out_backend)
         return LIB_STATUS_UNSUPPORTED;
     }
     backend->original_mode = mode;
+    backend->cooked_output = backend->output;
+    backend->output_ready = LIB_TRUE;
     lib_win32_initialize_critical_section(&backend->output_lock);
     lib_win32_initialize_critical_section(&backend->transaction_lock);
     *out_backend = backend;
     return LIB_STATUS_OK;
 }
 
+static lib_status host_console_select_output(host_console_backend *backend,
+    lib_win32_handle output)
+{
+    lib_win32_console_screen_buffer_infoex *previous, *next;
+    if (backend->output == output) return LIB_STATUS_OK;
+    previous = backend->output == backend->cooked_output ?
+        &backend->cooked_display : &backend->raw_display;
+    next = output == backend->cooked_output ? &backend->cooked_display : &backend->raw_display;
+    /* A failed metadata restore must not replace that buffer's saved state
+     * with its half-restored state when the broker rolls back. */
+    if (backend->output_ready) {
+        previous->cbSize = sizeof(*previous);
+        if (!lib_win32_get_console_screen_buffer_info_ex(backend->output, previous))
+            return LIB_STATUS_IO_ERROR;
+    }
+    if (!lib_win32_set_console_active_screen_buffer(output)) return LIB_STATUS_IO_ERROR;
+    backend->output = output;
+    backend->output_ready = LIB_FALSE;
+    if (next->cbSize != 0u) {
+        lib_win32_console_screen_buffer_infoex display = *next;
+        /* The native setter uses exclusive right/bottom window bounds. It
+         * also restores palette/geometry affected by the other screen buffer. */
+        ++display.srWindow.Right;
+        ++display.srWindow.Bottom;
+        if (!lib_win32_set_console_screen_buffer_info_ex(output, &display))
+            return LIB_STATUS_IO_ERROR;
+    }
+    backend->output_ready = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
 lib_status host_console_backend_destroy(host_console_backend *backend)
 {
     if (backend == LIB_NULL) return LIB_STATUS_OK;
+    /* Reader is already joined. Restore the original display before closing
+     * the alternate buffer, including failure during initial raw activation. */
+    if (backend->raw_output != LIB_NULL) {
+        if (backend->output != backend->cooked_output) {
+            lib_status status = host_console_select_output(backend, backend->cooked_output);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        if (!lib_win32_close_handle(backend->raw_output)) return LIB_STATUS_IO_ERROR;
+        backend->raw_output = LIB_NULL;
+    }
     if (backend->input != LIB_WIN32_INVALID_HANDLE_VALUE) {
         if (!lib_win32_close_handle(backend->input)) return LIB_STATUS_IO_ERROR;
         backend->input = LIB_WIN32_INVALID_HANDLE_VALUE;
@@ -256,6 +313,20 @@ static void host_console_activate_raw_input_surface(
     (void)lib_win32_set_focus(window);
 }
 
+static lib_status host_console_prepare_output(host_console_backend *backend,
+    host_console_mode mode)
+{
+    if (mode == HOST_CONSOLE_RAW_EVENTS && backend->raw_output == LIB_NULL) {
+        lib_win32_handle output = lib_win32_create_console_screen_buffer(
+            LIB_WIN32_GENERIC_READ | LIB_WIN32_GENERIC_WRITE,
+            LIB_WIN32_FILE_SHARE_READ | LIB_WIN32_FILE_SHARE_WRITE, LIB_NULL,
+            LIB_WIN32_CONSOLE_TEXTMODE_BUFFER, LIB_NULL);
+        if (output == LIB_WIN32_INVALID_HANDLE_VALUE) return LIB_STATUS_IO_ERROR;
+        backend->raw_output = output;
+    }
+    return LIB_STATUS_OK;
+}
+
 lib_status host_console_backend_prepare(host_console_backend *backend,
     lib_console *console, host_console_mode mode)
 {
@@ -266,7 +337,7 @@ lib_status host_console_backend_prepare(host_console_backend *backend,
     if (backend->input == LIB_WIN32_INVALID_HANDLE_VALUE ||
         backend->output == LIB_WIN32_INVALID_HANDLE_VALUE ||
         !lib_win32_get_console_mode(backend->input, &ignored)) return LIB_STATUS_IO_ERROR;
-    return LIB_STATUS_OK;
+    return host_console_prepare_output(backend, mode);
 }
 
 
@@ -275,7 +346,12 @@ lib_status host_console_backend_activate(host_console_backend *backend,
     lib_bool restore_cooked_request)
 {
     lib_win32_dword configured;
+    lib_win32_handle output;
+    lib_status status;
     if (backend == LIB_NULL || console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = host_console_prepare_output(backend, mode);
+    if (status != LIB_STATUS_OK) return status;
+    output = mode == HOST_CONSOLE_RAW_EVENTS ? backend->raw_output : backend->cooked_output;
     configured = backend->original_mode;
     if (mode == HOST_CONSOLE_RAW_EVENTS)
         /* ReadConsoleInput consumes classic INPUT_RECORD values.  A parent
@@ -294,6 +370,11 @@ lib_status host_console_backend_activate(host_console_backend *backend,
      * starting the new reader. */
     if (!lib_win32_flush_console_input_buffer(backend->input))
         return LIB_STATUS_IO_ERROR;
+    /* The broker's output gate covers selection and reader startup. A failed
+     * activation is rolled back through this same path, not a second restore
+     * implementation. Same-mode replacements leave the display untouched. */
+    status = host_console_select_output(backend, output);
+    if (status != LIB_STATUS_OK) return status;
     backend->stop_event = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     if (backend->stop_event == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     backend->console = console;
@@ -471,6 +552,8 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
             for (index = 0u; index < 16u; ++index)
                 info.ColorTable[index] = host_console_colorref_from_rgb(
                     frame->palette[index]);
+            ++info.srWindow.Right;
+            ++info.srWindow.Bottom;
             if (lib_win32_set_console_screen_buffer_info_ex(backend->output, &info))
                 lib_memory_copy(backend->previous_palette, frame->palette,
                     sizeof(frame->palette));

@@ -23,48 +23,22 @@ C_VOID vm_machine_runner_run(vm_machine *session)
     core_machine_run_budget budget;
     core_machine_run_result result;
     vm_machine_control_state *control;
-    vm_machine_pause_reason debug_pause_reason;
-    C_INT resumed;
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
-    vm_machine_report_lifecycle(session, VM_MACHINE_RUNNING);
     while (vm_machine_executor_state_is_active(control->state)) {
-        resumed = TYPE_FALSE;
+        if (session->executor_callback != STD_NULL)
+            session->executor_callback(session->executor_callback_context);
+        if (!vm_machine_executor_state_is_active(control->state)) break;
         if (vm_machine_executor_state_take_reset(control->state)) {
             type_status reset_status = vm_machine_control_reset_at_boundary(control);
 
             (C_VOID)vm_machine_finish_reset(session, reset_status);
             if (reset_status != TYPE_STATUS_OK) continue;
         }
-        if (vm_machine_executor_state_pause_requested(control->state)) {
-            /* The runner exclusively owns Core mutation.  Publish the final
-             * VADP snapshot before acknowledging pause, so a paused debugger
-             * or presenter never observes a stale mailbox frame. */
-            (C_VOID)vm_machine_publish_display(session, TYPE_TRUE);
-            vm_machine_executor_state_acknowledge_pause(control->state);
-            vm_machine_control_signal_completion(control);
-            vm_machine_report_lifecycle(session, VM_MACHINE_PAUSED);
-        }
-        while (vm_machine_executor_state_is_active(control->state) &&
-            vm_machine_executor_state_is_paused(control->state)) {
-            resumed = TYPE_TRUE;
-            (C_VOID)common_machine_observe_safe_point(session->executor);
-            if (vm_machine_executor_state_is_active(control->state) &&
-                vm_machine_executor_state_is_paused(control->state)) {
-                (C_VOID)common_machine_wait(session->executor, UINT32_MAX);
-            }
-        }
-        if (!vm_machine_executor_state_is_active(control->state)) break;
-        if (resumed) vm_machine_report_lifecycle(session, VM_MACHINE_RUNNING);
-        (C_VOID)common_machine_observe_safe_point(session->executor);
         vm_machine_control_refresh_debug(control);
         if (vm_machine_debug_breakpoint_due(&session->debug)) {
             vm_machine_debug_complete_breakpoint(&session->debug);
-            if (vm_machine_debug_completion_pending(&session->debug,
-                    &debug_pause_reason)) {
-                vm_machine_control_request_pause(control, debug_pause_reason);
-            }
             continue;
         }
         if (vm_machine_executor_state_pause_requested(control->state)) continue;
@@ -97,10 +71,6 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             }
         }
         vm_machine_debug_complete_run(&session->debug, result.executed);
-        if (vm_machine_debug_completion_pending(&session->debug,
-                &debug_pause_reason)) {
-            vm_machine_control_request_pause(control, debug_pause_reason);
-        }
         {
             if (vm_machine_pacing_wait(session) != TYPE_STATUS_OK) {
                 vm_machine_control_stop(control);
@@ -129,12 +99,6 @@ C_VOID vm_machine_runner_run(vm_machine *session)
                 host_sync_yield();
             }
         }
-        if (vm_machine_control_take_step(control)) {
-            vm_machine_control_request_pause(control, VM_MACHINE_PAUSE_STEP);
-        }
-    }
-    if (!vm_machine_executor_state_is_paused(control->state)) {
-        vm_machine_report_lifecycle(session, VM_MACHINE_STOPPED);
     }
     vm_machine_control_signal_completion(control);
 }

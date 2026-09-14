@@ -4,168 +4,119 @@
 #include "lib/types/types_interface.h"
 #include "lib/kvm-base/event_interface.h"
 #include "lib/kvm-base/frame_interface.h"
-#include "common/ui/ui_interface.h"
+#include "common/machine/machine_interface.h"
 
-#define COMMON_SESSION_LINE_CAPACITY 1024u
-#define COMMON_SESSION_CLI_TEXT_CAPACITY 8192u
-#define COMMON_SESSION_CLI_PROMPT_CAPACITY 64u
+#define COMMON_SESSION_TEXT_CAPACITY 16384u
+#define COMMON_SESSION_PROMPT_CAPACITY 64u
 
 typedef struct common_session common_session;
 
-typedef enum common_session_lifecycle_request_kind {
-    COMMON_SESSION_LIFECYCLE_NONE,
-    COMMON_SESSION_LIFECYCLE_START,
-    COMMON_SESSION_LIFECYCLE_PAUSE,
-    COMMON_SESSION_LIFECYCLE_RESET,
-    COMMON_SESSION_LIFECYCLE_RESUME,
-    COMMON_SESSION_LIFECYCLE_STEP,
-    COMMON_SESSION_LIFECYCLE_STOP
-} common_session_lifecycle_request_kind;
-
-typedef struct common_session_cli_result {
-    char text[COMMON_SESSION_CLI_TEXT_CAPACITY];
-    char prompt[COMMON_SESSION_CLI_PROMPT_CAPACITY];
-    lib_bool prompt_ready;
-    lib_bool keep_active;
-    common_session_lifecycle_request_kind lifecycle_request;
-} common_session_cli_result;
-
-typedef enum common_session_target {
-    COMMON_SESSION_TARGET_NONE,
-    COMMON_SESSION_TARGET_CONSOLE,
-    COMMON_SESSION_TARGET_WINDOW
-} common_session_target;
-
+/* Copied facts consumed by the one common session reducer.  Product adapters
+ * map their executor and configuration vocabulary at the boundary. */
 typedef enum common_session_machine_state {
+    COMMON_SESSION_MACHINE_INIT,
+    COMMON_SESSION_MACHINE_STOPPED,
     COMMON_SESSION_MACHINE_RUNNING,
     COMMON_SESSION_MACHINE_PAUSED,
-    COMMON_SESSION_MACHINE_RESET,
-    COMMON_SESSION_MACHINE_STOPPED,
-    COMMON_SESSION_MACHINE_FAULT
+    COMMON_SESSION_MACHINE_ERROR,
+    COMMON_SESSION_MACHINE_RESET_COMPLETED
 } common_session_machine_state;
 
-typedef lib_status (*common_session_cli_provider)(void *context,
-    const char *line, common_session_cli_result *out_result);
-typedef lib_status (*common_session_cli_machine_observer)(void *context,
-    common_session_machine_state state, lib_status status,
-    common_session_cli_result *out_result);
-typedef lib_status (*common_session_lifecycle_sink)(void *context,
-    common_session_lifecycle_request_kind request);
+typedef enum common_session_display {
+    COMMON_SESSION_DISPLAY_CONSOLE,
+    COMMON_SESSION_DISPLAY_WINDOW
+} common_session_display;
 
-typedef enum common_session_fact_kind {
-    COMMON_SESSION_FACT_CONSOLE_LINE,
-    COMMON_SESSION_FACT_MONITOR_TEXT,
-    COMMON_SESSION_FACT_MACHINE,
-    COMMON_SESSION_FACT_UI_INPUT,
-    COMMON_SESSION_FACT_UI_DELIVERY_FAILED,
-    COMMON_SESSION_FACT_UI_COMPLETION,
-    COMMON_SESSION_FACT_FRAME
-} common_session_fact_kind;
+typedef enum common_session_console_actual {
+    COMMON_SESSION_CONSOLE_MONITOR,
+    COMMON_SESSION_CONSOLE_VM
+} common_session_console_actual;
 
-typedef struct common_session_fact {
-    common_session_fact_kind kind;
-    lib_u32 run_id;
-    union {
-        char line[COMMON_SESSION_LINE_CAPACITY];
-        struct {
-            common_session_machine_state state;
-            lib_status status;
-        } machine;
-        struct {
-            lib_u64 source_identity;
-            lib_status status;
-        } ui_delivery_failure;
-        struct {
-            lib_status status;
-            common_ui_completion completion;
-        } ui_completion;
-        kvm_input_event input;
-    } value;
-} common_session_fact;
+typedef enum common_session_ui_action {
+    COMMON_SESSION_UI_ACTION_NONE,
+    COMMON_SESSION_UI_ACTION_CREATE_WINDOW,
+    COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE,
+    COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE,
+    COMMON_SESSION_UI_ACTION_BIND_MONITOR,
+    COMMON_SESSION_UI_ACTION_DESTROY_VM_CONSOLE,
+    COMMON_SESSION_UI_ACTION_DESTROY_WINDOW
+} common_session_ui_action;
 
-typedef enum common_session_notice {
-    COMMON_SESSION_NOTICE_NONE,
-    COMMON_SESSION_NOTICE_STARTED,
-    COMMON_SESSION_NOTICE_RESUMED,
-    COMMON_SESSION_NOTICE_PAUSED,
-    COMMON_SESSION_NOTICE_RESET,
-    COMMON_SESSION_NOTICE_STOPPED
-} common_session_notice;
+typedef struct common_session_presentation_plan {
+    lib_bool window_enabled;
+    lib_bool vm_console_enabled;
+    lib_bool monitor_console_enabled;
+} common_session_presentation_plan;
 
-typedef struct common_session_plan {
-    lib_bool ui_action_ready;
-    common_ui_action ui_action;
-    lib_bool ui_failure;
-    lib_status ui_failure_status;
-    lib_bool mouse_capturable_changed;
-    lib_bool mouse_capturable;
-    lib_bool release_mouse;
-    lib_bool frame_ready;
-    kvm_frame frame;
-    common_session_notice notice;
-    char console_text[COMMON_SESSION_CLI_TEXT_CAPACITY];
-    char console_prompt[COMMON_SESSION_CLI_PROMPT_CAPACITY];
-    lib_bool console_prompt_ready;
-} common_session_plan;
+/* These are neutral control requests, not a product command vocabulary.
+ * A caller supplies the one machine adapter that accepts or rejects them. */
+typedef enum common_session_request {
+    COMMON_SESSION_REQUEST_NONE,
+    COMMON_SESSION_REQUEST_START,
+    COMMON_SESSION_REQUEST_RESUME,
+    COMMON_SESSION_REQUEST_PAUSE,
+    COMMON_SESSION_REQUEST_STOP,
+    COMMON_SESSION_REQUEST_RESET
+} common_session_request;
 
-typedef lib_status (*common_session_input_sink)(void *context,
-    const kvm_input_event *event);
+/* A product command provider returns copied presentation text plus, at most,
+ * one neutral lifecycle request. Session is the unique lifecycle dispatcher
+ * and UI owner. Synchronous debug/media access uses the machine's serialized
+ * executor boundary from this same control thread. */
+typedef struct common_session_command_result {
+    char text[COMMON_SESSION_TEXT_CAPACITY];
+    char prompt[COMMON_SESSION_PROMPT_CAPACITY];
+    common_session_request request;
+    lib_bool exit_requested;
+    lib_bool arm_prompt;
+    lib_bool release_window_mouse;
+} common_session_command_result;
 
-/* One reducer owner serially configures, takes and reduces facts, reconciles
- * presentation and dispatches input. The publish APIs copy their payloads and
- * are the only Session entry points intended for external producers. */
-lib_status common_session_create(common_session **out_session);
-void common_session_destroy(common_session *session);
-void common_session_close(common_session *session);
-/* `ui` is borrowed: it must outlive the bound Session, and composition must
- * stop all producers before either owner is destroyed. */
+typedef struct common_session_command_provider {
+    void *context;
+    void (*open)(void *context, common_session_command_result *out_result);
+    void (*reject_line)(void *context, common_session_command_result *out_result);
+    void (*submit_line)(void *context, common_session_machine_state state,
+        const char *line, common_session_command_result *out_result);
+    lib_bool (*begin_external)(void *context, common_session_machine_state state,
+        common_session_request request);
+    void (*note_runtime)(void *context, common_session_machine_state prior,
+        common_session_machine_state completed,
+        common_session_command_result *out_result);
+    void (*note_broker)(void *context, common_session_machine_state state,
+        lib_bool vm_console_current, lib_bool monitor_running_surface);
+    void (*note_monitor_current)(void *context, lib_bool current,
+        common_session_command_result *out_result);
+    /* Product-owned hotkeys may request a neutral lifecycle action, release
+     * Window capture, or inject product input through their own adapter. */
+    lib_bool (*handle_hotkey)(void *context, common_session_machine_state state,
+        const char *identifier, common_session_command_result *out_result);
+} common_session_command_provider;
+
+typedef struct common_session_options {
+    common_session_display display;
+    lib_bool console_control;
+    common_machine *machine;
+    common_session_command_provider command;
+} common_session_options;
+
+struct common_ui;
+typedef struct common_ui common_ui;
+typedef struct common_ui_event common_ui_event;
+
+lib_status common_session_create(common_session **out_session,
+    const common_session_options *options);
 lib_status common_session_bind_ui(common_session *session, common_ui *ui);
-lib_status common_session_request_monitor_line(common_session *session);
-lib_status common_session_write_monitor(common_session *session, const char *text);
-/* Immutable product startup policy.  Console display uses the raw guest
- * Console for text; graphical frames select a Window, while console_control
- * retains the cooked monitor instead of the raw Console. */
-lib_status common_session_set_presentation_policy(common_session *session,
-    common_session_target display, lib_bool console_control);
-/* A user-visible Window close hides presentation until the next run. */
-lib_status common_session_hide_presentation(common_session *session);
-lib_status common_session_reconcile(common_session *session,
-    common_session_plan *out_plan);
-lib_status common_session_set_cli_provider(common_session *session,
-    common_session_cli_provider provider, void *context);
-lib_status common_session_set_cli_machine_observer(common_session *session,
-    common_session_cli_machine_observer observer, void *context);
-lib_bool common_session_has_cli_provider(const common_session *session);
-lib_status common_session_set_lifecycle_sink(common_session *session,
-    common_session_lifecycle_sink sink, void *context);
-lib_status common_session_request_lifecycle(common_session *session,
-    common_session_lifecycle_request_kind request);
-/* A presentation policy must be configured before a run can begin. */
-lib_u32 common_session_begin_run(common_session *session,
-    common_session_plan *out_plan);
-lib_bool common_session_is_running(const common_session *session);
-lib_status common_session_publish_console_line(void *context, const char *line);
-/* A copied machine completion message.  It is not command input and therefore
- * cannot be reinterpreted by the injected product CLI. */
-lib_status common_session_publish_monitor_text(common_session *session,
-    const char *text);
-lib_status common_session_publish_ui_input(void *context,
-    const kvm_input_event *event);
-lib_status common_session_publish_ui_delivery_failed(common_session *session,
-    lib_u64 source_identity, lib_status status);
-lib_status common_session_publish_machine(common_session *session,
-    common_session_machine_state state, lib_status status);
-lib_status common_session_publish_ui_completion(common_session *session,
-    lib_status status, const common_ui_completion *completion);
-lib_status common_session_publish_frame(common_session *session,
-    const kvm_frame *frame);
-lib_status common_session_take(common_session *session,
-    common_session_fact *out_fact, kvm_frame *out_frame,
-    lib_u32 timeout_milliseconds);
-lib_status common_session_reduce_fact(common_session *session,
-    const common_session_fact *fact, const kvm_frame *frame,
-    common_session_plan *out_plan);
-lib_status common_session_dispatch_host_input(common_session *session,
-    const kvm_input_event *event, common_session_input_sink sink,
-    void *sink_context);
+lib_status common_session_destroy(common_session *session);
+int common_session_run(common_session *session);
+
+/* These are the only async entry points. UI and machine adapters enqueue
+ * copied facts; neither calls the reducer or product command provider. */
+int common_session_enqueue_ui_event(void *context,
+    const common_ui_event *event);
+int common_session_enqueue_runtime_completed(common_session *session,
+    common_session_machine_state state, lib_u32 run_generation);
+int common_session_enqueue_frame_completed(common_session *session,
+    lib_u32 sequence, lib_bool graphics, lib_u32 run_generation);
+
 #endif

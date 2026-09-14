@@ -1,0 +1,121 @@
+#include "common/session/control.h"
+#include <assert.h>
+#include <string.h>
+
+/* These stubs keep the test at the application control boundary while making
+ * the paused guest-injection barrier observable. */
+static unsigned int delivered_guest_input;
+static int deliver_input(void *context, const kvm_input_event *event)
+{ (void)context; (void)event; ++delivered_guest_input; return 1; }
+
+static void take(common_session_queue *queue, common_session_event *event)
+{ assert(common_session_queue_take(queue, event, 0u)); }
+
+int main(void)
+{
+    common_session_queue *queue = NULL;
+    common_session_event event;
+    lib_console_line start = { 5u, "start" };
+    lib_console_line pause = { 5u, "pause" };
+    kvm_input_event raw_key = { 0 };
+    kvm_input_event raw_mouse = { 0 };
+    kvm_input_event retired = { 0 };
+    kvm_input_event hotkey = { 0 };
+
+    assert(common_session_queue_create(&queue));
+    raw_key.type = KVM_EVENT_KEY;
+    raw_key.source_identity = 41u;
+    raw_key.data.key.key = 'A';
+    raw_key.data.key.pressed = 1u;
+
+    /* Application events admitted after each completed monitor -> raw ->
+       monitor handoff remain one FIFO. Native records left in the host input
+       buffer before either activation are deliberately flushed by the broker;
+       this test does not claim to preserve those pre-cutover records. */
+    assert(common_session_queue_push_monitor_line(queue, &start, 0));
+    assert(common_session_queue_push_broker_completed(queue, 1, 7u));
+    assert(common_session_queue_push_kvm_for_run(queue, &raw_key, 7u));
+    assert(common_session_queue_push_broker_completed(queue, 0, 7u));
+    assert(common_session_queue_push_monitor_line(queue, &pause, 0));
+    take(queue, &event); assert(event.kind == COMMON_SESSION_EVENT_MONITOR_LINE);
+    take(queue, &event); assert(event.kind == COMMON_SESSION_EVENT_BROKER_COMPLETED &&
+        event.value.broker_vm_console_current);
+    take(queue, &event); assert(event.kind == COMMON_SESSION_EVENT_KVM_INPUT &&
+        common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_RUNNING));
+    take(queue, &event); assert(event.kind == COMMON_SESSION_EVENT_BROKER_COMPLETED &&
+        !event.value.broker_vm_console_current);
+    take(queue, &event); assert(event.kind == COMMON_SESSION_EVENT_MONITOR_LINE);
+
+    /* Window -> Console input belongs to the activated run. A raw event from
+       the former Console can never be delivered after Window owns a new run. */
+    assert(common_session_queue_push_kvm_for_run(queue, &raw_key, 6u));
+    take(queue, &event);
+    assert(!common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_RUNNING));
+
+    /* Retirement is ledger cleanup, never guest input.  It remains admitted
+       after a run changes so the unique source cannot leave held keys behind;
+       common_session_dispatch_input still emits no guest release while stopped. */
+    retired.type = KVM_EVENT_SOURCE_RETIRED;
+    retired.source_identity = raw_key.source_identity;
+    assert(common_session_queue_push_kvm_for_run(queue, &retired, 7u));
+    take(queue, &event); assert(common_session_accept_kvm_event(&event, 7u,
+        COMMON_SESSION_MACHINE_RUNNING));
+    assert(common_session_accept_kvm_event(&event, 8u, COMMON_SESSION_MACHINE_STOPPED));
+    assert(common_session_dispatch_input(queue, &event.value.kvm,
+        COMMON_SESSION_MACHINE_STOPPED, deliver_input, NULL));
+
+    /* A frozen Window must not affect a paused VM with any late ordinary
+       input. Releases remain admitted only for the app's pressed-key ledger;
+       they must not cross the separate VM ingress boundary. */
+    assert(common_session_queue_push_kvm_for_run(queue, &raw_key, 7u));
+    take(queue, &event);
+    assert(!common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_PAUSED));
+    raw_key.data.key.pressed = 0u;
+    assert(common_session_queue_push_kvm_for_run(queue, &raw_key, 7u));
+    take(queue, &event); assert(common_session_accept_kvm_event(&event, 7u,
+        COMMON_SESSION_MACHINE_PAUSED));
+    assert(common_session_dispatch_input(queue, &event.value.kvm,
+        COMMON_SESSION_MACHINE_PAUSED, deliver_input, NULL));
+    raw_mouse.type = KVM_EVENT_MOUSE;
+    raw_mouse.data.mouse.buttons = 0u;
+    assert(common_session_dispatch_input(queue, &raw_mouse,
+        COMMON_SESSION_MACHINE_PAUSED, deliver_input, NULL));
+    assert(delivered_guest_input == 0u);
+
+    /* Paused still admits a current-run registered hotkey for product
+       handling. A stale run remains rejected. Guest-producing hotkeys are
+       consumed at the control/guest boundary while paused. */
+    hotkey.type = KVM_EVENT_HOTKEY;
+    strcpy(hotkey.data.hotkey.identifier, "pause-toggle");
+    assert(common_session_queue_push_kvm_for_run(queue, &hotkey, 7u));
+    take(queue, &event);
+    assert(common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_PAUSED));
+    assert(common_session_queue_push_kvm_for_run(queue, &hotkey, 6u));
+    take(queue, &event);
+    assert(!common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_PAUSED));
+    strcpy(hotkey.data.hotkey.identifier, "send-ctrl-alt-del");
+    assert(common_session_dispatch_input(queue, &hotkey,
+        COMMON_SESSION_MACHINE_PAUSED, deliver_input, NULL));
+    strcpy(hotkey.data.hotkey.identifier, "send-alt-enter");
+    assert(common_session_dispatch_input(queue, &hotkey,
+        COMMON_SESSION_MACHINE_PAUSED, deliver_input, NULL));
+    assert(delivered_guest_input == 0u);
+
+    /* A KVM component's capacity failure is a product control fact, not a
+       swallowed leaf-local status. The monitor consumer reports this kind. */
+    assert(common_session_queue_push_kvm_delivery_failed(queue, 41u,
+        LIB_STATUS_LIMIT_EXCEEDED, 7u));
+    take(queue, &event);
+    assert(event.kind == COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED);
+    assert(event.value.delivery_failure.source_identity == 41u);
+    assert(event.value.delivery_failure.status == LIB_STATUS_LIMIT_EXCEEDED);
+
+    /* UI owns native monitor delivery now; the app queue still records its
+       copied terminal failure as one control fact. */
+    assert(common_session_queue_push_console_failed(queue));
+    take(queue, &event);
+    assert(event.kind == COMMON_SESSION_EVENT_CONSOLE_FAILED);
+    assert(!common_session_queue_take(queue, &event, 0u));
+    common_session_queue_destroy(queue);
+    return 0;
+}

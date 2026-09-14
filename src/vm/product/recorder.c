@@ -85,7 +85,7 @@ void vm_product_recorder_observe(void *context,
         observation == STD_NULL) return;
     (void)common_xasm32_disassemble(observation->instruction_bytes,
         observation->instruction_byte_count, statement, sizeof(statement),
-        &decoded_bytes, observation->code_default_size);
+        &decoded_bytes, STD_NULL, observation->code_default_size);
     for (index = 0u; statement[index] != '\0'; ++index)
         if (statement[index] == '\n') statement[index] = ' ';
     if (!recorder_write(recorder,

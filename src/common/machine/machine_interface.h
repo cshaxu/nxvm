@@ -1,65 +1,29 @@
 #ifndef COMMON_MACHINE_INTERFACE_H
 #define COMMON_MACHINE_INTERFACE_H
 
+#include "lib/kvm-base/event_interface.h"
+#include "lib/kvm-base/frame_interface.h"
 #include "lib/types/types_interface.h"
 
+#define COMMON_MACHINE_PATH_CAPACITY 1024u
 #define COMMON_MACHINE_DEBUG_BYTES 32u
-#define COMMON_MACHINE_MEDIA_PATH_CAPACITY 1024u
 
 typedef struct common_machine common_machine;
+typedef void (*common_machine_executor_callback)(void *context);
 
-typedef enum common_machine_input_kind {
-    COMMON_MACHINE_INPUT_KEY,
-    COMMON_MACHINE_INPUT_RELATIVE_MOUSE
-} common_machine_input_kind;
+typedef enum common_machine_state {
+    COMMON_MACHINE_STOPPED,
+    COMMON_MACHINE_STARTING,
+    COMMON_MACHINE_RUNNING,
+    COMMON_MACHINE_PAUSED,
+    COMMON_MACHINE_ERROR,
+    COMMON_MACHINE_RESET_COMPLETED
+} common_machine_state;
 
-typedef struct common_machine_input {
-    common_machine_input_kind kind;
-    union {
-        struct { lib_u16 scan_code; lib_u16 virtual_key; lib_bool pressed; } key;
-        struct { lib_i32 delta_x; lib_i32 delta_y; lib_u8 buttons; } mouse;
-    } value;
-} common_machine_input;
-
-typedef enum common_machine_request_kind {
-    COMMON_MACHINE_REQUEST_INPUT,
-    COMMON_MACHINE_REQUEST_PAUSE,
-    COMMON_MACHINE_REQUEST_RESET,
-    COMMON_MACHINE_REQUEST_RESUME,
-    COMMON_MACHINE_REQUEST_STEP,
-    COMMON_MACHINE_REQUEST_STOP,
-    /* A removable-medium request is copied into the same ordered, run-bound
-     * queue as host input and lifecycle control.  Its driver, not Session or
-     * UI, owns the eventual controller mutation at a safe point. */
-    COMMON_MACHINE_REQUEST_REMOVABLE_MEDIA
-} common_machine_request_kind;
-
-typedef enum common_machine_removable_media_kind {
-    COMMON_MACHINE_REMOVABLE_MEDIA_FLOPPY
-} common_machine_removable_media_kind;
-
-typedef struct common_machine_removable_media {
-    common_machine_removable_media_kind kind;
-    lib_u8 slot;
-    lib_bool present;
-    char path[COMMON_MACHINE_MEDIA_PATH_CAPACITY];
-} common_machine_removable_media;
-
-typedef enum common_machine_pause_reason {
-    COMMON_MACHINE_PAUSE_EXPLICIT,
-    COMMON_MACHINE_PAUSE_BREAKPOINT,
-    COMMON_MACHINE_PAUSE_TRACE,
-    COMMON_MACHINE_PAUSE_STEP
-} common_machine_pause_reason;
-
-typedef struct common_machine_request {
-    common_machine_request_kind kind;
-    common_machine_pause_reason pause_reason;
-    lib_u32 run_id;
-    common_machine_input input;
-    common_machine_removable_media removable_media;
-} common_machine_request;
-
+/* Debug is synchronous to the sole control-thread caller; execution occurs
+ * on the existing paused executor. Lifecycle, media and debug requests must
+ * be serialized by that caller, never issued from a driver/sink callback.
+ * Common owns lease validity and rendezvous; the product owns CPU access. */
 typedef enum common_machine_debug_operation {
     COMMON_MACHINE_DEBUG_READ_REGISTER,
     COMMON_MACHINE_DEBUG_WRITE_REGISTER,
@@ -86,8 +50,6 @@ typedef enum common_machine_debug_watch_kind {
     COMMON_MACHINE_DEBUG_WATCH_EXECUTE
 } common_machine_debug_watch_kind;
 
-/* The target owns enforcement.  Debug supplies only a bounded plan while
- * paused; it never counts instructions from an observation callback. */
 typedef enum common_machine_debug_execution_plan_kind {
     COMMON_MACHINE_DEBUG_EXECUTION_NONE,
     COMMON_MACHINE_DEBUG_EXECUTION_TRACE,
@@ -137,9 +99,26 @@ typedef struct common_machine_debug_request {
     common_machine_debug_watch_kind watch_kind;
     common_machine_debug_execution_plan_kind execution_kind;
     lib_u64 instruction_count;
-    lib_u8 bytes;
+    lib_u8 bytes; /* Memory payload size; port I/O explicitly requires 1 (byte). */
     lib_u8 data[COMMON_MACHINE_DEBUG_BYTES];
 } common_machine_debug_request;
+
+#define COMMON_MACHINE_DEBUG_ACCESS_CAPACITY 32u
+typedef struct common_machine_debug_memory_access {
+    lib_bool write;
+    lib_u32 linear;
+    lib_u32 bytes;
+    lib_u64 data; /* Lowest-addressed up to eight bytes, little endian. */
+} common_machine_debug_memory_access;
+
+typedef struct common_machine_debug_observation {
+    common_machine_debug_memory_access accesses[COMMON_MACHINE_DEBUG_ACCESS_CAPACITY];
+    lib_u8 count;
+    lib_bool truncated;
+    lib_bool watch_hit;
+    common_machine_debug_watch_kind watch_kind;
+    lib_u32 watch_address;
+} common_machine_debug_observation;
 
 typedef struct common_machine_debug_result {
     lib_u32 value;
@@ -147,49 +126,67 @@ typedef struct common_machine_debug_result {
     lib_u8 bytes;
     lib_u8 data[COMMON_MACHINE_DEBUG_BYTES];
     common_machine_debug_cpu_snapshot cpu;
+    common_machine_debug_observation observation;
 } common_machine_debug_result;
 
 typedef struct common_machine_debug_lease {
     lib_u64 generation;
 } common_machine_debug_lease;
 
-typedef lib_status (*common_machine_request_consumer)(void *context,
-    const common_machine_request *request);
-typedef lib_bool (*common_machine_is_paused)(void *context);
-/* Called after a copied request changes the FIFO from empty to nonempty.
- * This is only an infallible notification to an already-owned executor; it
- * carries no request and does not establish a second execution path. */
-typedef void (*common_machine_request_wake)(void *context);
-/* Synchronous typed boundary: Common calls this from its Debug caller and
- * receives the copied result before returning. An adapter with stricter CPU
- * affinity may synchronously relay internally, but Common owns no such queue
- * or executor. */
 typedef lib_status (*common_machine_debug_execute)(void *context,
     const common_machine_debug_request *request,
     common_machine_debug_result *out_result);
 
+/* State transitions and completed frame publication are independent facts.
+ * Keeping their callbacks separate prevents an executor paint callback from
+ * being mistaken for a lifecycle completion by the product control queue. */
+typedef void (*common_machine_state_sink)(void *context,
+    common_machine_state state, lib_u32 run_generation);
+typedef void (*common_machine_frame_sink)(void *context,
+    lib_u32 frame_sequence, lib_bool graphics, lib_u32 run_generation);
+
 typedef struct common_machine_driver {
-    common_machine_request_consumer consume_request;
-    common_machine_is_paused is_paused;
-    common_machine_request_wake wake_request;
-    common_machine_debug_execute execute_debug;
     void *context;
+    lib_bool (*reset)(void *context);
+    lib_bool (*run)(void *context);
+    void (*request_stop)(void *context);
+    void (*request_wake)(void *context);
+    void (*set_heartbeat)(void *context, lib_bool enabled);
+    void (*set_executor_callback)(void *context,
+        common_machine_executor_callback callback, void *callback_context);
+    void (*deliver_input)(void *context, const kvm_input_event *event);
+    lib_bool (*copy_frame)(void *context, kvm_frame *out_frame);
+    lib_bool (*set_removable_media)(void *context, const char *path);
+    common_machine_debug_execute execute_debug;
+    /* Executor-only stop notification and cancellation of product debug plans. */
+    lib_bool (*take_debug_stop)(void *context);
+    void (*cancel_debug)(void *context);
+    /* Optional product-owned observation after a complete frame has been
+     * published. It must not call machine lifecycle APIs. */
+    void (*frame_published)(void *context, const kvm_frame *frame);
 } common_machine_driver;
 
-lib_status common_machine_create(common_machine **out_machine);
-void common_machine_destroy(common_machine *machine);
-void common_machine_close(common_machine *machine);
-/* `driver` is copied but its context is borrowed. Bind exactly once before
- * requests are published, then keep the adapter and context alive until close
- * and every safe-point/paused-Debug caller has returned. */
-lib_status common_machine_bind_driver(common_machine *machine,
+lib_status common_machine_create(common_machine **out_machine,
     const common_machine_driver *driver);
-lib_status common_machine_bind_run(common_machine *machine, lib_u32 run_id);
-lib_status common_machine_submit(common_machine *machine,
-    const common_machine_request *request);
-lib_status common_machine_observe_safe_point(common_machine *machine);
-lib_status common_machine_wait(common_machine *machine,
-    lib_u32 timeout_milliseconds);
+void common_machine_set_state_sink(common_machine *machine,
+    common_machine_state_sink sink, void *context);
+void common_machine_set_frame_sink(common_machine *machine,
+    common_machine_frame_sink sink, void *context);
+lib_bool common_machine_start(common_machine *machine);
+lib_bool common_machine_pause(common_machine *machine);
+lib_bool common_machine_resume(common_machine *machine);
+lib_bool common_machine_stop(common_machine *machine);
+lib_bool common_machine_reset(common_machine *machine);
+lib_bool common_machine_set_removable_media(common_machine *machine,
+    const char *path);
+common_machine_state common_machine_state_get(const common_machine *machine);
+lib_bool common_machine_enqueue_input(common_machine *machine,
+    const kvm_input_event *event);
+lib_bool common_machine_copy_published_frame(common_machine *machine,
+    kvm_frame *destination, lib_u32 *out_run_generation);
+lib_u32 common_machine_published_frame_sequence(const common_machine *machine);
+lib_u32 common_machine_published_frame_run_generation(const common_machine *machine);
+lib_u32 common_machine_run_generation(const common_machine *machine);
 lib_status common_machine_debug_acquire(common_machine *machine,
     common_machine_debug_lease *out_lease);
 lib_status common_machine_debug_execute_with_lease(common_machine *machine,
@@ -197,5 +194,8 @@ lib_status common_machine_debug_execute_with_lease(common_machine *machine,
     const common_machine_debug_request *request,
     common_machine_debug_result *out_result);
 void common_machine_debug_invalidate(common_machine *machine);
+/* Asynchronous cancellation, allowed in every state; uses the existing queue. */
+void common_machine_debug_cancel(common_machine *machine);
+void common_machine_destroy(common_machine *machine);
 
 #endif

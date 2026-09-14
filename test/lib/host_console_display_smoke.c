@@ -1,0 +1,258 @@
+#include "lib/types/win32/console.h"
+#include "lib/types/win32/sync.h"
+#include <assert.h>
+#include <string.h>
+#include <stdio.h>
+
+/* Native display I/O, deterministic reader/startup failures. The test owns a
+ * hidden Console; it never changes the developer's Console or its input. */
+static int fail_allocate, fail_select, fail_reader, fail_query, fail_restore;
+static BOOL WINAPI query_display(HANDLE output, PCONSOLE_SCREEN_BUFFER_INFOEX info)
+{
+    if (fail_query) { fail_query = 0; return FALSE; }
+    return GetConsoleScreenBufferInfoEx(output, info);
+}
+static BOOL WINAPI restore_display(HANDLE output, PCONSOLE_SCREEN_BUFFER_INFOEX info)
+{
+    if (fail_restore) { fail_restore = 0; return FALSE; }
+    return SetConsoleScreenBufferInfoEx(output, info);
+}
+static HANDLE WINAPI allocate_screen(DWORD access, DWORD share,
+    const SECURITY_ATTRIBUTES *security, DWORD flags, LPVOID reserved)
+{
+    if (fail_allocate) { fail_allocate = 0; return INVALID_HANDLE_VALUE; }
+    return CreateConsoleScreenBuffer(access, share, security, flags, reserved);
+}
+static BOOL WINAPI select_screen(HANDLE output)
+{
+    if (fail_select) { fail_select = 0; return FALSE; }
+    return SetConsoleActiveScreenBuffer(output);
+}
+static HANDLE WINAPI start_reader(LPSECURITY_ATTRIBUTES attributes, SIZE_T size,
+    LPTHREAD_START_ROUTINE entry, LPVOID arg, DWORD flags, LPDWORD id)
+{
+    (void)attributes; (void)size; (void)entry; (void)arg; (void)flags; (void)id;
+    if (fail_reader) { fail_reader = 0; return NULL; }
+    return CreateEventA(NULL, TRUE, TRUE, NULL);
+}
+static HWND WINAPI no_foreground(void) { return NULL; }
+#undef lib_win32_create_console_screen_buffer
+#define lib_win32_create_console_screen_buffer allocate_screen
+#undef lib_win32_set_console_active_screen_buffer
+#define lib_win32_set_console_active_screen_buffer select_screen
+#undef lib_win32_create_thread
+#define lib_win32_create_thread start_reader
+#undef lib_win32_get_console_window
+#define lib_win32_get_console_window no_foreground
+#undef lib_win32_get_console_screen_buffer_info_ex
+#define lib_win32_get_console_screen_buffer_info_ex query_display
+#undef lib_win32_set_console_screen_buffer_info_ex
+#define lib_win32_set_console_screen_buffer_info_ex restore_display
+#include "lib/host/win32/console.c"
+#include "lib/host/console.c"
+
+typedef struct display_snapshot {
+    CONSOLE_SCREEN_BUFFER_INFOEX info;
+    CONSOLE_CURSOR_INFO cursor;
+    DWORD mode;
+    CHAR_INFO cells[120 * 30];
+} display_snapshot;
+
+static void snapshot(display_snapshot *s)
+{
+    HANDLE output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    COORD size = {120, 30}, origin = {0, 0};
+    SMALL_RECT region = {0, 0, 119, 29};
+    assert(output != INVALID_HANDLE_VALUE);
+    memset(s, 0, sizeof(*s));
+    s->info.cbSize = sizeof(s->info);
+    assert(GetConsoleScreenBufferInfoEx(output, &s->info));
+    assert(GetConsoleCursorInfo(output, &s->cursor));
+    assert(GetConsoleMode(output, &s->mode));
+    assert(ReadConsoleOutputW(output, s->cells, size, origin, &region));
+    assert(region.Right >= 79 && region.Bottom >= 24);
+    assert(CloseHandle(output));
+}
+
+static void expect_display(const display_snapshot *expected)
+{
+    display_snapshot actual;
+    static unsigned checkpoint;
+    snapshot(&actual);
+    ++checkpoint;
+    if (memcmp(&actual, expected, sizeof(actual)) != 0) {
+        fprintf(stderr, "display checkpoint %u: size %d,%d/%d,%d cursor %d,%d/%d,%d viewport %d,%d,%d,%d/%d,%d,%d,%d cells=%d palette=%d cursor-style=%d mode=%lu/%lu\n",
+            checkpoint, actual.info.dwSize.X, actual.info.dwSize.Y,
+            expected->info.dwSize.X, expected->info.dwSize.Y,
+            actual.info.dwCursorPosition.X, actual.info.dwCursorPosition.Y,
+            expected->info.dwCursorPosition.X, expected->info.dwCursorPosition.Y,
+            actual.info.srWindow.Left, actual.info.srWindow.Top, actual.info.srWindow.Right, actual.info.srWindow.Bottom,
+            expected->info.srWindow.Left, expected->info.srWindow.Top, expected->info.srWindow.Right, expected->info.srWindow.Bottom,
+            memcmp(actual.cells, expected->cells, sizeof(actual.cells)),
+            memcmp(actual.info.ColorTable, expected->info.ColorTable, sizeof(actual.info.ColorTable)),
+            memcmp(&actual.cursor, &expected->cursor, sizeof(actual.cursor)), actual.mode, expected->mode);
+    }
+    assert(memcmp(&actual, expected, sizeof(actual)) == 0);
+}
+
+static void check_frame_extent(short columns, short rows, int scrolled)
+{
+    host_console_broker *broker = NULL;
+    lib_console *cooked, *raw;
+    lib_console_text_frame frame = {0};
+    CONSOLE_SCREEN_BUFFER_INFO before, actual;
+    COORD extent = {columns, rows}, origin = {0, 0}, cells_size = {80, 25};
+    SMALL_RECT viewport = {0, 0, 19, 9}, region;
+    CHAR_INFO cells[80 * 25];
+    assert(lib_console_create(&cooked) == 0);
+    assert(lib_console_create(&raw) == 0);
+    assert(host_console_broker_create(&broker, cooked, HOST_CONSOLE_COOKED_LINES) == 0);
+    assert(SetConsoleCursorPosition(broker->backend->output, origin));
+    assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
+    assert(SetConsoleScreenBufferSize(broker->backend->output, extent));
+    viewport.Right = columns - 1;
+    viewport.Bottom = rows < 30 ? rows - 1 : 29;
+    if (scrolled) {
+        viewport.Top = 2; viewport.Bottom += 2;
+    }
+    assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
+    assert(GetConsoleScreenBufferInfo(broker->backend->output, &before));
+    frame.columns = 80; frame.rows = 25; frame.font_height = 16;
+    memset(frame.text, '#', sizeof(frame.text));
+    for (int round = 0; round < 3; ++round) {
+        assert(host_console_broker_replace(broker, cooked, raw, HOST_CONSOLE_RAW_EVENTS) == 0);
+        if (scrolled)
+            assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
+        assert(lib_console_write_text_frame(raw, &frame) == 0);
+        assert(lib_console_write_text_frame(raw, &frame) == 0);
+        region = (SMALL_RECT){0, 0, 79, 24};
+        assert(ReadConsoleOutputW(broker->backend->output, cells, cells_size, origin, &region));
+        assert(region.Left == 0 && region.Top == 0 && region.Right == 79 && region.Bottom == 24);
+        for (unsigned i = 0; i < 80 * 25; ++i) assert(cells[i].Char.UnicodeChar == '#');
+        assert(host_console_broker_replace(broker, raw, cooked, HOST_CONSOLE_COOKED_LINES) == 0);
+        assert(GetConsoleScreenBufferInfo(broker->backend->output, &actual));
+        if (actual.dwSize.X != before.dwSize.X || actual.dwSize.Y != before.dwSize.Y)
+            fprintf(stderr, "extent %d,%d round %d: restored %d,%d expected %d,%d\n",
+                columns, rows, round, actual.dwSize.X, actual.dwSize.Y, before.dwSize.X, before.dwSize.Y);
+        assert(actual.dwSize.X == before.dwSize.X && actual.dwSize.Y == before.dwSize.Y);
+        if (memcmp(&actual.srWindow, &before.srWindow, sizeof(actual.srWindow)) != 0)
+            fprintf(stderr, "viewport %d,%d round %d: %d,%d,%d,%d expected %d,%d,%d,%d\n",
+                columns, rows, round, actual.srWindow.Left, actual.srWindow.Top,
+                actual.srWindow.Right, actual.srWindow.Bottom, before.srWindow.Left,
+                before.srWindow.Top, before.srWindow.Right, before.srWindow.Bottom);
+        assert(memcmp(&actual.srWindow, &before.srWindow, sizeof(actual.srWindow)) == 0);
+    }
+    assert(host_console_broker_destroy(broker) == 0);
+    lib_console_release(raw); lib_console_release(cooked);
+}
+
+int main(void)
+{
+    host_console_broker *broker;
+    lib_console *cooked, *raw, *other;
+    lib_console_text_frame frame = {0};
+    display_snapshot before, after, raw_display;
+    DWORD written;
+    COORD origin = {0, 0};
+    CONSOLE_CURSOR_INFO cursor = {25, TRUE};
+    /* FreeConsole only detaches this test process, never its parent. */
+    (void)FreeConsole(); /* An attached pseudoconsole need not have an HWND. */
+    assert(AllocConsole());
+    ShowWindow(GetConsoleWindow(), SW_HIDE);
+    assert(lib_console_create(&cooked) == 0);
+    assert(lib_console_create(&raw) == 0);
+    assert(lib_console_create(&other) == 0);
+    assert(host_console_broker_create(&broker, cooked, HOST_CONSOLE_COOKED_LINES) == 0);
+    /* AllocConsole inherits host defaults, including very narrow windows. */
+    {
+        SMALL_RECT viewport = {0, 0, 19, 9};
+        COORD size = {120, 60};
+        assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
+        assert(SetConsoleScreenBufferSize(broker->backend->output, size));
+    }
+    assert(FillConsoleOutputCharacterW(broker->backend->output, L' ', 80 * 25, origin, &written));
+    assert(written == 80 * 25);
+    assert(SetConsoleCursorPosition(broker->backend->output, origin));
+    assert(SetConsoleCursorInfo(broker->backend->output, &cursor));
+    {
+        COORD size = {120, 60}, marker = {100, 28};
+        SMALL_RECT viewport = {0, 0, 119, 29};
+        assert(SetConsoleScreenBufferSize(broker->backend->output, size));
+        assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
+        assert(WriteConsoleOutputCharacterA(broker->backend->output, "wide history", 12, marker, &written));
+        assert(written == 12);
+    }
+    assert(lib_console_write_text(cooked, "history\r\nSoftPC> start\r\n", 24) == 0);
+    snapshot(&before);
+
+    /* Allocation failure happens in prepare, before any old reader/display changes. */
+    fail_allocate = 1;
+    assert(host_console_broker_replace(broker, cooked, raw, HOST_CONSOLE_RAW_EVENTS) == LIB_STATUS_IO_ERROR);
+    expect_display(&before);
+    assert(broker->current == cooked && !broker->broken);
+    /* Both switch failure and reader failure restore the old display. */
+    for (int failure = 0; failure < 3; ++failure) {
+        fail_select = failure == 0;
+        fail_reader = failure == 1;
+        fail_query = failure == 2;
+        assert(host_console_broker_replace(broker, cooked, raw, HOST_CONSOLE_RAW_EVENTS) != 0);
+        expect_display(&before);
+        assert(broker->current == cooked && !broker->broken);
+    }
+    frame.columns = 80; frame.rows = 25; frame.font_height = 16;
+    frame.cursor_row = 23; frame.cursor_column = 7;
+    frame.cursor_bottom = 15; /* intentionally hidden */
+    memset(frame.text, '#', sizeof(frame.text));
+    for (unsigned i = 0; i < 80 * 25; ++i) frame.attributes[i] = 0x1e;
+    frame.palette[1] = 0x123456;
+    for (int round = 0; round < 3; ++round) {
+        assert(host_console_broker_replace(broker, cooked, raw, HOST_CONSOLE_RAW_EVENTS) == 0);
+        assert(lib_console_write_text_frame(raw, &frame) == 0);
+        snapshot(&raw_display);
+        assert(raw_display.cells[0].Char.UnicodeChar == '#');
+        assert(!raw_display.cursor.bVisible);
+        if (round < 2) {
+            fail_select = round == 0;
+            fail_restore = round == 1;
+            assert(host_console_broker_replace(broker, raw, cooked, HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_IO_ERROR);
+            assert(broker->current == raw && !broker->broken);
+            expect_display(&raw_display);
+        }
+        assert(host_console_broker_replace(broker, raw, cooked, HOST_CONSOLE_COOKED_LINES) == 0);
+        expect_display(&before);
+    }
+    assert(lib_console_write_text(cooked, "ok\r\n\r\nSoftPC> ", 14) == 0);
+    snapshot(&after);
+    assert(after.info.dwCursorPosition.X == 8);
+    assert(after.info.dwCursorPosition.Y == before.info.dwCursorPosition.Y + 2);
+    for (unsigned x = 2; x < 80; ++x)
+        assert(after.cells[before.info.dwCursorPosition.Y * 120 + x].Char.UnicodeChar == ' ');
+    /* Same-mode binding does not clear text, move the cursor or switch screens. */
+    assert(host_console_broker_replace(broker, cooked, other, HOST_CONSOLE_COOKED_LINES) == 0);
+    expect_display(&after);
+    assert(host_console_broker_replace(broker, other, raw, HOST_CONSOLE_RAW_EVENTS) == 0);
+    assert(lib_console_write_text_frame(raw, &frame) == 0);
+    assert(host_console_broker_replace(broker, raw, other, HOST_CONSOLE_RAW_EVENTS) == 0);
+    snapshot(&raw_display);
+    assert(raw_display.cells[0].Char.UnicodeChar == '#');
+    /* Closing while raw is active must restore the stream buffer as well. */
+    assert(host_console_broker_destroy(broker) == 0);
+    expect_display(&after);
+    /* Initial raw creation has no preceding prepare/replace call. Its failed
+     * reader startup must restore the original screen and release ownership. */
+    fail_reader = 1;
+    broker = NULL;
+    assert(host_console_broker_create(&broker, raw, HOST_CONSOLE_RAW_EVENTS) == LIB_STATUS_NO_MEMORY);
+    assert(broker == NULL);
+    expect_display(&after);
+    assert(host_console_broker_create(&broker, raw, HOST_CONSOLE_RAW_EVENTS) == 0);
+    assert(host_console_broker_destroy(broker) == 0);
+    expect_display(&after);
+    lib_console_release(other); lib_console_release(raw); lib_console_release(cooked);
+    check_frame_extent(30, 30, 0);
+    check_frame_extent(80, 12, 0);
+    check_frame_extent(120, 60, 1);
+    assert(FreeConsole());
+    return 0;
+}

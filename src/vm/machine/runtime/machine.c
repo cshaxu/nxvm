@@ -102,104 +102,66 @@ static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
 static C_INT vm_machine_remove_fdd_direct(vm_machine *session,
     const C_CHAR *path);
 
-static lib_status vm_machine_status_as_lib(type_status status)
+static type_status vm_machine_deliver_key(vm_machine *session,
+    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
-    if (status == TYPE_STATUS_OK) return LIB_STATUS_OK;
-    if (status == TYPE_STATUS_INVALID_ARGUMENT) return LIB_STATUS_INVALID_ARGUMENT;
-    if (status == TYPE_STATUS_INVALID_STATE) return LIB_STATUS_INVALID_STATE;
-    if (status == TYPE_STATUS_UNSUPPORTED) return LIB_STATUS_UNSUPPORTED;
-    if (status == TYPE_STATUS_NO_MEMORY) return LIB_STATUS_NO_MEMORY;
-    return LIB_STATUS_IO_ERROR;
-}
+    type_status status = TYPE_STATUS_OK;
 
-static void vm_machine_report_removable_media(vm_machine *session,
-    const common_machine_removable_media *media, lib_status status)
-{
-    vm_machine_result result = {0};
-
-    if (session == STD_NULL || media == STD_NULL) return;
-    result.kind = VM_MACHINE_RESULT_REMOVABLE_MEDIA;
-    result.status = (type_status)status;
-    result.value.removable_media = *media;
-    vm_machine_publish_result(session, &result);
-}
-
-lib_status vm_machine_consume_request(
-    C_VOID *opaque, const common_machine_request *request)
-{
-    vm_machine *session = (vm_machine *)opaque;
-    lib_status status = LIB_STATUS_OK;
-
-    if (session == STD_NULL || !session->active || request == STD_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    if (request->kind == COMMON_MACHINE_REQUEST_PAUSE) {
-        vm_machine_control_request_pause(&session->control,
-            (vm_machine_pause_reason)request->pause_reason);
-        return LIB_STATUS_OK;
-    }
-    if (request->kind == COMMON_MACHINE_REQUEST_RESET) {
-        (C_VOID)vm_machine_control_reset(&session->control);
-        return LIB_STATUS_OK;
-    }
-    if (request->kind == COMMON_MACHINE_REQUEST_RESUME) {
-        vm_machine_control_continue(&session->control);
-        return LIB_STATUS_OK;
-    }
-    if (request->kind == COMMON_MACHINE_REQUEST_STEP) {
-        (C_VOID)vm_machine_control_step(&session->control);
-        return LIB_STATUS_OK;
-    }
-    if (request->kind == COMMON_MACHINE_REQUEST_STOP) {
-        vm_machine_control_stop(&session->control);
-        return LIB_STATUS_OK;
-    }
-    if (request->kind == COMMON_MACHINE_REQUEST_REMOVABLE_MEDIA) {
-        if (request->removable_media.kind != COMMON_MACHINE_REMOVABLE_MEDIA_FLOPPY ||
-            request->removable_media.slot >= VM_MACHINE_FLOPPY_SLOT_COUNT) {
-            status = LIB_STATUS_INVALID_ARGUMENT;
-        } else if (request->removable_media.present) {
-            status = vm_machine_insert_floppy_at(session,
-                request->removable_media.slot, request->removable_media.path) == 0 ?
-                LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
-        } else {
-            status = request->removable_media.slot == 0u &&
-                vm_machine_remove_fdd_direct(session, STD_NULL) == 0 ?
-                LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
-        }
-        vm_machine_report_removable_media(session, &request->removable_media, status);
-        return status;
-    }
-    if (request->kind != COMMON_MACHINE_REQUEST_INPUT) return LIB_STATUS_INVALID_ARGUMENT;
-    if (request->input.kind == COMMON_MACHINE_INPUT_KEY) {
+    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_ARGUMENT;
+    {
         vm_profile_default_keyboard_sequence sequence;
         type_unsigned_8 native_scan_set;
 
         if (core_machine_keyboard_get_native_scan_set(session->core_machine,
                 &native_scan_set) == TYPE_STATUS_OK &&
             vm_profile_default_keyboard_map_host_key_for_scan_set(
-                request->input.value.key.scan_code,
-                request->input.value.key.virtual_key,
-                request->input.value.key.pressed,
+                scan_code, virtual_key, pressed,
                 native_scan_set, &sequence) ==
             TYPE_STATUS_OK) {
-            status = vm_machine_status_as_lib(
-                core_machine_keyboard_receive_native_bytes(session->core_machine,
-                    sequence.bytes, sequence.count));
-        }
-    } else if (request->input.kind == COMMON_MACHINE_INPUT_RELATIVE_MOUSE) {
-        vm_profile_default_mouse_report report;
-
-        if (vm_profile_default_mouse_map_host_relative(
-                request->input.value.mouse.delta_x,
-                request->input.value.mouse.delta_y,
-                request->input.value.mouse.buttons, &report) ==
-            TYPE_STATUS_OK) {
-            status = vm_machine_status_as_lib(
-                core_machine_mouse_receive_relative(session->core_machine,
-                    report.delta_x, report.delta_y, report.buttons));
+            status = core_machine_keyboard_receive_native_bytes(session->core_machine,
+                sequence.bytes, sequence.count);
         }
     }
     return status;
+}
+
+static type_status vm_machine_deliver_mouse(vm_machine *session,
+    type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons)
+{
+    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_ARGUMENT;
+    {
+        vm_profile_default_mouse_report report;
+
+        if (vm_profile_default_mouse_map_host_relative(
+                delta_x, delta_y, buttons, &report) ==
+            TYPE_STATUS_OK) {
+            return core_machine_mouse_receive_relative(session->core_machine,
+                report.delta_x, report.delta_y, report.buttons);
+        }
+    }
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_machine_deliver_common_input(vm_machine *session,
+    const kvm_input_event *event)
+{
+    if (event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (event->type == KVM_EVENT_KEY) return vm_machine_deliver_key(session,
+        event->data.key.scan_code, (type_unsigned_16)event->data.key.key,
+        event->data.key.pressed != 0u);
+    if (event->type == KVM_EVENT_MOUSE) return vm_machine_deliver_mouse(session,
+        event->data.mouse.delta_x, event->data.mouse.delta_y,
+        event->data.mouse.buttons);
+    return TYPE_STATUS_UNSUPPORTED;
+}
+
+type_bool vm_machine_copy_common_frame(vm_machine *machine, kvm_frame *frame)
+{
+    if (machine == STD_NULL || frame == STD_NULL) return TYPE_FALSE;
+    (C_VOID)vm_machine_publish_display(machine, TYPE_FALSE);
+    if (!machine->latest_frame_valid) return TYPE_FALSE;
+    *frame = machine->latest_frame;
+    return TYPE_TRUE;
 }
 
 const C_CHAR *vm_machine_profile_name(vm_machine_profile_kind kind)
@@ -315,12 +277,6 @@ type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed)
     if (vm_machine_control_is_running(&session->control)) return TYPE_STATUS_INVALID_STATE;
     session->speed = speed;
     return TYPE_STATUS_OK;
-}
-
-type_status vm_machine_bind_run(vm_machine *session, type_unsigned_32 run_id)
-{
-    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
-    return (type_status)common_machine_bind_run(session->executor, run_id);
 }
 
 static type_status vm_machine_default_at_floppy_select(const vm_machine_config *config,
@@ -439,36 +395,23 @@ static C_INT vm_machine_remove_fdd_direct(vm_machine *session, const C_CHAR *pat
     return 0;
 }
 
-static C_INT vm_machine_request_fdd_change(vm_machine *session,
-    C_INT present, const C_CHAR *path)
+type_status vm_machine_set_common_media(vm_machine *session, const C_CHAR *path)
 {
-    common_machine_request request = {0};
-    lib_status status;
-
-    if (session == STD_NULL || !session->active ||
-        (present && (path == STD_NULL || path[0] == '\0')) ||
-        vm_machine_control_is_running(&session->control)) return -1;
-    request.kind = COMMON_MACHINE_REQUEST_REMOVABLE_MEDIA;
-    request.removable_media.kind = COMMON_MACHINE_REMOVABLE_MEDIA_FLOPPY;
-    request.removable_media.slot = 0u;
-    request.removable_media.present = present ? LIB_TRUE : LIB_FALSE;
-    if (present && !vm_machine_copy_path(request.removable_media.path,
-            sizeof(request.removable_media.path), path)) return -1;
-    status = common_machine_submit(session->executor, &request);
-    if (status != LIB_STATUS_OK) return -1;
-    /* A stopped machine has no executor task, so its composition boundary is
-     * the safe point.  A paused machine leaves the same request queued for
-     * its one executor to consume. */
-    if (session->execution_task == STD_NULL)
-        status = common_machine_observe_safe_point(session->executor);
-    return status == LIB_STATUS_OK ? 0 : -1;
+    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
+    if (path != STD_NULL && path[0] != '\0')
+        return vm_machine_insert_floppy_at(session, 0u, path) == 0 ?
+            TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+    return vm_machine_remove_fdd_direct(session, STD_NULL) == 0 ?
+        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
 C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path)
-{ return vm_machine_request_fdd_change(session, TYPE_TRUE, path); }
+{ return common_machine_set_removable_media(session == STD_NULL ? LIB_NULL :
+    session->executor, path) ? 0 : -1; }
 
 C_INT vm_machine_remove_fdd(vm_machine *session, const C_CHAR *path)
-{ (C_VOID)path; return vm_machine_request_fdd_change(session, TYPE_FALSE, STD_NULL); }
+{ (C_VOID)path; return common_machine_set_removable_media(session == STD_NULL ?
+    LIB_NULL : session->executor, LIB_NULL) ? 0 : -1; }
 static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
     const C_CHAR *path)
 {
@@ -1005,8 +948,7 @@ type_status vm_machine_reconfigure_memory(vm_machine *session,
 {
     if (session == STD_NULL ||
         session->model40_private ||
-        vm_machine_control_is_running(&session->control) ||
-        session->execution_task != STD_NULL) {
+        common_machine_state_get(session->executor) != COMMON_MACHINE_STOPPED) {
         return TYPE_STATUS_INVALID_STATE;
     }
     if (core_machine_reconfigure_memory(session->core_machine, memory_bytes) !=

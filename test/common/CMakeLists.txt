@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.23)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    project(shared_common_tests LANGUAGES C)
+    set(CMAKE_C_STANDARD 17)
+    set(CMAKE_C_STANDARD_REQUIRED ON)
+    set(CMAKE_C_EXTENSIONS OFF)
+    enable_testing()
+endif()
+get_filename_component(COMMON_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../src/common" ABSOLUTE)
+get_filename_component(LIB_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../src/lib" ABSOLUTE)
+if(NOT TARGET types)
+    add_subdirectory("${LIB_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/lib")
+endif()
+if(NOT TARGET common-session)
+    add_subdirectory("${COMMON_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/common")
+endif()
+
+function(common_test source)
+    get_filename_component(name "${source}" NAME)
+    add_executable(common-test-${name} ${source}_smoke.c)
+    target_link_libraries(common-test-${name} PRIVATE ${ARGN})
+    if(MSVC)
+        target_compile_options(common-test-${name} PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(common-test-${name} PRIVATE -UNDEBUG)
+    endif()
+    add_test(NAME common.${name} COMMAND common-test-${name})
+    set_tests_properties(common.${name} PROPERTIES LABELS "unit;common"
+        TIMEOUT 30 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+endfunction()
+
+common_test(sync common-session)
+common_test(presentation_plan common-session)
+common_test(reconciler common-session)
+common_test(control_state_matrix common-session)
+common_test(control_reconciler_integration common-session)
+common_test(input_queue_mouse_fifo common-machine)
+common_test(physical_key_identity common-session)
+if(WIN32)
+    # Existing native-thread fake verifies the generic machine/debug protocol.
+    common_test(common_machine common-machine common-debug host)
+endif()
+common_test(xasm32/xasm32 common-xasm32)
+common_test(xasm32/xasm32_contract common-xasm32)
+
+foreach(check IN ITEMS manifest corpus)
+    add_test(NAME common.${check} COMMAND "${CMAKE_COMMAND}"
+        "-DCOMMON_ROOT=${COMMON_ROOT}" -P "${COMMON_ROOT}/verify_${check}.cmake")
+endforeach()
+add_test(NAME common.verifier-negative COMMAND "${CMAKE_COMMAND}"
+    "-DCOMMON_ROOT=${COMMON_ROOT}"
+    "-DPROBE_ROOT=${CMAKE_CURRENT_BINARY_DIR}/verifier-probe"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_negative.cmake")
+add_test(NAME common.test-manifest COMMAND "${CMAKE_COMMAND}"
+    "-DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${COMMON_ROOT}/verify_manifest.cmake")

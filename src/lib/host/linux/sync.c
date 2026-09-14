@@ -5,6 +5,35 @@
 #include "lib/types/linux/sync.h"
 #include "lib/types/linux/clock.h"
 
+struct host_sync_mutex { lib_linux_pthread_mutex_t gate; };
+
+lib_status host_sync_mutex_create(host_sync_mutex **out_mutex)
+{
+    host_sync_mutex *mutex;
+    if (out_mutex == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_mutex = LIB_NULL;
+    mutex = lib_allocate(sizeof(*mutex));
+    if (mutex == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    if (lib_linux_pthread_mutex_init(&mutex->gate, LIB_NULL) != 0) {
+        lib_release(mutex);
+        return LIB_STATUS_IO_ERROR;
+    }
+    *out_mutex = mutex;
+    return LIB_STATUS_OK;
+}
+
+void host_sync_mutex_destroy(host_sync_mutex *mutex)
+{
+    if (mutex == LIB_NULL) return;
+    (void)lib_linux_pthread_mutex_destroy(&mutex->gate);
+    lib_release(mutex);
+}
+
+void host_sync_mutex_lock(host_sync_mutex *mutex)
+{ (void)lib_linux_pthread_mutex_lock(&mutex->gate); }
+void host_sync_mutex_unlock(host_sync_mutex *mutex)
+{ (void)lib_linux_pthread_mutex_unlock(&mutex->gate); }
+
 struct host_sync_event {
     lib_bool signaled;
     lib_bool manual_reset;

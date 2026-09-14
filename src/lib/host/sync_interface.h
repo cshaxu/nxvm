@@ -12,7 +12,16 @@ typedef enum host_sync_wait_result {
 } host_sync_wait_result;
 
 typedef struct host_sync_event host_sync_event;
+typedef struct host_sync_mutex host_sync_mutex;
 typedef struct host_sync_task host_sync_task;
+
+/* Blocking mutual exclusion. A live mutex is required for lock/unlock.
+ * Recursive locking is forbidden; only the owning thread may unlock.
+ * Destroy requires no owner or waiters; destroying NULL is harmless. */
+lib_status host_sync_mutex_create(host_sync_mutex **out_mutex);
+void host_sync_mutex_destroy(host_sync_mutex *mutex);
+void host_sync_mutex_lock(host_sync_mutex *mutex);
+void host_sync_mutex_unlock(host_sync_mutex *mutex);
 
 typedef void (*host_sync_task_entry)(void *context,
     const host_sync_task *task);

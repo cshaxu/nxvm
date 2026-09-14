@@ -1,708 +1,338 @@
 #include "common/session/session_interface.h"
 
-#include "lib/host/sync_interface.h"
+#include "common/session/control.h"
+#include "common/session/control_state.h"
+#include "common/ui/ui_interface.h"
 
-#define COMMON_SESSION_FACT_CAPACITY 64u
-#define COMMON_SESSION_PRESSED_CAPACITY 256u
-
-typedef struct common_session_pressed_key {
-    lib_u64 source_identity;
-    kvm_input_event event;
-} common_session_pressed_key;
+#include <stdlib.h>
+#include <string.h>
 
 struct common_session {
-    host_sync_event *ready;
-    lib_atomic_flag lock;
-    common_session_fact facts[COMMON_SESSION_FACT_CAPACITY];
-    lib_size first;
-    lib_size count;
-    lib_bool accepting;
-    lib_bool delivery_failed;
-    kvm_frame latest_frame;
-    lib_bool frame_ready;
-    lib_u32 latest_frame_run_id;
-    lib_u32 run_id;
+    common_session_queue *queue;
+    common_session_state state;
+    kvm_frame frame;
+    common_machine *machine;
+    common_session_command_provider command;
     common_ui *ui;
-    common_session_machine_state lifecycle;
-    common_session_target presentation_display;
-    lib_bool console_control;
-    lib_bool presentation_configured;
-    lib_bool presentation_hidden;
-    lib_bool presentation_frame_available;
-    lib_bool presentation_frame_graphics;
-    common_ui_surface_facts surface_facts;
-    lib_bool ui_action_in_flight;
-    common_ui_action_kind ui_action_in_flight_kind;
-    common_session_pressed_key pressed[COMMON_SESSION_PRESSED_CAPACITY];
-    lib_size pressed_count;
-    common_session_cli_provider cli_provider;
-    void *cli_provider_context;
-    common_session_cli_machine_observer cli_machine_observer;
-    void *cli_machine_observer_context;
-    common_session_lifecycle_sink lifecycle_sink;
-    void *lifecycle_sink_context;
 };
 
-static void common_session_lock(common_session *session)
+static common_ui_state common_session_ui_state(common_session_machine_state state)
 {
-    while (lib_atomic_flag_test_and_set_explicit(&session->lock,
-        LIB_MEMORY_ORDER_ACQUIRE)) { }
-}
-
-static void common_session_unlock(common_session *session)
-{
-    lib_atomic_flag_clear_explicit(&session->lock, LIB_MEMORY_ORDER_RELEASE);
-}
-
-static void common_session_plan_clear(common_session_plan *plan)
-{
-    if (plan != LIB_NULL) lib_memory_set(plan, 0, sizeof(*plan));
-}
-
-static void common_session_plan_action(common_session *session,
-    common_session_plan *plan, common_ui_action_kind kind)
-{
-    if (session == LIB_NULL || plan == LIB_NULL || session->ui_action_in_flight)
-        return;
-    plan->ui_action_ready = LIB_TRUE;
-    plan->ui_action.kind = kind;
-    session->ui_action_in_flight = LIB_TRUE;
-    session->ui_action_in_flight_kind = kind;
-}
-
-static void common_session_plan_surface(common_session *session,
-    common_session_plan *plan)
-{
-    common_ui_surface_facts facts;
-    lib_bool want_window;
-    lib_bool want_raw_console;
-
-    if (session == LIB_NULL || plan == LIB_NULL || session->ui_action_in_flight)
-        return;
-    facts = session->surface_facts;
-    want_window = LIB_FALSE;
-    want_raw_console = LIB_FALSE;
-    if (session->presentation_configured && !session->presentation_hidden &&
-        session->lifecycle != COMMON_SESSION_MACHINE_STOPPED &&
-        session->lifecycle != COMMON_SESSION_MACHINE_FAULT) {
-        if (session->lifecycle == COMMON_SESSION_MACHINE_PAUSED) {
-            want_window = session->presentation_display == COMMON_SESSION_TARGET_WINDOW ||
-                session->presentation_frame_graphics;
-        } else if (session->presentation_display == COMMON_SESSION_TARGET_WINDOW) {
-            want_window = LIB_TRUE;
-        } else if (session->presentation_frame_available) {
-            want_window = session->presentation_frame_graphics;
-            want_raw_console = !session->presentation_frame_graphics ||
-                !session->console_control;
-        }
-    }
-    if (want_raw_console) {
-        if (!facts.raw_console_exists)
-            common_session_plan_action(session, plan,
-                COMMON_UI_ACTION_CREATE_RAW_CONSOLE);
-        else if (!facts.raw_console_current)
-            common_session_plan_action(session, plan,
-                COMMON_UI_ACTION_BIND_RAW_CONSOLE);
-        if (plan->ui_action_ready) return;
-    } else {
-        if (facts.raw_console_current)
-            common_session_plan_action(session, plan,
-                COMMON_UI_ACTION_BIND_MONITOR_CONSOLE);
-        else if (facts.raw_console_exists)
-            common_session_plan_action(session, plan,
-                COMMON_UI_ACTION_DESTROY_RAW_CONSOLE);
-        if (plan->ui_action_ready) return;
-    }
-    if (want_window && !facts.window_exists) {
-        common_session_plan_action(session, plan, COMMON_UI_ACTION_CREATE_WINDOW);
-    } else if (!want_window && facts.window_exists) {
-        common_session_plan_action(session, plan, COMMON_UI_ACTION_DESTROY_WINDOW);
+    switch (state) {
+    case COMMON_SESSION_MACHINE_RUNNING: return COMMON_UI_STATE_RUNNING;
+    case COMMON_SESSION_MACHINE_PAUSED: return COMMON_UI_STATE_PAUSED;
+    case COMMON_SESSION_MACHINE_ERROR: return COMMON_UI_STATE_ERROR;
+    default: return COMMON_UI_STATE_STOPPED;
     }
 }
 
-lib_status common_session_create(common_session **out_session)
+static common_ui_action common_session_map_ui_action(common_session_ui_action action)
+{
+    switch (action) {
+    case COMMON_SESSION_UI_ACTION_CREATE_WINDOW: return COMMON_UI_ACTION_CREATE_WINDOW;
+    case COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE:
+        return COMMON_UI_ACTION_CREATE_VM_CONSOLE;
+    case COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE: return COMMON_UI_ACTION_BIND_VM_CONSOLE;
+    case COMMON_SESSION_UI_ACTION_BIND_MONITOR: return COMMON_UI_ACTION_BIND_MONITOR;
+    case COMMON_SESSION_UI_ACTION_DESTROY_VM_CONSOLE:
+        return COMMON_UI_ACTION_DESTROY_VM_CONSOLE;
+    case COMMON_SESSION_UI_ACTION_DESTROY_WINDOW: return COMMON_UI_ACTION_DESTROY_WINDOW;
+    default: return COMMON_UI_ACTION_NONE;
+    }
+}
+
+static void common_session_clear_result(common_session_command_result *result)
+{
+    if (result != NULL) *result = (common_session_command_result) { 0 };
+}
+
+static int common_session_write_result(common_session *session,
+    const common_session_command_result *result)
+{
+    if (session == NULL || session->ui == NULL || result == NULL) return 0;
+    return result->text[0] == '\0' ||
+        common_ui_write_monitor(session->ui, result->text) == LIB_STATUS_OK;
+}
+
+static int common_session_deliver_machine_input(void *context,
+    const kvm_input_event *event)
+{
+    return common_machine_enqueue_input((common_machine *)context, event) != 0;
+}
+
+static int common_session_dispatch_request(common_session *session,
+    common_session_request request)
+{
+    if (request == COMMON_SESSION_REQUEST_NONE) return 1;
+    if (session == NULL || session->machine == NULL) return 0;
+    switch (request) {
+    case COMMON_SESSION_REQUEST_START: return common_machine_start(session->machine);
+    case COMMON_SESSION_REQUEST_RESUME: return common_machine_resume(session->machine);
+    case COMMON_SESSION_REQUEST_PAUSE: return common_machine_pause(session->machine);
+    case COMMON_SESSION_REQUEST_STOP: return common_machine_stop(session->machine);
+    case COMMON_SESSION_REQUEST_RESET: return common_machine_reset(session->machine);
+    default: return 0;
+    }
+}
+
+static int common_session_arm_if_ready(common_session *session)
+{
+    common_session_command_result result;
+    if (session == NULL || session->command.note_monitor_current == NULL) return 0;
+    common_session_clear_result(&result);
+    session->command.note_monitor_current(session->command.context,
+        common_session_state_monitor_is_current(&session->state), &result);
+    if (result.request != COMMON_SESSION_REQUEST_NONE)
+        return common_session_write_result(session, &result) &&
+            common_session_dispatch_request(session, result.request);
+    if (!result.arm_prompt) return 1;
+    return common_session_write_result(session, &result) &&
+        common_ui_write_monitor(session->ui, result.prompt) == LIB_STATUS_OK &&
+        common_ui_request_monitor_line(session->ui) == LIB_STATUS_OK;
+}
+
+static int common_session_drive(common_session *session)
+{
+    common_session_ui_action action;
+    lib_bool console_status_surface;
+    if (session == NULL || session->ui == NULL || session->machine == NULL)
+        return 0;
+    common_ui_set_run_generation(session->ui,
+        common_machine_run_generation(session->machine));
+    action = common_session_state_take_action(&session->state);
+    if (action != COMMON_SESSION_UI_ACTION_NONE &&
+        common_ui_apply_action(session->ui, common_session_map_ui_action(action),
+            common_session_ui_state(session->state.presentation.runtime_actual)) != LIB_STATUS_OK)
+        return 0;
+    if (session->state.observed_frame_sequence == 0u ||
+        !common_session_state_frame_targets_ready(&session->state)) return 1;
+    console_status_surface =
+        session->state.presentation.display == COMMON_SESSION_DISPLAY_CONSOLE &&
+        !session->state.presentation.console_control && session->frame.graphics != 0u;
+    return common_ui_publish_frame(session->ui, &session->frame,
+        session->state.presentation.window_actual,
+        session->state.presentation.vm_console_actual &&
+            session->state.presentation.current_console_actual == COMMON_SESSION_CONSOLE_VM,
+        console_status_surface) == LIB_STATUS_OK;
+}
+
+static int common_session_handle_kvm_input(common_session *session,
+    const kvm_input_event *event)
+{
+    common_session_command_result result;
+    common_session_machine_state state;
+    if (session == NULL || event == NULL) return 0;
+    state = session->state.monitor_actual;
+    if (event->type == KVM_EVENT_WINDOW_CLOSE) {
+        if (state == COMMON_SESSION_MACHINE_RUNNING &&
+            (session->command.begin_external == NULL ||
+             !session->command.begin_external(session->command.context, state,
+                 COMMON_SESSION_REQUEST_PAUSE))) return 0;
+        common_session_state_note_window_close(&session->state);
+        return state != COMMON_SESSION_MACHINE_RUNNING ||
+            common_session_dispatch_request(session, COMMON_SESSION_REQUEST_PAUSE);
+    }
+    if (event->type == KVM_EVENT_HOTKEY) {
+        if (session->command.handle_hotkey == NULL) return 0;
+        common_session_clear_result(&result);
+        if (!session->command.handle_hotkey(session->command.context, state,
+                event->data.hotkey.identifier, &result)) return 0;
+        return (!result.release_window_mouse ||
+                common_ui_release_window_mouse(session->ui) == LIB_STATUS_OK) &&
+            common_session_write_result(session, &result) &&
+            common_session_dispatch_request(session, result.request);
+    }
+    return common_session_dispatch_input(session->queue, event, state,
+        common_session_deliver_machine_input, session->machine);
+}
+
+static int common_session_process_completed(common_session *session,
+    const common_session_event *event)
+{
+    common_session_command_result result;
+    lib_bool broker_monitor_completed = LIB_FALSE;
+    if (session == NULL || event == NULL) return 0;
+    if (event->run_generation != 0u &&
+        event->run_generation != common_machine_run_generation(session->machine))
+        return 1;
+    common_session_clear_result(&result);
+    if (event->kind == COMMON_SESSION_EVENT_RUNTIME_COMPLETED) {
+        if (session->command.note_runtime == NULL) return 0;
+        session->command.note_runtime(session->command.context,
+            session->state.monitor_actual, event->value.runtime_state, &result);
+        common_session_state_note_runtime(&session->state, event->value.runtime_state);
+    } else if (event->kind == COMMON_SESSION_EVENT_FRAME_COMPLETED) {
+        lib_u32 frame_run;
+        lib_u32 sequence = event->value.frame.sequence;
+        if (sequence > session->state.observed_frame_sequence &&
+            common_machine_copy_published_frame(session->machine, &session->frame,
+                &frame_run) && session->frame.sequence == sequence &&
+            frame_run == event->run_generation)
+            (void)common_session_state_note_frame(&session->state, sequence,
+                event->value.frame.graphics);
+    } else if (event->kind == COMMON_SESSION_EVENT_COMPONENT_COMPLETED) {
+        if (event->value.component.component == COMMON_SESSION_EVENT_COMPONENT_WINDOW)
+            common_session_state_note_window(&session->state,
+                event->value.component.exists);
+        else common_session_state_note_vm_console(&session->state,
+            event->value.component.exists);
+    } else if (event->kind == COMMON_SESSION_EVENT_BROKER_COMPLETED) {
+        common_session_state_note_current_console(&session->state,
+            event->value.broker_vm_console_current);
+        broker_monitor_completed = !event->value.broker_vm_console_current;
+    } else return 1;
+    /* Runtime wording is held by the injected command provider until the
+     * monitor is Current.  A raw Console must never receive monitor status
+     * text merely because its VM completion arrived first. */
+    if (!common_session_drive(session)) return 0;
+    if ((event->kind == COMMON_SESSION_EVENT_RUNTIME_COMPLETED ||
+         event->kind == COMMON_SESSION_EVENT_BROKER_COMPLETED) &&
+        (session->state.presentation.runtime_actual != COMMON_SESSION_MACHINE_RUNNING ||
+         common_session_state_frame_targets_ready(&session->state)) &&
+        common_ui_set_state(session->ui,
+            common_session_ui_state(session->state.presentation.runtime_actual)) != LIB_STATUS_OK)
+        return 0;
+    if (broker_monitor_completed && common_session_state_monitor_is_current(&session->state) &&
+        session->command.note_broker != NULL)
+        session->command.note_broker(session->command.context,
+            session->state.monitor_actual, LIB_FALSE,
+            common_session_state_monitor_is_running_graphics_surface(&session->state));
+    return common_session_arm_if_ready(session);
+}
+
+lib_status common_session_create(common_session **out_session,
+    const common_session_options *options)
 {
     common_session *session;
-
-    if (out_session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_session = LIB_NULL;
-    session = lib_allocate_zero(1u, sizeof(*session));
-    if (session == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    session->lock = (lib_atomic_flag)LIB_ATOMIC_FLAG_INITIALIZER;
-    lib_atomic_flag_clear_explicit(&session->lock, LIB_MEMORY_ORDER_RELEASE);
-    if (host_sync_event_create(&session->ready) != LIB_STATUS_OK) {
-        lib_release(session);
+    if (out_session == NULL || options == NULL || options->machine == NULL ||
+        options->command.open == NULL ||
+        options->command.submit_line == NULL || options->command.note_runtime == NULL ||
+        options->command.note_monitor_current == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_session = NULL;
+    session = calloc(1u, sizeof(*session));
+    if (session == NULL) return LIB_STATUS_NO_MEMORY;
+    if (!common_session_queue_create(&session->queue)) {
+        free(session);
         return LIB_STATUS_NO_MEMORY;
     }
-    session->accepting = LIB_TRUE;
-    session->lifecycle = COMMON_SESSION_MACHINE_STOPPED;
+    session->machine = options->machine;
+    session->command = options->command;
+    common_session_state_initialize(&session->state, options->display,
+        options->console_control);
     *out_session = session;
     return LIB_STATUS_OK;
 }
 
-void common_session_destroy(common_session *session)
-{
-    if (session == LIB_NULL) return;
-    host_sync_event_destroy(session->ready);
-    lib_release(session);
-}
-
-void common_session_close(common_session *session)
-{
-    if (session == LIB_NULL) return;
-    common_session_lock(session);
-    session->accepting = LIB_FALSE;
-    host_sync_event_signal(session->ready);
-    common_session_unlock(session);
-}
-
 lib_status common_session_bind_ui(common_session *session, common_ui *ui)
 {
-    if (session == LIB_NULL || ui == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    if (!session->accepting || session->ui != LIB_NULL) {
-        common_session_unlock(session);
-        return LIB_STATUS_INVALID_STATE;
-    }
+    if (session == NULL || ui == NULL || session->ui != NULL) return LIB_STATUS_INVALID_ARGUMENT;
     session->ui = ui;
-    common_session_unlock(session);
     return LIB_STATUS_OK;
 }
 
-lib_status common_session_request_monitor_line(common_session *session)
+lib_status common_session_destroy(common_session *session)
 {
-    return session == LIB_NULL || session->ui == LIB_NULL ? LIB_STATUS_INVALID_STATE :
-        common_ui_request_console_line(session->ui);
-}
-
-lib_status common_session_write_monitor(common_session *session, const char *text)
-{
-    return session == LIB_NULL || session->ui == LIB_NULL ? LIB_STATUS_INVALID_STATE :
-        common_ui_write_console(session->ui, text);
-}
-
-lib_status common_session_set_presentation_policy(common_session *session,
-    common_session_target display, lib_bool console_control)
-{
-    if (session == LIB_NULL || display == COMMON_SESSION_TARGET_NONE ||
-        display > COMMON_SESSION_TARGET_WINDOW ||
-        (console_control != LIB_FALSE && console_control != LIB_TRUE))
-        return LIB_STATUS_INVALID_ARGUMENT;
-    if (session->lifecycle != COMMON_SESSION_MACHINE_STOPPED)
-        return LIB_STATUS_INVALID_STATE;
-    session->presentation_display = display;
-    session->console_control = console_control;
-    session->presentation_configured = LIB_TRUE;
-    session->presentation_hidden = LIB_FALSE;
-    session->presentation_frame_available = LIB_FALSE;
-    session->presentation_frame_graphics = LIB_FALSE;
+    if (session == NULL) return LIB_STATUS_OK;
+    common_session_queue_destroy(session->queue);
+    free(session);
     return LIB_STATUS_OK;
 }
 
-lib_status common_session_hide_presentation(common_session *session)
+int common_session_enqueue_ui_event(void *context, const common_ui_event *event)
 {
-    if (session == LIB_NULL || !session->presentation_configured)
-        return LIB_STATUS_INVALID_STATE;
-    session->presentation_hidden = LIB_TRUE;
-    return LIB_STATUS_OK;
-}
-
-lib_status common_session_reconcile(common_session *session,
-    common_session_plan *out_plan)
-{
-    if (session == LIB_NULL || out_plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_plan_clear(out_plan);
-    common_session_plan_surface(session, out_plan);
-    return LIB_STATUS_OK;
-}
-
-lib_status common_session_set_cli_provider(common_session *session,
-    common_session_cli_provider provider, void *context)
-{
-    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    if (!session->accepting) {
-        common_session_unlock(session);
-        return LIB_STATUS_INVALID_STATE;
+    common_session *session = (common_session *)context;
+    if (session == NULL || event == NULL) return 0;
+    switch (event->kind) {
+    case COMMON_UI_EVENT_KVM_INPUT:
+        return common_session_queue_push_kvm_for_run(session->queue, &event->value.kvm,
+            event->run_generation);
+    case COMMON_UI_EVENT_MONITOR_LINE:
+        return common_session_queue_push_monitor_line(session->queue, &event->value.line,
+            event->monitor_line_rejected);
+    case COMMON_UI_EVENT_COMPONENT_COMPLETED:
+        return common_session_queue_push_component_completed(session->queue,
+            event->value.component.component == COMMON_UI_COMPONENT_WINDOW ?
+                COMMON_SESSION_EVENT_COMPONENT_WINDOW :
+                COMMON_SESSION_EVENT_COMPONENT_VM_CONSOLE,
+            event->value.component.exists, event->run_generation);
+    case COMMON_UI_EVENT_BROKER_COMPLETED:
+        return common_session_queue_push_broker_completed(session->queue,
+            event->value.broker_vm_console_current, event->run_generation);
+    case COMMON_UI_EVENT_KVM_DELIVERY_FAILED:
+        return common_session_queue_push_kvm_delivery_failed(session->queue,
+            event->value.delivery_failure.source_identity,
+            event->value.delivery_failure.status, event->run_generation);
+    case COMMON_UI_EVENT_CONSOLE_FAILED:
+        return common_session_queue_push_console_failed(session->queue);
     }
-    session->cli_provider = provider;
-    session->cli_provider_context = context;
-    common_session_unlock(session);
-    return LIB_STATUS_OK;
+    return 0;
 }
 
-lib_status common_session_set_cli_machine_observer(common_session *session,
-    common_session_cli_machine_observer observer, void *context)
+int common_session_enqueue_runtime_completed(common_session *session,
+    common_session_machine_state state, lib_u32 run_generation)
 {
-    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    if (!session->accepting) {
-        common_session_unlock(session);
-        return LIB_STATUS_INVALID_STATE;
-    }
-    session->cli_machine_observer = observer;
-    session->cli_machine_observer_context = context;
-    common_session_unlock(session);
-    return LIB_STATUS_OK;
+    return session != NULL && common_session_queue_push_runtime_completed(session->queue,
+        state, run_generation);
 }
 
-lib_bool common_session_has_cli_provider(const common_session *session)
+int common_session_enqueue_frame_completed(common_session *session,
+    lib_u32 sequence, lib_bool graphics, lib_u32 run_generation)
 {
-    return session != LIB_NULL && session->cli_provider != LIB_NULL;
+    return session != NULL && common_session_queue_push_frame_completed(session->queue,
+        sequence, graphics, run_generation);
 }
 
-lib_status common_session_set_lifecycle_sink(common_session *session,
-    common_session_lifecycle_sink sink, void *context)
+int common_session_run(common_session *session)
 {
-    if (session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    if (!session->accepting) {
-        common_session_unlock(session);
-        return LIB_STATUS_INVALID_STATE;
-    }
-    session->lifecycle_sink = sink;
-    session->lifecycle_sink_context = context;
-    common_session_unlock(session);
-    return LIB_STATUS_OK;
-}
-
-lib_status common_session_request_lifecycle(common_session *session,
-    common_session_lifecycle_request_kind request)
-{
-    common_session_lifecycle_sink sink;
-    void *context;
-
-    if (session == LIB_NULL || request == COMMON_SESSION_LIFECYCLE_NONE ||
-        request > COMMON_SESSION_LIFECYCLE_STOP) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    sink = session->lifecycle_sink;
-    context = session->lifecycle_sink_context;
-    common_session_unlock(session);
-    return sink == LIB_NULL ? LIB_STATUS_INVALID_STATE : sink(context, request);
-}
-
-lib_u32 common_session_begin_run(common_session *session,
-    common_session_plan *out_plan)
-{
-    if (session == LIB_NULL || out_plan == LIB_NULL || !session->presentation_configured)
-        return 0u;
-    common_session_plan_clear(out_plan);
-    common_session_lock(session);
-    if (session->run_id == UINT32_MAX) {
-        common_session_unlock(session);
-        return 0u;
-    }
-    ++session->run_id;
-    session->presentation_hidden = LIB_FALSE;
-    session->presentation_frame_available = LIB_FALSE;
-    session->presentation_frame_graphics = LIB_FALSE;
-    common_session_plan_surface(session, out_plan);
-    common_session_unlock(session);
-    return session->run_id;
-}
-
-lib_bool common_session_is_running(const common_session *session)
-{
-    return session != LIB_NULL && session->lifecycle == COMMON_SESSION_MACHINE_RUNNING;
-}
-
-static lib_status common_session_publish(common_session *session,
-    const common_session_fact *fact)
-{
-    lib_size index;
-
-    if (session == LIB_NULL || fact == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    if (!session->accepting) {
-        common_session_unlock(session);
-        return LIB_STATUS_INVALID_STATE;
-    }
-    if (session->count == COMMON_SESSION_FACT_CAPACITY) {
-        session->delivery_failed = LIB_TRUE;
-        host_sync_event_signal(session->ready);
-        common_session_unlock(session);
-        return LIB_STATUS_LIMIT_EXCEEDED;
-    }
-    index = (session->first + session->count) % COMMON_SESSION_FACT_CAPACITY;
-    session->facts[index] = *fact;
-    ++session->count;
-    host_sync_event_signal(session->ready);
-    common_session_unlock(session);
-    return LIB_STATUS_OK;
-}
-
-lib_status common_session_publish_console_line(void *context, const char *line)
-{
-    common_session_fact fact = {0};
-    lib_size bytes;
-
-    if (context == LIB_NULL || line == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    bytes = lib_text_length(line);
-    if (bytes >= sizeof(fact.value.line)) return LIB_STATUS_LIMIT_EXCEEDED;
-    fact.kind = COMMON_SESSION_FACT_CONSOLE_LINE;
-    lib_memory_copy(fact.value.line, line, bytes + 1u);
-    return common_session_publish((common_session *)context, &fact);
-}
-
-lib_status common_session_publish_monitor_text(common_session *session,
-    const char *text)
-{
-    common_session_fact fact = {0};
-    lib_size bytes;
-
-    if (session == LIB_NULL || text == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    bytes = lib_text_length(text);
-    if (bytes >= sizeof(fact.value.line)) return LIB_STATUS_LIMIT_EXCEEDED;
-    fact.kind = COMMON_SESSION_FACT_MONITOR_TEXT;
-    lib_memory_copy(fact.value.line, text, bytes + 1u);
-    return common_session_publish(session, &fact);
-}
-
-lib_status common_session_publish_ui_input(void *context,
-    const kvm_input_event *event)
-{
-    common_session_fact fact = {0};
-    common_session *session = context;
-
-    if (context == LIB_NULL || event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    fact.kind = COMMON_SESSION_FACT_UI_INPUT;
-    fact.value.input = *event;
-    common_session_lock(session);
-    fact.run_id = session->run_id;
-    common_session_unlock(session);
-    return common_session_publish(session, &fact);
-}
-
-lib_status common_session_publish_ui_delivery_failed(common_session *session,
-    lib_u64 source_identity, lib_status status)
-{
-    common_session_fact fact = {0};
-
-    if (session == LIB_NULL || status == LIB_STATUS_OK)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    fact.kind = COMMON_SESSION_FACT_UI_DELIVERY_FAILED;
-    fact.run_id = session->run_id;
-    fact.value.ui_delivery_failure.source_identity = source_identity;
-    fact.value.ui_delivery_failure.status = status;
-    common_session_unlock(session);
-    return common_session_publish(session, &fact);
-}
-
-lib_status common_session_publish_machine(common_session *session,
-    common_session_machine_state state, lib_status status)
-{
-    common_session_fact fact = {0};
-
-    if (session == LIB_NULL || state > COMMON_SESSION_MACHINE_FAULT)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    fact.kind = COMMON_SESSION_FACT_MACHINE;
-    fact.run_id = session->run_id;
-    fact.value.machine.state = state;
-    fact.value.machine.status = status;
-    common_session_unlock(session);
-    return common_session_publish(session, &fact);
-}
-
-lib_status common_session_publish_ui_completion(common_session *session,
-    lib_status status, const common_ui_completion *completion)
-{
-    common_session_fact fact = {0};
-
-    if (session == LIB_NULL || completion == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    fact.kind = COMMON_SESSION_FACT_UI_COMPLETION;
-    fact.run_id = session->run_id;
-    fact.value.ui_completion.status = status;
-    fact.value.ui_completion.completion = *completion;
-    common_session_unlock(session);
-    return common_session_publish(session, &fact);
-}
-
-lib_status common_session_publish_frame(common_session *session,
-    const kvm_frame *frame)
-{
-    common_session_fact fact = {0};
-
-    if (session == LIB_NULL || frame == LIB_NULL || !kvm_frame_is_valid(frame))
-        return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_lock(session);
-    if (!session->accepting) {
-        common_session_unlock(session);
-        return LIB_STATUS_INVALID_STATE;
-    }
-    session->latest_frame = *frame;
-    session->latest_frame_run_id = session->run_id;
-    if (!session->frame_ready) {
-        fact.kind = COMMON_SESSION_FACT_FRAME;
-        fact.run_id = session->run_id;
-        if (session->count == COMMON_SESSION_FACT_CAPACITY) {
-            session->delivery_failed = LIB_TRUE;
-            common_session_unlock(session);
-            return LIB_STATUS_LIMIT_EXCEEDED;
-        }
-        session->facts[(session->first + session->count) % COMMON_SESSION_FACT_CAPACITY] = fact;
-        ++session->count;
-    }
-    session->frame_ready = LIB_TRUE;
-    host_sync_event_signal(session->ready);
-    common_session_unlock(session);
-    return LIB_STATUS_OK;
-}
-
-lib_status common_session_take(common_session *session,
-    common_session_fact *out_fact, kvm_frame *out_frame,
-    lib_u32 timeout_milliseconds)
-{
-    host_sync_wait_result wait;
-    lib_size index;
-
-    if (session == LIB_NULL || out_fact == LIB_NULL || out_frame == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
+    common_session_command_result result;
+    char line[COMMON_SESSION_TEXT_CAPACITY];
+    if (session == NULL || session->ui == NULL) return 0;
+    common_session_clear_result(&result);
+    session->command.open(session->command.context, &result);
+    if (!common_session_write_result(session, &result) || !common_session_arm_if_ready(session))
+        return 0;
     for (;;) {
-        common_session_lock(session);
-        if (session->delivery_failed) {
-            common_session_unlock(session);
-            return LIB_STATUS_LIMIT_EXCEEDED;
+        common_session_event event;
+        if (!common_session_queue_take(session->queue, &event, 100u)) continue;
+        if (event.kind == COMMON_SESSION_EVENT_KVM_INPUT) {
+            if (!common_session_accept_kvm_event(&event,
+                    common_machine_run_generation(session->machine),
+                    session->state.monitor_actual)) continue;
+            if (!common_session_handle_kvm_input(session, &event.value.kvm) ||
+                !common_session_drive(session) || !common_session_arm_if_ready(session)) return 0;
+            continue;
         }
-        if (session->count != 0u) {
-            index = session->first;
-            *out_fact = session->facts[index];
-            session->first = (session->first + 1u) % COMMON_SESSION_FACT_CAPACITY;
-            --session->count;
-            if (out_fact->kind == COMMON_SESSION_FACT_FRAME) {
-                if (!session->frame_ready || out_fact->run_id != session->run_id ||
-                    session->latest_frame_run_id != session->run_id) {
-                    common_session_unlock(session);
-                    continue;
-                }
-                *out_frame = session->latest_frame;
-                session->frame_ready = LIB_FALSE;
+        if (event.kind == COMMON_SESSION_EVENT_MONITOR_LINE) {
+            common_session_clear_result(&result);
+            if (event.monitor_line_rejected) {
+                if (session->command.reject_line == NULL) return 0;
+                session->command.reject_line(session->command.context, &result);
             } else {
-                lib_memory_set(out_frame, 0, sizeof(*out_frame));
+                if (event.value.line.length >= sizeof(line)) return 0;
+                memcpy(line, event.value.line.text, event.value.line.length);
+                line[event.value.line.length] = '\0';
+                session->command.submit_line(session->command.context,
+                    session->state.monitor_actual, line, &result);
             }
-            if (session->count == 0u && !session->frame_ready)
-                host_sync_event_reset(session->ready);
-            common_session_unlock(session);
-            return LIB_STATUS_OK;
-        }
-        if (!session->accepting) {
-            common_session_unlock(session);
-            return LIB_STATUS_INVALID_STATE;
-        }
-        host_sync_event_reset(session->ready);
-        common_session_unlock(session);
-        wait = host_sync_event_wait(session->ready, timeout_milliseconds);
-        if (wait == HOST_SYNC_WAIT_TIMED_OUT) return LIB_STATUS_INVALID_STATE;
-        if (wait != HOST_SYNC_WAIT_SIGNALED) return LIB_STATUS_INVALID_STATE;
-    }
-}
-
-lib_status common_session_reduce_fact(common_session *session,
-    const common_session_fact *fact, const kvm_frame *frame,
-    common_session_plan *out_plan)
-{
-    common_session_cli_provider provider;
-    common_session_cli_machine_observer machine_observer;
-    common_session_lifecycle_sink lifecycle_sink;
-    common_session_cli_result cli_result;
-    void *provider_context;
-    void *machine_observer_context;
-    lib_status status;
-
-    if (session == LIB_NULL || fact == LIB_NULL || out_plan == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    common_session_plan_clear(out_plan);
-    if (fact->run_id != 0u && fact->run_id != session->run_id)
-        return LIB_STATUS_INVALID_STATE;
-    if (fact->kind == COMMON_SESSION_FACT_FRAME) {
-        if (frame == LIB_NULL || !kvm_frame_is_valid(frame)) return LIB_STATUS_INVALID_ARGUMENT;
-        session->presentation_frame_available = LIB_TRUE;
-        session->presentation_frame_graphics = frame->graphics != LIB_FALSE;
-        out_plan->frame_ready = LIB_TRUE;
-        out_plan->frame = *frame;
-        common_session_plan_surface(session, out_plan);
-        return LIB_STATUS_OK;
-    }
-    if (fact->kind == COMMON_SESSION_FACT_UI_COMPLETION) {
-        if (!session->ui_action_in_flight ||
-            fact->value.ui_completion.completion.action !=
-                session->ui_action_in_flight_kind) return LIB_STATUS_INVALID_STATE;
-        session->ui_action_in_flight = LIB_FALSE;
-        if (fact->value.ui_completion.status != LIB_STATUS_OK) {
-            out_plan->ui_failure = LIB_TRUE;
-            out_plan->ui_failure_status = fact->value.ui_completion.status;
-            return LIB_STATUS_OK;
-        }
-        session->surface_facts = fact->value.ui_completion.completion.facts;
-        common_session_plan_surface(session, out_plan);
-        return LIB_STATUS_OK;
-    }
-    if (fact->kind == COMMON_SESSION_FACT_UI_DELIVERY_FAILED) {
-        out_plan->ui_failure = LIB_TRUE;
-        out_plan->ui_failure_status = fact->value.ui_delivery_failure.status;
-        return LIB_STATUS_OK;
-    }
-    if (fact->kind == COMMON_SESSION_FACT_MONITOR_TEXT) {
-        lib_memory_copy(out_plan->console_text, fact->value.line,
-            lib_text_length(fact->value.line) + 1u);
-        return LIB_STATUS_OK;
-    }
-    if (fact->kind == COMMON_SESSION_FACT_CONSOLE_LINE) {
-        common_session_lock(session);
-        provider = session->cli_provider;
-        provider_context = session->cli_provider_context;
-        lifecycle_sink = session->lifecycle_sink;
-        common_session_unlock(session);
-        if (provider == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-        lib_memory_set(&cli_result, 0, sizeof(cli_result));
-        status = provider(provider_context, fact->value.line, &cli_result);
-        if (status != LIB_STATUS_OK) return status;
-        lib_memory_copy(out_plan->console_text, cli_result.text,
-            sizeof(out_plan->console_text));
-        out_plan->console_prompt_ready = cli_result.prompt_ready;
-        if (cli_result.prompt_ready) lib_memory_copy(out_plan->console_prompt,
-            cli_result.prompt, sizeof(out_plan->console_prompt));
-        if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
-            if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-            status = common_session_request_lifecycle(session,
-                cli_result.lifecycle_request);
-            if (status != LIB_STATUS_OK) return status;
-        }
-        if (!cli_result.keep_active) {
-            common_session_lock(session);
-            if (session->cli_provider == provider &&
-                session->cli_provider_context == provider_context) {
-                session->cli_provider = LIB_NULL;
-                session->cli_provider_context = LIB_NULL;
-                session->cli_machine_observer = LIB_NULL;
-                session->cli_machine_observer_context = LIB_NULL;
+            if (result.exit_requested) {
+                (void)common_session_dispatch_request(session, COMMON_SESSION_REQUEST_STOP);
+                return 1;
             }
-            common_session_unlock(session);
+            if (!common_session_write_result(session, &result) ||
+                !common_session_dispatch_request(session, result.request) ||
+                !common_session_drive(session) || !common_session_arm_if_ready(session)) return 0;
+            continue;
         }
-        return LIB_STATUS_OK;
-    }
-    if (fact->kind != COMMON_SESSION_FACT_MACHINE) return LIB_STATUS_OK;
-    switch (fact->value.machine.state) {
-    case COMMON_SESSION_MACHINE_RUNNING:
-        out_plan->notice = session->lifecycle == COMMON_SESSION_MACHINE_PAUSED ?
-            COMMON_SESSION_NOTICE_RESUMED : COMMON_SESSION_NOTICE_STARTED;
-        out_plan->mouse_capturable_changed = LIB_TRUE;
-        out_plan->mouse_capturable = LIB_TRUE;
-        break;
-    case COMMON_SESSION_MACHINE_PAUSED:
-        out_plan->notice = COMMON_SESSION_NOTICE_PAUSED;
-        out_plan->mouse_capturable_changed = LIB_TRUE;
-        out_plan->mouse_capturable = LIB_FALSE;
-        out_plan->release_mouse = LIB_TRUE;
-        break;
-    case COMMON_SESSION_MACHINE_RESET:
-        out_plan->notice = COMMON_SESSION_NOTICE_RESET;
-        break;
-    case COMMON_SESSION_MACHINE_STOPPED:
-    case COMMON_SESSION_MACHINE_FAULT:
-        out_plan->notice = COMMON_SESSION_NOTICE_STOPPED;
-        out_plan->mouse_capturable_changed = LIB_TRUE;
-        out_plan->mouse_capturable = LIB_FALSE;
-        out_plan->release_mouse = LIB_TRUE;
-        break;
-    default:
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    session->lifecycle = fact->value.machine.state;
-    common_session_lock(session);
-    machine_observer = session->cli_machine_observer;
-    machine_observer_context = session->cli_machine_observer_context;
-    lifecycle_sink = session->lifecycle_sink;
-    common_session_unlock(session);
-    if (machine_observer != LIB_NULL) {
-        lib_memory_set(&cli_result, 0, sizeof(cli_result));
-        status = machine_observer(machine_observer_context,
-            fact->value.machine.state, fact->value.machine.status, &cli_result);
-        if (status != LIB_STATUS_OK) return status;
-        lib_memory_copy(out_plan->console_text, cli_result.text,
-            sizeof(out_plan->console_text));
-        out_plan->console_prompt_ready = cli_result.prompt_ready;
-        if (cli_result.prompt_ready) lib_memory_copy(out_plan->console_prompt,
-            cli_result.prompt, sizeof(out_plan->console_prompt));
-        if (cli_result.lifecycle_request != COMMON_SESSION_LIFECYCLE_NONE) {
-            if (lifecycle_sink == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-            return common_session_request_lifecycle(session,
-                cli_result.lifecycle_request);
+        if (event.kind == COMMON_SESSION_EVENT_CONSOLE_FAILED ||
+            event.kind == COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED ||
+            event.kind == COMMON_SESSION_EVENT_QUEUE_DELIVERY_FAILED) {
+            const char *text = event.kind == COMMON_SESSION_EVENT_CONSOLE_FAILED ?
+                "Console input failed.\r\n" :
+                event.kind == COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED ?
+                "KVM input delivery failed.\r\n" : "Control queue delivery failed.\r\n";
+            (void)common_ui_write_monitor(session->ui, text);
+            return 0;
         }
+        if (!common_session_process_completed(session, &event)) return 0;
     }
-    common_session_plan_surface(session, out_plan);
-    return LIB_STATUS_OK;
-}
-
-static lib_size common_session_pressed_find(const common_session *session,
-    const kvm_input_event *event)
-{
-    lib_size index;
-
-    for (index = 0u; index < session->pressed_count; ++index) {
-        const common_session_pressed_key *pressed = &session->pressed[index];
-        if (pressed->source_identity == event->source_identity &&
-            pressed->event.data.key.scan_code == event->data.key.scan_code &&
-            pressed->event.data.key.key == event->data.key.key) return index;
-    }
-    return session->pressed_count;
-}
-
-static void common_session_pressed_forget(common_session *session,
-    const kvm_input_event *event)
-{
-    lib_size index = common_session_pressed_find(session, event);
-    if (index != session->pressed_count)
-        session->pressed[index] = session->pressed[--session->pressed_count];
-}
-
-static lib_status common_session_pressed_remember(common_session *session,
-    const kvm_input_event *event)
-{
-    if (common_session_pressed_find(session, event) != session->pressed_count)
-        return LIB_STATUS_OK;
-    if (session->pressed_count == COMMON_SESSION_PRESSED_CAPACITY)
-        return LIB_STATUS_LIMIT_EXCEEDED;
-    session->pressed[session->pressed_count].source_identity = event->source_identity;
-    session->pressed[session->pressed_count].event = *event;
-    ++session->pressed_count;
-    return LIB_STATUS_OK;
-}
-
-lib_status common_session_dispatch_host_input(common_session *session,
-    const kvm_input_event *event, common_session_input_sink sink,
-    void *sink_context)
-{
-    lib_size index = 0u;
-    lib_status status = LIB_STATUS_OK;
-
-    if (session == LIB_NULL || event == LIB_NULL || sink == LIB_NULL)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    if (event->type == KVM_EVENT_SOURCE_RETIRED) {
-        while (index < session->pressed_count) {
-            common_session_pressed_key *pressed = &session->pressed[index];
-            if (pressed->source_identity != event->source_identity) { ++index; continue; }
-            pressed->event.data.key.pressed = LIB_FALSE;
-            if (common_session_is_running(session) && status == LIB_STATUS_OK)
-                status = sink(sink_context, &pressed->event);
-            session->pressed[index] = session->pressed[--session->pressed_count];
-        }
-        return status;
-    }
-    if (!common_session_is_running(session)) return LIB_STATUS_OK;
-    if (event->type == KVM_EVENT_KEY && event->data.key.pressed) {
-        status = common_session_pressed_remember(session, event);
-        if (status != LIB_STATUS_OK) return status;
-        status = sink(sink_context, event);
-        if (status != LIB_STATUS_OK) common_session_pressed_forget(session, event);
-        return status;
-    }
-    if (event->type == KVM_EVENT_KEY && !event->data.key.pressed) {
-        common_session_pressed_forget(session, event);
-        return sink(sink_context, event);
-    }
-    return (event->type == KVM_EVENT_MOUSE || event->type == KVM_EVENT_TEXT) ?
-        sink(sink_context, event) : LIB_STATUS_OK;
 }

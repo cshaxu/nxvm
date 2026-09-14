@@ -11,8 +11,9 @@ int main(void)
     if (common_xasm32_assemble("nop", 3u, code, sizeof(code), &length,
             LIB_TRUE) != LIB_STATUS_OK || length != 1u || code[0] != 0x90u) return 11;
     if (common_xasm32_disassemble(code, sizeof(code), statement,
-            sizeof(statement), &statement_length, LIB_TRUE) != LIB_STATUS_OK ||
-        statement_length == 0u || statement[0] == '\0') return 12;
+            sizeof(statement), &statement_length, &length, LIB_TRUE) != LIB_STATUS_OK ||
+        statement_length != lib_text_length(statement) || statement_length <= 1u ||
+        length != 1u) return 12;
 
     if (common_xasm32_assemble_paragraph("nop\nnop", 7u, code,
             sizeof(code), &paragraph_length, LIB_TRUE) != LIB_STATUS_OK ||

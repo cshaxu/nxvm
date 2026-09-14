@@ -15,6 +15,7 @@ typedef MOUSE_EVENT_RECORD lib_win32_mouse_event_record;
 typedef SMALL_RECT lib_win32_small_rect;
 #define lib_win32_cancel_io_ex CancelIoEx
 #define lib_win32_cancel_synchronous_io CancelSynchronousIo
+#define lib_win32_create_console_screen_buffer CreateConsoleScreenBuffer
 #define lib_win32_flush_console_input_buffer FlushConsoleInputBuffer
 #define lib_win32_get_console_mode GetConsoleMode
 #define lib_win32_get_console_screen_buffer_info GetConsoleScreenBufferInfo
@@ -23,6 +24,7 @@ typedef SMALL_RECT lib_win32_small_rect;
 #define lib_win32_read_console_a ReadConsoleA
 #define lib_win32_read_console_input_w ReadConsoleInputW
 #define lib_win32_set_console_cursor_info SetConsoleCursorInfo
+#define lib_win32_set_console_active_screen_buffer SetConsoleActiveScreenBuffer
 #define lib_win32_set_console_cursor_position SetConsoleCursorPosition
 #define lib_win32_set_console_mode SetConsoleMode
 #define lib_win32_set_console_screen_buffer_info_ex SetConsoleScreenBufferInfoEx
@@ -32,6 +34,7 @@ typedef SMALL_RECT lib_win32_small_rect;
 #define lib_win32_write_console_input_a WriteConsoleInputA
 #define lib_win32_write_console_output_w WriteConsoleOutputW
 #define LIB_WIN32_ENABLE_ECHO_INPUT ENABLE_ECHO_INPUT
+#define LIB_WIN32_CONSOLE_TEXTMODE_BUFFER CONSOLE_TEXTMODE_BUFFER
 #define LIB_WIN32_ENABLE_EXTENDED_FLAGS ENABLE_EXTENDED_FLAGS
 #define LIB_WIN32_ENABLE_LINE_INPUT ENABLE_LINE_INPUT
 #define LIB_WIN32_ENABLE_MOUSE_INPUT ENABLE_MOUSE_INPUT

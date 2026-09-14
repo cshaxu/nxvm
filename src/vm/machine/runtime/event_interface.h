@@ -33,17 +33,6 @@ typedef struct vm_machine_input {
     } data;
 } vm_machine_input;
 
-typedef enum vm_machine_result_kind {
-    VM_MACHINE_RESULT_RUNNING,
-    VM_MACHINE_RESULT_PAUSED,
-    VM_MACHINE_RESULT_RESET,
-    VM_MACHINE_RESULT_STOPPED,
-    VM_MACHINE_RESULT_REMOVABLE_MEDIA,
-    VM_MACHINE_RESULT_DEBUG_COMPLETED,
-    VM_MACHINE_RESULT_FAULT,
-    VM_MACHINE_RESULT_DISPLAY
-} vm_machine_result_kind;
-
 #define VM_MACHINE_EVENT_TEXT_COLUMNS 80u
 #define VM_MACHINE_EVENT_TEXT_ROWS 25u
 #define VM_MACHINE_EVENT_TEXT_CELLS \
@@ -74,16 +63,7 @@ typedef struct vm_machine_display_event {
     type_unsigned_64 generation;
 } vm_machine_display_event;
 
-typedef struct vm_machine_result {
-    vm_machine_result_kind kind;
-    type_status status;
-    union {
-        vm_machine_display_event display;
-        common_machine_removable_media removable_media;
-    } value;
-} vm_machine_result;
-
-typedef C_VOID (*vm_machine_result_sink)(C_VOID *context,
-    const vm_machine_result *result);
-
+/* Removable-media presentation is a VM product fact.  Common's public
+ * media call intentionally carries only a path, so no Common-private media
+ * request record crosses this boundary. */
 #endif

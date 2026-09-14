@@ -32,8 +32,6 @@ typedef enum vm_machine_firmware_kind {
 
 struct vm_machine {
     C_INT active;
-    vm_machine_result_sink result_sink;
-    C_VOID *result_sink_context;
     common_machine *executor;
     core_machine_config core_machine_config;
     core_machine_controller_timing_rules controller_timing_rules;
@@ -57,8 +55,10 @@ struct vm_machine {
     core_machine_display_provider_slot *display_provider;
     core_machine_guest_presentation_mailbox *presentation_mailbox;
     core_machine_guest_input_source *input_source;
-    host_sync_task *execution_task;
-    host_sync_event *execution_started;
+    common_machine_executor_callback executor_callback;
+    C_VOID *executor_callback_context;
+    kvm_frame latest_frame;
+    type_bool latest_frame_valid;
     struct {
         type_unsigned_64 sequence;
         type_status status;
@@ -106,8 +106,8 @@ type_status vm_machine_storage_initialize(vm_machine *machine);
 type_status vm_machine_apply_cmos_seed(const vm_machine *session,
     core_machine_plan_topology *topology);
 C_VOID vm_machine_storage_finalize(vm_machine *machine);
-lib_status vm_machine_consume_request(C_VOID *opaque,
-    const common_machine_request *request);
-C_VOID vm_machine_publish_result(vm_machine *machine,
-    const vm_machine_result *result);
+type_status vm_machine_deliver_common_input(vm_machine *machine,
+    const kvm_input_event *event);
+type_bool vm_machine_copy_common_frame(vm_machine *machine, kvm_frame *frame);
+type_status vm_machine_set_common_media(vm_machine *machine, const C_CHAR *path);
 #endif

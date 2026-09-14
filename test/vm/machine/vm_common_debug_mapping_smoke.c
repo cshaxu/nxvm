@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine.h"
+#include "lib/host/sync_interface.h"
 #include "vm/machine/runtime/lifecycle.h"
 #include "vm/machine/runtime/machine_private.h"
 #include "../support/rom/session_assets.h"
@@ -12,6 +13,18 @@ static C_INT vm_debug_execute(vm_machine *machine,
 {
     return common_machine_debug_execute_with_lease(machine->executor, lease,
         request, result) == LIB_STATUS_OK;
+}
+
+static C_INT vm_debug_wait_paused(const vm_machine *machine)
+{
+    C_UINT waited;
+
+    for (waited = 0u; waited < 2000u; ++waited) {
+        if (common_machine_state_get(machine->executor) == COMMON_MACHINE_PAUSED)
+            return TYPE_TRUE;
+        host_sync_sleep_milliseconds(1u);
+    }
+    return TYPE_FALSE;
 }
 
 C_INT main(C_VOID)
@@ -26,9 +39,8 @@ C_INT main(C_VOID)
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &machine) !=
             TYPE_STATUS_OK || machine == STD_NULL) return 1;
-    (C_VOID)vm_machine_reset(machine);
-    vm_machine_executor_state_start(machine->control.state);
-    vm_machine_executor_state_acknowledge_pause(machine->control.state);
+    if (!common_machine_reset(machine->executor) || !vm_debug_wait_paused(machine))
+        goto failed;
     if (common_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
         goto failed;
     for (register_id = CORE_MACHINE_DEBUG_EAX;

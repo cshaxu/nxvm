@@ -104,9 +104,17 @@ recorded evidence, never by following successive isolated failures.
     Prove exact corpus equality, KVM-name gate, manifest/component boundaries
     and both NXVM architectures. This does not claim whole-task two-product
     execution acceptance.
-12. **S12: package and whole-task acceptance.** Independent build/manifest,
-    byte-identical consumer corpus, full matrix and failure-path review, full
-    unit and integration, optimized stripped x64/x86 release artifacts.
+12. **S12: canonical Common package import and NXVM adapter cutover.** Freeze
+    the audited project-owned SoftPC `src/lib`, `src/common`, `test/lib` and
+    `test/common` corpus; replace NXVM's four trees byte-for-byte; make the
+    NXVM product adapter directly consume that corpus without a compatibility
+    shim; and prove corpus identity, Common/Lib gates, both NXVM architectures
+    and the complete repository-only unit suite. This is an NXVM import and
+    consumer-cutover subtask, not whole-task two-product execution acceptance.
+13. **S13: package and whole-task acceptance.** Independently review the
+    byte-identical two-consumer corpus, complete matrix and failure-path
+    evidence, full unit and external integration, and optimized stripped
+    x64/x86 release artifacts before closing T531.
 
 ## Verification And Exit
 

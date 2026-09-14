@@ -18,7 +18,8 @@ typedef enum lib_memory_order
     LIB_MEMORY_ORDER_RELAXED,
     LIB_MEMORY_ORDER_ACQUIRE,
     LIB_MEMORY_ORDER_RELEASE,
-    LIB_MEMORY_ORDER_ACQ_REL
+    LIB_MEMORY_ORDER_ACQ_REL,
+    LIB_MEMORY_ORDER_SEQ_CST
 } lib_memory_order;
 
 #define LIB_ATOMIC_FLAG_INITIALIZER 0L
@@ -59,6 +60,20 @@ static inline void lib_atomic_i32_store_explicit(lib_atomic_i32 *object,
 {
     (void)order;
     (void)_InterlockedExchange(object, (long)value);
+}
+
+static inline lib_i32 lib_atomic_i32_exchange_explicit(lib_atomic_i32 *object,
+    lib_i32 value, lib_memory_order order)
+{
+    (void)order;
+    return (lib_i32)_InterlockedExchange(object, (long)value);
+}
+
+static inline lib_i32 lib_atomic_i32_fetch_add_explicit(lib_atomic_i32 *object,
+    lib_i32 value, lib_memory_order order)
+{
+    (void)order;
+    return (lib_i32)_InterlockedExchangeAdd(object, (long)value);
 }
 
 static inline lib_bool lib_atomic_i32_compare_exchange_strong_explicit(
@@ -136,6 +151,7 @@ typedef memory_order lib_memory_order;
 #define LIB_MEMORY_ORDER_ACQUIRE memory_order_acquire
 #define LIB_MEMORY_ORDER_RELEASE memory_order_release
 #define LIB_MEMORY_ORDER_ACQ_REL memory_order_acq_rel
+#define LIB_MEMORY_ORDER_SEQ_CST memory_order_seq_cst
 
 #define lib_atomic_flag_clear atomic_flag_clear
 #define lib_atomic_flag_test_and_set_explicit atomic_flag_test_and_set_explicit
@@ -143,6 +159,8 @@ typedef memory_order lib_memory_order;
 #define lib_atomic_i32_initialize atomic_init
 #define lib_atomic_i32_load_explicit atomic_load_explicit
 #define lib_atomic_i32_store_explicit atomic_store_explicit
+#define lib_atomic_i32_exchange_explicit atomic_exchange_explicit
+#define lib_atomic_i32_fetch_add_explicit atomic_fetch_add_explicit
 #define lib_atomic_i32_compare_exchange_strong_explicit atomic_compare_exchange_strong_explicit
 #define lib_atomic_u32_initialize atomic_init
 #define lib_atomic_u32_fetch_add_explicit atomic_fetch_add_explicit

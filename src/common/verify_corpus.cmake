@@ -1,48 +1,105 @@
-# The Common corpus is independently buildable only against the public Lib
-# surface.  Keep this check structural: product and Core meaning belongs in
-# the adapters outside this directory, not in Common.
+cmake_minimum_required(VERSION 3.23)
 if(NOT DEFINED COMMON_ROOT)
-    message(FATAL_ERROR "COMMON_ROOT is required")
+    set(COMMON_ROOT "${CMAKE_CURRENT_LIST_DIR}")
 endif()
+set(components machine session ui debug xasm32)
+set(edges_machine host kvm-base types)
+set(edges_session machine ui host console kvm-base types)
+set(edges_ui console host kvm-base kvm-window kvm-console types)
+set(edges_debug machine xasm32 storage types)
+set(edges_xasm32 types)
+set(lib_components types host storage console kvm-base kvm-window kvm-console)
 
-execute_process(
-    COMMAND "${CMAKE_COMMAND}" -DCORPUS_ROOT:PATH=${COMMON_ROOT}
-        -DCORPUS_NAME:STRING=Common
-        -P "${COMMON_ROOT}/verify_manifest.cmake"
-    COMMAND_ERROR_IS_FATAL ANY)
-
-set(common_required_files
-    CMakeLists.txt
-    machine/machine.c machine/machine_interface.h
-    session/session.c session/session_interface.h
-    ui/console_host.c ui/console_host.h ui/presentation.c ui/ui_interface.h
-    xasm32/aasm32.c xasm32/aasm32.h xasm32/dasm32.c
-    xasm32/dasm32.h xasm32/xasm32.c xasm32/xasm32.h
-    xasm32/xasm32_interface.h
-    debug/command.c debug/command.h debug/command_runtime.h
-    debug/debug.c debug/debug_interface.h)
-foreach(common_file IN LISTS common_required_files)
-    if(NOT EXISTS "${COMMON_ROOT}/${common_file}")
-        message(FATAL_ERROR "Common corpus omits required file: ${common_file}")
+function(check_edge owner dependency)
+    if(NOT dependency STREQUAL owner AND NOT dependency IN_LIST edges_${owner})
+        message(FATAL_ERROR "Forbidden Common edge: ${owner} -> ${dependency}")
     endif()
-endforeach()
+endfunction()
 
-file(GLOB_RECURSE common_corpus_files RELATIVE "${COMMON_ROOT}"
-    "${COMMON_ROOT}/*.c" "${COMMON_ROOT}/*.h" "${COMMON_ROOT}/CMakeLists.txt")
-foreach(common_file IN LISTS common_corpus_files)
-    file(READ "${COMMON_ROOT}/${common_file}" common_text)
-    foreach(common_forbidden
-            "#include \"core/"
-            "#include \"vm/"
-            "#include \"type.h\""
-            "#include <windows.h>"
-            "#include <X11/")
-        string(FIND "${common_text}" "${common_forbidden}" common_forbidden_at)
-        if(NOT common_forbidden_at EQUAL -1)
-            message(FATAL_ERROR
-                "Common corpus has a forbidden product/native include in ${common_file}: ${common_forbidden}")
+file(GLOB_RECURSE paths RELATIVE "${COMMON_ROOT}" "${COMMON_ROOT}/*")
+foreach(path IN LISTS paths)
+    if(path MATCHES "(^|/)(win32|linux)(/|$)")
+        message(FATAL_ERROR "Common must not contain platform directories: ${path}")
+    endif()
+    if(NOT path MATCHES "^([^/]+)/.*\\.[ch]$")
+        continue()
+    endif()
+    set(owner "${CMAKE_MATCH_1}")
+    if(NOT owner IN_LIST components)
+        message(FATAL_ERROR "Unknown Common component: ${path}")
+    endif()
+    file(READ "${COMMON_ROOT}/${path}" source)
+    # Assembly text legitimately contains DWORD; inspect tokens, not literals.
+    string(REGEX REPLACE "\"[^\"]*\"" "" tokens "${source}")
+    string(REGEX REPLACE "/\\*([^*]|\\*+[^*/])*\\*+/" "" tokens "${tokens}")
+    if(tokens MATCHES "_WIN32|_WIN64|__linux__|WINAPI|CRITICAL_SECTION|Interlocked[A-Za-z]+|WaitForSingleObject|CreateEvent[A-W]?|SetEvent|ResetEvent|CloseHandle|pthread_" OR
+       tokens MATCHES "(^|[^A-Za-z0-9_])(HANDLE|DWORD|LONG|HWND)([^A-Za-z0-9_]|$)")
+        message(FATAL_ERROR "Platform implementation in Common: ${path}")
+    endif()
+    string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"][^>\"]+[>\"]" includes "${source}")
+    foreach(include IN LISTS includes)
+        string(REGEX REPLACE ".*[<\"]([^>\"]+)[>\"]" "\\1" header "${include}")
+        if(header MATCHES "^(common|lib)/([^/]+)/(.+)$")
+            set(corpus "${CMAKE_MATCH_1}")
+            set(dependency "${CMAKE_MATCH_2}")
+            set(file "${CMAKE_MATCH_3}")
+            if(NOT file MATCHES "^[A-Za-z0-9_-]+\\.h$")
+                message(FATAL_ERROR "Noncanonical Common header path: ${header}")
+            endif()
+            if(corpus STREQUAL "common" AND NOT dependency IN_LIST components)
+                message(FATAL_ERROR "Unknown Common dependency: ${header}")
+            elseif(corpus STREQUAL "lib" AND NOT dependency IN_LIST lib_components)
+                message(FATAL_ERROR "Unknown Lib dependency: ${header}")
+            endif()
+            check_edge("${owner}" "${dependency}")
+            if(corpus STREQUAL "common" AND dependency STREQUAL owner)
+                if(NOT EXISTS "${COMMON_ROOT}/${dependency}/${file}")
+                    message(FATAL_ERROR "Missing local header: ${header}")
+                endif()
+            elseif(NOT dependency STREQUAL "types" AND
+                   NOT file MATCHES "^[^/]+_interface\\.h$")
+                message(FATAL_ERROR "Private dependency in Common: ${header}")
+            endif()
+            if(dependency STREQUAL "kvm-base" AND NOT file MATCHES "^(event|frame|hotkey)_interface\\.h$")
+                message(FATAL_ERROR "Private KVM support in Common: ${header}")
+            endif()
+        elseif(NOT header MATCHES "^(assert|limits|stddef|stdint|stdio|stdlib|string|stdarg|ctype|math|stdbool|float)\\.h$")
+            message(FATAL_ERROR "Noncanonical Common include: ${header}")
+        endif()
+        if(path MATCHES "_interface\\.h$" AND header STREQUAL "stdint.h")
+            message(FATAL_ERROR "Common ABI must use Lib types: ${path}")
         endif()
     endforeach()
 endforeach()
 
-message(STATUS "Common standalone Lib-only corpus: OK")
+file(GLOB_RECURSE builds "${COMMON_ROOT}/CMakeLists.txt")
+foreach(build IN LISTS builds)
+    file(READ "${build}" source)
+    string(REGEX REPLACE "#[^\n]*" "" source "${source}")
+    if(source MATCHES "(WIN32|LINUX|UNIX|APPLE|CMAKE_SYSTEM_NAME)")
+        message(FATAL_ERROR "Common build must not select platform implementations")
+    endif()
+    string(TOLOWER "${source}" source)
+    if(source MATCHES "(^|[^_A-Za-z])link_libraries[ \t\r\n]*\\(" OR
+       source MATCHES "(interface_)?link_libraries[ \t]")
+        message(FATAL_ERROR "Use explicit Common target_link_libraries")
+    endif()
+    string(REGEX MATCHALL "target_link_libraries[ \t\r\n]*\\([^)]*\\)" links "${source}")
+    foreach(link IN LISTS links)
+        string(REGEX REPLACE "^target_link_libraries[ \t\r\n]*\\(|\\)$" "" args "${link}")
+        string(REGEX REPLACE "[ \t\r\n]+" ";" args "${args}")
+        list(POP_FRONT args target)
+        string(REGEX REPLACE "^common-" "" owner "${target}")
+        if(NOT owner IN_LIST components)
+            message(FATAL_ERROR "Unknown Common link owner: ${target}")
+        endif()
+        foreach(dependency IN LISTS args)
+            if(dependency MATCHES "^(public|private|interface)$" OR dependency STREQUAL "")
+                continue()
+            endif()
+            string(REGEX REPLACE "^common-" "" dependency "${dependency}")
+            check_edge("${owner}" "${dependency}")
+        endforeach()
+    endforeach()
+endforeach()
+message(STATUS "Common platform and component boundaries verified")

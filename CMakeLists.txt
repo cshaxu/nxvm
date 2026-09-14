@@ -67,51 +67,49 @@ add_custom_target(cpu-timing-manifest-catalog
 
 add_subdirectory(src/lib)
 add_subdirectory(src/common)
-add_executable(common-machine-smoke test/common/machine/common_machine_smoke.c)
-target_link_libraries(common-machine-smoke PRIVATE common-machine)
-add_executable(common-debug-smoke test/common/debug/common_debug_smoke.c)
-target_link_libraries(common-debug-smoke PRIVATE common-debug)
-add_executable(common-session-smoke test/common/session/common_session_smoke.c)
-target_link_libraries(common-session-smoke PRIVATE common-session)
-add_executable(common-ui-smoke
-    test/common/ui/common_ui_smoke.c
-    test/common/ui/common_ui_console_host_fake.c)
-target_link_libraries(common-ui-smoke PRIVATE common-ui type-facade)
-add_executable(common-xasm32-smoke test/common/xasm32/xasm32_smoke.c)
-target_link_libraries(common-xasm32-smoke PRIVATE common-xasm32)
-add_executable(common-xasm32-contract-smoke
-    test/common/xasm32/xasm32_contract_smoke.c)
-target_link_libraries(common-xasm32-contract-smoke PRIVATE common-xasm32)
-add_executable(common-adapter-conformance
-    test/common/common_adapter_conformance.c
-    test/common/ui/common_ui_console_host_fake.c)
-target_link_libraries(common-adapter-conformance PRIVATE
-    common-machine common-session common-ui type-facade)
-add_dependencies(common-adapter-conformance common-verify-corpus)
-add_executable(types-smoke test/lib/types_smoke.c)
-target_link_libraries(types-smoke PRIVATE types)
-add_test(NAME unit.types-smoke COMMAND types-smoke)
-set_tests_properties(unit.types-smoke PROPERTIES LABELS "unit")
-add_executable(kvm-base-contract-smoke test/lib/kvm_base_contract_smoke.c)
-target_link_libraries(kvm-base-contract-smoke PRIVATE kvm-base)
-add_test(NAME unit.kvm-base-contract-smoke COMMAND kvm-base-contract-smoke)
-set_tests_properties(unit.kvm-base-contract-smoke PROPERTIES LABELS "unit")
-add_test(NAME unit.library-manifest
-    COMMAND ${CMAKE_COMMAND}
-        -DLIBRARY_ROOT=${CMAKE_SOURCE_DIR}/src/lib
-        -P ${CMAKE_SOURCE_DIR}/src/lib/verify_manifest.cmake)
-set_tests_properties(unit.library-manifest PROPERTIES LABELS "unit")
-add_test(NAME unit.library-manifest-fixtures
-    COMMAND ${CMAKE_COMMAND}
-        -DLIBRARY_ROOT:PATH=${CMAKE_SOURCE_DIR}/src/lib
-        -DVERIFY_SCRIPT:FILEPATH=${CMAKE_SOURCE_DIR}/src/lib/verify_manifest.cmake
-        -DWORK_ROOT:PATH=${CMAKE_BINARY_DIR}/test-library-manifest-fixtures
-        -P ${CMAKE_SOURCE_DIR}/test/lib/library_manifest_fixture.cmake)
-set_tests_properties(unit.library-manifest-fixtures PROPERTIES LABELS "unit")
-add_executable(storage-file-smoke test/lib/storage_file_smoke.c)
-target_link_libraries(storage-file-smoke PRIVATE storage)
-add_test(NAME unit.storage-file-smoke COMMAND storage-file-smoke)
-set_tests_properties(unit.storage-file-smoke PROPERTIES LABELS "unit")
+add_subdirectory(test/lib)
+add_subdirectory(test/common)
+set(PROJECT_SHARED_CORPUS_TEST_TARGETS
+    lib-test-lib_console
+    lib-test-types_contract
+    lib-test-storage_file_writer_binary
+    lib-test-kvm_component_contract
+    lib-test-win32_presentation
+    lib-test-win32_window_bounds
+    lib-test-linux_wait_contract
+    lib-test-linux_input_contract
+    common-test-sync
+    common-test-presentation_plan
+    common-test-reconciler
+    common-test-control_state_matrix
+    common-test-control_reconciler_integration
+    common-test-input_queue_mouse_fifo
+    common-test-physical_key_identity
+    common-test-xasm32
+    common-test-xasm32_contract)
+if(WIN32)
+    list(APPEND PROJECT_SHARED_CORPUS_TEST_TARGETS
+    lib-test-lib_console_event_gate
+    lib-test-host_console_broker
+    lib-test-lib_failure_output_contract
+    lib-test-win32_vocabulary_ownership
+    lib-test-win32_keyboard
+    lib-test-kvm_leaf_control_capacity
+    lib-test-kvm_console_retirement_barrier
+    lib-test-kvm_frame_damage_mouse
+    lib-test-kvm_window_retirement
+    lib-test-kvm_window_modal
+    lib-test-kvm_shutdown_failure
+    lib-test-host_console_reader_failure
+    lib-test-host_console_display
+    lib-test-kvm_input_admission
+    lib-test-console_blocking_gate
+    lib-test-host_sync_ownership
+    lib-test-kvm_keyboard_lifetime
+    lib-test-lib_console_io_contract
+    lib-test-kvm_window_capture_contract
+    common-test-common_machine)
+endif()
 
 add_library(core-machine STATIC
     src/core/machine/clock.c
@@ -254,9 +252,7 @@ add_executable(vm-model40-hdc-s26-smoke
     test/vm/machine/vm_model40_hdc_s26_smoke.c)
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-machine)
 add_executable(vm-model40-console-s20-smoke
-    test/integration/product/vm_model40_console_s20_smoke.c
-    src/vm/product/console.c
-    test/common/ui/common_ui_console_host_fake.c)
+    test/integration/product/vm_model40_console_s20_smoke.c)
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-machine)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
@@ -295,9 +291,7 @@ target_include_directories(vm-product-console-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
 add_executable(vm-product-console-lifecycle-smoke
-    test/integration/product/nxvm_console_lifecycle_smoke.c
-    src/vm/product/console.c
-    test/common/ui/common_ui_console_host_fake.c)
+    test/integration/product/nxvm_console_lifecycle_smoke.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-machine)
 add_executable(vm-yaml-cmos-seed-smoke
@@ -1293,15 +1287,9 @@ add_executable(core-machine-guest-input-source-smoke
     test/core/machine/core_machine_guest_input_source_smoke.c
 )
 target_link_libraries(core-machine-guest-input-source-smoke PRIVATE core-machine-boundary)
-add_executable(host-smoke
-    test/lib/host_sync_smoke.c
-)
-target_link_libraries(host-smoke PRIVATE host)
 add_executable(vm-machine-executor-state-smoke
     test/vm/machine/runtime/vm_machine_executor_state_smoke.c)
 target_link_libraries(vm-machine-executor-state-smoke PRIVATE vm-machine)
-add_executable(storage-smoke test/lib/storage_medium_smoke.c)
-target_link_libraries(storage-smoke PRIVATE storage)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/vm/machine/vm_keyboard_host_ingress_smoke.c
@@ -2168,6 +2156,16 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-xt-5160-268-profile-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
+list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
+    common-machine-smoke
+    common-xasm32-smoke
+    common-xasm32-contract-smoke
+    common-debug-smoke
+    common-session-smoke
+    common-ui-smoke
+    common-adapter-conformance
+    host-smoke
+    storage-smoke)
 
 # T337 deliberately inventories the complete unit surface that names
 # a #UD producer/assertion. It is an upper bound over real-mode owners: the
@@ -2588,7 +2586,6 @@ endforeach()
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
-    storage-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-media-provider-smoke
     vm-media-direct-readonly-smoke
@@ -2714,13 +2711,6 @@ set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
 get_property(project_t344_registered_targets GLOBAL
     PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS)
 set(project_t344_single_test_targets ${PROJECT_ALL_TEST_TARGETS})
-# These direct lib targets remain explicit unit routes.
-list(APPEND project_t344_single_test_targets
-    types-smoke
-    kvm-base-contract-smoke)
-list(APPEND project_t344_registered_targets
-    types-smoke
-    kvm-base-contract-smoke)
 list(REMOVE_ITEM project_t344_single_test_targets
     ${PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS})
 foreach(project_t344_target IN LISTS project_t344_single_test_targets)
@@ -2790,7 +2780,9 @@ if(POWERSHELL_EXECUTABLE)
         COMMENT "Building and executing repository-only unit tests"
         VERBATIM)
     add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS})
-    add_dependencies(run-unit-tests kvm-base-contract-smoke)
+    # The canonical shared corpus owns its own CTest registration.  Keep its
+    # executables in the aggregate build without re-registering an NXVM copy.
+    add_dependencies(run-unit-tests ${PROJECT_SHARED_CORPUS_TEST_TARGETS})
 
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -3435,9 +3427,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(host-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-executor-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3517,8 +3507,7 @@ file(GENERATE
 # Their strictness remains target-local and never substitutes for a linked
 # production dependency.
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
-    "type-facade|src/type.c"
-    "common-machine|src/common/machine/machine.c")
+    "type-facade|src/type.c")
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
 foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
     string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")

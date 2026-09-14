@@ -18,7 +18,6 @@ C_INT main(C_VOID)
     event.data.key.virtual_key = VM_HOST_CANCELLATION_F9_VIRTUAL_KEY;
     event.data.key.pressed = TYPE_TRUE;
     if (vm_machine_submit_host_input(session, &event) != TYPE_STATUS_OK) goto fail;
-    if (common_machine_observe_safe_point(session->executor) != LIB_STATUS_OK) goto fail;
     vm_machine_destroy(session);
     STD_PRINTF("M5:T201:S3:HOST-CANCELLATION:OK\n");
     return 0;

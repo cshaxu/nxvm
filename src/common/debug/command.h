@@ -14,8 +14,6 @@ lib_status common_debug_command_open(common_debug_command *command,
 void common_debug_command_close(common_debug_command *command);
 lib_status common_debug_command_submit_line(common_debug_command *command,
     const char *line, common_debug_result *out_result);
-void common_debug_command_observe_instruction(common_debug_command *command,
-    const common_debug_instruction_observation *observation);
 lib_status common_debug_command_observe_machine(common_debug_command *command,
     common_debug_machine_state state, lib_status status,
     common_debug_result *out_result);

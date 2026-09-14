@@ -357,7 +357,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (vm_machine_submit_host_input(session, &event) !=
             TYPE_STATUS_OK) goto done;
     }
-    (C_VOID)common_machine_observe_safe_point(session->executor);
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
             TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||

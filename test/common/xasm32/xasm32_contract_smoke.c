@@ -20,6 +20,7 @@ int main(void)
     char statement[8];
     lib_u8 code[COMMON_XASM32_MAX_CODE_BYTES];
     lib_size result_bytes = 37u;
+    lib_size instruction_bytes = 19u;
 
     lib_memory_set(exact_statement, ' ', sizeof(exact_statement));
     exact_statement[0] = 'n';
@@ -59,8 +60,8 @@ int main(void)
     lib_memory_set(statement, 0xa5, sizeof(statement));
     result_bytes = 37u;
     if (common_xasm32_disassemble(code, sizeof(code), statement, 1u,
-            &result_bytes, LIB_TRUE) != LIB_STATUS_LIMIT_EXCEEDED ||
-        statement[0] != (char)0xa5 || result_bytes != 37u) return 15;
+            &result_bytes, &instruction_bytes, LIB_TRUE) != LIB_STATUS_LIMIT_EXCEEDED ||
+        statement[0] != (char)0xa5 || result_bytes != 37u || instruction_bytes != 19u) return 15;
 
     lib_memory_set(code, 0xa5, sizeof(code));
     result_bytes = 37u;

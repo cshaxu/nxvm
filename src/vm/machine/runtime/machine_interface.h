@@ -154,7 +154,6 @@ type_status vm_machine_reconfigure_memory(vm_machine *session,
 type_status vm_machine_get_speed(const vm_machine *session,
     vm_machine_speed *out_speed);
 type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed);
-type_status vm_machine_bind_run(vm_machine *session, type_unsigned_32 run_id);
 C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path);
 C_INT vm_machine_remove_fdd(vm_machine *session, const C_CHAR *path);
 C_INT vm_machine_insert_hdd(vm_machine *session, const C_CHAR *path);
@@ -171,9 +170,4 @@ type_status vm_machine_get_reset_vector(const vm_machine *session,
 type_status vm_machine_get_information(const vm_machine *session,
     vm_machine_information *out_information);
 C_INT vm_machine_is_running(const vm_machine *session);
-/* The sole copied completion route.  It transfers neither a Core object nor
- * an executor or UI handle across this boundary. */
-C_VOID vm_machine_set_result_sink(vm_machine *machine,
-    vm_machine_result_sink sink, C_VOID *context);
-
 #endif

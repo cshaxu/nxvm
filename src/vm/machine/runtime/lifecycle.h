@@ -23,8 +23,6 @@ type_status vm_machine_request_pause(vm_machine *machine);
 type_status vm_machine_request_pause_reason(vm_machine *machine,
     vm_machine_pause_reason reason);
 type_status vm_machine_request_step(vm_machine *machine);
-void vm_machine_report_lifecycle(vm_machine *machine,
-    vm_machine_lifecycle lifecycle);
 
 type_status vm_machine_initialize(vm_machine *machine);
 C_VOID vm_machine_finalize(vm_machine *machine);

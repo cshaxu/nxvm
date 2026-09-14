@@ -16,6 +16,8 @@ vm_machine *vm_app_machine(vm_app *app);
 common_ui *vm_app_ui(vm_app *app);
 type_status vm_app_compose_machine(vm_app *app,
     const vm_session_request *request);
+type_status vm_app_compose_control(vm_app *app,
+    const common_session_options *options);
 type_status vm_app_compose_ui(vm_app *app, const common_ui_options *options);
 
 #endif

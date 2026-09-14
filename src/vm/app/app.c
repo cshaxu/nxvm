@@ -11,49 +11,30 @@ struct vm_app {
     common_ui *ui;
 };
 
-static common_session_machine_state vm_app_machine_state(vm_machine_result_kind kind)
+static common_session_machine_state vm_app_machine_state(common_machine_state state)
 {
-    switch (kind) {
-    case VM_MACHINE_RESULT_RUNNING: return COMMON_SESSION_MACHINE_RUNNING;
-    case VM_MACHINE_RESULT_PAUSED: return COMMON_SESSION_MACHINE_PAUSED;
-    case VM_MACHINE_RESULT_RESET: return COMMON_SESSION_MACHINE_RESET;
-    case VM_MACHINE_RESULT_STOPPED: return COMMON_SESSION_MACHINE_STOPPED;
-    default: return COMMON_SESSION_MACHINE_FAULT;
+    switch (state) {
+    case COMMON_MACHINE_RUNNING: return COMMON_SESSION_MACHINE_RUNNING;
+    case COMMON_MACHINE_PAUSED: return COMMON_SESSION_MACHINE_PAUSED;
+    case COMMON_MACHINE_RESET_COMPLETED:
+        return COMMON_SESSION_MACHINE_RESET_COMPLETED;
+    case COMMON_MACHINE_ERROR: return COMMON_SESSION_MACHINE_ERROR;
+    default: return COMMON_SESSION_MACHINE_STOPPED;
     }
 }
 
-static lib_status vm_app_status_as_lib(type_status status)
+static C_VOID vm_app_machine_state_completed(C_VOID *context,
+    common_machine_state state, lib_u32 run_generation)
 {
-    if (status == TYPE_STATUS_OK) return LIB_STATUS_OK;
-    if (status == TYPE_STATUS_INVALID_ARGUMENT) return LIB_STATUS_INVALID_ARGUMENT;
-    if (status == TYPE_STATUS_INVALID_STATE) return LIB_STATUS_INVALID_STATE;
-    if (status == TYPE_STATUS_UNSUPPORTED) return LIB_STATUS_UNSUPPORTED;
-    if (status == TYPE_STATUS_NO_MEMORY) return LIB_STATUS_NO_MEMORY;
-    return LIB_STATUS_IO_ERROR;
+    (C_VOID)common_session_enqueue_runtime_completed((common_session *)context,
+        vm_app_machine_state(state), run_generation);
 }
 
-static C_VOID vm_app_machine_result(void *context, const vm_machine_result *result)
+static C_VOID vm_app_machine_frame_published(C_VOID *context, lib_u32 sequence,
+    lib_bool graphics, lib_u32 run_generation)
 {
-    vm_app *app = context;
-    kvm_frame frame;
-
-    if (app == STD_NULL || result == STD_NULL) return;
-    if (result->kind == VM_MACHINE_RESULT_DISPLAY) {
-        if (vm_machine_frame_from_display(&result->value.display, &frame) ==
-            TYPE_STATUS_OK) (C_VOID)common_session_publish_frame(app->session, &frame);
-        return;
-    }
-    if (result->kind == VM_MACHINE_RESULT_REMOVABLE_MEDIA) {
-        (C_VOID)common_session_publish_monitor_text(app->session,
-            result->status == TYPE_STATUS_OK ?
-            (result->value.removable_media.present ? "Floppy disk inserted.\n" :
-                "Floppy disk ejected.\n") :
-            (result->value.removable_media.present ?
-                "Cannot read floppy disk.\n" : "Cannot eject floppy disk.\n"));
-        return;
-    }
-    (C_VOID)common_session_publish_machine(app->session,
-        vm_app_machine_state(result->kind), vm_app_status_as_lib(result->status));
+    (C_VOID)common_session_enqueue_frame_completed((common_session *)context,
+        sequence, graphics, run_generation);
 }
 
 type_status vm_app_create(vm_app **out_app)
@@ -64,10 +45,6 @@ type_status vm_app_create(vm_app **out_app)
     *out_app = STD_NULL;
     app = STD_CALLOC(1u, sizeof(*app));
     if (app == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    if (common_session_create(&app->session) != LIB_STATUS_OK) {
-        STD_FREE(app);
-        return TYPE_STATUS_NO_MEMORY;
-    }
     *out_app = app;
     return TYPE_STATUS_OK;
 }
@@ -96,7 +73,24 @@ type_status vm_app_compose_machine(vm_app *app, const vm_session_request *reques
         return TYPE_STATUS_INVALID_STATE;
     if (vm_machine_create_from_request(request, &app->machine) != TYPE_STATUS_OK)
         return TYPE_STATUS_INVALID_STATE;
-    vm_machine_set_result_sink(app->machine, vm_app_machine_result, app);
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_app_compose_control(vm_app *app,
+    const common_session_options *options)
+{
+    common_session_options resolved;
+
+    if (app == STD_NULL || options == LIB_NULL || app->machine == STD_NULL ||
+        app->session != LIB_NULL) return TYPE_STATUS_INVALID_STATE;
+    resolved = *options;
+    resolved.machine = vm_machine_common_machine(app->machine);
+    if (common_session_create(&app->session, &resolved) != LIB_STATUS_OK)
+        return TYPE_STATUS_INVALID_STATE;
+    common_machine_set_state_sink(resolved.machine, vm_app_machine_state_completed,
+        app->session);
+    common_machine_set_frame_sink(resolved.machine, vm_app_machine_frame_published,
+        app->session);
     return TYPE_STATUS_OK;
 }
 
