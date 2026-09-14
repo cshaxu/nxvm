@@ -7,6 +7,16 @@ Common has no platform directories, platform types, native calls or OS-selected
 implementations. Host owns blocking mutex/event/task/wait; Types owns the atomic
 vocabulary. Common retains queue, lifecycle and frame-publication ownership.
 
+Machine snapshot reads specify the expected run and leave the destination
+unchanged on rejection. Session treats frame events as publication hints and
+derives content, sequence and graphics/text routing from that one snapshot,
+which may be newer than the notification. UI owns the shared action vocabulary;
+session does not maintain a second action enum or mapping.
+UI APIs have one control-thread caller. Immutable creation options are shared
+with input callbacks; their run-generation tag uses a Types atomic. Frame
+deduplication and object ownership remain control-thread-local. Native producers
+must be destroyed before the event sink/context is released.
+
 | Component | One responsibility | Public contract |
 | --- | --- | --- |
 | `machine` | executor, lifecycle/input queues, frame publication, optional paused debug adapter | `machine_interface.h` |

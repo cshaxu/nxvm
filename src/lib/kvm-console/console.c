@@ -33,6 +33,9 @@ lib_status kvm_console_create(kvm_console **out_console,
     status = kvm_component_initialize(&console->base, options,
         kvm_console_component_stop, kvm_console_component_dispose);
     if (status == LIB_STATUS_OK)
+        status = kvm_component_mailboxes_select_notify(&console->base.mailboxes,
+            LIB_NULL, LIB_NULL);
+    if (status == LIB_STATUS_OK)
         status = lib_console_create(&console->logical_console);
     if (status == LIB_STATUS_OK) status = kvm_console_worker_start(console);
     if (status != LIB_STATUS_OK) {

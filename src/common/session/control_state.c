@@ -60,9 +60,9 @@ void common_session_state_note_current_console(common_session_state *state,
         COMMON_SESSION_CONSOLE_MONITOR);
 }
 
-common_session_ui_action common_session_state_take_action(common_session_state *state)
+common_ui_action common_session_state_take_action(common_session_state *state)
 {
-    return state == NULL ? COMMON_SESSION_UI_ACTION_NONE :
+    return state == NULL ? COMMON_UI_ACTION_NONE :
         common_session_reconciler_take_action(&state->presentation);
 }
 
@@ -74,7 +74,7 @@ int common_session_state_monitor_is_current(const common_session_state *state)
     return desired.monitor_console_enabled &&
         state->presentation.current_console_actual ==
             COMMON_SESSION_CONSOLE_MONITOR &&
-        state->presentation.in_flight != COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE;
+        state->presentation.in_flight != COMMON_UI_ACTION_BIND_VM_CONSOLE;
 }
 
 int common_session_state_monitor_is_running_graphics_surface(

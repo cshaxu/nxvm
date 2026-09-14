@@ -36,6 +36,8 @@ common_test(control_state_matrix common-session)
 common_test(control_reconciler_integration common-session)
 common_test(input_queue_mouse_fifo common-machine)
 common_test(physical_key_identity common-session)
+common_test(session_frame common-session)
+common_test(composition common-ui host)
 if(WIN32)
     # Existing native-thread fake verifies the generic machine/debug protocol.
     common_test(common_machine common-machine common-debug host)

@@ -109,7 +109,7 @@ set(project_t317_checked_files 0)
 foreach(project_t317_file IN LISTS project_t317_code_files)
     # src/lib is an independently buildable shared corpus with its own
     # base facade and manifest; it must not inherit NXVM's type vocabulary.
-    if(project_t317_file MATCHES "^src/lib/")
+    if(project_t317_file MATCHES "^(src|test)/lib/")
         continue()
     endif()
     set(project_t317_path "${PROJECT_T317_TYPE_SOURCE_DIR}/${project_t317_file}")

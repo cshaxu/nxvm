@@ -74,6 +74,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     lib-test-types_contract
     lib-test-storage_file_writer_binary
     lib-test-kvm_component_contract
+    lib-test-kvm_mailbox_selection
     lib-test-win32_presentation
     lib-test-win32_window_bounds
     lib-test-linux_wait_contract
@@ -85,6 +86,8 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     common-test-control_reconciler_integration
     common-test-input_queue_mouse_fifo
     common-test-physical_key_identity
+    common-test-session_frame
+    common-test-composition
     common-test-xasm32
     common-test-xasm32_contract)
 if(WIN32)
@@ -2734,10 +2737,6 @@ if(NOT project_t515_registered_case_count EQUAL 20)
     message(FATAL_ERROR "T515 YAML boot matrix must retain exactly twenty historical rows.")
 endif()
 set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS)
-list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
-    library-manifest
-    library-manifest-fixtures
-    storage-file-smoke)
 if(POWERSHELL_EXECUTABLE)
     list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
         core-machine-8086-timing-results-s5
@@ -3577,14 +3576,18 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "common-xasm32|src/common/xasm32/xasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/aasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/dasm32.c|xasm32"
-    "vm-model40-console-s20-smoke|src/vm/product/console.c|console-integration"
+    "common-machine|src/common/machine/machine.c|machine-owner"
+    "common-machine|src/common/machine/input_queue.c|machine-input-queue"
     "vm-product|src/vm/product/console.c|console-product"
     "vm-product|src/vm/product/recorder.c|recorder-product"
-    "common-ui|src/common/ui/console_host.c|presentation-leaf"
-    "common-ui|src/common/ui/presentation.c|presentation-leaf"
+    "common-ui|src/common/ui/ui.c|presentation-leaf"
     "vm-machine|src/vm/machine/runtime/frame.c|display-adaptation"
     "vm-product|src/vm/product/catalog.c|session-catalog"
     "common-session|src/common/session/session.c|session-owner"
+    "common-session|src/common/session/control.c|session-owner"
+    "common-session|src/common/session/control_state.c|session-owner"
+    "common-session|src/common/session/reconciler.c|session-owner"
+    "common-session|src/common/session/presentation_plan.c|session-owner"
     "vm-app|src/vm/app/app.c|session-composition"
     "vm-media|src/vm/media/fdd.c|vm-media"
     "vm-media|src/vm/media/hdd.c|vm-media"

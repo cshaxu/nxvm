@@ -142,6 +142,8 @@ int main(void)
     static kvm_win32_window_context c;
     kvm_component_options options={.input_sink=input,.failure_sink=failure};
     assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     c.component=&window; context=&c;
     assert(kvm_win32_mouse_refresh_bounds(&c.mouse) && clips==0);
     assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1,0) == LIB_STATUS_OK);
@@ -170,6 +172,8 @@ int main(void)
     assert(c.client_surface_width==0 && window.base.stopping);
     assert(kvm_component_destroy(&window.base)==LIB_STATUS_OK);
     assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     resize_ok=1;
     win32_window_resize_client((HWND)1,&c,640,480);
     assert(c.client_surface_width==640 && c.client_surface_height==480);
@@ -188,6 +192,8 @@ int main(void)
     assert(c.client_width==320 && c.client_height==240 && window.base.stopping);
     assert(kvm_component_destroy(&window.base)==LIB_STATUS_OK);
     assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     client_ok=1;
     c.frame.valid=1; c.frame.text_columns=80; c.frame.text_rows=25;
     c.frame.cursor_visible=1; c.frame.font_height=16;
@@ -241,6 +247,8 @@ int main(void)
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     /* A release callback faults mid-FIFO: later controls and frame stay untouched. */
     assert(kvm_component_initialize(&window.base,&options,join,dispose)==0);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     c.component=&window; c.frozen=0; c.left_button=1;
     reject_input=1; foreground_requests=0;
     assert(kvm_window_release_mouse(&window)==0);
@@ -253,6 +261,8 @@ int main(void)
     assert(window.base.mailboxes.frame_pending);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     c.component=&window; c.left_button=c.right_button=0; reject_input=0;
     c.mouse.captured=LIB_TRUE; c.mouse.window=(HWND)1; owner=(HWND)1;
     release_ok=0;

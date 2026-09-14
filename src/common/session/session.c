@@ -26,21 +26,6 @@ static common_ui_state common_session_ui_state(common_session_machine_state stat
     }
 }
 
-static common_ui_action common_session_map_ui_action(common_session_ui_action action)
-{
-    switch (action) {
-    case COMMON_SESSION_UI_ACTION_CREATE_WINDOW: return COMMON_UI_ACTION_CREATE_WINDOW;
-    case COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE:
-        return COMMON_UI_ACTION_CREATE_VM_CONSOLE;
-    case COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE: return COMMON_UI_ACTION_BIND_VM_CONSOLE;
-    case COMMON_SESSION_UI_ACTION_BIND_MONITOR: return COMMON_UI_ACTION_BIND_MONITOR;
-    case COMMON_SESSION_UI_ACTION_DESTROY_VM_CONSOLE:
-        return COMMON_UI_ACTION_DESTROY_VM_CONSOLE;
-    case COMMON_SESSION_UI_ACTION_DESTROY_WINDOW: return COMMON_UI_ACTION_DESTROY_WINDOW;
-    default: return COMMON_UI_ACTION_NONE;
-    }
-}
-
 static void common_session_clear_result(common_session_command_result *result)
 {
     if (result != NULL) *result = (common_session_command_result) { 0 };
@@ -93,15 +78,15 @@ static int common_session_arm_if_ready(common_session *session)
 
 static int common_session_drive(common_session *session)
 {
-    common_session_ui_action action;
+    common_ui_action action;
     lib_bool console_status_surface;
     if (session == NULL || session->ui == NULL || session->machine == NULL)
         return 0;
     common_ui_set_run_generation(session->ui,
         common_machine_run_generation(session->machine));
     action = common_session_state_take_action(&session->state);
-    if (action != COMMON_SESSION_UI_ACTION_NONE &&
-        common_ui_apply_action(session->ui, common_session_map_ui_action(action),
+    if (action != COMMON_UI_ACTION_NONE &&
+        common_ui_apply_action(session->ui, action,
             common_session_ui_state(session->state.presentation.runtime_actual)) != LIB_STATUS_OK)
         return 0;
     if (session->state.observed_frame_sequence == 0u ||
@@ -162,14 +147,12 @@ static int common_session_process_completed(common_session *session,
             session->state.monitor_actual, event->value.runtime_state, &result);
         common_session_state_note_runtime(&session->state, event->value.runtime_state);
     } else if (event->kind == COMMON_SESSION_EVENT_FRAME_COMPLETED) {
-        lib_u32 frame_run;
         lib_u32 sequence = event->value.frame.sequence;
         if (sequence > session->state.observed_frame_sequence &&
             common_machine_copy_published_frame(session->machine, &session->frame,
-                &frame_run) && session->frame.sequence == sequence &&
-            frame_run == event->run_generation)
-            (void)common_session_state_note_frame(&session->state, sequence,
-                event->value.frame.graphics);
+                event->run_generation))
+            (void)common_session_state_note_frame(&session->state, session->frame.sequence,
+                session->frame.graphics != 0u);
     } else if (event->kind == COMMON_SESSION_EVENT_COMPONENT_COMPLETED) {
         if (event->value.component.component == COMMON_SESSION_EVENT_COMPONENT_WINDOW)
             common_session_state_note_window(&session->state,

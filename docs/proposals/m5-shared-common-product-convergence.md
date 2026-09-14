@@ -111,7 +111,14 @@ recorded evidence, never by following successive isolated failures.
     shim; and prove corpus identity, Common/Lib gates, both NXVM architectures
     and the complete repository-only unit suite. This is an NXVM import and
     consumer-cutover subtask, not whole-task two-product execution acceptance.
-13. **S13: package and whole-task acceptance.** Independently review the
+13. **S13: canonical Lib and Common refresh.** Freeze SoftPC's next approved
+    project-owned `src/lib`, `src/common`, `test/lib` and `test/common` corpus;
+    replace NXVM's four trees byte-for-byte; directly adapt NXVM consumers to
+    its public contracts; and prove corpus identity, component boundaries,
+    both NXVM architectures and the complete repository-only unit suite.
+    This remains an NXVM import and consumer-cutover subtask, not whole-task
+    two-product execution acceptance.
+14. **S14: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.

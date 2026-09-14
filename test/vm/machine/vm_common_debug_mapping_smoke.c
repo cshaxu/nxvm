@@ -130,7 +130,7 @@ C_INT main(C_VOID)
             .operation = COMMON_MACHINE_DEBUG_CLEAR_EXECUTION_PLAN
         }, &result) || machine->debug.plan.kind !=
             COMMON_MACHINE_DEBUG_EXECUTION_NONE) goto failed;
-    common_machine_debug_invalidate(machine->executor);
+    if (!common_machine_stop(machine->executor)) goto failed;
     if (common_machine_debug_execute_with_lease(machine->executor, &lease,
             &(common_machine_debug_request){
                 .operation = COMMON_MACHINE_DEBUG_READ_REGISTER,

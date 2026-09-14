@@ -34,10 +34,9 @@ foreach(removed_file
 endforeach()
 
 foreach(required
-    "vm_product_console_debug_provider"
-    "vm_product_console_request_pause"
+    "common_debug_submit_line"
+    "common_debug_open"
     "vm_machine_common_debug_execute"
-    "vm_machine_request_pause"
     "vm_app_compose_ui"
     "common_ui_create"
     "common_ui_destroy")

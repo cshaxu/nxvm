@@ -12,7 +12,7 @@ struct common_machine {
     host_sync_mutex *frame_lock;
     int published_frame_index;
     lib_u32 published_frame_sequence;
-    lib_atomic_i32 published_frame_run_generation;
+    lib_u32 published_frame_run_generation;
     host_sync_event *command_event;
     host_sync_event *ready_event;
     host_sync_event *resume_event;
@@ -52,7 +52,7 @@ static void common_machine_notify_state(common_machine *machine,
             common_machine_run_generation(machine));
 }
 
-void common_machine_debug_invalidate(common_machine *machine)
+static void common_machine_debug_invalidate(common_machine *machine)
 {
     if (machine != NULL) (void)lib_atomic_i32_fetch_add_explicit(&machine->debug_generation, 1, LIB_MEMORY_ORDER_SEQ_CST);
 }
@@ -64,7 +64,7 @@ static void common_machine_invalidate_published_frame(common_machine *machine)
     memset(machine->frame_buffers[0], 0, sizeof(*machine->frame_buffers[0]));
     memset(machine->frame_buffers[1], 0, sizeof(*machine->frame_buffers[1]));
     machine->published_frame_index = 0;
-    lib_atomic_i32_exchange_explicit(&machine->published_frame_run_generation, 0, LIB_MEMORY_ORDER_SEQ_CST);
+    machine->published_frame_run_generation = 0u;
     host_sync_mutex_unlock(machine->frame_lock);
 }
 
@@ -120,7 +120,7 @@ static void common_machine_publish(common_machine *machine)
     }
     frame->sequence = ++machine->published_frame_sequence;
     generation = common_machine_run_generation(machine);
-    lib_atomic_i32_exchange_explicit(&machine->published_frame_run_generation, generation, LIB_MEMORY_ORDER_SEQ_CST);
+    machine->published_frame_run_generation = generation;
     machine->published_frame_index = staging_index;
     sink = machine->frame_sink;
     sink_context = machine->frame_context;
@@ -323,7 +323,6 @@ lib_status common_machine_create(common_machine **out_machine,
     *out_machine = NULL;
     machine = calloc(1u, sizeof(*machine));
     if (machine == NULL) return LIB_STATUS_NO_MEMORY;
-    lib_atomic_i32_initialize(&machine->published_frame_run_generation, 0);
     lib_atomic_i32_initialize(&machine->debug_requested, 0);
     lib_atomic_i32_initialize(&machine->debug_cancel_requested, 0);
     lib_atomic_i32_initialize(&machine->state, COMMON_MACHINE_STOPPED);
@@ -489,16 +488,16 @@ lib_bool common_machine_enqueue_input(common_machine *machine,
 }
 
 lib_bool common_machine_copy_published_frame(common_machine *machine,
-    kvm_frame *destination, lib_u32 *out_run_generation)
+    kvm_frame *destination, lib_u32 run_generation)
 {
     lib_bool copied;
     if (machine == NULL || destination == NULL) return LIB_FALSE;
     host_sync_mutex_lock(machine->frame_lock);
-    memcpy(destination, machine->frame_buffers[machine->published_frame_index],
-        sizeof(*destination));
-    if (out_run_generation != NULL)
-        *out_run_generation = (lib_u32)lib_atomic_i32_load_explicit(&machine->published_frame_run_generation, LIB_MEMORY_ORDER_SEQ_CST);
-    copied = destination->valid != 0u;
+    copied = machine->published_frame_run_generation == run_generation &&
+        machine->frame_buffers[machine->published_frame_index]->valid != 0u;
+    if (copied)
+        memcpy(destination, machine->frame_buffers[machine->published_frame_index],
+            sizeof(*destination));
     host_sync_mutex_unlock(machine->frame_lock);
     return copied;
 }
@@ -518,7 +517,7 @@ lib_u32 common_machine_published_frame_run_generation(const common_machine *mach
     lib_u32 generation;
     if (machine == NULL) return 0u;
     host_sync_mutex_lock(machine->frame_lock);
-    generation = (lib_u32)lib_atomic_i32_load_explicit(&machine->published_frame_run_generation, LIB_MEMORY_ORDER_SEQ_CST);
+    generation = machine->published_frame_run_generation;
     host_sync_mutex_unlock(machine->frame_lock);
     return generation;
 }

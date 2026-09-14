@@ -32,16 +32,6 @@ typedef enum common_session_console_actual {
     COMMON_SESSION_CONSOLE_VM
 } common_session_console_actual;
 
-typedef enum common_session_ui_action {
-    COMMON_SESSION_UI_ACTION_NONE,
-    COMMON_SESSION_UI_ACTION_CREATE_WINDOW,
-    COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE,
-    COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE,
-    COMMON_SESSION_UI_ACTION_BIND_MONITOR,
-    COMMON_SESSION_UI_ACTION_DESTROY_VM_CONSOLE,
-    COMMON_SESSION_UI_ACTION_DESTROY_WINDOW
-} common_session_ui_action;
-
 typedef struct common_session_presentation_plan {
     lib_bool window_enabled;
     lib_bool vm_console_enabled;

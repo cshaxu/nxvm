@@ -48,9 +48,9 @@ void common_session_reconciler_note_window(common_session_reconciler *reconciler
 {
     if (reconciler == NULL) return;
     reconciler->window_actual = exists != 0;
-    if ((exists && reconciler->in_flight == COMMON_SESSION_UI_ACTION_CREATE_WINDOW) ||
-        (!exists && reconciler->in_flight == COMMON_SESSION_UI_ACTION_DESTROY_WINDOW))
-        reconciler->in_flight = COMMON_SESSION_UI_ACTION_NONE;
+    if ((exists && reconciler->in_flight == COMMON_UI_ACTION_CREATE_WINDOW) ||
+        (!exists && reconciler->in_flight == COMMON_UI_ACTION_DESTROY_WINDOW))
+        reconciler->in_flight = COMMON_UI_ACTION_NONE;
 }
 
 void common_session_reconciler_note_vm_console(common_session_reconciler *reconciler,
@@ -58,9 +58,9 @@ void common_session_reconciler_note_vm_console(common_session_reconciler *reconc
 {
     if (reconciler == NULL) return;
     reconciler->vm_console_actual = exists != 0;
-    if ((exists && reconciler->in_flight == COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE) ||
-        (!exists && reconciler->in_flight == COMMON_SESSION_UI_ACTION_DESTROY_VM_CONSOLE))
-        reconciler->in_flight = COMMON_SESSION_UI_ACTION_NONE;
+    if ((exists && reconciler->in_flight == COMMON_UI_ACTION_CREATE_VM_CONSOLE) ||
+        (!exists && reconciler->in_flight == COMMON_UI_ACTION_DESTROY_VM_CONSOLE))
+        reconciler->in_flight = COMMON_UI_ACTION_NONE;
 }
 
 void common_session_reconciler_note_current_console(common_session_reconciler *reconciler,
@@ -69,10 +69,10 @@ void common_session_reconciler_note_current_console(common_session_reconciler *r
     if (reconciler == NULL) return;
     reconciler->current_console_actual = current;
     if ((current == COMMON_SESSION_CONSOLE_VM &&
-         reconciler->in_flight == COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE) ||
+         reconciler->in_flight == COMMON_UI_ACTION_BIND_VM_CONSOLE) ||
         (current == COMMON_SESSION_CONSOLE_MONITOR &&
-         reconciler->in_flight == COMMON_SESSION_UI_ACTION_BIND_MONITOR))
-        reconciler->in_flight = COMMON_SESSION_UI_ACTION_NONE;
+         reconciler->in_flight == COMMON_UI_ACTION_BIND_MONITOR))
+        reconciler->in_flight = COMMON_UI_ACTION_NONE;
 }
 
 common_session_presentation_plan common_session_reconciler_desired(const common_session_reconciler *reconciler)
@@ -89,39 +89,39 @@ common_session_presentation_plan common_session_reconciler_desired(const common_
     return plan;
 }
 
-common_session_ui_action common_session_reconciler_next_action(const common_session_reconciler *reconciler)
+common_ui_action common_session_reconciler_next_action(const common_session_reconciler *reconciler)
 {
     common_session_presentation_plan desired;
-    if (reconciler == NULL) return COMMON_SESSION_UI_ACTION_NONE;
-    if (reconciler->in_flight != COMMON_SESSION_UI_ACTION_NONE)
-        return COMMON_SESSION_UI_ACTION_NONE;
+    if (reconciler == NULL) return COMMON_UI_ACTION_NONE;
+    if (reconciler->in_flight != COMMON_UI_ACTION_NONE)
+        return COMMON_UI_ACTION_NONE;
 
     desired = common_session_reconciler_desired(reconciler);
     if (desired.vm_console_enabled && !reconciler->vm_console_actual)
-        return COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE;
+        return COMMON_UI_ACTION_CREATE_VM_CONSOLE;
     if (desired.vm_console_enabled &&
         reconciler->current_console_actual != COMMON_SESSION_CONSOLE_VM)
-        return COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE;
+        return COMMON_UI_ACTION_BIND_VM_CONSOLE;
     if (!desired.vm_console_enabled &&
         reconciler->current_console_actual != COMMON_SESSION_CONSOLE_MONITOR)
-        return COMMON_SESSION_UI_ACTION_BIND_MONITOR;
+        return COMMON_UI_ACTION_BIND_MONITOR;
     if (!desired.vm_console_enabled && reconciler->vm_console_actual)
-        return COMMON_SESSION_UI_ACTION_DESTROY_VM_CONSOLE;
+        return COMMON_UI_ACTION_DESTROY_VM_CONSOLE;
     /* Console activation may request foreground. Finish its ownership work
        before creating the Window that should receive the final activation. */
     if (desired.window_enabled && !reconciler->window_actual)
-        return COMMON_SESSION_UI_ACTION_CREATE_WINDOW;
+        return COMMON_UI_ACTION_CREATE_WINDOW;
     if (!desired.window_enabled && reconciler->window_actual)
-        return COMMON_SESSION_UI_ACTION_DESTROY_WINDOW;
-    return COMMON_SESSION_UI_ACTION_NONE;
+        return COMMON_UI_ACTION_DESTROY_WINDOW;
+    return COMMON_UI_ACTION_NONE;
 }
 
-common_session_ui_action common_session_reconciler_take_action(common_session_reconciler *reconciler)
+common_ui_action common_session_reconciler_take_action(common_session_reconciler *reconciler)
 {
-    common_session_ui_action action;
-    if (reconciler == NULL) return COMMON_SESSION_UI_ACTION_NONE;
+    common_ui_action action;
+    if (reconciler == NULL) return COMMON_UI_ACTION_NONE;
     action = common_session_reconciler_next_action(reconciler);
-    if (action != COMMON_SESSION_UI_ACTION_NONE)
+    if (action != COMMON_UI_ACTION_NONE)
         reconciler->in_flight = action;
     return action;
 }

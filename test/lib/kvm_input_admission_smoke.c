@@ -40,6 +40,8 @@ static void initialize(void)
     assert(kvm_hotkey_registry_register(&options.hotkeys, 'P',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "toggle") == LIB_STATUS_OK);
     assert(kvm_component_initialize(&window.base, &options, join, dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     lib_memory_set(&context, 0, sizeof(context));
     context.component = &window;
     count = attempts = reject_at = failures = 0;

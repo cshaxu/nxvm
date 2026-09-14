@@ -18,32 +18,32 @@ static lib_status kvm_component_notify_waiter(void *context)
 lib_status kvm_component_mailboxes_select_notify(kvm_component_mailboxes *mailboxes,
     kvm_mailbox_notify_fn notify, void *context)
 {
-    if (mailboxes == LIB_NULL || notify == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (mailboxes->notifier_selected) return LIB_STATUS_INVALID_STATE;
-    kvm_mailbox_wake_destroy(mailboxes->wake);
-    mailboxes->wake = LIB_NULL;
+    if (mailboxes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (mailboxes->notify != LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    if (notify == LIB_NULL) {
+        lib_status status = kvm_mailbox_wake_create(&mailboxes->wake);
+        if (status != LIB_STATUS_OK) return status;
+        notify = kvm_component_notify_waiter;
+        context = mailboxes->wake;
+    }
     mailboxes->notify = notify;
     mailboxes->notify_context = context;
-    mailboxes->notifier_selected = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
 lib_status kvm_component_mailboxes_notify(kvm_component_mailboxes *mailboxes)
 {
-    return mailboxes->notify(mailboxes->notify_context);
+    return mailboxes->notify == LIB_NULL ? LIB_STATUS_INVALID_STATE :
+        mailboxes->notify(mailboxes->notify_context);
 }
 
 lib_status kvm_component_mailboxes_create(kvm_component_mailboxes *mailboxes)
 {
-    lib_status status;
     if (mailboxes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_set(mailboxes, 0, sizeof(*mailboxes));
     lib_atomic_flag_clear(&mailboxes->frame_lock);
     lib_atomic_flag_clear(&mailboxes->control_lock);
-    status = kvm_mailbox_wake_create(&mailboxes->wake);
-    mailboxes->notify = kvm_component_notify_waiter;
-    mailboxes->notify_context = mailboxes->wake;
-    return status;
+    return LIB_STATUS_OK;
 }
 
 void kvm_component_mailboxes_destroy(kvm_component_mailboxes *mailboxes)

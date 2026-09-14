@@ -42,18 +42,18 @@ typedef struct kvm_component_mailboxes {
     lib_u32 control_head;
     lib_u32 control_count;
     lib_bool closed;
-    /* The native leaf may replace the default wait primitive once, during
-     * startup, with its own notifier.  It cannot be changed after that. */
-    lib_bool notifier_selected;
+    /* Selected once during startup; non-NULL notify means selection succeeded. */
     kvm_mailbox_wake *wake;
     kvm_mailbox_notify_fn notify;
     void *notify_context;
 } kvm_component_mailboxes;
 
+/* Initializes only mailbox data and locks, without allocating a wake object. */
 lib_status kvm_component_mailboxes_create(kvm_component_mailboxes *mailboxes);
 /* One-time startup selection, before publishing the component to any caller.
- * Replaces the default wait primitive. Context lives until worker join and
- * caller quiescence. Failure is after enqueue: do not replay the request. */
+ * NULL notify creates the default wait primitive; otherwise no wake is allocated.
+ * Failure leaves selection unset. Context lives until worker join and caller
+ * quiescence. After selection, notification failure is after enqueue: do not replay. */
 lib_status kvm_component_mailboxes_select_notify(kvm_component_mailboxes *mailboxes,
     kvm_mailbox_notify_fn notify, void *context);
 lib_status kvm_component_mailboxes_notify(kvm_component_mailboxes *mailboxes);

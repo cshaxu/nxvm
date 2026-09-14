@@ -48,8 +48,6 @@ typedef struct common_session_event {
 
 int common_session_queue_create(common_session_queue **out_queue);
 void common_session_queue_destroy(common_session_queue *queue);
-int common_session_queue_push_ux(common_session_queue *queue,
-    const kvm_input_event *event);
 int common_session_queue_push_kvm_for_run(common_session_queue *queue,
     const kvm_input_event *event, lib_u32 run_generation);
 int common_session_queue_push_monitor_line(common_session_queue *queue,

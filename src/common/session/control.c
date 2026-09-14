@@ -147,12 +147,6 @@ void common_session_queue_destroy(common_session_queue *queue)
     free(queue);
 }
 
-int common_session_queue_push_ux(common_session_queue *queue,
-    const kvm_input_event *event)
-{
-    return common_session_queue_push_kvm_for_run(queue, event, 0u);
-}
-
 int common_session_queue_push_kvm_for_run(common_session_queue *queue,
     const kvm_input_event *event, lib_u32 run_generation)
 {

@@ -56,6 +56,8 @@ int main(void)
     options.failure_context = &window_probe;
     assert(kvm_component_initialize(&window.base, &options, leaf_stop,
         leaf_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     for (index = 0u; index < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
         assert(kvm_window_set_title(&window, "x") == LIB_STATUS_OK);
     assert(kvm_window_set_title(&window, "x") == LIB_STATUS_LIMIT_EXCEEDED);
@@ -89,6 +91,8 @@ int main(void)
     options.failure_context = &console_probe;
     assert(kvm_component_initialize(&console.base, &options, leaf_stop,
         leaf_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&console.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     title.value.title[0] = 'x';
     for (index = 0u; index < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
         assert(kvm_component_enqueue_controls(&console.base, &title, 1u) ==

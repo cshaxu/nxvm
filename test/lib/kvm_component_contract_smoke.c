@@ -85,10 +85,16 @@ int main(void)
     options.hotkeys = hotkeys;
     assert(kvm_component_initialize(&first, &options, component_probe_stop,
         component_probe_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     assert(kvm_component_initialize(&second, &options, component_probe_stop,
         component_probe_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&second.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     assert(kvm_component_initialize(&third, &options, component_probe_stop,
         component_probe_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&third.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     assert(first.source_identity != 0u);
     assert(second.source_identity != 0u);
     assert(first.source_identity != second.source_identity);
@@ -120,6 +126,8 @@ int main(void)
     kvm_component_mailboxes_destroy(&first.mailboxes);
     assert(kvm_component_initialize(&first, &options, component_probe_stop,
         component_probe_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
 
     /* A frozen Window's delivery policy must not bypass matching. It silently
        consumes ordinary/mismatched records after kvm-base has attributed them,

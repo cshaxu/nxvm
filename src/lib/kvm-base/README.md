@@ -5,8 +5,8 @@ copied frame/input values, source-local hotkey matching, and private mailbox
 mechanics to `kvm-window` and `kvm-console`.
 
 Each mailbox selects one notification implementation exactly once before caller publication.
-Console retains the default wait primitive; Window replaces it with a native
-message notifier and releases the unused wait primitive. A second selection is
+Initialization allocates no wake. Console selects and creates the default wait
+primitive; Window directly selects its native message notifier. A second selection is
 rejected without changing the active notifier. Frame, control and
 terminal fault all use that selected entry, outside mailbox locks. Context
 remains valid through worker join; as with destruction, callers must quiesce

@@ -26,7 +26,7 @@ void common_session_state_note_window(common_session_state *state, int exists);
 void common_session_state_note_vm_console(common_session_state *state, int exists);
 void common_session_state_note_current_console(common_session_state *state,
     int vm_console_current);
-common_session_ui_action common_session_state_take_action(common_session_state *state);
+common_ui_action common_session_state_take_action(common_session_state *state);
 int common_session_state_monitor_is_current(const common_session_state *state);
 int common_session_state_monitor_is_running_graphics_surface(
     const common_session_state *state);

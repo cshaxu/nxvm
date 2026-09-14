@@ -2,6 +2,7 @@
 #define COMMON_SESSION_RECONCILER_H
 
 #include "common/session/presentation_plan.h"
+#include "common/ui/ui_interface.h"
 
 /* This reducer is presentation-only.  The control loop owns lifecycle
  * requests and runtime dispatch; this type sees completed runtime facts and
@@ -18,7 +19,7 @@ typedef struct common_session_reconciler {
     common_session_console_actual current_console_actual;
     /* A requested effect is not an actual fact.  Until its completion is
      * returned on the control FIFO, no second transition may be emitted. */
-    common_session_ui_action in_flight;
+    common_ui_action in_flight;
     lib_bool close_requested;
 } common_session_reconciler;
 
@@ -33,7 +34,7 @@ void common_session_reconciler_note_vm_console(common_session_reconciler *reconc
 void common_session_reconciler_note_current_console(common_session_reconciler *reconciler,
     common_session_console_actual current);
 common_session_presentation_plan common_session_reconciler_desired(const common_session_reconciler *reconciler);
-common_session_ui_action common_session_reconciler_next_action(const common_session_reconciler *reconciler);
-common_session_ui_action common_session_reconciler_take_action(common_session_reconciler *reconciler);
+common_ui_action common_session_reconciler_next_action(const common_session_reconciler *reconciler);
+common_ui_action common_session_reconciler_take_action(common_session_reconciler *reconciler);
 
 #endif

@@ -182,8 +182,10 @@ lib_bool common_machine_set_removable_media(common_machine *machine,
 common_machine_state common_machine_state_get(const common_machine *machine);
 lib_bool common_machine_enqueue_input(common_machine *machine,
     const kvm_input_event *event);
+/* Copy one complete frame only from the requested run. On rejection the
+ * destination is unchanged; content, sequence and route are one snapshot. */
 lib_bool common_machine_copy_published_frame(common_machine *machine,
-    kvm_frame *destination, lib_u32 *out_run_generation);
+    kvm_frame *destination, lib_u32 run_generation);
 lib_u32 common_machine_published_frame_sequence(const common_machine *machine);
 lib_u32 common_machine_published_frame_run_generation(const common_machine *machine);
 lib_u32 common_machine_run_generation(const common_machine *machine);
@@ -193,7 +195,6 @@ lib_status common_machine_debug_execute_with_lease(common_machine *machine,
     const common_machine_debug_lease *lease,
     const common_machine_debug_request *request,
     common_machine_debug_result *out_result);
-void common_machine_debug_invalidate(common_machine *machine);
 /* Asynchronous cancellation, allowed in every state; uses the existing queue. */
 void common_machine_debug_cancel(common_machine *machine);
 void common_machine_destroy(common_machine *machine);

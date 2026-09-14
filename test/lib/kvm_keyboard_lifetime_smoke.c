@@ -140,8 +140,12 @@ static void adapter_equivalence(unsigned scan)
     kvm_component_options options = { .input_sink = capture_event, .failure_sink = no_failure };
     options.input_context = &w;
     assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     options.input_context = &c;
     assert(kvm_component_initialize(&console.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&console.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     context.component = &window; console.worker_state = &state; window_context = &context;
     HWND handle = (HWND)1;
     LPARAM lp = (LPARAM)scan << 16;
@@ -270,6 +274,8 @@ static void repeat_delivery_failure(void)
     kvm_component_options options = { .input_context = &c,
         .input_sink = capture_event, .failure_sink = no_failure };
     assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+        LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     context.component = &window; window_context = &context;
     win32_window_proc((HWND)1, WM_KEYDOWN, 'A', 0x1e0005);
     assert(c.count == 2 && c.attempts == 3 && window.base.stopping);

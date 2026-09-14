@@ -138,6 +138,11 @@ int main(void)
     driver.copy_frame = fake_copy_frame;
     driver.execute_debug = fake_execute_debug;
     assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
+    frame.valid = 1u;
+    frame.sequence = 77u;
+    assert(!common_machine_copy_published_frame(machine, &frame,
+        common_machine_run_generation(machine)));
+    assert(frame.valid == 1u && frame.sequence == 77u);
     common_machine_set_state_sink(machine, note_state, &fake);
     common_machine_set_frame_sink(machine, note_frame, &fake);
     assert(common_debug_create(&debug) == LIB_STATUS_OK);
@@ -153,8 +158,14 @@ int main(void)
     assert(WaitForSingleObject(fake.running, 5000u) == WAIT_OBJECT_0);
     assert(WaitForSingleObject(fake.frame, 5000u) == WAIT_OBJECT_0);
     assert(InterlockedCompareExchange(&fake.resets, 0, 0) == 1);
-    assert(common_machine_copy_published_frame(machine, &frame, &generation));
+    generation = common_machine_run_generation(machine);
+    assert(common_machine_copy_published_frame(machine, &frame, generation));
     assert(frame.valid == 1u && generation == common_machine_run_generation(machine));
+    {
+        lib_u32 sequence = frame.sequence;
+        assert(!common_machine_copy_published_frame(machine, &frame, generation + 1u));
+        assert(frame.valid == 1u && frame.sequence == sequence);
+    }
     input.type = KVM_EVENT_KEY;
     input.data.key.pressed = 1u;
     assert(common_machine_enqueue_input(machine, &input));
@@ -194,6 +205,11 @@ int main(void)
     assert(common_machine_stop(machine));
     assert(WaitForSingleObject(fake.state_stopped, 5000u) == WAIT_OBJECT_0);
     assert(common_machine_state_get(machine) == COMMON_MACHINE_STOPPED);
+    {
+        lib_u32 sequence = frame.sequence;
+        assert(!common_machine_copy_published_frame(machine, &frame, generation));
+        assert(frame.valid == 1u && frame.sequence == sequence);
+    }
     common_machine_destroy(machine);
     CloseHandle(fake.input); CloseHandle(fake.frame); CloseHandle(fake.running);
     CloseHandle(fake.wake); CloseHandle(fake.reset_completed);

@@ -48,42 +48,42 @@ int main(void)
     common_session_reconciler_note_runtime(&state, COMMON_SESSION_MACHINE_RUNNING);
     common_session_reconciler_note_frame(&state, 0);
     assert(common_session_reconciler_take_action(&state) ==
-        COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE);
+        COMMON_UI_ACTION_CREATE_VM_CONSOLE);
     common_session_reconciler_note_vm_console(&state, 1);
     assert(common_session_reconciler_take_action(&state) ==
-        COMMON_SESSION_UI_ACTION_BIND_VM_CONSOLE);
+        COMMON_UI_ACTION_BIND_VM_CONSOLE);
     common_session_reconciler_note_current_console(&state, COMMON_SESSION_CONSOLE_VM);
-    assert(common_session_reconciler_next_action(&state) == COMMON_SESSION_UI_ACTION_NONE);
+    assert(common_session_reconciler_next_action(&state) == COMMON_UI_ACTION_NONE);
 
     /* Console ownership work precedes Window creation/final activation. */
     common_session_reconciler_note_frame(&state, 1);
     assert(common_session_reconciler_take_action(&state) ==
-        COMMON_SESSION_UI_ACTION_BIND_MONITOR);
+        COMMON_UI_ACTION_BIND_MONITOR);
     common_session_reconciler_note_current_console(&state, COMMON_SESSION_CONSOLE_MONITOR);
     assert(common_session_reconciler_take_action(&state) ==
-        COMMON_SESSION_UI_ACTION_DESTROY_VM_CONSOLE);
+        COMMON_UI_ACTION_DESTROY_VM_CONSOLE);
     common_session_reconciler_note_vm_console(&state, 0);
     assert(common_session_reconciler_take_action(&state) ==
-        COMMON_SESSION_UI_ACTION_CREATE_WINDOW);
+        COMMON_UI_ACTION_CREATE_WINDOW);
     common_session_reconciler_note_window(&state, 1);
 
     /* Pause is a completed runtime fact.  It retains this graphics Window
        but keeps monitor current; Window close only changes presentation. */
     common_session_reconciler_note_runtime(&state, COMMON_SESSION_MACHINE_PAUSED);
-    assert(common_session_reconciler_next_action(&state) == COMMON_SESSION_UI_ACTION_NONE);
+    assert(common_session_reconciler_next_action(&state) == COMMON_UI_ACTION_NONE);
     common_session_reconciler_note_window_close(&state);
     assert(common_session_reconciler_take_action(&state) ==
-        COMMON_SESSION_UI_ACTION_DESTROY_WINDOW);
+        COMMON_UI_ACTION_DESTROY_WINDOW);
     common_session_reconciler_note_window(&state, 0);
-    assert(common_session_reconciler_next_action(&state) == COMMON_SESSION_UI_ACTION_NONE);
+    assert(common_session_reconciler_next_action(&state) == COMMON_UI_ACTION_NONE);
 
     /* Stopped clears the previous route; a later running fact cannot inherit
        an old Window until runtime has supplied a new completed frame. */
     common_session_reconciler_note_runtime(&state, COMMON_SESSION_MACHINE_STOPPED);
     common_session_reconciler_note_runtime(&state, COMMON_SESSION_MACHINE_RUNNING);
-    assert(common_session_reconciler_next_action(&state) == COMMON_SESSION_UI_ACTION_NONE);
+    assert(common_session_reconciler_next_action(&state) == COMMON_UI_ACTION_NONE);
     common_session_reconciler_note_frame(&state, 0);
     assert(common_session_reconciler_take_action(&state) ==
-        COMMON_SESSION_UI_ACTION_CREATE_VM_CONSOLE);
+        COMMON_UI_ACTION_CREATE_VM_CONSOLE);
     return 0;
 }

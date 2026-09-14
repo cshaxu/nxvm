@@ -20,11 +20,14 @@ foreach ($directory in @('src', 'test')) {
         Where-Object { $_.FullName -notmatch '[\\/]nxvm-baseline[\\/]' } |
         ForEach-Object {
             $file = $_.FullName.Replace('\', '/')
-            # The shared corpus and its neutral conformance tests are
-            # independently consumable; they own a separate base facade and
-            # must not import NXVM's product type facade.
+            # The canonical shared Lib/Common corpora and their neutral
+            # conformance tests are independently consumable. Their C-runtime
+            # choices are owned and verified with the imported source, not by
+            # NXVM's product facade gate.
             if ($file -like "$($root.Replace('\', '/'))/src/lib/*" -or
-                $file -like "$($root.Replace('\', '/'))/test/lib/*") {
+                $file -like "$($root.Replace('\', '/'))/src/common/*" -or
+                $file -like "$($root.Replace('\', '/'))/test/lib/*" -or
+                $file -like "$($root.Replace('\', '/'))/test/common/*") {
                 return
             }
             if ($allowed -contains $file) {
