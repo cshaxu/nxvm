@@ -2,11 +2,11 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
-#include "vm/machine/runtime/display.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/display.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 static C_VOID vm_display_s5_port_write(vm_machine *session, type_unsigned_16 port,
     type_unsigned_8 value)

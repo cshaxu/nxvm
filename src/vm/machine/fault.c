@@ -1,7 +1,7 @@
 #include "type.h"
 
-#include "vm/machine/runtime/fault.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/fault.h"
+#include "vm/machine/machine_private.h"
 
 C_VOID vm_machine_fault_clear(vm_machine *session)
 {

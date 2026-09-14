@@ -3,7 +3,7 @@
 
 #include "type.h"
 #include "core/machine/rtc.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 static inline C_VOID vm_model40_fixture_cmos_seed(
     type_unsigned_8 bytes[VM_MACHINE_CMOS_SEED_BYTES])

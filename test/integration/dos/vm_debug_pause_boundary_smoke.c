@@ -1,5 +1,5 @@
 #include "type.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 #include <windows.h>
 
@@ -7,7 +7,7 @@
 
 
 
-#include "vm/machine/runtime/control.h"
+#include "vm/machine/control.h"
 
 #include "test/integration/support/session_yaml.h"
 

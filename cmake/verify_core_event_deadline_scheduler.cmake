@@ -10,9 +10,9 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/execution_provider.h"
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h"
     machine_interface_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/kbc.c" kbc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
     machine_devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/media/fdd.c" fdd_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/media/hdd.c" hdd_source)

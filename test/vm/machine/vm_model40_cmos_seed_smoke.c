@@ -3,8 +3,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "core/machine/rtc.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_private.h"
 #include "../support/rom/model40_session_assets.h"
 
 static type_unsigned_8 vm_model40_cmos_read(vm_machine *session,

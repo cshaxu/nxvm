@@ -4,7 +4,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 type_status vm_machine_waiting_advance(vm_machine *session,
     const core_machine_run_result *result, C_INT *out_advanced);

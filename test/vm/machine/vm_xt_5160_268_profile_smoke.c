@@ -3,8 +3,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/port.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
 #include "vm/app/catalog.h"
 #include "vm/profile/xt/xt_5160_268.h"
 

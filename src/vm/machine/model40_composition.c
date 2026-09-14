@@ -1,8 +1,8 @@
-#include "vm/machine/runtime/model40_composition.h"
+#include "vm/machine/model40_composition.h"
 
-#include "vm/machine/runtime/display.h"
+#include "vm/machine/display.h"
 #include "vm/machine/media/media.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 static C_VOID vm_machine_model40_capture_fdc_terminal(C_VOID *opaque,
     const core_machine_fdc_terminal_observation *observation)

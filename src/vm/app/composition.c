@@ -1,9 +1,9 @@
 #include "type.h"
 
 #include "vm/app/composition.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 #include "vm/app/config.h"
-#include "vm/machine/runtime/frame.h"
+#include "vm/machine/frame.h"
 
 struct vm_app {
     vm_machine *machine;

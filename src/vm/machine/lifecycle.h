@@ -10,9 +10,9 @@ extern "C" {
 #include "type.h"
 
 
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/executor_state.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/control.h"
+#include "vm/machine/executor_state.h"
 
 type_status vm_machine_start(vm_machine *machine);
 type_status vm_machine_reset(vm_machine *machine);

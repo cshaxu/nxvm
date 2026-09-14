@@ -8,11 +8,11 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/fault.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/control.h"
+#include "vm/machine/fault.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)

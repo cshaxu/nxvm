@@ -3,9 +3,9 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/port.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/machine_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 #include "../../core/support/core_machine_cpu_fixture.h"

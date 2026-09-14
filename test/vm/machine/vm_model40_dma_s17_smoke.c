@@ -3,9 +3,9 @@
 #include "core/machine/dma.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)

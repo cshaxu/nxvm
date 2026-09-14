@@ -1,5 +1,5 @@
 #include "type.h"
-#include "vm/machine/runtime/executor_state.h"
+#include "vm/machine/executor_state.h"
 
 struct vm_machine_executor_state {
     atomic_bool active;

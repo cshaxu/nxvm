@@ -5,7 +5,7 @@
 
 #include "common/machine/machine_interface.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 lib_status vm_machine_common_debug_execute(void *context,
     const common_machine_debug_request *request,

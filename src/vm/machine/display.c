@@ -2,14 +2,14 @@
 
 #include "core/machine/display_interface.h"
 
-#include "vm/machine/runtime/display.h"
-#include "vm/machine/runtime/frame.h"
+#include "vm/machine/display.h"
+#include "vm/machine/frame.h"
 
 #include "core/machine/guest_display_frame.h"
 
 #include "lib/host/clock_interface.h"
 
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 #define VM_MACHINE_DISPLAY_CADENCE_MILLISECONDS 16u
 

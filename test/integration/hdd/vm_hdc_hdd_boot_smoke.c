@@ -3,9 +3,9 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/waiting.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/waiting.h"
+#include "vm/machine/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_HDC_HDD_BOOT_ADDRESS 0x00007c00u

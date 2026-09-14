@@ -2,8 +2,8 @@
 
 #include "core/machine/media_interface.h"
 #include "vm/machine/media/media.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
 #include "vm/machine/media/fdd.h"
 #include "../support/rom/model40_session_assets.h"
 

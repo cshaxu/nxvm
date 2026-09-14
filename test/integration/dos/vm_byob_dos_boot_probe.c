@@ -12,11 +12,11 @@
 #include "core/machine/retirement_observation_interface.h"
 #include "core/machine/trace_interface.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/control.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/waiting.h"
 
 #define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 90000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u

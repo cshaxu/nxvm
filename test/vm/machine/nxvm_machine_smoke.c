@@ -1,9 +1,9 @@
 #include "type.h"
 
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/control.h"
+#include "vm/machine/lifecycle.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT verify(C_VOID)

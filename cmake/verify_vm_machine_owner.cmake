@@ -11,8 +11,8 @@ if(EXISTS "${PROJECT_SOURCE_DIR}/src/vm/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor source root remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/event_interface.h" event_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/event_interface.h" event_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/composition.c" app_source)
 
 # Common owns the sole lifecycle queue and worker.  App composition constructs

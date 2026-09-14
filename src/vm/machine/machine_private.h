@@ -1,7 +1,7 @@
 #ifndef VM_MACHINE_H
 #define VM_MACHINE_H
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/media_interface.h"
@@ -9,16 +9,16 @@
 #include "core/machine/guest_input_interface.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "lib/host/sync_interface.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/fault.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/model40_composition.h"
+#include "vm/machine/control.h"
+#include "vm/machine/fault.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/model40_composition.h"
 #include "vm/profile/default_profile/external_pc_at_rom.h"
 #include "vm/machine/debug.h"
 #include "vm/machine/media/fdd_private.h"
 #include "vm/machine/media/hdd_private.h"
 #include "common/machine/machine_interface.h"
-#include "vm/machine/runtime/event_interface.h"
+#include "vm/machine/event_interface.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "vm/profile/device/floppy.h"
 #include "vm/profile/model40/model40_private.h"

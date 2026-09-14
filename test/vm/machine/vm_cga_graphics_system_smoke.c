@@ -2,8 +2,8 @@
 
 #include "core/machine/entry_plan_interface.h"
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
 #include "../support/rom/session_assets.h"
 
 #define VM_CGA_GRAPHICS_BOOT_BUDGET 500000u

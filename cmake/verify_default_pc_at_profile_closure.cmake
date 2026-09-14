@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/external_pc_at_rom.c"
     firmware_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)

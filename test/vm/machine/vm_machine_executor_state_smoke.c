@@ -1,4 +1,4 @@
-#include "vm/machine/runtime/executor_state.h"
+#include "vm/machine/executor_state.h"
 
 typedef enum session_state_command {
     SESSION_STATE_START,

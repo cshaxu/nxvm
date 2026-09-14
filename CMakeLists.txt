@@ -1205,19 +1205,19 @@ set(VM_APP_SOURCES
     src/vm/app/config.c
 )
 set(VM_MACHINE_RUNTIME_SOURCES
-    src/vm/machine/runtime/debug_adapter.c
-    src/vm/machine/runtime/display.c
-    src/vm/machine/runtime/frame.c
-    src/vm/machine/runtime/lifecycle.c
-    src/vm/machine/runtime/machine.c
-    src/vm/machine/runtime/control.c
-    src/vm/machine/runtime/fault.c
-    src/vm/machine/runtime/runner.c
-    src/vm/machine/runtime/executor_state.c
-    src/vm/machine/runtime/waiting.c
-    src/vm/machine/runtime/machine_devices.c
-    src/vm/machine/runtime/model40_composition.c
-    src/vm/machine/runtime/machine_info.c
+    src/vm/machine/debug_adapter.c
+    src/vm/machine/display.c
+    src/vm/machine/frame.c
+    src/vm/machine/lifecycle.c
+    src/vm/machine/machine.c
+    src/vm/machine/control.c
+    src/vm/machine/fault.c
+    src/vm/machine/runner.c
+    src/vm/machine/executor_state.c
+    src/vm/machine/waiting.c
+    src/vm/machine/machine_devices.c
+    src/vm/machine/model40_composition.c
+    src/vm/machine/machine_info.c
 )
 set(VM_MACHINE_SOURCES
     src/vm/machine/debug.c
@@ -1290,7 +1290,7 @@ add_executable(core-machine-guest-input-source-smoke
 )
 target_link_libraries(core-machine-guest-input-source-smoke PRIVATE core-machine-boundary)
 add_executable(vm-machine-executor-state-smoke
-    test/vm/machine/runtime/vm_machine_executor_state_smoke.c)
+    test/vm/machine/vm_machine_executor_state_smoke.c)
 target_link_libraries(vm-machine-executor-state-smoke PRIVATE vm-machine)
 
 add_executable(vm-keyboard-host-ingress-smoke
@@ -3573,7 +3573,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-app|src/vm/app/keyboard.c|keyboard-product"
     "vm-app|src/vm/app/recorder.c|recorder-product"
     "common-ui|src/common/ui/ui.c|presentation-leaf"
-    "vm-machine|src/vm/machine/runtime/frame.c|display-adaptation"
+    "vm-machine|src/vm/machine/frame.c|display-adaptation"
     "vm-app|src/vm/app/catalog.c|session-catalog"
     "common-session|src/common/session/session.c|session-owner"
     "common-session|src/common/session/control.c|session-owner"
@@ -3585,18 +3585,18 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-media|src/vm/machine/media/hdd.c|vm-media"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
     "vm-app|src/vm/app/config.c|session-composition"
-    "vm-machine|src/vm/machine/runtime/debug_adapter.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/display.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/lifecycle.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/machine.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/control.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/executor_state.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/fault.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/runner.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/waiting.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/machine_devices.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/model40_composition.c|vm-machine"
-    "vm-machine|src/vm/machine/runtime/machine_info.c|vm-machine")
+    "vm-machine|src/vm/machine/debug_adapter.c|vm-machine"
+    "vm-machine|src/vm/machine/display.c|vm-machine"
+    "vm-machine|src/vm/machine/lifecycle.c|vm-machine"
+    "vm-machine|src/vm/machine/machine.c|vm-machine"
+    "vm-machine|src/vm/machine/control.c|vm-machine"
+    "vm-machine|src/vm/machine/executor_state.c|vm-machine"
+    "vm-machine|src/vm/machine/fault.c|vm-machine"
+    "vm-machine|src/vm/machine/runner.c|vm-machine"
+    "vm-machine|src/vm/machine/waiting.c|vm-machine"
+    "vm-machine|src/vm/machine/machine_devices.c|vm-machine"
+    "vm-machine|src/vm/machine/model40_composition.c|vm-machine"
+    "vm-machine|src/vm/machine/machine_info.c|vm-machine")
 string(REPLACE ";" "\n" project_t345_s4_residual_contents
     "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")
 file(GENERATE

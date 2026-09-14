@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 #include "vm/app/config.h"
 
 static C_INT vm_app_config_parse_cpu(const C_CHAR *value,

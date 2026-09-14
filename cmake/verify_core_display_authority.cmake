@@ -6,11 +6,11 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c" core_plan_sour
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_display.c" core_display_source)
 set(core_source "${core_plan_source}${core_display_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/display.c" display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/display.c" display_source)
 
 foreach(required IN ITEMS "core_machine_display_config"
     "core_machine_configure_display" "core_machine_display_ports_are_vadp"
@@ -37,9 +37,9 @@ endif()
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
     "core_machine_vadp_configure_" "core_machine_install_port_provider")
     foreach(vm_source IN ITEMS
-        "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c"
-        "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/display.c")
-        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c")
+        "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c"
+        "${PROJECT_SOURCE_DIR}/src/vm/machine/display.c")
+        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c")
             set(vm_source_text "${machine_source}")
         else()
             set(vm_source_text "${display_source}")

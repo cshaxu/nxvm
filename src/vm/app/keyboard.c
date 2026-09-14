@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "vm/app/keyboard.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 static C_VOID vm_app_keyboard_clear_result(common_session_command_result *result)
 {

@@ -1,9 +1,9 @@
 #include "type.h"
 
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/control.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 C_INT main(C_VOID)
 {

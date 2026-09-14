@@ -4,9 +4,9 @@
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
 static C_INT t386_s11_session_route(const vm_machine *session,

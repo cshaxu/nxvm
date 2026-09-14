@@ -2,8 +2,8 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/model40_session_assets.h"
 
 static C_INT vm_model40_d4_read(core_machine *machine,

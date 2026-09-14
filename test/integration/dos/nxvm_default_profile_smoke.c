@@ -1,8 +1,8 @@
 #include "type.h"
 
 #include "core/machine/memory.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/lifecycle.h"
 #include "vm/machine/media/fdd.h"
 #include "vm/machine/media/hdd.h"
 #include "test/integration/support/session_yaml.h"

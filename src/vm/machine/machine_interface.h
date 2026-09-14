@@ -6,7 +6,7 @@
 #include "core/machine/cpu_interface.h"
 #include "core/machine/fpu_interface.h"
 #include "core/machine/guest_input_interface.h"
-#include "vm/machine/runtime/event_interface.h"
+#include "vm/machine/event_interface.h"
 #include "vm/profile/byob/blob.h"
 #include "vm/profile/default_profile/external_pc_at_rom.h"
 #include "common/machine/machine_interface.h"

@@ -2,8 +2,8 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/waiting.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_T287_TRACE_BUDGET 2000000u

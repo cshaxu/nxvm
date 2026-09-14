@@ -1,9 +1,9 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 #include "../../../support/rom/model40_session_assets.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 static C_INT vm_model40_rom_read(core_machine *machine,
     type_unsigned_32 physical, type_unsigned_8 expected)

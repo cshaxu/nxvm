@@ -5,7 +5,7 @@
 
 #include "common/session/session_interface.h"
 #include "common/ui/ui_interface.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 #include "vm/request_interface.h"
 typedef struct vm_app vm_app;
 

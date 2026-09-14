@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 #include "lib/storage/file_interface.h"
 #include "vm/profile/byob/blob.h"
@@ -87,11 +87,11 @@ static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
 }
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/display.h"
+#include "vm/machine/control.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/display.h"
 #include "vm/machine/media/media.h"
-#include "vm/machine/runtime/machine_devices.h"
+#include "vm/machine/machine_devices.h"
 #include "vm/machine/media/fdd.h"
 #include "vm/machine/media/hdd.h"
 #include "vm/profile/default_profile/keyboard_mapper.h"

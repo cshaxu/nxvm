@@ -5,9 +5,9 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/hdc.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/runtime/waiting.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/waiting.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
 
 #define VM_ATA253_BOOT_BUDGET 800000u
 #define VM_ATA253_RUN_BUDGET 400000u

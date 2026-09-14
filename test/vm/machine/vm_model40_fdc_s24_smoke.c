@@ -4,8 +4,8 @@
 #include "core/machine/fdc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/lifecycle.h"
 #include "vm/machine/media/fdd.h"
 #include "../support/rom/model40_session_assets.h"
 

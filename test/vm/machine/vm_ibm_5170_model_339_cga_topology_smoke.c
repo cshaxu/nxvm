@@ -3,9 +3,9 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
 
 static C_INT vm_model_339_cga_topology(C_VOID)

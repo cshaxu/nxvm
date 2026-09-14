@@ -4,12 +4,12 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/fault.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/control.h"
+#include "vm/machine/fault.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
 static C_INT vm_fault_outcome_prepare(vm_machine *session)

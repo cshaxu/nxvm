@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 #include "vm/request_interface.h"
 
 /* Resolve product configuration into the public VM-machine construction

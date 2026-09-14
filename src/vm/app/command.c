@@ -12,7 +12,7 @@
 #include "common/session/session_interface.h"
 #include "common/ui/ui_interface.h"
 #include "vm/app/composition.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 #include "vm/app/catalog.h"
 #include "vm/app/command.h"
 #include "vm/app/keyboard.h"

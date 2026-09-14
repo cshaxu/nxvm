@@ -167,7 +167,13 @@ recorded evidence, never by following successive isolated failures.
     binding and destroys the VM adapter.  Prove exact Common/test identity and
     the new shutdown race proof; do not fork Common or add a second NXVM
     cleanup path.
-20. **S20: package and whole-task acceptance.** Independently review the
+20. **S20: VM-machine responsibility layout.** Remove the misleading
+    `vm/machine/runtime` shell by relocating its machine-driver implementation
+    directly beneath `vm/machine`. Keep `vm/machine/media` as the one Core
+    FDD/HDD host-storage-provider adaptation, and keep paused-Debug mapping
+    within the same machine adapter. Update includes, CMake and owner gates
+    atomically; do not add a generic `compat` layer or alter runtime behavior.
+21. **S21: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.

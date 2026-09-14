@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/machine/runtime/frame.h"
+#include "vm/machine/frame.h"
 
 C_INT main(C_VOID)
 {

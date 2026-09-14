@@ -1,8 +1,8 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
 
 int main(C_VOID)
 {

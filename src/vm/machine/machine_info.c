@@ -3,11 +3,11 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 #include "vm/machine/media/fdd.h"
 #include "vm/machine/media/hdd.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/fault.h"
+#include "vm/machine/control.h"
+#include "vm/machine/fault.h"
 
 type_status vm_machine_get_information(const vm_machine *session,
     vm_machine_information *out_information)

@@ -3,8 +3,8 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/waiting.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_CGA_DOS_BOOT_BUDGET 800000u

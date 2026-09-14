@@ -1,12 +1,12 @@
 #include "type.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 
 
 
 #include "../../core/support/core_machine_cpu_fixture.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 C_INT main(C_VOID)
 {

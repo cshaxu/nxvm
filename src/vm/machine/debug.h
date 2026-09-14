@@ -9,8 +9,8 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/debug_interface.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/control.h"
+#include "vm/machine/machine_interface.h"
 
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 

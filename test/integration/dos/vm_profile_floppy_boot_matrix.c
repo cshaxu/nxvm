@@ -5,8 +5,8 @@
 #include "core/machine/guest_presentation_mailbox_interface.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_private.h"
 #include "vm/profile/device/floppy.h"
 #include "test/integration/support/session_yaml.h"
 

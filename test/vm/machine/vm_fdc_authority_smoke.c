@@ -1,15 +1,15 @@
 #include "type.h"
 #include "core/machine/machine.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 
 
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 #include "vm/machine/media/media.h"
 
-#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/lifecycle.h"
 
 #include "core/machine/fdc.h"
 #include "../support/rom/session_assets.h"

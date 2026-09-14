@@ -2,8 +2,8 @@
 
 #include "core/machine/machine.h"
 #include "lib/host/sync_interface.h"
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/machine_private.h"
 #include "../support/common_machine_fixture.h"
 #include "../support/rom/session_assets.h"
 

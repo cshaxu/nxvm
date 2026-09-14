@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c"
     machine_source)
 
 set(forbidden_vm_cpu_pic_wiring

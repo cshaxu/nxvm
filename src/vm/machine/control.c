@@ -9,22 +9,22 @@
 
 #include "vm/machine/debug.h"
 
-#include "vm/machine/runtime/machine_devices.h"
+#include "vm/machine/machine_devices.h"
 
-#include "vm/machine/runtime/fault.h"
+#include "vm/machine/fault.h"
 
 #include "core/machine/machine_interface.h"
 
 #include "lib/host/sync_interface.h"
 
-#include "vm/machine/runtime/control.h"
+#include "vm/machine/control.h"
 
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/runner.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/runner.h"
 
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
-#include "vm/machine/runtime/display.h"
+#include "vm/machine/display.h"
 
 static type_status vm_machine_control_reset_machine(vm_machine *machine)
 {

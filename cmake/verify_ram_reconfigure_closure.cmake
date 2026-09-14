@@ -5,7 +5,7 @@ get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" ABSOLUTE)
 
 set(machine_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
 set(memory_source "${PROJECT_SOURCE_DIR}/src/core/machine/memory.c")
-set(machine_runtime_source "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c")
+set(machine_runtime_source "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c")
 
 foreach(file IN ITEMS "${machine_source}" "${memory_source}" "${machine_runtime_source}")
     if(NOT EXISTS "${file}")

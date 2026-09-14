@@ -1,9 +1,9 @@
 #include "type.h"
 
-#include "vm/machine/runtime/lifecycle.h"
-#include "vm/machine/runtime/runner.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/lifecycle.h"
+#include "vm/machine/runner.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/machine_interface.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "../support/rom/session_assets.h"
 

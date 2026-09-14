@@ -8,9 +8,9 @@ set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/clock.c" clock_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/execution_provider.h"
     provider_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile_private.h"
     profile_header)

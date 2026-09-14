@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/machine/runtime/frame.h"
+#include "vm/machine/frame.h"
 
 type_status vm_machine_frame_from_display(
     const vm_machine_display_event *source, kvm_frame *destination)

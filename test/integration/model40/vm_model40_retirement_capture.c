@@ -4,8 +4,8 @@
 #include "core/machine/machine.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/waiting.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
 /* DeskPro firmware performs a complete multi-pass RAM verification before its

@@ -1,8 +1,8 @@
-#include "vm/machine/runtime/debug_adapter.h"
+#include "vm/machine/debug_adapter.h"
 
 #include "core/machine/debug_interface.h"
 #include "vm/machine/debug.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 static type_status vm_machine_common_debug_map_watch(
     common_machine_debug_watch_kind source,

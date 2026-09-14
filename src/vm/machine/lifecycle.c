@@ -4,17 +4,17 @@
 
 #include "type.h"
 
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/control.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/control.h"
 
-#include "vm/machine/runtime/machine_devices.h"
+#include "vm/machine/machine_devices.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 
 #include "lib/host/sync_interface.h"
 
-#include "vm/machine/runtime/debug_adapter.h"
+#include "vm/machine/debug_adapter.h"
 
 #include "vm/machine/debug.h"
 
@@ -22,11 +22,11 @@
 
 #include "core/machine/guest_input_interface.h"
 
-#include "vm/machine/runtime/display.h"
-#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/display.h"
+#include "vm/machine/waiting.h"
 
 
-#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/lifecycle.h"
 
 static C_VOID vm_machine_input_submit(C_VOID *context,
     const core_machine_guest_input_event *event)

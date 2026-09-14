@@ -1,8 +1,8 @@
 #ifndef TEST_VM_COMMON_MACHINE_FIXTURE_H
 #define TEST_VM_COMMON_MACHINE_FIXTURE_H
 
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/machine_interface.h"
 
 static type_status vm_test_common_machine_bind(vm_machine *machine)
 {

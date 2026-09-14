@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 #include "../support/rom/model40_session_assets.h"
 
 static C_INT read_byte(core_machine *machine, type_unsigned_32 physical,

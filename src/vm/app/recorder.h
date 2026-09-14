@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 typedef struct vm_app_recorder vm_app_recorder;
 

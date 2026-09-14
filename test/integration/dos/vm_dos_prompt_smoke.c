@@ -11,11 +11,11 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 
-#include "vm/machine/runtime/lifecycle.h"
+#include "vm/machine/lifecycle.h"
 
-#include "vm/machine/runtime/control.h"
+#include "vm/machine/control.h"
 
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u

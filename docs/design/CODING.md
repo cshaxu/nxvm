@@ -22,7 +22,8 @@ src/
   vm/
     main.c
     app/{catalog,command,composition,config,recorder,version}/
-    machine/{media,runtime}/
+    machine/
+      media/
     {platform,profile,session}/
   mantle/
     composition/

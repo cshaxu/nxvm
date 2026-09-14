@@ -90,7 +90,7 @@ assembly owner: it maps those copied requests to Core, publishes copied
 lifecycle, media-completion, fault and display facts, and exposes bounded
 paused-Debug operations through the common lease contract. Neither owner
 selects a host surface or owns the process Console. The copied display/input
-ABI sits with `vm/machine/runtime`, beside the adapter that produces and
+ABI sits with `vm/machine`, beside the adapter that produces and
 consumes it; it contains no Core, executor, session, or UI pointer.
 
 `common/session` is the sole product-control reducer. Its one FIFO receives

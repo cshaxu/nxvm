@@ -6,9 +6,9 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/runtime/machine_interface.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/machine_interface.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/waiting.h"
 
 #define VM_T287_PROBE_FDD_BYTES (1440u * 1024u)
 #define VM_T287_PROBE_BUDGET 500000u

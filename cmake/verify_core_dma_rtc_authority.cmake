@@ -7,12 +7,12 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" core_board_so
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" core_scheduler_source)
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
     devices_source)
 
 foreach(required IN ITEMS "core_machine_configure_dma"

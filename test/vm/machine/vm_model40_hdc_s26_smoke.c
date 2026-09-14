@@ -3,7 +3,7 @@
 #include "core/machine/hdc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 #include "vm/machine/media/hdd.h"
 #include "../support/rom/model40_session_assets.h"
 

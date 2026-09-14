@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/guest_input_interface.h" input_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/guest_input.c" input_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/core/machine/core_machine_guest_input_source_smoke.c"
     input_smoke_source)
 

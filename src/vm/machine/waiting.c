@@ -2,9 +2,9 @@
 
 #include "lib/host/sync_interface.h"
 #include "lib/host/clock_interface.h"
-#include "vm/machine/runtime/control.h"
-#include "vm/machine/runtime/machine_private.h"
-#include "vm/machine/runtime/waiting.h"
+#include "vm/machine/control.h"
+#include "vm/machine/machine_private.h"
+#include "vm/machine/waiting.h"
 
 /* Compare positive rational values without cross multiplication overflow. */
 C_INT vm_machine_pacing_ratio_compare(type_unsigned_64 left_numerator,

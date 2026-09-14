@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 #include "../support/rom/session_assets.h"
-#include "vm/machine/runtime/machine_private.h"
+#include "vm/machine/machine_private.h"
 
 #define VM_HOST_CANCELLATION_F9_SCAN_CODE 0x43u
 #define VM_HOST_CANCELLATION_F9_VIRTUAL_KEY 0x78u

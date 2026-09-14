@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "vm/machine/runtime/machine_interface.h"
+#include "vm/machine/machine_interface.h"
 
 static inline C_VOID vm_test_default_pc_at_assets(vm_machine_assets *assets,
     type_unsigned_8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES])
