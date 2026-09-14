@@ -35,6 +35,11 @@ The machine debug contract is synchronous to the control-thread caller and
 serviced by the existing paused executor. Disassembly reports instruction byte
 count separately from text length; callers must not use text length as a PC step.
 
+Machine shutdown synchronously joins its worker and all callbacks without
+freeing the machine object. The serialized owner may then release callback
+targets and finally destroy the machine/driver; destroy reuses shutdown.
+Shutdown is permanent and idempotent, unlike the restartable product stop.
+
 ## Independent verification
 
 Transfer src/common, src/lib, test/common and test/lib unchanged. No importing

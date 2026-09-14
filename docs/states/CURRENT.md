@@ -1,7 +1,6 @@
 # Project Status
 
 ## Current Work
-
 | Task | Compact result |
 | --- | --- |
 | T531 S13 | Canonical SoftPC `54845ac` Lib/Common/test-corpus refresh accepted. P1 `4e7b4a26` imports the exact four trees and direct NXVM adaptations; P2 records equality, gates and dual-architecture acceptance. |
@@ -10,6 +9,7 @@
 | T531 S16 | Accepted P1 `59ccb57c`: SoftPC commit `00d4461` now exactly supplies `src/lib`, `src/common`, `test/lib` and `test/common`; NXVM's former `vm/product` root and target are retired in favor of one `vm/app` owner. [Evidence](../etc/evidence/t531-s16-app-consolidation.md). |
 | T531 S17 | App keyboard policy is now isolated in `app/keyboard`; `command` retains grammar and the sole callback-context adapter. No Common/Core/VM-machine contract changed. [Evidence](../etc/evidence/t531-s17-app-keyboard-convergence.md). |
 | T531 S18 | App composition is the sole NXVM Common-machine owner: VM describes/binds the driver only; UI, session, Common, then VM teardown is explicit. 325/325 unit and x64/x86 artifact verification pass. [Evidence](../etc/evidence/t531-s18-common-machine-composition-ownership.md). |
+| T531 S19 | SoftPC `433f57e` Common/test corpus is byte-identical; Common shutdown joins callbacks before the sole App cleanup path releases UI/session state. 325/325 unit and x64/x86 artifact verification pass. [Evidence](../etc/evidence/t531-s19-common-shutdown-refresh.md). |
 
 ## Current Technical Baseline
 

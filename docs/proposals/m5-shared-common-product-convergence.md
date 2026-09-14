@@ -159,7 +159,15 @@ recorded evidence, never by following successive isolated failures.
     object still referenced by a live dependent.  Retire the internal
     VM-machine Common creation/ownership path rather than adding a second
     construction mode or a compatibility wrapper.
-19. **S19: package and whole-task acceptance.** Independently review the
+19. **S19: canonical Common shutdown refresh.** Freeze SoftPC's current
+    project-owned `src/common` and `test/common` corpus and import it
+    byte-for-byte.  Adopt its permanent, idempotent `common_machine_shutdown`
+    contract so App first quiesces the Common worker and its callbacks, then
+    releases UI/session callback targets, destroys Common, revokes the VM
+    binding and destroys the VM adapter.  Prove exact Common/test identity and
+    the new shutdown race proof; do not fork Common or add a second NXVM
+    cleanup path.
+20. **S20: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.

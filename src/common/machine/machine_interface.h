@@ -197,6 +197,12 @@ lib_status common_machine_debug_execute_with_lease(common_machine *machine,
     common_machine_debug_result *out_result);
 /* Asynchronous cancellation, allowed in every state; uses the existing queue. */
 void common_machine_debug_cancel(common_machine *machine);
+/* Permanently stop/join the worker, including all in-flight callbacks, but
+ * retain the object. NULL/repeated calls are harmless. The owner serializes
+ * this with other API calls; never call from a worker callback. Callback
+ * contexts and the driver must remain alive until this returns. Destroy uses
+ * this same path; product stop remains a separate restartable operation. */
+void common_machine_shutdown(common_machine *machine);
 void common_machine_destroy(common_machine *machine);
 
 #endif

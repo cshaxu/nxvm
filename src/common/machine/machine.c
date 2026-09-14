@@ -241,7 +241,7 @@ static void common_machine_begin_cold_run(common_machine *machine,
 static lib_bool common_machine_schedule_cold_run(common_machine *machine,
     lib_bool pause_after_start)
 {
-    if (machine == NULL || lib_atomic_i32_load_explicit(&machine->state, LIB_MEMORY_ORDER_SEQ_CST) !=
+    if (machine == NULL || machine->worker == NULL || lib_atomic_i32_load_explicit(&machine->state, LIB_MEMORY_ORDER_SEQ_CST) !=
         COMMON_MACHINE_STOPPED) return LIB_FALSE;
     host_sync_event_reset(machine->ready_event);
     common_machine_begin_cold_run(machine, pause_after_start);
@@ -451,7 +451,7 @@ lib_bool common_machine_set_removable_media(common_machine *machine,
 {
     lib_size length;
     lib_i32 state;
-    if (machine == NULL || machine->driver.set_removable_media == NULL)
+    if (machine == NULL || machine->worker == NULL || machine->driver.set_removable_media == NULL)
         return LIB_FALSE;
     state = lib_atomic_i32_load_explicit(&machine->state, LIB_MEMORY_ORDER_SEQ_CST);
     if (state != COMMON_MACHINE_STOPPED && state != COMMON_MACHINE_PAUSED)
@@ -568,15 +568,22 @@ lib_status common_machine_debug_execute_with_lease(common_machine *machine,
     return machine->debug_status;
 }
 
-void common_machine_destroy(common_machine *machine)
+void common_machine_shutdown(common_machine *machine)
 {
-    if (machine == NULL) return;
+    if (machine == NULL || machine->worker == NULL) return;
     common_machine_debug_invalidate(machine);
     (void)common_machine_stop(machine);
     lib_atomic_i32_exchange_explicit(&machine->terminate_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
     if (machine->resume_event != NULL) host_sync_event_signal(machine->resume_event);
     if (machine->command_event != NULL) host_sync_event_signal(machine->command_event);
-    if (machine->worker != NULL) host_sync_task_destroy(machine->worker);
+    host_sync_task_destroy(machine->worker);
+    machine->worker = NULL;
+}
+
+void common_machine_destroy(common_machine *machine)
+{
+    if (machine == NULL) return;
+    common_machine_shutdown(machine);
     host_sync_event_destroy(machine->ready_event);
     host_sync_event_destroy(machine->resume_event);
     host_sync_event_destroy(machine->input_event);

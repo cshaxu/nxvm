@@ -53,6 +53,7 @@ type_status vm_app_create(vm_app **out_app)
 C_VOID vm_app_destroy(vm_app *app)
 {
     if (app == STD_NULL) return;
+    common_machine_shutdown(app->common_machine);
     common_ui_destroy(app->ui);
     common_session_destroy(app->session);
     common_machine_destroy(app->common_machine);

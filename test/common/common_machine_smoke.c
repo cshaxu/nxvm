@@ -20,6 +20,9 @@ typedef struct machine_fake {
     LONG inputs;
     LONG debug_calls;
     DWORD executor_thread;
+    HANDLE callback_entered;
+    HANDLE callback_release;
+    LONG notifications;
 } machine_fake;
 
 static lib_bool fake_reset(void *opaque)
@@ -51,6 +54,8 @@ static void fake_request_stop(void *opaque)
 { SetEvent(((machine_fake *)opaque)->stopped); }
 static void fake_request_wake(void *opaque)
 { SetEvent(((machine_fake *)opaque)->wake); }
+static lib_bool fake_set_media(void *opaque, const char *path)
+{ (void)opaque; (void)path; return LIB_TRUE; }
 static void fake_heartbeat(void *opaque, lib_bool enabled)
 { (void)opaque; (void)enabled; }
 static void fake_set_callback(void *opaque, common_machine_executor_callback callback,
@@ -92,6 +97,11 @@ static void note_state(void *opaque, common_machine_state state,
 {
     machine_fake *fake = (machine_fake *)opaque;
     (void)generation;
+    InterlockedIncrement(&fake->notifications);
+    if (state == COMMON_MACHINE_STOPPED && fake->callback_entered != NULL) {
+        SetEvent(fake->callback_entered);
+        assert(WaitForSingleObject(fake->callback_release, 5000u) == WAIT_OBJECT_0);
+    }
     if (state == COMMON_MACHINE_RUNNING) SetEvent(fake->running);
     if (state == COMMON_MACHINE_STOPPED) SetEvent(fake->state_stopped);
     if (state == COMMON_MACHINE_RESET_COMPLETED) SetEvent(fake->reset_completed);
@@ -101,7 +111,42 @@ static void note_frame(void *opaque, lib_u32 sequence, lib_bool graphics,
 {
     machine_fake *fake = (machine_fake *)opaque;
     (void)sequence; (void)graphics; (void)generation;
+    InterlockedIncrement(&fake->notifications);
     SetEvent(fake->frame);
+}
+
+static DWORD WINAPI shutdown_machine(void *opaque)
+{
+    common_machine_shutdown(opaque);
+    return 0;
+}
+
+/* A blocked final callback must prevent shutdown returning. A thread handle
+ * is the completion barrier; no timing sleep guesses at worker quiescence. */
+static void shutdown_active(common_machine *machine, machine_fake *fake)
+{
+    HANDLE thread;
+    LONG notifications;
+    fake->callback_entered = CreateEventA(NULL, TRUE, FALSE, NULL);
+    fake->callback_release = CreateEventA(NULL, TRUE, FALSE, NULL);
+    assert(fake->callback_entered && fake->callback_release);
+    thread = CreateThread(NULL, 0u, shutdown_machine, machine, 0u, NULL);
+    assert(thread != NULL);
+    assert(WaitForSingleObject(fake->callback_entered, 5000u) == WAIT_OBJECT_0);
+    assert(WaitForSingleObject(thread, 0u) == WAIT_TIMEOUT);
+    SetEvent(fake->callback_release);
+    assert(WaitForSingleObject(thread, 5000u) == WAIT_OBJECT_0);
+    assert(fake->callback == NULL && fake->callback_context == NULL);
+    notifications = fake->notifications;
+    assert(!common_machine_start(machine));
+    assert(!common_machine_reset(machine));
+    assert(!common_machine_set_removable_media(machine, NULL));
+    common_machine_shutdown(machine);
+    common_machine_destroy(machine);
+    assert(fake->notifications == notifications);
+    CloseHandle(thread);
+    CloseHandle(fake->callback_entered); CloseHandle(fake->callback_release);
+    fake->callback_entered = fake->callback_release = NULL;
 }
 
 int main(void)
@@ -136,6 +181,7 @@ int main(void)
     driver.set_executor_callback = fake_set_callback;
     driver.deliver_input = fake_deliver_input;
     driver.copy_frame = fake_copy_frame;
+    driver.set_removable_media = fake_set_media;
     driver.execute_debug = fake_execute_debug;
     assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
     frame.valid = 1u;
@@ -210,7 +256,25 @@ int main(void)
         assert(!common_machine_copy_published_frame(machine, &frame, generation));
         assert(frame.valid == 1u && frame.sequence == sequence);
     }
+    common_machine_shutdown(machine);
+    common_machine_shutdown(machine);
     common_machine_destroy(machine);
+    /* A never-started worker uses the same terminal path. */
+    assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
+    common_machine_shutdown(machine);
+    assert(!common_machine_start(machine));
+    common_machine_destroy(machine);
+    for (int paused = 0; paused != 2; ++paused) {
+        ResetEvent(fake.running); ResetEvent(fake.reset_completed);
+        assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
+        common_machine_set_state_sink(machine, note_state, &fake);
+        common_machine_set_frame_sink(machine, note_frame, &fake);
+        assert(paused ? common_machine_reset(machine) : common_machine_start(machine));
+        assert(WaitForSingleObject(paused ? fake.reset_completed : fake.running,
+            5000u) == WAIT_OBJECT_0);
+        shutdown_active(machine, &fake);
+    }
+    common_machine_shutdown(NULL);
     CloseHandle(fake.input); CloseHandle(fake.frame); CloseHandle(fake.running);
     CloseHandle(fake.wake); CloseHandle(fake.reset_completed);
     CloseHandle(fake.state_stopped); CloseHandle(fake.stopped);
