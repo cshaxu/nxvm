@@ -1,25 +1,5 @@
 # Project Status
 
-## Current Work
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T531 S20. |
-| Admission And Approval | Owner approved on 2026-09-14: simplify `vm/machine` layout and retain media there rather than inventing `vm/compat`. |
-| Objective | Delete the `runtime` directory shell and make `vm/machine` directly own the sole Core/Common adapter, its paused-Debug mapping, and its existing media child. |
-| Non-goals | No Common/Lib import, Core behavior, media semantics, profile behavior, public ABI, or new compatibility layer. |
-| Reference Baseline | NXVM `7f242550`; Common/Lib canonical corpus remains equal to SoftPC `e0c9ae3`. |
-| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S20. |
-| Files And ABI Surface | `src/vm/machine/runtime/*` relocates to `src/vm/machine/`; direct includes, CMake paths, tests/static gates, proposal/status/evidence. Public `vm_machine_*` symbols remain unchanged. |
-| Applicable Rules | One machine adapter owner; no duplicate path or compatibility wrapper; dependencies remain App -> VM machine -> Core/Common/Lib; media stays its independent FDD/HDD provider child. |
-| Verification | Search retired paths; configure/build x64/x86, run full unit suite, owner/lifecycle gates, documentation governance, diff check, and verify stripped artifacts. |
-| Expected Markers | No tracked `vm/machine/runtime` path or include remains; one `vm-machine` target still contains runner/lifecycle/display/debug/media adaptation. |
-| Asset Needs | None. |
-| Reporting Requirements | Record relocation map, sweep, source/test line accounting, full-unit result and artifact hashes. |
-| Stop Conditions | Stop for a discovered public-path consumer, CMake ownership conflict, behavior regression, or a need to alter media/Core semantics. |
-| Exit Criteria | Direct machine layout builds and behaves through the unchanged public contract; all retired paths are removed; required tests/gates/artifacts pass; complete P is pushed and reviewed. |
-| Original Owner Request | "合理，请你准入一个s任务修复 编译测试提交推送". |
-| Similar-Issue Sweep | Search tracked source/test/build/docs for `machine/runtime`, `vm_machine_runtime`, and `vm/compat`; remove only stale layout references and classify any semantic consumer. |
-
 | Task | Compact result |
 | --- | --- |
 | T531 S13 | Canonical SoftPC `54845ac` Lib/Common/test-corpus refresh accepted. P1 `4e7b4a26` imports the exact four trees and direct NXVM adaptations; P2 records equality, gates and dual-architecture acceptance. |
@@ -29,6 +9,7 @@
 | T531 S17 | App keyboard policy is now isolated in `app/keyboard`; `command` retains grammar and the sole callback-context adapter. No Common/Core/VM-machine contract changed. [Evidence](../etc/evidence/t531-s17-app-keyboard-convergence.md). |
 | T531 S18 | App composition is the sole NXVM Common-machine owner: VM describes/binds the driver only; UI, session, Common, then VM teardown is explicit. 325/325 unit and x64/x86 artifact verification pass. [Evidence](../etc/evidence/t531-s18-common-machine-composition-ownership.md). |
 | T531 S19 | Accepted at P2: SoftPC `433f57e` Common/test corpus is byte-identical; Common shutdown joins callbacks before the sole App cleanup path releases UI/session state. 325/325 unit and x64/x86 artifact verification pass. [Evidence](../etc/evidence/t531-s19-common-shutdown-refresh.md). |
+| T531 S20 | Accepted at P2: retired the `vm/machine/runtime` naming shell; one `vm-machine` target directly owns the Core/Common adapter and retains `media/` as its sole FDD/HDD storage-provider child. 325/325 x64 unit, five boundary gates, documentation governance and stripped x64/x86 artifacts pass. [Evidence](../etc/evidence/t531-s20-vm-machine-responsibility-layout.md). |
 
 ## Current Technical Baseline
 
