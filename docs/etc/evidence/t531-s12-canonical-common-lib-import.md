@@ -6,10 +6,10 @@ The owner authorized this S on 2026-09-14 to use the committed SoftPC corpus,
 excluding later uncommitted source-worktree content.  The sole imported source
 is SoftPC commit `662ed4b390b886800c202a66eac754d9aac595b6`:
 
-- `src/lib/` — 94 files;
-- `src/common/` — 36 files;
-- `test/lib/` — 38 files; and
-- `test/common/` — 14 files.
+- `src/lib/` - 94 files;
+- `src/common/` - 36 files;
+- `test/lib/` - 38 files; and
+- `test/common/` - 14 files.
 
 The four trees were exported from that commit and compared byte-for-byte with
 their NXVM counterparts.  The comparison is exact.  No SoftPC app, host,
@@ -46,3 +46,13 @@ NXVM consumes the imported public contracts directly:
 The artifact hashes match the copies in both `build/output/` and
 `assets/sessions/`.  T531 remains open; this evidence closes only S12 after
 its implementation and governance commits are pushed.
+
+## P2 independent acceptance
+
+The acceptance review inspected the actual P1 diff, repeated the exact
+four-tree comparison, and swept production and test sources for the retired
+VM result/FIFO/reporter route and App/Product direct Core calls. Both sweeps
+were clear. It also reran the listed gates and reviewed the x64/x86 artifact
+identity. The canonical corpus remains unmodified by NXVM; the only NXVM
+changes are its direct consumers, aggregate registration, obsolete-route gates
+and the provenance record above.

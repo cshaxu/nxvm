@@ -2,6 +2,10 @@
 
 ## Current Work
 
+| Task | Compact result |
+| --- | --- |
+| T531 S12 | Accepted committed SoftPC `662ed4b` Lib/Common/test-corpus import. P1 is `77eb85c3`; P2 records exact-corpus, direct-cutover, gate and dual-artifact acceptance. T531 remains open for the owner-selected next S. |
+
 ## M5 T531 S12 Packet
 
 | Field | Required record |
