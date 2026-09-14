@@ -21,7 +21,9 @@ src/
   core/{machine,product}/
   vm/
     main.c
-    {app,machine,platform,product,profile,session}/
+    app/
+    machine/{media,runtime}/
+    {platform,product,profile,session}/
   mantle/
     composition/
     {machine,platform,product}/

@@ -123,7 +123,14 @@ recorded evidence, never by following successive isolated failures.
     cooked monitor is the Current Console. Prove raw guest input cannot
     publish monitor text, retain the one broker and one guest-input route, and
     make no Lib/Common corpus change.
-15. **S15: package and whole-task acceptance.** Independently review the
+15. **S15: VM-machine media ownership layout.** Move NXVM's FDD/HDD
+    Core-media-provider adaptation from `src/vm/media/` to
+    `src/vm/machine/media/`. Update direct includes, CMake source lists and
+    source-layout checks atomically; retain the existing `vm-media` target and
+    all public `vm_machine_*` names. This is a structural relocation only: it
+    neither changes storage semantics nor tries to make NXVM controller
+    adaptation a Common capability.
+16. **S16: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.

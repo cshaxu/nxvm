@@ -7,7 +7,7 @@
 
 #include "vm/machine/runtime/machine_interface.h"
 
-#include "vm/media/media.h"
+#include "vm/machine/media/media.h"
 
 #include "vm/machine/runtime/lifecycle.h"
 

@@ -7,7 +7,26 @@
 | T531 S13 | Canonical SoftPC `54845ac` Lib/Common/test-corpus refresh accepted. P1 `4e7b4a26` imports the exact four trees and direct NXVM adaptations; P2 records equality, gates and dual-architecture acceptance. |
 | T531 S14 | Accepted raw-Console prompt correction at P1 `9e7b4eb2`; Common ownership now suppresses prompt publication during guest input. [Evidence](../etc/evidence/t531-s14-raw-console-monitor-ownership.md). |
 
-T531 remains open for later whole-task convergence acceptance.
+## M5 T531 S15 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T531 S15. |
+| Admission And Approval | Owner approved on 2026-09-14: move `src/vm/media` to `src/vm/machine/media`, commit and push the complete S, then retain T531 open for manual testing. |
+| Objective | Make VM-machine ownership explicit by relocating the FDD/HDD Core-media-provider adapter below `src/vm/machine/media`. |
+| Non-goals | No FDD/HDD behavior, storage API, Core-media-provider ABI, Common corpus, profile topology, asset, or user-visible change. Do not close T531. |
+| Reference Baseline | Accepted T531 S14 P2 `4da5d23c`; T531 proposal revised for this owner-approved continuation. |
+| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S15. |
+| Files And ABI Surface | Relocate only `src/vm/media/{fdd,hdd,media}.*` and their private headers with `git mv`; repair direct include paths, CMake source-layout assertions and affected tests. Retain target `vm-media` and all `vm_machine_*` symbols. |
+| Applicable Rules | [Architecture](../rules/ARCHITECTURE.md): sole Core-media adaptation owner and one production path. [Coding](../rules/CODING.md): structural relocation removes the obsolete path. [Source layout](../design/CODING.md): tests remain under `test/vm/machine`. [Execution](../rules/EXECUTION.md): structural relocation, actual-diff review, complete unit suite and immediate push. |
+| Verification | Configure/build affected targets; run focused VM-media smokes; run the complete repository-only unit suite; prove no tracked `src/vm/media` include/path remains; build stripped Release x64/x86 0531 artifacts and copy them to `build/output` and `assets/sessions`. |
+| Expected Markers | `src/vm/machine/media/` is the only tracked source location; `vm-media` remains the sole adapter target; no behavior/API rename; all unit cases pass. |
+| Asset Needs | None. |
+| Reporting Requirements | Report the relocation, retained owner/target, commit, push, verification and artifact hashes; explicitly state that T531 remains open for owner testing. |
+| Stop Conditions | Stop for an ABI/behavioral change, a required Common/SoftPC corpus change, a test failure not caused by the relocation, or a non-clean pre-existing worktree. |
+| Exit Criteria | One pushed implementation P with actual-diff review, evidence, full unit success and both verified artifacts; retain compact T531 progress rather than close the task. |
+| Original Owner Request | Move media now to `src/vm/machine/media`; add an S, close, commit and push it, then keep T531 open for owner testing before task closure. |
+| Similar-Issue Sweep | Search all tracked source, tests and CMake for `src/vm/media`, `vm/media/`, and duplicate VM-media source lists. Every hit is relocated or updated; no compatibility include path remains. |
 
 ## Current Technical Baseline
 

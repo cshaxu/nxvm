@@ -3,11 +3,11 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/media/media.h"
+#include "vm/machine/media/media.h"
 #include "vm/machine/runtime/machine_devices.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/media/fdd.h"
-#include "vm/media/hdd.h"
+#include "vm/machine/media/fdd.h"
+#include "vm/machine/media/hdd.h"
 
 type_status vm_machine_devices_initialize_media(vm_machine *session)
 {

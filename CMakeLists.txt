@@ -1225,8 +1225,8 @@ set(VM_MACHINE_SOURCES
     ${VM_MACHINE_RUNTIME_SOURCES}
 )
 set(VM_MEDIA_SOURCES
-    src/vm/media/fdd.c
-    src/vm/media/hdd.c
+    src/vm/machine/media/fdd.c
+    src/vm/machine/media/hdd.c
 )
 set(CORE_MACHINE_SOURCES
     src/core/machine/display.c
@@ -3589,8 +3589,8 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "common-session|src/common/session/reconciler.c|session-owner"
     "common-session|src/common/session/presentation_plan.c|session-owner"
     "vm-app|src/vm/app/app.c|session-composition"
-    "vm-media|src/vm/media/fdd.c|vm-media"
-    "vm-media|src/vm/media/hdd.c|vm-media"
+    "vm-media|src/vm/machine/media/fdd.c|vm-media"
+    "vm-media|src/vm/machine/media/hdd.c|vm-media"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
     "vm-app|src/vm/app/request_factory.c|session-composition"
     "vm-machine|src/vm/machine/runtime/debug_adapter.c|vm-machine"

@@ -1,10 +1,10 @@
 #include "type.h"
 
 #include "core/machine/media_interface.h"
-#include "vm/media/media.h"
+#include "vm/machine/media/media.h"
 #include "vm/machine/runtime/machine_interface.h"
 #include "vm/machine/runtime/machine_private.h"
-#include "vm/media/fdd.h"
+#include "vm/machine/media/fdd.h"
 #include "../support/rom/model40_session_assets.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
