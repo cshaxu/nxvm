@@ -1,4 +1,4 @@
-# M5 T531 S17 — NXVM App keyboard convergence
+# M5 T531 S17 - NXVM App keyboard convergence
 
 ## Result
 
