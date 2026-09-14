@@ -1,5 +1,5 @@
-#ifndef VM_APP_H
-#define VM_APP_H
+#ifndef VM_APP_COMPOSITION_H
+#define VM_APP_COMPOSITION_H
 
 #include "type.h"
 

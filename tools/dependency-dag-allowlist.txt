@@ -3,11 +3,9 @@
 src/vm/machine/runtime/machine.c|vm/profile
 src/vm/machine/runtime/machine_interface.h|vm/profile
 src/vm/machine/runtime/machine_private.h|vm/profile
-src/vm/app/app.c|vm/machine
-src/vm/app/app.h|vm/machine
-src/vm/app/request_factory.c|vm/machine
-src/vm/app/request_factory.h|vm/machine
-src/vm/product/console.c|vm/app
-src/vm/product/console.c|vm/machine
-src/vm/product/console.h|vm/app
-src/vm/product/recorder.h|vm/machine
+src/vm/app/composition.c|vm/machine
+src/vm/app/composition.h|vm/machine
+src/vm/app/config.c|vm/machine
+src/vm/app/config.h|vm/machine
+src/vm/app/command.c|vm/machine
+src/vm/app/recorder.h|vm/machine

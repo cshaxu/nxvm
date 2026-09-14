@@ -27,7 +27,7 @@ endforeach()
 
 foreach(forbidden
     "foreach(target IN ITEMS vm-dos-prompt-smoke"
-    "project_add_test(vm-product-session-smoke")
+    "project_add_test(vm-app-session-smoke")
     string(FIND "${cmake_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "Current media smoke registration is duplicated: ${forbidden}")

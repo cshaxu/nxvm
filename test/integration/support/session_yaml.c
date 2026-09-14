@@ -3,29 +3,29 @@
 #include <windows.h>
 
 #include "test/integration/support/session_yaml.h"
-#include "vm/app/request_factory.h"
+#include "vm/app/config.h"
 #include "vm/machine/runtime/machine_private.h"
 
 static C_INT integration_yaml_session_find(const C_CHAR *directory,
     const C_CHAR *file_name, vm_session_request *out_request)
 {
-    vm_product_session_catalog *catalog = STD_NULL;
+    vm_app_session_catalog *catalog = STD_NULL;
     STD_SIZE_T index;
     C_INT found = 0;
 
     if (directory == STD_NULL || file_name == STD_NULL || out_request == STD_NULL ||
-        vm_product_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) return 0;
-    for (index = 0u; index < vm_product_session_catalog_count(catalog); ++index) {
+        vm_app_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) return 0;
+    for (index = 0u; index < vm_app_session_catalog_count(catalog); ++index) {
         vm_session_request request;
 
-        if (vm_product_session_catalog_get_request(catalog, index, &request) ==
+        if (vm_app_session_catalog_get_request(catalog, index, &request) ==
                 TYPE_STATUS_OK && !STD_STRCMP(request.file_name, file_name)) {
             *out_request = request;
             found = 1;
             break;
         }
     }
-    vm_product_session_catalog_destroy(catalog);
+    vm_app_session_catalog_destroy(catalog);
     return found;
 }
 
@@ -51,6 +51,7 @@ C_INT integration_yaml_session_assets_present(
 
 type_status integration_yaml_session_restart(integration_yaml_session *session)
 {
+    vm_machine_config configuration;
     type_status status;
 
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -58,7 +59,9 @@ type_status integration_yaml_session_restart(integration_yaml_session *session)
         vm_machine_destroy(session->session);
         session->session = STD_NULL;
     }
-    status = vm_machine_create_from_request(&session->request, &session->session);
+    status = vm_app_configure_machine(&session->request, &configuration);
+    if (status == TYPE_STATUS_OK)
+        status = vm_machine_create(&configuration, &session->session);
     if (status != TYPE_STATUS_OK || session->session == STD_NULL) return TYPE_STATUS_FAULT;
     if (session->transform != STD_NULL && session->transform(session,
             session->transform_opaque) != TYPE_STATUS_OK) {

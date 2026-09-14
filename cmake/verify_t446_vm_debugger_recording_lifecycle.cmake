@@ -2,12 +2,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/product/recorder.c" recorder_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/recorder.c" recorder_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/debug.c" machine_source)
 foreach(required IN ITEMS
-    "vm_product_recorder_start"
-    "vm_product_recorder_stop"
-    "vm_product_recorder_observe"
+    "vm_app_recorder_start"
+    "vm_app_recorder_stop"
+    "vm_app_recorder_observe"
     "lib_storage_file_writer_open")
     string(FIND "${recorder_source}" "${required}" position)
     if(position EQUAL -1)

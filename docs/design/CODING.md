@@ -21,9 +21,9 @@ src/
   core/{machine,product}/
   vm/
     main.c
-    app/
+    app/{catalog,command,composition,config,recorder,version}/
     machine/{media,runtime}/
-    {platform,product,profile,session}/
+    {platform,profile,session}/
   mantle/
     composition/
     {machine,platform,product}/
@@ -43,7 +43,7 @@ admission and does not become a permanent source root.
 Headers stay beside their implementations. A public cross-module contract is
 named `*_interface.h`; an injected implementation is named `*_provider`.
 Public symbols use their ownership path, for example `core_machine_*`,
-`common_session_*`, `common_debug_*`, `vm_product_*`, `mantle_platform_*`,
+`common_session_*`, `common_debug_*`, `vm_app_*`, `mantle_platform_*`,
 `dos_machine_*`, and `vdm_product_*`. `src/lib/types` is the sole shared C
 type, status, atomic, and basic C-runtime vocabulary foundation.
 

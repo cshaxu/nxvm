@@ -256,7 +256,7 @@ add_executable(vm-model40-hdc-s26-smoke
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-machine)
 add_executable(vm-model40-console-s20-smoke
     test/integration/product/vm_model40_console_s20_smoke.c)
-target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-machine)
+target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-machine)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-machine)
@@ -285,26 +285,26 @@ target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-mach
 add_executable(vm-timer-firmware-smoke
     test/integration/dos/vm_timer_firmware_smoke.c)
 target_link_libraries(vm-timer-firmware-smoke PRIVATE integration-session-yaml-support)
-add_executable(vm-product-default-profile-smoke test/integration/dos/nxvm_default_profile_smoke.c)
-target_link_libraries(vm-product-default-profile-smoke PRIVATE integration-session-yaml-support)
-add_executable(vm-product-console-smoke
-    test/vm/product/nxvm_console_smoke.c
-    test/vm/product/support/vm_machine_console.c)
-target_include_directories(vm-product-console-smoke PRIVATE
+add_executable(vm-app-default-profile-smoke test/integration/dos/nxvm_default_profile_smoke.c)
+target_link_libraries(vm-app-default-profile-smoke PRIVATE integration-session-yaml-support)
+add_executable(vm-app-console-smoke
+    test/vm/app/nxvm_console_smoke.c
+    test/vm/app/support/vm_machine_console.c)
+target_include_directories(vm-app-console-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
-add_executable(vm-product-console-lifecycle-smoke
+target_link_libraries(vm-app-console-smoke PRIVATE vm-app)
+add_executable(vm-app-console-lifecycle-smoke
     test/integration/product/nxvm_console_lifecycle_smoke.c)
-target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
-    vm-product vm-machine)
+target_link_libraries(vm-app-console-lifecycle-smoke PRIVATE
+    vm-app vm-machine)
 add_executable(vm-yaml-cmos-seed-smoke
     test/integration/product/vm_yaml_cmos_seed_smoke.c)
 target_link_libraries(vm-yaml-cmos-seed-smoke PRIVATE integration-session-yaml-support)
-add_executable(vm-product-session-catalog-smoke
-    test/vm/product/nxvm_machine_catalog_smoke.c)
-target_link_libraries(vm-product-session-catalog-smoke PRIVATE vm-product)
-add_executable(vm-product-session-smoke test/vm/machine/nxvm_machine_smoke.c)
-target_link_libraries(vm-product-session-smoke PRIVATE vm-machine)
+add_executable(vm-app-session-catalog-smoke
+    test/vm/app/nxvm_machine_catalog_smoke.c)
+target_link_libraries(vm-app-session-catalog-smoke PRIVATE vm-app)
+add_executable(vm-app-session-smoke test/vm/machine/nxvm_machine_smoke.c)
+target_link_libraries(vm-app-session-smoke PRIVATE vm-machine)
 add_executable(vm-machine-initialization-atomicity-smoke
     test/vm/machine/vm_machine_initialization_atomicity_smoke.c)
 target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-machine)
@@ -1136,10 +1136,10 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-app-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-app-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-app-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-app-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1196,14 +1196,12 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/model40/rom/model40_rom.c
 )
 
-set(VM_PRODUCT_SOURCES
-    src/vm/product/console.c
-    src/vm/product/catalog.c
-    src/vm/product/recorder.c
-)
 set(VM_APP_SOURCES
-    src/vm/app/app.c
-    src/vm/app/request_factory.c
+    src/vm/app/command.c
+    src/vm/app/catalog.c
+    src/vm/app/recorder.c
+    src/vm/app/composition.c
+    src/vm/app/config.c
 )
 set(VM_MACHINE_RUNTIME_SOURCES
     src/vm/machine/runtime/debug_adapter.c
@@ -1338,20 +1336,12 @@ target_include_directories(vm-app PUBLIC
 )
 target_link_libraries(vm-app PUBLIC
     common-session
+    common-ui
     common-debug
     vm-machine
-    type-facade)
-
-add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
-target_include_directories(vm-product PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-product PUBLIC
-    vm-app
-    common-session
-    common-ui
     core-machine-boundary
-    storage)
+    storage
+    type-facade)
 
 add_executable(vm-control-lifecycle-smoke
     test/integration/dos/vm_control_lifecycle_smoke.c
@@ -1514,7 +1504,7 @@ add_library(integration-session-yaml-support STATIC
 )
 target_link_libraries(integration-session-yaml-support PUBLIC
     vm-machine
-    vm-product)
+    vm-app)
 target_include_directories(integration-session-yaml-support PUBLIC
     "${CMAKE_SOURCE_DIR}"
 )
@@ -1822,8 +1812,8 @@ target_link_libraries(vm-common-debug-mapping-smoke PRIVATE
     vm-machine
 )
 add_executable(vm-debugger-recording-lifecycle-smoke
-    test/vm/product/vm_product_recorder_smoke.c)
-target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-product)
+    test/vm/app/vm_app_recorder_smoke.c)
+target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-app)
 
 add_executable(vm-full-pc-session-smoke
     test/integration/dos/nxvm_full_pc_session_smoke.c
@@ -2145,10 +2135,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-console-pause-resume-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
-    vm-product-console-smoke
+    vm-app-console-smoke
     vm-common-debug-mapping-smoke
     vm-debugger-recording-lifecycle-smoke
-    vm-product-session-smoke
+    vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
     vm-machine-reconfigure-smoke
     vm-machine-media-lifecycle-s3-smoke
@@ -2258,7 +2248,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     vm-model-339-clock-contract-smoke
     core-machine-plan-smoke
     vm-model40-rom-layout-s14-smoke
-    vm-product-session-catalog-smoke
+    vm-app-session-catalog-smoke
     core-machine-instance-smoke
     core-machine-explicit-time-s4-smoke
     core-machine-80186-timing-manifest-runner
@@ -2406,7 +2396,7 @@ set(PROJECT_INTEGRATION_FDD_TARGETS
     vm-unified-debug-backend-smoke
     vm-control-lifecycle-smoke)
 set(PROJECT_INTEGRATION_FDD_HDD_TARGETS
-    vm-product-default-profile-smoke
+    vm-app-default-profile-smoke
     vm-full-pc-session-smoke
     vm-windows31-checkpoint
     vm-windows31-int13-trace-probe)
@@ -2416,7 +2406,7 @@ set(PROJECT_INTEGRATION_PROFILE_FLOPPY_MATRIX_TARGETS
     vm-profile-floppy-boot-matrix)
 set(PROJECT_INTEGRATION_PRODUCT_TARGETS
     vm-model40-console-s20-smoke
-    vm-product-console-lifecycle-smoke
+    vm-app-console-lifecycle-smoke
     vm-yaml-cmos-seed-smoke
     )
 set(PROJECT_INTEGRATION_TEST_TARGETS
@@ -2668,7 +2658,7 @@ foreach(target IN LISTS PROJECT_INTEGRATION_FDD_HDD_TARGETS)
         project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml)
     elseif(target STREQUAL "vm-windows31-int13-trace-probe")
         project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k-hdd.yaml)
-    elseif(target STREQUAL "vm-product-default-profile-smoke")
+    elseif(target STREQUAL "vm-app-default-profile-smoke")
         project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k.yaml
             default-pc-at-80386-1440k-hdd.yaml)
     else()
@@ -2852,7 +2842,7 @@ function(add_current_vm_artifact target version)
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(${target} PRIVATE
-        vm-product
+        vm-app
         vm-machine)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -3578,21 +3568,21 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "common-xasm32|src/common/xasm32/dasm32.c|xasm32"
     "common-machine|src/common/machine/machine.c|machine-owner"
     "common-machine|src/common/machine/input_queue.c|machine-input-queue"
-    "vm-product|src/vm/product/console.c|console-product"
-    "vm-product|src/vm/product/recorder.c|recorder-product"
+    "vm-app|src/vm/app/command.c|console-product"
+    "vm-app|src/vm/app/recorder.c|recorder-product"
     "common-ui|src/common/ui/ui.c|presentation-leaf"
     "vm-machine|src/vm/machine/runtime/frame.c|display-adaptation"
-    "vm-product|src/vm/product/catalog.c|session-catalog"
+    "vm-app|src/vm/app/catalog.c|session-catalog"
     "common-session|src/common/session/session.c|session-owner"
     "common-session|src/common/session/control.c|session-owner"
     "common-session|src/common/session/control_state.c|session-owner"
     "common-session|src/common/session/reconciler.c|session-owner"
     "common-session|src/common/session/presentation_plan.c|session-owner"
-    "vm-app|src/vm/app/app.c|session-composition"
+    "vm-app|src/vm/app/composition.c|session-composition"
     "vm-media|src/vm/machine/media/fdd.c|vm-media"
     "vm-media|src/vm/machine/media/hdd.c|vm-media"
     "vm-machine|src/vm/machine/debug.c|vm-machine"
-    "vm-app|src/vm/app/request_factory.c|session-composition"
+    "vm-app|src/vm/app/config.c|session-composition"
     "vm-machine|src/vm/machine/runtime/debug_adapter.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/display.c|vm-machine"
     "vm-machine|src/vm/machine/runtime/lifecycle.c|vm-machine"
@@ -3625,11 +3615,9 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-profile
     vm-media
     vm-machine
-    vm-machine
     common-session
     vm-app
     common-ui
-    vm-product
     vdm-machine
     vdm-composition
     ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})

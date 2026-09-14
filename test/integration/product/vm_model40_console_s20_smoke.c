@@ -18,34 +18,34 @@
 #define TEST_FILENO fileno
 #endif
 
-#include "vm/app/app.h"
-#include "vm/product/console.h"
-#include "vm/product/catalog.h"
+#include "vm/app/composition.h"
+#include "vm/app/command.h"
+#include "vm/app/catalog.h"
 
 static C_INT model40_choice(const C_CHAR *directory)
 {
-    vm_product_session_catalog *catalog = STD_NULL;
+    vm_app_session_catalog *catalog = STD_NULL;
     STD_SIZE_T index;
     C_INT choice = 0;
 
-    if (vm_product_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) return 0;
-    for (index = 0u; index < vm_product_session_catalog_count(catalog); ++index) {
+    if (vm_app_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) return 0;
+    for (index = 0u; index < vm_app_session_catalog_count(catalog); ++index) {
         vm_session_request request;
 
-        if (vm_product_session_catalog_get_request(catalog, index, &request) == TYPE_STATUS_OK &&
+        if (vm_app_session_catalog_get_request(catalog, index, &request) == TYPE_STATUS_OK &&
             !STD_STRCMP(request.file_name, "compaq-deskpro-386-model-40-1200k.yaml")) {
             choice = (C_INT)index + 1;
             break;
         }
     }
-    vm_product_session_catalog_destroy(catalog);
+    vm_app_session_catalog_destroy(catalog);
     return choice;
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     vm_app *session = STD_NULL;
-    vm_product_console_context *console = STD_NULL;
+    vm_app_console_context *console = STD_NULL;
     STD_FILE *input = STD_NULL;
     C_CHAR commands[48];
     C_INT stdin_copy = -1;
@@ -62,10 +62,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
             TEST_FILENO(STD_STDIN)) < 0)) failed = 1;
     if (!failed) {
         failed = vm_app_create(&session) != TYPE_STATUS_OK ||
-            vm_product_console_context_create(&console) != TYPE_STATUS_OK;
+            vm_app_console_context_create(&console) != TYPE_STATUS_OK;
     }
     if (!failed) {
-        vm_product_console_main(console, session, argv[1]);
+        vm_app_console_main(console, session, argv[1]);
         failed = session == STD_NULL;
     }
     if (stdin_copy >= 0) {
@@ -73,7 +73,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         TEST_CLOSE(stdin_copy);
     }
     if (input != STD_NULL) STD_FCLOSE(input);
-    vm_product_console_context_destroy(console);
+    vm_app_console_context_destroy(console);
     vm_app_destroy(session);
     if (!failed) STD_PRINTF("M5:T515:S3:MODEL40-CONSOLE-YAML:OK\n");
     return failed;

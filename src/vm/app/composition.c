@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "vm/app/app.h"
+#include "vm/app/composition.h"
 #include "vm/machine/runtime/machine_interface.h"
-#include "vm/app/request_factory.h"
+#include "vm/app/config.h"
 #include "vm/machine/runtime/frame.h"
 
 struct vm_app {
@@ -69,9 +69,12 @@ common_ui *vm_app_ui(vm_app *app)
 
 type_status vm_app_compose_machine(vm_app *app, const vm_session_request *request)
 {
+    vm_machine_config config;
+
     if (app == STD_NULL || request == STD_NULL || app->machine != STD_NULL)
         return TYPE_STATUS_INVALID_STATE;
-    if (vm_machine_create_from_request(request, &app->machine) != TYPE_STATUS_OK)
+    if (vm_app_configure_machine(request, &config) != TYPE_STATUS_OK ||
+        vm_machine_create(&config, &app->machine) != TYPE_STATUS_OK)
         return TYPE_STATUS_INVALID_STATE;
     return TYPE_STATUS_OK;
 }

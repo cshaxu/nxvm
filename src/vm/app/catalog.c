@@ -2,17 +2,17 @@
 
 #include <dirent.h>
 
-#include "vm/product/catalog.h"
+#include "vm/app/catalog.h"
 
-struct vm_product_session_catalog {
-    vm_session_request entries[VM_PRODUCT_SESSION_CATALOG_MAX];
+struct vm_app_session_catalog {
+    vm_session_request entries[VM_APP_SESSION_CATALOG_MAX];
     STD_SIZE_T count;
     STD_SIZE_T rejected;
 };
 
 #include "lib/storage/file_interface.h"
 
-static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
+static C_CHAR *vm_app_session_catalog_trim(C_CHAR *value)
 {
     C_CHAR *end;
 
@@ -23,7 +23,7 @@ static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
     return value;
 }
 
-static C_INT vm_product_session_catalog_copy(C_CHAR *destination,
+static C_INT vm_app_session_catalog_copy(C_CHAR *destination,
     STD_SIZE_T capacity, const C_CHAR *source)
 {
     STD_SIZE_T length = source == STD_NULL ? 0u : STD_STRLEN(source);
@@ -48,7 +48,7 @@ static C_INT vm_session_catalog_parse_memory_kib(const C_CHAR *value,
     return 1;
 }
 
-static C_INT vm_product_session_catalog_path(C_CHAR *destination,
+static C_INT vm_app_session_catalog_path(C_CHAR *destination,
     STD_SIZE_T capacity, const C_CHAR *directory, const C_CHAR *name)
 {
     C_INT written;
@@ -56,19 +56,19 @@ static C_INT vm_product_session_catalog_path(C_CHAR *destination,
     if (name == STD_NULL) return 0;
     if (name[0] == '/' || name[0] == '\\' ||
         (STD_ISALPHA(name[0]) && name[1] == ':')) {
-        return vm_product_session_catalog_copy(destination, capacity, name);
+        return vm_app_session_catalog_copy(destination, capacity, name);
     }
     written = STD_SNPRINTF(destination, capacity, "%s/%s", directory, name);
     return written >= 0 && (STD_SIZE_T)written < capacity;
 }
 
-static C_INT vm_product_session_catalog_parse_value(C_CHAR *line,
+static C_INT vm_app_session_catalog_parse_value(C_CHAR *line,
     const C_CHAR *key, C_CHAR **out_value)
 {
     STD_SIZE_T length = STD_STRLEN(key);
 
     if (STD_MEMCMP(line, key, length) != 0 || line[length] != ':') return 0;
-    *out_value = vm_product_session_catalog_trim(line + length + 1u);
+    *out_value = vm_app_session_catalog_trim(line + length + 1u);
     if (**out_value == '\"') {
         C_CHAR *end = *out_value + STD_STRLEN(*out_value);
         if (end == *out_value + 1 || end[-1] != '\"') return 0;
@@ -78,7 +78,7 @@ static C_INT vm_product_session_catalog_parse_value(C_CHAR *line,
     return 1;
 }
 
-static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
+static C_INT vm_app_session_catalog_parse_document(const C_CHAR *directory,
     const C_CHAR *name, C_CHAR *document, vm_session_request *entry)
 {
     C_CHAR *cursor;
@@ -111,7 +111,7 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
         line = cursor;
         while (*cursor != '\0' && *cursor != '\n') ++cursor;
         if (*cursor == '\n') *cursor++ = '\0';
-        C_CHAR *text = vm_product_session_catalog_trim(line);
+        C_CHAR *text = vm_app_session_catalog_trim(line);
         if (*text == '\0' || *text == '#') continue;
         if (!STD_STRCMP(text, "media:")) {
             if (media_section) break;
@@ -121,57 +121,57 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
             if (firmware) break;
             section = 3; media = 0; firmware = 1; continue;
         }
-        if (section == 3 && vm_product_session_catalog_parse_value(text, "bios", &value)) {
+        if (section == 3 && vm_app_session_catalog_parse_value(text, "bios", &value)) {
             if (firmware_bios) break;
             firmware_bios = 1;
             if (!STD_STRCMP(value, "[]")) continue;
             if (*value == '\0') continue;
             break;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "schema", &value)) {
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "schema", &value)) {
             if (schema || STD_STRCMP(value, "nxvm-session")) break;
             schema = 1; continue;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "profile", &value)) {
-            if (profile || !vm_product_session_catalog_copy(entry->profile, sizeof(entry->profile), value)) break;
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "profile", &value)) {
+            if (profile || !vm_app_session_catalog_copy(entry->profile, sizeof(entry->profile), value)) break;
             profile = 1; continue;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "cpu", &value)) {
-            if (cpu || !vm_product_session_catalog_copy(entry->cpu, sizeof(entry->cpu), value)) break;
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "cpu", &value)) {
+            if (cpu || !vm_app_session_catalog_copy(entry->cpu, sizeof(entry->cpu), value)) break;
             cpu = 1; continue;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "fpu", &value)) {
-            if (fpu || !vm_product_session_catalog_copy(entry->fpu, sizeof(entry->fpu), value)) break;
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "fpu", &value)) {
+            if (fpu || !vm_app_session_catalog_copy(entry->fpu, sizeof(entry->fpu), value)) break;
             fpu = 1; continue;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "memory_kib", &value)) {
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "memory_kib", &value)) {
             if (memory || !vm_session_catalog_parse_memory_kib(value,
                     &entry->memory_bytes)) break;
             memory = 1;
             continue;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "display", &value)) {
-            if (display || !vm_product_session_catalog_copy(entry->display, sizeof(entry->display), value)) break;
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "display", &value)) {
+            if (display || !vm_app_session_catalog_copy(entry->display, sizeof(entry->display), value)) break;
             display = 1; continue;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "console_control", &value)) {
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "console_control", &value)) {
             if (console_control || (STD_STRCMP(value, "0") && STD_STRCMP(value, "1"))) break;
             entry->console_control = value[0] == '1';
             console_control = 1; continue;
         }
-        if (section == 0 && vm_product_session_catalog_parse_value(text, "floppy_format", &value)) {
-            if (floppy_format || !vm_product_session_catalog_copy(entry->floppy_format,
+        if (section == 0 && vm_app_session_catalog_parse_value(text, "floppy_format", &value)) {
+            if (floppy_format || !vm_app_session_catalog_copy(entry->floppy_format,
                     sizeof(entry->floppy_format), value)) break;
             floppy_format = 1; continue;
         }
-        if (section == 2 && vm_product_session_catalog_parse_value(text, "floppy", &value)) {
+        if (section == 2 && vm_app_session_catalog_parse_value(text, "floppy", &value)) {
             if (floppy) break;
             floppy = 1;
             if (!STD_STRCMP(value, "[]")) continue;
             if (*value == '\0') { media = 1; continue; }
             break;
         }
-        if (section == 2 && vm_product_session_catalog_parse_value(text, "fixed_disk", &value)) {
+        if (section == 2 && vm_app_session_catalog_parse_value(text, "fixed_disk", &value)) {
             if (hard_disk) break;
             hard_disk = 1;
             if (!STD_STRCMP(value, "[]")) continue;
@@ -179,44 +179,44 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
             break;
         }
         if (section == 3 && firmware_bios && text[0] == '-' &&
-            vm_product_session_catalog_parse_value(vm_product_session_catalog_trim(text + 1u),
+            vm_app_session_catalog_parse_value(vm_app_session_catalog_trim(text + 1u),
                 "path", &value)) {
             if (entry->bios_count >= VM_SESSION_REQUEST_BIOS_SLOT_COUNT ||
-                !vm_product_session_catalog_path(entry->bios[entry->bios_count],
+                !vm_app_session_catalog_path(entry->bios[entry->bios_count],
                     VM_SESSION_REQUEST_PATH_MAX, directory, value)) break;
             ++entry->bios_count;
             continue;
         }
         if (section == 3 &&
-            vm_product_session_catalog_parse_value(text, "video", &value)) {
+            vm_app_session_catalog_parse_value(text, "video", &value)) {
             if (firmware_video) break;
             firmware_video = 1;
             if (!STD_STRCMP(value, "null")) continue;
-            if (!vm_product_session_catalog_path(entry->video, sizeof(entry->video), directory, value)) break;
+            if (!vm_app_session_catalog_path(entry->video, sizeof(entry->video), directory, value)) break;
             continue;
         }
         if (section == 3 &&
-            vm_product_session_catalog_parse_value(text, "cmos", &value)) {
+            vm_app_session_catalog_parse_value(text, "cmos", &value)) {
             if (firmware_cmos) break;
             firmware_cmos = 1;
             if (!STD_STRCMP(value, "null")) continue;
-            if (!vm_product_session_catalog_path(entry->cmos, sizeof(entry->cmos), directory, value)) break;
+            if (!vm_app_session_catalog_path(entry->cmos, sizeof(entry->cmos), directory, value)) break;
             continue;
         }
         if (section == 3 &&
-            vm_product_session_catalog_parse_value(text, "font", &value)) {
-            if (firmware_font || !vm_product_session_catalog_path(entry->font,
+            vm_app_session_catalog_parse_value(text, "font", &value)) {
+            if (firmware_font || !vm_app_session_catalog_path(entry->font,
                     sizeof(entry->font), directory, value)) break;
             firmware_font = 1;
             continue;
         }
         if (section == 2 && media != 0 && text[0] == '-' &&
-            vm_product_session_catalog_parse_value(vm_product_session_catalog_trim(text + 1u),
+            vm_app_session_catalog_parse_value(vm_app_session_catalog_trim(text + 1u),
                 "path", &value)) {
             STD_SIZE_T *count = media == 1 ? &entry->floppy_count : &entry->fixed_disk_count;
             C_CHAR (*target)[VM_SESSION_REQUEST_PATH_MAX] = media == 1 ?
                 entry->floppy : entry->fixed_disk;
-            if (*count >= VM_SESSION_REQUEST_MEDIA_SLOT_COUNT || !vm_product_session_catalog_path(
+            if (*count >= VM_SESSION_REQUEST_MEDIA_SLOT_COUNT || !vm_app_session_catalog_path(
                     target[*count], VM_SESSION_REQUEST_PATH_MAX, directory, value)) break;
             ++*count;
             continue;
@@ -229,18 +229,18 @@ static C_INT vm_product_session_catalog_parse_document(const C_CHAR *directory,
         entry->bios_count != 2u) return 0;
     if (firmware && !STD_STRCMP(entry->profile, "ibm-5160-model-268") &&
         (entry->bios_count == 0u || entry->bios_count > 2u)) return 0;
-    if (!vm_product_session_catalog_copy(entry->file_name, sizeof(entry->file_name), name)) return 0;
+    if (!vm_app_session_catalog_copy(entry->file_name, sizeof(entry->file_name), name)) return 0;
     return 1;
 }
 
 type_status vm_session_request_parse(const C_CHAR *directory,
     const C_CHAR *name, C_CHAR *document, vm_session_request *out_request)
 {
-    return vm_product_session_catalog_parse_document(directory, name, document,
+    return vm_app_session_catalog_parse_document(directory, name, document,
         out_request) ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_ARGUMENT;
 }
 
-static C_INT vm_product_session_catalog_parse_file(const C_CHAR *directory,
+static C_INT vm_app_session_catalog_parse_file(const C_CHAR *directory,
     const C_CHAR *name, vm_session_request *entry)
 {
     C_CHAR path[VM_SESSION_REQUEST_PATH_MAX];
@@ -249,7 +249,7 @@ static C_INT vm_product_session_catalog_parse_file(const C_CHAR *directory,
     STD_SIZE_T bytes = 0u;
     C_INT parsed;
 
-    if (!vm_product_session_catalog_path(path, sizeof(path), directory, name) ||
+    if (!vm_app_session_catalog_path(path, sizeof(path), directory, name) ||
         lib_storage_file_read_owned(path, 64u * 1024u, &loaded, &bytes) !=
             LIB_STATUS_OK ||
         (document = (C_CHAR *)STD_MALLOC(bytes + 1u)) == STD_NULL) {
@@ -259,28 +259,28 @@ static C_INT vm_product_session_catalog_parse_file(const C_CHAR *directory,
     if (bytes != 0u) STD_MEMCPY(document, loaded, bytes);
     document[bytes] = '\0';
     STD_FREE(loaded);
-    parsed = vm_product_session_catalog_parse_document(directory, name, document, entry);
+    parsed = vm_app_session_catalog_parse_document(directory, name, document, entry);
     STD_FREE(document);
     return parsed;
 }
 
-static C_INT vm_product_session_catalog_compare(const C_VOID *left, const C_VOID *right)
+static C_INT vm_app_session_catalog_compare(const C_VOID *left, const C_VOID *right)
 {
     const vm_session_request *a = left;
     const vm_session_request *b = right;
     return STD_STRCMP(a->file_name, b->file_name);
 }
 
-type_status vm_product_session_catalog_create(const C_CHAR *directory,
-    vm_product_session_catalog **out_catalog)
+type_status vm_app_session_catalog_create(const C_CHAR *directory,
+    vm_app_session_catalog **out_catalog)
 {
-    vm_product_session_catalog *catalog;
+    vm_app_session_catalog *catalog;
     DIR *dir;
     struct dirent *item;
 
     if (out_catalog == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_catalog = STD_NULL;
-    catalog = (vm_product_session_catalog *)STD_CALLOC(1u, sizeof(*catalog));
+    catalog = (vm_app_session_catalog *)STD_CALLOC(1u, sizeof(*catalog));
     if (catalog == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     if (directory == STD_NULL || (dir = opendir(directory)) == STD_NULL) {
         *out_catalog = catalog;
@@ -291,11 +291,11 @@ type_status vm_product_session_catalog_create(const C_CHAR *directory,
         const C_CHAR *extension;
         vm_session_request entry;
 
-        if (length < 5u || catalog->count == VM_PRODUCT_SESSION_CATALOG_MAX) continue;
+        if (length < 5u || catalog->count == VM_APP_SESSION_CATALOG_MAX) continue;
         extension = item->d_name + length - 5u;
         if (STD_STRCMP(extension, ".yaml") &&
             (length < 4u || STD_STRCMP(item->d_name + length - 4u, ".yml"))) continue;
-        if (vm_product_session_catalog_parse_file(directory, item->d_name, &entry)) {
+        if (vm_app_session_catalog_parse_file(directory, item->d_name, &entry)) {
             catalog->entries[catalog->count++] = entry;
         } else {
             ++catalog->rejected;
@@ -303,27 +303,27 @@ type_status vm_product_session_catalog_create(const C_CHAR *directory,
     }
     closedir(dir);
     qsort(catalog->entries, catalog->count, sizeof(catalog->entries[0]),
-        vm_product_session_catalog_compare);
+        vm_app_session_catalog_compare);
     *out_catalog = catalog;
     return TYPE_STATUS_OK;
 }
 
-C_VOID vm_product_session_catalog_destroy(vm_product_session_catalog *catalog)
+C_VOID vm_app_session_catalog_destroy(vm_app_session_catalog *catalog)
 {
     STD_FREE(catalog);
 }
 
-STD_SIZE_T vm_product_session_catalog_count(const vm_product_session_catalog *catalog)
+STD_SIZE_T vm_app_session_catalog_count(const vm_app_session_catalog *catalog)
 {
     return catalog == STD_NULL ? 0u : catalog->count;
 }
 
-STD_SIZE_T vm_product_session_catalog_rejected(const vm_product_session_catalog *catalog)
+STD_SIZE_T vm_app_session_catalog_rejected(const vm_app_session_catalog *catalog)
 {
     return catalog == STD_NULL ? 0u : catalog->rejected;
 }
 
-type_status vm_product_session_catalog_get_request(const vm_product_session_catalog *catalog,
+type_status vm_app_session_catalog_get_request(const vm_app_session_catalog *catalog,
     STD_SIZE_T index, vm_session_request *out_request)
 {
     if (catalog == STD_NULL || out_request == STD_NULL || index >= catalog->count) {

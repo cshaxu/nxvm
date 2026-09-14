@@ -95,19 +95,19 @@ consumes it; it contains no Core, executor, session, or UI pointer.
 
 `common/session` is the sole product-control reducer. Its one FIFO receives
 copied Console lines, machine results and presentation input; it owns run
-generation and lifecycle facts. `vm/app` is the NXVM composition binding: it
-creates the Common session and NXVM machine adapter, converts machine results
-into copied Common facts, and contains no second FIFO, run generation,
-lifecycle reducer or presentation state. `vm/product` retains NXVM command,
-YAML/profile, Debugger, title and input policy.
+generation and lifecycle facts. `vm/app` is the NXVM App root: it owns product
+configuration/catalogue, command policy, recording and composition. It creates
+the Common session and NXVM machine adapter, converts machine results into
+copied Common facts, and contains no second FIFO, run generation, lifecycle
+reducer or presentation state.
 
 `common/ui` is the sole shared-lib presenter binding. It owns the process
 Console broker, may lease it to at most one Console presenter, applies only
 copied target/frame/title/mouse operations, and returns only copied Console or
 native-input facts. It does not select a target, derive lifecycle policy or
-format product text. `vm/product` supplies NXVM's raw-VM/monitor/none policy,
-hotkeys, title and Console text; `vm/app` remains composition only. Core and
-`src/lib` do not know session selection or NXVM policy.
+format product text. `vm/app` supplies NXVM's raw-VM/monitor/none policy,
+hotkeys, title and Console text. Core and `src/lib` do not know session
+selection or NXVM policy.
 
 Native and WASM hosts share these component boundaries. A future TypeScript web
 product layer sits above the WASM platform/product adaptation; it does not move

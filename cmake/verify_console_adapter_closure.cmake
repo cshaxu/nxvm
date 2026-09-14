@@ -8,8 +8,8 @@ if(EXISTS "${obsolete_adapter}")
     message(FATAL_ERROR "Retired Console-to-composition adapter remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/app.c" app_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/product/console.c" product_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/command.c" product_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/debug_adapter.c"
     debug_source)
 

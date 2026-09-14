@@ -130,7 +130,19 @@ recorded evidence, never by following successive isolated failures.
     all public `vm_machine_*` names. This is a structural relocation only: it
     neither changes storage semantics nor tries to make NXVM controller
     adaptation a Common capability.
-16. **S16: package and whole-task acceptance.** Independently review the
+16. **S16: NXVM App consolidation and canonical shared-corpus refresh.**
+    Freeze SoftPC's committed `src/lib`, `src/common`, `test/lib` and
+    `test/common` corpus, import the four trees byte-for-byte, and directly
+    adapt NXVM consumers.  Consolidate NXVM's separate `vm/product` files
+    into `vm/app` by real responsibility: product configuration/catalogue,
+    command provider/interaction, recording, version and composition.  Move
+    request-string-to-machine-config resolution to App configuration while
+    leaving CPU/FPU/device creation at the VM-machine owner.  Delete the
+    `vm-product` target, namespace, paths and forwarding edges.  Command and
+    hotkey policy may use only public VM-machine operations; it must not
+    include runtime lifecycle implementation headers.  This does not move
+    Common execution/UI ownership back into NXVM.
+17. **S17: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.

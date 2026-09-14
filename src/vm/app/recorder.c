@@ -1,9 +1,9 @@
-#include "vm/product/recorder.h"
+#include "vm/app/recorder.h"
 
 #include "common/xasm32/xasm32_interface.h"
 #include "lib/storage/file_interface.h"
 
-struct vm_product_recorder {
+struct vm_app_recorder {
     lib_storage_file_writer *writer;
 };
 
@@ -18,7 +18,7 @@ static type_status recorder_status(lib_status status)
     }
 }
 
-static C_INT recorder_write(vm_product_recorder *recorder,
+static C_INT recorder_write(vm_app_recorder *recorder,
     const C_CHAR *format, ...)
 {
     C_CHAR text[4096];
@@ -34,9 +34,9 @@ static C_INT recorder_write(vm_product_recorder *recorder,
             (lib_size)written) == LIB_STATUS_OK;
 }
 
-type_status vm_product_recorder_create(vm_product_recorder **out_recorder)
+type_status vm_app_recorder_create(vm_app_recorder **out_recorder)
 {
-    vm_product_recorder *recorder;
+    vm_app_recorder *recorder;
 
     if (out_recorder == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_recorder = STD_NULL;
@@ -46,23 +46,23 @@ type_status vm_product_recorder_create(vm_product_recorder **out_recorder)
     return TYPE_STATUS_OK;
 }
 
-void vm_product_recorder_destroy(vm_product_recorder *recorder)
+void vm_app_recorder_destroy(vm_app_recorder *recorder)
 {
     if (recorder == STD_NULL) return;
-    (void)vm_product_recorder_stop(recorder);
+    (void)vm_app_recorder_stop(recorder);
     STD_FREE(recorder);
 }
 
-type_status vm_product_recorder_start(vm_product_recorder *recorder,
+type_status vm_app_recorder_start(vm_app_recorder *recorder,
     const C_CHAR *path)
 {
     if (recorder == STD_NULL || path == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    (void)vm_product_recorder_stop(recorder);
+    (void)vm_app_recorder_stop(recorder);
     return recorder_status(lib_storage_file_writer_open(path,
         LIB_STORAGE_FILE_WRITER_TRUNCATE, &recorder->writer));
 }
 
-type_status vm_product_recorder_stop(vm_product_recorder *recorder)
+type_status vm_app_recorder_stop(vm_app_recorder *recorder)
 {
     lib_status status;
 
@@ -73,10 +73,10 @@ type_status vm_product_recorder_stop(vm_product_recorder *recorder)
     return recorder_status(status);
 }
 
-void vm_product_recorder_observe(void *context,
+void vm_app_recorder_observe(void *context,
     const vm_machine_debug_observation *observation)
 {
-    vm_product_recorder *recorder = context;
+    vm_app_recorder *recorder = context;
     C_CHAR statement[256] = "<ERROR>";
     STD_SIZE_T decoded_bytes = 0u;
     STD_SIZE_T index;

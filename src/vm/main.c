@@ -7,11 +7,11 @@
 
 #include "type.h"
 
-#include "vm/product/version.h"
+#include "vm/app/version.h"
 
 #include "banner.h"
-#include "vm/app/app.h"
-#include "vm/product/console.h"
+#include "vm/app/composition.h"
+#include "vm/app/command.h"
 
 static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
     C_CHAR *directory, STD_SIZE_T capacity)
@@ -34,19 +34,19 @@ static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     vm_app *session = STD_NULL;
-    vm_product_console_context *console_context = STD_NULL;
+    vm_app_console_context *console_context = STD_NULL;
     C_CHAR profile_directory[1024];
 
     PRODUCT_PRINT_BANNER();
     if (vm_app_create(&session) != TYPE_STATUS_OK ||
-        vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) {
+        vm_app_console_context_create(&console_context) != TYPE_STATUS_OK) {
         vm_app_destroy(session);
         return 1;
     }
-    vm_product_console_main(console_context, session,
+    vm_app_console_main(console_context, session,
         vm_main_profile_directory(argc, argv, profile_directory,
             sizeof(profile_directory)));
-    vm_product_console_context_destroy(console_context);
+    vm_app_console_context_destroy(console_context);
     vm_app_destroy(session);
     return 0;
 }

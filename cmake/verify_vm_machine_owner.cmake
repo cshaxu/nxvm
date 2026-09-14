@@ -13,7 +13,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/event_interface.h" event_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/runtime/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/app.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/composition.c" app_source)
 
 # Common owns the sole lifecycle queue and worker.  NXVM supplies only the
 # bounded Core driver and forwards Common's copied facts to Common Session.
