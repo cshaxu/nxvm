@@ -7,27 +7,7 @@
 | T531 S13 | Canonical SoftPC `54845ac` Lib/Common/test-corpus refresh accepted. P1 `4e7b4a26` imports the exact four trees and direct NXVM adaptations; P2 records equality, gates and dual-architecture acceptance. |
 | T531 S14 | Accepted raw-Console prompt correction at P1 `9e7b4eb2`; Common ownership now suppresses prompt publication during guest input. [Evidence](../etc/evidence/t531-s14-raw-console-monitor-ownership.md). |
 | T531 S15 | Accepted P1 `5c648c35`: FDD/HDD Core-media adaptation now resides at `src/vm/machine/media` with the one retained `vm-media` target; direct include/CMake paths and obsolete DAG exceptions are removed. [Evidence](../etc/evidence/t531-s15-vm-machine-media-layout.md). |
-
-## M5 T531 S16 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T531 S16. |
-| Admission And Approval | Owner approved on 2026-09-14: merge `src/vm/product` into `src/vm/app`, organize it by configuration, commands and composition, remove command-layer runtime-lifecycle imports, import SoftPC's committed four shared trees, build, test, commit and push. |
-| Objective | Retain one NXVM App root that owns product configuration, command policy, recorder and composition; retain VM-machine creation and Common execution/UI ownership at their existing owners. |
-| Non-goals | No Common behavior redesign, Core/device semantic change, new queue, public machine-state escape, external asset change, SoftPC write, or task closure. |
-| Reference Baseline | Accepted T531 S15 P2 `c9f8576b`; SoftPC committed baseline `00d4461d0754ae2a7bd8684aa06df6541f83fef9`. |
-| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S16. |
-| Files And ABI Surface | Exact import of SoftPC `src/lib`, `src/common`, `test/lib`, `test/common`; relocate `vm/product` into `vm/app`, update CMake/tests/static gates and documentation. Public NXVM product symbols may be renamed to `vm_app_*`; retain one direct App-to-public-VM-machine route. |
-| Applicable Rules | [Architecture](../rules/ARCHITECTURE.md): one owner and neutral dependency direction. [Coding](../rules/CODING.md): delete retired paths and forwarding layers. [Source policy](../etc/operations/policy/source-policy.md): import only the named committed project-owned corpus. [Execution](../rules/EXECUTION.md): structural relocation, complete unit suite, artifacts and actual-diff review. |
-| Verification | Prove exact four-tree equality to the named SoftPC commit; build affected App/VM targets; run focused App command/catalogue/recorder tests; run full repository-only unit suite; prove zero live `vm/product`, `vm-product`, and command-to-runtime-lifecycle path; run documentation/dependency gates; build stripped x64/x86 0531 artifacts in both required locations. |
-| Expected Markers | `src/vm/app` is the sole NXVM product configuration/command/composition root; `vm-app` is its sole CMake target; VM-machine remains the only machine builder; Common remains sole execution/UI owner. |
-| Asset Needs | None. |
-| Reporting Requirements | Report the frozen SoftPC revision and exact-tree comparison, retired names/paths, retained owner route, verification, artifact hashes, commit and push. T531 remains open. |
-| Stop Conditions | Stop for a non-identical required SoftPC import that cannot be directly adapted, a needed Common public API change, a behavior regression, unknown source provenance, or a machine implementation dependency from App command policy. |
-| Exit Criteria | One pushed implementation P and governance acceptance P after actual-diff review, exact import proof, complete unit success and dual artifacts; retain compact T531 progress rather than close it. |
-| Original Owner Request | Consolidate `src/vm/app` and `src/vm/product` into App by responsibility, preserve the configuration/machine/Common boundaries, and import SoftPC's shared four-component corpus. |
-| Similar-Issue Sweep | Search tracked CMake, source, tests and static gates for `vm/product`, `vm-product`, direct command-to-runtime lifecycle imports and duplicate request-to-machine construction. Retire every same-semantic route or record an explicit distinct owner. |
+| T531 S16 | Accepted P1 `59ccb57c`: SoftPC commit `00d4461` now exactly supplies `src/lib`, `src/common`, `test/lib` and `test/common`; NXVM's former `vm/product` root and target are retired in favor of one `vm/app` owner. [Evidence](../etc/evidence/t531-s16-app-consolidation.md). |
 
 ## Current Technical Baseline
 
