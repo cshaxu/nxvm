@@ -6,6 +6,7 @@ static kvm_frame published;
 static lib_u32 current_run = 7u, published_run = 7u, copies, deliveries;
 static lib_u32 delivered_sequence;
 static lib_bool delivered_graphics, delivered_status;
+static lib_u32 monitor_calls;
 static lib_u32 fake_run(const common_machine *machine)
 { (void)machine; return current_run; }
 static lib_bool fake_copy(common_machine *machine, kvm_frame *frame, lib_u32 run)
@@ -51,7 +52,14 @@ lib_status common_ui_publish_frame(common_ui *ui, const kvm_frame *frame,
     return LIB_STATUS_OK;
 }
 static void monitor(void *context, lib_bool current, common_session_command_result *result)
-{ (void)context; (void)current; (void)result; }
+{
+    (void)context;
+    ++monitor_calls;
+    /* The raw VM Console owns host input here. Product callbacks must receive
+       this false fact and must not arm or write a cooked monitor prompt. */
+    assert(!current);
+    assert(!result->arm_prompt);
+}
 
 int main(void)
 {
@@ -78,6 +86,7 @@ int main(void)
     event.value.frame.graphics = 0; /* An earlier text frame. */
     assert(common_session_process_completed(&session, &event));
     assert(copies == 1u && session.state.observed_frame_sequence == 3u);
+    assert(monitor_calls == 1u);
     assert(session.state.presentation.graphics_actual);
     assert(session.state.presentation.in_flight == COMMON_UI_ACTION_CREATE_WINDOW);
     assert(deliveries == 0u); /* Wait for component completion before publishing. */

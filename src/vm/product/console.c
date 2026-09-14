@@ -330,7 +330,8 @@ static C_VOID vm_product_console_note_monitor_current(C_VOID *opaque,
 {
     vm_product_console_context *context = opaque;
     vm_product_console_clear_result(result);
-    if (current) vm_product_console_prompt(result,
+    if (!current) return;
+    vm_product_console_prompt(result,
         context != STD_NULL && context->debug_active ? "- " : "Console> ");
 }
 

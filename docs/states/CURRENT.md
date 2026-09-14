@@ -6,7 +6,26 @@
 | --- | --- |
 | T531 S13 | Canonical SoftPC `54845ac` Lib/Common/test-corpus refresh accepted. P1 `4e7b4a26` imports the exact four trees and direct NXVM adaptations; P2 records equality, gates and dual-architecture acceptance. T531 remains open. |
 
-The completed S13 evidence is [canonical Common and Lib refresh](../etc/evidence/t531-s13-canonical-common-lib-refresh.md). T531 remains open for later whole-task convergence acceptance.
+## M5 T531 S14 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved S14 on 2026-09-14 after reporting that each guest key in a raw Console prints a monitor prompt. |
+| Objective | Correct the NXVM-injected monitor callback so it emits a prompt only while Common reports that the cooked monitor owns the Console. |
+| Non-goals | Do not change SoftPC-imported Lib/Common/Test trees, the broker contract, guest keyboard delivery, hotkey behavior, YAML, assets or display ownership. |
+| Reference Baseline | NXVM `722b84cd`; Common/Lib exact SoftPC `54845ac02342fe183b3ab308c92ad3c4704d1d84` corpus. |
+| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S14. |
+| Files And ABI Surface | NXVM product console callback, its owner-local regression proof, proposal/current state and evidence only; no public ABI change. |
+| Applicable Rules | Task Reading Set; execution actual-change review; architecture one Console owner/one input route; coding no unnecessary public test API; Product UX guest-window/Console ownership. |
+| Verification | Run the focused product/Common regression, the complete repository-only unit suite, relevant specialized gates, documentation governance and `git diff --check`; build x64/x86 release artifacts if runtime code changes. |
+| Expected Markers | Common continues to report `current=false` while raw guest Console owns input; NXVM emits no monitor prompt in that state and still arms one when monitor becomes Current. |
+| Asset Needs | None. No YAML or binary asset modification is authorized. |
+| Reporting Requirements | Record root cause, retained owner path, before/after regression and full verification in indexed evidence; implementation P then independent governance P; leave T531 open. |
+| Stop Conditions | Stop for a finding that Common or Lib has duplicate Console ownership, that a public ABI change is required, or that guest input is not delivered through Common's one KVM route. |
+| Exit Criteria | The callback honors `current`; the focused and full unit suite pass; source/gate/evidence review passes; x64/x86 artifacts exist; P1/P2 are pushed; workspace is clean while T531 remains open. |
+| Original Owner Request | Fix the observed duplicate monitor prompt printed for every guest key in the Console. |
+| Similar-Issue Sweep | Inspect all injected Common session callbacks and monitor/prompt writes so no other product callback ignores Common's ownership state or writes monitor text while raw guest input is current. |
 
 ## Current Technical Baseline
 

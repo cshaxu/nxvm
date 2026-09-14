@@ -118,7 +118,12 @@ recorded evidence, never by following successive isolated failures.
     both NXVM architectures and the complete repository-only unit suite.
     This remains an NXVM import and consumer-cutover subtask, not whole-task
     two-product execution acceptance.
-14. **S14: package and whole-task acceptance.** Independently review the
+14. **S14: raw-console monitor prompt correction.** Repair the NXVM injected
+    monitor callback so it arms a prompt only when Common reports that the
+    cooked monitor is the Current Console. Prove raw guest input cannot
+    publish monitor text, retain the one broker and one guest-input route, and
+    make no Lib/Common corpus change.
+15. **S15: package and whole-task acceptance.** Independently review the
     byte-identical two-consumer corpus, complete matrix and failure-path
     evidence, full unit and external integration, and optimized stripped
     x64/x86 release artifacts before closing T531.
