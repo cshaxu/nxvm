@@ -140,6 +140,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 captured_cursor_y;
     type_unsigned_16 captured_columns;
     type_unsigned_16 captured_rows;
+    type_unsigned_8 captured_text_cell_height;
     C_INT captured_cursor_visible;
 } t_vadp_data;
 

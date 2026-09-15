@@ -51,6 +51,7 @@ C_INT main(C_VOID)
     STD_MEMSET(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.columns != 80u || snapshot.rows != 25u ||
+        snapshot.text_cell_height != 1u ||
         snapshot.characters[0] != 'A' || snapshot.attributes[0] != 0x1fu ||
         !snapshot.buffer_changed || !snapshot.text_glyphs_present ||
         snapshot.text_glyphs['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] != 0x81u ||
@@ -75,6 +76,7 @@ C_INT main(C_VOID)
     core_machine_vadp_write_crtc(&port, 0x0fu, 1u);
     core_machine_vadp_write_crtc(&port, 0x0au, 2u);
     core_machine_vadp_write_crtc(&port, 0x0bu, 6u);
+    core_machine_vadp_write_crtc(&port, 0x09u, 7u);
     core_machine_port_write(&port, 0x03d9u, 0x1eu);
     status = core_machine_port_read(&port, 0x03dau);
     failed |= status != 0x00u || core_machine_port_read(&port, 0x03dau) != status;
@@ -94,7 +96,7 @@ C_INT main(C_VOID)
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= !snapshot.cursor_changed || snapshot.cursor_x != 1u ||
         snapshot.cursor_y != 0u || snapshot.cursor_top != 2u ||
-        snapshot.cursor_bottom != 6u;
+        snapshot.cursor_bottom != 6u || snapshot.text_cell_height != 8u;
 
     value = 'B';
     failed |= core_machine_memory_write_physical(&memory,

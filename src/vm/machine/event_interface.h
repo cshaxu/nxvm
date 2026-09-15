@@ -47,6 +47,7 @@ typedef struct vm_machine_display_event {
     type_unsigned_8 attributes[VM_MACHINE_EVENT_TEXT_CELLS];
     type_unsigned_16 columns;
     type_unsigned_16 rows;
+    type_unsigned_8 text_cell_height;
     type_unsigned_8 cursor_top;
     type_unsigned_8 cursor_bottom;
     type_unsigned_8 cursor_x;

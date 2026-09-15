@@ -88,6 +88,8 @@ typedef struct core_machine_display_snapshot {
     core_machine_display_kind kind;
     type_unsigned_16 columns;
     type_unsigned_16 rows;
+    /* Current CRTC character-cell scan-line count, not a font-asset default. */
+    type_unsigned_8 text_cell_height;
     type_unsigned_8 cursor_top;
     type_unsigned_8 cursor_bottom;
     /* Text coordinates are column then row, relative to display start. */

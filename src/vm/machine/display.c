@@ -47,6 +47,7 @@ static C_VOID vm_machine_display_result(vm_machine *machine,
     display.graphics = frame->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
     display.columns = frame->columns;
     display.rows = frame->rows;
+    display.text_cell_height = frame->text_cell_height;
     display.cursor_top = frame->cursor_top;
     display.cursor_bottom = frame->cursor_bottom;
     display.cursor_x = frame->cursor_x;
@@ -109,6 +110,7 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
     } else {
         frame.columns = snapshot.columns;
         frame.rows = snapshot.rows;
+        frame.text_cell_height = snapshot.text_cell_height;
         if (frame.columns > CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS) {
             frame.columns = CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS;
         }

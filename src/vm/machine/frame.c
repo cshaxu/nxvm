@@ -26,10 +26,12 @@ type_status vm_machine_frame_from_display(
             sizeof(source->palette_rgb));
         return TYPE_STATUS_OK;
     }
-    if (source->columns > KVM_TEXT_COLUMNS || source->rows > KVM_TEXT_ROWS)
+    if (source->columns > KVM_TEXT_COLUMNS || source->rows > KVM_TEXT_ROWS ||
+        source->text_cell_height == 0u || source->text_cell_height > 16u)
         return TYPE_STATUS_UNSUPPORTED;
     destination->text_columns = source->columns;
     destination->text_rows = source->rows;
+    destination->font_height = source->text_cell_height;
     destination->cursor_column = source->cursor_x;
     destination->cursor_row = source->cursor_y;
     destination->cursor_top = source->cursor_top;
@@ -44,7 +46,6 @@ type_status vm_machine_frame_from_display(
     if (source->glyphs_present) {
         STD_MEMCPY(destination->font, source->glyphs,
             sizeof(destination->font));
-        destination->font_height = 16u;
     }
     return TYPE_STATUS_OK;
 }

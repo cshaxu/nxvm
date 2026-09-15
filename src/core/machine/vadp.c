@@ -1943,6 +1943,8 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     }
     out_snapshot->columns = columns;
     out_snapshot->rows = rows;
+    out_snapshot->text_cell_height = (type_unsigned_8)(adapter->data.crtc[
+        CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u);
     for (column = 0u; column < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES;
         ++column) {
         out_snapshot->palette_rgb[column] = core_machine_vadp_rgbi_color(
@@ -1970,6 +1972,7 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
         CORE_MACHINE_DISPLAY_KIND_TEXT ||
         adapter->data.captured_columns != columns ||
         adapter->data.captured_rows != rows ||
+        adapter->data.captured_text_cell_height != out_snapshot->text_cell_height ||
         STD_MEMCMP(adapter->data.text_cells, cells, visible_bytes) != 0;
     if (buffer_changed) {
         STD_MEMCPY(adapter->data.text_cells, cells, visible_bytes);
@@ -2004,6 +2007,7 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     adapter->data.captured_cursor_y = out_snapshot->cursor_y;
     adapter->data.captured_columns = columns;
     adapter->data.captured_rows = rows;
+    adapter->data.captured_text_cell_height = out_snapshot->text_cell_height;
     adapter->data.captured_cursor_visible = out_snapshot->cursor_visible;
     adapter->data.captured = TYPE_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_TEXT;

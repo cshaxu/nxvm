@@ -180,7 +180,11 @@ static int common_session_process_completed(common_session *session,
         session->command.note_broker(session->command.context,
             session->state.monitor_actual, LIB_FALSE,
             common_session_state_monitor_is_running_graphics_surface(&session->state));
-    return common_session_arm_if_ready(session);
+    /* A frame is presentation data, never a monitor-input transition.  In
+     * particular, a Window session keeps the cooked monitor current while it
+     * receives frames; re-arming here would print one prompt per frame. */
+    return event->kind == COMMON_SESSION_EVENT_FRAME_COMPLETED ? 1 :
+        common_session_arm_if_ready(session);
 }
 
 lib_status common_session_create(common_session **out_session,

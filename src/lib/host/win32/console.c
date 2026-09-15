@@ -79,6 +79,19 @@ static int host_console_ensure_text_surface(host_console_backend *backend)
         backend->previous_columns = backend->previous_rows = 0u;
         if (!lib_win32_set_console_screen_buffer_size(output, required)) return 0;
     }
+    /* The buffer alone does not define what the user can see: a host can keep
+     * a short viewport over a correctly sized 80x25 text buffer.  Expand only
+     * a clipped viewport; a larger native viewport is already a complete text
+     * surface and must retain its display state across a broker rollback. */
+    if (info.srWindow.Right - info.srWindow.Left + 1 <
+            (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS ||
+        info.srWindow.Bottom - info.srWindow.Top + 1 <
+            (lib_win32_short)LIB_CONSOLE_TEXT_ROWS) {
+        viewport.Left = viewport.Top = 0;
+        viewport.Right = (lib_win32_short)(LIB_CONSOLE_TEXT_COLUMNS - 1u);
+        viewport.Bottom = (lib_win32_short)(LIB_CONSOLE_TEXT_ROWS - 1u);
+        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return 0;
+    }
     return 1;
 }
 

@@ -32,6 +32,7 @@ typedef struct core_machine_guest_display_frame {
     type_unsigned_8 attributes[CORE_MACHINE_GUEST_DISPLAY_MAX_CELLS];
     type_unsigned_16 columns;
     type_unsigned_16 rows;
+    type_unsigned_8 text_cell_height;
     type_unsigned_8 cursor_top;
     type_unsigned_8 cursor_bottom;
     /* Copied text coordinates are column then row. */

@@ -126,6 +126,10 @@ static void check_frame_extent(short columns, short rows, int scrolled)
             assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
         assert(lib_console_write_text_frame(raw, &frame) == 0);
         assert(lib_console_write_text_frame(raw, &frame) == 0);
+        assert(GetConsoleScreenBufferInfo(broker->backend->output, &actual));
+        assert(actual.srWindow.Left == 0 && actual.srWindow.Top == 0 &&
+            actual.srWindow.Right - actual.srWindow.Left + 1 >= 80 &&
+            actual.srWindow.Bottom - actual.srWindow.Top + 1 >= 25);
         region = (SMALL_RECT){0, 0, 79, 24};
         assert(ReadConsoleOutputW(broker->backend->output, cells, cells_size, origin, &region));
         assert(region.Left == 0 && region.Top == 0 && region.Right == 79 && region.Bottom == 24);

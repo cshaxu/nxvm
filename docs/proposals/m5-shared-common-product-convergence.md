@@ -173,10 +173,19 @@ recorded evidence, never by following successive isolated failures.
     FDD/HDD host-storage-provider adaptation, and keep paused-Debug mapping
     within the same machine adapter. Update includes, CMake and owner gates
     atomically; do not add a generic `compat` layer or alter runtime behavior.
-21. **S21: package and whole-task acceptance.** Independently review the
-    byte-identical two-consumer corpus, complete matrix and failure-path
-    evidence, full unit and external integration, and optimized stripped
-    x64/x86 release artifacts before closing T531.
+21. **S21: presentation-contract corrective closure and package acceptance.**
+    Repair the three owner-level defects reported after S20 before attempting
+    whole-task acceptance: Common must never re-arm a cooked-monitor prompt
+    for an ordinary frame completion; the Win32 Console backend must establish
+    the full 80x25 visible viewport before writing a text frame; and the NXVM
+    Core-to-VM copied display contract must retain VADP's current character
+    scan-line height instead of silently substituting 16.  The first two are
+    canonical Common/Lib behavior and must be transferred to SoftPC without an
+    NXVM-only branch; the third remains the NXVM Core display-owner contract.
+    Add direct owner tests for all three, prove the two shared trees are either
+    byte-identical to the accepted SoftPC revision or explicitly awaiting its
+    matching corrective import, then run full unit and external integration
+    plus optimized stripped x64/x86 artifacts before package acceptance.
 
 ## Verification And Exit
 

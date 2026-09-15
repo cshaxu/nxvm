@@ -11,6 +11,9 @@ C_INT main(C_VOID)
     source.generation = 7u;
     source.columns = 80u;
     source.rows = 25u;
+    source.text_cell_height = 8u;
+    source.cursor_top = 6u;
+    source.cursor_bottom = 7u;
     source.characters[0u] = 'A';
     source.attributes[0u] = 0x1eu;
     source.characters[1999u] = 'Z';
@@ -20,7 +23,9 @@ C_INT main(C_VOID)
         !destination.valid || destination.graphics || destination.text[0u] != 'A' ||
         destination.attributes[0u] != 0x1eu || destination.text[1999u] != 'Z' ||
         destination.attributes[1999u] != 0x4fu ||
-        destination.text_palette[14u] != 0x00ffff00u) return 1;
+        destination.text_palette[14u] != 0x00ffff00u ||
+        destination.font_height != 8u || destination.cursor_top != 6u ||
+        destination.cursor_bottom != 7u) return 1;
 
     source.graphics = TYPE_TRUE;
     source.pixel_width = 320u;
