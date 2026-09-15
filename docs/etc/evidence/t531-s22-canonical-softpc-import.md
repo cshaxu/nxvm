@@ -52,6 +52,15 @@ canonical corpus folds their behavior into its current public boundaries.
   accidentally used the composed-only lifecycle API.  Each now starts and
   controls its declared direct runner consistently; its bounded waits are
   wall-clock deadlines rather than `Sleep(1)` iteration counts.
+- The MinGW generator's nested multi-command `POST_BUILD` form was replaced
+  with one deployment script, eliminating its deadlocked `cmd /C` wrapper.
+  Optimized, debug-stripped Release artifacts now build and deploy as:
+  - x64: `nxvm_0_5_0531_x64.exe`, 1,239,146 bytes,
+    `54AB24DFE759A3C7FE2417634E1C93D28E6C73045FB04BC6ADF229F3A7EEC4AA`.
+  - x86: `nxvm_0_5_0531_x86.exe`, 1,629,040 bytes,
+    `B55D27BD576C1196BCD5397D18493034277F1D1757B0D25A7C364AB3208BCC34`.
+  Each matching file in `build/output` and `assets/sessions` has the stated
+  SHA-256.
 
 ## Remaining Task Scope
 
