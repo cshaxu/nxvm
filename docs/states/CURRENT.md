@@ -6,14 +6,14 @@
 | --- | --- |
 | Identifier Mode | Continuation — M5 T531 S21 corrective package-acceptance subtask. |
 | Admission And Approval | Owner reported repeated monitor prompts and incorrect text cursor/viewport behavior on 2026-09-14; this packet treats that report as approval for the bounded owner-level correction. Permanent owner approval covers normal commits and pushes. |
-| Objective | Restore one correct presentation path: no cooked prompt on frame completion, a visible 80x25 Console text surface, and the actual VADP text-cell scan-line height through the NXVM copied-frame contract. |
+| Objective | Restore one correct presentation path: one pending cooked-monitor line, a visible 80x25 Console text surface, and VADP CRTC cursor scan-lines mapped into the one 8x16 glyph geometry. |
 | Non-goals | No product-specific UI workaround, no new queue, no presentation-policy change, no SoftPC sibling write, no new external assets, and no whole-T531 closure until SoftPC adopts the shared corrective corpus. |
 | Reference Baseline | T531 S20 accepted at `84d57cd0`; NXVM and SoftPC `src/lib`/`src/common` are byte-identical at investigation start. |
 | Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), revised S21. |
 | Files And ABI Surface | Shared `src/common/session`, `src/lib/host/win32/console`, their direct tests/manifests; NXVM Core display snapshot/guest frame and VM display-event/frame adapter with direct owner tests. Copied frame gains only the existing owner fact: current text-cell height. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`: one owner/path; public copied values only; canonical shared corpus; user-visible before/after evidence. |
 | Verification | Direct Common prompt scheduling, native Console viewport, Core VADP text snapshot, and VM frame conversion tests; complete x64 unit suite; required external integration suite; x64/x86 optimized stripped artifact build and hash/PE verification; actual diff, canonical-corpus, boundary, and documentation gates. |
-| Expected Markers | A frame completion cannot arm/write a monitor prompt; text output has a 80x25 visible viewport; an 8-scan-line CRTC text mode arrives at KVM with `font_height == 8` and cursor scan-lines retain their relative bottom position. |
+| Expected Markers | A monitor can have only one pending input line; text output has a 80x25 visible viewport; an 8-scan-line CRTC cursor interval maps to the bottom of the stable 16-scan-line glyph cell without changing Window geometry. |
 | Asset Needs | None. |
 | Reporting Requirements | Report owner findings before implementation, one P commit with direct test/build evidence, and explicitly state whether SoftPC has adopted the matching shared change. Do not claim T531 whole-task closure while corpus identity is pending. |
 | Stop Conditions | Stop for a contrary canonical SoftPC contract, an incompatible native Console restriction, a required unapproved public capability beyond copied cell height, any prior presentation regression, or a failed integration suite without a bounded owner diagnosis. |

@@ -14,6 +14,7 @@ struct common_session {
     common_machine *machine;
     common_session_command_provider command;
     common_ui *ui;
+    lib_bool monitor_prompt_pending;
 };
 
 static common_ui_state common_session_ui_state(common_session_machine_state state)
@@ -64,16 +65,24 @@ static int common_session_arm_if_ready(common_session *session)
 {
     common_session_command_result result;
     if (session == NULL || session->command.note_monitor_current == NULL) return 0;
+    if (!common_session_state_monitor_is_current(&session->state)) {
+        session->monitor_prompt_pending = LIB_FALSE;
+        return 1;
+    }
+    if (session->monitor_prompt_pending) return 1;
     common_session_clear_result(&result);
     session->command.note_monitor_current(session->command.context,
-        common_session_state_monitor_is_current(&session->state), &result);
+        LIB_TRUE, &result);
     if (result.request != COMMON_SESSION_REQUEST_NONE)
         return common_session_write_result(session, &result) &&
             common_session_dispatch_request(session, result.request);
     if (!result.arm_prompt) return 1;
-    return common_session_write_result(session, &result) &&
-        common_ui_write_monitor(session->ui, result.prompt) == LIB_STATUS_OK &&
-        common_ui_request_monitor_line(session->ui) == LIB_STATUS_OK;
+    if (!common_session_write_result(session, &result) ||
+        common_ui_write_monitor(session->ui, result.prompt) != LIB_STATUS_OK ||
+        common_ui_request_monitor_line(session->ui) != LIB_STATUS_OK)
+        return 0;
+    session->monitor_prompt_pending = LIB_TRUE;
+    return 1;
 }
 
 static int common_session_drive(common_session *session)
@@ -180,10 +189,15 @@ static int common_session_process_completed(common_session *session,
         session->command.note_broker(session->command.context,
             session->state.monitor_actual, LIB_FALSE,
             common_session_state_monitor_is_running_graphics_surface(&session->state));
-    /* A frame is presentation data, never a monitor-input transition.  In
+    /* A frame is presentation data, never a monitor-input transition. In
      * particular, a Window session keeps the cooked monitor current while it
      * receives frames; re-arming here would print one prompt per frame. */
-    return event->kind == COMMON_SESSION_EVENT_FRAME_COMPLETED ? 1 :
+    if (event->kind == COMMON_SESSION_EVENT_FRAME_COMPLETED) {
+        if (!common_session_state_monitor_is_current(&session->state))
+            session->monitor_prompt_pending = LIB_FALSE;
+        return 1;
+    }
+    return
         common_session_arm_if_ready(session);
 }
 
@@ -290,6 +304,7 @@ int common_session_run(common_session *session)
             continue;
         }
         if (event.kind == COMMON_SESSION_EVENT_MONITOR_LINE) {
+            session->monitor_prompt_pending = LIB_FALSE;
             common_session_clear_result(&result);
             if (event.monitor_line_rejected) {
                 if (session->command.reject_line == NULL) return 0;

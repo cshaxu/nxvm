@@ -24,8 +24,8 @@ C_INT main(C_VOID)
         destination.attributes[0u] != 0x1eu || destination.text[1999u] != 'Z' ||
         destination.attributes[1999u] != 0x4fu ||
         destination.text_palette[14u] != 0x00ffff00u ||
-        destination.font_height != 8u || destination.cursor_top != 6u ||
-        destination.cursor_bottom != 7u) return 1;
+        destination.font_height != 16u || destination.cursor_top != 12u ||
+        destination.cursor_bottom != 15u) return 1;
 
     source.graphics = TYPE_TRUE;
     source.pixel_width = 320u;

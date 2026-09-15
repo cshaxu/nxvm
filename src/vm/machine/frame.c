@@ -27,15 +27,25 @@ type_status vm_machine_frame_from_display(
         return TYPE_STATUS_OK;
     }
     if (source->columns > KVM_TEXT_COLUMNS || source->rows > KVM_TEXT_ROWS ||
-        source->text_cell_height == 0u || source->text_cell_height > 16u)
+        source->text_cell_height == 0u || source->text_cell_height > 32u)
         return TYPE_STATUS_UNSUPPORTED;
     destination->text_columns = source->columns;
     destination->text_rows = source->rows;
-    destination->font_height = source->text_cell_height;
+    /* The CRTC cell height describes cursor raster coordinates. The copied
+     * glyph asset remains 8x16, so preserve its rendering geometry and map
+     * the CRTC interval into that one glyph coordinate system. */
+    destination->font_height = 16u;
     destination->cursor_column = source->cursor_x;
     destination->cursor_row = source->cursor_y;
-    destination->cursor_top = source->cursor_top;
-    destination->cursor_bottom = source->cursor_bottom;
+    destination->cursor_top = (type_unsigned_8)((type_unsigned_32)source->cursor_top *
+        destination->font_height / source->text_cell_height);
+    destination->cursor_bottom = (type_unsigned_8)(
+        (((type_unsigned_32)source->cursor_bottom + 1u) * destination->font_height +
+            source->text_cell_height - 1u) / source->text_cell_height - 1u);
+    if (destination->cursor_top >= destination->font_height)
+        destination->cursor_top = (type_unsigned_8)(destination->font_height - 1u);
+    if (destination->cursor_bottom >= destination->font_height)
+        destination->cursor_bottom = (type_unsigned_8)(destination->font_height - 1u);
     destination->cursor_visible = source->cursor_visible;
     destination->cursor_phase = source->cursor_visible;
     STD_MEMCPY(destination->text, source->characters, sizeof(source->characters));

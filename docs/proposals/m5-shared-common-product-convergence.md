@@ -179,7 +179,9 @@ recorded evidence, never by following successive isolated failures.
     for an ordinary frame completion; the Win32 Console backend must establish
     the full 80x25 visible viewport before writing a text frame; and the NXVM
     Core-to-VM copied display contract must retain VADP's current character
-    scan-line height instead of silently substituting 16.  The first two are
+    scan-line height to map CRTC cursor coordinates into the stable 8x16 glyph
+    cell instead of silently treating CRTC coordinates as glyph coordinates.
+    The first two are
     canonical Common/Lib behavior and must be transferred to SoftPC without an
     NXVM-only branch; the third remains the NXVM Core display-owner contract.
     Add direct owner tests for all three, prove the two shared trees are either
