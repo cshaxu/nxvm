@@ -11,6 +11,13 @@ foreach(source IN LISTS integration_sources)
         message(FATAL_ERROR
             "T516 integration must use the YAML-declared VM media overlay, not copied media: ${source}")
     endif()
+    # This is the one integration provider that resolves a YAML catalog entry
+    # into the immutable request used to create the test machine. Every other
+    # integration source is a consumer and must not construct a machine.
+    if(source MATCHES "/support/session_yaml\\.c$" OR
+       source MATCHES "\\\\support\\\\session_yaml\\.c$")
+        continue()
+    endif()
     if(text MATCHES "vm_machine_create[ \t\r\n]*\\(")
         message(FATAL_ERROR "T515 integration must open only through session YAML: ${source}")
     endif()

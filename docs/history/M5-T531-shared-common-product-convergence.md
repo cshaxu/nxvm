@@ -66,3 +66,19 @@ S11 is accepted after implementation `3a275380`: the independent closure
 review confirms exact canonical-tree equality, direct consumer adoption, no
 retired compatibility path, and all recorded gates. T531 remains open for S12
 whole-task two-product execution evidence.
+
+S13--S20 subsequently converged NXVM's App, Common-machine composition and
+VM-machine layout onto the shared corpus. S21 P1 `b35357ca` repaired the
+Common monitor/frame distinction, Win32 Console viewport and VADP copied-frame
+route; P2 `e0d3b946` corrected the first attempt's false use of CRTC cell
+height as the KVM glyph height. The retained path has one pending monitor line,
+one visible 80x25 Console surface and one 8x16 glyph geometry with CRTC cursor
+coordinates mapped into it. [S21 evidence](../etc/evidence/t531-s21-presentation-contract-corrective.md)
+records direct owner proof, 325/325 x64 unit proof and dual optimized artifacts.
+
+S22 imports SoftPC `fa14c62bd34182bf9930988e25296bfb7d5be646` as the exact
+four-tree shared corpus and adapts NXVM only at its product boundary. T531
+remains open. [S22 evidence](../etc/evidence/t531-s22-canonical-softpc-import.md)
+records corpus identity, the adapter-only changes, successful repository-only
+verification, and the actual non-green external integration rows without
+pre-existing attribution.

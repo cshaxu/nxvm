@@ -2,8 +2,6 @@
 #include "common/machine/input_queue.h"
 #include "lib/host/sync_interface.h"
 
-#include <stdlib.h>
-#include <string.h>
 
 struct common_machine {
     common_machine_driver driver;
@@ -61,8 +59,8 @@ static void common_machine_invalidate_published_frame(common_machine *machine)
 {
     if (machine == NULL) return;
     host_sync_mutex_lock(machine->frame_lock);
-    memset(machine->frame_buffers[0], 0, sizeof(*machine->frame_buffers[0]));
-    memset(machine->frame_buffers[1], 0, sizeof(*machine->frame_buffers[1]));
+    lib_memory_set(machine->frame_buffers[0], 0, sizeof(*machine->frame_buffers[0]));
+    lib_memory_set(machine->frame_buffers[1], 0, sizeof(*machine->frame_buffers[1]));
     machine->published_frame_index = 0;
     machine->published_frame_run_generation = 0u;
     host_sync_mutex_unlock(machine->frame_lock);
@@ -83,13 +81,13 @@ static lib_bool common_machine_text_frame_changed(const kvm_frame *previous,
         previous->cursor_phase != candidate->cursor_phase ||
         previous->font_height != candidate->font_height ||
         previous->attribute_font_select != candidate->attribute_font_select ||
-        memcmp(previous->text, candidate->text, sizeof(candidate->text)) != 0 ||
-        memcmp(previous->attributes, candidate->attributes,
+        lib_memory_compare(previous->text, candidate->text, sizeof(candidate->text)) != 0 ||
+        lib_memory_compare(previous->attributes, candidate->attributes,
             sizeof(candidate->attributes)) != 0 ||
-        memcmp(previous->text_palette, candidate->text_palette,
+        lib_memory_compare(previous->text_palette, candidate->text_palette,
             sizeof(candidate->text_palette)) != 0 ||
-        memcmp(previous->font, candidate->font, sizeof(candidate->font)) != 0 ||
-        memcmp(previous->secondary_font, candidate->secondary_font,
+        lib_memory_compare(previous->font, candidate->font, sizeof(candidate->font)) != 0 ||
+        lib_memory_compare(previous->secondary_font, candidate->secondary_font,
             sizeof(candidate->secondary_font)) != 0;
 }
 
@@ -168,7 +166,7 @@ static void common_machine_service_debug(common_machine *machine)
         machine->driver.cancel_debug(machine->driver.context);
     if (lib_atomic_i32_exchange_explicit(&machine->debug_requested, 0, LIB_MEMORY_ORDER_SEQ_CST) == 0) return;
     machine->debug_status = LIB_STATUS_INVALID_STATE;
-    memset(&machine->debug_result, 0, sizeof(machine->debug_result));
+    lib_memory_set(&machine->debug_result, 0, sizeof(machine->debug_result));
     if (common_machine_state_get(machine) == COMMON_MACHINE_PAUSED &&
         lib_atomic_i32_load_explicit(&machine->pause_requested, LIB_MEMORY_ORDER_SEQ_CST) != 0 &&
         machine->debug_lease.generation == (lib_u64)(lib_u32)
@@ -321,7 +319,7 @@ lib_status common_machine_create(common_machine **out_machine,
         driver->deliver_input == NULL || driver->copy_frame == NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = NULL;
-    machine = calloc(1u, sizeof(*machine));
+    machine = lib_allocate_zero(1u, sizeof(*machine));
     if (machine == NULL) return LIB_STATUS_NO_MEMORY;
     lib_atomic_i32_initialize(&machine->debug_requested, 0);
     lib_atomic_i32_initialize(&machine->debug_cancel_requested, 0);
@@ -345,8 +343,8 @@ lib_status common_machine_create(common_machine **out_machine,
     if (status == LIB_STATUS_OK) status = host_sync_event_create(&machine->debug_event);
     if (status == LIB_STATUS_OK) status = common_machine_input_queue_create(&machine->input_queue);
     if (status == LIB_STATUS_OK) {
-        machine->frame_buffers[0] = calloc(1u, sizeof(*machine->frame_buffers[0]));
-        machine->frame_buffers[1] = calloc(1u, sizeof(*machine->frame_buffers[1]));
+        machine->frame_buffers[0] = lib_allocate_zero(1u, sizeof(*machine->frame_buffers[0]));
+        machine->frame_buffers[1] = lib_allocate_zero(1u, sizeof(*machine->frame_buffers[1]));
         if (machine->frame_buffers[0] == NULL || machine->frame_buffers[1] == NULL)
             status = LIB_STATUS_NO_MEMORY;
     }
@@ -458,9 +456,9 @@ lib_bool common_machine_set_removable_media(common_machine *machine,
         return LIB_FALSE;
     if (path == NULL) machine->media_path[0] = '\0';
     else {
-        length = strlen(path);
+        length = lib_text_length(path);
         if (length >= sizeof(machine->media_path)) return LIB_FALSE;
-        memcpy(machine->media_path, path, length + 1u);
+        lib_memory_copy(machine->media_path, path, length + 1u);
     }
     host_sync_event_reset(machine->media_event);
     lib_atomic_i32_exchange_explicit(&machine->media_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
@@ -496,7 +494,7 @@ lib_bool common_machine_copy_published_frame(common_machine *machine,
     copied = machine->published_frame_run_generation == run_generation &&
         machine->frame_buffers[machine->published_frame_index]->valid != 0u;
     if (copied)
-        memcpy(destination, machine->frame_buffers[machine->published_frame_index],
+        lib_memory_copy(destination, machine->frame_buffers[machine->published_frame_index],
             sizeof(*destination));
     host_sync_mutex_unlock(machine->frame_lock);
     return copied;
@@ -591,8 +589,8 @@ void common_machine_destroy(common_machine *machine)
     host_sync_event_destroy(machine->debug_event);
     common_machine_input_queue_destroy(machine->input_queue);
     host_sync_mutex_destroy(machine->frame_lock);
-    free(machine->frame_buffers[0]);
-    free(machine->frame_buffers[1]);
+    lib_release(machine->frame_buffers[0]);
+    lib_release(machine->frame_buffers[1]);
     host_sync_event_destroy(machine->command_event);
-    free(machine);
+    lib_release(machine);
 }

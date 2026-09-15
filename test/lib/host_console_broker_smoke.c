@@ -20,6 +20,7 @@ struct host_console_backend {
 };
 
 static int host_console_fail_next_activation;
+static const lib_console_text_frame output_frame = { .columns = 80u, .rows = 25u };
 static int host_console_fail_next_prepare;
 static int host_console_fail_next_retirement;
 static int host_console_prepare_saw_active;
@@ -127,6 +128,13 @@ lib_status host_console_backend_request_cooked_line(
 
 void host_console_backend_lock_output(host_console_backend *native_console)
 { (void)native_console; }
+lib_status host_console_backend_cancel_cooked_line(host_console_backend *native_console,
+    lib_bool *out_completed)
+{
+    *out_completed = !native_console->cooked_request;
+    native_console->cooked_request = LIB_FALSE;
+    return LIB_STATUS_OK;
+}
 void host_console_backend_unlock_output(host_console_backend *native_console)
 { (void)native_console; }
 lib_status host_console_backend_write_bound(host_console_backend *native_console,
@@ -196,14 +204,14 @@ static HANDLE cleanup_entered, cleanup_release, replacement_attempted;
 static lib_console *cleanup_console;
 static LONG challenger;
 static LONG observed_busy;
-static lib_status tracked_output_sink(lib_console *console,
-    lib_console_output_sink sink, void *context)
+static lib_status tracked_output_binding(lib_console *console,
+    const lib_console_output_binding *binding)
 {
-    if (console == cleanup_console && sink == NULL) {
+    if (console == cleanup_console && binding == NULL) {
         SetEvent(cleanup_entered);
         assert(WaitForSingleObject(cleanup_release, INFINITE) == WAIT_OBJECT_0);
     }
-    return lib_console_set_output_sink(console, sink, context);
+    return lib_console_set_output_binding(console, binding);
 }
 void host_console_backend_lock_transaction(host_console_backend *backend)
 {
@@ -217,7 +225,7 @@ void host_console_backend_lock_transaction(host_console_backend *backend)
 }
 void host_console_backend_unlock_transaction(host_console_backend *backend)
 { LeaveCriticalSection(&backend->transaction); }
-#define lib_console_set_output_sink tracked_output_sink
+#define lib_console_set_output_binding tracked_output_binding
 #endif
 static lib_status tracked_delivery(lib_console *console, const lib_console_event *event)
 {
@@ -233,7 +241,7 @@ static lib_status tracked_delivery(lib_console *console, const lib_console_event
 #include "lib/host/console.c"
 #undef lib_console_deliver_event
 #ifdef _WIN32
-#undef lib_console_set_output_sink
+#undef lib_console_set_output_binding
 static DWORD WINAPI reverse_replace(void *opaque)
 {
     InterlockedExchange(&challenger, (LONG)GetCurrentThreadId());
@@ -265,6 +273,7 @@ static void check_serial_cleanup(void)
     assert(WaitForSingleObject(second, 5000) == WAIT_OBJECT_0);
     assert(forward.status == LIB_STATUS_OK && reverse.status == LIB_STATUS_OK);
     assert(lib_console_write_text(a, "a", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(a, &output_frame) == LIB_STATUS_OK);
     cleanup_console = NULL;
     InterlockedExchange(&challenger, 0);
     host_console_broker_destroy(broker);
@@ -281,6 +290,7 @@ int main(void)
     lib_console *second = LIB_NULL;
     host_console_broker *broker = LIB_NULL;
     host_console_broker *second_broker = LIB_NULL;
+    lib_bool completed;
 
     assert(lib_console_create(&first) == LIB_STATUS_OK);
     assert(lib_console_create(&second) == LIB_STATUS_OK);
@@ -296,6 +306,11 @@ int main(void)
         LIB_STATUS_NOT_CURRENT);
     assert(host_console_broker_request_cooked_line(broker, first) ==
         LIB_STATUS_OK);
+    assert(host_console_broker_cancel_cooked_line(broker, second, &completed) ==
+        LIB_STATUS_NOT_CURRENT && broker->backend->cooked_request);
+    assert(host_console_broker_cancel_cooked_line(broker, first, &completed) ==
+        LIB_STATUS_OK && !completed && !broker->backend->cooked_request);
+    assert(host_console_broker_request_cooked_line(broker, first) == LIB_STATUS_OK);
     host_console_fail_next_activation = 1;
     assert(host_console_broker_replace(broker, first, second,
         HOST_CONSOLE_RAW_EVENTS) == LIB_STATUS_IO_ERROR);
@@ -312,11 +327,14 @@ int main(void)
         HOST_CONSOLE_RAW_EVENTS) == LIB_STATUS_INVALID_STATE);
     assert(second_broker == LIB_NULL);
     assert(lib_console_write_text(first, "a", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(first, &output_frame) == LIB_STATUS_OK);
     assert(host_console_broker_replace(broker, first, second,
         HOST_CONSOLE_RAW_EVENTS) == LIB_STATUS_OK);
     assert(host_console_prepare_saw_active);
     assert(lib_console_write_text(first, "a", 1u) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text_frame(first, &output_frame) == LIB_STATUS_NOT_CURRENT);
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
     /* Reader retirement is an explicit transaction boundary.  After a failed
        retirement cancellation may already have disturbed the old reader, so
        the broker fails closed: neither old nor next is advertised Current. */
@@ -325,6 +343,7 @@ int main(void)
     assert(host_console_broker_replace(broker, second, first,
         HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_IO_ERROR);
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_NOT_CURRENT);
     assert(input_resets == resets_before_failure);
     assert(host_console_broker_replace(broker, second, first,
         HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_INVALID_STATE);
@@ -350,12 +369,14 @@ int main(void)
         HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_IO_ERROR);
     /* Preflight failure did not stop or detach the old current object. */
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
     assert(host_console_prepare_saw_active);
     assert(input_resets == resets_before_failure);
     host_console_fail_next_activation = 1;
     assert(host_console_broker_replace(broker, second, first,
         HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_IO_ERROR);
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
     /* If the next reader and the mandatory old-reader restoration both fail,
        the broker is terminally broken rather than falsely advertising old as
        Current. The application must stop; a later replacement cannot revive
@@ -364,10 +385,12 @@ int main(void)
     assert(host_console_broker_replace(broker, second, first,
         HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_IO_ERROR);
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_NOT_CURRENT);
     assert(host_console_broker_replace(broker, second, first,
         HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_INVALID_STATE);
     host_console_broker_destroy(broker);
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_NOT_CURRENT);
     assert(host_console_broker_create(&second_broker, first,
         HOST_CONSOLE_COOKED_LINES) == LIB_STATUS_OK);
     host_console_broker_destroy(second_broker);

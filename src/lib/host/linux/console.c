@@ -10,6 +10,10 @@ lib_status host_console_backend_destroy(host_console_backend *backend)
 { return backend == LIB_NULL ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED; }
 lib_status host_console_backend_request_cooked_line(host_console_backend *backend)
 { (void)backend; return LIB_STATUS_UNSUPPORTED; }
+lib_status host_console_backend_cancel_cooked_line(host_console_backend *backend,
+    lib_bool *out_completed)
+{ (void)backend; if (out_completed != LIB_NULL) *out_completed = LIB_FALSE;
+  return LIB_STATUS_UNSUPPORTED; }
 lib_status host_console_backend_prepare(host_console_backend *backend,
     lib_console *console, host_console_mode mode)
 { (void)backend; (void)console; (void)mode; return LIB_STATUS_UNSUPPORTED; }

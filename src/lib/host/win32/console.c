@@ -58,41 +58,45 @@ static int host_console_ensure_text_surface(host_console_backend *backend)
     lib_win32_console_screen_buffer_info info;
     lib_win32_coord required;
     lib_win32_small_rect viewport;
+    lib_win32_short width, height;
 
     if (output == LIB_NULL || output == LIB_WIN32_INVALID_HANDLE_VALUE ||
         !lib_win32_get_console_screen_buffer_info(output, &info)) return 0;
-    /* Position first: some hosts resize the backing buffer to the viewport.
-     * Ensure frame capacity only after that operation, never before it. */
+    width = info.srWindow.Right - info.srWindow.Left + 1;
+    height = info.srWindow.Bottom - info.srWindow.Top + 1;
+    if (width < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS)
+        width = (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS;
+    if (height < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS)
+        height = (lib_win32_short)LIB_CONSOLE_TEXT_ROWS;
+    required.X = info.dwSize.X < width ? width : info.dwSize.X;
+    required.Y = info.dwSize.Y < height ? height : info.dwSize.Y;
+    /* Move the existing viewport before expanding capacity. Preserve both
+     * original dimensions: some hosts resize the buffer during this move. */
     if (info.srWindow.Left != 0 || info.srWindow.Top != 0) {
         viewport.Left = viewport.Top = 0;
         viewport.Right = info.srWindow.Right - info.srWindow.Left;
         viewport.Bottom = info.srWindow.Bottom - info.srWindow.Top;
-        (void)lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport);
+        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return 0;
         if (!lib_win32_get_console_screen_buffer_info(output, &info)) return 0;
     }
-    required.X = info.dwSize.X < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS ?
-        (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS : info.dwSize.X;
-    required.Y = info.dwSize.Y < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS ?
-        (lib_win32_short)LIB_CONSOLE_TEXT_ROWS : info.dwSize.Y;
     if (required.X != info.dwSize.X || required.Y != info.dwSize.Y) {
         /* Restoring dimensions cannot restore cells lost by a native shrink. */
         backend->previous_columns = backend->previous_rows = 0u;
         if (!lib_win32_set_console_screen_buffer_size(output, required)) return 0;
     }
-    /* The buffer alone does not define what the user can see: a host can keep
-     * a short viewport over a correctly sized 80x25 text buffer.  Expand only
-     * a clipped viewport; a larger native viewport is already a complete text
-     * surface and must retain its display state across a broker rollback. */
-    if (info.srWindow.Right - info.srWindow.Left + 1 <
-            (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS ||
-        info.srWindow.Bottom - info.srWindow.Top + 1 <
-            (lib_win32_short)LIB_CONSOLE_TEXT_ROWS) {
-        viewport.Left = viewport.Top = 0;
-        viewport.Right = (lib_win32_short)(LIB_CONSOLE_TEXT_COLUMNS - 1u);
-        viewport.Bottom = (lib_win32_short)(LIB_CONSOLE_TEXT_ROWS - 1u);
+    viewport.Left = viewport.Top = 0;
+    viewport.Right = width - 1;
+    viewport.Bottom = height - 1;
+    if (info.srWindow.Left != 0 || info.srWindow.Top != 0 ||
+        info.srWindow.Right != viewport.Right || info.srWindow.Bottom != viewport.Bottom) {
         if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return 0;
     }
-    return 1;
+    /* Success means visible cells, not only backing storage. An unsupported
+     * host size must fail instead of reporting a silently clipped surface. */
+    return lib_win32_get_console_screen_buffer_info(output, &info) &&
+        info.dwSize.X >= required.X && info.dwSize.Y >= required.Y &&
+        info.srWindow.Left == 0 && info.srWindow.Top == 0 &&
+        info.srWindow.Right >= viewport.Right && info.srWindow.Bottom >= viewport.Bottom;
 }
 
 static lib_u8 host_console_modifiers(lib_win32_dword state)
@@ -478,6 +482,30 @@ static lib_status host_console_retire_reader(host_console_backend *backend)
     if (!lib_win32_close_handle(backend->reader)) return LIB_STATUS_IO_ERROR;
     backend->reader = LIB_NULL;
     return LIB_STATUS_OK;
+}
+
+lib_status host_console_backend_cancel_cooked_line(host_console_backend *backend,
+    lib_bool *out_completed)
+{
+    lib_status status;
+    if (backend == LIB_NULL || out_completed == LIB_NULL ||
+        backend->mode != HOST_CONSOLE_COOKED_LINES || backend->stop_event == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (backend->reader == LIB_NULL) {
+        *out_completed = LIB_TRUE;
+        return LIB_STATUS_OK;
+    }
+    status = host_console_retire_reader(backend);
+    if (status != LIB_STATUS_OK) return status;
+    /* Only inspect completion after join: cancellation may race a successful
+     * event delivery. A committed line is not an abandoned editing fragment. */
+    *out_completed = backend->cooked_line_pending == 0;
+    lib_win32_interlocked_exchange(&backend->cooked_line_pending, 0);
+    /* A raced completion is already delivered. Flush only native leftovers,
+     * including a synthetic wake that lost that race, never the queued line. */
+    if (!lib_win32_flush_console_input_buffer(backend->input))
+        return LIB_STATUS_IO_ERROR;
+    return lib_win32_reset_event(backend->stop_event) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
 lib_status host_console_backend_deactivate(host_console_backend *backend,

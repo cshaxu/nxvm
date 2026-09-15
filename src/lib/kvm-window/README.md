@@ -25,7 +25,7 @@ Native Window destruction removes its timer; stale queued ticks cannot bypass
 frozen/due checks.
 Checked destroy uses the shared 5000 ms join contract; a failed join retains the
 component and all callback dependencies, never freeing a live worker.
-`freeze()` atomically prevents capture, releases any
+`freeze()` submits one control; the Window worker prevents capture, releases any
 capture, and holds the cursor at its current drawn state; `unfreeze()` resumes
 the blink but waits for a later client-area click before it captures. A real
 frozen-to-unfrozen transition requests foreground/focus once, subject to host

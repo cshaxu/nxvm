@@ -9,6 +9,7 @@ typedef struct console_probe {
     unsigned int events;
     char output[32];
     lib_size output_length;
+    unsigned int frames;
 } console_probe;
 
 static void console_probe_event(void *context, const lib_console_event *event)
@@ -29,11 +30,25 @@ static lib_status console_probe_output(void *context, const char *text,
     return LIB_STATUS_OK;
 }
 
+static lib_status console_probe_frame(void *context,
+    const lib_console_text_frame *frame)
+{
+    console_probe *probe = (console_probe *)context;
+    assert(frame->columns == 80u && frame->rows == 25u);
+    ++probe->frames;
+    return LIB_STATUS_OK;
+}
+
 int main(void)
 {
     lib_console *console = LIB_NULL;
     console_probe probe = { 0 };
     lib_console_event event = { 0 };
+    console_probe next = { 0 };
+    lib_console_text_frame frame = { .columns = 80u, .rows = 25u };
+    lib_console_output_binding binding = {
+        console_probe_output, console_probe_frame, &probe
+    };
 
     assert(lib_console_create(&console) == LIB_STATUS_OK);
     assert(console != LIB_NULL);
@@ -57,11 +72,31 @@ int main(void)
     event.kind = LIB_CONSOLE_EVENT_COOKED_LINE;
     event.value.line.length = LIB_CONSOLE_LINE_MAX;
     assert(lib_console_deliver_event(console, &event) == LIB_STATUS_INVALID_ARGUMENT);
-    assert(lib_console_set_output_sink(console, console_probe_output, &probe) ==
-        LIB_STATUS_OK);
+    assert(lib_console_set_output_binding(NULL, &binding) == LIB_STATUS_INVALID_ARGUMENT);
+    assert(lib_console_set_output_binding(console, &binding) == LIB_STATUS_OK);
+    binding.context = &next; /* Console owns a copy, not this descriptor. */
     assert(lib_console_write_text(console, "hello", 5u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_OK);
+    assert(probe.frames == 1u && next.frames == 0u);
     assert(probe.output_length == 5u);
     assert(strcmp(probe.output, "hello") == 0);
+    assert(lib_console_set_output_binding(console, &binding) == LIB_STATUS_OK);
+    assert(lib_console_write_text(console, "next", 4u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_OK);
+    assert(next.frames == 1u && strcmp(next.output, "next") == 0);
+    assert(probe.frames == 1u && strcmp(probe.output, "hello") == 0);
+    assert(lib_console_set_output_binding(console, NULL) == LIB_STATUS_OK);
+    assert(lib_console_write_text(console, "x", 1u) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_NOT_CURRENT);
+    binding.text = NULL;
+    assert(lib_console_set_output_binding(console, &binding) == LIB_STATUS_OK);
+    assert(lib_console_write_text(console, "x", 1u) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_OK);
+    binding.text = console_probe_output;
+    binding.frame = NULL;
+    assert(lib_console_set_output_binding(console, &binding) == LIB_STATUS_OK);
+    assert(lib_console_write_text(console, "x", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_NOT_CURRENT);
     assert(lib_console_set_event_sink(console, LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     assert(lib_console_deliver_event(console, &probe.event) == LIB_STATUS_INVALID_STATE);
     lib_console_destroy(console);

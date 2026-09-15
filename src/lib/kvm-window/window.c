@@ -14,7 +14,7 @@ static lib_status kvm_window_enqueue(kvm_window *window,
     kvm_component_control control)
 {
     return window == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
-        kvm_component_enqueue_controls(&window->base, &control, 1u);
+        kvm_component_enqueue_control(&window->base, &control);
 }
 
 lib_status kvm_window_create(kvm_window **out_window,
@@ -85,13 +85,11 @@ lib_status kvm_window_unfreeze(kvm_window *window)
 
 lib_status kvm_window_freeze(kvm_window *window)
 {
-    kvm_component_control controls[2] = {
-        { .kind = KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN },
-        { .kind = KVM_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE }
+    kvm_component_control control = {
+        .kind = KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN
     };
-    if (window == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    controls[0].value.window_frozen = LIB_TRUE;
-    return kvm_component_enqueue_controls(&window->base, controls, 2u);
+    control.value.window_frozen = LIB_TRUE;
+    return kvm_window_enqueue(window, control);
 }
 
 lib_status kvm_window_release_mouse(kvm_window *window)

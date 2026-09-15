@@ -34,12 +34,12 @@ lib_status common_xasm32_assemble(const char *statement, lib_size statement_byte
         (flag32 != LIB_FALSE && flag32 != LIB_TRUE)) return LIB_STATUS_INVALID_ARGUMENT;
     status = common_xasm32_validate_statement(statement, statement_bytes, LIB_FALSE);
     if (status != LIB_STATUS_OK) return status;
-    memcpy(local_statement, statement, statement_bytes);
+    lib_memory_copy(local_statement, statement, statement_bytes);
     local_statement[statement_bytes] = '\0';
     code_bytes = aasm32(local_statement, local_code, flag32);
     if (code_bytes == 0u) return LIB_STATUS_UNSUPPORTED;
     if (code_bytes > code_capacity) return LIB_STATUS_LIMIT_EXCEEDED;
-    memcpy(code, local_code, code_bytes);
+    lib_memory_copy(code, local_code, code_bytes);
     *out_code_bytes = code_bytes;
     return LIB_STATUS_OK;
 }
@@ -56,12 +56,12 @@ lib_status common_xasm32_assemble_paragraph(const char *statement,
         (flag32 != LIB_FALSE && flag32 != LIB_TRUE)) return LIB_STATUS_INVALID_ARGUMENT;
     status = common_xasm32_validate_statement(statement, statement_bytes, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
-    local_statement = malloc(statement_bytes + 1u);
+    local_statement = lib_allocate(statement_bytes + 1u);
     if (local_statement == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    memcpy(local_statement, statement, statement_bytes);
+    lib_memory_copy(local_statement, statement, statement_bytes);
     local_statement[statement_bytes] = '\0';
     status = aasm32x(local_statement, code_capacity, code, out_code_bytes, flag32);
-    free(local_statement);
+    lib_release(local_statement);
     return status;
 }
 
@@ -78,10 +78,10 @@ lib_status common_xasm32_disassemble(const lib_u8 *code, lib_size code_bytes,
         code_bytes < COMMON_XASM32_MAX_CODE_BYTES || statement_capacity == 0u ||
         (flag32 != LIB_FALSE && flag32 != LIB_TRUE)) return LIB_STATUS_INVALID_ARGUMENT;
     decoded_bytes = dasm32(local_statement, (lib_u8 *)code, flag32);
-    statement_bytes = strlen(local_statement);
+    statement_bytes = lib_text_length(local_statement);
     if (decoded_bytes == 0u) return LIB_STATUS_UNSUPPORTED;
     if (statement_bytes >= statement_capacity) return LIB_STATUS_LIMIT_EXCEEDED;
-    memcpy(statement, local_statement, statement_bytes + 1u);
+    lib_memory_copy(statement, local_statement, statement_bytes + 1u);
     *out_statement_bytes = statement_bytes;
     *out_code_bytes = decoded_bytes;
     return LIB_STATUS_OK;

@@ -15,9 +15,9 @@ static void *counted_set(void *destination, int value, lib_size size)
     if (size == sizeof(kvm_frame)) ++status_builds;
     return memset(destination, value, size);
 }
-#define memset counted_set
+#define lib_memory_set counted_set
 #include "common/ui/ui.c"
-#undef memset
+#undef lib_memory_set
 
 struct kvm_window { kvm_window_options options; };
 struct kvm_console { lib_console *object; kvm_console_options options; };
@@ -70,6 +70,9 @@ lib_status host_console_broker_request_cooked_line(host_console_broker *broker,
 { assert(broker->current == expected); return LIB_STATUS_OK; }
 lib_status host_console_broker_destroy(host_console_broker *broker)
 { assert(broker == &broker_fake); return LIB_STATUS_OK; }
+lib_status host_console_broker_cancel_cooked_line(host_console_broker *broker,
+    lib_console *expected, lib_bool *out_completed)
+{ assert(broker->current == expected); *out_completed = LIB_FALSE; return LIB_STATUS_OK; }
 
 static int receive(void *context, const common_ui_event *event)
 {
@@ -131,16 +134,54 @@ int main(void)
     assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_OK);
     assert(status_builds == 1u && console_frames == 1u && window_frames == 1u);
     frame.sequence = 2u;
-    publish_status = LIB_STATUS_IO_ERROR;
-    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_IO_ERROR);
-    publish_status = LIB_STATUS_OK;
+    /* Window advances, but its fixed Console explanation is unchanged. */
     assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_OK);
-    assert(status_builds == 3u && console_frames == 3u && window_frames == 2u);
+    assert(status_builds == 1u && console_frames == 1u && window_frames == 2u);
     frame.sequence = 3u;
     frame.graphics = 0u;
     frame.text[0] = 'T';
+    publish_status = LIB_STATUS_IO_ERROR;
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_IO_ERROR);
+    assert(ui->console_status_delivered);
+    publish_status = LIB_STATUS_OK;
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_OK);
+    assert(!ui->console_status_delivered && last_console.text[0] == 'T');
+    assert(status_builds == 1u && console_frames == 3u && window_frames == 3u);
+    frame.sequence = 4u;
+    frame.text[0] = 'U';
     assert(common_ui_publish_frame(ui, &frame, 1, 1, 0) == LIB_STATUS_OK);
-    assert(status_builds == 3u && last_console.text[0] == 'T');
+    assert(console_frames == 4u && last_console.text[0] == 'U');
+    frame.sequence = 5u;
+    frame.graphics = 1u;
+    publish_status = LIB_STATUS_IO_ERROR;
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_IO_ERROR);
+    assert(!ui->console_status_delivered);
+    publish_status = LIB_STATUS_OK;
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_OK);
+    assert(status_builds == 3u && console_frames == 6u && window_frames == 5u);
+    /* Switching content category with the same source frame still submits. */
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 0) == LIB_STATUS_OK);
+    assert(last_console.graphics && console_frames == 7u);
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_OK);
+    assert(!last_console.graphics && console_frames == 8u);
+    /* Rebinding retains content in this existing KVM instance. */
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_BIND_MONITOR,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_BIND_VM_CONSOLE,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_OK);
+    assert(status_builds == 4u && console_frames == 8u);
+    /* A fresh Console has no old status; even the same sequence is delivered. */
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_BIND_MONITOR,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_DESTROY_VM_CONSOLE,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_CREATE_VM_CONSOLE,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_BIND_VM_CONSOLE,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    assert(common_ui_publish_frame(ui, &frame, 1, 1, 1) == LIB_STATUS_OK);
+    assert(status_builds == 5u && console_frames == 9u && window_frames == 5u);
     /* Real concurrent callback/control access uses the one existing atomic. */
     for (int source = 0; source < 2; ++source) {
         kvm_component_options *component = source ? &console_fake.options :

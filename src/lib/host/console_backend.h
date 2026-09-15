@@ -21,6 +21,8 @@ lib_status host_console_backend_activate(host_console_backend *backend,
  * arms one line; rollback restores only an unfinished retired request. */
 lib_status host_console_backend_request_cooked_line(
     host_console_backend *backend);
+lib_status host_console_backend_cancel_cooked_line(host_console_backend *backend,
+    lib_bool *out_completed);
 /* Retire and join the current reader before invalidating its binding or
  * activating another. Retirement failure is terminal: do not start next or
  * claim that old remains usable. The broker fails closed. */

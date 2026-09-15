@@ -51,7 +51,7 @@ if(WIN32)
         "${LIB_ROOT}/kvm-console/console.c")
     foreach(probe IN ITEMS kvm_frame_damage_mouse kvm_window_retirement
             kvm_window_modal kvm_shutdown_failure host_console_reader_failure
-            host_console_display kvm_input_admission console_blocking_gate
+            host_console_display host_console_cancel kvm_input_admission console_blocking_gate
             host_sync_ownership kvm_keyboard_lifetime lib_console_io_contract
             kvm_window_capture_contract)
         lib_test(${probe} kvm-window console)

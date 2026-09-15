@@ -23,9 +23,9 @@ static inline lib_status xasm32_copy_text(char *destination,
     if (destination == LIB_NULL || source == LIB_NULL || destination_capacity == 0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    source_bytes = strlen(source);
+    source_bytes = lib_text_length(source);
     if (source_bytes >= destination_capacity) return LIB_STATUS_LIMIT_EXCEEDED;
-    memcpy(destination, source, source_bytes + 1u);
+    lib_memory_copy(destination, source, source_bytes + 1u);
     return LIB_STATUS_OK;
 }
 
@@ -38,13 +38,13 @@ static inline lib_status xasm32_append_text(char *destination,
     if (destination == LIB_NULL || source == LIB_NULL || destination_capacity == 0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    destination_bytes = strlen(destination);
-    source_bytes = strlen(source);
+    destination_bytes = lib_text_length(destination);
+    source_bytes = lib_text_length(source);
     if (destination_bytes >= destination_capacity ||
         source_bytes >= destination_capacity - destination_bytes) {
         return LIB_STATUS_LIMIT_EXCEEDED;
     }
-    memcpy(destination + destination_bytes, source, source_bytes + 1u);
+    lib_memory_copy(destination + destination_bytes, source, source_bytes + 1u);
     return LIB_STATUS_OK;
 }
 

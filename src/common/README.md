@@ -17,6 +17,30 @@ with input callbacks; their run-generation tag uses a Types atomic. Frame
 deduplication and object ownership remain control-thread-local. Native producers
 must be destroyed before the event sink/context is released.
 
+The debug command state is the public opaque debug object itself, with no
+separately allocated forwarding owner. Session uses one internal control state
+for completed facts and presentation actions; pure derivation stays separate.
+UI submits the fixed graphical Console explanation only when entering that
+content kind or creating a fresh Console. Text still follows frame sequences;
+only successful submissions update these control-thread-local markers.
+
+Session owns one pending cooked line until its normal/rejected event is consumed
+or the broker confirms cancellation/handoff. Frame events never request input.
+Provider prompt readiness is level-triggered, not consumed by notification;
+text, explicit requests and prompt admission use one result outlet. While editing,
+notification text first cancels and joins the reader, discarding the partial line.
+A completed queued line remains pending and is still consumed. UI only forwards
+that cancellation to its broker; it owns no second reader state or editor.
+
+Debugger output is a growable, object-owned string, borrowed until the next
+submit/observe/open/destroy. Its result prompt carries the original input suffix
+(address, byte value, flags or colon), not an additional generic continuation
+label. Session command results may borrow additional text until the next provider
+call. Session consumes it synchronously through its existing monitor transaction,
+normalizing LF/CRLF in bounded chunks. No large result is silently truncated;
+allocation/formatting and native write failures remain explicit. Providers must
+not retain a debug result across a producing call without copying its text.
+
 | Component | One responsibility | Public contract |
 | --- | --- | --- |
 | `machine` | executor, lifecycle/input queues, frame publication, optional paused debug adapter | `machine_interface.h` |

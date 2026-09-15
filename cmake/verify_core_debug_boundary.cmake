@@ -9,7 +9,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/common/debug/command.c" command_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/common/debug/debug_interface.h" interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/common/debug/command.h" command_interface)
+file(READ "${PROJECT_SOURCE_DIR}/src/common/debug/command_runtime.h" command_interface)
 foreach(forbidden IN ITEMS
     "#include \"core/"
     "#include \"vm/"
@@ -28,8 +28,7 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 foreach(required IN ITEMS
-    "src/common/debug/command.c"
-    "src/common/debug/debug.c")
+    "src/common/debug/command.c")
     string(FIND "${cmake_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "common-debug omits ${required}")

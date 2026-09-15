@@ -77,5 +77,6 @@ lib_status common_ui_publish_frame(common_ui *ui, const kvm_frame *frame,
 lib_status common_ui_release_window_mouse(common_ui *ui);
 lib_status common_ui_write_monitor(common_ui *ui, const char *text);
 lib_status common_ui_request_monitor_line(common_ui *ui);
+lib_status common_ui_cancel_monitor_line(common_ui *ui, lib_bool *out_completed);
 
 #endif

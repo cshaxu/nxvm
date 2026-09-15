@@ -93,51 +93,38 @@ lib_status kvm_component_mailboxes_publish_frame(kvm_component_mailboxes *mailbo
     return LIB_STATUS_OK;
 }
 
-lib_status kvm_component_mailboxes_enqueue_controls(
-    kvm_component_mailboxes *mailboxes, const kvm_component_control *controls,
-    lib_u32 control_count)
+lib_status kvm_component_mailboxes_enqueue_control(
+    kvm_component_mailboxes *mailboxes, const kvm_component_control *control)
 {
     lib_u32 index;
-    lib_u32 control_index;
-    lib_u32 ordinary_count = 0u;
-    lib_bool includes_stop = LIB_FALSE;
+    lib_bool stop;
 
-    if (mailboxes == LIB_NULL || controls == LIB_NULL || control_count == 0u)
+    if (mailboxes == LIB_NULL || control == LIB_NULL ||
+        control->kind > KVM_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE)
         return LIB_STATUS_INVALID_ARGUMENT;
-    for (control_index = 0u; control_index < control_count; ++control_index) {
-        if (controls[control_index].kind > KVM_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE)
-            return LIB_STATUS_INVALID_ARGUMENT;
-        if (controls[control_index].kind == KVM_COMPONENT_CONTROL_STOP) {
-            if (includes_stop != LIB_FALSE) return LIB_STATUS_INVALID_ARGUMENT;
-            includes_stop = LIB_TRUE;
-        } else ++ordinary_count;
-    }
-    if (includes_stop != LIB_FALSE && control_count != 1u)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    if (includes_stop) kvm_component_mailboxes_lock(&mailboxes->frame_lock);
+    stop = control->kind == KVM_COMPONENT_CONTROL_STOP;
+    if (stop) kvm_component_mailboxes_lock(&mailboxes->frame_lock);
     kvm_component_mailboxes_lock(&mailboxes->control_lock);
-    if (includes_stop != LIB_FALSE) {
+    if (stop) {
         if (mailboxes->closed != LIB_FALSE) {
             kvm_component_mailboxes_unlock(&mailboxes->control_lock);
             kvm_component_mailboxes_unlock(&mailboxes->frame_lock);
             return LIB_STATUS_OK;
         }
         mailboxes->closed = LIB_TRUE;
-    } else if (mailboxes->closed != LIB_FALSE || ordinary_count >
-        KVM_COMPONENT_CONTROL_CAPACITY - mailboxes->control_count) {
+    } else if (mailboxes->closed != LIB_FALSE ||
+        mailboxes->control_count == KVM_COMPONENT_CONTROL_CAPACITY) {
         lib_status status = mailboxes->closed != LIB_FALSE ?
             LIB_STATUS_INVALID_STATE : LIB_STATUS_LIMIT_EXCEEDED;
         kvm_component_mailboxes_unlock(&mailboxes->control_lock);
         return status;
     }
-    for (control_index = 0u; control_index < control_count; ++control_index) {
-        index = (mailboxes->control_head + mailboxes->control_count) %
-            KVM_COMPONENT_CONTROL_STORAGE_CAPACITY;
-        mailboxes->controls[index] = controls[control_index];
-        ++mailboxes->control_count;
-    }
+    index = (mailboxes->control_head + mailboxes->control_count) %
+        KVM_COMPONENT_CONTROL_STORAGE_CAPACITY;
+    mailboxes->controls[index] = *control;
+    ++mailboxes->control_count;
     kvm_component_mailboxes_unlock(&mailboxes->control_lock);
-    if (includes_stop) kvm_component_mailboxes_unlock(&mailboxes->frame_lock);
+    if (stop) kvm_component_mailboxes_unlock(&mailboxes->frame_lock);
     return LIB_STATUS_OK;
 }
 

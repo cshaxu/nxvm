@@ -2496,7 +2496,7 @@ static t_aasm_oprinfo parsearg_mem(aasm32_context *aasmContext, t_aasm_token tok
     lib_u8 eax, ecx, edx, ebx, esp, ebp, esi, edi;
     lib_u8 ieax, iecx, iedx, iebx, iebp, iesi, iedi;
     XASM32_TRACE_CALL_BEGIN("parsearg_mem");
-    memset((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
+    lib_memory_set((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     bx = bp = si = di = neg = al = 0;
     eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
     ieax = iecx = iedx = iebx = iebp = iesi = iedi = 0;
@@ -3191,7 +3191,7 @@ static t_aasm_oprinfo parsearg_imm(aasm32_context *aasmContext, t_aasm_token tok
     t_aasm_oprinfo info;
     XASM32_TRACE_CALL_BEGIN("parsearg_imm");
 
-    memset((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
+    lib_memory_set((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
 
     if (token == TOKEN_PLUS)
     {
@@ -3276,7 +3276,7 @@ static t_aasm_oprinfo parsearg(aasm32_context *aasmContext, char *arg)
     t_aasm_token token;
     t_aasm_oprinfo info;
     XASM32_TRACE_CALL_BEGIN("parsearg");
-    memset((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
+    lib_memory_set((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     if (!arg || !arg[0])
     {
         info.type = XASM32_OPERAND_NONE;
@@ -9269,12 +9269,12 @@ static int is_space(aasm32_context *aasmContext, char c)
 }
 static int is_prefix(aasm32_context *aasmContext)
 {
-    if (!strcmp(rop, "es:") || !strcmp(rop, "cs:") ||
-        !strcmp(rop, "ss:") || !strcmp(rop, "ds:") ||
-        !strcmp(rop, "fs:") || !strcmp(rop, "gs:") ||
-        !strcmp(rop, "lock:") || !strcmp(rop, "rep:") ||
-        !strcmp(rop, "repne:") || !strcmp(rop, "repnz:") ||
-        !strcmp(rop, "repe:") || !strcmp(rop, "repz:"))
+    if (!lib_c_strcmp(rop, "es:") || !lib_c_strcmp(rop, "cs:") ||
+        !lib_c_strcmp(rop, "ss:") || !lib_c_strcmp(rop, "ds:") ||
+        !lib_c_strcmp(rop, "fs:") || !lib_c_strcmp(rop, "gs:") ||
+        !lib_c_strcmp(rop, "lock:") || !lib_c_strcmp(rop, "rep:") ||
+        !lib_c_strcmp(rop, "repne:") || !lib_c_strcmp(rop, "repnz:") ||
+        !lib_c_strcmp(rop, "repe:") || !lib_c_strcmp(rop, "repz:"))
     {
         return 1;
     }
@@ -9289,433 +9289,433 @@ static void exec(aasm32_context *aasmContext)
     XASM32_TRACE_CALL_BEGIN("exec");
     if (!rop || is_end(aasmContext, rop[0]))
         ;
-    else if (!strcmp(rop, "add"))
+    else if (!lib_c_strcmp(rop, "add"))
         ADD(aasmContext);
-    else if (!strcmp(rop, "push"))
+    else if (!lib_c_strcmp(rop, "push"))
         PUSH(aasmContext);
-    else if (!strcmp(rop, "pop"))
+    else if (!lib_c_strcmp(rop, "pop"))
         POP(aasmContext);
-    else if (!strcmp(rop, "or"))
+    else if (!lib_c_strcmp(rop, "or"))
         OR(aasmContext);
-    else if (!strcmp(rop, "adc"))
+    else if (!lib_c_strcmp(rop, "adc"))
         ADC(aasmContext);
-    else if (!strcmp(rop, "sbb"))
+    else if (!lib_c_strcmp(rop, "sbb"))
         SBB(aasmContext);
-    else if (!strcmp(rop, "and"))
+    else if (!lib_c_strcmp(rop, "and"))
         AND(aasmContext);
-    else if (!strcmp(rop, "es:"))
+    else if (!lib_c_strcmp(rop, "es:"))
         PREFIX_ES(aasmContext);
-    else if (!strcmp(rop, "daa"))
+    else if (!lib_c_strcmp(rop, "daa"))
         DAA(aasmContext);
-    else if (!strcmp(rop, "sub"))
+    else if (!lib_c_strcmp(rop, "sub"))
         SUB(aasmContext);
-    else if (!strcmp(rop, "cs:"))
+    else if (!lib_c_strcmp(rop, "cs:"))
         PREFIX_CS(aasmContext);
-    else if (!strcmp(rop, "das"))
+    else if (!lib_c_strcmp(rop, "das"))
         DAS(aasmContext);
-    else if (!strcmp(rop, "xor"))
+    else if (!lib_c_strcmp(rop, "xor"))
         XOR(aasmContext);
-    else if (!strcmp(rop, "ss:"))
+    else if (!lib_c_strcmp(rop, "ss:"))
         PREFIX_SS(aasmContext);
-    else if (!strcmp(rop, "aaa"))
+    else if (!lib_c_strcmp(rop, "aaa"))
         AAA(aasmContext);
-    else if (!strcmp(rop, "cmp"))
+    else if (!lib_c_strcmp(rop, "cmp"))
         CMP(aasmContext);
-    else if (!strcmp(rop, "ds:"))
+    else if (!lib_c_strcmp(rop, "ds:"))
         PREFIX_DS(aasmContext);
-    else if (!strcmp(rop, "aas"))
+    else if (!lib_c_strcmp(rop, "aas"))
         AAS(aasmContext);
-    else if (!strcmp(rop, "inc"))
+    else if (!lib_c_strcmp(rop, "inc"))
         INC(aasmContext);
-    else if (!strcmp(rop, "dec"))
+    else if (!lib_c_strcmp(rop, "dec"))
         DEC(aasmContext);
-    else if (!strcmp(rop, "pusha"))
+    else if (!lib_c_strcmp(rop, "pusha"))
         PUSHA(aasmContext, 2);
-    else if (!strcmp(rop, "pushad"))
+    else if (!lib_c_strcmp(rop, "pushad"))
         PUSHA(aasmContext, 4);
-    else if (!strcmp(rop, "popa"))
+    else if (!lib_c_strcmp(rop, "popa"))
         POPA(aasmContext, 2);
-    else if (!strcmp(rop, "popad"))
+    else if (!lib_c_strcmp(rop, "popad"))
         POPA(aasmContext, 4);
-    else if (!strcmp(rop, "bound"))
+    else if (!lib_c_strcmp(rop, "bound"))
         BOUND(aasmContext);
-    else if (!strcmp(rop, "arpl"))
+    else if (!lib_c_strcmp(rop, "arpl"))
         ARPL_RM16_R16(aasmContext);
-    else if (!strcmp(rop, "fs:"))
+    else if (!lib_c_strcmp(rop, "fs:"))
         PREFIX_FS(aasmContext);
-    else if (!strcmp(rop, "gs:"))
+    else if (!lib_c_strcmp(rop, "gs:"))
         PREFIX_GS(aasmContext);
-    else if (!strcmp(rop, "op+:"))
+    else if (!lib_c_strcmp(rop, "op+:"))
         PREFIX_OprSize(aasmContext);
-    else if (!strcmp(rop, "az+:"))
+    else if (!lib_c_strcmp(rop, "az+:"))
         PREFIX_AddrSize(aasmContext);
-    else if (!strcmp(rop, "imul"))
+    else if (!lib_c_strcmp(rop, "imul"))
         IMUL(aasmContext);
-    else if (!strcmp(rop, "ins"))
+    else if (!lib_c_strcmp(rop, "ins"))
         INS(aasmContext);
-    else if (!strcmp(rop, "insb"))
+    else if (!lib_c_strcmp(rop, "insb"))
         INSB(aasmContext);
-    else if (!strcmp(rop, "insw"))
+    else if (!lib_c_strcmp(rop, "insw"))
         INSW(aasmContext, 2);
-    else if (!strcmp(rop, "insd"))
+    else if (!lib_c_strcmp(rop, "insd"))
         INSW(aasmContext, 4);
-    else if (!strcmp(rop, "outs"))
+    else if (!lib_c_strcmp(rop, "outs"))
         OUTS(aasmContext);
-    else if (!strcmp(rop, "outsb"))
+    else if (!lib_c_strcmp(rop, "outsb"))
         OUTSB(aasmContext);
-    else if (!strcmp(rop, "outsw"))
+    else if (!lib_c_strcmp(rop, "outsw"))
         OUTSW(aasmContext, 2);
-    else if (!strcmp(rop, "outsd"))
+    else if (!lib_c_strcmp(rop, "outsd"))
         OUTSW(aasmContext, 4);
-    else if (!strcmp(rop, "jo"))
+    else if (!lib_c_strcmp(rop, "jo"))
         JCC_REL(aasmContext, 0x70);
-    else if (!strcmp(rop, "jno"))
+    else if (!lib_c_strcmp(rop, "jno"))
         JCC_REL(aasmContext, 0x71);
-    else if (!strcmp(rop, "jb"))
+    else if (!lib_c_strcmp(rop, "jb"))
         JCC_REL(aasmContext, 0x72);
-    else if (!strcmp(rop, "jc"))
+    else if (!lib_c_strcmp(rop, "jc"))
         JCC_REL(aasmContext, 0x72);
-    else if (!strcmp(rop, "jnae"))
+    else if (!lib_c_strcmp(rop, "jnae"))
         JCC_REL(aasmContext, 0x72);
-    else if (!strcmp(rop, "jae"))
+    else if (!lib_c_strcmp(rop, "jae"))
         JCC_REL(aasmContext, 0x73);
-    else if (!strcmp(rop, "jnb"))
+    else if (!lib_c_strcmp(rop, "jnb"))
         JCC_REL(aasmContext, 0x73);
-    else if (!strcmp(rop, "jnc"))
+    else if (!lib_c_strcmp(rop, "jnc"))
         JCC_REL(aasmContext, 0x73);
-    else if (!strcmp(rop, "je"))
+    else if (!lib_c_strcmp(rop, "je"))
         JCC_REL(aasmContext, 0x74);
-    else if (!strcmp(rop, "jz"))
+    else if (!lib_c_strcmp(rop, "jz"))
         JCC_REL(aasmContext, 0x74);
-    else if (!strcmp(rop, "jne"))
+    else if (!lib_c_strcmp(rop, "jne"))
         JCC_REL(aasmContext, 0x75);
-    else if (!strcmp(rop, "jnz"))
+    else if (!lib_c_strcmp(rop, "jnz"))
         JCC_REL(aasmContext, 0x75);
-    else if (!strcmp(rop, "jbe"))
+    else if (!lib_c_strcmp(rop, "jbe"))
         JCC_REL(aasmContext, 0x76);
-    else if (!strcmp(rop, "jna"))
+    else if (!lib_c_strcmp(rop, "jna"))
         JCC_REL(aasmContext, 0x76);
-    else if (!strcmp(rop, "ja"))
+    else if (!lib_c_strcmp(rop, "ja"))
         JCC_REL(aasmContext, 0x77);
-    else if (!strcmp(rop, "jnbe"))
+    else if (!lib_c_strcmp(rop, "jnbe"))
         JCC_REL(aasmContext, 0x77);
-    else if (!strcmp(rop, "js"))
+    else if (!lib_c_strcmp(rop, "js"))
         JCC_REL(aasmContext, 0x78);
-    else if (!strcmp(rop, "jns"))
+    else if (!lib_c_strcmp(rop, "jns"))
         JCC_REL(aasmContext, 0x79);
-    else if (!strcmp(rop, "jp"))
+    else if (!lib_c_strcmp(rop, "jp"))
         JCC_REL(aasmContext, 0x7a);
-    else if (!strcmp(rop, "jpe"))
+    else if (!lib_c_strcmp(rop, "jpe"))
         JCC_REL(aasmContext, 0x7a);
-    else if (!strcmp(rop, "jnp"))
+    else if (!lib_c_strcmp(rop, "jnp"))
         JCC_REL(aasmContext, 0x7b);
-    else if (!strcmp(rop, "jpo"))
+    else if (!lib_c_strcmp(rop, "jpo"))
         JCC_REL(aasmContext, 0x7b);
-    else if (!strcmp(rop, "jl"))
+    else if (!lib_c_strcmp(rop, "jl"))
         JCC_REL(aasmContext, 0x7c);
-    else if (!strcmp(rop, "jnge"))
+    else if (!lib_c_strcmp(rop, "jnge"))
         JCC_REL(aasmContext, 0x7c);
-    else if (!strcmp(rop, "jge"))
+    else if (!lib_c_strcmp(rop, "jge"))
         JCC_REL(aasmContext, 0x7d);
-    else if (!strcmp(rop, "jnl"))
+    else if (!lib_c_strcmp(rop, "jnl"))
         JCC_REL(aasmContext, 0x7d);
-    else if (!strcmp(rop, "jle"))
+    else if (!lib_c_strcmp(rop, "jle"))
         JCC_REL(aasmContext, 0x7e);
-    else if (!strcmp(rop, "jng"))
+    else if (!lib_c_strcmp(rop, "jng"))
         JCC_REL(aasmContext, 0x7e);
-    else if (!strcmp(rop, "jg"))
+    else if (!lib_c_strcmp(rop, "jg"))
         JCC_REL(aasmContext, 0x7f);
-    else if (!strcmp(rop, "jnle"))
+    else if (!lib_c_strcmp(rop, "jnle"))
         JCC_REL(aasmContext, 0x7f);
-    else if (!strcmp(rop, "test"))
+    else if (!lib_c_strcmp(rop, "test"))
         TEST(aasmContext);
-    else if (!strcmp(rop, "xchg"))
+    else if (!lib_c_strcmp(rop, "xchg"))
         XCHG(aasmContext);
-    else if (!strcmp(rop, "mov"))
+    else if (!lib_c_strcmp(rop, "mov"))
         MOV(aasmContext);
-    else if (!strcmp(rop, "lea"))
+    else if (!lib_c_strcmp(rop, "lea"))
         LEA(aasmContext);
-    else if (!strcmp(rop, "nop"))
+    else if (!lib_c_strcmp(rop, "nop"))
         NOP(aasmContext);
-    else if (!strcmp(rop, "cbw"))
+    else if (!lib_c_strcmp(rop, "cbw"))
         CBW(aasmContext, 2);
-    else if (!strcmp(rop, "cwde"))
+    else if (!lib_c_strcmp(rop, "cwde"))
         CBW(aasmContext, 4);
-    else if (!strcmp(rop, "cwd"))
+    else if (!lib_c_strcmp(rop, "cwd"))
         CWD(aasmContext, 2);
-    else if (!strcmp(rop, "cdq"))
+    else if (!lib_c_strcmp(rop, "cdq"))
         CWD(aasmContext, 4);
-    else if (!strcmp(rop, "call"))
+    else if (!lib_c_strcmp(rop, "call"))
         CALL(aasmContext);
-    else if (!strcmp(rop, "wait"))
+    else if (!lib_c_strcmp(rop, "wait"))
         WAIT(aasmContext);
-    else if (!strcmp(rop, "pushf"))
+    else if (!lib_c_strcmp(rop, "pushf"))
         PUSHF(aasmContext, 2);
-    else if (!strcmp(rop, "pushfd"))
+    else if (!lib_c_strcmp(rop, "pushfd"))
         PUSHF(aasmContext, 4);
-    else if (!strcmp(rop, "popf"))
+    else if (!lib_c_strcmp(rop, "popf"))
         POPF(aasmContext, 2);
-    else if (!strcmp(rop, "popfd"))
+    else if (!lib_c_strcmp(rop, "popfd"))
         POPF(aasmContext, 4);
-    else if (!strcmp(rop, "sahf"))
+    else if (!lib_c_strcmp(rop, "sahf"))
         SAHF(aasmContext);
-    else if (!strcmp(rop, "lahf"))
+    else if (!lib_c_strcmp(rop, "lahf"))
         LAHF(aasmContext);
-    else if (!strcmp(rop, "movs"))
+    else if (!lib_c_strcmp(rop, "movs"))
         MOVS(aasmContext);
-    else if (!strcmp(rop, "movsb"))
+    else if (!lib_c_strcmp(rop, "movsb"))
         MOVSB(aasmContext);
-    else if (!strcmp(rop, "movsw"))
+    else if (!lib_c_strcmp(rop, "movsw"))
         MOVSW(aasmContext, 2);
-    else if (!strcmp(rop, "movsd"))
+    else if (!lib_c_strcmp(rop, "movsd"))
         MOVSW(aasmContext, 4);
-    else if (!strcmp(rop, "cmps"))
+    else if (!lib_c_strcmp(rop, "cmps"))
         CMPS(aasmContext);
-    else if (!strcmp(rop, "cmpsb"))
+    else if (!lib_c_strcmp(rop, "cmpsb"))
         CMPSB(aasmContext);
-    else if (!strcmp(rop, "cmpsw"))
+    else if (!lib_c_strcmp(rop, "cmpsw"))
         CMPSW(aasmContext, 2);
-    else if (!strcmp(rop, "cmpsd"))
+    else if (!lib_c_strcmp(rop, "cmpsd"))
         CMPSW(aasmContext, 4);
-    else if (!strcmp(rop, "stos"))
+    else if (!lib_c_strcmp(rop, "stos"))
         STOS(aasmContext);
-    else if (!strcmp(rop, "stosb"))
+    else if (!lib_c_strcmp(rop, "stosb"))
         STOSB(aasmContext);
-    else if (!strcmp(rop, "stosw"))
+    else if (!lib_c_strcmp(rop, "stosw"))
         STOSW(aasmContext, 2);
-    else if (!strcmp(rop, "stosd"))
+    else if (!lib_c_strcmp(rop, "stosd"))
         STOSW(aasmContext, 4);
-    else if (!strcmp(rop, "lods"))
+    else if (!lib_c_strcmp(rop, "lods"))
         LODS(aasmContext);
-    else if (!strcmp(rop, "lodsb"))
+    else if (!lib_c_strcmp(rop, "lodsb"))
         LODSB(aasmContext);
-    else if (!strcmp(rop, "lodsw"))
+    else if (!lib_c_strcmp(rop, "lodsw"))
         LODSW(aasmContext, 2);
-    else if (!strcmp(rop, "lodsd"))
+    else if (!lib_c_strcmp(rop, "lodsd"))
         LODSW(aasmContext, 4);
-    else if (!strcmp(rop, "scas"))
+    else if (!lib_c_strcmp(rop, "scas"))
         SCAS(aasmContext);
-    else if (!strcmp(rop, "scasb"))
+    else if (!lib_c_strcmp(rop, "scasb"))
         SCASB(aasmContext);
-    else if (!strcmp(rop, "scasw"))
+    else if (!lib_c_strcmp(rop, "scasw"))
         SCASW(aasmContext, 2);
-    else if (!strcmp(rop, "scasd"))
+    else if (!lib_c_strcmp(rop, "scasd"))
         SCASW(aasmContext, 4);
-    else if (!strcmp(rop, "ret"))
+    else if (!lib_c_strcmp(rop, "ret"))
         RET(aasmContext);
-    else if (!strcmp(rop, "les"))
+    else if (!lib_c_strcmp(rop, "les"))
         LES(aasmContext);
-    else if (!strcmp(rop, "lds"))
+    else if (!lib_c_strcmp(rop, "lds"))
         LDS(aasmContext);
-    else if (!strcmp(rop, "enter"))
+    else if (!lib_c_strcmp(rop, "enter"))
         ENTER(aasmContext);
-    else if (!strcmp(rop, "leave"))
+    else if (!lib_c_strcmp(rop, "leave"))
         LEAVE(aasmContext);
-    else if (!strcmp(rop, "retf"))
+    else if (!lib_c_strcmp(rop, "retf"))
         RETF(aasmContext);
-    else if (!strcmp(rop, "int"))
+    else if (!lib_c_strcmp(rop, "int"))
         INT(aasmContext);
-    else if (!strcmp(rop, "into"))
+    else if (!lib_c_strcmp(rop, "into"))
         INTO(aasmContext);
-    else if (!strcmp(rop, "iret"))
+    else if (!lib_c_strcmp(rop, "iret"))
         IRET(aasmContext, 2);
-    else if (!strcmp(rop, "iretd"))
+    else if (!lib_c_strcmp(rop, "iretd"))
         IRET(aasmContext, 4);
-    else if (!strcmp(rop, "rol"))
+    else if (!lib_c_strcmp(rop, "rol"))
         ROL(aasmContext);
-    else if (!strcmp(rop, "ror"))
+    else if (!lib_c_strcmp(rop, "ror"))
         ROR(aasmContext);
-    else if (!strcmp(rop, "rcl"))
+    else if (!lib_c_strcmp(rop, "rcl"))
         RCL(aasmContext);
-    else if (!strcmp(rop, "rcr"))
+    else if (!lib_c_strcmp(rop, "rcr"))
         RCR(aasmContext);
-    else if (!strcmp(rop, "shl"))
+    else if (!lib_c_strcmp(rop, "shl"))
         SHL(aasmContext);
-    else if (!strcmp(rop, "shr"))
+    else if (!lib_c_strcmp(rop, "shr"))
         SHR(aasmContext);
-    else if (!strcmp(rop, "sal"))
+    else if (!lib_c_strcmp(rop, "sal"))
         SAL(aasmContext);
-    else if (!strcmp(rop, "sar"))
+    else if (!lib_c_strcmp(rop, "sar"))
         SAR(aasmContext);
-    else if (!strcmp(rop, "aam"))
+    else if (!lib_c_strcmp(rop, "aam"))
         AAM(aasmContext);
-    else if (!strcmp(rop, "aad"))
+    else if (!lib_c_strcmp(rop, "aad"))
         AAD(aasmContext);
-    else if (!strcmp(rop, "xlat"))
+    else if (!lib_c_strcmp(rop, "xlat"))
         XLAT(aasmContext);
-    else if (!strcmp(rop, "xlatb"))
+    else if (!lib_c_strcmp(rop, "xlatb"))
         XLATB(aasmContext);
-    else if (!strcmp(rop, "loopne"))
+    else if (!lib_c_strcmp(rop, "loopne"))
         JCC_REL(aasmContext, 0xe0);
-    else if (!strcmp(rop, "loopnz"))
+    else if (!lib_c_strcmp(rop, "loopnz"))
         JCC_REL(aasmContext, 0xe0);
-    else if (!strcmp(rop, "loope"))
+    else if (!lib_c_strcmp(rop, "loope"))
         JCC_REL(aasmContext, 0xe1);
-    else if (!strcmp(rop, "loopz"))
+    else if (!lib_c_strcmp(rop, "loopz"))
         JCC_REL(aasmContext, 0xe1);
-    else if (!strcmp(rop, "loop"))
+    else if (!lib_c_strcmp(rop, "loop"))
         JCC_REL(aasmContext, 0xe2);
-    else if (!strcmp(rop, "jcxz"))
+    else if (!lib_c_strcmp(rop, "jcxz"))
         JCC_REL(aasmContext, 0xe3);
-    else if (!strcmp(rop, "in"))
+    else if (!lib_c_strcmp(rop, "in"))
         IN(aasmContext);
-    else if (!strcmp(rop, "out"))
+    else if (!lib_c_strcmp(rop, "out"))
         OUT(aasmContext);
-    else if (!strcmp(rop, "jmp"))
+    else if (!lib_c_strcmp(rop, "jmp"))
         JMP(aasmContext);
-    else if (!strcmp(rop, "lock"))
+    else if (!lib_c_strcmp(rop, "lock"))
         PREFIX_LOCK(aasmContext);
-    else if (!strcmp(rop, "repne:"))
+    else if (!lib_c_strcmp(rop, "repne:"))
         PREFIX_REPNZ(aasmContext);
-    else if (!strcmp(rop, "repnz:"))
+    else if (!lib_c_strcmp(rop, "repnz:"))
         PREFIX_REPNZ(aasmContext);
-    else if (!strcmp(rop, "rep:"))
+    else if (!lib_c_strcmp(rop, "rep:"))
         PREFIX_REPZ(aasmContext);
-    else if (!strcmp(rop, "repe:"))
+    else if (!lib_c_strcmp(rop, "repe:"))
         PREFIX_REPZ(aasmContext);
-    else if (!strcmp(rop, "repz:"))
+    else if (!lib_c_strcmp(rop, "repz:"))
         PREFIX_REPZ(aasmContext);
-    else if (!strcmp(rop, "hlt"))
+    else if (!lib_c_strcmp(rop, "hlt"))
         HLT(aasmContext);
-    else if (!strcmp(rop, "cmc"))
+    else if (!lib_c_strcmp(rop, "cmc"))
         CMC(aasmContext);
-    else if (!strcmp(rop, "not"))
+    else if (!lib_c_strcmp(rop, "not"))
         NOT(aasmContext);
-    else if (!strcmp(rop, "neg"))
+    else if (!lib_c_strcmp(rop, "neg"))
         NEG(aasmContext);
-    else if (!strcmp(rop, "mul"))
+    else if (!lib_c_strcmp(rop, "mul"))
         MUL(aasmContext);
-    else if (!strcmp(rop, "div"))
+    else if (!lib_c_strcmp(rop, "div"))
         DIV(aasmContext);
-    else if (!strcmp(rop, "idiv"))
+    else if (!lib_c_strcmp(rop, "idiv"))
         IDIV(aasmContext);
-    else if (!strcmp(rop, "clc"))
+    else if (!lib_c_strcmp(rop, "clc"))
         CLC(aasmContext);
-    else if (!strcmp(rop, "stc"))
+    else if (!lib_c_strcmp(rop, "stc"))
         STC(aasmContext);
-    else if (!strcmp(rop, "cli"))
+    else if (!lib_c_strcmp(rop, "cli"))
         CLI(aasmContext);
-    else if (!strcmp(rop, "sti"))
+    else if (!lib_c_strcmp(rop, "sti"))
         STI(aasmContext);
-    else if (!strcmp(rop, "cld"))
+    else if (!lib_c_strcmp(rop, "cld"))
         CLD(aasmContext);
-    else if (!strcmp(rop, "std"))
+    else if (!lib_c_strcmp(rop, "std"))
         STD(aasmContext);
-    else if (!strcmp(rop, "sldt"))
+    else if (!lib_c_strcmp(rop, "sldt"))
         SLDT(aasmContext);
-    else if (!strcmp(rop, "str"))
+    else if (!lib_c_strcmp(rop, "str"))
         STR(aasmContext);
-    else if (!strcmp(rop, "lldt"))
+    else if (!lib_c_strcmp(rop, "lldt"))
         LLDT(aasmContext);
-    else if (!strcmp(rop, "ltr"))
+    else if (!lib_c_strcmp(rop, "ltr"))
         LTR(aasmContext);
-    else if (!strcmp(rop, "verr"))
+    else if (!lib_c_strcmp(rop, "verr"))
         VERR(aasmContext);
-    else if (!strcmp(rop, "verw"))
+    else if (!lib_c_strcmp(rop, "verw"))
         VERW(aasmContext);
-    else if (!strcmp(rop, "sgdt"))
+    else if (!lib_c_strcmp(rop, "sgdt"))
         SGDT(aasmContext);
-    else if (!strcmp(rop, "sidt"))
+    else if (!lib_c_strcmp(rop, "sidt"))
         SIDT(aasmContext);
-    else if (!strcmp(rop, "lgdt"))
+    else if (!lib_c_strcmp(rop, "lgdt"))
         LGDT(aasmContext);
-    else if (!strcmp(rop, "lidt"))
+    else if (!lib_c_strcmp(rop, "lidt"))
         LIDT(aasmContext);
-    else if (!strcmp(rop, "smsw"))
+    else if (!lib_c_strcmp(rop, "smsw"))
         SMSW(aasmContext);
-    else if (!strcmp(rop, "lmsw"))
+    else if (!lib_c_strcmp(rop, "lmsw"))
         LMSW(aasmContext);
-    else if (!strcmp(rop, "lar"))
+    else if (!lib_c_strcmp(rop, "lar"))
         LAR(aasmContext);
-    else if (!strcmp(rop, "lsl"))
+    else if (!lib_c_strcmp(rop, "lsl"))
         LSL(aasmContext);
-    else if (!strcmp(rop, "clts"))
+    else if (!lib_c_strcmp(rop, "clts"))
         CLTS(aasmContext);
-    else if (!strcmp(rop, "seto"))
+    else if (!lib_c_strcmp(rop, "seto"))
         SETCC_RM8(aasmContext, 0x90);
-    else if (!strcmp(rop, "setno"))
+    else if (!lib_c_strcmp(rop, "setno"))
         SETCC_RM8(aasmContext, 0x91);
-    else if (!strcmp(rop, "setb"))
+    else if (!lib_c_strcmp(rop, "setb"))
         SETCC_RM8(aasmContext, 0x92);
-    else if (!strcmp(rop, "setc"))
+    else if (!lib_c_strcmp(rop, "setc"))
         SETCC_RM8(aasmContext, 0x92);
-    else if (!strcmp(rop, "setnae"))
+    else if (!lib_c_strcmp(rop, "setnae"))
         SETCC_RM8(aasmContext, 0x92);
-    else if (!strcmp(rop, "setae"))
+    else if (!lib_c_strcmp(rop, "setae"))
         SETCC_RM8(aasmContext, 0x93);
-    else if (!strcmp(rop, "setnb"))
+    else if (!lib_c_strcmp(rop, "setnb"))
         SETCC_RM8(aasmContext, 0x93);
-    else if (!strcmp(rop, "setnc"))
+    else if (!lib_c_strcmp(rop, "setnc"))
         SETCC_RM8(aasmContext, 0x93);
-    else if (!strcmp(rop, "sete"))
+    else if (!lib_c_strcmp(rop, "sete"))
         SETCC_RM8(aasmContext, 0x94);
-    else if (!strcmp(rop, "setz"))
+    else if (!lib_c_strcmp(rop, "setz"))
         SETCC_RM8(aasmContext, 0x94);
-    else if (!strcmp(rop, "setne"))
+    else if (!lib_c_strcmp(rop, "setne"))
         SETCC_RM8(aasmContext, 0x95);
-    else if (!strcmp(rop, "setnz"))
+    else if (!lib_c_strcmp(rop, "setnz"))
         SETCC_RM8(aasmContext, 0x95);
-    else if (!strcmp(rop, "setbe"))
+    else if (!lib_c_strcmp(rop, "setbe"))
         SETCC_RM8(aasmContext, 0x96);
-    else if (!strcmp(rop, "setna"))
+    else if (!lib_c_strcmp(rop, "setna"))
         SETCC_RM8(aasmContext, 0x96);
-    else if (!strcmp(rop, "seta"))
+    else if (!lib_c_strcmp(rop, "seta"))
         SETCC_RM8(aasmContext, 0x97);
-    else if (!strcmp(rop, "setnbe"))
+    else if (!lib_c_strcmp(rop, "setnbe"))
         SETCC_RM8(aasmContext, 0x97);
-    else if (!strcmp(rop, "sets"))
+    else if (!lib_c_strcmp(rop, "sets"))
         SETCC_RM8(aasmContext, 0x98);
-    else if (!strcmp(rop, "setns"))
+    else if (!lib_c_strcmp(rop, "setns"))
         SETCC_RM8(aasmContext, 0x99);
-    else if (!strcmp(rop, "setp"))
+    else if (!lib_c_strcmp(rop, "setp"))
         SETCC_RM8(aasmContext, 0x9a);
-    else if (!strcmp(rop, "setpe"))
+    else if (!lib_c_strcmp(rop, "setpe"))
         SETCC_RM8(aasmContext, 0x9a);
-    else if (!strcmp(rop, "setnp"))
+    else if (!lib_c_strcmp(rop, "setnp"))
         SETCC_RM8(aasmContext, 0x9b);
-    else if (!strcmp(rop, "setpo"))
+    else if (!lib_c_strcmp(rop, "setpo"))
         SETCC_RM8(aasmContext, 0x9b);
-    else if (!strcmp(rop, "setl"))
+    else if (!lib_c_strcmp(rop, "setl"))
         SETCC_RM8(aasmContext, 0x9c);
-    else if (!strcmp(rop, "setnge"))
+    else if (!lib_c_strcmp(rop, "setnge"))
         SETCC_RM8(aasmContext, 0x9c);
-    else if (!strcmp(rop, "setge"))
+    else if (!lib_c_strcmp(rop, "setge"))
         SETCC_RM8(aasmContext, 0x9d);
-    else if (!strcmp(rop, "setnl"))
+    else if (!lib_c_strcmp(rop, "setnl"))
         SETCC_RM8(aasmContext, 0x9d);
-    else if (!strcmp(rop, "setle"))
+    else if (!lib_c_strcmp(rop, "setle"))
         SETCC_RM8(aasmContext, 0x9e);
-    else if (!strcmp(rop, "setng"))
+    else if (!lib_c_strcmp(rop, "setng"))
         SETCC_RM8(aasmContext, 0x9e);
-    else if (!strcmp(rop, "setg"))
+    else if (!lib_c_strcmp(rop, "setg"))
         SETCC_RM8(aasmContext, 0x9f);
-    else if (!strcmp(rop, "setnle"))
+    else if (!lib_c_strcmp(rop, "setnle"))
         SETCC_RM8(aasmContext, 0x9f);
-    else if (!strcmp(rop, "bt"))
+    else if (!lib_c_strcmp(rop, "bt"))
         BT(aasmContext);
-    else if (!strcmp(rop, "shld"))
+    else if (!lib_c_strcmp(rop, "shld"))
         SHLD(aasmContext);
-    else if (!strcmp(rop, "bts"))
+    else if (!lib_c_strcmp(rop, "bts"))
         BTS(aasmContext);
-    else if (!strcmp(rop, "shrd"))
+    else if (!lib_c_strcmp(rop, "shrd"))
         SHRD(aasmContext);
-    else if (!strcmp(rop, "lss"))
+    else if (!lib_c_strcmp(rop, "lss"))
         LSS(aasmContext);
-    else if (!strcmp(rop, "btr"))
+    else if (!lib_c_strcmp(rop, "btr"))
         BTR(aasmContext);
-    else if (!strcmp(rop, "lfs"))
+    else if (!lib_c_strcmp(rop, "lfs"))
         LFS(aasmContext);
-    else if (!strcmp(rop, "lgs"))
+    else if (!lib_c_strcmp(rop, "lgs"))
         LGS(aasmContext);
-    else if (!strcmp(rop, "movzx"))
+    else if (!lib_c_strcmp(rop, "movzx"))
         MOVZX(aasmContext);
-    else if (!strcmp(rop, "btc"))
+    else if (!lib_c_strcmp(rop, "btc"))
         BTC(aasmContext);
-    else if (!strcmp(rop, "bsf"))
+    else if (!lib_c_strcmp(rop, "bsf"))
         BSF(aasmContext);
-    else if (!strcmp(rop, "bsr"))
+    else if (!lib_c_strcmp(rop, "bsr"))
         BSR(aasmContext);
-    else if (!strcmp(rop, "movsx"))
+    else if (!lib_c_strcmp(rop, "movsx"))
         MOVSX(aasmContext);
     else
         _ser_;
@@ -9773,7 +9773,7 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
         return 0;
     }
 
-    memcpy((void *)astmt, (void *)stmt, 0x100);
+    lib_memory_copy((void *)astmt, (void *)stmt, 0x100);
     xasm32_string_lower(astmt);
     rstmt = astmt;
 
@@ -9784,10 +9784,10 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
     flagError = 0;
 
     iop = 0;
-    memset((void *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
-    memset((void *)(&aopri2), 0x00, sizeof(t_aasm_oprinfo));
-    memset((void *)(&aopri3), 0x00, sizeof(t_aasm_oprinfo));
-    memset((void *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
+    lib_memory_set((void *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
+    lib_memory_set((void *)(&aopri2), 0x00, sizeof(t_aasm_oprinfo));
+    lib_memory_set((void *)(&aopri3), 0x00, sizeof(t_aasm_oprinfo));
+    lib_memory_set((void *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
     prefix_oprsizeg = prefix_addrsizeg = 0;
 
     rop = ropr1 = ropr2 = ropr3 = LIB_NULL;
@@ -9902,7 +9902,7 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
             (*(rcode + len)) = 0x66;
             len++;
         }
-        memcpy((void *)(rcode + len), (void *)acode, iop);
+        lib_memory_copy((void *)(rcode + len), (void *)acode, iop);
         len += iop;
     }
     return len;
@@ -9912,7 +9912,7 @@ lib_u8 aasm32(const char *stmt, lib_u8 *rcode, int flag32)
 {
     aasm32_context local_context;
 
-    memset(&local_context, 0, sizeof(local_context));
+    lib_memory_set(&local_context, 0, sizeof(local_context));
     return aasm32_execute(&local_context, stmt, rcode, flag32);
 }
 
@@ -9962,8 +9962,8 @@ static void asmx_get_label(aasm32_context *aasmContext, t_aasm_instr *rinstr)
     }
     rinstr->flag_has_label = 1;
     if (rinstr->stmt[0] == '$' && rinstr->stmt[1] == '(' &&
-        rinstr->stmt[strlen(rinstr->stmt) - 1] == ':' &&
-        rinstr->stmt[strlen(rinstr->stmt) - 2] == ')')
+        rinstr->stmt[lib_text_length(rinstr->stmt) - 1] == ':' &&
+        rinstr->stmt[lib_text_length(rinstr->stmt) - 2] == ')')
     {
         rinstr->flag_is_label = 1;
     }
@@ -10019,8 +10019,8 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
     default:
         return;
     }
-    if (!strcmp(rinstr->op_str, "loopne") || !strcmp(rinstr->op_str, "loopnz") || !strcmp(rinstr->op_str, "loope") ||
-        !strcmp(rinstr->op_str, "loopz") || !strcmp(rinstr->op_str, "loop") || !strcmp(rinstr->op_str, "jcxz"))
+    if (!lib_c_strcmp(rinstr->op_str, "loopne") || !lib_c_strcmp(rinstr->op_str, "loopnz") || !lib_c_strcmp(rinstr->op_str, "loope") ||
+        !lib_c_strcmp(rinstr->op_str, "loopz") || !lib_c_strcmp(rinstr->op_str, "loop") || !lib_c_strcmp(rinstr->op_str, "jcxz"))
     {
         switch (rinstr->ptr)
         {
@@ -10033,16 +10033,16 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
             return;
         }
     }
-    if (!strcmp(rinstr->op_str, "jo") || !strcmp(rinstr->op_str, "jno") || !strcmp(rinstr->op_str, "jb") ||
-        !strcmp(rinstr->op_str, "jc") || !strcmp(rinstr->op_str, "jnae") || !strcmp(rinstr->op_str, "jae") ||
-        !strcmp(rinstr->op_str, "jnb") || !strcmp(rinstr->op_str, "jnc") || !strcmp(rinstr->op_str, "je") ||
-        !strcmp(rinstr->op_str, "jz") || !strcmp(rinstr->op_str, "jne") || !strcmp(rinstr->op_str, "jnz") ||
-        !strcmp(rinstr->op_str, "jbe") || !strcmp(rinstr->op_str, "jna") || !strcmp(rinstr->op_str, "ja") ||
-        !strcmp(rinstr->op_str, "jnbe") || !strcmp(rinstr->op_str, "js") || !strcmp(rinstr->op_str, "jns") ||
-        !strcmp(rinstr->op_str, "jp") || !strcmp(rinstr->op_str, "jpe") || !strcmp(rinstr->op_str, "jnp") ||
-        !strcmp(rinstr->op_str, "jpo") || !strcmp(rinstr->op_str, "jl") || !strcmp(rinstr->op_str, "jnge") ||
-        !strcmp(rinstr->op_str, "jge") || !strcmp(rinstr->op_str, "jnl") || !strcmp(rinstr->op_str, "jle") ||
-        !strcmp(rinstr->op_str, "jng") || !strcmp(rinstr->op_str, "jg") || !strcmp(rinstr->op_str, "jnle"))
+    if (!lib_c_strcmp(rinstr->op_str, "jo") || !lib_c_strcmp(rinstr->op_str, "jno") || !lib_c_strcmp(rinstr->op_str, "jb") ||
+        !lib_c_strcmp(rinstr->op_str, "jc") || !lib_c_strcmp(rinstr->op_str, "jnae") || !lib_c_strcmp(rinstr->op_str, "jae") ||
+        !lib_c_strcmp(rinstr->op_str, "jnb") || !lib_c_strcmp(rinstr->op_str, "jnc") || !lib_c_strcmp(rinstr->op_str, "je") ||
+        !lib_c_strcmp(rinstr->op_str, "jz") || !lib_c_strcmp(rinstr->op_str, "jne") || !lib_c_strcmp(rinstr->op_str, "jnz") ||
+        !lib_c_strcmp(rinstr->op_str, "jbe") || !lib_c_strcmp(rinstr->op_str, "jna") || !lib_c_strcmp(rinstr->op_str, "ja") ||
+        !lib_c_strcmp(rinstr->op_str, "jnbe") || !lib_c_strcmp(rinstr->op_str, "js") || !lib_c_strcmp(rinstr->op_str, "jns") ||
+        !lib_c_strcmp(rinstr->op_str, "jp") || !lib_c_strcmp(rinstr->op_str, "jpe") || !lib_c_strcmp(rinstr->op_str, "jnp") ||
+        !lib_c_strcmp(rinstr->op_str, "jpo") || !lib_c_strcmp(rinstr->op_str, "jl") || !lib_c_strcmp(rinstr->op_str, "jnge") ||
+        !lib_c_strcmp(rinstr->op_str, "jge") || !lib_c_strcmp(rinstr->op_str, "jnl") || !lib_c_strcmp(rinstr->op_str, "jle") ||
+        !lib_c_strcmp(rinstr->op_str, "jng") || !lib_c_strcmp(rinstr->op_str, "jg") || !lib_c_strcmp(rinstr->op_str, "jnle"))
     {
         switch (rinstr->ptr)
         {
@@ -10058,7 +10058,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
             return;
         }
     }
-    if (!strcmp(rinstr->op_str, "jmp"))
+    if (!lib_c_strcmp(rinstr->op_str, "jmp"))
     {
         switch (rinstr->ptr)
         {
@@ -10074,7 +10074,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
             return;
         }
     }
-    if (!strcmp(rinstr->op_str, "call"))
+    if (!lib_c_strcmp(rinstr->op_str, "call"))
     {
         switch (rinstr->ptr)
         {
@@ -10101,7 +10101,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     if (stmt == LIB_NULL || rcode == LIB_NULL || out_code_bytes == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    statement_bytes = strlen(stmt);
+    statement_bytes = lib_text_length(stmt);
     if (statement_bytes > 0x7fffffffu) return LIB_STATUS_INVALID_ARGUMENT;
     count = 1;
     flagError = 0;
@@ -10116,7 +10116,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     if ((lib_size)count > (lib_size)-1 / sizeof(*instr)) {
         return LIB_STATUS_NO_MEMORY;
     }
-    instr = (t_aasm_instr *)malloc((lib_size)count * sizeof(*instr));
+    instr = (t_aasm_instr *)lib_allocate((lib_size)count * sizeof(*instr));
     if (instr == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     i = j = k = 0;
     while (is_space(aasmContext, stmt[i]))
@@ -10166,7 +10166,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         else
         {
             if (j >= (lib_i32)(sizeof(instr[k].stmt) - 1u)) {
-                free((void *)instr);
+                lib_release((void *)instr);
                 return LIB_STATUS_INVALID_ARGUMENT;
             }
             instr[k].stmt[j] = stmt[i];
@@ -10176,12 +10176,12 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     }
     count = k;
     if (count == 0) {
-        free((void *)instr);
+        lib_release((void *)instr);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (i = 0; i < count; ++i)
     {
-        memset((void *)instr[i].code_array, 0x00, 15);
+        lib_memory_set((void *)instr[i].code_array, 0x00, 15);
         asmx_get_label(aasmContext, &instr[i]);
         if (instr[i].flag_has_label)
         {
@@ -10201,7 +10201,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         }
         if (flagError)
         {
-            free((void *)instr);
+            lib_release((void *)instr);
             return LIB_STATUS_UNSUPPORTED;
         }
         if (!instr[i].code_len)
@@ -10210,7 +10210,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         }
         if (flagError)
         {
-            free((void *)instr);
+            lib_release((void *)instr);
             return LIB_STATUS_UNSUPPORTED;
         }
     }
@@ -10225,7 +10225,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         {
             for (j = i - 1; j >= 0; --j)
             {
-                if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str))
+                if (instr[j].flag_has_label && !lib_c_strcmp(instr[j].label_str, instr[i].label_str))
                 {
                     if (instr[j].flag_is_label)
                     {
@@ -10246,7 +10246,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                         case PTR_SHORT:
                             if (offset < 0x80)
                             {
-                                snprintf(imm, sizeof(imm), "short +%02x", (lib_u8)offset);
+                                lib_c_snprintf(imm, sizeof(imm), "short +%02x", (lib_u8)offset);
                             }
                             else
                             {
@@ -10259,7 +10259,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    snprintf(imm, sizeof(imm), "near +%04x", (lib_u16)offset);
+                                    lib_c_snprintf(imm, sizeof(imm), "near +%04x", (lib_u16)offset);
                                 }
                                 else
                                 {
@@ -10269,7 +10269,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    snprintf(imm, sizeof(imm), "near +%08x", (lib_u32)offset);
+                                    lib_c_snprintf(imm, sizeof(imm), "near +%08x", (lib_u32)offset);
                                 }
                                 else
                                 {
@@ -10284,9 +10284,9 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             flagError = 1;
                             break;
                         }
-                        if (snprintf(instr[j].stmt, sizeof(instr[j].stmt),
+                        if (lib_c_snprintf(instr[j].stmt, sizeof(instr[j].stmt),
                                 "%s %s", instr[j].op_str, imm) < 0 ||
-                            strlen(instr[j].op_str) + 1u + strlen(imm) >=
+                            lib_text_length(instr[j].op_str) + 1u + lib_text_length(imm) >=
                                 sizeof(instr[j].stmt)) {
                             flagError = 1;
                         }
@@ -10294,7 +10294,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                     }
                     if (flagError)
                     {
-                        free((void *)instr);
+                        lib_release((void *)instr);
                         return LIB_STATUS_UNSUPPORTED;
                     }
                 }
@@ -10306,7 +10306,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         {
             for (j = i + 1; j < count; ++j)
             {
-                if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str))
+                if (instr[j].flag_has_label && !lib_c_strcmp(instr[j].label_str, instr[i].label_str))
                 {
                     if (instr[j].flag_is_label)
                     {
@@ -10324,7 +10324,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                         case PTR_SHORT:
                             if (offset < 0x80)
                             {
-                                snprintf(imm, sizeof(imm), "short -%02x", (lib_u8)offset);
+                                lib_c_snprintf(imm, sizeof(imm), "short -%02x", (lib_u8)offset);
                             }
                             else
                             {
@@ -10337,7 +10337,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    snprintf(imm, sizeof(imm), "near -%04x", (lib_u16)offset);
+                                    lib_c_snprintf(imm, sizeof(imm), "near -%04x", (lib_u16)offset);
                                 }
                                 else
                                 {
@@ -10347,7 +10347,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    snprintf(imm, sizeof(imm), "near -%08x", (lib_u32)offset);
+                                    lib_c_snprintf(imm, sizeof(imm), "near -%08x", (lib_u32)offset);
                                 }
                                 else
                                 {
@@ -10362,9 +10362,9 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             flagError = 1;
                             break;
                         }
-                        if (snprintf(instr[j].stmt, sizeof(instr[j].stmt),
+                        if (lib_c_snprintf(instr[j].stmt, sizeof(instr[j].stmt),
                                 "%s %s", instr[j].op_str, imm) < 0 ||
-                            strlen(instr[j].op_str) + 1u + strlen(imm) >=
+                            lib_text_length(instr[j].op_str) + 1u + lib_text_length(imm) >=
                                 sizeof(instr[j].stmt)) {
                             flagError = 1;
                         }
@@ -10372,7 +10372,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                     }
                     if (flagError)
                     {
-                        free((void *)instr);
+                        lib_release((void *)instr);
                         return LIB_STATUS_UNSUPPORTED;
                     }
                 }
@@ -10383,7 +10383,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     for (i = 0; i < count; ++i)
     {
         if ((lib_size)instr[i].code_len > code_capacity - len) {
-            free((void *)instr);
+            lib_release((void *)instr);
             return LIB_STATUS_LIMIT_EXCEEDED;
         }
         len += instr[i].code_len;
@@ -10391,11 +10391,11 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     len = 0;
     for (i = 0; i < count; ++i)
     {
-        memcpy((void *)(rcode + len), (void *)instr[i].code_array,
+        lib_memory_copy((void *)(rcode + len), (void *)instr[i].code_array,
             instr[i].code_len);
         len += instr[i].code_len;
     }
-    free((void *)instr);
+    lib_release((void *)instr);
     *out_code_bytes = len;
     return LIB_STATUS_OK;
 }
@@ -10405,7 +10405,7 @@ lib_status aasm32x(const char *stmt, lib_size code_capacity,
 {
     aasm32_context local_context;
 
-    memset(&local_context, 0, sizeof(local_context));
+    lib_memory_set(&local_context, 0, sizeof(local_context));
     return aasm32x_execute(&local_context, stmt, code_capacity, rcode,
         out_code_bytes, flag32);
 }

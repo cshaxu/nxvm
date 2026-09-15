@@ -4,6 +4,12 @@
 copied frame/input values, source-local hotkey matching, and private mailbox
 mechanics to `kvm-window` and `kvm-console`.
 
+Control admission copies one record per call into the 32-slot ordinary FIFO.
+Capacity rejection returns LIMIT_EXCEEDED without replacing any queued record.
+STOP has a reserved slot, closes admission and is idempotent. The worker consumes
+controls in order through STOP, then ignores later control/frame work. There is
+no batch admission; frame publication remains independently locked, latest-wins.
+
 Each mailbox selects one notification implementation exactly once before caller publication.
 Initialization allocates no wake. Console selects and creates the default wait
 primitive; Window directly selects its native message notifier. A second selection is

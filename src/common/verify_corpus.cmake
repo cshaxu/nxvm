@@ -32,6 +32,10 @@ foreach(path IN LISTS paths)
     # Assembly text legitimately contains DWORD; inspect tokens, not literals.
     string(REGEX REPLACE "\"[^\"]*\"" "" tokens "${source}")
     string(REGEX REPLACE "/\\*([^*]|\\*+[^*/])*\\*+/" "" tokens "${tokens}")
+    string(REGEX REPLACE "//[^\n]*" "" tokens "${tokens}")
+    if(tokens MATCHES "(^|[^A-Za-z0-9_])(memset|memcpy|memmove|memcmp|memchr|strlen|strcmp|strchr|strtok|calloc|malloc|realloc|free|snprintf)([^A-Za-z0-9_]|$)")
+        message(FATAL_ERROR "Raw CRT vocabulary in Common; use Lib Types: ${path}")
+    endif()
     if(tokens MATCHES "_WIN32|_WIN64|__linux__|WINAPI|CRITICAL_SECTION|Interlocked[A-Za-z]+|WaitForSingleObject|CreateEvent[A-W]?|SetEvent|ResetEvent|CloseHandle|pthread_" OR
        tokens MATCHES "(^|[^A-Za-z0-9_])(HANDLE|DWORD|LONG|HWND)([^A-Za-z0-9_]|$)")
         message(FATAL_ERROR "Platform implementation in Common: ${path}")

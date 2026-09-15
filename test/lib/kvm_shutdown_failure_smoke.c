@@ -45,7 +45,7 @@ int main(void)
         if(mode==0) assert(kvm_component_request_stop(&c->base)==LIB_STATUS_OK);
         if(mode==1) {
             kvm_component_control title={.kind=KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE};
-            assert(kvm_component_enqueue_controls(&c->base,&title,1)==LIB_STATUS_OK);
+            assert(kvm_component_enqueue_control(&c->base,&title)==LIB_STATUS_OK);
         }
         if(mode==2) {
             static kvm_frame frame={.valid=1,.text_columns=80,.text_rows=25};

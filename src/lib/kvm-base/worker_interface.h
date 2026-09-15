@@ -38,8 +38,8 @@ int kvm_component_emit(kvm_component *component, const kvm_input_event *event);
  * allow_replay tags this make's eligibility for later ordinary replay. */
 int kvm_component_emit_to(kvm_component *component, const kvm_input_event *event,
     kvm_input_sink delivery_sink, void *delivery_context, lib_bool allow_replay);
-lib_status kvm_component_enqueue_controls(kvm_component *component,
-    const kvm_component_control *controls, lib_u32 control_count);
+lib_status kvm_component_enqueue_control(kvm_component *component,
+    const kvm_component_control *control);
 void kvm_component_retire(kvm_component *component, lib_status status);
 /* Terminal failure: closes admission and reports once on the detecting thread,
  * then wakes the worker. Retirement follows input quiescence, not reporting. */

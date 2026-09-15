@@ -85,14 +85,13 @@ int kvm_component_emit(kvm_component *component, const kvm_input_event *event)
         component->input_context, LIB_TRUE);
 }
 
-lib_status kvm_component_enqueue_controls(kvm_component *component,
-    const kvm_component_control *controls, lib_u32 control_count)
+lib_status kvm_component_enqueue_control(kvm_component *component,
+    const kvm_component_control *control)
 {
     lib_status status;
 
     if (component == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = kvm_component_mailboxes_enqueue_controls(&component->mailboxes,
-        controls, control_count);
+    status = kvm_component_mailboxes_enqueue_control(&component->mailboxes, control);
     if (status != LIB_STATUS_OK) return status;
 
     /* Enqueue is the acceptance boundary.  Once the FIFO owns a request, a
@@ -132,7 +131,7 @@ lib_status kvm_component_request_stop(kvm_component *component)
 {
     kvm_component_control control = { .kind = KVM_COMPONENT_CONTROL_STOP };
     return component == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
-        kvm_component_enqueue_controls(component, &control, 1u);
+        kvm_component_enqueue_control(component, &control);
 }
 
 lib_status kvm_component_destroy(kvm_component *component)

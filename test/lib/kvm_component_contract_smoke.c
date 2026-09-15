@@ -64,10 +64,6 @@ int main(void)
     kvm_component_control control = { KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN,
         { 0 } };
     kvm_component_control taken;
-    kvm_component_control disable_controls[2] = {
-        { KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN, { 0 } },
-        { KVM_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE, { 0 } }
-    };
     atomic_uint_fast64_t identity_next;
     kvm_hotkey_registry hotkeys;
     lib_u64 identity;
@@ -162,11 +158,11 @@ int main(void)
     assert(probe.input_count == 1u);
 
     for (index = 0u; index < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
-        assert(kvm_component_enqueue_controls(&second, &control, 1u) ==
+        assert(kvm_component_enqueue_control(&second, &control) ==
             LIB_STATUS_OK);
     /* A full ordinary FIFO rejects the next request and retains every
        original record. Rejection is returned; the component remains healthy. */
-    assert(kvm_component_enqueue_controls(&second, &control, 1u) ==
+    assert(kvm_component_enqueue_control(&second, &control) ==
         LIB_STATUS_LIMIT_EXCEEDED);
     assert(probe.failure_count == 1u);
     /* STOP has one reserved FIFO slot.  A full normal queue cannot make
@@ -180,14 +176,13 @@ int main(void)
     assert(taken.kind == KVM_COMPONENT_CONTROL_STOP);
     assert(!kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
 
-    /* Multi-record control requests are all-or-nothing. This is the exact
-       shape used by Window freeze: no frozen flag may be left queued
-       without its following release when only one ordinary slot remains. */
+    /* The last ordinary slot accepts exactly one record; rejection is inert. */
     for (index = 0u; index + 1u < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
-        assert(kvm_component_enqueue_controls(&third, &control, 1u) ==
+        assert(kvm_component_enqueue_control(&third, &control) ==
             LIB_STATUS_OK);
-    disable_controls[0].value.window_frozen = LIB_TRUE;
-    assert(kvm_component_enqueue_controls(&third, disable_controls, 2u) ==
+    control.value.window_frozen = LIB_TRUE;
+    assert(kvm_component_enqueue_control(&third, &control) == LIB_STATUS_OK);
+    assert(kvm_component_enqueue_control(&third, &control) ==
         LIB_STATUS_LIMIT_EXCEEDED);
     assert(probe.failure_count == 1u);
     for (index = 0u; index + 1u < KVM_COMPONENT_CONTROL_CAPACITY; ++index) {
@@ -195,6 +190,8 @@ int main(void)
         assert(taken.kind == KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN);
         assert(taken.value.window_frozen == LIB_FALSE);
     }
+    assert(kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
+    assert(taken.value.window_frozen == LIB_TRUE);
     assert(!kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
 
     assert(kvm_component_destroy(&first) == LIB_STATUS_OK);

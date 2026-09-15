@@ -61,12 +61,10 @@ void kvm_component_mailboxes_close(kvm_component_mailboxes *mailboxes);
 void kvm_component_mailboxes_destroy(kvm_component_mailboxes *mailboxes);
 lib_status kvm_component_mailboxes_publish_frame(kvm_component_mailboxes *mailboxes,
     const kvm_frame *frame);
-/* Appends a non-empty control batch atomically. A capacity failure leaves the
- * existing FIFO and every requested control unchanged. STOP is terminal and
- * must be submitted as its own one-record batch. */
-lib_status kvm_component_mailboxes_enqueue_controls(
-    kvm_component_mailboxes *mailboxes, const kvm_component_control *controls,
-    lib_u32 control_count);
+/* Appends one copied control. Capacity failure leaves the FIFO unchanged.
+ * STOP is terminal, idempotent and has one reserved slot. */
+lib_status kvm_component_mailboxes_enqueue_control(
+    kvm_component_mailboxes *mailboxes, const kvm_component_control *control);
 lib_bool kvm_component_mailboxes_take_control(kvm_component_mailboxes *mailboxes,
     kvm_component_control *out_control);
 lib_bool kvm_component_mailboxes_capture_frame(kvm_component_mailboxes *mailboxes,

@@ -188,6 +188,18 @@ recorded evidence, never by following successive isolated failures.
     byte-identical to the accepted SoftPC revision or explicitly awaiting its
     matching corrective import, then run full unit and external integration
     plus optimized stripped x64/x86 artifacts before package acceptance.
+22. **S22: canonical SoftPC Common and Lib corrective import.** Freeze the
+    committed SoftPC `fa14c62bd34182bf9930988e25296bfb7d5be646` source and
+    test corpus; atomically replace NXVM `src/lib`, `src/common`, `test/lib`,
+    and `test/common` byte-for-byte; then adapt only NXVM consumers to the
+    revised public contracts. The imported Common contract must keep product
+    notifications separate from pending cooked-reader admission, and the
+    imported Win32 Console owner must retain its no-shrink viewport policy and
+    explicit failure behavior. Delete the superseded NXVM-local shared hunks;
+    retain only a necessary NXVM Core-to-frame adapter difference. Prove exact
+    four-tree identity, both builds, full repository-only unit coverage, and
+    an honestly recorded integration result. This S does not itself claim the
+    eventual two-product execution gate.
 
 ## Verification And Exit
 

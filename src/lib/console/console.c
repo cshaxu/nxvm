@@ -12,10 +12,7 @@ struct lib_console {
     lib_atomic_u32 references;
     lib_console_event_sink event_sink;
     void *event_context;
-    lib_console_output_sink output_sink;
-    void *output_context;
-    lib_console_text_frame_sink text_frame_sink;
-    void *text_frame_context;
+    lib_console_output_binding output;
     lib_u32 binding_generation;
     lib_bool binding_active;
 };
@@ -102,28 +99,13 @@ lib_status lib_console_set_event_sink(lib_console *console,
     return LIB_STATUS_OK;
 }
 
-lib_status lib_console_set_output_sink(lib_console *console,
-    lib_console_output_sink sink, void *context)
+lib_status lib_console_set_output_binding(lib_console *console,
+    const lib_console_output_binding *binding)
 {
+    const lib_console_output_binding empty = { 0 };
     if (console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     console_mutex_enter(console->output_lock);
-    lib_console_lock(console);
-    console->output_sink = sink;
-    console->output_context = context;
-    lib_console_unlock(console);
-    console_mutex_leave(console->output_lock);
-    return LIB_STATUS_OK;
-}
-
-lib_status lib_console_set_text_frame_sink(lib_console *console,
-    lib_console_text_frame_sink sink, void *context)
-{
-    if (console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    console_mutex_enter(console->output_lock);
-    lib_console_lock(console);
-    console->text_frame_sink = sink;
-    console->text_frame_context = context;
-    lib_console_unlock(console);
+    console->output = binding != LIB_NULL ? *binding : empty;
     console_mutex_leave(console->output_lock);
     return LIB_STATUS_OK;
 }
@@ -191,10 +173,8 @@ lib_status lib_console_write_text(lib_console *console,
     if (console == LIB_NULL || (text == LIB_NULL && length != 0u))
         return LIB_STATUS_INVALID_ARGUMENT;
     console_mutex_enter(console->output_lock);
-    lib_console_lock(console);
-    sink = console->output_sink;
-    context = console->output_context;
-    lib_console_unlock(console);
+    sink = console->output.text;
+    context = console->output.context;
     status = sink == LIB_NULL ? LIB_STATUS_NOT_CURRENT : sink(context, text, length);
     console_mutex_leave(console->output_lock);
     return status;
@@ -211,10 +191,8 @@ lib_status lib_console_write_text_frame(lib_console *console,
         frame->columns > LIB_CONSOLE_TEXT_COLUMNS || frame->rows == 0u ||
         frame->rows > LIB_CONSOLE_TEXT_ROWS) return LIB_STATUS_INVALID_ARGUMENT;
     console_mutex_enter(console->output_lock);
-    lib_console_lock(console);
-    sink = console->text_frame_sink;
-    context = console->text_frame_context;
-    lib_console_unlock(console);
+    sink = console->output.frame;
+    context = console->output.context;
     status = sink == LIB_NULL ? LIB_STATUS_NOT_CURRENT : sink(context, frame);
     console_mutex_leave(console->output_lock);
     return status;

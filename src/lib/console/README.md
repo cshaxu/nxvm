@@ -8,10 +8,12 @@ no native Console handle, platform mode, monitor, or application lifecycle polic
 Its private win32/linux mutex implementations block competing callback/output
 operations without busy-waiting. Sink callbacks cannot synchronously reenter
 binding replacement or destruction; detach remains a quiescence barrier.
-Gate acquisition/release failures return status instead of entering a sink
-unprotected or pretending a binding change completed. Final release is checked;
-failed teardown retains the logical object and is terminal for its caller.
-
+The adapter-only `binding_interface.h` installs one copied output binding:
+text callback, text-frame callback and a shared borrowed context. Replacing it
+with NULL clears both. The output gate covers either callback and replacement;
+after replacement returns, no previous output uses the old context. A valid
+object always accepts replacement; an absent callback makes its write return
+NOT_CURRENT. Input generation and its separate event gate are unchanged.
 
 Text-frame bytes use a fixed PC-display glyph mapping (CP437 graphics, including
 the low graphic symbols; zero is blank). `lib_console_pc_glyph` maps each byte

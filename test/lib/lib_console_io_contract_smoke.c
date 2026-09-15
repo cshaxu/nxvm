@@ -28,8 +28,11 @@ static BOOL WINAPI text_write(HANDLE h,LPCVOID text,DWORD n,LPDWORD written,LPVO
 static int palette_query_ok, palette_set_ok, cursor_ok = 1;
 static WCHAR first_cell;
 static COORD buffer_size={80,25};
+static SMALL_RECT viewport={0,0,79,24};
 static BOOL WINAPI screen_info(HANDLE h, PCONSOLE_SCREEN_BUFFER_INFO p)
-{ (void)h; memset(p, 0, sizeof(*p)); p->dwSize=buffer_size; return TRUE; }
+{ (void)h; memset(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return TRUE; }
+static BOOL WINAPI set_viewport(HANDLE h,BOOL absolute,const SMALL_RECT *rect)
+{ (void)h; assert(absolute); viewport=*rect; return TRUE; }
 static BOOL WINAPI resize_buffer(HANDLE h,COORD size)
 { (void)h; buffer_size=size; return TRUE; }
 static BOOL WINAPI palette_get(HANDLE h, PCONSOLE_SCREEN_BUFFER_INFOEX p)
@@ -74,6 +77,8 @@ static HANDLE WINAPI start_reader(LPSECURITY_ATTRIBUTES a, SIZE_T size,
 #define lib_win32_get_console_screen_buffer_info screen_info
 #undef lib_win32_set_console_screen_buffer_size
 #define lib_win32_set_console_screen_buffer_size resize_buffer
+#undef lib_win32_set_console_window_info
+#define lib_win32_set_console_window_info set_viewport
 #undef lib_win32_get_console_screen_buffer_info_ex
 #define lib_win32_get_console_screen_buffer_info_ex palette_get
 #undef lib_win32_set_console_screen_buffer_info_ex

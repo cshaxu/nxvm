@@ -4,8 +4,6 @@
 #include "lib/kvm-console/console_interface.h"
 #include "lib/kvm-window/window_interface.h"
 
-#include <stdlib.h>
-#include <string.h>
 
 struct common_ui {
     lib_console *monitor;
@@ -16,6 +14,7 @@ struct common_ui {
     lib_atomic_i32 run_generation;
     lib_u32 window_delivered_frame_sequence;
     lib_u32 console_delivered_frame_sequence;
+    lib_bool console_status_delivered;
 };
 
 static int common_ui_emit(common_ui *ui, const common_ui_event *event)
@@ -126,7 +125,10 @@ static lib_status common_ui_create_console(common_ui *ui)
     options.failure_sink = common_ui_delivery_failed;
     options.hotkeys = ui->options.hotkeys;
     status = kvm_console_create(&ui->console, &options);
-    if (status == LIB_STATUS_OK) ui->console_delivered_frame_sequence = 0u;
+    if (status == LIB_STATUS_OK) {
+        ui->console_delivered_frame_sequence = 0u;
+        ui->console_status_delivered = LIB_FALSE;
+    }
     return status;
 }
 
@@ -138,7 +140,7 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
         options->running_window_title == NULL || options->paused_window_title == NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_ui = NULL;
-    ui = calloc(1u, sizeof(*ui));
+    ui = lib_allocate_zero(1u, sizeof(*ui));
     if (ui == NULL) return LIB_STATUS_NO_MEMORY;
     lib_atomic_i32_initialize(&ui->run_generation, 0);
     ui->options = *options;
@@ -153,7 +155,7 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
             (void)lib_console_set_event_sink(ui->monitor, NULL, NULL);
             lib_console_release(ui->monitor);
         }
-        free(ui);
+        lib_release(ui);
         return status;
     }
     *out_ui = ui;
@@ -186,7 +188,7 @@ lib_status common_ui_destroy(common_ui *ui)
         (void)lib_console_set_event_sink(ui->monitor, NULL, NULL);
         lib_console_release(ui->monitor);
     }
-    free(ui);
+    lib_release(ui);
     return status;
 }
 
@@ -257,7 +259,7 @@ static void common_ui_status_frame(kvm_frame *frame, const kvm_frame *source,
 {
     lib_size index;
     lib_size row = 0u, column = 0u;
-    memset(frame, 0, sizeof(*frame));
+    lib_memory_set(frame, 0, sizeof(*frame));
     frame->valid = 1u;
     frame->sequence = source->sequence;
     frame->text_columns = KVM_TEXT_COLUMNS;
@@ -284,16 +286,20 @@ lib_status common_ui_publish_frame(common_ui *ui, const kvm_frame *frame,
     kvm_frame status_frame;
     const kvm_frame *console_frame = frame;
     lib_status status;
+    lib_bool show_status;
     if (ui == NULL || frame == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    show_status = frame->graphics != 0u && console_status_surface;
     if (vm_console_current && ui->console != NULL &&
-        ui->console_delivered_frame_sequence != frame->sequence) {
-        if (frame->graphics != 0u && console_status_surface) {
+        (show_status != ui->console_status_delivered ||
+         (!show_status && ui->console_delivered_frame_sequence != frame->sequence))) {
+        if (show_status) {
             common_ui_status_frame(&status_frame, frame, ui->options.graphics_console_status_text);
             console_frame = &status_frame;
         }
         status = kvm_console_publish_frame(ui->console, console_frame);
         if (status != LIB_STATUS_OK) return status;
         ui->console_delivered_frame_sequence = frame->sequence;
+        ui->console_status_delivered = show_status;
     }
     if (window_actual && ui->window != NULL &&
         ui->window_delivered_frame_sequence != frame->sequence) {
@@ -313,11 +319,17 @@ lib_status common_ui_release_window_mouse(common_ui *ui)
 lib_status common_ui_write_monitor(common_ui *ui, const char *text)
 {
     return ui == NULL || text == NULL ? LIB_STATUS_INVALID_ARGUMENT :
-        lib_console_write_text(ui->monitor, text, strlen(text));
+        lib_console_write_text(ui->monitor, text, lib_text_length(text));
 }
 
 lib_status common_ui_request_monitor_line(common_ui *ui)
 {
     return ui == NULL ? LIB_STATUS_INVALID_ARGUMENT :
         host_console_broker_request_cooked_line(ui->broker, ui->monitor);
+}
+
+lib_status common_ui_cancel_monitor_line(common_ui *ui, lib_bool *out_completed)
+{
+    return ui == NULL ? LIB_STATUS_INVALID_ARGUMENT :
+        host_console_broker_cancel_cooked_line(ui->broker, ui->monitor, out_completed);
 }

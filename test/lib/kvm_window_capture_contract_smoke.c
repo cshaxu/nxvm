@@ -181,8 +181,14 @@ int main(void)
     assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
     assert(win32_window_consume_mailboxes((HWND)1,&c));
     assert(focus_requests==0 && foreground_requests==0);
+    clip_ok=1;
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1,0)==LIB_STATUS_OK);
+    focus_requests=foreground_requests=0;
+    unsigned releases_before_freeze=releases;
     assert(kvm_window_freeze(&window)==LIB_STATUS_OK);
+    assert(c.mouse.captured && !c.frozen);
     assert(win32_window_consume_mailboxes((HWND)1,&c));
+    assert(c.frozen && !c.mouse.captured && releases==releases_before_freeze+1);
     assert(focus_requests==0 && foreground_requests==0);
     assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
     assert(win32_window_consume_mailboxes((HWND)1,&c));
@@ -232,7 +238,7 @@ int main(void)
     assert(focus_requests==1 && foreground_requests==1 && !c.mouse.captured);
     title_ok=0;
     kvm_component_control command={.kind=KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE};
-    assert(kvm_component_mailboxes_enqueue_controls(&window.base.mailboxes,&command,1)==0);
+    assert(kvm_component_mailboxes_enqueue_control(&window.base.mailboxes,&command)==0);
     assert(!win32_window_consume_mailboxes((HWND)1,&c) && window.base.stopping);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     assert(kvm_component_initialize(&window.base,&options,join,dispose)==0);
@@ -257,7 +263,7 @@ int main(void)
     assert(kvm_window_publish_frame(&window,&c.frame)==0);
     win32_window_proc((HWND)1,WIN32_WINDOW_MAILBOX_READY,0,0);
     assert(window.base.stopping && !c.frozen && !foreground_requests);
-    assert(window.base.mailboxes.control_count==3);
+    assert(window.base.mailboxes.control_count==2);
     assert(window.base.mailboxes.frame_pending);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
@@ -266,7 +272,10 @@ int main(void)
     c.component=&window; c.left_button=c.right_button=0; reject_input=0;
     c.mouse.captured=LIB_TRUE; c.mouse.window=(HWND)1; owner=(HWND)1;
     release_ok=0;
-    win32_window_release_mouse(&c);
+    assert(kvm_window_freeze(&window)==LIB_STATUS_OK);
+    assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
+    assert(!win32_window_consume_mailboxes((HWND)1,&c));
+    assert(c.frozen && window.base.mailboxes.control_count==1);
     assert(window.base.failure==LIB_STATUS_IO_ERROR && window.base.stopping);
     assert(!c.mouse.captured);
     assert(kvm_component_destroy(&window.base)==LIB_STATUS_OK);

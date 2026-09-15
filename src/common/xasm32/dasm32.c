@@ -72,7 +72,7 @@ struct dasm32_context
 /* Every disassembly field is an owned fixed array in dasm32_context or local scope. */
 #define DASM_FORMAT_ARRAY(buffer, ...)                                             \
     do {                                                                            \
-        int dasm_format_result = snprintf((buffer), sizeof(buffer),          \
+        int dasm_format_result = lib_c_snprintf((buffer), sizeof(buffer),          \
             __VA_ARGS__);                                                           \
         if (dasm_format_result < 0 ||                                               \
             (lib_size)dasm_format_result >= sizeof(buffer)) {                     \
@@ -84,7 +84,7 @@ struct dasm32_context
  * arrays, `sizeof(str)` there is only pointer width. */
 #define DASM_FORMAT_CONTEXT_TEXT(buffer, ...)                                      \
     do {                                                                            \
-        int dasm_format_result = snprintf((buffer), XASM32_TEXT_CAPACITY,          \
+        int dasm_format_result = lib_c_snprintf((buffer), XASM32_TEXT_CAPACITY,          \
             __VA_ARGS__);                                                           \
         if (dasm_format_result < 0 ||                                               \
             (lib_size)dasm_format_result >= XASM32_TEXT_CAPACITY) {                \
@@ -6800,11 +6800,11 @@ static lib_u8 dasm32_execute(dasm32_context *dasmContext, char *stmt, lib_u8 *rc
         XASM32_TRACE_CHECK_BREAK(_d_code(dasmContext, (lib_u8 *)(&opcode), 1));
         iop = oldiop;
         XASM32_TRACE_CHECK_BREAK((*(dtable[opcode]))(dasmContext));
-        if (strlen(dop))
+        if (lib_text_length(dop))
         {
             DASM_APPEND_ARRAY(dop, " ");
             DASM_COPY_ARRAY(dstmt, dop);
-            for (i = strlen(dop); i < 8; ++i)
+            for (i = lib_text_length(dop); i < 8; ++i)
                 DASM_APPEND_ARRAY(dstmt, " ");
             DASM_APPEND_ARRAY(dstmt, dopr);
             DASM_APPEND_ARRAY(stmt, dstmt);
@@ -6822,6 +6822,6 @@ lib_u8 dasm32(char *stmt, lib_u8 *rcode, int flag32)
 {
     dasm32_context local_context;
 
-    memset(&local_context, 0, sizeof(local_context));
+    lib_memory_set(&local_context, 0, sizeof(local_context));
     return dasm32_execute(&local_context, stmt, rcode, flag32);
 }

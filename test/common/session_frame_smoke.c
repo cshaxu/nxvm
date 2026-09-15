@@ -6,7 +6,7 @@ static kvm_frame published;
 static lib_u32 current_run = 7u, published_run = 7u, copies, deliveries;
 static lib_u32 delivered_sequence;
 static lib_bool delivered_graphics, delivered_status;
-static lib_u32 monitor_calls, monitor_line_requests;
+static lib_u32 monitor_calls;
 static lib_u32 fake_run(const common_machine *machine)
 { (void)machine; return current_run; }
 static lib_bool fake_copy(common_machine *machine, kvm_frame *frame, lib_u32 run)
@@ -35,7 +35,9 @@ lib_status common_ui_set_state(common_ui *ui, common_ui_state state)
 lib_status common_ui_write_monitor(common_ui *ui, const char *text)
 { (void)ui; (void)text; return LIB_STATUS_OK; }
 lib_status common_ui_request_monitor_line(common_ui *ui)
-{ (void)ui; ++monitor_line_requests; return LIB_STATUS_OK; }
+{ (void)ui; return LIB_STATUS_OK; }
+lib_status common_ui_cancel_monitor_line(common_ui *ui, lib_bool *out_completed)
+{ (void)ui; *out_completed = LIB_FALSE; return LIB_STATUS_OK; }
 lib_status common_ui_release_window_mouse(common_ui *ui)
 { (void)ui; return LIB_STATUS_OK; }
 lib_status common_ui_publish_frame(common_ui *ui, const kvm_frame *frame,
@@ -55,9 +57,10 @@ static void monitor(void *context, lib_bool current, common_session_command_resu
 {
     (void)context;
     ++monitor_calls;
-    (void)current;
-    result->arm_prompt = LIB_TRUE;
-    strcpy(result->prompt, "Console> ");
+    /* The raw VM Console owns host input here. Product callbacks must receive
+       this false fact and must not arm or write a cooked monitor prompt. */
+    assert(!current);
+    assert(!result->arm_prompt);
 }
 
 int main(void)
@@ -85,9 +88,9 @@ int main(void)
     event.value.frame.graphics = 0; /* An earlier text frame. */
     assert(common_session_process_completed(&session, &event));
     assert(copies == 1u && session.state.observed_frame_sequence == 3u);
-    assert(monitor_calls == 0u); /* A frame cannot arm a monitor prompt. */
-    assert(session.state.presentation.graphics_actual);
-    assert(session.state.presentation.in_flight == COMMON_UI_ACTION_CREATE_WINDOW);
+    assert(monitor_calls == 0u); /* Frames never request a monitor input turn. */
+    assert(session.state.graphics_actual);
+    assert(session.state.in_flight == COMMON_UI_ACTION_CREATE_WINDOW);
     assert(deliveries == 0u); /* Wait for component completion before publishing. */
     event.kind = COMMON_SESSION_EVENT_COMPONENT_COMPLETED;
     event.value.component.component = COMMON_SESSION_EVENT_COMPONENT_WINDOW;
@@ -95,18 +98,16 @@ int main(void)
     assert(common_session_process_completed(&session, &event));
     assert(deliveries == 1u && delivered_sequence == 3u &&
         delivered_graphics && delivered_status);
-    assert(monitor_calls == 0u);
 
     event.kind = COMMON_SESSION_EVENT_FRAME_COMPLETED;
     event.value.frame.sequence = 3u;
     assert(common_session_process_completed(&session, &event));
     assert(copies == 1u); /* Duplicate notification does not copy again. */
-    assert(monitor_calls == 0u);
     event.value.frame.sequence = 4u;
     published.valid = 0u;
     assert(common_session_process_completed(&session, &event));
     assert(session.frame.valid && session.frame.sequence == 3u &&
-        session.state.presentation.graphics_actual);
+        session.state.graphics_actual);
     published.valid = 1u;
     published_run = 8u; /* Reset advanced between notification and snapshot. */
     assert(common_session_process_completed(&session, &event));
@@ -120,42 +121,12 @@ int main(void)
     published.graphics = 0u;
     assert(common_session_process_completed(&session, &event));
     assert(session.state.observed_frame_sequence == 5u &&
-        !session.state.presentation.graphics_actual);
-    assert(session.state.presentation.in_flight == COMMON_UI_ACTION_DESTROY_WINDOW);
+        !session.state.graphics_actual);
+    assert(session.state.in_flight == COMMON_UI_ACTION_DESTROY_WINDOW);
     event.kind = COMMON_SESSION_EVENT_COMPONENT_COMPLETED;
     event.value.component.component = COMMON_SESSION_EVENT_COMPONENT_WINDOW;
     event.value.component.exists = 0;
     assert(common_session_process_completed(&session, &event));
     assert(delivered_sequence == 5u && !delivered_graphics && !delivered_status);
-    {
-        common_session window_session = {0};
-        lib_u32 prior_monitor_calls = monitor_calls;
-
-        window_session.machine = (common_machine *)&current_run;
-        window_session.ui = (common_ui *)&current_run;
-        window_session.command.note_monitor_current = monitor;
-        common_session_state_initialize(&window_session.state,
-            COMMON_SESSION_DISPLAY_WINDOW, 0);
-        common_session_state_note_runtime(&window_session.state,
-            COMMON_SESSION_MACHINE_RUNNING);
-        assert(common_session_arm_if_ready(&window_session));
-        assert(monitor_calls == prior_monitor_calls + 1u &&
-            monitor_line_requests == 1u);
-        event.kind = COMMON_SESSION_EVENT_COMPONENT_COMPLETED;
-        event.value.component.component = COMMON_SESSION_EVENT_COMPONENT_WINDOW;
-        event.value.component.exists = 1;
-        assert(common_session_process_completed(&window_session, &event));
-        assert(monitor_calls == prior_monitor_calls + 1u &&
-            monitor_line_requests == 1u);
-        published.sequence = 6u;
-        published.graphics = 0u;
-        event.kind = COMMON_SESSION_EVENT_FRAME_COMPLETED;
-        event.run_generation = current_run;
-        event.value.frame.sequence = published.sequence;
-        assert(common_session_process_completed(&window_session, &event));
-        /* Window sessions retain the cooked monitor as Current.  A frame still
-         * cannot manufacture a new monitor prompt. */
-        assert(monitor_calls == prior_monitor_calls);
-    }
     return 0;
 }

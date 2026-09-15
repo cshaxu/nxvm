@@ -189,7 +189,8 @@ static void check_io_failure(int reader, lib_status output_status)
         assert(lib_console_deliver_event(logical, &event) == LIB_STATUS_OK);
     } else {
         write_result = output_status;
-        assert(lib_console_set_text_frame_sink(logical, failing_frame, NULL) == LIB_STATUS_OK);
+        const lib_console_output_binding output = { NULL, failing_frame, NULL };
+        assert(lib_console_set_output_binding(logical, &output) == LIB_STATUS_OK);
         frame.valid = 1u; frame.text_columns = 80u; frame.text_rows = 25u;
         assert(kvm_console_publish_frame(console, &frame) == LIB_STATUS_OK);
         assert(WaitForSingleObject(write_called, 5000u) == WAIT_OBJECT_0);
@@ -244,7 +245,8 @@ static void check_activation_frame(void)
     assert(kvm_console_create(&c,&options)==0); idle_frame();
     lib_console *logical=kvm_console_get_console(c);
     assert(lib_console_bind_generation(logical,1)==0);
-    assert(lib_console_set_text_frame_sink(logical,activation_frame,NULL)==0);
+    const lib_console_output_binding output = { NULL, activation_frame, NULL };
+    assert(lib_console_set_output_binding(logical, &output) == LIB_STATUS_OK);
     activated.kind=LIB_CONSOLE_EVENT_ACTIVATED; activated.binding_generation=1;
     assert(lib_console_deliver_event(logical,&activated)==0); idle_frame();
     assert(frame_writes==0); /* Empty activation never invents output. */

@@ -26,6 +26,13 @@ lib_status host_console_broker_replace(host_console_broker *broker,
  * Current Console in cooked mode. */
 lib_status host_console_broker_request_cooked_line(host_console_broker *broker,
     lib_console *expected_current);
+/* Quiesce the current cooked read without replacing its binding. Success
+ * discards an unfinished line; *out_completed is true when no unfinished read
+ * remains to cancel (including repeated cancellation after completion).
+ * Call with an outstanding requested line: a completed event must be consumed.
+ * No prompt/output policy is applied. Failure is terminal for this broker. */
+lib_status host_console_broker_cancel_cooked_line(host_console_broker *broker,
+    lib_console *expected_current, lib_bool *out_completed);
 /* OK consumes the object. Failure is a terminal infrastructure failure. */
 lib_status host_console_broker_destroy(host_console_broker *broker);
 

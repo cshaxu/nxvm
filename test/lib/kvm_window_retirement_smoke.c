@@ -116,7 +116,7 @@ static void checked_fail(kvm_component *component, lib_status status)
     assert(kvm_component_mailboxes_publish_frame(&component->mailboxes, &rejected) ==
         LIB_STATUS_INVALID_STATE);
     kvm_component_control title = { .kind = KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE };
-    assert(kvm_component_mailboxes_enqueue_controls(&component->mailboxes, &title, 1u) ==
+    assert(kvm_component_mailboxes_enqueue_control(&component->mailboxes, &title) ==
         LIB_STATUS_INVALID_STATE);
 }
 #define kvm_component_fail checked_fail

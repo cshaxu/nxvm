@@ -11,10 +11,19 @@ typedef lib_status (*lib_console_output_sink)(void *context,
 typedef lib_status (*lib_console_text_frame_sink)(void *context,
     const lib_console_text_frame *frame);
 
-lib_status lib_console_set_output_sink(lib_console *console,
-    lib_console_output_sink sink, void *context);
-lib_status lib_console_set_text_frame_sink(lib_console *console,
-    lib_console_text_frame_sink sink, void *context);
+typedef struct lib_console_output_binding {
+    lib_console_output_sink text;
+    lib_console_text_frame_sink frame;
+    void *context;
+} lib_console_output_binding;
+
+/* Copies the binding; NULL clears both outputs. Waits for in-flight output
+ * before replacing it. The borrowed context must survive until replacement
+ * returns; output callbacks must not reenter binding or destruction.
+ * A valid Console always accepts replacement. An absent callback returns
+ * NOT_CURRENT from its corresponding write operation. */
+lib_status lib_console_set_output_binding(lib_console *console,
+    const lib_console_output_binding *binding);
 lib_status lib_console_deliver_event(lib_console *console,
     const lib_console_event *event);
 lib_status lib_console_bind_generation(lib_console *console,

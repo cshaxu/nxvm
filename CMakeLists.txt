@@ -87,6 +87,8 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     common-test-input_queue_mouse_fifo
     common-test-physical_key_identity
     common-test-session_frame
+    common-test-session_monitor
+    common-test-debug_output
     common-test-composition
     common-test-xasm32
     common-test-xasm32_contract)
@@ -105,6 +107,7 @@ if(WIN32)
     lib-test-kvm_shutdown_failure
     lib-test-host_console_reader_failure
     lib-test-host_console_display
+    lib-test-host_console_cancel
     lib-test-kvm_input_admission
     lib-test-console_blocking_gate
     lib-test-host_sync_ownership
@@ -3563,7 +3566,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/xt_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/rtc.c|machine-executor"
     "common-debug|src/common/debug/command.c|debug-command"
-    "common-debug|src/common/debug/debug.c|debug-provider"
     "common-xasm32|src/common/xasm32/xasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/aasm32.c|xasm32"
     "common-xasm32|src/common/xasm32/dasm32.c|xasm32"
@@ -3578,7 +3580,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "common-session|src/common/session/session.c|session-owner"
     "common-session|src/common/session/control.c|session-owner"
     "common-session|src/common/session/control_state.c|session-owner"
-    "common-session|src/common/session/reconciler.c|session-owner"
     "common-session|src/common/session/presentation_plan.c|session-owner"
     "vm-app|src/vm/app/composition.c|session-composition"
     "vm-media|src/vm/machine/media/fdd.c|vm-media"

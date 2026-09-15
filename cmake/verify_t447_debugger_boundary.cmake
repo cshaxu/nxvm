@@ -4,7 +4,7 @@ endif()
 
 foreach(file IN ITEMS
     "src/common/debug/debug_interface.h"
-    "src/common/debug/command.h"
+    "src/common/debug/command_runtime.h"
     "src/common/debug/command.c")
     file(READ "${PROJECT_SOURCE_DIR}/${file}" source)
     foreach(forbidden IN ITEMS

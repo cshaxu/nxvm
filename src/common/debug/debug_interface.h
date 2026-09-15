@@ -19,7 +19,6 @@ typedef enum common_debug_register {
 } common_debug_register;
 
 #define COMMON_DEBUG_LINE_CAPACITY 256u
-#define COMMON_DEBUG_TEXT_CAPACITY 8192u
 #define COMMON_DEBUG_PROMPT_CAPACITY 64u
 
 typedef enum common_debug_lifecycle_request {
@@ -30,7 +29,10 @@ typedef enum common_debug_lifecycle_request {
 } common_debug_lifecycle_request;
 
 typedef struct common_debug_result {
-    char text[COMMON_DEBUG_TEXT_CAPACITY];
+    /* Borrowed, NUL-terminated output, valid until the next submit/observe,
+     * open or destroy on this debug object. Copy before retaining longer.
+     * Output grows as needed; allocation/format failure returns lib_status. */
+    const char *text;
     char prompt[COMMON_DEBUG_PROMPT_CAPACITY];
     lib_bool prompt_ready;
     lib_bool keep_active;

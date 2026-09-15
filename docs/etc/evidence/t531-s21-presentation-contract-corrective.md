@@ -41,9 +41,11 @@ claim whole-T531 corpus identity or closure before that adoption.
 - `vm-machine-frame-smoke`: an 8-scan-line CRTC cursor interval maps to the
   bottom of the stable 16-scan-line KVM glyph cell.
 - The x64 unit suite passes 325/325. The full integration invocation is not a
-  pass: its early pre-existing/independent failures include timer-firmware,
-  paused-Debug, DOS prompt, DOS keyboard and DOS memory-fault probes. S21 is
-  therefore a corrective P commit, not a task or subtask closure claim.
+  pass: it included timer-firmware, paused-Debug, DOS prompt, DOS keyboard
+  and DOS memory-fault probes. S21 did not establish whether those failures
+  predated its changes, so no pre-existing or independent attribution is
+  claimed. S21 is therefore a corrective P commit, not a task or subtask
+  closure claim.
 - Lib/Common manifests, direct owner tests, required boundary/documentation
   gates, and optimized stripped x64 and x86 `0531` artifact builds are
   recorded with the implementation commit.

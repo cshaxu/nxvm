@@ -521,7 +521,10 @@ static int win32_window_consume_mailboxes(lib_win32_hwnd window,
                 if (!win32_window_accepting_input(context)) return 0;
             }
             context->frozen = control.value.window_frozen;
-            if (context->frozen == LIB_FALSE) {
+            if (context->frozen) {
+                win32_window_release_mouse(context);
+                if (!win32_window_accepting_input(context)) return 0;
+            } else {
                 context->cursor_blink_visible = LIB_TRUE;
                 context->cursor_blink_due = lib_win32_get_tick_count() +
                     WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS;

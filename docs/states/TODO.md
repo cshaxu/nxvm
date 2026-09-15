@@ -15,6 +15,13 @@ adopts them.
 
 ## Hardware And Compatibility Debt
 
+- [ ] **External integration suite restoration (`TODO(High)`).** T531 closure
+  retains non-green timer-firmware, paused-Debug, unified-Debug, DOS prompt,
+  DOS keyboard and DOS memory-fault integration probes. Re-admit one bounded
+  source/asset/profile diagnosis that classifies every failing row, preserves
+  repository-only unit fixtures and YAML-relative external assets, and does
+  not relabel failed runtime evidence as a passing gate.
+
 - [ ] **External-ROM Model-40 and IBM 5170 boot-chain repair (`TODO(High)`).**
   T515 verifies one YAML-relative external asset path and complete unit
   coverage, but its full integration run records three real-ROM timeouts:

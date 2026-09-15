@@ -7,6 +7,13 @@
 /* Native display I/O, deterministic reader/startup failures. The test owns a
  * hidden Console; it never changes the developer's Console or its input. */
 static int fail_allocate, fail_select, fail_reader, fail_query, fail_restore;
+static int fail_viewport, ignore_viewport;
+static BOOL WINAPI set_viewport(HANDLE output, BOOL absolute, const SMALL_RECT *rect)
+{
+    if (fail_viewport) { fail_viewport = 0; return FALSE; }
+    if (ignore_viewport) { ignore_viewport = 0; return TRUE; }
+    return SetConsoleWindowInfo(output, absolute, rect);
+}
 static BOOL WINAPI query_display(HANDLE output, PCONSOLE_SCREEN_BUFFER_INFOEX info)
 {
     if (fail_query) { fail_query = 0; return FALSE; }
@@ -48,6 +55,8 @@ static HWND WINAPI no_foreground(void) { return NULL; }
 #define lib_win32_get_console_screen_buffer_info_ex query_display
 #undef lib_win32_set_console_screen_buffer_info_ex
 #define lib_win32_set_console_screen_buffer_info_ex restore_display
+#undef lib_win32_set_console_window_info
+#define lib_win32_set_console_window_info set_viewport
 #include "lib/host/win32/console.c"
 #include "lib/host/console.c"
 
@@ -111,9 +120,9 @@ static void check_frame_extent(short columns, short rows, int scrolled)
     assert(SetConsoleCursorPosition(broker->backend->output, origin));
     assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
     assert(SetConsoleScreenBufferSize(broker->backend->output, extent));
-    viewport.Right = columns - 1;
-    viewport.Bottom = rows < 30 ? rows - 1 : 29;
-    if (scrolled) {
+    viewport.Right = scrolled == 2 ? 19 : columns - 1;
+    viewport.Bottom = scrolled == 2 ? 9 : rows < 30 ? rows - 1 : 29;
+    if (scrolled == 1) {
         viewport.Top = 2; viewport.Bottom += 2;
     }
     assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
@@ -122,14 +131,30 @@ static void check_frame_extent(short columns, short rows, int scrolled)
     memset(frame.text, '#', sizeof(frame.text));
     for (int round = 0; round < 3; ++round) {
         assert(host_console_broker_replace(broker, cooked, raw, HOST_CONSOLE_RAW_EVENTS) == 0);
-        if (scrolled)
-            assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
+        assert(SetConsoleWindowInfo(broker->backend->output, TRUE, &viewport));
+        if (round == 0 && !scrolled && rows == 13) {
+            fail_viewport = 1;
+            assert(!host_console_ensure_text_surface(broker->backend));
+            assert(fail_viewport == 0);
+            ignore_viewport = 1;
+            assert(!host_console_ensure_text_surface(broker->backend));
+            assert(ignore_viewport == 0);
+        }
+        {
+            CONSOLE_SCREEN_BUFFER_INFO raw_before;
+            int width = viewport.Right - viewport.Left + 1;
+            int height = viewport.Bottom - viewport.Top + 1;
+            assert(GetConsoleScreenBufferInfo(broker->backend->output, &raw_before));
+            assert(host_console_ensure_text_surface(broker->backend));
+            assert(GetConsoleScreenBufferInfo(broker->backend->output, &actual));
+            assert(actual.srWindow.Left == 0 && actual.srWindow.Top == 0);
+            assert(actual.srWindow.Right + 1 == (width < 80 ? 80 : width));
+            assert(actual.srWindow.Bottom + 1 == (height < 25 ? 25 : height));
+            assert(actual.dwSize.X >= raw_before.dwSize.X);
+            assert(actual.dwSize.Y >= raw_before.dwSize.Y);
+        }
         assert(lib_console_write_text_frame(raw, &frame) == 0);
         assert(lib_console_write_text_frame(raw, &frame) == 0);
-        assert(GetConsoleScreenBufferInfo(broker->backend->output, &actual));
-        assert(actual.srWindow.Left == 0 && actual.srWindow.Top == 0 &&
-            actual.srWindow.Right - actual.srWindow.Left + 1 >= 80 &&
-            actual.srWindow.Bottom - actual.srWindow.Top + 1 >= 25);
         region = (SMALL_RECT){0, 0, 79, 24};
         assert(ReadConsoleOutputW(broker->backend->output, cells, cells_size, origin, &region));
         assert(region.Left == 0 && region.Top == 0 && region.Right == 79 && region.Bottom == 24);
@@ -255,7 +280,10 @@ int main(void)
     expect_display(&after);
     lib_console_release(other); lib_console_release(raw); lib_console_release(cooked);
     check_frame_extent(30, 30, 0);
+    check_frame_extent(30, 30, 2);
     check_frame_extent(80, 12, 0);
+    check_frame_extent(80, 13, 0);
+    check_frame_extent(120, 13, 0);
     check_frame_extent(120, 60, 1);
     assert(FreeConsole());
     return 0;

@@ -1,11 +1,9 @@
 #include "common/session/control.h"
 
-#include <string.h>
 #include <limits.h>
 
 #include "lib/host/sync_interface.h"
 
-#include <stdlib.h>
 
 #define COMMON_SESSION_EVENT_QUEUE_INITIAL_CAPACITY 64u
 #define COMMON_SESSION_EVENT_PRESSED_CAPACITY 256u
@@ -37,7 +35,7 @@ static int common_session_queue_push(common_session_queue *queue,
     const common_session_event *event);
 
 /* Allocation failure must not turn a key transition into a silent drop.  This
- * fixed metadata slot is the queue's final, allocation-free fault record. */
+ * fixed metadata slot is the queue's final, allocation-lib_release fault record. */
 static void common_session_queue_latch_delivery_failure(common_session_queue *queue,
     lib_u64 source_identity, lib_status status, lib_u32 run_generation)
 {
@@ -93,14 +91,14 @@ static int common_session_queue_push(common_session_queue *queue,
             host_sync_mutex_unlock(queue->lock);
             return 0;
         }
-        expanded = calloc(next_capacity, sizeof(*expanded));
+        expanded = lib_allocate_zero(next_capacity, sizeof(*expanded));
         if (expanded == NULL) {
             host_sync_mutex_unlock(queue->lock);
             return 0;
         }
         for (index = 0u; index < queue->count; ++index)
             expanded[index] = queue->events[(queue->first + index) % queue->capacity];
-        free(queue->events);
+        lib_release(queue->events);
         queue->events = expanded;
         queue->first = 0u;
         queue->capacity = next_capacity;
@@ -118,20 +116,20 @@ int common_session_queue_create(common_session_queue **out_queue)
     common_session_queue *queue;
     if (out_queue == NULL) return 0;
     *out_queue = NULL;
-    queue = calloc(1u, sizeof(*queue));
+    queue = lib_allocate_zero(1u, sizeof(*queue));
     if (queue == NULL) return 0;
     if (host_sync_mutex_create(&queue->lock) != LIB_STATUS_OK) {
-        free(queue);
+        lib_release(queue);
         return 0;
     }
     queue->capacity = COMMON_SESSION_EVENT_QUEUE_INITIAL_CAPACITY;
-    queue->events = calloc(queue->capacity, sizeof(*queue->events));
+    queue->events = lib_allocate_zero(queue->capacity, sizeof(*queue->events));
     if (queue->events == NULL ||
         host_sync_event_create(&queue->available) != LIB_STATUS_OK) {
-        free(queue->events);
+        lib_release(queue->events);
         if (queue->available != NULL) host_sync_event_destroy(queue->available);
         host_sync_mutex_destroy(queue->lock);
-        free(queue);
+        lib_release(queue);
         return 0;
     }
     *out_queue = queue;
@@ -142,9 +140,9 @@ void common_session_queue_destroy(common_session_queue *queue)
 {
     if (queue == NULL) return;
     host_sync_event_destroy(queue->available);
-    free(queue->events);
+    lib_release(queue->events);
     host_sync_mutex_destroy(queue->lock);
-    free(queue);
+    lib_release(queue);
 }
 
 int common_session_queue_push_kvm_for_run(common_session_queue *queue,
@@ -230,7 +228,7 @@ int common_session_queue_take(common_session_queue *queue,
         return 0;
     host_sync_mutex_lock(queue->lock);
     if (queue->count == 0u && queue->fatal_delivery_pending) {
-        memset(out_event, 0, sizeof(*out_event));
+        lib_memory_set(out_event, 0, sizeof(*out_event));
         out_event->kind = COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED;
         out_event->run_generation = queue->fatal_delivery_generation;
         out_event->value.delivery_failure.source_identity = queue->fatal_delivery_source;
@@ -242,7 +240,7 @@ int common_session_queue_take(common_session_queue *queue,
         return 1;
     }
     if (queue->count == 0u && queue->fatal_queue_delivery_pending) {
-        memset(out_event, 0, sizeof(*out_event));
+        lib_memory_set(out_event, 0, sizeof(*out_event));
         out_event->kind = COMMON_SESSION_EVENT_QUEUE_DELIVERY_FAILED;
         out_event->run_generation = queue->fatal_queue_delivery_generation;
         out_event->value.queue_delivery_status = queue->fatal_queue_delivery_status;

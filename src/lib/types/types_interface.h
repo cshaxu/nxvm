@@ -63,6 +63,10 @@ static inline const void *lib_memory_find(const void *bytes, int value,
 static inline lib_size lib_text_length(const char *text)
 { return strlen(text); }
 
+#define lib_c_strcmp strcmp
+#define lib_c_strchr strchr
+#define lib_c_strtok strtok
+
 static inline void *lib_allocate(lib_size byte_count)
 { return malloc(byte_count); }
 

@@ -64,19 +64,21 @@ int main(void)
     assert(window_probe.failures == 0u);
     leaf_drain(&window.base);
 
-    /* Window freeze is one atomic ordered control batch: first it makes future
-       capture impossible, then it releases current capture. Unfreeze is one
-       independent permission change and never implies a capture request. */
+    /* Freeze uses the final ordinary slot, not a two-record transaction. */
     {
         kvm_component_control taken;
+        for (index = 0u; index + 1u < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
+            assert(kvm_window_set_title(&window, "x") == LIB_STATUS_OK);
         assert(kvm_window_freeze(&window) == LIB_STATUS_OK);
+        assert(kvm_window_freeze(&window) == LIB_STATUS_LIMIT_EXCEEDED);
+        for (index = 0u; index + 1u < KVM_COMPONENT_CONTROL_CAPACITY; ++index) {
+            assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
+            assert(taken.kind == KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE);
+        }
         assert(kvm_component_mailboxes_take_control(&window.base.mailboxes,
             &taken));
         assert(taken.kind == KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN);
         assert(taken.value.window_frozen == LIB_TRUE);
-        assert(kvm_component_mailboxes_take_control(&window.base.mailboxes,
-            &taken));
-        assert(taken.kind == KVM_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE);
         assert(!kvm_component_mailboxes_take_control(&window.base.mailboxes,
             &taken));
         assert(kvm_window_unfreeze(&window) == LIB_STATUS_OK);
@@ -95,9 +97,9 @@ int main(void)
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     title.value.title[0] = 'x';
     for (index = 0u; index < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
-        assert(kvm_component_enqueue_controls(&console.base, &title, 1u) ==
+        assert(kvm_component_enqueue_control(&console.base, &title) ==
             LIB_STATUS_OK);
-    assert(kvm_component_enqueue_controls(&console.base, &title, 1u) ==
+    assert(kvm_component_enqueue_control(&console.base, &title) ==
         LIB_STATUS_LIMIT_EXCEEDED);
     assert(console_probe.failures == 0u);
     leaf_drain(&console.base);

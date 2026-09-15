@@ -1,7 +1,6 @@
 #include "common/machine/input_queue.h"
 
 #include "lib/host/sync_interface.h"
-#include <stdlib.h>
 
 #define COMMON_MACHINE_INPUT_QUEUE_CAPACITY 256u
 
@@ -18,11 +17,11 @@ lib_status common_machine_input_queue_create(common_machine_input_queue **out_qu
     lib_status status;
     if (out_queue == NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_queue = NULL;
-    queue = calloc(1u, sizeof(*queue));
+    queue = lib_allocate_zero(1u, sizeof(*queue));
     if (queue == NULL) return LIB_STATUS_NO_MEMORY;
     status = host_sync_mutex_create(&queue->lock);
     if (status != LIB_STATUS_OK) {
-        free(queue);
+        lib_release(queue);
         return status;
     }
     *out_queue = queue;
@@ -33,7 +32,7 @@ void common_machine_input_queue_destroy(common_machine_input_queue *queue)
 {
     if (queue == NULL) return;
     host_sync_mutex_destroy(queue->lock);
-    free(queue);
+    lib_release(queue);
 }
 
 lib_bool common_machine_input_queue_push(common_machine_input_queue *queue,

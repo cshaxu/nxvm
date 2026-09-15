@@ -59,7 +59,7 @@ static void set_frozen(lib_bool frozen)
 {
     kvm_component_control control = { .kind = KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN };
     control.value.window_frozen = frozen;
-    assert(kvm_component_enqueue_controls(&window.base, &control, 1) == LIB_STATUS_OK);
+    assert(kvm_component_enqueue_control(&window.base, &control) == LIB_STATUS_OK);
     assert(win32_window_consume_mailboxes(NULL, &context));
     assert(context.frozen == frozen);
 }
@@ -196,7 +196,7 @@ int main(void)
     assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
     /* Call mailbox API so ordinary rejected control does not add a failure report. */
     kvm_component_control title = { .kind = KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE };
-    assert(kvm_component_mailboxes_enqueue_controls(&window.base.mailboxes, &title, 1u) == LIB_STATUS_INVALID_STATE);
+    assert(kvm_component_mailboxes_enqueue_control(&window.base.mailboxes, &title) == LIB_STATUS_INVALID_STATE);
     assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
     assert(taken.kind == KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE);
     assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));

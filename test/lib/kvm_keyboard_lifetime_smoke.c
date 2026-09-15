@@ -47,6 +47,26 @@ static int submit(kvm_hotkey_matcher *m, capture *c, kvm_key key, unsigned scan,
     e.data.key.flags = flags; e.data.key.modifiers = mods; e.data.key.pressed = down;
     return kvm_hotkey_matcher_submit(m, &e, capture_event, c, LIB_TRUE);
 }
+/* Compare the active payload, never struct padding or unused union storage. */
+static void same_input(const capture *left, const capture *right)
+{
+    assert(left->count == right->count);
+    for (unsigned i = 0; i < left->count; ++i) {
+        const kvm_input_event *a = &left->events[i], *b = &right->events[i];
+        assert(a->source == b->source && a->source_identity == b->source_identity);
+        assert(a->type == b->type);
+        if (a->type == KVM_EVENT_KEY) {
+            assert(a->data.key.key == b->data.key.key);
+            assert(a->data.key.scan_code == b->data.key.scan_code);
+            assert(a->data.key.flags == b->data.key.flags);
+            assert(a->data.key.modifiers == b->data.key.modifiers);
+            assert(a->data.key.pressed == b->data.key.pressed);
+        } else {
+            assert(a->type == KVM_EVENT_TEXT);
+            assert(a->data.text.scalar == b->data.text.scalar);
+        }
+    }
+}
 static void permutations(void)
 {
     const unsigned orders[6][3] = {{0,1,2},{0,2,1},{1,0,2},{1,2,0},{2,0,1},{2,1,0}};
@@ -169,7 +189,7 @@ static void adapter_equivalence(unsigned scan)
     win32_window_proc(handle, WM_KEYDOWN, VK_PACKET, 0);
     assert(translations == 1 && w.count == 6);
     translations = 0;
-    assert(lib_memory_compare(w.events, c.events, w.count * sizeof(w.events[0])) == 0);
+    same_input(&w, &c);
     w.count = w.attempts = c.count = c.attempts = 0;
     for (unsigned i = 0; i < 2; ++i) {
         unsigned unit = i ? 0xde00 : 0xd83d;
@@ -179,7 +199,7 @@ static void adapter_equivalence(unsigned scan)
     }
     assert(w.count == 1 && c.count == 1);
     assert(w.events[0].type == KVM_EVENT_TEXT && w.events[0].data.text.scalar == 0x1f600);
-    assert(lib_memory_compare(w.events, c.events, w.count * sizeof(w.events[0])) == 0);
+    same_input(&w, &c);
     /* Adapters preserve counts; only the shared normalizer expands batches. */
     w.count = w.attempts = c.count = c.attempts = 0;
     win32_window_proc(handle, WM_KEYDOWN, 'A', 0x1e0004);
@@ -187,12 +207,12 @@ static void adapter_equivalence(unsigned scan)
     console_record(&console, 'A', 0x1e, 'a', 1, 4);
     console_record(&console, 'A', 0x1e, 'a', 0, 0);
     assert(w.count == 5 && c.count == 5);
-    assert(lib_memory_compare(w.events, c.events, w.count * sizeof(w.events[0])) == 0);
+    same_input(&w, &c);
     w.count = w.attempts = c.count = c.attempts = 0;
     win32_window_proc(handle, WM_CHAR, 0x4e00, 3);
     console_record(&console, 0, 0, 0x4e00, 1, 3);
     assert(w.count == 3 && c.count == 3);
-    assert(lib_memory_compare(w.events, c.events, w.count * sizeof(w.events[0])) == 0);
+    same_input(&w, &c);
     w.count = w.attempts = c.count = c.attempts = 0;
     win32_window_proc(handle, WM_CHAR, 0x4e00, 1);
     console_record(&console, 0, 0, 0x4e00, 1, 0);
@@ -218,7 +238,7 @@ static void adapter_equivalence(unsigned scan)
                 console_record(&console, 0, 0, cases[n].units[i], 0, cases[n].repeats[i]);
             }
             assert(w.count == cases[n].expected && c.count == w.count);
-            assert(lib_memory_compare(w.events, c.events, w.count * sizeof(w.events[0])) == 0);
+            same_input(&w, &c);
             for (unsigned i = 0; i < w.count; ++i) {
                 if (cases[n].scalar)
                     assert(w.events[i].type == KVM_EVENT_TEXT &&
@@ -243,7 +263,7 @@ static void adapter_equivalence(unsigned scan)
     win32_window_proc(handle, WM_CHAR, 0xde00, 2);
     console_record(&console, 0, 0, 0xde00, 1, 2);
     assert(w.count == 2 && c.count == 2);
-    assert(lib_memory_compare(w.events, c.events, w.count * sizeof(w.events[0])) == 0);
+    same_input(&w, &c);
     w.count = w.attempts = c.count = c.attempts = 0;
     win32_window_proc(handle, WM_CHAR, 0x4e00, 1);
     console_record(&console, 0, 0, 0x4e00, 1, 1);

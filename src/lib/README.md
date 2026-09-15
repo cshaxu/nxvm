@@ -171,6 +171,13 @@ LF, emits one REJECTED_LINE, and never submits a truncated tail. Raw activation
 requests native foreground/focus; cooked activation does not. The reader's
 confirmed retirement, not focus, establishes the input handoff.
 
+Cooked-line cancellation uses the same retirement/join as replacement, without
+changing the logical binding. It reports cancelled versus already completed;
+completed copied events survive cancellation. Native leftover records are flushed
+after join. Callbacks may not synchronously cancel their own reader. Cancellation
+does not print or rearm; the caller owns those decisions. Linux Console remains
+unsupported through the same API, as for its existing activation contract.
+
 Win32 host keeps stream output in the original screen buffer and frame output
 in one lazily allocated alternate buffer, both owned by the same broker.
 Selection and display-metadata restoration are inside the existing output
@@ -194,6 +201,9 @@ only a successful write of the entire requested rectangle commits the cache.
 Clipped native success is incomplete output and returns IO_ERROR.
 Surface size is established after palette application, which can change native
 buffer geometry; output does not rely on a precondition invalidated by metadata.
+Raw output grows the visible viewport to at least 80x25 without shrinking either
+existing dimension or backing storage. Final queried geometry must cover that
+target; a rejected or silently clipped resize returns IO_ERROR, not success.
 The broker alone sequences deactivation, including failed initial activation.
 Backend disposal frees inactive resources without repeating mode restoration
 or reader retirement. KVM Console disposal similarly follows its worker's sink

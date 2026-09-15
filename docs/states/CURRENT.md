@@ -1,36 +1,27 @@
 # Project Status
 
-## M5 T531 S21 Packet
+## Current Work
+
+## M5 T531 S22 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation — M5 T531 S21 corrective package-acceptance subtask. |
-| Admission And Approval | Owner reported repeated monitor prompts and incorrect text cursor/viewport behavior on 2026-09-14; this packet treats that report as approval for the bounded owner-level correction. Permanent owner approval covers normal commits and pushes. |
-| Objective | Restore one correct presentation path: one pending cooked-monitor line, a visible 80x25 Console text surface, and VADP CRTC cursor scan-lines mapped into the one 8x16 glyph geometry. |
-| Non-goals | No product-specific UI workaround, no new queue, no presentation-policy change, no SoftPC sibling write, no new external assets, and no whole-T531 closure until SoftPC adopts the shared corrective corpus. |
-| Reference Baseline | T531 S20 accepted at `84d57cd0`; NXVM and SoftPC `src/lib`/`src/common` are byte-identical at investigation start. |
-| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), revised S21. |
-| Files And ABI Surface | Shared `src/common/session`, `src/lib/host/win32/console`, their direct tests/manifests; NXVM Core display snapshot/guest frame and VM display-event/frame adapter with direct owner tests. Copied frame gains only the existing owner fact: current text-cell height. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, and `docs/rules/EXECUTION.md`: one owner/path; public copied values only; canonical shared corpus; user-visible before/after evidence. |
-| Verification | Direct Common prompt scheduling, native Console viewport, Core VADP text snapshot, and VM frame conversion tests; complete x64 unit suite; required external integration suite; x64/x86 optimized stripped artifact build and hash/PE verification; actual diff, canonical-corpus, boundary, and documentation gates. |
-| Expected Markers | A monitor can have only one pending input line; text output has a 80x25 visible viewport; an 8-scan-line CRTC cursor interval maps to the bottom of the stable 16-scan-line glyph cell without changing Window geometry. |
-| Asset Needs | None. |
-| Reporting Requirements | Report owner findings before implementation, one P commit with direct test/build evidence, and explicitly state whether SoftPC has adopted the matching shared change. Do not claim T531 whole-task closure while corpus identity is pending. |
-| Stop Conditions | Stop for a contrary canonical SoftPC contract, an incompatible native Console restriction, a required unapproved public capability beyond copied cell height, any prior presentation regression, or a failed integration suite without a bounded owner diagnosis. |
-| Exit Criteria | All three owner tests pass; full specified verification and artifacts pass; shared correction is recorded for SoftPC adoption; no NXVM-only shared-code branch or duplicate presentation path remains. |
-| Original Owner Request | “还是输出了一堆提示符，而且，window模式下光标始终在每行的中间，并不在行的底部。” |
-| Similar-Issue Sweep | Audit every completion kind for prompt arming, every Windows Console text-surface call, and every Core→VM→KVM text-frame conversion for a substituted character height. |
-
-| Task | Compact result |
-| --- | --- |
-| T531 S13 | Canonical SoftPC `54845ac` Lib/Common/test-corpus refresh accepted. P1 `4e7b4a26` imports the exact four trees and direct NXVM adaptations; P2 records equality, gates and dual-architecture acceptance. |
-| T531 S14 | Accepted raw-Console prompt correction at P1 `9e7b4eb2`; Common ownership now suppresses prompt publication during guest input. [Evidence](../etc/evidence/t531-s14-raw-console-monitor-ownership.md). |
-| T531 S15 | Accepted P1 `5c648c35`: FDD/HDD Core-media adaptation now resides at `src/vm/machine/media` with the one retained `vm-media` target; direct include/CMake paths and obsolete DAG exceptions are removed. [Evidence](../etc/evidence/t531-s15-vm-machine-media-layout.md). |
-| T531 S16 | Accepted P1 `59ccb57c`: SoftPC commit `00d4461` now exactly supplies `src/lib`, `src/common`, `test/lib` and `test/common`; NXVM's former `vm/product` root and target are retired in favor of one `vm/app` owner. [Evidence](../etc/evidence/t531-s16-app-consolidation.md). |
-| T531 S17 | App keyboard policy is now isolated in `app/keyboard`; `command` retains grammar and the sole callback-context adapter. No Common/Core/VM-machine contract changed. [Evidence](../etc/evidence/t531-s17-app-keyboard-convergence.md). |
-| T531 S18 | App composition is the sole NXVM Common-machine owner: VM describes/binds the driver only; UI, session, Common, then VM teardown is explicit. 325/325 unit and x64/x86 artifact verification pass. [Evidence](../etc/evidence/t531-s18-common-machine-composition-ownership.md). |
-| T531 S19 | Accepted at P2: SoftPC `433f57e` Common/test corpus is byte-identical; Common shutdown joins callbacks before the sole App cleanup path releases UI/session state. 325/325 unit and x64/x86 artifact verification pass. [Evidence](../etc/evidence/t531-s19-common-shutdown-refresh.md). |
-| T531 S20 | Accepted at P2: retired the `vm/machine/runtime` naming shell; one `vm-machine` target directly owns the Core/Common adapter and retains `media/` as its sole FDD/HDD storage-provider child. 325/325 x64 unit, five boundary gates, documentation governance and stripped x64/x86 artifacts pass. [Evidence](../etc/evidence/t531-s20-vm-machine-responsibility-layout.md). |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved this S on 2026-09-14: import the latest committed SoftPC `src/lib`, `src/common`, `test/lib`, and `test/common`, then adapt NXVM only at its product-adapter boundary. Permanent normal push approval remains in effect. |
+| Objective | Replace NXVM's four shared trees byte-for-byte with SoftPC `fa14c62bd34182bf9930988e25296bfb7d5be646`; adapt NXVM consumers to the revised public contracts and restore one canonical shared corpus. |
+| Non-goals | No SoftPC write, no NXVM-specific branch in Lib/Common, no new product policy, no Core/VADP behavior redesign, no YAML edits, and no claim that external integration failures predate this S. |
+| Reference Baseline | NXVM `e0d3b946`; clean committed SoftPC `fa14c62bd34182bf9930988e25296bfb7d5be646`; the preceding NXVM-only S21 Common/Console correction is superseded by this canonical import. |
+| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S22. |
+| Files And ABI Surface | Complete `src/lib`, `src/common`, `test/lib`, and `test/common` imports; NXVM CMake and direct consumers only where the imported public contracts require adaptation; task evidence and task history. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Product UX](../design/UI.md), and the source policy. Shared components retain one product-neutral owner and platform APIs remain inside Lib. |
+| Verification | Before/after four-tree corpus diff; Lib/Common manifests and corpus gates; source-boundary scans; both x64/x86 Release builds; complete repository-only unit suite; focused imported Lib/Common tests; external integration invocation recorded honestly; actual-diff review and documentation governance. |
+| Expected Markers | SoftPC revision `fa14c62b`; exact corpus equality for all four imported trees; no retired NXVM-only Common/Lib patch; no platform API leakage outside Lib. |
+| Asset Needs | None; repository-only tests only. External integration uses its established external assets without modifying them. |
+| Reporting Requirements | Report the frozen source revision, exact consumer adaptations, corpus identity, test/build outcomes, line delta, and every remaining non-green integration row without pre-existing attribution. |
+| Stop Conditions | Stop for an incompatible public contract that needs a new product-policy seam, a required Core semantic change, a source-license conflict, or a regression that cannot be repaired at the NXVM adapter boundary. |
+| Exit Criteria | All four trees equal the frozen SoftPC corpus; NXVM directly consumes it with no compatibility copy; full unit and both builds pass; integration result is recorded; actual review proves one owner/path. T531 remains open until its whole-task two-product execution gate is separately satisfied. |
+| Original Owner Request | Admit a new S to import the latest SoftPC Lib/Common sources and tests, then adapt NXVM to the same clean shared architecture. |
+| Similar-Issue Sweep | Treat prompt/reader ordering, Console broker ownership, viewport growth, mailbox/reconciliation and all changed public contracts as one imported contract family; inspect every NXVM caller rather than patching the reported display symptom. |
 
 ## Current Technical Baseline
 
@@ -40,6 +31,9 @@
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:
   `machine`, `session`, `ui`, `xasm32`, and `debug`.
+- S21 P1 `b35357ca` and P2 `e0d3b946` established the initial NXVM diagnosis.
+  S22 replaces their private Common/Lib hunks with SoftPC's canonical corrected
+  corpus and retains only the NXVM VADP adapter concern where still needed.
 
 ## Recent M5 Closures
 
