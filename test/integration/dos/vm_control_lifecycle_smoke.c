@@ -47,6 +47,28 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     vm_machine_control_reset(&session->control);
     Sleep(10u);
+    vm_machine_control_request_pause(&session->control,
+        VM_MACHINE_PAUSE_EXPLICIT);
+    if (!vm_machine_control_wait_for_pause(&session->control, 2000u)) {
+        STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:PAUSE-FAILED\n", STD_STDERR);
+        vm_machine_control_stop(&session->control);
+        WaitForSingleObject(thread, 2000u);
+        CloseHandle(thread);
+        integration_yaml_session_close(&yaml_session);
+        return 1;
+    }
+    vm_machine_control_continue(&session->control);
+    result = GetTickCount();
+    while (!vm_machine_control_is_running(&session->control) &&
+        GetTickCount() - result < 2000u) Sleep(10u);
+    if (!vm_machine_control_is_running(&session->control)) {
+        STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:RESUME-FAILED\n", STD_STDERR);
+        vm_machine_control_stop(&session->control);
+        WaitForSingleObject(thread, 2000u);
+        CloseHandle(thread);
+        integration_yaml_session_close(&yaml_session);
+        return 1;
+    }
     vm_machine_control_stop(&session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);

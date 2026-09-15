@@ -258,7 +258,10 @@ add_executable(vm-model40-hdc-s26-smoke
     test/vm/machine/vm_model40_hdc_s26_smoke.c)
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-machine)
 add_executable(vm-model40-console-s20-smoke
-    test/integration/product/vm_model40_console_s20_smoke.c)
+    test/integration/product/vm_model40_console_s20_smoke.c
+    test/integration/support/nxvm_console_process.c)
+target_include_directories(vm-model40-console-s20-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-machine)
 add_executable(vm-model-339-clock-contract-smoke
     test/vm/machine/vm_model_339_clock_contract_smoke.c)
@@ -297,7 +300,10 @@ target_include_directories(vm-app-console-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(vm-app-console-smoke PRIVATE vm-app)
 add_executable(vm-app-console-lifecycle-smoke
-    test/integration/product/nxvm_console_lifecycle_smoke.c)
+    test/integration/product/nxvm_console_lifecycle_smoke.c
+    test/integration/support/nxvm_console_process.c)
+target_include_directories(vm-app-console-lifecycle-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-app-console-lifecycle-smoke PRIVATE
     vm-app vm-machine)
 add_executable(vm-yaml-cmos-seed-smoke
@@ -2673,9 +2679,16 @@ foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
     project_add_t515_yaml_integration_test(${target} default-pc-at-80386-1440k-hdd.yaml)
 endforeach()
 
-foreach(target IN LISTS PROJECT_INTEGRATION_PRODUCT_TARGETS)
-    project_add_t515_yaml_integration_test(${target})
-endforeach()
+set(PROJECT_CURRENT_SESSION_ARTIFACT
+    "${CMAKE_SOURCE_DIR}/assets/sessions/nxvm_0_5_0531_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
+if(NOT EXISTS "${PROJECT_CURRENT_SESSION_ARTIFACT}")
+    message(FATAL_ERROR "Current session artifact is missing: ${PROJECT_CURRENT_SESSION_ARTIFACT}")
+endif()
+project_add_t515_yaml_integration_test(vm-model40-console-s20-smoke
+    "${PROJECT_CURRENT_SESSION_ARTIFACT}")
+project_add_t515_yaml_integration_test(vm-app-console-lifecycle-smoke
+    "${PROJECT_CURRENT_SESSION_ARTIFACT}")
+project_add_t515_yaml_integration_test(vm-yaml-cmos-seed-smoke)
 
 foreach(project_t515_session IN ITEMS
     compaq-deskpro-386-model-40-1200k.yaml
@@ -2869,19 +2882,10 @@ function(add_current_vm_artifact target version)
             COMMAND ${CMAKE_COMMAND}
                 -DPROJECT_ARTIFACT_PATH:FILEPATH=$<TARGET_FILE:${target}>
                 -DPROJECT_ARTIFACT_ARCHITECTURE:STRING=${PROJECT_ARTIFACT_ARCHITECTURE}
-                -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_architecture.cmake"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:${target}>"
-                "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:${target}>"
-                "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/assets/sessions"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:${target}>"
-                "${CMAKE_SOURCE_DIR}/assets/sessions/${task_artifact_filename}")
+                -DPROJECT_ARTIFACT_FILENAME:STRING=${task_artifact_filename}
+                -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+                -DPROJECT_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
+                -P "${CMAKE_SOURCE_DIR}/cmake/deploy_current_artifact.cmake")
     endif()
 endfunction()
 

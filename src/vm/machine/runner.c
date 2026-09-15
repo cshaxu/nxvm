@@ -41,7 +41,14 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             vm_machine_debug_complete_breakpoint(&session->debug);
             continue;
         }
-        if (vm_machine_executor_state_pause_requested(control->state)) continue;
+        if (vm_machine_executor_state_pause_requested(control->state)) {
+            vm_machine_executor_state_acknowledge_pause(control->state);
+            (C_VOID)vm_machine_publish_display(session, TYPE_TRUE);
+            vm_machine_control_signal_completion(control);
+            (C_VOID)host_sync_event_wait(control->control_ready, UINT32_MAX);
+            host_sync_event_reset(control->control_ready);
+            continue;
+        }
         budget.instructions = vm_machine_control_step_requested(control) ? 1u :
             session->speed == VM_MACHINE_SPEED_TURBO ?
             VM_MACHINE_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
@@ -71,6 +78,10 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             }
         }
         vm_machine_debug_complete_run(&session->debug, result.executed);
+        if (vm_machine_control_take_step(control)) {
+            vm_machine_control_request_pause(control, VM_MACHINE_PAUSE_STEP);
+            continue;
+        }
         {
             if (vm_machine_pacing_wait(session) != TYPE_STATUS_OK) {
                 vm_machine_control_stop(control);

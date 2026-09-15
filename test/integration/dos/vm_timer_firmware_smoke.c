@@ -15,17 +15,23 @@
 #define VM_TIMER_BDA_ROLLOVER 0x0470u
 #define VM_TIMER_DAILY_LIMIT 0x001800b0u
 
+static DWORD WINAPI vm_timer_run_machine(C_VOID *opaque)
+{
+    vm_machine_control_start(&((vm_machine *)opaque)->control);
+    return 0u;
+}
+
 static C_INT vm_timer_wait_for_pause_reason(const vm_machine *machine,
     vm_machine_pause_reason reason)
 {
-    C_UINT elapsed;
+    ULONGLONG deadline = GetTickCount64() + 2000u;
 
-    for (elapsed = 0u; elapsed < 2000u; ++elapsed) {
+    do {
         if (machine != STD_NULL && vm_machine_control_is_paused(&machine->control) &&
             vm_machine_control_get_pause_reason(&machine->control) == reason)
             return TYPE_TRUE;
-        Sleep(1u);
-    }
+        Sleep(10u);
+    } while (GetTickCount64() < deadline);
     return machine != STD_NULL && vm_machine_control_is_paused(&machine->control) &&
         vm_machine_control_get_pause_reason(&machine->control) == reason;
 }
@@ -34,6 +40,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session;
     vm_machine *session = STD_NULL;
+    HANDLE thread = STD_NULL;
     DWORD elapsed;
     type_unsigned_32 bda_ticks = 0u;
     type_unsigned_32 int1a_ticks;
@@ -58,7 +65,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     session = yaml_session.session;
     stage = 2;
-    if (vm_machine_start(session) != TYPE_STATUS_OK) goto fail;
+    thread = CreateThread(STD_NULL, 0u, vm_timer_run_machine, session, 0u,
+        STD_NULL);
+    if (thread == STD_NULL) goto fail;
     stage = 3;
     /* Host time is only a bounded startup watchdog; guest time remains core-owned. */
     for (elapsed = 0u; elapsed < 10000u; elapsed += 10u) {
@@ -69,7 +78,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (bda_ticks == 0u) goto fail;
     stage = 4;
-    if (vm_machine_pause_for_debug(session, 2000u) != TYPE_STATUS_OK) goto fail;
+    vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
+    if (!vm_machine_control_wait_for_pause(&session->control, 2000u)) goto fail;
     stage = 5;
     if (core_machine_get_elapsed_ticks(session->core_machine,
             &paused_elapsed_ticks) != TYPE_STATUS_OK) goto fail;
@@ -78,7 +88,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (core_machine_get_elapsed_ticks(session->core_machine,
             &observed_paused_elapsed_ticks) != TYPE_STATUS_OK ||
         observed_paused_elapsed_ticks != paused_elapsed_ticks) goto fail;
-    if (vm_machine_request_step(session) != TYPE_STATUS_OK ||
+    if (!vm_machine_control_step(&session->control) ||
         !vm_timer_wait_for_pause_reason(session, VM_MACHINE_PAUSE_STEP) ||
         core_machine_get_elapsed_ticks(session->core_machine,
             &stepped_elapsed_ticks) != TYPE_STATUS_OK ||
@@ -116,6 +126,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
             VM_TIMER_BDA_ROLLOVER, &rollover_byte, sizeof(rollover_byte)) !=
             TYPE_STATUS_OK || rollover_byte != 0u) goto fail;
     vm_machine_stop(session);
+    if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
+    CloseHandle(thread);
     integration_yaml_session_close(&yaml_session);
     STD_PRINTF("M5:T225:S4:IRQ0-BDA-INT1A-ROLLOVER:DOS:OK\n");
     return 0;
@@ -124,6 +136,10 @@ fail:
     STD_FPRINTF(STD_STDERR, "M5:T225:S3:TIMER:FAIL:%d:%d:%u\n", stage,
         (C_INT)result.reason, bda_ticks);
     if (session != STD_NULL) vm_machine_stop(session);
+    if (thread != STD_NULL) {
+        WaitForSingleObject(thread, 2000u);
+        CloseHandle(thread);
+    }
     integration_yaml_session_close(&yaml_session);
     return 1;
 }

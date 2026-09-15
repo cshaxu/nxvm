@@ -470,11 +470,14 @@ static C_INT boot_timeout_parse(const C_CHAR *text, DWORD *out_timeout)
 
 static DWORD WINAPI boot_start(C_VOID *opaque)
 {
-    type_status status = vm_machine_start((vm_machine *)opaque);
+    vm_machine *machine = (vm_machine *)opaque;
+    type_status status = vm_machine_reset(machine);
 
     if (status != TYPE_STATUS_OK) {
         STD_PRINTF("T515:YAML-BOOT:START-FAILED:%d\n", (C_INT)status);
+        return 0u;
     }
+    vm_machine_control_start(&machine->control);
     return 0u;
 }
 

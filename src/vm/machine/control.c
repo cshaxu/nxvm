@@ -67,6 +67,7 @@ type_status vm_machine_control_reset(vm_machine_control_state *control) {
     if (control == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_machine_executor_state_is_active(control->state)) {
         vm_machine_executor_state_request_reset(control->state);
+        host_sync_event_signal(control->control_ready);
         return TYPE_STATUS_OK;
     } else {
         type_status status = vm_machine_control_reset_machine(control->machine);
@@ -88,6 +89,7 @@ C_VOID vm_machine_control_stop(vm_machine_control_state *control)  {
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     vm_machine_executor_state_stop(control->state);
+    host_sync_event_signal(control->control_ready);
 }
 
 C_VOID vm_machine_control_fault(vm_machine_control_state *control)
@@ -99,6 +101,7 @@ C_VOID vm_machine_control_fault(vm_machine_control_state *control)
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     vm_machine_executor_state_stop(control->state);
+    host_sync_event_signal(control->control_ready);
 }
 
 C_VOID vm_machine_control_request_pause(vm_machine_control_state *control,
@@ -108,6 +111,7 @@ C_VOID vm_machine_control_request_pause(vm_machine_control_state *control,
     atomic_store(&control->step_requested, TYPE_FALSE);
     atomic_store(&control->pause_reason, reason);
     vm_machine_executor_state_request_pause(control->state);
+    host_sync_event_signal(control->control_ready);
 }
 
 C_INT vm_machine_control_wait_for_pause(vm_machine_control_state *control,
@@ -144,6 +148,7 @@ C_VOID vm_machine_control_continue(vm_machine_control_state *control)
     atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     host_sync_event_reset(control->completion_ready);
     vm_machine_executor_state_resume(control->state);
+    host_sync_event_signal(control->control_ready);
 }
 
 C_INT vm_machine_control_step(vm_machine_control_state *control)
@@ -155,6 +160,7 @@ C_INT vm_machine_control_step(vm_machine_control_state *control)
     atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     host_sync_event_reset(control->completion_ready);
     vm_machine_executor_state_resume(control->state);
+    host_sync_event_signal(control->control_ready);
     return TYPE_TRUE;
 }
 
@@ -194,6 +200,13 @@ type_status vm_machine_control_initialize(vm_machine_control_state *control,
         control->state = STD_NULL;
         return TYPE_STATUS_NO_MEMORY;
     }
+    if (host_sync_event_create(&control->control_ready) != LIB_STATUS_OK) {
+        host_sync_event_destroy(control->completion_ready);
+        control->completion_ready = STD_NULL;
+        vm_machine_executor_state_destroy(control->state);
+        control->state = STD_NULL;
+        return TYPE_STATUS_NO_MEMORY;
+    }
     control->machine = machine;
     vm_machine_debug_initialize(&machine->debug);
     status = vm_machine_devices_initialize_media(machine);
@@ -215,6 +228,8 @@ C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
     vm_machine_debug_finalize(&machine->debug);
     host_sync_event_destroy(control->completion_ready);
     control->completion_ready = STD_NULL;
+    host_sync_event_destroy(control->control_ready);
+    control->control_ready = STD_NULL;
     vm_machine_executor_state_destroy(control->state);
     control->state = STD_NULL;
 }

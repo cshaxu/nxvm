@@ -8,26 +8,32 @@
 
 static C_INT wait_for_running(const vm_machine *machine)
 {
-    C_UINT waited;
+    ULONGLONG deadline = GetTickCount64() + 2000u;
 
-    for (waited = 0u; waited < 2000u; ++waited) {
-        if (vm_machine_is_running(machine)) return 1;
-        Sleep(1u);
-    }
-    return vm_machine_is_running(machine);
+    do {
+        if (vm_machine_control_is_running(&machine->control)) return 1;
+        Sleep(10u);
+    } while (GetTickCount64() < deadline);
+    return machine != STD_NULL && vm_machine_control_is_running(&machine->control);
+}
+
+static DWORD WINAPI run_machine(C_VOID *opaque)
+{
+    vm_machine_control_start(&((vm_machine *)opaque)->control);
+    return 0u;
 }
 
 static C_INT wait_for_pause_reason(const vm_machine *machine,
     vm_machine_pause_reason reason)
 {
-    C_UINT waited;
+    ULONGLONG deadline = GetTickCount64() + 2000u;
 
-    for (waited = 0u; waited < 2000u; ++waited) {
+    do {
         if (machine != STD_NULL && vm_machine_control_is_paused(&machine->control) &&
             vm_machine_control_get_pause_reason(&machine->control) == reason)
             return 1;
-        Sleep(1u);
-    }
+        Sleep(10u);
+    } while (GetTickCount64() < deadline);
     return machine != STD_NULL && vm_machine_control_is_paused(&machine->control) &&
         vm_machine_control_get_pause_reason(&machine->control) == reason;
 }
@@ -36,31 +42,42 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_yaml_session yaml_session;
     vm_machine *session;
+    HANDLE thread = STD_NULL;
 
     if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
             &yaml_session) != TYPE_STATUS_OK) return 77;
     session = yaml_session.session;
-    if (vm_machine_start(session) != TYPE_STATUS_OK || !wait_for_running(session) ||
-        vm_machine_request_pause(session) != TYPE_STATUS_OK ||
+    thread = CreateThread(STD_NULL, 0u, run_machine, session, 0u, STD_NULL);
+    if (thread == STD_NULL || !wait_for_running(session)) goto fail;
+    vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
+    if (
         !vm_machine_control_wait_for_pause(&session->control, 2000u) ||
         !vm_machine_control_is_paused(&session->control) ||
         vm_machine_control_get_pause_reason(&session->control) != VM_MACHINE_PAUSE_EXPLICIT ||
-        vm_machine_request_step(session) != TYPE_STATUS_OK ||
+        !vm_machine_control_step(&session->control) ||
         !wait_for_pause_reason(session, VM_MACHINE_PAUSE_STEP)) goto fail;
-    if (vm_machine_resume(session) != TYPE_STATUS_OK || !wait_for_running(session) ||
-        vm_machine_request_pause(session) != TYPE_STATUS_OK ||
+    vm_machine_control_continue(&session->control);
+    if (!wait_for_running(session)) goto fail;
+    vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
+    if (
         !vm_machine_control_wait_for_pause(&session->control, 2000u) ||
         !vm_machine_control_is_paused(&session->control) ||
         vm_machine_control_get_pause_reason(&session->control) != VM_MACHINE_PAUSE_EXPLICIT) {
         goto fail;
     }
     vm_machine_stop(session);
+    if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
+    CloseHandle(thread);
     integration_yaml_session_close(&yaml_session);
     puts("M5:T46:S1:UNIFIED-DEBUG-BACKEND:OK");
     return 0;
 
 fail:
     if (session != STD_NULL) vm_machine_stop(session);
+    if (thread != STD_NULL) {
+        WaitForSingleObject(thread, 2000u);
+        CloseHandle(thread);
+    }
     integration_yaml_session_close(&yaml_session);
     return 1;
 }

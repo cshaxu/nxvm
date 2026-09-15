@@ -220,8 +220,15 @@ type_status vm_machine_reset(vm_machine *machine) {
 }
 
 C_VOID vm_machine_stop(vm_machine *machine) {
-    if (machine != STD_NULL && machine->executor != LIB_NULL)
+    if (machine == STD_NULL) return;
+    if (machine->executor != LIB_NULL) {
         (C_VOID)common_machine_stop(machine->executor);
+        return;
+    }
+    /* An uncomposed machine has no Common lifecycle owner yet. This is the
+     * matching construction/test state already handled by vm_machine_reset;
+     * stopping it must still wake a direct bounded runner. */
+    vm_machine_control_stop(&machine->control);
 }
 
 type_status vm_machine_request_pause(vm_machine *machine)

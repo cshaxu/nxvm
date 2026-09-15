@@ -1,86 +1,19 @@
-#ifndef _WIN32
-#define _POSIX_C_SOURCE 200809L
-#endif
-
 #include "type.h"
 
-#ifdef _WIN32
-#include <io.h>
-#define TEST_CONSOLE_DUP _dup
-#define TEST_CONSOLE_DUP2 _dup2
-#define TEST_CONSOLE_CLOSE _close
-#define TEST_CONSOLE_FILENO _fileno
-#else
-#include <unistd.h>
-#define TEST_CONSOLE_DUP dup
-#define TEST_CONSOLE_DUP2 dup2
-#define TEST_CONSOLE_CLOSE close
-#define TEST_CONSOLE_FILENO fileno
-#endif
-
-#include "vm/app/composition.h"
-#include "vm/app/command.h"
-#include "vm/app/catalog.h"
-
-static C_INT session_choice(const C_CHAR *directory, const C_CHAR *file_name)
-{
-    vm_app_session_catalog *catalog = STD_NULL;
-    STD_SIZE_T index;
-    C_INT choice = 0;
-
-    if (vm_app_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) return 0;
-    for (index = 0u; index < vm_app_session_catalog_count(catalog); ++index) {
-        vm_session_request request;
-
-        if (vm_app_session_catalog_get_request(catalog, index, &request) == TYPE_STATUS_OK &&
-            !STD_STRCMP(request.file_name, file_name)) {
-            choice = (C_INT)index + 1;
-            break;
-        }
-    }
-    vm_app_session_catalog_destroy(catalog);
-    return choice;
-}
+#include "test/integration/support/nxvm_console_process.h"
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_app *session = STD_NULL;
-    vm_app_console_context *console_context = STD_NULL;
-    STD_FILE *input = STD_NULL;
-    C_CHAR commands[128];
-    C_INT saved_stdin = -1;
-    C_INT choice;
-    C_INT result = 1;
-    vm_machine_speed speed = VM_MACHINE_SPEED_STANDARD;
+    static const C_CHAR *const commands[] = {
+        "speed turbo\r", "help\r", "info\r", "exit\r"
+    };
+    static const C_CHAR *const markers[] = {
+        "Speed: turbo", "VM Console Commands", "Device Info", ""
+    };
 
-    if (argc != 2 || (choice = session_choice(argv[1], "ibm-5170-model-339-1200k.yaml")) == 0 ||
-        (input = tmpfile()) == STD_NULL ||
-        STD_SNPRINTF(commands, sizeof(commands), "%d\nspeed turbo\nhelp\ninfo\nexit\n",
-            choice) < 0 || STD_FPUTS(commands, input) < 0 || fflush(input) != 0 ||
-        STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) {
-        if (input != STD_NULL) STD_FCLOSE(input);
-        return 1;
-    }
-    saved_stdin = TEST_CONSOLE_DUP(TEST_CONSOLE_FILENO(STD_STDIN));
-    if (saved_stdin < 0 || TEST_CONSOLE_DUP2(TEST_CONSOLE_FILENO(input),
-            TEST_CONSOLE_FILENO(STD_STDIN)) < 0) goto done;
-    if (vm_app_create(&session) != TYPE_STATUS_OK ||
-        vm_app_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
-    vm_app_console_main(console_context, session, argv[1]);
-    if (vm_app_machine(session) == STD_NULL ||
-        vm_machine_get_speed(vm_app_machine(session), &speed) != TYPE_STATUS_OK ||
-        speed != VM_MACHINE_SPEED_TURBO) {
-        goto done;
-    }
-    result = 0;
-done:
-    if (saved_stdin >= 0) {
-        (C_VOID)TEST_CONSOLE_DUP2(saved_stdin, TEST_CONSOLE_FILENO(STD_STDIN));
-        TEST_CONSOLE_CLOSE(saved_stdin);
-    }
-    STD_FCLOSE(input);
-    vm_app_console_context_destroy(console_context);
-    vm_app_destroy(session);
-    if (result == 0) STD_PRINTF("M5:T515:S3:CONSOLE-YAML-LIFECYCLE:OK\n");
-    return result;
+    if (argc != 3 || !nxvm_console_process_run(argv[2], argv[1],
+            "ibm-5170-model-339-1200k.yaml", commands, markers,
+            sizeof(commands) / sizeof(commands[0]))) return 1;
+    STD_PRINTF("M5:T515:S3:CONSOLE-YAML-LIFECYCLE:OK\n");
+    return 0;
 }

@@ -25,6 +25,7 @@ typedef struct vm_machine_control_state {
     atomic_bool step_requested;
     atomic_int pause_reason;
     host_sync_event *completion_ready;
+    host_sync_event *control_ready;
 } vm_machine_control_state;
 
 #include "vm/machine/machine_interface.h"
