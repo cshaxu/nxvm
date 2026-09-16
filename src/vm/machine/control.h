@@ -2,7 +2,7 @@
 #define VM_MACHINE_CONTROL_H
 
 #include "type.h"
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 #include "vm/machine/executor_state.h"
 
 #ifdef __cplusplus
@@ -24,8 +24,8 @@ typedef struct vm_machine_control_state {
     vm_machine *machine;
     atomic_bool step_requested;
     atomic_int pause_reason;
-    host_sync_event *completion_ready;
-    host_sync_event *control_ready;
+    base_sync_event *completion_ready;
+    base_sync_event *control_ready;
 } vm_machine_control_state;
 
 #include "vm/machine/machine_interface.h"

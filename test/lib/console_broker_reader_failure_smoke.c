@@ -23,7 +23,7 @@ static DWORD WINAPI failed_wait(DWORD count, const HANDLE *handles, BOOL all, DW
 #undef lib_win32_wait_for_multiple_objects
 #define lib_win32_read_console_a failed_read
 #define lib_win32_wait_for_multiple_objects failed_wait
-#include "lib/host/win32/console.c"
+#include "lib/console-broker/win32/console.c"
 
 static int failures;
 static void receive(void *context, const lib_console_event *event)
@@ -40,7 +40,7 @@ static void receive(void *context, const lib_console_event *event)
 }
 int main(void)
 {
-    host_console_backend backend = { 0 };
+    console_broker_backend backend = { 0 };
     assert(lib_console_create(&backend.console) == LIB_STATUS_OK);
     assert(lib_console_set_event_sink(backend.console, receive, NULL) == LIB_STATUS_OK);
     assert(lib_console_bind_generation(backend.console, 1u) == LIB_STATUS_OK);
@@ -48,20 +48,20 @@ int main(void)
     backend.stop_event = CreateEventA(NULL, TRUE, FALSE, NULL);
     assert(backend.stop_event);
     for (int mode = 0; mode != 2; ++mode) {
-        backend.mode = mode == 0 ? HOST_CONSOLE_RAW_EVENTS : HOST_CONSOLE_COOKED_LINES;
+        backend.mode = mode == 0 ? CONSOLE_BROKER_RAW_EVENTS : CONSOLE_BROKER_COOKED_LINES;
         ResetEvent(backend.stop_event);
-        host_console_reader(&backend);
+        console_broker_reader(&backend);
         assert(failures == mode + 1);
         SetEvent(backend.stop_event);
-        host_console_reader(&backend);
+        console_broker_reader(&backend);
         assert(failures == mode + 1);
     }
     ResetEvent(backend.stop_event);
     backend.generation = 2u;
-    host_console_reader(&backend);
+    console_broker_reader(&backend);
     assert(failures == 2);
     backend.generation = 1u;
-    backend.mode = HOST_CONSOLE_RAW_EVENTS;
+    backend.mode = CONSOLE_BROKER_RAW_EVENTS;
     record_count = 5;
     for (unsigned i = 0; i < record_count; ++i) {
         records[i].EventType = KEY_EVENT;
@@ -73,7 +73,7 @@ int main(void)
     records[3].Event.KeyEvent.bKeyDown = FALSE;
     records[3].Event.KeyEvent.wRepeatCount = 5; /* one physical release */
     records[4].Event.KeyEvent.wRepeatCount = 0; /* preserve synthetic single record */
-    host_console_reader(&backend);
+    console_broker_reader(&backend);
     assert(record_index == 5 && raw_count == 5 && failures == 3);
     assert(raw_unicode[0] == 0x4e00 && raw_repeat[0] == 5);
     assert(raw_unicode[1] == 0xd83d && raw_unicode[2] == 0xde00);

@@ -78,6 +78,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     lib-test-win32_presentation
     lib-test-win32_window_bounds
     lib-test-linux_wait_contract
+    lib-test-linux_storage_contract
     lib-test-linux_input_contract
     common-test-sync
     common-test-presentation_plan
@@ -89,32 +90,35 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     common-test-session_frame
     common-test-session_monitor
     common-test-debug_output
+    common-test-debug_linear
     common-test-composition
     common-test-xasm32
     common-test-xasm32_contract)
 if(WIN32)
     list(APPEND PROJECT_SHARED_CORPUS_TEST_TARGETS
-    lib-test-lib_console_event_gate
-    lib-test-host_console_broker
-    lib-test-lib_failure_output_contract
-    lib-test-win32_vocabulary_ownership
-    lib-test-win32_keyboard
-    lib-test-kvm_leaf_control_capacity
-    lib-test-kvm_console_retirement_barrier
-    lib-test-kvm_frame_damage_mouse
-    lib-test-kvm_window_retirement
-    lib-test-kvm_window_modal
-    lib-test-kvm_shutdown_failure
-    lib-test-host_console_reader_failure
-    lib-test-host_console_display
-    lib-test-host_console_cancel
-    lib-test-kvm_input_admission
-    lib-test-console_blocking_gate
-    lib-test-host_sync_ownership
-    lib-test-kvm_keyboard_lifetime
-    lib-test-lib_console_io_contract
-    lib-test-kvm_window_capture_contract
-    common-test-common_machine)
+        lib-test-lib_console_event_gate
+        lib-test-kvm_frame_lock
+        lib-test-console_broker
+        lib-test-lib_failure_output_contract
+        lib-test-win32_vocabulary_ownership
+        lib-test-win32_keyboard
+        lib-test-kvm_leaf_control_capacity
+        lib-test-kvm_console_retirement_barrier
+        lib-test-kvm_frame_damage_mouse
+        lib-test-kvm_window_retirement
+        lib-test-kvm_window_modal
+        lib-test-kvm_shutdown_failure
+        lib-test-console_broker_reader_failure
+        lib-test-console_broker_display
+        lib-test-console_broker_cancel
+        lib-test-kvm_input_admission
+        lib-test-console_blocking_gate
+        lib-test-base_sync_ownership
+        lib-test-kvm_keyboard_lifetime
+        lib-test-lib_console_io_contract
+        lib-test-kvm_window_capture_contract
+        common-test-machine_wait
+        common-test-common_machine)
 endif()
 
 add_library(core-machine STATIC
@@ -1259,7 +1263,7 @@ add_library(core-machine-boundary STATIC
 target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-boundary PUBLIC type-facade host)
+target_link_libraries(core-machine-boundary PUBLIC type-facade base)
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
 )

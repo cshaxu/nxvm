@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "lib/host/clock_interface.h"
+#include "lib/base/clock_interface.h"
 
 #define CHECK(expression) do { if (!(expression)) return __LINE__; } while (0)
 
@@ -43,11 +43,11 @@ int main(void)
             7u, LIB_MEMORY_ORDER_ACQ_REL, LIB_MEMORY_ORDER_ACQUIRE)) { }
     CHECK(lib_atomic_u64_load_explicit(&identity, LIB_MEMORY_ORDER_ACQUIRE) == 7u);
 
-    CHECK(host_clock_monotonic_counter(LIB_NULL, &frequency) == LIB_STATUS_INVALID_ARGUMENT);
-    CHECK(host_clock_monotonic_counter(&before, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
-    CHECK(host_clock_monotonic_counter(&before, &frequency) == LIB_STATUS_OK);
-    CHECK(host_clock_monotonic_counter(&after, &next_frequency) == LIB_STATUS_OK);
+    CHECK(base_clock_monotonic_counter(LIB_NULL, &frequency) == LIB_STATUS_INVALID_ARGUMENT);
+    CHECK(base_clock_monotonic_counter(&before, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    CHECK(base_clock_monotonic_counter(&before, &frequency) == LIB_STATUS_OK);
+    CHECK(base_clock_monotonic_counter(&after, &next_frequency) == LIB_STATUS_OK);
     CHECK(frequency > 0u && frequency == next_frequency && after >= before);
-    CHECK(host_clock_milliseconds(&milliseconds) == LIB_STATUS_OK);
+    CHECK(base_clock_milliseconds(&milliseconds) == LIB_STATUS_OK);
     return 0;
 }

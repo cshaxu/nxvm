@@ -7,7 +7,7 @@
 
 #include "core/machine/guest_display_frame.h"
 
-#include "lib/host/clock_interface.h"
+#include "lib/base/clock_interface.h"
 
 #include "vm/machine/machine_private.h"
 
@@ -17,7 +17,7 @@ static C_INT vm_machine_display_publish_is_due(vm_machine *machine, C_INT force)
 {
     type_unsigned_64 now;
 
-    if (machine == STD_NULL || host_clock_milliseconds(&now) != LIB_STATUS_OK) {
+    if (machine == STD_NULL || base_clock_milliseconds(&now) != LIB_STATUS_OK) {
         return TYPE_TRUE;
     }
     if (!force && now >= machine->last_display_publish_milliseconds &&

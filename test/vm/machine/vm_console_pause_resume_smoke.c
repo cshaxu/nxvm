@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 #include "vm/machine/control.h"
 #include "vm/machine/lifecycle.h"
 #include "vm/machine/machine_private.h"
@@ -14,7 +14,7 @@ static C_INT vm_console_pause_resume_wait(const vm_machine *session, C_INT pause
     for (waited = 0u; waited < 2000u; ++waited) {
         if (common_machine_state_get(session->executor) ==
             (paused ? COMMON_MACHINE_PAUSED : COMMON_MACHINE_RUNNING)) return TYPE_TRUE;
-        host_sync_sleep_milliseconds(1u);
+        base_sync_sleep_milliseconds(1u);
     }
     return TYPE_FALSE;
 }
@@ -37,7 +37,7 @@ C_INT main(C_VOID)
     vm_machine_stop(session);
     for (waited = 0u; waited < 2000u &&
         common_machine_state_get(session->executor) != COMMON_MACHINE_STOPPED; ++waited)
-        host_sync_sleep_milliseconds(1u);
+        base_sync_sleep_milliseconds(1u);
     failed |= common_machine_state_get(session->executor) != COMMON_MACHINE_STOPPED;
     vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);

@@ -1,22 +1,44 @@
 #include <assert.h>
 #include <windows.h>
-#include "lib/console/win32/mutex.c"
+#include "lib/base/win32/sync.c"
 
 static HANDLE entered, release_gate, blocked;
 static LONG contender;
-static void tracked_enter(console_mutex *mutex)
+static unsigned mutex_creates, fail_mutex, live_mutexes;
+static lib_status tracked_create(base_sync_mutex **out)
+{
+    if (++mutex_creates == fail_mutex) {
+        *out = NULL;
+        return LIB_STATUS_NO_MEMORY;
+    }
+    lib_status status = base_sync_mutex_create(out);
+    if (status == LIB_STATUS_OK) ++live_mutexes;
+    return status;
+}
+static void tracked_destroy(base_sync_mutex *mutex)
+{
+    if (mutex != NULL) { assert(live_mutexes); --live_mutexes; }
+    base_sync_mutex_destroy(mutex);
+}
+static void tracked_enter(base_sync_mutex *mutex)
 {
     if (GetCurrentThreadId() == (DWORD)InterlockedCompareExchange(&contender, 0, 0)) {
         if (TryEnterCriticalSection(&mutex->gate)) return;
         SetEvent(blocked); /* proven contention, not a scheduling guess */
     }
-    console_mutex_enter(mutex);
+    base_sync_mutex_lock(mutex);
 }
-#define console_mutex_enter tracked_enter
+#define base_sync_mutex_lock tracked_enter
+#define base_sync_mutex_create tracked_create
+#define base_sync_mutex_destroy tracked_destroy
 #include "lib/console/console.c"
-#undef console_mutex_enter
+#include "lib/console-broker/win32/console.c"
+#undef base_sync_mutex_lock
+#undef base_sync_mutex_create
+#undef base_sync_mutex_destroy
 
 static lib_console *object;
+static console_broker_backend backend;
 static int mode;
 static int replacement_calls;
 static lib_console_text_frame frame = { .columns = 80u, .rows = 25u };
@@ -66,8 +88,28 @@ static DWORD WINAPI detach(void *unused)
     else assert(lib_console_set_event_sink(object, NULL, NULL) == LIB_STATUS_OK);
     return 0;
 }
+static DWORD WINAPI lock_consumer(void *unused)
+{
+    (void)unused;
+    InterlockedExchange(&contender, (LONG)GetCurrentThreadId());
+    if (mode == 0) assert(lib_console_bind_generation(object, 2) == LIB_STATUS_OK);
+    else if (mode == 1) {
+        console_broker_backend_lock_output(&backend);
+        console_broker_backend_unlock_output(&backend);
+    } else {
+        console_broker_backend_lock_transaction(&backend);
+        console_broker_backend_unlock_transaction(&backend);
+    }
+    return 0;
+}
 int main(void)
 {
+    for (fail_mutex = 1; fail_mutex <= 3; ++fail_mutex) {
+        mutex_creates = 0;
+        assert(lib_console_create(&object) == LIB_STATUS_NO_MEMORY);
+        assert(object == NULL && live_mutexes == 0);
+    }
+    fail_mutex = 0;
     for (mode = 0; mode != 5; ++mode) {
         HANDLE a, b;
         const lib_console_output_binding binding = { output, frame_output, NULL };
@@ -98,8 +140,30 @@ int main(void)
         }
         InterlockedExchange(&contender, 0);
         lib_console_destroy(object);
+        assert(live_mutexes == 0);
         CloseHandle(a); CloseHandle(b);
         CloseHandle(entered); CloseHandle(release_gate); CloseHandle(blocked);
     }
+    assert(lib_console_create(&object) == LIB_STATUS_OK);
+    assert(base_sync_mutex_create(&backend.output_lock) == LIB_STATUS_OK);
+    assert(base_sync_mutex_create(&backend.transaction_lock) == LIB_STATUS_OK);
+    for (mode = 0; mode < 3; ++mode) {
+        base_sync_mutex *held = mode == 0 ? object->lock :
+            mode == 1 ? backend.output_lock : backend.transaction_lock;
+        blocked = CreateEventA(NULL, TRUE, FALSE, NULL);
+        assert(blocked);
+        base_sync_mutex_lock(held);
+        HANDLE thread = CreateThread(NULL, 0, lock_consumer, NULL, 0, NULL);
+        assert(thread && WaitForSingleObject(blocked, 5000) == WAIT_OBJECT_0);
+        assert(WaitForSingleObject(thread, 0) == WAIT_TIMEOUT);
+        base_sync_mutex_unlock(held);
+        assert(WaitForSingleObject(thread, 5000) == WAIT_OBJECT_0);
+        InterlockedExchange(&contender, 0);
+        CloseHandle(thread); CloseHandle(blocked);
+    }
+    base_sync_mutex_destroy(backend.output_lock);
+    base_sync_mutex_destroy(backend.transaction_lock);
+    lib_console_destroy(object);
+    assert(live_mutexes == 0);
     return 0;
 }

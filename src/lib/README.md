@@ -13,7 +13,7 @@ or changed library file.
 
 ## Header visibility
 
-Host's public synchronization contract includes opaque blocking mutexes.
+Base's public synchronization contract includes opaque blocking mutexes.
 Lock/unlock require a live object, same-thread ownership and no recursive
 locking; destroy requires all users to have stopped. Platform implementations
 own the allocation and native lock directly, without an outer pointer wrapper.
@@ -25,9 +25,9 @@ not from a sibling component or a forwarding root header. The sole exception
 is `types/{win32,linux}`: these shared external declarations may be included
 by matching platform implementations. Application-facing
 copied-value APIs are distinct from the leaf-support contracts:
-`kvm-base/worker_interface.h`, `mailbox_interface.h`, `mailbox_wake_interface.h`,
+`kvm-base/worker_interface.h`, `mailbox_interface.h`,
 `kvm-base/input_interface.h` serves only the KVM leaves;
-`console/binding_interface.h` serves host binding implementations.
+`console/binding_interface.h` serves console-broker binding implementations.
 Other component headers are exclusively component-local. They use short
 names and live directly in their owning directory; no filename carries a
 `_private`, `_internal`, or `_native` qualifier. Names describe the operation:
@@ -47,15 +47,16 @@ An arrow means the component on the right may use the generic contract of the
 component on the left:
 
 ```text
-types -> console + host + storage + kvm-base + kvm-window + kvm-console
-console -> host + kvm-console
+types -> base + console + console-broker + storage + kvm-base + kvm-window + kvm-console
+base -> console + console-broker + kvm-base + kvm-console
+console -> console-broker + kvm-console
 kvm-base -> kvm-window + kvm-console
 ```
 
-No other component edge is allowed. In particular, `host`, `storage`,
+No other component edge is allowed. In particular, `console-broker`, `storage`,
 `kvm-window`, and `kvm-console` are peers. `kvm-window` neither includes nor
-calls `console` or `host`; `kvm-console` consumes only the neutral `console`
-contract. `host` does not include KVM. There is no unified KVM aggregate,
+calls `console` or `console-broker`; `kvm-console` consumes only the neutral `console`
+contract. `console-broker` does not include KVM. There is no unified KVM aggregate,
 lifecycle controller, or public unified presenter API.
 
 - `types` is header-only and provides scalar aliases, status values, atomic
@@ -65,18 +66,22 @@ lifecycle controller, or public unified presenter API.
   to its platform-neutral base source. Common types headers contain no OS
   selection; platform declaration groups live in `types/win32` and
   `types/linux`. The compiler-only atomic adaptation remains common.
+- `base` owns generic sync/time and depends only on Types. Console and KVM
+  frame gates reuse its blocking mutex instead of private implementations.
 - `console` provides the logical Console object. It is a neutral copied-value
   endpoint: it has no native handle, platform input mode, Window, raw Console,
   monitor, or product-lifecycle meaning.
-- `host` exposes an opaque `host_console_broker` that binds one caller-owned
-  logical Console to native I/O and provides clock/sync. A caller supplies its
-  expected Current Console on every replacement or cooked-line request; host
+- `console-broker` exposes an opaque `console_broker` that binds one caller-owned
+  logical Console to native I/O. A caller supplies its
+  expected Current Console on every replacement or cooked-line request; the broker
   has no monitor, raw Console, prompt, or lifecycle vocabulary. A replacement first
   retires and confirms the old native reader, then activates the next binding;
   it uses the same transaction for every raw/cooked pair. If retirement cannot
   complete, no next reader starts and the broker fails closed with host-I/O
   failure rather than claiming either Console is usable.
-- `storage` provides file and byte-medium primitives.
+- `storage` provides file and byte-medium primitives. Medium and writer own
+  embedded file storage; owned-byte reads use a stack file. Closing consumes
+  the stream, not its enclosing allocation; failed opens leave it empty.
 - `kvm-base` provides copied frame/input values, source-local registered-hotkey
   matching, source identities, and private mailbox mechanics.
 - `kvm-window` owns one Window lifecycle; `kvm-console` owns one raw-Console
@@ -109,8 +114,7 @@ mailboxes. Callers never share or address a mailbox directly.
   overwriting an existing record. A STOP record has one reserved FIFO slot and
   is idempotent. Once STOP is queued or a terminal fault closes admission, later
   frame and non-STOP control requests return
-  `LIB_STATUS_INVALID_STATE`. A multi-record operation is all-or-nothing:
-  insufficient ordinary capacity leaves every requested record unqueued. A
+  `LIB_STATUS_INVALID_STATE`. Each call admits one control record. A
   rejected control enqueue is returned to its caller without faulting the
   component. Notification failure after acceptance is terminal and also
   reported through the component failure sink; it is not permission to replay.
@@ -121,7 +125,7 @@ mailboxes. Callers never share or address a mailbox directly.
   creation failure is distinct and does not retire an uncreated source.
 
 Unexpected native Console reader errors emit `LIB_CONSOLE_EVENT_IO_FAILURE`.
-Before native activation, after old input quiesces, host delivers INPUT_RESET
+Before native activation, after old input quiesces, the broker delivers INPUT_RESET
 synchronously through the logical Console. Consumers clear local input history
 before the next reader starts; this is distinct from successful ACTIVATED and
 permanent KVM source retirement. Rollback uses the same reset-before-reader path.
@@ -141,13 +145,13 @@ handle from it.
 
 ## Platform scope
 
-Linux event waits share one host-sync mutex/condition, so a waiter on multiple
+Linux event waits share one base-sync mutex/condition, so a waiter on multiple
 events sleeps until a predicate can change instead of polling. Auto-reset
 consumption occurs under the same lock. Timed waits use a monotonic deadline;
 infinite waits have no deadline. Callers must join all waiters before destroying
 their event objects. The shared wait primitive has process lifetime and
-contains no application context. Mailbox waits use a per-mailbox monotonic
-condition with the same timeout and spurious-wake semantics.
+contains no application context. Default mailbox waits reuse a Base auto-reset
+Event per mailbox; no separate KVM condition implementation remains.
 
 The public component contracts are cross-platform. This corpus currently has
 supported Win32 leaves; Linux KVM leaves are intentional
@@ -160,8 +164,8 @@ keyboard replay is never retried after a partial sink failure. Mouse/close
 records do not flush keyboard prefixes; only keyboard order, not key/mouse
 interleaving, is retained while a prefix is pending.
 
-Console callback/output gates and broker replacement use component-private
-blocking locks; no sibling host dependency is introduced into console. Native
+Console callback/output gates use Base blocking mutexes; broker replacement
+retains backend-owned blocking locks. No Console-to-Broker dependency exists. Native
 I/O lock ordering and detach barriers are unchanged. Callbacks must not
 synchronously reenter binding replacement or destruction on the same owner.
 
@@ -178,7 +182,7 @@ after join. Callbacks may not synchronously cancel their own reader. Cancellatio
 does not print or rearm; the caller owns those decisions. Linux Console remains
 unsupported through the same API, as for its existing activation contract.
 
-Win32 host keeps stream output in the original screen buffer and frame output
+Win32 broker keeps stream output in the original screen buffer and frame output
 in one lazily allocated alternate buffer, both owned by the same broker.
 Selection and display-metadata restoration are inside the existing output
 transaction, before the next reader starts. Same-mode replacement does not

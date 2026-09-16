@@ -1,4 +1,5 @@
 #include "common/session/session_interface.h"
+#include "common/session/control.h"
 #include <assert.h>
 #include <string.h>
 
@@ -8,6 +9,19 @@ static lib_bool collect;
 static char output[40000];
 static lib_size output_used;
 static unsigned writes, fail_write;
+static lib_u32 waits;
+static lib_bool fail_wait;
+static int take_event(common_session_queue *queue, common_session_event *event,
+    lib_u32 timeout_ms)
+{
+    assert(timeout_ms == LIB_UINT32_MAX);
+    ++waits;
+    if (fail_wait) {
+        assert(waits == 1u); /* A failed wait must never be retried. */
+        return 0;
+    }
+    return common_session_queue_take(queue, event, timeout_ms);
+}
 static lib_u32 run(const common_machine *m) { (void)m; return 1; }
 static lib_bool copy_frame(common_machine *m, kvm_frame *f, lib_u32 g)
 { (void)m; (void)f; (void)g; return LIB_FALSE; }
@@ -19,7 +33,9 @@ static int machine_request(common_machine *m) { (void)m; ++commands; return 1; }
 #define common_machine_pause machine_request
 #define common_machine_reset machine_request
 #define common_machine_stop machine_request
+#define common_session_queue_take take_event
 #include "common/session/session.c"
+#undef common_session_queue_take
 
 static common_session *active;
 lib_status common_ui_cancel_monitor_line(common_ui *ui, lib_bool *out_completed)
@@ -132,6 +148,7 @@ int main(void)
     /* Both rejected and ordinary line events pass through the actual loop. */
     assert(common_session_queue_push_monitor_line(s.queue, &line, 1));
     assert(common_session_run(&s));
+    assert(waits == 2u);
     assert(requests == 3 && prompts == 3);
     exit_on_request = LIB_FALSE;
     /* Demand survives being non-current; only confirmed handoff clears the
@@ -184,6 +201,15 @@ int main(void)
         s.state.current_console_actual = COMMON_SESSION_CONSOLE_VM;
         assert(common_session_apply_result(&s, &large) && writes == 0u);
     }
+    /* Run-loop failure propagates without a second wait or new reader. */
+    collect = LIB_FALSE;
+    fail_request = LIB_FALSE;
+    s.state.current_console_actual = COMMON_SESSION_CONSOLE_MONITOR;
+    s.pending_line = LIB_TRUE;
+    before = requests;
+    waits = 0u; fail_wait = LIB_TRUE;
+    assert(!common_session_run(&s));
+    assert(waits == 1u && requests == before);
     common_session_queue_destroy(s.queue);
     return 0;
 }

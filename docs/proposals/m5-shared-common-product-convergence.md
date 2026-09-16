@@ -200,6 +200,15 @@ recorded evidence, never by following successive isolated failures.
     four-tree identity, both builds, full repository-only unit coverage, and
     an honestly recorded integration result. This S does not itself claim the
     eventual two-product execution gate.
+23. **S23: canonical Host/Common corpus refresh.** Freeze SoftPC's committed
+    `src/lib`, `src/common`, `test/lib` and `test/common` corpus; atomically
+    replace NXVM's four trees byte-for-byte; then cut NXVM directly to the
+    renamed Host, Console and mailbox public contracts.  Delete every retired
+    `base` or `console-broker` reference rather than retaining a compatibility
+    alias.  Prove exact corpus identity, dependency and manifest gates, both
+    stripped Release architectures, the complete repository-only unit suite,
+    and the external integration suite.  This remains an NXVM import and
+    adapter-cutover subtask, not whole-task two-product acceptance.
 
 ## Verification And Exit
 

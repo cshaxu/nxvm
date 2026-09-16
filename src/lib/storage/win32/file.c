@@ -42,7 +42,7 @@ lib_status storage_file_platform_open_readwrite(const char *path,
     lib_storage_file *file)
 { return storage_file_platform_open(path, LIB_TRUE, file); }
 
-lib_status storage_file_platform_seek_absolute(lib_storage_file *file, lib_i64 offset)
+lib_status storage_file_platform_seek_absolute(const lib_storage_file *file, lib_i64 offset)
 { return lib_win32_fseeki64(file->stream, offset, LIB_SEEK_SET) == 0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
 
 lib_status storage_file_platform_byte_count(lib_storage_file *file, lib_i64 *out_byte_count)

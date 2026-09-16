@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 #include "vm/machine/display.h"
 #include "vm/machine/fault.h"
 #include "vm/machine/lifecycle.h"
@@ -45,8 +45,8 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             vm_machine_executor_state_acknowledge_pause(control->state);
             (C_VOID)vm_machine_publish_display(session, TYPE_TRUE);
             vm_machine_control_signal_completion(control);
-            (C_VOID)host_sync_event_wait(control->control_ready, UINT32_MAX);
-            host_sync_event_reset(control->control_ready);
+            (C_VOID)base_sync_event_wait(control->control_ready, UINT32_MAX);
+            base_sync_event_reset(control->control_ready);
             continue;
         }
         budget.instructions = vm_machine_control_step_requested(control) ? 1u :
@@ -107,7 +107,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
                 /* Core has no source-qualified deadline to advance.  Yielding
                  * gives host input/control a turn without manufacturing guest
                  * time or restoring the old fixed-delay polling loop. */
-                host_sync_yield();
+                base_sync_yield();
             }
         }
     }

@@ -15,7 +15,7 @@ lib_status kvm_console_create(kvm_console **out_console,
 lib_status kvm_console_publish_frame(kvm_console *console, const kvm_frame *frame);
 /* Same checked destruction contract as kvm_component_destroy. */
 lib_status kvm_console_destroy(kvm_console *console);
-/* Borrowed logical Console object. The application passes it to host for
+/* Borrowed logical Console object. The application passes it to the broker for
  * Current Console registration before it permits raw input. */
 lib_console *kvm_console_get_console(const kvm_console *console);
 

@@ -1,14 +1,14 @@
 #include "lib/types/win32/scalar.h"
-#include "lib/host/sync.h"
+#include "lib/base/sync.h"
 
 #include "lib/types/win32/sync.h"
 
-struct host_sync_event { lib_win32_handle handle; };
-struct host_sync_mutex { lib_win32_critical_section gate; };
+struct base_sync_event { lib_win32_handle handle; };
+struct base_sync_mutex { lib_win32_critical_section gate; };
 
-lib_status host_sync_mutex_create(host_sync_mutex **out_mutex)
+lib_status base_sync_mutex_create(base_sync_mutex **out_mutex)
 {
-    host_sync_mutex *mutex;
+    base_sync_mutex *mutex;
     if (out_mutex == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_mutex = LIB_NULL;
     mutex = lib_allocate(sizeof(*mutex));
@@ -21,39 +21,38 @@ lib_status host_sync_mutex_create(host_sync_mutex **out_mutex)
     return LIB_STATUS_OK;
 }
 
-void host_sync_mutex_destroy(host_sync_mutex *mutex)
+void base_sync_mutex_destroy(base_sync_mutex *mutex)
 {
     if (mutex == LIB_NULL) return;
     lib_win32_delete_critical_section(&mutex->gate);
     lib_release(mutex);
 }
 
-void host_sync_mutex_lock(host_sync_mutex *mutex)
+void base_sync_mutex_lock(base_sync_mutex *mutex)
 { lib_win32_enter_critical_section(&mutex->gate); }
-void host_sync_mutex_unlock(host_sync_mutex *mutex)
+void base_sync_mutex_unlock(base_sync_mutex *mutex)
 { lib_win32_leave_critical_section(&mutex->gate); }
 
-struct host_sync_platform_task {
+struct base_sync_win32_task {
+    base_sync_task task;
     lib_win32_handle thread;
-    host_sync_platform_task_entry entry;
-    void *context;
 };
 
-static lib_win32_dword LIB_WIN32_WINAPI host_sync_platform_main(lib_win32_lpvoid opaque)
+static lib_win32_dword LIB_WIN32_WINAPI base_sync_platform_main(lib_win32_lpvoid opaque)
 {
-    host_sync_platform_task *task = opaque;
-    task->entry(task->context);
+    struct base_sync_win32_task *state = opaque;
+    state->task.entry(state->task.context, &state->task);
     return 0u;
 }
 
-void host_sync_platform_sleep_milliseconds(lib_u32 milliseconds)
+void base_sync_platform_sleep_milliseconds(lib_u32 milliseconds)
 { lib_win32_sleep((lib_win32_dword)milliseconds); }
-void host_sync_platform_yield(void) { lib_win32_sleep(0u); }
+void base_sync_platform_yield(void) { lib_win32_sleep(0u); }
 
-lib_status host_sync_platform_event_create(lib_bool manual_reset,
-    host_sync_event **out_event)
+lib_status base_sync_platform_event_create(lib_bool manual_reset,
+    base_sync_event **out_event)
 {
-    host_sync_event *event;
+    base_sync_event *event;
     if (out_event == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_event = LIB_NULL;
     event = lib_allocate_zero(1u, sizeof(*event));
@@ -64,15 +63,15 @@ lib_status host_sync_platform_event_create(lib_bool manual_reset,
     return LIB_STATUS_OK;
 }
 
-void host_sync_platform_event_destroy(host_sync_event *event)
+void base_sync_platform_event_destroy(base_sync_event *event)
 { if (event != LIB_NULL) { if (event->handle != LIB_NULL) (void)lib_win32_close_handle(event->handle); lib_release(event); } }
-void host_sync_platform_event_signal(host_sync_event *event)
-{ if (event != LIB_NULL && event->handle != LIB_NULL) (void)lib_win32_set_event(event->handle); }
-void host_sync_platform_event_reset(host_sync_event *event)
-{ if (event != LIB_NULL && event->handle != LIB_NULL) (void)lib_win32_reset_event(event->handle); }
+lib_status base_sync_platform_event_signal(base_sync_event *event)
+{ return lib_win32_set_event(event->handle) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
+lib_status base_sync_platform_event_reset(base_sync_event *event)
+{ return lib_win32_reset_event(event->handle) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
 
-lib_status host_sync_platform_event_wait_many(
-    const host_sync_event *const *events, lib_u32 event_count,
+lib_status base_sync_platform_event_wait_many(
+    const base_sync_event *const *events, lib_u32 event_count,
     lib_u32 timeout_milliseconds, lib_bool *out_signaled,
     lib_u32 *out_event_index)
 {
@@ -97,23 +96,30 @@ lib_status host_sync_platform_event_wait_many(
     return result == LIB_WIN32_WAIT_TIMEOUT ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-lib_status host_sync_platform_task_create(host_sync_platform_task_entry entry,
-    void *context, host_sync_platform_task **out_task)
+lib_status base_sync_platform_task_create(base_sync_task_entry entry,
+    void *context, base_sync_event *cancellation, base_sync_task **out_task)
 {
-    host_sync_platform_task *task;
+    struct base_sync_win32_task *task;
     if (out_task == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_task = LIB_NULL;
     if (entry == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     task = lib_allocate_zero(1u, sizeof(*task));
     if (task == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    task->entry = entry; task->context = context;
-    task->thread = lib_win32_create_thread(LIB_NULL, 0u, host_sync_platform_main, task, 0u, LIB_NULL);
+    task->task.entry = entry; task->task.context = context;
+    task->task.cancellation = cancellation;
+    task->thread = lib_win32_create_thread(LIB_NULL, 0u, base_sync_platform_main, task, 0u, LIB_NULL);
     if (task->thread == LIB_NULL) { lib_release(task); return LIB_STATUS_IO_ERROR; }
-    *out_task = task;
+    *out_task = &task->task;
     return LIB_STATUS_OK;
 }
 
-void host_sync_platform_task_join(host_sync_platform_task *task)
-{ if (task != LIB_NULL && task->thread != LIB_NULL) (void)lib_win32_wait_for_single_object(task->thread, LIB_WIN32_INFINITE); }
-void host_sync_platform_task_destroy(host_sync_platform_task *task)
-{ if (task != LIB_NULL) { if (task->thread != LIB_NULL) (void)lib_win32_close_handle(task->thread); lib_release(task); } }
+void base_sync_platform_task_join(base_sync_task *task)
+{
+    struct base_sync_win32_task *state = (struct base_sync_win32_task *)task;
+    if (state != LIB_NULL) (void)lib_win32_wait_for_single_object(state->thread, LIB_WIN32_INFINITE);
+}
+void base_sync_platform_task_destroy(base_sync_task *task)
+{
+    struct base_sync_win32_task *state = (struct base_sync_win32_task *)task;
+    if (state != LIB_NULL) { (void)lib_win32_close_handle(state->thread); lib_release(state); }
+}

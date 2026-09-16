@@ -8,7 +8,7 @@
 #include "core/machine/display_interface.h"
 #include "core/machine/guest_input_interface.h"
 #include "core/machine/guest_presentation_mailbox_interface.h"
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 #include "vm/machine/control.h"
 #include "vm/machine/fault.h"
 #include "vm/machine/lifecycle.h"

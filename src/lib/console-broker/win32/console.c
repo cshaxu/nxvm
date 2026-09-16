@@ -5,11 +5,12 @@
 #include "lib/types/win32/sync.h"
 #include "lib/types/win32/window.h"
 #include "lib/console/binding_interface.h"
-#include "lib/host/console_backend.h"
+#include "lib/console-broker/console_backend.h"
+#include "lib/base/sync_interface.h"
 
 #include "lib/types/win32/console.h"
 
-struct host_console_backend {
+struct console_broker_backend {
     lib_win32_handle input;
     lib_win32_handle output;
     /* Stream output retains its native cells, scrollback and cursor while
@@ -28,11 +29,11 @@ struct host_console_backend {
      * it without confusing an in-flight line with a thread that is merely
      * returning from its callback. */
     volatile lib_win32_long cooked_line_pending;
-    lib_win32_critical_section output_lock;
-    lib_win32_critical_section transaction_lock;
+    base_sync_mutex *output_lock;
+    base_sync_mutex *transaction_lock;
     lib_win32_dword original_mode;
     lib_console *console;
-    host_console_mode mode;
+    console_broker_mode mode;
     lib_u32 generation;
     lib_u8 previous[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS];
     lib_u16 previous_attributes[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS];
@@ -45,14 +46,14 @@ struct host_console_backend {
  * Normal cancellation completes immediately.  If the native Console does not
  * retire its sole reader in this interval, host I/O is no longer trustworthy
  * and the broker fails closed instead of hanging the control thread. */
-#define HOST_CONSOLE_READER_RETIRE_TIMEOUT_MS 2000u
+#define CONSOLE_BROKER_READER_RETIRE_TIMEOUT_MS 2000u
 
-static lib_win32_colorref host_console_colorref_from_rgb(lib_u32 rgb)
+static lib_win32_colorref console_broker_colorref_from_rgb(lib_u32 rgb)
 {
     return lib_win32_rgb((rgb >> 16u) & 0xffu, (rgb >> 8u) & 0xffu, rgb & 0xffu);
 }
 
-static int host_console_ensure_text_surface(host_console_backend *backend)
+static int console_broker_ensure_text_surface(console_broker_backend *backend)
 {
     lib_win32_handle output = backend->output;
     lib_win32_console_screen_buffer_info info;
@@ -99,7 +100,7 @@ static int host_console_ensure_text_surface(host_console_backend *backend)
         info.srWindow.Right >= viewport.Right && info.srWindow.Bottom >= viewport.Bottom;
 }
 
-static lib_u8 host_console_modifiers(lib_win32_dword state)
+static lib_u8 console_broker_modifiers(lib_win32_dword state)
 {
     lib_u8 modifiers = 0u;
     if ((state & (LIB_WIN32_LEFT_CTRL_PRESSED | LIB_WIN32_RIGHT_CTRL_PRESSED)) != 0u)
@@ -111,7 +112,7 @@ static lib_u8 host_console_modifiers(lib_win32_dword state)
     return modifiers;
 }
 
-static lib_status host_console_emit_key(host_console_backend *backend,
+static lib_status console_broker_emit_key(console_broker_backend *backend,
     const lib_win32_key_event_record *key)
 {
     lib_console_event event = { 0 };
@@ -120,7 +121,7 @@ static lib_status host_console_emit_key(host_console_backend *backend,
     event.value.raw_key.key = key->wVirtualKeyCode;
     event.value.raw_key.unicode = key->uChar.UnicodeChar;
     event.value.raw_key.scan_code = key->wVirtualScanCode;
-    event.value.raw_key.modifiers = host_console_modifiers(key->dwControlKeyState);
+    event.value.raw_key.modifiers = console_broker_modifiers(key->dwControlKeyState);
     event.value.raw_key.extended =
         (key->dwControlKeyState & LIB_WIN32_ENHANCED_KEY) != 0u ? LIB_TRUE : LIB_FALSE;
     event.value.raw_key.pressed = key->bKeyDown ? LIB_TRUE : LIB_FALSE;
@@ -128,7 +129,7 @@ static lib_status host_console_emit_key(host_console_backend *backend,
     return lib_console_deliver_event(backend->console, &event);
 }
 
-static lib_status host_console_emit_mouse(host_console_backend *backend,
+static lib_status console_broker_emit_mouse(console_broker_backend *backend,
     const lib_win32_mouse_event_record *mouse)
 {
     lib_console_event event = { 0 };
@@ -140,7 +141,7 @@ static lib_status host_console_emit_mouse(host_console_backend *backend,
     return lib_console_deliver_event(backend->console, &event);
 }
 
-static void host_console_reader_failed(host_console_backend *backend)
+static void console_broker_reader_failed(console_broker_backend *backend)
 {
     lib_console_event event = { 0 };
     if (lib_win32_wait_for_single_object(backend->stop_event, 0u) == LIB_WIN32_WAIT_OBJECT_0)
@@ -153,10 +154,10 @@ static void host_console_reader_failed(host_console_backend *backend)
     (void)lib_console_deliver_event(backend->console, &event);
 }
 
-static lib_win32_dword LIB_WIN32_WINAPI host_console_reader(void *context)
+static lib_win32_dword LIB_WIN32_WINAPI console_broker_reader(void *context)
 {
-    host_console_backend *backend = (host_console_backend *)context;
-    if (backend->mode == HOST_CONSOLE_COOKED_LINES) {
+    console_broker_backend *backend = (console_broker_backend *)context;
+    if (backend->mode == CONSOLE_BROKER_COOKED_LINES) {
         char text[LIB_CONSOLE_LINE_MAX];
         lib_console_event event = { 0 };
         lib_bool overflow = LIB_FALSE, complete = LIB_FALSE;
@@ -169,7 +170,7 @@ static lib_win32_dword LIB_WIN32_WINAPI host_console_reader(void *context)
                 if (lib_win32_wait_for_single_object(backend->stop_event, 0u) !=
                         LIB_WIN32_WAIT_OBJECT_0)
                     lib_win32_interlocked_exchange(&backend->cooked_line_pending, 0);
-                host_console_reader_failed(backend);
+                console_broker_reader_failed(backend);
                 return 0u;
             }
             if (lib_win32_wait_for_single_object(backend->stop_event, 0u) == LIB_WIN32_WAIT_OBJECT_0) {
@@ -189,7 +190,7 @@ static lib_win32_dword LIB_WIN32_WINAPI host_console_reader(void *context)
         if (overflow) event.value.line.length = 0u;
         event.value.line.text[event.value.line.length] = '\0';
         if (lib_console_deliver_event(backend->console, &event) != LIB_STATUS_OK)
-            host_console_reader_failed(backend);
+            console_broker_reader_failed(backend);
     } else {
         lib_win32_handle waits[2] = { backend->stop_event, backend->input };
         while (lib_win32_wait_for_multiple_objects(2u, waits, LIB_WIN32_FALSE, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0 + 1u) {
@@ -197,24 +198,28 @@ static lib_win32_dword LIB_WIN32_WINAPI host_console_reader(void *context)
             lib_win32_dword read = 0u;
             if (!lib_win32_read_console_input_w(backend->input, &record, 1u, &read)) break;
             if (read == 0u) continue;
-            if (record.EventType == LIB_WIN32_KEY_EVENT && host_console_emit_key(backend,
+            if (record.EventType == LIB_WIN32_KEY_EVENT && console_broker_emit_key(backend,
                     &record.Event.KeyEvent) != LIB_STATUS_OK) break;
-            if (record.EventType == LIB_WIN32_MOUSE_EVENT && host_console_emit_mouse(backend,
+            if (record.EventType == LIB_WIN32_MOUSE_EVENT && console_broker_emit_mouse(backend,
                     &record.Event.MouseEvent) != LIB_STATUS_OK) break;
         }
-        host_console_reader_failed(backend);
+        console_broker_reader_failed(backend);
     }
     return 0u;
 }
 
-lib_status host_console_backend_create(host_console_backend **out_backend)
+lib_status console_broker_backend_create(console_broker_backend **out_backend)
 {
-    host_console_backend *backend;
+    console_broker_backend *backend;
+    lib_status status;
     lib_win32_dword mode;
     if (out_backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_backend = LIB_NULL;
     backend = lib_allocate_zero(1u, sizeof(*backend));
     if (backend == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    status = base_sync_mutex_create(&backend->output_lock);
+    if (status == LIB_STATUS_OK) status = base_sync_mutex_create(&backend->transaction_lock);
+    if (status != LIB_STATUS_OK) goto release;
     backend->input = lib_win32_create_file_a("CONIN$", LIB_WIN32_GENERIC_READ | LIB_WIN32_GENERIC_WRITE,
         LIB_WIN32_FILE_SHARE_READ | LIB_WIN32_FILE_SHARE_WRITE, LIB_NULL, LIB_WIN32_OPEN_EXISTING, 0, LIB_NULL);
     backend->output = lib_win32_create_file_a("CONOUT$", LIB_WIN32_GENERIC_READ | LIB_WIN32_GENERIC_WRITE,
@@ -224,19 +229,22 @@ lib_status host_console_backend_create(host_console_backend **out_backend)
         !lib_win32_get_console_mode(backend->input, &mode)) {
         if (backend->input != LIB_WIN32_INVALID_HANDLE_VALUE) lib_win32_close_handle(backend->input);
         if (backend->output != LIB_WIN32_INVALID_HANDLE_VALUE) lib_win32_close_handle(backend->output);
-        lib_release(backend);
-        return LIB_STATUS_UNSUPPORTED;
+        status = LIB_STATUS_UNSUPPORTED;
+        goto release;
     }
     backend->original_mode = mode;
     backend->cooked_output = backend->output;
     backend->output_ready = LIB_TRUE;
-    lib_win32_initialize_critical_section(&backend->output_lock);
-    lib_win32_initialize_critical_section(&backend->transaction_lock);
     *out_backend = backend;
     return LIB_STATUS_OK;
+release:
+    base_sync_mutex_destroy(backend->transaction_lock);
+    base_sync_mutex_destroy(backend->output_lock);
+    lib_release(backend);
+    return status;
 }
 
-static lib_status host_console_select_output(host_console_backend *backend,
+static lib_status console_broker_select_output(console_broker_backend *backend,
     lib_win32_handle output)
 {
     lib_win32_console_screen_buffer_infoex *previous, *next;
@@ -267,14 +275,14 @@ static lib_status host_console_select_output(host_console_backend *backend,
     return LIB_STATUS_OK;
 }
 
-lib_status host_console_backend_destroy(host_console_backend *backend)
+lib_status console_broker_backend_destroy(console_broker_backend *backend)
 {
     if (backend == LIB_NULL) return LIB_STATUS_OK;
     /* Reader is already joined. Restore the original display before closing
      * the alternate buffer, including failure during initial raw activation. */
     if (backend->raw_output != LIB_NULL) {
         if (backend->output != backend->cooked_output) {
-            lib_status status = host_console_select_output(backend, backend->cooked_output);
+            lib_status status = console_broker_select_output(backend, backend->cooked_output);
             if (status != LIB_STATUS_OK) return status;
         }
         if (!lib_win32_close_handle(backend->raw_output)) return LIB_STATUS_IO_ERROR;
@@ -288,18 +296,18 @@ lib_status host_console_backend_destroy(host_console_backend *backend)
         if (!lib_win32_close_handle(backend->output)) return LIB_STATUS_IO_ERROR;
         backend->output = LIB_WIN32_INVALID_HANDLE_VALUE;
     }
-    lib_win32_delete_critical_section(&backend->output_lock);
-    lib_win32_delete_critical_section(&backend->transaction_lock);
+    base_sync_mutex_destroy(backend->output_lock);
+    base_sync_mutex_destroy(backend->transaction_lock);
     lib_release(backend);
     return LIB_STATUS_OK;
 }
 
-static lib_status host_console_start_reader(host_console_backend *backend)
+static lib_status console_broker_start_reader(console_broker_backend *backend)
 {
     backend->reader_status = LIB_STATUS_OK;
-    if (backend->mode == HOST_CONSOLE_COOKED_LINES)
+    if (backend->mode == CONSOLE_BROKER_COOKED_LINES)
         lib_win32_interlocked_exchange(&backend->cooked_line_pending, 1);
-    backend->reader = lib_win32_create_thread(LIB_NULL, 0u, host_console_reader,
+    backend->reader = lib_win32_create_thread(LIB_NULL, 0u, console_broker_reader,
         backend, 0u, LIB_NULL);
     if (backend->reader == LIB_NULL) {
         lib_win32_interlocked_exchange(&backend->cooked_line_pending, 0);
@@ -313,13 +321,13 @@ static lib_status host_console_start_reader(host_console_backend *backend)
  * API: the broker owns the one process Console handle and knows whether a
  * live raw reader exists.  Cooked activation intentionally does not make a
  * native foreground request. */
-static void host_console_activate_raw_input_surface(
-    host_console_backend *backend)
+static void console_broker_activate_raw_input_surface(
+    console_broker_backend *backend)
 {
     lib_win32_hwnd window;
 
     if (backend == LIB_NULL ||
-        backend->mode != HOST_CONSOLE_RAW_EVENTS ||
+        backend->mode != CONSOLE_BROKER_RAW_EVENTS ||
         backend->console == LIB_NULL || backend->reader == LIB_NULL)
         return;
     window = lib_win32_get_console_window();
@@ -330,10 +338,10 @@ static void host_console_activate_raw_input_surface(
     (void)lib_win32_set_focus(window);
 }
 
-static lib_status host_console_prepare_output(host_console_backend *backend,
-    host_console_mode mode)
+static lib_status console_broker_prepare_output(console_broker_backend *backend,
+    console_broker_mode mode)
 {
-    if (mode == HOST_CONSOLE_RAW_EVENTS && backend->raw_output == LIB_NULL) {
+    if (mode == CONSOLE_BROKER_RAW_EVENTS && backend->raw_output == LIB_NULL) {
         lib_win32_handle output = lib_win32_create_console_screen_buffer(
             LIB_WIN32_GENERIC_READ | LIB_WIN32_GENERIC_WRITE,
             LIB_WIN32_FILE_SHARE_READ | LIB_WIN32_FILE_SHARE_WRITE, LIB_NULL,
@@ -344,33 +352,33 @@ static lib_status host_console_prepare_output(host_console_backend *backend,
     return LIB_STATUS_OK;
 }
 
-lib_status host_console_backend_prepare(host_console_backend *backend,
-    lib_console *console, host_console_mode mode)
+lib_status console_broker_backend_prepare(console_broker_backend *backend,
+    lib_console *console, console_broker_mode mode)
 {
     lib_win32_dword ignored;
     if (backend == LIB_NULL || console == LIB_NULL ||
-        (mode != HOST_CONSOLE_RAW_EVENTS && mode != HOST_CONSOLE_COOKED_LINES))
+        (mode != CONSOLE_BROKER_RAW_EVENTS && mode != CONSOLE_BROKER_COOKED_LINES))
         return LIB_STATUS_INVALID_ARGUMENT;
     if (backend->input == LIB_WIN32_INVALID_HANDLE_VALUE ||
         backend->output == LIB_WIN32_INVALID_HANDLE_VALUE ||
         !lib_win32_get_console_mode(backend->input, &ignored)) return LIB_STATUS_IO_ERROR;
-    return host_console_prepare_output(backend, mode);
+    return console_broker_prepare_output(backend, mode);
 }
 
 
-lib_status host_console_backend_activate(host_console_backend *backend,
-    lib_console *console, host_console_mode mode, lib_u32 generation,
+lib_status console_broker_backend_activate(console_broker_backend *backend,
+    lib_console *console, console_broker_mode mode, lib_u32 generation,
     lib_bool restore_cooked_request)
 {
     lib_win32_dword configured;
     lib_win32_handle output;
     lib_status status;
     if (backend == LIB_NULL || console == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = host_console_prepare_output(backend, mode);
+    status = console_broker_prepare_output(backend, mode);
     if (status != LIB_STATUS_OK) return status;
-    output = mode == HOST_CONSOLE_RAW_EVENTS ? backend->raw_output : backend->cooked_output;
+    output = mode == CONSOLE_BROKER_RAW_EVENTS ? backend->raw_output : backend->cooked_output;
     configured = backend->original_mode;
-    if (mode == HOST_CONSOLE_RAW_EVENTS)
+    if (mode == CONSOLE_BROKER_RAW_EVENTS)
         /* ReadConsoleInput consumes classic INPUT_RECORD values.  A parent
          * Windows Terminal may have enabled VT input; retaining that flag
          * converts keyboard input into byte sequences for ReadConsole/ReadFile
@@ -390,7 +398,7 @@ lib_status host_console_backend_activate(host_console_backend *backend,
     /* The broker's output gate covers selection and reader startup. A failed
      * activation is rolled back through this same path, not a second restore
      * implementation. Same-mode replacements leave the display untouched. */
-    status = host_console_select_output(backend, output);
+    status = console_broker_select_output(backend, output);
     if (status != LIB_STATUS_OK) return status;
     backend->stop_event = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     if (backend->stop_event == LIB_NULL) return LIB_STATUS_NO_MEMORY;
@@ -406,25 +414,25 @@ lib_status host_console_backend_activate(host_console_backend *backend,
     backend->previous_rows = 0u;
     /* Normal cooked activation is not a line request. Rollback alone may
      * restore the unfinished request captured after the old reader joined. */
-    if (mode == HOST_CONSOLE_RAW_EVENTS || restore_cooked_request) {
-        if (host_console_start_reader(backend) != LIB_STATUS_OK) {
+    if (mode == CONSOLE_BROKER_RAW_EVENTS || restore_cooked_request) {
+        if (console_broker_start_reader(backend) != LIB_STATUS_OK) {
             lib_win32_close_handle(backend->stop_event);
             backend->stop_event = LIB_NULL;
             backend->console = LIB_NULL;
             return LIB_STATUS_NO_MEMORY;
         }
-        host_console_activate_raw_input_surface(backend);
+        console_broker_activate_raw_input_surface(backend);
     }
     return LIB_STATUS_OK;
 }
 
-lib_status host_console_backend_request_cooked_line(
-    host_console_backend *backend)
+lib_status console_broker_backend_request_cooked_line(
+    console_broker_backend *backend)
 {
     lib_win32_dword completed;
 
     if (backend == LIB_NULL ||
-        backend->mode != HOST_CONSOLE_COOKED_LINES ||
+        backend->mode != CONSOLE_BROKER_COOKED_LINES ||
         backend->console == LIB_NULL || backend->stop_event == LIB_NULL)
         return LIB_STATUS_INVALID_STATE;
     if (backend->reader != LIB_NULL) {
@@ -440,10 +448,10 @@ lib_status host_console_backend_request_cooked_line(
         if (!lib_win32_close_handle(backend->reader)) return LIB_STATUS_IO_ERROR;
         backend->reader = LIB_NULL;
     }
-    return host_console_start_reader(backend);
+    return console_broker_start_reader(backend);
 }
 
-static lib_status host_console_retire_reader(host_console_backend *backend)
+static lib_status console_broker_retire_reader(console_broker_backend *backend)
 {
     lib_win32_dword completed;
 
@@ -457,7 +465,7 @@ static lib_status host_console_retire_reader(host_console_backend *backend)
     (void)lib_win32_cancel_io_ex(backend->input, LIB_NULL);
     (void)lib_win32_cancel_synchronous_io(backend->reader);
     completed = lib_win32_wait_for_single_object(backend->reader, 0u);
-    if (completed == LIB_WIN32_WAIT_TIMEOUT && backend->mode == HOST_CONSOLE_COOKED_LINES) {
+    if (completed == LIB_WIN32_WAIT_TIMEOUT && backend->mode == CONSOLE_BROKER_COOKED_LINES) {
         lib_win32_input_record wake = { 0 };
         lib_win32_dword written = 0u;
         /* Some terminal hosts do not interrupt a line-buffered ReadConsoleA
@@ -476,7 +484,7 @@ static lib_status host_console_retire_reader(host_console_backend *backend)
             written != 1u) return LIB_STATUS_IO_ERROR;
     }
     completed = lib_win32_wait_for_single_object(backend->reader,
-        HOST_CONSOLE_READER_RETIRE_TIMEOUT_MS);
+        CONSOLE_BROKER_READER_RETIRE_TIMEOUT_MS);
     if (completed != LIB_WIN32_WAIT_OBJECT_0) return LIB_STATUS_IO_ERROR;
     if (backend->reader_status != LIB_STATUS_OK) return backend->reader_status;
     if (!lib_win32_close_handle(backend->reader)) return LIB_STATUS_IO_ERROR;
@@ -484,18 +492,18 @@ static lib_status host_console_retire_reader(host_console_backend *backend)
     return LIB_STATUS_OK;
 }
 
-lib_status host_console_backend_cancel_cooked_line(host_console_backend *backend,
+lib_status console_broker_backend_cancel_cooked_line(console_broker_backend *backend,
     lib_bool *out_completed)
 {
     lib_status status;
     if (backend == LIB_NULL || out_completed == LIB_NULL ||
-        backend->mode != HOST_CONSOLE_COOKED_LINES || backend->stop_event == LIB_NULL)
+        backend->mode != CONSOLE_BROKER_COOKED_LINES || backend->stop_event == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (backend->reader == LIB_NULL) {
         *out_completed = LIB_TRUE;
         return LIB_STATUS_OK;
     }
-    status = host_console_retire_reader(backend);
+    status = console_broker_retire_reader(backend);
     if (status != LIB_STATUS_OK) return status;
     /* Only inspect completion after join: cancellation may race a successful
      * event delivery. A committed line is not an abandoned editing fragment. */
@@ -508,13 +516,13 @@ lib_status host_console_backend_cancel_cooked_line(host_console_backend *backend
     return lib_win32_reset_event(backend->stop_event) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-lib_status host_console_backend_deactivate(host_console_backend *backend,
+lib_status console_broker_backend_deactivate(console_broker_backend *backend,
     lib_bool *out_cooked_request)
 {
     lib_status status;
 
     if (backend == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = host_console_retire_reader(backend);
+    status = console_broker_retire_reader(backend);
     if (status != LIB_STATUS_OK) return status;
     /* A completed line clears pending before delivery; cancelled reads retain
      * it until this join. Never snapshot it while the reader can still finish. */
@@ -530,27 +538,27 @@ lib_status host_console_backend_deactivate(host_console_backend *backend,
         LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 
-void host_console_backend_lock_output(host_console_backend *backend)
+void console_broker_backend_lock_output(console_broker_backend *backend)
 {
-    if (backend != LIB_NULL) lib_win32_enter_critical_section(&backend->output_lock);
+    if (backend != LIB_NULL) base_sync_mutex_lock(backend->output_lock);
 }
 
-void host_console_backend_unlock_output(host_console_backend *backend)
+void console_broker_backend_unlock_output(console_broker_backend *backend)
 {
-    if (backend != LIB_NULL) lib_win32_leave_critical_section(&backend->output_lock);
+    if (backend != LIB_NULL) base_sync_mutex_unlock(backend->output_lock);
 }
 
-lib_status host_console_backend_write_bound(host_console_backend *backend,
+lib_status console_broker_backend_write_bound(console_broker_backend *backend,
     lib_console *expected_console, lib_u32 expected_generation, const char *text,
     lib_size length)
 {
     lib_win32_dword written = 0u;
     if (backend == LIB_NULL || (text == LIB_NULL && length != 0u) ||
         length > (lib_size)LIB_UINT32_MAX) return LIB_STATUS_INVALID_ARGUMENT;
-    host_console_backend_lock_output(backend);
+    console_broker_backend_lock_output(backend);
     if (backend->console != expected_console ||
         backend->generation != expected_generation) {
-        host_console_backend_unlock_output(backend);
+        console_broker_backend_unlock_output(backend);
         return LIB_STATUS_NOT_CURRENT;
     }
     {
@@ -558,12 +566,12 @@ lib_status host_console_backend_write_bound(host_console_backend *backend,
         if (length != 0u) backend->previous_columns = backend->previous_rows = 0u;
         lib_status status = lib_win32_write_console_a(backend->output, text, (lib_win32_dword)length,
             &written, LIB_NULL) && written == (lib_win32_dword)length ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
-        host_console_backend_unlock_output(backend);
+        console_broker_backend_unlock_output(backend);
         return status;
     }
 }
 
-lib_status host_console_backend_write_text_frame_bound(host_console_backend *backend,
+lib_status console_broker_backend_write_text_frame_bound(console_broker_backend *backend,
     lib_console *expected_console, lib_u32 expected_generation,
     const lib_console_text_frame *frame)
 {
@@ -576,10 +584,10 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
 
     if (backend == LIB_NULL || frame == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    host_console_backend_lock_output(backend);
+    console_broker_backend_lock_output(backend);
     if (backend->console != expected_console ||
         backend->generation != expected_generation) {
-        host_console_backend_unlock_output(backend);
+        console_broker_backend_unlock_output(backend);
         return LIB_STATUS_NOT_CURRENT;
     }
     if (lib_memory_compare(frame->palette, backend->previous_palette,
@@ -591,7 +599,7 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
         info.cbSize = sizeof(info);
         if (lib_win32_get_console_screen_buffer_info_ex(backend->output, &info)) {
             for (index = 0u; index < 16u; ++index)
-                info.ColorTable[index] = host_console_colorref_from_rgb(
+                info.ColorTable[index] = console_broker_colorref_from_rgb(
                     frame->palette[index]);
             ++info.srWindow.Right;
             ++info.srWindow.Bottom;
@@ -604,8 +612,8 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
     }
     /* Palette application can also change native buffer/viewport geometry.
      * Establish the write surface after that operation, never before it. */
-    if (!host_console_ensure_text_surface(backend)) {
-        host_console_backend_unlock_output(backend);
+    if (!console_broker_ensure_text_surface(backend)) {
+        console_broker_backend_unlock_output(backend);
         return LIB_STATUS_IO_ERROR;
     }
     if (backend->previous_columns != frame->columns ||
@@ -630,7 +638,7 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
                 &region) || region.Left != 0 || region.Top != 0 ||
                 region.Right != LIB_CONSOLE_TEXT_COLUMNS - 1 ||
                 region.Bottom != LIB_CONSOLE_TEXT_ROWS - 1) {
-            host_console_backend_unlock_output(backend);
+            console_broker_backend_unlock_output(backend);
             return LIB_STATUS_IO_ERROR;
         }
         lib_memory_copy(backend->previous, frame->text, sizeof(frame->text));
@@ -653,20 +661,20 @@ lib_status host_console_backend_write_text_frame_bound(host_console_backend *bac
             position.X = (lib_win32_short)frame->cursor_column;
             position.Y = (lib_win32_short)frame->cursor_row;
             if (!lib_win32_set_console_cursor_position(backend->output, position)) {
-                host_console_backend_unlock_output(backend);
+                console_broker_backend_unlock_output(backend);
                 return LIB_STATUS_IO_ERROR;
             }
         }
         if (!lib_win32_set_console_cursor_info(backend->output, &cursor)) {
-            host_console_backend_unlock_output(backend);
+            console_broker_backend_unlock_output(backend);
             return LIB_STATUS_IO_ERROR;
         }
     }
-    host_console_backend_unlock_output(backend);
+    console_broker_backend_unlock_output(backend);
     return LIB_STATUS_OK;
 }
 
-void host_console_backend_lock_transaction(host_console_backend *backend)
-{ lib_win32_enter_critical_section(&backend->transaction_lock); }
-void host_console_backend_unlock_transaction(host_console_backend *backend)
-{ lib_win32_leave_critical_section(&backend->transaction_lock); }
+void console_broker_backend_lock_transaction(console_broker_backend *backend)
+{ base_sync_mutex_lock(backend->transaction_lock); }
+void console_broker_backend_unlock_transaction(console_broker_backend *backend)
+{ base_sync_mutex_unlock(backend->transaction_lock); }

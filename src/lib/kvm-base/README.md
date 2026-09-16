@@ -1,6 +1,6 @@
 # kvm-base
 
-`kvm-base` is the shared KVM foundation. It depends only on `types` and provides
+`kvm-base` is the shared KVM foundation. It depends on `types` and `base`, providing
 copied frame/input values, source-local hotkey matching, and private mailbox
 mechanics to `kvm-window` and `kvm-console`.
 
@@ -10,9 +10,15 @@ STOP has a reserved slot, closes admission and is idempotent. The worker consume
 controls in order through STOP, then ignores later control/frame work. There is
 no batch admission; frame publication remains independently locked, latest-wins.
 
+Frame and control each use an independent Base blocking mutex.
+The control lock only protects the short FIFO operation. STOP/fault acquires frame
+then control; ordinary control remains independent of a contended frame copy.
+Initialization creates both mutexes or releases the partial allocation and fails;
+disposal releases them after all mailbox users have quiesced.
+
 Each mailbox selects one notification implementation exactly once before caller publication.
 Initialization allocates no wake. Console selects and creates the default wait
-primitive; Window directly selects its native message notifier. A second selection is
+primitive (one Base automatic-reset Event); Window directly selects its native message notifier. A second selection is
 rejected without changing the active notifier. Frame, control and
 terminal fault all use that selected entry, outside mailbox locks. Context
 remains valid through worker join; as with destruction, callers must quiesce
@@ -29,7 +35,7 @@ Each instance owns its ledger; modifier snapshots may satisfy chord modifiers
 without corresponding makes in that instance. This accepted behavior does not
 merge ledgers or require a second modifier-state table.
 
-`worker_interface.h`, `mailbox_interface.h`, `mailbox_wake_interface.h` and
+`worker_interface.h`, `mailbox_interface.h` and
 the root `input_interface.h` are shared leaf-support contracts, not
 application entry points. Each leaf owns its own state; Window capture is
 Window-local. Outstanding suppressed keys survive subsequent matched chords
@@ -42,7 +48,7 @@ input declarations expose copied input normalization with common surrogate,
 recovery and delivery state. Same-shape platform operations decode raw keys and
 text layout; Linux terminal text uses TEXT rather than inventing physical keys.
 Window message decoding and key-state queries belong only to kvm-window.
-Mailbox wake operations remain selected by the build. Frame damage accumulates
+Base owns the default Event implementation; no KVM platform wake duplicate remains. Frame damage accumulates
 until successful consumption even when intermediate complete pixel frames are
 replaced. Capture copies without consuming; acknowledgement clears pending only
 if that publication is still latest. Failed output keeps it pending without

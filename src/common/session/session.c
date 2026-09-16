@@ -310,7 +310,8 @@ int common_session_run(common_session *session)
         return 0;
     for (;;) {
         common_session_event event;
-        if (!common_session_queue_take(session->queue, &event, 100u)) continue;
+        /* No periodic work: a failed indefinite wait is terminal, not idle. */
+        if (!common_session_queue_take(session->queue, &event, LIB_UINT32_MAX)) return 0;
         if (event.kind == COMMON_SESSION_EVENT_KVM_INPUT) {
             if (!common_session_accept_kvm_event(&event,
                     common_machine_run_generation(session->machine),

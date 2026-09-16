@@ -205,14 +205,13 @@ int main(void)
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     /* A held frame-copy lock must not block control producer/consumer. */
     initialize();
-    assert(!lib_atomic_flag_test_and_set_explicit(&window.base.mailboxes.frame_lock,
-        LIB_MEMORY_ORDER_ACQUIRE));
+    base_sync_mutex_lock(window.base.mailboxes.frame_lock);
     HANDLE control_thread = CreateThread(NULL, 0, enqueue_title, NULL, 0, NULL);
     assert(control_thread);
     assert(WaitForSingleObject(control_thread, 5000) == WAIT_OBJECT_0);
     assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
     assert(taken.kind == KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE);
-    lib_atomic_flag_clear_explicit(&window.base.mailboxes.frame_lock, LIB_MEMORY_ORDER_RELEASE);
+    base_sync_mutex_unlock(window.base.mailboxes.frame_lock);
     CloseHandle(control_thread);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     /* Either producer may win the admission lock, but no publish may commit

@@ -247,7 +247,7 @@ int main(void)
         immediate_notification,&c) == LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         immediate_notification,&c) == LIB_STATUS_INVALID_STATE);
-    assert(!kvm_component_mailboxes_wake(&window.base.mailboxes));
+    assert(!window.base.mailboxes.wake);
     assert(kvm_window_set_title(&window,"reentrant notification")==0);
     assert(!c.frozen && !c.consuming && !window.base.mailboxes.control_count);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);

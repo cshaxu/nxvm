@@ -4,7 +4,7 @@
 uses public `lib` contracts and accepts product behavior only through copied
 options and injected callbacks.  It never includes app, host, or MVDM source.
 Common has no platform directories, platform types, native calls or OS-selected
-implementations. Host owns blocking mutex/event/task/wait; Types owns the atomic
+implementations. Base owns blocking mutex/event/task/wait; Types owns the atomic
 vocabulary. Common retains queue, lifecycle and frame-publication ownership.
 
 Machine snapshot reads specify the expected run and leave the destination
@@ -40,6 +40,14 @@ call. Session consumes it synchronously through its existing monitor transaction
 normalizing LF/CRLF in bounded chunks. No large result is silently truncated;
 allocation/formatting and native write failures remain explicit. Providers must
 not retain a debug result across a producing call without copying its text.
+
+Linear debug byte ranges must fit the 32-bit address space before access.
+XM copies in address-safe direction for overlapping ranges. XS reports only
+patterns wholly inside its byte count and accepts linear addresses only.
+XU retains its full 32-bit instruction count and stops on decode failure or
+address exhaustion, without wrapping the saved next address. XA likewise ends
+its input continuation when the last address is consumed. XE/XF retain original
+incremental validation: an invalid later byte does not undo earlier writes.
 
 | Component | One responsibility | Public contract |
 | --- | --- | --- |
@@ -82,5 +90,5 @@ changed or duplicate entries. The source/build DAG gate rejects platform
 bypasses and sibling private includes; its negative tests live in test/common.
 The source-only build still accepts an explicit COMMON_LIB_ROOT when configured
 directly. It does not register or carry test code.
-Common synchronization tests run against actual Host primitives without sleeps.
+Common synchronization tests run against actual Base primitives without sleeps.
 Platform backend availability does not imply complete native display parity.

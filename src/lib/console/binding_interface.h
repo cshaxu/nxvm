@@ -3,7 +3,7 @@
 
 #include "lib/console/console_interface.h"
 
-/* This adapter-only surface is for generic host implementations.  Products
+/* This adapter-only surface is for Console broker implementations.  Products
  * receive events and write through the public object API; they never bind a
  * logical Console to native I/O themselves. */
 typedef lib_status (*lib_console_output_sink)(void *context,

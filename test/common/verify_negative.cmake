@@ -24,7 +24,7 @@ foreach(symbol IN ITEMS memset memcpy memmove memcmp memchr strlen strcmp
 endforeach()
 reject("#include \"lib/types/win32/sync.h\"\n" "" "Noncanonical Common header path")
 reject("#include \"common/session/session_interface.h\"\n" "" "Forbidden Common edge")
-reject("#include \"lib/host/sync.h\"\n" "" "Private dependency")
+reject("#include \"lib/base/sync.h\"\n" "" "Private dependency")
 reject("#include \"lib/kvm-base/component_interface.h\"\n" "" "Private KVM support")
 reject("#include \"../session/control.h\"\n" "" "Noncanonical")
 reject("#include \"common/machine/../../host/machine.h\"\n" "" "Noncanonical")

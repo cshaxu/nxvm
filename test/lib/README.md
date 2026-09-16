@@ -17,7 +17,7 @@ Assertions remain enabled in Release. Scratch files stay in the build directory.
 The shared file cleanup helper is also used by product tests.
 
 Coverage: Types/atomic/clock and vocabulary; logical Console event/output gates;
-Host broker, display, reader failure, sync lifetime and Linux waits; Storage
+Console broker, display and reader failure; Base sync lifetime and Linux waits; Storage
 binary writer, medium and consumed-close failure; KVM physical/text input,
 matcher/frozen admission, frame damage, geometry/motion, control FIFO,
 capture, modal wake, failures and retirement. Native GUI smoke does not prove

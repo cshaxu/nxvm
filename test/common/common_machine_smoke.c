@@ -174,10 +174,11 @@ static void extended_registers(common_debug *debug, machine_fake *fake)
     assert(common_debug_submit_line(debug, "xr", &result) == LIB_STATUS_OK);
     assert(strstr(result.text,
         "EFL=00000002: vm rf nt IOPL=0 of df if tf sf zf af pf cf \n") != NULL);
-    fake->linear_reads = 0u;
+    fake->real_reads = fake->linear_reads = 0u;
     assert(common_debug_submit_line(debug, "r", &result) == LIB_STATUS_OK);
     assert(strncmp(result.text, "AX=0000  BX=0003", 15u) == 0);
-    assert(strstr(result.text, "EAX=") == NULL && fake->linear_reads == 1u);
+    assert(strstr(result.text, "EAX=") == NULL && fake->linear_reads == 0u &&
+        fake->real_reads == 1u);
     assert(strstr(result.text, "0000:0008 90") != NULL);
     /* Each original XR register continuation reads and writes the full value. */
     for (index = 0; index < 10u; ++index) {

@@ -26,6 +26,9 @@ static int fail_init_step, init_step, live_mutexes, live_conditions, live_attrib
 static int wait_calls, wait_result, clock_failure, sleep_calls;
 static int interrupt_sleep;
 static int fail_signal, fail_lock, fail_unlock;
+static int fail_thread, thread_joins;
+static void *(*thread_entry)(void *);
+static void *thread_context;
 static void (*wait_hook)(void);
 static lib_linux_timespec observed_deadline;
 static int init_failed(void) { return ++init_step == fail_init_step; }
@@ -88,7 +91,14 @@ static inline int lib_linux_nanosleep(const lib_linux_timespec *duration, lib_li
 }
 static inline int lib_linux_sched_yield(void) { return 0; }
 static inline int lib_linux_pthread_create(lib_linux_pthread_t *t, const void *a, void *(*fn)(void *), void *ctx)
-{ (void)t; (void)a; (void)fn; (void)ctx; return 1; }
+{
+    (void)a;
+    if (fail_thread) return 1;
+    *t = 1; thread_entry = fn; thread_context = ctx; return 0;
+}
 static inline int lib_linux_pthread_join(lib_linux_pthread_t t, void **result)
-{ (void)t; (void)result; return 0; }
+{
+    (void)result; assert(t == 1 && thread_entry); ++thread_joins;
+    thread_entry(thread_context); thread_entry = NULL; return 0;
+}
 #endif

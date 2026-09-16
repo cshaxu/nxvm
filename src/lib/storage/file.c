@@ -3,7 +3,7 @@
 #include "lib/storage/file.h"
 #include "lib/storage/file_interface.h"
 
-static lib_status storage_file_close(lib_storage_file *file)
+lib_status lib_storage_file_close(lib_storage_file *file)
 {
     int result;
     if (file == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -15,36 +15,7 @@ static lib_status storage_file_close(lib_storage_file *file)
 
 struct lib_storage_file_writer { lib_storage_file file; };
 
-static lib_status lib_storage_file_open(const char *path,
-    lib_status (*open_platform)(const char *, lib_storage_file *),
-    lib_storage_file **out_file)
-{
-    lib_storage_file *file;
-    lib_status status;
-
-    if (out_file == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_file = LIB_NULL;
-    if (path == LIB_NULL || open_platform == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    file = (lib_storage_file *)lib_allocate_zero(1u, sizeof(*file));
-    if (file == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    status = open_platform(path, file);
-    if (status != LIB_STATUS_OK) {
-        lib_release(file);
-        return status;
-    }
-    *out_file = file;
-    return LIB_STATUS_OK;
-}
-
-lib_status lib_storage_file_open_readonly(const char *path,
-    lib_storage_file **out_file)
-{ return lib_storage_file_open(path, storage_file_platform_open_readonly, out_file); }
-
-lib_status lib_storage_file_open_readwrite(const char *path,
-    lib_storage_file **out_file)
-{ return lib_storage_file_open(path, storage_file_platform_open_readwrite, out_file); }
-
-lib_status lib_storage_file_read_exact(lib_storage_file *file, void *bytes,
+lib_status lib_storage_file_read_exact(const lib_storage_file *file, void *bytes,
     lib_size byte_count)
 {
     lib_size transferred;
@@ -72,7 +43,7 @@ lib_status lib_storage_file_flush(lib_storage_file *file)
 { return file == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
     lib_c_fflush(file->stream) == 0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
 
-lib_status lib_storage_file_seek_absolute(lib_storage_file *file,
+lib_status lib_storage_file_seek_absolute(const lib_storage_file *file,
     lib_i64 offset)
 { return file == LIB_NULL || offset < 0 ? LIB_STATUS_INVALID_ARGUMENT :
     storage_file_platform_seek_absolute(file, offset); }
@@ -82,24 +53,10 @@ lib_status lib_storage_file_byte_count(lib_storage_file *file,
 { return file == LIB_NULL || out_byte_count == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
     storage_file_platform_byte_count(file, out_byte_count); }
 
-lib_status lib_storage_file_close(lib_storage_file **file)
-{
-    lib_storage_file *value;
-    lib_status status;
-
-    if (file == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    value = *file;
-    *file = LIB_NULL;
-    if (value == LIB_NULL) return LIB_STATUS_OK;
-    status = storage_file_close(value);
-    lib_release(value);
-    return status;
-}
-
 lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
     void **out_bytes, lib_size *out_byte_count)
 {
-    lib_storage_file *file = LIB_NULL;
+    lib_storage_file file = { 0 };
     lib_i64 length;
     void *bytes = LIB_NULL;
     lib_status status, close_status;
@@ -108,14 +65,14 @@ lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
     *out_bytes = LIB_NULL;
     if (out_byte_count == LIB_NULL || path == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_byte_count = 0u;
-    status = lib_storage_file_open_readonly(path, &file);
-    if (status == LIB_STATUS_OK) status = lib_storage_file_byte_count(file, &length);
+    status = storage_file_platform_open_readonly(path, &file);
+    if (status == LIB_STATUS_OK) status = lib_storage_file_byte_count(&file, &length);
     if (status == LIB_STATUS_OK && (length < 0 || (lib_u64)length > maximum))
         status = LIB_STATUS_LIMIT_EXCEEDED;
     if (status == LIB_STATUS_OK) {
         bytes = lib_allocate((lib_size)length == 0u ? 1u : (lib_size)length);
         status = bytes == LIB_NULL ? LIB_STATUS_NO_MEMORY :
-            lib_storage_file_read_exact(file, bytes, (lib_size)length);
+            lib_storage_file_read_exact(&file, bytes, (lib_size)length);
     }
     close_status = lib_storage_file_close(&file);
     if (status == LIB_STATUS_OK) status = close_status;
@@ -162,7 +119,7 @@ lib_status lib_storage_file_writer_close(lib_storage_file_writer *writer)
 {
     if (writer == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     {
-        lib_status status = storage_file_close(&writer->file);
+        lib_status status = lib_storage_file_close(&writer->file);
         lib_release(writer);
         return status;
     }

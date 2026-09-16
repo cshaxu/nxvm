@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine.h"
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 #include "vm/machine/lifecycle.h"
 #include "vm/machine/machine_private.h"
 #include "../support/common_machine_fixture.h"
@@ -23,7 +23,7 @@ static C_INT vm_debug_wait_paused(const vm_machine *machine)
     for (waited = 0u; waited < 2000u; ++waited) {
         if (common_machine_state_get(machine->executor) == COMMON_MACHINE_PAUSED)
             return TYPE_TRUE;
-        host_sync_sleep_milliseconds(1u);
+        base_sync_sleep_milliseconds(1u);
     }
     return TYPE_FALSE;
 }

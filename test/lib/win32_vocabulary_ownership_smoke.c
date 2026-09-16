@@ -30,7 +30,7 @@ static lib_win32_key_state fake_key_state(int key)
 #define lib_win32_get_key_state fake_key_state
 #undef lib_win32_key_scan
 #define lib_win32_key_scan fake_key_scan
-#include "lib/host/win32/clock.c"
+#include "lib/base/win32/clock.c"
 #include "lib/kvm-window/win32/input.c"
 #include "lib/kvm-base/win32/input.c"
 #include "lib/kvm-base/input.c"
@@ -50,23 +50,23 @@ static int capture(void *context, const kvm_input_event *event)
 int main(void)
 {
     lib_u64 units = 999u, frequency = 888u;
-    CHECK(host_clock_platform_counter(LIB_NULL, &frequency) == LIB_STATUS_IO_ERROR);
-    CHECK(host_clock_platform_counter(&units, LIB_NULL) == LIB_STATUS_IO_ERROR);
+    CHECK(base_clock_platform_counter(LIB_NULL, &frequency) == LIB_STATUS_IO_ERROR);
+    CHECK(base_clock_platform_counter(&units, LIB_NULL) == LIB_STATUS_IO_ERROR);
     CHECK(query_count == 0u);
     counter_ok = 0;
-    CHECK(host_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
+    CHECK(base_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
     CHECK(units == 999u && frequency == 888u && query_count == 1u);
     counter_ok = 1; frequency_ok = 0;
-    CHECK(host_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
+    CHECK(base_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
     frequency_ok = 1; frequency_value = 0;
-    CHECK(host_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
+    CHECK(base_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
     frequency_value = -1;
-    CHECK(host_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
+    CHECK(base_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
     frequency_value = 1000; counter_value = -1;
-    CHECK(host_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
+    CHECK(base_clock_platform_counter(&units, &frequency) == LIB_STATUS_IO_ERROR);
     CHECK(units == 999u && frequency == 888u);
     counter_value = 123;
-    CHECK(host_clock_platform_counter(&units, &frequency) == LIB_STATUS_OK);
+    CHECK(base_clock_platform_counter(&units, &frequency) == LIB_STATUS_OK);
     CHECK(units == 123u && frequency == 1000u);
     for (pressed = 0u; pressed != 8u; ++pressed) {
         lib_u8 expected = 0u;

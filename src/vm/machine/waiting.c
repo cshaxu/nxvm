@@ -1,7 +1,7 @@
 #include "type.h"
 
-#include "lib/host/sync_interface.h"
-#include "lib/host/clock_interface.h"
+#include "lib/base/sync_interface.h"
+#include "lib/base/clock_interface.h"
 #include "vm/machine/control.h"
 #include "vm/machine/machine_private.h"
 #include "vm/machine/waiting.h"
@@ -77,7 +77,7 @@ static C_INT vm_machine_pacing_target_due(vm_machine *session,
         !observation->pacing_time_available ||
         observation->pacing_ticks_per_second == 0u ||
         session->speed != VM_MACHINE_SPEED_STANDARD) return TYPE_TRUE;
-    if (host_clock_monotonic_counter(&host_units,
+    if (base_clock_monotonic_counter(&host_units,
             &host_units_per_second) != LIB_STATUS_OK || host_units_per_second == 0u) {
         vm_machine_pacing_reset(session);
         return TYPE_TRUE;
@@ -101,11 +101,11 @@ static C_INT vm_machine_pacing_target_due(vm_machine *session,
          * fixed 1 ms oversleep. Neither branch advances guest time. */
         if (vm_machine_pacing_waits_at_least_millisecond(session, observation,
                 target_tick, host_units)) {
-            host_sync_sleep_milliseconds(1u);
+            base_sync_sleep_milliseconds(1u);
         } else {
-            host_sync_yield();
+            base_sync_yield();
         }
-        if (host_clock_monotonic_counter(&host_units,
+        if (base_clock_monotonic_counter(&host_units,
                 &host_units_per_second) != LIB_STATUS_OK ||
             host_units_per_second != session->pacing_host_units_per_second ||
             host_units < session->pacing_host_origin_units) {

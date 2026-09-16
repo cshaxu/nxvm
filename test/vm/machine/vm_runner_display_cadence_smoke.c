@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 #include "vm/machine/control.h"
 #include "vm/machine/display.h"
 #include "vm/machine/lifecycle.h"
@@ -15,7 +15,7 @@ static C_INT vm_runner_display_wait(const vm_machine *session, C_INT paused)
     for (waited = 0u; waited < 2000u; ++waited) {
         if (common_machine_state_get(session->executor) ==
             (paused ? COMMON_MACHINE_PAUSED : COMMON_MACHINE_RUNNING)) return TYPE_TRUE;
-        host_sync_sleep_milliseconds(1u);
+        base_sync_sleep_milliseconds(1u);
     }
     return TYPE_FALSE;
 }
@@ -27,7 +27,7 @@ static C_INT vm_runner_display_wait_stopped(const vm_machine *session)
     for (waited = 0u; waited < 2000u; ++waited) {
         if (common_machine_state_get(session->executor) == COMMON_MACHINE_STOPPED)
             return TYPE_TRUE;
-        host_sync_sleep_milliseconds(1u);
+        base_sync_sleep_milliseconds(1u);
     }
     return TYPE_FALSE;
 }

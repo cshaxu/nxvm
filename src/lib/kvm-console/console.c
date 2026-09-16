@@ -1,7 +1,8 @@
 #include "lib/kvm-console/console.h"
 
-static void kvm_console_dispose(kvm_console *console)
+static void kvm_console_component_dispose(kvm_component *base)
 {
+    kvm_console *console = (kvm_console *)base;
     if (console == LIB_NULL) return;
     kvm_component_mailboxes_destroy(&console->base.mailboxes);
     if (console->logical_console != LIB_NULL) {
@@ -13,9 +14,6 @@ static void kvm_console_dispose(kvm_console *console)
 
 static lib_status kvm_console_component_stop(kvm_component *base, lib_u32 timeout_ms)
 { return kvm_console_worker_join((kvm_console *)base, timeout_ms); }
-
-static void kvm_console_component_dispose(kvm_component *base)
-{ kvm_console_dispose((kvm_console *)base); }
 
 lib_status kvm_console_create(kvm_console **out_console,
     const kvm_console_options *options)
@@ -40,7 +38,7 @@ lib_status kvm_console_create(kvm_console **out_console,
     if (status == LIB_STATUS_OK) status = kvm_console_worker_start(console);
     if (status != LIB_STATUS_OK) {
         if (console->worker_state == LIB_NULL)
-            kvm_console_dispose(console);
+            kvm_console_component_dispose(&console->base);
         return status;
     }
     *out_console = console;

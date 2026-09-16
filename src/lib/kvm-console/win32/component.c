@@ -2,6 +2,7 @@
 #include "lib/types/win32/scalar.h"
 #include "lib/types/win32/sync.h"
 #include "lib/kvm-console/console.h"
+#include "lib/base/sync_interface.h"
 
 #include "lib/kvm-base/input_interface.h"
 
@@ -93,21 +94,14 @@ static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)
         LIB_MEMORY_ORDER_ACQUIRE) == 0) {
         kvm_component_control control;
         kvm_frame frame;
-        kvm_mailbox_wake_wait_result wake;
-        lib_status wait_status;
-
-        wait_status = kvm_mailbox_wake_wait(
-            kvm_component_mailboxes_wake(&console->base.mailboxes), LIB_UINT32_MAX, &wake);
-        if (wait_status != LIB_STATUS_OK) {
-            kvm_component_fail(&console->base, wait_status);
+        base_sync_wait_result wake = base_sync_event_wait(
+            console->base.mailboxes.wake, LIB_UINT32_MAX);
+        if (wake != BASE_SYNC_WAIT_SIGNALED) {
+            kvm_component_fail(&console->base, LIB_STATUS_IO_ERROR);
             break;
         }
         if (lib_atomic_i32_load_explicit(&console->base.stopping,
                 LIB_MEMORY_ORDER_ACQUIRE) != 0) break;
-        if (wake != KVM_MAILBOX_WAKE_WAIT_WAKE) {
-            kvm_component_fail(&console->base, LIB_STATUS_IO_ERROR);
-            break;
-        }
         while (kvm_component_mailboxes_take_control(&console->base.mailboxes, &control)) {
             if (control.kind == KVM_COMPONENT_CONTROL_STOP) {
                 goto retired;

@@ -9,7 +9,7 @@ if(library_cmake MATCHES "Curses")
 endif()
 
 string(FIND "${library_cmake}" "find_package(Threads REQUIRED)" threads_find)
-foreach(component IN ITEMS console host kvm-base)
+foreach(component IN ITEMS base)
     string(FIND "${library_cmake}"
         "target_link_libraries(${component} PRIVATE Threads::Threads)" sync_threads)
     if(threads_find EQUAL -1 OR sync_threads EQUAL -1)

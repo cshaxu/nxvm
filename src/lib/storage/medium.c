@@ -12,13 +12,13 @@ typedef struct lib_storage_medium_page {
 } lib_storage_medium_page;
 
 struct lib_storage_medium {
-    lib_storage_file *file;
+    lib_storage_file file;
     lib_storage_medium_page *pages;
     lib_size byte_count;
     lib_storage_medium_mode mode;
 };
 
-static lib_status lib_storage_medium_create(lib_storage_file *file, lib_size byte_count,
+static lib_status lib_storage_medium_create(lib_size byte_count,
     lib_storage_medium_mode mode, lib_storage_medium **out_medium)
 {
     lib_storage_medium *medium;
@@ -27,7 +27,6 @@ static lib_status lib_storage_medium_create(lib_storage_file *file, lib_size byt
     *out_medium = LIB_NULL;
     medium = lib_allocate_zero(1u, sizeof(*medium));
     if (medium == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    medium->file = file;
     medium->byte_count = byte_count;
     medium->mode = mode;
     *out_medium = medium;
@@ -37,7 +36,7 @@ static lib_status lib_storage_medium_create(lib_storage_file *file, lib_size byt
 lib_status lib_storage_medium_open(const char *path, lib_storage_medium_mode mode,
     lib_storage_medium **out_medium)
 {
-    lib_storage_file *file = LIB_NULL;
+    lib_storage_medium *medium;
     lib_i64 length;
     lib_status status;
 
@@ -46,22 +45,22 @@ lib_status lib_storage_medium_open(const char *path, lib_storage_medium_mode mod
     if (path == LIB_NULL || mode < LIB_STORAGE_MEDIUM_DIRECT ||
         mode > LIB_STORAGE_MEDIUM_OVERLAY)
         return LIB_STATUS_INVALID_ARGUMENT;
+    status = lib_storage_medium_create(0u, mode, &medium);
+    if (status != LIB_STATUS_OK) return status;
     status = mode == LIB_STORAGE_MEDIUM_DIRECT ?
-        lib_storage_file_open_readwrite(path, &file) :
-        lib_storage_file_open_readonly(path, &file);
+        storage_file_platform_open_readwrite(path, &medium->file) :
+        storage_file_platform_open_readonly(path, &medium->file);
     if (status == LIB_STATUS_OK)
-        status = lib_storage_file_byte_count(file, &length);
+        status = lib_storage_file_byte_count(&medium->file, &length);
     if (status == LIB_STATUS_OK && (length < 0 || (lib_u64)length > (lib_u64)(lib_size)-1))
         status = LIB_STATUS_LIMIT_EXCEEDED;
-    if (status == LIB_STATUS_OK) {
-        status = lib_storage_medium_create(file, (lib_size)length, mode, out_medium);
-        if (status == LIB_STATUS_OK) file = LIB_NULL;
+    if (status != LIB_STATUS_OK) {
+        (void)lib_storage_medium_destroy(&medium);
+        return status;
     }
-    if (file == LIB_NULL) return status;
-    {
-        lib_status close_status = lib_storage_file_close(&file);
-        return status == LIB_STATUS_OK ? close_status : status;
-    }
+    medium->byte_count = (lib_size)length;
+    *out_medium = medium;
+    return LIB_STATUS_OK;
 }
 
 lib_status lib_storage_medium_create_overlay(const void *bytes, lib_size byte_count,
@@ -72,7 +71,7 @@ lib_status lib_storage_medium_create_overlay(const void *bytes, lib_size byte_co
     if (out_medium == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_medium = LIB_NULL;
     if (byte_count != 0u && bytes == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = lib_storage_medium_create(LIB_NULL, byte_count,
+    status = lib_storage_medium_create(byte_count,
         LIB_STORAGE_MEDIUM_OVERLAY, out_medium);
     if (status != LIB_STATUS_OK || byte_count == 0u) return status;
     status = lib_storage_medium_write_at(*out_medium, 0u, bytes, byte_count);
@@ -83,7 +82,7 @@ lib_status lib_storage_medium_create_overlay(const void *bytes, lib_size byte_co
 lib_status lib_storage_medium_create_zero_overlay(lib_size byte_count,
     lib_storage_medium **out_medium)
 {
-    return lib_storage_medium_create(LIB_NULL, byte_count,
+    return lib_storage_medium_create(byte_count,
         LIB_STORAGE_MEDIUM_OVERLAY, out_medium);
 }
 
@@ -137,14 +136,14 @@ static lib_status lib_storage_medium_read_base(const lib_storage_medium *medium,
     lib_size offset, void *bytes, lib_size byte_count)
 {
     if (byte_count == 0u) return LIB_STATUS_OK;
-    if (medium->file == LIB_NULL) {
+    if (medium->file.stream == LIB_NULL) {
         lib_memory_set(bytes, 0, byte_count);
         return LIB_STATUS_OK;
     }
     {
-        lib_status status = lib_storage_file_seek_absolute(medium->file, (lib_i64)offset);
+        lib_status status = lib_storage_file_seek_absolute(&medium->file, (lib_i64)offset);
         if (status == LIB_STATUS_OK)
-            status = lib_storage_file_read_exact(medium->file, bytes, byte_count);
+            status = lib_storage_file_read_exact(&medium->file, bytes, byte_count);
         return status;
     }
 }
@@ -220,10 +219,10 @@ lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
         return LIB_STATUS_INVALID_ARGUMENT;
     if (medium->mode == LIB_STORAGE_MEDIUM_READONLY) return LIB_STATUS_INVALID_STATE;
     if (medium->mode == LIB_STORAGE_MEDIUM_DIRECT) {
-        lib_status status = lib_storage_file_seek_absolute(medium->file, (lib_i64)offset);
+        lib_status status = lib_storage_file_seek_absolute(&medium->file, (lib_i64)offset);
         if (status == LIB_STATUS_OK)
-            status = lib_storage_file_write_exact(medium->file, bytes, byte_count);
-        if (status == LIB_STATUS_OK) status = lib_storage_file_flush(medium->file);
+            status = lib_storage_file_write_exact(&medium->file, bytes, byte_count);
+        if (status == LIB_STATUS_OK) status = lib_storage_file_flush(&medium->file);
         return status;
     }
     while (byte_count != 0u) {

@@ -1,7 +1,7 @@
 # kvm-window
 
 `kvm-window` depends on `types` and `kvm-base` only. It owns one Window lifecycle and sends
-copied KVM events to the application queue entry. It never includes `host` or
+copied KVM events to the application queue entry. It never includes `console-broker` or
 makes product decisions.
 
 Win32 mailbox notifications use SendNotifyMessage to the owned Window, not an

@@ -1,5 +1,5 @@
-#include "lib/host/console_interface.h"
-#include "lib/host/sync_interface.h"
+#include "lib/console-broker/console_interface.h"
+#include "lib/base/sync_interface.h"
 #include "lib/storage/file_interface.h"
 #include "lib/storage/medium_interface.h"
 #include "lib/kvm-console/console_interface.h"
@@ -13,8 +13,8 @@ int main(void)
     lib_size byte_count = 7u;
     lib_storage_file_writer *writer = (lib_storage_file_writer *)1;
     lib_storage_medium *medium = (lib_storage_medium *)1;
-    host_sync_task *task = (host_sync_task *)1;
-    host_console_broker *broker = (host_console_broker *)1;
+    base_sync_task *task = (base_sync_task *)1;
+    console_broker *broker = (console_broker *)1;
     kvm_console *console = (kvm_console *)1;
     kvm_window *window = (kvm_window *)1;
 
@@ -28,9 +28,9 @@ int main(void)
     medium = (lib_storage_medium *)1;
     assert(lib_storage_medium_create_overlay(LIB_NULL, 1u, &medium) ==
         LIB_STATUS_INVALID_ARGUMENT && medium == LIB_NULL);
-    assert(host_sync_task_create(LIB_NULL, LIB_NULL, &task) ==
+    assert(base_sync_task_create(LIB_NULL, LIB_NULL, &task) ==
         LIB_STATUS_INVALID_ARGUMENT && task == LIB_NULL);
-    assert(host_console_broker_create(&broker, LIB_NULL, HOST_CONSOLE_RAW_EVENTS) ==
+    assert(console_broker_create(&broker, LIB_NULL, CONSOLE_BROKER_RAW_EVENTS) ==
         LIB_STATUS_INVALID_ARGUMENT && broker == LIB_NULL);
     assert(kvm_console_create(&console, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT &&
         console == LIB_NULL);

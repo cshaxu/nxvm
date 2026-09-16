@@ -12,7 +12,7 @@
 #include "vm/machine/machine_interface.h"
 
 
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 
 #include "vm/machine/debug_adapter.h"
 
@@ -287,7 +287,7 @@ type_status vm_machine_pause_for_debug(vm_machine *machine,
     while (timeout_milliseconds-- != 0u) {
         if (common_machine_state_get(machine->executor) == COMMON_MACHINE_PAUSED)
             return TYPE_STATUS_OK;
-        host_sync_sleep_milliseconds(1u);
+        base_sync_sleep_milliseconds(1u);
     }
     return TYPE_STATUS_INVALID_STATE;
 }

@@ -19,6 +19,7 @@ static lib_status storage_file_platform_open(const char *path, lib_bool readwrit
     lock.l_whence = LIB_SEEK_SET;
     if (lib_linux_fcntl(lib_linux_fileno(file->stream), LIB_LINUX_F_SETLK, &lock) != 0) {
         (void)lib_c_fclose(file->stream);
+        file->stream = LIB_NULL;
         return LIB_STATUS_IO_ERROR;
     }
     return LIB_STATUS_OK;
@@ -32,7 +33,7 @@ lib_status storage_file_platform_open_readwrite(const char *path,
     lib_storage_file *file)
 { return storage_file_platform_open(path, LIB_TRUE, file); }
 
-lib_status storage_file_platform_seek_absolute(lib_storage_file *file, lib_i64 offset)
+lib_status storage_file_platform_seek_absolute(const lib_storage_file *file, lib_i64 offset)
 { return lib_linux_fseeko(file->stream, (lib_linux_off_t)offset, LIB_SEEK_SET) == 0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
 
 lib_status storage_file_platform_byte_count(lib_storage_file *file, lib_i64 *out_byte_count)

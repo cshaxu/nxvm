@@ -34,7 +34,7 @@ static BOOL WINAPI set_mode(HANDLE h, DWORD m) { (void)h; (void)m; return TRUE; 
 #define lib_win32_flush_console_input_buffer flush
 #undef lib_win32_set_console_mode
 #define lib_win32_set_console_mode set_mode
-#include "lib/host/win32/console.c"
+#include "lib/console-broker/win32/console.c"
 
 static void receive(void *p, const lib_console_event *e)
 {
@@ -46,36 +46,36 @@ static void receive(void *p, const lib_console_event *e)
 }
 int main(void)
 {
-    host_console_backend b = {0};
+    console_broker_backend b = {0};
     lib_bool completed;
     entered = CreateEventA(NULL, TRUE, FALSE, NULL);
     finish_read = CreateEventA(NULL, TRUE, FALSE, NULL);
     delivered = CreateEventA(NULL, TRUE, FALSE, NULL);
     b.stop_event = CreateEventA(NULL, TRUE, FALSE, NULL);
     assert(entered && finish_read && delivered && b.stop_event);
-    b.mode = HOST_CONSOLE_COOKED_LINES; b.generation = 1;
+    b.mode = CONSOLE_BROKER_COOKED_LINES; b.generation = 1;
     assert(lib_console_create(&b.console) == 0);
     assert(lib_console_bind_generation(b.console, 1) == 0);
     assert(lib_console_set_event_sink(b.console, receive, NULL) == 0);
     /* Real worker is inside read. Cancellation joins it; its fragment cannot
      * become a command and a second read starts only after the join. */
-    assert(host_console_backend_request_cooked_line(&b) == 0);
+    assert(console_broker_backend_request_cooked_line(&b) == 0);
     assert(WaitForSingleObject(entered, 5000) == WAIT_OBJECT_0);
-    assert(host_console_backend_cancel_cooked_line(&b, &completed) == 0);
+    assert(console_broker_backend_cancel_cooked_line(&b, &completed) == 0);
     assert(!completed && !b.reader && !b.cooked_line_pending && lines == 0 && flushes == 1);
     assert(WaitForSingleObject(b.stop_event, 0) == WAIT_TIMEOUT);
     ResetEvent(entered); ResetEvent(finish_read);
-    assert(host_console_backend_request_cooked_line(&b) == 0);
+    assert(console_broker_backend_request_cooked_line(&b) == 0);
     assert(WaitForSingleObject(entered, 5000) == WAIT_OBJECT_0);
     /* A complete event wins the race. It remains consumable; cancellation and
      * another notification cannot turn it into an abandoned fragment. */
     SetEvent(finish_read);
     assert(WaitForSingleObject(delivered, 5000) == WAIT_OBJECT_0);
-    assert(host_console_backend_cancel_cooked_line(&b, &completed) == 0 && completed);
+    assert(console_broker_backend_cancel_cooked_line(&b, &completed) == 0 && completed);
     assert(!b.reader && lines == 1 && flushes == 2);
-    assert(host_console_backend_cancel_cooked_line(&b, &completed) == 0 && completed);
+    assert(console_broker_backend_cancel_cooked_line(&b, &completed) == 0 && completed);
     lib_console_release(b.console);
-    assert(host_console_backend_deactivate(&b, NULL) == 0);
+    assert(console_broker_backend_deactivate(&b, NULL) == 0);
     CloseHandle(entered); CloseHandle(finish_read); CloseHandle(delivered);
     return 0;
 }

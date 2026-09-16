@@ -9,18 +9,17 @@
 
 static LONG fail_wake;
 static HANDLE frame_idle;
-static lib_status retirement_wait(
-    const kvm_mailbox_wake *wake, lib_u32 timeout, kvm_mailbox_wake_wait_result *out_result)
+static base_sync_wait_result retirement_wait(base_sync_event *wake, lib_u32 timeout)
 {
     if (frame_idle) assert(ReleaseSemaphore(frame_idle, 1, NULL));
-    lib_status result = kvm_mailbox_wake_wait(wake, timeout, out_result);
+    base_sync_wait_result result = base_sync_event_wait(wake, timeout);
     return InterlockedCompareExchange(&fail_wake, 0, 0) ?
-        LIB_STATUS_IO_ERROR : result;
+        BASE_SYNC_WAIT_FAULT : result;
 }
 /* Compile the production worker; only its wait result is controllable. */
-#define kvm_mailbox_wake_wait retirement_wait
+#define base_sync_event_wait retirement_wait
 #include "lib/kvm-console/win32/component.c"
-#undef kvm_mailbox_wake_wait
+#undef base_sync_event_wait
 
 typedef struct retirement_probe {
     HANDLE input_entered;
@@ -126,7 +125,7 @@ static void check_retirement(int fault)
     assert(WaitForSingleObject(probe.input_entered, INFINITE) == WAIT_OBJECT_0);
     if (fault) {
         InterlockedExchange(&fail_wake, 1);
-        kvm_mailbox_wake_signal(kvm_component_mailboxes_wake(&console->base.mailboxes));
+        base_sync_event_signal(console->base.mailboxes.wake);
     }
     destroy_thread = CreateThread(NULL, 0u, retirement_destroy, &destroy, 0u,
         NULL);

@@ -2,7 +2,7 @@
 
 #include <limits.h>
 
-#include "lib/host/sync_interface.h"
+#include "lib/base/sync_interface.h"
 
 
 #define COMMON_SESSION_EVENT_QUEUE_INITIAL_CAPACITY 64u
@@ -14,8 +14,8 @@ typedef struct common_session_pressed_key {
 } common_session_pressed_key;
 
 struct common_session_queue {
-    host_sync_mutex *lock;
-    host_sync_event *available;
+    base_sync_mutex *lock;
+    base_sync_event *available;
     common_session_event *events;
     unsigned int first;
     unsigned int count;
@@ -40,15 +40,15 @@ static void common_session_queue_latch_delivery_failure(common_session_queue *qu
     lib_u64 source_identity, lib_status status, lib_u32 run_generation)
 {
     if (queue == NULL) return;
-    host_sync_mutex_lock(queue->lock);
+    base_sync_mutex_lock(queue->lock);
     if (!queue->fatal_delivery_pending) {
         queue->fatal_delivery_pending = 1;
         queue->fatal_delivery_source = source_identity;
         queue->fatal_delivery_generation = run_generation;
         queue->fatal_delivery_status = status;
     }
-    host_sync_event_signal(queue->available);
-    host_sync_mutex_unlock(queue->lock);
+    base_sync_event_signal(queue->available);
+    base_sync_mutex_unlock(queue->lock);
 }
 
 /* All control records are facts required by the sole reconciler.  If the
@@ -58,14 +58,14 @@ static void common_session_queue_latch_queue_delivery_failure(
     common_session_queue *queue, lib_status status, lib_u32 run_generation)
 {
     if (queue == NULL) return;
-    host_sync_mutex_lock(queue->lock);
+    base_sync_mutex_lock(queue->lock);
     if (!queue->fatal_queue_delivery_pending) {
         queue->fatal_queue_delivery_pending = 1;
         queue->fatal_queue_delivery_generation = run_generation;
         queue->fatal_queue_delivery_status = status;
     }
-    host_sync_event_signal(queue->available);
-    host_sync_mutex_unlock(queue->lock);
+    base_sync_event_signal(queue->available);
+    base_sync_mutex_unlock(queue->lock);
 }
 
 static int common_session_queue_push_required(common_session_queue *queue,
@@ -83,17 +83,17 @@ static int common_session_queue_push(common_session_queue *queue,
     common_session_event *expanded;
     unsigned int index;
     if (queue == NULL || event == NULL) return 0;
-    host_sync_mutex_lock(queue->lock);
+    base_sync_mutex_lock(queue->lock);
     if (queue->count == queue->capacity) {
         unsigned int next_capacity = queue->capacity * 2u;
         if (next_capacity <= queue->capacity ||
             next_capacity > UINT_MAX / sizeof(*expanded)) {
-            host_sync_mutex_unlock(queue->lock);
+            base_sync_mutex_unlock(queue->lock);
             return 0;
         }
         expanded = lib_allocate_zero(next_capacity, sizeof(*expanded));
         if (expanded == NULL) {
-            host_sync_mutex_unlock(queue->lock);
+            base_sync_mutex_unlock(queue->lock);
             return 0;
         }
         for (index = 0u; index < queue->count; ++index)
@@ -106,8 +106,8 @@ static int common_session_queue_push(common_session_queue *queue,
     queue->events[(queue->first + queue->count) % queue->capacity] =
         *event;
     ++queue->count;
-    host_sync_event_signal(queue->available);
-    host_sync_mutex_unlock(queue->lock);
+    base_sync_event_signal(queue->available);
+    base_sync_mutex_unlock(queue->lock);
     return 1;
 }
 
@@ -118,17 +118,17 @@ int common_session_queue_create(common_session_queue **out_queue)
     *out_queue = NULL;
     queue = lib_allocate_zero(1u, sizeof(*queue));
     if (queue == NULL) return 0;
-    if (host_sync_mutex_create(&queue->lock) != LIB_STATUS_OK) {
+    if (base_sync_mutex_create(&queue->lock) != LIB_STATUS_OK) {
         lib_release(queue);
         return 0;
     }
     queue->capacity = COMMON_SESSION_EVENT_QUEUE_INITIAL_CAPACITY;
     queue->events = lib_allocate_zero(queue->capacity, sizeof(*queue->events));
     if (queue->events == NULL ||
-        host_sync_event_create(&queue->available) != LIB_STATUS_OK) {
+        base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &queue->available) != LIB_STATUS_OK) {
         lib_release(queue->events);
-        if (queue->available != NULL) host_sync_event_destroy(queue->available);
-        host_sync_mutex_destroy(queue->lock);
+        if (queue->available != NULL) base_sync_event_destroy(queue->available);
+        base_sync_mutex_destroy(queue->lock);
         lib_release(queue);
         return 0;
     }
@@ -139,9 +139,9 @@ int common_session_queue_create(common_session_queue **out_queue)
 void common_session_queue_destroy(common_session_queue *queue)
 {
     if (queue == NULL) return;
-    host_sync_event_destroy(queue->available);
+    base_sync_event_destroy(queue->available);
     lib_release(queue->events);
-    host_sync_mutex_destroy(queue->lock);
+    base_sync_mutex_destroy(queue->lock);
     lib_release(queue);
 }
 
@@ -224,9 +224,9 @@ int common_session_queue_take(common_session_queue *queue,
     common_session_event *out_event, lib_u32 timeout_ms)
 {
     if (queue == NULL || out_event == NULL ||
-        host_sync_event_wait(queue->available, timeout_ms) != HOST_SYNC_WAIT_SIGNALED)
+        base_sync_event_wait(queue->available, timeout_ms) != BASE_SYNC_WAIT_SIGNALED)
         return 0;
-    host_sync_mutex_lock(queue->lock);
+    base_sync_mutex_lock(queue->lock);
     if (queue->count == 0u && queue->fatal_delivery_pending) {
         lib_memory_set(out_event, 0, sizeof(*out_event));
         out_event->kind = COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED;
@@ -235,8 +235,8 @@ int common_session_queue_take(common_session_queue *queue,
         out_event->value.delivery_failure.status = queue->fatal_delivery_status;
         queue->fatal_delivery_pending = 0;
         if (!queue->fatal_queue_delivery_pending)
-            host_sync_event_reset(queue->available);
-        host_sync_mutex_unlock(queue->lock);
+            base_sync_event_reset(queue->available);
+        base_sync_mutex_unlock(queue->lock);
         return 1;
     }
     if (queue->count == 0u && queue->fatal_queue_delivery_pending) {
@@ -245,13 +245,13 @@ int common_session_queue_take(common_session_queue *queue,
         out_event->run_generation = queue->fatal_queue_delivery_generation;
         out_event->value.queue_delivery_status = queue->fatal_queue_delivery_status;
         queue->fatal_queue_delivery_pending = 0;
-        host_sync_event_reset(queue->available);
-        host_sync_mutex_unlock(queue->lock);
+        base_sync_event_reset(queue->available);
+        base_sync_mutex_unlock(queue->lock);
         return 1;
     }
     if (queue->count == 0u) {
-        host_sync_event_reset(queue->available);
-        host_sync_mutex_unlock(queue->lock);
+        base_sync_event_reset(queue->available);
+        base_sync_mutex_unlock(queue->lock);
         return 0;
     }
     *out_event = queue->events[queue->first];
@@ -259,8 +259,8 @@ int common_session_queue_take(common_session_queue *queue,
     --queue->count;
     if (queue->count == 0u && !queue->fatal_delivery_pending &&
         !queue->fatal_queue_delivery_pending)
-        host_sync_event_reset(queue->available);
-    host_sync_mutex_unlock(queue->lock);
+        base_sync_event_reset(queue->available);
+    base_sync_mutex_unlock(queue->lock);
     return 1;
 }
 

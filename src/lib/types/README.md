@@ -8,7 +8,7 @@ resource policy, platform worker, or product behavior.
 `types` is header-only. It centralizes external declarations and typed,
 one-to-one wrappers, but does not compile a platform implementation. Each
 owning component supplies its own selected `win32` or `linux` source behind a
-uniform component-private contract: `host` owns synchronization and Console
+uniform component-private contract: `base` owns synchronization; `console-broker` owns Console
 native work, `storage` owns file native work, and `kvm-base`/the KVM leaves own
 their own wake, input, and rendering work. `types` never interprets a
 consumer's state machine or input protocol.
@@ -44,7 +44,7 @@ input is validated by its consumer, not silently reinterpreted here.
 
 `file.h` contains common C stream declarations. `win32/file.h` and
 `linux/file.h` add their platform declarations. File operations and ownership
-remain in storage. Counter validation/composition belongs to host; input
+remain in storage. Counter validation/composition belongs to base; input
 normalization belongs to kvm-base and Window key-state queries to kvm-window.
 There is no runtime layer or zero-result
 fallback pretending to implement another platform's input query.

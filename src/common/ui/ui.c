@@ -1,13 +1,13 @@
 #include "common/ui/ui_interface.h"
 
-#include "lib/host/console_interface.h"
+#include "lib/console-broker/console_interface.h"
 #include "lib/kvm-console/console_interface.h"
 #include "lib/kvm-window/window_interface.h"
 
 
 struct common_ui {
     lib_console *monitor;
-    host_console_broker *broker;
+    console_broker *broker;
     kvm_window *window;
     kvm_console *console;
     common_ui_options options;
@@ -148,8 +148,8 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
     if (status == LIB_STATUS_OK)
         status = lib_console_set_event_sink(ui->monitor, common_ui_monitor_receive, ui);
     if (status == LIB_STATUS_OK)
-        status = host_console_broker_create(&ui->broker, ui->monitor,
-            HOST_CONSOLE_COOKED_LINES);
+        status = console_broker_create(&ui->broker, ui->monitor,
+            CONSOLE_BROKER_COOKED_LINES);
     if (status != LIB_STATUS_OK) {
         if (ui->monitor != NULL) {
             (void)lib_console_set_event_sink(ui->monitor, NULL, NULL);
@@ -167,9 +167,9 @@ lib_status common_ui_destroy(common_ui *ui)
     lib_status status = LIB_STATUS_OK;
     if (ui == NULL) return LIB_STATUS_OK;
     if (ui->console != NULL) {
-        lib_status replace = host_console_broker_replace(ui->broker,
+        lib_status replace = console_broker_replace(ui->broker,
             kvm_console_get_console(ui->console), ui->monitor,
-            HOST_CONSOLE_COOKED_LINES);
+            CONSOLE_BROKER_COOKED_LINES);
         if (replace != LIB_STATUS_OK) status = replace;
     }
     if (ui->window != NULL) {
@@ -181,7 +181,7 @@ lib_status common_ui_destroy(common_ui *ui)
         if (status == LIB_STATUS_OK) status = destroy;
     }
     if (ui->broker != NULL) {
-        lib_status destroy = host_console_broker_destroy(ui->broker);
+        lib_status destroy = console_broker_destroy(ui->broker);
         if (status == LIB_STATUS_OK) status = destroy;
     }
     if (ui->monitor != NULL) {
@@ -215,13 +215,13 @@ lib_status common_ui_apply_action(common_ui *ui, common_ui_action action,
             COMMON_UI_COMPONENT_VM_CONSOLE, LIB_TRUE) : status;
     case COMMON_UI_ACTION_BIND_VM_CONSOLE:
         if (ui->console == NULL) return LIB_STATUS_INVALID_STATE;
-        status = host_console_broker_replace(ui->broker, ui->monitor,
-            kvm_console_get_console(ui->console), HOST_CONSOLE_RAW_EVENTS);
+        status = console_broker_replace(ui->broker, ui->monitor,
+            kvm_console_get_console(ui->console), CONSOLE_BROKER_RAW_EVENTS);
         return status == LIB_STATUS_OK ? common_ui_emit_broker(ui, LIB_TRUE) : status;
     case COMMON_UI_ACTION_BIND_MONITOR:
         if (ui->console == NULL) return LIB_STATUS_INVALID_STATE;
-        status = host_console_broker_replace(ui->broker, kvm_console_get_console(ui->console),
-            ui->monitor, HOST_CONSOLE_COOKED_LINES);
+        status = console_broker_replace(ui->broker, kvm_console_get_console(ui->console),
+            ui->monitor, CONSOLE_BROKER_COOKED_LINES);
         return status == LIB_STATUS_OK ? common_ui_emit_broker(ui, LIB_FALSE) : status;
     case COMMON_UI_ACTION_DESTROY_VM_CONSOLE:
         if (ui->console == NULL) return LIB_STATUS_INVALID_STATE;
@@ -325,11 +325,11 @@ lib_status common_ui_write_monitor(common_ui *ui, const char *text)
 lib_status common_ui_request_monitor_line(common_ui *ui)
 {
     return ui == NULL ? LIB_STATUS_INVALID_ARGUMENT :
-        host_console_broker_request_cooked_line(ui->broker, ui->monitor);
+        console_broker_request_cooked_line(ui->broker, ui->monitor);
 }
 
 lib_status common_ui_cancel_monitor_line(common_ui *ui, lib_bool *out_completed)
 {
     return ui == NULL ? LIB_STATUS_INVALID_ARGUMENT :
-        host_console_broker_cancel_cooked_line(ui->broker, ui->monitor, out_completed);
+        console_broker_cancel_cooked_line(ui->broker, ui->monitor, out_completed);
 }

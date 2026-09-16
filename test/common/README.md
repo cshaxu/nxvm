@@ -13,7 +13,7 @@ Coverage: session FIFO/wake, derived presentation/state matrix, input admission
 and retirement, source-local physical-key identity, machine input FIFO,
 machine/executor/debug lease contracts with a fake driver, xasm32 byte/text
 contracts, and independent source manifest/DAG negative probes. Common sync
-tests use Host; the existing native-thread machine fake is Windows-only and
+tests use Base; the existing native-thread machine fake is Windows-only and
 does not imply Linux execution coverage. Production Common stays platform-free.
 
 CLI bindings, original machine execution, cooked/raw product presentation,

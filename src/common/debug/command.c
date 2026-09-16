@@ -654,7 +654,7 @@ static type_unsigned_8 scannubit8(command_context *debugContext, C_CHAR *s)
 {
     type_unsigned_8 ans = 0;
     STD_SIZE_T i = 0;
-    if (s[0] == '\'' && s[2] == '\'')
+    if (STD_STRLEN(s) == 3u && s[0] == '\'' && s[2] == '\'')
     {
         return s[1];
     }
@@ -753,43 +753,96 @@ static type_unsigned_32 scannubit32(command_context *debugContext, C_CHAR *s)
 
 static C_VOID addrparse(command_context *debugContext, type_unsigned_16 defseg, const C_CHAR *addr)
 {
-    C_CHAR *cseg, *cptr;
-    C_CHAR ccopy[0x100];
-    if (!command_copy_text_checked(ccopy, sizeof(ccopy), addr)) {
-        seterr(debugContext, narg - 1u);
-        return;
-    }
-    cseg = STD_STRTOK(ccopy, ":");
-    cptr = STD_STRTOK(STD_NULL, "");
-    if (!cptr)
+    C_CHAR *colon;
+    C_CHAR copy[0x100];
+    if (!command_copy_text_checked(copy, sizeof(copy), addr)) return;
+    type_string_lower(copy);
+    colon = lib_c_strchr(copy, ':');
+    seg = defseg;
+    if (colon != STD_NULL)
     {
-        seg = defseg;
-        ptr = scannubit16(debugContext, cseg);
+        *colon++ = '\0';
+        if (copy[0] == '\0' || colon[0] == '\0' || lib_c_strchr(colon, ':'))
+        {
+            seterr(debugContext, narg - 1u);
+            return;
+        }
+        if (!STD_STRCMP(copy, "es")) seg = _es;
+        else if (!STD_STRCMP(copy, "cs")) seg = _cs;
+        else if (!STD_STRCMP(copy, "ss")) seg = _ss;
+        else if (!STD_STRCMP(copy, "ds")) seg = _ds;
+        else seg = scannubit16(debugContext, copy);
     }
-    else
+    ptr = scannubit16(debugContext, colon != STD_NULL ? colon : copy);
+}
+
+/* Consume a real range, leaving the next argument for a destination/list.
+ * A 32-bit count represents the complete 64 KiB segment without wrapping. */
+static type_unsigned_32 scanrange(command_context *debugContext,
+    type_unsigned_16 default_segment, type_unsigned_32 default_count,
+    STD_SIZE_T *next)
+{
+    type_unsigned_32 count, end;
+    STD_SIZE_T i = 2u;
+    if (narg < 2u) { seterr(debugContext, 0u); return 0u; }
+    addrparse(debugContext, default_segment, arg[1]);
+    count = default_count;
+    if (count > 0x10000u - ptr) count = 0x10000u - ptr;
+    if (i < narg)
     {
-        if (!STD_STRCMP(cseg, "es"))
+        if (arg[i][0] == 'l')
         {
-            seg = _es;
+            C_CHAR *length = arg[i++] + 1;
+            if (!*length && i < narg) length = arg[i++];
+            if (!*length) { seterr(debugContext, i - 1u); return 0u; }
+            count = scannubit16(debugContext, length);
+            if (count == 0u) count = 0x10000u;
         }
-        else if (!STD_STRCMP(cseg, "cs"))
+        else if ((arg[i][0] >= '0' && arg[i][0] <= '9') ||
+                 (arg[i][0] >= 'a' && arg[i][0] <= 'f'))
         {
-            seg = _cs;
+            end = scannubit16(debugContext, arg[i++]);
+            if (end < ptr) { seterr(debugContext, i - 1u); return 0u; }
+            count = end - ptr + 1u;
         }
-        else if (!STD_STRCMP(cseg, "ss"))
-        {
-            seg = _ss;
-        }
-        else if (!STD_STRCMP(cseg, "ds"))
-        {
-            seg = _ds;
-        }
-        else
-        {
-            seg = scannubit16(debugContext, cseg);
-        }
-        ptr = scannubit16(debugContext, cptr);
     }
+    *next = i;
+    if (count > 0x10000u - ptr) seterr(debugContext, i - 1u);
+    return nErrPos ? 0u : count;
+}
+
+/* Validate the entire list before any memory operation; quoted bytes retain
+ * case and delimiters. Repeated matching quotes encode one literal quote. */
+static STD_SIZE_T scanlist(command_context *debugContext, STD_SIZE_T first,
+    type_unsigned_8 *bytes)
+{
+    STD_SIZE_T count = 0u, i;
+    for (i = first; i < narg; ++i)
+    {
+        C_CHAR *p = arg[i];
+        if (*p == '\'' || *p == '"')
+        {
+            C_CHAR quote = *p++;
+            while (*p)
+            {
+                if (*p == quote)
+                {
+                    if (p[1] != quote) break;
+                    ++p;
+                }
+                bytes[count++] = (type_unsigned_8)*p++;
+            }
+            if (*p != quote || p[1] != '\0')
+            {
+                seterr(debugContext, i);
+                return 0u;
+            }
+        }
+        else bytes[count++] = scannubit8(debugContext, p);
+        if (nErrPos) return 0u;
+    }
+    if (count == 0u) seterr(debugContext, narg - 1u);
+    return count;
 }
 
 /* DEBUG CMD BEGIN */
@@ -868,38 +921,27 @@ static C_VOID a(command_context *debugContext)
 /* compare */
 static C_VOID c(command_context *debugContext)
 {
-    STD_SIZE_T i;
+    STD_SIZE_T next;
+    type_unsigned_32 i, count = scanrange(debugContext, _ds, 128u, &next);
+    type_unsigned_16 seg1 = seg, ptr1 = ptr;
     type_unsigned_8 val1, val2;
-    type_unsigned_16 seg1, ptr1, seg2, ptr2, range;
-    if (narg != 4)
+    if (nErrPos) return;
+    if (next + 1u != narg) { seterr(debugContext, narg - 1u); return; }
+    addrparse(debugContext, _ds, arg[next]);
+    if (nErrPos) return;
+    for (i = 0u; i < count; ++i)
     {
-        seterr(debugContext, narg - 1);
-    }
-    else
-    {
-        addrparse(debugContext, _ds, arg[1]);
-        seg1 = seg;
-        ptr1 = ptr;
-        addrparse(debugContext, _ds, arg[3]);
-        seg2 = seg;
-        ptr2 = ptr;
-        range = scannubit16(debugContext, arg[2]) - ptr1;
-        if (!nErrPos)
+        if (command_machine_read_real(seg1, (type_unsigned_16)(ptr1 + i), &val1, 1) ||
+            command_machine_read_real(seg, (type_unsigned_16)(ptr + i), &val2, 1)) return;
+        if (val1 != val2)
         {
-            for (i = 0; i <= range; ++i)
-            {
-                command_machine_read_real(seg1, (type_unsigned_16)(ptr1 + i), (C_VOID *)(&val1), 1);
-                command_machine_read_real(seg2, (type_unsigned_16)(ptr2 + i), (C_VOID *)(&val2), 1);
-                if (val1 != val2)
-                {
-                    STD_PRINTF("%04X:%04X  ", seg1, (type_unsigned_16)(ptr1 + i));
-                    STD_PRINTF("%02X  %02X", val1, val2);
-                    STD_PRINTF("  %04X:%04X\n", seg2, (type_unsigned_16)(ptr2 + i));
-                }
-            }
+            STD_PRINTF("%04X:%04X  ", seg1, (type_unsigned_16)(ptr1 + i));
+            STD_PRINTF("%02X  %02X", val1, val2);
+            STD_PRINTF("  %04X:%04X\n", seg, (type_unsigned_16)(ptr + i));
         }
     }
 }
+
 /* dump */
 static C_VOID dprint(command_context *debugContext, type_unsigned_16 segment, type_unsigned_16 start, type_unsigned_16 end)
 {
@@ -907,10 +949,6 @@ static C_VOID dprint(command_context *debugContext, type_unsigned_16 segment, ty
     type_unsigned_16 iaddr;
     if (start > end)
         end = 0xffff;
-    if ((type_unsigned_32)((segment << 4) + end) > 0x000fffff)
-    {
-        end = (type_unsigned_16)(0x000fffff - (segment << 4));
-    }
     c[0x10] = '\0';
     if (end < start)
     {
@@ -962,42 +1000,20 @@ static C_VOID dprint(command_context *debugContext, type_unsigned_16 segment, ty
 }
 static C_VOID d(command_context *debugContext)
 {
-    type_unsigned_16 ptr2;
-    if (narg == 1)
-    {
-        dprint(debugContext, dumpSegRec, dumpPtrRec, dumpPtrRec + 0x7f);
-    }
-    else if (narg == 2)
-    {
-        addrparse(debugContext, _ds, arg[1]);
-        if (nErrPos)
-        {
-            return;
-        }
-        dprint(debugContext, seg, ptr, ptr + 0x7f);
-    }
-    else if (narg == 3)
-    {
-        addrparse(debugContext, _ds, arg[1]);
-        ptr2 = scannubit16(debugContext, arg[2]);
-        if (nErrPos)
-        {
-            return;
-        }
-        if (ptr > ptr2)
-        {
-            seterr(debugContext, 2);
-        }
-        else
-        {
-            dprint(debugContext, seg, ptr, ptr2);
-        }
-    }
+    STD_SIZE_T next;
+    type_unsigned_32 count;
+    if (narg == 1u)
+        dprint(debugContext, dumpSegRec, dumpPtrRec,
+            (type_unsigned_16)(dumpPtrRec + 0x7fu));
     else
     {
-        seterr(debugContext, 3);
+        count = scanrange(debugContext, _ds, 128u, &next);
+        if (nErrPos) return;
+        if (next != narg) { seterr(debugContext, next); return; }
+        dprint(debugContext, seg, ptr, (type_unsigned_16)(ptr + count - 1u));
     }
 }
+
 /* enter */
 static C_VOID e(command_context *debugContext)
 {
@@ -1027,65 +1043,32 @@ static C_VOID e(command_context *debugContext)
             command_machine_write_real(seg, ptr, (C_VOID *)(&val), 1);
         }
     }
-    else if (narg > 2)
+    else
     {
+        type_unsigned_8 bytes[COMMON_DEBUG_LINE_CAPACITY];
+        STD_SIZE_T count;
         addrparse(debugContext, _ds, arg[1]);
-        if (nErrPos)
-        {
-            return;
-        }
-        for (i = 2; i < narg; ++i)
-        {
-            val = scannubit8(debugContext, arg[i]); /* MARK */
-            if (!nErrPos)
-            {
-                command_machine_write_real(seg, ptr, (C_VOID *)(&val), 1);
-            }
-            else
-            {
-                break;
-            }
-            ptr++;
-        }
+        count = scanlist(debugContext, 2u, bytes);
+        if (nErrPos) return;
+        for (i = 0u; i < count; ++i)
+            if (command_machine_write_real(seg, (type_unsigned_16)(ptr + i),
+                    &bytes[i], 1)) return;
     }
 }
 /* fill */
 static C_VOID f(command_context *debugContext)
 {
-    type_unsigned_8 nbyte;
-    type_unsigned_8 val;
-    STD_SIZE_T i, j;
-    type_unsigned_16 end;
-    if (narg < 4)
-    {
-        seterr(debugContext, narg - 1);
-    }
-    else
-    {
-        addrparse(debugContext, _ds, arg[1]);
-        end = scannubit16(debugContext, arg[2]);
-        if (end < ptr)
-        {
-            seterr(debugContext, 2);
-        }
-        if (!nErrPos)
-        {
-            nbyte = (type_unsigned_8)narg - 3;
-            for (i = ptr, j = 0; i <= end; ++i, ++j)
-            {
-                val = scannubit8(debugContext, arg[j % nbyte + 3]);
-                if (!nErrPos)
-                {
-                    command_machine_write_real(seg, (type_unsigned_16)i, (C_VOID *)(&val), 1);
-                }
-                else
-                {
-                    return;
-                }
-            }
-        }
-    }
+    STD_SIZE_T next, length;
+    type_unsigned_32 i, count = scanrange(debugContext, _ds, 128u, &next);
+    type_unsigned_8 bytes[COMMON_DEBUG_LINE_CAPACITY];
+    if (nErrPos) return;
+    length = scanlist(debugContext, next, bytes);
+    if (nErrPos) return;
+    for (i = 0u; i < count; ++i)
+        if (command_machine_write_real(seg, (type_unsigned_16)(ptr + i),
+                &bytes[i % length], 1)) return;
 }
+
 /* go */
 static C_VOID rprintregs(command_context *debugContext);
 static C_VOID g(command_context *debugContext)
@@ -1213,41 +1196,25 @@ static C_VOID l(command_context *debugContext)
 /* move */
 static C_VOID m(command_context *debugContext)
 {
-    STD_SIZE_T i;
+    STD_SIZE_T next;
+    type_unsigned_32 i, offset, count = scanrange(debugContext, _ds, 128u, &next);
+    type_unsigned_16 seg1 = seg, ptr1 = ptr;
     type_unsigned_8 val;
-    type_unsigned_16 seg1, ptr1, range, seg2, ptr2;
-    if (narg != 4)
-        seterr(debugContext, narg - 1);
-    else
+    C_INT backward;
+    if (nErrPos) return;
+    if (next + 1u != narg) { seterr(debugContext, narg - 1u); return; }
+    addrparse(debugContext, _ds, arg[next]);
+    if (nErrPos) return;
+    if (((seg1 << 4) + ptr1) == ((seg << 4) + ptr)) return;
+    backward = ((seg1 << 4) + ptr1) < ((seg << 4) + ptr);
+    for (i = 0u; i < count; ++i)
     {
-        addrparse(debugContext, _ds, arg[1]);
-        seg1 = seg;
-        ptr1 = ptr;
-        addrparse(debugContext, _ds, arg[3]);
-        seg2 = seg;
-        ptr2 = ptr;
-        range = scannubit16(debugContext, arg[2]) - ptr1;
-        if (!nErrPos)
-        {
-            if (((seg1 << 4) + ptr1) < ((seg2 << 4) + ptr2))
-            {
-                for (i = 0; i <= range; ++i)
-                {
-                    command_machine_read_real(seg1, (type_unsigned_16)(ptr1 + range - i), (C_VOID *)(&val), 1);
-                    command_machine_write_real(seg2, (type_unsigned_16)(ptr2 + range - i), (C_VOID *)(&val), 1);
-                }
-            }
-            else if (((seg1 << 4) + ptr1) > ((seg2 << 4) + ptr2))
-            {
-                for (i = 0; i <= range; ++i)
-                {
-                    command_machine_read_real(seg1, (type_unsigned_16)(ptr1 + i), (C_VOID *)(&val), 1);
-                    command_machine_write_real(seg2, (type_unsigned_16)(ptr2 + i), (C_VOID *)(&val), 1);
-                }
-            }
-        }
+        offset = backward ? count - 1u - i : i;
+        if (command_machine_read_real(seg1, (type_unsigned_16)(ptr1 + offset), &val, 1) ||
+            command_machine_write_real(seg, (type_unsigned_16)(ptr + offset), &val, 1)) return;
     }
 }
+
 /* name */
 static C_VOID n(command_context *debugContext)
 {
@@ -1284,6 +1251,7 @@ static C_VOID q(command_context *debugContext)
 static type_unsigned_8 uprintins(command_context *debugContext, type_unsigned_16 segment, type_unsigned_16 off)
 {
     STD_SIZE_T i;
+    type_unsigned_8 first = off > 0xfff1u ? (type_unsigned_8)(0x10000u - off) : 15u;
     STD_SIZE_T sbin_remaining;
     C_INT binary_failed = TYPE_FALSE;
     C_INT format_result;
@@ -1291,7 +1259,8 @@ static type_unsigned_8 uprintins(command_context *debugContext, type_unsigned_16
     type_unsigned_8 ucode[15];
     C_CHAR str[0x100], stmt[0x100], sbin[0x100];
     C_CHAR *sbin_cursor;
-    if (command_machine_read_linear((segment << 4) + off, (C_VOID *)ucode, 15))
+    if (command_machine_read_real(segment, off, ucode, first) ||
+        (first < 15u && command_machine_read_real(segment, 0u, ucode + first, 15u - first)))
     {
         len = 0;
         (C_VOID)STD_SNPRINTF(str, sizeof(str), "%04X:%04X <ERROR>", segment, off);
@@ -1301,7 +1270,7 @@ static type_unsigned_8 uprintins(command_context *debugContext, type_unsigned_16
         lib_size instruction_bytes = 0u;
         if (common_xasm32_disassemble(ucode, sizeof(ucode), stmt,
                 sizeof(stmt), &i, &instruction_bytes,
-                command_machine_get_code_default_size()) != TYPE_STATUS_OK) {
+                0) != TYPE_STATUS_OK) {
             len = 0u;
             (void)lib_c_snprintf(stmt, sizeof(stmt), "<ERROR>");
         } else {
@@ -1645,56 +1614,23 @@ static C_VOID r(command_context *debugContext)
 /* search */
 static C_VOID s(command_context *debugContext)
 {
-    STD_SIZE_T i;
-    C_INT flagFound = 0;
-    type_unsigned_16 p, pfront, start, end;
-    type_unsigned_8 cstart, val;
-    if (narg < 4)
+    STD_SIZE_T next, length, j;
+    type_unsigned_32 i, count = scanrange(debugContext, _ds, 128u, &next);
+    type_unsigned_8 bytes[COMMON_DEBUG_LINE_CAPACITY], val;
+    if (nErrPos) return;
+    length = scanlist(debugContext, next, bytes);
+    if (nErrPos || count < length) return;
+    for (i = 0u; i <= count - length; ++i)
     {
-        seterr(debugContext, narg - 1);
-    }
-    else
-    {
-        addrparse(debugContext, _ds, arg[1]);
-        start = ptr;
-        end = scannubit16(debugContext, arg[2]);
-        if (!nErrPos)
+        for (j = 0u; j < length; ++j)
         {
-            p = start;
-            cstart = scannubit8(debugContext, arg[3]);
-            while (p <= end)
-            {
-                command_machine_read_real(seg, p, (C_VOID *)(&val), 1);
-                if (val == cstart)
-                {
-                    pfront = p;
-                    flagFound = 1;
-                    for (i = 3; i < narg; ++i)
-                    {
-                        command_machine_read_real(seg, p, (C_VOID *)(&val), 1);
-                        if (val != scannubit8(debugContext, arg[i]))
-                        {
-                            flagFound = 0;
-                            p = pfront + 1;
-                            break;
-                        }
-                        else
-                        {
-                            ++p;
-                        }
-                    }
-                    if (flagFound)
-                    {
-                        STD_PRINTF("%04X:%04X  ", seg, pfront);
-                        STD_PRINTF("\n");
-                    }
-                }
-                else
-                    ++p;
-            }
+            if (command_machine_read_real(seg, (type_unsigned_16)(ptr + i + j), &val, 1)) return;
+            if (val != bytes[j]) break;
         }
+        if (j == length) STD_PRINTF("%04X:%04X  \n", seg, (type_unsigned_16)(ptr + i));
     }
 }
+
 /* trace */
 static C_VOID t(command_context *debugContext)
 {
@@ -1747,10 +1683,6 @@ static C_VOID uprint(command_context *debugContext, type_unsigned_16 segment, ty
     {
         end = 0xffff;
     }
-    if ((type_unsigned_32)((segment << 4) + end) > 0xfffff)
-    {
-        end = (0xfffff - (segment << 4));
-    }
     while (start <= end)
     {
         len = uprintins(debugContext, segment, start);
@@ -1768,42 +1700,20 @@ static C_VOID uprint(command_context *debugContext, type_unsigned_16 segment, ty
 }
 static C_VOID u(command_context *debugContext)
 {
-    type_unsigned_16 ptr2;
-    if (narg == 1)
-    {
-        uprint(debugContext, uasmSegRec, uasmPtrRec, uasmPtrRec + 0x1f);
-    }
-    else if (narg == 2)
-    {
-        addrparse(debugContext, _cs, arg[1]);
-        if (nErrPos)
-        {
-            return;
-        }
-        uprint(debugContext, seg, ptr, ptr + 0x1f);
-    }
-    else if (narg == 3)
-    {
-        addrparse(debugContext, _ds, arg[1]);
-        ptr2 = scannubit16(debugContext, arg[2]);
-        if (nErrPos)
-        {
-            return;
-        }
-        if (ptr > ptr2)
-        {
-            seterr(debugContext, 2);
-        }
-        else
-        {
-            uprint(debugContext, seg, ptr, ptr2);
-        }
-    }
+    STD_SIZE_T next;
+    type_unsigned_32 count;
+    if (narg == 1u)
+        uprint(debugContext, uasmSegRec, uasmPtrRec,
+            (type_unsigned_16)(uasmPtrRec + 0x1fu));
     else
     {
-        seterr(debugContext, 3);
+        count = scanrange(debugContext, _cs, 32u, &next);
+        if (nErrPos) return;
+        if (next != narg) { seterr(debugContext, next); return; }
+        uprint(debugContext, seg, ptr, (type_unsigned_16)(ptr + count - 1u));
     }
 }
+
 /* verbal */
 static C_VOID v(command_context *debugContext)
 {
@@ -1887,6 +1797,15 @@ static C_VOID w(command_context *debugContext)
 #define xalin debugContext->assemble_linear
 #define xdlin debugContext->dump_linear
 #define xulin debugContext->unassemble_linear
+static C_INT xcheckrange(command_context *debugContext,
+    type_unsigned_32 linear, type_unsigned_32 count)
+{
+    if (count != 0u && count - 1u > LIB_UINT32_MAX - linear) {
+        seterr(debugContext, narg - 1);
+        return 0;
+    }
+    return 1;
+}
 /* print */
 static type_unsigned_8 xuprintins(command_context *debugContext, type_unsigned_32 linear)
 {
@@ -1895,10 +1814,13 @@ static type_unsigned_8 xuprintins(command_context *debugContext, type_unsigned_3
     C_INT binary_failed = TYPE_FALSE;
     C_INT format_result;
     type_unsigned_8 len;
-    type_unsigned_8 ucode[15];
+    /* The decoder needs 15 host bytes; accept only bytes read before address end. */
+    type_unsigned_8 ucode[15] = {0};
+    type_unsigned_8 available = linear > LIB_UINT32_MAX - 14u ?
+        (type_unsigned_8)(LIB_UINT32_MAX - linear + 1u) : 15u;
     C_CHAR str[0x100], stmt[0x100], sbin[0x100];
     C_CHAR *sbin_cursor;
-    if (command_machine_read_linear(linear, (C_VOID *)ucode, 15))
+    if (command_machine_read_linear(linear, (C_VOID *)ucode, available))
     {
         len = 0;
         (C_VOID)STD_SNPRINTF(str, sizeof(str), "L%08X <ERROR>", linear);
@@ -1908,7 +1830,8 @@ static type_unsigned_8 xuprintins(command_context *debugContext, type_unsigned_3
         lib_size instruction_bytes = 0u;
         if (common_xasm32_disassemble(ucode, sizeof(ucode), stmt,
                 sizeof(stmt), &i, &instruction_bytes,
-                command_machine_get_code_default_size()) != TYPE_STATUS_OK) {
+                command_machine_get_code_default_size()) != TYPE_STATUS_OK ||
+            instruction_bytes > available) {
             len = 0u;
             (void)lib_c_snprintf(stmt, sizeof(stmt), "<ERROR>");
         } else {
@@ -2008,11 +1931,13 @@ static C_VOID xaconsole(command_context *debugContext)
         }
         else
         {
+            if (!xcheckrange(debugContext, xalin, (type_unsigned_32)len)) return;
             if (command_machine_write_linear(xalin, (C_VOID *)acode, (type_unsigned_8)len))
             {
                 STD_PRINTF("debug: fail to write to L%08X\n", xalin);
                 return;
             }
+            if (len > LIB_UINT32_MAX - xalin) return;
             xalin += (type_unsigned_32)len;
         }
         if (errAsmPos)
@@ -2076,6 +2001,8 @@ static C_VOID xc(command_context *debugContext)
         {
             return;
         }
+        if (!xcheckrange(debugContext, lin1, (type_unsigned_32)count) ||
+            !xcheckrange(debugContext, lin2, (type_unsigned_32)count)) return;
         for (i = 0; i < count; ++i)
         {
             if (command_machine_read_linear((type_unsigned_32)(lin1 + i), (C_VOID *)(&val1), 1))
@@ -2100,15 +2027,15 @@ static C_VOID xdprint(command_context *debugContext, type_unsigned_32 linear, ty
     C_CHAR t, c[0x11];
     type_unsigned_32 ilinear;
     type_unsigned_32 start = linear;
-    type_unsigned_32 end = linear + count - 1;
+    type_unsigned_32 end;
     c[0x10] = '\0';
     if (!count)
     {
         return;
     }
-    if (end < start)
-        end = 0xffffffff;
-    for (ilinear = start - (start % 0x10); ilinear <= end + 0x0f - (end % 0x10); ++ilinear)
+    if (!xcheckrange(debugContext, linear, count)) return;
+    end = linear + (count - 1u);
+    for (ilinear = start - (start % 0x10); ilinear <= (end | 0x0fu); ++ilinear)
     {
         if (ilinear % 0x10 == 0)
             STD_PRINTF("L%08X  ", ilinear);
@@ -2140,7 +2067,7 @@ static C_VOID xdprint(command_context *debugContext, type_unsigned_32 linear, ty
         STD_PRINTF(" ");
         if (ilinear % 0x10 == 7 && ilinear >= start && ilinear < end)
             STD_PRINTF("\b-");
-        if ((ilinear + 1) % 0x10 == 0)
+        if (ilinear % 0x10 == 0x0f)
         {
             STD_PRINTF("  %s\n", c);
         }
@@ -2221,70 +2148,34 @@ static C_VOID xe(command_context *debugContext)
             }
         }
     }
-    else if (narg > 2)
+    else
     {
+        type_unsigned_8 bytes[COMMON_DEBUG_LINE_CAPACITY];
+        STD_SIZE_T count;
         linear = scannubit32(debugContext, arg[1]);
-        if (nErrPos)
-        {
-            return;
-        }
-        for (i = 2; i < narg; ++i)
-        {
-            val = scannubit8(debugContext, arg[i]);
-            if (!nErrPos)
-            {
-                if (command_machine_write_linear(linear, (C_VOID *)(&val), 1))
-                {
-                    STD_PRINTF("debug: fail to write to L%08X.\n", linear);
-                    return;
-                }
-            }
-            else
-            {
-                break;
-            }
-            linear++;
-        }
+        count = scanlist(debugContext, 2u, bytes);
+        if (nErrPos || !xcheckrange(debugContext, linear, (type_unsigned_32)count)) return;
+        for (i = 0u; i < count; ++i)
+            if (command_machine_write_linear(linear + (type_unsigned_32)i,
+                    &bytes[i], 1)) return;
     }
 }
 /* fill */
 static C_VOID xf(command_context *debugContext)
 {
-    type_unsigned_8 val;
-    STD_SIZE_T i, j, count, bcount;
+    STD_SIZE_T i, count, length;
     type_unsigned_32 linear;
-    if (narg < 4)
-    {
-        seterr(debugContext, narg - 1);
-    }
-    else
-    {
-        linear = scannubit32(debugContext, arg[1]);
-        if (nErrPos)
-        {
-            return;
-        }
-        count = scannubit32(debugContext, arg[2]);
-        if (nErrPos)
-        {
-            return;
-        }
-        bcount = narg - 3;
-        for (i = 0, j = 0; i < count; ++i, ++j)
-        {
-            val = scannubit8(debugContext, arg[j % bcount + 3]);
-            if (nErrPos)
-            {
-                return;
-            }
-            if (command_machine_write_linear((type_unsigned_32)(linear + i), (C_VOID *)(&val), 1))
-            {
-                STD_PRINTF("debug: fail to write to L%08X.\n", (type_unsigned_32)(linear + i));
-                return;
-            }
-        }
-    }
+    type_unsigned_8 bytes[COMMON_DEBUG_LINE_CAPACITY];
+    if (narg < 4u) { seterr(debugContext, narg - 1u); return; }
+    linear = scannubit32(debugContext, arg[1]);
+    count = scannubit32(debugContext, arg[2]);
+    length = scanlist(debugContext, 3u, bytes);
+    if (nErrPos || !xcheckrange(debugContext, linear, (type_unsigned_32)count)) return;
+    for (i = 0u; i < count; ++i)
+        if (command_machine_write_linear(linear + (type_unsigned_32)i,
+                &bytes[i % length], 1)) return;
 }
+
 /* go */
 static C_VOID xg(command_context *debugContext)
 {
@@ -2326,7 +2217,7 @@ static C_VOID xm(command_context *debugContext)
 {
     type_unsigned_8 val;
     STD_SIZE_T i;
-    type_unsigned_32 lin1, lin2, count;
+    type_unsigned_32 lin1, lin2, count, offset;
     if (narg != 4)
     {
         seterr(debugContext, narg - 1);
@@ -2348,16 +2239,19 @@ static C_VOID xm(command_context *debugContext)
         {
             return;
         }
+        if (!xcheckrange(debugContext, lin1, count) ||
+            !xcheckrange(debugContext, lin2, count) || lin1 == lin2) return;
         for (i = 0; i < count; ++i)
         {
-            if (command_machine_read_linear((type_unsigned_32)(lin1 + i), (C_VOID *)(&val), 1))
+            offset = lin2 > lin1 ? count - 1u - (type_unsigned_32)i : (type_unsigned_32)i;
+            if (command_machine_read_linear(lin1 + offset, (C_VOID *)(&val), 1))
             {
-                STD_PRINTF("debug: fail to read from L%08X.\n", lin1 + i);
+                STD_PRINTF("debug: fail to read from L%08X.\n", lin1 + offset);
                 return;
             }
-            if (command_machine_write_linear((type_unsigned_32)(lin2 + i), (C_VOID *)(&val), 1))
+            if (command_machine_write_linear(lin2 + offset, (C_VOID *)(&val), 1))
             {
-                STD_PRINTF("debug: fail to write to L%08X.\n", lin2 + i);
+                STD_PRINTF("debug: fail to write to L%08X.\n", lin2 + offset);
                 return;
             }
         }
@@ -2368,7 +2262,7 @@ static C_VOID xs(command_context *debugContext)
 {
     STD_SIZE_T i, count, bcount;
     type_unsigned_32 linear;
-    type_unsigned_8 val, mem[256], line[256];
+    type_unsigned_8 mem[256], line[256];
     if (narg < 4)
     {
         seterr(debugContext, narg - 1);
@@ -2385,18 +2279,10 @@ static C_VOID xs(command_context *debugContext)
         {
             return;
         }
-        addrparse(debugContext, _ds, arg[1]);
-        bcount = narg - 3;
-        for (i = 0; i < bcount; ++i)
-        {
-            val = scannubit8(debugContext, arg[i + 3]);
-            if (nErrPos)
-            {
-                return;
-            }
-            line[i] = val;
-        }
-        for (i = 0; i < count; ++i)
+        bcount = scanlist(debugContext, 3u, line);
+        if (nErrPos || !xcheckrange(debugContext, linear, (type_unsigned_32)count)) return;
+        if (count < bcount) return;
+        for (i = 0; i <= count - bcount; ++i)
         {
             if (command_machine_read_linear((type_unsigned_32)(linear + i), (C_VOID *)mem, (type_unsigned_8)bcount))
             {
@@ -2717,14 +2603,14 @@ static C_VOID xr(command_context *debugContext)
     }
 }
 /* unassemble */
-static C_VOID xuprint(command_context *debugContext, type_unsigned_32 linear, type_unsigned_8 count)
+static C_VOID xuprint(command_context *debugContext, type_unsigned_32 linear, type_unsigned_32 count)
 {
     type_unsigned_32 len = 0;
     STD_SIZE_T i;
     for (i = 0; i < count; ++i)
     {
         len = xuprintins(debugContext, linear);
-        if (!len)
+        if (!len || len > LIB_UINT32_MAX - linear)
         {
             break;
         }
@@ -2952,6 +2838,8 @@ static C_VOID help(command_context *debugContext)
     STD_PRINTF("trace           T [[address] value]\n");
     /* STD_PRINTF("trace           T [=address] [value]\n"); */
     STD_PRINTF("unassemble      U [range]\n");
+    STD_PRINTF("range           address [end | L length]\n");
+    STD_PRINTF("list            hex bytes and quoted strings\n");
     STD_PRINTF("verbal          V \n");
     STD_PRINTF("write           W [address]\n");
     STD_PRINTF("debug32         X?\n");
@@ -2964,42 +2852,46 @@ static C_VOID help(command_context *debugContext)
 
 static C_VOID parse(command_context *debugContext)
 {
-    if (!command_copy_text_checked(strCmdCopy, sizeof(strCmdCopy),
-            strCmdBuff)) return;
-    narg = 0;
-    arg[0] = STD_STRTOK(strCmdCopy, " ,\t\n\r\f");
-    if (arg[narg])
+    C_CHAR *p;
+    if (!command_copy_text_checked(strCmdCopy, sizeof(strCmdCopy), strCmdBuff)) return;
+    narg = 0u;
+    nErrPos = 0u;
+    p = strCmdCopy;
+    while (*p)
     {
-        type_string_lower(arg[narg]);
-        narg++;
-    }
-    else
-    {
-        return;
-    }
-    if (STD_STRLEN(arg[narg - 1]) != 1)
-    {
-        arg[narg] = arg[narg - 1] + 1;
-        narg++;
-    }
-    while (narg < DEBUG_MAXNARG)
-    {
-        arg[narg] = STD_STRTOK(STD_NULL, " ,\t\n\r\f");
-        if (arg[narg])
+        C_CHAR *start, quote = 0;
+        while (*p && lib_c_strchr(" ,\t\n\r\f", *p)) ++p;
+        if (!*p) break;
+        start = p;
+        while (*p)
         {
-            type_string_lower(arg[narg]);
-            narg++;
+            if (quote)
+            {
+                if (*p == quote)
+                {
+                    if (p[1] == quote) { p += 2; continue; }
+                    quote = 0;
+                }
+            }
+            else
+            {
+                if (lib_c_strchr(" ,\t\n\r\f", *p)) break;
+                if (*p == '\'' || *p == '"') quote = *p;
+                else if (*p >= 'A' && *p <= 'Z') *p += 'a' - 'A';
+            }
+            ++p;
         }
-        else
-        {
-            break;
-        }
+        if (*p) *p++ = '\0';
+        arg[narg++] = start;
+        if (narg == 1u && STD_STRLEN(start) > 1u) arg[narg++] = start + 1;
+        if (quote) { seterr(debugContext, narg - 1u); break; }
     }
+    arg[narg] = STD_NULL;
 }
 
 static C_VOID exec(command_context *debugContext)
 {
-    nErrPos = 0;
+    if (nErrPos) return;
     if (!arg[0])
     {
         return;
@@ -3229,9 +3121,9 @@ lib_status common_debug_submit_line(common_debug *command,
         if (!command_copy_text_checked(strCmdBuff, sizeof(strCmdBuff), line))
             return LIB_STATUS_INVALID_ARGUMENT;
         parse(debugContext);
-        if (command_needs_machine(command) && !command_prepare_machine(command))
+        if (!nErrPos && command_needs_machine(command) && !command_prepare_machine(command))
             goto finished;
-        command_prepare_continuation(command);
+        if (!nErrPos) command_prepare_continuation(command);
         exec(debugContext);
     } else {
         if (command_needs_machine(command) && !command_prepare_machine(command)) goto finished;

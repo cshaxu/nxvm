@@ -8,10 +8,9 @@ static unsigned attempts, retired, failures, joins;
 static BOOL WINAPI reject_signal(HANDLE h) { (void)h; ++attempts; return FALSE; }
 #undef lib_win32_set_event
 #define lib_win32_set_event reject_signal
-#include "lib/kvm-base/win32/mailbox.c"
-static lib_status observed_wait(const kvm_mailbox_wake *w,lib_u32 timeout,
-    kvm_mailbox_wake_wait_result *out_result)
-{ SetEvent(asleep); return kvm_mailbox_wake_wait(w,timeout,out_result); }
+#include "lib/base/win32/sync.c"
+static base_sync_wait_result observed_wait(base_sync_event *w, lib_u32 timeout)
+{ SetEvent(asleep); return base_sync_event_wait(w, timeout); }
 static DWORD WINAPI bounded_join(HANDLE h,DWORD timeout)
 {
     assert(timeout==KVM_COMPONENT_DESTROY_TIMEOUT_MS);
@@ -21,9 +20,9 @@ static DWORD WINAPI bounded_join(HANDLE h,DWORD timeout)
 }
 #undef lib_win32_wait_for_single_object
 #define lib_win32_wait_for_single_object bounded_join
-#define kvm_mailbox_wake_wait observed_wait
+#define base_sync_event_wait observed_wait
 #include "lib/kvm-console/win32/component.c"
-#undef kvm_mailbox_wake_wait
+#undef base_sync_event_wait
 
 static int input(void *p,const kvm_input_event *e)
 { (void)p; assert(e->type==KVM_EVENT_SOURCE_RETIRED); ++retired; return 1; }
@@ -32,7 +31,7 @@ static void failure(void *p,lib_u64 id,lib_status s)
 int main(void)
 {
     assert(kvm_console_destroy(NULL)==LIB_STATUS_OK);
-    assert(kvm_mailbox_wake_signal(NULL)==LIB_STATUS_INVALID_ARGUMENT);
+    assert(base_sync_event_signal(NULL)==LIB_STATUS_INVALID_ARGUMENT);
     for(unsigned mode=0;mode<4;++mode) {
         kvm_console_options o={0}; kvm_console *c=NULL;
         asleep=CreateEventA(NULL,TRUE,FALSE,NULL);

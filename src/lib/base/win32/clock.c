@@ -1,7 +1,7 @@
-#include "lib/host/clock.h"
+#include "lib/base/clock.h"
 #include "lib/types/win32/clock.h"
 
-lib_status host_clock_platform_counter(lib_u64 *out_units,
+lib_status base_clock_platform_counter(lib_u64 *out_units,
     lib_u64 *out_units_per_second)
 {
     lib_win32_counter counter;
