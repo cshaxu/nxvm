@@ -324,8 +324,17 @@ static void check_input_reset(void)
     assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==3);
     assert(reset_events[2].data.mouse.delta_x==0 && reset_events[2].data.mouse.delta_y==0);
     ++e.value.raw_mouse.delta_x; ++e.value.raw_mouse.delta_y;
+    e.value.raw_mouse.buttons=FROM_LEFT_1ST_BUTTON_PRESSED|RIGHTMOST_BUTTON_PRESSED;
     assert(lib_console_deliver_event(logical,&e)==0);
     assert(reset_events[3].data.mouse.delta_x==8 && reset_events[3].data.mouse.delta_y==16);
+    assert(reset_events[2].data.mouse.buttons==0 && reset_events[3].data.mouse.buttons==
+        (KVM_MOUSE_BUTTON_LEFT|KVM_MOUSE_BUTTON_RIGHT));
+    assert(reset_events[3].data.mouse.relative && reset_events[3].source_identity==
+        reset_events[2].source_identity);
+    assert(kvm_console_mouse_buttons(0)==0);
+    assert(kvm_console_mouse_buttons(FROM_LEFT_1ST_BUTTON_PRESSED)==KVM_MOUSE_BUTTON_LEFT);
+    assert(kvm_console_mouse_buttons(RIGHTMOST_BUTTON_PRESSED)==KVM_MOUSE_BUTTON_RIGHT);
+    assert(kvm_console_mouse_buttons(FROM_LEFT_2ND_BUTTON_PRESSED)==0);
     e.kind=LIB_CONSOLE_EVENT_RAW_KEY;
     e.value.raw_key=(lib_console_raw_key){ .key='P', .scan_code=0x19, .pressed=1, .modifiers=3 };
     assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==5);

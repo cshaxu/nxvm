@@ -1,38 +1,17 @@
 #include "common/machine/input_queue.h"
 
-#include "lib/base/sync_interface.h"
-
-#define COMMON_MACHINE_INPUT_QUEUE_CAPACITY 256u
-
-struct common_machine_input_queue {
-    base_sync_mutex *lock;
-    kvm_input_event entries[COMMON_MACHINE_INPUT_QUEUE_CAPACITY];
-    unsigned int head;
-    unsigned int tail;
-};
-
-lib_status common_machine_input_queue_create(common_machine_input_queue **out_queue)
+lib_status common_machine_input_queue_initialize(common_machine_input_queue *queue)
 {
-    common_machine_input_queue *queue;
-    lib_status status;
-    if (out_queue == NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_queue = NULL;
-    queue = lib_allocate_zero(1u, sizeof(*queue));
-    if (queue == NULL) return LIB_STATUS_NO_MEMORY;
-    status = base_sync_mutex_create(&queue->lock);
-    if (status != LIB_STATUS_OK) {
-        lib_release(queue);
-        return status;
-    }
-    *out_queue = queue;
-    return LIB_STATUS_OK;
+    if (queue == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *queue = (common_machine_input_queue) { 0 };
+    return base_sync_mutex_create(&queue->lock);
 }
 
-void common_machine_input_queue_destroy(common_machine_input_queue *queue)
+void common_machine_input_queue_dispose(common_machine_input_queue *queue)
 {
     if (queue == NULL) return;
     base_sync_mutex_destroy(queue->lock);
-    lib_release(queue);
+    queue->lock = NULL;
 }
 
 lib_bool common_machine_input_queue_push(common_machine_input_queue *queue,

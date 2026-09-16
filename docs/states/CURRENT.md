@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T531 S23 Packet
+## M5 T531 S24 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approved this continuation S on 2026-09-15: import the latest committed SoftPC `src/lib`, `src/common`, `test/lib`, and `test/common`, adapt NXVM cleanly, then compile, test, commit and push. Permanent normal push approval remains in effect. |
-| Objective | Replace NXVM's four shared trees byte-for-byte with SoftPC `549ed44eb82e833e649ec3d2e3178c5bfeafdfab`; adapt NXVM consumers to the revised Host/Console/mailbox public contracts and restore one canonical shared corpus. |
+| Admission And Approval | Owner approved this continuation S on 2026-09-16: audit and import the latest committed SoftPC `src/lib`, `src/common`, `test/lib`, and `test/common`, adapt NXVM cleanly, then compile, test, commit and push. Permanent normal push approval remains in effect. |
+| Objective | Replace NXVM's four shared trees byte-for-byte with SoftPC `ea7e9823a7e333318ecc4b9645c466f33add51ee`; adapt NXVM consumers to the revised canonical queue, Console and Storage public contracts and restore one canonical shared corpus. |
 | Non-goals | No SoftPC write, no NXVM-specific branch in Lib/Common, no new product policy, no Core/VADP behavior redesign, no YAML edits, and no claim that an integration failure predates this S. |
-| Reference Baseline | NXVM `e3cc4cf2`; clean committed SoftPC `549ed44eb82e833e649ec3d2e3178c5bfeafdfab`; S22 is the immediately preceding canonical corpus import. |
-| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S23. |
+| Reference Baseline | NXVM `2f2c4b8c`; clean committed SoftPC `ea7e9823a7e333318ecc4b9645c466f33add51ee`; S23 is the immediately preceding canonical corpus import. |
+| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S24. |
 | Files And ABI Surface | Complete `src/lib`, `src/common`, `test/lib`, and `test/common` imports; NXVM CMake and consumers only where the imported public contracts require adaptation; task evidence and task history. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Product UX](../design/UI.md), and the source policy. Shared components retain one product-neutral owner and platform APIs remain inside Lib. |
 | Verification | Before/after four-tree corpus diff; Lib/Common manifests and corpus gates; retired-path scans; both x64/x86 Release builds; complete repository-only unit suite; external integration suite; actual-diff review and documentation governance. |
-| Expected Markers | SoftPC revision `549ed44e`; exact corpus equality for all four imported trees; no retired `base`/`console-broker` consumer reference; no platform API leakage outside Lib. |
+| Expected Markers | SoftPC revision `ea7e9823`; exact corpus equality for all four imported trees; no retired queue, Console-binding or Storage consumer reference; no platform API leakage outside Lib. |
 | Asset Needs | None; repository-only tests only. External integration uses its established external assets without modifying them. |
 | Reporting Requirements | Report the frozen source revision, exact consumer adaptations, corpus identity, test/build outcomes, line delta, and every remaining non-green integration row without pre-existing attribution. |
 | Stop Conditions | Stop for an incompatible public contract that needs a new product-policy seam, a required Core semantic change, a source-license conflict, or a regression that cannot be repaired at the NXVM adapter boundary. |
 | Exit Criteria | All four trees equal the frozen SoftPC corpus; NXVM directly consumes it with no compatibility copy; full unit, integration and both builds pass; actual review proves one owner/path. T531 remains open until its whole-task two-product execution gate is separately satisfied. |
-| Original Owner Request | Admit a new S to import the latest SoftPC Lib/Common sources and tests, then adapt NXVM to the same clean shared architecture, compile, test, commit and push. |
-| Similar-Issue Sweep | Treat every renamed Host, Console, mutex, clock, sync and platform-mailbox contract as one family; inspect all NXVM source, tests and CMake consumers instead of retaining compatibility spellings. |
+| Original Owner Request | Admit a new S to audit and import the latest SoftPC Lib/Common sources and tests, then adapt NXVM to the same clean shared architecture, compile, test, commit and push. |
+| Similar-Issue Sweep | Treat every revised session queue, Common input queue, Console binding and Storage contract as one family; inspect all NXVM source, tests and CMake consumers instead of retaining compatibility spellings. |
 
 ## Current Technical Baseline
 

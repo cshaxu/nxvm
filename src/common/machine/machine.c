@@ -5,7 +5,7 @@
 
 struct common_machine {
     common_machine_driver driver;
-    common_machine_input_queue *input_queue;
+    common_machine_input_queue input_queue;
     kvm_frame *frame_buffers[2];
     base_sync_mutex *frame_lock;
     int published_frame_index;
@@ -136,9 +136,9 @@ static void common_machine_drain_input(common_machine *machine)
 {
     kvm_input_event event;
     if (machine == NULL || machine->driver.deliver_input == NULL) return;
-    if (common_machine_input_queue_pop(machine->input_queue, &event)) {
+    if (common_machine_input_queue_pop(&machine->input_queue, &event)) {
         machine->driver.deliver_input(machine->driver.context, &event);
-        if (common_machine_input_queue_pending(machine->input_queue) &&
+        if (common_machine_input_queue_pending(&machine->input_queue) &&
             machine->driver.request_wake != NULL) {
             /* The driver uses this wake edge to schedule another safe host
              * callback; it is not a lifecycle stop request. */
@@ -234,7 +234,7 @@ static void common_machine_begin_cold_run(common_machine *machine,
     lib_bool pause_after_start)
 {
     common_machine_debug_invalidate(machine);
-    common_machine_input_queue_clear(machine->input_queue);
+    common_machine_input_queue_clear(&machine->input_queue);
     common_machine_invalidate_published_frame(machine);
     lib_atomic_i32_exchange_explicit(&machine->pause_requested, pause_after_start != 0, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_exchange_explicit(&machine->stop_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
@@ -350,7 +350,7 @@ lib_status common_machine_create(common_machine **out_machine,
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->input_event);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->media_event);
     if (status == LIB_STATUS_OK) status = base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &machine->debug_event);
-    if (status == LIB_STATUS_OK) status = common_machine_input_queue_create(&machine->input_queue);
+    if (status == LIB_STATUS_OK) status = common_machine_input_queue_initialize(&machine->input_queue);
     if (status == LIB_STATUS_OK) {
         machine->frame_buffers[0] = lib_allocate_zero(1u, sizeof(*machine->frame_buffers[0]));
         machine->frame_buffers[1] = lib_allocate_zero(1u, sizeof(*machine->frame_buffers[1]));
@@ -487,7 +487,7 @@ lib_bool common_machine_enqueue_input(common_machine *machine,
 {
     if (machine == NULL || event == NULL ||
         common_machine_state_get(machine) != COMMON_MACHINE_RUNNING ||
-        !common_machine_input_queue_push(machine->input_queue, event))
+        !common_machine_input_queue_push(&machine->input_queue, event))
         return LIB_FALSE;
     base_sync_event_signal(machine->input_event);
     machine->driver.request_wake(machine->driver.context);
@@ -596,7 +596,7 @@ void common_machine_destroy(common_machine *machine)
     base_sync_event_destroy(machine->input_event);
     base_sync_event_destroy(machine->media_event);
     base_sync_event_destroy(machine->debug_event);
-    common_machine_input_queue_destroy(machine->input_queue);
+    common_machine_input_queue_dispose(&machine->input_queue);
     base_sync_mutex_destroy(machine->frame_lock);
     lib_release(machine->frame_buffers[0]);
     lib_release(machine->frame_buffers[1]);

@@ -7,7 +7,7 @@ typedef struct probe {
     base_sync_mutex *mutex;
     base_sync_event *entered;
     base_sync_event *go;
-    common_session_queue *queue;
+    common_session_queue queue;
     lib_u32 count;
 } probe;
 
@@ -20,7 +20,7 @@ static void producer(void *opaque, const base_sync_task *task)
     assert(base_sync_event_wait(p->go, 5000u) == BASE_SYNC_WAIT_SIGNALED);
     for (i = 0; i < 1000u; ++i) {
         base_sync_mutex_lock(p->mutex);
-        assert(common_session_queue_push_frame_completed(p->queue, p->count, 0, 7u));
+        assert(common_session_queue_push_frame_completed(&p->queue, p->count, 0, 7u));
         ++p->count;
         base_sync_mutex_unlock(p->mutex);
     }
@@ -31,7 +31,7 @@ int main(void)
     probe p = { 0 };
     base_sync_task *a = NULL, *b = NULL;
     common_session_event event = { 0 };
-    common_machine_input_queue *input = NULL;
+    common_machine_input_queue storage = { 0 }, *input = &storage;
     kvm_input_event key = { 0 }, copied = { 0 };
     lib_u32 i;
     lib_atomic_i32 atom;
@@ -40,16 +40,16 @@ int main(void)
     assert(base_sync_mutex_create(&p.mutex) == LIB_STATUS_OK);
     assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &p.entered) == LIB_STATUS_OK);
     assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &p.go) == LIB_STATUS_OK);
-    assert(common_session_queue_create(&p.queue));
-    assert(!common_session_queue_take(p.queue, &event, 0u));
+    assert(common_session_queue_initialize(&p.queue));
+    assert(!common_session_queue_take(&p.queue, &event, 0u));
     /* Force growth before a consumer exists; no fixed-capacity silent loss. */
     for (i = 0; i < 1000u; ++i)
-        assert(common_session_queue_push_frame_completed(p.queue, i, 0, 9u));
+        assert(common_session_queue_push_frame_completed(&p.queue, i, 0, 9u));
     for (i = 0; i < 1000u; ++i) {
-        assert(common_session_queue_take(p.queue, &event, 0u));
+        assert(common_session_queue_take(&p.queue, &event, 0u));
         assert(event.value.frame.sequence == i && event.run_generation == 9u);
     }
-    assert(!common_session_queue_take(p.queue, &event, 0u));
+    assert(!common_session_queue_take(&p.queue, &event, 0u));
     base_sync_mutex_lock(p.mutex);
     assert(base_sync_task_create(producer, &p, &a) == LIB_STATUS_OK);
     assert(base_sync_event_wait(p.entered, 5000u) == BASE_SYNC_WAIT_SIGNALED);
@@ -60,24 +60,24 @@ int main(void)
     assert(p.count == 0u);
     base_sync_mutex_unlock(p.mutex);
     for (i = 0; i < 2000u; ++i) {
-        assert(common_session_queue_take(p.queue, &event, LIB_UINT32_MAX));
+        assert(common_session_queue_take(&p.queue, &event, LIB_UINT32_MAX));
         assert(event.kind == COMMON_SESSION_EVENT_FRAME_COMPLETED);
         assert(event.value.frame.sequence == i && event.run_generation == 7u);
     }
     base_sync_task_destroy(a);
     base_sync_task_destroy(b);
     assert(p.count == 2000u);
-    assert(!common_session_queue_take(p.queue, &event, 0u));
-    assert(common_session_queue_push_console_failed(p.queue));
-    assert(common_session_queue_take(p.queue, &event, 0u));
+    assert(!common_session_queue_take(&p.queue, &event, 0u));
+    assert(common_session_queue_push_console_failed(&p.queue));
+    assert(common_session_queue_take(&p.queue, &event, 0u));
     assert(event.kind == COMMON_SESSION_EVENT_CONSOLE_FAILED);
-    assert(!common_session_queue_take(p.queue, &event, 0u));
-    common_session_queue_destroy(p.queue);
+    assert(!common_session_queue_take(&p.queue, &event, 0u));
+    common_session_queue_dispose(&p.queue);
     base_sync_event_destroy(p.go);
     base_sync_event_destroy(p.entered);
     base_sync_mutex_destroy(p.mutex);
 
-    assert(common_machine_input_queue_create(&input) == LIB_STATUS_OK);
+    assert(common_machine_input_queue_initialize(input) == LIB_STATUS_OK);
     key.type = KVM_EVENT_KEY;
     for (i = 0; i < 255u; ++i) {
         key.source_identity = i;
@@ -92,7 +92,7 @@ int main(void)
     assert(common_machine_input_queue_push(input, &key));
     common_machine_input_queue_clear(input);
     assert(!common_machine_input_queue_pop(input, &copied));
-    common_machine_input_queue_destroy(input);
+    common_machine_input_queue_dispose(input);
 
     lib_atomic_i32_initialize(&atom, 0);
     assert(lib_atomic_i32_fetch_add_explicit(&atom, 3, LIB_MEMORY_ORDER_SEQ_CST) == 0);

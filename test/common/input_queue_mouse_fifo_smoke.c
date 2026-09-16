@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    common_machine_input_queue *queue = NULL;
+    common_machine_input_queue storage = { 0 }, *queue = &storage;
     kvm_input_event first = { 0 };
     kvm_input_event second = { 0 };
     kvm_input_event actual = { 0 };
@@ -16,7 +16,7 @@ int main(void)
     first.data.mouse.buttons = KVM_MOUSE_BUTTON_LEFT;
     second = first;
     second.data.mouse.delta_y = 16;
-    assert(common_machine_input_queue_create(&queue) == LIB_STATUS_OK);
+    assert(common_machine_input_queue_initialize(queue) == LIB_STATUS_OK);
     assert(common_machine_input_queue_push(queue, &first));
     assert(common_machine_input_queue_push(queue, &second));
     assert(common_machine_input_queue_pop(queue, &actual));
@@ -24,6 +24,6 @@ int main(void)
     assert(common_machine_input_queue_pop(queue, &actual));
     assert(memcmp(&actual, &second, sizeof(actual)) == 0);
     assert(!common_machine_input_queue_pending(queue));
-    common_machine_input_queue_destroy(queue);
+    common_machine_input_queue_dispose(queue);
     return 0;
 }

@@ -60,7 +60,7 @@ lib_status common_ui_request_monitor_line(common_ui *ui)
     if (exit_on_request) {
         lib_console_line line = {0};
         memcpy(line.text, "exit", 5); line.length = 4;
-        assert(common_session_queue_push_monitor_line(active->queue, &line, 0));
+        assert(common_session_queue_push_monitor_line(&active->queue, &line, 0));
     }
     return fail_request ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
@@ -116,7 +116,7 @@ int main(void)
     s.command.note_runtime = runtime;
     s.command.open = opened; s.command.reject_line = rejected;
     s.command.submit_line = submitted;
-    assert(common_session_queue_create(&s.queue));
+    assert(common_session_queue_initialize(&s.queue));
     common_session_state_initialize(&s.state, COMMON_SESSION_DISPLAY_WINDOW, 1);
     common_session_state_note_runtime(&s.state, COMMON_SESSION_MACHINE_RUNNING);
     common_session_state_note_window(&s.state, 1);
@@ -146,7 +146,7 @@ int main(void)
     assert(common_session_apply_result(&s, &notice));
     assert(common_session_arm_if_ready(&s) && requests == 2 && notices == 3);
     /* Both rejected and ordinary line events pass through the actual loop. */
-    assert(common_session_queue_push_monitor_line(s.queue, &line, 1));
+    assert(common_session_queue_push_monitor_line(&s.queue, &line, 1));
     assert(common_session_run(&s));
     assert(waits == 2u);
     assert(requests == 3 && prompts == 3);
@@ -210,6 +210,6 @@ int main(void)
     waits = 0u; fail_wait = LIB_TRUE;
     assert(!common_session_run(&s));
     assert(waits == 1u && requests == before);
-    common_session_queue_destroy(s.queue);
+    common_session_queue_dispose(&s.queue);
     return 0;
 }

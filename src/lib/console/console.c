@@ -14,7 +14,6 @@ struct lib_console {
     void *event_context;
     lib_console_output_binding output;
     lib_u32 binding_generation;
-    lib_bool binding_active;
 };
 
 static lib_bool lib_console_event_valid(const lib_console_event *event)
@@ -113,8 +112,7 @@ lib_status lib_console_deliver_event(lib_console *console,
     copied = *event;
     base_sync_mutex_lock(console->event_gate);
     base_sync_mutex_lock(console->lock);
-    if (console->binding_active == LIB_FALSE ||
-        copied.binding_generation == 0u ||
+    if (copied.binding_generation == 0u ||
         copied.binding_generation != console->binding_generation) {
         base_sync_mutex_unlock(console->lock);
         base_sync_mutex_unlock(console->event_gate);
@@ -141,7 +139,6 @@ lib_status lib_console_bind_generation(lib_console *console,
     if (console == LIB_NULL || generation == 0u) return LIB_STATUS_INVALID_ARGUMENT;
     base_sync_mutex_lock(console->lock);
     console->binding_generation = generation;
-    console->binding_active = LIB_TRUE;
     base_sync_mutex_unlock(console->lock);
     return LIB_STATUS_OK;
 }
@@ -151,7 +148,6 @@ void lib_console_invalidate_binding(lib_console *console)
     if (console == LIB_NULL) return;
     base_sync_mutex_lock(console->lock);
     console->binding_generation = 0u;
-    console->binding_active = LIB_FALSE;
     base_sync_mutex_unlock(console->lock);
 }
 

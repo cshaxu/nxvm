@@ -1,5 +1,12 @@
 #include "lib/kvm-console/console.h"
 
+/* No native input exists while worker_start is unsupported. */
+lib_u8 kvm_console_mouse_buttons(lib_u32 buttons)
+{
+    (void)buttons;
+    return 0u;
+}
+
 lib_status kvm_console_worker_start(kvm_console *console)
 {
     (void)console;

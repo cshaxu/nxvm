@@ -73,6 +73,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     lib-test-lib_console
     lib-test-types_contract
     lib-test-storage_file_writer_binary
+    lib-test-storage_position
     lib-test-kvm_component_contract
     lib-test-kvm_mailbox_selection
     lib-test-win32_presentation
@@ -81,11 +82,13 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     lib-test-linux_storage_contract
     lib-test-linux_input_contract
     common-test-sync
+    common-test-session_queue_failure
     common-test-presentation_plan
     common-test-reconciler
     common-test-control_state_matrix
     common-test-control_reconciler_integration
     common-test-input_queue_mouse_fifo
+    common-test-input_queue_ownership
     common-test-physical_key_identity
     common-test-session_frame
     common-test-session_monitor

@@ -13,7 +13,7 @@ static void take(common_session_queue *queue, common_session_event *event)
 
 int main(void)
 {
-    common_session_queue *queue = NULL;
+    common_session_queue storage = { 0 }, *queue = &storage;
     common_session_event event;
     lib_console_line start = { 5u, "start" };
     lib_console_line pause = { 5u, "pause" };
@@ -22,7 +22,7 @@ int main(void)
     kvm_input_event retired = { 0 };
     kvm_input_event hotkey = { 0 };
 
-    assert(common_session_queue_create(&queue));
+    assert(common_session_queue_initialize(queue));
     raw_key.type = KVM_EVENT_KEY;
     raw_key.source_identity = 41u;
     raw_key.data.key.key = 'A';
@@ -116,6 +116,6 @@ int main(void)
     take(queue, &event);
     assert(event.kind == COMMON_SESSION_EVENT_CONSOLE_FAILED);
     assert(!common_session_queue_take(queue, &event, 0u));
-    common_session_queue_destroy(queue);
+    common_session_queue_dispose(queue);
     return 0;
 }

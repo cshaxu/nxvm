@@ -46,12 +46,22 @@ lib_status lib_storage_file_flush(lib_storage_file *file)
 lib_status lib_storage_file_seek_absolute(const lib_storage_file *file,
     lib_i64 offset)
 { return file == LIB_NULL || offset < 0 ? LIB_STATUS_INVALID_ARGUMENT :
-    storage_file_platform_seek_absolute(file, offset); }
+    storage_file_platform_seek(file, offset, LIB_SEEK_SET); }
 
 lib_status lib_storage_file_byte_count(lib_storage_file *file,
     lib_i64 *out_byte_count)
-{ return file == LIB_NULL || out_byte_count == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
-    storage_file_platform_byte_count(file, out_byte_count); }
+{
+    lib_i64 offset, length;
+    if (file == LIB_NULL || out_byte_count == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    offset = storage_file_platform_tell(file);
+    if (offset < 0 || storage_file_platform_seek(file, 0, LIB_SEEK_END) != LIB_STATUS_OK)
+        return LIB_STATUS_IO_ERROR;
+    length = storage_file_platform_tell(file);
+    if (length < 0 || storage_file_platform_seek(file, offset, LIB_SEEK_SET) != LIB_STATUS_OK)
+        return LIB_STATUS_IO_ERROR;
+    *out_byte_count = length;
+    return LIB_STATUS_OK;
+}
 
 lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
     void **out_bytes, lib_size *out_byte_count)
@@ -65,7 +75,7 @@ lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
     *out_bytes = LIB_NULL;
     if (out_byte_count == LIB_NULL || path == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_byte_count = 0u;
-    status = storage_file_platform_open_readonly(path, &file);
+    status = storage_file_platform_open(path, LIB_FALSE, &file);
     if (status == LIB_STATUS_OK) status = lib_storage_file_byte_count(&file, &length);
     if (status == LIB_STATUS_OK && (length < 0 || (lib_u64)length > maximum))
         status = LIB_STATUS_LIMIT_EXCEEDED;

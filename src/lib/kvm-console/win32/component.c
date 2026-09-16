@@ -4,85 +4,19 @@
 #include "lib/kvm-console/console.h"
 #include "lib/base/sync_interface.h"
 
-#include "lib/kvm-base/input_interface.h"
-
 #include "lib/types/win32/console.h"
 
 typedef struct kvm_console_win32_state {
     lib_win32_handle worker;
-    kvm_keyboard_normalizer keyboard;
-    lib_win32_coord previous_mouse;
-    int previous_mouse_valid;
 } kvm_console_win32_state;
 
-static int kvm_console_emit_normalized(void *context, const kvm_input_event *event)
+lib_u8 kvm_console_mouse_buttons(lib_u32 buttons)
 {
-    kvm_console *console = context;
-    return console == LIB_NULL ? 0 : kvm_component_emit(&console->base, event);
-}
-
-static lib_u8 kvm_console_hotkey_modifiers(lib_u8 modifiers)
-{
-    lib_u8 result = 0u;
-    if ((modifiers & LIB_CONSOLE_MODIFIER_CONTROL) != 0u)
-        result |= KVM_HOTKEY_MODIFIER_CONTROL;
-    if ((modifiers & LIB_CONSOLE_MODIFIER_ALT) != 0u)
-        result |= KVM_HOTKEY_MODIFIER_ALT;
-    if ((modifiers & LIB_CONSOLE_MODIFIER_SHIFT) != 0u)
-        result |= KVM_HOTKEY_MODIFIER_SHIFT;
+    lib_u8 result = (buttons & LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED) != 0u ?
+        KVM_MOUSE_BUTTON_LEFT : 0u;
+    if ((buttons & LIB_WIN32_RIGHTMOST_BUTTON_PRESSED) != 0u)
+        result |= KVM_MOUSE_BUTTON_RIGHT;
     return result;
-}
-
-static void kvm_console_receive_event(void *context,
-    const lib_console_event *event)
-{
-    kvm_console *console = (kvm_console *)context;
-    kvm_console_win32_state *state;
-    kvm_input_event input = { 0 };
-
-    if (console == LIB_NULL || event == LIB_NULL ||
-        lib_atomic_i32_load_explicit(&console->base.stopping,
-            LIB_MEMORY_ORDER_ACQUIRE) != 0 ||
-        (state = (kvm_console_win32_state *)console->worker_state) == LIB_NULL)
-        return;
-    if (event->kind == LIB_CONSOLE_EVENT_INPUT_RESET) {
-        kvm_hotkey_matcher_discard(&console->base.hotkey_matcher);
-        lib_memory_set(&state->keyboard, 0, sizeof(state->keyboard));
-        state->previous_mouse_valid = 0;
-    } else if (event->kind == LIB_CONSOLE_EVENT_ACTIVATED) {
-        lib_status status = kvm_component_mailboxes_notify(&console->base.mailboxes);
-        if (status != LIB_STATUS_OK) kvm_component_fail(&console->base, status);
-    } else if (event->kind == LIB_CONSOLE_EVENT_IO_FAILURE) {
-        kvm_component_fail(&console->base, LIB_STATUS_IO_ERROR);
-    } else if (event->kind == LIB_CONSOLE_EVENT_RAW_KEY) {
-        const lib_console_raw_key *key = &event->value.raw_key;
-
-        kvm_keyboard_record record = {
-            KVM_KEYBOARD_COMBINED, key->scan_code, (lib_u16)key->key,
-            (lib_u16)key->unicode,
-            key->extended != LIB_FALSE ? KVM_INPUT_FLAG_EXTENDED : 0u,
-            kvm_console_hotkey_modifiers(key->modifiers), key->pressed, key->repeat_count };
-        (void)kvm_keyboard_submit_record(&state->keyboard,
-            &console->base.hotkey_matcher, console,
-            kvm_console_emit_normalized, &record);
-    } else if (event->kind == LIB_CONSOLE_EVENT_RAW_MOUSE) {
-        const lib_console_raw_mouse *mouse = &event->value.raw_mouse;
-
-        input.type = KVM_EVENT_MOUSE;
-        input.data.mouse.relative = 1u;
-        if (state->previous_mouse_valid) {
-            input.data.mouse.delta_x = (mouse->delta_x - state->previous_mouse.X) * 8;
-            input.data.mouse.delta_y = (mouse->delta_y - state->previous_mouse.Y) * 16;
-        }
-        state->previous_mouse.X = (lib_win32_short)mouse->delta_x;
-        state->previous_mouse.Y = (lib_win32_short)mouse->delta_y;
-        state->previous_mouse_valid = 1;
-        input.data.mouse.buttons = (mouse->buttons & LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED) != 0u ?
-            KVM_MOUSE_BUTTON_LEFT : 0u;
-        if ((mouse->buttons & LIB_WIN32_RIGHTMOST_BUTTON_PRESSED) != 0u)
-            input.data.mouse.buttons |= KVM_MOUSE_BUTTON_RIGHT;
-        (void)kvm_console_emit_normalized(console, &input);
-    }
 }
 
 static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)

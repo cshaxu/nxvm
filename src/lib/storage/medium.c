@@ -47,9 +47,8 @@ lib_status lib_storage_medium_open(const char *path, lib_storage_medium_mode mod
         return LIB_STATUS_INVALID_ARGUMENT;
     status = lib_storage_medium_create(0u, mode, &medium);
     if (status != LIB_STATUS_OK) return status;
-    status = mode == LIB_STORAGE_MEDIUM_DIRECT ?
-        storage_file_platform_open_readwrite(path, &medium->file) :
-        storage_file_platform_open_readonly(path, &medium->file);
+    status = storage_file_platform_open(path, mode == LIB_STORAGE_MEDIUM_DIRECT,
+        &medium->file);
     if (status == LIB_STATUS_OK)
         status = lib_storage_file_byte_count(&medium->file, &length);
     if (status == LIB_STATUS_OK && (length < 0 || (lib_u64)length > (lib_u64)(lib_size)-1))

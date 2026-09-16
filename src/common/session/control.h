@@ -1,11 +1,10 @@
 #ifndef COMMON_SESSION_CONTROL_H
 #define COMMON_SESSION_CONTROL_H
 
+#include "lib/base/sync_interface.h"
 #include "lib/console/console_interface.h"
 #include "lib/kvm-base/event_interface.h"
 #include "common/session/session_interface.h"
-
-typedef struct common_session_queue common_session_queue;
 
 typedef enum common_session_event_kind {
     COMMON_SESSION_EVENT_KVM_INPUT,
@@ -46,8 +45,24 @@ typedef struct common_session_event {
     } value;
 } common_session_event;
 
-int common_session_queue_create(common_session_queue **out_queue);
-void common_session_queue_destroy(common_session_queue *queue);
+#define COMMON_SESSION_EVENT_PRESSED_CAPACITY 256u
+
+typedef struct common_session_queue {
+    base_sync_mutex *lock;
+    base_sync_event *available;
+    common_session_event *events;
+    unsigned int first;
+    unsigned int count;
+    unsigned int capacity;
+    kvm_input_event pressed[COMMON_SESSION_EVENT_PRESSED_CAPACITY];
+    unsigned int pressed_count;
+    common_session_event faults[2];
+    int fault_pending[2];
+} common_session_queue;
+
+/* Caller owns zeroed or disposed storage; failure releases partial resources. */
+int common_session_queue_initialize(common_session_queue *queue);
+void common_session_queue_dispose(common_session_queue *queue);
 int common_session_queue_push_kvm_for_run(common_session_queue *queue,
     const kvm_input_event *event, lib_u32 run_generation);
 int common_session_queue_push_monitor_line(common_session_queue *queue,

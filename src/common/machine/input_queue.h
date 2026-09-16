@@ -2,14 +2,22 @@
 #define COMMON_MACHINE_INPUT_QUEUE_H
 
 #include "lib/kvm-base/event_interface.h"
+#include "lib/base/sync_interface.h"
 
-typedef struct common_machine_input_queue common_machine_input_queue;
+#define COMMON_MACHINE_INPUT_QUEUE_CAPACITY 256u
+
+typedef struct common_machine_input_queue {
+    base_sync_mutex *lock;
+    kvm_input_event entries[COMMON_MACHINE_INPUT_QUEUE_CAPACITY];
+    unsigned int head;
+    unsigned int tail;
+} common_machine_input_queue;
 
 /* SoftPC runtime coordination: KVM producers publish copied KVM events, while
  * the sole machine executor consumes them.  This is deliberately product
  * runtime ownership, not a second KVM implementation. */
-lib_status common_machine_input_queue_create(common_machine_input_queue **out_queue);
-void common_machine_input_queue_destroy(common_machine_input_queue *queue);
+lib_status common_machine_input_queue_initialize(common_machine_input_queue *queue);
+void common_machine_input_queue_dispose(common_machine_input_queue *queue);
 lib_bool common_machine_input_queue_push(common_machine_input_queue *queue,
     const kvm_input_event *event);
 lib_bool common_machine_input_queue_pop(common_machine_input_queue *queue,

@@ -12,14 +12,14 @@ typedef struct { int l_type, l_whence; } lib_linux_file_lock;
 #define LIB_LINUX_F_SETLK 3
 #define lib_linux_fseeko fseek
 #define lib_linux_ftello ftell
-static int reject_lock, expected_lock;
+static int reject_lock, reject_open, expected_lock;
 static unsigned closes;
 static FILE *open_stream(const char *path, const char *mode)
 {
     assert(path != NULL);
     assert(mode[0] == 'r' && mode[1] == 'b');
     assert(mode[2] == (expected_lock == LIB_LINUX_F_WRLCK ? '+' : '\0'));
-    return tmpfile();
+    return reject_open ? NULL : tmpfile();
 }
 static int close_stream(FILE *stream) { ++closes; return fclose(stream); }
 static int descriptor(FILE *stream) { assert(stream != NULL); return 7; }
@@ -45,12 +45,23 @@ int main(void)
             lib_storage_file file = { 0 };
             unsigned before = closes;
             expected_lock = write ? LIB_LINUX_F_WRLCK : LIB_LINUX_F_RDLCK;
-            lib_status status = write ? storage_file_platform_open_readwrite("fixture", &file) :
-                storage_file_platform_open_readonly("fixture", &file);
+            lib_status status = storage_file_platform_open("fixture", write, &file);
             assert(status == (reject_lock ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK));
             assert((file.stream == NULL) == (reject_lock != 0));
+            if (!reject_lock) {
+                lib_i64 length = -1;
+                assert(lib_storage_file_byte_count(&file, &length) == LIB_STATUS_OK && length == 0);
+                assert(lib_storage_file_write_exact(&file, "abc", 3u) == LIB_STATUS_OK);
+                assert(lib_storage_file_seek_absolute(&file, 1) == LIB_STATUS_OK);
+                assert(lib_storage_file_byte_count(&file, &length) == LIB_STATUS_OK && length == 3);
+                assert(storage_file_platform_tell(&file) == 1);
+            }
             assert(lib_storage_file_close(&file) == LIB_STATUS_OK);
             assert(closes == before + 1u && file.stream == NULL);
+            reject_open = 1;
+            assert(storage_file_platform_open("fixture", write, &file) == LIB_STATUS_IO_ERROR);
+            assert(file.stream == NULL && closes == before + 1u);
+            reject_open = 0;
         }
     }
     return 0;

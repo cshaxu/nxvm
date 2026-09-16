@@ -47,6 +47,16 @@ static int close_stream(FILE *stream)
 
 int main(void)
 {
+    lib_storage_file positioned = { tmpfile() };
+    lib_i64 measured = -1;
+    assert(positioned.stream != NULL);
+    assert(lib_storage_file_byte_count(&positioned, &measured) == LIB_STATUS_OK && measured == 0);
+    assert(lib_storage_file_seek_absolute(&positioned, 4096) == LIB_STATUS_OK);
+    assert(lib_storage_file_write_exact(&positioned, "Z", 1u) == LIB_STATUS_OK);
+    assert(lib_storage_file_seek_absolute(&positioned, 7) == LIB_STATUS_OK);
+    assert(lib_storage_file_byte_count(&positioned, &measured) == LIB_STATUS_OK && measured == 4097);
+    assert(storage_file_platform_tell(&positioned) == 7);
+    assert(lib_storage_file_close(&positioned) == LIB_STATUS_OK);
     static const unsigned char payload[] = { 'A', 0u, 'B', '\n' };
     unsigned char actual[sizeof(payload)] = { 0u };
     const char *path = "softpc-storage-writer-binary-smoke.bin";
@@ -113,7 +123,9 @@ int main(void)
     assert(owned == NULL && live_allocations == 0u);
     reject_close = 0;
     assert(softpc_test_remove_image(path));
-    assert(lib_storage_medium_open(path, LIB_STORAGE_MEDIUM_DIRECT, &medium) == LIB_STATUS_IO_ERROR);
-    assert(medium == NULL && live_allocations == 0u);
+    for (int mode = LIB_STORAGE_MEDIUM_DIRECT; mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++mode) {
+        assert(lib_storage_medium_open(path, (lib_storage_medium_mode)mode, &medium) == LIB_STATUS_IO_ERROR);
+        assert(medium == NULL && live_allocations == 0u);
+    }
     return 0;
 }

@@ -204,11 +204,21 @@ recorded evidence, never by following successive isolated failures.
     `src/lib`, `src/common`, `test/lib` and `test/common` corpus; atomically
     replace NXVM's four trees byte-for-byte; then cut NXVM directly to the
     renamed Host, Console and mailbox public contracts.  Delete every retired
-    `base` or `console-broker` reference rather than retaining a compatibility
+    Host-name or prior-mailbox reference rather than retaining a compatibility
     alias.  Prove exact corpus identity, dependency and manifest gates, both
     stripped Release architectures, the complete repository-only unit suite,
     and the external integration suite.  This remains an NXVM import and
     adapter-cutover subtask, not whole-task two-product acceptance.
+24. **S24: canonical queue/storage corpus refresh.** Freeze SoftPC's committed
+    `src/lib`, `src/common`, `test/lib` and `test/common` corpus; atomically
+    replace NXVM's four trees byte-for-byte.  Adopt the canonical embedded
+    session-queue/resource-disposal, Common input-queue, Console binding and
+    Storage contracts by direct NXVM consumer adaptation only.  Delete every
+    superseded NXVM assumption rather than retaining a compatibility spelling
+    or parallel queue.  Prove four-tree identity, manifests and component
+    gates, both stripped Release architectures, complete repository-only unit
+    coverage and the external integration suite.  This remains an import and
+    adapter-cutover S, not whole-task two-product acceptance.
 
 ## Verification And Exit
 

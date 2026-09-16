@@ -2,67 +2,21 @@
 
 #include <limits.h>
 
-#include "lib/base/sync_interface.h"
-
-
 #define COMMON_SESSION_EVENT_QUEUE_INITIAL_CAPACITY 64u
-#define COMMON_SESSION_EVENT_PRESSED_CAPACITY 256u
-
-typedef struct common_session_pressed_key {
-    lib_u64 source;
-    kvm_input_event event;
-} common_session_pressed_key;
-
-struct common_session_queue {
-    base_sync_mutex *lock;
-    base_sync_event *available;
-    common_session_event *events;
-    unsigned int first;
-    unsigned int count;
-    unsigned int capacity;
-    common_session_pressed_key pressed[COMMON_SESSION_EVENT_PRESSED_CAPACITY];
-    unsigned int pressed_count;
-    int fatal_delivery_pending;
-    lib_u64 fatal_delivery_source;
-    lib_u32 fatal_delivery_generation;
-    lib_status fatal_delivery_status;
-    int fatal_queue_delivery_pending;
-    lib_u32 fatal_queue_delivery_generation;
-    lib_status fatal_queue_delivery_status;
-};
 
 static int common_session_queue_push(common_session_queue *queue,
     const common_session_event *event);
 
-/* Allocation failure must not turn a key transition into a silent drop.  This
- * fixed metadata slot is the queue's final, allocation-lib_release fault record. */
-static void common_session_queue_latch_delivery_failure(common_session_queue *queue,
-    lib_u64 source_identity, lib_status status, lib_u32 run_generation)
+/* Fixed storage survives allocation failure. Each class keeps its first fault;
+ * KVM delivery (slot 0) precedes control delivery (slot 1) after the FIFO drains. */
+static void common_session_queue_latch_failure(common_session_queue *queue,
+    unsigned int slot, const common_session_event *event)
 {
     if (queue == NULL) return;
     base_sync_mutex_lock(queue->lock);
-    if (!queue->fatal_delivery_pending) {
-        queue->fatal_delivery_pending = 1;
-        queue->fatal_delivery_source = source_identity;
-        queue->fatal_delivery_generation = run_generation;
-        queue->fatal_delivery_status = status;
-    }
-    base_sync_event_signal(queue->available);
-    base_sync_mutex_unlock(queue->lock);
-}
-
-/* All control records are facts required by the sole reconciler.  If the
- * dynamically growing FIFO cannot retain one, expose a terminal failure from
- * fixed storage rather than pretending the fact never happened. */
-static void common_session_queue_latch_queue_delivery_failure(
-    common_session_queue *queue, lib_status status, lib_u32 run_generation)
-{
-    if (queue == NULL) return;
-    base_sync_mutex_lock(queue->lock);
-    if (!queue->fatal_queue_delivery_pending) {
-        queue->fatal_queue_delivery_pending = 1;
-        queue->fatal_queue_delivery_generation = run_generation;
-        queue->fatal_queue_delivery_status = status;
+    if (!queue->fault_pending[slot]) {
+        queue->faults[slot] = *event;
+        queue->fault_pending[slot] = 1;
     }
     base_sync_event_signal(queue->available);
     base_sync_mutex_unlock(queue->lock);
@@ -71,9 +25,12 @@ static void common_session_queue_latch_queue_delivery_failure(
 static int common_session_queue_push_required(common_session_queue *queue,
     const common_session_event *event)
 {
+    common_session_event fault = { 0 };
     if (common_session_queue_push(queue, event)) return 1;
-    common_session_queue_latch_queue_delivery_failure(queue, LIB_STATUS_NO_MEMORY,
-        event == NULL ? 0u : event->run_generation);
+    fault.kind = COMMON_SESSION_EVENT_QUEUE_DELIVERY_FAILED;
+    fault.run_generation = event == NULL ? 0u : event->run_generation;
+    fault.value.queue_delivery_status = LIB_STATUS_NO_MEMORY;
+    common_session_queue_latch_failure(queue, 1u, &fault);
     return 0;
 }
 
@@ -111,38 +68,28 @@ static int common_session_queue_push(common_session_queue *queue,
     return 1;
 }
 
-int common_session_queue_create(common_session_queue **out_queue)
+int common_session_queue_initialize(common_session_queue *queue)
 {
-    common_session_queue *queue;
-    if (out_queue == NULL) return 0;
-    *out_queue = NULL;
-    queue = lib_allocate_zero(1u, sizeof(*queue));
     if (queue == NULL) return 0;
-    if (base_sync_mutex_create(&queue->lock) != LIB_STATUS_OK) {
-        lib_release(queue);
-        return 0;
-    }
+    *queue = (common_session_queue) { 0 };
+    if (base_sync_mutex_create(&queue->lock) != LIB_STATUS_OK) return 0;
     queue->capacity = COMMON_SESSION_EVENT_QUEUE_INITIAL_CAPACITY;
     queue->events = lib_allocate_zero(queue->capacity, sizeof(*queue->events));
     if (queue->events == NULL ||
         base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &queue->available) != LIB_STATUS_OK) {
-        lib_release(queue->events);
-        if (queue->available != NULL) base_sync_event_destroy(queue->available);
-        base_sync_mutex_destroy(queue->lock);
-        lib_release(queue);
+        common_session_queue_dispose(queue);
         return 0;
     }
-    *out_queue = queue;
     return 1;
 }
 
-void common_session_queue_destroy(common_session_queue *queue)
+void common_session_queue_dispose(common_session_queue *queue)
 {
     if (queue == NULL) return;
     base_sync_event_destroy(queue->available);
     lib_release(queue->events);
     base_sync_mutex_destroy(queue->lock);
-    lib_release(queue);
+    *queue = (common_session_queue) { 0 };
 }
 
 int common_session_queue_push_kvm_for_run(common_session_queue *queue,
@@ -154,8 +101,10 @@ int common_session_queue_push_kvm_for_run(common_session_queue *queue,
     copied.run_generation = run_generation;
     copied.value.kvm = *event;
     if (common_session_queue_push(queue, &copied)) return 1;
-    common_session_queue_latch_delivery_failure(queue, event->source_identity,
-        LIB_STATUS_NO_MEMORY, run_generation);
+    copied.kind = COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED;
+    copied.value.delivery_failure.source_identity = event->source_identity;
+    copied.value.delivery_failure.status = LIB_STATUS_NO_MEMORY;
+    common_session_queue_latch_failure(queue, 0u, &copied);
     return 0;
 }
 
@@ -223,45 +172,30 @@ int common_session_queue_push_kvm_delivery_failed(common_session_queue *queue,
 int common_session_queue_take(common_session_queue *queue,
     common_session_event *out_event, lib_u32 timeout_ms)
 {
+    int taken = 0;
+    unsigned int slot;
     if (queue == NULL || out_event == NULL ||
         base_sync_event_wait(queue->available, timeout_ms) != BASE_SYNC_WAIT_SIGNALED)
         return 0;
     base_sync_mutex_lock(queue->lock);
-    if (queue->count == 0u && queue->fatal_delivery_pending) {
-        lib_memory_set(out_event, 0, sizeof(*out_event));
-        out_event->kind = COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED;
-        out_event->run_generation = queue->fatal_delivery_generation;
-        out_event->value.delivery_failure.source_identity = queue->fatal_delivery_source;
-        out_event->value.delivery_failure.status = queue->fatal_delivery_status;
-        queue->fatal_delivery_pending = 0;
-        if (!queue->fatal_queue_delivery_pending)
-            base_sync_event_reset(queue->available);
-        base_sync_mutex_unlock(queue->lock);
-        return 1;
+    if (queue->count != 0u) {
+        *out_event = queue->events[queue->first];
+        queue->first = (queue->first + 1u) % queue->capacity;
+        --queue->count;
+        taken = 1;
+    } else {
+        for (slot = 0u; slot < 2u; ++slot) {
+            if (!queue->fault_pending[slot]) continue;
+            *out_event = queue->faults[slot];
+            queue->fault_pending[slot] = 0;
+            taken = 1;
+            break;
+        }
     }
-    if (queue->count == 0u && queue->fatal_queue_delivery_pending) {
-        lib_memory_set(out_event, 0, sizeof(*out_event));
-        out_event->kind = COMMON_SESSION_EVENT_QUEUE_DELIVERY_FAILED;
-        out_event->run_generation = queue->fatal_queue_delivery_generation;
-        out_event->value.queue_delivery_status = queue->fatal_queue_delivery_status;
-        queue->fatal_queue_delivery_pending = 0;
-        base_sync_event_reset(queue->available);
-        base_sync_mutex_unlock(queue->lock);
-        return 1;
-    }
-    if (queue->count == 0u) {
-        base_sync_event_reset(queue->available);
-        base_sync_mutex_unlock(queue->lock);
-        return 0;
-    }
-    *out_event = queue->events[queue->first];
-    queue->first = (queue->first + 1u) % queue->capacity;
-    --queue->count;
-    if (queue->count == 0u && !queue->fatal_delivery_pending &&
-        !queue->fatal_queue_delivery_pending)
+    if (queue->count == 0u && !queue->fault_pending[0] && !queue->fault_pending[1])
         base_sync_event_reset(queue->available);
     base_sync_mutex_unlock(queue->lock);
-    return 1;
+    return taken;
 }
 
 int common_session_accept_kvm_event(const common_session_event *event,
@@ -291,13 +225,13 @@ static void common_session_forget_pressed(common_session_queue *queue,
 {
     unsigned int index;
     for (index = 0u; index < queue->pressed_count; ++index) {
-        common_session_pressed_key *pressed = &queue->pressed[index];
-        if (pressed->source == event->source_identity &&
-            (pressed->event.data.key.flags & KVM_KEY_FLAG_EXTENDED) ==
+        kvm_input_event *pressed = &queue->pressed[index];
+        if (pressed->source_identity == event->source_identity &&
+            (pressed->data.key.flags & KVM_KEY_FLAG_EXTENDED) ==
                 (event->data.key.flags & KVM_KEY_FLAG_EXTENDED) &&
-            ((pressed->event.data.key.scan_code != 0u || event->data.key.scan_code != 0u)
-                ? pressed->event.data.key.scan_code == event->data.key.scan_code
-                : pressed->event.data.key.key == event->data.key.key)) {
+            ((pressed->data.key.scan_code != 0u || event->data.key.scan_code != 0u)
+                ? pressed->data.key.scan_code == event->data.key.scan_code
+                : pressed->data.key.key == event->data.key.key)) {
             pressed[0] = queue->pressed[--queue->pressed_count];
             return;
         }
@@ -307,12 +241,9 @@ static void common_session_forget_pressed(common_session_queue *queue,
 static void common_session_remember_pressed(common_session_queue *queue,
     const kvm_input_event *event)
 {
-    unsigned int index;
     common_session_forget_pressed(queue, event);
     if (queue->pressed_count == COMMON_SESSION_EVENT_PRESSED_CAPACITY) return;
-    index = queue->pressed_count++;
-    queue->pressed[index].source = event->source_identity;
-    queue->pressed[index].event = *event;
+    queue->pressed[queue->pressed_count++] = *event;
 }
 
 static int common_session_release_source(common_session_queue *queue,
@@ -321,17 +252,17 @@ static int common_session_release_source(common_session_queue *queue,
 {
     unsigned int index = 0u;
     while (index < queue->pressed_count) {
-        common_session_pressed_key *pressed = &queue->pressed[index];
-        if (pressed->source != source) {
+        kvm_input_event *pressed = &queue->pressed[index];
+        if (pressed->source_identity != source) {
             ++index;
             continue;
         }
-        pressed->event.data.key.pressed = 0u;
+        pressed->data.key.pressed = 0u;
         /* Source retirement is ledger cleanup.  It can reach the control
            queue after pause, but must not turn into a late guest release in
            the paused or stopped VM. */
         if (runtime_state == COMMON_SESSION_MACHINE_RUNNING &&
-            !sink(sink_context, &pressed->event)) return 0;
+            !sink(sink_context, pressed)) return 0;
         queue->pressed[index] = queue->pressed[--queue->pressed_count];
     }
     return 1;

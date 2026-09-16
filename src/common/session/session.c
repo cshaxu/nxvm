@@ -6,7 +6,7 @@
 
 
 struct common_session {
-    common_session_queue *queue;
+    common_session_queue queue;
     common_session_state state;
     kvm_frame frame;
     common_machine *machine;
@@ -156,7 +156,7 @@ static int common_session_handle_kvm_input(common_session *session,
                 event->data.hotkey.identifier, &result)) return 0;
         return common_session_apply_result(session, &result);
     }
-    return common_session_dispatch_input(session->queue, event, state,
+    return common_session_dispatch_input(&session->queue, event, state,
         common_session_deliver_machine_input, session->machine);
 }
 
@@ -228,7 +228,7 @@ lib_status common_session_create(common_session **out_session,
     *out_session = NULL;
     session = lib_allocate_zero(1u, sizeof(*session));
     if (session == NULL) return LIB_STATUS_NO_MEMORY;
-    if (!common_session_queue_create(&session->queue)) {
+    if (!common_session_queue_initialize(&session->queue)) {
         lib_release(session);
         return LIB_STATUS_NO_MEMORY;
     }
@@ -250,7 +250,7 @@ lib_status common_session_bind_ui(common_session *session, common_ui *ui)
 lib_status common_session_destroy(common_session *session)
 {
     if (session == NULL) return LIB_STATUS_OK;
-    common_session_queue_destroy(session->queue);
+    common_session_queue_dispose(&session->queue);
     lib_release(session);
     return LIB_STATUS_OK;
 }
@@ -261,26 +261,26 @@ int common_session_enqueue_ui_event(void *context, const common_ui_event *event)
     if (session == NULL || event == NULL) return 0;
     switch (event->kind) {
     case COMMON_UI_EVENT_KVM_INPUT:
-        return common_session_queue_push_kvm_for_run(session->queue, &event->value.kvm,
+        return common_session_queue_push_kvm_for_run(&session->queue, &event->value.kvm,
             event->run_generation);
     case COMMON_UI_EVENT_MONITOR_LINE:
-        return common_session_queue_push_monitor_line(session->queue, &event->value.line,
+        return common_session_queue_push_monitor_line(&session->queue, &event->value.line,
             event->monitor_line_rejected);
     case COMMON_UI_EVENT_COMPONENT_COMPLETED:
-        return common_session_queue_push_component_completed(session->queue,
+        return common_session_queue_push_component_completed(&session->queue,
             event->value.component.component == COMMON_UI_COMPONENT_WINDOW ?
                 COMMON_SESSION_EVENT_COMPONENT_WINDOW :
                 COMMON_SESSION_EVENT_COMPONENT_VM_CONSOLE,
             event->value.component.exists, event->run_generation);
     case COMMON_UI_EVENT_BROKER_COMPLETED:
-        return common_session_queue_push_broker_completed(session->queue,
+        return common_session_queue_push_broker_completed(&session->queue,
             event->value.broker_vm_console_current, event->run_generation);
     case COMMON_UI_EVENT_KVM_DELIVERY_FAILED:
-        return common_session_queue_push_kvm_delivery_failed(session->queue,
+        return common_session_queue_push_kvm_delivery_failed(&session->queue,
             event->value.delivery_failure.source_identity,
             event->value.delivery_failure.status, event->run_generation);
     case COMMON_UI_EVENT_CONSOLE_FAILED:
-        return common_session_queue_push_console_failed(session->queue);
+        return common_session_queue_push_console_failed(&session->queue);
     }
     return 0;
 }
@@ -288,14 +288,14 @@ int common_session_enqueue_ui_event(void *context, const common_ui_event *event)
 int common_session_enqueue_runtime_completed(common_session *session,
     common_session_machine_state state, lib_u32 run_generation)
 {
-    return session != NULL && common_session_queue_push_runtime_completed(session->queue,
+    return session != NULL && common_session_queue_push_runtime_completed(&session->queue,
         state, run_generation);
 }
 
 int common_session_enqueue_frame_completed(common_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 run_generation)
 {
-    return session != NULL && common_session_queue_push_frame_completed(session->queue,
+    return session != NULL && common_session_queue_push_frame_completed(&session->queue,
         sequence, graphics, run_generation);
 }
 
@@ -311,7 +311,7 @@ int common_session_run(common_session *session)
     for (;;) {
         common_session_event event;
         /* No periodic work: a failed indefinite wait is terminal, not idle. */
-        if (!common_session_queue_take(session->queue, &event, LIB_UINT32_MAX)) return 0;
+        if (!common_session_queue_take(&session->queue, &event, LIB_UINT32_MAX)) return 0;
         if (event.kind == COMMON_SESSION_EVENT_KVM_INPUT) {
             if (!common_session_accept_kvm_event(&event,
                     common_machine_run_generation(session->machine),

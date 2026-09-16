@@ -249,7 +249,7 @@ static void adapter_equivalence(unsigned scan)
                         w.events[i].data.key.pressed == (i % 2 == 0));
             }
             assert(context.keyboard_normalizer.pending_high_surrogate == 0 &&
-                state.keyboard.pending_high_surrogate == 0);
+                console.keyboard.pending_high_surrogate == 0);
         }
     }
     /* A physical record cancels an unfinished text prefix on both inputs. */

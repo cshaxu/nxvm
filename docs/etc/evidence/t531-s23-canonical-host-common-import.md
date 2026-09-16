@@ -20,7 +20,7 @@ Verification on 2026-09-15:
 - Full repository-only unit suite: 332/332 pass.
 - External YAML/asset integration suite: 42/42 pass, including 5160, 5170 and
   DeskPro Model 40 boot matrix rows.
-- Stripped Release artifacts built and deployed for both architectures:
-  x64 `DA393C4431FB7E5F0013E69B03FADC6E982B405A111EA19C1C15F3717B94…`;
-  x86 `28B8BA0567AC92092D50077E9CC8891CF51E5541A563290C96A2F1D14EC2…`.
+- Stripped Release artifacts built and deployed for both architectures;
+  recorded SHA-256 prefixes are x64 `DA393C4431FB7E5F0013E69B03FADC6E`
+  and x86 `28B8BA0567AC92092D50077E9CC8891CF51E5541A563290C`.
 - `git diff --check`: pass.

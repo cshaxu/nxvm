@@ -7,7 +7,7 @@
 
 #include "lib/storage/file.h"
 
-static lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
+lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
     lib_storage_file *file)
 {
     lib_win32_handle handle;
@@ -34,27 +34,9 @@ static lib_status storage_file_platform_open(const char *path, lib_bool readwrit
     return LIB_STATUS_OK;
 }
 
-lib_status storage_file_platform_open_readonly(const char *path,
-    lib_storage_file *file)
-{ return storage_file_platform_open(path, LIB_FALSE, file); }
+lib_status storage_file_platform_seek(const lib_storage_file *file, lib_i64 offset,
+    int origin)
+{ return lib_win32_fseeki64(file->stream, offset, origin) == 0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
 
-lib_status storage_file_platform_open_readwrite(const char *path,
-    lib_storage_file *file)
-{ return storage_file_platform_open(path, LIB_TRUE, file); }
-
-lib_status storage_file_platform_seek_absolute(const lib_storage_file *file, lib_i64 offset)
-{ return lib_win32_fseeki64(file->stream, offset, LIB_SEEK_SET) == 0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
-
-lib_status storage_file_platform_byte_count(lib_storage_file *file, lib_i64 *out_byte_count)
-{
-    lib_i64 offset = lib_win32_ftelli64(file->stream);
-    lib_i64 length;
-
-    if (offset < 0 || lib_win32_fseeki64(file->stream, 0, LIB_SEEK_END) != 0)
-        return LIB_STATUS_IO_ERROR;
-    length = lib_win32_ftelli64(file->stream);
-    if (length < 0 || lib_win32_fseeki64(file->stream, offset, LIB_SEEK_SET) != 0)
-        return LIB_STATUS_IO_ERROR;
-    *out_byte_count = length;
-    return LIB_STATUS_OK;
-}
+lib_i64 storage_file_platform_tell(const lib_storage_file *file)
+{ return lib_win32_ftelli64(file->stream); }
