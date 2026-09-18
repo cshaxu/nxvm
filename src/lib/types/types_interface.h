@@ -37,6 +37,7 @@ enum {
 #define LIB_UINT32_MAX UINT32_MAX
 #define LIB_UINT64_MAX UINT64_MAX
 #define LIB_SIZE_MAX SIZE_MAX
+#define lib_offsetof(type, member) offsetof(type, member)
 
 /* Cross-platform C runtime vocabulary.  These functions deliberately expose
  * no platform handle, product state, or I/O policy. */

@@ -219,6 +219,18 @@ recorded evidence, never by following successive isolated failures.
     gates, both stripped Release architectures, complete repository-only unit
     coverage and the external integration suite.  This remains an import and
     adapter-cutover S, not whole-task two-product acceptance.
+25. **S25: canonical frame/state corpus refresh.** Freeze SoftPC's committed
+    `src/lib`, `src/common`, `test/lib` and `test/common` corpus; atomically
+    replace NXVM's four trees byte-for-byte. Adopt the canonical bounded-frame
+    copy, raw-Console mouse ownership, paused-window and optional
+    state-transfer contracts only through direct NXVM consumer adaptation.
+    State transfer remains unavailable to NXVM product commands until a later
+    Core-backed owner is admitted; no placeholder snapshot path may be added.
+    Delete superseded shared code and test aggregation omissions. Prove exact
+    four-tree identity, manifests and component gates, both stripped Release
+    architectures, complete repository-only unit coverage and the external
+    integration suite. This remains an import and adapter-cutover S, not
+    whole-task two-product acceptance.
 
 ## Verification And Exit
 

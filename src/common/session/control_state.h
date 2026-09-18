@@ -19,7 +19,10 @@ typedef struct common_session_state {
     /* A requested effect is not an actual fact.  Until its completion is
      * returned on the control FIFO, no second transition may be emitted. */
     common_ui_action in_flight;
-    lib_bool close_requested;
+    /* Paused presentation retains only an already existing Window.  This is
+       set by Window close and by stopped-to-paused state restoration, where
+       no Window existed to retain.  A later RUNNING completion clears it. */
+    lib_bool window_suppressed;
     common_session_machine_state monitor_actual;
     lib_u32 observed_frame_sequence;
 } common_session_state;

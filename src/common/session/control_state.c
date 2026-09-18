@@ -14,14 +14,16 @@ void common_session_state_initialize(common_session_state *state,
 
 void common_session_state_note_window_close(common_session_state *state)
 {
-    if (state != NULL) state->close_requested = 1;
+    if (state != NULL) state->window_suppressed = 1;
 }
 
 void common_session_state_note_runtime(common_session_state *state,
     common_session_machine_state completed)
 {
     common_session_machine_state presentation_state = completed;
+    lib_bool was_stopped;
     if (state == NULL) return;
+    was_stopped = state->runtime_actual == COMMON_SESSION_MACHINE_STOPPED;
     if (completed == COMMON_SESSION_MACHINE_RESET_COMPLETED ||
         completed == COMMON_SESSION_MACHINE_PAUSED)
         state->monitor_actual = COMMON_SESSION_MACHINE_PAUSED;
@@ -31,11 +33,14 @@ void common_session_state_note_runtime(common_session_state *state,
         state->monitor_actual = COMMON_SESSION_MACHINE_STOPPED;
     if (presentation_state == COMMON_SESSION_MACHINE_RESET_COMPLETED)
         presentation_state = COMMON_SESSION_MACHINE_PAUSED;
-    /* X belongs to the closed pause, not future pauses. Keep it through
-       destruction; clearing there would recreate the still-paused Window. */
+    /* A paused view retains a pre-existing Window; it never synthesizes one.
+       This covers X close and a stopped-to-paused state restore alike. */
+    if (completed == COMMON_SESSION_MACHINE_PAUSED && was_stopped &&
+        !state->window_actual)
+        state->window_suppressed = 1;
     if (presentation_state == COMMON_SESSION_MACHINE_RUNNING &&
         state->runtime_actual != COMMON_SESSION_MACHINE_RUNNING)
-        state->close_requested = 0;
+        state->window_suppressed = 0;
     state->runtime_actual = presentation_state;
     if (presentation_state == COMMON_SESSION_MACHINE_STOPPED || presentation_state == COMMON_SESSION_MACHINE_ERROR) {
         /* A subsequent run must not inherit the previous run's display
@@ -140,7 +145,7 @@ common_session_presentation_plan common_session_state_desired(const common_sessi
         state->console_control, state->runtime_actual,
         state->frame_actual,
         state->graphics_actual);
-    if (state->close_requested &&
+    if (state->window_suppressed &&
         state->runtime_actual == COMMON_SESSION_MACHINE_PAUSED)
         plan.window_enabled = 0;
     return plan;

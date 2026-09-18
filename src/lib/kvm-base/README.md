@@ -4,6 +4,12 @@
 copied frame/input values, source-local hotkey matching, and private mailbox
 mechanics to `kvm-window` and `kvm-console`.
 
+`kvm_frame_copy` preserves the complete prefix before `graphics_pixels`.
+Text copies do not touch pixels; graphics copies include exactly stride*height
+bytes, including row padding. Pixels outside that active extent are not frame
+content and must not be read. Layout, ownership and mailbox acknowledgement
+are unchanged; callers need not maintain per-field copy lists.
+
 Control admission copies one record per call into the 32-slot ordinary FIFO.
 Capacity rejection returns LIMIT_EXCEEDED without replacing any queued record.
 STOP has a reserved slot, closes admission and is idempotent. The worker consumes

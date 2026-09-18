@@ -195,6 +195,32 @@ int main(void)
     common_ui_set_run_generation(ui, 12u);
     input_worker(&window_fake.options.component, NULL);
     assert(received_run == 12u);
+    {
+        kvm_input_event input = { 0 };
+        lib_u32 prior = received;
+        input.type = KVM_EVENT_MOUSE;
+        assert(console_fake.options.input_sink(console_fake.options.input_context,
+            &input));
+        assert(received == prior);
+        assert(window_fake.options.component.input_sink(
+            window_fake.options.component.input_context, &input));
+        assert(received == prior + 1u);
+        input.type = KVM_EVENT_KEY;
+        assert(console_fake.options.input_sink(console_fake.options.input_context,
+            &input));
+        assert(received == prior + 2u);
+        input.type = KVM_EVENT_HOTKEY;
+        assert(console_fake.options.input_sink(console_fake.options.input_context,
+            &input));
+        assert(received == prior + 3u);
+        assert(common_ui_apply_action(ui, COMMON_UI_ACTION_DESTROY_WINDOW,
+            COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+        assert(received == prior + 4u);
+        input.type = KVM_EVENT_MOUSE;
+        assert(console_fake.options.input_sink(console_fake.options.input_context,
+            &input));
+        assert(received == prior + 5u);
+    }
     assert(common_ui_destroy(ui) == LIB_STATUS_OK);
     return 0;
 }

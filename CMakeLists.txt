@@ -74,6 +74,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     lib-test-types_contract
     lib-test-storage_file_writer_binary
     lib-test-storage_position
+    lib-test-kvm_frame_copy
     lib-test-kvm_component_contract
     lib-test-kvm_mailbox_selection
     lib-test-win32_presentation

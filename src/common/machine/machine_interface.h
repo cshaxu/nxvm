@@ -137,6 +137,21 @@ typedef lib_status (*common_machine_debug_execute)(void *context,
     const common_machine_debug_request *request,
     common_machine_debug_result *out_result);
 
+typedef lib_status (*common_machine_state_write_callback)(void *context,
+    const lib_u8 *bytes, lib_size byte_count);
+typedef lib_status (*common_machine_state_read_callback)(void *context,
+    lib_u8 *bytes, lib_size byte_count);
+
+typedef struct common_machine_state_writer {
+    common_machine_state_write_callback write;
+    void *context;
+} common_machine_state_writer;
+
+typedef struct common_machine_state_reader {
+    common_machine_state_read_callback read;
+    void *context;
+} common_machine_state_reader;
+
 /* State transitions and completed frame publication are independent facts.
  * Keeping their callbacks separate prevents an executor paint callback from
  * being mistaken for a lifecycle completion by the product control queue. */
@@ -157,6 +172,14 @@ typedef struct common_machine_driver {
     void (*deliver_input)(void *context, const kvm_input_event *event);
     lib_bool (*copy_frame)(void *context, kvm_frame *out_frame);
     lib_bool (*set_removable_media)(void *context, const char *path);
+    /* Common invokes only these state-specific driver hooks on its existing
+     * executor. The driver owns safe-boundary detection and image semantics. */
+    lib_status (*begin_state_read)(void *context,
+        const common_machine_state_writer *writer);
+    lib_bool (*take_state_read_result)(void *context,
+        lib_status *out_status);
+    lib_status (*write_state)(void *context,
+        const common_machine_state_reader *reader);
     common_machine_debug_execute execute_debug;
     /* Executor-only stop notification and cancellation of product debug plans. */
     lib_bool (*take_debug_stop)(void *context);
@@ -179,6 +202,10 @@ lib_bool common_machine_stop(common_machine *machine);
 lib_bool common_machine_reset(common_machine *machine);
 lib_bool common_machine_set_removable_media(common_machine *machine,
     const char *path);
+lib_status common_machine_read_state(common_machine *machine,
+    const common_machine_state_writer *writer);
+lib_status common_machine_write_state(common_machine *machine,
+    const common_machine_state_reader *reader);
 common_machine_state common_machine_state_get(const common_machine *machine);
 lib_bool common_machine_enqueue_input(common_machine *machine,
     const kvm_input_event *event);

@@ -29,6 +29,15 @@ typedef struct machine_fake {
     unsigned real_reads, linear_reads;
     lib_bool memory_fixture;
     lib_u8 memory[8192];
+    lib_u8 state_byte;
+    LONG state_reads;
+    LONG state_writes;
+    LONG defer_state_read;
+    LONG state_read_waiting;
+    LONG state_read_ready;
+    common_machine_state_writer deferred_state_writer;
+    LONG running_notifications;
+    LONG paused_notifications;
 } machine_fake;
 
 static lib_bool fake_reset(void *opaque)
@@ -59,7 +68,18 @@ static lib_bool fake_run(void *opaque)
 static void fake_request_stop(void *opaque)
 { SetEvent(((machine_fake *)opaque)->stopped); }
 static void fake_request_wake(void *opaque)
-{ SetEvent(((machine_fake *)opaque)->wake); }
+{
+    machine_fake *fake = (machine_fake *)opaque;
+    if (InterlockedCompareExchange(&fake->state_read_waiting, 0, 0) != 0) {
+        assert(fake->deferred_state_writer.write(
+            fake->deferred_state_writer.context, &fake->state_byte, 1u) ==
+            LIB_STATUS_OK);
+        InterlockedIncrement(&fake->state_reads);
+        InterlockedExchange(&fake->state_read_waiting, 0);
+        InterlockedExchange(&fake->state_read_ready, 1);
+    }
+    SetEvent(fake->wake);
+}
 static lib_bool fake_set_media(void *opaque, const char *path)
 { (void)opaque; (void)path; return LIB_TRUE; }
 static void fake_heartbeat(void *opaque, lib_bool enabled)
@@ -86,6 +106,75 @@ static lib_bool fake_copy_frame(void *opaque, kvm_frame *frame)
     frame->text_columns = KVM_TEXT_COLUMNS;
     frame->text_rows = KVM_TEXT_ROWS;
     return LIB_TRUE;
+}
+
+/* State transfer is deliberately exercised through the injected driver, on
+ * the executor thread.  The Common test never needs to know what the byte
+ * represents. */
+static lib_status fake_begin_state_read(void *opaque,
+    const common_machine_state_writer *writer)
+{
+    machine_fake *fake = (machine_fake *)opaque;
+    assert(GetCurrentThreadId() == fake->executor_thread);
+    if (writer == NULL || writer->write == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (InterlockedExchange(&fake->defer_state_read, 0) != 0) {
+        fake->deferred_state_writer = *writer;
+        InterlockedExchange(&fake->state_read_waiting, 1);
+        return LIB_STATUS_OK;
+    }
+    if (writer->write(writer->context, &fake->state_byte, 1u) != LIB_STATUS_OK)
+        return LIB_STATUS_IO_ERROR;
+    InterlockedIncrement(&fake->state_reads);
+    InterlockedExchange(&fake->state_read_ready, 1);
+    return LIB_STATUS_OK;
+}
+
+static lib_bool fake_take_state_read_result(void *opaque, lib_status *status)
+{
+    machine_fake *fake = (machine_fake *)opaque;
+    if (status == NULL) return LIB_FALSE;
+    if (InterlockedExchange(&fake->state_read_ready, 0) == 0) return LIB_FALSE;
+    *status = LIB_STATUS_OK;
+    return LIB_TRUE;
+}
+
+static lib_status fake_write_state(void *opaque,
+    const common_machine_state_reader *reader)
+{
+    machine_fake *fake = (machine_fake *)opaque;
+    lib_u8 byte = 0u;
+    if (reader == NULL || reader->read == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (reader->read(reader->context, &byte, 1u) != LIB_STATUS_OK)
+        return LIB_STATUS_IO_ERROR;
+    fake->state_byte = byte;
+    InterlockedIncrement(&fake->state_writes);
+    return LIB_STATUS_OK;
+}
+
+typedef struct state_transfer {
+    lib_u8 byte;
+    LONG calls;
+} state_transfer;
+
+static lib_status state_write(void *opaque, const lib_u8 *bytes,
+    lib_size byte_count)
+{
+    state_transfer *transfer = (state_transfer *)opaque;
+    if (transfer == NULL || bytes == NULL || byte_count != 1u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    transfer->byte = bytes[0];
+    InterlockedIncrement(&transfer->calls);
+    return LIB_STATUS_OK;
+}
+
+static lib_status state_read(void *opaque, lib_u8 *bytes, lib_size byte_count)
+{
+    state_transfer *transfer = (state_transfer *)opaque;
+    if (transfer == NULL || bytes == NULL || byte_count != 1u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    bytes[0] = transfer->byte;
+    InterlockedIncrement(&transfer->calls);
+    return LIB_STATUS_OK;
 }
 static lib_status fake_execute_debug(void *opaque,
     const common_machine_debug_request *request,
@@ -314,11 +403,16 @@ static void note_state(void *opaque, common_machine_state state,
     machine_fake *fake = (machine_fake *)opaque;
     (void)generation;
     InterlockedIncrement(&fake->notifications);
+    if (state == COMMON_MACHINE_RUNNING) {
+        InterlockedIncrement(&fake->running_notifications);
+        SetEvent(fake->running);
+    }
+    if (state == COMMON_MACHINE_PAUSED)
+        InterlockedIncrement(&fake->paused_notifications);
     if (state == COMMON_MACHINE_STOPPED && fake->callback_entered != NULL) {
         SetEvent(fake->callback_entered);
         assert(WaitForSingleObject(fake->callback_release, 5000u) == WAIT_OBJECT_0);
     }
-    if (state == COMMON_MACHINE_RUNNING) SetEvent(fake->running);
     if (state == COMMON_MACHINE_STOPPED) SetEvent(fake->state_stopped);
     if (state == COMMON_MACHINE_RESET_COMPLETED) SetEvent(fake->reset_completed);
 }
@@ -377,6 +471,7 @@ int main(void)
     common_machine_debug_result debug_result = { 0 };
     common_debug *debug = NULL;
     common_debug_result debug_command_result = { 0 };
+    state_transfer transfer = { 0 };
 
     fake.stopped = CreateEventA(NULL, TRUE, FALSE, NULL);
     fake.state_stopped = CreateEventA(NULL, TRUE, FALSE, NULL);
@@ -398,6 +493,9 @@ int main(void)
     driver.deliver_input = fake_deliver_input;
     driver.copy_frame = fake_copy_frame;
     driver.set_removable_media = fake_set_media;
+    driver.begin_state_read = fake_begin_state_read;
+    driver.take_state_read_result = fake_take_state_read_result;
+    driver.write_state = fake_write_state;
     driver.execute_debug = fake_execute_debug;
     assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
     frame.valid = 1u;
@@ -421,8 +519,12 @@ int main(void)
     assert(WaitForSingleObject(fake.frame, 5000u) == WAIT_OBJECT_0);
     assert(InterlockedCompareExchange(&fake.resets, 0, 0) == 1);
     generation = common_machine_run_generation(machine);
+    memset(frame.graphics_pixels, 0xa5, sizeof(frame.graphics_pixels));
     assert(common_machine_copy_published_frame(machine, &frame, generation));
     assert(frame.valid == 1u && generation == common_machine_run_generation(machine));
+    assert(!frame.graphics);
+    for (lib_size i = 0u; i < sizeof(frame.graphics_pixels); ++i)
+        assert(frame.graphics_pixels[i] == 0xa5);
     {
         lib_u32 sequence = frame.sequence;
         assert(!common_machine_copy_published_frame(machine, &frame, generation + 1u));
@@ -433,6 +535,31 @@ int main(void)
     assert(common_machine_enqueue_input(machine, &input));
     assert(WaitForSingleObject(fake.input, 5000u) == WAIT_OBJECT_0);
     assert(InterlockedCompareExchange(&fake.inputs, 0, 0) == 1);
+    fake.state_byte = 0x5au;
+    assert(common_machine_read_state(machine,
+        &(common_machine_state_writer) { state_write, &transfer }) == LIB_STATUS_OK);
+    assert(transfer.byte == 0x5au && InterlockedCompareExchange(
+        &transfer.calls, 0, 0) == 1 && InterlockedCompareExchange(
+        &fake.state_reads, 0, 0) == 1);
+    assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
+    fake.defer_state_read = 1;
+    {
+        LONG running = fake.running_notifications;
+        LONG paused = fake.paused_notifications;
+        assert(common_machine_read_state(machine,
+            &(common_machine_state_writer) { state_write, &transfer }) ==
+            LIB_STATUS_OK);
+        assert(transfer.byte == 0x5au && InterlockedCompareExchange(
+            &transfer.calls, 0, 0) == 2 && InterlockedCompareExchange(
+            &fake.state_reads, 0, 0) == 2);
+        assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
+        assert(fake.running_notifications == running);
+        assert(fake.paused_notifications == paused);
+    }
+    ResetEvent(fake.running);
+    assert(common_machine_resume(machine));
+    assert(WaitForSingleObject(fake.running, 5000u) == WAIT_OBJECT_0);
+    assert(common_machine_state_get(machine) == COMMON_MACHINE_RUNNING);
     assert(common_debug_submit_line(debug, "d", &debug_command_result) == LIB_STATUS_OK);
     assert(strstr(debug_command_result.text, "must be paused") != NULL);
     assert(common_debug_submit_line(debug, "q", &debug_command_result) == LIB_STATUS_OK);
@@ -469,6 +596,16 @@ int main(void)
     assert(common_machine_stop(machine));
     assert(WaitForSingleObject(fake.state_stopped, 5000u) == WAIT_OBJECT_0);
     assert(common_machine_state_get(machine) == COMMON_MACHINE_STOPPED);
+    transfer.byte = 0xa5u;
+    transfer.calls = 0;
+    assert(common_machine_write_state(machine,
+        &(common_machine_state_reader) { state_read, &transfer }) == LIB_STATUS_OK);
+    assert(transfer.calls == 1 && fake.state_byte == 0xa5u &&
+        InterlockedCompareExchange(&fake.state_writes, 0, 0) == 1);
+    assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
+    assert(common_machine_write_state(machine,
+        &(common_machine_state_reader) { state_read, &transfer }) ==
+        LIB_STATUS_INVALID_STATE);
     {
         lib_u32 sequence = frame.sequence;
         assert(!common_machine_copy_published_frame(machine, &frame, generation));

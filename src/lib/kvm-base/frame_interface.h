@@ -59,4 +59,19 @@ static inline lib_bool kvm_frame_is_valid(const kvm_frame *frame)
         frame->text_rows != 0u && frame->text_rows <= KVM_TEXT_ROWS;
 }
 
+/* Copies the entire metadata/text/font/palette prefix. Pixels are meaningful
+ * only in graphics mode, within stride * height; the remaining capacity is
+ * untouched. Invalid arguments leave destination unchanged. Self-copy is OK. */
+static inline lib_bool kvm_frame_copy(kvm_frame *destination,
+    const kvm_frame *source)
+{
+    lib_size bytes = lib_offsetof(kvm_frame, graphics_pixels);
+    if (destination == LIB_NULL || !kvm_frame_is_valid(source)) return LIB_FALSE;
+    if (destination == source) return LIB_TRUE;
+    if (source->graphics != 0u)
+        bytes += (lib_size)source->graphics_stride * source->graphics_height;
+    lib_memory_copy(destination, source, bytes);
+    return LIB_TRUE;
+}
+
 #endif

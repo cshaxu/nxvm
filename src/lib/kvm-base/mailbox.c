@@ -81,7 +81,7 @@ lib_status kvm_component_mailboxes_publish_frame(kvm_component_mailboxes *mailbo
         if (mailboxes->frame.dirty_right > right) right = mailboxes->frame.dirty_right;
         if (mailboxes->frame.dirty_bottom > bottom) bottom = mailboxes->frame.dirty_bottom;
     }
-    mailboxes->frame = *frame;
+    (void)kvm_frame_copy(&mailboxes->frame, frame);
     mailboxes->frame.dirty_left = left; mailboxes->frame.dirty_top = top;
     mailboxes->frame.dirty_right = right; mailboxes->frame.dirty_bottom = bottom;
     mailboxes->frame_pending = LIB_TRUE;
@@ -152,7 +152,7 @@ lib_bool kvm_component_mailboxes_capture_frame(kvm_component_mailboxes *mailboxe
         base_sync_mutex_unlock(mailboxes->frame_lock);
         return LIB_FALSE;
     }
-    *out_frame = mailboxes->frame;
+    (void)kvm_frame_copy(out_frame, &mailboxes->frame);
     *out_generation = mailboxes->frame_generation;
     base_sync_mutex_unlock(mailboxes->frame_lock);
     return LIB_TRUE;

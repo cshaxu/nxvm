@@ -114,11 +114,30 @@ static void test_reset_completion_restores_paused_view(void)
     assert(common_session_state_frame_targets_ready(&state));
 }
 
+static void test_stopped_restore_paused_does_not_create_window(void)
+{
+    common_session_state state;
+
+    common_session_state_initialize(&state, COMMON_SESSION_DISPLAY_WINDOW, 1);
+    /* A restored graphics frame is machine state, not evidence that this
+       newly stopped product had a Window to retain. */
+    assert(common_session_state_note_frame(&state, 1u, 1));
+    common_session_state_note_runtime(&state, COMMON_SESSION_MACHINE_PAUSED);
+    assert(!common_session_state_desired(&state).window_enabled);
+    assert(common_session_state_take_action(&state) == COMMON_UI_ACTION_NONE);
+
+    /* Resume starts a new active presentation lifetime normally. */
+    common_session_state_note_runtime(&state, COMMON_SESSION_MACHINE_RUNNING);
+    assert(common_session_state_take_action(&state) ==
+        COMMON_UI_ACTION_CREATE_WINDOW);
+}
+
 int main(void)
 {
     test_console_text_to_graphics_monitor();
     test_console_graphics_vm_console();
     test_static_window_pause_stop_and_close();
     test_reset_completion_restores_paused_view();
+    test_stopped_restore_paused_does_not_create_window();
     return 0;
 }

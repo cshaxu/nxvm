@@ -14,6 +14,7 @@ lib_status lib_storage_file_close(lib_storage_file *file)
 }
 
 struct lib_storage_file_writer { lib_storage_file file; };
+struct lib_storage_file_reader { lib_storage_file file; };
 
 lib_status lib_storage_file_read_exact(const lib_storage_file *file, void *bytes,
     lib_size byte_count)
@@ -93,6 +94,42 @@ lib_status lib_storage_file_read_owned(const char *path, lib_size maximum,
     *out_bytes = bytes;
     *out_byte_count = (lib_size)length;
     return LIB_STATUS_OK;
+}
+
+lib_status lib_storage_file_reader_open(const char *path,
+    lib_storage_file_reader **out_reader)
+{
+    lib_storage_file_reader *reader;
+
+    if (out_reader == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_reader = LIB_NULL;
+    if (path == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    reader = lib_allocate(sizeof(*reader));
+    if (reader == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    if (storage_file_platform_open(path, LIB_FALSE, &reader->file) !=
+        LIB_STATUS_OK) {
+        lib_release(reader);
+        return LIB_STATUS_IO_ERROR;
+    }
+    *out_reader = reader;
+    return LIB_STATUS_OK;
+}
+
+lib_status lib_storage_file_reader_read(lib_storage_file_reader *reader,
+    void *bytes, lib_size byte_count)
+{
+    if (reader == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return lib_storage_file_read_exact(&reader->file, bytes, byte_count);
+}
+
+lib_status lib_storage_file_reader_close(lib_storage_file_reader *reader)
+{
+    if (reader == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    {
+        lib_status status = lib_storage_file_close(&reader->file);
+        lib_release(reader);
+        return status;
+    }
 }
 
 lib_status lib_storage_file_writer_open(const char *path,

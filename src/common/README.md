@@ -7,8 +7,10 @@ Common has no platform directories, platform types, native calls or OS-selected
 implementations. Base owns blocking mutex/event/task/wait; Types owns the atomic
 vocabulary. Common retains queue, lifecycle and frame-publication ownership.
 
-Machine snapshot reads specify the expected run and leave the destination
-unchanged on rejection. Session treats frame events as publication hints and
+Machine frame snapshot reads use `kvm_frame_copy`: the complete prefix and
+active graphics extent are copied, not inactive pixel capacity. They specify
+the expected run and leave the destination unchanged on rejection.
+Session treats frame events as publication hints and
 derives content, sequence and graphics/text routing from that one snapshot,
 which may be newer than the notification. UI owns the shared action vocabulary;
 session does not maintain a second action enum or mapping.

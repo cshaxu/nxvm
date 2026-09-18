@@ -5,6 +5,11 @@
 #include "lib/kvm-window/window_interface.h"
 
 
+typedef struct common_ui_input_context {
+    common_ui *ui;
+    lib_bool vm_console;
+} common_ui_input_context;
+
 struct common_ui {
     lib_console *monitor;
     console_broker *broker;
@@ -12,9 +17,12 @@ struct common_ui {
     kvm_console *console;
     common_ui_options options;
     lib_atomic_i32 run_generation;
+    lib_atomic_i32 window_live;
     lib_u32 window_delivered_frame_sequence;
     lib_u32 console_delivered_frame_sequence;
     lib_bool console_status_delivered;
+    common_ui_input_context window_input;
+    common_ui_input_context console_input;
 };
 
 static int common_ui_emit(common_ui *ui, const common_ui_event *event)
@@ -38,9 +46,15 @@ static void common_ui_delivery_failed(void *opaque, lib_u64 source_identity,
 
 static int common_ui_input(void *opaque, const kvm_input_event *input)
 {
-    common_ui *ui = (common_ui *)opaque;
+    common_ui_input_context *context = (common_ui_input_context *)opaque;
+    common_ui *ui = context == NULL ? NULL : context->ui;
     common_ui_event event = { 0 };
     if (ui == NULL || input == NULL) return 0;
+    /* A graphical Window is the sole guest-mouse surface. The concurrent raw
+       Console remains a keyboard/hotkey surface in Console display mode. */
+    if (context->vm_console && input->type == KVM_EVENT_MOUSE &&
+        lib_atomic_i32_load_explicit(&ui->window_live,
+            LIB_MEMORY_ORDER_SEQ_CST) != 0) return 1;
     event.kind = COMMON_UI_EVENT_KVM_INPUT;
     event.run_generation = (lib_u32)lib_atomic_i32_load_explicit(
         &ui->run_generation, LIB_MEMORY_ORDER_SEQ_CST);
@@ -100,7 +114,7 @@ static lib_status common_ui_create_window(common_ui *ui, common_ui_state state)
     lib_status status;
     if (ui == NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (ui->window != NULL) return LIB_STATUS_OK;
-    options.component.input_context = ui;
+    options.component.input_context = &ui->window_input;
     options.component.input_sink = common_ui_input;
     options.component.failure_context = ui;
     options.component.failure_sink = common_ui_delivery_failed;
@@ -109,6 +123,8 @@ static lib_status common_ui_create_window(common_ui *ui, common_ui_state state)
     options.initial_frozen = state != COMMON_UI_STATE_RUNNING;
     status = kvm_window_create(&ui->window, &options);
     if (status != LIB_STATUS_OK) return status;
+    lib_atomic_i32_store_explicit(&ui->window_live, 1,
+        LIB_MEMORY_ORDER_SEQ_CST);
     ui->window_delivered_frame_sequence = 0u;
     return status;
 }
@@ -119,7 +135,7 @@ static lib_status common_ui_create_console(common_ui *ui)
     lib_status status;
     if (ui == NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (ui->console != NULL) return LIB_STATUS_OK;
-    options.input_context = ui;
+    options.input_context = &ui->console_input;
     options.input_sink = common_ui_input;
     options.failure_context = ui;
     options.failure_sink = common_ui_delivery_failed;
@@ -143,6 +159,10 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
     ui = lib_allocate_zero(1u, sizeof(*ui));
     if (ui == NULL) return LIB_STATUS_NO_MEMORY;
     lib_atomic_i32_initialize(&ui->run_generation, 0);
+    lib_atomic_i32_initialize(&ui->window_live, 0);
+    ui->window_input.ui = ui;
+    ui->console_input.ui = ui;
+    ui->console_input.vm_console = LIB_TRUE;
     ui->options = *options;
     status = lib_console_create(&ui->monitor);
     if (status == LIB_STATUS_OK)
@@ -174,6 +194,8 @@ lib_status common_ui_destroy(common_ui *ui)
     }
     if (ui->window != NULL) {
         lib_status destroy = kvm_window_destroy(ui->window);
+        if (destroy == LIB_STATUS_OK) lib_atomic_i32_store_explicit(
+            &ui->window_live, 0, LIB_MEMORY_ORDER_SEQ_CST);
         if (status == LIB_STATUS_OK) status = destroy;
     }
     if (ui->console != NULL) {
@@ -234,6 +256,8 @@ lib_status common_ui_apply_action(common_ui *ui, common_ui_action action,
         if (ui->window == NULL) return LIB_STATUS_INVALID_STATE;
         status = kvm_window_destroy(ui->window);
         if (status != LIB_STATUS_OK) return status;
+        lib_atomic_i32_store_explicit(&ui->window_live, 0,
+            LIB_MEMORY_ORDER_SEQ_CST);
         ui->window = NULL;
         ui->window_delivered_frame_sequence = 0u;
         return common_ui_emit_component(ui, COMMON_UI_COMPONENT_WINDOW, LIB_FALSE);

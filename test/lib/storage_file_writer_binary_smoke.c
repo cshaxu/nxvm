@@ -75,6 +75,23 @@ int main(void)
     assert(fclose(file) == 0);
     assert(lib_memory_compare(actual, payload, sizeof(payload)) == 0);
     assert(allocations == 1u && live_allocations == 0u);
+    {
+        lib_storage_file_reader *reader = LIB_NULL;
+        lib_u8 prefix[2] = { 0u };
+        lib_u8 suffix[2] = { 0u };
+
+        assert(lib_storage_file_reader_open(path, &reader) == LIB_STATUS_OK);
+        assert(lib_storage_file_reader_read(reader, prefix, sizeof(prefix)) ==
+            LIB_STATUS_OK);
+        assert(lib_storage_file_reader_read(reader, suffix, sizeof(suffix)) ==
+            LIB_STATUS_OK);
+        assert(lib_storage_file_reader_read(reader, suffix, 1u) ==
+            LIB_STATUS_IO_ERROR);
+        assert(lib_storage_file_reader_close(reader) == LIB_STATUS_OK);
+        assert(lib_memory_compare(prefix, payload, sizeof(prefix)) == 0);
+        assert(lib_memory_compare(suffix, payload + sizeof(prefix),
+            sizeof(suffix)) == 0);
+    }
     void *owned = NULL;
     lib_size length = 0u;
     unsigned before = allocations;
