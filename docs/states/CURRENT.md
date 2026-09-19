@@ -2,7 +2,7 @@
 
 ## Current Work
 
-## M5 T531 S26 Accepted
+## M5 T531 S26 Packet
 
 | Field | Required record |
 | --- | --- |
