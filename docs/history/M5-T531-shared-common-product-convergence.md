@@ -1,5 +1,15 @@
 # M5 T531 Shared Common Product Convergence
 
+## S26 accepted
+
+S26 is accepted at `0840a34b`. It imports SoftPC `95c467a7` as byte-identical
+Lib/Common source and test trees and carries each YAML floppy/fixed-disk
+`direct`, `readonly`, or `overlay` choice through the one VM-machine storage
+owner. Omitted modes remain overlay. The S evidence records 336/336 unit,
+both stripped Release artifacts, and the full integration observation: 41/42
+in one full run, with the one Model 40 boot row passing in its immediate
+isolated replay. T531 remains open.
+
 Owner admitted this implementation task on 2026-09-13 after directing T530
 closure. [Proposal](../proposals/m5-shared-common-product-convergence.md).
 
