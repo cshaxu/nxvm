@@ -48,11 +48,13 @@ C_INT main(C_VOID)
     }
     vm_machine_fdd_initialize(&fdd);
     vm_machine_hdd_initialize(&hdd);
-    if (vm_machine_fdd_insert_readonly_for(&fdd, vm_media_direct_fdd_path) != TYPE_FALSE ||
+    if (vm_machine_fdd_insert_for(&fdd, vm_media_direct_fdd_path,
+            LIB_STORAGE_MEDIUM_READONLY) != TYPE_FALSE ||
         !fdd.connect.flagReadOnly || vm_machine_fdd_read_byte(&fdd, 0u, 0u, 1u, 0u,
             &byte) != TYPE_FALSE || byte != 0xa5u ||
         vm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, 0u) != TYPE_TRUE ||
-        vm_machine_hdd_insert_readonly(&hdd, vm_media_direct_hdd_path) != TYPE_FALSE ||
+        vm_machine_hdd_insert(&hdd, vm_media_direct_hdd_path,
+            LIB_STORAGE_MEDIUM_READONLY) != TYPE_FALSE ||
         !hdd.connect.flagReadOnly || vm_machine_hdd_media_provider()->write_bytes(&hdd,
             0u, &byte, 1u) != CORE_MACHINE_MEDIA_RESULT_READ_ONLY ||
         vm_machine_hdd_media_provider()->read_bytes(&hdd, 0u, &byte, 1u) !=
@@ -61,10 +63,11 @@ C_INT main(C_VOID)
     }
     if (vm_machine_fdd_remove_for(&fdd, STD_NULL) != TYPE_FALSE ||
         vm_machine_hdd_remove(&hdd, STD_NULL) != TYPE_FALSE) failed = 1;
-    if (!failed && (vm_machine_fdd_insert_direct_for(&fdd,
-            vm_media_direct_fdd_path) != TYPE_FALSE ||
+    if (!failed && (vm_machine_fdd_insert_for(&fdd, vm_media_direct_fdd_path,
+            LIB_STORAGE_MEDIUM_DIRECT) != TYPE_FALSE ||
         vm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, direct_value) != TYPE_FALSE ||
-        vm_machine_hdd_insert_direct(&hdd, vm_media_direct_hdd_path) != TYPE_FALSE ||
+        vm_machine_hdd_insert(&hdd, vm_media_direct_hdd_path,
+            LIB_STORAGE_MEDIUM_DIRECT) != TYPE_FALSE ||
         vm_machine_hdd_media_provider()->write_bytes(&hdd, 0u, &direct_value,
             1u) != CORE_MACHINE_MEDIA_RESULT_OK ||
         vm_machine_fdd_remove_for(&fdd, STD_NULL) != TYPE_FALSE ||

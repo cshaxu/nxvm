@@ -10,6 +10,7 @@
 #include "vm/profile/byob/blob.h"
 #include "vm/profile/default_profile/external_pc_at_rom.h"
 #include "common/machine/machine_interface.h"
+#include "lib/storage/medium_interface.h"
 
 typedef enum vm_machine_profile_kind {
     VM_MACHINE_PROFILE_DEFAULT_PC_AT,
@@ -48,6 +49,8 @@ typedef struct vm_machine_config {
     STD_SIZE_T memory_bytes;
     const C_CHAR *floppy_image[VM_MACHINE_FLOPPY_SLOT_COUNT];
     const C_CHAR *fixed_disk_image[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
+    lib_storage_medium_mode floppy_mode[VM_MACHINE_FLOPPY_SLOT_COUNT];
+    lib_storage_medium_mode fixed_disk_mode[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
     /* Optional profile-scoped MC146818 NVRAM seed.  It is copied once during
      * construction; Core remains the sole owner of the live CMOS state. */
     const C_CHAR *cmos_seed;

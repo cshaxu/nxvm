@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "vm/app/catalog.h"
+#include "vm/app/config.h"
 
 static C_INT catalog_parse(C_CHAR *document, vm_session_request *out_request)
 {
@@ -15,9 +16,10 @@ C_INT main(C_VOID)
         "memory_kib: 4294967296\n"
         "floppy_format: 720k\ndisplay: console\nconsole_control: 1\nfirmware:\n  bios:\n"
         "    - path: system.rom\n  video: null\n  cmos: seed.cmos\n"
-        "  font: font.bin\nmedia:\n  floppy:\n    - path: first.img\n"
+        "  font: font.bin\nmedia:\n  floppy:\n    - path: first.img\n      mode: direct\n"
         "    - path: /owner/second.img\n  fixed_disk:\n"
-        "    - path: first-disk.img\n    - path: C:/owner/second-disk.img\n";
+        "    - path: first-disk.img\n      mode: readonly\n"
+        "    - path: C:/owner/second-disk.img\n      mode: overlay\n";
     static C_CHAR invalid_memory[] =
         "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: -1\n"
         "display: console\nmedia:\n  floppy: []\n  fixed_disk: []\n";
@@ -30,6 +32,9 @@ C_INT main(C_VOID)
     static C_CHAR invalid_console_control[] =
         "schema: nxvm-session\nprofile: default-pc-at\ndisplay: console\n"
         "console_control: 2\nmedia:\n  floppy: []\n  fixed_disk: []\n";
+    static C_CHAR invalid_media_mode[] =
+        "schema: nxvm-session\nprofile: default-pc-at\ndisplay: console\nmedia:\n"
+        "  floppy:\n    - path: image.img\n      mode: transient\n  fixed_disk: []\n";
     static C_CHAR model40[] =
         "schema: nxvm-session\nprofile: compaq-deskpro-386-model-40\n"
         "display: console\nmedia:\n  floppy: []\n  fixed_disk: []\n"
@@ -40,6 +45,7 @@ C_INT main(C_VOID)
         "media:\n  floppy: []\n  fixed_disk: []\nfirmware:\n  bios:\n"
         "    - path: xt.rom\n  video: null\n  cmos: null\n  font: font.bin\n";
     vm_session_request request;
+    vm_machine_config config;
 
     if (!catalog_parse(valid, &request)) {
         STD_PRINTF("catalog valid parse failed\n");
@@ -58,13 +64,27 @@ C_INT main(C_VOID)
         STD_STRCMP(request.floppy[0u], "unit-root/first.img") ||
         STD_STRCMP(request.floppy[1u], "/owner/second.img") ||
         STD_STRCMP(request.fixed_disk[0u], "unit-root/first-disk.img") ||
-        STD_STRCMP(request.fixed_disk[1u], "C:/owner/second-disk.img")) {
+        STD_STRCMP(request.fixed_disk[1u], "C:/owner/second-disk.img") ||
+        request.floppy_mode[0u] != LIB_STORAGE_MEDIUM_DIRECT ||
+        request.floppy_mode[1u] != LIB_STORAGE_MEDIUM_OVERLAY ||
+        request.fixed_disk_mode[0u] != LIB_STORAGE_MEDIUM_READONLY ||
+        request.fixed_disk_mode[1u] != LIB_STORAGE_MEDIUM_OVERLAY) {
+        STD_PRINTF("catalog valid result mismatch\n");
+        return 1;
+    }
+    request.floppy_count = 1u;
+    request.fixed_disk_count = 1u;
+    if (vm_app_configure_machine(&request, &config) != TYPE_STATUS_OK ||
+        config.floppy_mode[0u] != LIB_STORAGE_MEDIUM_DIRECT ||
+        config.floppy_mode[1u] != LIB_STORAGE_MEDIUM_OVERLAY ||
+        config.fixed_disk_mode[0u] != LIB_STORAGE_MEDIUM_READONLY ||
+        config.fixed_disk_mode[1u] != LIB_STORAGE_MEDIUM_OVERLAY) {
         STD_PRINTF("catalog valid result mismatch\n");
         return 1;
     }
     if (catalog_parse(invalid_memory, &request) || catalog_parse(duplicate_media, &request) ||
         catalog_parse(invalid_schema, &request) || catalog_parse(invalid_console_control,
-            &request)) {
+            &request) || catalog_parse(invalid_media_mode, &request)) {
         STD_PRINTF("catalog invalid parse accepted\n");
         return 1;
     }

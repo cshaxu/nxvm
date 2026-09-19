@@ -80,10 +80,14 @@ static type_status vm_app_config_request_configure(
     config->memory_bytes = request->memory_bytes;
     config->floppy_image[0u] = request->floppy_count == 0u ? STD_NULL : request->floppy[0u];
     config->floppy_image[1u] = request->floppy_count < 2u ? STD_NULL : request->floppy[1u];
+    config->floppy_mode[0u] = request->floppy_mode[0u];
+    config->floppy_mode[1u] = request->floppy_mode[1u];
     config->fixed_disk_image[0u] = request->fixed_disk_count == 0u ? STD_NULL :
         request->fixed_disk[0u];
     config->fixed_disk_image[1u] = request->fixed_disk_count < 2u ? STD_NULL :
         request->fixed_disk[1u];
+    config->fixed_disk_mode[0u] = request->fixed_disk_mode[0u];
+    config->fixed_disk_mode[1u] = request->fixed_disk_mode[1u];
     config->cmos_seed = request->cmos[0] == '\0' ? STD_NULL : request->cmos;
     config->font_path = request->font[0] == '\0' ? STD_NULL : request->font;
     config->bios_count = request->bios_count;

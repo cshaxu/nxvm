@@ -3,6 +3,7 @@
 
 #include "lib/kvm-base/event_interface.h"
 #include "lib/kvm-base/frame_interface.h"
+#include "lib/storage/medium_interface.h"
 #include "lib/types/types_interface.h"
 
 #define COMMON_MACHINE_PATH_CAPACITY 1024u
@@ -171,7 +172,8 @@ typedef struct common_machine_driver {
         common_machine_executor_callback callback, void *callback_context);
     void (*deliver_input)(void *context, const kvm_input_event *event);
     lib_bool (*copy_frame)(void *context, kvm_frame *out_frame);
-    lib_bool (*set_removable_media)(void *context, const char *path);
+    lib_bool (*set_removable_media)(void *context, const char *path,
+        lib_storage_medium_mode mode);
     /* Common invokes only these state-specific driver hooks on its existing
      * executor. The driver owns safe-boundary detection and image semantics. */
     lib_status (*begin_state_read)(void *context,
@@ -201,7 +203,7 @@ lib_bool common_machine_resume(common_machine *machine);
 lib_bool common_machine_stop(common_machine *machine);
 lib_bool common_machine_reset(common_machine *machine);
 lib_bool common_machine_set_removable_media(common_machine *machine,
-    const char *path);
+    const char *path, lib_storage_medium_mode mode);
 lib_status common_machine_read_state(common_machine *machine,
     const common_machine_state_writer *writer);
 lib_status common_machine_write_state(common_machine *machine,

@@ -231,6 +231,19 @@ recorded evidence, never by following successive isolated failures.
     architectures, complete repository-only unit coverage and the external
     integration suite. This remains an import and adapter-cutover S, not
     whole-task two-product acceptance.
+26. **S26: canonical modeful-media Common refresh.** Freeze SoftPC's committed
+    `src/lib`, `src/common`, `test/lib` and `test/common` corpus; atomically
+    replace NXVM's four trees byte-for-byte. Adopt Common's modeful removable
+    media request as the one runtime path. Extend NXVM's YAML construction
+    request so every `media.floppy` and `media.fixed_disk` entry may declare
+    `mode: direct|readonly|overlay`; omitted modes retain the established
+    `overlay` default. App resolves this immutable value into VM-machine
+    construction, and VM-machine alone opens the selected Storage medium for
+    FDD/HDD. Do not add a second mode enum, a YAML-only media path, or edit
+    output-session YAML without separate owner direction. Prove exact corpus
+    identity, mode parsing/default/error coverage, all three FDD/HDD modes,
+    both stripped Release architectures, the complete repository-only unit
+    suite and the external integration suite.
 
 ## Verification And Exit
 

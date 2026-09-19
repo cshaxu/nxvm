@@ -98,7 +98,7 @@ static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
 #include "vm/profile/default_profile/mouse_mapper.h"
 
 static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
-    const C_CHAR *path);
+    const C_CHAR *path, lib_storage_medium_mode mode);
 static C_INT vm_machine_remove_fdd_direct(vm_machine *session,
     const C_CHAR *path);
 
@@ -238,6 +238,20 @@ static const C_CHAR *vm_machine_config_fixed_disk(const vm_machine_config *confi
     return config->fixed_disk_image[slot];
 }
 
+static lib_storage_medium_mode vm_machine_config_floppy_mode(
+    const vm_machine_config *config, STD_SIZE_T slot)
+{
+    return config != STD_NULL && slot < VM_MACHINE_FLOPPY_SLOT_COUNT ?
+        config->floppy_mode[slot] : LIB_STORAGE_MEDIUM_OVERLAY;
+}
+
+static lib_storage_medium_mode vm_machine_config_fixed_disk_mode(
+    const vm_machine_config *config, STD_SIZE_T slot)
+{
+    return config != STD_NULL && slot < VM_MACHINE_FIXED_DISK_SLOT_COUNT ?
+        config->fixed_disk_mode[slot] : LIB_STORAGE_MEDIUM_OVERLAY;
+}
+
 type_status vm_machine_apply_cmos_seed(const vm_machine *session,
     core_machine_plan_topology *topology)
 {
@@ -370,19 +384,21 @@ static type_status vm_machine_ibm_5170_floppy_select(const vm_machine_config *co
 }
 
 static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
-    const C_CHAR *path)
+    const C_CHAR *path, lib_storage_medium_mode mode)
 {
     C_CHAR candidate[sizeof(session->floppy_image_path[slot])];
 
     if (session == STD_NULL || slot >= VM_MACHINE_FLOPPY_SLOT_COUNT ||
         (slot != 0u && !session->model40_private) ||
         vm_machine_control_is_running(&session->control) ||
+        mode > LIB_STORAGE_MEDIUM_OVERLAY ||
         !vm_machine_copy_path(candidate, sizeof(candidate), path) ||
-        vm_machine_fdd_insert_for(&session->floppy[slot], candidate) != 0 ||
+        vm_machine_fdd_insert_for(&session->floppy[slot], candidate, mode) != 0 ||
         !vm_machine_copy_path(session->floppy_image_path[slot],
             sizeof(session->floppy_image_path[slot]),
             candidate)) return -1;
     session->retained_config.floppy_image[slot] = session->floppy_image_path[slot];
+    session->retained_config.floppy_mode[slot] = mode;
     return 0;
 }
 
@@ -395,11 +411,12 @@ static C_INT vm_machine_remove_fdd_direct(vm_machine *session, const C_CHAR *pat
     return 0;
 }
 
-type_status vm_machine_set_common_media(vm_machine *session, const C_CHAR *path)
+type_status vm_machine_set_common_media(vm_machine *session, const C_CHAR *path,
+    lib_storage_medium_mode mode)
 {
     if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
     if (path != STD_NULL && path[0] != '\0')
-        return vm_machine_insert_floppy_at(session, 0u, path) == 0 ?
+        return vm_machine_insert_floppy_at(session, 0u, path, mode) == 0 ?
             TYPE_STATUS_OK : TYPE_STATUS_FAULT;
     return vm_machine_remove_fdd_direct(session, STD_NULL) == 0 ?
         TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
@@ -407,23 +424,27 @@ type_status vm_machine_set_common_media(vm_machine *session, const C_CHAR *path)
 
 C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path)
 { return session != STD_NULL && session->executor != LIB_NULL &&
-    common_machine_set_removable_media(session->executor, path) ? 0 : -1; }
+    common_machine_set_removable_media(session->executor, path,
+        LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 
 C_INT vm_machine_remove_fdd(vm_machine *session, const C_CHAR *path)
 { (C_VOID)path; return session != STD_NULL && session->executor != LIB_NULL &&
-    common_machine_set_removable_media(session->executor, LIB_NULL) ? 0 : -1; }
+    common_machine_set_removable_media(session->executor, LIB_NULL,
+        LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
-    const C_CHAR *path)
+    const C_CHAR *path, lib_storage_medium_mode mode)
 {
     C_CHAR candidate[sizeof(session->hdd_image_path)];
 
     if (session == STD_NULL || session->model40_private ||
         (!session->xt_private && (session->profile == STD_NULL ||
             !session->profile->hdc_present)) || !vm_machine_copy_path(candidate,
-            sizeof(candidate), path) || vm_machine_hdd_insert(&session->hdd, candidate) != 0 ||
+            sizeof(candidate), path) || mode > LIB_STORAGE_MEDIUM_OVERLAY ||
+        vm_machine_hdd_insert(&session->hdd, candidate, mode) != 0 ||
         !vm_machine_copy_path(session->hdd_image_path, sizeof(session->hdd_image_path),
             candidate)) return -1;
     session->retained_config.fixed_disk_image[0u] = session->hdd_image_path;
+    session->retained_config.fixed_disk_mode[0u] = mode;
     return 0;
 }
 
@@ -643,10 +664,12 @@ static type_status vm_machine_create_xt_from_assets(const vm_machine_config *con
     status = vm_machine_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
     if ((vm_machine_config_floppy(config, 0u) != STD_NULL &&
-            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u))) ||
+            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u),
+                vm_machine_config_floppy_mode(config, 0u))) ||
         (vm_machine_config_fixed_disk(config, 0u) != STD_NULL &&
             vm_machine_insert_hdd_at_startup(session,
-                vm_machine_config_fixed_disk(config, 0u)))) {
+                vm_machine_config_fixed_disk(config, 0u),
+                vm_machine_config_fixed_disk_mode(config, 0u)))) {
         vm_machine_destroy(session);
         return TYPE_STATUS_FAULT;
     }
@@ -717,12 +740,15 @@ static type_status vm_machine_create_model40_from_assets(
     status = vm_machine_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
     if ((vm_machine_config_floppy(config, 0u) != STD_NULL &&
-            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u))) ||
+            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u),
+                vm_machine_config_floppy_mode(config, 0u))) ||
         (vm_machine_config_floppy(config, 1u) != STD_NULL &&
-            vm_machine_insert_floppy_at(session, 1u, vm_machine_config_floppy(config, 1u))) ||
+            vm_machine_insert_floppy_at(session, 1u, vm_machine_config_floppy(config, 1u),
+                vm_machine_config_floppy_mode(config, 1u))) ||
         (vm_machine_config_fixed_disk(config, 0u) != STD_NULL &&
             vm_machine_model40_insert_hdd_at_startup(session,
-                vm_machine_config_fixed_disk(config, 0u)))) {
+                vm_machine_config_fixed_disk(config, 0u),
+                vm_machine_config_fixed_disk_mode(config, 0u)))) {
         vm_machine_destroy(session);
         return TYPE_STATUS_FAULT;
     }
@@ -792,10 +818,12 @@ type_status vm_machine_create_from_assets(const vm_machine_config *config,
     status = vm_machine_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
     if ((vm_machine_config_floppy(config, 0u) != STD_NULL &&
-            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u))) ||
+            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u),
+                vm_machine_config_floppy_mode(config, 0u))) ||
         (vm_machine_config_fixed_disk(config, 0u) != STD_NULL &&
             vm_machine_insert_hdd_at_startup(session,
-                vm_machine_config_fixed_disk(config, 0u)))) {
+                vm_machine_config_fixed_disk(config, 0u),
+                vm_machine_config_fixed_disk_mode(config, 0u)))) {
         vm_machine_destroy(session);
         return TYPE_STATUS_FAULT;
     }

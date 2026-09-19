@@ -78,6 +78,17 @@ static C_INT vm_app_session_catalog_parse_value(C_CHAR *line,
     return 1;
 }
 
+static C_INT vm_app_session_catalog_parse_media_mode(const C_CHAR *value,
+    lib_storage_medium_mode *out_mode)
+{
+    if (value == STD_NULL || out_mode == STD_NULL) return 0;
+    if (!STD_STRCMP(value, "direct")) *out_mode = LIB_STORAGE_MEDIUM_DIRECT;
+    else if (!STD_STRCMP(value, "readonly")) *out_mode = LIB_STORAGE_MEDIUM_READONLY;
+    else if (!STD_STRCMP(value, "overlay")) *out_mode = LIB_STORAGE_MEDIUM_OVERLAY;
+    else return 0;
+    return 1;
+}
+
 static C_INT vm_app_session_catalog_parse_document(const C_CHAR *directory,
     const C_CHAR *name, C_CHAR *document, vm_session_request *entry)
 {
@@ -102,6 +113,8 @@ static C_INT vm_app_session_catalog_parse_document(const C_CHAR *directory,
     C_INT floppy_format = 0;
     C_INT floppy = 0;
     C_INT hard_disk = 0;
+    C_INT media_mode = 0;
+    STD_SIZE_T media_slot = VM_SESSION_REQUEST_MEDIA_SLOT_COUNT;
 
     if (directory == STD_NULL || name == STD_NULL || document == STD_NULL ||
         entry == STD_NULL) return 0;
@@ -166,14 +179,14 @@ static C_INT vm_app_session_catalog_parse_document(const C_CHAR *directory,
         }
         if (section == 2 && vm_app_session_catalog_parse_value(text, "floppy", &value)) {
             if (floppy) break;
-            floppy = 1;
+            floppy = 1; media_slot = VM_SESSION_REQUEST_MEDIA_SLOT_COUNT;
             if (!STD_STRCMP(value, "[]")) continue;
             if (*value == '\0') { media = 1; continue; }
             break;
         }
         if (section == 2 && vm_app_session_catalog_parse_value(text, "fixed_disk", &value)) {
             if (hard_disk) break;
-            hard_disk = 1;
+            hard_disk = 1; media_slot = VM_SESSION_REQUEST_MEDIA_SLOT_COUNT;
             if (!STD_STRCMP(value, "[]")) continue;
             if (*value == '\0') { media = 2; continue; }
             break;
@@ -218,7 +231,21 @@ static C_INT vm_app_session_catalog_parse_document(const C_CHAR *directory,
                 entry->floppy : entry->fixed_disk;
             if (*count >= VM_SESSION_REQUEST_MEDIA_SLOT_COUNT || !vm_app_session_catalog_path(
                     target[*count], VM_SESSION_REQUEST_PATH_MAX, directory, value)) break;
+            (media == 1 ? entry->floppy_mode : entry->fixed_disk_mode)[*count] =
+                LIB_STORAGE_MEDIUM_OVERLAY;
+            media_slot = *count;
+            media_mode = 0;
             ++*count;
+            continue;
+        }
+        if (section == 2 && media != 0 && media_slot <
+            VM_SESSION_REQUEST_MEDIA_SLOT_COUNT &&
+            vm_app_session_catalog_parse_value(text, "mode", &value)) {
+            lib_storage_medium_mode *modes = media == 1 ? entry->floppy_mode :
+                entry->fixed_disk_mode;
+            if (media_mode || !vm_app_session_catalog_parse_media_mode(value,
+                    &modes[media_slot])) break;
+            media_mode = 1;
             continue;
         }
         break;

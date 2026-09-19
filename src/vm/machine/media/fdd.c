@@ -357,14 +357,12 @@ static C_INT vm_machine_fdd_insert_medium_for(t_fdd *fdd, const C_CHAR *file_nam
     return TYPE_FALSE;
 }
 
-C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
-{ return vm_machine_fdd_insert_medium_for(fdd, file_name, LIB_STORAGE_MEDIUM_OVERLAY); }
-
-C_INT vm_machine_fdd_insert_readonly_for(t_fdd *fdd, const C_CHAR *file_name)
-{ return vm_machine_fdd_insert_medium_for(fdd, file_name, LIB_STORAGE_MEDIUM_READONLY); }
-
-C_INT vm_machine_fdd_insert_direct_for(t_fdd *fdd, const C_CHAR *file_name)
-{ return vm_machine_fdd_insert_medium_for(fdd, file_name, LIB_STORAGE_MEDIUM_DIRECT); }
+C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name,
+    lib_storage_medium_mode mode)
+{
+    return mode <= LIB_STORAGE_MEDIUM_OVERLAY ?
+        vm_machine_fdd_insert_medium_for(fdd, file_name, mode) : TYPE_TRUE;
+}
 
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
 {

@@ -50,6 +50,7 @@ struct common_machine {
     common_machine_frame_sink frame_sink;
     void *frame_context;
     lib_bool media_succeeded;
+    lib_storage_medium_mode media_mode;
     char media_path[COMMON_MACHINE_PATH_CAPACITY];
 };
 
@@ -164,7 +165,8 @@ static void common_machine_service_media(common_machine *machine)
         return;
     machine->media_succeeded = machine->driver.set_removable_media != NULL &&
         machine->driver.set_removable_media(machine->driver.context,
-            machine->media_path[0] == '\0' ? NULL : machine->media_path);
+            machine->media_path[0] == '\0' ? NULL : machine->media_path,
+            machine->media_mode);
     base_sync_event_signal(machine->media_event);
 }
 
@@ -588,11 +590,13 @@ lib_bool common_machine_reset(common_machine *machine)
 }
 
 lib_bool common_machine_set_removable_media(common_machine *machine,
-    const char *path)
+    const char *path, lib_storage_medium_mode mode)
 {
     lib_size length;
     lib_i32 state;
-    if (machine == NULL || machine->worker == NULL || machine->driver.set_removable_media == NULL)
+    if (machine == NULL || machine->worker == NULL ||
+        machine->driver.set_removable_media == NULL ||
+        mode > LIB_STORAGE_MEDIUM_OVERLAY)
         return LIB_FALSE;
     state = lib_atomic_i32_load_explicit(&machine->state, LIB_MEMORY_ORDER_SEQ_CST);
     if (state != COMMON_MACHINE_STOPPED && state != COMMON_MACHINE_PAUSED)
@@ -603,6 +607,7 @@ lib_bool common_machine_set_removable_media(common_machine *machine,
         if (length >= sizeof(machine->media_path)) return LIB_FALSE;
         lib_memory_copy(machine->media_path, path, length + 1u);
     }
+    machine->media_mode = mode;
     base_sync_event_reset(machine->media_event);
     lib_atomic_i32_exchange_explicit(&machine->media_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
     base_sync_event_signal(machine->command_event);

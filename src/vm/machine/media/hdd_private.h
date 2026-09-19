@@ -49,7 +49,8 @@ C_VOID vm_machine_hdd_finalize(t_hdd *hdd);
 C_VOID vm_machine_hdd_create(t_hdd *hdd, type_unsigned_16 cylinders);
 C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     STD_SIZE_T raw_byte_count);
-C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name);
+C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name,
+    lib_storage_medium_mode mode);
 C_INT vm_machine_hdd_set_geometry(t_hdd *hdd, type_unsigned_32 cylinders,
     type_unsigned_16 heads, type_unsigned_16 sectors_per_track);
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name);

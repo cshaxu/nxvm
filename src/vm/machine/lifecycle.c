@@ -142,12 +142,12 @@ static lib_bool vm_machine_driver_copy_frame(void *context, kvm_frame *frame)
 { return vm_machine_copy_common_frame((vm_machine *)context, frame) ? LIB_TRUE : LIB_FALSE; }
 
 static lib_bool vm_machine_driver_set_removable_media(void *context,
-    const char *path)
+    const char *path, lib_storage_medium_mode mode)
 {
     vm_machine *machine = (vm_machine *)context;
 
     if (machine == STD_NULL) return LIB_FALSE;
-    return vm_machine_set_common_media(machine, path) == TYPE_STATUS_OK;
+    return vm_machine_set_common_media(machine, path, mode) == TYPE_STATUS_OK;
 }
 
 static lib_bool vm_machine_driver_take_debug_stop(void *context)

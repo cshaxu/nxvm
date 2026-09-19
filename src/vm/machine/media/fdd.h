@@ -9,6 +9,7 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/media_interface.h"
+#include "lib/storage/medium_interface.h"
 
 typedef struct t_fdd t_fdd;
 
@@ -35,9 +36,8 @@ C_VOID vm_machine_fdd_finalize(t_fdd *fdd);
 C_VOID vm_machine_fdd_create_for(t_fdd *fdd);
 C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
     STD_SIZE_T byte_count);
-C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name);
-C_INT vm_machine_fdd_insert_readonly_for(t_fdd *fdd, const C_CHAR *file_name);
-C_INT vm_machine_fdd_insert_direct_for(t_fdd *fdd, const C_CHAR *file_name);
+C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name,
+    lib_storage_medium_mode mode);
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name);
 const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID);
 

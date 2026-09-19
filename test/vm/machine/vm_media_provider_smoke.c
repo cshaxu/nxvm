@@ -46,8 +46,10 @@ C_INT main(C_VOID)
         vm_media_write_file(vm_media_hdd_path, hdd_bytes, sizeof(hdd_bytes))) failed = TYPE_TRUE;
     vm_machine_fdd_initialize(&fdd);
     vm_machine_hdd_initialize(&hdd);
-    if (!failed && (vm_machine_fdd_insert_for(&fdd, vm_media_fdd_path) != TYPE_FALSE ||
-        vm_machine_hdd_insert(&hdd, vm_media_hdd_path) != TYPE_FALSE ||
+    if (!failed && (vm_machine_fdd_insert_for(&fdd, vm_media_fdd_path,
+        LIB_STORAGE_MEDIUM_OVERLAY) != TYPE_FALSE ||
+        vm_machine_hdd_insert(&hdd, vm_media_hdd_path,
+            LIB_STORAGE_MEDIUM_OVERLAY) != TYPE_FALSE ||
         core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
         core_machine_media_registry_bind(registry, 1u, &fdd,
             vm_machine_fdd_media_provider()) != TYPE_STATUS_OK ||

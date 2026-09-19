@@ -110,5 +110,6 @@ C_VOID vm_machine_storage_finalize(vm_machine *machine);
 type_status vm_machine_deliver_common_input(vm_machine *machine,
     const kvm_input_event *event);
 type_bool vm_machine_copy_common_frame(vm_machine *machine, kvm_frame *frame);
-type_status vm_machine_set_common_media(vm_machine *machine, const C_CHAR *path);
+type_status vm_machine_set_common_media(vm_machine *machine, const C_CHAR *path,
+    lib_storage_medium_mode mode);
 #endif

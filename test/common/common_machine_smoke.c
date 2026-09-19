@@ -38,6 +38,9 @@ typedef struct machine_fake {
     common_machine_state_writer deferred_state_writer;
     LONG running_notifications;
     LONG paused_notifications;
+    LONG media_calls;
+    lib_storage_medium_mode media_mode;
+    char media_path[COMMON_MACHINE_PATH_CAPACITY];
 } machine_fake;
 
 static lib_bool fake_reset(void *opaque)
@@ -80,8 +83,20 @@ static void fake_request_wake(void *opaque)
     }
     SetEvent(fake->wake);
 }
-static lib_bool fake_set_media(void *opaque, const char *path)
-{ (void)opaque; (void)path; return LIB_TRUE; }
+static lib_bool fake_set_media(void *opaque, const char *path,
+    lib_storage_medium_mode mode)
+{
+    machine_fake *fake = (machine_fake *)opaque;
+    if (mode > LIB_STORAGE_MEDIUM_OVERLAY) return LIB_FALSE;
+    ++fake->media_calls;
+    fake->media_mode = mode;
+    if (path == NULL) fake->media_path[0] = '\0';
+    else {
+        assert(strlen(path) < sizeof(fake->media_path));
+        memcpy(fake->media_path, path, strlen(path) + 1u);
+    }
+    return LIB_TRUE;
+}
 static void fake_heartbeat(void *opaque, lib_bool enabled)
 { (void)opaque; (void)enabled; }
 static void fake_set_callback(void *opaque, common_machine_executor_callback callback,
@@ -450,7 +465,8 @@ static void shutdown_active(common_machine *machine, machine_fake *fake)
     notifications = fake->notifications;
     assert(!common_machine_start(machine));
     assert(!common_machine_reset(machine));
-    assert(!common_machine_set_removable_media(machine, NULL));
+    assert(!common_machine_set_removable_media(machine, NULL,
+        LIB_STORAGE_MEDIUM_OVERLAY));
     common_machine_shutdown(machine);
     common_machine_destroy(machine);
     assert(fake->notifications == notifications);
@@ -542,6 +558,22 @@ int main(void)
         &transfer.calls, 0, 0) == 1 && InterlockedCompareExchange(
         &fake.state_reads, 0, 0) == 1);
     assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
+    assert(common_machine_set_removable_media(machine, "Mixed-Case.img",
+        LIB_STORAGE_MEDIUM_DIRECT));
+    assert(fake.media_calls == 1 && fake.media_mode == LIB_STORAGE_MEDIUM_DIRECT &&
+        !strcmp(fake.media_path, "Mixed-Case.img"));
+    assert(common_machine_set_removable_media(machine, "ReadOnly.img",
+        LIB_STORAGE_MEDIUM_READONLY));
+    assert(fake.media_calls == 2 && fake.media_mode == LIB_STORAGE_MEDIUM_READONLY &&
+        !strcmp(fake.media_path, "ReadOnly.img"));
+    assert(common_machine_set_removable_media(machine, "Overlay.img",
+        LIB_STORAGE_MEDIUM_OVERLAY));
+    assert(fake.media_calls == 3 && fake.media_mode == LIB_STORAGE_MEDIUM_OVERLAY &&
+        !strcmp(fake.media_path, "Overlay.img"));
+    assert(common_machine_set_removable_media(machine, NULL,
+        LIB_STORAGE_MEDIUM_OVERLAY));
+    assert(fake.media_calls == 4 && fake.media_mode == LIB_STORAGE_MEDIUM_OVERLAY &&
+        fake.media_path[0] == '\0');
     fake.defer_state_read = 1;
     {
         LONG running = fake.running_notifications;

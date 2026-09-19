@@ -139,14 +139,16 @@ type_status vm_machine_model40_materialize_plan(vm_machine *session,
     return vm_machine_model40_materialize_controllers(session, plan);
 }
 
-C_INT vm_machine_model40_insert_hdd_at_startup(vm_machine *session, const C_CHAR *path)
+C_INT vm_machine_model40_insert_hdd_at_startup(vm_machine *session,
+    const C_CHAR *path, lib_storage_medium_mode mode)
 {
     const STD_SIZE_T expected_bytes = 925u * 5u * 17u * 512u;
     STD_SIZE_T path_length;
 
     if (session == STD_NULL || !session->model40_private || path == STD_NULL ||
         vm_machine_hdd_has_media(&session->hdd) ||
-        vm_machine_hdd_insert(&session->hdd, path) != 0 ||
+        mode > LIB_STORAGE_MEDIUM_OVERLAY ||
+        vm_machine_hdd_insert(&session->hdd, path, mode) != 0 ||
         vm_machine_hdd_raw_byte_count(&session->hdd) != expected_bytes) return -1;
     path_length = STD_STRLEN(path);
     if (path_length >= sizeof(session->hdd_image_path)) return -1;
@@ -155,5 +157,6 @@ C_INT vm_machine_model40_insert_hdd_at_startup(vm_machine *session, const C_CHAR
         return -1;
     }
     session->retained_config.fixed_disk_image[0u] = session->hdd_image_path;
+    session->retained_config.fixed_disk_mode[0u] = mode;
     return 0;
 }

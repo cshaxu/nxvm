@@ -274,14 +274,12 @@ static C_INT vm_machine_hdd_insert_medium(t_hdd *hdd, const C_CHAR *file_name,
     hdd->connect.flagReadOnly = mode == LIB_STORAGE_MEDIUM_READONLY;
     return TYPE_FALSE;
 }
-C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name)
-{ return vm_machine_hdd_insert_medium(hdd, file_name, LIB_STORAGE_MEDIUM_OVERLAY); }
-
-C_INT vm_machine_hdd_insert_readonly(t_hdd *hdd, const C_CHAR *file_name)
-{ return vm_machine_hdd_insert_medium(hdd, file_name, LIB_STORAGE_MEDIUM_READONLY); }
-
-C_INT vm_machine_hdd_insert_direct(t_hdd *hdd, const C_CHAR *file_name)
-{ return vm_machine_hdd_insert_medium(hdd, file_name, LIB_STORAGE_MEDIUM_DIRECT); }
+C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name,
+    lib_storage_medium_mode mode)
+{
+    return mode <= LIB_STORAGE_MEDIUM_OVERLAY ?
+        vm_machine_hdd_insert_medium(hdd, file_name, mode) : TYPE_TRUE;
+}
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
     (C_VOID)file_name;
     if (hdd == STD_NULL) return TYPE_TRUE;
