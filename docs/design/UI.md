@@ -1,7 +1,8 @@
 # Product UX
 
 XT, AT, DeskPro 386, default PC/AT and future PC110 share one NXVM interaction
-model. This target design does not claim fixed-build/INI cutover or PC110 delivery.
+model. The fixed-build/INI cutover is complete for the four implemented
+products; this does not claim PC110 delivery.
 
 ## NXVM
 

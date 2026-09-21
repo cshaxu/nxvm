@@ -1,8 +1,10 @@
-# Source Layout Detail Record
+# Retired Source Layout Detail Record
 
-> Supporting M1--M5 migration and interface detail. The current macro layout
-> authority is [design/CODING.md](../../design/CODING.md). This record cannot
-> change current component ownership, directory structure, or dependency rules.
+> Historical M1--M5 migration and interface detail. The current macro layout
+> authority is [design/CODING.md](../../design/CODING.md). This record predates
+> the App/Core/shared-corpus layout and T533 fixed-product cutover; it cannot
+> change current component ownership, directory structure, dependency rules or
+> product scope.
 
 ## Authority
 

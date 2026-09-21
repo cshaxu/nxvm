@@ -14,7 +14,8 @@ external BYOB asset root; the selected Profile determines its fixed firmware
 roles and relative asset names. A shared NXVM.ini configures supported memory,
 media paths/access and presentation, not machine identity, firmware paths, CPU
 population, controller topology, startup actions or firmware boot order. It
-replaces YAML at the implementation cutover, not through a permanent parallel loader.
+  replaced the retired YAML loader at the completed product cutover; no
+  permanent compatibility loader remains.
 
 All implemented machines and their required personalities remain supported;
 new Standard-board selection is not a migration prerequisite. PC110 requires

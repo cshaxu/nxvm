@@ -5,8 +5,9 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current And Target Trees
 
-Retain the App/Core/shared-corpus layout. The tree below is the migration
-target, not a claim that Devices, Profiles or fixed-build INI loading already exist.
+The App/Core/shared-corpus layout is current. `devices`, `machine` and
+`profiles` are live owner roots; `pc110` remains a future Profile only when its
+separate evidence task admits real source files.
 
 ```text
 src/
@@ -25,9 +26,9 @@ src/
       pc110/            PC110 board C, frozen configuration and ROM slots
 ```
 
-Keep shared profile declarations and proven helpers at the profiles root.
-The current `core/profile` directory migrates to `core/profiles`; do not keep
-a singular compatibility directory. Preserve existing machine identities and
+Keep shared profile declarations and proven helpers at the profiles root. The
+former singular `core/profile` root is retired; do not restore a compatibility
+directory. Preserve existing machine identities and
 variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
 and selection tables stay in generic Core, not copied into board directories.
@@ -41,9 +42,9 @@ configuration header/source containing that local root. It neither copies ROM
 bytes into the source/build output nor permits an unconfigured generic root.
 Documentation changes do not move assets. Each generated product EXE and its
 common NXVM.ini live only in the ignored
-`assets/binary/<profile>/` directory; relative runtime-media paths
-resolve from that file. It has no
-firmware/CMOS/font asset path keys. Existing session YAML remains the runtime baseline until cutover.
+`assets/binary/<profile>/` directory; relative runtime-media paths resolve from
+that file. It has no firmware/CMOS/font asset path keys. NXVM.ini is the sole
+product runtime configuration route; repository-only tests do not load it.
 Do not rename/move external assets merely to match target source directory names.
 
 ## Files And Names

@@ -2,8 +2,26 @@
 
 ## Current Work
 
-No implementation task is admitted. M5 T533 is closed; the next candidate is the
-retained CPU-family qualification.
+## M5 Td S171 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Governance |
+| Admission And Approval | The owner approved a thorough documentation audit and governance pass as Td on 2026-09-21, before resuming Queue implementation. The uncommitted T534 S1 preparation is withdrawn without CPU behavior or evidence work. |
+| Objective | Reconcile every live design, rule, Queue proposal, current baseline and supporting-current document with T533's completed fixed-product/INI/sole-artifact architecture, while preserving historical records as historical. |
+| Non-goals | Do not change production code, CMake, tests, assets, CPU/controller behavior, historical task facts, Queue order or protected external material. Do not rewrite closed history merely because terminology later changed. |
+| Reference Baseline | [T533 history](../history/M5-T533-fixed-machine-products.md), [S5 convergence ledger](../etc/evidence/t533-s5-product-convergence-ledger.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Queue](QUEUE.md). |
+| Candidate Proposal | No implementation proposal: this is owner-approved standalone governance. Its evidence records live-document findings and dispositions. |
+| Files And ABI Surface | Documentation only: principal design, current state, Queue-linked proposals, source/build policy, supporting-document index and explicit historical labels. No source, ABI, runtime route or generated artifact changes. |
+| Applicable Rules | [Documentation](../rules/DOCUMENT.md): one authority per topic and preserve historical terminology. [Execution](../rules/EXECUTION.md): Td packet, documentation governance and actual-diff review. [Architecture](../rules/ARCHITECTURE.md): one Profile/INI/asset route. [Source policy](../etc/operations/policy/source-policy.md): BYOB assets remain external. |
+| Verification | Audit all non-history Markdown under `docs/design`, `docs/rules`, `docs/states`, `docs/proposals`, `docs/etc/operations`, `docs/etc/architecture`, `docs/etc/research` and the `etc` index for retired YAML/runtime-selection/deployment/layout claims; record every live hit and disposition; run documentation governance and `git diff --check`. |
+| Expected Markers | One post-T533 description of fixed products, external BYOB firmware, adjacent INI, sole `assets/binary/<profile>/` deployment, retained machine scope and historical-document status; all Queue proposals start from that baseline. |
+| Asset Needs | None. This Td neither reads nor modifies firmware, ROM, CMOS, media, fonts, manuals or external repositories. |
+| Reporting Requirements | Record scope/search, every live finding, changed authority and rationale, historical exclusions, Queue/proposal update proof, verification, and explicit confirmation that the withdrawn T534 packet produced no implementation work. |
+| Stop Conditions | Stop if a proposed correction would alter a closed historical fact, imply an unimplemented PC110/486 capability, require a source/build change, or reveal a competing live architecture that cannot be resolved by the principal authorities. |
+| Exit Criteria | All live architecture/operational/proposal texts agree with the T533 baseline, retired supporting designs are unambiguously historical, the Queue has current context without a premature T534 admission, and documentation governance passes. |
+| Original Owner Request | Treat T533 as whole-system simplification and cleanup; ensure all later Queue proposals and their context are current before more implementation work begins. |
+| Similar-Issue Sweep | Search all live authorities and live proposal/supporting-context locations for the retired architecture vocabulary and paths; classify each as corrected, intentionally historical or not applicable in the evidence record. |
 
 ## Current Technical Baseline
 
@@ -25,7 +43,7 @@ retained CPU-family qualification.
 
 | Task | Compact result |
 | --- | --- |
-| T533 | Closed at `99de6d11`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
+| T533 | Closed by `99de6d11` and deployment correction `6d5a4828`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |
 | T531 | Closed at owner direction on 2026-09-20 after S28 implementation `20c1e71b`: the final canonical SoftPC `2b17749a` six-tree Lib/Common/x86 source-and-test refresh is exact; 338/338 unit, specialized/documentation gates and stripped 0531 x64/x86 artifacts pass. The full external integration remains 41/42: `integration.vm-dos-keyboard-smoke` stays explicitly transferred to [TODO(High)](TODO.md), not relabelled green. [History](../history/M5-T531-shared-common-product-convergence.md). |
 | T530 | Closed at owner direction on 2026-09-13 after implementation bc9a1247; pinned canonical Lib import and Common adaptation, recorded 299/299 unit and 42/42 integration, both 0530 artifacts verified by hash. No new manual test is claimed. Later source revisions and Common UX convergence belong to the next task. [History](../history/M5-T530-canonical-softpc-lib-refresh.md). |

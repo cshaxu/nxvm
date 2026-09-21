@@ -84,8 +84,8 @@ with slot, size, SHA-256, read-only mapping and provenance. At the approved
 cutover, CMake receives one local `NXVM_PROFILE_ASSETS_ROOT` for the selected
 machine build. It validates the selected Profile's manifest and generates an
 ignored local asset-root binding; it never copies firmware into source control
-or embeds it in the EXE. The current session YAML baseline resolves relative
-paths from YAML; NXVM.ini resolves only runtime-media paths from INI. Neither
+or embeds it in the EXE. The retired session-YAML loader is historical only.
+NXVM.ini resolves only runtime-media paths from the adjacent INI. Neither
 configuration format embeds hashes/catalogues, firmware paths or protected
 binary payloads. Repository templates use portable references, never tracked
 machine-local absolute paths. The loader supplies immutable bytes through the

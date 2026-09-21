@@ -1,9 +1,10 @@
-# Architecture Detail Record
+# Retired Architecture Detail Record
 
-> Supporting technical and historical detail for M1--M5. The current product
-> architecture is [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md), and
-> the current source layout is [design/CODING.md](../../design/CODING.md). This
-> record cannot create a competing current authority.
+> Historical M1--M5 technical detail. The current product architecture is
+> [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md), and the current source
+> layout is [design/CODING.md](../../design/CODING.md). This record predates
+> withdrawal of NXVDM/mantle/DOS scope and the T533 fixed-product cutover; it
+> cannot create a competing current authority.
 
 ## Product Shape
 

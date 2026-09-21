@@ -1,10 +1,12 @@
-# Core Machine Instance Detail Record
+# Historical Core Machine Instance Detail Record
 
-> Supporting M5 object, provider, and session design detail. The current
+> Historical M5 object, provider, and session design detail. The current
 > high-level architecture and source layout are
 > [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md) and
 > [design/CODING.md](../../design/CODING.md); this record cannot create a
-> competing current architecture authority.
+> competing current architecture authority. It predates the App/Core/shared-
+> corpus and fixed-product terminology; current paths and product boundaries
+> are not inferred from its examples.
 
 ## Scope
 

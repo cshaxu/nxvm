@@ -1,8 +1,10 @@
 # Fixed-Machine Selection And Simplification Evidence
 
 Research date: 2026-09-21. Supporting evidence, not a second architecture or
-machine-selection authority. Baseline: `b03f827b` after T532. No production,
-test, build, session YAML or executable was changed by this research.
+machine-selection authority. Baseline: `b03f827b` after T532, before T533's
+INI/sole-artifact cutover. No production, test, build, session YAML or
+executable was changed by this research; all source-path observations below are
+therefore historical unless the scope override says otherwise.
 
 ## Current Scope Override
 

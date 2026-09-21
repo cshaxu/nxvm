@@ -6,6 +6,14 @@ Preserve every existing CPU implementation, profile and selection table while
 qualifying the CPU contracts required by XT, AT, DeskPro, default and future PC110. CPU
 architecture remains independent of build-fixed board profiles.
 
+## Current Product Context
+
+The completed fixed-product cutover has made XT, AT, DeskPro and default PC/AT four build-selected
+products. Each uses external BYOB firmware, one adjacent NXVM.ini runtime-media
+route and sole `assets/binary/<profile>/` deployment. This qualification keeps
+CPU semantics in `core/devices`; it neither restores runtime CPU/profile/YAML
+selection nor treats a successful product boot as CPU completeness proof.
+
 ## Scope And Batches
 
 1. Inventory actual models, instruction forms, feature/timing tables and tests.

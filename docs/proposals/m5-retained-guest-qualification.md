@@ -5,6 +5,14 @@
 Qualify the retained XT, AT, DeskPro 386 and default PC/AT machines with their
 actual hardware and firmware. No machine is replaced or gated on Standard selection.
 
+## Current Product Context
+
+The completed cutover establishes four product bindings: one selected Profile and external
+BYOB asset root at build time, one adjacent NXVM.ini for runtime media and
+presentation, and deployment only in `assets/binary/<profile>/`. This task
+extends that exact production route; it does not use retired YAML/catalog
+construction or manufacture firmware/CMOS/media substitutes.
+
 ## Dependencies And Batches
 
 Freeze each machine's board/firmware/media set and complete the needed CPU/controller

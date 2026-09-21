@@ -6,6 +6,15 @@ Qualify all retained XT/AT/DeskPro/default components and later PC110 through on
 Core state/time architecture. Read the selected board before assuming its
 RTC, keyboard, video or storage chip identity.
 
+## Current Product Context
+
+The completed fixed-product cutover selects one Profile per implemented XT, AT, DeskPro and
+default product. Controller work starts from that construction: external BYOB
+firmware is resolved by the selected Profile, NXVM.ini supplies only runtime
+media/presentation, and deployment is only `assets/binary/<profile>/`. A repair
+must not recreate a YAML/catalog machine selector or board-specific second
+execution path.
+
 ## Scope And Batches
 
 The fixed-product proposal supplies each retained BOM and migration map;

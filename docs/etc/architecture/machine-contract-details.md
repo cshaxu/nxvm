@@ -1,8 +1,10 @@
-# Machine Contract Detail Record
+# Historical Machine Contract Detail Record
 
-> Supporting M1--M5 interface detail. The current high-level architecture is
+> Historical M1--M5 interface detail. The current high-level architecture is
 > [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md); this record preserves
 > technical contract rationale and cannot establish a competing current rule.
+> Its root-type and former directory examples are not current source-layout
+> authority.
 
 ## Authority
 

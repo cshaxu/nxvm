@@ -12,7 +12,7 @@ has changed.
 
 An M5-close decision requires every applicable item to be evidenced or an
 owner-approved deferral to be recorded in `TODO.md` with its target milestone.
-M6 mantle work must not use an unfinished M5 boundary or corpus item as an
+M6 PC110 work must not use an unfinished M5 boundary or corpus item as an
 implicit waiver. Current milestone state remains in `states/CURRENT.md`.
 
 ## 1. Current Build Graph

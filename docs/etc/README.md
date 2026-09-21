@@ -9,9 +9,10 @@ principal documents named in [docs/README.md](../README.md).
 
 | Current category | Owner | Purpose |
 | --- | --- | --- |
-| `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
+| `architecture/` | Architecture owner | Supporting detailed rationale; each record explicitly states whether it is current or historical. |
 | `architecture/specification-driven-l3-timing.md` | Architecture owner | Historical Core timing-plan rationale; current scope and timing classification are owned by the principal Architecture authority. |
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Historical two-root profile-resolution design, superseded by the fixed-machine composition authority; retained to identify migration inputs. |
+| `architecture/module-layout-detail.md` and `architecture/pc-at-profile.md` | Architecture owner | Retired M1--M5/T208 layout and profile records. They preserve migration evidence only; the principal design authorities and T533 history own current paths and construction. |
 | `requirements/` | Product and profile owners | Supporting requirements; former DOS/NXVDM requirements are historical, not current product commitments. |
 | `research/fixed-machine-selection.md` | Machine-selection owner | Historical candidate research, SoftPC INI inspection, composition observations and the later all-implemented-machine retention override. |
 | `history/retired-machine-plans/` | Product governance owner | Archived proposals/debt with historical receivers and the later XT/AT/DeskPro/default retention override; not a current queue or task-history record. |
@@ -24,6 +25,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t533-s3-profile-machine-plan.md` | Fixed-machine product owner | T533 S3 records the single Profile-owned board/firmware plan consumed by neutral Machine composition. |
 | `evidence/t533-s4-fixed-profile-ini-cutover.md` | Fixed-machine product owner | T533 S4 records the four fixed product selections, sole INI route, path-resolution correction and real per-product boot dispositions. |
 | `evidence/t533-s5-product-convergence-ledger.md` | Fixed-machine product owner | T533 S5 records four-product closure, Common-input/HDD integration repair, and sole artifact-path evidence. |
+| `evidence/td-s171-t533-architecture-documentation-audit.md` | Documentation governance owner | Td S171 reconciles live principal/supporting/proposal context with the completed T533 fixed-product, INI and sole-artifact baseline; it preserves rather than rewrites historical records. |
 | `evidence/t526-s10-vm-machine-executor-migration.md` | VM machine owner | T526 S10 removes the VM composition executor, establishes one copied machine request/result boundary, and records the complete owner-path sweep and repository-only verification. |
 | `evidence/t526-s11-session-control-convergence.md` | VM session owner | T526 S11 removes product control/provider forwarding, establishes the sole copied session fact reducer and presentation-plan route, and records its repository-only verification. |
 | `evidence/t526-s12-presentation-leaf-convergence.md` | VM presentation owner | T526 S12 makes `vm/presentation` the sole shared-lib and Console-broker owner, consumes the one copied presentation plan, and removes the product presentation route. |

@@ -1,4 +1,9 @@
-# Default PC/AT Profile
+# Retired Default PC/AT Profile Record
+
+> Historical T208 design evidence. The current architecture is the
+> build-selected `core/profiles/default_profile` composition with external
+> BYOB firmware and adjacent NXVM.ini runtime media. This record does not
+> describe a current `vm/profile` or YAML/runtime-profile-selection route.
 
 ## T208 S1 Decision
 

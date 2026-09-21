@@ -5,6 +5,14 @@
 Retain the useful Bochs comparison and specification-driven test work without
 making it a dependency of the emulator or resurrecting withdrawn product lines.
 
+## Current Product Context
+
+The fixed-product cutover is complete. Differential tools observe the
+existing Core/Debug boundary and never select a profile, firmware or CPU at
+runtime. Repository-only unit tests remain file-free; product integration uses
+the selected external BYOB assets and adjacent NXVM.ini through the production
+route.
+
 ## Batches
 
 1. Freeze copied instruction/state comparison contracts, supported CPU models,
