@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## M5 T533 S4 Packet
+## M5 T533 S5 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner approved independent T533 execution on 2026-09-21. Accepted S3 `4b9b8241` assigns fixed target selection and the NXVM.ini cutover to S4. |
-| Objective | Select one canonical fixed product Profile for each retained machine (XT, 5170, Model 40 and default PC/AT), validate its external BYOB asset root, and replace production YAML/catalog loading with one NXVM.ini runtime configuration path. |
-| Non-goals | Do not embed or commit protected assets, add a runtime machine/CPU/firmware selector, put BIOS boot order or automatic start in INI, retire retained machines, create PC110 placeholders, or keep a YAML compatibility route. |
-| Reference Baseline | T533 S1 ledger `14572230`; S3 profile-plan boundary `2a589dc7`, accepted `4b9b8241`; proposal S4. |
-| Candidate Proposal | [M5 fixed-machine products](../proposals/m5-fixed-machine-products.md), S4 fixed-build and App INI cutover. |
-| Files And ABI Surface | App configuration/catalog/composition, CMake profile selection and generated local asset binding, repository-only parser tests and integration input routing. Profile plan remains the sole board/firmware owner. |
-| Applicable Rules | [Architecture](../design/ARCHITECTURE.md): Profile is the only board/firmware owner; App owns runtime INI only; no parallel YAML/fallback route. [Coding](../design/CODING.md): one parser, mirrored repository-only tests, external assets only in integration. [Source policy](../etc/operations/policy/source-policy.md): BYOB firmware/media remain external and manifest-validated. [Execution](../rules/EXECUTION.md): full unit per S; full integration and dual artifacts at T closure. |
-| Verification | Each fixed target rejects absent/mismatched local BYOB assets, INI parser unit tests use code-owned strings only, all migrated integration scenarios use INI and external assets, full unit/integration plus required x86/x64 artifacts pass before task close. |
-| Expected Markers | Four canonical build selections replace the former CPU/media session multiplication; each build selects one profile without a runtime alternate; INI carries only memory/media modes/paths/presentation; relative paths resolve from INI; no product YAML loader/catalog or test-specific machine/ROM construction remains. |
+| Admission And Approval | The owner approved independent T533 execution on 2026-09-21. S4 implementation `7874b683` is reviewed as the fixed-profile/INI boundary; this admitted S5 completes its required product convergence and task closure. |
+| Objective | Close the fixed-product conversion: prove all four canonical builds, repair the Model 40 boot-chain failure or transfer it truthfully, remove any remaining duplicate deployment/configuration path, and produce the required optimized dual-architecture artifacts. |
+| Non-goals | Do not add runtime machine/CPU/firmware selection, embed or commit BYOB assets, alter BIOS boot order through INI, retire any retained machine, create PC110 placeholders, or retain a YAML compatibility route. |
+| Reference Baseline | T533 S4 implementation `7874b683`; [S5 convergence ledger](../etc/evidence/t533-s5-product-convergence-ledger.md); [M5 fixed-machine products](../proposals/m5-fixed-machine-products.md), S5. |
+| Candidate Proposal | [M5 fixed-machine products](../proposals/m5-fixed-machine-products.md), S5 duplicate cleanup and full closure. |
+| Files And ABI Surface | Fixed CMake product/build/deployment boundary, Profile-to-Machine composition, App INI entry, integration fixtures and any single shared Core device owner exposed by the Model 40 failure. |
+| Applicable Rules | [Architecture](../design/ARCHITECTURE.md): Profile is the sole board/firmware owner and App owns runtime INI only. [Coding](../design/CODING.md): one parser, one construction route, repository-only unit tests and external assets only in integration. [Source policy](../etc/operations/policy/source-policy.md): BYOB firmware/media remain external and manifest-validated. [Execution](../rules/EXECUTION.md): complete unit per S; full integration and dual artifacts at task closure. |
+| Verification | Execute the ledger: configure each product against its manifest; run all repository-only units; run every product's registered integrations; replay all affected profiles after a shared repair; verify no YAML/catalog/deployment duplication; create and inspect all required optimized stripped x64/x86 artifacts with matching INI companions. |
+| Expected Markers | Four build-selected products with no runtime alternate; one unchanged adjacent NXVM.ini per artifact; no configuration overwrite between products; all qualified product rows reach their declared terminal; no duplicate construction/reset/media/display path. |
 | Asset Needs | Local user-provided `nxvm-assets` only. Never import or commit ROM, CMOS, font or guest-media bytes. |
-| Reporting Requirements | Record the four selected profiles, every retired runtime variant document, manifest validation result, no-YAML-path sweep, test migration disposition, code-size/path reduction, and external asset correction provenance. Do not claim a protected-asset import or an integration result that was not run. |
-| Stop Conditions | Stop for a missing legal BYOB manifest contract, a retained test with no lawful INI mapping, a required firmware semantic not available from its chosen Profile, or an inability to remove YAML atomically. |
-| Exit Criteria | All production and integration construction reaches the build-selected Profile through one INI path, no YAML production route remains, all retained machines/scenarios are accounted for by target/INI, and required full verification plus dual-architecture artifacts pass. |
+| Reporting Requirements | Record every ledger disposition, actual code-size/path result, Model 40 root cause and complete affected-profile replay, all artifact paths/hashes, and every lawful transfer. Do not claim a protected-asset import or an unrun integration result. |
+| Stop Conditions | Stop for a missing legal BYOB manifest contract, no lawful INI mapping, a required firmware semantic unavailable from its profile, a failure that cannot be localized to an owner, or any required artifact that would overwrite another product's configuration. |
+| Exit Criteria | Every S5 ledger member is accepted with evidence or explicitly transferred by owner-approved normal process; all four product builds use one INI path without YAML/catalog; complete unit/integration and dual-architecture artifacts pass; task closure audit proves the original fixed-profile request. |
 | Original Owner Request | Retain XT, AT, DeskPro 386 Model 40 and default PC/AT, but stop exposing a combinatorial collection of same-machine CPU/floppy sessions: each retained machine gets one most suitable canonical profile. Keep CPU implementations and tests. Build selects a fixed profile; NXVM.ini owns only runtime options. |
 | Similar-Issue Sweep | Sweep all production App/CMake/session construction and all integration support/tests for runtime profile, CPU, firmware, YAML/catalog and copied-media paths. Each hit is migrated to the generated fixed binding/INI route, retained only as a generic Core test, or explicitly transferred; no product compatibility loader remains. |
 
