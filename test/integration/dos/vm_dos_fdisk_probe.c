@@ -6,7 +6,7 @@
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_T287_FDISK_CELLS (80u * 25u)
 
@@ -65,7 +65,7 @@ static C_INT vm_t287_fdisk_submit(const vm_machine *session, const type_unsigned
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     const type_unsigned_8 enter[] = {0x5au};
     const type_unsigned_8 four_make[] = {0x25u};
     const type_unsigned_8 four_break[] = {0xf0u, 0x25u};
@@ -75,9 +75,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine *session = STD_NULL;
     C_INT passed = 0;
 
-    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     if ((thread = CreateThread(STD_NULL, 0u,
             vm_t287_fdisk_run, session, 0u, STD_NULL)) == STD_NULL) goto done;
     if (!vm_t287_fdisk_wait(session, "Enter new date", 60000u) ||
@@ -105,7 +105,7 @@ done:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     if (!passed) return 1;
     STD_PRINTF("M5:T287:S21:FDISK:OPTION4:EXTERNAL:OK\n");
     return 0;

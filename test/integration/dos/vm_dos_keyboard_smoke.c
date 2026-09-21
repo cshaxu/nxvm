@@ -8,7 +8,7 @@
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
@@ -169,7 +169,7 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_machine *session,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
@@ -180,9 +180,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD edit_timeout = argc == 4 ? 20000u : 5000u;
     C_INT display_ok = 0;
 
-    if ((argc != 3 && argc != 4) || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     thread = CreateThread(STD_NULL, 0u, run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
@@ -281,7 +281,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine_stop(session);
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     if (elapsed == edit_timeout || !display_ok) return 1;
     STD_PRINTF("M5:T216:S5:EDIT:DOS:OK\n");
     return 0;
@@ -292,6 +292,6 @@ fail:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 1;
 }

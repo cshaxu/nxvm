@@ -4,7 +4,7 @@
 
 #include "core/machine/lifecycle.h"
 
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 static C_INT wait_for_running(const vm_machine *machine)
 {
@@ -40,13 +40,13 @@ static C_INT wait_for_pause_reason(const vm_machine *machine,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
     HANDLE thread = STD_NULL;
 
-    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     thread = CreateThread(STD_NULL, 0u, run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL || !wait_for_running(session)) goto fail;
     vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
@@ -68,7 +68,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     puts("M5:T46:S1:UNIFIED-DEBUG-BACKEND:OK");
     return 0;
 
@@ -78,6 +78,6 @@ fail:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 1;
 }

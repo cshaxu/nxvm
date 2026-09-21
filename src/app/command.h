@@ -11,7 +11,7 @@ extern "C"
 #include "type.h"
 
 #include "app/composition.h"
-#include "app/catalog.h"
+#include "app/ini_interface.h"
 
     typedef struct vm_app_console_context vm_app_console_context;
 
@@ -22,8 +22,8 @@ extern "C"
 
     /* Entry point of product console */
 C_VOID vm_app_console_main(vm_app_console_context *context,
-                               vm_app *session,
-                               const C_CHAR *profile_directory);
+    vm_app *session,
+    const C_CHAR *ini_path);
 
 #ifdef __cplusplus
 } /*_EOCD_*/

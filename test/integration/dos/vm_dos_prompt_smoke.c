@@ -16,7 +16,7 @@
 #include "core/machine/control.h"
 
 #include "core/machine/machine_private.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
@@ -52,14 +52,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     DWORD elapsed;
     C_INT prompt_seen = 0;
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
     HANDLE thread = STD_NULL;
     C_INT turbo = 0;
 
-    if ((argc != 3 && argc != 4) || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     turbo = argc == 4;
     if ((turbo && STD_STRCMP(argv[3], "turbo")) ||
         (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK)) {
@@ -87,7 +87,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     puts(turbo ? "M5:T459:S1:DOS-PROMPT-TURBO:OK" : "M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
@@ -98,7 +98,7 @@ fail:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 1;
 }
 static C_INT has_dos_prompt(const vm_machine *session)

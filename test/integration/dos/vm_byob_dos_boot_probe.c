@@ -11,7 +11,7 @@
 #include "core/devices/memory.h"
 #include "core/devices/retirement_observation_interface.h"
 #include "core/devices/trace_interface.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/devices/machine_interface.h"
@@ -1648,7 +1648,7 @@ int main(C_INT argc, C_CHAR **argv)
     /* Keep the host-side diagnostic wall-clock budget observable even when a
        guest instruction is stalled behind an unbounded Core wait path. */
     core_machine_run_budget budget = {256u, 256u};
-    integration_yaml_session yaml_session = {0};
+    integration_ini_session ini_session = {0};
     vm_machine *session = STD_NULL;
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
@@ -1733,9 +1733,9 @@ int main(C_INT argc, C_CHAR **argv)
         STD_PRINTF("BOOT-PROBE=invalid-arguments\n");
         goto done;
     }
-    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) != TYPE_STATUS_OK)
+    if (integration_ini_session_open(argv[1], argv[2], &ini_session) != TYPE_STATUS_OK)
         return 77;
-    session = yaml_session.session;
+    session = ini_session.session;
     if (session == STD_NULL) goto done;
     /* A diagnostic must begin at the same reset boundary as the delivery
        runner.  Construction performs an initial Core reset, but
@@ -1781,7 +1781,7 @@ int main(C_INT argc, C_CHAR **argv)
         }
     }
     trace.machine = session->core_machine;
-    if (!STD_STRCMP(yaml_session.request.profile, "compaq-deskpro-386-model-40")) {
+    if (!STD_STRCMP(ini_session.request.profile, "compaq-deskpro-386-model-40")) {
         t_ram *memory = &session->core_machine->executor_memory;
 
         if (memory->connect.write_observer_count <
@@ -3383,6 +3383,6 @@ done:
     if (session != STD_NULL && session->core_machine != STD_NULL) {
         (C_VOID)core_machine_set_trace_provider(session->core_machine, STD_NULL);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return exit_code;
 }

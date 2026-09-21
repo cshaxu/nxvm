@@ -13,7 +13,7 @@
 #include "common/ui/ui_interface.h"
 #include "app/composition.h"
 #include "core/machine/machine_interface.h"
-#include "app/catalog.h"
+#include "app/ini_interface.h"
 #include "app/command.h"
 #include "app/keyboard.h"
 #include "app/recorder.h"
@@ -25,7 +25,6 @@ struct vm_app_console_context {
     C_CHAR *arguments[CONSOLE_MAXNARG];
     STD_SIZE_T argument_count;
     vm_app *session;
-    vm_app_session_catalog *catalog;
     common_session *control;
     x86_debug *debug;
     vm_app_recorder *recorder;
@@ -355,34 +354,6 @@ static lib_bool vm_app_console_hotkey(C_VOID *opaque,
         identifier, result);
 }
 
-static C_INT vm_app_console_choose_profile(vm_app_console_context *context,
-    vm_session_request *out_request)
-{
-    C_CHAR line[32];
-    STD_SIZE_T count;
-    STD_SIZE_T index;
-    C_INT choice;
-
-    count = vm_app_session_catalog_count(context->catalog);
-    if (count == 0u) {
-        STD_PRINTF("No session configuration files found.\n");
-        return 0;
-    }
-    STD_PRINTF("Available session profiles:\n");
-    for (index = 0u; index < count; ++index) {
-        vm_session_request request;
-        if (vm_app_session_catalog_get_request(context->catalog, index, &request) !=
-            TYPE_STATUS_OK) return 0;
-        STD_PRINTF("  %u  %s\n", (unsigned int)(index + 1u), request.file_name);
-    }
-    STD_PRINTF("Select profile [1-%u, Enter to cancel]: ", (unsigned int)count);
-    if (STD_FGETS(line, (C_INT)sizeof(line), STD_STDIN) == STD_NULL) return 0;
-    choice = STD_ATOI(line);
-    return choice > 0 && (STD_SIZE_T)choice <= count &&
-        vm_app_session_catalog_get_request(context->catalog,
-            (STD_SIZE_T)(choice - 1), out_request) == TYPE_STATUS_OK;
-}
-
 static C_INT vm_app_console_compose(vm_app_console_context *context,
     const vm_session_request *request)
 {
@@ -430,18 +401,19 @@ C_VOID vm_app_console_context_destroy(vm_app_console_context *context)
     if (context == STD_NULL) return;
     x86_debug_destroy(context->debug);
     vm_app_recorder_destroy(context->recorder);
-    vm_app_session_catalog_destroy(context->catalog);
     STD_FREE(context);
 }
 
 C_VOID vm_app_console_main(vm_app_console_context *context,
-    vm_app *session, const C_CHAR *profile_directory)
+    vm_app *session, const C_CHAR *ini_path)
 {
     vm_session_request request;
-    if (context == STD_NULL || session == STD_NULL || profile_directory == STD_NULL) return;
+    if (context == STD_NULL || session == STD_NULL || ini_path == STD_NULL) return;
     context->session = session;
-    if (vm_app_session_catalog_create(profile_directory, &context->catalog) !=
-        TYPE_STATUS_OK || !vm_app_console_choose_profile(context, &request)) return;
+    if (vm_app_ini_load(ini_path, &request) != TYPE_STATUS_OK) {
+        STD_PRINTF("Unable to load NXVM.ini.\n");
+        return;
+    }
     if (!vm_app_console_compose(context, &request)) {
         STD_PRINTF("Unable to create session from '%s'.\n", request.file_name);
         return;

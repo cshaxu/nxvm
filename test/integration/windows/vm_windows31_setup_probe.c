@@ -7,7 +7,7 @@
 #include "core/devices/machine.h"
 #include "core/devices/machine_interface.h"
 #include "core/devices/guest_presentation_mailbox_interface.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 #include "core/machine/control.h"
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"
@@ -230,7 +230,7 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session = {0};
+    integration_ini_session ini_session = {0};
     const type_unsigned_8 enter[] = {0x5au};
     HANDLE thread = STD_NULL;
     vm_machine *session = STD_NULL;
@@ -241,9 +241,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT date_prompt = 0;
     DWORD elapsed;
 
-    if ((argc != 3 && argc != 4) || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     if (session == STD_NULL) goto fail;
     thread = CreateThread(STD_NULL, 0u, vm_t287_run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -318,7 +318,7 @@ done:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return passed ? 0 : 1;
 
 fail:

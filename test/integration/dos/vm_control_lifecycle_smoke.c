@@ -7,7 +7,7 @@
 
 #include "core/machine/control.h"
 #include "core/machine/machine_private.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
 {
@@ -18,21 +18,21 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
     DWORD result;
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
 
     if (argc != 3) {
         return 1;
     }
-    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) != TYPE_STATUS_OK) {
+    if (integration_ini_session_open(argv[1], argv[2], &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     vm_machine_control_reset(&session->control);
     thread = CreateThread(STD_NULL, 0u, run_device, &session->control, 0u, STD_NULL);
     if (thread == STD_NULL) {
         STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", STD_STDERR);
-        integration_yaml_session_close(&yaml_session);
+        integration_ini_session_close(&ini_session);
         return 1;
     }
 
@@ -42,7 +42,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         vm_machine_control_stop(&session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        integration_yaml_session_close(&yaml_session);
+        integration_ini_session_close(&ini_session);
         return 1;
     }
     vm_machine_control_reset(&session->control);
@@ -54,7 +54,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         vm_machine_control_stop(&session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        integration_yaml_session_close(&yaml_session);
+        integration_ini_session_close(&ini_session);
         return 1;
     }
     vm_machine_control_continue(&session->control);
@@ -66,13 +66,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         vm_machine_control_stop(&session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        integration_yaml_session_close(&yaml_session);
+        integration_ini_session_close(&ini_session);
         return 1;
     }
     vm_machine_control_stop(&session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
 
     if (result != WAIT_OBJECT_0) {
         STD_FPRINTF(STD_STDERR,

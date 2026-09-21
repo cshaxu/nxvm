@@ -3,7 +3,7 @@
 #include "core/devices/machine_interface.h"
 #include "core/devices/machine.h"
 #include "core/devices/retirement_observation_interface.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 
@@ -104,7 +104,7 @@ typedef struct model40_retirement_capture {
     type_bool observation_seen;
     type_bool previous_protected_mode;
     type_bool protected_mode_seen;
-    type_bool form_catalog_truncated;
+    type_bool form_ini_truncated;
     type_bool key_limit_reached;
     type_bool terminal_bytes_available;
     type_bool iret_frame_seen;
@@ -921,7 +921,7 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         }
     }
     if (capture->form_count == MODEL40_CAPTURE_FORM_LIMIT) {
-        capture->form_catalog_truncated = TYPE_TRUE;
+        capture->form_ini_truncated = TYPE_TRUE;
         return;
     }
     capture->forms[capture->form_count++] = (model40_retirement_capture_form) {
@@ -1039,7 +1039,7 @@ static C_VOID model40_capture_emit_d4_timer_history(
 }
 
 static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
-    integration_yaml_session *out_session)
+    integration_ini_session *out_session)
 {
     if (argv == STD_NULL || out_session == STD_NULL ||
         (argc != 3 && (argc != 4 || (STD_STRCMP(argv[3], "--terminal-bytes") &&
@@ -1051,7 +1051,7 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
         STD_STRCMP(argv[3], "--port-sequence-diagnostic") &&
         STD_STRCMP(argv[3], "--d4-memory-diagnostic") &&
         STD_STRCMP(argv[3], "--warm-reset-diagnostic"))))) return 0;
-    return integration_yaml_session_open(argv[1], argv[2], out_session) ==
+    return integration_ini_session_open(argv[1], argv[2], out_session) ==
         TYPE_STATUS_OK && out_session->session != STD_NULL;
 }
 
@@ -1257,7 +1257,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_run_result result = { 0 };
     core_machine_cpu_diagnostic diagnostic = { 0 };
     model40_retirement_capture capture = { 0 };
-    integration_yaml_session yaml_session = {0};
+    integration_ini_session ini_session = {0};
     vm_machine *session;
     type_status status = TYPE_STATUS_OK;
     type_unsigned_32 index;
@@ -1282,12 +1282,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT warm_reset_diagnostic = argc == 4 && argv != STD_NULL &&
         !STD_STRCMP(argv[3], "--warm-reset-diagnostic");
 
-    if (!model40_capture_create_session(argc, argv, &yaml_session)) {
-        STD_FPRINTF(STD_STDERR, "usage: capture sessions-directory model40-session.yaml "
+    if (!model40_capture_create_session(argc, argv, &ini_session)) {
+        STD_FPRINTF(STD_STDERR, "usage: capture sessions-directory model40-session.ini "
             "[--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic|--c1-transfer-diagnostic|--fdc-read-data-diagnostic|--port-sequence-diagnostic|--d4-memory-diagnostic|--warm-reset-diagnostic]\n");
         return 2;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     capture.c0a_diagnostic = c0a_diagnostic != 0;
     capture.c1_transfer_diagnostic = c1_transfer_diagnostic != 0;
     capture.d4_timer_history_enabled = port_sequence_diagnostic != 0;
@@ -1813,7 +1813,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned long long)result.ticks,
             (unsigned long long)result.elapsed_ticks, (unsigned)status);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     if (port_sequence_diagnostic) {
         return capture.checkpoint_reached && capture.post_c0_port_count ==
             MODEL40_CAPTURE_POST_C0_HISTORY && capture.unallocated == 0u &&

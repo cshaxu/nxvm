@@ -5,21 +5,21 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/media/fdd.h"
 #include "core/machine/media/hdd.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine_reset_vector vector;
     vm_machine *session;
 
-    if (integration_yaml_session_open(directory, file_name, &yaml_session) != TYPE_STATUS_OK) {
+    if (integration_ini_session_open(directory, file_name, &ini_session) != TYPE_STATUS_OK) {
         return -1;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     if (
         vm_machine_control_is_running(&session->control)) {
-        integration_yaml_session_close(&yaml_session);
+        integration_ini_session_close(&ini_session);
         return 1;
     }
     vm_machine_reset(session);
@@ -27,10 +27,10 @@ static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
         vm_machine_hdd_remove(&session->hdd, STD_NULL) ||
         vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
-        integration_yaml_session_close(&yaml_session);
+        integration_ini_session_close(&ini_session);
         return 1;
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 0;
 }
 

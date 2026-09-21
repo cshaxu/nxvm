@@ -4,8 +4,10 @@
 
 Preserve an extensible multi-machine architecture with one build-fixed profile
 per executable: all implemented IBM 5160 XT, IBM 5170 AT, DeskPro 386 and
-default PC/AT machines, and later PC110. Preserve all existing CPU models,
-profiles, selection tables and tests even when unused by these products.
+default PC/AT machines, and later PC110. The four current products are one
+canonical profile each: XT/360 KiB, 5170/1.2 MiB, Model 40/1.2 MiB and default
+PC/AT/80386/1.44 MiB with HDC. Preserve all CPU models, selection tables and
+unit tests even when they are not a separately compiled product.
 
 This proposal revises the documentation-governance direction; it does not
 admit a numeric implementation T or reopen closed T532. [Architecture](../design/ARCHITECTURE.md)

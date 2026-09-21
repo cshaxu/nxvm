@@ -5,7 +5,6 @@
 #include "core/devices/port.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "app/catalog.h"
 #include "core/profiles/xt/xt_5160_268.h"
 
 static core_machine_media_result vm_xt_5160_268_fdd_query(C_VOID *context,

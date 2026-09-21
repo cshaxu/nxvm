@@ -6,7 +6,7 @@
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 #include "core/devices/guest_input_interface.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 800000u
 #define VM_MOUSE_DOS_RUN_BUDGET 400000u
@@ -226,20 +226,20 @@ static C_INT vm_mouse_dos_install_program(type_unsigned_8 *image, DWORD image_si
 }
 
 static type_status vm_mouse_dos_install_on_overlay(
-    integration_yaml_session *yaml_session, C_VOID *opaque)
+    integration_ini_session *ini_session, C_VOID *opaque)
 {
     type_unsigned_8 *image = STD_NULL;
     STD_SIZE_T image_size = 0u;
     type_unsigned_16 *bytes_offset = (type_unsigned_16 *)opaque;
     C_INT installed;
 
-    if (yaml_session == STD_NULL || bytes_offset == STD_NULL ||
-        integration_yaml_session_overlay_read(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
+    if (ini_session == STD_NULL || bytes_offset == STD_NULL ||
+        integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             (C_VOID **)&image, &image_size) != TYPE_STATUS_OK || image_size > MAXDWORD) {
         return TYPE_STATUS_FAULT;
     }
     installed = vm_mouse_dos_install_program(image, (DWORD)image_size, bytes_offset) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             image, image_size) == TYPE_STATUS_OK;
     STD_FREE(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
@@ -315,7 +315,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     static const type_unsigned_8 command[] = { 0x3au, 0x44u, 0x3cu, 0x1bu, 0x24u,
         0x1eu, 0x25u, 0x16u, 0x5au };
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
@@ -331,11 +331,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT stage = 0;
 
     stage = 1;
-    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_mouse_dos_install_on_overlay, &bytes_offset, &yaml_session) !=
+    if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_mouse_dos_install_on_overlay, &bytes_offset, &ini_session) !=
         TYPE_STATUS_OK) return 77;
     stage = 2;
-    session = yaml_session.session;
+    session = ini_session.session;
     stage = 3;
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_BOOT_BUDGET, 0u)) goto done;
     stage = 4;
@@ -375,7 +375,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
 
 done:
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     if (!passed) {
         STD_FPRINTF(STD_STDERR, "M5:T241:MOUSE-DRIVER:DOS:FAIL:STAGE=%d\n", stage);
         return 1;

@@ -7,35 +7,25 @@
 #include "../devices/support/core_machine_cpu_fixture.h"
 
 #include "core/machine/machine_interface.h"
+#include "support/rom/session_assets.h"
 
 C_INT main(C_VOID)
 {
-    vm_machine *first;
-    vm_machine *second;
+    vm_machine *first = STD_NULL;
+    vm_machine *second = STD_NULL;
     C_INT failed = 0;
 
-    first = ((vm_machine *)STD_CALLOC(1u, sizeof(vm_machine)));
-    second = ((vm_machine *)STD_CALLOC(1u, sizeof(vm_machine)));
-    if (first == STD_NULL || second == STD_NULL) {
-        STD_FREE(second);
-        STD_FREE(first);
-        return 1;
+    if (vm_test_default_pc_at_session_create(STD_NULL, &first) != TYPE_STATUS_OK ||
+        vm_test_default_pc_at_session_create(STD_NULL, &second) != TYPE_STATUS_OK) failed = 1;
+
+    if (!failed) {
+        failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
+        failed |= !test_core_machine_fixture_sessions_are_isolated(
+            first->core_machine, second->core_machine);
     }
 
-    vm_machine_storage_initialize(first);
-    vm_machine_storage_initialize(second);
-
-    vm_machine_debug_initialize(&first->debug);
-    vm_machine_debug_initialize(&second->debug);
-
-    failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
-    failed |= !test_core_machine_fixture_sessions_are_isolated(
-        first->core_machine, second->core_machine);
-
-    vm_machine_storage_finalize(second);
-    vm_machine_storage_finalize(first);
-    STD_FREE(second);
-    STD_FREE(first);
+    vm_machine_destroy(second);
+    vm_machine_destroy(first);
 
     if (failed) return 1;
     puts("M5:T73:S1:TWO-SESSION-ISOLATION:OK");

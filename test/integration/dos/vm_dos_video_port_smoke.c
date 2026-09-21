@@ -6,7 +6,7 @@
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 #include "../../core/devices/support/core_machine_cpu_fixture.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u
 #define VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM 256u
@@ -28,7 +28,7 @@ static C_INT vm_dos_video_has_prompt(const core_machine_display_snapshot *snapsh
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = {0};
@@ -43,9 +43,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT prompt_seen = 0;
     C_INT failed = 0;
 
-    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     if (!session->active) goto fail;
     vm_machine_reset(session);
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
@@ -96,13 +96,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (functions[instruction]) STD_PRINTF("%02X", (C_UINT)instruction);
     }
     STD_PRINTF("\n");
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 0;
 
 fail:
     STD_FPRINTF(STD_STDERR,
         "M5:T212:S2:VIDEO:DOS:FAIL INT10=%u F2=%u PROMPT=%d STOP=%d\n",
         int10_count, f2_count, prompt_seen, (C_INT)result.reason);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 1;
 }

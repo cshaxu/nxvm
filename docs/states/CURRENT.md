@@ -2,11 +2,33 @@
 
 ## Current Work
 
+## M5 T533 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved independent T533 execution on 2026-09-21. Accepted S3 `4b9b8241` assigns fixed target selection and the NXVM.ini cutover to S4. |
+| Objective | Select one canonical fixed product Profile for each retained machine (XT, 5170, Model 40 and default PC/AT), validate its external BYOB asset root, and replace production YAML/catalog loading with one NXVM.ini runtime configuration path. |
+| Non-goals | Do not embed or commit protected assets, add a runtime machine/CPU/firmware selector, put BIOS boot order or automatic start in INI, retire retained machines, create PC110 placeholders, or keep a YAML compatibility route. |
+| Reference Baseline | T533 S1 ledger `14572230`; S3 profile-plan boundary `2a589dc7`, accepted `4b9b8241`; proposal S4. |
+| Candidate Proposal | [M5 fixed-machine products](../proposals/m5-fixed-machine-products.md), S4 fixed-build and App INI cutover. |
+| Files And ABI Surface | App configuration/catalog/composition, CMake profile selection and generated local asset binding, repository-only parser tests and integration input routing. Profile plan remains the sole board/firmware owner. |
+| Applicable Rules | [Architecture](../design/ARCHITECTURE.md): Profile is the only board/firmware owner; App owns runtime INI only; no parallel YAML/fallback route. [Coding](../design/CODING.md): one parser, mirrored repository-only tests, external assets only in integration. [Source policy](../etc/operations/policy/source-policy.md): BYOB firmware/media remain external and manifest-validated. [Execution](../rules/EXECUTION.md): full unit per S; full integration and dual artifacts at T closure. |
+| Verification | Each fixed target rejects absent/mismatched local BYOB assets, INI parser unit tests use code-owned strings only, all migrated integration scenarios use INI and external assets, full unit/integration plus required x86/x64 artifacts pass before task close. |
+| Expected Markers | Four canonical build selections replace the former CPU/media session multiplication; each build selects one profile without a runtime alternate; INI carries only memory/media modes/paths/presentation; relative paths resolve from INI; no product YAML loader/catalog or test-specific machine/ROM construction remains. |
+| Asset Needs | Local user-provided `nxvm-assets` only. Never import or commit ROM, CMOS, font or guest-media bytes. |
+| Reporting Requirements | Record the four selected profiles, every retired runtime variant document, manifest validation result, no-YAML-path sweep, test migration disposition, code-size/path reduction, and external asset correction provenance. Do not claim a protected-asset import or an integration result that was not run. |
+| Stop Conditions | Stop for a missing legal BYOB manifest contract, a retained test with no lawful INI mapping, a required firmware semantic not available from its chosen Profile, or an inability to remove YAML atomically. |
+| Exit Criteria | All production and integration construction reaches the build-selected Profile through one INI path, no YAML production route remains, all retained machines/scenarios are accounted for by target/INI, and required full verification plus dual-architecture artifacts pass. |
+| Original Owner Request | Retain XT, AT, DeskPro 386 Model 40 and default PC/AT, but stop exposing a combinatorial collection of same-machine CPU/floppy sessions: each retained machine gets one most suitable canonical profile. Keep CPU implementations and tests. Build selects a fixed profile; NXVM.ini owns only runtime options. |
+| Similar-Issue Sweep | Sweep all production App/CMake/session construction and all integration support/tests for runtime profile, CPU, firmware, YAML/catalog and copied-media paths. Each hit is migrated to the generated fixed binding/INI route, retained only as a generic Core test, or explicitly transferred; no product compatibility loader remains. |
+
 ## Current Technical Baseline
 
-- `vm-0-5-0532` is the current target. Its stripped Release artifacts are
-  `nxvm_0_5_0532_x64.exe` and `nxvm_0_5_0532_x86.exe` in both
-  `build/output` and `assets/sessions`.
+- `vm-0-5-0533` is the current target. Its T533 fixed-default product artifact
+  names are `nxvm_default_0_5_0533_x64.exe` and
+  `nxvm_default_0_5_0533_x86.exe`; neither is claimed produced until the
+  required dual-architecture Release closure succeeds.
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:
   `machine`, `session`, and `ui`. The separately selected `src/x86` corpus owns

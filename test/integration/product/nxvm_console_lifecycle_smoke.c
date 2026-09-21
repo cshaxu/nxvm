@@ -12,8 +12,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     };
 
     if (argc != 3 || !nxvm_console_process_run(argv[2], argv[1],
-            "ibm-5170-model-339-1200k.yaml", commands, markers,
+            "NXVM.ini", commands, markers,
             sizeof(commands) / sizeof(commands[0]))) return 1;
-    STD_PRINTF("M5:T515:S3:CONSOLE-YAML-LIFECYCLE:OK\n");
+    STD_PRINTF("M5:T533:S4:CONSOLE-INI-LIFECYCLE:OK\n");
     return 0;
 }

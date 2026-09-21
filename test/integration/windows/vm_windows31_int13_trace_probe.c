@@ -4,14 +4,14 @@
 #include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_T287_TRACE_BUDGET 2000000u
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     const core_machine_run_budget budget = {1u, 0u};
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     core_machine_run_result result;
     vm_machine *session = STD_NULL;
     type_unsigned_16 int13[2] = {0};
@@ -28,9 +28,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT active = 0;
     C_INT passed = 0;
 
-    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     for (instruction = 0u; instruction < VM_T287_TRACE_BUDGET; ++instruction) {
         t_cpu *cpu = &session->core_machine->executor_cpu;
         C_INT returning = 0;
@@ -99,6 +99,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
             core_machine_linear_pc(session->core_machine));
     }
 
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return passed ? 0 : 1;
 }

@@ -9,7 +9,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "../../core/devices/support/core_machine_cpu_fixture.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_TIMER_BDA_TICKS 0x046cu
 #define VM_TIMER_BDA_ROLLOVER 0x0470u
@@ -38,7 +38,7 @@ static C_INT vm_timer_wait_for_pause_reason(const vm_machine *machine,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
@@ -60,10 +60,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     stage = 1;
     if (argc != 3) goto fail;
-    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) != TYPE_STATUS_OK) {
+    if (integration_ini_session_open(argv[1], argv[2], &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     stage = 2;
     thread = CreateThread(STD_NULL, 0u, vm_timer_run_machine, session, 0u,
         STD_NULL);
@@ -128,7 +128,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine_stop(session);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     STD_PRINTF("M5:T225:S4:IRQ0-BDA-INT1A-ROLLOVER:DOS:OK\n");
     return 0;
 
@@ -140,6 +140,6 @@ fail:
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 1;
 }

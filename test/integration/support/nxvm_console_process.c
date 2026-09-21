@@ -2,34 +2,9 @@
 
 #include <windows.h>
 
-#include "app/catalog.h"
 #include "test/integration/support/nxvm_console_process.h"
 
 #define NXVM_CONSOLE_WAIT_MILLISECONDS 5000u
-
-static C_INT nxvm_console_profile_choice(const C_CHAR *directory,
-    const C_CHAR *profile_file)
-{
-    vm_app_session_catalog *catalog = STD_NULL;
-    STD_SIZE_T index;
-    C_INT choice = 0;
-
-    if (directory == STD_NULL || profile_file == STD_NULL ||
-        vm_app_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK)
-        return 0;
-    for (index = 0u; index < vm_app_session_catalog_count(catalog); ++index) {
-        vm_session_request request;
-
-        if (vm_app_session_catalog_get_request(catalog, index, &request) ==
-                TYPE_STATUS_OK &&
-            !STD_STRCMP(request.file_name, profile_file)) {
-            choice = (C_INT)index + 1;
-            break;
-        }
-    }
-    vm_app_session_catalog_destroy(catalog);
-    return choice;
-}
 
 static C_INT nxvm_console_send_key(HANDLE input, WORD virtual_key,
     CHAR character, C_INT pressed)
@@ -107,18 +82,14 @@ C_INT nxvm_console_process_run(const C_CHAR *executable,
     PROCESS_INFORMATION process = {0};
     HANDLE input = INVALID_HANDLE_VALUE;
     HANDLE output = INVALID_HANDLE_VALUE;
-    C_CHAR choice_text[16];
-    C_INT choice;
     STD_SIZE_T index;
     C_INT result = 0;
     const C_CHAR *stage = "validation";
 
     startup.cb = sizeof(startup);
     if (executable == STD_NULL || session_directory == STD_NULL ||
-        profile_file == STD_NULL || (command_count != 0u &&
-        (commands == STD_NULL || markers == STD_NULL)) ||
-        (choice = nxvm_console_profile_choice(session_directory, profile_file)) == 0 ||
-        STD_SNPRINTF(choice_text, sizeof(choice_text), "%d\r", choice) < 0) return 0;
+        profile_file == STD_NULL || STD_STRCMP(profile_file, "NXVM.ini") ||
+        (command_count != 0u && (commands == STD_NULL || markers == STD_NULL))) return 0;
     startup.dwFlags = STARTF_USESHOWWINDOW;
     startup.wShowWindow = SW_HIDE;
     stage = "child creation";
@@ -137,14 +108,6 @@ C_INT nxvm_console_process_run(const C_CHAR *executable,
         FILE_SHARE_READ | FILE_SHARE_WRITE, STD_NULL, OPEN_EXISTING, 0u, STD_NULL);
     if (input == INVALID_HANDLE_VALUE || output == INVALID_HANDLE_VALUE) {
         stage = "console handles";
-        goto done;
-    }
-    if (!nxvm_console_wait_for_text(output, "Select profile", NXVM_CONSOLE_WAIT_MILLISECONDS)) {
-        stage = "profile prompt";
-        goto done;
-    }
-    if (!nxvm_console_send_text(input, choice_text)) {
-        stage = "profile input";
         goto done;
     }
     if (!nxvm_console_wait_for_text(output, "Console>", NXVM_CONSOLE_WAIT_MILLISECONDS)) {

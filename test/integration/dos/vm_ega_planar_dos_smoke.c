@@ -5,7 +5,7 @@
 #include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_EGA_DOS_BOOT_BUDGET 800000u
 #define VM_EGA_DOS_RUN_BUDGET 400000u
@@ -116,20 +116,20 @@ static C_INT vm_ega_dos_install_program(type_unsigned_8 *image, DWORD image_size
 }
 
 static type_status vm_ega_dos_install_on_overlay(
-    integration_yaml_session *yaml_session, C_VOID *opaque)
+    integration_ini_session *ini_session, C_VOID *opaque)
 {
     type_unsigned_8 *image = STD_NULL;
     STD_SIZE_T image_size = 0u;
     C_INT installed;
 
     (C_VOID)opaque;
-    if (yaml_session == STD_NULL || integration_yaml_session_overlay_read(yaml_session,
+    if (ini_session == STD_NULL || integration_ini_session_overlay_read(ini_session,
             VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&image, &image_size) != TYPE_STATUS_OK ||
         image_size > MAXDWORD) {
         return TYPE_STATUS_FAULT;
     }
     installed = vm_ega_dos_install_program(image, (DWORD)image_size) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             image, image_size) == TYPE_STATUS_OK;
     STD_FREE(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
@@ -190,16 +190,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static const type_unsigned_8 command[] = { 0x24u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
         0x26u, 0x3eu, 0x5au };
 #endif
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
     STD_SIZE_T index;
     C_INT passed = 0;
 
-    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_ega_dos_install_on_overlay, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_ega_dos_install_on_overlay, STD_NULL, &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     if (
         !vm_ega_dos_run_until(session, VM_EGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
@@ -209,7 +209,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     passed = vm_ega_dos_run_until(session, VM_EGA_DOS_RUN_BUDGET, 1);
 
 done:
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     if (!passed) return 1;
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
     STD_PRINTF("M5:T239:S3:ROM-EGA-INT10:DOS:OK\n");

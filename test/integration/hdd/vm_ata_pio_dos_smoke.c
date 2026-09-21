@@ -4,7 +4,7 @@
 
 #include "core/devices/machine_interface.h"
 #include "core/devices/hdc.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 #include "core/machine/waiting.h"
 #include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
@@ -175,7 +175,7 @@ static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size);
 static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size);
 
 static type_status vm_ata253_install_on_overlay(
-    integration_yaml_session *yaml_session, C_VOID *opaque)
+    integration_ini_session *ini_session, C_VOID *opaque)
 {
     type_unsigned_8 *fdd_image = STD_NULL;
     type_unsigned_8 *hdd_image = STD_NULL;
@@ -184,19 +184,19 @@ static type_status vm_ata253_install_on_overlay(
     C_INT ok;
 
     (C_VOID)opaque;
-    if (yaml_session == STD_NULL || integration_yaml_session_overlay_read(yaml_session,
+    if (ini_session == STD_NULL || integration_ini_session_overlay_read(ini_session,
             VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&fdd_image, &fdd_size) != TYPE_STATUS_OK ||
-        integration_yaml_session_overlay_read(yaml_session, VM_MACHINE_MEDIA_HDD_ID,
+        integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_HDD_ID,
             (C_VOID **)&hdd_image, &hdd_size) != TYPE_STATUS_OK || fdd_size > MAXDWORD ||
         hdd_size > MAXDWORD || !vm_ata253_install(fdd_image, (DWORD)fdd_size) ||
-        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             fdd_image, fdd_size) != TYPE_STATUS_OK) {
         STD_FREE(fdd_image);
         STD_FREE(hdd_image);
         return TYPE_STATUS_FAULT;
     }
     ok = vm_ata253_zero_image(hdd_image, (DWORD)hdd_size) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_HDD_ID,
+        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_HDD_ID,
             hdd_image, hdd_size) == TYPE_STATUS_OK;
     STD_FREE(fdd_image);
     STD_FREE(hdd_image);
@@ -317,16 +317,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     static const type_unsigned_8 command[] = { 0x1cu, 0x2cu, 0x1cu, 0x1eu, 0x2eu,
         0x26u, 0x5au };
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session = STD_NULL;
     STD_SIZE_T index;
     C_INT passed = 0;
 
-    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_ata253_install_on_overlay, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_ata253_install_on_overlay, STD_NULL, &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     if (session == STD_NULL ||
         !vm_ata253_run_until(session, VM_ATA253_BOOT_BUDGET, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
@@ -336,7 +336,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     passed = vm_ata253_run_until(session, VM_ATA253_RUN_BUDGET, 'O');
 
 done:
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     if (!passed) return 1;
     STD_PRINTF("M5:T286:S3:ATA-NIEN:DOS:OK\n");
     STD_PRINTF("M5:T253:S3:ATA-PIO:DOS:OK\n");

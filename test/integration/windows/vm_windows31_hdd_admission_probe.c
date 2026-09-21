@@ -5,7 +5,7 @@
 #include "core/devices/debug_interface.h"
 #include "core/devices/machine_interface.h"
 #include "core/devices/machine.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 #include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
@@ -68,14 +68,14 @@ static C_INT vm_t287_probe_build_fdd(type_unsigned_8 **out_bytes, STD_SIZE_T *ou
 }
 
 static type_status vm_t287_probe_install_boot_overlay(
-    integration_yaml_session *yaml_session, C_VOID *opaque)
+    integration_ini_session *ini_session, C_VOID *opaque)
 {
     type_unsigned_8 *bytes;
     STD_SIZE_T count;
 
     (C_VOID)opaque;
-    return yaml_session != STD_NULL && vm_t287_probe_build_fdd(&bytes, &count) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
+    return ini_session != STD_NULL && vm_t287_probe_build_fdd(&bytes, &count) &&
+        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             bytes, count) == TYPE_STATUS_OK ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
@@ -88,7 +88,7 @@ static type_unsigned_32 vm_t287_probe_lba(const type_unsigned_8 *entry)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     const core_machine_run_budget budget = {1u, 0u};
-    integration_yaml_session yaml_session = {0};
+    integration_ini_session ini_session = {0};
     core_machine_run_result result;
     core_machine_cpu_state cpu = {0};
     vm_machine *session = STD_NULL;
@@ -117,12 +117,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_SIZE_T mbr_mismatch = sizeof(guest_mbr);
     STD_SIZE_T vbr_mismatch = sizeof(guest_vbr);
 
-    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_t287_probe_install_boot_overlay, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_t287_probe_install_boot_overlay, STD_NULL, &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
-    session = yaml_session.session;
-    if (session == STD_NULL || integration_yaml_session_overlay_read(&yaml_session,
+    session = ini_session.session;
+    if (session == STD_NULL || integration_ini_session_overlay_read(&ini_session,
             VM_MACHINE_MEDIA_HDD_ID, (C_VOID **)&hdd_overlay, &hdd_overlay_count) !=
             TYPE_STATUS_OK || hdd_overlay_count < 1024u * 1024u) goto done;
     STD_MEMCPY(host_mbr, hdd_overlay, sizeof(host_mbr));
@@ -204,6 +204,6 @@ done:
             session == STD_NULL ? 0u : session->core_machine->hdc.data.status,
             session == STD_NULL ? 0u : session->core_machine->hdc.data.command_count);
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return passed ? 0 : 1;
 }

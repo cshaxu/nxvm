@@ -6,7 +6,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/waiting.h"
 #include "core/machine/machine_private.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_HDC_HDD_BOOT_ADDRESS 0x00007c00u
 #define VM_HDC_HDD_BOOT_BYTES 512u
@@ -59,7 +59,7 @@ static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     const core_machine_run_budget budget = {
         VM_HDC_HDD_BOOT_QUANTUM, 0u
     };
@@ -70,9 +70,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_unsigned_32 executed = 0u;
     C_INT loaded = 0;
 
-    if (argc != 3 || integration_yaml_session_open(argv[1], argv[2],
-            &yaml_session) != TYPE_STATUS_OK) return 77;
-    session = yaml_session.session;
+    if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
+            &ini_session) != TYPE_STATUS_OK) return 77;
+    session = ini_session.session;
     if (!session->hdd.connect.flagDiskExist) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {
         run_status = core_machine_run(session->core_machine, budget, &result);
@@ -127,10 +127,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     STD_PRINTF("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
         session->core_machine->hdc.data.command_count, executed);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 0;
 
 fail:
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return 1;
 }

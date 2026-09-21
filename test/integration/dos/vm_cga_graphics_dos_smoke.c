@@ -5,7 +5,7 @@
 #include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_CGA_DOS_BOOT_BUDGET 800000u
 #define VM_CGA_DOS_RUN_BUDGET 400000u
@@ -96,7 +96,7 @@ static C_INT vm_cga_dos_install_program(type_unsigned_8 *image, DWORD image_size
     return 1;
 }
 
-static type_status vm_cga_dos_install_on_overlay(integration_yaml_session *session,
+static type_status vm_cga_dos_install_on_overlay(integration_ini_session *session,
     C_VOID *opaque)
 {
     type_unsigned_8 *image = STD_NULL;
@@ -104,12 +104,12 @@ static type_status vm_cga_dos_install_on_overlay(integration_yaml_session *sessi
     C_INT installed;
 
     (C_VOID)opaque;
-    if (integration_yaml_session_overlay_read(session, VM_MACHINE_MEDIA_FDD_ID,
+    if (integration_ini_session_overlay_read(session, VM_MACHINE_MEDIA_FDD_ID,
             (C_VOID **)&image, &image_size) != TYPE_STATUS_OK || image_size > MAXDWORD) {
         return TYPE_STATUS_FAULT;
     }
     installed = vm_cga_dos_install_program(image, (DWORD)image_size) &&
-        integration_yaml_session_overlay_write(session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(session, VM_MACHINE_MEDIA_FDD_ID,
             image, image_size) == TYPE_STATUS_OK;
     STD_FREE(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
@@ -165,16 +165,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     static const type_unsigned_8 command[] = { 0x21u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
         0x1eu, 0x3eu, 0x5au };
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
     STD_SIZE_T index;
     C_INT passed = 0;
 
-    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_cga_dos_install_on_overlay, STD_NULL, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_cga_dos_install_on_overlay, STD_NULL, &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     if (
         !vm_cga_dos_run_until(session, VM_CGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
@@ -184,7 +184,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     passed = vm_cga_dos_run_until(session, VM_CGA_DOS_RUN_BUDGET, 1);
 
 done:
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     if (!passed) return 1;
     STD_PRINTF("M5:T228:S3:CGA:DOS:OK\n");
     return 0;

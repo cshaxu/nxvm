@@ -8,7 +8,7 @@
 #include "core/devices/memory_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define VM_FDC242_BOOT_BUDGET 6000000u
 #define VM_FDC242_RUN_BUDGET 400000u
@@ -111,18 +111,18 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size)
 }
 
 static type_status vm_fdc242_install_on_overlay(
-    integration_yaml_session *yaml_session, C_VOID *opaque)
+    integration_ini_session *ini_session, C_VOID *opaque)
 {
     type_unsigned_8 *image = STD_NULL;
     type_unsigned_8 *expected = (type_unsigned_8 *)opaque;
     STD_SIZE_T size = 0u;
     C_INT installed;
 
-    if (yaml_session == STD_NULL || expected == STD_NULL ||
-        integration_yaml_session_overlay_read(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
+    if (ini_session == STD_NULL || expected == STD_NULL ||
+        integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             (C_VOID **)&image, &size) != TYPE_STATUS_OK || size > MAXDWORD) return TYPE_STATUS_FAULT;
     installed = vm_fdc242_install(image, (DWORD)size) &&
-        integration_yaml_session_overlay_write(yaml_session, VM_MACHINE_MEDIA_FDD_ID,
+        integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             image, size) == TYPE_STATUS_OK;
     if (installed) STD_MEMCPY(expected, image, VM_FDC242_TRACK_BYTES);
     STD_FREE(image);
@@ -176,7 +176,7 @@ typedef struct vm_fdc242_result {
     type_unsigned_8 off_result[9];
 } vm_fdc242_result;
 
-static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
+static C_INT vm_fdc242_run_case(integration_ini_session *ini_session,
     type_unsigned_32 quantum, vm_fdc242_result *out_result)
 {
     static const type_unsigned_8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
@@ -185,9 +185,9 @@ static C_INT vm_fdc242_run_case(integration_yaml_session *yaml_session,
     STD_SIZE_T index;
     C_INT ok = 0;
 
-    if (yaml_session == STD_NULL || out_result == STD_NULL || quantum == 0u ||
-        integration_yaml_session_restart(yaml_session) != TYPE_STATUS_OK) goto done;
-    session = yaml_session->session;
+    if (ini_session == STD_NULL || out_result == STD_NULL || quantum == 0u ||
+        integration_ini_session_restart(ini_session) != TYPE_STATUS_OK) goto done;
+    session = ini_session->session;
     vm_machine_executor_state_start(session->control.state);
     if (!vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
@@ -209,19 +209,19 @@ done:
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     type_unsigned_8 expected[VM_FDC242_TRACK_BYTES];
     vm_fdc242_result one_instruction = {0};
     vm_fdc242_result short_quantum = {0};
     C_INT passed = 0;
     STD_SIZE_T first_mismatch = sizeof(expected);
 
-    if (argc != 3 || integration_yaml_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_fdc242_install_on_overlay, expected, &yaml_session) != TYPE_STATUS_OK) {
+    if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
+            vm_fdc242_install_on_overlay, expected, &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
-    passed = vm_fdc242_run_case(&yaml_session, 1u, &one_instruction) &&
-        vm_fdc242_run_case(&yaml_session, 128u, &short_quantum) &&
+    passed = vm_fdc242_run_case(&ini_session, 1u, &one_instruction) &&
+        vm_fdc242_run_case(&ini_session, 128u, &short_quantum) &&
         STD_MEMCMP(expected, one_instruction.bytes, sizeof(expected)) == 0 &&
         STD_MEMCMP(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0 &&
         one_instruction.result[0] == 1u && one_instruction.result[1] == 0x20u &&
@@ -258,9 +258,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
             one_instruction.off_result[4], one_instruction.off_result[5],
             one_instruction.off_result[6], one_instruction.off_result[7],
             one_instruction.off_result[8]);
-        integration_yaml_session_close(&yaml_session); return 1;
+        integration_ini_session_close(&ini_session); return 1;
     }
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     STD_PRINTF("M5:T268:S3:FDC-MOTOR:DOS:OK\n");
     STD_PRINTF("M5:T269:S3:DMA-GRANT:DOS:OK\n");
     STD_PRINTF("M5:T290:S3:FDC:DOS:OK\n");

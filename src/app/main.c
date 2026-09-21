@@ -13,29 +13,29 @@
 #include "app/composition.h"
 #include "app/command.h"
 
-static const C_CHAR *vm_main_profile_directory(C_INT argc, C_CHAR **argv,
-    C_CHAR *directory, STD_SIZE_T capacity)
+static const C_CHAR *vm_main_ini_path(C_INT argc, C_CHAR **argv,
+    C_CHAR *path, STD_SIZE_T capacity)
 {
     C_CHAR *cursor;
     STD_SIZE_T length;
 
-    if (directory == STD_NULL || capacity < 2u || argc <= 0 || argv == STD_NULL ||
-        argv[0] == STD_NULL) return ".";
+    if (path == STD_NULL || capacity < sizeof("NXVM.ini") || argc <= 0 || argv == STD_NULL ||
+        argv[0] == STD_NULL) return "NXVM.ini";
     length = STD_STRLEN(argv[0]);
-    if (length >= capacity) return ".";
-    STD_MEMCPY(directory, argv[0], length + 1u);
-    cursor = directory + length;
-    while (cursor != directory && cursor[-1] != '/' && cursor[-1] != '\\') --cursor;
-    if (cursor == directory) return ".";
-    cursor[-1] = '\0';
-    return directory;
+    if (length + sizeof("NXVM.ini") >= capacity) return "NXVM.ini";
+    STD_MEMCPY(path, argv[0], length + 1u);
+    cursor = path + length;
+    while (cursor != path && cursor[-1] != '/' && cursor[-1] != '\\') --cursor;
+    if (cursor == path) return "NXVM.ini";
+    STD_MEMCPY(cursor, "NXVM.ini", sizeof("NXVM.ini"));
+    return path;
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     vm_app *session = STD_NULL;
     vm_app_console_context *console_context = STD_NULL;
-    C_CHAR profile_directory[1024];
+    C_CHAR ini_path[1024];
 
     PRODUCT_PRINT_BANNER();
     if (vm_app_create(&session) != TYPE_STATUS_OK ||
@@ -44,8 +44,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         return 1;
     }
     vm_app_console_main(console_context, session,
-        vm_main_profile_directory(argc, argv, profile_directory,
-            sizeof(profile_directory)));
+        vm_main_ini_path(argc, argv, ini_path, sizeof(ini_path)));
     vm_app_console_context_destroy(console_context);
     vm_app_destroy(session);
     return 0;

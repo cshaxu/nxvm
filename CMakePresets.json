@@ -14,7 +14,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc",
-        "PROJECT_ARTIFACT_ARCHITECTURE": "x64"
+        "PROJECT_ARTIFACT_ARCHITECTURE": "x64",
+        "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
       }
     },
     {
@@ -52,7 +53,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "$env{NXVM_I686_GCC}",
-        "PROJECT_ARTIFACT_ARCHITECTURE": "x86"
+        "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
+        "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
       }
     },
     {
@@ -65,7 +67,8 @@
         "CMAKE_C_COMPILER": "$env{NXVM_I686_CLANG}",
         "CMAKE_C_COMPILER_TARGET": "i686-w64-windows-gnu",
         "CMAKE_SYSROOT": "$env{NXVM_I686_SYSROOT}",
-        "PROJECT_ARTIFACT_ARCHITECTURE": "x86"
+        "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
+        "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
       }
     }
   ],
@@ -73,17 +76,17 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64-release",
-      "targets": ["vm-0-5-0532"]
+      "targets": ["vm-0-5-0533"]
     },
     {
       "name": "current-gcc-ccache",
       "configurePreset": "mingw-gcc-x64-release-ccache",
-      "targets": ["vm-0-5-0532"]
+      "targets": ["vm-0-5-0533"]
     },
     {
       "name": "current-gcc-x86",
       "configurePreset": "mingw-gcc-x86-release",
-      "targets": ["vm-0-5-0532"]
+      "targets": ["vm-0-5-0533"]
     },
     {
       "name": "unit-tests-gcc",

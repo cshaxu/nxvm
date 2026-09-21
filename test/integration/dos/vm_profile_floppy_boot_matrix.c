@@ -8,7 +8,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/profiles/device/floppy.h"
-#include "test/integration/support/session_yaml.h"
+#include "test/integration/support/session_ini.h"
 
 #define BOOT_TIMEOUT 180000u
 #define BOOT_POLL 10u
@@ -218,13 +218,13 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
     if (session == STD_NULL || name == STD_NULL) return;
     if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK) {
         (C_VOID)core_machine_capture_observation(session->core_machine, &observation);
-        STD_PRINTF("T515:YAML-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:elapsed=%llu:lifecycle=%u:FDD=%u:%ux%ux%u:CMOS10=%02X\n",
+        STD_PRINTF("T515:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:elapsed=%llu:lifecycle=%u:FDD=%u:%ux%ux%u:CMOS10=%02X\n",
             name, cpu.cs, cpu.eip, cpu.cs_base, cpu.eflags, cpu.halted,
             (unsigned long long)observation.elapsed_ticks, observation.lifecycle,
             session->fdd.connect.flagDiskExist,
             session->fdd.data.ncyl, session->fdd.data.nhead, session->fdd.data.nsector,
             session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY]);
-        STD_PRINTF("T515:YAML-BOOT:%s:FDC:phase=%u:cmd=%02X:index=%u:CHRN=%u/%u/%u:EOT=%u:CCR=%02X:result=%02X/%02X/%02X:remaining=%u:gate=%u:due=%llu:irq=%u\n",
+        STD_PRINTF("T515:INI-BOOT:%s:FDC:phase=%u:cmd=%02X:index=%u:CHRN=%u/%u/%u:EOT=%u:CCR=%02X:result=%02X/%02X/%02X:remaining=%u:gate=%u:due=%llu:irq=%u\n",
             name, session->core_machine->fdc.data.phase,
             session->core_machine->fdc.data.cmd[0u],
             session->core_machine->fdc.data.command_index,
@@ -239,17 +239,17 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             session->core_machine->fdc.connect.irq_source.asserted);
         if (core_machine_capture_time_observation(session->core_machine,
                 &time_observation) == TYPE_STATUS_OK) {
-            STD_PRINTF("T515:YAML-BOOT:%s:TIME:deadline=%llu:valid=%u:progress=%u\n",
+            STD_PRINTF("T515:INI-BOOT:%s:TIME:deadline=%llu:valid=%u:progress=%u\n",
                 name, (unsigned long long)time_observation.next_deadline_tick,
                 time_observation.next_deadline_valid,
                 time_observation.progress_disposition);
         }
-        STD_PRINTF("T515:YAML-BOOT:%s:PIC:IRR=%02X:IMR=%02X:ISR=%02X:IRQ0=%u\n",
+        STD_PRINTF("T515:INI-BOOT:%s:PIC:IRR=%02X:IMR=%02X:ISR=%02X:IRQ0=%u\n",
             name, session->core_machine->shared_pic_master.data.irr,
             session->core_machine->shared_pic_master.data.imr,
             session->core_machine->shared_pic_master.data.isr,
             session->core_machine->shared_pit_irq0_source.asserted);
-        STD_PRINTF("T515:YAML-BOOT:%s:PIT:out0=%u/active=%u/reload=%u/rem=%u:out1=%u/active=%u/reload=%u/rem=%u:clock=%u/%u\n",
+        STD_PRINTF("T515:INI-BOOT:%s:PIT:out0=%u/active=%u/reload=%u/rem=%u:out1=%u/active=%u/reload=%u/rem=%u:clock=%u/%u\n",
             name, session->core_machine->shared_pit.data.flagOutput[0u],
             session->core_machine->shared_pit.data.flagActive[0u],
             session->core_machine->shared_pit.data.reload[0u],
@@ -260,13 +260,13 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             session->core_machine->shared_pit.data.remaining[1u],
             session->core_machine->pit_clock.numerator,
             session->core_machine->pit_clock.denominator);
-        STD_PRINTF("T526:S13:YAML-BOOT:%s:PIT0:control=%02X:count=%04X:latch=%04X:latched=%u:read=%u\n",
+        STD_PRINTF("T526:S13:INI-BOOT:%s:PIT0:control=%02X:count=%04X:latch=%04X:latched=%u:read=%u\n",
             name, session->core_machine->shared_pit.data.cw[0u],
             session->core_machine->shared_pit.data.count[0u],
             session->core_machine->shared_pit.data.latch[0u],
             session->core_machine->shared_pit.data.flagLatch[0u],
             session->core_machine->shared_pit.data.flagRead[0u]);
-        STD_PRINTF("T515:YAML-BOOT:%s:CMOS:diag=%02X:floppy=%02X:fixed=%02X:equip=%02X:base=%02X%02X:extended=%02X%02X\n",
+        STD_PRINTF("T515:INI-BOOT:%s:CMOS:diag=%02X:floppy=%02X:fixed=%02X:equip=%02X:base=%02X%02X:extended=%02X%02X\n",
             name, session->core_machine->shared_rtc.registers[0x0eu],
             session->core_machine->shared_rtc.registers[0x10u],
             session->core_machine->shared_rtc.registers[0x12u],
@@ -277,34 +277,34 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             session->core_machine->shared_rtc.registers[0x17u]);
         if (core_machine_memory_read(session->core_machine, 0x00000410u,
                 equipment, sizeof(equipment)) == TYPE_STATUS_OK) {
-            STD_PRINTF("T515:YAML-BOOT:%s:BDA:equipment=%02X%02X\n", name,
+            STD_PRINTF("T515:INI-BOOT:%s:BDA:equipment=%02X%02X\n", name,
                 equipment[1u], equipment[0u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x0000046au,
                 &interrupt_flag, 1u) == TYPE_STATUS_OK) {
-            STD_PRINTF("T516:YAML-BOOT:%s:POST-INTR-FLAG=%02X\n", name,
+            STD_PRINTF("T516:INI-BOOT:%s:POST-INTR-FLAG=%02X\n", name,
                 interrupt_flag);
         }
         if (core_machine_memory_read(session->core_machine, 0x00000024u,
                 keyboard_vector, sizeof(keyboard_vector)) == TYPE_STATUS_OK) {
-            STD_PRINTF("T516:YAML-BOOT:%s:INT09=%02X%02X:%02X%02X\n", name,
+            STD_PRINTF("T516:INI-BOOT:%s:INT09=%02X%02X:%02X%02X\n", name,
                 keyboard_vector[1u], keyboard_vector[0u], keyboard_vector[3u],
                 keyboard_vector[2u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x000c0000u,
                 option_signature, sizeof(option_signature)) == TYPE_STATUS_OK) {
-            STD_PRINTF("T515:YAML-BOOT:%s:C0000=%02X%02X\n", name,
+            STD_PRINTF("T515:INI-BOOT:%s:C0000=%02X%02X\n", name,
                 option_signature[0u], option_signature[1u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x00007c00u,
                 boot_bytes, sizeof(boot_bytes)) == TYPE_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x00007dfeu,
                 boot_signature, sizeof(boot_signature)) == TYPE_STATUS_OK) {
-            STD_PRINTF("T516:YAML-BOOT:%s:BOOT=%02X/%02X/%02X/%02X:sig=%02X%02X\n",
+            STD_PRINTF("T516:INI-BOOT:%s:BOOT=%02X/%02X/%02X/%02X:sig=%02X%02X\n",
                 name, boot_bytes[0u], boot_bytes[1u], boot_bytes[2u], boot_bytes[3u],
                 boot_signature[1u], boot_signature[0u]);
         }
-        STD_PRINTF("T515:YAML-BOOT:%s:KBC:output=%02X:command=%02X:fifo=%u:serial=%u:enabled=%u:scan=%u:typematic=%u/%02X/%llu:bat=%u:pending=%u:input-full=%u\n",
+        STD_PRINTF("T515:INI-BOOT:%s:KBC:output=%02X:command=%02X:fifo=%u:serial=%u:enabled=%u:scan=%u:typematic=%u/%02X/%llu:bat=%u:pending=%u:input-full=%u\n",
             name, session->core_machine->shared_kbc.data.output_port,
             session->core_machine->shared_kbc.data.command_byte,
             session->core_machine->shared_kbc.data.fifo_count,
@@ -317,7 +317,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             session->core_machine->shared_kbc.data.keyboard_bat_pending,
             session->core_machine->shared_kbc.data.pending_write,
             session->core_machine->shared_kbc.data.input_buffer_full);
-        STD_PRINTF("T516:YAML-BOOT:%s:KBC-QUEUE:delayed=%u/%u:polls=%u:head=%u:", name,
+        STD_PRINTF("T516:INI-BOOT:%s:KBC-QUEUE:delayed=%u/%u:polls=%u:head=%u:", name,
             session->core_machine->shared_kbc.data.delayed_response_index,
             session->core_machine->shared_kbc.data.delayed_response_count,
             session->core_machine->shared_kbc.data.response_status_polls_remaining,
@@ -332,7 +332,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
         }
         STD_PRINTF("\n");
         if (trace_probe != STD_NULL) {
-            STD_PRINTF("T516:YAML-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
+            STD_PRINTF("T516:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
                 name, (unsigned long long)trace_probe->cpu_retires,
                 (unsigned long long)trace_probe->external_cycle_commits,
                 (unsigned long long)trace_probe->port61_reads,
@@ -341,13 +341,13 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                 trace_probe->pit_writes, trace_probe->last_pit_address,
                 trace_probe->last_pit_value, trace_probe->kbc_writes,
                 trace_probe->last_kbc_address, trace_probe->last_kbc_value);
-            STD_PRINTF("T516:YAML-BOOT:%s:INTA=%u:IRQ1=%u:IRQ6=%u\n", name,
+            STD_PRINTF("T516:INI-BOOT:%s:INTA=%u:IRQ1=%u:IRQ6=%u\n", name,
                 trace_probe->interrupt_acknowledges, trace_probe->interrupt_vectors[0x09u],
                 trace_probe->interrupt_vectors[0x0eu]);
-            STD_PRINTF("T516:YAML-BOOT:%s:POST-INTR-WRITES=%u:last=%02X\n", name,
+            STD_PRINTF("T516:INI-BOOT:%s:POST-INTR-WRITES=%u:last=%02X\n", name,
                 trace_probe->post_interrupt_flag_writes,
                 trace_probe->last_post_interrupt_flag);
-            STD_PRINTF("T516:YAML-BOOT:%s:POST-CODES:", name);
+            STD_PRINTF("T516:INI-BOOT:%s:POST-CODES:", name);
             const type_unsigned_32 retained_post = trace_probe->post_code_count <
                 BOOT_TRACE_POST_CODES ? trace_probe->post_code_count : BOOT_TRACE_POST_CODES;
             const type_unsigned_32 first_post = trace_probe->post_code_count - retained_post;
@@ -356,7 +356,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                     BOOT_TRACE_POST_CODES]);
             }
             STD_PRINTF("\n");
-            STD_PRINTF("T516:YAML-BOOT:%s:KBC-CPU:", name);
+            STD_PRINTF("T516:INI-BOOT:%s:KBC-CPU:", name);
             const type_unsigned_32 retained = trace_probe->kbc_transaction_count <
                 BOOT_TRACE_KBC_TRANSACTIONS ? trace_probe->kbc_transaction_count :
                 BOOT_TRACE_KBC_TRANSACTIONS;
@@ -369,7 +369,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                     transaction->value, transaction->kind);
             }
             STD_PRINTF("\n");
-            STD_PRINTF("T516:YAML-BOOT:%s:KBC-READS:00=%u:55=%u:65=%u:AA=%u:FA=%u:AB=%u:83=%u\n",
+            STD_PRINTF("T516:INI-BOOT:%s:KBC-READS:00=%u:55=%u:65=%u:AA=%u:FA=%u:AB=%u:83=%u\n",
                 name, trace_probe->kbc_data_read_values[0x00u],
                 trace_probe->kbc_data_read_values[0x55u],
                 trace_probe->kbc_data_read_values[0x65u],
@@ -377,7 +377,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                 trace_probe->kbc_data_read_values[0xfau],
                 trace_probe->kbc_data_read_values[0xabu],
                 trace_probe->kbc_data_read_values[0x83u]);
-            STD_PRINTF("T516:YAML-BOOT:%s:FDC-CPU:read=%u:id=%u:", name,
+            STD_PRINTF("T516:INI-BOOT:%s:FDC-CPU:read=%u:id=%u:", name,
                 trace_probe->fdc_read_data_commands, trace_probe->fdc_read_id_commands);
             const type_unsigned_32 retained_fdc = trace_probe->fdc_transaction_count <
                 BOOT_TRACE_FDC_TRANSACTIONS ? trace_probe->fdc_transaction_count :
@@ -392,7 +392,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                     transaction->value, transaction->kind);
             }
             STD_PRINTF("\n");
-            STD_PRINTF("T516:YAML-BOOT:%s:FDC-TERMINALS:", name);
+            STD_PRINTF("T516:INI-BOOT:%s:FDC-TERMINALS:", name);
             const type_unsigned_32 retained_terminal = trace_probe->fdc_terminal_count <
                 BOOT_TRACE_FDC_TERMINALS ? trace_probe->fdc_terminal_count :
                 BOOT_TRACE_FDC_TERMINALS;
@@ -415,7 +415,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             }
             STD_PRINTF("\n");
         }
-        STD_PRINTF("T515:YAML-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X:ESI=%08X:EDI=%08X:EBP=%08X\n",
+        STD_PRINTF("T515:INI-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X:ESI=%08X:EDI=%08X:EBP=%08X\n",
             name, session->core_machine->executor_cpu.data.eax,
             session->core_machine->executor_cpu.data.ebx,
             session->core_machine->executor_cpu.data.ecx,
@@ -425,7 +425,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             session->core_machine->executor_cpu.data.ebp);
         if (core_machine_memory_read(session->core_machine, cpu.cs_base + cpu.eip, pc_bytes,
                 sizeof(pc_bytes)) == TYPE_STATUS_OK) {
-            STD_PRINTF("T516:YAML-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",
+            STD_PRINTF("T516:INI-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",
                 name, pc_bytes[0u], pc_bytes[1u], pc_bytes[2u], pc_bytes[3u],
                 pc_bytes[4u], pc_bytes[5u], pc_bytes[6u], pc_bytes[7u]);
         }
@@ -433,7 +433,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                 TYPE_STATUS_OK && diagnostic.recent_count != 0u) {
             const core_machine_cpu_execution_point *point =
                 &diagnostic.recent[diagnostic.recent_count - 1u];
-            STD_PRINTF("T515:YAML-BOOT:%s:RECENT:CS=%04X:EIP=%08X:bytes=%02X/%02X/%02X\n",
+            STD_PRINTF("T515:INI-BOOT:%s:RECENT:CS=%04X:EIP=%08X:bytes=%02X/%02X/%02X\n",
                 name, point->cs, point->eip, point->bytes[0u], point->bytes[1u],
                 point->bytes[2u]);
         }
@@ -448,7 +448,7 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             nonblank |= line[index] != ' ';
         }
         line[80u] = '\0';
-        if (nonblank) STD_PRINTF("T515:YAML-BOOT:%s:SCREEN:%u:%s\n", name,
+        if (nonblank) STD_PRINTF("T515:INI-BOOT:%s:SCREEN:%u:%s\n", name,
             (unsigned int)row, line);
     }
 }
@@ -474,31 +474,22 @@ static DWORD WINAPI boot_start(C_VOID *opaque)
     type_status status = vm_machine_reset(machine);
 
     if (status != TYPE_STATUS_OK) {
-        STD_PRINTF("T515:YAML-BOOT:START-FAILED:%d\n", (C_INT)status);
+        STD_PRINTF("T515:INI-BOOT:START-FAILED:%d\n", (C_INT)status);
         return 0u;
     }
     vm_machine_control_start(&machine->control);
     return 0u;
 }
 
-static C_INT boot_cmos_seed_matches(const vm_machine *session,
-    const vm_session_request *request)
+static C_INT boot_cmos_seed_matches(const vm_machine *session)
 {
-    type_unsigned_8 seed[VM_MACHINE_CMOS_SEED_BYTES];
     t_port *port;
-    STD_FILE *file;
     type_unsigned_8 index;
-    C_INT loaded;
 
-    if (session == STD_NULL || request == STD_NULL || request->cmos[0] == '\0') return 1;
-    file = STD_FOPEN(request->cmos, "rb");
-    if (file == STD_NULL) return 0;
-    loaded = STD_FREAD(seed, 1u, sizeof(seed), file) == sizeof(seed) &&
-        STD_FCLOSE(file) == 0;
-    if (!loaded) return 0;
+    if (session == STD_NULL || !session->cmos_seed_present) return 1;
     port = &session->core_machine->executor_port;
     for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
-        type_unsigned_8 expected = seed[index];
+        type_unsigned_8 expected = session->cmos_seed[index];
         type_unsigned_8 actual;
 
         core_machine_port_write(port, 0x0070u, index);
@@ -514,7 +505,7 @@ static C_INT boot_cmos_seed_matches(const vm_machine *session,
 
 int main(int argc, char **argv)
 {
-    integration_yaml_session yaml_session;
+    integration_ini_session ini_session;
     vm_machine *session;
     HANDLE thread = STD_NULL;
     const C_CHAR *terminal = STD_NULL;
@@ -536,16 +527,16 @@ int main(int argc, char **argv)
     }
     trace_enabled = argc >= 5 && !STD_STRCMP(argv[4], "trace");
     standard_speed = (argc == 5 && !STD_STRCMP(argv[4], "standard")) || argc == 6;
-    if (integration_yaml_session_open(argv[1], argv[2], &yaml_session) ==
+    if (integration_ini_session_open(argv[1], argv[2], &ini_session) ==
         TYPE_STATUS_UNSUPPORTED) {
-        STD_PRINTF("T515:YAML-BOOT:%s:UNAVAILABLE\n", argv[2]);
+        STD_PRINTF("T515:INI-BOOT:%s:UNAVAILABLE\n", argv[2]);
         return ASSET_UNAVAILABLE;
     }
-    if (yaml_session.session == STD_NULL) {
-        STD_FPRINTF(STD_STDERR, "T515:YAML-BOOT:%s:SESSION-OPEN-FAILED\n", argv[2]);
+    if (ini_session.session == STD_NULL) {
+        STD_FPRINTF(STD_STDERR, "T515:INI-BOOT:%s:SESSION-OPEN-FAILED\n", argv[2]);
         return 1;
     }
-    session = yaml_session.session;
+    session = ini_session.session;
     if (trace_enabled) {
         trace_probe.fdc = &session->core_machine->fdc;
         (C_VOID)core_machine_set_trace_provider(session->core_machine,
@@ -554,8 +545,8 @@ int main(int argc, char **argv)
             (core_machine_fdc_terminal_observation_provider) {boot_trace_fdc_terminal,
                 &trace_probe};
     }
-    if (!boot_cmos_seed_matches(session, &yaml_session.request)) {
-        STD_FPRINTF(STD_STDERR, "T515:YAML-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
+    if (!boot_cmos_seed_matches(session)) {
+        STD_FPRINTF(STD_STDERR, "T515:INI-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);
         goto done;
     }
     if (vm_machine_set_speed(session, standard_speed ? VM_MACHINE_SPEED_STANDARD :
@@ -578,17 +569,17 @@ int main(int argc, char **argv)
     CloseHandle(thread); thread = STD_NULL;
     if (terminal == STD_NULL || keyboard_post_failure_seen) {
         if (keyboard_post_failure_seen) {
-            STD_PRINTF("T515:YAML-BOOT:%s:KEYBOARD-POST-FAILURE\n", argv[2]);
+            STD_PRINTF("T515:INI-BOOT:%s:KEYBOARD-POST-FAILURE\n", argv[2]);
         }
         if (terminal == STD_NULL) {
-            STD_PRINTF("T515:YAML-BOOT:%s:TERMINAL-TIMEOUT\n", argv[2]);
+            STD_PRINTF("T515:INI-BOOT:%s:TERMINAL-TIMEOUT\n", argv[2]);
         }
         goto done;
     }
-    STD_PRINTF("T515:YAML-BOOT:%s:%s\n", argv[2], terminal);
+    STD_PRINTF("T515:INI-BOOT:%s:%s\n", argv[2], terminal);
     result = 0;
 done:
     if (thread != STD_NULL) CloseHandle(thread);
-    integration_yaml_session_close(&yaml_session);
+    integration_ini_session_close(&ini_session);
     return result;
 }
