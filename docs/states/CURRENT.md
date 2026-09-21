@@ -2,26 +2,6 @@
 
 ## Current Work
 
-## M5 T533 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved independent execution of T533 on 2026-09-21. S1 acceptance `7fdb25ab` establishes the complete relocation ledger and admits the next bounded S within the approved proposal. |
-| Objective | Atomically relocate reusable Core implementation and its mirrored repository-only tests from `core/core` to `core/devices`, and profile implementation/tests from singular `core/profile` to plural `core/profiles`, without any hardware, runtime, ABI or shared-corpus behavior change. |
-| Non-goals | Do not move board construction from Machine, alter CMake target topology beyond renamed paths, change YAML/INI behavior, profile selection, asset loading, test assertions, firmware bytes, Common/Lib/x86, integration inputs or developer artifacts. |
-| Reference Baseline | T533 S1 ledger at `14572230`, accepted at `7fdb25ab`; runnable baseline is `vm-0-5-0532`. |
-| Candidate Proposal | [Fixed-machine products and architecture consolidation](../proposals/m5-fixed-machine-products.md), S2; [baseline ledger](../etc/evidence/t533-s1-fixed-machine-baseline-ledger.md). |
-| Files And ABI Surface | Tracked source/test path moves below `src/core/core`, `src/core/profile`, `test/core/core`, `test/core/profile`; direct include/CMake/static-gate/doc links that spell the former paths. Public C interfaces, target names and runtime behavior remain unchanged. |
-| Applicable Rules | Task Reading Set; Execution structural-relocation and full-unit closure requirements; Architecture owner/dependency direction; Coding minimal-diff/no-duplicate-path requirements; Documentation link/index requirements. Source policy is not triggered because no assets or third-party content move. |
-| Verification | `git diff --check`; no former source/test owner roots or stale build references outside recorded historical evidence; configure/build from a fresh x64 tree; full repository-only unit suite; documentation governance. Use focused path/include/CMake sweeps only transiently. |
-| Expected Markers | `src/core/devices` and `src/core/profiles` are the sole live owner paths; matching `test/core/devices` and `test/core/profiles` mirror them; CMake and static checks name only the new roots; every retained CPU/profile test remains registered. |
-| Asset Needs | None. No `nxvm-assets` read, write, import, hash or manifest action is permitted in S2. |
-| Reporting Requirements | Report moved owner sets, explicit non-moved Machine/App/profile-composition routes reserved for S3/S4, test count and gates, reviewable P1 and governance P2 commits. |
-| Stop Conditions | Stop if a move would change an exported include/ABI, require a compatibility alias, alter a runtime profile route, leave a live former-root hit without an approved disposition, or expose an undisposed owner outside the frozen S1 ledger. |
-| Exit Criteria | Former live roots are absent; the new source/test mirror is exact; all moved includes, CMake lists and static checks resolve from new names; full unit/documentation gates pass; actual-diff review confirms relocation only. |
-| Original Owner Request | Retain all implemented machine products while restructuring to `core/devices`, `core/profiles` and `core/machine`, then later make each build fixed-profile with external BYOB assets and NXVM.ini runtime configuration. |
-| Similar-Issue Sweep | Search all tracked production source, tests, CMake, scripts and active documentation for live `core/core`, `core/profile`, `test/core/core` and `test/core/profile` owner references; historical evidence is retained only when it describes its then-current baseline. |
 
 ## Current Technical Baseline
 
@@ -40,7 +20,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T533 S1 | Accepted at `14572230`: finite four-machine/CPU/configuration/build/test ledger, with every live route assigned to S2--S5; 336/336 repository-only unit tests and documentation governance passed. [Evidence](../etc/evidence/t533-s1-fixed-machine-baseline-ledger.md). |
+| T533 S2 | Accepted at `687db585`: source and test owner roots are now Devices/Profiles; all CMake, include and static-gate paths moved with them, with no compatibility alias or runtime change. Fresh x64 configuration and 336/336 repository-only unit tests pass. [Evidence](../etc/evidence/t533-s2-devices-profiles-relocation.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |
 | T531 | Closed at owner direction on 2026-09-20 after S28 implementation `20c1e71b`: the final canonical SoftPC `2b17749a` six-tree Lib/Common/x86 source-and-test refresh is exact; 338/338 unit, specialized/documentation gates and stripped 0531 x64/x86 artifacts pass. The full external integration remains 41/42: `integration.vm-dos-keyboard-smoke` stays explicitly transferred to [TODO(High)](TODO.md), not relabelled green. [History](../history/M5-T531-shared-common-product-convergence.md). |
 | T530 | Closed at owner direction on 2026-09-13 after implementation bc9a1247; pinned canonical Lib import and Common adaptation, recorded 299/299 unit and 42/42 integration, both 0530 artifacts verified by hash. No new manual test is claimed. Later source revisions and Common UX convergence belong to the next task. [History](../history/M5-T530-canonical-softpc-lib-refresh.md). |

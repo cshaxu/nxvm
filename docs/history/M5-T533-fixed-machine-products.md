@@ -29,3 +29,9 @@ from `core/profile` to `core/profiles`, including their repository-only test
 mirrors and all live CMake/static-verifier references. It deliberately leaves
 Machine composition, product configuration and runtime behavior unchanged for
 S3 and S4.
+
+Accepted in `687db585` after actual-change review. The live old-root sweep is
+empty, the shared fixture's six relative references use its new Devices path,
+and no asset or runtime route changed. A fresh x64 configure and the complete
+repository-only unit suite pass 336/336; documentation governance and
+`git diff --check` pass.
