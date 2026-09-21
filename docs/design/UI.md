@@ -1,15 +1,25 @@
 # Product UX
 
-Standard and PC110 share one NXVM interaction model. This target design does
-not claim that both executables are delivered.
+XT, AT, Standard and PC110 share one NXVM interaction model. This target design
+does not claim that all four executables are delivered.
 
 ## NXVM
 
-Each executable identifies and boots its fixed machine. YAML supplies
-firmware/media paths, access modes and supported options, not machine topology.
-Preserve simple YAML, relative-to-YAML and absolute paths, ordered media slots
-and clear load failures. CPU tables remain a Core capability, not an unrestricted
-CPU replacement menu for a fixed product.
+Each executable identifies its build-fixed machine. One NXVM.ini beside the
+EXE supplies startup memory, floppy/hard-disk paths and their independent
+readonly/direct/overlay modes, and console/window presentation. Follow SoftPC's
+simple INI and existing console_control behavior, not a new configuration
+framework. Absolute paths work; relative paths resolve from the INI directory.
+INI does not choose a machine, startup action or boot order. BIOS/CMOS remain
+responsible for boot. CPU tables remain a Core capability, not an unrestricted
+replacement menu. Preserve physical media-slot order, not DOS drive letters.
+
+All machine executables use the same file/schema. Omitted memory uses the
+selected board default; explicit unsupported memory/media produces a clear
+error. The parser must support XT sub-MiB memory without rounding it to MiB;
+freeze the single memory-unit syntax during implementation planning. Firmware
+roles are selected-profile facts, with external asset resolution through the
+same application path, never an embedded fallback or second YAML loader.
 
 ## PC110
 
@@ -22,7 +32,7 @@ control Console or VDM/DOS-launch interface.
 Retain Console/Window presentation, Common's existing `console_control`
 behavior, lifecycle notifications, mouse policy and registered shortcuts.
 Pause/resume/stop/reset remain explicit control actions. Runtime debugging and
-assembly/disassembly remain in both builds; development trace is separate.
+assembly/disassembly remain in all machine builds; development trace is separate.
 
 ## Host Resources
 

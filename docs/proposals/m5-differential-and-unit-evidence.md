@@ -3,7 +3,7 @@
 ## Goal
 
 Retain the useful Bochs comparison and specification-driven test work without
-making it a dependency of the emulator or resurrecting old machine products.
+making it a dependency of the emulator or resurrecting withdrawn product lines.
 
 ## Batches
 
@@ -16,7 +16,7 @@ making it a dependency of the emulator or resurrecting old machine products.
    ownership. Reuse table-driven fixtures for equal semantics and preserve
    retained CPU coverage independently from the fixed-product matrix.
 4. Add explicitly admitted missing semantic tests from the finite ledgers,
-   with no external YAML/ROM/media input in unit tests.
+   with no external INI/YAML/ROM/media input in unit tests.
 
 ## Exit
 

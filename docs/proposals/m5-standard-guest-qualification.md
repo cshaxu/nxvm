@@ -2,7 +2,8 @@
 
 ## Goal
 
-Qualify the selected Standard machine, not DeskPro/5170 under a new name.
+Qualify the selected 386DX Standard machine. DeskPro is eligible if selected
+with its actual board identity and firmware; 5170 remains a separate AT product.
 
 ## Dependencies And Batches
 
@@ -13,10 +14,13 @@ Standard Mode and 386 Enhanced Mode lifecycle in that dependency order.
 Record any unsupported prerequisite explicitly; do not broaden the hardware
 configuration dynamically to pass a later checkpoint.
 
-Use session YAML and external readonly masters/overlays through the production
-asset route. Preserve the original integration universe until the product
+After the configuration cutover, use NXVM.ini and external readonly
+masters/overlays through the production asset route. Preserve the original
+integration universe until the product
 retirement map explicitly assigns each row; replace old board-specific scenarios
 with the corresponding selected-board proof, not an empty or weaker gate.
+XT/AT boot and controller regressions remain required; 386-specific Windows
+checkpoints are not imposed on XT as though all four machines were interchangeable.
 
 ## Exit
 

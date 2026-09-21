@@ -24,12 +24,13 @@ does not carry a continuing product obligation.
 
 Retain lawful external firmware composition and Console/debugger interaction.
 
-## M5: Fixed Standard Machine And Shared Core
+## M5: Fixed Machine Builds And Shared Devices
 
-Freeze an identified 386DX Standard board, firmware, display/storage set and
-the PC110 evidence inventory. Converge build selection, construction and state
-ownership to one profile per EXE; preserve all CPU families as an exception.
-Retire other machine personalities through a coverage/dependency disposition.
+Retain XT and AT; research the 386DX Standard board, including DeskPro, and
+inventory PC110 prerequisites. Converge build selection, NXVM.ini, Devices,
+profile-owned construction and Common adaptation to one profile per EXE.
+Preserve all CPU families as an exception. Retire only unrelated personalities
+through a coverage/dependency disposition, not XT/AT or an unresolved candidate.
 
 Qualify the selected CPU, controllers and wiring through original function/
 timing ledgers, code gaps and reference cross-checks. Exact manual values or
@@ -50,12 +51,12 @@ infer complete PC110 support from AT registers or emulator placeholders.
 
 ## M7: PC110 Product Closure
 
-Deliver the second executable through the same App/Common runtime, asset route
+Deliver the PC110 executable through the same App/Common runtime, asset route
 and dual host-architecture builds. Prove firmware, storage, display/input,
 lifecycle and selected guest checkpoints; state excluded capabilities explicitly.
 
 ## M8 And Later: Evidence-Led Compatibility
 
-Broaden either machine after hardware/corpus prerequisites. The former mantle,
+Broaden the selected machines after hardware/corpus prerequisites. The former mantle,
 owned-DOS and NXVDM milestones are withdrawn. New web, Windows 95 or unrelated
 machine products require a separate owner decision.

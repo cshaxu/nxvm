@@ -30,7 +30,7 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 - [ ] **Unselected peripheral breadth (`TODO(Low)`).** ELCR/PCI/APIC, advanced
   AUX, light-pen/composite effects, serial/parallel/game ports and host speaker
   breadth require a named board consumer and source contract. If selected by
-  the Standard/PC110 BOM they transfer to controller qualification; otherwise
+  an XT/AT/Standard/PC110 BOM they transfer to controller qualification; otherwise
   they are not implicit product features.
 ## Timing-Fidelity Debt
 
@@ -53,4 +53,4 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
   not runtime support proof. Admit POSIX runtime validation when an approved
   environment exists; no WSL installation is implied.
 - [ ] **DevBox exploration (`TODO(Low)`).** Requires an explicit product goal,
-  trust boundary and corpus; not an automatic extension of these two emulators.
+  trust boundary and corpus; not an automatic extension of these machine builds.

@@ -5,6 +5,19 @@ change. None of these files is an active proposal, admission or current rule.
 Original facts are preserved; local links were relocated mechanically. This is
 a proposal/debt archive, not a standalone Td task-history record.
 
+## Scope Override: Retained XT And AT
+
+The later 2026-09-21 owner decision supersedes the two-product retirement
+assumption below: XT and AT remain products, DeskPro remains a Standard 386DX
+candidate, and PC110 follows later. The original table is the historical Td S167
+disposition, not permission to delete these boards or their regressions.
+Their original source/gap/boot evidence feeds the current
+[composition and INI cutover](../../../proposals/m5-fixed-machine-products.md)
+and [controller qualification](../../../proposals/m5-selected-controller-qualification.md).
+No archived proposal is automatically re-admitted, and VDM remains withdrawn.
+Required XT/AT debt in the historical snapshot is transferred to these receivers,
+not treated as repaired or left retired merely because its old proposal is archived.
+
 ## Previous Proposals
 
 All 43 previous proposals have the dispositions below. Transfer preserves

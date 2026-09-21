@@ -6,6 +6,12 @@ test, build, session YAML or executable was changed by this research.
 
 ## Selection Result
 
+The later Td S168 scope retains XT and AT and adds DeskPro 386 to the Standard
+candidate comparison. The Intel/AMI findings below remain evidence, not an
+exclusion of DeskPro or authorization to retire existing machines. Existing
+DeskPro code/assets and boot history reduce migration uncertainty but do not
+by themselves prove that it is the best documented Standard choice.
+
 No researched candidate is yet proven to meet all four requirements at once.
 Intel Model 302 is the strongest primary-document/Intel-component lead;
 AMI 386XT Series-4 is a useful alternative with identified BIOS dump leads.
@@ -81,7 +87,7 @@ without board identity, or a runnable reference without register/timing evidence
 does not close selection. Non-Intel support parts in a Standard candidate
 must be explicitly reconciled with the owner's component restriction.
 
-Machine-specific C and ROM mapping declarations belong to the two profile
+Machine-specific C and ROM mapping declarations belong to the selected profile
 owners. Vendor payloads and their local manifests remain in external
 `nxvm-assets`; no protected BIOS is committed or silently synthesized.
 
@@ -93,11 +99,11 @@ Inspected live source, not inferred solely from directory names:
 | --- | --- | --- |
 | `src/app/config.c` | Machine-name parser plus per-board ROM/CMOS/media/CPU restrictions. | App parses values; fixed profile owns hardware constraints. |
 | `src/core/profile/profile_resolver.c` and header | Recursive parent traversal, field masks, runtime owner strings and copied resolved values. | Direct frozen plan; retain generic conflict validation. |
-| `src/core/profile/default_profile/pc_at_profile.c` | A 5170 parent is assembled to derive default AT; descriptors and resolved snapshots coexist. | Two independent complete board declarations, no retired-parent inheritance. |
+| `src/core/profile/default_profile/pc_at_profile.c` | A 5170 parent is assembled to derive default AT; descriptors and resolved snapshots coexist. | Direct board construction without recursive configuration mirrors; retain 5170 itself. |
 | `src/core/machine/machine.c` | Separate XT/Model-40/PC-AT create and asset branches. | One resource and publication transaction, board facts supplied once. |
 | `src/core/machine/machine_private.h` | Multiple resolved boards, ROM buffers, firmware-kind and private flags in one object. | Selected-board lifetime only; no replacement mega-union. |
-| `src/core/machine/model40_composition.c`, `lifecycle.c` | Compaq wiring in generic adapter, reset/provider selection by machine kind. | Retire unselected wiring and switches together. |
-| `src/core/core/vadp.c`, `hdc.c`, `fdc.c`, `d4_memory.c` | Compaq/DeskPro personalities coexist with reusable mechanisms. | Dependency-led removal; preserve shared video, disk, timing and memory owners. |
+| `src/core/machine/model40_composition.c`, `lifecycle.c` | Compaq wiring in generic adapter, reset/provider selection by machine kind. | Relocate wiring to Profile and bind once; preserve DeskPro until Standard selection. |
+| `src/core/core/vadp.c`, `hdc.c`, `fdc.c`, `d4_memory.c` | Compaq/DeskPro personalities coexist with reusable mechanisms. | Move reusable owners to Devices; no premature removal of candidate hardware. |
 | `src/core/machine/media/` | Device-semantic adapter over Lib Storage. | Keep needed geometry/change semantics; do not duplicate file storage. |
 | `src/core/core/cpu_interface.h` | Actual enum: DEFAULT, 8086, 8088, 80186, 80286, 80386. | Retain all actual models; 80188/486 are not currently implemented enum entries. |
 | `src/app/composition.c`, `core/machine/lifecycle.c` | Existing Common driver/session/UI binding. | Keep one shared route; do not add product-specific queues or executors. |
@@ -105,7 +111,34 @@ Inspected live source, not inferred solely from directory names:
 The audit identifies replacement opportunities, not numerical code savings.
 Implementation must count actual deleted/added lines and prove that removed
 paths have no retained consumer. CPU retention overrides machine retirement;
-old-machine tests containing generic regressions must be rehomed first.
+old-machine tests containing generic regressions must be rehomed first. XT/AT
+tests are retained board coverage, not generic-only salvage from retired boards.
+
+## SoftPC INI And Current Composition Inspection
+
+Td S168 inspected read-only SoftPC revision `2b17749a12c1132d9c9c65754008befbcb764546`:
+`assets/binary/softpc.ini`, `src/app/config.c`, `config.h` and
+`test/app/config_smoke.c`. The sample/parser supports memory_mb, floppy,
+floppy_mode, hard_disk, hard_disk_mode, display, console_control, serial_output
+and printer_output. Paths resolve from INI beside EXE; modes are direct,
+readonly and overlay. No startup or boot-order key exists. The owner confirmed
+NXVM.ini must not acquire either responsibility.
+
+The parser's integer-MiB memory range starts at 1, so it cannot represent XT
+640 KiB. NXVM's common schema needs one sub-MiB-capable memory syntax rather
+than copying that constraint or creating a separate XT parser. This is a
+contract gap to settle in S1, not implemented syntax. Optional serial/printer
+keys require actual endpoint support; similarity does not authorize dummy keys.
+The SoftPC App parser uses native Windows path APIs; NXVM should reuse Lib
+contracts instead of copying native-platform dependencies into App.
+
+NXVM `src/app/composition.c` already binds Common Machine/Session/UI once.
+`src/core/machine/machine.c` and `lifecycle.c` still own board-specific asset,
+construction and firmware-provider branches. Those facts belong to Profile,
+not merely a new directory name. `src/core/core/machine.h` aggregates generic
+execution, CPU/devices and timeline; those mechanisms move with Devices, not
+to a second profile-owned runtime. Neutral resource-provider contracts prevent
+Profile from depending back on private Machine adapter state.
 
 ## Governance Verification Boundary
 
@@ -114,7 +147,7 @@ The principal design documents are target requirements. The current runnable
 verify this delivery; no new boot, unit, integration or artifact result is
 claimed. Implementation and final board selection remain queued.
 
-Closure review: the full documentation governance gate and its self-tests pass.
+Historical Td S167 closure review: the full documentation governance gate and its self-tests pass.
 The checker now recognizes PC110 instead of retired NXVDM UX; self-test fixtures
 also match the existing dual-host-architecture artifact and packetless-closure
 rules. No runtime predicate was relaxed. All 43 archived proposals were compared

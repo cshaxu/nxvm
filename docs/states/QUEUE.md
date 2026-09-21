@@ -16,4 +16,6 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 The [retired-plan disposition](../etc/history/retired-machine-plans/README.md)
 maps prior candidates to these receivers or withdrawn product scope. It is
-historical context, not another queue. CPU retention is not machine retention.
+historical context, not another queue. Its latest scope override retains XT/AT
+and DeskPro candidacy. The head proposal covers compiled profiles, NXVM.ini and
+Devices/Profile/Machine separation; no implementation T is admitted by this Td.

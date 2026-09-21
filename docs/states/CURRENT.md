@@ -2,8 +2,9 @@
 
 ## Current Work
 
-No task is currently admitted. The fixed-machine implementation proposal is
-queued; Standard hardware selection and PC110 implementation remain unproven.
+No task is currently admitted. The queue-head proposal now covers four compiled
+machine families, NXVM.ini and Devices/Profile/Machine separation. Standard
+selection and PC110 implementation remain unproven; no runtime cutover occurred.
 
 ## Current Technical Baseline
 
@@ -32,7 +33,17 @@ queued; Standard hardware selection and PC110 implementation remain unproven.
 
 ## Recent Governance
 
-- **M5 Td S167 P1:** governs two fixed-machine products within one multi-machine
+- **M5 Td S168 P1:** supersedes the two-product retirement scope with retained
+  XT/AT, candidate Standard 386DX (including DeskPro) and later PC110. The
+  queue-head proposal defines five S batches for Devices relocation, profile-
+  owned composition, Common adaptation and fixed-build/INI cutover. Read-only
+  SoftPC configuration inspection confirms no startup/boot-mode key; NXVM.ini
+  likewise excludes both. Documentation and architecture governance keep one
+  authority per concern; archived XT/AT evidence has explicit current receivers.
+  Full documentation gate and actual-diff review pass. Only README/docs changed;
+  source, tests, assets, build configuration and 0532 artifacts remain untouched.
+
+- **M5 Td S167 P1 (scope superseded by S168):** governed two fixed-machine products within one multi-machine
   architecture and preserves all CPU families. The queue-head
   [consolidation proposal](../proposals/m5-fixed-machine-products.md) records
   inspected simplifications and five S batches; 43 old proposals and all debt

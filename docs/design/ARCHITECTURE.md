@@ -7,28 +7,32 @@ from this approved target.
 
 ## Product Shape
 
-NXVM retains a multi-machine architecture. Standard and PC110 each link exactly
-one fixed machine composition, with the same App, Common, Lib and x86 tooling.
-YAML supplies assets and permitted session options, not another machine, CPU
-population or controller topology. A machine identity may be checked for
-mismatch; it is not a runtime selector.
+NXVM retains an extensible multi-machine architecture. XT, AT, Standard 386DX
+and later PC110 each link exactly one fixed machine composition, using the same
+App, Common, Lib and x86 tooling. A shared NXVM.ini configures supported memory,
+media paths/access and presentation, not machine identity, CPU population,
+controller topology, startup actions or firmware boot order. It replaces YAML
+at the implementation cutover, not through a permanent parallel loader.
 
 Standard requires a source-qualified 386DX board whose identity is not yet
-frozen. PC110 requires its own 486-class contract, not a renamed 386 profile.
+frozen; DeskPro 386 remains a candidate. PC110 requires its own 486-class
+contract, not a renamed 386 profile.
 Neither implies a VDM, mantle, DOS implementation or DLL product. Existing
 release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
 
-- `app` owns syntax, paths, product CLI, recording and the one composition root.
+- `app` owns INI syntax, paths, product CLI, recording and the one composition root.
   It assembles Common Session/UI/Machine and the NXVM driver.
 - `core/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
-- `core/profile` supplies immutable board configuration, topology, firmware-slot
-  rules and necessary board-specific behavior. Standard and PC110 do not
-  inherit from retired 5170 or DeskPro products.
-- `core/core` owns CPU, memory, bus, devices, reset, faults and the sole guest
+- `core/profile` owns each board's actual composition: device construction,
+  wiring, clocks, memory constraints, firmware slots and board-specific behavior.
+  It constructs and destroys the selected machine through neutral device
+  contracts; it does not depend on Common or Machine-adapter internals.
+- `core/devices` (currently `core/core`) owns CPU, memory, bus, devices, reset,
+  generic execution and faults and the sole guest
   timeline. Generic mechanisms know hardware contracts, not product names.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
@@ -41,29 +45,34 @@ release behavior remains the baseline until an implemented, verified cutover.
 
 ### Fixed Composition Without A New Framework
 
-Build selection supplies one board description to one machine factory:
+Build selection supplies one profile composition entry to the adapter:
 
 ```text
-build-selected profile + App options + externally loaded asset bytes
+build-selected profile + App INI options + externally loaded asset bytes
                               |
                               v
-                one validated, frozen Core plan
+            profile constructs one validated, frozen Core plan
                               |
                               v
-             one Core instance and Common machine driver
+           one Devices instance -> Machine adapter -> Common Machine
 ```
 
 Profile owns hardware constraints; App owns syntax/path resolution; Core owns
 generic structural/state invariants. These are distinct checks, not copies of
 one board rule in all three layers. Share constants or construction helpers
-only where semantics match. Two fixed targets need no profile inheritance
+only where semantics match. Fixed targets need no profile inheritance
 engine, plugin registry, per-field provenance mirror or runtime machine registry.
 Provenance belongs in evidence rather than repeated runtime strings.
 
 Construction prepares assets and a plan, validates, publishes one live machine,
 and rolls back through one resource owner on failure. Reset reuses the frozen
 plan and Core reset path. The driver retains only the selected board's resources,
-not simultaneous XT, PC/AT and Compaq ROM/state records.
+not simultaneous XT, PC/AT and Compaq ROM/state records. Moving directories
+alone is insufficient: board constructors currently in Machine move to Profile;
+Machine retains execution, host-resource lifetime and Common adaptation only.
+Injected asset/media services use neutral contracts, avoiding a Profile-to-
+Machine dependency cycle. Adding a board needs a composition and build entry,
+not another Common queue, App parser or generic-device machine-name branch.
 
 ### CPU Retention And Device Reduction
 
@@ -74,7 +83,8 @@ coverage needs sources and implementation; an enum alias cannot turn 386 into
 486. Fixed products choose their documented CPU once. Do not scatter build
 macros through handlers or remove later CPUs' 16-bit, real-mode or VM86 semantics.
 
-Device retirement follows the two-board inventory. Remove unneeded legacy
+Device retirement follows the four-family inventory. XT/AT mechanisms and
+DeskPro candidate dependencies are protected from premature deletion. Remove unneeded
 personalities and their configuration fields, not standard Intel chip behavior
 or CPU-shared mechanisms. One VADP owner retains needed VGA/EGA mechanisms;
 PC110 extensions must not create second VRAM/frame truth. One HDC owner retains
@@ -106,7 +116,10 @@ initializes Core-owned writable CMOS rather than a second BIOS/register mirror.
 
 Guest writes flow through sole device state into copied snapshots, Common UI
 and Lib KVM. Native handles, fonts and presentation are not guest-video owners.
-Both executables retain the same lifecycle and UX.
+All executables retain the same lifecycle and UX. The shared INI is one format
+and parser, not a promise that every memory size or disk fits every board.
+Omitted values use selected-profile defaults; explicit unsupported values fail
+clearly rather than selecting another board or silently changing hardware.
 
 ## Runtime Admission Boundary
 

@@ -80,12 +80,14 @@ an explicit error, not permission for an embedded BIOS fallback. This local
 use does not grant redistribution rights.
 
 The external `nxvm-assets/profiles` archive owns vendor payloads and manifests
-with slot, size, SHA-256, read-only mapping and provenance. Session YAML keeps
-simple relative-to-YAML or absolute paths, not embedded hashes/catalogues.
+with slot, size, SHA-256, read-only mapping and provenance. The current session
+YAML baseline resolves relative paths from YAML; the approved NXVM.ini cutover
+resolves relative paths from INI. Absolute paths remain supported. Neither
+configuration format embeds hashes/catalogues or protected binary payloads.
 Repository templates use portable references, never machine-local absolute
 paths. The loader supplies immutable bytes through the single Core ROM path.
 
-For Standard and PC110, profile directories in this repository own board C,
+For XT, AT, Standard and PC110, profile directories in this repository own board C,
 ROM slot/mapping declarations and authorized ROM source if separately admitted.
 Protected `.rom` and `.cmos` payloads stay in the corresponding external profile
 archive. A CMOS seed initializes documented writable configuration, not a

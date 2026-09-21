@@ -2,108 +2,107 @@
 
 ## Purpose And Approval Boundary
 
-Implement the owner's revised product direction: one multi-machine architecture,
-one build-fixed Standard 386DX executable and one build-fixed PC110 executable.
-Preserve the complete CPU-family implementation/profile/selection-table corpus.
-This proposal updates the current governance work; it is not an admission of a
-new numeric task or a reopening of the closed layout task.
+Preserve an extensible multi-machine architecture with one build-fixed profile
+per executable: IBM 5160 XT, IBM 5170 AT, an evidence-selected Standard 386DX
+(DeskPro 386 is eligible), and later PC110. Preserve all existing CPU models,
+profiles, selection tables and tests even when unused by these products.
 
-[Architecture](../design/ARCHITECTURE.md) is normative.
-[Research and code observations](../etc/research/fixed-machine-selection.md)
-record current evidence. Standard's exact board/ROM set is not yet frozen.
+This proposal revises the documentation-governance direction; it does not
+admit a numeric implementation T or reopen closed T532. [Architecture](../design/ARCHITECTURE.md)
+is normative; [research](../etc/research/fixed-machine-selection.md) records
+source observations. Neither the Standard selection nor PC110 readiness is frozen.
 
-## Scope And Non-goals
+## Configuration Contract
 
-Converge build selection, profile construction, machine-owned resources and
-obsolete personality retirement. Keep App/Common/Lib/x86 single-path.
-No VDM, profile plugin framework, new scheduler or shared-corpus fork.
-No automatic deletion based on chip vendor/name. Missing Standard-specific
-non-Intel hardware requires explicit selection approval. PC110 is an approved
-exception to the standard-Intel component restriction.
+- One NXVM.ini beside the EXE, one parser and one schema for all machine builds.
+  Follow the inspected SoftPC INI scope: memory, media paths and independent
+  access modes, console/window and existing console_control semantics.
+- INI does not select the machine or CPU and does not specify a startup mode,
+  automatic start action or firmware boot order. The owner explicitly excluded
+  those responsibilities. BIOS/CMOS and existing lifecycle commands retain them.
+- Relative paths resolve from the INI directory; absolute paths remain valid.
+  Keep readonly/direct/overlay semantics and physical slot order, not DOS letters.
+  Preserve required multi-drive capability; freeze one simple slot-key convention
+  in S1 rather than adding per-board parsers or silently dropping second drives.
+- Missing memory uses the compiled board default; supplied values must fit that
+  board. S1 defines one memory-unit syntax supporting sub-MiB XT RAM. SoftPC's
+  current integer memory_mb alone cannot express it. Do not add parallel unit
+  aliases, per-machine sections or silently clamp unsupported values.
+- A shared file is not a claim that a single explicit memory/media combination
+  suits all four boards. Report incompatible geometry/capacity clearly.
+- Board firmware roles, layout and seed rules belong to the selected profile.
+  S1 fixes their external deployment/path resolution without expanding INI into
+  a hardware manifest. All protected bytes remain external; no baked-in BIOS,
+  machine-local absolute path or hidden YAML firmware loader is acceptable.
+- Replace the production YAML/catalog path completely at cutover, migrating
+  integration inputs through the same INI loader. Preserve user-owned output
+  configuration; do not overwrite it during builds or silently convert it.
 
-This structural task cannot claim a new CPU/chip implementation from a wrapper.
-A component missing complete function/timing support receives its own bounded
-implementation proposal and ledger before product qualification.
+## Ownership And Simplification
 
-## Observed Simplification Set
-
-- `app/config.c`: move machine-name parsing and board-specific CPU, ROM count,
-  CMOS, floppy and disk restrictions out of App. Keep one syntax/path parser;
-  the selected profile owns hardware constraints. Retain CPU tables at Core,
-  not a second reduced App-only model authority.
-- `core/profile/profile_resolver.*`: replace recursive parents, owned/provided
-  masks and copied per-field owner strings with direct construction of one
-  immutable plan. Keep real port/window/route validation; removing inheritance
-  must not remove conflict detection.
-- `core/machine/machine.c`: replace separate Model-40, XT and PC/AT asset/create
-  branches with one prepare/validate/create/bind/reset/publish path and cleanup.
-- `core/machine/machine_private.h`: remove simultaneous resolved-profile,
-  firmware-kind, board-flag and multi-board ROM storage. Keep only selected
-  profile resources and Core/Common handles; no replacement mega-union.
-- `core/machine/model40_composition.c` and firmware selection in `lifecycle.c`:
-  retire unselected board construction and reset/provider switches together.
-  Profile-local facts populate the same generic plan; no per-board runner.
-- `core/core`: inventory Compaq CECG/WD/D4, DeskPro FDC and XT-specific paths;
-  retain only mechanisms required by the approved device set or preserved CPUs.
-  Separate reusable Intel PPI/chip semantics from XT keyboard glue before
-  retirement. Generic real-mode/VM86, DMA, A20 and transaction behavior survives.
-- Media adapters remain only where they add geometry/change/lifecycle semantics.
-  Do not recreate Lib Storage or blindly merge FDD/HDD. Reuse existing Common
-  queues, paused-debug lease and Lib presenters instead of new wrappers.
-- Build/test matrices factor into retained CPU conformance, selected-device
-  conformance and two product integration matrices. Preserve behavior coverage;
-  do not keep meaningless Cartesian products of unsupported machine/CPU choices.
-
-These are inspected opportunities, not a claim that code has already changed
-or that every candidate file is dead.
-
-## Convergence Ledger
-
-Before deletion, list every current profile, board personality, configuration
-field, constructor/reset branch, ROM slot, test and build entry. Give each one
-exactly one receiver: retained CPU/shared mechanism, Standard, PC110, retired
-product-only behavior, or a blocked hardware prerequisite. Record caller proof,
-source evidence and regression owner. Unknown dependencies block deletion.
-Preserve old successful input/evidence records externally; old tests are retired
-only with explicit coverage disposition, never converted from failures to passes.
+- `core/core` becomes `core/devices`, together with its mirrored tests. It keeps
+  reusable CPU/controllers, memory/bus, reset, generic execution and the sole
+  timeline. This is not permission to split one machine into device workers.
+- `core/profile/{xt,at,standard,pc110}` owns actual board composition, including
+  construction/wiring, clocks, memory constraints, firmware slots and necessary
+  board behavior. Create future directories only with real implementation.
+- Move board constructors now in `core/machine/machine.c`,
+  `model40_composition.c` and lifecycle firmware switches to their profile owner.
+  Keep the generic adapter's prepare/bind/execute/observe/release sequence once.
+  Inject neutral asset/media services; Profile must not depend on adapter internals.
+- Replace recursive profile parents, provenance-string mirrors and duplicated
+  resolved states with direct frozen descriptions where caller evidence permits.
+  Keep port/window/route conflict validation and real hardware constraints.
+- `core/machine` adapts one assembled Devices instance to `common/machine`,
+  retaining needed host-resource/media lifetime and pacing, not board policy,
+  a second lifecycle reducer or simultaneous buffers for every board.
+- App owns entry, INI values/paths, CLI and composition of Common plus the adapter.
+  It does not build chips or duplicate profile validation. Lib/Common/x86 remain
+  unchanged unless a concrete separately approved shared-contract gap appears.
+- Keep FDD/HDD adapters where they own geometry/change semantics. Reuse Lib
+  Storage and the existing Common queues, paused-debug lease and Lib KVM.
+- XT and AT are retained, not retirement candidates. Do not delete Compaq
+  CECG/WD/D4 or DeskPro construction while Standard selection is unresolved.
+  Retire genuinely unrelated personalities only after a caller/coverage map;
+  preserving a required non-Intel part is preferable to a false generic substitute.
 
 ## Proposed S Batches
 
-- **S1 - evidence and deletion map.** Freeze Standard board/revision/CPU/chip
-  list, video and storage choices, firmware byte layout and CMOS seed semantics.
-  Compare Intel Model 302 and AMI 386XT Series-4 evidence; neither is currently
-  fully admitted. Inventory PC110 prerequisites and every retention/deletion
-  row. Stop board-specific implementation if firmware/hardware identity is
-  unresolved; do not silently pick a synthetic PC.
-- **S2 - build-fixed selection.** One parameterized target recipe, exactly one
-  selected profile implementation per EXE, common source lists and checked
-  product identity. YAML cannot select another board. Preserve Core CPU tables
-  and tests. Update artifact/status validation from the current single-target
-  predicate to the admitted fixed-product set as part of this cutover, not by
-  weakening today's gate. PC110 readiness is explicit, never a fake bootable target.
-- **S3 - flat plan and unified construction.** Remove profile inheritance and
-  duplicated board policy; unify external asset lifetime, initialization,
-  rollback and reset. Publish one live instance only after validation.
-- **S4 - selected-device and legacy-path retirement.** Execute the complete
-  dependency map, including old App fields, Core personalities and tests.
-  Keep real shared mechanisms; no stubs or disabled obsolete production paths.
-  New-chip implementation is not concealed inside this cleanup batch.
-- **S5 - whole cutover audit.** Prove one factory/reset/ROM/media/display path,
-  no alternate product selector, retained CPU coverage and exact shared-corpus
-  identity. Reconcile all old integration rows and run required complete suites.
-  Build both host architectures for each genuinely implemented product;
-  transfer PC110 implementation to its explicit queue receiver.
+- **S1 - baseline and complete contract.** Inventory every profile, constructor,
+  reset/provider branch, asset role, config key, test and build target. Compare
+  SoftPC INI behavior, freeze memory/slot syntax and external firmware resolution.
+  Research DeskPro, Intel Model 302 and AMI alternatives against matching manuals,
+  firmware, supported devices and implementation cost; record unresolved choices.
+  XT/AT structural work need not wait for a new Standard board selection.
+- **S2 - Devices source/test relocation.** Move reusable Core and matching tests,
+  update includes/build/gates and remove former paths without changing hardware
+  behavior or shared corpora. Preserve every CPU implementation and selection table.
+- **S3 - Profile composition and Machine adaptation.** Move actual board wiring
+  to Profile, flatten redundant resolution, unify lifetime/rollback and bind the
+  same Common driver. Prove XT/AT and existing DeskPro regressions before removing
+  old branches; no transitional second machine or firmware path remains at exit.
+- **S4 - fixed builds and App INI cutover.** Use one parameterized build recipe
+  selecting one composition per EXE. Implement the common INI entry, remove runtime
+  machine/YAML selection, migrate every retained integration scenario, and update
+  artifact/status checks together. Unit parser tests use code-owned inputs only.
+  Expose only implemented targets; PC110 is not a placeholder bootable executable.
+- **S5 - retirement and full closure.** Reconcile all config/asset/test/build rows,
+  remove only proven unrelated paths and audit one construction/reset/media/display
+  route. Run full suites and build both host architectures for each admitted
+  runnable machine. Record real code reductions and unchanged shared-corpus hashes.
+  Standard selection/hardware and PC110 implementation remain explicit receivers,
+  never a fabricated usability claim from a successful structural build.
 
 ## Exit And Stop Conditions
 
-All structural ledger rows have direct proof or an explicit hardware receiver.
-No missing Standard identity, firmware or required hardware can be transferred
-away while claiming Standard usability. Complete unit/integration closure,
-dual Release artifacts, actual-diff review and code-size accounting follow
-Execution. Do not close both products on the strength of the structural task:
-PC110 hardware and qualification remain separate required work.
+Each S closes only with its complete unit suite and required affected integration
+proof; T closure requires complete unit/integration and dual-architecture artifacts
+under Execution. Keep original successful/failing scenario dispositions visible:
+do not erase retained XT/AT coverage or relabel a failing baseline as retired.
 
-Never remove a retained CPU or its tests because it is unused by a product.
-Do not modify user output YAML, copy protected assets into the repository,
-weaken boot predicates or invent timing evidence. An unresolvable board/ROM
-identity requires owner selection, not guessed firmware.
+One compiled profile, one INI parser, profile-owned composition, one Core clock
+and one Common adapter must be demonstrated in code, not just directory names.
+Missing firmware/hardware blocks that product's qualification, not permission
+to select a substitute secretly. CPU preservation does not claim unimplemented
+80188/486 support. No VDM, new plugin framework, scheduler, protected binary
+import or user YAML mutation is part of this proposal.

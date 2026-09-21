@@ -2,13 +2,14 @@
 
 ## Goal
 
-Qualify only the frozen Standard and PC110 component set through one shared
+Qualify the retained XT/AT and selected Standard/PC110 component sets through one shared
 Core state/time architecture. Read the selected board before assuming its
 RTC, keyboard, video or storage chip identity.
 
 ## Scope And Batches
 
-The fixed-product proposal first supplies the accepted BOM and retirement map.
+The fixed-product proposal supplies each accepted BOM and retirement map;
+unresolved Standard selection must not retire XT/AT or DeskPro candidate hardware.
 For each distinct retained/new controller, admit its own bounded task: source
 collection; exhaustive function/timing List 1; current-code gap List 2;
 primary-manual/emulator cross-check; complete owner repair; downstream wiring

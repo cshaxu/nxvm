@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement the actual IBM Palm Top PC 110 as the second fixed-machine product
+Implement the actual IBM Palm Top PC 110 as the later fourth machine family
 through the existing Core and Common runtime.
 
 ## Evidence First
@@ -24,7 +24,7 @@ does not prove complete original chipset documentation or a bootable emulator.
 3. Compose selected hardware under `core/profile/pc110`, using one Core plan,
    timeline, media path and display owner. Share a chip only where semantics
    match; do not inherit Standard's board identity or copy its runner.
-4. Qualify the second product through real firmware/media and both host
+4. Qualify the PC110 product through real firmware/media and both host
    architectures, then close the finite power/input/display/storage/lifecycle
    ledger. Unimplemented board functions remain explicit, not stubbed success.
 

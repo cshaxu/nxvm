@@ -450,11 +450,11 @@ Identifiers are never reused or allocated out of queue order.
 
 Until the fixed-product build cutover, executable names remain
 `nxvm_0_5_NNNN_x64.exe` and `nxvm_0_5_NNNN_x86.exe`. After that admitted
-cutover, names include the fixed machine: `nxvm_standard_0_5_NNNN_x64.exe`
-and `_x86.exe`, and `nxvm_pc110_0_5_NNNN_x64.exe` and `_x86.exe` when PC110
-is implemented and admitted as runnable. Each runnable product requires both
+cutover, names use `nxvm_<machine>_0_5_NNNN_<arch>.exe`, with machine keys
+`xt`, `at`, `standard`, `pc110` and architectures `x64`, `x86`. Build only
+implemented profiles admitted as runnable. Each runnable product requires both
 host architectures in `build/output/` and `assets/sessions/`, with identical
-copies by hash. An absent PC110 implementation must be reported, not replaced
+copies by hash. Any absent implementation must be reported, not replaced
 by a stub artifact. Product targets share one build recipe and revision
 declaration; each links exactly one profile, and the toolchain selects host
 architecture. Each is an optimized,

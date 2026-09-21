@@ -3,8 +3,8 @@
 ## Goal
 
 Preserve every existing CPU implementation, profile and selection table while
-qualifying the CPU contracts required by Standard and PC110. CPU architecture
-remains independent of the two shipped board profiles.
+qualifying the CPU contracts required by XT, AT, Standard and PC110. CPU
+architecture remains independent of build-fixed board profiles.
 
 ## Scope And Batches
 
