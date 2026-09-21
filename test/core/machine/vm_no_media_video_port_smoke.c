@@ -1,12 +1,12 @@
 #include "type.h"
 
-#include "core/core/debug_interface.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/debug_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "support/rom/session_assets.h"
-#include "../core/support/core_machine_cpu_fixture.h"
+#include "../devices/support/core_machine_cpu_fixture.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)

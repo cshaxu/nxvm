@@ -1,7 +1,7 @@
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 
-#include "core/core/media_interface.h"
+#include "core/devices/media_interface.h"
 #include "core/machine/media/media.h"
 #include "core/machine/machine_interface.h"
 #include "app/catalog.h"

@@ -1,5 +1,5 @@
 #include "type.h"
-#include "core/core/machine.h"
+#include "core/devices/machine.h"
 #include "core/machine/machine_private.h"
 
 
@@ -11,7 +11,7 @@
 
 #include "core/machine/lifecycle.h"
 
-#include "core/core/fdc.h"
+#include "core/devices/fdc.h"
 #include "support/rom/session_assets.h"
 
 C_INT main(C_VOID)

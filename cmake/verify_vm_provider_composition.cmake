@@ -4,7 +4,7 @@ endif()
 
 set(session_dir "${PROJECT_SOURCE_DIR}/src/core/machine")
 set(devices "${session_dir}/machine_devices.c")
-set(firmware "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/external_pc_at_rom.c")
+set(firmware "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/external_pc_at_rom.c")
 set(info "${session_dir}/machine_info.c")
 set(factory "${PROJECT_SOURCE_DIR}/src/app/config.c")
 

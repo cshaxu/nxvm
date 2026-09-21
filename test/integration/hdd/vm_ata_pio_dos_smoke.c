@@ -2,11 +2,11 @@
 
 #include <windows.h>
 
-#include "core/core/machine_interface.h"
-#include "core/core/hdc.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/hdc.h"
 #include "test/integration/support/session_yaml.h"
 #include "core/machine/waiting.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 
 #define VM_ATA253_BOOT_BUDGET 800000u

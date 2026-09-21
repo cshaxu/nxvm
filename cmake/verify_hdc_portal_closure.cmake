@@ -24,7 +24,7 @@ foreach(required "core_machine_plan_configure_hdc")
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_plan.c" machine_plan)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_plan.c" machine_plan)
 foreach(required "core_machine_configure_hdc")
     string(FIND "${machine_plan}" "${required}" position)
     if(position EQUAL -1)

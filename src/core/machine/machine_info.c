@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/media/fdd.h"
 #include "core/machine/media/hdd.h"

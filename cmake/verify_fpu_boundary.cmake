@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/fpu.c" fpu_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/fpu.c" fpu_source)
 
 string(REGEX MATCH "(^|[^A-Za-z0-9_])(float|double)([^A-Za-z0-9_]|$)"
     host_floating_point "${fpu_source}")

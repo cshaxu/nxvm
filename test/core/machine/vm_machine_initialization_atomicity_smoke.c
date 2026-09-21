@@ -4,7 +4,7 @@
 #include "core/machine/runner.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "core/profile/default_profile/pc_at_profile_private.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
 static C_INT verify_recovery(C_VOID);

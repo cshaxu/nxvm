@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 

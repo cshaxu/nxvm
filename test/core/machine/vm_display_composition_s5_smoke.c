@@ -1,7 +1,7 @@
 #include "type.h"
 
-#include "core/core/machine.h"
-#include "core/core/guest_presentation_mailbox_interface.h"
+#include "core/devices/machine.h"
+#include "core/devices/guest_presentation_mailbox_interface.h"
 #include "core/machine/display.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"

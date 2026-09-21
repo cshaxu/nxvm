@@ -21,3 +21,11 @@ assigns every observed construction/configuration/build route to S2--S5, and
 does not make a protected-asset claim. The x64 isolated build passed 336/336
 repository-only unit tests in 226.85 seconds; documentation governance and
 `git diff --check` passed.
+
+## S2: Devices And Profiles Relocation
+
+S2 performs the atomic owner-path move from `core/core` to `core/devices` and
+from `core/profile` to `core/profiles`, including their repository-only test
+mirrors and all live CMake/static-verifier references. It deliberately leaves
+Machine composition, product configuration and runtime behavior unchanged for
+S3 and S4.

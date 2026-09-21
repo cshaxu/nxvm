@@ -1,7 +1,7 @@
 #include "type.h"
 
-#include "core/core/machine_interface.h"
-#include "core/profile/profile_resolver_interface.h"
+#include "core/devices/machine_interface.h"
+#include "core/profiles/profile_resolver_interface.h"
 
 static const type_unsigned_32 vm_profile_resolver_contracts[] = {7u};
 

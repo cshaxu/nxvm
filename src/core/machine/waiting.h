@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/machine_interface.h"
 
 type_status vm_machine_waiting_advance(vm_machine *session,

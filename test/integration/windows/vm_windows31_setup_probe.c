@@ -2,18 +2,18 @@
 
 #include <windows.h>
 
-#include "core/core/cpu.h"
-#include "core/core/debug_interface.h"
-#include "core/core/machine.h"
-#include "core/core/machine_interface.h"
-#include "core/core/guest_presentation_mailbox_interface.h"
+#include "core/devices/cpu.h"
+#include "core/devices/debug_interface.h"
+#include "core/devices/machine.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/guest_presentation_mailbox_interface.h"
 #include "test/integration/support/session_yaml.h"
 #include "core/machine/control.h"
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "../../core/core/support/core_machine_cpu_fixture.h"
+#include "../../core/devices/support/core_machine_cpu_fixture.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u

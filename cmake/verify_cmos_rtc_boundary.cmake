@@ -2,14 +2,14 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/rtc.c" rtc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile_private.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
 
 foreach(forbidden IN ITEMS "STD_TIME(" "STD_LOCALTIME(" "GetSystemTime"

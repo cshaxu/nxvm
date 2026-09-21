@@ -2,13 +2,13 @@
 
 #include <windows.h>
 
-#include "core/core/debug_interface.h"
-#include "core/core/machine_interface.h"
-#include "core/core/memory.h"
+#include "core/devices/debug_interface.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/memory.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "../../core/core/support/core_machine_cpu_fixture.h"
+#include "../../core/devices/support/core_machine_cpu_fixture.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_TIMER_BDA_TICKS 0x046cu

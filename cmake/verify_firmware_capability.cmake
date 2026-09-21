@@ -15,7 +15,7 @@ foreach(source IN LISTS vm_firmware_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/firmware_interface.h" contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/firmware_interface.h" contract)
 foreach(required "core_machine_firmware_memory_read"
         "core_machine_firmware_memory_write" "core_machine_firmware_port_read"
         "core_machine_firmware_port_write" "core_machine_firmware_request_stop")
@@ -31,7 +31,7 @@ foreach(forbidden "t_cpu" "t_ram" "execution_context" "set_cr" "set_mode")
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_firmware.c" firmware_machine)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_firmware.c" firmware_machine)
 foreach(required "rom_mapping_boundary" "core_machine_rollback_immutable_rom_mappings"
         "STD_MEMSET(&machine->firmware_context")
     string(FIND "${firmware_machine}" "${required}" found)
@@ -44,7 +44,7 @@ if(NOT found EQUAL -1)
     message(FATAL_ERROR "Firmware bind retains write-only frozen state")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/rom_mapping_interface.c" rom_mapping)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/rom_mapping_interface.c" rom_mapping)
 foreach(required "core_machine_rollback_immutable_rom_mappings"
         "STD_FREE(mapping->image)" "device_provider_count")
     string(FIND "${rom_mapping}" "${required}" found)

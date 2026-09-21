@@ -2,14 +2,14 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_scheduler.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_scheduler.c"
     scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/execution_provider.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/execution_provider.h"
     execution_provider_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_interface.h"
     machine_interface_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/kbc.c" kbc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/kbc.c" kbc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
     lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"

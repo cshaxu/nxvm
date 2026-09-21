@@ -3,12 +3,12 @@
 
 #include "type.h"
 
-#include "core/core/cpu_interface.h"
-#include "core/core/fpu_interface.h"
-#include "core/core/guest_input_interface.h"
+#include "core/devices/cpu_interface.h"
+#include "core/devices/fpu_interface.h"
+#include "core/devices/guest_input_interface.h"
 #include "core/machine/event_interface.h"
-#include "core/profile/byob/blob.h"
-#include "core/profile/default_profile/external_pc_at_rom.h"
+#include "core/profiles/byob/blob.h"
+#include "core/profiles/default_profile/external_pc_at_rom.h"
 #include "common/machine/machine_interface.h"
 #include "lib/storage/medium_interface.h"
 

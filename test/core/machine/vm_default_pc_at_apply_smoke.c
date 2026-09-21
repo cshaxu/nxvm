@@ -1,10 +1,10 @@
 #include "type.h"
 
-#include "core/core/machine.h"
+#include "core/devices/machine.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "core/core/rtc.h"
+#include "core/devices/rtc.h"
 #include "support/rom/session_assets.h"
 
 static C_INT vm_default_pc_at_fdd_format_is_valid(

@@ -18,9 +18,9 @@
 
 #include "core/machine/debug.h"
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 
-#include "core/core/guest_input_interface.h"
+#include "core/devices/guest_input_interface.h"
 
 #include "core/machine/display.h"
 #include "core/machine/waiting.h"

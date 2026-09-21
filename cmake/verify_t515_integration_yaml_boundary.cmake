@@ -37,8 +37,8 @@ file(GLOB_RECURSE unit_sources
     "${PROJECT_SOURCE_DIR}/test/app/*.h"
     "${PROJECT_SOURCE_DIR}/test/core/machine/*.c"
     "${PROJECT_SOURCE_DIR}/test/core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/profile/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/profile/*.h")
+    "${PROJECT_SOURCE_DIR}/test/core/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/test/core/profiles/*.h")
 foreach(source IN LISTS unit_sources)
     file(READ "${source}" text)
     if(text MATCHES "vm_machine_create[ \t\r\n]*\\(")

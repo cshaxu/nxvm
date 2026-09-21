@@ -3,7 +3,7 @@
 #include "core/machine/machine_private.h"
 
 #include "lib/storage/file_interface.h"
-#include "core/profile/byob/blob.h"
+#include "core/profiles/byob/blob.h"
 
 static type_status vm_machine_asset_copy(type_unsigned_8 *destination,
     STD_SIZE_T expected_bytes, vm_machine_asset_bytes source)
@@ -86,7 +86,7 @@ static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
     return TYPE_STATUS_OK;
 }
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/display.h"
@@ -94,8 +94,8 @@ static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
 #include "core/machine/machine_devices.h"
 #include "core/machine/media/fdd.h"
 #include "core/machine/media/hdd.h"
-#include "core/profile/default_profile/keyboard_mapper.h"
-#include "core/profile/default_profile/mouse_mapper.h"
+#include "core/profiles/default_profile/keyboard_mapper.h"
+#include "core/profiles/default_profile/mouse_mapper.h"
 
 static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
     const C_CHAR *path, lib_storage_medium_mode mode);

@@ -1,16 +1,16 @@
 #include "type.h"
 
-#include "core/core/cpu_instructions.h"
-#include "core/core/debug_interface.h"
-#include "core/core/machine_interface.h"
-#include "core/core/memory.h"
+#include "core/devices/cpu_instructions.h"
+#include "core/devices/debug_interface.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/memory.h"
 #include "core/machine/control.h"
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 #include "core/machine/machine_private.h"
-#include "../core/support/core_machine_cpu_fixture.h"
+#include "../devices/support/core_machine_cpu_fixture.h"
 
 static C_INT vm_fault_outcome_prepare(vm_machine *session)
 {

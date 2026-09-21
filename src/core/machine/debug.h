@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "core/core/debug_interface.h"
+#include "core/devices/debug_interface.h"
 #include "x86/debug/protocol_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/machine_interface.h"

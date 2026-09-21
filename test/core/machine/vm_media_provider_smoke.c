@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/core/media_interface.h"
+#include "core/devices/media_interface.h"
 #include "core/machine/media/fdd_private.h"
 #include "core/machine/media/hdd_private.h"
 

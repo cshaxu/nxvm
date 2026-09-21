@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "core/core/machine.h"
-#include "core/core/machine_interface.h"
-#include "core/core/memory.h"
+#include "core/devices/machine.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/memory.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"

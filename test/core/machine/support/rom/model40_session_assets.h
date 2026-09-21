@@ -2,7 +2,7 @@
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 
 #include "type.h"
-#include "core/core/rtc.h"
+#include "core/devices/rtc.h"
 #include "core/machine/machine_interface.h"
 
 static inline C_VOID vm_model40_fixture_cmos_seed(

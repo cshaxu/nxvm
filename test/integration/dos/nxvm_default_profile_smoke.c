@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/core/memory.h"
+#include "core/devices/memory.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/media/fdd.h"

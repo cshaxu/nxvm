@@ -150,30 +150,30 @@ if(WIN32)
 endif()
 
 add_library(core-machine STATIC
-    src/core/core/clock.c
-    src/core/core/cpu_timing.c
-    src/core/core/cpu_timing_model.c
-    src/core/core/d4_memory.c
-    src/core/core/debug.c
-    src/core/core/entry_plan_interface.c
-    src/core/core/fdc.c
-    src/core/core/hdc.c
-    src/core/core/machine_firmware.c
-    src/core/core/machine.c
-    src/core/core/machine_board.c
-    src/core/core/machine_plan.c
-    src/core/core/machine_scheduler.c
-    src/core/core/machine_display.c
-    src/core/core/memory_interface.c
-    src/core/core/media_interface.c
-    src/core/core/port_interface.c
-    src/core/core/presentation_interface.c
-    src/core/core/rom_mapping_interface.c
-    src/core/core/trace_interface.c
-    src/core/core/retirement_observation_interface.c
-    src/core/core/timeline.c
-    src/core/core/xt_ppi_keyboard.c
-    src/core/core/xt_keyboard.c
+    src/core/devices/clock.c
+    src/core/devices/cpu_timing.c
+    src/core/devices/cpu_timing_model.c
+    src/core/devices/d4_memory.c
+    src/core/devices/debug.c
+    src/core/devices/entry_plan_interface.c
+    src/core/devices/fdc.c
+    src/core/devices/hdc.c
+    src/core/devices/machine_firmware.c
+    src/core/devices/machine.c
+    src/core/devices/machine_board.c
+    src/core/devices/machine_plan.c
+    src/core/devices/machine_scheduler.c
+    src/core/devices/machine_display.c
+    src/core/devices/memory_interface.c
+    src/core/devices/media_interface.c
+    src/core/devices/port_interface.c
+    src/core/devices/presentation_interface.c
+    src/core/devices/rom_mapping_interface.c
+    src/core/devices/trace_interface.c
+    src/core/devices/retirement_observation_interface.c
+    src/core/devices/timeline.c
+    src/core/devices/xt_ppi_keyboard.c
+    src/core/devices/xt_keyboard.c
 )
 add_dependencies(core-machine cpu-timing-manifest-catalog)
 # This is the complete public core-machine runtime. It extends the primitive
@@ -207,14 +207,14 @@ target_compile_definitions(core-machine-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
 add_executable(core-machine-contract-smoke
-    test/core/core/core_contract_smoke.c
+    test/core/devices/core_contract_smoke.c
 )
 add_executable(core-machine-plan-smoke
-    test/core/core/core_machine_plan_smoke.c
+    test/core/devices/core_machine_plan_smoke.c
 )
 target_link_libraries(core-machine-plan-smoke PRIVATE core-machine)
 add_executable(vm-default-pc-at-profile-smoke
-    test/core/profile/default_pc_at_profile_smoke.c)
+    test/core/profiles/default_pc_at_profile_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
 add_executable(vm-pcat-topology-s2-smoke
     test/core/machine/vm_pcat_topology_s2_smoke.c)
@@ -253,7 +253,7 @@ add_executable(vm-model40-cecg-s28-smoke
     test/core/machine/vm_model40_cecg_s28_smoke.c)
 target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-machine)
 add_executable(vm-model40-rom-layout-s14-smoke
-    test/core/profile/model40/rom/model40_rom_layout_s14_smoke.c)
+    test/core/profiles/model40/rom/model40_rom_layout_s14_smoke.c)
 target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-machine)
 add_executable(vm-model40-d4-compatibility-s25-smoke
     test/core/machine/vm_model40_d4_compatibility_s25_smoke.c)
@@ -302,7 +302,7 @@ add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/core/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-machine)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
-    test/core/profile/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
+    test/core/profiles/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-machine)
 add_executable(vm-hdc-port-smoke test/core/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-machine)
@@ -318,7 +318,7 @@ add_executable(vm-default-pc-at-apply-smoke
 target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-machine)
 
 add_executable(vm-default-pc-at-rom-materialization-smoke
-    test/core/profile/default_pc_at/rom/default_pc_at_rom_materialization_smoke.c)
+    test/core/profiles/default_pc_at/rom/default_pc_at_rom_materialization_smoke.c)
 target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-machine)
 add_executable(vm-timer-firmware-smoke
     test/integration/dos/vm_timer_firmware_smoke.c)
@@ -374,96 +374,96 @@ target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-machine)
 target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
 
 add_executable(core-machine-instance-smoke
-    test/core/core/machine_instance_smoke.c
+    test/core/devices/machine_instance_smoke.c
 )
 target_link_libraries(core-machine-instance-smoke PRIVATE core-machine)
 
 add_executable(core-machine-lifecycle-smoke
-    test/core/core/machine_lifecycle_smoke.c
+    test/core/devices/machine_lifecycle_smoke.c
 )
 target_link_libraries(core-machine-lifecycle-smoke PRIVATE core-machine)
 
 add_executable(core-machine-firmware-capability-smoke
-    test/core/core/machine_firmware_capability_smoke.c)
+    test/core/devices/machine_firmware_capability_smoke.c)
 target_link_libraries(core-machine-firmware-capability-smoke PRIVATE core-machine)
 add_executable(core-machine-reset-rom-alias-smoke
-    test/core/core/machine_reset_rom_alias_smoke.c)
+    test/core/devices/machine_reset_rom_alias_smoke.c)
 target_link_libraries(core-machine-reset-rom-alias-smoke PRIVATE core-machine)
 add_executable(core-machine-memory-device-registration-s16-smoke
-    test/core/core/machine_memory_device_registration_s16_smoke.c)
+    test/core/devices/machine_memory_device_registration_s16_smoke.c)
 target_link_libraries(core-machine-memory-device-registration-s16-smoke PRIVATE core-machine)
 
-add_executable(core-machine-time-smoke test/core/core/machine_time_smoke.c)
+add_executable(core-machine-time-smoke test/core/devices/machine_time_smoke.c)
 target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
 add_executable(core-machine-explicit-time-s4-smoke
-    test/core/core/machine_explicit_time_s4_smoke.c)
+    test/core/devices/machine_explicit_time_s4_smoke.c)
 target_link_libraries(core-machine-explicit-time-s4-smoke PRIVATE core-machine)
 
 add_executable(core-machine-scheduler-smoke
-    test/core/core/machine_scheduler_smoke.c)
+    test/core/devices/machine_scheduler_smoke.c)
 target_link_libraries(core-machine-scheduler-smoke PRIVATE core-machine)
 
 add_executable(core-machine-timing-checkpoint-smoke
-    test/core/core/machine_timing_checkpoint_smoke.c)
+    test/core/devices/machine_timing_checkpoint_smoke.c)
 target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
 
 add_executable(core-machine-transaction-s2-smoke
-    test/core/core/machine_transaction_s2_smoke.c)
+    test/core/devices/machine_transaction_s2_smoke.c)
 target_link_libraries(core-machine-transaction-s2-smoke PRIVATE core-machine-observable)
 add_executable(core-machine-prefetch-locality-smoke
-    test/core/core/machine_prefetch_locality_smoke.c)
+    test/core/devices/machine_prefetch_locality_smoke.c)
 target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE core-machine)
 
 add_executable(core-machine-competition-s3-smoke
-    test/core/core/machine_competition_s3_smoke.c)
+    test/core/devices/machine_competition_s3_smoke.c)
 target_link_libraries(core-machine-competition-s3-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
-    test/core/core/machine_d4_refresh_hold_smoke.c)
+    test/core/devices/machine_d4_refresh_hold_smoke.c)
 target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-competition-80386-s1-smoke
-    test/core/core/machine_competition_80386_s1_smoke.c)
+    test/core/devices/machine_competition_80386_s1_smoke.c)
 target_link_libraries(core-machine-competition-80386-s1-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-transaction-lifecycle-s4-smoke
-    test/core/core/machine_transaction_lifecycle_s4_smoke.c)
+    test/core/devices/machine_transaction_lifecycle_s4_smoke.c)
 target_link_libraries(core-machine-transaction-lifecycle-s4-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-rational-clock-smoke
-    test/core/core/machine_rational_clock_smoke.c)
+    test/core/devices/machine_rational_clock_smoke.c)
 target_link_libraries(core-machine-rational-clock-smoke PRIVATE core-machine)
 
 add_executable(core-machine-timeline-s2-smoke
-    test/core/core/machine_timeline_s2_smoke.c)
+    test/core/devices/machine_timeline_s2_smoke.c)
 target_link_libraries(core-machine-timeline-s2-smoke PRIVATE core-machine)
 
 add_executable(core-machine-arbitration-s3-smoke
-    test/core/core/machine_arbitration_s3_smoke.c)
+    test/core/devices/machine_arbitration_s3_smoke.c)
 target_link_libraries(core-machine-arbitration-s3-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-rtc-storage-s4-smoke
-    test/core/core/machine_rtc_storage_s4_smoke.c)
+    test/core/devices/machine_rtc_storage_s4_smoke.c)
 target_link_libraries(core-machine-rtc-storage-s4-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-input-display-s5-smoke
-    test/core/core/machine_input_display_s5_smoke.c)
+    test/core/devices/machine_input_display_s5_smoke.c)
 target_link_libraries(core-machine-input-display-s5-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-real-mode-tick-smoke
-    test/core/core/core_machine_real_mode_tick_smoke.c)
+    test/core/devices/core_machine_real_mode_tick_smoke.c)
 target_link_libraries(core-machine-real-mode-tick-smoke PRIVATE core-machine)
 
 add_executable(core-machine-instruction-timing-smoke
-    test/core/core/core_machine_instruction_timing_smoke.c)
+    test/core/devices/core_machine_instruction_timing_smoke.c)
 target_link_libraries(core-machine-instruction-timing-smoke PRIVATE core-machine)
 
 add_executable(core-machine-cpu-timing-preview-smoke
-    test/core/core/core_machine_cpu_timing_preview_smoke.c)
+    test/core/devices/core_machine_cpu_timing_preview_smoke.c)
 target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE core-machine)
 
 add_executable(core-machine-instruction-timing-ledger-smoke
-    test/core/core/core_machine_instruction_timing_ledger_smoke.c)
+    test/core/devices/core_machine_instruction_timing_ledger_smoke.c)
 target_link_libraries(core-machine-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -472,7 +472,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-t359-s2-timing-smoke
-    test/core/core/core_machine_t359_s2_timing_smoke.c)
+    test/core/devices/core_machine_t359_s2_timing_smoke.c)
 target_link_libraries(core-machine-t359-s2-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-t359-s2-timing-smoke PRIVATE
@@ -480,7 +480,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-t359-s3-timing-smoke
-    test/core/core/core_machine_t359_s3_timing_smoke.c)
+    test/core/devices/core_machine_t359_s3_timing_smoke.c)
 target_link_libraries(core-machine-t359-s3-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-t359-s3-timing-smoke PRIVATE
@@ -488,7 +488,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-t359-s4-timing-smoke
-    test/core/core/core_machine_t359_s4_timing_smoke.c)
+    test/core/devices/core_machine_t359_s4_timing_smoke.c)
 target_link_libraries(core-machine-t359-s4-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-t359-s4-timing-smoke PRIVATE
@@ -496,7 +496,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-t359-s5-timing-smoke
-    test/core/core/core_machine_t359_s5_timing_smoke.c)
+    test/core/devices/core_machine_t359_s5_timing_smoke.c)
 target_link_libraries(core-machine-t359-s5-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-t359-s5-timing-smoke PRIVATE
@@ -504,7 +504,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-t359-s6-timing-smoke
-    test/core/core/core_machine_t359_s6_timing_smoke.c)
+    test/core/devices/core_machine_t359_s6_timing_smoke.c)
 target_link_libraries(core-machine-t359-s6-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-t359-s6-timing-smoke PRIVATE
@@ -512,7 +512,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-8086-instruction-timing-ledger-smoke
-    test/core/core/core_machine_8086_instruction_timing_ledger_smoke.c)
+    test/core/devices/core_machine_8086_instruction_timing_ledger_smoke.c)
 target_link_libraries(core-machine-8086-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -523,7 +523,7 @@ endif()
 # The T435 S4 runner proves every frozen I86 key through a real instruction
 # execution; its result artifact is verified by the dependent CTest below.
 add_executable(core-machine-8086-timing-manifest-runner
-    test/core/core/core_machine_8086_timing_manifest_runner.c)
+    test/core/devices/core_machine_8086_timing_manifest_runner.c)
 target_link_libraries(core-machine-8086-timing-manifest-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-8086-timing-manifest-runner PRIVATE
@@ -539,7 +539,7 @@ endif()
 # target is admitted as a unit test only once its independent Table-2-21
 # transfer verifier consumes its result artifact.
 add_executable(core-machine-8088-timing-manifest-runner
-    test/core/core/core_machine_8086_timing_manifest_runner.c)
+    test/core/devices/core_machine_8086_timing_manifest_runner.c)
 target_link_libraries(core-machine-8088-timing-manifest-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-8088-timing-manifest-runner PRIVATE
@@ -555,7 +555,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80186-instruction-timing-ledger-smoke
-    test/core/core/core_machine_80186_instruction_timing_ledger_smoke.c)
+    test/core/devices/core_machine_80186_instruction_timing_ledger_smoke.c)
 target_link_libraries(core-machine-80186-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -566,7 +566,7 @@ endif()
 # This is intentionally not a unit target yet: it records only the
 # real I186 recipes currently migrated to the manifest-result mechanism.
 add_executable(core-machine-80186-timing-manifest-runner
-    test/core/core/core_machine_80186_timing_manifest_runner.c)
+    test/core/devices/core_machine_80186_timing_manifest_runner.c)
 target_link_libraries(core-machine-80186-timing-manifest-runner PRIVATE
     core-machine)
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
@@ -582,7 +582,7 @@ endif()
 # S10 starts the 80286 generated-key runner with real retirement observations.
 # It does not write the final result document until every legal recipe exists.
 add_executable(core-machine-80286-timing-manifest-runner
-    test/core/core/core_machine_80286_timing_manifest_runner.c)
+    test/core/devices/core_machine_80286_timing_manifest_runner.c)
 target_link_libraries(core-machine-80286-timing-manifest-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80286-timing-manifest-runner PRIVATE
@@ -597,7 +597,7 @@ endif()
 # These runners generate reproducible decoder-boundary artifacts under the
 # build tree; the ledger verifiers consume those artifacts separately.
 add_executable(core-machine-80186-decoder-inventory-runner
-    test/core/core/core_machine_80186_decoder_inventory_runner.c)
+    test/core/devices/core_machine_80186_decoder_inventory_runner.c)
 target_link_libraries(core-machine-80186-decoder-inventory-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80186-decoder-inventory-runner PRIVATE
@@ -608,7 +608,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80286-decoder-inventory-runner
-    test/core/core/core_machine_80286_decoder_inventory_runner.c)
+    test/core/devices/core_machine_80286_decoder_inventory_runner.c)
 target_link_libraries(core-machine-80286-decoder-inventory-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80286-decoder-inventory-runner PRIVATE
@@ -619,7 +619,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80386-decoder-inventory-runner
-    test/core/core/core_machine_80386_decoder_inventory_runner.c)
+    test/core/devices/core_machine_80386_decoder_inventory_runner.c)
 target_link_libraries(core-machine-80386-decoder-inventory-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80386-decoder-inventory-runner PRIVATE
@@ -630,7 +630,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80386-timing-manifest-runner
-    test/core/core/core_machine_80386_timing_manifest_runner.c)
+    test/core/devices/core_machine_80386_timing_manifest_runner.c)
 target_link_libraries(core-machine-80386-timing-manifest-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-80386-timing-manifest-runner PRIVATE
@@ -643,7 +643,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-legacy-timing-normalization-s2-smoke
-    test/core/core/core_machine_legacy_timing_normalization_s2_smoke.c)
+    test/core/devices/core_machine_legacy_timing_normalization_s2_smoke.c)
 target_link_libraries(core-machine-legacy-timing-normalization-s2-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -652,7 +652,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80286-instruction-timing-ledger-smoke
-    test/core/core/core_machine_80286_instruction_timing_ledger_smoke.c)
+    test/core/devices/core_machine_80286_instruction_timing_ledger_smoke.c)
 target_link_libraries(core-machine-80286-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -661,7 +661,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-80386-protected-io-timing-smoke
-    test/core/core/core_machine_80386_protected_io_timing_smoke.c)
+    test/core/devices/core_machine_80386_protected_io_timing_smoke.c)
 target_link_libraries(core-machine-80386-protected-io-timing-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -670,257 +670,257 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(core-machine-real-mode-corpus-smoke
-    test/core/core/core_machine_real_mode_corpus_smoke.c)
+    test/core/devices/core_machine_real_mode_corpus_smoke.c)
 target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
 
 add_executable(core-machine-real-mode-386-address-smoke
-    test/core/core/core_machine_real_mode_386_address_smoke.c)
+    test/core/devices/core_machine_real_mode_386_address_smoke.c)
 target_link_libraries(core-machine-real-mode-386-address-smoke PRIVATE core-machine)
 add_executable(core-machine-operand-address-smoke
-    test/core/core/core_machine_operand_address_smoke.c)
+    test/core/devices/core_machine_operand_address_smoke.c)
 target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
 add_executable(core-machine-prefix-attributes-s64-smoke
-    test/core/core/core_machine_prefix_attributes_s64_smoke.c)
+    test/core/devices/core_machine_prefix_attributes_s64_smoke.c)
 target_link_libraries(core-machine-prefix-attributes-s64-smoke PRIVATE core-machine)
 add_executable(core-machine-legacy-lock-s1-smoke
-    test/core/core/core_machine_legacy_lock_s1_smoke.c)
+    test/core/devices/core_machine_legacy_lock_s1_smoke.c)
 target_link_libraries(core-machine-legacy-lock-s1-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-lock-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-setcc-smoke test/core/core/core_machine_setcc_smoke.c)
+add_executable(core-machine-setcc-smoke test/core/devices/core_machine_setcc_smoke.c)
 target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
-add_executable(core-machine-movx-smoke test/core/core/core_machine_movx_smoke.c)
+add_executable(core-machine-movx-smoke test/core/devices/core_machine_movx_smoke.c)
 target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
-add_executable(core-machine-bit-test-smoke test/core/core/core_machine_bit_test_smoke.c)
+add_executable(core-machine-bit-test-smoke test/core/devices/core_machine_bit_test_smoke.c)
 target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
-add_executable(core-machine-inc-dec-smoke test/core/core/core_machine_inc_dec_smoke.c)
+add_executable(core-machine-inc-dec-smoke test/core/devices/core_machine_inc_dec_smoke.c)
 target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
 add_executable(core-machine-legacy-alu-s2-smoke
-    test/core/core/core_machine_legacy_alu_s2_smoke.c)
+    test/core/devices/core_machine_legacy_alu_s2_smoke.c)
 target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-alu-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-rotate-smoke test/core/core/core_machine_rotate_smoke.c)
+add_executable(core-machine-rotate-smoke test/core/devices/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
-add_executable(core-machine-eflags-local-smoke test/core/core/core_machine_eflags_local_smoke.c)
+add_executable(core-machine-eflags-local-smoke test/core/devices/core_machine_eflags_local_smoke.c)
 target_link_libraries(core-machine-eflags-local-smoke PRIVATE core-machine)
-add_executable(core-machine-pushf-popf-smoke test/core/core/core_machine_pushf_popf_smoke.c)
+add_executable(core-machine-pushf-popf-smoke test/core/devices/core_machine_pushf_popf_smoke.c)
 target_link_libraries(core-machine-pushf-popf-smoke PRIVATE core-machine)
-add_executable(core-machine-pushf-popf-s47-smoke test/core/core/core_machine_pushf_popf_s47_smoke.c)
+add_executable(core-machine-pushf-popf-s47-smoke test/core/devices/core_machine_pushf_popf_s47_smoke.c)
 target_link_libraries(core-machine-pushf-popf-s47-smoke PRIVATE core-machine)
-add_executable(core-machine-cli-sti-smoke test/core/core/core_machine_cli_sti_smoke.c)
+add_executable(core-machine-cli-sti-smoke test/core/devices/core_machine_cli_sti_smoke.c)
 target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-machine)
-add_executable(core-machine-cli-sti-s48-smoke test/core/core/core_machine_cli_sti_s48_smoke.c)
+add_executable(core-machine-cli-sti-s48-smoke test/core/devices/core_machine_cli_sti_s48_smoke.c)
 target_link_libraries(core-machine-cli-sti-s48-smoke PRIVATE core-machine)
-add_executable(core-machine-hlt-s49-smoke test/core/core/core_machine_hlt_s49_smoke.c)
+add_executable(core-machine-hlt-s49-smoke test/core/devices/core_machine_hlt_s49_smoke.c)
 target_link_libraries(core-machine-hlt-s49-smoke PRIVATE core-machine)
-add_executable(core-machine-software-int-s50-smoke test/core/core/core_machine_software_int_s50_smoke.c)
+add_executable(core-machine-software-int-s50-smoke test/core/devices/core_machine_software_int_s50_smoke.c)
 target_link_libraries(core-machine-software-int-s50-smoke PRIVATE core-machine)
-add_executable(core-machine-iret-s51-smoke test/core/core/core_machine_iret_s51_smoke.c)
+add_executable(core-machine-iret-s51-smoke test/core/devices/core_machine_iret_s51_smoke.c)
 target_link_libraries(core-machine-iret-s51-smoke PRIVATE core-machine)
-add_executable(core-machine-iret-outer-s52-smoke test/core/core/core_machine_iret_outer_s52_smoke.c)
+add_executable(core-machine-iret-outer-s52-smoke test/core/devices/core_machine_iret_outer_s52_smoke.c)
 target_link_libraries(core-machine-iret-outer-s52-smoke PRIVATE core-machine)
-add_executable(core-machine-fs-gs-stack-smoke test/core/core/core_machine_fs_gs_stack_smoke.c)
+add_executable(core-machine-fs-gs-stack-smoke test/core/devices/core_machine_fs_gs_stack_smoke.c)
 target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
-add_executable(core-machine-lss-lfs-lgs-smoke test/core/core/core_machine_lss_lfs_lgs_smoke.c)
+add_executable(core-machine-lss-lfs-lgs-smoke test/core/devices/core_machine_lss_lfs_lgs_smoke.c)
 target_link_libraries(core-machine-lss-lfs-lgs-smoke PRIVATE core-machine)
-add_executable(core-machine-les-lds-smoke test/core/core/core_machine_les_lds_smoke.c)
+add_executable(core-machine-les-lds-smoke test/core/devices/core_machine_les_lds_smoke.c)
 target_link_libraries(core-machine-les-lds-smoke PRIVATE core-machine)
 
 add_executable(core-machine-les-lds-s41-smoke
-    test/core/core/core_machine_les_lds_s41_smoke.c)
+    test/core/devices/core_machine_les_lds_s41_smoke.c)
 target_link_libraries(core-machine-les-lds-s41-smoke PRIVATE core-machine)
-add_executable(core-machine-lea-smoke test/core/core/core_machine_lea_smoke.c)
+add_executable(core-machine-lea-smoke test/core/devices/core_machine_lea_smoke.c)
 target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
-add_executable(core-machine-xchg-smoke test/core/core/core_machine_xchg_smoke.c)
+add_executable(core-machine-xchg-smoke test/core/devices/core_machine_xchg_smoke.c)
 target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
-add_executable(core-machine-sign-extend-smoke test/core/core/core_machine_sign_extend_smoke.c)
+add_executable(core-machine-sign-extend-smoke test/core/devices/core_machine_sign_extend_smoke.c)
 target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
-add_executable(core-machine-moffs-smoke test/core/core/core_machine_moffs_smoke.c)
+add_executable(core-machine-moffs-smoke test/core/devices/core_machine_moffs_smoke.c)
 target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
-add_executable(core-machine-gpr-mov-smoke test/core/core/core_machine_gpr_mov_smoke.c)
+add_executable(core-machine-gpr-mov-smoke test/core/devices/core_machine_gpr_mov_smoke.c)
 target_link_libraries(core-machine-gpr-mov-smoke PRIVATE core-machine)
-add_executable(core-machine-sreg-mov-smoke test/core/core/core_machine_sreg_mov_smoke.c)
+add_executable(core-machine-sreg-mov-smoke test/core/devices/core_machine_sreg_mov_smoke.c)
 target_link_libraries(core-machine-sreg-mov-smoke PRIVATE core-machine)
-add_executable(core-machine-movs-smoke test/core/core/core_machine_movs_smoke.c)
+add_executable(core-machine-movs-smoke test/core/devices/core_machine_movs_smoke.c)
 target_link_libraries(core-machine-movs-smoke PRIVATE core-machine)
-add_executable(core-machine-stos-smoke test/core/core/core_machine_stos_smoke.c)
+add_executable(core-machine-stos-smoke test/core/devices/core_machine_stos_smoke.c)
 target_link_libraries(core-machine-stos-smoke PRIVATE core-machine)
-add_executable(core-machine-lods-smoke test/core/core/core_machine_lods_smoke.c)
+add_executable(core-machine-lods-smoke test/core/devices/core_machine_lods_smoke.c)
 target_link_libraries(core-machine-lods-smoke PRIVATE core-machine)
-add_executable(core-machine-scas-smoke test/core/core/core_machine_scas_smoke.c)
+add_executable(core-machine-scas-smoke test/core/devices/core_machine_scas_smoke.c)
 target_link_libraries(core-machine-scas-smoke PRIVATE core-machine)
 add_executable(core-machine-pusha-popa-smoke
-    test/core/core/core_machine_pusha_popa_smoke.c)
+    test/core/devices/core_machine_pusha_popa_smoke.c)
 target_link_libraries(core-machine-pusha-popa-smoke PRIVATE core-machine)
 add_executable(core-machine-enter-leave-smoke
-    test/core/core/core_machine_enter_leave_smoke.c)
+    test/core/devices/core_machine_enter_leave_smoke.c)
 target_link_libraries(core-machine-enter-leave-smoke PRIVATE core-machine)
 add_executable(core-machine-gpr-push-pop-smoke
-    test/core/core/core_machine_gpr_push_pop_smoke.c)
+    test/core/devices/core_machine_gpr_push_pop_smoke.c)
 target_link_libraries(core-machine-gpr-push-pop-smoke PRIVATE core-machine)
 add_executable(core-machine-push-immediate-smoke
-    test/core/core/core_machine_push_immediate_smoke.c)
+    test/core/devices/core_machine_push_immediate_smoke.c)
 target_link_libraries(core-machine-push-immediate-smoke PRIVATE core-machine)
 add_executable(core-machine-legacy-sreg-stack-smoke
-    test/core/core/core_machine_legacy_sreg_stack_smoke.c)
+    test/core/devices/core_machine_legacy_sreg_stack_smoke.c)
 target_link_libraries(core-machine-legacy-sreg-stack-smoke PRIVATE core-machine)
-add_executable(core-machine-double-shift-smoke test/core/core/core_machine_double_shift_smoke.c)
+add_executable(core-machine-double-shift-smoke test/core/devices/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
-add_executable(core-machine-bit-scan-smoke test/core/core/core_machine_bit_scan_smoke.c)
+add_executable(core-machine-bit-scan-smoke test/core/devices/core_machine_bit_scan_smoke.c)
 target_link_libraries(core-machine-bit-scan-smoke PRIVATE core-machine)
-add_executable(core-machine-imul2-smoke test/core/core/core_machine_imul2_smoke.c)
+add_executable(core-machine-imul2-smoke test/core/devices/core_machine_imul2_smoke.c)
 target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
 add_executable(core-machine-imul-immediate-s56-smoke
-    test/core/core/core_machine_imul_immediate_s56_smoke.c)
+    test/core/devices/core_machine_imul_immediate_s56_smoke.c)
 target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine)
 add_executable(core-machine-lar-lsl-s57-smoke
-    test/core/core/core_machine_lar_lsl_s57_smoke.c)
+    test/core/devices/core_machine_lar_lsl_s57_smoke.c)
 target_link_libraries(core-machine-lar-lsl-s57-smoke PRIVATE core-machine)
 add_executable(core-machine-verr-verw-s58-smoke
-    test/core/core/core_machine_verr_verw_s58_smoke.c)
+    test/core/devices/core_machine_verr_verw_s58_smoke.c)
 target_link_libraries(core-machine-verr-verw-s58-smoke PRIVATE core-machine)
 add_executable(core-machine-debug-mov-s59-smoke
-    test/core/core/core_machine_debug_mov_s59_smoke.c)
+    test/core/devices/core_machine_debug_mov_s59_smoke.c)
 target_link_libraries(core-machine-debug-mov-s59-smoke PRIVATE core-machine)
 add_executable(core-machine-tf-db-s60-smoke
-    test/core/core/core_machine_tf_db_s60_smoke.c)
+    test/core/devices/core_machine_tf_db_s60_smoke.c)
 target_link_libraries(core-machine-tf-db-s60-smoke PRIVATE core-machine)
 add_executable(core-machine-dttr-s61-smoke
-    test/core/core/core_machine_dttr_s61_smoke.c)
+    test/core/devices/core_machine_dttr_s61_smoke.c)
 target_link_libraries(core-machine-dttr-s61-smoke PRIVATE core-machine)
 add_executable(core-machine-clts-s62-smoke
-    test/core/core/core_machine_clts_s62_smoke.c)
+    test/core/devices/core_machine_clts_s62_smoke.c)
 target_link_libraries(core-machine-clts-s62-smoke PRIVATE core-machine)
 add_executable(core-machine-msw-s63-smoke
-    test/core/core/core_machine_msw_s63_smoke.c)
+    test/core/devices/core_machine_msw_s63_smoke.c)
 target_link_libraries(core-machine-msw-s63-smoke PRIVATE core-machine)
 add_executable(core-machine-control-transfer-smoke
-    test/core/core/core_machine_control_transfer_smoke.c)
+    test/core/devices/core_machine_control_transfer_smoke.c)
 target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
 add_executable(core-machine-protected-far-s1-smoke
-    test/core/core/core_machine_protected_far_s1_smoke.c)
+    test/core/devices/core_machine_protected_far_s1_smoke.c)
 target_link_libraries(core-machine-protected-far-s1-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-far-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-data-access-s2-smoke
-    test/core/core/core_machine_protected_data_access_s2_smoke.c)
+    test/core/devices/core_machine_protected_data_access_s2_smoke.c)
 target_link_libraries(core-machine-protected-data-access-s2-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-data-access-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-gate-s3-smoke
-    test/core/core/core_machine_protected_16_gate_s3_smoke.c)
+    test/core/devices/core_machine_protected_16_gate_s3_smoke.c)
 target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-gate-s3-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-external-s4-smoke
-    test/core/core/core_machine_protected_16_external_s4_smoke.c)
+    test/core/devices/core_machine_protected_16_external_s4_smoke.c)
 target_link_libraries(core-machine-protected-16-external-s4-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-external-s4-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-outer-s5-smoke
-    test/core/core/core_machine_protected_16_outer_s5_smoke.c)
+    test/core/devices/core_machine_protected_16_outer_s5_smoke.c)
 target_link_libraries(core-machine-protected-16-outer-s5-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-outer-s5-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-outer-iret-s6-smoke
-    test/core/core/core_machine_protected_16_outer_iret_s6_smoke.c)
+    test/core/devices/core_machine_protected_16_outer_iret_s6_smoke.c)
 target_link_libraries(core-machine-protected-16-outer-iret-s6-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-outer-iret-s6-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-call-gate-s7-smoke
-    test/core/core/core_machine_protected_16_call_gate_s7_smoke.c)
+    test/core/devices/core_machine_protected_16_call_gate_s7_smoke.c)
 target_link_libraries(core-machine-protected-16-call-gate-s7-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-call-gate-s7-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-descriptor-system-smoke
-    test/core/core/core_machine_descriptor_system_smoke.c)
+    test/core/devices/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
 add_executable(core-machine-sgdt-sidt-smoke
-    test/core/core/core_machine_sgdt_sidt_smoke.c)
+    test/core/devices/core_machine_sgdt_sidt_smoke.c)
 target_link_libraries(core-machine-sgdt-sidt-smoke PRIVATE core-machine)
 add_executable(core-machine-lgdt-lidt-smoke
-    test/core/core/core_machine_lgdt_lidt_smoke.c)
+    test/core/devices/core_machine_lgdt_lidt_smoke.c)
 target_link_libraries(core-machine-lgdt-lidt-smoke PRIVATE core-machine)
 add_executable(core-machine-vm86-delivery-smoke
-    test/core/core/core_machine_vm86_delivery_smoke.c)
+    test/core/devices/core_machine_vm86_delivery_smoke.c)
 target_link_libraries(core-machine-vm86-delivery-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-vm86-delivery-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-vm86-iret-smoke
-    test/core/core/core_machine_vm86_iret_smoke.c)
+    test/core/devices/core_machine_vm86_iret_smoke.c)
 target_link_libraries(core-machine-vm86-iret-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-vm86-iret-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-interrupt-entry-smoke
-    test/core/core/core_machine_interrupt_entry_smoke.c)
+    test/core/devices/core_machine_interrupt_entry_smoke.c)
 target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
 add_executable(core-machine-idt-privilege-entry-smoke
-    test/core/core/core_machine_idt_privilege_entry_smoke.c)
+    test/core/devices/core_machine_idt_privilege_entry_smoke.c)
 target_link_libraries(core-machine-idt-privilege-entry-smoke PRIVATE core-machine)
 add_executable(core-machine-real-mode-386-rep-cmps-smoke
-    test/core/core/core_machine_real_mode_386_rep_cmps_smoke.c)
+    test/core/devices/core_machine_real_mode_386_rep_cmps_smoke.c)
 target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
 
 add_executable(core-machine-cmps-smoke
-    test/core/core/core_machine_cmps_smoke.c)
+    test/core/devices/core_machine_cmps_smoke.c)
 target_link_libraries(core-machine-cmps-smoke PRIVATE core-machine)
 
 add_executable(core-machine-port-strings-smoke
-    test/core/core/core_machine_port_strings_smoke.c)
+    test/core/devices/core_machine_port_strings_smoke.c)
 target_link_libraries(core-machine-port-strings-smoke PRIVATE core-machine)
 add_executable(core-machine-port-io-s55-smoke
-    test/core/core/core_machine_port_io_s55_smoke.c)
+    test/core/devices/core_machine_port_io_s55_smoke.c)
 target_link_libraries(core-machine-port-io-s55-smoke PRIVATE core-machine)
 
 add_executable(core-machine-lahf-sahf-smoke
-    test/core/core/core_machine_lahf_sahf_smoke.c)
+    test/core/devices/core_machine_lahf_sahf_smoke.c)
 target_link_libraries(core-machine-lahf-sahf-smoke PRIVATE core-machine)
 
 add_executable(core-machine-direct-flags-smoke
-    test/core/core/core_machine_direct_flags_smoke.c)
+    test/core/devices/core_machine_direct_flags_smoke.c)
 target_link_libraries(core-machine-direct-flags-smoke PRIVATE core-machine)
 
 add_executable(core-machine-80286-protected-mode-smoke
-    test/core/core/core_machine_80286_protected_mode_smoke.c)
+    test/core/devices/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
 
 add_executable(core-machine-arpl-smoke
-    test/core/core/core_machine_arpl_smoke.c)
+    test/core/devices/core_machine_arpl_smoke.c)
 target_link_libraries(core-machine-arpl-smoke PRIVATE core-machine)
 add_executable(core-machine-arpl-s53-smoke
-    test/core/core/core_machine_arpl_s53_smoke.c)
+    test/core/devices/core_machine_arpl_s53_smoke.c)
 target_link_libraries(core-machine-arpl-s53-smoke PRIVATE core-machine)
 add_executable(core-machine-bound-s54-smoke
-    test/core/core/core_machine_bound_s54_smoke.c)
+    test/core/devices/core_machine_bound_s54_smoke.c)
 target_link_libraries(core-machine-bound-s54-smoke PRIVATE core-machine)
 
 add_executable(core-machine-segment-selector-smoke
-    test/core/core/core_machine_segment_selector_smoke.c)
+    test/core/devices/core_machine_segment_selector_smoke.c)
 target_link_libraries(core-machine-segment-selector-smoke PRIVATE core-machine)
 
 add_executable(core-machine-80386-paging-smoke
-    test/core/core/core_machine_80386_paging_smoke.c)
+    test/core/devices/core_machine_80386_paging_smoke.c)
 target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine-observable)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-80386-paging-smoke PRIVATE
@@ -928,29 +928,29 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_executable(core-machine-protected-privilege-smoke
-    test/core/core/core_machine_protected_privilege_smoke.c)
+    test/core/devices/core_machine_protected_privilege_smoke.c)
 target_link_libraries(core-machine-protected-privilege-smoke PRIVATE core-machine)
 
 add_executable(core-machine-protected-return-atomicity-smoke
-    test/core/core/core_machine_protected_return_atomicity_smoke.c)
+    test/core/devices/core_machine_protected_return_atomicity_smoke.c)
 target_link_libraries(core-machine-protected-return-atomicity-smoke PRIVATE core-machine)
 add_executable(core-machine-protected-iret-smoke
-    test/core/core/core_machine_protected_iret_smoke.c)
+    test/core/devices/core_machine_protected_iret_smoke.c)
 target_link_libraries(core-machine-protected-iret-smoke PRIVATE core-machine)
 
 add_executable(core-machine-call-gate-smoke
-    test/core/core/core_machine_call_gate_smoke.c)
+    test/core/devices/core_machine_call_gate_smoke.c)
 target_link_libraries(core-machine-call-gate-smoke PRIVATE core-machine)
 add_executable(core-machine-call-gate-privilege-entry-smoke
-    test/core/core/core_machine_call_gate_privilege_entry_smoke.c)
+    test/core/devices/core_machine_call_gate_privilege_entry_smoke.c)
 target_link_libraries(core-machine-call-gate-privilege-entry-smoke PRIVATE core-machine)
 
 add_executable(core-machine-tss-iomap-port-smoke
-    test/core/core/core_machine_tss_iomap_port_smoke.c)
+    test/core/devices/core_machine_tss_iomap_port_smoke.c)
 target_link_libraries(core-machine-tss-iomap-port-smoke PRIVATE core-machine)
 
 add_executable(core-machine-task-switch-smoke
-    test/core/core/core_machine_task_switch_smoke.c)
+    test/core/devices/core_machine_task_switch_smoke.c)
 target_link_libraries(core-machine-task-switch-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-task-switch-smoke PRIVATE
@@ -980,64 +980,64 @@ foreach(target IN ITEMS
 endforeach()
 
 add_executable(core-machine-stopped-lifecycle-smoke
-    test/core/core/machine_stopped_lifecycle_smoke.c
+    test/core/devices/machine_stopped_lifecycle_smoke.c
 )
 target_link_libraries(core-machine-stopped-lifecycle-smoke PRIVATE core-machine)
 add_executable(core-machine-cpu-pic-lifecycle-smoke
-    test/core/core/machine_cpu_pic_lifecycle_smoke.c
+    test/core/devices/machine_cpu_pic_lifecycle_smoke.c
 )
 target_link_libraries(core-machine-cpu-pic-lifecycle-smoke PRIVATE core-machine)
 add_executable(core-machine-memory-reconfigure-smoke
-    test/core/core/machine_memory_reconfigure_smoke.c
+    test/core/devices/machine_memory_reconfigure_smoke.c
 )
 target_link_libraries(core-machine-memory-reconfigure-smoke PRIVATE core-machine)
 
 add_executable(core-machine-checked-memory-smoke
-    test/core/core/machine_checked_memory_smoke.c
+    test/core/devices/machine_checked_memory_smoke.c
 )
 target_link_libraries(core-machine-checked-memory-smoke PRIVATE core-machine)
 
 
 add_executable(core-machine-immutable-rom-mapping-smoke
-    test/core/core/machine_immutable_rom_mapping_smoke.c
+    test/core/devices/machine_immutable_rom_mapping_smoke.c
 )
 target_link_libraries(core-machine-immutable-rom-mapping-smoke PRIVATE core-machine)
 
 add_executable(core-machine-entry-plan-smoke
-    test/core/core/machine_entry_plan_smoke.c
+    test/core/devices/machine_entry_plan_smoke.c
 )
 target_link_libraries(core-machine-entry-plan-smoke PRIVATE core-machine)
 
 add_executable(core-machine-configuration-smoke
-    test/core/core/machine_configuration_smoke.c
+    test/core/devices/machine_configuration_smoke.c
 )
 target_link_libraries(core-machine-configuration-smoke PRIVATE core-machine)
 
 add_executable(core-machine-port-ownership-smoke
-    test/core/core/core_machine_port_ownership_smoke.c
+    test/core/devices/core_machine_port_ownership_smoke.c
 )
 target_link_libraries(core-machine-port-ownership-smoke PRIVATE core-machine)
 
 add_executable(core-machine-trace-smoke
-    test/core/core/machine_trace_smoke.c
+    test/core/devices/machine_trace_smoke.c
 )
 target_link_libraries(core-machine-trace-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-retirement-observation-s3-smoke
-    test/core/core/machine_retirement_observation_s3_smoke.c
+    test/core/devices/machine_retirement_observation_s3_smoke.c
 )
 target_link_libraries(core-machine-retirement-observation-s3-smoke PRIVATE core-machine)
 add_executable(core-machine-external-time-trace-s18-smoke
-    test/core/core/machine_external_time_trace_s18_smoke.c
+    test/core/devices/machine_external_time_trace_s18_smoke.c
 )
 target_link_libraries(core-machine-external-time-trace-s18-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-debug-smoke
-    test/core/core/machine_debug_smoke.c
+    test/core/devices/machine_debug_smoke.c
 )
 target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
 
-add_executable(core-machine-presentation-smoke test/core/core/presentation_smoke.c)
+add_executable(core-machine-presentation-smoke test/core/devices/presentation_smoke.c)
 target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
 
 # T317 owns this exact source-to-target inventory.  Keep strict options on the
@@ -1045,53 +1045,53 @@ target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
 # evidence of strict compilation for a smoke source.
 function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
-    "core-machine-arpl-s53-smoke|test/core/core/core_machine_arpl_s53_smoke.c"
-    "core-machine-bound-s54-smoke|test/core/core/core_machine_bound_s54_smoke.c"
-    "core-machine-cli-sti-s48-smoke|test/core/core/core_machine_cli_sti_s48_smoke.c"
-    "core-machine-cli-sti-smoke|test/core/core/core_machine_cli_sti_smoke.c"
-    "core-machine-clts-s62-smoke|test/core/core/core_machine_clts_s62_smoke.c"
-    "core-machine-cmps-smoke|test/core/core/core_machine_cmps_smoke.c"
-    "core-machine-debug-mov-s59-smoke|test/core/core/core_machine_debug_mov_s59_smoke.c"
-    "core-machine-direct-flags-smoke|test/core/core/core_machine_direct_flags_smoke.c"
-    "core-machine-dttr-s61-smoke|test/core/core/core_machine_dttr_s61_smoke.c"
-    "core-machine-eflags-local-smoke|test/core/core/core_machine_eflags_local_smoke.c"
-    "core-machine-enter-leave-smoke|test/core/core/core_machine_enter_leave_smoke.c"
-    "core-machine-fpu-interface-s65-smoke|test/core/core/core_machine_fpu_interface_s65_smoke.c"
-    "core-machine-fs-gs-stack-smoke|test/core/core/core_machine_fs_gs_stack_smoke.c"
-    "core-machine-gpr-mov-smoke|test/core/core/core_machine_gpr_mov_smoke.c"
-    "core-machine-gpr-push-pop-smoke|test/core/core/core_machine_gpr_push_pop_smoke.c"
-    "core-machine-hlt-s49-smoke|test/core/core/core_machine_hlt_s49_smoke.c"
-    "core-machine-imul-immediate-s56-smoke|test/core/core/core_machine_imul_immediate_s56_smoke.c"
-    "core-machine-inc-dec-smoke|test/core/core/core_machine_inc_dec_smoke.c"
-    "core-machine-iret-outer-s52-smoke|test/core/core/core_machine_iret_outer_s52_smoke.c"
-    "core-machine-iret-s51-smoke|test/core/core/core_machine_iret_s51_smoke.c"
-    "core-machine-lahf-sahf-smoke|test/core/core/core_machine_lahf_sahf_smoke.c"
-    "core-machine-lar-lsl-s57-smoke|test/core/core/core_machine_lar_lsl_s57_smoke.c"
-    "core-machine-lea-smoke|test/core/core/core_machine_lea_smoke.c"
-    "core-machine-legacy-sreg-stack-smoke|test/core/core/core_machine_legacy_sreg_stack_smoke.c"
-    "core-machine-les-lds-s41-smoke|test/core/core/core_machine_les_lds_s41_smoke.c"
-    "core-machine-les-lds-smoke|test/core/core/core_machine_les_lds_smoke.c"
-    "core-machine-lods-smoke|test/core/core/core_machine_lods_smoke.c"
-    "core-machine-lss-lfs-lgs-smoke|test/core/core/core_machine_lss_lfs_lgs_smoke.c"
-    "core-machine-moffs-smoke|test/core/core/core_machine_moffs_smoke.c"
-    "core-machine-movs-smoke|test/core/core/core_machine_movs_smoke.c"
-    "core-machine-msw-s63-smoke|test/core/core/core_machine_msw_s63_smoke.c"
-    "core-machine-port-io-s55-smoke|test/core/core/core_machine_port_io_s55_smoke.c"
-    "core-machine-port-strings-smoke|test/core/core/core_machine_port_strings_smoke.c"
-    "core-machine-prefix-attributes-s64-smoke|test/core/core/core_machine_prefix_attributes_s64_smoke.c"
-    "core-machine-push-immediate-smoke|test/core/core/core_machine_push_immediate_smoke.c"
-    "core-machine-pusha-popa-smoke|test/core/core/core_machine_pusha_popa_smoke.c"
-    "core-machine-pushf-popf-s47-smoke|test/core/core/core_machine_pushf_popf_s47_smoke.c"
-    "core-machine-pushf-popf-smoke|test/core/core/core_machine_pushf_popf_smoke.c"
-    "core-machine-rotate-smoke|test/core/core/core_machine_rotate_smoke.c"
-    "core-machine-scas-smoke|test/core/core/core_machine_scas_smoke.c"
-    "core-machine-sign-extend-smoke|test/core/core/core_machine_sign_extend_smoke.c"
-    "core-machine-software-int-s50-smoke|test/core/core/core_machine_software_int_s50_smoke.c"
-    "core-machine-sreg-mov-smoke|test/core/core/core_machine_sreg_mov_smoke.c"
-    "core-machine-stos-smoke|test/core/core/core_machine_stos_smoke.c"
-    "core-machine-tf-db-s60-smoke|test/core/core/core_machine_tf_db_s60_smoke.c"
-    "core-machine-verr-verw-s58-smoke|test/core/core/core_machine_verr_verw_s58_smoke.c"
-    "core-machine-xchg-smoke|test/core/core/core_machine_xchg_smoke.c")
+    "core-machine-arpl-s53-smoke|test/core/devices/core_machine_arpl_s53_smoke.c"
+    "core-machine-bound-s54-smoke|test/core/devices/core_machine_bound_s54_smoke.c"
+    "core-machine-cli-sti-s48-smoke|test/core/devices/core_machine_cli_sti_s48_smoke.c"
+    "core-machine-cli-sti-smoke|test/core/devices/core_machine_cli_sti_smoke.c"
+    "core-machine-clts-s62-smoke|test/core/devices/core_machine_clts_s62_smoke.c"
+    "core-machine-cmps-smoke|test/core/devices/core_machine_cmps_smoke.c"
+    "core-machine-debug-mov-s59-smoke|test/core/devices/core_machine_debug_mov_s59_smoke.c"
+    "core-machine-direct-flags-smoke|test/core/devices/core_machine_direct_flags_smoke.c"
+    "core-machine-dttr-s61-smoke|test/core/devices/core_machine_dttr_s61_smoke.c"
+    "core-machine-eflags-local-smoke|test/core/devices/core_machine_eflags_local_smoke.c"
+    "core-machine-enter-leave-smoke|test/core/devices/core_machine_enter_leave_smoke.c"
+    "core-machine-fpu-interface-s65-smoke|test/core/devices/core_machine_fpu_interface_s65_smoke.c"
+    "core-machine-fs-gs-stack-smoke|test/core/devices/core_machine_fs_gs_stack_smoke.c"
+    "core-machine-gpr-mov-smoke|test/core/devices/core_machine_gpr_mov_smoke.c"
+    "core-machine-gpr-push-pop-smoke|test/core/devices/core_machine_gpr_push_pop_smoke.c"
+    "core-machine-hlt-s49-smoke|test/core/devices/core_machine_hlt_s49_smoke.c"
+    "core-machine-imul-immediate-s56-smoke|test/core/devices/core_machine_imul_immediate_s56_smoke.c"
+    "core-machine-inc-dec-smoke|test/core/devices/core_machine_inc_dec_smoke.c"
+    "core-machine-iret-outer-s52-smoke|test/core/devices/core_machine_iret_outer_s52_smoke.c"
+    "core-machine-iret-s51-smoke|test/core/devices/core_machine_iret_s51_smoke.c"
+    "core-machine-lahf-sahf-smoke|test/core/devices/core_machine_lahf_sahf_smoke.c"
+    "core-machine-lar-lsl-s57-smoke|test/core/devices/core_machine_lar_lsl_s57_smoke.c"
+    "core-machine-lea-smoke|test/core/devices/core_machine_lea_smoke.c"
+    "core-machine-legacy-sreg-stack-smoke|test/core/devices/core_machine_legacy_sreg_stack_smoke.c"
+    "core-machine-les-lds-s41-smoke|test/core/devices/core_machine_les_lds_s41_smoke.c"
+    "core-machine-les-lds-smoke|test/core/devices/core_machine_les_lds_smoke.c"
+    "core-machine-lods-smoke|test/core/devices/core_machine_lods_smoke.c"
+    "core-machine-lss-lfs-lgs-smoke|test/core/devices/core_machine_lss_lfs_lgs_smoke.c"
+    "core-machine-moffs-smoke|test/core/devices/core_machine_moffs_smoke.c"
+    "core-machine-movs-smoke|test/core/devices/core_machine_movs_smoke.c"
+    "core-machine-msw-s63-smoke|test/core/devices/core_machine_msw_s63_smoke.c"
+    "core-machine-port-io-s55-smoke|test/core/devices/core_machine_port_io_s55_smoke.c"
+    "core-machine-port-strings-smoke|test/core/devices/core_machine_port_strings_smoke.c"
+    "core-machine-prefix-attributes-s64-smoke|test/core/devices/core_machine_prefix_attributes_s64_smoke.c"
+    "core-machine-push-immediate-smoke|test/core/devices/core_machine_push_immediate_smoke.c"
+    "core-machine-pusha-popa-smoke|test/core/devices/core_machine_pusha_popa_smoke.c"
+    "core-machine-pushf-popf-s47-smoke|test/core/devices/core_machine_pushf_popf_s47_smoke.c"
+    "core-machine-pushf-popf-smoke|test/core/devices/core_machine_pushf_popf_smoke.c"
+    "core-machine-rotate-smoke|test/core/devices/core_machine_rotate_smoke.c"
+    "core-machine-scas-smoke|test/core/devices/core_machine_scas_smoke.c"
+    "core-machine-sign-extend-smoke|test/core/devices/core_machine_sign_extend_smoke.c"
+    "core-machine-software-int-s50-smoke|test/core/devices/core_machine_software_int_s50_smoke.c"
+    "core-machine-sreg-mov-smoke|test/core/devices/core_machine_sreg_mov_smoke.c"
+    "core-machine-stos-smoke|test/core/devices/core_machine_stos_smoke.c"
+    "core-machine-tf-db-s60-smoke|test/core/devices/core_machine_tf_db_s60_smoke.c"
+    "core-machine-verr-verw-s58-smoke|test/core/devices/core_machine_verr_verw_s58_smoke.c"
+    "core-machine-xchg-smoke|test/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
 if(NOT project_t317_inventory_count EQUAL 47)
@@ -1224,17 +1224,17 @@ target_include_directories(type-facade PUBLIC
 )
 
 set(VM_PROFILE_SOURCES
-    src/core/profile/profile_resolver.c
-    src/core/profile/byob/blob.c
-    src/core/profile/xt/xt_5160_268.c
-    src/core/profile/xt/rom/xt_5160_268_rom.c
-    src/core/profile/default_profile/pc_at_profile.c
-    src/core/profile/default_profile/keyboard_mapper.c
-    src/core/profile/default_profile/mouse_mapper.c
-    src/core/profile/default_profile/external_pc_at_rom.c
-    src/core/profile/device/floppy.c
-    src/core/profile/model40/model40.c
-    src/core/profile/model40/rom/model40_rom.c
+    src/core/profiles/profile_resolver.c
+    src/core/profiles/byob/blob.c
+    src/core/profiles/xt/xt_5160_268.c
+    src/core/profiles/xt/rom/xt_5160_268_rom.c
+    src/core/profiles/default_profile/pc_at_profile.c
+    src/core/profiles/default_profile/keyboard_mapper.c
+    src/core/profiles/default_profile/mouse_mapper.c
+    src/core/profiles/default_profile/external_pc_at_rom.c
+    src/core/profiles/device/floppy.c
+    src/core/profiles/model40/model40.c
+    src/core/profiles/model40/rom/model40_rom.c
 )
 
 set(VM_APP_SOURCES
@@ -1269,25 +1269,25 @@ set(VM_MEDIA_SOURCES
     src/core/machine/media/hdd.c
 )
 set(CORE_MACHINE_SOURCES
-    src/core/core/display.c
-    src/core/core/vadp.c
-    src/core/core/port.c
-    src/core/core/memory.c
-    src/core/core/cpu.c
-    src/core/core/fpu.c
-    src/core/core/cpu_instructions.c
-    src/core/core/pic.c
-    src/core/core/pit.c
-    src/core/core/dma.c
-    src/core/core/kbc.c
-    src/core/core/xt_ppi_keyboard.c
-    src/core/core/xt_keyboard.c
-    src/core/core/rtc.c
-    src/core/core/transaction.c
+    src/core/devices/display.c
+    src/core/devices/vadp.c
+    src/core/devices/port.c
+    src/core/devices/memory.c
+    src/core/devices/cpu.c
+    src/core/devices/fpu.c
+    src/core/devices/cpu_instructions.c
+    src/core/devices/pic.c
+    src/core/devices/pit.c
+    src/core/devices/dma.c
+    src/core/devices/kbc.c
+    src/core/devices/xt_ppi_keyboard.c
+    src/core/devices/xt_keyboard.c
+    src/core/devices/rtc.c
+    src/core/devices/transaction.c
 )
 add_library(core-machine-boundary STATIC
-    src/core/core/guest_input.c
-    src/core/core/guest_presentation_mailbox.c)
+    src/core/devices/guest_input.c
+    src/core/devices/guest_presentation_mailbox.c)
 target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -1305,7 +1305,7 @@ target_link_libraries(core-machine-executor PUBLIC type-facade)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(std-snprintf-smoke
-    test/core/core/std_snprintf_smoke.c
+    test/core/devices/std_snprintf_smoke.c
 )
 target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
 
@@ -1327,7 +1327,7 @@ target_link_libraries(vm-profile PUBLIC
     type-facade)
 
 add_executable(core-machine-guest-input-source-smoke
-    test/core/core/core_machine_guest_input_source_smoke.c
+    test/core/devices/core_machine_guest_input_source_smoke.c
 )
 target_link_libraries(core-machine-guest-input-source-smoke PRIVATE core-machine-boundary)
 add_executable(vm-machine-executor-state-smoke
@@ -1347,7 +1347,7 @@ target_link_libraries(vm-host-cancellation-smoke PRIVATE
 
 
 add_executable(core-machine-guest-presentation-mailbox-smoke
-    test/core/core/core_machine_guest_presentation_mailbox_smoke.c
+    test/core/devices/core_machine_guest_presentation_mailbox_smoke.c
 )
 target_link_libraries(core-machine-guest-presentation-mailbox-smoke PRIVATE
     core-machine-boundary)
@@ -1394,21 +1394,21 @@ target_link_libraries(vm-control-lifecycle-smoke PRIVATE
 )
 
 add_executable(core-machine-cpu-context-smoke
-    test/core/core/cpu_execution_context_smoke.c
+    test/core/devices/cpu_execution_context_smoke.c
 )
 target_link_libraries(core-machine-cpu-context-smoke PRIVATE
     core-machine
 )
 
 add_executable(core-machine-trace-context-smoke
-    test/core/core/cpu_trace_context_smoke.c
+    test/core/devices/cpu_trace_context_smoke.c
 )
 target_link_libraries(core-machine-trace-context-smoke PRIVATE
     core-machine
 )
 
 add_executable(core-machine-cpu-fault-diagnostic-smoke
-    test/core/core/cpu_fault_diagnostic_smoke.c
+    test/core/devices/cpu_fault_diagnostic_smoke.c
 )
 target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
     core-machine-observable
@@ -1421,104 +1421,104 @@ target_link_libraries(core-machine-ram-port-context-smoke PRIVATE
     core-machine
 )
 add_executable(core-machine-pit-readback-smoke
-    test/core/core/core_machine_pit_readback_smoke.c
+    test/core/devices/core_machine_pit_readback_smoke.c
 )
 target_link_libraries(core-machine-pit-readback-smoke PRIVATE core-machine)
 add_executable(core-machine-pit-8253-smoke
-    test/core/core/core_machine_pit_8253_smoke.c
+    test/core/devices/core_machine_pit_8253_smoke.c
 )
 target_link_libraries(core-machine-pit-8253-smoke PRIVATE core-machine)
 add_executable(core-machine-pit-waveform-smoke
-    test/core/core/core_machine_pit_waveform_smoke.c
+    test/core/devices/core_machine_pit_waveform_smoke.c
 )
 target_link_libraries(core-machine-pit-waveform-smoke PRIVATE core-machine)
 add_executable(core-machine-pit-divider-smoke
-    test/core/core/machine_pit_divider_smoke.c
+    test/core/devices/machine_pit_divider_smoke.c
 )
 target_link_libraries(core-machine-pit-divider-smoke PRIVATE core-machine)
 add_executable(core-machine-pit-irq0-s2-smoke
-    test/core/core/core_machine_pit_irq0_s2_smoke.c
+    test/core/devices/core_machine_pit_irq0_s2_smoke.c
 )
 target_link_libraries(core-machine-pit-irq0-s2-smoke PRIVATE core-machine)
 add_executable(core-machine-auxiliary-pit-s3-smoke
-    test/core/core/core_machine_auxiliary_pit_s3_smoke.c
+    test/core/devices/core_machine_auxiliary_pit_s3_smoke.c
 )
 target_link_libraries(core-machine-auxiliary-pit-s3-smoke PRIVATE core-machine)
 add_executable(core-machine-d4-platform-s4-smoke
-    test/core/core/core_machine_d4_platform_s4_smoke.c
+    test/core/devices/core_machine_d4_platform_s4_smoke.c
 )
 target_link_libraries(core-machine-d4-platform-s4-smoke PRIVATE core-machine)
 add_executable(core-machine-rtc-cmos-s3-smoke
-    test/core/core/core_machine_rtc_cmos_s3_smoke.c
+    test/core/devices/core_machine_rtc_cmos_s3_smoke.c
 )
 target_link_libraries(core-machine-rtc-cmos-s3-smoke PRIVATE core-machine)
 add_executable(core-machine-planar-parity-nmi-s3-smoke
-    test/core/core/core_machine_planar_parity_nmi_s3_smoke.c)
+    test/core/devices/core_machine_planar_parity_nmi_s3_smoke.c)
 target_link_libraries(core-machine-planar-parity-nmi-s3-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-irq-lifecycle-smoke
-    test/core/core/core_machine_pic_irq_lifecycle_smoke.c)
+    test/core/devices/core_machine_pic_irq_lifecycle_smoke.c)
 target_link_libraries(core-machine-pic-irq-lifecycle-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-command-priority-smoke
-    test/core/core/core_machine_pic_command_priority_smoke.c)
+    test/core/devices/core_machine_pic_command_priority_smoke.c)
 target_link_libraries(core-machine-pic-command-priority-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-ocw3-smoke
-    test/core/core/core_machine_pic_ocw3_smoke.c)
+    test/core/devices/core_machine_pic_ocw3_smoke.c)
 target_link_libraries(core-machine-pic-ocw3-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-lifecycle-s4-smoke
-    test/core/core/core_machine_pic_lifecycle_s4_smoke.c)
+    test/core/devices/core_machine_pic_lifecycle_s4_smoke.c)
 target_link_libraries(core-machine-pic-lifecycle-s4-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-phase-s2-smoke
-    test/core/core/core_machine_pic_phase_s2_smoke.c)
+    test/core/devices/core_machine_pic_phase_s2_smoke.c)
 target_link_libraries(core-machine-pic-phase-s2-smoke PRIVATE core-machine-observable)
 add_executable(core-machine-kbc-controller-smoke
-    test/core/core/core_machine_kbc_controller_smoke.c
+    test/core/devices/core_machine_kbc_controller_smoke.c
 )
 target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-machine)
 add_executable(core-machine-xt-ppi-keyboard-smoke
-    test/core/core/core_machine_xt_ppi_keyboard_smoke.c)
+    test/core/devices/core_machine_xt_ppi_keyboard_smoke.c)
 target_link_libraries(core-machine-xt-ppi-keyboard-smoke PRIVATE core-machine)
 add_executable(core-machine-kbc-serial-cadence-smoke
-    test/core/core/core_machine_kbc_serial_cadence_smoke.c)
+    test/core/devices/core_machine_kbc_serial_cadence_smoke.c)
 target_link_libraries(core-machine-kbc-serial-cadence-smoke PRIVATE core-machine)
 add_executable(core-machine-kbc-aux-port-smoke
-    test/core/core/core_machine_kbc_aux_port_smoke.c
+    test/core/devices/core_machine_kbc_aux_port_smoke.c
 )
 target_link_libraries(core-machine-kbc-aux-port-smoke PRIVATE core-machine)
 add_executable(core-machine-dma-channel-smoke
-    test/core/core/core_machine_dma_channel_smoke.c
+    test/core/devices/core_machine_dma_channel_smoke.c
 )
 target_link_libraries(core-machine-dma-channel-smoke PRIVATE core-machine)
 add_executable(core-machine-dma-binding-token-smoke
-    test/core/core/core_machine_dma_binding_token_smoke.c
+    test/core/devices/core_machine_dma_binding_token_smoke.c
 )
 target_link_libraries(core-machine-dma-binding-token-smoke PRIVATE core-machine)
 add_executable(core-machine-media-provider-smoke
-    test/core/core/core_machine_media_provider_smoke.c
+    test/core/devices/core_machine_media_provider_smoke.c
 )
 target_link_libraries(core-machine-media-provider-smoke PRIVATE core-machine)
-add_executable(core-machine-rtc-smoke test/core/core/core_machine_rtc_smoke.c)
+add_executable(core-machine-rtc-smoke test/core/devices/core_machine_rtc_smoke.c)
 target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
-add_executable(core-machine-fdc-smoke test/core/core/core_machine_fdc_smoke.c)
+add_executable(core-machine-fdc-smoke test/core/devices/core_machine_fdc_smoke.c)
 target_link_libraries(core-machine-fdc-smoke PRIVATE core-machine)
 add_executable(core-machine-fdc-topology-port-smoke
-    test/core/core/core_machine_fdc_topology_port_smoke.c)
+    test/core/devices/core_machine_fdc_topology_port_smoke.c)
 target_link_libraries(core-machine-fdc-topology-port-smoke PRIVATE core-machine)
 add_executable(core-machine-fdc-media-change-port-smoke
-    test/core/core/core_machine_fdc_media_change_port_smoke.c)
+    test/core/devices/core_machine_fdc_media_change_port_smoke.c)
 target_link_libraries(core-machine-fdc-media-change-port-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-hdc-s5-smoke
-    test/core/core/core_machine_compaq_hdc_s5_smoke.c)
+    test/core/devices/core_machine_compaq_hdc_s5_smoke.c)
 target_link_libraries(core-machine-compaq-hdc-s5-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-hdc-machine-s5-smoke
-    test/core/core/core_machine_compaq_hdc_machine_s5_smoke.c)
+    test/core/devices/core_machine_compaq_hdc_machine_s5_smoke.c)
 target_link_libraries(core-machine-compaq-hdc-machine-s5-smoke PRIVATE core-machine)
-add_executable(core-machine-hdc-smoke test/core/core/core_machine_hdc_smoke.c)
+add_executable(core-machine-hdc-smoke test/core/devices/core_machine_hdc_smoke.c)
 target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
 add_executable(core-machine-xebec-wiring-smoke
-    test/core/core/core_machine_xebec_wiring_smoke.c)
+    test/core/devices/core_machine_xebec_wiring_smoke.c)
 target_link_libraries(core-machine-xebec-wiring-smoke PRIVATE core-machine)
 add_executable(core-machine-controller-authority-smoke
-    test/core/core/core_machine_controller_authority_smoke.c)
+    test/core/devices/core_machine_controller_authority_smoke.c)
 target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-machine)
 add_executable(core-mantle-shape-smoke test/core/machine/core_mantle_shape_smoke.c)
 target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-machine-boundary)
@@ -1599,41 +1599,41 @@ add_executable(vm-keyboard-set1-mapper-smoke
 )
 target_link_libraries(vm-keyboard-set1-mapper-smoke PRIVATE vm-profile)
 add_executable(core-machine-vadp-text-smoke
-    test/core/core/core_machine_vadp_text_smoke.c
+    test/core/devices/core_machine_vadp_text_smoke.c
 )
 target_link_libraries(core-machine-vadp-text-smoke PRIVATE core-machine)
 
 add_executable(core-machine-vadp-text-status-smoke
-    test/core/core/core_machine_vadp_text_status_smoke.c
+    test/core/devices/core_machine_vadp_text_status_smoke.c
 )
 target_link_libraries(core-machine-vadp-text-status-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-external-port-smoke
-    test/core/core/core_machine_ega_external_port_smoke.c
+    test/core/devices/core_machine_ega_external_port_smoke.c
 )
 target_link_libraries(core-machine-ega-external-port-smoke PRIVATE core-machine)
 add_executable(core-machine-display-authority-smoke
-    test/core/core/core_machine_display_authority_smoke.c
+    test/core/devices/core_machine_display_authority_smoke.c
 )
 target_link_libraries(core-machine-display-authority-smoke PRIVATE core-machine)
 add_executable(core-machine-dma-rtc-authority-smoke
-    test/core/core/core_machine_dma_rtc_authority_smoke.c
+    test/core/devices/core_machine_dma_rtc_authority_smoke.c
 )
 target_link_libraries(core-machine-dma-rtc-authority-smoke PRIVATE core-machine)
 add_executable(core-machine-cga-graphics-port-smoke
-    test/core/core/core_machine_cga_graphics_port_smoke.c
+    test/core/devices/core_machine_cga_graphics_port_smoke.c
 )
 target_link_libraries(core-machine-cga-graphics-port-smoke PRIVATE core-machine)
 add_executable(core-machine-cga-640-port-smoke
-    test/core/core/core_machine_cga_640_port_smoke.c
+    test/core/devices/core_machine_cga_640_port_smoke.c
 )
 target_link_libraries(core-machine-cga-640-port-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-sequencer-port-smoke
-    test/core/core/core_machine_ega_sequencer_port_smoke.c
+    test/core/devices/core_machine_ega_sequencer_port_smoke.c
 )
 target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-registration-transaction-smoke
-    test/core/core/core_machine_ega_registration_transaction_smoke.c
-    src/core/core/vadp.c
+    test/core/devices/core_machine_ega_registration_transaction_smoke.c
+    src/core/devices/vadp.c
 )
 target_include_directories(core-machine-ega-registration-transaction-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
@@ -1649,47 +1649,47 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-ega-controller-port-smoke
-    test/core/core/core_machine_ega_controller_port_smoke.c
+    test/core/devices/core_machine_ega_controller_port_smoke.c
 )
 target_link_libraries(core-machine-ega-controller-port-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-crtc-boundary-port-smoke
-    test/core/core/core_machine_ega_crtc_boundary_port_smoke.c
+    test/core/devices/core_machine_ega_crtc_boundary_port_smoke.c
 )
 target_link_libraries(core-machine-ega-crtc-boundary-port-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-planar-port-smoke
-    test/core/core/core_machine_ega_planar_port_smoke.c
+    test/core/devices/core_machine_ega_planar_port_smoke.c
 )
 target_link_libraries(core-machine-ega-planar-port-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-mode10-contract-smoke
-    test/core/core/core_machine_ega_mode10_contract_smoke.c
+    test/core/devices/core_machine_ega_mode10_contract_smoke.c
 )
 target_link_libraries(core-machine-ega-mode10-contract-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-ega-s6-smoke
-    test/core/core/core_machine_compaq_ega_s6_smoke.c
+    test/core/devices/core_machine_compaq_ega_s6_smoke.c
 )
 target_link_libraries(core-machine-compaq-ega-s6-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-cecg-s9-smoke
-    test/core/core/core_machine_compaq_cecg_s9_smoke.c
+    test/core/devices/core_machine_compaq_cecg_s9_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s9-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-cecg-s10-smoke
-    test/core/core/core_machine_compaq_cecg_s10_smoke.c
+    test/core/devices/core_machine_compaq_cecg_s10_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s10-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-cecg-s11-smoke
-    test/core/core/core_machine_compaq_cecg_s11_smoke.c
+    test/core/devices/core_machine_compaq_cecg_s11_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s11-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-cecg-s12-smoke
-    test/core/core/core_machine_compaq_cecg_s12_smoke.c
+    test/core/devices/core_machine_compaq_cecg_s12_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s12-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-cecg-s13-smoke
-    test/core/core/core_machine_compaq_cecg_s13_smoke.c
+    test/core/devices/core_machine_compaq_cecg_s13_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s13-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-cecg-s28-smoke
-    test/core/core/core_machine_compaq_cecg_s28_smoke.c)
+    test/core/devices/core_machine_compaq_cecg_s28_smoke.c)
 target_link_libraries(core-machine-compaq-cecg-s28-smoke PRIVATE core-machine)
 add_executable(vm-ega-controller-system-smoke
     test/core/machine/vm_ega_controller_system_smoke.c
@@ -1761,59 +1761,59 @@ add_executable(vm-fault-outcome-runner-smoke
     test/core/machine/vm_fault_outcome_runner_smoke.c)
 target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-machine)
 add_executable(core-machine-cpu-fpu-profile-smoke
-    test/core/core/cpu_fpu_profile_smoke.c)
+    test/core/devices/cpu_fpu_profile_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
     core-machine)
 add_executable(core-machine-cpu-profile-gate-smoke
-    test/core/core/cpu_profile_gate_smoke.c)
+    test/core/devices/cpu_profile_gate_smoke.c)
 target_link_libraries(core-machine-cpu-profile-gate-smoke PRIVATE
     core-machine)
 add_executable(core-machine-fpu-escape-smoke
-    test/core/core/fpu_escape_smoke.c)
+    test/core/devices/fpu_escape_smoke.c)
 target_link_libraries(core-machine-fpu-escape-smoke PRIVATE core-machine)
 add_executable(core-machine-fpu-interface-s65-smoke
-    test/core/core/core_machine_fpu_interface_s65_smoke.c)
+    test/core/devices/core_machine_fpu_interface_s65_smoke.c)
 target_link_libraries(core-machine-fpu-interface-s65-smoke PRIVATE core-machine)
 add_executable(core-machine-fpu-8087-smoke
-    test/core/core/core_machine_fpu_8087_smoke.c)
+    test/core/devices/core_machine_fpu_8087_smoke.c)
 target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-machine)
 add_executable(core-machine-real-exception-final-s1-smoke
-    test/core/core/core_machine_real_exception_final_s1_smoke.c)
+    test/core/devices/core_machine_real_exception_final_s1_smoke.c)
 target_link_libraries(core-machine-real-exception-final-s1-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-real-exception-final-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-ud-delivery-s1-smoke
-    test/core/core/core_machine_protected_ud_delivery_s1_smoke.c)
+    test/core/devices/core_machine_protected_ud_delivery_s1_smoke.c)
 target_link_libraries(core-machine-protected-ud-delivery-s1-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-protected-ud-delivery-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-real-ud-delivery-s1-smoke
-    test/core/core/core_machine_real_ud_delivery_s1_smoke.c)
+    test/core/devices/core_machine_real_ud_delivery_s1_smoke.c)
 target_link_libraries(core-machine-real-ud-delivery-s1-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-real-ud-delivery-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-hardware-delivery-s3-smoke
-    test/core/core/core_machine_hardware_delivery_s3_smoke.c)
+    test/core/devices/core_machine_hardware_delivery_s3_smoke.c)
 target_link_libraries(core-machine-hardware-delivery-s3-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-hardware-delivery-s3-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-interrupt-return-composition-s4-smoke
-    test/core/core/core_machine_interrupt_return_composition_s4_smoke.c)
+    test/core/devices/core_machine_interrupt_return_composition_s4_smoke.c)
 target_link_libraries(core-machine-interrupt-return-composition-s4-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-interrupt-return-composition-s4-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-vm86-lgdt-lidt-s5-smoke
-    test/core/core/core_machine_vm86_lgdt_lidt_s5_smoke.c)
+    test/core/devices/core_machine_vm86_lgdt_lidt_s5_smoke.c)
 target_link_libraries(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE core-machine)
 target_compile_definitions(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE
     CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
@@ -1822,11 +1822,11 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-int-ivt-smoke
-    test/core/core/cpu_int_ivt_smoke.c)
+    test/core/devices/cpu_int_ivt_smoke.c)
 target_link_libraries(core-machine-int-ivt-smoke PRIVATE
     core-machine)
 add_executable(core-machine-cpu-fpu-profile-closure-smoke
-    test/core/core/cpu_fpu_profile_closure_smoke.c)
+    test/core/devices/cpu_fpu_profile_closure_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-closure-smoke PRIVATE
     core-machine)
 add_custom_target(core-machine-cpu-fpu-static-closure
@@ -1869,7 +1869,7 @@ add_executable(vm-core-executor-storage-smoke
 target_link_libraries(vm-core-executor-storage-smoke PRIVATE
     vm-machine)
 add_executable(core-machine-executor-run-smoke
-    test/core/core/core_machine_executor_run_smoke.c
+    test/core/devices/core_machine_executor_run_smoke.c
 )
 target_link_libraries(core-machine-executor-run-smoke PRIVATE
     core-machine
@@ -1877,12 +1877,12 @@ target_link_libraries(core-machine-executor-run-smoke PRIVATE
 )
 
 add_executable(core-machine-ram-create-smoke
-    test/core/core/core_machine_ram_create_smoke.c
+    test/core/devices/core_machine_ram_create_smoke.c
 )
 target_link_libraries(core-machine-ram-create-smoke PRIVATE core-machine)
 
 add_executable(core-machine-port-assembly-smoke
-    test/core/core/core_machine_port_assembly_smoke.c
+    test/core/devices/core_machine_port_assembly_smoke.c
 )
 target_link_libraries(core-machine-port-assembly-smoke PRIVATE core-machine)
 
@@ -3548,21 +3548,21 @@ file(GENERATE
 # the verifier; the supporting evidence and TODO define each domain's risk and
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
-    "core-machine-executor|src/core/core/display.c|machine-executor"
-    "core-machine-executor|src/core/core/vadp.c|machine-executor"
-    "core-machine-executor|src/core/core/port.c|machine-executor"
-    "core-machine-executor|src/core/core/memory.c|machine-executor"
-    "core-machine-executor|src/core/core/transaction.c|machine-executor"
-    "core-machine-executor|src/core/core/cpu.c|machine-executor"
-    "core-machine-executor|src/core/core/fpu.c|machine-executor"
-    "core-machine-executor|src/core/core/cpu_instructions.c|machine-executor"
-    "core-machine-executor|src/core/core/pic.c|machine-executor"
-    "core-machine-executor|src/core/core/pit.c|machine-executor"
-    "core-machine-executor|src/core/core/dma.c|machine-executor"
-    "core-machine-executor|src/core/core/kbc.c|machine-executor"
-    "core-machine-executor|src/core/core/xt_ppi_keyboard.c|machine-executor"
-    "core-machine-executor|src/core/core/xt_keyboard.c|machine-executor"
-    "core-machine-executor|src/core/core/rtc.c|machine-executor"
+    "core-machine-executor|src/core/devices/display.c|machine-executor"
+    "core-machine-executor|src/core/devices/vadp.c|machine-executor"
+    "core-machine-executor|src/core/devices/port.c|machine-executor"
+    "core-machine-executor|src/core/devices/memory.c|machine-executor"
+    "core-machine-executor|src/core/devices/transaction.c|machine-executor"
+    "core-machine-executor|src/core/devices/cpu.c|machine-executor"
+    "core-machine-executor|src/core/devices/fpu.c|machine-executor"
+    "core-machine-executor|src/core/devices/cpu_instructions.c|machine-executor"
+    "core-machine-executor|src/core/devices/pic.c|machine-executor"
+    "core-machine-executor|src/core/devices/pit.c|machine-executor"
+    "core-machine-executor|src/core/devices/dma.c|machine-executor"
+    "core-machine-executor|src/core/devices/kbc.c|machine-executor"
+    "core-machine-executor|src/core/devices/xt_ppi_keyboard.c|machine-executor"
+    "core-machine-executor|src/core/devices/xt_keyboard.c|machine-executor"
+    "core-machine-executor|src/core/devices/rtc.c|machine-executor"
     "vm-app|src/app/command.c|console-product"
     "vm-app|src/app/keyboard.c|keyboard-product"
     "vm-app|src/app/recorder.c|recorder-product"

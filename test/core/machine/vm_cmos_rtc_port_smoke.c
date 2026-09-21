@@ -1,12 +1,12 @@
 #include "type.h"
 
-#include "core/core/pic.h"
-#include "core/core/port.h"
-#include "core/core/machine.h"
+#include "core/devices/pic.h"
+#include "core/devices/port.h"
+#include "core/devices/machine.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "core/core/rtc.h"
+#include "core/devices/rtc.h"
 #include "support/rom/session_assets.h"
 
 static C_VOID cmos_write(t_port *port, type_unsigned_8 reg, type_unsigned_8 value)

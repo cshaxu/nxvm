@@ -4,7 +4,7 @@
 
 
 
-#include "../core/support/core_machine_cpu_fixture.h"
+#include "../devices/support/core_machine_cpu_fixture.h"
 
 #include "core/machine/machine_interface.h"
 

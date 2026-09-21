@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/profile/default_profile/keyboard_mapper.h"
+#include "core/profiles/default_profile/keyboard_mapper.h"
 
 static C_INT vm_keyboard_native_set2_expect(type_unsigned_16 scan, type_unsigned_16 key,
     C_INT pressed, const type_unsigned_8 *expected, type_unsigned_8 count)

@@ -1,9 +1,9 @@
 #include "type.h"
 
-#include "core/core/machine.h"
-#include "core/core/memory.h"
-#include "core/core/port.h"
-#include "core/core/vadp.h"
+#include "core/devices/machine.h"
+#include "core/devices/memory.h"
+#include "core/devices/port.h"
+#include "core/devices/vadp.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"

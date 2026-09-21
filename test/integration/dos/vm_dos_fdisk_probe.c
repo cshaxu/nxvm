@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-#include "core/core/guest_presentation_mailbox_interface.h"
+#include "core/devices/guest_presentation_mailbox_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"

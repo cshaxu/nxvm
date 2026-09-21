@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "core/core/debug_interface.h"
-#include "core/core/machine_interface.h"
-#include "core/core/machine.h"
+#include "core/devices/debug_interface.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/machine.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/waiting.h"
 #include "core/machine/machine_private.h"

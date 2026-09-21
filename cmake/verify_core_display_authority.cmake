@@ -2,12 +2,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_display.c" core_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_display.c" core_display_source)
 set(core_source "${core_plan_source}${core_display_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/display.c" display_source)

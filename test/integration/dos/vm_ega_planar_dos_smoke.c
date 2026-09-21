@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 #include "test/integration/support/session_yaml.h"

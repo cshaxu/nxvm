@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(t360_machine "${PROJECT_SOURCE_DIR}/src/core/core/cpu_timing_model.c")
-set(t360_timing "${PROJECT_SOURCE_DIR}/src/core/core/cpu_timing.c")
+set(t360_machine "${PROJECT_SOURCE_DIR}/src/core/devices/cpu_timing_model.c")
+set(t360_timing "${PROJECT_SOURCE_DIR}/src/core/devices/cpu_timing.c")
 set(t360_inventory
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t360-s1-four-profile-source-authority-consumer-inventory.md")
 foreach(t360_file IN ITEMS "${t360_machine}" "${t360_timing}" "${t360_inventory}")

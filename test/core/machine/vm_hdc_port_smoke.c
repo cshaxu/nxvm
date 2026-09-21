@@ -1,12 +1,12 @@
 #include "type.h"
 
-#include "core/core/machine_interface.h"
-#include "core/core/machine.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/machine.h"
 #include "core/machine/media/media.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
-#include "core/core/hdc.h"
-#include "core/profile/default_profile/pc_at_profile_private.h"
+#include "core/devices/hdc.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
 #define HDC_DATA_PORT 0x01f0u

@@ -1,11 +1,11 @@
 #include "type.h"
 
-#include "core/core/display_interface.h"
+#include "core/devices/display_interface.h"
 
 #include "core/machine/display.h"
 #include "core/machine/frame.h"
 
-#include "core/core/guest_display_frame.h"
+#include "core/devices/guest_display_frame.h"
 
 #include "lib/base/clock_interface.h"
 

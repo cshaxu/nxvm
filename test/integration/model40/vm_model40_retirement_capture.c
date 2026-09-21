@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "core/core/machine_interface.h"
-#include "core/core/machine.h"
-#include "core/core/retirement_observation_interface.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/machine.h"
+#include "core/devices/retirement_observation_interface.h"
 #include "test/integration/support/session_yaml.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"

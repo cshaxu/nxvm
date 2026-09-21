@@ -2,12 +2,12 @@
 
 #include <windows.h>
 
-#include "core/core/guest_presentation_mailbox_interface.h"
-#include "core/core/machine.h"
-#include "core/core/port.h"
+#include "core/devices/guest_presentation_mailbox_interface.h"
+#include "core/devices/machine.h"
+#include "core/devices/port.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
-#include "core/profile/device/floppy.h"
+#include "core/profiles/device/floppy.h"
 #include "test/integration/support/session_yaml.h"
 
 #define BOOT_TIMEOUT 180000u

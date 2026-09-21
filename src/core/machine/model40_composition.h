@@ -2,7 +2,7 @@
 #define VM_MACHINE_MODEL40_COMPOSITION_H
 
 #include "type.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "lib/storage/medium_interface.h"
 
 typedef struct vm_machine vm_machine;

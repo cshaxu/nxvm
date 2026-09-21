@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/core/machine.h"
+#include "core/devices/machine.h"
 #include "lib/base/sync_interface.h"
 #include "x86/debug/protocol_interface.h"
 #include "core/machine/lifecycle.h"

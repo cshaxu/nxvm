@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "core/core/media_interface.h"
+#include "core/devices/media_interface.h"
 #include "lib/storage/medium_interface.h"
 #include "core/machine/media/hdd.h"
 

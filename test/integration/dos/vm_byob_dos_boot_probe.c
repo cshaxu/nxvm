@@ -1,20 +1,20 @@
 #include "type.h"
 
-#include "core/core/debug_interface.h"
+#include "core/devices/debug_interface.h"
 #include <windows.h>
 #ifdef exception_code
 #undef exception_code
 #endif
 
-#include "core/core/machine_interface.h"
-#include "core/core/machine.h"
-#include "core/core/memory.h"
-#include "core/core/retirement_observation_interface.h"
-#include "core/core/trace_interface.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/machine.h"
+#include "core/devices/memory.h"
+#include "core/devices/retirement_observation_interface.h"
+#include "core/devices/trace_interface.h"
 #include "test/integration/support/session_yaml.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
 

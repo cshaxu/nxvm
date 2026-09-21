@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "test/integration/support/session_yaml.h"
 
 C_INT main(C_INT argc, C_CHAR **argv)

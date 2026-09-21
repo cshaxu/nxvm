@@ -1,9 +1,9 @@
 #include "type.h"
 
-#include "core/core/dma.h"
-#include "core/core/fdc.h"
-#include "core/core/machine.h"
-#include "core/core/port.h"
+#include "core/devices/dma.h"
+#include "core/devices/fdc.h"
+#include "core/devices/machine.h"
+#include "core/devices/port.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/media/fdd.h"

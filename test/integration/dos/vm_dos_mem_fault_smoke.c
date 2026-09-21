@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
-#include "core/core/cpu_instructions.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/cpu_instructions.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"

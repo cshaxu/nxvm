@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/vadp.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/core/vadp.h" vadp_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/vadp.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/vadp.h" vadp_header)
 
 string(FIND "${vadp_header}" "#define CORE_MACHINE_VADP_CRTC_REGISTER_COUNT 20u" count_position)
 if(count_position EQUAL -1)

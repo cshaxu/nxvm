@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 
 typedef struct vm_machine vm_machine;
 

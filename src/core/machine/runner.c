@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/core/machine_interface.h"
+#include "core/devices/machine_interface.h"
 #include "lib/base/sync_interface.h"
 #include "core/machine/display.h"
 #include "core/machine/fault.h"

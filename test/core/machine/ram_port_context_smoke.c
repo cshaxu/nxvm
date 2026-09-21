@@ -2,9 +2,9 @@
 
 
 
-#include "core/core/memory.h"
+#include "core/devices/memory.h"
 
-#include "core/core/port.h"
+#include "core/devices/port.h"
 
 C_INT main(C_VOID)
 {

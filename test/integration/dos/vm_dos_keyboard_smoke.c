@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
-#include "core/core/debug_interface.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/debug_interface.h"
+#include "core/devices/machine_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"

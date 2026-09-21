@@ -1,6 +1,6 @@
 #include "core/machine/debug_adapter.h"
 
-#include "core/core/debug_interface.h"
+#include "core/devices/debug_interface.h"
 #include "core/machine/debug.h"
 #include "core/machine/machine_private.h"
 

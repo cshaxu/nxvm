@@ -1,14 +1,14 @@
 #include "type.h"
 
-#include "core/core/machine.h"
-#include "core/core/machine_interface.h"
-#include "core/core/port.h"
+#include "core/devices/machine.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/port.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "core/profile/default_profile/pc_at_profile.h"
+#include "core/profiles/default_profile/pc_at_profile.h"
 
-#include "../core/support/core_machine_cpu_fixture.h"
+#include "../devices/support/core_machine_cpu_fixture.h"
 #include "support/rom/session_assets.h"
 
 static C_INT vm_pcat_s4_topology_matches(

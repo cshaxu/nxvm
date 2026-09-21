@@ -1,12 +1,12 @@
 #include "type.h"
 
-#include "core/core/machine.h"
-#include "core/core/machine_interface.h"
-#include "core/core/port.h"
+#include "core/devices/machine.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/port.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "app/catalog.h"
-#include "core/profile/xt/xt_5160_268.h"
+#include "core/profiles/xt/xt_5160_268.h"
 
 static core_machine_media_result vm_xt_5160_268_fdd_query(C_VOID *context,
     core_machine_media_info *out_info)

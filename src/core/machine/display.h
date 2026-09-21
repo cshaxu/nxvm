@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "core/core/display_interface.h"
+#include "core/devices/display_interface.h"
 struct vm_machine;
 C_VOID vm_machine_bind_display(struct vm_machine *machine);
 core_machine_display_kind vm_machine_publish_display(struct vm_machine *machine,

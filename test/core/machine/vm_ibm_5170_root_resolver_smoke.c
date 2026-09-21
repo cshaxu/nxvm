@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "core/core/machine_interface.h"
-#include "core/profile/default_profile/pc_at_profile_private.h"
-#include "core/profile/model40/model40_private.h"
+#include "core/devices/machine_interface.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
+#include "core/profiles/model40/model40_private.h"
 
 static const type_unsigned_32 vm_ibm_5170_root_contract_ids[] = {1u};
 

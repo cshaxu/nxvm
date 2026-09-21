@@ -1,10 +1,10 @@
 #include "type.h"
 
-#include "core/core/entry_plan_interface.h"
-#include "core/core/machine_interface.h"
-#include "core/core/media_interface.h"
-#include "core/core/rtc.h"
-#include "../core/support/core_machine_cpu_fixture.h"
+#include "core/devices/entry_plan_interface.h"
+#include "core/devices/machine_interface.h"
+#include "core/devices/media_interface.h"
+#include "core/devices/rtc.h"
+#include "../devices/support/core_machine_cpu_fixture.h"
 
 typedef struct mantle_fixture {
     core_machine_rtc rtc;

@@ -8,8 +8,8 @@
 
 
 
-#include "core/core/debug_interface.h"
-#include "core/core/machine_interface.h"
+#include "core/devices/debug_interface.h"
+#include "core/devices/machine_interface.h"
 
 #include "core/machine/lifecycle.h"
 

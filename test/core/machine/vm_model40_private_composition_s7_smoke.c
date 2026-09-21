@@ -2,9 +2,9 @@
 
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "core/core/kbc.h"
-#include "core/core/machine.h"
-#include "core/core/port.h"
+#include "core/devices/kbc.h"
+#include "core/devices/machine.h"
+#include "core/devices/port.h"
 #include "support/rom/model40_session_assets.h"
 
 C_INT main(C_VOID)

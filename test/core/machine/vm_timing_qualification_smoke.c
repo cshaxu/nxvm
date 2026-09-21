@@ -1,11 +1,11 @@
 #include "type.h"
 
-#include "core/core/dma.h"
-#include "core/core/machine.h"
-#include "core/core/machine_interface.h"
-#include "core/profile/default_profile/pc_at_profile_private.h"
-#include "core/profile/model40/model40_private.h"
-#include "core/profile/xt/xt_5160_268.h"
+#include "core/devices/dma.h"
+#include "core/devices/machine.h"
+#include "core/devices/machine_interface.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
+#include "core/profiles/model40/model40_private.h"
+#include "core/profiles/xt/xt_5160_268.h"
 
 typedef C_INT vm_timing_qualification_configure(
     core_machine_config *out_configuration);

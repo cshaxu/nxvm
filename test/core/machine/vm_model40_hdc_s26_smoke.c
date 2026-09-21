@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "core/core/hdc.h"
-#include "core/core/machine.h"
-#include "core/core/port.h"
+#include "core/devices/hdc.h"
+#include "core/devices/machine.h"
+#include "core/devices/port.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/media/hdd.h"
 #include "support/rom/model40_session_assets.h"
