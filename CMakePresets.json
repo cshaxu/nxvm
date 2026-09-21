@@ -73,17 +73,17 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64-release",
-      "targets": ["vm-0-5-0531"]
+      "targets": ["vm-0-5-0532"]
     },
     {
       "name": "current-gcc-ccache",
       "configurePreset": "mingw-gcc-x64-release-ccache",
-      "targets": ["vm-0-5-0531"]
+      "targets": ["vm-0-5-0532"]
     },
     {
       "name": "current-gcc-x86",
       "configurePreset": "mingw-gcc-x86-release",
-      "targets": ["vm-0-5-0531"]
+      "targets": ["vm-0-5-0532"]
     },
     {
       "name": "unit-tests-gcc",
@@ -97,13 +97,6 @@
       "name": "integration-tests-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": ["run-integration-tests"]
-    },
-    {
-      "name": "vdm-minimal-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": [
-        "vdm-minimal-session-smoke"
-      ]
     }
   ]
 }

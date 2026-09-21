@@ -2685,7 +2685,7 @@ foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
 endforeach()
 
 set(PROJECT_CURRENT_SESSION_ARTIFACT
-    "${CMAKE_SOURCE_DIR}/assets/sessions/nxvm_0_5_0531_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
+    "${CMAKE_SOURCE_DIR}/assets/sessions/nxvm_0_5_0532_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
 if(NOT EXISTS "${PROJECT_CURRENT_SESSION_ARTIFACT}")
     message(FATAL_ERROR "Current session artifact is missing: ${PROJECT_CURRENT_SESSION_ARTIFACT}")
 endif()
@@ -2894,8 +2894,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0531)
-add_current_vm_artifact(vm-0-5-0531 "0.5.0531")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0532)
+add_current_vm_artifact(vm-0-5-0532 "0.5.0532")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

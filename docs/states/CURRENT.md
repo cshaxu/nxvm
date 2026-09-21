@@ -2,14 +2,31 @@
 
 ## Current Work
 
-T532 remains open between accepted subtasks. S2 completed the owner-aligned
-source/test relocation at `66bba6f3`; its evidence is
-[indexed here](../etc/evidence/t532-s2-single-product-layout-relocation.md).
+## M5 T532 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved the complete single-product App/Core source map and matching repository-only test layout; S2 was accepted at `e9c5a55f`. This S completes only the proposal's defined closure sweep. |
+| Objective | Prove the final App/Core/test owner map, build the T532 dual stripped Release artifacts, run complete repository-only unit and independent integration verification, and record the truthful final task disposition. |
+| Non-goals | No functional guest, controller, profile, CLI, UX, Lib/Common/x86 API, external asset, session-YAML or integration-test semantic change; no repair of an unrelated external-integration failure merely to make this layout task green. |
+| Reference Baseline | Accepted S2 implementation `66bba6f3`, acceptance `e9c5a55f`, and [S2 evidence](../etc/evidence/t532-s2-single-product-layout-relocation.md). |
+| Candidate Proposal | [M5 NXVM single-product layout](../proposals/m5-nxvm-single-product-layout.md), S3. |
+| Files And ABI Surface | Build-version/artifact declarations, current technical baseline, T532 history/evidence, and any mechanically stale source/test/CMake/static-gate path discovered by the defined sweep. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), and [Source Layout](../design/CODING.md). Source policy is not triggered: no source or binary is imported. |
+| Verification | Final tracked-path and CMake/include sweep; clean x64 and x86 Release configurations and stripped artifacts; complete repository-only unit suite; independent owner-managed integration suite; specialized/documentation gates; actual-change and task-closure review. |
+| Expected Markers | No tracked `src/vm`, `src/vdm`, `test/vm` or `test/vdm`; final `src/{app,core/{core,machine,profile}}` and mirrored tests; `nxvm_0_5_0532_{x64,x86}.exe` in `build/output` and `assets/sessions`; truthful integration result. |
+| Asset Needs | Existing owner-managed integration assets only; no asset creation, import, copying or configuration mutation. |
+| Reporting Requirements | Record exact path-sweep result, x64/x86 artifact hashes and PE architectures, complete unit/integration results, all gate outcomes, actual code-size/path review, and any transferred external-integration result. |
+| Stop Conditions | Stop and report if closure needs a behavior change, external asset change, a new compatibility root, an unresolved old-path consumer, or an unapproved integration repair. |
+| Exit Criteria | The owner map remains exact, no former root survives, both Release artifacts are verified, complete unit and applicable gates pass, integration is green or its pre-existing owner-managed failure is explicitly transferred under the execution rule, and the T-level closure audit maps every request to evidence. |
+| Original Owner Request | Reorganize NXVM as one VM product: delete `src/vdm`; move `src/vm/app` to `src/app`, `src/core/machine` to `src/core/core`, `src/vm/machine` to `src/core/machine`, `src/vm/profile` to `src/core/profile`; tests follow the same component ownership except independent integration. |
+| Similar-Issue Sweep | Scan all tracked production/test/CMake/tool/current-authority paths for former roots, VDM targets, legacy test-owner roots, forwarding includes, and stale owner wording; repair every in-scope hit or stop for a non-layout semantic consumer. |
 
 ## Current Technical Baseline
 
-- `vm-0-5-0531` is the current target. Its stripped Release artifacts are
-  `nxvm_0_5_0531_x64.exe` and `nxvm_0_5_0531_x86.exe` in both
+- `vm-0-5-0532` is the current target. Its stripped Release artifacts are
+  `nxvm_0_5_0532_x64.exe` and `nxvm_0_5_0532_x86.exe` in both
   `build/output` and `assets/sessions`.
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:

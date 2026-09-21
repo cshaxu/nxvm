@@ -5,7 +5,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/waiting.h"
-#include "../../core/support/core_machine_cpu_fixture.h"
+#include "../../core/core/support/core_machine_cpu_fixture.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u

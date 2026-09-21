@@ -3,7 +3,7 @@
 
 #include "core/core/media_interface.h"
 #include "core/machine/media/media.h"
-#include "core/core/machine_interface.h"
+#include "core/machine/machine_interface.h"
 #include "app/catalog.h"
 
 typedef struct integration_yaml_session integration_yaml_session;
