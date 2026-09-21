@@ -10,3 +10,4 @@
 *.obj
 *.exe
 *.dll
+/assets/sessions/*/
