@@ -26,11 +26,11 @@ Retain lawful external firmware composition and Console/debugger interaction.
 
 ## M5: Fixed Machine Builds And Shared Devices
 
-Retain XT and AT; research the 386DX Standard board, including DeskPro, and
-inventory PC110 prerequisites. Converge build selection, NXVM.ini, Devices,
-profile-owned construction and Common adaptation to one profile per EXE.
-Preserve all CPU families as an exception. Retire only unrelated personalities
-through a coverage/dependency disposition, not XT/AT or an unresolved candidate.
+Retain all implemented XT, AT, DeskPro 386 and default PC/AT variants; inventory
+PC110 prerequisites without making a new Standard-board choice a dependency.
+Converge build selection, NXVM.ini, Devices, Profiles-owned construction and
+Common adaptation to one profile per EXE. Preserve every CPU family and live
+machine capability; simplify duplicated machinery rather than retiring models.
 
 Qualify the selected CPU, controllers and wiring through original function/
 timing ledgers, code gaps and reference cross-checks. Exact manual values or

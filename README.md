@@ -3,10 +3,11 @@
 Neko's x86 Virtual Machine is a portable x86 PC emulator with an integrated
 debugger. NXVM is the repository's current, bootable whole-machine product.
 The approved direction is one build-fixed executable per machine: IBM 5160 XT,
-IBM 5170 AT, a still-to-be-selected Standard 386DX, and later IBM Palm Top PC 110.
+IBM 5170 AT, DeskPro 386, default PC/AT, and later IBM Palm Top PC 110.
 They share an extensible architecture and one NXVM.ini configuration format.
 CPU-family implementations remain reusable. This is the target, not a claim
-that the INI/four-build cutover is implemented; the former NXVDM plan is withdrawn.
+that the INI/fixed-build cutover is implemented. All implemented machines remain
+supported; the former NXVDM plan is withdrawn.
 
 ## Introduction
 

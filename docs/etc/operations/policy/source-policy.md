@@ -87,7 +87,7 @@ configuration format embeds hashes/catalogues or protected binary payloads.
 Repository templates use portable references, never machine-local absolute
 paths. The loader supplies immutable bytes through the single Core ROM path.
 
-For XT, AT, Standard and PC110, profile directories in this repository own board C,
+For XT, AT, DeskPro, default and PC110, `core/profiles` owns board C,
 ROM slot/mapping declarations and authorized ROM source if separately admitted.
 Protected `.rom` and `.cmos` payloads stay in the corresponding external profile
 archive. A CMOS seed initializes documented writable configuration, not a

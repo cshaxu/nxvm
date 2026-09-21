@@ -4,7 +4,16 @@ Research date: 2026-09-21. Supporting evidence, not a second architecture or
 machine-selection authority. Baseline: `b03f827b` after T532. No production,
 test, build, session YAML or executable was changed by this research.
 
-## Selection Result
+## Current Scope Override
+
+Td S169 preserves every implemented XT, AT, DeskPro 386 and default PC/AT
+machine, with PC110 later. Standard-board selection is no longer a migration
+prerequisite or replacement goal. The earlier candidate findings below remain
+historical research, not permission to retire a machine. Target source ownership
+is `core/profiles`; singular paths in the observation table name actual baseline
+files, not the desired directory spelling.
+
+## Earlier Selection Result
 
 The later Td S168 scope retains XT and AT and adds DeskPro 386 to the Standard
 candidate comparison. The Intel/AMI findings below remain evidence, not an
@@ -102,17 +111,16 @@ Inspected live source, not inferred solely from directory names:
 | `src/core/profile/default_profile/pc_at_profile.c` | A 5170 parent is assembled to derive default AT; descriptors and resolved snapshots coexist. | Direct board construction without recursive configuration mirrors; retain 5170 itself. |
 | `src/core/machine/machine.c` | Separate XT/Model-40/PC-AT create and asset branches. | One resource and publication transaction, board facts supplied once. |
 | `src/core/machine/machine_private.h` | Multiple resolved boards, ROM buffers, firmware-kind and private flags in one object. | Selected-board lifetime only; no replacement mega-union. |
-| `src/core/machine/model40_composition.c`, `lifecycle.c` | Compaq wiring in generic adapter, reset/provider selection by machine kind. | Relocate wiring to Profile and bind once; preserve DeskPro until Standard selection. |
-| `src/core/core/vadp.c`, `hdc.c`, `fdc.c`, `d4_memory.c` | Compaq/DeskPro personalities coexist with reusable mechanisms. | Move reusable owners to Devices; no premature removal of candidate hardware. |
+| `src/core/machine/model40_composition.c`, `lifecycle.c` | Compaq wiring in generic adapter, reset/provider selection by machine kind. | Relocate wiring to Profiles and bind once; preserve DeskPro as an implemented machine. |
+| `src/core/core/vadp.c`, `hdc.c`, `fdc.c`, `d4_memory.c` | Compaq/DeskPro personalities coexist with reusable mechanisms. | Move reusable owners to Devices; preserve required machine personalities. |
 | `src/core/machine/media/` | Device-semantic adapter over Lib Storage. | Keep needed geometry/change semantics; do not duplicate file storage. |
 | `src/core/core/cpu_interface.h` | Actual enum: DEFAULT, 8086, 8088, 80186, 80286, 80386. | Retain all actual models; 80188/486 are not currently implemented enum entries. |
 | `src/app/composition.c`, `core/machine/lifecycle.c` | Existing Common driver/session/UI binding. | Keep one shared route; do not add product-specific queues or executors. |
 
 The audit identifies replacement opportunities, not numerical code savings.
 Implementation must count actual deleted/added lines and prove that removed
-paths have no retained consumer. CPU retention overrides machine retirement;
-old-machine tests containing generic regressions must be rehomed first. XT/AT
-tests are retained board coverage, not generic-only salvage from retired boards.
+paths have no retained consumer. All existing machine and CPU tests move with
+their owners; none is discarded as a consequence of structure simplification.
 
 ## SoftPC INI And Current Composition Inspection
 
@@ -145,7 +153,8 @@ Profile from depending back on private Machine adapter state.
 The principal design documents are target requirements. The current runnable
 0532 baseline is unchanged. Documentation validation and actual-diff review
 verify this delivery; no new boot, unit, integration or artifact result is
-claimed. Implementation and final board selection remain queued.
+claimed. Structural implementation remains queued; new-board selection is no
+longer its prerequisite. PC110 retains a separate implementation receiver.
 
 Historical Td S167 closure review: the full documentation governance gate and its self-tests pass.
 The checker now recognizes PC110 instead of retired NXVDM UX; self-test fixtures

@@ -7,17 +7,17 @@ from this approved target.
 
 ## Product Shape
 
-NXVM retains an extensible multi-machine architecture. XT, AT, Standard 386DX
-and later PC110 each link exactly one fixed machine composition, using the same
+NXVM retains an extensible multi-machine architecture. XT, AT, DeskPro 386,
+default PC/AT and later PC110 each link one fixed machine composition, using the same
 App, Common, Lib and x86 tooling. A shared NXVM.ini configures supported memory,
 media paths/access and presentation, not machine identity, CPU population,
 controller topology, startup actions or firmware boot order. It replaces YAML
 at the implementation cutover, not through a permanent parallel loader.
 
-Standard requires a source-qualified 386DX board whose identity is not yet
-frozen; DeskPro 386 remains a candidate. PC110 requires its own 486-class
-contract, not a renamed 386 profile.
-Neither implies a VDM, mantle, DOS implementation or DLL product. Existing
+All implemented machines and their required personalities remain supported;
+new Standard-board selection is not a migration prerequisite. PC110 requires
+its own 486-class contract, not a renamed 386 profile.
+This implies no VDM, mantle, DOS implementation or DLL product. Existing
 release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
@@ -27,7 +27,7 @@ release behavior remains the baseline until an implemented, verified cutover.
 - `core/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
-- `core/profile` owns each board's actual composition: device construction,
+- `core/profiles` owns each board's actual composition: device construction,
   wiring, clocks, memory constraints, firmware slots and board-specific behavior.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
@@ -74,7 +74,7 @@ Injected asset/media services use neutral contracts, avoiding a Profile-to-
 Machine dependency cycle. Adding a board needs a composition and build entry,
 not another Common queue, App parser or generic-device machine-name branch.
 
-### CPU Retention And Device Reduction
+### CPU And Machine Preservation
 
 CPU identity, feature/timing tables and instruction dispatch remain Core-owned
 and selectable by Core callers and repository-only CPU tests. Preserve all
@@ -83,10 +83,10 @@ coverage needs sources and implementation; an enum alias cannot turn 386 into
 486. Fixed products choose their documented CPU once. Do not scatter build
 macros through handlers or remove later CPUs' 16-bit, real-mode or VM86 semantics.
 
-Device retirement follows the four-family inventory. XT/AT mechanisms and
-DeskPro candidate dependencies are protected from premature deletion. Remove unneeded
-personalities and their configuration fields, not standard Intel chip behavior
-or CPU-shared mechanisms. One VADP owner retains needed VGA/EGA mechanisms;
+Retain every implemented machine's device personalities, including default
+and Compaq-specific behavior. Structural cleanup may remove duplicate or dead
+mechanisms with caller proof, but not live machine capabilities. One VADP owner
+retains needed VGA/EGA mechanisms;
 PC110 extensions must not create second VRAM/frame truth. One HDC owner retains
 only selected storage personalities, not an assumption that all disks are ATA.
 

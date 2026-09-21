@@ -1,7 +1,7 @@
 # Product UX
 
-XT, AT, Standard and PC110 share one NXVM interaction model. This target design
-does not claim that all four executables are delivered.
+XT, AT, DeskPro 386, default PC/AT and future PC110 share one NXVM interaction
+model. This target design does not claim fixed-build/INI cutover or PC110 delivery.
 
 ## NXVM
 

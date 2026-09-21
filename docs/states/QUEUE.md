@@ -8,7 +8,7 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 2. [Retained CPU-family qualification](../proposals/m5-retained-cpu-qualification.md)
 3. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
 4. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-5. [Standard DOS and Windows qualification](../proposals/m5-standard-guest-qualification.md)
+5. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 ## M6 Candidates
 
@@ -16,6 +16,7 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 The [retired-plan disposition](../etc/history/retired-machine-plans/README.md)
 maps prior candidates to these receivers or withdrawn product scope. It is
-historical context, not another queue. Its latest scope override retains XT/AT
-and DeskPro candidacy. The head proposal covers compiled profiles, NXVM.ini and
-Devices/Profile/Machine separation; no implementation T is admitted by this Td.
+historical context, not another queue. Its latest scope override retains all
+implemented XT, AT, DeskPro and default machines. The head proposal covers
+compiled profiles, NXVM.ini and Devices/Profiles/Machine separation, not machine
+retirement or Standard selection; no implementation T is admitted by this Td.

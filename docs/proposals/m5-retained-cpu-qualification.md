@@ -3,7 +3,7 @@
 ## Goal
 
 Preserve every existing CPU implementation, profile and selection table while
-qualifying the CPU contracts required by XT, AT, Standard and PC110. CPU
+qualifying the CPU contracts required by XT, AT, DeskPro, default and future PC110. CPU
 architecture remains independent of build-fixed board profiles.
 
 ## Scope And Batches

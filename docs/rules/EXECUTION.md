@@ -451,7 +451,7 @@ Identifiers are never reused or allocated out of queue order.
 Until the fixed-product build cutover, executable names remain
 `nxvm_0_5_NNNN_x64.exe` and `nxvm_0_5_NNNN_x86.exe`. After that admitted
 cutover, names use `nxvm_<machine>_0_5_NNNN_<arch>.exe`, with machine keys
-`xt`, `at`, `standard`, `pc110` and architectures `x64`, `x86`. Build only
+`xt`, `at`, `model40`, `default`, `pc110` and architectures `x64`, `x86`. Build only
 implemented profiles admitted as runnable. Each runnable product requires both
 host architectures in `build/output/` and `assets/sessions/`, with identical
 copies by hash. Any absent implementation must be reported, not replaced

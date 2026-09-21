@@ -2,9 +2,10 @@
 
 ## Current Work
 
-No task is currently admitted. The queue-head proposal now covers four compiled
-machine families, NXVM.ini and Devices/Profile/Machine separation. Standard
-selection and PC110 implementation remain unproven; no runtime cutover occurred.
+No task is currently admitted. The queue-head structural proposal retains all
+implemented XT, AT, DeskPro 386 and default PC/AT machines, with future PC110.
+Target ownership is Devices/Profiles/Machine; fixed builds and NXVM.ini remain
+planned, not implemented. No Standard-board selection is required for migration.
 
 ## Current Technical Baseline
 
@@ -32,6 +33,15 @@ selection and PC110 implementation remain unproven; no runtime cutover occurred.
 | T526 | Canonical-library integration repair closed at `98ac51a4`: 299/299 unit, 67/67 specialized gates, 42/42 external integration, actual-diff review and stripped x64/x86 artifacts accepted. |
 
 ## Recent Governance
+
+- **M5 Td S169 P1:** revises current goals, architecture, layout, proposals,
+  queue and future artifact naming to preserve every implemented machine and
+  use plural core/profiles plus mirrored tests. Standard-board selection and
+  model retirement are removed from the structural proposal; guest qualification
+  now covers the retained machines. Historical scope notices preserve earlier
+  facts without authorizing deletion. Documentation/architecture governance
+  guided the authority split; full documentation gate and actual-diff review
+  pass. No source, test, asset, configuration or artifact changes.
 
 - **M5 Td S168 P1:** supersedes the two-product retirement scope with retained
   XT/AT, candidate Standard 386DX (including DeskPro) and later PC110. The

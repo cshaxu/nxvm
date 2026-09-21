@@ -30,7 +30,7 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 - [ ] **Unselected peripheral breadth (`TODO(Low)`).** ELCR/PCI/APIC, advanced
   AUX, light-pen/composite effects, serial/parallel/game ports and host speaker
   breadth require a named board consumer and source contract. If selected by
-  an XT/AT/Standard/PC110 BOM they transfer to controller qualification; otherwise
+  an XT/AT/DeskPro/default/PC110 BOM they transfer to controller qualification; otherwise
   they are not implicit product features.
 ## Timing-Fidelity Debt
 
