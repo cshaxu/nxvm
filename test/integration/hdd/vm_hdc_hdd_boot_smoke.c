@@ -74,6 +74,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
     if (!session->hdd.connect.flagDiskExist) goto fail;
+    /* The canonical product INI intentionally supplies its normal floppy.
+     * This probe's distinct subject is HDD firmware handoff, so remove that
+     * declared removable medium through the production owner and reset before
+     * executing.  It is not a second profile or boot-order configuration. */
+    if (vm_machine_set_common_media(session, STD_NULL,
+            LIB_STORAGE_MEDIUM_OVERLAY) != TYPE_STATUS_OK ||
+        vm_machine_reset(session) != TYPE_STATUS_OK) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {
         run_status = core_machine_run(session->core_machine, budget, &result);
         if (run_status != TYPE_STATUS_OK ||

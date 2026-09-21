@@ -42,8 +42,11 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             continue;
         }
         if (vm_machine_executor_state_pause_requested(control->state)) {
-            vm_machine_executor_state_acknowledge_pause(control->state);
+            /* A paused observation is a safe snapshot boundary: publish the
+             * final guest frame before acknowledging it.  Otherwise a caller
+             * can observe PAUSED and still capture the preceding frame. */
             (C_VOID)vm_machine_publish_display(session, TYPE_TRUE);
+            vm_machine_executor_state_acknowledge_pause(control->state);
             vm_machine_control_signal_completion(control);
             (C_VOID)base_sync_event_wait(control->control_ready, UINT32_MAX);
             base_sync_event_reset(control->control_ready);

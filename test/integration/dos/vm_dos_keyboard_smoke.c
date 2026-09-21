@@ -13,12 +13,6 @@
 #define TEXT_VIDEO_BASE 0x000b8000u
 #define TEXT_VIDEO_CELLS (80u * 25u)
 
-static DWORD WINAPI run_machine(C_VOID *opaque)
-{
-    vm_machine_control_start(&((vm_machine *)opaque)->control);
-    return 0u;
-}
-
 static C_INT vm_dos_keyboard_submit_key(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
@@ -30,6 +24,13 @@ static C_INT vm_dos_keyboard_submit_key(vm_machine *session,
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed != 0;
     return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
+}
+
+static C_INT vm_dos_keyboard_submit_return(vm_machine *session)
+{
+    if (!vm_dos_keyboard_submit_key(session, 0x1cu, VK_RETURN, 1)) return 0;
+    Sleep(25u);
+    return vm_dos_keyboard_submit_key(session, 0x1cu, VK_RETURN, 0);
 }
 
 static C_INT vm_dos_keyboard_has_text(const vm_machine *session,
@@ -171,7 +172,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session;
     vm_machine *session = STD_NULL;
-    HANDLE thread = STD_NULL;
     DWORD elapsed;
     const C_UCHAR scan_codes[] = { 0x12u, 0x20u, 0x17u, 0x14u, 0x1cu };
     const C_UCHAR virtual_keys[] = { 'E', 'D', 'I', 'T', VK_RETURN };
@@ -183,8 +183,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
-    thread = CreateThread(STD_NULL, 0u, run_machine, session, 0u, STD_NULL);
-    if (thread == STD_NULL) goto fail;
+    if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
     for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
         if (vm_dos_keyboard_has_prompt(session) ||
             vm_dos_keyboard_has_date_prompt(session)) break;
@@ -205,15 +204,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         goto fail;
     }
     if (vm_dos_keyboard_has_date_prompt(session)) {
-        if (core_machine_keyboard_receive_native_byte(session->core_machine, 0x5au) !=
-            TYPE_STATUS_OK) goto fail;
+        if (!vm_dos_keyboard_submit_return(session)) goto fail;
         for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
             if (vm_dos_keyboard_has_time_prompt(session)) break;
             Sleep(10u);
         }
-        if (elapsed == prompt_timeout ||
-            core_machine_keyboard_receive_native_byte(session->core_machine, 0x5au) !=
-                TYPE_STATUS_OK) goto fail;
+        if (elapsed == prompt_timeout || !vm_dos_keyboard_submit_return(session)) goto fail;
         for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
             if (vm_dos_keyboard_has_prompt(session)) break;
             Sleep(10u);
@@ -279,8 +275,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     vm_machine_stop(session);
-    WaitForSingleObject(thread, 2000u);
-    CloseHandle(thread);
     integration_ini_session_close(&ini_session);
     if (elapsed == edit_timeout || !display_ok) return 1;
     STD_PRINTF("M5:T216:S5:EDIT:DOS:OK\n");
@@ -288,10 +282,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
 fail:
     if (session != STD_NULL) vm_machine_stop(session);
-    if (thread != STD_NULL) {
-        WaitForSingleObject(thread, 2000u);
-        CloseHandle(thread);
-    }
     integration_ini_session_close(&ini_session);
     return 1;
 }

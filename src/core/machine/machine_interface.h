@@ -103,12 +103,14 @@ type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed);
 C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path);
 C_INT vm_machine_remove_fdd(vm_machine *session, const C_CHAR *path);
 C_INT vm_machine_insert_hdd(vm_machine *session, const C_CHAR *path);
-/* Production host-input ingress.  Events are copied into the session's
- * ordered request transport; they do not mutate guest devices synchronously. */
+/* Production host-input ingress.  A composed session copies events into
+ * Common's ordered executor transport; it never mutates a running guest
+ * device from the host thread.  An uncomposed deterministic Core loop may
+ * use the same API for owner-local tests. */
 type_status vm_machine_submit_host_input(vm_machine *session,
     const core_machine_guest_input_event *event);
 /* vm/app uses this value-only ingress; vm/machine alone translates it to
- * the Core-owned guest-input source. */
+ * Common's neutral guest-input event. */
 type_status vm_machine_submit_input(vm_machine *session,
     const vm_machine_input *input);
 type_status vm_machine_get_reset_vector(const vm_machine *session,

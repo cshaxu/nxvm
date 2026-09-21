@@ -127,12 +127,37 @@ static C_INT vm_machine_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
 type_status vm_machine_submit_host_input(vm_machine *session,
     const core_machine_guest_input_event *event)
 {
+    kvm_input_event input = {0};
+
     if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
     if (event == STD_NULL || (event->kind != CORE_MACHINE_GUEST_INPUT_KEY &&
         event->kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return core_machine_guest_input_source_submit(session->input_source, event);
+    if (event->kind == CORE_MACHINE_GUEST_INPUT_KEY) {
+        input.type = KVM_EVENT_KEY;
+        input.data.key.scan_code = event->data.key.scan_code;
+        input.data.key.key = event->data.key.virtual_key;
+        input.data.key.pressed = event->data.key.pressed;
+    } else {
+        input.type = KVM_EVENT_MOUSE;
+        input.data.mouse.delta_x = event->data.relative_mouse.delta_x;
+        input.data.mouse.delta_y = event->data.relative_mouse.delta_y;
+        input.data.mouse.buttons = event->data.relative_mouse.buttons;
+    }
+    /* A composed product has exactly one executor-side Core mutation path.
+     * The Common FIFO serializes host input with its bounded safe points.
+     * An explicitly uncomposed deterministic Core loop retains direct
+     * owner-local delivery. */
+    if (session->executor != LIB_NULL) {
+        return common_machine_enqueue_input(session->executor, &input) ?
+            TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
+    }
+    /* The uncomposed test ingress retains the prior source contract: a valid
+     * copied host record was accepted even when this board has no receiver
+     * for that optional class (for example AUX input on Model 40). */
+    (C_VOID)vm_machine_deliver_common_input(session, &input);
+    return TYPE_STATUS_OK;
 }
 
 type_status vm_machine_submit_input(vm_machine *session,

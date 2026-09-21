@@ -21,12 +21,6 @@
 #define VM_T287_FAULT_OBSERVATION_MILLISECONDS 60000u
 #define VM_T288_POST_COPY_TIMEOUT_MILLISECONDS 720000u
 
-static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
-{
-    vm_machine_control_start(&((vm_machine *)opaque)->control);
-    return 0u;
-}
-
 static C_INT vm_t287_submit_input(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
@@ -95,18 +89,11 @@ static C_INT vm_t287_wait_for(const vm_machine *session, const C_CHAR *text,
     return 0;
 }
 
-static C_INT vm_t287_submit(const vm_machine *session, const type_unsigned_8 *codes,
-    STD_SIZE_T count)
+static C_INT vm_t287_submit_return(vm_machine *session)
 {
-    STD_SIZE_T index;
-
-    if (session == STD_NULL || codes == STD_NULL) return 0;
-    for (index = 0u; index < count; ++index) {
-        if (core_machine_keyboard_receive_native_byte(session->core_machine,
-                codes[index]) != TYPE_STATUS_OK) return 0;
-        Sleep(25u);
-    }
-    return 1;
+    if (!vm_t287_submit_input(session, 0x1cu, VK_RETURN, 1)) return 0;
+    Sleep(25u);
+    return vm_t287_submit_input(session, 0x1cu, VK_RETURN, 0);
 }
 
 static C_INT vm_t287_type_setup(vm_machine *session)
@@ -231,8 +218,6 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session = {0};
-    const type_unsigned_8 enter[] = {0x5au};
-    HANDLE thread = STD_NULL;
     vm_machine *session = STD_NULL;
     const C_CHAR *stage = "create";
     C_INT observed_setup_inf = 0;
@@ -245,8 +230,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
     if (session == STD_NULL) goto fail;
-    thread = CreateThread(STD_NULL, 0u, vm_t287_run_machine, session, 0u, STD_NULL);
-    if (thread == STD_NULL) goto fail;
+    if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
     stage = "boot";
     for (elapsed = 0u; elapsed < VM_T287_BOOT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         date_prompt = vm_t287_has_text(session, "Enter new date");
@@ -259,10 +243,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (elapsed == VM_T287_BOOT_TIMEOUT_MILLISECONDS) goto fail;
     if (date_prompt) {
         stage = "date";
-        if (!vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+        if (!vm_t287_submit_return(session)) goto fail;
         stage = "time";
         if (!vm_t287_wait_for(session, "Enter new time", VM_T287_BOOT_TIMEOUT_MILLISECONDS) ||
-            !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+            !vm_t287_submit_return(session)) goto fail;
     }
     stage = "prompt";
     if (!vm_t287_wait_for(session, STD_NULL, VM_T287_BOOT_TIMEOUT_MILLISECONDS)) goto fail;
@@ -280,10 +264,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (vm_t287_has_text(session, "Welcome to Setup.")) {
             stage = "welcome";
             if (advance_steps != 0) {
-                if (!vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+                if (!vm_t287_submit_return(session)) goto fail;
                 Sleep(3000u);
                 if (advance_steps >= 2) {
-                    if (!vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+                    if (!vm_t287_submit_return(session)) goto fail;
                     Sleep(3000u);
                 }
                 if (advance_steps >= 3) {
@@ -314,10 +298,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
 done:
     if (session != STD_NULL) vm_machine_stop(session);
-    if (thread != STD_NULL) {
-        WaitForSingleObject(thread, 2000u);
-        CloseHandle(thread);
-    }
     integration_ini_session_close(&ini_session);
     return passed ? 0 : 1;
 

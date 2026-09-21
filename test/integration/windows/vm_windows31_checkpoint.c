@@ -16,12 +16,6 @@
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
 #define VM_T287_COMMAND_TIMEOUT_MILLISECONDS 5000u
 
-static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
-{
-    vm_machine_control_start(&((vm_machine *)opaque)->control);
-    return 0u;
-}
-
 static C_INT vm_t287_submit_input(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
 {
@@ -169,7 +163,6 @@ static C_VOID vm_t287_report_frame(const vm_machine *session)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session = {0};
-    HANDLE thread = STD_NULL;
     vm_machine *session = STD_NULL;
     type_unsigned_8 hdd_count = 0u;
     type_unsigned_8 hdd_bda[4] = {0};
@@ -183,8 +176,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
     if (session == STD_NULL) goto fail;
-    thread = CreateThread(STD_NULL, 0u, vm_t287_run_machine, session, 0u, STD_NULL);
-    if (thread == STD_NULL) goto fail;
+    if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
     stage = "date";
     boot_text = vm_t287_wait_for_text(session, "Enter new date", "A:\\>",
         VM_T287_BOOT_TIMEOUT_MILLISECONDS);
@@ -226,11 +218,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) == TYPE_STATUS_OK) hdd_count = hdd_bda[1];
     ata_commands = session->core_machine->hdc.data.command_count;
-    vm_machine_control_stop(&session->control);
-    WaitForSingleObject(thread, 2000u);
+    vm_machine_stop(session);
     vm_t287_report_frame(session);
-    CloseHandle(thread);
-    thread = STD_NULL;
     if (c_present && ata_commands != 0u) {
         STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-present "
             "observed_bda_hdd_count=%u ata_commands=%u\n", hdd_count,
@@ -242,10 +231,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
 fail:
     vm_t287_report(session, stage);
     if (session != STD_NULL) vm_machine_stop(session);
-    if (thread != STD_NULL) {
-        WaitForSingleObject(thread, 2000u);
-        CloseHandle(thread);
-    }
     integration_ini_session_close(&ini_session);
     return 1;
 }

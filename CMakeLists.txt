@@ -1289,7 +1289,6 @@ set(CORE_MACHINE_SOURCES
     src/core/devices/transaction.c
 )
 add_library(core-machine-boundary STATIC
-    src/core/devices/guest_input.c
     src/core/devices/guest_presentation_mailbox.c)
 target_include_directories(core-machine-boundary PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -1329,10 +1328,6 @@ target_link_libraries(vm-profile PUBLIC
     storage
     type-facade)
 
-add_executable(core-machine-guest-input-source-smoke
-    test/core/devices/core_machine_guest_input_source_smoke.c
-)
-target_link_libraries(core-machine-guest-input-source-smoke PRIVATE core-machine-boundary)
 add_executable(vm-machine-executor-state-smoke
     test/core/machine/vm_machine_executor_state_smoke.c)
 target_link_libraries(vm-machine-executor-state-smoke PRIVATE vm-machine)
@@ -2134,7 +2129,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     common-ui-smoke
     common-adapter-conformance
     vm-machine-frame-smoke
-    core-machine-guest-input-source-smoke
     host-smoke
     vm-machine-executor-state-smoke
     storage-smoke
@@ -3439,7 +3433,6 @@ endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-guest-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-executor-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

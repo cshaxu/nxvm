@@ -14,6 +14,7 @@ typedef type_status (*integration_ini_session_overlay_transform)(
 struct integration_ini_session {
     vm_session_request request;
     vm_machine *session;
+    common_machine *common_machine;
     integration_ini_session_overlay_transform transform;
     C_VOID *transform_opaque;
 };
@@ -32,6 +33,10 @@ type_status integration_ini_session_overlay_read(const integration_ini_session *
 type_status integration_ini_session_overlay_write(integration_ini_session *session,
     core_machine_media_id id, const C_VOID *bytes, STD_SIZE_T byte_count);
 type_status integration_ini_session_restart(integration_ini_session *session);
+/* Integration uses the same composed Common executor as the product whenever
+ * a test drives a running guest.  Direct Core loops remain for owner-local
+ * controller tests that deliberately do not submit host input. */
+type_status integration_ini_session_start(integration_ini_session *session);
 C_VOID integration_ini_session_close(integration_ini_session *session);
 
 #endif

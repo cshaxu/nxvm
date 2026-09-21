@@ -20,36 +20,12 @@
 
 #include "core/devices/machine_interface.h"
 
-#include "core/devices/guest_input_interface.h"
 
 #include "core/machine/display.h"
 #include "core/machine/waiting.h"
 
 
 #include "core/machine/lifecycle.h"
-
-static C_VOID vm_machine_input_submit(C_VOID *context,
-    const core_machine_guest_input_event *event)
-{
-    vm_machine *machine = (vm_machine *)context;
-    kvm_input_event input = {0};
-
-    if (machine == STD_NULL || event == STD_NULL) return;
-    if (event->kind == CORE_MACHINE_GUEST_INPUT_KEY) {
-        input.type = KVM_EVENT_KEY;
-        input.data.key.scan_code = event->data.key.scan_code;
-        input.data.key.key = event->data.key.virtual_key;
-        input.data.key.pressed = event->data.key.pressed;
-    } else if (event->kind == CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE) {
-        input.type = KVM_EVENT_MOUSE;
-        input.data.mouse.delta_x = event->data.relative_mouse.delta_x;
-        input.data.mouse.delta_y = event->data.relative_mouse.delta_y;
-        input.data.mouse.buttons = event->data.relative_mouse.buttons;
-    } else {
-        return;
-    }
-    (C_VOID)vm_machine_deliver_common_input(machine, &input);
-}
 
 static C_VOID vm_machine_execution_provider_reset(C_VOID *context)
 {
@@ -85,10 +61,6 @@ type_status vm_machine_bind_execution_provider(vm_machine *machine)
     if (status != TYPE_STATUS_OK) return status;
     return core_machine_freeze_execution_providers(machine->core_machine);
 }
-
-static const core_machine_guest_input_sink vm_machine_input_sink = {
-    vm_machine_input_submit
-};
 
 /* Common owns the sole host worker and lifecycle queue.  NXVM only adapts its
  * bounded Core executor at the explicit callbacks below; it does not retain a
@@ -338,12 +310,6 @@ type_status vm_machine_initialize(vm_machine *machine) {
         vm_machine_finalize(machine);
         return status;
     }
-    status = core_machine_guest_input_source_create(&vm_machine_input_sink, machine,
-        &machine->input_source);
-    if (status != TYPE_STATUS_OK) {
-        vm_machine_finalize(machine);
-        return status;
-    }
     vm_machine_start_outcome_reset(machine);
     machine->active = 1;
     return TYPE_STATUS_OK;
@@ -352,8 +318,6 @@ type_status vm_machine_initialize(vm_machine *machine) {
 C_VOID vm_machine_finalize(vm_machine *machine) {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     vm_machine_stop(machine);
-    core_machine_guest_input_source_destroy(machine->input_source);
-    machine->input_source = STD_NULL;
     machine->executor = STD_NULL;
     machine->active = 0;
     vm_machine_control_finalize(&machine->control, machine);

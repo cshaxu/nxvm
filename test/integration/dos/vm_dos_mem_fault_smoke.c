@@ -14,12 +14,6 @@
 #define DOS_PROMPT_TIMEOUT_MILLISECONDS 20000u
 #define MEM_FAULT_TIMEOUT_MILLISECONDS 2000u
 
-static DWORD WINAPI vm_dos_mem_fault_run_machine(C_VOID *opaque)
-{
-    vm_machine_control_start(&((vm_machine *)opaque)->control);
-    return 0u;
-}
-
 static C_INT vm_dos_mem_fault_submit_key(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key)
 {
@@ -69,7 +63,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session;
     vm_machine *session = STD_NULL;
-    HANDLE thread = STD_NULL;
     DWORD elapsed;
     DWORD result;
     const C_UCHAR scan_codes[] = { 0x32u, 0x12u, 0x32u, 0x1cu };
@@ -84,10 +77,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         return 77;
     }
     session = ini_session.session;
-    stage = "machine thread creation";
-    thread = CreateThread(STD_NULL, 0u, vm_dos_mem_fault_run_machine, session,
-        0u, STD_NULL);
-    if (thread == STD_NULL) goto fail;
+    stage = "machine start";
+    if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
     stage = "DOS prompt";
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         if (vm_dos_mem_fault_has_prompt(session)) break;
@@ -99,8 +90,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (!vm_dos_mem_fault_submit_key(session, scan_codes[index],
                 virtual_keys[index])) goto fail;
     }
-    result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
-    if (result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) goto fail;
+    Sleep(MEM_FAULT_TIMEOUT_MILLISECONDS);
+    result = vm_machine_control_is_running(&session->control) ? WAIT_TIMEOUT :
+        WAIT_OBJECT_0;
     stage = "FNINIT fault classification";
     if (result == WAIT_OBJECT_0) {
         if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
@@ -119,8 +111,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         STD_PRINTF("M5:T156:S1:DOS-MEM-NEXT:RUNNING\n");
     }
     vm_machine_stop(session);
-    if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
-    CloseHandle(thread);
     integration_ini_session_close(&ini_session);
     STD_PRINTF("M5:T156:S1:DOS-MEM-FNINIT-PASSED:OK\n");
     return 0;
@@ -133,10 +123,6 @@ fail:
         vm_dos_mem_fault_print(&diagnostic);
     }
     if (session != STD_NULL) vm_machine_stop(session);
-    if (thread != STD_NULL) {
-        WaitForSingleObject(thread, 2000u);
-        CloseHandle(thread);
-    }
     integration_ini_session_close(&ini_session);
     return 1;
 }

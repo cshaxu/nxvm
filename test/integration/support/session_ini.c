@@ -43,6 +43,12 @@ type_status integration_ini_session_restart(integration_ini_session *session)
     type_status status;
 
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session->common_machine != LIB_NULL) {
+        (C_VOID)common_machine_shutdown(session->common_machine);
+        (C_VOID)vm_machine_bind_common_machine(session->session, LIB_NULL);
+        (C_VOID)common_machine_destroy(session->common_machine);
+        session->common_machine = LIB_NULL;
+    }
     if (session->session != STD_NULL) {
         vm_machine_destroy(session->session);
         session->session = STD_NULL;
@@ -58,6 +64,20 @@ type_status integration_ini_session_restart(integration_ini_session *session)
         return TYPE_STATUS_FAULT;
     }
     return TYPE_STATUS_OK;
+}
+
+type_status integration_ini_session_start(integration_ini_session *session)
+{
+    common_machine_driver driver;
+
+    if (session == STD_NULL || session->session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session->common_machine == LIB_NULL &&
+        (vm_machine_describe_common_driver(session->session, &driver) != TYPE_STATUS_OK ||
+        common_machine_create(&session->common_machine, &driver) != LIB_STATUS_OK ||
+        vm_machine_bind_common_machine(session->session, session->common_machine) !=
+            TYPE_STATUS_OK)) return TYPE_STATUS_FAULT;
+    return common_machine_start(session->common_machine) ? TYPE_STATUS_OK :
+        TYPE_STATUS_INVALID_STATE;
 }
 
 type_status integration_ini_session_open(const C_CHAR *directory,
@@ -142,6 +162,10 @@ type_status integration_ini_session_overlay_write(integration_ini_session *sessi
 C_VOID integration_ini_session_close(integration_ini_session *session)
 {
     if (session == STD_NULL) return;
+    (C_VOID)common_machine_shutdown(session->common_machine);
+    (C_VOID)vm_machine_bind_common_machine(session->session, LIB_NULL);
+    (C_VOID)common_machine_destroy(session->common_machine);
+    session->common_machine = LIB_NULL;
     vm_machine_destroy(session->session);
     STD_MEMSET(session, 0, sizeof(*session));
 }

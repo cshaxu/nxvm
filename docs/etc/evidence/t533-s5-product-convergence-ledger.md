@@ -8,10 +8,10 @@ unavailable owner-provided asset is a disposition, not a pass.
 
 | Product profile | CPU | Media topology | Required release artifacts | Current disposition |
 | --- | --- | --- | --- | --- |
-| `ibm-5160-model-268-360k` | 8088 | 360 KiB FDD | x64 and x86 EXE plus adjacent `NXVM.ini` | Release x64 reached `installer-running`; x86 replay pending |
-| `ibm-5170-model-339-1200k` | 80286 | 1.2 MiB FDD | x64 and x86 EXE plus adjacent `NXVM.ini` | Release x64 reached `installer-running`; x86 replay pending |
-| `compaq-deskpro-386-model-40-1200k` | 80386 | 1.2 MiB FDD and HDC | x64 and x86 EXE plus adjacent `NXVM.ini` | Release x64 boot reached `installer-running` within 60 seconds; dual-architecture replay pending |
-| `default-pc-at-80386-1440k-hdd` | 80386 | 1.44 MiB FDD and HDC | x64 and x86 EXE plus adjacent `NXVM.ini` | Release x64 reached `dos-prompt`; x86 replay pending |
+| `ibm-5160-model-268-360k` | 8088 | 360 KiB FDD | x64 and x86 EXE plus adjacent `NXVM.ini` | Both Release architectures reached `installer-running` |
+| `ibm-5170-model-339-1200k` | 80286 | 1.2 MiB FDD | x64 and x86 EXE plus adjacent `NXVM.ini` | Both Release architectures reached `installer-running` |
+| `compaq-deskpro-386-model-40-1200k` | 80386 | 1.2 MiB FDD and HDC | x64 and x86 EXE plus adjacent `NXVM.ini` | Both Release architectures reached `installer-running` |
+| `default-pc-at-80386-1440k-hdd` | 80386 | 1.44 MiB FDD and HDC | x64 and x86 EXE plus adjacent `NXVM.ini` | Both Release architectures reached `dos-prompt` |
 
 Every artifact row must validate the same profile manifest selected at CMake
 configure time. The checked-in root INI remains the canonical template. The
@@ -47,6 +47,45 @@ and architecture before it can close.
   `build/output/<profile>/` and `assets/sessions/<profile>/`; both receive its
   matching executable and an adjacent INI whose external-asset relative prefix
   is correct from that directory.
-- The complete repository-only suite was rebuilt and run from
-  `build/t533-s5-default-release-x64`: **336/336 passed** (212.71 seconds).
-  It does not consume an INI, ROM, CMOS, font or guest-media file.
+- The prior fixed-product implementation ran **336/336** repository-only
+  cases.  This S5 repair removes the unconsumed Core guest-input-source and
+  its isolated smoke, leaving **335** repository-only cases; the remaining
+  host ingress coverage exercises the actual Machine/Common route.  The suite
+  still consumes no INI, ROM, CMOS, font or guest-media file.  The revised
+  **335/335** suite passed at four-way parallelism in 22.82 seconds.
+- All eight stripped Release artifacts were built with their native x64 or
+  x86 toolchain and passed the CMake PE-architecture check.  Each has an
+  adjacent generated INI in both required product directories.  The four x64
+  and four x86 boot probes reached the terminal recorded in the table above.
+
+## Input And HDD Gate Repair
+
+The former 17/20 integration result exposed two shared test/product boundary
+errors rather than three profile-specific failures:
+
+- `vm_machine_submit_host_input()` bypassed Common's executor FIFO and wrote
+  KBC state from a host thread while the Core runner was active.  Composed
+  machines now enqueue the copied `kvm_input_event` through Common; only an
+  explicitly uncomposed deterministic Core loop retains direct owner-local
+  delivery.  The redundant Core guest-input-source transport and its lone
+  smoke were removed.
+- The HDD-only probe used a canonical INI that correctly includes a normal
+  floppy, but then incorrectly expected HDD VBR handoff.  It now removes the
+  declared floppy through the existing media owner and resets before executing;
+  it does not introduce a second INI, profile, firmware route, or boot-order
+  override.
+- Runner pause acknowledgement now follows final-frame publication, so a
+  paused observer cannot read the preceding frame.
+
+Focused replay of keyboard, HDD-only, Windows checkpoint and memory-fault
+input tests passed serially.  The complete optimized default integration suite
+then passed **20/20** serially and **20/20** at four-way parallelism (12.21
+seconds for the final parallel replay).
+
+## Revised Artifact Evidence
+
+All four product Release build directories were rebuilt after the repair for
+both architectures and redeployed only to their product-specific
+`build/output/<profile>/` and `assets/sessions/<profile>/` directories.  PE
+inspection confirms every x64 artifact is machine `8664h` and every x86
+artifact is machine `014Ch` in both locations; no shared root INI was written.
