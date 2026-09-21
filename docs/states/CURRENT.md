@@ -2,33 +2,17 @@
 
 ## Current Work
 
-## M5 T533 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved independent T533 execution on 2026-09-21. S4 implementation `7874b683` is reviewed as the fixed-profile/INI boundary; this admitted S5 completes its required product convergence and task closure. The owner additionally approved repair of the discovered shared integration mechanisms: host input must use Common's sole executor FIFO, and the HDD-only boot probe must remove the declared floppy through the production media boundary before reset. |
-| Objective | Close the fixed-product conversion: prove all four canonical optimized builds, resolve the Model 40 Debug-timeout versus Release-product qualification boundary, remove any remaining duplicate deployment/configuration path, repair the shared input and HDD-only integration mechanisms, and produce the required dual-architecture artifacts. |
-| Non-goals | Do not add runtime machine/CPU/firmware selection, embed or commit BYOB assets, alter BIOS boot order through INI, retire any retained machine, create PC110 placeholders, or retain a YAML compatibility route. |
-| Reference Baseline | T533 S4 implementation `7874b683`; [S5 convergence ledger](../etc/evidence/t533-s5-product-convergence-ledger.md); [M5 fixed-machine products](../proposals/m5-fixed-machine-products.md), S5. |
-| Candidate Proposal | [M5 fixed-machine products](../proposals/m5-fixed-machine-products.md), S5 duplicate cleanup and full closure. |
-| Files And ABI Surface | Fixed CMake product/build/deployment boundary, Profile-to-Machine composition, App INI entry and integration fixtures. `vm_machine_submit_host_input()` is the sole host-input ingress and must enqueue through the already-owned Common executor when composed; an explicitly uncomposed deterministic Core loop may deliver owner-local input directly. HDD-only integration must use the existing VM media mutation followed by reset, never a second INI/profile/firmware route. |
-| Applicable Rules | [Architecture](../design/ARCHITECTURE.md): Profile is the sole board/firmware owner and App owns runtime INI only. [Coding](../design/CODING.md): one parser, one construction route, repository-only unit tests and external assets only in integration. [Source policy](../etc/operations/policy/source-policy.md): BYOB firmware/media remain external and manifest-validated. [Execution](../rules/EXECUTION.md): complete unit per S; full integration and dual artifacts at task closure. |
-| Verification | Execute the ledger: configure each product against its manifest; run all repository-only units; run every product's registered integrations using optimized product builds both serially and at normal parallelism; verify input-bearing integration uses the Common executor route, HDD-only boot removes the declared floppy then resets, no YAML/catalog/deployment duplication; create and inspect all required stripped x64/x86 artifacts with matching INI companions. |
-| Expected Markers | Four build-selected products with no runtime alternate; one unchanged adjacent NXVM.ini per artifact; no configuration overwrite between products; all qualified product rows reach their declared terminal; no duplicate construction/reset/media/display path. |
-| Asset Needs | Local user-provided `nxvm-assets` only. Never import or commit ROM, CMOS, font or guest-media bytes. |
-| Reporting Requirements | Record every ledger disposition, actual code-size/path result, Model 40 Debug-versus-Release conclusion and complete affected-product replay, all artifact paths/hashes, and every lawful transfer. Do not claim a protected-asset import or an unrun integration result. |
-| Stop Conditions | Stop for a missing legal BYOB manifest contract, no lawful INI mapping, a required firmware semantic unavailable from its profile, a failure that cannot be localized to an owner, or any required artifact that would overwrite another product's configuration. |
-| Exit Criteria | Every S5 ledger member is accepted with evidence or explicitly transferred by owner-approved normal process; all four product builds use one INI path without YAML/catalog; complete unit/integration and dual-architecture artifacts pass; task closure audit proves the original fixed-profile request. |
-| Original Owner Request | Retain XT, AT, DeskPro 386 Model 40 and default PC/AT, but stop exposing a combinatorial collection of same-machine CPU/floppy sessions: each retained machine gets one most suitable canonical profile. Keep CPU implementations and tests. Build selects a fixed profile; NXVM.ini owns only runtime options. |
-| Similar-Issue Sweep | Sweep all production App/CMake/session construction and all integration support/tests for runtime profile, CPU, firmware, YAML/catalog and copied-media paths. Also sweep every host-input caller: a composed machine must enqueue through Common, while only an explicitly uncomposed deterministic Core loop may deliver directly. Sweep all HDD-only probes for an explicit production-media removal plus reset rather than hidden alternate configuration. Each hit is migrated to the generated fixed binding/INI route, retained only as a generic Core test, or explicitly transferred; no product compatibility loader remains. |
+No implementation task is admitted. M5 T533 is closed; the next candidate is the
+retained CPU-family qualification.
 
 ## Current Technical Baseline
 
-- `vm-0-5-0533` is the current target. Its T533 fixed-default product artifact
-  names are `nxvm_default_0_5_0533_x64.exe` and
-  `nxvm_default_0_5_0533_x86.exe`; neither is claimed produced until the
-  required dual-architecture Release closure succeeds.
+- `vm-0-5-0533` is the current target. T533 produced eight stripped, optimized
+  x64/x86 artifacts for its four fixed products; each product has only one
+  executable location, `assets/binary/<profile>/`, with its adjacent generated
+  INI. The preset-selected default pair is `nxvm_default_0_5_0533_x64.exe` and
+  `nxvm_default_0_5_0533_x86.exe`. Paths, hashes and terminal dispositions are recorded in the
+  [T533 convergence ledger](../etc/evidence/t533-s5-product-convergence-ledger.md).
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:
   `machine`, `session`, and `ui`. The separately selected `src/x86` corpus owns
@@ -41,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T533 S3 | Accepted at `2a589dc7`: Profiles now construct the one frozen board/firmware plan for XT, 5170, Model 40 and default PC/AT; Machine consumes it without board or firmware branches. Full repository-only unit, documentation and dependency gates pass. [Evidence](../etc/evidence/t533-s3-profile-machine-plan.md). |
+| T533 | Closed at `99de6d11`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |
 | T531 | Closed at owner direction on 2026-09-20 after S28 implementation `20c1e71b`: the final canonical SoftPC `2b17749a` six-tree Lib/Common/x86 source-and-test refresh is exact; 338/338 unit, specialized/documentation gates and stripped 0531 x64/x86 artifacts pass. The full external integration remains 41/42: `integration.vm-dos-keyboard-smoke` stays explicitly transferred to [TODO(High)](TODO.md), not relabelled green. [History](../history/M5-T531-shared-common-product-convergence.md). |
 | T530 | Closed at owner direction on 2026-09-13 after implementation bc9a1247; pinned canonical Lib import and Common adaptation, recorded 299/299 unit and 42/42 integration, both 0530 artifacts verified by hash. No new manual test is claimed. Later source revisions and Common UX convergence belong to the next task. [History](../history/M5-T530-canonical-softpc-lib-refresh.md). |
@@ -80,7 +64,7 @@
 
 - **M5 Td S167 P1 (scope superseded by S168):** governed two fixed-machine products within one multi-machine
   architecture and preserves all CPU families. The queue-head
-  [consolidation proposal](../proposals/m5-fixed-machine-products.md) records
+  [T533 consolidation record](../history/M5-T533-fixed-machine-products.md) records
   inspected simplifications and five S batches; 43 old proposals and all debt
   have explicit receivers/retirements. [Research](../etc/research/fixed-machine-selection.md)
   records Standard firmware gaps, PC110 prerequisites and external manuals.

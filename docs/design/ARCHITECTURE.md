@@ -134,6 +134,12 @@ and parser, not a promise that every memory size or disk fits every board.
 Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
+Each selected product deploys once to the ignored
+`assets/binary/<profile>/` directory, alongside its generated
+`NXVM.ini`. That is the only current executable location; `build/` remains
+compiler state apart from historical evidence, and `assets/sessions/` retains
+only checked-in INI templates and integration inputs for current work.
+
 ## Runtime Admission Boundary
 
 The [source policy](../etc/operations/policy/source-policy.md) owns asset and
@@ -143,5 +149,5 @@ POST remain firmware behavior; no generated BIOS, synthetic F1 or silent asset
 fallback substitutes for missing hardware.
 
 [Roadmap](ROADMAP.md) and [Current](../states/CURRENT.md) own sequencing and
-implemented status. The [consolidation proposal](../proposals/m5-fixed-machine-products.md)
+implemented status. The [T533 consolidation record](../history/M5-T533-fixed-machine-products.md)
 maps this design to observed code and bounded migration evidence.

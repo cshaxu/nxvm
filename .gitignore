@@ -11,3 +11,4 @@
 *.exe
 *.dll
 /assets/sessions/*/
+/assets/binary/*/

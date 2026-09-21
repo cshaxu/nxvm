@@ -15,9 +15,9 @@ unavailable owner-provided asset is a disposition, not a pass.
 
 Every artifact row must validate the same profile manifest selected at CMake
 configure time. The checked-in root INI remains the canonical template. The
-two deployed copies adjust only the relative `nxvm-assets` prefix for their
-one-level-deeper product directory; media remains relative to the adjacent
-INI, not to a CMake build directory.
+one deployed copy adjusts the relative `nxvm-assets` prefix for its
+product-specific directory; media remains relative to the adjacent INI, not to
+a CMake build directory.
 
 ## Construction And Test Universe
 
@@ -27,7 +27,7 @@ INI, not to a CMake build directory.
 | Integration construction | Each registered scenario uses the matching profile INI and external BYOB assets directly through readonly/overlay storage; no copied-media route. |
 | Repository-only tests | Complete unit suite passes without INI, firmware, CMOS, font or media files. |
 | Product integration | Each profile's registered boot row reaches its declared terminal in the optimized product build; Debug keeps repository-only unit coverage but is not a production-speed qualification runner. |
-| Release deployment | Eight optimized, stripped x64/x86 artifacts exist with their matching INI companions in the required product-output locations, without overwriting another product's configuration. |
+| Release deployment | Eight optimized, stripped x64/x86 artifacts exist with their matching INI companions only in `assets/binary/<profile>/`, without overwriting another product's configuration. |
 | Cleanup | No user-selectable CPU/profile/firmware route, product YAML loader, catalog, or duplicate construction/reset/media path remains. |
 
 ## Known First Failure
@@ -42,11 +42,11 @@ and architecture before it can close.
 
 ## Completed S5 Evidence
 
-- The fixed-product deployment no longer writes a shared `NXVM.ini`.
-  Each Release product deploys only to
-  `build/output/<profile>/` and `assets/sessions/<profile>/`; both receive its
-  matching executable and an adjacent INI whose external-asset relative prefix
-  is correct from that directory.
+- The fixed-product deployment no longer writes a shared `NXVM.ini` or a
+  second product copy. Each Release product deploys only to
+  `assets/binary/<profile>/`, with its matching executable and an
+  adjacent INI whose external-asset relative prefix is correct from that
+  directory.
 - The prior fixed-product implementation ran **336/336** repository-only
   cases.  This S5 repair removes the unconsumed Core guest-input-source and
   its isolated smoke, leaving **335** repository-only cases; the remaining
@@ -84,8 +84,14 @@ seconds for the final parallel replay).
 
 ## Revised Artifact Evidence
 
-All four product Release build directories were rebuilt after the repair for
-both architectures and redeployed only to their product-specific
-`build/output/<profile>/` and `assets/sessions/<profile>/` directories.  PE
-inspection confirms every x64 artifact is machine `8664h` and every x86
-artifact is machine `014Ch` in both locations; no shared root INI was written.
+All four product Release artifacts were redeployed after the repair for both
+architectures, only to `assets/binary/<profile>/`. PE inspection
+confirms every x64 artifact is machine `8664h` and every x86 artifact is
+machine `014Ch`; no shared root INI or second product copy was written.
+
+| Product | x64 SHA-256 | x86 SHA-256 |
+| --- | --- | --- |
+| `ibm-5160-model-268-360k` | `4E0C81B7E883498665AADF22D80D222A88BF905D25A54F4C886CF1F801E7E077` | `4771804A21D9890998EBC5A797E23E7257BD2D37BBC99A1B604A29A7E1D008B2` |
+| `ibm-5170-model-339-1200k` | `EA03D4E567F949104EB7B196FC4253E7CB0265BA124B38B0ACF64B941A26CA63` | `450A34A71A428333AE7E0F44CCA2E63A843C5E22C2A4F970799025FBB244DFA4` |
+| `compaq-deskpro-386-model-40-1200k` | `B2BD2C62767A3A8E125EECD82DFE449FB8E0E3F129F88D7DA65DF81D1E07A97B` | `7D45098771F9F603BABE47A40E031D57BA7622280B85E76C6654FEA1C91B8200` |
+| `default-pc-at-80386-1440k-hdd` | `AF249AFD0858B868185AA6C9E4582AD8268B04E98435FCB00C19AA45BD26F9ED` | `5AA2B10EF866F031798FB74EB0ECB5E2B50B4B9EFB2AC769657C44BBCAE8C64F` |

@@ -2855,9 +2855,9 @@ add_custom_target(verify-t338-legacy-profile-metadata
     VERBATIM)
 
 
-# CMake builds the current source artifact only. Historical task executables are
-# retained evidence under build/output and are never regenerated from newer
-# source under their former task/version names.
+# CMake builds the current source artifact only.  Each current product is
+# deployed once beneath assets/binary; historical artifacts are never
+# regenerated from newer source under their former task/version names.
 function(add_current_vm_artifact target version)
     string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
         "nxvm_${NXVM_PRODUCT_MACHINE_KEY}_\\1_\\2_\\3_${PROJECT_ARTIFACT_ARCHITECTURE}.exe"

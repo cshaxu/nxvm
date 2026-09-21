@@ -40,8 +40,9 @@ that compiler's `bin` directory first on `PATH`, then use
 `mingw-gcc-x86-release` and `current-gcc-x86`. This is a second compiler
 configuration, not a second source or product route.
 
-Session templates in `assets/sessions/` name the selected profile, CPU variant
-when applicable, and attached floppy geometry (for example,
-`default-pc-at-80386-1440k.yaml`). Integration registrations use those exact
-filenames; they do not retain unsuffixed compatibility aliases, and CMake
-rejects a registration whose named YAML is absent.
+INI templates in `assets/sessions/` name the fixed product's runtime media,
+access mode, memory and presentation settings (for example,
+`default-pc-at-80386-1440k-hdd.ini`). Integration registrations use those
+exact filenames; no YAML compatibility route remains. Release builds deploy
+the EXE and its generated adjacent INI only to
+`assets/binary/<profile>/`.

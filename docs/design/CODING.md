@@ -39,8 +39,10 @@ in `nxvm-assets/manuals/`. CMake receives the untracked absolute
 `NXVM_PROFILE_ASSETS_ROOT` for a selected build and creates an ignored generated
 configuration header/source containing that local root. It neither copies ROM
 bytes into the source/build output nor permits an unconfigured generic root.
-Documentation changes do not move assets. The common NXVM.ini lives beside the
-executable; relative runtime-media paths resolve from that file. It has no
+Documentation changes do not move assets. Each generated product EXE and its
+common NXVM.ini live only in the ignored
+`assets/binary/<profile>/` directory; relative runtime-media paths
+resolve from that file. It has no
 firmware/CMOS/font asset path keys. Existing session YAML remains the runtime baseline until cutover.
 Do not rename/move external assets merely to match target source directory names.
 

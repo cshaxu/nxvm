@@ -22,13 +22,14 @@ implicit waiver. Current milestone state remains in `states/CURRENT.md`.
   targets are not presented as product evidence.
 - [x] The full applicable build and focused smoke gates pass from a clean owned
   build tree. A test proves exactly the runnable path or contract claimed.
-- [ ] Every runnable behavior-changing M5 task has one verified task-level EXE
-  in `build/output/`, with SHA-256, source commit, banner/version, and runtime
+- [ ] Every runnable behavior-changing M5 task has verified task-level x64 and
+  x86 EXEs in `assets/binary/<profile>/`, with SHA-256, source commit,
+  banner/version, and runtime
   classification recorded in its verification record.
 
 ## 2. Workspace And Asset Hygiene
 
-- [ ] `build/output/` is the only retained local artifact directory. Other
+- [ ] `assets/binary/` is the only retained local artifact directory. Other
   owned build trees, logs, traces, test executables, and stale CMake/Ninja
   state are removed unless the active subtask records a short-lived need.
 - [ ] No protected guest media, Microsoft binary, machine-local path, raw trace,

@@ -13,7 +13,7 @@ products with all their required hardware; PC110 follows later. New Standard
 selection is not a migration dependency. The original table is the historical Td S167
 disposition, not permission to delete these boards or their regressions.
 Their original source/gap/boot evidence feeds the current
-[composition and INI cutover](../../../proposals/m5-fixed-machine-products.md)
+[composition and INI cutover](../../../history/M5-T533-fixed-machine-products.md)
 and [controller qualification](../../../proposals/m5-selected-controller-qualification.md).
 No archived proposal is automatically re-admitted, and VDM remains withdrawn.
 Required XT/AT/DeskPro/default debt in the historical snapshot is transferred to these receivers,
@@ -48,7 +48,7 @@ labels or product commitments. New proposals and principal design take precedenc
 | [m5-fdc-board-integration-reclosure](m5-fdc-board-integration-reclosure.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-final-l3-windows-closure-audit](m5-final-l3-windows-closure-audit.md) | [Retained guest qualification](../../../proposals/m5-retained-guest-qualification.md); old machine selection superseded. |
 | [m5-four-profile-cpu-completeness-program](m5-four-profile-cpu-completeness-program.md) | [CPU qualification](../../../proposals/m5-retained-cpu-qualification.md); preserve all CPU models, not old board menus. |
-| [m5-generic-pc-backbone-foundation](m5-generic-pc-backbone-foundation.md) | [Fixed products](../../../proposals/m5-fixed-machine-products.md); no old profile inheritance or runtime selector. |
+| [m5-generic-pc-backbone-foundation](m5-generic-pc-backbone-foundation.md) | [Fixed products](../../../history/M5-T533-fixed-machine-products.md); no old profile inheritance or runtime selector. |
 | [m5-hdc-board-integration-reclosure](m5-hdc-board-integration-reclosure.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-instruction-timed-execution](m5-instruction-timed-execution.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-l3-bus-timing-convergence](m5-l3-bus-timing-convergence.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
@@ -60,11 +60,11 @@ labels or product commitments. New proposals and principal design take precedenc
 | [m5-specification-driven-complete-simulation-admission-program](m5-specification-driven-complete-simulation-admission-program.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
 | [m5-specification-unit-test-matrix-coverage](m5-specification-unit-test-matrix-coverage.md) | [Differential/tests](../../../proposals/m5-differential-and-unit-evidence.md). |
 | [m5-vadp-board-integration-reclosure](m5-vadp-board-integration-reclosure.md) | [Controller qualification](../../../proposals/m5-selected-controller-qualification.md) and fixed-product retention map; keep generic evidence, re-freeze board domain. |
-| [m5-vm-profile-contract-ownership](m5-vm-profile-contract-ownership.md) | [Fixed products](../../../proposals/m5-fixed-machine-products.md); no old profile inheritance or runtime selector. |
+| [m5-vm-profile-contract-ownership](m5-vm-profile-contract-ownership.md) | [Fixed products](../../../history/M5-T533-fixed-machine-products.md); no old profile inheritance or runtime selector. |
 | [m5-windows31-byob-lifecycle-harness](m5-windows31-byob-lifecycle-harness.md) | [Retained guest qualification](../../../proposals/m5-retained-guest-qualification.md); old machine selection superseded. |
 | [m5-windows31-enhanced-mode-lifecycle](m5-windows31-enhanced-mode-lifecycle.md) | [Retained guest qualification](../../../proposals/m5-retained-guest-qualification.md); old machine selection superseded. |
 | [m5-windows31-standard-mode-lifecycle](m5-windows31-standard-mode-lifecycle.md) | [Retained guest qualification](../../../proposals/m5-retained-guest-qualification.md); old machine selection superseded. |
-| [m5-yaml-image-load-mode-contract](m5-yaml-image-load-mode-contract.md) | [Fixed products](../../../proposals/m5-fixed-machine-products.md); no old profile inheritance or runtime selector. |
+| [m5-yaml-image-load-mode-contract](m5-yaml-image-load-mode-contract.md) | [Fixed products](../../../history/M5-T533-fixed-machine-products.md); no old profile inheritance or runtime selector. |
 | [m6-mantle-program](m6-mantle-program.md) | Withdrawn: no mantle or owned-DOS/VDM product. |
 | [m6-minimal-mantle-single-session](m6-minimal-mantle-single-session.md) | Withdrawn: no mantle or owned-DOS/VDM product. |
 | [m6-ordinary-ram-transaction](m6-ordinary-ram-transaction.md) | Withdrawn: no mantle or owned-DOS/VDM product. |

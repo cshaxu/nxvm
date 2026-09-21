@@ -5,7 +5,7 @@ product architecture while retaining all implemented XT, AT, DeskPro 386 and
 default PC/AT machines. Each executable will select exactly one Profile at
 build time and resolve its lawful firmware solely from the build-provided
 external BYOB asset root. The retained candidate proposal is
-[Fixed-machine products and architecture consolidation](../proposals/m5-fixed-machine-products.md).
+[Fixed-machine products and architecture consolidation](M5-T533-fixed-machine-products-proposal.md).
 
 ## S1: Baseline And Contract Ledger
 
@@ -56,3 +56,42 @@ unit target, focused XT/5170/Model-40/default regression set, documentation
 governance and dependency-DAG gate pass.  The selected-plan source sweep found
 no former Machine firmware-kind or board-private branch; no protected payload,
 runtime configuration or executable artifact changed.
+
+## S4: Fixed Builds And App INI Cutover
+
+S4 replaced runtime YAML/catalog/profile selection with one CMake-selected
+Profile binding and one adjacent `NXVM.ini` parser. Each retained machine now
+has one fixed product target; manifests validate only the local BYOB asset root,
+while the INI supplies runtime media, access modes, memory and presentation.
+
+Accepted in `7874b683`. The four product targets have no runtime alternate
+machine, CPU or firmware selector, and every integration scenario uses the same
+production INI route. Firmware and media remain external, never embedded or
+committed.
+
+## S5: Product Convergence And Closure
+
+S5 removed the duplicate host-input transport, making a composed machine submit
+copied input through Common's sole executor FIFO. It also corrected the HDD-only
+integration probe to remove the declared floppy through the production media
+owner and reset before checking VBR handoff. Final display publication now
+precedes pause acknowledgement, preventing a paused observer from seeing a
+stale frame.
+
+Accepted in `99de6d11` after actual-change review. The complete repository-only
+suite passes **335/335** at four-way parallelism; optimized default integration
+passes **20/20** serially and **20/20** at four-way parallelism. All four fixed
+products have stripped x64 and x86 Release artifacts, matching adjacent INIs,
+only in `assets/binary/<profile>/`. The complete four-product ledger and
+artifact evidence are retained in the
+[S5 convergence ledger](../etc/evidence/t533-s5-product-convergence-ledger.md).
+
+## Task Closure
+
+T533 closes with one Profile-owned board/firmware construction route, one
+build-selected product per retained machine, one App INI route, one Common
+input executor route, and one executable deployment location. XT, 5170, Model
+40 and default PC/AT remain retained; CPU implementations and repository-only
+coverage remain intact. No YAML compatibility loader, runtime profile/CPU/
+firmware selector, copied-media test route, shared generated product
+configuration or duplicate artifact deployment remains.
