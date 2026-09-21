@@ -7,7 +7,9 @@ model. This target design does not claim fixed-build/INI cutover or PC110 delive
 
 Each executable identifies its build-fixed machine. One NXVM.ini beside the
 EXE supplies startup memory, floppy/hard-disk paths and their independent
-readonly/direct/overlay modes, and console/window presentation. Follow SoftPC's
+readonly/direct/overlay modes, and console/window presentation. Firmware,
+CMOS seed, video ROM and font derive only from the build-fixed Profile and its
+build-provided BYOB asset root. Follow SoftPC's
 simple INI and existing console_control behavior, not a new configuration
 framework. Absolute paths work; relative paths resolve from the INI directory.
 INI does not choose a machine, startup action or boot order. BIOS/CMOS remain
@@ -19,7 +21,7 @@ selected board default; explicit unsupported memory/media produces a clear
 error. The parser must support XT sub-MiB memory without rounding it to MiB;
 freeze the single memory-unit syntax during implementation planning. Firmware
 roles are selected-profile facts, with external asset resolution through the
-same application path, never an embedded fallback or second YAML loader.
+build-fixed root, never an embedded fallback, INI key or second YAML loader.
 
 ## PC110
 

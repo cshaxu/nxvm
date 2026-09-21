@@ -80,12 +80,16 @@ an explicit error, not permission for an embedded BIOS fallback. This local
 use does not grant redistribution rights.
 
 The external `nxvm-assets/profiles` archive owns vendor payloads and manifests
-with slot, size, SHA-256, read-only mapping and provenance. The current session
-YAML baseline resolves relative paths from YAML; the approved NXVM.ini cutover
-resolves relative paths from INI. Absolute paths remain supported. Neither
-configuration format embeds hashes/catalogues or protected binary payloads.
-Repository templates use portable references, never machine-local absolute
-paths. The loader supplies immutable bytes through the single Core ROM path.
+with slot, size, SHA-256, read-only mapping and provenance. At the approved
+cutover, CMake receives one local `NXVM_PROFILE_ASSETS_ROOT` for the selected
+machine build. It validates the selected Profile's manifest and generates an
+ignored local asset-root binding; it never copies firmware into source control
+or embeds it in the EXE. The current session YAML baseline resolves relative
+paths from YAML; NXVM.ini resolves only runtime-media paths from INI. Neither
+configuration format embeds hashes/catalogues, firmware paths or protected
+binary payloads. Repository templates use portable references, never tracked
+machine-local absolute paths. The loader supplies immutable bytes through the
+single Core ROM path.
 
 For XT, AT, DeskPro, default and PC110, `core/profiles` owns board C,
 ROM slot/mapping declarations and authorized ROM source if separately admitted.

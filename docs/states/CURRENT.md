@@ -5,7 +5,8 @@
 No task is currently admitted. The queue-head structural proposal retains all
 implemented XT, AT, DeskPro 386 and default PC/AT machines, with future PC110.
 Target ownership is Devices/Profiles/Machine; fixed builds and NXVM.ini remain
-planned, not implemented. No Standard-board selection is required for migration.
+planned, not implemented. Each future profile build uses an external BYOB asset
+root; no firmware is embedded, selected by INI or included in the repository.
 
 ## Current Technical Baseline
 
@@ -33,6 +34,13 @@ planned, not implemented. No Standard-board selection is required for migration.
 | T526 | Canonical-library integration repair closed at `98ac51a4`: 299/299 unit, 67/67 specialized gates, 42/42 external integration, actual-diff review and stripped x64/x86 artifacts accepted. |
 
 ## Recent Governance
+
+- **M5 Td S170 P1:** records one external BYOB firmware route for each future
+  compiled profile: a CMake-provided local `NXVM_PROFILE_ASSETS_ROOT` is
+  validated against the Profile manifest and emitted only as an ignored local
+  build binding. Firmware, CMOS and fonts stay outside both repository and EXE;
+  `NXVM.ini` only configures runtime media and presentation. Documentation gate
+  and actual-diff review pass; no source, build, test, asset or artifact changed.
 
 - **M5 Td S169 P1:** revises current goals, architecture, layout, proposals,
   queue and future artifact naming to preserve every implemented machine and

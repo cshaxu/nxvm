@@ -9,10 +9,12 @@ from this approved target.
 
 NXVM retains an extensible multi-machine architecture. XT, AT, DeskPro 386,
 default PC/AT and later PC110 each link one fixed machine composition, using the same
-App, Common, Lib and x86 tooling. A shared NXVM.ini configures supported memory,
-media paths/access and presentation, not machine identity, CPU population,
-controller topology, startup actions or firmware boot order. It replaces YAML
-at the implementation cutover, not through a permanent parallel loader.
+App, Common, Lib and x86 tooling. Build configuration selects that executable's
+external BYOB asset root; the selected Profile determines its fixed firmware
+roles and relative asset names. A shared NXVM.ini configures supported memory,
+media paths/access and presentation, not machine identity, firmware paths, CPU
+population, controller topology, startup actions or firmware boot order. It
+replaces YAML at the implementation cutover, not through a permanent parallel loader.
 
 All implemented machines and their required personalities remain supported;
 new Standard-board selection is not a migration prerequisite. PC110 requires
@@ -22,13 +24,14 @@ release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
 
-- `app` owns INI syntax, paths, product CLI, recording and the one composition root.
+- `app` owns INI syntax, runtime-media paths, product CLI, recording and the one composition root.
   It assembles Common Session/UI/Machine and the NXVM driver.
 - `core/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
 - `core/profiles` owns each board's actual composition: device construction,
-  wiring, clocks, memory constraints, firmware slots and board-specific behavior.
+  wiring, clocks, memory constraints, firmware slots, fixed relative asset names
+  and board-specific behavior.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
 - `core/devices` (currently `core/core`) owns CPU, memory, bus, devices, reset,
@@ -48,16 +51,17 @@ release behavior remains the baseline until an implemented, verified cutover.
 Build selection supplies one profile composition entry to the adapter:
 
 ```text
-build-selected profile + App INI options + externally loaded asset bytes
+build-selected profile + build-provided BYOB asset root + App INI options
                               |
                               v
-            profile constructs one validated, frozen Core plan
+       Profile resolves its fixed assets, then constructs one frozen Core plan
                               |
                               v
            one Devices instance -> Machine adapter -> Common Machine
 ```
 
-Profile owns hardware constraints; App owns syntax/path resolution; Core owns
+Profile owns hardware constraints and firmware asset resolution; App owns INI
+syntax and runtime-media path resolution; Core owns
 generic structural/state invariants. These are distinct checks, not copies of
 one board rule in all three layers. Share constants or construction helpers
 only where semantics match. Fixed targets need no profile inheritance
@@ -73,6 +77,14 @@ Machine retains execution, host-resource lifetime and Common adaptation only.
 Injected asset/media services use neutral contracts, avoiding a Profile-to-
 Machine dependency cycle. Adding a board needs a composition and build entry,
 not another Common queue, App parser or generic-device machine-name branch.
+
+The build root is a local CMake input, not a tracked absolute path, ROM payload
+or runtime configuration selector. A build validates that the selected
+profile's declared external asset set is present and identifies the expected
+slot, size and hash. The generated executable may retain its local root as its
+only firmware lookup base: a recipient who compiles must supply its own lawful
+root. Missing, mismatched or unreadable firmware is a hard startup/build
+validation failure; there is no embedded, YAML, INI or cross-profile fallback.
 
 ### CPU And Machine Preservation
 
@@ -111,7 +123,8 @@ Fixed-machine packaging is not a timing upgrade.
 Lib Storage remains the sole file/lock/direct/readonly/overlay implementation.
 The machine adapter retains genuine media semantics such as geometry and
 change generation; do not force FDD/HDD into identical behavior merely to
-reduce files. ROM bytes are immutable external inputs; seed configuration
+reduce files. ROM bytes are immutable external inputs located below the
+build-provided root; seed configuration
 initializes Core-owned writable CMOS rather than a second BIOS/register mirror.
 
 Guest writes flow through sole device state into copied snapshots, Common UI

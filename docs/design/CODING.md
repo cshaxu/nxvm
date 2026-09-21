@@ -32,12 +32,16 @@ variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
 and selection tables stay in generic Core, not copied into board directories.
 
-Profile-specific ROM source and mapping declarations live with the profile.
-Protected payloads remain external in owner-managed
-`nxvm-assets/profiles/` per machine; original manuals
-remain in `nxvm-assets/manuals/`. Documentation changes do not move assets.
-The common NXVM.ini lives beside the executable; relative paths resolve from
-that file. Existing session YAML remains the runtime baseline until cutover.
+Profile-specific ROM source, mapping declarations and an asset manifest live
+with the profile. Protected payloads remain external in the user-supplied,
+owner-managed `nxvm-assets/profiles/<machine>/` tree; original manuals remain
+in `nxvm-assets/manuals/`. CMake receives the untracked absolute
+`NXVM_PROFILE_ASSETS_ROOT` for a selected build and creates an ignored generated
+configuration header/source containing that local root. It neither copies ROM
+bytes into the source/build output nor permits an unconfigured generic root.
+Documentation changes do not move assets. The common NXVM.ini lives beside the
+executable; relative runtime-media paths resolve from that file. It has no
+firmware/CMOS/font asset path keys. Existing session YAML remains the runtime baseline until cutover.
 Do not rename/move external assets merely to match target source directory names.
 
 ## Files And Names

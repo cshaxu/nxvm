@@ -16,10 +16,16 @@ task's bootability claim. This task preserves all current model variants.
 
 ## Configuration Contract
 
+- Each build receives exactly one local `NXVM_PROFILE_ASSETS_ROOT`, locating a
+  user-supplied `nxvm-assets` root. The compiled profile identifies required
+  firmware/CMOS/font roles and relative files through its manifest; CMake checks
+  their presence, size and hash and generates an ignored local root binding.
+  Firmware remains external at runtime and is never copied into the EXE.
+
 - One NXVM.ini beside the EXE, one parser and one schema for all machine builds.
   Follow the inspected SoftPC INI scope: memory, media paths and independent
   access modes, console/window and existing console_control semantics.
-- INI does not select the machine or CPU and does not specify a startup mode,
+- INI does not select the machine, CPU or firmware assets and does not specify a startup mode,
   automatic start action or firmware boot order. The owner explicitly excluded
   those responsibilities. BIOS/CMOS and existing lifecycle commands retain them.
 - Relative paths resolve from the INI directory; absolute paths remain valid.
@@ -32,10 +38,10 @@ task's bootability claim. This task preserves all current model variants.
   aliases, per-machine sections or silently clamp unsupported values.
 - A shared file is not a claim that a single explicit memory/media combination
   suits every board. Report incompatible geometry/capacity clearly.
-- Board firmware roles, layout and seed rules belong to the selected profile.
-  S1 fixes their external deployment/path resolution without expanding INI into
-  a hardware manifest. All protected bytes remain external; no baked-in BIOS,
-  machine-local absolute path or hidden YAML firmware loader is acceptable.
+- Board firmware roles, layout, seed rules and manifest belong to the selected
+  profile. All protected bytes remain external. The CMake root is local build
+  configuration, not a committed machine-local path, payload embedding, INI
+  firmware key or hidden YAML loader.
 - Replace the production YAML/catalog path completely at cutover, migrating
   integration inputs through the same INI loader. Preserve user-owned output
   configuration; do not overwrite it during builds or silently convert it.
@@ -73,7 +79,8 @@ task's bootability claim. This task preserves all current model variants.
 
 - **S1 - baseline and complete contract.** Inventory every profile, constructor,
   reset/provider branch, asset role, config key, test and build target. Compare
-  SoftPC INI behavior, freeze memory/slot syntax and external firmware resolution.
+  SoftPC INI behavior, freeze memory/slot syntax, profile asset manifest and
+  CMake-root validation/binding contract.
   Map every current XT/AT/DeskPro/default variant, including admitted CPU choices,
   to retained build/config/test coverage. New-board research is outside this task.
 - **S2 - Devices and Profiles source/test relocation.** Move reusable Core and matching tests,
@@ -85,9 +92,10 @@ task's bootability claim. This task preserves all current model variants.
   same Common driver. Prove XT/AT/DeskPro/default regressions before removing
   old branches; no transitional second machine or firmware path remains at exit.
 - **S4 - fixed builds and App INI cutover.** Use one parameterized build recipe
-  selecting one composition per EXE. Implement the common INI entry, remove runtime
-  machine/YAML selection, migrate every retained integration scenario, and update
-  artifact/status checks together. Unit parser tests use code-owned inputs only.
+  selecting one composition per EXE and one required BYOB assets root. Implement
+  profile-manifest validation/root binding and the common INI entry, remove runtime
+  machine/YAML/firmware selection, migrate every retained integration scenario, and
+  update artifact/status checks together. Unit parser tests use code-owned inputs only.
   Expose only implemented targets; PC110 is not a placeholder bootable executable.
 - **S5 - duplicate cleanup and full closure.** Reconcile all config/asset/test/build rows,
   remove only proven dead/duplicate paths and audit one construction/reset/media/display
@@ -104,7 +112,7 @@ proof; T closure requires complete unit/integration and dual-architecture artifa
 under Execution. Keep original successful/failing scenario dispositions visible:
 do not erase any existing machine coverage or relabel a failing baseline as retired.
 
-One compiled profile, one INI parser, profile-owned composition, one Core clock
+One compiled profile, one validated BYOB root, one INI parser, profile-owned composition, one Core clock
 and one Common adapter must be demonstrated in code, not just directory names.
 Missing firmware/hardware blocks that product's qualification, not permission
 to select a substitute secretly. CPU preservation does not claim unimplemented
