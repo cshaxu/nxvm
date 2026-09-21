@@ -1228,12 +1228,14 @@ set(VM_PROFILE_SOURCES
     src/core/profiles/byob/blob.c
     src/core/profiles/xt/xt_5160_268.c
     src/core/profiles/xt/rom/xt_5160_268_rom.c
+    src/core/profiles/machine_plan.c
     src/core/profiles/default_profile/pc_at_profile.c
     src/core/profiles/default_profile/keyboard_mapper.c
     src/core/profiles/default_profile/mouse_mapper.c
     src/core/profiles/default_profile/external_pc_at_rom.c
     src/core/profiles/device/floppy.c
     src/core/profiles/model40/model40.c
+    src/core/profiles/model40/composition.c
     src/core/profiles/model40/rom/model40_rom.c
 )
 
@@ -1257,7 +1259,6 @@ set(VM_MACHINE_RUNTIME_SOURCES
     src/core/machine/executor_state.c
     src/core/machine/waiting.c
     src/core/machine/machine_devices.c
-    src/core/machine/model40_composition.c
     src/core/machine/machine_info.c
 )
 set(VM_MACHINE_SOURCES
@@ -3583,7 +3584,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/core/machine/runner.c|vm-machine"
     "vm-machine|src/core/machine/waiting.c|vm-machine"
     "vm-machine|src/core/machine/machine_devices.c|vm-machine"
-    "vm-machine|src/core/machine/model40_composition.c|vm-machine"
+    "vm-machine|src/core/profiles/model40/composition.c|vm-machine"
     "vm-machine|src/core/machine/machine_info.c|vm-machine")
 string(REPLACE ";" "\n" project_t345_s4_residual_contents
     "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")

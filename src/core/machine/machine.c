@@ -2,90 +2,6 @@
 
 #include "core/machine/machine_private.h"
 
-#include "lib/storage/file_interface.h"
-#include "core/profiles/byob/blob.h"
-
-static type_status vm_machine_asset_copy(type_unsigned_8 *destination,
-    STD_SIZE_T expected_bytes, vm_machine_asset_bytes source)
-{
-    if (destination == STD_NULL || source.data == STD_NULL ||
-        source.bytes != expected_bytes) return TYPE_STATUS_INVALID_ARGUMENT;
-    STD_MEMCPY(destination, source.data, expected_bytes);
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_machine_cmos_seed_copy(vm_machine *session,
-    vm_machine_asset_bytes source)
-{
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (source.data == STD_NULL && source.bytes == 0u) return TYPE_STATUS_OK;
-    if (vm_machine_asset_copy(session->cmos_seed, VM_MACHINE_CMOS_SEED_BYTES,
-            source) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
-    session->cmos_seed_present = TYPE_TRUE;
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_machine_text_glyphs_copy(vm_machine *session,
-    vm_machine_asset_bytes source)
-{
-    STD_SIZE_T character;
-
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (source.data == STD_NULL && source.bytes == 0u) return TYPE_STATUS_OK;
-    if (source.data == STD_NULL || source.bytes !=
-        VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES) return TYPE_STATUS_INVALID_ARGUMENT;
-    for (character = 0u; character < CORE_MACHINE_DISPLAY_TEXT_GLYPH_COUNT;
-        ++character) {
-        STD_MEMCPY(&session->text_glyphs.bytes[character *
-                CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS],
-            &source.data[character * 8u], 8u);
-        STD_MEMCPY(&session->text_glyphs.bytes[character *
-                CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS + 8u],
-            &source.data[VM_MACHINE_TEXT_GLYPH_ROW_PLANE_BYTES +
-                character * 8u], 8u);
-    }
-    session->text_glyphs.present = TYPE_TRUE;
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_machine_pc_at_rom_copy(vm_machine *session,
-    const vm_machine_config *config, const vm_machine_assets *assets)
-{
-    STD_SIZE_T index;
-
-    if (session == STD_NULL || config == STD_NULL || assets == STD_NULL ||
-        config->bios_count == 0u || config->bios_count > 2u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    if (config->bios_count == 1u) {
-        if (vm_machine_asset_copy(session->pc_at_rom, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES,
-                assets->bios[0u]) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
-    } else {
-        if (assets->bios[0u].data == STD_NULL || assets->bios[1u].data == STD_NULL ||
-            assets->bios[0u].bytes != VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES ||
-            assets->bios[1u].bytes != VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES) {
-            return TYPE_STATUS_INVALID_ARGUMENT;
-        }
-        for (index = 0u; index < VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES; ++index) {
-            session->pc_at_rom[index * 2u] = assets->bios[0u].data[index];
-            session->pc_at_rom[index * 2u + 1u] = assets->bios[1u].data[index];
-        }
-    }
-    if (assets->video.data != STD_NULL) {
-        if (assets->video.bytes == 0u ||
-            assets->video.bytes > VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES) {
-            return TYPE_STATUS_INVALID_ARGUMENT;
-        }
-        STD_MEMCPY(session->pc_at_video_rom, assets->video.data,
-            assets->video.bytes);
-        session->pc_at_video_rom_bytes = assets->video.bytes;
-    } else if (assets->video.bytes != 0u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    session->pc_at_rom_external = TYPE_TRUE;
-    return TYPE_STATUS_OK;
-}
-
 #include "core/devices/machine_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
@@ -101,6 +17,22 @@ static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
     const C_CHAR *path, lib_storage_medium_mode mode);
 static C_INT vm_machine_remove_fdd_direct(vm_machine *session,
     const C_CHAR *path);
+
+static type_status vm_machine_generic_materialize(C_VOID *context,
+    core_machine_plan *plan)
+{
+    return vm_machine_devices_materialize_plan((vm_machine *)context, plan);
+}
+
+static C_VOID vm_machine_capture_fdc_terminal(C_VOID *opaque,
+    const core_machine_fdc_terminal_observation *observation)
+{
+    vm_machine *machine = (vm_machine *)opaque;
+
+    if (machine == STD_NULL || observation == STD_NULL) return;
+    machine->model40_fdc_terminal_observation = *observation;
+    machine->model40_fdc_terminal_observation_valid = TYPE_TRUE;
+}
 
 static type_status vm_machine_deliver_key(vm_machine *session,
     type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
@@ -292,103 +224,13 @@ type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed)
     return TYPE_STATUS_OK;
 }
 
-static type_status vm_machine_default_at_floppy_select(const vm_machine_config *config,
-    vm_profile_floppy_kind *out_kind)
-{
-    vm_machine_floppy_format format;
-
-    if (out_kind == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    format = config == STD_NULL ? VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT :
-        config->floppy_format;
-    switch (format) {
-    case VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT:
-    case VM_MACHINE_FLOPPY_FORMAT_1440K:
-        *out_kind = VM_PROFILE_FLOPPY_35_1440K;
-        return TYPE_STATUS_OK;
-    case VM_MACHINE_FLOPPY_FORMAT_1200K:
-        *out_kind = VM_PROFILE_FLOPPY_525_1200K;
-        return TYPE_STATUS_OK;
-    case VM_MACHINE_FLOPPY_FORMAT_720K:
-        *out_kind = VM_PROFILE_FLOPPY_35_720K;
-        return TYPE_STATUS_OK;
-    case VM_MACHINE_FLOPPY_FORMAT_360K:
-        *out_kind = VM_PROFILE_FLOPPY_525_360K;
-        return TYPE_STATUS_OK;
-    default:
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-}
-
-static C_VOID vm_machine_default_at_request_create(const vm_machine_config *config,
-    vm_profile_floppy_kind floppy_kind, vm_profile_default_at_request *out_request)
-{
-    if (out_request == STD_NULL) return;
-    *out_request = (vm_profile_default_at_request) {0};
-    if (config == STD_NULL) return;
-    if (config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
-        config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE) {
-        out_request->requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU;
-        out_request->cpu_profile = config->cpu_profile;
-        out_request->fpu_profile = config->fpu_profile;
-    }
-    if (config->memory_bytes != 0u) {
-        out_request->requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY;
-        out_request->memory_bytes = config->memory_bytes;
-    }
-    if (floppy_kind != VM_PROFILE_FLOPPY_35_1440K) {
-        out_request->requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY;
-        out_request->floppy_cmos_type = vm_profile_floppy_cmos_type_get(floppy_kind);
-    }
-}
-
-static type_status vm_machine_default_at_resolve(vm_machine *session,
-    const vm_machine_config *config)
-{
-    vm_profile_default_at_request request;
-
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (vm_machine_default_at_floppy_select(config, &session->floppy_kind) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    session->fdd_media_kind = session->floppy_kind;
-    vm_machine_default_at_request_create(config, session->floppy_kind, &request);
-    if (vm_profile_default_at_child_resolve(&request, &session->default_at_resolved) !=
-        TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
-    session->profile = &session->default_at_resolved.descriptor;
-    session->profile_topology = &session->default_at_resolved.topology;
-    session->core_machine_config =
-        session->default_at_resolved.resolved.values.core.configuration;
-    session->controller_timing_rules =
-        session->default_at_resolved.resolved.values.core.controller_timing_rules;
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_machine_ibm_5170_floppy_select(const vm_machine_config *config,
-    vm_profile_floppy_kind *out_kind)
-{
-    const vm_machine_floppy_format format = config == STD_NULL ?
-        VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT : config->floppy_format;
-
-    if (out_kind == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (format == VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT ||
-        format == VM_MACHINE_FLOPPY_FORMAT_1200K) {
-        *out_kind = VM_PROFILE_FLOPPY_525_1200K;
-        return TYPE_STATUS_OK;
-    }
-    if (format == VM_MACHINE_FLOPPY_FORMAT_360K) {
-        *out_kind = VM_PROFILE_FLOPPY_525_360K;
-        return TYPE_STATUS_OK;
-    }
-    return TYPE_STATUS_INVALID_ARGUMENT;
-}
-
 static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
     const C_CHAR *path, lib_storage_medium_mode mode)
 {
     C_CHAR candidate[sizeof(session->floppy_image_path[slot])];
 
-    if (session == STD_NULL || slot >= VM_MACHINE_FLOPPY_SLOT_COUNT ||
-        (slot != 0u && !session->model40_private) ||
+    if (session == STD_NULL || session->profile_plan == STD_NULL ||
+        slot >= vm_profile_machine_plan_floppy_slot_count(session->profile_plan) ||
         vm_machine_control_is_running(&session->control) ||
         mode > LIB_STORAGE_MEDIUM_OVERLAY ||
         !vm_machine_copy_path(candidate, sizeof(candidate), path) ||
@@ -435,15 +277,25 @@ static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
 {
     C_CHAR candidate[sizeof(session->hdd_image_path)];
 
-    if (session == STD_NULL || session->model40_private ||
-        (!session->xt_private && (session->profile == STD_NULL ||
-            !session->profile->hdc_present)) || !vm_machine_copy_path(candidate,
+    type_unsigned_16 cylinders = 0u;
+    type_unsigned_8 heads = 0u, sectors = 0u;
+
+    if (session == STD_NULL || session->profile_plan == STD_NULL ||
+        !vm_profile_machine_plan_hdc_present(session->profile_plan) || !vm_machine_copy_path(candidate,
             sizeof(candidate), path) || mode > LIB_STORAGE_MEDIUM_OVERLAY ||
         vm_machine_hdd_insert(&session->hdd, candidate, mode) != 0 ||
         !vm_machine_copy_path(session->hdd_image_path, sizeof(session->hdd_image_path),
             candidate)) return -1;
     session->retained_config.fixed_disk_image[0u] = session->hdd_image_path;
     session->retained_config.fixed_disk_mode[0u] = mode;
+    if (vm_profile_machine_plan_hdd_geometry_get(session->profile_plan,
+            &cylinders, &heads, &sectors)) {
+        const STD_SIZE_T expected_bytes = (STD_SIZE_T)cylinders * heads * sectors * 512u;
+        if (vm_machine_hdd_raw_byte_count(&session->hdd) != expected_bytes ||
+            vm_machine_hdd_set_geometry(&session->hdd, cylinders, heads, sectors) != TYPE_FALSE) {
+            return -1;
+        }
+    }
     return 0;
 }
 
@@ -461,12 +313,7 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
     if (machine == STD_NULL || machine->core_machine != STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (!machine->model40_private && !machine->xt_private && machine->profile == STD_NULL &&
-        vm_machine_default_at_resolve(machine, STD_NULL) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    if (!machine->model40_private && !machine->xt_private &&
-        !vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
+    if (machine->profile_plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_plan_create(&machine->core_machine_config,
@@ -486,24 +333,7 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
         return status;
     }
     vm_machine_bind_display(machine);
-    if (machine->model40_private) {
-        status = vm_machine_model40_topology_materialize(machine, &topology);
-        if (status != TYPE_STATUS_OK) {
-            vm_machine_storage_finalize(machine);
-            return status;
-        }
-    } else if (machine->profile_topology != STD_NULL) {
-        topology = *machine->profile_topology;
-    } else {
-        /* Direct white-box fixtures retain their descriptor failure coverage
-         * through the same profile owner; product sessions always copy first. */
-        status = vm_profile_default_pc_at_topology_materialize(machine->profile,
-            &machine->controller_timing_rules, &topology);
-        if (status != TYPE_STATUS_OK) {
-            vm_machine_storage_finalize(machine);
-            return status;
-        }
-    }
+    topology = *vm_profile_machine_plan_topology_get(machine->profile_plan);
     status = vm_machine_apply_cmos_seed(machine, &topology);
     if (status != TYPE_STATUS_OK) { vm_machine_storage_finalize(machine); return status; }
     topology.display.text_glyphs = machine->text_glyphs;
@@ -520,9 +350,10 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
         vm_machine_storage_finalize(machine);
         return status;
     }
-    status = machine->model40_private ?
-        vm_machine_model40_materialize_plan(machine, machine->core_machine_plan) :
-        vm_machine_devices_materialize_plan(machine, machine->core_machine_plan);
+    status = vm_profile_machine_plan_materialize(machine->profile_plan,
+        machine->core_machine_plan, vm_machine_generic_materialize, machine,
+        (core_machine_fdc_terminal_observation_provider) {
+            vm_machine_capture_fdc_terminal, machine });
     if (status != TYPE_STATUS_OK) {
         vm_machine_storage_finalize(machine);
         return status;
@@ -536,13 +367,6 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
     if (status != TYPE_STATUS_OK) {
         vm_machine_storage_finalize(machine);
         return status;
-    }
-    if (machine->firmware_kind == VM_MACHINE_FIRMWARE_EXTERNAL_PC_AT_ROM)
-        machine->pc_at_rom_context.image = machine->pc_at_rom;
-    if (machine->firmware_kind == VM_MACHINE_FIRMWARE_EXTERNAL_PC_AT_ROM) {
-        machine->pc_at_rom_context.video = machine->pc_at_video_rom_bytes == 0u ?
-            STD_NULL : machine->pc_at_video_rom;
-        machine->pc_at_rom_context.video_bytes = machine->pc_at_video_rom_bytes;
     }
     if (core_machine_guest_presentation_mailbox_create(&machine->presentation_mailbox) !=
         TYPE_STATUS_OK) {
@@ -568,174 +392,39 @@ C_VOID vm_machine_storage_finalize(vm_machine *machine)
     machine->core_machine_plan = STD_NULL;
 }
 
-static type_status vm_machine_initialize_model40_configuration(vm_machine *session,
-    const vm_machine_config *config)
-{
-    const vm_machine_floppy_format format = config == STD_NULL ?
-        VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT : config->floppy_format;
-
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    session->model40_private = 1;
-    session->firmware_kind = VM_MACHINE_FIRMWARE_MODEL40_BYOB;
-    session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
-    if (format == VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT ||
-        format == VM_MACHINE_FLOPPY_FORMAT_1200K) {
-        session->fdd_media_kind = VM_PROFILE_FLOPPY_525_1200K;
-        return TYPE_STATUS_OK;
-    }
-    if (format == VM_MACHINE_FLOPPY_FORMAT_360K) {
-        /* A 1.2MB drive remains the sole physical drive; this selects only
-           compatible 48-TPI media for its one removable-media provider. */
-        session->fdd_media_kind = VM_PROFILE_FLOPPY_525_360K;
-        return TYPE_STATUS_OK;
-    }
-    return TYPE_STATUS_INVALID_ARGUMENT;
-}
-
-static type_status vm_machine_create_xt_from_assets(const vm_machine_config *config,
-    const vm_machine_assets *assets, vm_machine **out_session)
+static type_status vm_machine_create_from_plan(const vm_machine_config *config,
+    vm_profile_machine_plan *plan, vm_machine **out_session)
 {
     vm_machine *session;
-    vm_profile_xt_5160_268_external_rom source_rom;
     type_status status;
 
-    if (config == STD_NULL || assets == STD_NULL || out_session == STD_NULL ||
-        config->bios_count == 0u || config->bios_count > 2u ||
-        config->cmos_seed != STD_NULL || config->memory_bytes != 0u ||
-        (config->floppy_format != VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT &&
-         config->floppy_format != VM_MACHINE_FLOPPY_FORMAT_360K) || config->create_fdd ||
-        config->create_hdd_cylinders != 0u ||
-        config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
-        config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
-        vm_machine_config_fixed_disk(config, 1u) != STD_NULL ||
-        vm_machine_config_floppy(config, 1u) != STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    status = vm_profile_xt_5160_268_external_rom_create(assets->bios[0u].data,
-        assets->bios[0u].bytes, config->bios_count == 2u ? assets->bios[1u].data :
-        STD_NULL, config->bios_count == 2u ? assets->bios[1u].bytes : 0u,
-        assets->video.data, assets->video.bytes, &source_rom);
-    if (status != TYPE_STATUS_OK) return status;
+    if (config == STD_NULL || plan == STD_NULL || out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_session = STD_NULL;
     session = (vm_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    session->xt_private = 1;
-    session->firmware_kind = VM_MACHINE_FIRMWARE_XT_BYOB;
-    session->floppy_kind = VM_PROFILE_FLOPPY_525_360K;
-    session->fdd_media_kind = VM_PROFILE_FLOPPY_525_360K;
-    if (vm_profile_xt_5160_268_resolve(&session->xt_resolved,
-            source_rom.xebec_present) != TYPE_STATUS_OK) {
-        STD_FREE(session);
-        return TYPE_STATUS_FAULT;
-    }
-    session->profile_topology = &session->xt_resolved.topology;
-    session->core_machine_config = session->xt_resolved.resolved.values.core.configuration;
-    session->controller_timing_rules =
-        session->xt_resolved.resolved.values.core.controller_timing_rules;
-    session->xt_system_rom = (type_unsigned_8 *)STD_MALLOC(
-        VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES);
-    session->xt_xebec_rom = (type_unsigned_8 *)STD_MALLOC(
-        VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES);
-    if (source_rom.video_bytes != STD_NULL) {
-        session->xt_video_rom = (type_unsigned_8 *)STD_MALLOC(source_rom.video_byte_count);
-    }
-    if (session->xt_system_rom == STD_NULL || session->xt_xebec_rom == STD_NULL ||
-        (source_rom.video_bytes != STD_NULL && session->xt_video_rom == STD_NULL)) {
-        vm_machine_destroy(session);
+    if (session == STD_NULL) {
+        vm_profile_machine_plan_destroy(plan);
         return TYPE_STATUS_NO_MEMORY;
     }
-    STD_MEMCPY(session->xt_system_rom, source_rom.system_bytes,
-        VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES);
-    if (source_rom.xebec_present) STD_MEMCPY(session->xt_xebec_rom,
-        source_rom.xebec_bytes, VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES);
-    if (source_rom.video_bytes != STD_NULL) STD_MEMCPY(session->xt_video_rom,
-        source_rom.video_bytes, source_rom.video_byte_count);
-    session->xt_rom = source_rom;
-    session->xt_rom.system_bytes = session->xt_system_rom;
-    session->xt_rom.xebec_bytes = source_rom.xebec_present ? session->xt_xebec_rom : STD_NULL;
-    session->xt_rom.video_bytes = source_rom.video_bytes == STD_NULL ? STD_NULL :
-        session->xt_video_rom;
-    session->retained_config = *config;
-    session->retained_config.bios_path[0u] = STD_NULL;
-    session->retained_config.bios_path[1u] = STD_NULL;
-    session->retained_config.font_path = STD_NULL;
-    if (vm_machine_text_glyphs_copy(session, assets->font) != TYPE_STATUS_OK) {
+    session->profile_plan = plan;
+    session->core_machine_config = *vm_profile_machine_plan_core_config_get(session->profile_plan);
+    session->controller_timing_rules = *vm_profile_machine_plan_timing_rules_get(session->profile_plan);
+    session->profile = vm_profile_machine_plan_pc_at_descriptor_get(session->profile_plan);
+    session->floppy_kind = vm_profile_machine_plan_drive_floppy_get(session->profile_plan);
+    session->fdd_media_kind = vm_profile_machine_plan_media_floppy_get(session->profile_plan);
+    if (!vm_profile_machine_plan_hdc_present(session->profile_plan) &&
+        (vm_machine_config_fixed_disk(config, 0u) != STD_NULL || config->create_hdd_cylinders != 0u)) {
         vm_machine_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    status = vm_machine_initialize(session);
-    if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
-    if ((vm_machine_config_floppy(config, 0u) != STD_NULL &&
-            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u),
-                vm_machine_config_floppy_mode(config, 0u))) ||
-        (vm_machine_config_fixed_disk(config, 0u) != STD_NULL &&
-            vm_machine_insert_hdd_at_startup(session,
-                vm_machine_config_fixed_disk(config, 0u),
-                vm_machine_config_fixed_disk_mode(config, 0u)))) {
-        vm_machine_destroy(session);
-        return TYPE_STATUS_FAULT;
-    }
-    status = vm_machine_reset(session);
-    if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
-    *out_session = session;
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_machine_create_model40_from_assets(
-    const vm_machine_config *config, const vm_machine_assets *assets,
-    vm_machine **out_session)
-{
-    vm_machine *session;
-    vm_profile_model40_external_rom source_rom;
-    type_status status;
-
-    if (config == STD_NULL || assets == STD_NULL || out_session == STD_NULL ||
-        config->bios_count != 2u ||
-        (config->memory_bytes != 0u && config->memory_bytes != 1024u * 1024u) ||
-        vm_machine_config_fixed_disk(config, 1u) != STD_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    *out_session = STD_NULL;
-    session = (vm_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    status = vm_machine_initialize_model40_configuration(session, config);
-    if (status == TYPE_STATUS_OK) status = vm_profile_model40_child_resolve(
-        &session->model40_resolved);
-    if (status == TYPE_STATUS_OK) {
-        session->core_machine_config =
-            session->model40_resolved.values.core.configuration;
-        session->controller_timing_rules =
-            session->model40_resolved.values.core.controller_timing_rules;
-        status = vm_profile_model40_external_rom_create(assets->bios[0u].data,
-            assets->bios[0u].bytes, assets->bios[1u].data, assets->bios[1u].bytes,
-            assets->video.data, assets->video.bytes, &source_rom);
-    }
-    if (status == TYPE_STATUS_OK) {
-        STD_MEMCPY(session->model40_even_rom, assets->bios[0u].data,
-            VM_PROFILE_MODEL40_ROM_CHIP_BYTES);
-        STD_MEMCPY(session->model40_odd_rom, assets->bios[1u].data,
-            VM_PROFILE_MODEL40_ROM_CHIP_BYTES);
-        if (assets->video.data != STD_NULL) {
-            STD_MEMCPY(session->model40_video_rom, assets->video.data,
-                VM_PROFILE_MODEL40_VIDEO_ROM_BYTES);
-        }
-        session->model40_rom = source_rom;
-        session->model40_rom.even_bytes = session->model40_even_rom;
-        session->model40_rom.odd_bytes = session->model40_odd_rom;
-        session->model40_rom.video_bytes = assets->video.data == STD_NULL ? STD_NULL :
-            session->model40_video_rom;
-    }
-    if (status != TYPE_STATUS_OK || vm_machine_cmos_seed_copy(session,
-            assets->cmos_seed) != TYPE_STATUS_OK) {
-        STD_FREE(session);
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
+    if (vm_profile_machine_plan_copy_cmos_seed(session->profile_plan, session->cmos_seed,
+            &session->cmos_seed_present) != TYPE_STATUS_OK ||
+        vm_profile_machine_plan_copy_text_glyphs(session->profile_plan,
+            &session->text_glyphs) != TYPE_STATUS_OK) { vm_machine_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT; }
     session->retained_config = *config;
     session->retained_config.cmos_seed = STD_NULL;
     session->retained_config.bios_path[0u] = STD_NULL;
     session->retained_config.bios_path[1u] = STD_NULL;
     session->retained_config.video_path = STD_NULL;
     session->retained_config.font_path = STD_NULL;
-    if (vm_machine_text_glyphs_copy(session, assets->font) != TYPE_STATUS_OK) {
-        vm_machine_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT;
-    }
     status = vm_machine_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
     if ((vm_machine_config_floppy(config, 0u) != STD_NULL &&
@@ -745,11 +434,15 @@ static type_status vm_machine_create_model40_from_assets(
             vm_machine_insert_floppy_at(session, 1u, vm_machine_config_floppy(config, 1u),
                 vm_machine_config_floppy_mode(config, 1u))) ||
         (vm_machine_config_fixed_disk(config, 0u) != STD_NULL &&
-            vm_machine_model40_insert_hdd_at_startup(session,
+            vm_machine_insert_hdd_at_startup(session,
                 vm_machine_config_fixed_disk(config, 0u),
                 vm_machine_config_fixed_disk_mode(config, 0u)))) {
         vm_machine_destroy(session);
         return TYPE_STATUS_FAULT;
+    }
+    if (config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
+    if (vm_profile_machine_plan_hdc_present(session->profile_plan) && config->create_hdd_cylinders != 0u) {
+        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders);
     }
     status = vm_machine_reset(session);
     if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
@@ -760,220 +453,29 @@ static type_status vm_machine_create_model40_from_assets(
 type_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_session)
 {
-    vm_machine *session;
-    type_status status;
-
-    if (config != STD_NULL && config->profile_kind ==
-        VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
-        return vm_machine_create_model40_from_assets(config, assets, out_session);
-    }
-    if (config != STD_NULL && config->profile_kind == VM_MACHINE_PROFILE_IBM_5160_MODEL_268) {
-        return vm_machine_create_xt_from_assets(config, assets, out_session);
-    }
-    if (config == STD_NULL || assets == STD_NULL || out_session == STD_NULL ||
-        (config->profile_kind != VM_MACHINE_PROFILE_DEFAULT_PC_AT &&
-         config->profile_kind != VM_MACHINE_PROFILE_IBM_5170_MODEL_339) ||
-        config->fixed_disk_image[1u] != STD_NULL || config->floppy_image[1u] != STD_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    *out_session = STD_NULL;
-    session = (vm_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    if (config->profile_kind == VM_MACHINE_PROFILE_DEFAULT_PC_AT) {
-        status = vm_machine_default_at_resolve(session, config);
-    } else {
-        status = vm_machine_ibm_5170_floppy_select(config, &session->fdd_media_kind);
-        /* The 5170's 1.2 MB drive is an immutable board fact. The YAML
-         * format selects the removable medium only (including 360 KB). */
-        session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
-        if (status == TYPE_STATUS_OK) status = vm_profile_ibm_5170_root_resolve_memory(
-            config->memory_bytes, &session->ibm_5170_root);
-        if (status == TYPE_STATUS_OK) {
-            session->profile = &session->ibm_5170_root.descriptor;
-            session->profile_topology = &session->ibm_5170_root.topology;
-            session->core_machine_config =
-                session->ibm_5170_root.resolved.values.core.configuration;
-            session->controller_timing_rules =
-                session->ibm_5170_root.resolved.values.core.controller_timing_rules;
-        }
-    }
-    if (status != TYPE_STATUS_OK || vm_machine_cmos_seed_copy(session,
-            assets->cmos_seed) != TYPE_STATUS_OK || vm_machine_pc_at_rom_copy(session,
-            config, assets) != TYPE_STATUS_OK || (!session->profile->hdc_present &&
-            (vm_machine_config_fixed_disk(config, 0u) != STD_NULL ||
-             config->create_hdd_cylinders != 0u))) {
-        STD_FREE(session);
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    session->firmware_kind = VM_MACHINE_FIRMWARE_EXTERNAL_PC_AT_ROM;
-    session->retained_config = *config;
-    session->retained_config.cmos_seed = STD_NULL;
-    session->retained_config.bios_path[0u] = STD_NULL;
-    session->retained_config.bios_path[1u] = STD_NULL;
-    session->retained_config.font_path = STD_NULL;
-    if (vm_machine_text_glyphs_copy(session, assets->font) != TYPE_STATUS_OK) {
-        vm_machine_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    status = vm_machine_initialize(session);
-    if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
-    if ((vm_machine_config_floppy(config, 0u) != STD_NULL &&
-            vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u),
-                vm_machine_config_floppy_mode(config, 0u))) ||
-        (vm_machine_config_fixed_disk(config, 0u) != STD_NULL &&
-            vm_machine_insert_hdd_at_startup(session,
-                vm_machine_config_fixed_disk(config, 0u),
-                vm_machine_config_fixed_disk_mode(config, 0u)))) {
-        vm_machine_destroy(session);
-        return TYPE_STATUS_FAULT;
-    }
-    if (config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
-    if (session->profile->hdc_present && config->create_hdd_cylinders != 0u) {
-        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders);
-    }
-    status = vm_machine_reset(session);
-    if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
-    *out_session = session;
-    return TYPE_STATUS_OK;
-}
-
-typedef struct vm_machine_file_assets {
-    type_unsigned_8 *bios[2];
-    type_unsigned_8 *cmos_seed;
-    type_unsigned_8 *video;
-    type_unsigned_8 *font;
-    vm_machine_assets view;
-} vm_machine_file_assets;
-
-static C_VOID vm_machine_file_assets_destroy(vm_machine_file_assets *assets)
-{
-    if (assets == STD_NULL) return;
-    STD_FREE(assets->bios[0u]);
-    STD_FREE(assets->bios[1u]);
-    STD_FREE(assets->cmos_seed);
-    STD_FREE(assets->video);
-    STD_FREE(assets->font);
-    *assets = (vm_machine_file_assets) {0};
-}
-
-static type_status vm_machine_file_asset_load(const C_CHAR *path,
-    STD_SIZE_T bytes, vm_machine_asset_bytes *out_view,
-    type_unsigned_8 **out_owned)
-{
-    type_unsigned_8 *owned;
-
-    if (path == STD_NULL || out_view == STD_NULL || out_owned == STD_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    owned = (type_unsigned_8 *)STD_MALLOC(bytes);
-    if (owned == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    if (vm_profile_byob_blob_load(&(vm_profile_byob_blob) { path, STD_NULL, bytes },
-            owned) != TYPE_STATUS_OK) {
-        STD_FREE(owned);
-        return TYPE_STATUS_FAULT;
-    }
-    *out_view = (vm_machine_asset_bytes) { owned, bytes };
-    *out_owned = owned;
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_machine_file_variable_asset_load(const C_CHAR *path,
-    STD_SIZE_T maximum, vm_machine_asset_bytes *out_view,
-    type_unsigned_8 **out_owned)
-{
-    C_VOID *owned = STD_NULL;
-    STD_SIZE_T bytes = 0u;
-
-    if (path == STD_NULL || out_view == STD_NULL || out_owned == STD_NULL ||
-        maximum == 0u || lib_storage_file_read_owned(path, maximum, &owned, &bytes) !=
-            LIB_STATUS_OK ||
-        bytes == 0u) {
-        STD_FREE(owned);
-        return TYPE_STATUS_FAULT;
-    }
-    *out_view = (vm_machine_asset_bytes) { owned, bytes };
-    *out_owned = owned;
-    return TYPE_STATUS_OK;
-}
-
-static type_status vm_machine_file_assets_load(const vm_machine_config *config,
-    vm_machine_file_assets *assets)
-{
-    STD_SIZE_T bios_bytes;
-    type_status status;
-
-    if (config == STD_NULL || assets == STD_NULL || config->bios_count == 0u ||
-        config->bios_count > 2u || (config->profile_kind !=
-            VM_MACHINE_PROFILE_IBM_5160_MODEL_268 && config->cmos_seed == STD_NULL)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    *assets = (vm_machine_file_assets) {0};
-    if (config->profile_kind == VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
-        if (config->bios_count != 2u) return TYPE_STATUS_INVALID_ARGUMENT;
-        bios_bytes = VM_PROFILE_MODEL40_ROM_CHIP_BYTES;
-    } else if (config->profile_kind == VM_MACHINE_PROFILE_IBM_5160_MODEL_268) {
-        bios_bytes = VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES;
-    } else {
-        bios_bytes = config->bios_count == 1u ? VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES :
-            VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES;
-    }
-    status = vm_machine_file_asset_load(config->bios_path[0u], bios_bytes,
-        &assets->view.bios[0u], &assets->bios[0u]);
-    if (status == TYPE_STATUS_OK && config->bios_count == 2u) {
-        const STD_SIZE_T secondary_bytes = config->profile_kind ==
-            VM_MACHINE_PROFILE_IBM_5160_MODEL_268 ?
-            VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES : bios_bytes;
-        status = vm_machine_file_asset_load(config->bios_path[1u], secondary_bytes,
-            &assets->view.bios[1u], &assets->bios[1u]);
-    }
-    if (status == TYPE_STATUS_OK && config->cmos_seed != STD_NULL) {
-        status = vm_machine_file_asset_load(config->cmos_seed,
-            VM_MACHINE_CMOS_SEED_BYTES, &assets->view.cmos_seed,
-            &assets->cmos_seed);
-    }
-    if (status == TYPE_STATUS_OK && config->video_path != STD_NULL) {
-        status = config->profile_kind == VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 ?
-            vm_machine_file_asset_load(config->video_path,
-                VM_PROFILE_MODEL40_VIDEO_ROM_BYTES, &assets->view.video,
-                &assets->video) : vm_machine_file_variable_asset_load(config->video_path,
-                VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES, &assets->view.video,
-                &assets->video);
-    }
-    if (status == TYPE_STATUS_OK && config->font_path != STD_NULL) {
-        status = vm_machine_file_asset_load(config->font_path,
-            VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES, &assets->view.font,
-            &assets->font);
-    }
-    if (status != TYPE_STATUS_OK) vm_machine_file_assets_destroy(assets);
-    return status;
-}
-
-static type_status vm_machine_create_file_backed(const vm_machine_config *config,
-    vm_machine **out_session)
-{
-    vm_machine_file_assets assets;
-    type_status status = vm_machine_file_assets_load(config, &assets);
+    vm_profile_machine_plan *plan = STD_NULL;
+    type_status status = vm_profile_machine_plan_create(config, assets, &plan);
 
     if (status != TYPE_STATUS_OK) return status;
-    status = vm_machine_create_from_assets(config, &assets.view, out_session);
-    vm_machine_file_assets_destroy(&assets);
-    return status;
+    return vm_machine_create_from_plan(config, plan, out_session);
 }
 
 C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_session)
 {
-    if (config == STD_NULL || out_session == STD_NULL ||
-        vm_machine_config_fixed_disk(config, 1u) != STD_NULL ||
-        (config->profile_kind != VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
-         vm_machine_config_floppy(config, 1u) != STD_NULL)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    return vm_machine_create_file_backed(config, out_session);
+    vm_profile_machine_plan *plan = STD_NULL;
+    type_status status;
+
+    if (config == STD_NULL || out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    status = vm_profile_machine_plan_create_file_backed(config, &plan);
+    if (status != TYPE_STATUS_OK) return status;
+    return vm_machine_create_from_plan(config, plan, out_session);
 }
 
 type_status vm_machine_reconfigure_memory(vm_machine *session,
     STD_SIZE_T memory_bytes)
 {
-    if (session == STD_NULL || session->model40_private ||
+    if (session == STD_NULL || !vm_profile_machine_plan_memory_reconfigurable(
+            session->profile_plan) ||
         (session->executor != LIB_NULL && common_machine_state_get(
             session->executor) != COMMON_MACHINE_STOPPED)) {
         return TYPE_STATUS_INVALID_STATE;
@@ -991,9 +493,7 @@ C_VOID vm_machine_destroy(vm_machine *session)
 {
     if (session == STD_NULL) return;
     vm_machine_finalize(session);
-    STD_FREE(session->xt_system_rom);
-    STD_FREE(session->xt_xebec_rom);
-    STD_FREE(session->xt_video_rom);
+    vm_profile_machine_plan_destroy(session->profile_plan);
     STD_FREE(session);
 }
 

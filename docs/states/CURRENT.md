@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T533 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved independent T533 execution on 2026-09-21. Accepted S2 `78a86421` leaves the profile-composition/machine-adapter batch explicitly assigned to S3. |
+| Objective | Make Profiles the sole owner of board selection, resolution, firmware binding and board composition; reduce Core Machine to one neutral selected-plan adapter with one prepare/bind/run/release lifecycle. |
+| Non-goals | Do not implement fixed product targets or NXVM.ini, remove a retained machine/CPU/controller, alter BYOB payloads, add a profile plugin framework, retain an old composition fallback, change Common/Lib/x86, or claim PC110 implementation. |
+| Reference Baseline | T533 S1 ledger `14572230`; S2 owner relocation `687db585`, accepted `78a86421`; current runnable baseline `vm-0-5-0532`. |
+| Candidate Proposal | [Fixed-machine products and architecture consolidation](../proposals/m5-fixed-machine-products.md), S3; [baseline ledger](../etc/evidence/t533-s1-fixed-machine-baseline-ledger.md). |
+| Files And ABI Surface | `src/core/machine/machine.c`, `machine_private.h`, lifecycle/provider binding, Model-40 composition and Profile declarations/tests. A neutral internal selected-plan contract may move as required; public App/Common requests retain their current behavior. |
+| Applicable Rules | Task Reading Set; Architecture unique state owner, one-direction dependency and no duplicate production route; Coding minimal direct abstraction; Execution mechanism-defect/similar-issue sweep; source policy BYOB boundary. |
+| Verification | Profile-specific XT, 5170, Model-40 and default-PC/AT focused tests; full repository-only unit suite; configured static owner/dependency gates; documentation governance; source sweep proving Machine has no board-kind/firmware-kind switch or simultaneous board-resolved state. |
+| Expected Markers | Each retained Profile constructs one frozen neutral plan containing its board/topology/firmware binding; Machine consumes one selected plan and owns only generic runtime/media/resource lifetime; lifecycle binds the Profile-supplied provider once; no old factory branch or compatibility path remains. |
+| Asset Needs | Code-owned test views only. Do not import, alter, hash or embed external firmware, CMOS, font or media. |
+| Reporting Requirements | Report the selected-plan boundary, each relocated XT/5170/Model-40/default decision, removed Machine ownership, all affected test results and any residual receiver for S4. |
+| Stop Conditions | Stop for a needed new profile/device semantic not proven by existing behavior, an external asset requirement, a changed runtime result not explained by the selected-plan boundary, a cross-layer reverse dependency, or inability to remove the old factory path atomically. |
+| Exit Criteria | One Profile-owned construction/provider route exists for every retained machine, Machine has no board choice or parallel board buffers, direct and file-backed test paths share the selected-plan route, all retained profile regressions/full unit suite/gates pass, and actual-change review proves no fallback. |
+| Original Owner Request | Keep all current machines but reorganize Core as Devices/Profiles/Machine, then later compile one fixed profile per executable with external BYOB assets and NXVM.ini runtime configuration. |
+| Similar-Issue Sweep | Audit every `vm_machine_create*`, `firmware_kind`, profile resolver, board-specific field and Profile-to-Machine include across production, tests, CMake and static verifiers; classify each as Profile owner, neutral Machine resource, or S4 runtime-config receiver. |
+
 
 ## Current Technical Baseline
 

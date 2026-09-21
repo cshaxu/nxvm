@@ -192,7 +192,8 @@ done:
             values[3], values[4], values[5], values[6], values[7], lba, cylinder,
             head, sector, entry == STD_NULL ? 0u : entry[4], (C_UINT)mbr_mismatch,
             (C_UINT)vbr_mismatch, int13_vector[1], int13_vector[0],
-            session == STD_NULL ? 0u : (C_UINT)session->pc_at_rom_external, values[9],
+            session == STD_NULL ? 0u : (C_UINT)vm_profile_machine_plan_external_firmware(
+                session->profile_plan), values[9],
             values[10], values[11], first_sector_number,
             first_cylinder_low, first_cylinder_high, first_drive_head, first_command_count,
             guest_mbr[0], guest_mbr[1], guest_mbr[2], guest_mbr[3],

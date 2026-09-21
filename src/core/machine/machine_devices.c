@@ -14,11 +14,11 @@ type_status vm_machine_devices_initialize_media(vm_machine *session)
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_machine_fdd_initialize_with_geometry(&session->fdd,
             vm_profile_floppy_geometry_get(session->fdd_media_kind))) return TYPE_STATUS_FAULT;
-    if (session->model40_private && vm_machine_fdd_initialize_with_geometry(
+    if (vm_profile_machine_plan_floppy_slot_count(session->profile_plan) > 1u &&
+        vm_machine_fdd_initialize_with_geometry(
             &session->floppy[1u], vm_profile_floppy_geometry_get(
                 session->fdd_media_kind))) return TYPE_STATUS_FAULT;
-    if (session->model40_private || session->xt_private ||
-        (session->profile != STD_NULL && session->profile->hdc_present)) {
+    if (vm_profile_machine_plan_hdc_present(session->profile_plan)) {
         vm_machine_hdd_initialize(&session->hdd);
     }
     return TYPE_STATUS_OK;
@@ -32,14 +32,13 @@ type_status vm_machine_devices_bind_media(vm_machine *session)
     status = core_machine_media_registry_bind(session->media_registry,
         VM_MACHINE_MEDIA_FDD_ID, &session->fdd, vm_machine_fdd_media_provider());
     if (status != TYPE_STATUS_OK) return status;
-    if (session->model40_private) {
+    if (vm_profile_machine_plan_floppy_slot_count(session->profile_plan) > 1u) {
         status = core_machine_media_registry_bind(session->media_registry,
             VM_MACHINE_MEDIA_FDD_SECONDARY_ID, &session->floppy[1u],
             vm_machine_fdd_media_provider());
         if (status != TYPE_STATUS_OK) return status;
     }
-    if (session->model40_private || session->xt_private ||
-        (session->profile != STD_NULL && session->profile->hdc_present)) {
+    if (vm_profile_machine_plan_hdc_present(session->profile_plan)) {
         status = core_machine_media_registry_bind(session->media_registry,
             VM_MACHINE_MEDIA_HDD_ID, &session->hdd, vm_machine_hdd_media_provider());
         if (status != TYPE_STATUS_OK) return status;
@@ -50,6 +49,7 @@ type_status vm_machine_devices_bind_media(vm_machine *session)
 static type_status vm_machine_devices_materialize_fdc(vm_machine *session,
     core_machine_plan *plan)
 {
+    const vm_profile_default_pc_at_descriptor *profile;
     const vm_profile_default_pc_at_port_leaf *dor_port;
     const vm_profile_default_pc_at_port_leaf *status_port;
     const vm_profile_default_pc_at_port_leaf *data_port;
@@ -65,15 +65,16 @@ static type_status vm_machine_devices_materialize_fdc(vm_machine *session,
     if (session == STD_NULL || plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    dor_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+    profile = vm_profile_machine_plan_pc_at_descriptor_get(session->profile_plan);
+    dor_port = vm_profile_default_pc_at_port_leaf_at(profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0u);
-    status_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+    status_port = vm_profile_default_pc_at_port_leaf_at(profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 1u);
-    data_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+    data_port = vm_profile_default_pc_at_port_leaf_at(profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 2u);
-    control_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+    control_port = vm_profile_default_pc_at_port_leaf_at(profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 3u);
-    route = vm_profile_default_pc_at_route_find(session->profile,
+    route = vm_profile_default_pc_at_route_find(profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
     if (dor_port == STD_NULL || status_port == STD_NULL || data_port == STD_NULL ||
         control_port == STD_NULL || route == STD_NULL) {
@@ -86,30 +87,33 @@ static type_status vm_machine_devices_materialize_fdc(vm_machine *session,
     config.control_port = control_port->port;
     config.irq = route->irq;
     config.dma_channel = route->dma_channel;
-    config.ready_mask = session->profile->fdc_ready_mask;
+    config.ready_mask = profile->fdc_ready_mask;
     config.clock_ticks_per_second = session->core_machine_config.time_axis.ticks_per_second;
-    drives.installed_mask = session->profile->fdc_installed_mask;
-    drives.double_sided_mask = session->profile->fdc_double_sided_mask;
-    STD_MEMCPY(drives.cylinder_count, session->profile->fdc_cylinder_count,
+    drives.installed_mask = profile->fdc_installed_mask;
+    drives.double_sided_mask = profile->fdc_double_sided_mask;
+    STD_MEMCPY(drives.cylinder_count, profile->fdc_cylinder_count,
         sizeof(drives.cylinder_count));
-    drives.track_zero_active_low_mask = session->profile->fdc_track_zero_active_low_mask;
-    config.diagnostic_port = session->profile->fdc_diagnostic_port;
-    config.diagnostic_read_value = session->profile->fdc_diagnostic_read_value;
+    drives.track_zero_active_low_mask = profile->fdc_track_zero_active_low_mask;
+    config.diagnostic_port = profile->fdc_diagnostic_port;
+    config.diagnostic_read_value = profile->fdc_diagnostic_read_value;
     return core_machine_plan_configure_fdc(plan, &drives, &config);
 }
 
 static type_status vm_machine_devices_materialize_hdc(vm_machine *session,
     core_machine_plan *plan)
 {
-    if (session == STD_NULL || session->profile == STD_NULL || plan == STD_NULL) {
+    const vm_profile_default_pc_at_descriptor *profile = session == STD_NULL ? STD_NULL :
+        vm_profile_machine_plan_pc_at_descriptor_get(session->profile_plan);
+
+    if (profile == STD_NULL || plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (!session->profile->hdc_present) return TYPE_STATUS_OK;
-    if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
+    if (!profile->hdc_present) return TYPE_STATUS_OK;
+    if (!vm_profile_default_pc_at_descriptor_is_valid(profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     return core_machine_plan_configure_hdc(plan, VM_MACHINE_MEDIA_HDD_ID,
-        CORE_MACHINE_MEDIA_ID_INVALID, &session->profile->hdc);
+        CORE_MACHINE_MEDIA_ID_INVALID, &profile->hdc);
 }
 
 type_status vm_machine_devices_materialize_plan(vm_machine *session,
@@ -117,14 +121,11 @@ type_status vm_machine_devices_materialize_plan(vm_machine *session,
 {
     type_status status;
 
-    if (session == STD_NULL || plan == STD_NULL || session->model40_private) {
+    if (session == STD_NULL || plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    /* XT is the only resolved topology that already carries both sourced
-     * storage devices.  PC/AT profiles retain their established descriptor
-     * materialization route. */
-    if (session->xt_private) return TYPE_STATUS_OK;
-    if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
+    if (!vm_profile_default_pc_at_descriptor_is_valid(
+            vm_profile_machine_plan_pc_at_descriptor_get(session->profile_plan))) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = vm_machine_devices_materialize_fdc(session, plan);
@@ -137,9 +138,9 @@ C_VOID vm_machine_devices_reset(vm_machine *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_reset(&session->fdd);
-    if (session->model40_private) vm_machine_fdd_reset(&session->floppy[1u]);
-    if (session->model40_private || session->xt_private ||
-        (session->profile != STD_NULL && session->profile->hdc_present)) {
+    if (vm_profile_machine_plan_floppy_slot_count(session->profile_plan) > 1u)
+        vm_machine_fdd_reset(&session->floppy[1u]);
+    if (vm_profile_machine_plan_hdc_present(session->profile_plan)) {
         vm_machine_hdd_reset(&session->hdd);
     }
 }
@@ -148,9 +149,9 @@ C_VOID vm_machine_devices_finalize(vm_machine *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_finalize(&session->fdd);
-    if (session->model40_private) vm_machine_fdd_finalize(&session->floppy[1u]);
-    if (session->model40_private || session->xt_private ||
-        (session->profile != STD_NULL && session->profile->hdc_present)) {
+    if (vm_profile_machine_plan_floppy_slot_count(session->profile_plan) > 1u)
+        vm_machine_fdd_finalize(&session->floppy[1u]);
+    if (vm_profile_machine_plan_hdc_present(session->profile_plan)) {
         vm_machine_hdd_finalize(&session->hdd);
     }
 }

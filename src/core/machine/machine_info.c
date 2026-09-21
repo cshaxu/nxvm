@@ -28,13 +28,12 @@ type_status vm_machine_get_information(const vm_machine *session,
     out_information->memory_bytes = memory_bytes;
     out_information->floppy_image_bytes = vm_machine_fdd_image_size(&session->fdd);
     out_information->floppy_media_inserted = vm_machine_fdd_has_media(&session->fdd);
-    out_information->fixed_disk_present = session->profile != STD_NULL &&
-        session->profile->hdc_present;
+    out_information->fixed_disk_present = vm_profile_machine_plan_hdc_present(
+        session->profile_plan);
     out_information->fixed_disk_cylinders = vm_machine_hdd_cylinders(&session->hdd);
     out_information->fixed_disk_image_bytes = vm_machine_hdd_image_size(&session->hdd);
     out_information->fixed_disk_media_connected = vm_machine_hdd_has_media(&session->hdd);
-    out_information->external_firmware = session->firmware_kind ==
-        VM_MACHINE_FIRMWARE_EXTERNAL_PC_AT_ROM && session->pc_at_rom_external;
+    out_information->external_firmware = session->profile_plan != STD_NULL;
     out_information->active = vm_machine_executor_state_is_active(
         session->control.state);
     fault = &session->fault_outcome;

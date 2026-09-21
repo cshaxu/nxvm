@@ -70,15 +70,12 @@ type_status vm_machine_bind_execution_provider(vm_machine *machine)
     if (machine == STD_NULL || machine->core_machine == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (machine->firmware_kind == VM_MACHINE_FIRMWARE_MODEL40_BYOB) {
-        firmware_provider = vm_profile_model40_firmware_provider();
-        firmware_context = &machine->model40_rom;
-    } else if (machine->firmware_kind == VM_MACHINE_FIRMWARE_XT_BYOB) {
-        firmware_provider = vm_profile_xt_5160_268_firmware_provider();
-        firmware_context = &machine->xt_rom;
-    } else {
-        firmware_provider = vm_profile_external_pc_at_rom_provider();
-        firmware_context = &machine->pc_at_rom_context;
+    firmware_provider = vm_profile_machine_plan_firmware_provider_get(
+        machine->profile_plan);
+    firmware_context = vm_profile_machine_plan_firmware_context_get(
+        machine->profile_plan);
+    if (firmware_provider == STD_NULL || firmware_context == STD_NULL) {
+        return TYPE_STATUS_INVALID_STATE;
     }
     status = core_machine_bind_firmware_provider(machine->core_machine,
         firmware_provider, firmware_context);

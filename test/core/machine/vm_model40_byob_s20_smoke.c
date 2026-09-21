@@ -40,7 +40,7 @@ C_INT main(C_VOID)
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
         session == STD_NULL ||
-        !session->model40_private || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
+        !vm_profile_machine_plan_is_model40(session->profile_plan) || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         session->core_machine_config.l1_compatibility_policy !=
@@ -52,10 +52,10 @@ C_INT main(C_VOID)
             &time_observation) != TYPE_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 16000000u || time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u ||
-        session->fdd.data.nsector != 15u || session->model40_rom.even_bytes[0] != 0u ||
-        session->model40_rom.odd_bytes[0] != 1u ||
-        session->model40_rom.video_bytes == STD_NULL ||
-        session->model40_rom.video_bytes[0u] != 0x55u ||
+        session->fdd.data.nsector != 15u || vm_profile_machine_plan_model40_rom_get(session->profile_plan)->even_bytes[0] != 0u ||
+        vm_profile_machine_plan_model40_rom_get(session->profile_plan)->odd_bytes[0] != 1u ||
+        vm_profile_machine_plan_model40_rom_get(session->profile_plan)->video_bytes == STD_NULL ||
+        vm_profile_machine_plan_model40_rom_get(session->profile_plan)->video_bytes[0u] != 0x55u ||
         core_machine_memory_read(session->core_machine,
             VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, &observed_memory,
             sizeof(observed_memory)) != TYPE_STATUS_OK || observed_memory != 0x55u;
@@ -91,8 +91,8 @@ C_INT main(C_VOID)
     failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     even[0u] = 2u;
-    failed |= !failed && (session->model40_rom.even_bytes[0] != 0u ||
-        session->model40_rom.odd_bytes[0] != 1u);
+    failed |= !failed && (vm_profile_machine_plan_model40_rom_get(session->profile_plan)->even_bytes[0] != 0u ||
+        vm_profile_machine_plan_model40_rom_get(session->profile_plan)->odd_bytes[0] != 1u);
     vm_machine_destroy(session);
     session = STD_NULL;
     config.memory_bytes = 2u * 1024u * 1024u;

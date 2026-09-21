@@ -23,7 +23,8 @@ int main(C_VOID)
     image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
     assets.bios[0u] = (vm_machine_asset_bytes) { image, sizeof(image) };
     failed = vm_machine_create_from_assets(&config, &assets, &session) !=
-            TYPE_STATUS_OK || session == STD_NULL || !session->pc_at_rom_external;
+            TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_external_firmware(
+                session->profile_plan);
     if (!failed) {
         failed |= core_machine_memory_query(session->core_machine, 0x000f0000u,
             1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||

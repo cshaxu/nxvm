@@ -50,11 +50,11 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     failed |= session->profile == model_339 ||
         STD_STRCMP(session->profile->identity, "pc-at-5170") != 0 ||
         session->core_machine_config.memory_bytes !=
-            session->ibm_5170_root.resolved.values.core.configuration.memory_bytes ||
+            vm_profile_machine_plan_pc_at_resolved_get(session->profile_plan)->resolved.values.core.configuration.memory_bytes ||
         session->core_machine_config.time_axis.kind !=
-            session->ibm_5170_root.resolved.values.core.configuration.time_axis.kind ||
+            vm_profile_machine_plan_pc_at_resolved_get(session->profile_plan)->resolved.values.core.configuration.time_axis.kind ||
         session->controller_timing_rules.dma_service !=
-            session->ibm_5170_root.resolved.values.core.controller_timing_rules.dma_service ||
+            vm_profile_machine_plan_pc_at_resolved_get(session->profile_plan)->resolved.values.core.controller_timing_rules.dma_service ||
         session->core_machine->dma_clock.numerator != 3u ||
         session->core_machine->dma_clock.denominator != 8u ||
         session->core_machine->pit_clock.numerator != 596591u ||

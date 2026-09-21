@@ -118,33 +118,15 @@ static C_INT pcat_topology_rejects_before_registration(
 {
     vm_profile_default_pc_at_descriptor invalid = *source;
     vm_profile_default_pc_at_port_leaf leaves[96];
-    vm_machine session = {0};
 
     if (source->port_leaf_count > sizeof(leaves) / sizeof(leaves[0])) return 1;
     STD_MEMCPY(leaves, source->port_leaves,
         source->port_leaf_count * sizeof(leaves[0]));
     leaves[0].read = TYPE_FALSE;
     invalid.port_leaves = leaves;
-    session.profile = &invalid;
-    session.core_machine_config.memory_bytes = invalid.default_memory_bytes;
-    session.core_machine_config.cpu_profile = invalid.cpu_profile;
-    session.core_machine_config.fpu_profile = invalid.fpu_profile;
-    session.core_machine_config.ticks_per_instruction = invalid.ticks_per_instruction;
-    session.core_machine_config.instruction_timing = invalid.instruction_timing;
-    session.core_machine_config.clock_plan = invalid.clock_plan;
-    session.core_machine_config.kbc_typematic_initial_ticks =
-        invalid.kbc_typematic_initial_ticks;
-    session.core_machine_config.kbc_typematic_repeat_ticks =
-        invalid.kbc_typematic_repeat_ticks;
-    session.core_machine_config.kbc_command_response_ticks =
-        invalid.kbc_command_response_ticks;
-    if (vm_machine_initialize(&session) != TYPE_STATUS_INVALID_ARGUMENT ||
-        session.active || session.core_machine != STD_NULL) {
-        vm_machine_finalize(&session);
-        return 1;
-    }
-    vm_machine_finalize(&session);
-    return 0;
+    /* Profile now owns construction validation; Machine accepts only a
+     * frozen plan and cannot be fed a second descriptor route. */
+    return vm_profile_default_pc_at_descriptor_is_valid(&invalid) ? 1 : 0;
 }
 
 C_INT main(C_VOID)

@@ -33,7 +33,7 @@ C_INT main(C_VOID)
     failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        TYPE_STATUS_OK || session == STD_NULL || !session->model40_private ||
+        TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
         session->profile != STD_NULL ||
         session->core_machine->retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
@@ -91,12 +91,12 @@ C_INT main(C_VOID)
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != TYPE_STATUS_OK ||
-        STD_STRCMP(session->model40_resolved.identity,
+        STD_STRCMP(vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->identity,
             "compaq-deskpro-386-model-40") != 0 ||
-        STD_STRCMP(session->model40_resolved.parent_identity, "pc-at-5170") != 0 ||
-        session->model40_resolved.values.core.configuration.memory_bytes !=
+        STD_STRCMP(vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->parent_identity, "pc-at-5170") != 0 ||
+        vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->values.core.configuration.memory_bytes !=
             session->core_machine_config.memory_bytes ||
-        session->model40_resolved.values.core.configuration.cpu_profile !=
+        vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->values.core.configuration.cpu_profile !=
             session->core_machine_config.cpu_profile ||
         session->core_machine->shared_kbc.data.aux_enabled ||
         (session->core_machine->shared_kbc.data.command_byte &

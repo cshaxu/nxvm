@@ -294,7 +294,8 @@ static C_INT vm_model_339_external_rom_route(C_VOID)
     odd[0u] = 0x34u;
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     failed = vm_machine_create_from_assets(&config, &assets, &session) !=
-            TYPE_STATUS_OK || session == STD_NULL || !session->pc_at_rom_external ||
+            TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_external_firmware(
+                session->profile_plan) ||
         core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
             sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x12u ||
             observed[1u] != 0x34u ||

@@ -35,3 +35,18 @@ empty, the shared fixture's six relative references use its new Devices path,
 and no asset or runtime route changed. A fresh x64 configure and the complete
 repository-only unit suite pass 336/336; documentation governance and
 `git diff --check` pass.
+
+## S3: Profile Composition And Machine Adaptation
+
+S3 makes Profiles the only board-selection, board-resolution, firmware-binding
+and board-materialization owner.  A frozen opaque machine plan carries copied
+BYOB data, Core configuration/topology and its provider/context to Machine.
+Machine keeps one generic prepare/bind/run/release route for direct and
+file-backed inputs; it no longer branches on a firmware kind or retains
+parallel XT/Model-40/default/5170 resolved state.
+
+The Model-40 topology/controller composition moved under its Profile.  The
+only Machine descriptor projection is read-only diagnostics, not construction
+authority.  Repository-only tests preserve the retained four machine profiles;
+white-box failure injection that constructed a second Machine descriptor now
+validates at Profile construction, where that authority belongs.

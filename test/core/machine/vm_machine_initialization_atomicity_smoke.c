@@ -27,19 +27,6 @@ static C_INT verify_running_reset_outcome(C_VOID)
     return verify_reset_outcome();
 }
 
-static C_VOID initialize_config(vm_machine *session,
-    const vm_profile_default_pc_at_descriptor *profile)
-{
-    vm_profile_default_pc_at_cpu_contract contract;
-
-    session->profile = profile;
-    if (vm_profile_default_pc_at_cpu_contract_select(profile,
-            CORE_MACHINE_CPU_PROFILE_DEFAULT, profile->fpu_profile, &contract)) {
-        (C_VOID)vm_profile_default_pc_at_core_config_materialize(profile, &contract,
-            &session->core_machine_config, &session->controller_timing_rules);
-    }
-}
-
 static C_INT profile_timing_is_materialized(const core_machine_config *config,
     const vm_profile_default_pc_at_descriptor *profile)
 {
@@ -129,91 +116,6 @@ static C_INT verify_create_materialization(
     return failed;
 }
 
-static C_INT verify_failure(const vm_profile_default_pc_at_descriptor *profile)
-{
-    vm_machine session = {0};
-
-    initialize_config(&session, profile);
-    if (vm_machine_initialize(&session) != TYPE_STATUS_INVALID_ARGUMENT ||
-        session.active || session.core_machine != STD_NULL ||
-        session.executor != LIB_NULL) {
-        vm_machine_finalize(&session);
-        return 1;
-    }
-    vm_machine_finalize(&session);
-    return 0;
-}
-
-static C_INT verify_core_failure(
-    const vm_profile_default_pc_at_descriptor *profile)
-{
-    vm_machine session = {0};
-
-    initialize_config(&session, profile);
-    session.core_machine_config.cpu_profile = (core_machine_cpu_profile)0xffu;
-    if (vm_machine_initialize(&session) != TYPE_STATUS_INVALID_ARGUMENT ||
-        session.active || session.core_machine != STD_NULL) {
-        vm_machine_finalize(&session);
-        return 1;
-    }
-    return 0;
-}
-
-static C_INT verify_fdd_initialization_failure(
-    const vm_profile_default_pc_at_descriptor *profile)
-{
-    vm_machine session = {0};
-
-    initialize_config(&session, profile);
-    session.fdd_media_kind = (vm_profile_floppy_kind)0xffu;
-    if (vm_machine_initialize(&session) != TYPE_STATUS_FAULT || session.active ||
-        session.core_machine != STD_NULL ||
-        session.executor != LIB_NULL) {
-        vm_machine_finalize(&session);
-        return 1;
-    }
-    return 0;
-}
-
-static C_INT verify_controller_failure(
-    const vm_profile_default_pc_at_descriptor *source)
-{
-    vm_profile_default_pc_at_descriptor profile = *source;
-    vm_profile_default_pc_at_port_leaf leaves[96];
-    STD_SIZE_T index;
-
-    if (source->port_leaf_count > sizeof(leaves) / sizeof(leaves[0])) return 1;
-    STD_MEMCPY(leaves, source->port_leaves,
-        source->port_leaf_count * sizeof(leaves[0]));
-    for (index = 0u; index < source->port_leaf_count; ++index) {
-        if (leaves[index].device == VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC &&
-            leaves[index].port == 0x03f5u) {
-            leaves[index].write = TYPE_FALSE;
-            profile.port_leaves = leaves;
-            return verify_failure(&profile);
-        }
-    }
-    return 1;
-}
-
-static C_INT verify_hdc_failure(
-    const vm_profile_default_pc_at_descriptor *source)
-{
-    vm_profile_default_pc_at_descriptor profile = *source;
-
-    profile.hdc.bus.task_file.data_port = 0u;
-    return verify_failure(&profile);
-}
-
-static C_INT verify_fdc_bounce_failure(
-    const vm_profile_default_pc_at_descriptor *source)
-{
-    vm_profile_default_pc_at_descriptor profile = *source;
-
-    profile.fdc_bounce_segment = (type_unsigned_16)(profile.default_memory_bytes >> 4u);
-    return verify_failure(&profile);
-}
-
 static C_INT verify_invalid_media_slot(
     const vm_profile_default_pc_at_descriptor *profile)
 {
@@ -251,10 +153,7 @@ C_INT main(C_VOID)
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
     if (profile == STD_NULL || verify_create_materialization(profile) != 0 ||
-        verify_core_failure(profile) != 0 ||
-        verify_fdd_initialization_failure(profile) != 0 ||
-        verify_controller_failure(profile) != 0 || verify_hdc_failure(profile) != 0 ||
-        verify_fdc_bounce_failure(profile) != 0 || verify_invalid_media_slot(profile) != 0 ||
+        verify_invalid_media_slot(profile) != 0 ||
         verify_recovery() != 0 || verify_reset_outcome() != 0 ||
         verify_running_reset_outcome() != 0) {
         return 1;

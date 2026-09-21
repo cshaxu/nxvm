@@ -1,23 +1,12 @@
-#include "core/machine/model40_composition.h"
+#include "core/profiles/model40/composition_interface.h"
 
-#include "core/machine/display.h"
-#include "core/machine/media/media.h"
-#include "core/machine/machine_private.h"
+#include "core/devices/vadp.h"
 
-static C_VOID vm_machine_model40_capture_fdc_terminal(C_VOID *opaque,
-    const core_machine_fdc_terminal_observation *observation)
-{
-    vm_machine *session = (vm_machine *)opaque;
-
-    if (session == STD_NULL || observation == STD_NULL) return;
-    session->model40_fdc_terminal_observation = *observation;
-    session->model40_fdc_terminal_observation_valid = TYPE_TRUE;
-}
-static type_status vm_machine_model40_materialize_controllers(vm_machine *session,
-    core_machine_plan *plan)
+static type_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
+    core_machine_fdc_terminal_observation_provider terminal_observation)
 {
     const core_machine_fdc_drive_bindings drives = {
-        .media_id = { VM_MACHINE_MEDIA_FDD_ID, VM_MACHINE_MEDIA_FDD_SECONDARY_ID,
+        .media_id = { 1u, 2u,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID },
         /* The selected Model 40 topology has two 1.2 MiB mechanisms.
          * A: may be the only drive with inserted media. */
@@ -29,7 +18,7 @@ static type_status vm_machine_model40_materialize_controllers(vm_machine *sessio
     core_machine_fdc_config fdc = {0};
     core_machine_hdc_config hdc = {0};
 
-    if (session == STD_NULL || plan == STD_NULL || !session->model40_private) {
+    if (plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
@@ -46,15 +35,14 @@ static type_status vm_machine_model40_materialize_controllers(vm_machine *sessio
             .drive_address_port = 0x03f7u, .lba28_supported = TYPE_FALSE}};
     if (core_machine_plan_configure_fdc(plan, &drives, &fdc) != TYPE_STATUS_OK ||
         core_machine_plan_bind_fdc_terminal_observation(plan,
-            (core_machine_fdc_terminal_observation_provider) {
-                vm_machine_model40_capture_fdc_terminal, session }) != TYPE_STATUS_OK) {
+            terminal_observation) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return core_machine_plan_configure_hdc(plan, VM_MACHINE_MEDIA_HDD_ID,
+    return core_machine_plan_configure_hdc(plan, 2u,
         CORE_MACHINE_MEDIA_ID_INVALID, &hdc);
 }
 
-type_status vm_machine_model40_topology_materialize(vm_machine *session,
+type_status vm_profile_model40_topology_materialize(
     core_machine_plan_topology *out_topology)
 {
     core_machine_display_config display = {0};
@@ -64,10 +52,7 @@ type_status vm_machine_model40_topology_materialize(vm_machine *session,
     core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u };
     core_machine_rtc_cmos_config rtc = {0};
     core_machine_plan_topology topology = {0};
-    if (session == STD_NULL || session->core_machine != STD_NULL ||
-        !session->model40_private ||
-        !vm_profile_model40_external_rom_is_valid(&session->model40_rom) ||
-        out_topology == STD_NULL) {
+    if (out_topology == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     display.text_timing = (core_machine_vadp_text_timing) {48u, 8u, 8u};
@@ -126,37 +111,15 @@ type_status vm_machine_model40_topology_materialize(vm_machine *session,
     return TYPE_STATUS_OK;
 }
 
-type_status vm_machine_model40_materialize_plan(vm_machine *session,
-    core_machine_plan *plan)
+type_status vm_profile_model40_materialize_plan(core_machine_plan *plan,
+    core_machine_fdc_terminal_observation_provider terminal_observation)
 {
     const core_machine_d4_memory_config d4_memory = {
         TYPE_TRUE, 0x8fu, 0xfdu, 0xfc42u };
 
-    if (session == STD_NULL || plan == STD_NULL || !session->model40_private ||
-        core_machine_plan_configure_d4_memory(plan, &d4_memory) != TYPE_STATUS_OK) {
+    if (plan == STD_NULL || core_machine_plan_configure_d4_memory(plan,
+            &d4_memory) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return vm_machine_model40_materialize_controllers(session, plan);
-}
-
-C_INT vm_machine_model40_insert_hdd_at_startup(vm_machine *session,
-    const C_CHAR *path, lib_storage_medium_mode mode)
-{
-    const STD_SIZE_T expected_bytes = 925u * 5u * 17u * 512u;
-    STD_SIZE_T path_length;
-
-    if (session == STD_NULL || !session->model40_private || path == STD_NULL ||
-        vm_machine_hdd_has_media(&session->hdd) ||
-        mode > LIB_STORAGE_MEDIUM_OVERLAY ||
-        vm_machine_hdd_insert(&session->hdd, path, mode) != 0 ||
-        vm_machine_hdd_raw_byte_count(&session->hdd) != expected_bytes) return -1;
-    path_length = STD_STRLEN(path);
-    if (path_length >= sizeof(session->hdd_image_path)) return -1;
-    STD_MEMCPY(session->hdd_image_path, path, path_length + 1u);
-    if (vm_machine_hdd_set_geometry(&session->hdd, 925u, 5u, 17u) != TYPE_FALSE) {
-        return -1;
-    }
-    session->retained_config.fixed_disk_image[0u] = session->hdd_image_path;
-    session->retained_config.fixed_disk_mode[0u] = mode;
-    return 0;
+    return vm_profile_model40_materialize_controllers(plan, terminal_observation);
 }
