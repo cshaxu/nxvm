@@ -28,7 +28,7 @@ foreach(source IN LISTS integration_sources)
         continue()
     endif()
     if(source MATCHES "\\.c$" AND NOT text MATCHES
-        "integration_yaml_session_|vm_app_session_catalog_create")
+        "integration_yaml_session_|vm_app_session_catalog_create|nxvm_console_process_run")
         message(FATAL_ERROR "T515 integration lacks a YAML catalog/session consumer: ${source}")
     endif()
 endforeach()

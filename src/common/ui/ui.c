@@ -16,7 +16,7 @@ struct common_ui {
     kvm_window *window;
     kvm_console *console;
     common_ui_options options;
-    lib_atomic_i32 run_generation;
+    lib_atomic_u32 run_generation;
     lib_atomic_i32 window_live;
     lib_u32 window_delivered_frame_sequence;
     lib_u32 console_delivered_frame_sequence;
@@ -37,7 +37,7 @@ static void common_ui_delivery_failed(void *opaque, lib_u64 source_identity,
     common_ui *ui = (common_ui *)opaque;
     common_ui_event event = { 0 };
     event.kind = COMMON_UI_EVENT_KVM_DELIVERY_FAILED;
-    event.run_generation = ui == NULL ? 0u : (lib_u32)lib_atomic_i32_load_explicit(
+    event.run_generation = ui == NULL ? 0u : lib_atomic_u32_load_explicit(
         &ui->run_generation, LIB_MEMORY_ORDER_SEQ_CST);
     event.value.delivery_failure.source_identity = source_identity;
     event.value.delivery_failure.status = status;
@@ -56,7 +56,7 @@ static int common_ui_input(void *opaque, const kvm_input_event *input)
         lib_atomic_i32_load_explicit(&ui->window_live,
             LIB_MEMORY_ORDER_SEQ_CST) != 0) return 1;
     event.kind = COMMON_UI_EVENT_KVM_INPUT;
-    event.run_generation = (lib_u32)lib_atomic_i32_load_explicit(
+    event.run_generation = lib_atomic_u32_load_explicit(
         &ui->run_generation, LIB_MEMORY_ORDER_SEQ_CST);
     event.value.kvm = *input;
     return common_ui_emit(ui, &event);
@@ -85,7 +85,7 @@ static lib_status common_ui_emit_component(common_ui *ui,
 {
     common_ui_event event = { 0 };
     event.kind = COMMON_UI_EVENT_COMPONENT_COMPLETED;
-    event.run_generation = (lib_u32)lib_atomic_i32_load_explicit(
+    event.run_generation = lib_atomic_u32_load_explicit(
         &ui->run_generation, LIB_MEMORY_ORDER_SEQ_CST);
     event.value.component.component = component;
     event.value.component.exists = exists;
@@ -96,7 +96,7 @@ static lib_status common_ui_emit_broker(common_ui *ui, lib_bool vm_current)
 {
     common_ui_event event = { 0 };
     event.kind = COMMON_UI_EVENT_BROKER_COMPLETED;
-    event.run_generation = (lib_u32)lib_atomic_i32_load_explicit(
+    event.run_generation = lib_atomic_u32_load_explicit(
         &ui->run_generation, LIB_MEMORY_ORDER_SEQ_CST);
     event.value.broker_vm_console_current = vm_current;
     return common_ui_emit(ui, &event) ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
@@ -152,13 +152,14 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
 {
     common_ui *ui;
     lib_status status;
-    if (out_ui == NULL || options == NULL || options->event_sink == NULL ||
+    if (out_ui == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_ui = NULL;
+    if (options == NULL || options->event_sink == NULL ||
         options->running_window_title == NULL || options->paused_window_title == NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    *out_ui = NULL;
     ui = lib_allocate_zero(1u, sizeof(*ui));
     if (ui == NULL) return LIB_STATUS_NO_MEMORY;
-    lib_atomic_i32_initialize(&ui->run_generation, 0);
+    lib_atomic_u32_initialize(&ui->run_generation, 0u);
     lib_atomic_i32_initialize(&ui->window_live, 0);
     ui->window_input.ui = ui;
     ui->console_input.ui = ui;
@@ -184,40 +185,38 @@ lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options
 
 lib_status common_ui_destroy(common_ui *ui)
 {
-    lib_status status = LIB_STATUS_OK;
+    lib_status status;
     if (ui == NULL) return LIB_STATUS_OK;
-    if (ui->console != NULL) {
-        lib_status replace = console_broker_replace(ui->broker,
-            kvm_console_get_console(ui->console), ui->monitor,
-            CONSOLE_BROKER_COOKED_LINES);
-        if (replace != LIB_STATUS_OK) status = replace;
+    /* Stop native input and detach output before releasing its consumers. */
+    if (ui->broker != NULL) {
+        status = console_broker_destroy(ui->broker);
+        if (status != LIB_STATUS_OK) return status;
+        ui->broker = NULL;
     }
     if (ui->window != NULL) {
-        lib_status destroy = kvm_window_destroy(ui->window);
-        if (destroy == LIB_STATUS_OK) lib_atomic_i32_store_explicit(
+        status = kvm_window_destroy(ui->window);
+        if (status != LIB_STATUS_OK) return status;
+        ui->window = NULL;
+        lib_atomic_i32_store_explicit(
             &ui->window_live, 0, LIB_MEMORY_ORDER_SEQ_CST);
-        if (status == LIB_STATUS_OK) status = destroy;
     }
     if (ui->console != NULL) {
-        lib_status destroy = kvm_console_destroy(ui->console);
-        if (status == LIB_STATUS_OK) status = destroy;
-    }
-    if (ui->broker != NULL) {
-        lib_status destroy = console_broker_destroy(ui->broker);
-        if (status == LIB_STATUS_OK) status = destroy;
+        status = kvm_console_destroy(ui->console);
+        if (status != LIB_STATUS_OK) return status;
+        ui->console = NULL;
     }
     if (ui->monitor != NULL) {
         (void)lib_console_set_event_sink(ui->monitor, NULL, NULL);
         lib_console_release(ui->monitor);
     }
     lib_release(ui);
-    return status;
+    return LIB_STATUS_OK;
 }
 
 void common_ui_set_run_generation(common_ui *ui, lib_u32 run_generation)
 {
-    if (ui != NULL) lib_atomic_i32_store_explicit(&ui->run_generation,
-        (lib_i32)run_generation, LIB_MEMORY_ORDER_SEQ_CST);
+    if (ui != NULL) lib_atomic_u32_store_explicit(&ui->run_generation,
+        run_generation, LIB_MEMORY_ORDER_SEQ_CST);
 }
 
 lib_status common_ui_apply_action(common_ui *ui, common_ui_action action,
@@ -278,58 +277,64 @@ lib_status common_ui_set_state(common_ui *ui, common_ui_state state)
     return LIB_STATUS_OK;
 }
 
-static void common_ui_status_frame(kvm_frame *frame, const kvm_frame *source,
+static void common_ui_status_frame(kvm_console_text_frame *frame,
     const char *text)
 {
     lib_size index;
     lib_size row = 0u, column = 0u;
     lib_memory_set(frame, 0, sizeof(*frame));
-    frame->valid = 1u;
-    frame->sequence = source->sequence;
-    frame->text_columns = KVM_TEXT_COLUMNS;
-    frame->text_rows = KVM_TEXT_ROWS;
-    frame->cursor_column = -1;
-    frame->cursor_row = -1;
-    for (index = 0u; index < sizeof(frame->text); ++index) {
-        frame->text[index] = ' ';
-        frame->attributes[index] = 0x07u;
+    frame->base.text_columns = KVM_TEXT_COLUMNS;
+    frame->base.text_rows = KVM_TEXT_ROWS;
+    frame->base.cursor_column = -1;
+    frame->base.cursor_row = -1;
+    frame->base.text_palette[7] = 0xc0c0c0u;
+    for (index = 0u; index < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++index)
+        frame->base.cells[index] = (kvm_text_cell){ ' ', 0u, 7u, 0u };
+    for (index = 0u; index < 256u; ++index) {
+        lib_u16 character = index >= 32u && index < 127u ? (lib_u16)index : ' ';
+        frame->characters.primary[index] = character;
+        frame->characters.secondary[index] = character;
     }
     for (index = 0u; text != NULL && text[index] != '\0'; ++index) {
         if (text[index] == '\r') continue;
         if (text[index] == '\n') { ++row; column = 0u; continue; }
         if (row < KVM_TEXT_ROWS && column < KVM_TEXT_COLUMNS)
-            frame->text[row * KVM_TEXT_COLUMNS + column] = (lib_u8)text[index];
+            frame->base.cells[row * KVM_TEXT_COLUMNS + column].glyph_index = (lib_u8)text[index];
         ++column;
     }
 }
 
-lib_status common_ui_publish_frame(common_ui *ui, const kvm_frame *frame,
+lib_status common_ui_publish_frame(common_ui *ui, const kvm_window_frame *frame,
+    const kvm_console_character_map *characters, lib_u32 sequence,
     lib_bool window_actual, lib_bool vm_console_current,
     lib_bool console_status_surface)
 {
-    kvm_frame status_frame;
-    const kvm_frame *console_frame = frame;
+    kvm_console_text_frame console_frame;
     lib_status status;
     lib_bool show_status;
     if (ui == NULL || frame == NULL) return LIB_STATUS_INVALID_ARGUMENT;
     show_status = frame->graphics != 0u && console_status_surface;
     if (vm_console_current && ui->console != NULL &&
         (show_status != ui->console_status_delivered ||
-         (!show_status && ui->console_delivered_frame_sequence != frame->sequence))) {
+         (!show_status && ui->console_delivered_frame_sequence != sequence))) {
         if (show_status) {
-            common_ui_status_frame(&status_frame, frame, ui->options.graphics_console_status_text);
-            console_frame = &status_frame;
+            common_ui_status_frame(&console_frame, ui->options.graphics_console_status_text);
+        } else {
+            if (frame->graphics != 0u) return LIB_STATUS_UNSUPPORTED;
+            if (characters == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+            console_frame.base = frame->text.base;
+            console_frame.characters = *characters;
         }
-        status = kvm_console_publish_frame(ui->console, console_frame);
+        status = kvm_console_publish_frame(ui->console, &console_frame);
         if (status != LIB_STATUS_OK) return status;
-        ui->console_delivered_frame_sequence = frame->sequence;
+        ui->console_delivered_frame_sequence = sequence;
         ui->console_status_delivered = show_status;
     }
     if (window_actual && ui->window != NULL &&
-        ui->window_delivered_frame_sequence != frame->sequence) {
+        ui->window_delivered_frame_sequence != sequence) {
         status = kvm_window_publish_frame(ui->window, frame);
         if (status != LIB_STATUS_OK) return status;
-        ui->window_delivered_frame_sequence = frame->sequence;
+        ui->window_delivered_frame_sequence = sequence;
     }
     return LIB_STATUS_OK;
 }

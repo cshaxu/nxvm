@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef COMMON_XASM32_DASM32_H
-#define COMMON_XASM32_DASM32_H
+#ifndef X86_XASM32_DASM32_H
+#define X86_XASM32_DASM32_H
 
 #ifdef __cplusplus
 extern "C" {

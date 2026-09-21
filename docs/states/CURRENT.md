@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T531 S26 Packet
+## M5 T531 S27 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; accepted on 2026-09-18. |
-| Admission And Approval | Owner approved this continuation S on 2026-09-18: import and connect the latest SoftPC shared corpus; YAML must define floppy and fixed-disk access modes. Owner accepted S closure while retaining T531 open. |
-| Objective | Replace NXVM's four shared trees byte-for-byte with SoftPC `95c467a73e448ca7953f8d1b776843b26316651b`; directly adopt its modeful Common removable-media contract, and make YAML media entries resolve one immutable Storage mode for each FDD/HDD. |
-| Non-goals | No SoftPC write, no NXVM-specific branch in Lib/Common, no Core/controller semantics change, no second mode enum or compatibility mode path, no user-output YAML edit, and no persistence/commit semantics change. Omitted YAML mode remains the existing overlay behavior. |
-| Reference Baseline | NXVM `21b33e67`; clean committed SoftPC `95c467a73e448ca7953f8d1b776843b26316651b`; S25 is the immediately preceding canonical corpus import. |
-| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S26. |
-| Files And ABI Surface | Complete `src/lib`, `src/common`, `test/lib`, and `test/common` imports; NXVM YAML request/config parser, App-to-VM-machine composition and VM-machine FDD/HDD opening adaptation; task evidence and task history. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Product UX](../design/UI.md), and the source policy. Common remains product-neutral; App owns YAML parsing, VM-machine owns media opening, and platform APIs remain inside Lib. |
-| Verification | Before/after four-tree corpus diff; Lib/Common manifests and corpus gates; YAML parsing/default/invalid-mode and all FDD/HDD mode unit coverage; retired-path scans; both x64/x86 Release builds; complete repository-only unit suite; external integration suite; actual-diff review and documentation governance. |
-| Expected Markers | SoftPC revision `95c467a7`; exact corpus equality for all four imported trees; `media.floppy[]`/`media.fixed_disk[]` parse one `direct|readonly|overlay` mode per path with overlay default; Common transfers the selected removable mode once to VM-machine; no platform API leakage outside Lib. |
-| Asset Needs | None; repository-only tests only. External integration uses its established external assets without modifying them. |
-| Reporting Requirements | Report the frozen source revision, exact YAML/VM-machine adaptation, corpus identity, test/build outcomes, line delta, and every remaining non-green integration row without pre-existing attribution. |
-| Stop Conditions | Stop for an incompatible public contract that needs a new product-policy seam, a required Core semantic change, a source-license conflict, or a regression that cannot be repaired at the NXVM adapter boundary. |
-| Exit Criteria | Four-tree equality, mode-path coverage, 336/336 unit, both Release artifacts, actual-diff review and documentation governance pass. Full integration recorded 41/42 with the Model 40 row passing on immediate isolated replay; evidence records the non-deterministic observation. T531 remains open until its whole-task two-product execution gate is separately satisfied. |
-| Original Owner Request | Admit a new S to import and connect the latest SoftPC shared components. YAML must define analogous access-mode configuration for floppy and hard-disk media. |
-| Similar-Issue Sweep | Treat every FDD/HDD construction and removable-media call site as one mode-propagation family; inspect parser, request, config, Common driver, startup and replacement paths so no image silently chooses a second access policy. |
+| Identifier Mode | Continuation. |
+| Admission And Approval | Owner approved S27 on 2026-09-20: import and adapt SoftPC's prepared Common, Lib and x86 source/test corpus. T531 remains open. |
+| Objective | Replace NXVM's six shared trees byte-for-byte with SoftPC `f6dadddd2ce82e82d81094b2c510ebbfb427297b`, then directly adapt NXVM to the new public contracts. |
+| Non-goals | No SoftPC write, no NXVM-specific code in the six shared trees, no Core/controller semantic change, no compatibility aliases, and no asset/session-YAML edit. |
+| Reference Baseline | NXVM `e5e32089`; committed SoftPC `f6dadddd2ce82e82d81094b2c510ebbfb427297b` with no uncommitted changes in the six imported trees; accepted S26 is the immediate predecessor. |
+| Candidate Proposal | [M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md), S27. |
+| Files And ABI Surface | Complete `src/lib`, `src/common`, `src/x86`, `test/lib`, `test/common`, and `test/x86` imports; NXVM App/VM/CMake consumer adaptation; task evidence and task history. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md), and the source policy. Lib/Common remain neutral; x86 is an explicitly selected architecture-specific frontend. |
+| Verification | Before/after six-tree corpus diff; all manifest/dependency gates; direct NXVM debugger/assembler tests; retired-path scan; x64/x86 Release builds; complete unit suite; external integration; actual-diff review and documentation governance. |
+| Expected Markers | SoftPC revision `f6dadddd`; exact equality of all six trees; Common has no x86 dependency; NXVM selects x86 only through public interfaces; no retired Common Debug/xasm32 route. |
+| Asset Needs | None; repository-only corpus tests only. External integration uses established owner-managed assets without modifying them. |
+| Reporting Requirements | Record frozen source revision, six-tree identity, consumer adaptations, verification/build outcomes, line delta, and every remaining non-green integration row without attribution. |
+| Stop Conditions | Stop for incompatible public contract requiring a new product-policy seam, required Core semantic change, source-license conflict, or adapter-boundary regression that cannot be repaired without a shared-tree fork. |
+| Exit Criteria | Six trees equal frozen SoftPC; NXVM consumes the public x86/Common/Lib contracts through one path; all required builds/tests and documentation governance pass; actual review proves no compatibility branch. T531 remains open for its whole-task two-product execution gate. |
+| Original Owner Request | Import the prepared upstream SoftPC Common, Lib and x86 source/test six-component corpus verbatim and adapt NXVM to the new architecture. |
+| Similar-Issue Sweep | Inspect every Common Debug/xasm32 include, build target, test registration and NXVM command integration; each must migrate to x86 or be removed, with no parallel frontend path. |
 
 ## Current Technical Baseline
 
@@ -30,7 +30,8 @@
   `build/output` and `assets/sessions`.
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:
-  `machine`, `session`, `ui`, `xasm32`, and `debug`.
+  `machine`, `session`, and `ui`. The separately selected `src/x86` corpus owns
+  `xasm32` and the x86 Debug CLI; Common has no x86 dependency.
 - S21 P1 `b35357ca` and P2 `e0d3b946` established the initial NXVM diagnosis.
   S22 replaces their private Common/Lib hunks with SoftPC's canonical corrected
   corpus and retains only the NXVM VADP adapter concern where still needed.

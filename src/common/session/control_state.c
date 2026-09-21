@@ -30,7 +30,7 @@ void common_session_state_note_runtime(common_session_state *state,
     else if (completed == COMMON_SESSION_MACHINE_RUNNING)
         state->monitor_actual = COMMON_SESSION_MACHINE_RUNNING;
     else if (completed == COMMON_SESSION_MACHINE_STOPPED || completed == COMMON_SESSION_MACHINE_ERROR)
-        state->monitor_actual = COMMON_SESSION_MACHINE_STOPPED;
+        state->monitor_actual = completed;
     if (presentation_state == COMMON_SESSION_MACHINE_RESET_COMPLETED)
         presentation_state = COMMON_SESSION_MACHINE_PAUSED;
     /* A paused view retains a pre-existing Window; it never synthesizes one.

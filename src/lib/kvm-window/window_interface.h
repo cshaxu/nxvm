@@ -2,6 +2,7 @@
 #define KVM_WINDOW_INTERFACE_H
 
 #include "lib/kvm-base/component_interface.h"
+#include "lib/kvm-window/frame_interface.h"
 
 #define KVM_WINDOW_TITLE_CAPACITY 128u
 
@@ -17,11 +18,14 @@ typedef struct kvm_window_options {
     lib_bool initial_frozen;
 } kvm_window_options;
 
-/* On failure *out_window remains NULL. A live worker that cannot be joined is
+/* Win32 capture requires exclusive raw mouse registration while captured.
+ * An existing registration prevents capture. Applications must not concurrently
+ * change that process-wide registration during capture/release.
+ * On failure *out_window remains NULL. A live worker that cannot be joined is
  * a terminal application infrastructure fault, not a caller-owned half object. */
 lib_status kvm_window_create(kvm_window **out_window,
     const kvm_window_options *options);
-lib_status kvm_window_publish_frame(kvm_window *window, const kvm_frame *frame);
+lib_status kvm_window_publish_frame(kvm_window *window, const kvm_window_frame *frame);
 /* Same checked destruction contract as kvm_component_destroy. */
 lib_status kvm_window_destroy(kvm_window *window);
 lib_status kvm_window_set_title(kvm_window *window, const char *title);

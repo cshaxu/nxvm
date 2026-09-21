@@ -1,5 +1,11 @@
 #include "lib/kvm-window/geometry.h"
 
+/* Ceiling preserves the limiting axis when integer bounds are fitted again. */
+static int kvm_window_scale_extent(int extent, lib_u32 numerator, lib_u32 denominator)
+{
+    return (int)(((lib_u64)extent * numerator + denominator - 1u) / denominator);
+}
+
 void kvm_window_map_dirty_rect(const kvm_window_rect *source, const kvm_window_rect *display,
     lib_u32 source_width, lib_u32 source_height, kvm_window_rect *target)
 {
@@ -36,17 +42,8 @@ int kvm_window_fit_outer_rect(const kvm_window_rect *work_area, int desired_widt
     width = desired_width;
     height = desired_height;
     if (width > available_width || height > available_height) {
-        if ((lib_u64)available_width * (lib_u64)desired_height <=
-            (lib_u64)available_height * (lib_u64)desired_width) {
-            width = available_width;
-            height = (int)((lib_u64)width * (lib_u64)desired_height /
-                (lib_u64)desired_width);
-        } else {
-            height = available_height;
-            width = (int)((lib_u64)height * (lib_u64)desired_width /
-                (lib_u64)desired_height);
-        }
-        if (width <= 0 || height <= 0) return 0;
+        if (!kvm_window_fit_aspect_size(available_width, available_height,
+                (lib_u32)desired_width, (lib_u32)desired_height, &width, &height)) return 0;
     }
     fitted->left = work_area->left + (available_width - width) / 2;
     fitted->top = work_area->top + (available_height - height) / 2;
@@ -91,10 +88,10 @@ int kvm_window_fit_aspect_size(int available_width, int available_height,
     if ((lib_u64)available_width * source_height <=
         (lib_u64)available_height * source_width) {
         width = available_width;
-        height = (int)((lib_u64)width * source_height / source_width);
+        height = kvm_window_scale_extent(width, source_height, source_width);
     } else {
         height = available_height;
-        width = (int)((lib_u64)height * source_width / source_height);
+        width = kvm_window_scale_extent(height, source_width, source_height);
     }
     if (width <= 0 || height <= 0) return 0;
     *fitted_width = width;
@@ -102,33 +99,34 @@ int kvm_window_fit_aspect_size(int available_width, int available_height,
     return 1;
 }
 
-int kvm_window_cursor_rect(const kvm_frame *frame, const kvm_window_rect *display,
+int kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_rect *display,
     kvm_window_rect *cursor)
 {
     int width, height, cell_top, cell_bottom;
-    lib_u32 top, bottom;
-    if (!kvm_frame_is_valid(frame) || !display || !cursor || frame->graphics ||
-        !frame->cursor_visible || frame->cursor_column < 0 || frame->cursor_row < 0 ||
-        frame->cursor_column >= frame->text_columns || frame->cursor_row >= frame->text_rows)
+    lib_u32 top, bottom, font_height;
+    if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !display || !cursor || frame->graphics ||
+        !frame->text.base.cursor_visible || frame->text.base.cursor_column < 0 || frame->text.base.cursor_row < 0 ||
+        frame->text.base.cursor_column >= frame->text.base.text_columns || frame->text.base.cursor_row >= frame->text.base.text_rows)
         return 0;
     width = display->right - display->left;
     height = display->bottom - display->top;
     if (width <= 0 || height <= 0) return 0;
-    cell_top = (int)((lib_i64)frame->cursor_row*height/frame->text_rows);
-    cell_bottom = (int)((lib_i64)(frame->cursor_row+1)*height/frame->text_rows);
-    cursor->left = display->left+(lib_i32)((lib_i64)frame->cursor_column*width/frame->text_columns);
-    cursor->right = display->left+(lib_i32)((lib_i64)(frame->cursor_column+1)*width/frame->text_columns);
+    cell_top = (int)((lib_i64)frame->text.base.cursor_row*height/frame->text.base.text_rows);
+    cell_bottom = (int)((lib_i64)(frame->text.base.cursor_row+1)*height/frame->text.base.text_rows);
+    cursor->left = display->left+(lib_i32)((lib_i64)frame->text.base.cursor_column*width/frame->text.base.text_columns);
+    cursor->right = display->left+(lib_i32)((lib_i64)(frame->text.base.cursor_column+1)*width/frame->text.base.text_columns);
     cursor->top = display->top+cell_top;
     cursor->bottom = display->top+cell_bottom;
-    if (frame->font_height && frame->cursor_bottom >= frame->cursor_top) {
-        top = frame->cursor_top;
-        if (top >= frame->font_height) return 0;
-        bottom = (lib_u32)frame->cursor_bottom + 1u;
-        if (bottom > frame->font_height) bottom = frame->font_height;
+    font_height = frame->text.base.font_height ? frame->text.base.font_height : KVM_WINDOW_FONT_HEIGHT;
+    if (frame->text.base.cursor_bottom >= frame->text.base.cursor_top) {
+        top = frame->text.base.cursor_top;
+        if (top >= font_height) return 0;
+        bottom = (lib_u32)frame->text.base.cursor_bottom + 1u;
+        if (bottom > font_height) bottom = font_height;
         cursor->top = display->top+cell_top+(lib_i32)(
-            (lib_i64)(cell_bottom-cell_top)*top/frame->font_height);
+            (lib_i64)(cell_bottom-cell_top)*top/font_height);
         cursor->bottom = display->top+cell_top+(lib_i32)(
-            ((lib_i64)(cell_bottom-cell_top)*bottom+frame->font_height-1u)/frame->font_height);
+            ((lib_i64)(cell_bottom-cell_top)*bottom+font_height-1u)/font_height);
     }
     return cursor->right > cursor->left && cursor->bottom > cursor->top;
 }
@@ -146,18 +144,14 @@ void kvm_window_constrain_sizing(kvm_window_rect *outer, kvm_window_edge edge,
     client_height = target_height - frame_height;
     if (client_width <= 0 || client_height <= 0) return;
     if (edge == KVM_WINDOW_EDGE_LEFT || edge == KVM_WINDOW_EDGE_RIGHT) {
-        client_height = (int)((lib_u64)client_width * source_height /
-            source_width);
+        client_height = kvm_window_scale_extent(client_width, source_height, source_width);
     } else if (edge == KVM_WINDOW_EDGE_TOP || edge == KVM_WINDOW_EDGE_BOTTOM) {
-        client_width = (int)((lib_u64)client_height * source_width /
-            source_height);
+        client_width = kvm_window_scale_extent(client_height, source_width, source_height);
     } else if ((lib_u64)client_width * source_height >=
         (lib_u64)client_height * source_width) {
-        client_height = (int)((lib_u64)client_width * source_height /
-            source_width);
+        client_height = kvm_window_scale_extent(client_width, source_height, source_width);
     } else {
-        client_width = (int)((lib_u64)client_height * source_width /
-            source_height);
+        client_width = kvm_window_scale_extent(client_height, source_width, source_height);
     }
     target_width = client_width + frame_width;
     target_height = client_height + frame_height;

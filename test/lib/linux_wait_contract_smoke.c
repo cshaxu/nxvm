@@ -139,10 +139,15 @@ int main(void)
         assert(base_sync_task_create(task_entry, &task, &task) == LIB_STATUS_OK);
         assert(allocations == before + 2); /* Task + existing cancellation Event. */
         assert(!base_sync_task_cancelled(task));
-        base_sync_task_request_cancel(task);
-        base_sync_task_join(task);
-        base_sync_task_destroy(task);
-        assert(thread_joins == 1 && allocations == releases);
+        assert(base_sync_task_request_cancel(task) == LIB_STATUS_OK);
+        fail_join = 1;
+        assert(base_sync_task_destroy(task) == LIB_STATUS_IO_ERROR);
+        assert(allocations == releases + 2 && thread_joins == 1);
+        assert(!((struct base_sync_linux_task *)task)->joined);
+        fail_join = 0;
+        assert(base_sync_task_join(task) == LIB_STATUS_OK);
+        assert(base_sync_task_destroy(task) == LIB_STATUS_OK);
+        assert(thread_joins == 2 && allocations == releases);
         fail_thread = 1;
         assert(base_sync_task_create(task_entry, &task, &task) == LIB_STATUS_IO_ERROR);
         assert(task == NULL && allocations == releases);

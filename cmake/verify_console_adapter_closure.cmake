@@ -34,9 +34,9 @@ foreach(removed_file
 endforeach()
 
 foreach(required
-    "common_debug_submit_line"
-    "common_debug_open"
-    "vm_machine_common_debug_execute"
+    "x86_debug_submit_line"
+    "x86_debug_open"
+    "vm_machine_debug_execute"
     "vm_app_compose_ui"
     "common_ui_create"
     "common_ui_destroy")

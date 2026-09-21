@@ -50,11 +50,15 @@ base_sync_wait_result base_sync_wait_any(base_sync_event *const *events,
     lib_u32 timeout_milliseconds, lib_u32 *out_event_index);
 lib_status base_sync_task_create(base_sync_task_entry entry, void *context,
     base_sync_task **out_task);
-void base_sync_task_request_cancel(base_sync_task *task);
+lib_status base_sync_task_request_cancel(base_sync_task *task);
 int base_sync_task_cancelled(const base_sync_task *task);
 base_sync_wait_result base_sync_task_wait_cancel(const base_sync_task *task,
     lib_u32 timeout_milliseconds);
-void base_sync_task_join(base_sync_task *task);
-void base_sync_task_destroy(base_sync_task *task);
+/* The owner serializes join/destroy; neither may run on this task itself.
+ * Join waits indefinitely, returning IO_ERROR if native exit cannot be proven.
+ * Destroy cancels and joins; failure retains the task and all caller-owned
+ * context must remain alive. Success consumes it. NULL is a successful no-op. */
+lib_status base_sync_task_join(base_sync_task *task);
+lib_status base_sync_task_destroy(base_sync_task *task);
 
 #endif

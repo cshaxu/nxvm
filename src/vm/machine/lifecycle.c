@@ -138,8 +138,15 @@ static void vm_machine_driver_deliver_input(void *context,
     const kvm_input_event *event)
 { (C_VOID)vm_machine_deliver_common_input((vm_machine *)context, event); }
 
-static lib_bool vm_machine_driver_copy_frame(void *context, kvm_frame *frame)
-{ return vm_machine_copy_common_frame((vm_machine *)context, frame) ? LIB_TRUE : LIB_FALSE; }
+static lib_status vm_machine_driver_copy_frame(void *context, common_machine_frame *frame)
+{
+    if (context == NULL || frame == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    /* Common clears staging validity before this call.  A Core display that
+     * has not yet published is an ordinary no-frame result, not a machine
+     * failure. */
+    (C_VOID)vm_machine_copy_common_frame((vm_machine *)context, frame);
+    return LIB_STATUS_OK;
+}
 
 static lib_bool vm_machine_driver_set_removable_media(void *context,
     const char *path, lib_storage_medium_mode mode)
@@ -252,7 +259,7 @@ type_status vm_machine_describe_common_driver(vm_machine *machine,
         .deliver_input = vm_machine_driver_deliver_input,
         .copy_frame = vm_machine_driver_copy_frame,
         .set_removable_media = vm_machine_driver_set_removable_media,
-        .execute_debug = vm_machine_common_debug_execute,
+        .execute_debug = vm_machine_debug_execute,
         .take_debug_stop = vm_machine_driver_take_debug_stop,
         .cancel_debug = vm_machine_driver_cancel_debug
     };

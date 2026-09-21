@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.23)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     project(shared_library_tests LANGUAGES C)
-    set(CMAKE_C_STANDARD 17)
-    set(CMAKE_C_STANDARD_REQUIRED ON)
-    set(CMAKE_C_EXTENSIONS OFF)
     enable_testing()
-    set(LIBRARY_STRICT_WARNINGS ON CACHE BOOL "Strict library warnings")
+endif()
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 get_filename_component(LIB_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../src/lib" ABSOLUTE)
 if(NOT TARGET types)
@@ -32,11 +34,14 @@ lib_test(storage_file_writer_binary storage)
 lib_test(storage_position storage)
 lib_test(kvm_component_contract kvm-base)
 lib_test(kvm_mailbox_selection kvm-base)
-lib_test(kvm_frame_copy kvm-base)
+lib_test(kvm_frame_copy kvm-window)
 lib_test(win32_presentation kvm-base)
 lib_test(win32_window_bounds kvm-window)
 lib_test(linux_wait_contract types)
 lib_test(linux_storage_contract types)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    lib_test(linux_storage_lock storage)
+endif()
 lib_test(linux_input_contract types)
 target_sources(lib-test-linux_input_contract PRIVATE
     "${LIB_ROOT}/kvm-base/input.c" "${LIB_ROOT}/kvm-base/linux/input.c"
@@ -63,6 +68,9 @@ if(WIN32)
     target_link_libraries(lib-test-base_sync_ownership PRIVATE base)
     target_link_libraries(lib-test-kvm_keyboard_lifetime PRIVATE kvm-console)
     target_link_libraries(lib-test-kvm_shutdown_failure PRIVATE kvm-console)
+    # Real native windows/consoles can affect the user's desktop even when hidden.
+    set_property(TEST library.kvm_window_modal library.kvm_window_retirement
+        library.console_broker_display APPEND PROPERTY LABELS desktop)
 endif()
 
 add_test(NAME library.types-layout
@@ -92,6 +100,12 @@ add_test(NAME library.types-layout
     add_test(NAME library.kvm-naming
         COMMAND "${CMAKE_COMMAND}" -DKVM_NAMING_ROOT:PATH=${LIB_ROOT}
             -P "${LIB_ROOT}/verify_kvm_naming.cmake")
+    add_test(NAME library.component-control-ownership
+        COMMAND "${CMAKE_COMMAND}"
+            -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_SOURCE_DIR}/fixtures/lib-control-ownership
+            -DLIBRARY_VERIFIER:FILEPATH=${LIB_ROOT}/verify_component_dependencies.cmake
+            "-DLIBRARY_EXPECTED_ERROR:STRING=Window controls belong to kvm-window"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/component_dag_forbidden_include_smoke.cmake")
     add_test(NAME library.kvm-naming-forbidden
         COMMAND "${CMAKE_COMMAND}"
             -DKVM_NAMING_ROOT:PATH=${CMAKE_CURRENT_SOURCE_DIR}/fixtures/kvm-naming

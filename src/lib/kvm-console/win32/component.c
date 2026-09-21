@@ -27,7 +27,7 @@ static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)
     while (lib_atomic_i32_load_explicit(&console->base.stopping,
         LIB_MEMORY_ORDER_ACQUIRE) == 0) {
         kvm_component_control control;
-        kvm_frame frame;
+        kvm_console_text_frame frame;
         base_sync_wait_result wake = base_sync_event_wait(
             console->base.mailboxes.wake, LIB_UINT32_MAX);
         if (wake != BASE_SYNC_WAIT_SIGNALED) {
@@ -40,11 +40,13 @@ static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)
             if (control.kind == KVM_COMPONENT_CONTROL_STOP) {
                 goto retired;
             }
-            /* kvm-console has no title or mouse surface. Unsupported Window
-             * control entries are intentionally consumed as no-ops. */
+            /* This consumer has no ordinary controls. The transport accepts
+             * opaque kinds, but only the consumer can validate their meaning. */
+            kvm_component_fail(&console->base, LIB_STATUS_INVALID_ARGUMENT);
+            goto retired;
         }
         if (kvm_component_mailboxes_capture_frame(&console->base.mailboxes,
-                &generation, &frame)) {
+                &generation, &frame, sizeof(frame))) {
             lib_status status = kvm_console_publish_text_frame(console, &frame);
             if (status == LIB_STATUS_OK)
                 kvm_component_mailboxes_acknowledge_frame(&console->base.mailboxes,

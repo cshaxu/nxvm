@@ -3,6 +3,7 @@
 
 #include "lib/console/console_interface.h"
 #include "lib/kvm-base/component_interface.h"
+#include "lib/kvm-console/frame_interface.h"
 
 typedef struct kvm_console kvm_console;
 
@@ -12,7 +13,9 @@ typedef kvm_component_options kvm_console_options;
  * a terminal application infrastructure fault, not a caller-owned half object. */
 lib_status kvm_console_create(kvm_console **out_console,
     const kvm_console_options *options);
-lib_status kvm_console_publish_frame(kvm_console *console, const kvm_frame *frame);
+/* Copied text only. Rejection leaves pending output unchanged; publications
+ * after STOP return INVALID_STATE. Graphics have no representation here. */
+lib_status kvm_console_publish_frame(kvm_console *console, const kvm_console_text_frame *frame);
 /* Same checked destruction contract as kvm_component_destroy. */
 lib_status kvm_console_destroy(kvm_console *console);
 /* Borrowed logical Console object. The application passes it to the broker for

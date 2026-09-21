@@ -13,9 +13,8 @@ typedef struct common_machine_input_queue {
     unsigned int tail;
 } common_machine_input_queue;
 
-/* SoftPC runtime coordination: KVM producers publish copied KVM events, while
- * the sole machine executor consumes them.  This is deliberately product
- * runtime ownership, not a second KVM implementation. */
+/* KVM producers publish copied events; the sole machine executor consumes them.
+ * Queue ownership belongs to Machine, not to a second KVM implementation. */
 lib_status common_machine_input_queue_initialize(common_machine_input_queue *queue);
 void common_machine_input_queue_dispose(common_machine_input_queue *queue);
 lib_bool common_machine_input_queue_push(common_machine_input_queue *queue,

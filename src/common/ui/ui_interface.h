@@ -3,7 +3,8 @@
 
 #include "lib/console/console_interface.h"
 #include "lib/kvm-base/event_interface.h"
-#include "lib/kvm-base/frame_interface.h"
+#include "lib/kvm-window/frame_interface.h"
+#include "lib/kvm-console/frame_interface.h"
 #include "lib/kvm-base/hotkey_interface.h"
 #include "lib/types/types_interface.h"
 
@@ -66,12 +67,15 @@ typedef struct common_ui_options {
 } common_ui_options;
 
 lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options);
+/* Failure retains ui and remaining resources; callback dependencies must stay
+ * alive. Treat unjoined workers as terminal, not as a completed destruction. */
 lib_status common_ui_destroy(common_ui *ui);
 void common_ui_set_run_generation(common_ui *ui, lib_u32 run_generation);
 lib_status common_ui_apply_action(common_ui *ui, common_ui_action action,
     common_ui_state state);
 lib_status common_ui_set_state(common_ui *ui, common_ui_state state);
-lib_status common_ui_publish_frame(common_ui *ui, const kvm_frame *frame,
+lib_status common_ui_publish_frame(common_ui *ui, const kvm_window_frame *frame,
+    const kvm_console_character_map *characters, lib_u32 sequence,
     lib_bool window_actual, lib_bool vm_console_current,
     lib_bool console_status_surface);
 lib_status common_ui_release_window_mouse(common_ui *ui);

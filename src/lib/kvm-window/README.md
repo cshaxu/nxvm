@@ -1,8 +1,24 @@
 # kvm-window
 
+Text cells select primary/secondary bitmaps through explicit glyph-bank values;
+foreground/background palette indices are independent, with no device bit layout.
+
 `kvm-window` depends on `types` and `kvm-base` only. It owns one Window lifecycle and sends
 copied KVM events to the application queue entry. It never includes `console-broker` or
 makes product decisions.
+
+`kvm_window_frame` contains either common text fields with two bitmap-font banks,
+or Window-owned complete indexed graphics and palette. It contains no
+Console character map. Copies include only the active text or graphics extent.
+Window compares resolved colours with its existing RGB surface on consumption,
+updates changed pixels and invalidates their enclosing rectangle. Skipped frames
+need no damage history. Both text and graphics decode colours directly into the
+same pixel comparison helper, without an intermediate buffer. First frames
+and recreated surfaces require full invalidation; same-size mode transitions
+compare actual pixels. Cursor position/shape/visibility changes invalidate the
+old/new overlay rectangles separately. Stride and palette come from each frame.
+Native invalidation accumulates until paint; exposure redraws the surface.
+Successful acknowledgement is generation-bound. No extra previous-frame cache.
 
 Win32 mailbox notifications use SendNotifyMessage to the owned Window, not an
 Event-to-message bridge. Notifications coalesce; requests stay in the private
@@ -39,7 +55,20 @@ unfreeze. The Window does not interpret a hotkey identifier.
 
 Relative mouse scaling retains signed integer remainders per axis. Capture,
 release and scale changes reset those remainders; copied event deltas remain
-integers. All post-start worker exits stop input, release capture, close the
+integers. While captured, only WM_INPUT produces motion: relative records supply
+deltas directly; absolute records are mapped from 0..65535 to desktop units and
+differenced, with the first sample establishing a baseline. Repeated absolute
+positions produce no motion. Device, coordinate-space and geometry changes
+reset the baseline. No pointer recentering or edge thresholds are used.
+Legacy messages still supply buttons, but never duplicate motion. Native relative
+motion bypasses system pointer acceleration; absolute input is still limited by
+the positions supplied by its device. Neither path changes system mouse settings.
+Capture acquires process-wide raw mouse registration only when none exists;
+release removes only its own registration. Applications must serialize other
+raw mouse registration changes with capture/release; an existing registration
+causes capture to be declined, never stolen. Capture/clip loss, deactivation or
+input failure releases capture; reentry requires another click.
+All post-start worker exits stop input, release capture, close the
 Window and retire the source once quiescent, before releasing storage. First
 failure is reported on the detecting thread, not delayed until this cleanup.
 Failed native disposal retains ownership and returns failure from join/destroy.

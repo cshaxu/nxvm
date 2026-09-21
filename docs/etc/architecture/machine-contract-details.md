@@ -269,7 +269,7 @@ or host-assisted recovery.
 
 CPU and memory mutation occurs only at an execution boundary. A debugger, DOS
 loader, firmware override or root composition uses these APIs only after the
-current quantum has returned; `common/debug` receives an adapted target, not a
+current quantum has returned; `x86/debug` receives an adapted target, not a
 `core_machine` handle.
 
 ### Core Configuration And Provider Boundary
@@ -845,7 +845,7 @@ pauses, exits, cancels, or produces a product result.
 
 ## Common Product Capabilities
 
-`common/debug`, `common/xasm32`, `common/session`, `common/machine` and
+`x86/debug`, `x86/xasm32`, `common/session`, `common/machine` and
 `common/ui` are reusable product capabilities, not a third composition layer.
 They act only through copied values and abstract targets; Common never selects
 a profile, creates a machine, owns an execution loop, receives native handles

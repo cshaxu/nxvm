@@ -15,8 +15,9 @@ after replacement returns, no previous output uses the old context. A valid
 object always accepts replacement; an absent callback makes its write return
 NOT_CURRENT. Input generation and its separate event gate are unchanged.
 
-Text-frame bytes use a fixed PC-display glyph mapping (CP437 graphics, including
-the low graphic symbols; zero is blank). `lib_console_pc_glyph` maps each byte
-to Unicode without inspecting an application's encoding. This is not bitmap
-font storage and cannot reproduce arbitrary uploaded fonts. Native renderers
-use Unicode cells instead of filtering bytes to ASCII.
+Text-frame cells contain copied BMP Unicode values, not encoded byte indices.
+Separate foreground/background arrays contain palette indices 0..15, not native
+attribute words. Invalid visible colours are rejected before calling the sink.
+The native renderer forwards them without code-page interpretation. Character
+mapping belongs to the producer; this component stores no encoding table or
+bitmap font and cannot reproduce arbitrary uploaded fonts.

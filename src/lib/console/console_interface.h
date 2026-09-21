@@ -88,8 +88,9 @@ typedef struct lib_console_event {
 typedef struct lib_console_text_frame {
     lib_u16 columns;
     lib_u16 rows;
-    lib_u8 text[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS];
-    lib_u16 attributes[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS];
+    lib_u16 text[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* BMP characters */
+    lib_u8 foreground[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* palette index 0..15 */
+    lib_u8 background[LIB_CONSOLE_TEXT_COLUMNS * LIB_CONSOLE_TEXT_ROWS]; /* palette index 0..15 */
     lib_u32 palette[16u];
     lib_i32 cursor_column;
     lib_i32 cursor_row;
@@ -103,16 +104,11 @@ typedef struct lib_console_text_frame {
 typedef void (*lib_console_event_sink)(void *context,
     const lib_console_event *event);
 
-/* Fixed PC display-byte mapping (CP437 graphics), independent of host code page.
- * Zero is a blank cell; custom raster fonts cannot be reproduced by this map. */
-lib_u16 lib_console_pc_glyph(lib_u8 value);
-
 lib_status lib_console_create(lib_console **out_console);
 lib_console *lib_console_retain(lib_console *console);
 /* Reference release is private ownership bookkeeping.  It never creates a
  * caller-visible half-Console; binding and I/O operations carry statuses. */
 void lib_console_release(lib_console *console);
-void lib_console_destroy(lib_console *console);
 lib_status lib_console_set_event_sink(lib_console *console,
     lib_console_event_sink sink, void *context);
 lib_status lib_console_write_text(lib_console *console,

@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,6 +35,7 @@ enum {
 #define LIB_NULL NULL
 #define LIB_INT32_MAX INT32_MAX
 #define LIB_INT32_MIN INT32_MIN
+#define LIB_UINT_MAX UINT_MAX
 #define LIB_UINT32_MAX UINT32_MAX
 #define LIB_UINT64_MAX UINT64_MAX
 #define LIB_SIZE_MAX SIZE_MAX

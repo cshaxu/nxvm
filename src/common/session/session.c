@@ -8,7 +8,7 @@
 struct common_session {
     common_session_queue queue;
     common_session_state state;
-    kvm_frame frame;
+    common_machine_frame frame;
     common_machine *machine;
     common_session_command_provider command;
     common_ui *ui;
@@ -125,8 +125,9 @@ static int common_session_drive(common_session *session)
         !common_session_state_frame_targets_ready(&session->state)) return 1;
     console_status_surface =
         session->state.display == COMMON_SESSION_DISPLAY_CONSOLE &&
-        !session->state.console_control && session->frame.graphics != 0u;
-    return common_ui_publish_frame(session->ui, &session->frame,
+        !session->state.console_control && session->frame.window.graphics != 0u;
+    return common_ui_publish_frame(session->ui, &session->frame.window,
+        &session->frame.characters, session->frame.sequence,
         session->state.window_actual,
         session->state.vm_console_actual &&
             session->state.current_console_actual == COMMON_SESSION_CONSOLE_VM,
@@ -181,7 +182,7 @@ static int common_session_process_completed(common_session *session,
             common_machine_copy_published_frame(session->machine, &session->frame,
                 event->run_generation))
             (void)common_session_state_note_frame(&session->state, session->frame.sequence,
-                session->frame.graphics != 0u);
+                session->frame.window.graphics != 0u);
     } else if (event->kind == COMMON_SESSION_EVENT_COMPONENT_COMPLETED) {
         if (event->value.component.component == COMMON_SESSION_EVENT_COMPONENT_WINDOW)
             common_session_state_note_window(&session->state,
@@ -221,11 +222,12 @@ lib_status common_session_create(common_session **out_session,
     const common_session_options *options)
 {
     common_session *session;
-    if (out_session == NULL || options == NULL || options->machine == NULL ||
+    if (out_session == NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_session = NULL;
+    if (options == NULL || options->machine == NULL ||
         options->command.open == NULL ||
         options->command.submit_line == NULL || options->command.note_runtime == NULL ||
         options->command.note_monitor_current == NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_session = NULL;
     session = lib_allocate_zero(1u, sizeof(*session));
     if (session == NULL) return LIB_STATUS_NO_MEMORY;
     if (!common_session_queue_initialize(&session->queue)) {

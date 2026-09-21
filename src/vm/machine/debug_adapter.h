@@ -4,11 +4,12 @@
 #include "type.h"
 
 #include "common/machine/machine_interface.h"
+#include "x86/debug/protocol_interface.h"
 
 #include "vm/machine/machine_interface.h"
 
-lib_status vm_machine_common_debug_execute(void *context,
-    const common_machine_debug_request *request,
-    common_machine_debug_result *out_result);
+lib_status vm_machine_debug_execute(void *context,
+    const void *request, lib_size request_size,
+    void *response, lib_size response_capacity, lib_size *response_size);
 
 #endif

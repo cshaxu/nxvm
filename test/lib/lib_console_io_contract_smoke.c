@@ -27,6 +27,7 @@ static BOOL WINAPI text_write(HANDLE h,LPCVOID text,DWORD n,LPDWORD written,LPVO
 { (void)h;(void)text;(void)r;*written=n==0 ? 0 : text_written;return text_result; }
 static int palette_query_ok, palette_set_ok, cursor_ok = 1;
 static WCHAR first_cell;
+static WORD first_attribute;
 static COORD buffer_size={80,25};
 static SMALL_RECT viewport={0,0,79,24};
 static BOOL WINAPI screen_info(HANDLE h, PCONSOLE_SCREEN_BUFFER_INFO p)
@@ -42,6 +43,7 @@ static BOOL WINAPI palette_set(HANDLE h, PCONSOLE_SCREEN_BUFFER_INFOEX p)
 static BOOL WINAPI write_cells(HANDLE h, const CHAR_INFO *p, COORD a, COORD b, PSMALL_RECT r)
 {
     (void)h; (void)a; (void)b; ++writes; first_cell=p[0].Char.UnicodeChar;
+    first_attribute=p[0].Attributes;
     if (r->Bottom>=buffer_size.Y) r->Bottom=buffer_size.Y-1;
     if (partial_write==1) r->Right=39;
     if (partial_write==2) r->Bottom=11;
@@ -49,8 +51,9 @@ static BOOL WINAPI write_cells(HANDLE h, const CHAR_INFO *p, COORD a, COORD b, P
     if (partial_write==4) r->Top=1;
     return partial_write!=5;
 }
+static CONSOLE_CURSOR_INFO last_cursor;
 static BOOL WINAPI cursor_info(HANDLE h, const CONSOLE_CURSOR_INFO *p)
-{ (void)h; (void)p; return cursor_ok; }
+{ (void)h; last_cursor=*p; return cursor_ok; }
 static BOOL WINAPI cursor_position(HANDLE h, COORD p)
 { (void)h; (void)p; return cursor_ok; }
 static unsigned readers_started, mode_sets;
@@ -99,7 +102,7 @@ static void cooked_restore(void)
 {
     console_broker_backend b={0};
     lib_console *c;
-    lib_bool pending;
+    lib_bool pending = LIB_FALSE;
     assert(lib_console_create(&c)==LIB_STATUS_OK);
     assert(lib_console_bind_generation(c,1)==LIB_STATUS_OK);
     assert(lib_console_set_event_sink(c,receive,NULL)==LIB_STATUS_OK);
@@ -150,14 +153,9 @@ int main(void)
     memset(line,'x',2048);strcpy(line+2048,"\r\n");input=line;
     reads=0;cancel_at=2;chunk=7;delivered=0;
     console_broker_reader(&b);assert(delivered==0);ResetEvent(stop);cancel_at=0;
-    assert(lib_console_pc_glyph(0)==' ' && lib_console_pc_glyph('A')=='A');
-    assert(lib_console_pc_glyph(1)==0x263a && lib_console_pc_glyph(0x7f)==0x2302);
-    assert(lib_console_pc_glyph(0xb3)==0x2502 && lib_console_pc_glyph(0xc4)==0x2500);
-    assert(lib_console_pc_glyph(0xda)==0x250c && lib_console_pc_glyph(0xdb)==0x2588);
-    assert(lib_console_pc_glyph(0x82)==0xe9 && lib_console_pc_glyph(0xff)==0xa0);
     assert(base_sync_mutex_create(&b.output_lock)==LIB_STATUS_OK);
     assert(base_sync_mutex_create(&b.transaction_lock)==LIB_STATUS_OK);b.output=(HANDLE)1;
-    f.columns=80;f.rows=25;f.text[0]=0xdb;f.palette[0]=1;
+    f.columns=80;f.rows=25;f.text[0]=0x2588;f.palette[0]=1;
     for(int i=0;i<2;++i) assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     assert(first_cell==0x2588 && writes==1 && palette_attempts==2);
     palette_query_ok=1;
@@ -169,6 +167,17 @@ int main(void)
     assert(buffer_size.Y==25); /* Palette must precede surface preparation. */
     assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
     assert(palette_sets==2);
+    /* Native approximation consumes the already normalized scanline range. */
+    f.font_height=16; f.cursor_top=14; f.cursor_bottom=15;
+    f.cursor_visible=f.cursor_phase=1;
+    assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
+    assert(last_cursor.dwSize==12 && last_cursor.bVisible);
+    f.cursor_visible=0;
+    assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
+    assert(!last_cursor.bVisible);
+    f.cursor_visible=1; f.cursor_top=9; f.cursor_bottom=8;
+    assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
+    assert(last_cursor.dwSize==100 && last_cursor.bVisible);
     for (int axis=0;axis<2;++axis) {
         unsigned before=writes;
         if (axis==0) buffer_size.Y=24;
@@ -203,9 +212,17 @@ int main(void)
         assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
         assert(!b.previous_columns && !b.previous_rows);
         unsigned attempted=writes;
-        partial_write=0; f.text[0]=0xdb;
+        partial_write=0; f.text[0]=0x2588;
         assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
         assert(writes==attempted+1 && b.previous_columns==80);
+    }
+    for (unsigned attribute=0;attribute<256;++attribute) {
+        f.foreground[0]=attribute & 15u; f.background[0]=attribute >> 4;
+        assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+        assert(first_attribute==attribute);
+        unsigned completed=writes;
+        assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+        assert(writes==completed);
     }
     base_sync_mutex_destroy(b.transaction_lock);base_sync_mutex_destroy(b.output_lock);CloseHandle(stop);lib_console_release(b.console);
     cooked_restore();

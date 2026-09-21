@@ -43,11 +43,11 @@ int main(void)
         kvm_console_win32_state *worker=state;
         if(mode==0) assert(kvm_component_request_stop(&c->base)==LIB_STATUS_OK);
         if(mode==1) {
-            kvm_component_control title={.kind=KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE};
+            kvm_component_control title={.kind=42u};
             assert(kvm_component_enqueue_control(&c->base,&title)==LIB_STATUS_OK);
         }
         if(mode==2) {
-            static kvm_frame frame={.valid=1,.text_columns=80,.text_rows=25};
+            static kvm_console_text_frame frame={.base = { .text_columns=80, .text_rows=25 }};
             assert(kvm_console_publish_frame(c,&frame)==LIB_STATUS_OK);
         }
         if(mode==3) {

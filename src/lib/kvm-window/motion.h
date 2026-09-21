@@ -10,4 +10,7 @@ typedef struct kvm_window_motion {
 int kvm_window_motion_move(kvm_window_motion *motion, int x, int y,
     int client_width, int client_height, lib_u32 content_width,
     lib_u32 content_height, int *dx, int *dy);
+int kvm_window_motion_scale(kvm_window_motion *motion, int x, int y,
+    int client_width, int client_height, lib_u32 content_width,
+    lib_u32 content_height, int *dx, int *dy);
 #endif

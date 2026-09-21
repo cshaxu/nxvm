@@ -1,5 +1,8 @@
 # Shared Library
 
+This package selects C11 without extensions in standalone and embedded builds.
+GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
+
 Unit tests and fixtures live in `test/lib`, not in the production corpus.
 Configure `cmake -S test/lib -B build/lib-tests`, build that directory, then
 run CTest there. The source-only CMake entry retains its manifest target;
@@ -106,9 +109,10 @@ Every `kvm-window` and `kvm-console` instance owns a separate, private pair of
 mailboxes. Callers never share or address a mailbox directly.
 
 - The frame mailbox holds one copied frame. Publishing replaces that value:
-  frames are **latest-wins**, but unconsumed dirty rectangles are unioned under
-  the mailbox admission lock. Consumption takes latest complete pixels and accumulated
-  damage together. Dimensions, mode or palette changes invalidate the full image.
+  frames are **latest-wins** opaque payloads in leaf-owned fixed storage.
+  Window derives changed regions by comparing complete frames with its RGB
+  surface on consumption; no producer damage or merge callback crosses Base.
+  Console stores text fields and character maps only, never graphics or fonts.
 - The control mailbox is FIFO. It accepts up to 32 ordinary control records;
   enqueue beyond that limit returns `LIB_STATUS_LIMIT_EXCEEDED` without
   overwriting an existing record. A STOP record has one reserved FIFO slot and
@@ -193,7 +197,8 @@ and rollback; an incomplete restore never replaces a saved snapshot. Destruction
 restores the original buffer before closing the alternate. No new public API,
 input owner, reader, or command-specific clearing is involved.
 
-Console text frames use the fixed PC-display mapping documented by `console`.
+Logical Console text frames carry BMP Unicode cells; KVM Console applies the
+character maps copied from its caller. No Lib component owns a PC code page.
 Palette caches advance only after successful native palette application;
 unavailable palette support may retry without terminating text output. Text
 and cursor I/O failures remain explicit. Window sizing/title completion likewise

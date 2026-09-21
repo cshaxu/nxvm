@@ -1,5 +1,5 @@
-#ifndef COMMON_XASM32_INTERNAL_H
-#define COMMON_XASM32_INTERNAL_H
+#ifndef X86_XASM32_INTERNAL_H
+#define X86_XASM32_INTERNAL_H
 
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
@@ -61,7 +61,7 @@ static inline lib_status xasm32_append_text(char *destination,
 #define XASM32_TRACE_CHECK_RETURN_ZERO(expression) \
     do { (expression); if (XASM32_TRACE_ERROR) return 0u; } while (0)
 #define XASM32_TRACE_CHECK_BREAK(expression) \
-    if (1) { (expression); if (XASM32_TRACE_ERROR) break; } else
+    if (1) { (expression); if (XASM32_TRACE_ERROR) break; } else (void)0
 #define XASM32_TRACE_IMPOSSIBLE_RETURN XASM32_TRACE_CHECK_RETURN(XASM32_TRACE_SET_ERROR)
 
 #endif

@@ -40,6 +40,10 @@ foreach(source IN LISTS library_component_sources)
     if(NOT owner IN_LIST library_components)
         continue()
     endif()
+    if(owner STREQUAL "kvm-base" AND
+       source_text MATCHES "KVM_(COMPONENT_)?CONTROL_(SET_WINDOW|RELEASE_WINDOW)|KVM_WINDOW_CONTROL_|KVM_COMPONENT_WINDOW_TITLE_CAPACITY")
+        message(FATAL_ERROR "Window controls belong to kvm-window, not kvm-base: ${relative_source}")
+    endif()
     string(REGEX MATCHALL "#[ \t]*include[ \t]*\"[^\"]+\""
         quoted_includes "${source_text}")
     foreach(quoted_include IN LISTS quoted_includes)

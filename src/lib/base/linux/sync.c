@@ -176,12 +176,15 @@ lib_status base_sync_platform_task_create(base_sync_task_entry entry,
     }
     *out_task = &task->task; return LIB_STATUS_OK;
 }
-void base_sync_platform_task_join(base_sync_task *task)
+lib_status base_sync_platform_task_join(base_sync_task *task)
 {
     struct base_sync_linux_task *state = (struct base_sync_linux_task *)task;
-    if (state != LIB_NULL && state->joined == LIB_FALSE) {
-        (void)lib_linux_pthread_join(state->thread, LIB_NULL); state->joined = LIB_TRUE;
+    if (state->joined == LIB_FALSE) {
+        if (lib_linux_pthread_join(state->thread, LIB_NULL) != 0)
+            return LIB_STATUS_IO_ERROR;
+        state->joined = LIB_TRUE;
     }
+    return LIB_STATUS_OK;
 }
 void base_sync_platform_task_destroy(base_sync_task *task)
 { if (task != LIB_NULL) lib_release(task); }

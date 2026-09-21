@@ -4,6 +4,25 @@
 /* Win32 window, pointer and drawing declarations; no KVM policy. */
 #include <windows.h>
 
+typedef RAWINPUT lib_win32_raw_input;
+typedef RAWINPUTHEADER lib_win32_raw_input_header;
+typedef RAWINPUTDEVICE lib_win32_raw_input_device;
+typedef HRAWINPUT lib_win32_hraw_input;
+#define lib_win32_register_raw_input_devices RegisterRawInputDevices
+#define lib_win32_get_registered_raw_input_devices GetRegisteredRawInputDevices
+#define lib_win32_get_raw_input_data GetRawInputData
+#define lib_win32_get_system_metrics GetSystemMetrics
+#define LIB_WIN32_SM_CXSCREEN SM_CXSCREEN
+#define LIB_WIN32_SM_CYSCREEN SM_CYSCREEN
+#define LIB_WIN32_SM_CXVIRTUALSCREEN SM_CXVIRTUALSCREEN
+#define LIB_WIN32_SM_CYVIRTUALSCREEN SM_CYVIRTUALSCREEN
+#define LIB_WIN32_RIDEV_REMOVE RIDEV_REMOVE
+#define LIB_WIN32_RID_INPUT RID_INPUT
+#define LIB_WIN32_RIM_TYPEMOUSE RIM_TYPEMOUSE
+#define LIB_WIN32_MOUSE_MOVE_ABSOLUTE MOUSE_MOVE_ABSOLUTE
+#define LIB_WIN32_MOUSE_VIRTUAL_DESKTOP MOUSE_VIRTUAL_DESKTOP
+#define LIB_WIN32_WM_INPUT WM_INPUT
+
 typedef HWND lib_win32_hwnd;
 typedef HBITMAP lib_win32_hbitmap;
 typedef HBRUSH lib_win32_hbrush;
@@ -39,6 +58,7 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define lib_win32_dispatch_message_w DispatchMessageW
 #define lib_win32_end_paint EndPaint
 #define lib_win32_get_capture GetCapture
+#define lib_win32_get_clip_cursor GetClipCursor
 #define lib_win32_get_client_rect GetClientRect
 #define lib_win32_get_cursor_pos GetCursorPos
 #define lib_win32_get_dc GetDC
@@ -68,6 +88,7 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define lib_win32_send_message_a SendMessageA
 #define lib_win32_send_notify_message_w SendNotifyMessageW
 #define LIB_WIN32_WM_CANCELMODE WM_CANCELMODE
+#define LIB_WIN32_WM_ACTIVATEAPP WM_ACTIVATEAPP
 #define LIB_WIN32_WAIT_FAILED WAIT_FAILED
 #define lib_win32_set_active_window SetActiveWindow
 #define lib_win32_set_capture SetCapture

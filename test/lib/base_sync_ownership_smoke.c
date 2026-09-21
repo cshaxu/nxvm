@@ -4,7 +4,7 @@
 #include <assert.h>
 
 static unsigned allocations, releases, joins, allocation_attempts, fail_allocation;
-static int fail_create, fail_signal, fail_reset, fail_thread;
+static int fail_create, fail_signal, fail_reset, fail_thread, fail_join;
 static lib_iptr observed_identity;
 static HANDLE WINAPI create_event(LPSECURITY_ATTRIBUTES attributes, BOOL manual,
     BOOL initial, LPCSTR name)
@@ -21,7 +21,7 @@ static void *allocate(lib_size count, lib_size size)
 static void release(void *memory)
 { if (memory) ++releases; lib_release(memory); }
 static DWORD WINAPI join_wait(HANDLE handle, DWORD timeout)
-{ ++joins; return WaitForSingleObject(handle, timeout); }
+{ ++joins; return fail_join ? WAIT_FAILED : WaitForSingleObject(handle, timeout); }
 static HANDLE WINAPI create_thread(LPSECURITY_ATTRIBUTES a, SIZE_T size,
     LPTHREAD_START_ROUTINE entry, LPVOID context, DWORD flags, LPDWORD id)
 { return fail_thread ? NULL : CreateThread(a, size, entry, context, flags, id); }
@@ -73,7 +73,7 @@ int main(void)
     assert(base_sync_task_create(task_entry, &completed, &task) == LIB_STATUS_OK);
     assert(allocations == 3); /* cancellation event + thread, no startup allocation */
     identity = (lib_iptr)task;
-    base_sync_task_destroy(task);
+    assert(base_sync_task_destroy(task) == LIB_STATUS_OK);
     assert(observed_identity == identity && completed && joins == 1 && allocations == releases);
     /* Count both common and platform allocation sites, including failed create. */
     for (unsigned failure = 1; failure <= 2; ++failure) {
@@ -92,11 +92,27 @@ int main(void)
     fail_create = 0;
     assert(base_sync_task_create(NULL, NULL, &task) == LIB_STATUS_INVALID_ARGUMENT && !task);
     assert(base_sync_task_create(task_entry, NULL, NULL) == LIB_STATUS_INVALID_ARGUMENT);
-    base_sync_task_destroy(NULL);
+    assert(base_sync_task_destroy(NULL) == LIB_STATUS_OK);
+    assert(base_sync_task_join(NULL) == LIB_STATUS_OK);
+    assert(base_sync_task_request_cancel(NULL) == LIB_STATUS_OK);
     assert(base_sync_task_create(immediate_entry, &completed, &task) == LIB_STATUS_OK);
     identity = (lib_iptr)task;
-    base_sync_task_destroy(task);
+    assert(base_sync_task_destroy(task) == LIB_STATUS_OK);
     assert(observed_identity == identity && completed == 2 && joins == 2 && allocations == releases);
+    assert(base_sync_task_create(task_entry, &completed, &task) == LIB_STATUS_OK);
+    {
+        unsigned before = releases;
+        fail_signal = 1;
+        assert(base_sync_task_destroy(task) == LIB_STATUS_IO_ERROR);
+        assert(releases == before && joins == 2);
+        fail_signal = 0; fail_join = 1;
+        assert(base_sync_task_destroy(task) == LIB_STATUS_IO_ERROR);
+        assert(releases == before && joins == 3);
+        assert(task->cancellation != NULL); /* No reference has been disposed. */
+        fail_join = 0;
+        assert(base_sync_task_destroy(task) == LIB_STATUS_OK);
+        assert(allocations == releases && joins == 4);
+    }
     event = (void *)1;
     assert(base_sync_event_create((base_sync_event_mode)99, &event) ==
         LIB_STATUS_INVALID_ARGUMENT && event == NULL);

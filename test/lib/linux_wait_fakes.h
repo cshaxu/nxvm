@@ -26,7 +26,7 @@ static int fail_init_step, init_step, live_mutexes, live_conditions, live_attrib
 static int wait_calls, wait_result, clock_failure, sleep_calls;
 static int interrupt_sleep;
 static int fail_signal, fail_lock, fail_unlock;
-static int fail_thread, thread_joins;
+static int fail_thread, fail_join, thread_joins;
 static void *(*thread_entry)(void *);
 static void *thread_context;
 static void (*wait_hook)(void);
@@ -99,6 +99,7 @@ static inline int lib_linux_pthread_create(lib_linux_pthread_t *t, const void *a
 static inline int lib_linux_pthread_join(lib_linux_pthread_t t, void **result)
 {
     (void)result; assert(t == 1 && thread_entry); ++thread_joins;
+    if (fail_join) return 1;
     thread_entry(thread_context); thread_entry = NULL; return 0;
 }
 #endif

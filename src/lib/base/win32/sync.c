@@ -81,11 +81,12 @@ lib_status base_sync_platform_event_wait_many(
     if (events == LIB_NULL || out_signaled == LIB_NULL || event_count == 0u ||
         event_count > (lib_u32)LIB_WIN32_MAXIMUM_WAIT_OBJECTS) return LIB_STATUS_INVALID_ARGUMENT;
     *out_signaled = LIB_FALSE;
-    for (index = 0u; index < event_count; ++index) {
+    index = 0u;
+    do { /* The validated count is nonzero; initialize every passed handle. */
         if (events[index] == LIB_NULL || events[index]->handle == LIB_NULL)
             return LIB_STATUS_INVALID_ARGUMENT;
         handles[index] = events[index]->handle;
-    }
+    } while (++index < event_count);
     result = lib_win32_wait_for_multiple_objects((lib_win32_dword)event_count, handles, LIB_WIN32_FALSE,
         (lib_win32_dword)timeout_milliseconds);
     if (result < LIB_WIN32_WAIT_OBJECT_0 + event_count) {
@@ -113,10 +114,11 @@ lib_status base_sync_platform_task_create(base_sync_task_entry entry,
     return LIB_STATUS_OK;
 }
 
-void base_sync_platform_task_join(base_sync_task *task)
+lib_status base_sync_platform_task_join(base_sync_task *task)
 {
     struct base_sync_win32_task *state = (struct base_sync_win32_task *)task;
-    if (state != LIB_NULL) (void)lib_win32_wait_for_single_object(state->thread, LIB_WIN32_INFINITE);
+    return lib_win32_wait_for_single_object(state->thread, LIB_WIN32_INFINITE) ==
+        LIB_WIN32_WAIT_OBJECT_0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
 }
 void base_sync_platform_task_destroy(base_sync_task *task)
 {

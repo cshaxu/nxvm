@@ -94,6 +94,27 @@ static inline void lib_atomic_u32_initialize(lib_atomic_u32 *object, lib_u32 val
     *object = (long)value;
 }
 
+static inline lib_u32 lib_atomic_u32_load_explicit(const lib_atomic_u32 *object,
+    lib_memory_order order)
+{
+    (void)order;
+    return (lib_u32)_InterlockedCompareExchange((volatile long *)object, 0L, 0L);
+}
+
+static inline void lib_atomic_u32_store_explicit(lib_atomic_u32 *object,
+    lib_u32 value, lib_memory_order order)
+{
+    (void)order;
+    (void)_InterlockedExchange(object, (long)value);
+}
+
+static inline lib_u32 lib_atomic_u32_exchange_explicit(lib_atomic_u32 *object,
+    lib_u32 value, lib_memory_order order)
+{
+    (void)order;
+    return (lib_u32)_InterlockedExchange(object, (long)value);
+}
+
 static inline lib_u32 lib_atomic_u32_fetch_add_explicit(lib_atomic_u32 *object,
                                                         lib_u32 value, lib_memory_order order)
 {
@@ -163,6 +184,9 @@ typedef memory_order lib_memory_order;
 #define lib_atomic_i32_fetch_add_explicit atomic_fetch_add_explicit
 #define lib_atomic_i32_compare_exchange_strong_explicit atomic_compare_exchange_strong_explicit
 #define lib_atomic_u32_initialize atomic_init
+#define lib_atomic_u32_load_explicit atomic_load_explicit
+#define lib_atomic_u32_store_explicit atomic_store_explicit
+#define lib_atomic_u32_exchange_explicit atomic_exchange_explicit
 #define lib_atomic_u32_fetch_add_explicit atomic_fetch_add_explicit
 #define lib_atomic_u32_fetch_sub_explicit atomic_fetch_sub_explicit
 #define lib_atomic_u64_initialize atomic_init

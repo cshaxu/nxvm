@@ -1,7 +1,5 @@
 #include "common/session/control.h"
 
-#include <limits.h>
-
 #define COMMON_SESSION_EVENT_QUEUE_INITIAL_CAPACITY 64u
 
 static int common_session_queue_push(common_session_queue *queue,
@@ -44,7 +42,7 @@ static int common_session_queue_push(common_session_queue *queue,
     if (queue->count == queue->capacity) {
         unsigned int next_capacity = queue->capacity * 2u;
         if (next_capacity <= queue->capacity ||
-            next_capacity > UINT_MAX / sizeof(*expanded)) {
+            next_capacity > LIB_UINT_MAX / sizeof(*expanded)) {
             base_sync_mutex_unlock(queue->lock);
             return 0;
         }
@@ -129,7 +127,7 @@ int common_session_queue_push_console_failed(common_session_queue *queue)
 int common_session_queue_push_runtime_completed(common_session_queue *queue,
     common_session_machine_state state, lib_u32 run_generation)
 {
-    common_session_event event = { COMMON_SESSION_EVENT_RUNTIME_COMPLETED, run_generation };
+    common_session_event event = { .kind = COMMON_SESSION_EVENT_RUNTIME_COMPLETED, .run_generation = run_generation };
     event.value.runtime_state = state;
     return common_session_queue_push_required(queue, &event);
 }
@@ -137,7 +135,7 @@ int common_session_queue_push_runtime_completed(common_session_queue *queue,
 int common_session_queue_push_frame_completed(common_session_queue *queue,
     lib_u32 sequence, int graphics, lib_u32 run_generation)
 {
-    common_session_event event = { COMMON_SESSION_EVENT_FRAME_COMPLETED, run_generation };
+    common_session_event event = { .kind = COMMON_SESSION_EVENT_FRAME_COMPLETED, .run_generation = run_generation };
     event.value.frame.sequence = sequence;
     event.value.frame.graphics = graphics != 0;
     return common_session_queue_push_required(queue, &event);
@@ -146,7 +144,7 @@ int common_session_queue_push_frame_completed(common_session_queue *queue,
 int common_session_queue_push_component_completed(common_session_queue *queue,
     common_session_component_kind component, int exists, lib_u32 run_generation)
 {
-    common_session_event event = { COMMON_SESSION_EVENT_COMPONENT_COMPLETED, run_generation };
+    common_session_event event = { .kind = COMMON_SESSION_EVENT_COMPONENT_COMPLETED, .run_generation = run_generation };
     event.value.component.component = component;
     event.value.component.exists = exists != 0;
     return common_session_queue_push_required(queue, &event);
@@ -155,7 +153,7 @@ int common_session_queue_push_component_completed(common_session_queue *queue,
 int common_session_queue_push_broker_completed(common_session_queue *queue,
     int vm_console_current, lib_u32 run_generation)
 {
-    common_session_event event = { COMMON_SESSION_EVENT_BROKER_COMPLETED, run_generation };
+    common_session_event event = { .kind = COMMON_SESSION_EVENT_BROKER_COMPLETED, .run_generation = run_generation };
     event.value.broker_vm_console_current = vm_console_current != 0;
     return common_session_queue_push_required(queue, &event);
 }
@@ -163,7 +161,7 @@ int common_session_queue_push_broker_completed(common_session_queue *queue,
 int common_session_queue_push_kvm_delivery_failed(common_session_queue *queue,
     lib_u64 source_identity, lib_status status, lib_u32 run_generation)
 {
-    common_session_event event = { COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED, run_generation };
+    common_session_event event = { .kind = COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED, .run_generation = run_generation };
     event.value.delivery_failure.source_identity = source_identity;
     event.value.delivery_failure.status = status;
     return common_session_queue_push_required(queue, &event);
@@ -279,7 +277,7 @@ int common_session_dispatch_input(common_session_queue *queue, const kvm_input_e
         return runtime_state != COMMON_SESSION_MACHINE_RUNNING ||
             sink(sink_context, event);
     }
-    if (event->type == KVM_EVENT_MOUSE)
+    if (event->type == KVM_EVENT_MOUSE || event->type == KVM_EVENT_TEXT)
         return runtime_state != COMMON_SESSION_MACHINE_RUNNING ||
             sink(sink_context, event);
     if (event->type == KVM_EVENT_SOURCE_RETIRED)

@@ -1,6 +1,6 @@
 #include "vm/app/recorder.h"
 
-#include "common/xasm32/xasm32_interface.h"
+#include "x86/xasm32/xasm32_interface.h"
 #include "lib/storage/file_interface.h"
 
 struct vm_app_recorder {
@@ -83,7 +83,7 @@ void vm_app_recorder_observe(void *context,
 
     if (recorder == STD_NULL || recorder->writer == STD_NULL ||
         observation == STD_NULL) return;
-    (void)common_xasm32_disassemble(observation->instruction_bytes,
+    (void)x86_xasm32_disassemble(observation->instruction_bytes,
         observation->instruction_byte_count, statement, sizeof(statement),
         &decoded_bytes, STD_NULL, observation->code_default_size);
     for (index = 0u; statement[index] != '\0'; ++index)

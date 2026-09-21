@@ -1,6 +1,6 @@
-#include "common/xasm32/xasm32.h"
+#include "x86/xasm32/xasm32.h"
 
-#include "common/xasm32/aasm32.h"
+#include "x86/xasm32/aasm32.h"
 
 #define _chrf(n)              \
     do                        \
@@ -6416,12 +6416,6 @@ static void RETF_(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xcb);
     XASM32_TRACE_CALL_END;
 }
-static void INT3(aasm32_context *aasmContext)
-{
-    XASM32_TRACE_CALL_BEGIN("INT3");
-    _c_setbyte(aasmContext, 0xcc);
-    XASM32_TRACE_CALL_END;
-}
 static void INT_I8(aasm32_context *aasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("INT_I8");
@@ -6557,6 +6551,7 @@ static void OUT_I8_AL(aasm32_context *aasmContext)
 }
 static void OUT_I8_EAX(aasm32_context *aasmContext, lib_u8 byte)
 {
+    (void)byte;
     XASM32_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _c_setbyte(aasmContext, 0xe7);
     XASM32_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
@@ -9261,10 +9256,12 @@ static void MOVSX(aasm32_context *aasmContext)
 /* main routines */
 static int is_end(aasm32_context *aasmContext, char c)
 {
+    (void)aasmContext;
     return (!c || c == '\n' || c == ';');
 }
 static int is_space(aasm32_context *aasmContext, char c)
 {
+    (void)aasmContext;
     return (c == ' ' || c == '\t');
 }
 static int is_prefix(aasm32_context *aasmContext)
@@ -9933,6 +9930,7 @@ typedef struct
 #define _GetOperandSize (defsize ? 4 : 2)
 static void asmx_get_label(aasm32_context *aasmContext, t_aasm_instr *rinstr)
 {
+    (void)aasmContext;
     lib_size i = 0, j = 0;
     rinstr->label_str[0] = 0;
     rinstr->flag_has_label = 0;
@@ -10026,6 +10024,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
         {
         case PTR_NONE:
             rinstr->ptr = PTR_SHORT;
+            /* fall through */
         case PTR_SHORT:
             rinstr->code_len = 1 /*opcode*/ + 1 /*rel_imm8*/;
             break;
@@ -10048,6 +10047,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
         {
         case PTR_NONE:
             rinstr->ptr = PTR_SHORT;
+            /* fall through */
         case PTR_SHORT:
             rinstr->code_len = 1 /*opcode*/ + 1 /*rel_imm8*/;
             break;
@@ -10067,6 +10067,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
             break;
         case PTR_NONE:
             rinstr->ptr = PTR_NEAR;
+            /* fall through */
         case PTR_NEAR:
             rinstr->code_len = 1 /*opcode*/ + _GetOperandSize /*rel_immx*/;
             break;
@@ -10080,6 +10081,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
         {
         case PTR_NONE:
             rinstr->ptr = PTR_NEAR;
+            /* fall through */
         case PTR_NEAR:
             rinstr->code_len = 1 /*opcode*/ + _GetOperandSize /*rel_immx*/;
             break;

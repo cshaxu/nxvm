@@ -107,9 +107,10 @@ lib_status base_sync_task_create(base_sync_task_entry entry, void *context,
     return status;
 }
 
-void base_sync_task_request_cancel(base_sync_task *task)
+lib_status base_sync_task_request_cancel(base_sync_task *task)
 {
-    if (task != LIB_NULL) base_sync_event_signal(task->cancellation);
+    return task == LIB_NULL ? LIB_STATUS_OK :
+        base_sync_event_signal(task->cancellation);
 }
 
 int base_sync_task_cancelled(const base_sync_task *task)
@@ -131,16 +132,20 @@ base_sync_wait_result base_sync_task_wait_cancel(const base_sync_task *task,
         LIB_NULL);
 }
 
-void base_sync_task_join(base_sync_task *task)
+lib_status base_sync_task_join(base_sync_task *task)
 {
-    if (task != LIB_NULL) base_sync_platform_task_join(task);
+    return task == LIB_NULL ? LIB_STATUS_OK : base_sync_platform_task_join(task);
 }
 
-void base_sync_task_destroy(base_sync_task *task)
+lib_status base_sync_task_destroy(base_sync_task *task)
 {
-    if (task == LIB_NULL) return;
-    base_sync_task_request_cancel(task);
-    base_sync_task_join(task);
+    lib_status status;
+    if (task == LIB_NULL) return LIB_STATUS_OK;
+    status = base_sync_task_request_cancel(task);
+    if (status != LIB_STATUS_OK) return status;
+    status = base_sync_task_join(task);
+    if (status != LIB_STATUS_OK) return status;
     base_sync_event_destroy(task->cancellation);
     base_sync_platform_task_destroy(task);
+    return LIB_STATUS_OK;
 }

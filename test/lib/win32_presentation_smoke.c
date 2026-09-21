@@ -1,4 +1,4 @@
-#include "lib/kvm-base/frame_interface.h"
+#include "lib/kvm-window/frame_interface.h"
 #include "lib/kvm-base/hotkey_interface.h"
 
 #include <assert.h>
@@ -20,7 +20,7 @@ static int kvm_capture_event(void *opaque, const kvm_input_event *event)
 
 int main(void)
 {
-    kvm_frame *frame = calloc(1u, sizeof(*frame));
+    kvm_window_frame *frame = calloc(1u, sizeof(*frame));
     kvm_hotkey_registry registry;
     kvm_hotkey_matcher matcher;
     kvm_capture capture = { 0 };
@@ -29,10 +29,10 @@ int main(void)
     assert(frame != NULL);
     frame->valid = 1u;
     frame->graphics = 0u;
-    frame->text_columns = 80u;
-    frame->text_rows = 25u;
-    frame->text[0] = 'X';
-    assert(kvm_frame_is_valid(frame));
+    frame->text.base.text_columns = 80u;
+    frame->text.base.text_rows = 25u;
+    frame->text.base.cells[0].glyph_index = 'X';
+    assert(kvm_window_frame_validate(frame) == LIB_STATUS_OK);
 
     kvm_hotkey_registry_initialize(&registry);
     assert(kvm_hotkey_registry_register(&registry, 'P',

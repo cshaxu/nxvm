@@ -2,6 +2,7 @@
 #include "lib/kvm-window/window.h"
 #include "lib/kvm-console/console.h"
 #include "lib/types/win32/window.h"
+#include "lib/kvm-window/win32/input.h"
 #include <assert.h>
 
 static int allocation_failure;
@@ -12,6 +13,9 @@ static void *test_reallocate(void *memory, lib_size size)
 #undef lib_reallocate
 
 /* Execute both production message adapters without owning desktop focus. */
+/* Match the Console fixture's zero modifiers, not the user's live keyboard. */
+static lib_u8 fixture_modifiers(void) { return 0u; }
+#define kvm_window_modifiers_from_key_state fixture_modifiers
 static void *window_context;
 static unsigned translations;
 static BOOL WINAPI translate_unmapped(const MSG *message)
@@ -159,11 +163,13 @@ static void adapter_equivalence(unsigned scan)
     capture w = {0}, c = {0};
     kvm_component_options options = { .input_sink = capture_event, .failure_sink = no_failure };
     options.input_context = &w;
-    assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose,
+        &window.pending_frame, sizeof(window.pending_frame)) == LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     options.input_context = &c;
-    assert(kvm_component_initialize(&console.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_initialize(&console.base, &options, no_join, no_dispose,
+        &console.pending_frame, sizeof(console.pending_frame)) == LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&console.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     context.component = &window; console.worker_state = &state; window_context = &context;
@@ -293,7 +299,8 @@ static void repeat_delivery_failure(void)
     capture c = { .reject_at = 3 };
     kvm_component_options options = { .input_context = &c,
         .input_sink = capture_event, .failure_sink = no_failure };
-    assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose) == LIB_STATUS_OK);
+    assert(kvm_component_initialize(&window.base, &options, no_join, no_dispose,
+        &window.pending_frame, sizeof(window.pending_frame)) == LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     context.component = &window; window_context = &context;

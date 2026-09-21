@@ -32,6 +32,11 @@ int main(void)
     lib_atomic_i32_store_explicit(&state, 9, LIB_MEMORY_ORDER_RELEASE);
     CHECK(lib_atomic_i32_load_explicit(&state, LIB_MEMORY_ORDER_ACQUIRE) == 9);
     lib_atomic_u32_initialize(&references, 1u);
+    CHECK(lib_atomic_u32_load_explicit(&references, LIB_MEMORY_ORDER_RELAXED) == 1u);
+    lib_atomic_u32_store_explicit(&references, LIB_UINT32_MAX,
+        LIB_MEMORY_ORDER_RELEASE);
+    CHECK(lib_atomic_u32_exchange_explicit(&references, 1u,
+        LIB_MEMORY_ORDER_ACQ_REL) == LIB_UINT32_MAX);
     CHECK(lib_atomic_u32_fetch_add_explicit(&references, 2u, LIB_MEMORY_ORDER_RELAXED) == 1u);
     CHECK(lib_atomic_u32_fetch_sub_explicit(&references, 1u, LIB_MEMORY_ORDER_ACQ_REL) == 3u);
     lib_atomic_u64_initialize(&identity, 0x100000001ULL);

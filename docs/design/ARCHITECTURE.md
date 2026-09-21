@@ -24,8 +24,8 @@ They are architectural commitments, not current release artifacts.
 ## Modules, Ownership, And Assembly
 
 `core` contains independent `machine` and `product` modules. `src/lib/types`
-is the shared C type/status foundation. `src/common/xasm32` is the shared x86
-assembler/disassembler component; `src/common/debug` is the shared Debug CLI
+is the shared C type/status foundation. `src/x86/xasm32` is the explicit x86
+assembler/disassembler component; `src/x86/debug` is the shared Debug CLI
 provider. `src/common/session`, `src/common/machine` and `src/common/ui` own
 the shared product runtime mechanisms. `vm` uses `events`, `machine`,
 `product`, and `profile` modules.

@@ -188,7 +188,7 @@ int main(void)
 
     /* Only unmapped transitions ask the native adapter for character translation. */
     capture.count = 0;
-    kvm_keyboard_record record = { KVM_KEYBOARD_TRANSITION, 0, 'A', 0, 0, 0, 1 };
+    kvm_keyboard_record record = { .kind = KVM_KEYBOARD_TRANSITION, .key = 'A', .pressed = 1 };
     assert(kvm_keyboard_submit_record(&normalizer, NULL, &capture, capture_key, &record) ==
         KVM_KEYBOARD_ACCEPTED);
     record.pressed = 0;

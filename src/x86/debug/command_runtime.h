@@ -1,5 +1,5 @@
-#ifndef COMMON_DEBUG_COMMAND_RUNTIME_H
-#define COMMON_DEBUG_COMMAND_RUNTIME_H
+#ifndef X86_DEBUG_COMMAND_RUNTIME_H
+#define X86_DEBUG_COMMAND_RUNTIME_H
 
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"

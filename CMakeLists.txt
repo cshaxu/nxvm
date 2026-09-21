@@ -67,8 +67,30 @@ add_custom_target(cpu-timing-manifest-catalog
 
 add_subdirectory(src/lib)
 add_subdirectory(src/common)
+add_subdirectory(src/x86)
+
+# The frozen upstream x86 corpus is strict under GNU/Clang.  GCC 16 also
+# emits a format-truncation diagnostic for two bounded Debug display buffers;
+# preserve the byte-identical corpus while keeping every other x86 warning
+# fatal in this consuming build.
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(x86-debug PRIVATE -Wno-error=format-truncation)
+endif()
 add_subdirectory(test/lib)
 add_subdirectory(test/common)
+add_subdirectory(test/x86)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(x86-test-debug_output PRIVATE -Wno-error=format-truncation)
+    target_compile_options(x86-test-debug_linear PRIVATE -Wno-error=format-truncation)
+    # The imported window capture contract deliberately constructs the maximum
+    # copied graphics frame on its test stack.  Its 1280x768 payload exceeds
+    # MinGW's default executable stack but not the contract's bounded ABI.
+    target_link_options(lib-test-kvm_window_capture_contract PRIVATE
+        -Wl,--stack,8388608)
+elseif(MSVC)
+    target_link_options(lib-test-kvm_window_capture_contract PRIVATE
+        /STACK:8388608)
+endif()
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     lib-test-lib_console
     lib-test-types_contract
@@ -93,11 +115,11 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     common-test-physical_key_identity
     common-test-session_frame
     common-test-session_monitor
-    common-test-debug_output
-    common-test-debug_linear
     common-test-composition
-    common-test-xasm32
-    common-test-xasm32_contract)
+    x86-test-debug_output
+    x86-test-debug_linear
+    x86-test-xasm32
+    x86-test-xasm32_contract)
 if(WIN32)
     list(APPEND PROJECT_SHARED_CORPUS_TEST_TARGETS
         lib-test-lib_console_event_gate
@@ -122,7 +144,8 @@ if(WIN32)
         lib-test-lib_console_io_contract
         lib-test-kvm_window_capture_contract
         common-test-machine_wait
-        common-test-common_machine)
+        common-test-common_machine
+        x86-test-debug_machine)
 endif()
 
 add_library(core-machine STATIC
@@ -1355,7 +1378,8 @@ target_include_directories(vm-app PUBLIC
 target_link_libraries(vm-app PUBLIC
     common-session
     common-ui
-    common-debug
+    x86-debug
+    x86-xasm32
     vm-machine
     core-machine-boundary
     storage
@@ -1823,10 +1847,10 @@ add_executable(vm-unified-debug-backend-smoke
     test/integration/dos/vm_unified_debug_backend_smoke.c)
 target_link_libraries(vm-unified-debug-backend-smoke PRIVATE
     integration-session-yaml-support)
-add_executable(vm-common-debug-mapping-smoke
-    test/vm/machine/vm_common_debug_mapping_smoke.c
+add_executable(vm-x86-debug-mapping-smoke
+    test/vm/machine/vm_x86_debug_mapping_smoke.c
 )
-target_link_libraries(vm-common-debug-mapping-smoke PRIVATE
+target_link_libraries(vm-x86-debug-mapping-smoke PRIVATE
     vm-machine
 )
 add_executable(vm-debugger-recording-lifecycle-smoke
@@ -2126,9 +2150,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-boot-failure-lifecycle-smoke
     common-machine-smoke
     std-snprintf-smoke
-    common-xasm32-smoke
-    common-xasm32-contract-smoke
-    common-debug-smoke
+    x86-test-xasm32
+    x86-test-xasm32_contract
+    x86-test-debug_output
+    x86-test-debug_linear
+    x86-test-debug_machine
     common-session-smoke
     common-ui-smoke
     common-adapter-conformance
@@ -2154,7 +2180,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
     vm-app-console-smoke
-    vm-common-debug-mapping-smoke
+    vm-x86-debug-mapping-smoke
     vm-debugger-recording-lifecycle-smoke
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
@@ -2169,9 +2195,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     vdm-minimal-presentation-smoke)
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
     common-machine-smoke
-    common-xasm32-smoke
-    common-xasm32-contract-smoke
-    common-debug-smoke
+    x86-test-xasm32
+    x86-test-xasm32_contract
+    x86-test-debug_output
+    x86-test-debug_linear
+    x86-test-debug_machine
     common-session-smoke
     common-ui-smoke
     common-adapter-conformance
@@ -3577,22 +3605,11 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/xt_ppi_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/xt_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/rtc.c|machine-executor"
-    "common-debug|src/common/debug/command.c|debug-command"
-    "common-xasm32|src/common/xasm32/xasm32.c|xasm32"
-    "common-xasm32|src/common/xasm32/aasm32.c|xasm32"
-    "common-xasm32|src/common/xasm32/dasm32.c|xasm32"
-    "common-machine|src/common/machine/machine.c|machine-owner"
-    "common-machine|src/common/machine/input_queue.c|machine-input-queue"
     "vm-app|src/vm/app/command.c|console-product"
     "vm-app|src/vm/app/keyboard.c|keyboard-product"
     "vm-app|src/vm/app/recorder.c|recorder-product"
-    "common-ui|src/common/ui/ui.c|presentation-leaf"
     "vm-machine|src/vm/machine/frame.c|display-adaptation"
     "vm-app|src/vm/app/catalog.c|session-catalog"
-    "common-session|src/common/session/session.c|session-owner"
-    "common-session|src/common/session/control.c|session-owner"
-    "common-session|src/common/session/control_state.c|session-owner"
-    "common-session|src/common/session/presentation_plan.c|session-owner"
     "vm-app|src/vm/app/composition.c|session-composition"
     "vm-media|src/vm/machine/media/fdd.c|vm-media"
     "vm-media|src/vm/machine/media/hdd.c|vm-media"
@@ -3625,8 +3642,8 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine-executor
     core-machine-boundary
     common-machine
-    common-xasm32
-    common-debug
+    x86-xasm32
+    x86-debug
     vm-profile
     vm-media
     vm-machine

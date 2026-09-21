@@ -7,6 +7,7 @@
 
 struct kvm_console {
     kvm_component base;
+    kvm_console_text_frame pending_frame;
     lib_console *logical_console;
     void *worker_state;
     kvm_keyboard_normalizer keyboard;
@@ -14,7 +15,7 @@ struct kvm_console {
     int previous_mouse_valid;
 };
 
-lib_status kvm_console_publish_text_frame(kvm_console *console, const kvm_frame *frame);
+lib_status kvm_console_publish_text_frame(kvm_console *console, const kvm_console_text_frame *frame);
 
 void kvm_console_receive_event(void *context, const lib_console_event *event);
 lib_u8 kvm_console_mouse_buttons(lib_u32 buttons);

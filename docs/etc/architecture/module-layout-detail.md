@@ -180,15 +180,16 @@ services but contains no PC/AT handler, ROM image, product policy, or host OS
 call.
 
 `lib` contains product-neutral C and host facilities. `common` contains generic
-command, debug, assembler, disassembler, session and UI contracts, but no
-session composition, NXVM Console, profile, boot/media or host-policy decision.
-Its components depend only on Lib, never on one another. Root composition owns
-concrete product binding and lifetime.
+machine, session and UI contracts, but no session composition, NXVM Console,
+profile, boot/media or host-policy decision. Its components depend only on Lib,
+never on one another. `x86` contains the separately selected x86 Debug and
+assembler/disassembler capability. Root composition owns concrete product
+binding and lifetime.
 
 The hardware-debugger command language, prompt and pure assembler/disassembler
-capability belong in `common/debug` and `common/xasm32`. The common machine
-contract declares the copied operations it needs; each product adapter binds
-those operations to its own machine without forking the shared grammar.
+capability belong in `x86/debug` and `x86/xasm32`. The common machine contract
+declares only a generic copied rendezvous; each product adapter binds the x86
+operations to its own machine without forking the shared grammar.
 
 Machine snapshots and platform frames are distinct contracts. A product-machine
 snapshot may contain text cells, attributes, geometry, cursor, generation, and

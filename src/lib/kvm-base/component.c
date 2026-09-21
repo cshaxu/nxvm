@@ -38,7 +38,7 @@ static void kvm_component_report_failure(kvm_component *component, lib_status st
 
 lib_status kvm_component_initialize(kvm_component *component,
     const kvm_component_options *options, kvm_component_join_fn join_worker,
-    kvm_component_dispose_fn dispose)
+    kvm_component_dispose_fn dispose, void *frame_storage, lib_size frame_capacity)
 {
     lib_u64 identity;
     if (component == LIB_NULL || options == LIB_NULL || options->input_sink == LIB_NULL ||
@@ -57,7 +57,7 @@ lib_status kvm_component_initialize(kvm_component *component,
     kvm_hotkey_matcher_initialize(&component->hotkey_matcher, &options->hotkeys);
     lib_atomic_i32_initialize(&component->stopping, 0);
     lib_atomic_i32_initialize(&component->failure, LIB_STATUS_OK);
-    return kvm_component_mailboxes_create(&component->mailboxes);
+    return kvm_component_mailboxes_create(&component->mailboxes, frame_storage, frame_capacity);
 }
 
 int kvm_component_emit_to(kvm_component *component, const kvm_input_event *event,
@@ -116,11 +116,12 @@ void kvm_component_retire(kvm_component *component, lib_status status)
         kvm_component_report_failure(component, LIB_STATUS_IO_ERROR);
 }
 
-lib_status kvm_component_publish_frame(kvm_component *component, const kvm_frame *frame)
+lib_status kvm_component_publish_frame(kvm_component *component, const void *frame,
+    lib_size bytes)
 {
     lib_status status;
     if (component == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = kvm_component_mailboxes_publish_frame(&component->mailboxes, frame);
+    status = kvm_component_mailboxes_publish_frame(&component->mailboxes, frame, bytes);
     if (status != LIB_STATUS_OK) return status;
     status = kvm_component_mailboxes_notify(&component->mailboxes);
     if (status != LIB_STATUS_OK) kvm_component_fail(component, status);

@@ -2,7 +2,6 @@
 #define KVM_BASE_COMPONENT_INTERFACE_H
 
 #include "lib/kvm-base/hotkey_interface.h"
-#include "lib/kvm-base/frame_interface.h"
 
 typedef struct kvm_component kvm_component;
 
@@ -25,10 +24,6 @@ typedef struct kvm_component_options {
     kvm_hotkey_registry hotkeys;
 } kvm_component_options;
 
-/* Copies into this component's one-slot latest-wins frame mailbox.
- * STOP admission or a terminal fault rejects later frames with INVALID_STATE. */
-lib_status kvm_component_publish_frame(kvm_component *component,
-    const kvm_frame *frame);
 /* Appends one FIFO STOP record. A repeated request is idempotent; a full
  * ordinary control queue still has its reserved STOP slot. Other control
  * enqueue failures are returned. A rejected request is not a worker fault. */

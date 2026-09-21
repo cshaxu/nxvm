@@ -59,14 +59,14 @@ void vm_machine_debug_bind_observer(t_debug *debug,
 }
 
 type_status vm_machine_debug_set_execution_plan(t_debug *debug,
-    const common_machine_debug_request *request)
+    const x86_debug_request *request)
 {
     if (debug == STD_NULL || request == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (request->execution_kind != COMMON_MACHINE_DEBUG_EXECUTION_TRACE &&
-        request->execution_kind != COMMON_MACHINE_DEBUG_EXECUTION_BREAK_REAL &&
-        request->execution_kind != COMMON_MACHINE_DEBUG_EXECUTION_BREAK_LINEAR)
+    if (request->execution_kind != X86_DEBUG_EXECUTION_TRACE &&
+        request->execution_kind != X86_DEBUG_EXECUTION_BREAK_REAL &&
+        request->execution_kind != X86_DEBUG_EXECUTION_BREAK_LINEAR)
         return TYPE_STATUS_INVALID_ARGUMENT;
-    if (request->execution_kind == COMMON_MACHINE_DEBUG_EXECUTION_TRACE &&
+    if (request->execution_kind == X86_DEBUG_EXECUTION_TRACE &&
         request->instruction_count == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
     debug->plan = (t_debug_execution_plan) {
         .kind = request->execution_kind,
@@ -85,10 +85,10 @@ type_unsigned_64 vm_machine_debug_limit_instruction_budget(
     const t_debug *debug, type_unsigned_64 requested)
 {
     if (debug == STD_NULL || requested == 0u) return requested;
-    if (debug->plan.kind == COMMON_MACHINE_DEBUG_EXECUTION_TRACE &&
+    if (debug->plan.kind == X86_DEBUG_EXECUTION_TRACE &&
         debug->plan.remaining < requested) return debug->plan.remaining;
-    if (debug->plan.kind == COMMON_MACHINE_DEBUG_EXECUTION_BREAK_REAL ||
-        debug->plan.kind == COMMON_MACHINE_DEBUG_EXECUTION_BREAK_LINEAR)
+    if (debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_REAL ||
+        debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_LINEAR)
         return 1u;
     return requested;
 }
@@ -96,8 +96,8 @@ type_unsigned_64 vm_machine_debug_limit_instruction_budget(
 C_INT vm_machine_debug_breakpoint_due(const t_debug *debug)
 {
     if (debug == STD_NULL || !debug->observation_valid ||
-        (debug->plan.kind != COMMON_MACHINE_DEBUG_EXECUTION_BREAK_REAL &&
-         debug->plan.kind != COMMON_MACHINE_DEBUG_EXECUTION_BREAK_LINEAR)) return TYPE_FALSE;
+        (debug->plan.kind != X86_DEBUG_EXECUTION_BREAK_REAL &&
+         debug->plan.kind != X86_DEBUG_EXECUTION_BREAK_LINEAR)) return TYPE_FALSE;
     return debug->observation.cs_base + debug->observation.eip ==
         debug->plan.breakpoint_linear;
 }
@@ -105,23 +105,23 @@ C_INT vm_machine_debug_breakpoint_due(const t_debug *debug)
 C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug)
 {
     if (debug == STD_NULL || (debug->plan.kind !=
-        COMMON_MACHINE_DEBUG_EXECUTION_BREAK_REAL && debug->plan.kind !=
-        COMMON_MACHINE_DEBUG_EXECUTION_BREAK_LINEAR)) return;
+        X86_DEBUG_EXECUTION_BREAK_REAL && debug->plan.kind !=
+        X86_DEBUG_EXECUTION_BREAK_LINEAR)) return;
     debug->plan.completion_pending = TYPE_TRUE;
     debug->plan.completion_reason = VM_MACHINE_PAUSE_BREAKPOINT;
     debug->plan.completion_executed = debug->plan.executed;
-    debug->plan.kind = COMMON_MACHINE_DEBUG_EXECUTION_NONE;
+    debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
 C_VOID vm_machine_debug_complete_run(t_debug *debug, type_unsigned_64 executed)
 {
     if (debug == STD_NULL || executed == 0u) return;
-    if (debug->plan.kind == COMMON_MACHINE_DEBUG_EXECUTION_BREAK_REAL ||
-        debug->plan.kind == COMMON_MACHINE_DEBUG_EXECUTION_BREAK_LINEAR) {
+    if (debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_REAL ||
+        debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_LINEAR) {
         debug->plan.executed += executed;
         return;
     }
-    if (debug->plan.kind != COMMON_MACHINE_DEBUG_EXECUTION_TRACE) return;
+    if (debug->plan.kind != X86_DEBUG_EXECUTION_TRACE) return;
     debug->plan.executed += executed;
     if (executed < debug->plan.remaining) {
         debug->plan.remaining -= executed;
@@ -130,7 +130,7 @@ C_VOID vm_machine_debug_complete_run(t_debug *debug, type_unsigned_64 executed)
     debug->plan.completion_pending = TYPE_TRUE;
     debug->plan.completion_reason = VM_MACHINE_PAUSE_TRACE;
     debug->plan.completion_executed = debug->plan.executed;
-    debug->plan.kind = COMMON_MACHINE_DEBUG_EXECUTION_NONE;
+    debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
 C_INT vm_machine_debug_completion_pending(const t_debug *debug,

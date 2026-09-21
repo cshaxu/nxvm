@@ -80,7 +80,7 @@ int main(void)
     CloseHandle(probe.release);
     CloseHandle(probe.delivered);
     CloseHandle(probe.detached);
-    lib_console_destroy(probe.console);
+    lib_console_release(probe.console);
     return 0;
 }
 #else

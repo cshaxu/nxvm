@@ -8,7 +8,7 @@
 
 #include <limits.h>
 
-#include "common/debug/debug_interface.h"
+#include "x86/debug/debug_interface.h"
 #include "common/session/session_interface.h"
 #include "common/ui/ui_interface.h"
 #include "vm/app/composition.h"
@@ -27,7 +27,7 @@ struct vm_app_console_context {
     vm_app *session;
     vm_app_session_catalog *catalog;
     common_session *control;
-    common_debug *debug;
+    x86_debug *debug;
     vm_app_recorder *recorder;
     C_INT debug_active;
     C_INT debug_requested;
@@ -212,29 +212,29 @@ static C_VOID vm_app_console_floppy(vm_app_console_context *context,
 }
 
 static C_VOID vm_app_console_debug_result(common_session_command_result *destination,
-    const common_debug_result *source)
+    const x86_debug_result *source)
 {
     if (destination == LIB_NULL || source == LIB_NULL) return;
     vm_app_console_append(destination, "%s", source->text);
     if (source->prompt_ready) vm_app_console_prompt(destination, source->prompt);
-    if (source->lifecycle_request == COMMON_DEBUG_LIFECYCLE_RESUME ||
-        source->lifecycle_request == COMMON_DEBUG_LIFECYCLE_STEP)
+    if (source->lifecycle_request == X86_DEBUG_LIFECYCLE_RESUME ||
+        source->lifecycle_request == X86_DEBUG_LIFECYCLE_STEP)
         destination->request = COMMON_SESSION_REQUEST_RESUME;
-    if (source->lifecycle_request == COMMON_DEBUG_LIFECYCLE_STOP)
+    if (source->lifecycle_request == X86_DEBUG_LIFECYCLE_STOP)
         destination->request = COMMON_SESSION_REQUEST_STOP;
 }
 
 static C_VOID vm_app_console_submit_debug(vm_app_console_context *context,
     const C_CHAR *line, common_session_command_result *result)
 {
-    common_debug_result debug_result = {0};
-    if (common_debug_submit_line(context->debug, line, &debug_result) != LIB_STATUS_OK) {
+    x86_debug_result debug_result = {0};
+    if (x86_debug_submit_line(context->debug, line, &debug_result) != LIB_STATUS_OK) {
         vm_app_console_append(result, "Debugger command failed.\n");
         return;
     }
     vm_app_console_debug_result(result, &debug_result);
     if (!debug_result.keep_active) {
-        common_debug_close(context->debug);
+        x86_debug_close(context->debug);
         context->debug_active = TYPE_FALSE;
     }
 }
@@ -268,7 +268,7 @@ static C_VOID vm_app_console_submit_line(C_VOID *opaque,
     else if (!STD_STRCMP(context->arguments[0], "exit")) result->exit_requested = LIB_TRUE;
     else if (!STD_STRCMP(context->arguments[0], "debug")) {
         if (state == COMMON_SESSION_MACHINE_PAUSED) {
-            if (common_debug_open(context->debug, vm_app_console_common_machine(context)) ==
+            if (x86_debug_open(context->debug, vm_app_console_common_machine(context)) ==
                 LIB_STATUS_OK) {
                 context->debug_active = TYPE_TRUE;
                 vm_app_console_prompt(result, "- ");
@@ -315,7 +315,7 @@ static C_VOID vm_app_console_note_runtime(C_VOID *opaque,
     if (message != STD_NULL) vm_app_console_append(result, "%s", message);
     if (context != STD_NULL && context->debug_requested &&
         completed == COMMON_SESSION_MACHINE_PAUSED &&
-        common_debug_open(context->debug, vm_app_console_common_machine(context)) ==
+        x86_debug_open(context->debug, vm_app_console_common_machine(context)) ==
             LIB_STATUS_OK) {
         context->debug_requested = TYPE_FALSE;
         context->debug_active = TYPE_TRUE;
@@ -391,7 +391,7 @@ static C_INT vm_app_console_compose(vm_app_console_context *context,
 
     if (vm_app_compose_machine(context->session, request) != TYPE_STATUS_OK) return 0;
     if (vm_app_recorder_create(&context->recorder) != TYPE_STATUS_OK ||
-        common_debug_create(&context->debug) != LIB_STATUS_OK) return 0;
+        x86_debug_create(&context->debug) != LIB_STATUS_OK) return 0;
     session_options.display = !STD_STRCMP(request->display, "window") ?
         COMMON_SESSION_DISPLAY_WINDOW : COMMON_SESSION_DISPLAY_CONSOLE;
     session_options.console_control = request->console_control ? LIB_TRUE : LIB_FALSE;
@@ -428,7 +428,7 @@ type_status vm_app_console_context_create(vm_app_console_context **out_context)
 C_VOID vm_app_console_context_destroy(vm_app_console_context *context)
 {
     if (context == STD_NULL) return;
-    common_debug_destroy(context->debug);
+    x86_debug_destroy(context->debug);
     vm_app_recorder_destroy(context->recorder);
     vm_app_session_catalog_destroy(context->catalog);
     STD_FREE(context);

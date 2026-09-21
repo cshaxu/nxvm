@@ -1,27 +1,18 @@
 #ifndef KVM_BASE_MAILBOX_INTERFACE_H
 #define KVM_BASE_MAILBOX_INTERFACE_H
 
-#include "lib/kvm-base/frame_interface.h"
-
 #include "lib/base/sync_interface.h"
 
 #define KVM_COMPONENT_CONTROL_CAPACITY 32u
 #define KVM_COMPONENT_CONTROL_STORAGE_CAPACITY (KVM_COMPONENT_CONTROL_CAPACITY + 1u)
-#define KVM_COMPONENT_WINDOW_TITLE_CAPACITY 128u
+#define KVM_COMPONENT_CONTROL_PAYLOAD_CAPACITY 128u
+#define KVM_COMPONENT_CONTROL_STOP 0u
 
-typedef enum kvm_component_control_kind {
-    KVM_COMPONENT_CONTROL_STOP,
-    KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE,
-    KVM_COMPONENT_CONTROL_SET_WINDOW_FROZEN,
-    KVM_COMPONENT_CONTROL_RELEASE_WINDOW_MOUSE
-} kvm_component_control_kind;
-
+/* Zero is the terminal transport marker. All other kinds and payload bytes
+ * belong to the consumer; initialize unused bytes before enqueueing. */
 typedef struct kvm_component_control {
-    kvm_component_control_kind kind;
-    union {
-        char title[KVM_COMPONENT_WINDOW_TITLE_CAPACITY];
-        lib_bool window_frozen;
-    } value;
+    lib_u32 kind;
+    lib_u8 payload[KVM_COMPONENT_CONTROL_PAYLOAD_CAPACITY];
 } kvm_component_control;
 
 typedef lib_status (*kvm_mailbox_notify_fn)(void *context);
@@ -34,7 +25,9 @@ typedef lib_status (*kvm_mailbox_notify_fn)(void *context);
 typedef struct kvm_component_mailboxes {
     base_sync_mutex *frame_lock;
     base_sync_mutex *control_lock;
-    kvm_frame frame;
+    void *frame;
+    lib_size frame_capacity;
+    lib_size frame_size;
     lib_u32 frame_generation;
     lib_bool frame_pending;
     kvm_component_control controls[KVM_COMPONENT_CONTROL_STORAGE_CAPACITY];
@@ -49,7 +42,10 @@ typedef struct kvm_component_mailboxes {
 
 /* Creates independent blocking frame/control locks, without a wake object.
  * Failure leaves an empty, destroyable mailbox; no operation is then valid. */
-lib_status kvm_component_mailboxes_create(kvm_component_mailboxes *mailboxes);
+/* Nonempty storage is consumer-owned, correctly aligned for its own type,
+ * and remains alive through worker join. */
+lib_status kvm_component_mailboxes_create(kvm_component_mailboxes *mailboxes,
+    void *frame_storage, lib_size frame_capacity);
 /* One-time startup selection, before publishing the component to any caller.
  * NULL notify creates the default wait primitive; otherwise no wake is allocated.
  * Failure leaves selection unset. Context lives until worker join and caller
@@ -60,7 +56,7 @@ lib_status kvm_component_mailboxes_notify(kvm_component_mailboxes *mailboxes);
 void kvm_component_mailboxes_close(kvm_component_mailboxes *mailboxes);
 void kvm_component_mailboxes_destroy(kvm_component_mailboxes *mailboxes);
 lib_status kvm_component_mailboxes_publish_frame(kvm_component_mailboxes *mailboxes,
-    const kvm_frame *frame);
+    const void *frame, lib_size bytes);
 /* Appends one copied control. Capacity failure leaves the FIFO unchanged.
  * STOP is terminal, idempotent and has one reserved slot. */
 lib_status kvm_component_mailboxes_enqueue_control(
@@ -68,7 +64,7 @@ lib_status kvm_component_mailboxes_enqueue_control(
 lib_bool kvm_component_mailboxes_take_control(kvm_component_mailboxes *mailboxes,
     kvm_component_control *out_control);
 lib_bool kvm_component_mailboxes_capture_frame(kvm_component_mailboxes *mailboxes,
-    lib_u32 *out_generation, kvm_frame *out_frame);
+    lib_u32 *out_generation, void *out_frame, lib_size capacity);
 /* Capture leaves the latest frame pending. Acknowledge only after success;
  * acknowledging an older capture never clears a newer publication. */
 void kvm_component_mailboxes_acknowledge_frame(kvm_component_mailboxes *mailboxes,

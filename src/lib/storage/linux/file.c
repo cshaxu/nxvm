@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 
@@ -8,16 +9,14 @@
 lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
     lib_storage_file *file)
 {
-    lib_linux_file_lock lock = { 0 };
-
     file->stream = lib_c_fopen(path,
         readwrite != LIB_FALSE ? "rb+" : "rb");
     if (file->stream == LIB_NULL) {
         return LIB_STATUS_IO_ERROR;
     }
-    lock.l_type = readwrite != LIB_FALSE ? LIB_LINUX_F_WRLCK : LIB_LINUX_F_RDLCK;
-    lock.l_whence = LIB_SEEK_SET;
-    if (lib_linux_fcntl(lib_linux_fileno(file->stream), LIB_LINUX_F_SETLK, &lock) != 0) {
+    /* flock belongs to this open file description, not to the process. */
+    if (lib_linux_flock(lib_linux_fileno(file->stream), LIB_LINUX_LOCK_NB |
+            (readwrite != LIB_FALSE ? LIB_LINUX_LOCK_EX : LIB_LINUX_LOCK_SH)) != 0) {
         (void)lib_c_fclose(file->stream);
         file->stream = LIB_NULL;
         return LIB_STATUS_IO_ERROR;

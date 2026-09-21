@@ -9,6 +9,7 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/debug_interface.h"
+#include "x86/debug/protocol_interface.h"
 #include "vm/machine/control.h"
 #include "vm/machine/machine_interface.h"
 
@@ -20,7 +21,7 @@ typedef struct {
 } t_debug_connect;
 
 typedef struct {
-    common_machine_debug_execution_plan_kind kind;
+    x86_debug_execution_plan_kind kind;
     type_unsigned_64 remaining;
     type_unsigned_64 executed;
     type_unsigned_32 breakpoint_linear;
@@ -44,7 +45,7 @@ C_VOID vm_machine_debug_finalize(t_debug *debug);
 C_VOID vm_machine_debug_bind_observer(t_debug *debug,
     vm_machine_debug_observer observer, void *context);
 type_status vm_machine_debug_set_execution_plan(t_debug *debug,
-    const common_machine_debug_request *request);
+    const x86_debug_request *request);
 C_VOID vm_machine_debug_clear_execution_plan(t_debug *debug);
 type_unsigned_64 vm_machine_debug_limit_instruction_budget(
     const t_debug *debug, type_unsigned_64 requested);

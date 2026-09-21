@@ -83,6 +83,30 @@ static void check_sources(common_session_machine_state retirement_state)
     common_session_queue_dispose(q);
 }
 
+static int receive_text(void *context, const kvm_input_event *event)
+{
+    unsigned *calls = context;
+    assert(event->type == KVM_EVENT_TEXT && event->data.text.scalar == 0x4e2du);
+    assert(event->source_identity == 17u);
+    return ++*calls == 1u;
+}
+
+static void check_text(void)
+{
+    common_session_queue q = { 0 };
+    kvm_input_event event = { 0 };
+    unsigned calls = 0u;
+    event.type = KVM_EVENT_TEXT;
+    event.source_identity = 17u;
+    event.data.text.scalar = 0x4e2du;
+    assert(common_session_dispatch_input(&q, &event, COMMON_SESSION_MACHINE_PAUSED, receive_text, &calls));
+    assert(common_session_dispatch_input(&q, &event, COMMON_SESSION_MACHINE_STOPPED, receive_text, &calls));
+    assert(calls == 0u);
+    assert(common_session_dispatch_input(&q, &event, COMMON_SESSION_MACHINE_RUNNING, receive_text, &calls));
+    assert(!common_session_dispatch_input(&q, &event, COMMON_SESSION_MACHINE_RUNNING, receive_text, &calls));
+    assert(calls == 2u && q.pressed_count == 0u);
+}
+
 int main(void)
 {
     int release_first, extended_first;
@@ -94,5 +118,6 @@ int main(void)
         }
     check_sources(COMMON_SESSION_MACHINE_RUNNING);
     check_sources(COMMON_SESSION_MACHINE_PAUSED);
+    check_text();
     return 0;
 }

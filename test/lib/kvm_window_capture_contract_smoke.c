@@ -6,6 +6,50 @@
 static HWND owner, focused;
 static RECT client = {0,0,640,480}, clipped;
 static POINT origin = {100,200};
+static RAWINPUT raw_record;
+static RAWINPUTDEVICE raw_binding;
+static unsigned raw_reads, raw_registrations, raw_removals;
+static int raw_read_ok=1, raw_register_ok=1, raw_query_ok=1, raw_remove_ok=1;
+static UINT raw_size=sizeof(RAWINPUT);
+static int desktop_width=65535, desktop_height=65535;
+static UINT WINAPI query_raw(PRAWINPUTDEVICE d,PUINT count,UINT size)
+{
+    assert(size==sizeof(*d));
+    if (!raw_query_ok) return (UINT)-1;
+    UINT needed=raw_binding.usUsage ? 1u : 0u;
+    if (!d) { *count=needed; return 0; }
+    assert(*count>=needed);
+    if (needed) *d=raw_binding;
+    return needed;
+}
+static BOOL WINAPI register_raw(PCRAWINPUTDEVICE d,UINT count,UINT size)
+{
+    assert(count==1 && size==sizeof(*d) && d->usUsagePage==1 && d->usUsage==2);
+    if (d->dwFlags==RIDEV_REMOVE) {
+        assert(!d->hwndTarget); ++raw_removals;
+        if (!raw_remove_ok) return FALSE;
+        raw_binding=(RAWINPUTDEVICE){0};
+    } else {
+        assert(d->dwFlags==0 && d->hwndTarget==(HWND)1); ++raw_registrations;
+        if (!raw_register_ok) return FALSE;
+        raw_binding=*d;
+    }
+    return TRUE;
+}
+static UINT WINAPI read_raw(HRAWINPUT h,UINT command,LPVOID data,PUINT size,UINT header)
+{
+    assert(h==(HRAWINPUT)1 && command==RID_INPUT && *size==sizeof(RAWINPUT));
+    assert(header==sizeof(RAWINPUTHEADER)); ++raw_reads;
+    if (!raw_read_ok) return (UINT)-1;
+    *(RAWINPUT *)data=raw_record; return raw_size;
+}
+static int WINAPI metrics(int index)
+{
+    assert(index==SM_CXSCREEN || index==SM_CYSCREEN ||
+        index==SM_CXVIRTUALSCREEN || index==SM_CYVIRTUALSCREEN);
+    return index==SM_CXSCREEN || index==SM_CXVIRTUALSCREEN ? desktop_width : desktop_height;
+}
+static BOOL WINAPI get_clip(RECT *r) { *r=clipped; return TRUE; }
 static unsigned releases, clips, events;
 static int reject_input;
 static int release_ok=1;
@@ -31,8 +75,10 @@ static HGDIOBJ WINAPI select_bitmap(HDC d,HGDIOBJ o)
 static BOOL WINAPI delete_bitmap(HGDIOBJ o) { assert(o==(HGDIOBJ)3);++deleted_bitmaps;return TRUE; }
 static BOOL WINAPI delete_dc(HDC d) { assert(d==(HDC)2);++deleted_dcs;return TRUE; }
 static DWORD WINAPI clock_tick(void) { return ticks; }
+static unsigned invalidations;
+static RECT invalidated, previous_invalidated;
 static BOOL WINAPI invalidate(HWND w,const RECT *r,BOOL erase)
-{ (void)w;(void)r;(void)erase;return TRUE; }
+{ (void)w;assert(!erase);++invalidations;previous_invalidated=invalidated;if(r)invalidated=*r;return TRUE; }
 static void *context;
 static void notify_loss(void);
 static int reenter_title;
@@ -77,6 +123,8 @@ static BOOL WINAPI title(HWND w,LPCSTR text)
 #define lib_win32_set_foreground_window foreground
 #define lib_win32_get_focus get_focus
 #define lib_win32_clip_cursor clip
+#undef lib_win32_get_clip_cursor
+#define lib_win32_get_clip_cursor get_clip
 #define lib_win32_get_client_rect get_client
 #define lib_win32_client_to_screen to_screen
 #define lib_win32_set_cursor cursor
@@ -105,6 +153,14 @@ static BOOL WINAPI title(HWND w,LPCSTR text)
 #define lib_win32_select_object select_bitmap
 #define lib_win32_delete_object delete_bitmap
 #define lib_win32_delete_dc delete_dc
+#undef lib_win32_register_raw_input_devices
+#undef lib_win32_get_raw_input_data
+#define lib_win32_register_raw_input_devices register_raw
+#define lib_win32_get_raw_input_data read_raw
+#undef lib_win32_get_registered_raw_input_devices
+#define lib_win32_get_registered_raw_input_devices query_raw
+#undef lib_win32_get_system_metrics
+#define lib_win32_get_system_metrics metrics
 #include "lib/kvm-window/win32/mouse.c"
 #include "lib/kvm-window/win32/geometry.c"
 #include "lib/kvm-window/win32/component.c"
@@ -127,8 +183,139 @@ static void failure(void *p,lib_u64 id,lib_status status)
 static lib_status join(kvm_component *p, lib_u32 timeout_ms)
 { (void)p; (void)timeout_ms; return LIB_STATUS_OK; }
 static void dispose(kvm_component *p) { kvm_component_mailboxes_destroy(&p->mailboxes); }
+static unsigned control_failures;
+static void invalid_control_failure(void *p, lib_u64 id, lib_status status)
+{ (void)p; assert(id && status==LIB_STATUS_INVALID_ARGUMENT); ++control_failures; }
+static void check_invalid_controls(void)
+{
+    static kvm_window window;
+    static kvm_win32_window_context c;
+    kvm_component_options options={.input_sink=input,.failure_sink=invalid_control_failure};
+    for(unsigned i=0;i<3;++i) {
+        kvm_component_control command={.kind=LIB_UINT32_MAX};
+        assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==0);
+        assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,NULL,NULL)==0);
+        lib_memory_set(&c,0,sizeof(c)); c.component=&window;
+        if(i==1) { command.kind=KVM_WINDOW_CONTROL_SET_TITLE;
+            lib_memory_set(command.payload,'x',sizeof(command.payload)); }
+        if(i==2) { command.kind=KVM_WINDOW_CONTROL_SET_FROZEN; command.payload[0]=2; }
+        assert(kvm_component_enqueue_control(&window.base,&command)==0);
+        assert(!win32_window_consume_mailboxes((HWND)1,&c));
+        assert(window.base.stopping && window.base.mailboxes.closed);
+        assert(control_failures==i+1);
+        assert(kvm_component_destroy(&window.base)==0);
+    }
+}
+static void check_surface_damage(void)
+{
+    static kvm_window window;
+    static kvm_win32_window_context c;
+    static kvm_window_frame frame;
+    kvm_component_options options={.input_sink=input,.failure_sink=failure};
+    assert(kvm_component_initialize(&window.base,&options,join,dispose,
+        &window.pending_frame,sizeof(window.pending_frame))==0);
+    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,NULL,NULL)==0);
+    c.component=&window;
+    c.surface_dc=(HDC)2; c.surface_pixels=surface_bits;
+    c.surface_width=c.surface_height=c.client_surface_width=c.client_surface_height=8;
+    c.client_width=c.client_height=8;
+    frame.valid=frame.graphics=1;
+    frame.image.width=frame.image.stride=frame.image.height=8;
+    frame.image.palette[1]=0x123456;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(c.surface_valid && invalidated.right==8 && invalidated.bottom==8);
+    unsigned before=invalidations;
+    /* Two updates before WM_PAINT must each invalidate, not replace the first. */
+    frame.image.pixels[0]=1;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidated.left==0 && invalidated.top==0 && invalidated.right==1 && invalidated.bottom==1);
+    frame.image.pixels[63]=1;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+2 && invalidated.left==7 && invalidated.top==7);
+    assert(surface_bits[0]==0x123456 && surface_bits[63]==0x123456);
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+2);
+    frame=(kvm_window_frame){.valid=1};
+    frame.text.base.text_columns=frame.text.base.text_rows=1;
+    frame.text.base.font_height=8; /* Same pixel dimensions as graphics. */
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(c.surface_valid && invalidations==before+3);
+    frame=(kvm_window_frame){.valid=1,.graphics=1};
+    frame.image.width=frame.image.stride=frame.image.height=8;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(c.surface_valid && invalidations==before+3);
+    assert(invalidated.left==0 && invalidated.top==0 && invalidated.right==8 && invalidated.bottom==8);
+    /* Same black bitmap, but a new cursor overlay must still invalidate. */
+    frame=(kvm_window_frame){.valid=1};
+    frame.text.base.text_columns=1; frame.text.base.text_rows=2;
+    frame.text.base.font_height=4;
+    frame.text.base.cursor_visible=1;
+    frame.text.base.cursor_top=frame.text.base.cursor_bottom=3;
+    c.cursor_blink_visible=1;
+    before=invalidations;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+1 && invalidated.top==3 && invalidated.bottom==4);
+    frame.text.base.cursor_row=1;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+3 && previous_invalidated.top==3 && previous_invalidated.bottom==4);
+    assert(invalidated.top==7 && invalidated.bottom==8);
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+3); /* Identical bitmap and cursor. */
+    c.cursor_blink_due=ticks+250;
+    ticks+=250;
+    win32_window_advance_cursor_blink((HWND)1,&c);
+    assert(!c.cursor_blink_visible && invalidations==before+4 && invalidated.top==7);
+    ticks+=250;
+    win32_window_advance_cursor_blink((HWND)1,&c);
+    assert(c.cursor_blink_visible && invalidations==before+5);
+    frame.text.base.cursor_visible=0;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+6 && invalidated.top==7);
+    /* Font-only and palette-only changes go through the same pixel damage. */
+    frame.text.base.cells[0].foreground=1;
+    frame.text.base.text_palette[1]=0x123456;
+    frame.text.font[0]=0x80;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+7 && invalidated.left==0 && invalidated.top==0 &&
+        invalidated.right==1 && invalidated.bottom==1 && surface_bits[0]==0x123456);
+    frame.text.base.text_palette[1]=0x654321;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+8 && surface_bits[0]==0x654321);
+    frame.text.font[0]=0;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+9 && surface_bits[0]==0);
+    /* Text A is skipped by latest-wins; B's full bitmap contains both edits. */
+    frame.text.font[0]=0x80;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    frame.text.base.cells[KVM_TEXT_COLUMNS].foreground=1;
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+10 && invalidated.left==0 && invalidated.top==0 &&
+        invalidated.right==1 && invalidated.bottom==5);
+    assert(surface_bits[0]==0x654321 && surface_bits[32]==0x654321);
+    c.surface_valid=0; /* Recreated surface must invalidate fully, even same RGB. */
+    assert(kvm_window_publish_frame(&window,&frame)==0);
+    win32_window_consume_frame((HWND)1,&c);
+    assert(invalidations==before+11 && invalidated.right==8 && invalidated.bottom==8);
+    assert(kvm_component_destroy(&window.base)==0);
+}
 int main(void)
 {
+    check_invalid_controls();
     static kvm_win32_window_context surface;
     assert(!win32_window_ensure_surface((HWND)1,&surface,8,8));
     assert(!surface.surface_width && !surface.surface_height && !surface.surface_dc && !surface.surface_pixels);
@@ -141,12 +328,13 @@ int main(void)
     static kvm_window window;
     static kvm_win32_window_context c;
     kvm_component_options options={.input_sink=input,.failure_sink=failure};
-    assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     c.component=&window; context=&c;
     assert(kvm_win32_mouse_refresh_bounds(&c.mouse) && clips==0);
-    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1,0) == LIB_STATUS_OK);
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1) == LIB_STATUS_OK);
     assert(clipped.left==100 && clipped.top==200 && clipped.right==740 && clipped.bottom==680);
     origin.x=-300; origin.y=50;
     win32_window_proc((HWND)1,WM_MOVE,0,0);
@@ -159,10 +347,10 @@ int main(void)
     assert(!c.mouse.captured && !c.left_button && !c.mouse.motion.valid);
     assert(!c.mouse.motion.remainder_x && releases==0 && events==1 && owner==(HWND)2);
     notify_loss(); assert(events==1 && releases==0);
-    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1,0) == LIB_STATUS_OK);
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1) == LIB_STATUS_OK);
     c.right_button=1; win32_window_release_mouse(&c);
     assert(releases==1 && events==2 && !c.mouse.captured && !c.right_button);
-    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1,0) == LIB_STATUS_OK);
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1) == LIB_STATUS_OK);
     clip_ok=0; win32_window_proc((HWND)1,WM_MOVE,0,0);
     assert(!c.mouse.captured && releases==2);
     unsigned previous=clips;
@@ -171,7 +359,8 @@ int main(void)
     win32_window_resize_client((HWND)1,&c,640,480);
     assert(c.client_surface_width==0 && window.base.stopping);
     assert(kvm_component_destroy(&window.base)==LIB_STATUS_OK);
-    assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     resize_ok=1;
@@ -182,7 +371,7 @@ int main(void)
     assert(win32_window_consume_mailboxes((HWND)1,&c));
     assert(focus_requests==0 && foreground_requests==0);
     clip_ok=1;
-    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1,0)==LIB_STATUS_OK);
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==LIB_STATUS_OK);
     focus_requests=foreground_requests=0;
     unsigned releases_before_freeze=releases;
     assert(kvm_window_freeze(&window)==LIB_STATUS_OK);
@@ -197,12 +386,13 @@ int main(void)
     win32_window_capture_client_size((HWND)1,&c);
     assert(c.client_width==320 && c.client_height==240 && window.base.stopping);
     assert(kvm_component_destroy(&window.base)==LIB_STATUS_OK);
-    assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     client_ok=1;
-    c.frame.valid=1; c.frame.text_columns=80; c.frame.text_rows=25;
-    c.frame.cursor_visible=1; c.frame.font_height=16;
+    c.frame.valid=1; c.frame.text.base.text_columns=80; c.frame.text.base.text_rows=25;
+    c.frame.text.base.cursor_visible=1; c.frame.text.base.font_height=16;
     c.cursor_blink_due=250; c.cursor_blink_visible=1;
     for (ticks=0;ticks<250;++ticks) win32_window_proc((HWND)1,WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0);
     assert(c.cursor_blink_visible);
@@ -231,17 +421,18 @@ int main(void)
     c.frozen=0; c.cursor_blink_due=10; ticks=0xfffffff0u;
     win32_window_proc((HWND)1,WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); assert(!c.cursor_blink_visible);
     ticks=10; win32_window_proc((HWND)1,WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); assert(c.cursor_blink_visible);
-    c.frame.cursor_visible=0; ticks=1000;
+    c.frame.text.base.cursor_visible=0; ticks=1000;
     win32_window_proc((HWND)1,WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); assert(c.cursor_blink_visible);
     assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
     assert(win32_window_consume_mailboxes((HWND)1,&c));
     assert(focus_requests==1 && foreground_requests==1 && !c.mouse.captured);
     title_ok=0;
-    kvm_component_control command={.kind=KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE};
+    kvm_component_control command={.kind=KVM_WINDOW_CONTROL_SET_TITLE};
     assert(kvm_component_mailboxes_enqueue_control(&window.base.mailboxes,&command)==0);
     assert(!win32_window_consume_mailboxes((HWND)1,&c) && window.base.stopping);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
-    assert(kvm_component_initialize(&window.base,&options,join,dispose)==0);
+    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==0);
     c.component=&window; c.frozen=1; title_ok=1; reenter_title=1;
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         immediate_notification,&c) == LIB_STATUS_OK);
@@ -252,7 +443,8 @@ int main(void)
     assert(!c.frozen && !c.consuming && !window.base.mailboxes.control_count);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     /* A release callback faults mid-FIFO: later controls and frame stay untouched. */
-    assert(kvm_component_initialize(&window.base,&options,join,dispose)==0);
+    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==0);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     c.component=&window; c.frozen=0; c.left_button=1;
@@ -266,7 +458,8 @@ int main(void)
     assert(window.base.mailboxes.control_count==2);
     assert(window.base.mailboxes.frame_pending);
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
-    assert(kvm_component_initialize(&window.base,&options,join,dispose)==LIB_STATUS_OK);
+    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     c.component=&window; c.left_button=c.right_button=0; reject_input=0;
@@ -284,9 +477,129 @@ int main(void)
         kvm_window_constrain_sizing(&r,(kvm_window_edge)edge,16,29,640,480);
         int w=r.right-r.left-16,h=r.bottom-r.top-29;
         assert((edge==KVM_WINDOW_EDGE_LEFT || edge==KVM_WINDOW_EDGE_RIGHT) ?
-            (w==800 && h==600) : (w==933 && h==700));
+            (w==800 && h==600) : (w==934 && h==700));
+        int fitted_w,fitted_h;
+        assert(kvm_window_fit_aspect_size(w,h,640,480,&fitted_w,&fitted_h));
+        assert(fitted_w==w && fitted_h==h);
         assert((edge==KVM_WINDOW_EDGE_LEFT || edge==KVM_WINDOW_EDGE_TOPLEFT || edge==KVM_WINDOW_EDGE_BOTTOMLEFT) ? r.right==826 : r.left==10);
         assert((edge==KVM_WINDOW_EDGE_TOP || edge==KVM_WINDOW_EDGE_TOPLEFT || edge==KVM_WINDOW_EDGE_TOPRIGHT) ? r.bottom==749 : r.top==20);
     }
+    /* Relative packets continue even at a clipped pointer edge, without warps. */
+    release_ok=1; clip_ok=1;
+    client.right=640; client.bottom=480; origin.x=-900; origin.y=80;
+    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+        &window.pending_frame, sizeof(window.pending_frame))==0);
+    c.component=&window; c.frozen=0; c.left_button=c.right_button=0;
+    c.client_width=c.surface_width=640; c.client_height=c.surface_height=480;
+    raw_record.header.dwType=RIM_TYPEMOUSE;
+    raw_record.header.hDevice=(HANDLE)1;
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
+    assert(raw_registrations>0 && raw_binding.hwndTarget==(HWND)1);
+    int dx,dy, total=0;
+    for(unsigned i=0;i<100;++i) {
+        raw_record.data.mouse.lLastX=20; raw_record.data.mouse.lLastY=-10;
+        assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy));
+        assert(dx==20 && dy==-10); total+=dx;
+    }
+    assert(total==2000);
+    raw_record.data.mouse.lLastX=1; raw_record.data.mouse.lLastY=0;
+    for(unsigned i=0;i<2;++i) {
+        assert(kvm_win32_mouse_move(&c.mouse,1,1280,960,640,480,&dx,&dy));
+        assert(dx==(int)i && dy==0);
+    }
+    raw_record.data.mouse.lLastX=-1;
+    assert(kvm_win32_mouse_move(&c.mouse,1,1280,960,640,480,&dx,&dy) && dx==0);
+    assert(kvm_win32_mouse_move(&c.mouse,1,1280,960,640,480,&dx,&dy) && dx==-1);
+    /* Absolute samples: first anchors, repeated positions are zero, left stays left. */
+    raw_record.data.mouse.usFlags=MOUSE_MOVE_ABSOLUTE | MOUSE_VIRTUAL_DESKTOP;
+    raw_record.data.mouse.lLastX=40209; raw_record.data.mouse.lLastY=30969;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    raw_record.data.mouse.lLastX=40072;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==-137 && dy==0);
+    raw_record.data.mouse.lLastX=39936;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==-136 && dy==0);
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    raw_record.data.mouse.lLastX+=10; raw_record.data.mouse.lLastY-=10;
+    assert(kvm_win32_mouse_move(&c.mouse,1,320,240,640,480,&dx,&dy) && dx==20 && dy==-20);
+    /* Device, absolute coordinate space and desktop size changes cannot jump. */
+    raw_record.header.hDevice=(HANDLE)2; raw_record.data.mouse.lLastX=100;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    raw_record.data.mouse.usFlags=MOUSE_MOVE_ABSOLUTE;
+    raw_record.data.mouse.lLastX=500;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    desktop_width=1920; desktop_height=1080;
+    raw_record.data.mouse.lLastX=32768; raw_record.data.mouse.lLastY=32768;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    raw_record.data.mouse.lLastX=65535; raw_record.data.mouse.lLastY=65535;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==960 && dy==540);
+    raw_record.data.mouse.lLastX=65536;
+    assert(!kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy));
+    raw_record.data.mouse.lLastX=100;
+    client.right=320; origin.x=100;
+    assert(kvm_win32_mouse_refresh_bounds(&c.mouse));
+    assert(kvm_win32_mouse_move(&c.mouse,1,320,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    assert(kvm_win32_mouse_release(&c.mouse)==0 && raw_binding.usUsage==0);
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
+    raw_record.data.mouse.lLastX=30000;
+    assert(kvm_win32_mouse_move(&c.mouse,1,320,480,640,480,&dx,&dy) && dx==0 && dy==0);
+    raw_record.data.mouse.usFlags=0; raw_record.data.mouse.lLastX=4; raw_record.data.mouse.lLastY=-2;
+    assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==4 && dy==-2);
+    /* Legacy coordinates never deliver motion; WM_INPUT is the one entry. */
+    unsigned before=events, reads_before=raw_reads;
+    win32_window_proc((HWND)1,WM_MOUSEMOVE,0,MAKELPARAM(32767,32767));
+    assert(events==before && raw_reads==reads_before);
+    win32_window_proc((HWND)1,WM_INPUT,0,1);
+    win32_window_flush_mouse(&c);
+    assert(events==before+1 && raw_reads==reads_before+1);
+    /* Buttons retain their legacy route and do not re-read/double motion. */
+    reads_before=raw_reads; before=events;
+    win32_window_proc((HWND)1,WM_LBUTTONDOWN,0,0);
+    win32_window_proc((HWND)1,WM_LBUTTONUP,0,0);
+    assert(events==before+2 && raw_reads==reads_before);
+    /* Clipping loss is detected on the next raw packet; no later content. */
+    clipped.right+=100;
+    win32_window_proc((HWND)1,WM_INPUT,0,1);
+    assert(!c.mouse.captured && raw_binding.usUsage==0);
+    before=events;
+    win32_window_proc((HWND)1,WM_INPUT,0,1);
+    assert(events==before);
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
+    win32_window_proc((HWND)1,WM_ACTIVATEAPP,FALSE,0);
+    assert(!c.mouse.captured);
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
+    raw_read_ok=0;
+    win32_window_proc((HWND)1,WM_INPUT,0,1);
+    assert(!c.mouse.captured && events==before);
+    raw_read_ok=1;
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
+    raw_size=sizeof(RAWINPUTHEADER);
+    assert(!kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy));
+    raw_size=sizeof(RAWINPUT);
+    assert(kvm_win32_mouse_release(&c.mouse)==0);
+    /* Registration failures/foreign consumers are never stolen or hidden. */
+    raw_query_ok=0;
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==LIB_STATUS_IO_ERROR && !c.mouse.captured);
+    raw_query_ok=1;
+    raw_binding=(RAWINPUTDEVICE){1,2,0,(HWND)2};
+    unsigned registrations_before=raw_registrations;
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==LIB_STATUS_INVALID_STATE);
+    assert(raw_binding.hwndTarget==(HWND)2 && raw_registrations==registrations_before);
+    raw_binding=(RAWINPUTDEVICE){0};
+    raw_register_ok=0;
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==LIB_STATUS_IO_ERROR && !c.mouse.captured);
+    raw_register_ok=1;
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
+    raw_binding.hwndTarget=(HWND)2;
+    unsigned removals_before=raw_removals;
+    assert(kvm_win32_mouse_release(&c.mouse)==0);
+    assert(raw_binding.hwndTarget==(HWND)2 && raw_removals==removals_before);
+    raw_binding=(RAWINPUTDEVICE){0};
+    assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
+    raw_remove_ok=0;
+    assert(kvm_win32_mouse_release(&c.mouse)==LIB_STATUS_IO_ERROR && !c.mouse.captured);
+    raw_remove_ok=1; raw_binding=(RAWINPUTDEVICE){0};
+    assert(kvm_component_destroy(&window.base)==0);
+    check_surface_damage();
     return 0;
 }

@@ -23,7 +23,7 @@ static int take_event(common_session_queue *queue, common_session_event *event,
     return common_session_queue_take(queue, event, timeout_ms);
 }
 static lib_u32 run(const common_machine *m) { (void)m; return 1; }
-static lib_bool copy_frame(common_machine *m, kvm_frame *f, lib_u32 g)
+static lib_bool copy_frame(common_machine *m, common_machine_frame *f, lib_u32 g)
 { (void)m; (void)f; (void)g; return LIB_FALSE; }
 static int machine_request(common_machine *m) { (void)m; ++commands; return 1; }
 #define common_machine_run_generation run
@@ -72,9 +72,10 @@ lib_status common_ui_set_state(common_ui *ui, common_ui_state s)
 { (void)ui; (void)s; return LIB_STATUS_OK; }
 lib_status common_ui_release_window_mouse(common_ui *ui)
 { (void)ui; return LIB_STATUS_OK; }
-lib_status common_ui_publish_frame(common_ui *ui, const kvm_frame *f,
+lib_status common_ui_publish_frame(common_ui *ui, const kvm_window_frame *f,
+    const kvm_console_character_map *characters, lib_u32 sequence,
     lib_bool w, lib_bool c, lib_bool status)
-{ (void)ui; (void)f; (void)w; (void)c; (void)status; return LIB_STATUS_OK; }
+{ (void)characters; (void)sequence; (void)ui; (void)f; (void)w; (void)c; (void)status; return LIB_STATUS_OK; }
 static void monitor(void *p, lib_bool current, common_session_command_result *out)
 {
     (void)p; (void)current; ++callbacks;

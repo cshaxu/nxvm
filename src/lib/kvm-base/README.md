@@ -4,17 +4,29 @@
 copied frame/input values, source-local hotkey matching, and private mailbox
 mechanics to `kvm-window` and `kvm-console`.
 
-`kvm_frame_copy` preserves the complete prefix before `graphics_pixels`.
-Text copies do not touch pixels; graphics copies include exactly stride*height
-bytes, including row padding. Pixels outside that active extent are not frame
-content and must not be read. Layout, ownership and mailbox acknowledgement
-are unchanged; callers need not maintain per-field copy lists.
+`kvm_text_frame` contains the common text fields with a fixed 80-cell row stride.
+One `kvm_text_cell` array carries glyph index, glyph bank (0 primary, 1 secondary)
+and foreground/background palette indices (0..15) together in each four-byte cell.
+Cells have no padding; whole-array copying/comparison is valid. Colours and bank are independent;
+visible cells are validated before publication. No packed device attribute is
+interpreted here. Producers initialize the complete fixed-capacity value.
+Fonts, character maps and graphics belong to the receiving leaf, not this base.
+The frame mailbox copies opaque bytes into leaf-provided fixed storage. The
+leaf validates its typed value and supplies its active byte count. Publication
+only replaces bytes; there is no content callback or damage interpretation.
 
 Control admission copies one record per call into the 32-slot ordinary FIFO.
 Capacity rejection returns LIMIT_EXCEEDED without replacing any queued record.
 STOP has a reserved slot, closes admission and is idempotent. The worker consumes
 controls in order through STOP, then ignores later control/frame work. There is
 no batch admission; frame publication remains independently locked, latest-wins.
+
+The control envelope has an opaque nonzero consumer kind and 128 copied payload
+bytes; only kind zero (STOP) is interpreted here. Window owns title/freeze/release
+encoding and validation. Console currently has no ordinary controls. Consumers
+reject invalid records through their existing fault path, rather than silently
+accepting another component's commands. No native or application API exposes
+the envelope; no per-control allocation or extra dispatch registry is involved.
 
 Frame and control each use an independent Base blocking mutex.
 The control lock only protects the short FIFO operation. STOP/fault acquires frame
@@ -54,9 +66,8 @@ input declarations expose copied input normalization with common surrogate,
 recovery and delivery state. Same-shape platform operations decode raw keys and
 text layout; Linux terminal text uses TEXT rather than inventing physical keys.
 Window message decoding and key-state queries belong only to kvm-window.
-Base owns the default Event implementation; no KVM platform wake duplicate remains. Frame damage accumulates
-until successful consumption even when intermediate complete pixel frames are
-replaced. Capture copies without consuming; acknowledgement clears pending only
+Base owns the default Event implementation; no KVM platform wake duplicate remains.
+Capture copies the active bytes without consuming; acknowledgement clears pending only
 if that publication is still latest. Failed output keeps it pending without
 restoring a stale copy over newer content or signalling another retry.
 

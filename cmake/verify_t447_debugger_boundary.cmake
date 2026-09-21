@@ -3,9 +3,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 foreach(file IN ITEMS
-    "src/common/debug/debug_interface.h"
-    "src/common/debug/command_runtime.h"
-    "src/common/debug/command.c")
+    "src/x86/debug/debug_interface.h"
+    "src/x86/debug/command_runtime.h"
+    "src/x86/debug/command.c")
     file(READ "${PROJECT_SOURCE_DIR}/${file}" source)
     foreach(forbidden IN ITEMS
         "core_debugger"
@@ -14,9 +14,9 @@ foreach(file IN ITEMS
         "core_debug_context")
         string(FIND "${source}" "${forbidden}" position)
         if(NOT position EQUAL -1)
-            message(FATAL_ERROR "Common Debug retains ${forbidden}: ${file}")
+            message(FATAL_ERROR "x86 Debug retains ${forbidden}: ${file}")
         endif()
     endforeach()
 endforeach()
 
-message(STATUS "M5 T527 common Debug command boundary: OK")
+message(STATUS "M5 T527 x86 Debug command boundary: OK")

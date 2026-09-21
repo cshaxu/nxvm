@@ -431,8 +431,8 @@ int main(void)
     CloseHandle(console_broker_callback_finished);
     console_broker_destroy(broker);
 #endif
-    lib_console_destroy(first);
-    lib_console_destroy(second);
+    lib_console_release(first);
+    lib_console_release(second);
 #ifdef _WIN32
     check_serial_cleanup();
 #endif

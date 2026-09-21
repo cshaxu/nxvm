@@ -35,7 +35,7 @@ static C_INT vm_runner_display_wait_stopped(const vm_machine *session)
 C_INT main(C_VOID)
 {
     vm_machine *session = STD_NULL;
-    kvm_frame frame;
+    common_machine_frame frame;
     C_INT failed = 0;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
@@ -46,7 +46,8 @@ C_INT main(C_VOID)
     }
     (C_VOID)vm_machine_publish_display(session, TYPE_TRUE);
     if (!vm_machine_copy_common_frame(session, &frame) ||
-        frame.text_columns != 80u || frame.text_rows != 25u ||
+        frame.window.text.base.text_columns != 80u ||
+        frame.window.text.base.text_rows != 25u ||
         vm_machine_resume(session) != TYPE_STATUS_OK ||
         !vm_runner_display_wait(session, TYPE_FALSE) ||
         vm_machine_request_pause(session) != TYPE_STATUS_OK ||

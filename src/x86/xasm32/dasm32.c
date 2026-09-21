@@ -1,6 +1,6 @@
-#include "common/xasm32/xasm32.h"
+#include "x86/xasm32/xasm32.h"
 
-#include "common/xasm32/dasm32.h"
+#include "x86/xasm32/dasm32.h"
 
 typedef lib_u8 t_dasm_prefix;
 
@@ -162,6 +162,7 @@ static void SPRINTFSI(dasm32_context *dasmContext, char *str, lib_u32 imm, lib_u
 /* kernel decoding function */
 static lib_u8 _kdf_check_prefix(dasm32_context *dasmContext, lib_u8 opcode)
 {
+    (void)dasmContext;
     XASM32_TRACE_CALL_BEGIN("_kdf_check_prefix");
     switch (opcode)
     {
@@ -212,7 +213,8 @@ static void _kdf_modrm(dasm32_context *dasmContext, lib_u8 regbyte, lib_u8 rmbyt
     lib_u16 disp16;
     lib_u32 disp32;
     char dsibindex[0x100], dptr[0x100];
-    lib_u8 modrm, sib;
+    /* Every SIB use is gated by mod != 3 && rm == 4, which reads it below. */
+    lib_u8 modrm, sib = 0;
     char sign;
     lib_u8 disp8u;
     XASM32_TRACE_CALL_BEGIN("_kdf_modrm");
@@ -729,6 +731,7 @@ static void _kdf_modrm(dasm32_context *dasmContext, lib_u8 regbyte, lib_u8 rmbyt
             DASM_APPEND_ARRAY(dptr, drm);
             DASM_COPY_ARRAY(drm, dptr);
         }
+        /* fall through */
     case 9:
         /* reg is operation or segment */
         cr = _GetModRM_REG(modrm);
@@ -856,6 +859,7 @@ static void _d_imm(dasm32_context *dasmContext, lib_u8 byte)
 }
 static void _d_moffs(dasm32_context *dasmContext, lib_u8 byte)
 {
+    (void)byte;
     lib_u32 offset = 0;
     XASM32_TRACE_CALL_BEGIN("_d_moffs");
     flagmem = 1;
@@ -1094,14 +1098,6 @@ static void PUSH_CS(dasm32_context *dasmContext)
     XASM32_TRACE_CALL_BEGIN("PUSH_CS");
     _adv;
     DASM_FORMAT_ARRAY(dop, "PUSH");
-    DASM_FORMAT_ARRAY(dopr, "CS");
-    XASM32_TRACE_CALL_END;
-}
-static void POP_CS(dasm32_context *dasmContext)
-{
-    XASM32_TRACE_CALL_BEGIN("POP_CS");
-    _adv;
-    DASM_FORMAT_ARRAY(dop, "POP");
     DASM_FORMAT_ARRAY(dopr, "CS");
     XASM32_TRACE_CALL_END;
 }
@@ -5434,7 +5430,7 @@ static void CLTS(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dop, "CLTS");
     XASM32_TRACE_CALL_END;
 }
-static void WBINVD(dasm32_context *dasmContext) {}
+static void WBINVD(dasm32_context *dasmContext) { (void)dasmContext; }
 static void MOV_R32_CR(dasm32_context *dasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("MOV_R32_CR");
@@ -5489,8 +5485,8 @@ static void MOV_TR_R32(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dopr, "%s,%s", dr, drm);
     XASM32_TRACE_CALL_END;
 }
-static void WRMSR(dasm32_context *dasmContext) {}
-static void RDMSR(dasm32_context *dasmContext) {}
+static void WRMSR(dasm32_context *dasmContext) { (void)dasmContext; }
+static void RDMSR(dasm32_context *dasmContext) { (void)dasmContext; }
 static void JO_REL32(dasm32_context *dasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("JO_REL32");
@@ -5971,7 +5967,7 @@ static void POP_FS(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dopr, "FS");
     XASM32_TRACE_CALL_END;
 }
-static void CPUID(dasm32_context *dasmContext) {}
+static void CPUID(dasm32_context *dasmContext) { (void)dasmContext; }
 static void BT_RM32_R32(dasm32_context *dasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("BT_RM32_R32");
@@ -6016,7 +6012,7 @@ static void POP_GS(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dopr, "GS");
     XASM32_TRACE_CALL_END;
 }
-static void RSM(dasm32_context *dasmContext) {}
+static void RSM(dasm32_context *dasmContext) { (void)dasmContext; }
 static void BTS_RM32_R32(dasm32_context *dasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("BTS_RM32_R32");

@@ -6,10 +6,9 @@
 
 #define LIB_TYPES_LINUX_FILE_H
 typedef long lib_linux_off_t;
-typedef struct { int l_type, l_whence; } lib_linux_file_lock;
-#define LIB_LINUX_F_RDLCK 1
-#define LIB_LINUX_F_WRLCK 2
-#define LIB_LINUX_F_SETLK 3
+#define LIB_LINUX_LOCK_SH 1
+#define LIB_LINUX_LOCK_EX 2
+#define LIB_LINUX_LOCK_NB 4
 #define lib_linux_fseeko fseek
 #define lib_linux_ftello ftell
 static int reject_lock, reject_open, expected_lock;
@@ -18,15 +17,14 @@ static FILE *open_stream(const char *path, const char *mode)
 {
     assert(path != NULL);
     assert(mode[0] == 'r' && mode[1] == 'b');
-    assert(mode[2] == (expected_lock == LIB_LINUX_F_WRLCK ? '+' : '\0'));
+    assert(mode[2] == (expected_lock == LIB_LINUX_LOCK_EX ? '+' : '\0'));
     return reject_open ? NULL : tmpfile();
 }
 static int close_stream(FILE *stream) { ++closes; return fclose(stream); }
 static int descriptor(FILE *stream) { assert(stream != NULL); return 7; }
-static int lock_stream(int fd, int operation, const lib_linux_file_lock *lock)
+static int lock_stream(int fd, int operation)
 {
-    assert(fd == 7 && operation == LIB_LINUX_F_SETLK);
-    assert(lock->l_type == expected_lock && lock->l_whence == LIB_SEEK_SET);
+    assert(fd == 7 && operation == (expected_lock | LIB_LINUX_LOCK_NB));
     return reject_lock ? -1 : 0;
 }
 #undef lib_c_fopen
@@ -34,7 +32,7 @@ static int lock_stream(int fd, int operation, const lib_linux_file_lock *lock)
 #define lib_c_fopen open_stream
 #define lib_c_fclose close_stream
 #define lib_linux_fileno descriptor
-#define lib_linux_fcntl lock_stream
+#define lib_linux_flock lock_stream
 #include "lib/storage/linux/file.c"
 #include "lib/storage/file.c"
 
@@ -44,7 +42,7 @@ int main(void)
         for (reject_lock = 0; reject_lock != 2; ++reject_lock) {
             lib_storage_file file = { 0 };
             unsigned before = closes;
-            expected_lock = write ? LIB_LINUX_F_WRLCK : LIB_LINUX_F_RDLCK;
+            expected_lock = write ? LIB_LINUX_LOCK_EX : LIB_LINUX_LOCK_SH;
             lib_status status = storage_file_platform_open("fixture", write, &file);
             assert(status == (reject_lock ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK));
             assert((file.stream == NULL) == (reject_lock != 0));

@@ -23,7 +23,7 @@ lib_status base_sync_platform_event_wait_many(
     lib_u32 *out_event_index);
 lib_status base_sync_platform_task_create(base_sync_task_entry entry,
     void *context, base_sync_event *cancellation, base_sync_task **out_task);
-void base_sync_platform_task_join(base_sync_task *task);
+lib_status base_sync_platform_task_join(base_sync_task *task);
 void base_sync_platform_task_destroy(base_sync_task *task);
 
 #endif

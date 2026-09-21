@@ -36,23 +36,24 @@ static lib_status notify(void *context)
 
 int main(void)
 {
+    lib_u32 storage;
     static kvm_component_mailboxes mailbox;
     for (reject_mutex = 1; reject_mutex <= 2; ++reject_mutex) {
         mutex_creates = 0;
-        assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_NO_MEMORY);
+        assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_NO_MEMORY);
         assert(mailbox.frame_lock == NULL && mailbox.control_lock == NULL);
         assert(mailbox.wake == NULL && creates == 0);
         kvm_component_mailboxes_destroy(&mailbox);
     }
     reject_mutex = 0;
-    assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
     assert(creates == 0u && mailbox.notify == NULL && mailbox.wake == NULL);
     assert(kvm_component_mailboxes_notify(&mailbox) == LIB_STATUS_INVALID_STATE);
     kvm_component_mailboxes_destroy(&mailbox);
     assert(destroys == 0u);
 
     /* Window succeeds even when default-wake allocation would fail. */
-    assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&mailbox, notify, &token) == LIB_STATUS_OK);
     assert(creates == 0u && mailbox.wake == NULL);
     assert(kvm_component_mailboxes_select_notify(&mailbox, NULL, NULL) == LIB_STATUS_INVALID_STATE);
@@ -63,13 +64,13 @@ int main(void)
     assert(destroys == 0u);
 
     /* Failed Console selection owns nothing and can be safely disposed. */
-    assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&mailbox, NULL, NULL) == LIB_STATUS_NO_MEMORY);
     assert(creates == 1u && mailbox.notify == NULL && mailbox.wake == NULL);
     kvm_component_mailboxes_destroy(&mailbox);
     assert(destroys == 0u);
     allocation = LIB_STATUS_OK;
-    assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
+    assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
     assert(kvm_component_mailboxes_select_notify(&mailbox, NULL, NULL) == LIB_STATUS_OK);
     assert(creates == 2u && mailbox.wake != NULL);
     assert(kvm_component_mailboxes_select_notify(&mailbox, NULL, NULL) == LIB_STATUS_INVALID_STATE);

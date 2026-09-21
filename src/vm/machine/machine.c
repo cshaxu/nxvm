@@ -155,13 +155,12 @@ type_status vm_machine_deliver_common_input(vm_machine *session,
     return TYPE_STATUS_UNSUPPORTED;
 }
 
-type_bool vm_machine_copy_common_frame(vm_machine *machine, kvm_frame *frame)
+type_bool vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame)
 {
     if (machine == STD_NULL || frame == STD_NULL) return TYPE_FALSE;
     (C_VOID)vm_machine_publish_display(machine, TYPE_FALSE);
     if (!machine->latest_frame_valid) return TYPE_FALSE;
-    *frame = machine->latest_frame;
-    return TYPE_TRUE;
+    return common_machine_frame_copy(frame, &machine->latest_frame);
 }
 
 const C_CHAR *vm_machine_profile_name(vm_machine_profile_kind kind)

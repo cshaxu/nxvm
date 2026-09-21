@@ -17,8 +17,7 @@ static void tracked_lock(base_sync_mutex *mutex)
 #undef base_sync_mutex_lock
 
 static kvm_component_mailboxes mailbox;
-static kvm_frame frame = { .valid = 1, .text_columns = 80, .text_rows = 25 };
-static kvm_frame copy;
+static lib_u32 frame = 80u, copy, storage;
 static int operation;
 static DWORD WINAPI compete(void *unused)
 {
@@ -27,10 +26,10 @@ static DWORD WINAPI compete(void *unused)
     (void)unused;
     InterlockedExchange(&contender, (LONG)GetCurrentThreadId());
     if (operation == 0)
-        assert(kvm_component_mailboxes_publish_frame(&mailbox, &frame) == LIB_STATUS_OK);
+        assert(kvm_component_mailboxes_publish_frame(&mailbox, &frame, sizeof(frame)) == LIB_STATUS_OK);
     else if (operation == 1) {
-        assert(kvm_component_mailboxes_capture_frame(&mailbox, &generation, &copy));
-        assert(copy.text_columns == 80 && generation == 1);
+        assert(kvm_component_mailboxes_capture_frame(&mailbox, &generation, &copy, sizeof(copy)));
+        assert(copy == 80 && generation == 1);
     } else if (operation == 2)
         assert(kvm_component_mailboxes_enqueue_control(&mailbox, &stop) == LIB_STATUS_OK);
     else {
@@ -45,9 +44,9 @@ int main(void)
     for (operation = 0; operation < 4; ++operation) {
         HANDLE thread;
         kvm_component_control taken;
-        const kvm_component_control title = { .kind = KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE };
-        assert(kvm_component_mailboxes_create(&mailbox) == LIB_STATUS_OK);
-        assert(kvm_component_mailboxes_publish_frame(&mailbox, &frame) == LIB_STATUS_OK);
+        const kvm_component_control title = { .kind = 42u };
+        assert(kvm_component_mailboxes_create(&mailbox, &storage, sizeof(storage)) == LIB_STATUS_OK);
+        assert(kvm_component_mailboxes_publish_frame(&mailbox, &frame, sizeof(frame)) == LIB_STATUS_OK);
         contended = CreateEventA(NULL, TRUE, FALSE, NULL);
         assert(contended);
         base_sync_mutex *held = operation == 3 ? mailbox.control_lock : mailbox.frame_lock;
@@ -58,18 +57,18 @@ int main(void)
         /* Even STOP's pending frame-lock acquisition must not hold control. */
         if (operation == 3) {
             lib_u32 generation;
-            assert(kvm_component_mailboxes_capture_frame(&mailbox, &generation, &copy));
+            assert(kvm_component_mailboxes_capture_frame(&mailbox, &generation, &copy, sizeof(copy)));
         } else {
             assert(kvm_component_mailboxes_enqueue_control(&mailbox, &title) == LIB_STATUS_OK);
             assert(kvm_component_mailboxes_take_control(&mailbox, &taken));
-            assert(taken.kind == KVM_COMPONENT_CONTROL_SET_WINDOW_TITLE);
+            assert(taken.kind == 42u);
         }
         base_sync_mutex_unlock(held);
         assert(WaitForSingleObject(thread, 5000) == WAIT_OBJECT_0);
         if (operation == 2) {
             assert(kvm_component_mailboxes_take_control(&mailbox, &taken));
             assert(taken.kind == KVM_COMPONENT_CONTROL_STOP);
-            assert(kvm_component_mailboxes_publish_frame(&mailbox, &frame) == LIB_STATUS_INVALID_STATE);
+            assert(kvm_component_mailboxes_publish_frame(&mailbox, &frame, sizeof(frame)) == LIB_STATUS_INVALID_STATE);
         }
         InterlockedExchange(&contender, 0);
         CloseHandle(thread);

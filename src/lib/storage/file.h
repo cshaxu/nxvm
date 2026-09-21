@@ -11,7 +11,9 @@ typedef struct lib_storage_file {
 
 /* Selected platform implementations supply open/locking and large-file
  * positioning. Open requires an empty caller-owned file; failure leaves it
- * empty. Common close consumes the stream, never the enclosing storage. */
+ * empty. Common close consumes the stream, never the enclosing storage.
+ * Readonly opens share; a readwrite open excludes other cooperating opens.
+ * Linux uses advisory flock locks tied to each open file description. */
 lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
     lib_storage_file *file);
 lib_status storage_file_platform_seek(const lib_storage_file *file,

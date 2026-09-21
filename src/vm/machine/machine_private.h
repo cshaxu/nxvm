@@ -58,7 +58,7 @@ struct vm_machine {
     core_machine_guest_input_source *input_source;
     common_machine_executor_callback executor_callback;
     C_VOID *executor_callback_context;
-    kvm_frame latest_frame;
+    common_machine_frame latest_frame;
     type_bool latest_frame_valid;
     struct {
         type_unsigned_64 sequence;
@@ -109,7 +109,7 @@ type_status vm_machine_apply_cmos_seed(const vm_machine *session,
 C_VOID vm_machine_storage_finalize(vm_machine *machine);
 type_status vm_machine_deliver_common_input(vm_machine *machine,
     const kvm_input_event *event);
-type_bool vm_machine_copy_common_frame(vm_machine *machine, kvm_frame *frame);
+type_bool vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame);
 type_status vm_machine_set_common_media(vm_machine *machine, const C_CHAR *path,
     lib_storage_medium_mode mode);
 #endif

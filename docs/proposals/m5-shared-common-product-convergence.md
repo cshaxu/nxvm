@@ -39,7 +39,7 @@ merging NXVM's bounded Core runner with SoftPC's continuous CCPU executor.
   that callback: NXVM may access its paused Core boundary directly, while
   SoftPC synchronously relays to its existing CCPU rendezvous and returns the
   copied result. Common does not gain a second Debug queue or executor.
-- Debug state access follows `common/debug -> common/machine -> product machine
+- Debug state access follows `x86/debug -> common/machine -> product machine
   adapter -> machine implementation`. Lifecycle requests go through session.
   Debug never mutates a running machine, fabricates register support, or owns
   another run loop. Original table-driven command, assembler and disassembler
@@ -244,6 +244,18 @@ recorded evidence, never by following successive isolated failures.
     identity, mode parsing/default/error coverage, all three FDD/HDD modes,
     both stripped Release architectures, the complete repository-only unit
     suite and the external integration suite.
+27. **S27: canonical six-package x86/Common/Lib import.** Freeze SoftPC's
+    committed `src/lib`, `src/common`, `src/x86`, `test/lib`, `test/common`, and
+    `test/x86` corpus; atomically replace NXVM's corresponding trees
+    byte-for-byte. Adopt the architecture-specific Debug/xasm32 split as a
+    product-selected `x86` sibling of neutral Common and Lib, not as a new
+    Core owner or a compatibility copy. Adapt only NXVM's App/VM/CMake consumers
+    to the public contracts, deleting superseded Common Debug/xasm32 references
+    and tests rather than preserving aliases. Prove six-tree identity, each
+    corpus manifest/dependency gate, direct NXVM debug/assembly functionality,
+    both stripped Release architectures, complete repository-only unit coverage
+    and the external integration suite. This remains an import/adaptation S;
+    T531 stays open for its two-product execution gate.
 
 ## Verification And Exit
 

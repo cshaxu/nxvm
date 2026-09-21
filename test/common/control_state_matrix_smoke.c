@@ -77,6 +77,9 @@ static void test_static_window_pause_stop_and_close(void)
     common_session_state_note_runtime(&state, COMMON_SESSION_MACHINE_STOPPED);
     assert(state.monitor_actual == COMMON_SESSION_MACHINE_STOPPED);
     assert(common_session_state_take_action(&state) == COMMON_UI_ACTION_NONE);
+    common_session_state_note_runtime(&state, COMMON_SESSION_MACHINE_ERROR);
+    assert(state.monitor_actual == COMMON_SESSION_MACHINE_ERROR);
+    assert(common_session_state_take_action(&state) == COMMON_UI_ACTION_NONE);
 }
 
 static void test_reset_completion_restores_paused_view(void)

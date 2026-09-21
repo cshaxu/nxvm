@@ -2,21 +2,16 @@ cmake_minimum_required(VERSION 3.23)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     project(nxvm_shared_library LANGUAGES C)
-    set(CMAKE_C_STANDARD 11)
-    set(CMAKE_C_STANDARD_REQUIRED ON)
-    set(CMAKE_C_EXTENSIONS OFF)
     include(CTest)
+endif()
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
 set(LIBRARY_SOURCE_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
-
-set(LIBRARY_STRICT_WARNINGS_DEFAULT OFF)
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(LIBRARY_STRICT_WARNINGS_DEFAULT ON)
-endif()
-option(LIBRARY_STRICT_WARNINGS
-    "Build shared-library implementation targets with strict compiler warnings"
-    ${LIBRARY_STRICT_WARNINGS_DEFAULT})
 
 function(library_root target)
     get_target_property(target_type ${target} TYPE)
@@ -111,14 +106,6 @@ endif()
 add_library(lib-neutral-corpus INTERFACE)
 target_link_libraries(lib-neutral-corpus INTERFACE
     types base console console-broker storage kvm-base kvm-window kvm-console)
-
-if(LIBRARY_STRICT_WARNINGS AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    foreach(library_target IN ITEMS
-            base console kvm-base kvm-window kvm-console console-broker storage)
-        target_compile_options(${library_target} PRIVATE
-            -Wall -Wextra -Wpedantic -Werror)
-    endforeach()
-endif()
 
 add_custom_target(lib-verify-manifest
     COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}

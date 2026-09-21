@@ -139,7 +139,7 @@ int main(void)
             assert(replacement_calls == 2);
         }
         InterlockedExchange(&contender, 0);
-        lib_console_destroy(object);
+        lib_console_release(object);
         assert(live_mutexes == 0);
         CloseHandle(a); CloseHandle(b);
         CloseHandle(entered); CloseHandle(release_gate); CloseHandle(blocked);
@@ -163,7 +163,7 @@ int main(void)
     }
     base_sync_mutex_destroy(backend.output_lock);
     base_sync_mutex_destroy(backend.transaction_lock);
-    lib_console_destroy(object);
+    lib_console_release(object);
     assert(live_mutexes == 0);
     return 0;
 }
