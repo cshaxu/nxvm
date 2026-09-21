@@ -2,9 +2,26 @@
 
 ## Current Work
 
-No implementation subtask is active. The owner closed T531 on 2026-09-20;
-the next directory-layout task remains discussion-only until separately
-proposed and admitted.
+## M5 T532 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved T532 S1 on 2026-09-20: reorganize NXVM into the approved single-product App/Core layout and delete VDM. |
+| Objective | Freeze the complete relocation/deletion ledger for all production, test, build, tool and documentation consumers of the approved source map before a structural move. |
+| Non-goals | No guest, controller, profile, CLI, UX, shared Lib/Common/x86 API, asset, or session-YAML semantic change; no placeholder directory or compatibility include path. |
+| Reference Baseline | NXVM `9ad55615`; T531 is closed. The present tree retains `src/vm`, `src/vdm`, `test/vm` and potentially `test/vdm` surfaces to be classified. |
+| Candidate Proposal | [M5 NXVM single-product layout](../proposals/m5-nxvm-single-product-layout.md), S1. |
+| Files And ABI Surface | `src/vm`, `src/vdm`, `src/core/machine`, `test/vm`, `test/vdm`, `CMakeLists.txt`, static gates, source-layout/architecture documents and every direct path consumer. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md), [Architecture](../rules/ARCHITECTURE.md), [Coding](../rules/CODING.md), [Documentation](../rules/DOCUMENT.md), [System Architecture](../design/ARCHITECTURE.md), and [Source Layout](../design/CODING.md). This S is an inventory only; source policy is not triggered because no external source is imported. |
+| Verification | Complete tracked-path inventory; each path has exactly one destination or deletion disposition; direct include/CMake/static-gate query sweep; proposal/current/history/documentation governance. |
+| Expected Markers | The five owner-approved source moves, App main-entry destination, every residual `vm` root file disposition, VDM consumer deletion set, and a test-owner mirror disposition excluding `test/integration`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the finite ledger, unresolved ownership decisions, expected source/test code count, query commands and a proposal update; report no runtime claim from this planning S. |
+| Stop Conditions | Stop before moving code if a residual owner would require a reverse dependency, a second composition path, public ABI rename, product behavior change, or a destination not authorized by the approved map. |
+| Exit Criteria | A complete, reviewable relocation ledger resolves every affected tracked path and its consumers; no code move occurs until the next admitted S; documentation governance passes. |
+| Original Owner Request | Admit T532 and reorganize the code as shared Lib/Common/x86 plus NXVM App/Core: delete `src/vdm`; move `src/vm/app` to `src/app`, `src/core/machine` to `src/core/core`, `src/vm/machine` to `src/core/machine`, and `src/vm/profile` to `src/core/profile`; tests mirror source except integration. |
+| Similar-Issue Sweep | Search all tracked source, tests, CMake, tools and active documentation for every former path and component spelling; classify each as moved, deleted, historical evidence, or intentionally external integration. |
 
 ## Current Technical Baseline
 

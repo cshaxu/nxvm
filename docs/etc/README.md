@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t532-s1-single-product-layout-ledger.md` | NXVM layout owner | T532 S1 freezes the complete App/Core source and test relocation/deletion map before the single-product structural move. |
 | `evidence/t526-s10-vm-machine-executor-migration.md` | VM machine owner | T526 S10 removes the VM composition executor, establishes one copied machine request/result boundary, and records the complete owner-path sweep and repository-only verification. |
 | `evidence/t526-s11-session-control-convergence.md` | VM session owner | T526 S11 removes product control/provider forwarding, establishes the sole copied session fact reducer and presentation-plan route, and records its repository-only verification. |
 | `evidence/t526-s12-presentation-leaf-convergence.md` | VM presentation owner | T526 S12 makes `vm/presentation` the sole shared-lib and Console-broker owner, consumes the one copied presentation plan, and removes the product presentation route. |
