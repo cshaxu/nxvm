@@ -24,7 +24,6 @@ reserve a numeric task identifier, or define a technical baseline.
 
 Shared M5 admission context:
 [Four-profile CPU completeness](../proposals/m5-four-profile-cpu-completeness-program.md),
-[M5 shared Common product convergence](../proposals/m5-shared-common-product-convergence.md),
 [complete simulation admission](../proposals/m5-specification-driven-complete-simulation-admission-program.md),
 [IBM 5160 XT keyboard device](../proposals/ibm-5160-xt-keyboard-device.md),
 [8088 CPU profile](../proposals/m5-8088-cpu-profile.md),

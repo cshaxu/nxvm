@@ -11,7 +11,7 @@ in one full run, with the one Model 40 boot row passing in its immediate
 isolated replay. T531 remains open.
 
 Owner admitted this implementation task on 2026-09-13 after directing T530
-closure. [Proposal](../proposals/m5-shared-common-product-convergence.md).
+closure. [Proposal](M5-T531-shared-common-product-convergence-proposal.md).
 
 S1 completed the contract inventory without runtime implementation. Its
 [two-consumer ledger](../etc/evidence/t531-s1-two-product-convergence-ledger.md)
@@ -92,3 +92,20 @@ remains open. [S22 evidence](../etc/evidence/t531-s22-canonical-softpc-import.md
 records corpus identity, the adapter-only changes, successful repository-only
 verification, and the actual non-green external integration rows without
 pre-existing attribution.
+
+## Task closure
+
+The owner closed T531 on 2026-09-20 after accepting S27 and S28. The final
+implementation commit is `20c1e71b`, which imports the exact six-tree SoftPC
+`2b17749a12c1132d9c9c65754008befbcb764546` Lib/Common/x86 source-and-test
+corpus with no NXVM-local shared-tree patch or compatibility path. Its
+[S28 evidence](../etc/evidence/t531-s28-canonical-six-package-refresh.md)
+records byte identity, 338/338 repository-only unit, x86 and specialized
+gates, documentation governance, and paired stripped 0531 artifacts.
+
+The full external integration result is 41/42. The remaining
+`integration.vm-dos-keyboard-smoke` failure is neither hidden nor attributed
+to the shared-corpus refresh: it remains in the existing
+[external-integration restoration TODO](../states/TODO.md). This owner-directed
+closure does not claim a complete two-product execution acceptance beyond the
+recorded NXVM integration evidence.

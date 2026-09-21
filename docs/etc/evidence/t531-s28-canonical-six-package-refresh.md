@@ -55,5 +55,5 @@ identically to `build/output` and `assets/sessions`:
 
 PE inspection confirms `i386:x86-64` and `i386`, respectively.
 
-S28 is ready for owner validation; T531 remains open for its whole-task
-two-product execution gate.
+The owner accepted S28 and closed T531 on 2026-09-20. The sole non-green
+integration row remains explicitly transferred to `TODO(High)`.
