@@ -16,7 +16,7 @@
 
 | Residual | Sole owner |
 | --- | --- |
-| DR6/DR7 matching, breakpoint causes, and ordinary vector-1 interaction | [80386DX extended instruction and system-state closure](../../proposals/m5-80386dx-extended-state-closure.md) |
+| DR6/DR7 matching, breakpoint causes, and ordinary vector-1 interaction | [80386DX extended instruction and system-state closure](../history/retired-machine-plans/m5-80386dx-extended-state-closure.md) |
 | Reset, shutdown, and triple-fault policy | `TODO(Medium)` in [states/TODO.md](../../states/TODO.md): architectural reset, shutdown, and triple-fault policy |
 | VME/PVI and later debug extensions | 80386DX proposal's explicit outside-80386 boundary |
 

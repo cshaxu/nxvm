@@ -10,9 +10,11 @@ principal documents named in [docs/README.md](../README.md).
 | Current category | Owner | Purpose |
 | --- | --- | --- |
 | `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
-| `architecture/specification-driven-l3-timing.md` | Architecture owner | Core Project A design: specification-driven instruction and transaction timing, explicit L2 fallback ledger, and neutral Core-to-VM timing-contract boundary. Promotes to the principal Architecture authority only through an approved architecture task. |
-| `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
-| `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
+| `architecture/specification-driven-l3-timing.md` | Architecture owner | Historical Core timing-plan rationale; current scope and timing classification are owned by the principal Architecture authority. |
+| `architecture/vm-profile-resolution-design.md` | Architecture owner | Historical two-root profile-resolution design, superseded by the fixed-machine composition authority; retained to identify migration inputs. |
+| `requirements/` | Product and profile owners | Supporting requirements; former DOS/NXVDM requirements are historical, not current product commitments. |
+| `research/fixed-machine-selection.md` | Machine-selection owner | Original-manual acquisition/provenance, Standard candidate gaps, PC110 research limits and inspected code simplification opportunities. |
+| `history/retired-machine-plans/` | Product governance owner | Archived pre-Standard/PC110 proposals and debt with an exhaustive receiver/withdrawal index; not a current queue or task-history record. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
 | `evidence/t532-s1-single-product-layout-ledger.md` | NXVM layout owner | T532 S1 freezes the complete App/Core source and test relocation/deletion map before the single-product structural move. |
 | `evidence/t532-s2-single-product-layout-relocation.md` | NXVM layout owner | T532 S2 executes the frozen move/delete set, including the source-mirroring repository-only test tree, and records final path, build and static-gate proof. |

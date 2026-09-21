@@ -448,16 +448,22 @@ verifies, and copies two usable local developer artifacts to ignored
 subtasks rebuild that revision; source commit plus SHA-256 identify the build.
 Identifiers are never reused or allocated out of queue order.
 
-The executables are `nxvm_0_5_NNNN_x64.exe` and `nxvm_0_5_NNNN_x86.exe` for
-the bootable VM, or `nxvdm_0_5_NNNN_x64.exe` and `nxvdm_0_5_NNNN_x86.exe` for
-the DOS runner. Both derive from one source target and version declaration;
-the configured toolchain selects the architecture. Each is an optimized,
+Until the fixed-product build cutover, executable names remain
+`nxvm_0_5_NNNN_x64.exe` and `nxvm_0_5_NNNN_x86.exe`. After that admitted
+cutover, names include the fixed machine: `nxvm_standard_0_5_NNNN_x64.exe`
+and `_x86.exe`, and `nxvm_pc110_0_5_NNNN_x64.exe` and `_x86.exe` when PC110
+is implemented and admitted as runnable. Each runnable product requires both
+host architectures in `build/output/` and `assets/sessions/`, with identical
+copies by hash. An absent PC110 implementation must be reported, not replaced
+by a stub artifact. Product targets share one build recipe and revision
+declaration; each links exactly one profile, and the toolchain selects host
+architecture. Each is an optimized,
 stripped Release artifact and has its own recorded SHA-256 and PE architecture
 verification. A missing or failing required architecture toolchain blocks task
 closure rather than silently omitting that artifact. Task records map identifier
 to revision; historical artifacts retain their names and banners but are
-evidence, never active CMake targets. The current-artifact target is the only
-admitted product artifact target. Record source commit, identity/banner, and
+evidence, never active CMake targets. Current alone names admitted product
+artifact targets and their baseline. Record source commit, identity/banner, and
 baseline/developer/product kind for both artifacts. Smoke executables stay in the build tree;
 design-only work creates none. Local artifacts are not release evidence, carry
 no protected media or Microsoft binaries, and are replaced only by a newly

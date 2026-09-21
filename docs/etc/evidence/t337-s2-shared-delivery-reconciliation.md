@@ -33,7 +33,7 @@ differences. No production repair is justified by this audit.
 
 | Residual | Sole next owner |
 | --- | --- |
-| DR6/DR7 matching, breakpoint types, cause bits, and ordinary vector-1 `#DB` interaction | [80386DX extended instruction and system-state closure](../../proposals/m5-80386dx-extended-state-closure.md) |
+| DR6/DR7 matching, breakpoint types, cause bits, and ordinary vector-1 `#DB` interaction | [80386DX extended instruction and system-state closure](../history/retired-machine-plans/m5-80386dx-extended-state-closure.md) |
 | Reset, shutdown, and triple-fault architectural policy | `TODO(Medium)`: a later shared CPU/machine lifecycle admission must define the Intel boundary and product reset contract before implementation. |
 | VME/PVI and post-80386 debug extensions | Existing explicit outside-80386 boundary in the 80386DX proposal. |
 

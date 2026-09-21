@@ -50,7 +50,7 @@ not allow QPC or `Sleep` to manufacture guest time.  A complete paced mode
 needs selected source-backed profile timebases and Core-owned deadlines from
 every timed controller that could wake or visibly change the guest.  That
 bounded admission condition is received by the [Core L3 integration and VM
-contract export proposal](../../proposals/m5-core-l3-integration-vm-contract-export.md).
+contract export proposal](../history/retired-machine-plans/m5-core-l3-integration-vm-contract-export.md).
 Until then Standard preserves its existing profile behavior and Turbo retains
 the one-tick safe path.
 

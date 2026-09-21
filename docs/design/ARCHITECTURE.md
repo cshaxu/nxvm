@@ -1,108 +1,121 @@
 # System Architecture
 
-This is the current high-level architecture authority. Apply the local
-[Architecture Rules](../rules/ARCHITECTURE.md) when changing it. Detailed M5
-contracts, migration rationale, and hardware notes are supporting material
-indexed in [etc/README.md](../etc/README.md); they cannot override this file.
+This is the concrete architecture authority; apply the
+[Architecture Rules](../rules/ARCHITECTURE.md). The
+[current baseline](../states/CURRENT.md) distinguishes implemented behavior
+from this approved target.
 
 ## Product Shape
 
-The NXVM repository has one current product and reusable components:
+NXVM retains a multi-machine architecture. Standard and PC110 each link exactly
+one fixed machine composition, with the same App, Common, Lib and x86 tooling.
+YAML supplies assets and permitted session options, not another machine, CPU
+population or controller topology. A machine identity may be checked for
+mismatch; it is not a runtime selector.
 
-| Form or component | Purpose | Current state |
-| --- | --- | --- |
-| `nxvm.exe` | Bootable whole-machine VM with the retained NXVM Console and debugger. | Current runnable product. |
-| `core` | Product-neutral machine and reusable product tooling. | Shared source foundation; not yet a separate artifact. |
-
-The medium-term build targets are `core.dll`, `mantle.dll`, and `dos.dll`.
-They are architectural commitments, not current release artifacts.
+Standard requires a source-qualified 386DX board whose identity is not yet
+frozen. PC110 requires its own 486-class contract, not a renamed 386 profile.
+Neither implies a VDM, mantle, DOS implementation or DLL product. Existing
+release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
 
-`core/core` contains generic machine behavior; `core/machine` is NXVM's
-assembly and execution adapter; `core/profile` owns NXVM board profiles.
-`src/lib/types`
-is the shared C type/status foundation. `src/x86/xasm32` is the explicit x86
-assembler/disassembler component; `src/x86/debug` is the shared Debug CLI
-provider. `src/common/session`, `src/common/machine` and `src/common/ui` own
-the shared product runtime mechanisms. `app` owns NXVM product configuration,
-commands, and composition.
+- `app` owns syntax, paths, product CLI, recording and the one composition root.
+  It assembles Common Session/UI/Machine and the NXVM driver.
+- `core/machine` is that driver: asset/media lifetime, bounded execution,
+  pacing and copied input/output/debug adaptation. It has no machine-name
+  switch, independent lifecycle queue or guest-device state.
+- `core/profile` supplies immutable board configuration, topology, firmware-slot
+  rules and necessary board-specific behavior. Standard and PC110 do not
+  inherit from retired 5170 or DeskPro products.
+- `core/core` owns CPU, memory, bus, devices, reset, faults and the sole guest
+  timeline. Generic mechanisms know hardware contracts, not product names.
+- `common/machine` owns the shared execution/control protocol and paused-debug
+  lease; `common/session` is the sole product-control reducer;
+  `common/ui` binds Lib KVM and the Console broker.
+- `x86/debug` owns Debug CLI continuations; `x86/xasm32` owns assembly and
+  disassembly. Paused Debug operations go through Common Machine and the NXVM
+  driver to Core, not a second machine path.
+- `lib` owns platform/C-runtime services. Lib/Common/x86 remain product-neutral
+  and source-shareable with SoftPC.
+
+### Fixed Composition Without A New Framework
+
+Build selection supplies one board description to one machine factory:
 
 ```text
-app ------> core
+build-selected profile + App options + externally loaded asset bytes
+                              |
+                              v
+                one validated, frozen Core plan
+                              |
+                              v
+             one Core instance and Common machine driver
 ```
 
-`core` owns generic guest-machine behavior and policy-free host abstractions.
-It never depends on `app`.
+Profile owns hardware constraints; App owns syntax/path resolution; Core owns
+generic structural/state invariants. These are distinct checks, not copies of
+one board rule in all three layers. Share constants or construction helpers
+only where semantics match. Two fixed targets need no profile inheritance
+engine, plugin registry, per-field provenance mirror or runtime machine registry.
+Provenance belongs in evidence rather than repeated runtime strings.
 
-`app` owns bootable-machine composition, BIOS/POST boot policy selection, and
-the retained NXVM product experience. Product-root composition is where the
-declared machine, profile, platform, and product capabilities are combined.
+Construction prepares assets and a plan, validates, publishes one live machine,
+and rolls back through one resource owner on failure. Reset reuses the frozen
+plan and Core reset path. The driver retains only the selected board's resources,
+not simultaneous XT, PC/AT and Compaq ROM/state records.
 
-Common Debug owns debugger command parsing, assembly/disassembly and its
-continuation state; it is a CLI provider registered with common session, not a
-machine-state owner. Common machine exposes synchronous bounded paused-Debug
-operations through its product driver. NXVM routes those operations through
-`core/machine` to generic Core; SoftPC may bind its own driver. Generic Core
-machine owns
-shared instruction decode and execution, checked memory and port
-access, and the CPU/DMA transaction lifecycle. Its current specification-driven L3 instruction and transaction timing direction, L2 fallback discipline, and future Core-to-VM timing-plan boundary are detailed in [Specification-Driven Instruction And Transaction Timing Simulation](../etc/architecture/specification-driven-l3-timing.md). A VM machine profile composes
-those mechanisms with a documented CPU and board contract; it may add only a
-real architectural or physical difference, including CPU feature gates,
-address/operand width, protection or paging behavior, bus width, prefetch,
-availability/wait rules, and selected device topology.
+### CPU Retention And Device Reduction
 
-Equivalent profile routes reuse the core owner and transaction path. The IBM
-PC/XT 5160-268 8088 profile reuses 8086-class instruction semantics but owns
-its distinct external-bus and prefetch/timing contract. It must not duplicate
-opcode execution or create another CPU/DMA memory-or-port transaction path. A
-80286 or 80386 profile similarly adds only its documented architectural and
-board-local differences through the same core ownership boundaries.
+CPU identity, feature/timing tables and instruction dispatch remain Core-owned
+and selectable by Core callers and repository-only CPU tests. Preserve all
+existing models and tests even when no shipped machine uses them. New 188/486
+coverage needs sources and implementation; an enum alias cannot turn 386 into
+486. Fixed products choose their documented CPU once. Do not scatter build
+macros through handlers or remove later CPUs' 16-bit, real-mode or VM86 semantics.
+
+Device retirement follows the two-board inventory. Remove unneeded legacy
+personalities and their configuration fields, not standard Intel chip behavior
+or CPU-shared mechanisms. One VADP owner retains needed VGA/EGA mechanisms;
+PC110 extensions must not create second VRAM/frame truth. One HDC owner retains
+only selected storage personalities, not an assumption that all disks are ATA.
+
+Board-local mutable registers have one owner, lifetime and event registration
+within the same Core instance. Their implementation may live with the profile,
+but it uses bounded Core contracts, not private CPU/RAM pointers or a board
+scheduler. Immutable configuration is distinct from guest-programmed state.
 
 ## Product And Host Boundary
 
-Platform integrations report through opaque core contracts. Host policy and
-guest-state mutation occur at the owning product composition boundary, never
-inside a generic platform implementation.
+Common retains one Session control queue and one Machine execution boundary;
+App adds neither a parallel queue nor a second reducer. The NXVM driver runs
+the existing bounded Core path; no per-profile executor, presenter, debugger
+or file backend is introduced.
 
-### NXVM Machine Execution And Presentation
+Core alone advances guest time. Board clocks/wiring feed its existing plan.
+The driver may limit already-produced progress against host monotonic time;
+host elapsed time never generates or skips guest ticks. Exact source values
+or formulas are L3, model/proportional estimates L2, order-only behavior L1.
+Fixed-machine packaging is not a timing upgrade.
 
-NXVM separates one machine's Core execution from product control.
-`common/machine` owns the one ordered safe-point FIFO. It accepts only copied
-input, lifecycle and removable-media requests and calls its opaque product
-driver at execution boundaries. `core/machine` is NXVM's sole driver and Core
-assembly owner: it maps those copied requests to Core, publishes copied
-lifecycle, media-completion, fault and display facts, and exposes bounded
-paused-Debug operations through the common lease contract. Neither owner
-selects a host surface or owns the process Console. The copied display/input
-ABI sits with `core/machine`, beside the adapter that produces and
-consumes it; it contains no Core, executor, session, or UI pointer.
+Lib Storage remains the sole file/lock/direct/readonly/overlay implementation.
+The machine adapter retains genuine media semantics such as geometry and
+change generation; do not force FDD/HDD into identical behavior merely to
+reduce files. ROM bytes are immutable external inputs; seed configuration
+initializes Core-owned writable CMOS rather than a second BIOS/register mirror.
 
-`common/session` is the sole product-control reducer. Its one FIFO receives
-copied Console lines, machine results and presentation input; it owns run
-generation and lifecycle facts. `app` is the NXVM product root: it owns product
-configuration/catalogue, command policy, recording and composition. It creates
-the Common session and NXVM machine adapter, converts machine results into
-copied Common facts, and contains no second FIFO, run generation, lifecycle
-reducer or presentation state.
-
-`common/ui` is the sole shared-lib presenter binding. It owns the process
-Console broker, may lease it to at most one Console presenter, applies only
-copied target/frame/title/mouse operations, and returns only copied Console or
-native-input facts. It does not select a target, derive lifecycle policy or
-format product text. `app` supplies NXVM's raw-VM/monitor/none policy,
-hotkeys, title and Console text. Core and `src/lib` do not know session
-selection or NXVM policy.
-
-Native and WASM hosts share these component boundaries. A future TypeScript web
-product layer sits above the WASM platform/product adaptation; it does not move
-browser, network, or storage policy into generic machine behavior.
+Guest writes flow through sole device state into copied snapshots, Common UI
+and Lib KVM. Native handles, fonts and presentation are not guest-video owners.
+Both executables retain the same lifecycle and UX.
 
 ## Runtime Admission Boundary
 
-Source, firmware, research, and redistribution procedures are defined by
-[Architecture Rules](../rules/ARCHITECTURE.md) and the indexed
-[source policy](../etc/operations/policy/source-policy.md).
+The [source policy](../etc/operations/policy/source-policy.md) owns asset and
+redistribution handling. Profile-local ROM code means slot/mapping declarations
+and authorized source, not permission to commit vendor binaries. Boot order and
+POST remain firmware behavior; no generated BIOS, synthetic F1 or silent asset
+fallback substitutes for missing hardware.
 
-Current delivery state and staged implementation goals are defined only by
-[ROADMAP.md](ROADMAP.md) and [CURRENT.md](../states/CURRENT.md).
+[Roadmap](ROADMAP.md) and [Current](../states/CURRENT.md) own sequencing and
+implemented status. The [consolidation proposal](../proposals/m5-fixed-machine-products.md)
+maps this design to observed code and bounded migration evidence.

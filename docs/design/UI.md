@@ -1,41 +1,33 @@
 # Product UX
 
-This document defines the high-level interaction of the current NXVM product
-and future NXVDM product. Detailed CLI grammar, containment rules, debugger
-commands, acceptance cases, and M8 delivery criteria are retained in
-[etc/requirements/nxvdm-runtime-detail.md](../etc/requirements/nxvdm-runtime-detail.md).
+Standard and PC110 share one NXVM interaction model. This target design does
+not claim that both executables are delivered.
 
 ## NXVM
 
-`nxvm.exe` remains a bootable whole-machine product with its interactive NXVM
-Console and debugger. It preserves the direct machine/firmware/media workflow;
-it does not acquire a replacement process CLI.
+Each executable identifies and boots its fixed machine. YAML supplies
+firmware/media paths, access modes and supported options, not machine topology.
+Preserve simple YAML, relative-to-YAML and absolute paths, ordered media slots
+and clear load failures. CPU tables remain a Core capability, not an unrestricted
+CPU replacement menu for a fixed product.
 
-## NXVDM
+## PC110
 
-`nxvdm.exe` is the non-invasive DOS application product. Its primary surface is
-`nxvdm run [options] [program [args...]]`, with an explicit debug entry mode.
-Normal use launches one guest program; debug use may begin with no program and
-pause at a defined machine point.
+PC110 uses the same monitor, lifecycle, input and debugger. Hardware-specific
+setup belongs to its firmware and documented configuration, not another
+control Console or VDM/DOS-launch interface.
 
 ## Presentation And Debugging
 
-NXVDM provides `auto`, `console`, and `window` display choices. Console mode
-is text-only and fails clearly for unsupported guest graphics. Window mode owns
-guest display and input. Auto may begin with compatible Console text then make
-one supported transition to the guest window.
-
-The guest window owns guest interaction. In debug mode a separate control
-Console presents the shared debugger experience; host logs and standard streams
-remain distinct from the guest display.
+Retain Console/Window presentation, Common's existing `console_control`
+behavior, lifecycle notifications, mouse policy and registered shortcuts.
+Pause/resume/stop/reset remain explicit control actions. Runtime debugging and
+assembly/disassembly remain in both builds; development trace is separate.
 
 ## Host Resources
 
-The user selects visible host drives explicitly or by an exclusion policy. A
-guest program can observe and access only that resolved visible set; path,
-reparse, UNC, device-namespace, and drive-escape attempts fail as unavailable.
-NXVDM does not require installation, system changes, or administrative access.
-
-Exact option behavior, cancellation/exit semantics, and the Windows
-compatibility matrix remain supporting detail. The delivery sequence belongs to
-[Roadmap](ROADMAP.md), not this interaction authority.
+Only supplied firmware and media enter the machine. Lib Storage owns
+direct/readonly/overlay access and locking; preserve masters for overlay and
+seed use. No host-drive DOS API, embedded substitute BIOS or automatic
+proprietary-ROM download is introduced.
+[Roadmap](ROADMAP.md) owns delivery order.

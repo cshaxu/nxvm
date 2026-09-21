@@ -4,6 +4,11 @@
 
 ## Role
 
+> Historical detailed design: current product scope and timing classification
+> are defined by [System Architecture](../../design/ARCHITECTURE.md). In
+> particular, range selection and emulator/proportional models are L2, not
+> L3; the former broad profile domain below is not a current admission.
+
 This supporting design records the current Project A architecture: make every
 admitted Core instruction, controller, device and integration capable of
 specification-driven instruction and transaction timing when the available

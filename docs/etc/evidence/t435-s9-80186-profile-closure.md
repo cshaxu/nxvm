@@ -4,7 +4,7 @@
 
 S9 implements the 80186 timing program against the accepted S1/S2 corpus.  It
 does not reopen CPU instruction semantics already accepted by T401: the
-[timing program](../../proposals/m5-core-cpu-instruction-timing-program.md)
+[timing program](../history/retired-machine-plans/m5-core-cpu-instruction-timing-program.md)
 requires decode, semantic execution and fault boundaries as non-regression
 conditions, and assigns a newly discovered semantic defect to a separate
 corrective admission.

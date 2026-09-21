@@ -29,7 +29,7 @@ license, stop and record a separate review before importing it.
 
 ## C Vocabulary Boundary
 
-[rules/CODING.md](../../../rules/CODING.md) defines the `type.h` vocabulary, ISO C
+[rules/CODING.md](../../../rules/CODING.md) defines the shared C vocabulary, ISO C
 header/call boundary, platform type exposure, and input-flush safety. The
 [C-Library Facade Detail Record](../../history/m5/c-library-facade.md)
 preserves supporting M5 inventory and rationale. Imported or derived source
@@ -66,32 +66,31 @@ product code is organized and maintained here.
 
 ## Microsoft Binaries
 
-Microsoft binaries never enter this repository or the default release. BYOB is
-a future research possibility, not a current feature or promised `ntvdm import`
-workflow. Any future profile and hash policy follows a separately approved
-research decision.
+Microsoft binaries never enter this repository or a release. The owner-approved
+whole-machine integration route may use lawfully supplied external guest media.
+This does not authorize a DOS/VDM host, redistribution or an import/download
+workflow. Asset masters and local manifests remain in `nxvm-assets`.
 
 ## Third-Party Firmware Images
 
-Award, Phoenix, IBM, Compaq, and other third-party firmware images are never
-committed, bundled, listed in a project/release hash catalog, or made a default
-runtime dependency. With explicit owner authorization, they may be acquired,
-organized, and used only in an external owner-managed research archive. That
-local authorization does not make a vendor image redistributable, a repository
-asset, a project download mechanism, or a product dependency. A future
-external-ROM provider may read a user-supplied local bundle only after an
-owner-approved machine-profile design gate defines its manifest, validation,
-mapping, and legal boundary. A local manifest hash validates the owner's
-supplied file; it does not make a ROM redistributable or authorize copying
-vendor code.
+Award, Phoenix, IBM, Compaq and other third-party firmware bytes are never
+committed, bundled or made a project download. The owner-approved runtime
+and integration route loads user-supplied external ROMs; missing firmware is
+an explicit error, not permission for an embedded BIOS fallback. This local
+use does not grant redistribution rights.
 
-The approved profile-admission boundary requires a future BYOB manifest to
-name an explicit local path, profile ROM slot, exact size, SHA-256, requested
-read-only mapping, and user provenance statement. It is consumed only by a
-separately admitted VM-composition implementation before machine creation.
-The repository must not retain the path, ROM bytes, a vendor catalogue, or a
-download/discovery mechanism. A profile declares only an abstract ROM-slot
-constraint; `core` receives only a generic immutable mapping provider.
+The external `nxvm-assets/profiles` archive owns vendor payloads and manifests
+with slot, size, SHA-256, read-only mapping and provenance. Session YAML keeps
+simple relative-to-YAML or absolute paths, not embedded hashes/catalogues.
+Repository templates use portable references, never machine-local absolute
+paths. The loader supplies immutable bytes through the single Core ROM path.
+
+For Standard and PC110, profile directories in this repository own board C,
+ROM slot/mapping declarations and authorized ROM source if separately admitted.
+Protected `.rom` and `.cmos` payloads stay in the corresponding external profile
+archive. A CMOS seed initializes documented writable configuration, not a
+second live register owner. Acquiring an original manual or locating a BIOS
+download is not proof of a complete or redistributable machine asset set.
 
 ## Bochx And Bochs Research
 

@@ -114,7 +114,7 @@ Model-40 mapping; G7 is deleted dead data; and G8 is a repository-only
 copied-frame test. No open T521 production duplicate or silent configuration
 remains. Future source-qualified MDA/CGA/EGA/VGA board admission is explicitly
 transferred to the queued [VADP video-adapter and board-integration
-reclosure](../proposals/m5-vadp-board-integration-reclosure.md), rather than
+reclosure](../etc/history/retired-machine-plans/m5-vadp-board-integration-reclosure.md), rather than
 being inferred from these archived bytes.
 
 T521 is closed. Its retained proposal is

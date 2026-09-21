@@ -2,7 +2,8 @@
 
 ## Current Work
 
-No task is currently admitted.
+No task is currently admitted. The fixed-machine implementation proposal is
+queued; Standard hardware selection and PC110 implementation remain unproven.
 
 ## Current Technical Baseline
 
@@ -30,6 +31,15 @@ No task is currently admitted.
 | T526 | Canonical-library integration repair closed at `98ac51a4`: 299/299 unit, 67/67 specialized gates, 42/42 external integration, actual-diff review and stripped x64/x86 artifacts accepted. |
 
 ## Recent Governance
+
+- **M5 Td S167 P1:** governs two fixed-machine products within one multi-machine
+  architecture and preserves all CPU families. The queue-head
+  [consolidation proposal](../proposals/m5-fixed-machine-products.md) records
+  inspected simplifications and five S batches; 43 old proposals and all debt
+  have explicit receivers/retirements. [Research](../etc/research/fixed-machine-selection.md)
+  records Standard firmware gaps, PC110 prerequisites and external manuals.
+  Documentation gate/self-tests and actual-diff review pass. No production,
+  CMake, test or YAML changes; current artifacts and the closed T532 remain unchanged.
 
 - **M5 Td S166 P1:** queued two owner-approved, unnumbered candidates in
   dependency order: VM-machine owner cleanup, then Common-machine executor

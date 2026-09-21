@@ -1,55 +1,59 @@
 # Source Layout
 
-This is the current macro source-layout authority. Apply the local
-[Coding Rules](../rules/CODING.md) when changing it. Detailed M5 layout and
-contract evidence is supporting material indexed in
-[etc/README.md](../etc/README.md); it cannot override this file.
+This is the macro layout authority. Apply [Coding Rules](../rules/CODING.md);
+dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current And Target Trees
 
-NXVM is a single bootable-machine product. `src/lib/`, `src/common/`, and
-`src/x86/` are shared components; `src/app/` and `src/core/` are NXVM-owned.
-Empty future-product roots are prohibited.
+Retain the App/Core/shared-corpus layout. Standard and PC110 are target profile
+subtrees; current XT/PC-AT/Model-40 files are migration inputs, not evidence
+that the new targets exist.
 
 ```text
 src/
-  lib/{types,console,base,console-broker,storage,kvm-base,kvm-console,kvm-window}/
-  common/
-    {contracts.h,session,machine,ui,xasm32,debug}/
-  app/
-    main.c
-    request_interface.h
-    {catalog,command,composition,config,keyboard,recorder,version}/
+  lib/                  shared C and platform services
+  common/{session,machine,ui}/
+  x86/{xasm32,debug}/
+  app/                  main, config/catalog, CLI, composition, recorder
   core/
-    core/
-    machine/
-      media/
+    core/               reusable CPU/device/memory/bus/time implementation
+    machine/            NXVM driver, asset/media and execution adapter
     profile/
+      standard/         selected board C, frozen configuration and ROM slots
+      pc110/            PC110 board C, frozen configuration and ROM slots
 ```
 
-The diagram is a target source map, not permission to create every directory
-today. A temporary adapter or baseline reference root requires an explicit
-admission and does not become a permanent source root.
+Keep shared profile declarations and proven helpers at the profile root.
+Do not add a framework or empty future directories. CPU-family implementations
+and selection tables stay in generic Core, not copied into board directories.
+
+Profile-specific ROM source and mapping declarations live with the profile.
+Protected payloads remain external in owner-managed
+`nxvm-assets/profiles/standard/` and `profiles/pc110/`; original manuals
+remain in `nxvm-assets/manuals/`. Documentation changes do not move assets.
+Session templates stay in `assets/sessions/`; paths are relative to their YAML.
 
 ## Files And Names
 
-Headers stay beside their implementations. A public cross-module contract is
-named `*_interface.h`; an injected implementation is named `*_provider`.
-Public symbols use their ownership path, for example `core_machine_*`,
-`common_session_*`, `x86_debug_*`, and `vm_app_*`. Existing stable symbol
-prefixes need not mirror a directory rename. `src/lib/types` is the sole shared C
-type, status, atomic, and basic C-runtime vocabulary foundation.
+Headers stay beside implementation; only `*_interface.h` is public across
+components. Keep cohesive files flat until a real subsystem needs a directory.
+Stable symbol prefixes need not change because a directory moved.
+`src/lib/types` owns shared C vocabulary; legacy root aliases need a separate
+caller migration, not another facade.
 
-Files remain flat within a module until a real multi-file subsystem justifies a
-subdirectory. `main.c` and `composition/` belong at the appropriate component
-root.
+One build-selected profile entry supplies the existing factory. Prefer direct
+construction and small immutable descriptions over string dispatch, recursive
+inheritance or duplicated build source lists. Define the concrete interface
+from actual construction requirements during implementation.
 
 ## Source Organization
 
-The retained test layout uses one repository-root `test/` directory.
-Repository-only test modules mirror their source owner: `test/app/`,
-`test/core/core/`, `test/core/machine/`, `test/core/profile/`, `test/common/`,
-and `test/x86/` follow their corresponding source components. A directory is
-introduced only for a real source subsystem or cross-owner composition boundary. `test/support/`
-contains setup-only helpers, never a second product path. External-asset
-product scenarios live only in `test/integration/`; they are not unit tests.
+Repository-only tests mirror owners under `test/{app,core,lib,common,x86}`.
+Profile tests mirror `test/core/profile/{standard,pc110}`. Keep CPU-family
+tests at the Core owner, including models unused by either executable.
+`test/integration/` stays separate, using YAML and external assets; unit tests
+use code-owned values without external ROM/YAML/media dependencies.
+
+Retire tests only for explicitly retired product behavior. Rehome generic CPU,
+chip, transaction, lifecycle and failure regressions before removing board
+fixtures. Smaller product matrices must not hide reduced retained coverage.

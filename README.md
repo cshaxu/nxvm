@@ -2,9 +2,10 @@
 
 Neko's x86 Virtual Machine is a portable x86 PC emulator with an integrated
 debugger. NXVM is the repository's current, bootable whole-machine product.
-Its codebase is also being evolved into a shared, evidence-led machine
-foundation for the future NXVDM DOS application product; NXVDM is not yet a
-runnable release product.
+The approved direction is two fixed-machine executables, Standard 386DX and
+IBM Palm Top PC 110, over one multi-machine architecture. CPU-family
+implementations remain reusable. This is a target direction, not a claim that
+both products are already implemented; the former NXVDM plan is withdrawn.
 
 ## Introduction
 
@@ -58,10 +59,10 @@ cmake --build --preset current-gcc
 The current developer x64 artifact is copied to `build/output/` after a
 successful build. Task closure also emits the corresponding `_x86.exe` from
 the same source target using the documented x86 MinGW-w64 preset. Run the
-current project gates with:
+documentation governance gate with:
 
 ```powershell
-cmake --build --preset current-gates-gcc
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
 ```
 
 When `ccache` is installed, an optional isolated repeat-build route is:
@@ -145,8 +146,7 @@ or supported.
 
 ## Project Boundary
 
-NXVM is the present product; the shared foundation may later support NXVDM
-without making it a current runtime promise. Source, firmware, guest media,
+NXVM emulates whole machines, not a DOS/VDM application host. Source, firmware, guest media,
 research, and distribution constraints are defined by the local documentation
 authorities. Read [AGENTS.md](AGENTS.md) before changing the repository.
 

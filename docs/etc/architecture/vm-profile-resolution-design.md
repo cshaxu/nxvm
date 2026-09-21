@@ -1,5 +1,10 @@
 # VM Profile Resolution And Core Machine-Plan Design
 
+> Historical design retained for migration evidence. The current
+> [System Architecture](../../design/ARCHITECTURE.md) replaces the old machine
+> roots, inheritance resolver and timing-label assumptions below. This document
+> no longer defines a target profile hierarchy.
+
 M5 Td S110 supporting design. This document elaborates the principal System Architecture and the Core L3 timing design. It is not an active task, Queue change, ABI change, or assertion that the target already exists.
 
 ## Scope

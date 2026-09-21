@@ -403,7 +403,8 @@ function New-SelfTestRepository([string]$root) {
 {
   "version": 4,
   "buildPresets": [
-    { "name": "current-gcc", "targets": ["vm-0-5-0300"] }
+    { "name": "current-gcc", "targets": ["vm-0-5-0300"] },
+    { "name": "current-gcc-x86", "targets": ["vm-0-5-0300"] }
   ]
 }
 '@
@@ -425,7 +426,7 @@ function New-SelfTestRepository([string]$root) {
 
 ## Current Technical Baseline
 
-- `vm-0-5-0300` / `nxvm_0_5_0300.exe`
+- `vm-0-5-0300` / `nxvm_0_5_0300_x64.exe` / `nxvm_0_5_0300_x86.exe`
 
 ## Recent M5 Closures
 
@@ -441,7 +442,7 @@ function New-SelfTestRepository([string]$root) {
     Set-SelfTestFile $root "docs/design/GOAL.md" "# Project Goals`n`n1. Strategic outcome"
     Set-SelfTestFile $root "docs/design/ARCHITECTURE.md" "# System Architecture`n`n## Product Shape`n`n## Modules, Ownership, And Assembly`n`n## Product And Host Boundary`n`n## Runtime Admission Boundary"
     Set-SelfTestFile $root "docs/design/CODING.md" "# Source Layout`n`n## Current And Target Trees`n`n## Files And Names`n`n## Source Organization"
-    Set-SelfTestFile $root "docs/design/UI.md" "# Product UX`n`n## NXVM`n`n## NXVDM`n`n## Presentation And Debugging`n`n## Host Resources"
+    Set-SelfTestFile $root "docs/design/UI.md" "# Product UX`n`n## NXVM`n`n## PC110`n`n## Presentation And Debugging`n`n## Host Resources"
     Set-SelfTestFile $root "docs/design/ROADMAP.md" "# Roadmap`n`n## M0: Governance Reset"
     Set-SelfTestFile $root "docs/etc/README.md" "# Supporting Documentation Index"
     New-Item -ItemType Directory -Force -Path (Join-Path $root "docs/history") | Out-Null
@@ -481,6 +482,11 @@ if ($SelfTest) {
         New-SelfTestRepository $fixtureRoot
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected the controlled passing fixture."
+        $validUx = Get-Content -Raw -LiteralPath (Join-Path $fixtureRoot 'docs/design/UI.md')
+        Set-SelfTestFile $fixtureRoot 'docs/design/UI.md' ($validUx.Replace('## PC110', '## NXVDM'))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted the retired NXVDM product heading."
+        Set-SelfTestFile $fixtureRoot 'docs/design/UI.md' $validUx
         Set-SelfTestFile $fixtureRoot "test/README.md" "# Test Directory`n`nC:\Users\alice\private"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a machine-local path in a test README."
@@ -602,12 +608,11 @@ if ($SelfTest) {
         Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $betweenSubtasks
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected an open task between accepted subtasks."
-        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($betweenSubtasks.Replace(
-            "| T301 S1 | Fixture progress |`n",
-            ""
-        ))
+        $packetlessWithoutState = [regex]::Replace($betweenSubtasks,
+            '(?m)^\| T(?:300|301 S1) \|[^\r\n]*\r?\n', '')
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $packetlessWithoutState
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
-            "Documentation schema accepted an active packetless status without task progress."
+            "Documentation schema accepted a packetless status without progress or closure."
         $continuationPacket = $activeNumericPacket.Replace("M5 T301 S1", "M5 T301 S2").Replace(
             "| Identifier Mode | New |",
             "| Identifier Mode | Continuation |"
@@ -669,7 +674,7 @@ if ($SelfTest) {
 
 ## Current Technical Baseline
 
-- `vm-0-5-0300` / `nxvm_0_5_0300.exe`
+- `vm-0-5-0300` / `nxvm_0_5_0300_x64.exe` / `nxvm_0_5_0300_x86.exe`
 
 ## Recent M5 Closures
 
@@ -857,7 +862,7 @@ Require-HeadingSchema "docs/design/CODING.md" $codingDesign "Source Layout" @(
 )
 Require-HeadingSchema "docs/design/UI.md" $uiDesign "Product UX" @(
     '^NXVM$',
-    '^NXVDM$',
+    '^PC110$',
     '^Presentation And Debugging$',
     '^Host Resources$'
 )
@@ -894,7 +899,7 @@ Require-RequiredH2 "docs/design/CODING.md" $codingDesign @(
     '^Current And Target Trees$', '^Files And Names$', '^Source Organization$'
 )
 Require-RequiredH2 "docs/design/UI.md" $uiDesign @(
-    '^NXVM$', '^NXVDM$', '^Presentation And Debugging$', '^Host Resources$'
+    '^NXVM$', '^PC110$', '^Presentation And Debugging$', '^Host Resources$'
 )
 
 Require-NoTaskIdentifier "docs/states/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)

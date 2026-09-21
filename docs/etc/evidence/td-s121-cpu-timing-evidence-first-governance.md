@@ -4,7 +4,7 @@
 
 ## Decision
 
-The queued [Core CPU instruction-timing program](../../proposals/m5-core-cpu-instruction-timing-program.md) must not begin by auditing current scalar code or repairing the first visible fallback. Its durable convergence ledger is built in three ordered phases:
+The queued [Core CPU instruction-timing program](../history/retired-machine-plans/m5-core-cpu-instruction-timing-program.md) must not begin by auditing current scalar code or repairing the first visible fallback. Its durable convergence ledger is built in three ordered phases:
 
 1. complete 8086/80186 evidence and model research;
 2. implementation-gap audit and finite repair plan; then

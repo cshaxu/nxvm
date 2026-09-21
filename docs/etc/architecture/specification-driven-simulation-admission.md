@@ -3,7 +3,7 @@
 `M5:Td:S114:HARDWARE-TIER-LEDGER:OK`
 
 This supporting record supplies the reusable ledger shape for the shared
-[complete simulation admission proposal](../../proposals/m5-specification-driven-complete-simulation-admission-program.md).
+[complete simulation admission proposal](../history/retired-machine-plans/m5-specification-driven-complete-simulation-admission-program.md).
 It is not a Rule, task packet, machine profile, or competing architecture.
 
 ## Required hardware-unit ledger
