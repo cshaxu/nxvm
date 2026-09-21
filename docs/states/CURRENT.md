@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 Td S171 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance |
-| Admission And Approval | The owner approved a thorough documentation audit and governance pass as Td on 2026-09-21, before resuming Queue implementation. The uncommitted T534 S1 preparation is withdrawn without CPU behavior or evidence work. |
-| Objective | Reconcile every live design, rule, Queue proposal, current baseline and supporting-current document with T533's completed fixed-product/INI/sole-artifact architecture, while preserving historical records as historical. |
-| Non-goals | Do not change production code, CMake, tests, assets, CPU/controller behavior, historical task facts, Queue order or protected external material. Do not rewrite closed history merely because terminology later changed. |
-| Reference Baseline | [T533 history](../history/M5-T533-fixed-machine-products.md), [S5 convergence ledger](../etc/evidence/t533-s5-product-convergence-ledger.md), [System Architecture](../design/ARCHITECTURE.md), [Source Layout](../design/CODING.md), [Queue](QUEUE.md). |
-| Candidate Proposal | No implementation proposal: this is owner-approved standalone governance. Its evidence records live-document findings and dispositions. |
-| Files And ABI Surface | Documentation only: principal design, current state, Queue-linked proposals, source/build policy, supporting-document index and explicit historical labels. No source, ABI, runtime route or generated artifact changes. |
-| Applicable Rules | [Documentation](../rules/DOCUMENT.md): one authority per topic and preserve historical terminology. [Execution](../rules/EXECUTION.md): Td packet, documentation governance and actual-diff review. [Architecture](../rules/ARCHITECTURE.md): one Profile/INI/asset route. [Source policy](../etc/operations/policy/source-policy.md): BYOB assets remain external. |
-| Verification | Audit all non-history Markdown under `docs/design`, `docs/rules`, `docs/states`, `docs/proposals`, `docs/etc/operations`, `docs/etc/architecture`, `docs/etc/research` and the `etc` index for retired YAML/runtime-selection/deployment/layout claims; record every live hit and disposition; run documentation governance and `git diff --check`. |
-| Expected Markers | One post-T533 description of fixed products, external BYOB firmware, adjacent INI, sole `assets/binary/<profile>/` deployment, retained machine scope and historical-document status; all Queue proposals start from that baseline. |
-| Asset Needs | None. This Td neither reads nor modifies firmware, ROM, CMOS, media, fonts, manuals or external repositories. |
-| Reporting Requirements | Record scope/search, every live finding, changed authority and rationale, historical exclusions, Queue/proposal update proof, verification, and explicit confirmation that the withdrawn T534 packet produced no implementation work. |
-| Stop Conditions | Stop if a proposed correction would alter a closed historical fact, imply an unimplemented PC110/486 capability, require a source/build change, or reveal a competing live architecture that cannot be resolved by the principal authorities. |
-| Exit Criteria | All live architecture/operational/proposal texts agree with the T533 baseline, retired supporting designs are unambiguously historical, the Queue has current context without a premature T534 admission, and documentation governance passes. |
-| Original Owner Request | Treat T533 as whole-system simplification and cleanup; ensure all later Queue proposals and their context are current before more implementation work begins. |
-| Similar-Issue Sweep | Search all live authorities and live proposal/supporting-context locations for the retired architecture vocabulary and paths; classify each as corrected, intentionally historical or not applicable in the evidence record. |
+No implementation task is admitted. M5 Td S171 is closed; the Queue head remains
+the unnumbered retained CPU-family qualification candidate.
 
 ## Current Technical Baseline
 
@@ -35,9 +17,6 @@
   independently buildable, Lib-public-contract-only product-capability corpus:
   `machine`, `session`, and `ui`. The separately selected `src/x86` corpus owns
   `xasm32` and the x86 Debug CLI; Common has no x86 dependency.
-- S21 P1 `b35357ca` and P2 `e0d3b946` established the initial NXVM diagnosis.
-  S22 replaces their private Common/Lib hunks with SoftPC's canonical corrected
-  corpus and retains only the NXVM VADP adapter concern where still needed.
 
 ## Recent M5 Closures
 
@@ -53,6 +32,14 @@
 | T526 | Canonical-library integration repair closed at `98ac51a4`: 299/299 unit, 67/67 specialized gates, 42/42 external integration, actual-diff review and stripped x64/x86 artifacts accepted. |
 
 ## Recent Governance
+
+- **M5 Td S171 P1 `3631f80f`, P2 governance closure:** audited the entire live
+  architecture/operation/proposal context against completed T533. It corrects
+  the former YAML-as-current, target-as-current and old-deployment language;
+  labels retired supporting records without rewriting their facts; and gives
+  every Queue proposal the fixed Product/BYOB/NXVM.ini/sole-artifact baseline.
+  The draft T534 packet was withdrawn before CPU work. Documentation governance
+  and actual-diff review pass; no code, build, test, asset or artifact changed.
 
 - **M5 Td S170 P1:** records one external BYOB firmware route for each future
   compiled profile: a CMake-provided local `NXVM_PROFILE_ASSETS_ROOT` is
