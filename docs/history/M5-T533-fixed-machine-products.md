@@ -50,3 +50,9 @@ only Machine descriptor projection is read-only diagnostics, not construction
 authority.  Repository-only tests preserve the retained four machine profiles;
 white-box failure injection that constructed a second Machine descriptor now
 validates at Profile construction, where that authority belongs.
+
+Accepted in `2a589dc7` after actual-change review.  The full repository-only
+unit target, focused XT/5170/Model-40/default regression set, documentation
+governance and dependency-DAG gate pass.  The selected-plan source sweep found
+no former Machine firmware-kind or board-private branch; no protected payload,
+runtime configuration or executable artifact changed.

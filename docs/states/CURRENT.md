@@ -2,28 +2,6 @@
 
 ## Current Work
 
-## M5 T533 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved independent T533 execution on 2026-09-21. Accepted S2 `78a86421` leaves the profile-composition/machine-adapter batch explicitly assigned to S3. |
-| Objective | Make Profiles the sole owner of board selection, resolution, firmware binding and board composition; reduce Core Machine to one neutral selected-plan adapter with one prepare/bind/run/release lifecycle. |
-| Non-goals | Do not implement fixed product targets or NXVM.ini, remove a retained machine/CPU/controller, alter BYOB payloads, add a profile plugin framework, retain an old composition fallback, change Common/Lib/x86, or claim PC110 implementation. |
-| Reference Baseline | T533 S1 ledger `14572230`; S2 owner relocation `687db585`, accepted `78a86421`; current runnable baseline `vm-0-5-0532`. |
-| Candidate Proposal | [Fixed-machine products and architecture consolidation](../proposals/m5-fixed-machine-products.md), S3; [baseline ledger](../etc/evidence/t533-s1-fixed-machine-baseline-ledger.md). |
-| Files And ABI Surface | `src/core/machine/machine.c`, `machine_private.h`, lifecycle/provider binding, Model-40 composition and Profile declarations/tests. A neutral internal selected-plan contract may move as required; public App/Common requests retain their current behavior. |
-| Applicable Rules | Task Reading Set; Architecture unique state owner, one-direction dependency and no duplicate production route; Coding minimal direct abstraction; Execution mechanism-defect/similar-issue sweep; source policy BYOB boundary. |
-| Verification | Profile-specific XT, 5170, Model-40 and default-PC/AT focused tests; full repository-only unit suite; configured static owner/dependency gates; documentation governance; source sweep proving Machine has no board-kind/firmware-kind switch or simultaneous board-resolved state. |
-| Expected Markers | Each retained Profile constructs one frozen neutral plan containing its board/topology/firmware binding; Machine consumes one selected plan and owns only generic runtime/media/resource lifetime; lifecycle binds the Profile-supplied provider once; no old factory branch or compatibility path remains. |
-| Asset Needs | Code-owned test views only. Do not import, alter, hash or embed external firmware, CMOS, font or media. |
-| Reporting Requirements | Report the selected-plan boundary, each relocated XT/5170/Model-40/default decision, removed Machine ownership, all affected test results and any residual receiver for S4. |
-| Stop Conditions | Stop for a needed new profile/device semantic not proven by existing behavior, an external asset requirement, a changed runtime result not explained by the selected-plan boundary, a cross-layer reverse dependency, or inability to remove the old factory path atomically. |
-| Exit Criteria | One Profile-owned construction/provider route exists for every retained machine, Machine has no board choice or parallel board buffers, direct and file-backed test paths share the selected-plan route, all retained profile regressions/full unit suite/gates pass, and actual-change review proves no fallback. |
-| Original Owner Request | Keep all current machines but reorganize Core as Devices/Profiles/Machine, then later compile one fixed profile per executable with external BYOB assets and NXVM.ini runtime configuration. |
-| Similar-Issue Sweep | Audit every `vm_machine_create*`, `firmware_kind`, profile resolver, board-specific field and Profile-to-Machine include across production, tests, CMake and static verifiers; classify each as Profile owner, neutral Machine resource, or S4 runtime-config receiver. |
-
-
 ## Current Technical Baseline
 
 - `vm-0-5-0532` is the current target. Its stripped Release artifacts are
@@ -41,7 +19,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T533 S2 | Accepted at `687db585`: source and test owner roots are now Devices/Profiles; all CMake, include and static-gate paths moved with them, with no compatibility alias or runtime change. Fresh x64 configuration and 336/336 repository-only unit tests pass. [Evidence](../etc/evidence/t533-s2-devices-profiles-relocation.md). |
+| T533 S3 | Accepted at `2a589dc7`: Profiles now construct the one frozen board/firmware plan for XT, 5170, Model 40 and default PC/AT; Machine consumes it without board or firmware branches. Full repository-only unit, documentation and dependency gates pass. [Evidence](../etc/evidence/t533-s3-profile-machine-plan.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |
 | T531 | Closed at owner direction on 2026-09-20 after S28 implementation `20c1e71b`: the final canonical SoftPC `2b17749a` six-tree Lib/Common/x86 source-and-test refresh is exact; 338/338 unit, specialized/documentation gates and stripped 0531 x64/x86 artifacts pass. The full external integration remains 41/42: `integration.vm-dos-keyboard-smoke` stays explicitly transferred to [TODO(High)](TODO.md), not relabelled green. [History](../history/M5-T531-shared-common-product-convergence.md). |
 | T530 | Closed at owner direction on 2026-09-13 after implementation bc9a1247; pinned canonical Lib import and Common adaptation, recorded 299/299 unit and 42/42 integration, both 0530 artifacts verified by hash. No new manual test is claimed. Later source revisions and Common UX convergence belong to the next task. [History](../history/M5-T530-canonical-softpc-lib-refresh.md). |
