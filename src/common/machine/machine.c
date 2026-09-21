@@ -133,7 +133,10 @@ static lib_status common_machine_publish(common_machine *machine)
         base_sync_mutex_unlock(machine->frame_lock);
         return LIB_STATUS_OK;
     }
-    frame->sequence = ++machine->published_frame_sequence;
+    /* Zero is reserved for consumers without a published frame. */
+    if (++machine->published_frame_sequence == 0u)
+        ++machine->published_frame_sequence;
+    frame->sequence = machine->published_frame_sequence;
     generation = common_machine_run_generation(machine);
     machine->published_frame_run_generation = generation;
     machine->published_frame_index = staging_index;
@@ -341,9 +344,9 @@ static void common_machine_executor_event(void *opaque)
             lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_SEQ_CST) == 0) {
             base_sync_event *events[3] = { machine->resume_event,
                 machine->command_event, machine->input_event };
-            lib_u32 index = UINT32_MAX;
+            lib_u32 index = LIB_UINT32_MAX;
             base_sync_wait_result result = base_sync_wait_any(events, 3u,
-                machine->worker, UINT32_MAX, &index);
+                machine->worker, LIB_UINT32_MAX, &index);
             if (result != BASE_SYNC_WAIT_SIGNALED) {
                 if (result != BASE_SYNC_WAIT_CANCELLED)
                     lib_atomic_i32_exchange_explicit(&machine->state, COMMON_MACHINE_ERROR, LIB_MEMORY_ORDER_SEQ_CST);
@@ -449,7 +452,7 @@ static void common_machine_worker(void *opaque, const base_sync_task *task)
         lib_bool succeeded;
         /* The paused callback may have consumed the terminal command wake. */
         base_sync_wait_result result = base_sync_wait_any(&machine->command_event,
-            1u, task, UINT32_MAX, NULL);
+            1u, task, LIB_UINT32_MAX, NULL);
         if (result == BASE_SYNC_WAIT_CANCELLED) break;
         if (result != BASE_SYNC_WAIT_SIGNALED) {
             common_machine_finish_requests(machine, COMMON_MACHINE_ERROR);
@@ -686,7 +689,7 @@ lib_bool common_machine_set_removable_media(common_machine *machine,
     if (!common_machine_submit_request(machine, &machine->media_requested,
             machine->media_event, (1u << COMMON_MACHINE_STOPPED) |
                 (1u << COMMON_MACHINE_PAUSED))) return LIB_FALSE;
-    return base_sync_event_wait(machine->media_event, UINT32_MAX) ==
+    return base_sync_event_wait(machine->media_event, LIB_UINT32_MAX) ==
         BASE_SYNC_WAIT_SIGNALED && machine->media_succeeded;
 }
 
@@ -700,7 +703,7 @@ lib_status common_machine_read_state(common_machine *machine,
             machine->state_event, (1u << COMMON_MACHINE_RUNNING) |
                 (1u << COMMON_MACHINE_PAUSED))) return LIB_STATUS_INVALID_STATE;
     machine->driver.request_wake(machine->driver.context);
-    return base_sync_event_wait(machine->state_event, UINT32_MAX) ==
+    return base_sync_event_wait(machine->state_event, LIB_UINT32_MAX) ==
         BASE_SYNC_WAIT_SIGNALED ? machine->state_status : LIB_STATUS_IO_ERROR;
 }
 
@@ -713,7 +716,7 @@ lib_status common_machine_write_state(common_machine *machine,
     if (!common_machine_submit_request(machine, &machine->state_write_requested,
             machine->state_event, 1u << COMMON_MACHINE_STOPPED))
         return LIB_STATUS_INVALID_STATE;
-    return base_sync_event_wait(machine->state_event, UINT32_MAX) ==
+    return base_sync_event_wait(machine->state_event, LIB_UINT32_MAX) ==
         BASE_SYNC_WAIT_SIGNALED ? machine->state_status : LIB_STATUS_IO_ERROR;
 }
 
@@ -817,7 +820,7 @@ lib_status common_machine_debug_execute_with_lease(common_machine *machine,
     if (!common_machine_submit_request(machine, &machine->debug_requested,
             machine->debug_event, 1u << COMMON_MACHINE_PAUSED))
         return LIB_STATUS_INVALID_STATE;
-    if (base_sync_event_wait(machine->debug_event, UINT32_MAX) !=
+    if (base_sync_event_wait(machine->debug_event, LIB_UINT32_MAX) !=
         BASE_SYNC_WAIT_SIGNALED) return LIB_STATUS_IO_ERROR;
     if (machine->debug_status == LIB_STATUS_OK) {
         if (machine->debug_response_size != 0u)

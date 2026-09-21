@@ -53,8 +53,8 @@ void common_session_state_note_runtime(common_session_state *state,
 int common_session_state_note_frame(common_session_state *state, lib_u32 sequence,
     int graphics)
 {
-    if (state == NULL || sequence == 0u ||
-        sequence <= state->observed_frame_sequence) return 0;
+    if (state == NULL || !common_session_frame_is_newer(sequence,
+            state->observed_frame_sequence)) return 0;
     state->observed_frame_sequence = sequence;
     state->frame_actual = 1;
     state->graphics_actual = graphics != 0;

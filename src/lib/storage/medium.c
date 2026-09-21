@@ -218,7 +218,7 @@ lib_status lib_storage_medium_read_at(const lib_storage_medium *medium,
     return LIB_STATUS_OK;
 }
 
-lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
+static lib_status lib_storage_medium_write(lib_storage_medium *medium,
     lib_size offset, const void *bytes, lib_size byte_count)
 {
     const lib_u8 *cursor = bytes;
@@ -230,7 +230,6 @@ lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
         lib_status status = lib_storage_file_seek_absolute(&medium->file, (lib_i64)offset);
         if (status == LIB_STATUS_OK)
             status = lib_storage_file_write_exact(&medium->file, bytes, byte_count);
-        if (status == LIB_STATUS_OK) status = lib_storage_file_flush(&medium->file);
         return status;
     }
     while (byte_count != 0u) {
@@ -253,25 +252,39 @@ lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
     return LIB_STATUS_OK;
 }
 
+lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
+    lib_size offset, const void *bytes, lib_size byte_count)
+{
+    lib_status status = lib_storage_medium_write(medium, offset, bytes, byte_count);
+    if (status == LIB_STATUS_OK && medium->mode == LIB_STORAGE_MEDIUM_DIRECT)
+        status = lib_storage_file_flush(&medium->file);
+    return status;
+}
+
 lib_status lib_storage_medium_fill_at(lib_storage_medium *medium,
     lib_size offset, lib_size byte_count, lib_u8 value)
 {
     lib_u8 buffer[512];
     lib_size count;
+    lib_status status = LIB_STATUS_OK;
 
     if (medium == LIB_NULL || offset > medium->byte_count ||
         byte_count > medium->byte_count - offset) return LIB_STATUS_INVALID_ARGUMENT;
+    if (byte_count == 0u) return LIB_STATUS_OK;
     lib_memory_set(buffer, value, sizeof(buffer));
     while (byte_count != 0u) {
         count = byte_count > sizeof(buffer) ? sizeof(buffer) : byte_count;
-        {
-            lib_status status = lib_storage_medium_write_at(medium, offset, buffer, count);
-            if (status != LIB_STATUS_OK) return status;
-        }
+        status = lib_storage_medium_write(medium, offset, buffer, count);
+        if (status != LIB_STATUS_OK) break;
         offset += count;
         byte_count -= count;
     }
-    return LIB_STATUS_OK;
+    if (medium->mode == LIB_STORAGE_MEDIUM_DIRECT) {
+        /* Flush partial writes too; preserve the first write error. */
+        lib_status flush_status = lib_storage_file_flush(&medium->file);
+        if (status == LIB_STATUS_OK) status = flush_status;
+    }
+    return status;
 }
 
 lib_status lib_storage_medium_replace(lib_storage_medium **lease,

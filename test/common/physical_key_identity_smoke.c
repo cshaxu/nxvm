@@ -107,6 +107,61 @@ static void check_text(void)
     assert(calls == 2u && q.pressed_count == 0u);
 }
 
+static void check_capacity(void)
+{
+    common_session_queue q = { 0 };
+    kvm_input_event event = { 0 };
+    capture c = { 0 };
+    const unsigned capacity = COMMON_SESSION_EVENT_PRESSED_CAPACITY;
+    assert(common_session_queue_initialize(&q));
+    event.type = KVM_EVENT_KEY;
+    event.data.key.key = KVM_KEY_CONTROL;
+    event.data.key.scan_code = 0x1d;
+    event.data.key.pressed = 1u;
+    /* Same physical key on distinct sources must occupy distinct entries. */
+    for (unsigned i = 1u; i <= capacity; ++i) {
+        event.source_identity = i;
+        dispatch(&q, &event, &c);
+        assert(q.pressed_count == i && c.makes == i);
+    }
+    event.source_identity = 1u;
+    dispatch(&q, &event, &c); /* Repeat at capacity still succeeds. */
+    assert(q.pressed_count == capacity && c.makes == capacity + 1u);
+    /* Neither a new physical key nor a new source may bypass the ledger. */
+    for (unsigned i = 0u; i < 2u; ++i) {
+        event.source_identity = i == 0u ? 1u : capacity + 1u;
+        event.data.key.flags = i == 0u ? KVM_KEY_FLAG_EXTENDED : 0u;
+        assert(!common_session_dispatch_input(&q, &event,
+            COMMON_SESSION_MACHINE_RUNNING, receive, &c));
+        assert(q.pressed_count == capacity && c.makes == capacity + 1u);
+    }
+    event.type = KVM_EVENT_SOURCE_RETIRED;
+    dispatch(&q, &event, &c); /* Rejected source has nothing to release. */
+    assert(q.pressed_count == capacity && c.breaks == 0u);
+    event.type = KVM_EVENT_KEY;
+    event.source_identity = 1u;
+    event.data.key.pressed = 0u;
+    dispatch(&q, &event, &c);
+    assert(q.pressed_count == capacity - 1u && c.breaks == 1u);
+    event.source_identity = capacity + 1u;
+    event.data.key.pressed = 1u;
+    dispatch(&q, &event, &c); /* Freed slot admits the formerly rejected key. */
+    assert(q.pressed_count == capacity && c.makes == capacity + 2u);
+    event.type = KVM_EVENT_SOURCE_RETIRED;
+    for (unsigned i = 1u; i <= capacity + 1u; ++i) {
+        event.source_identity = i;
+        dispatch(&q, &event, &c);
+    }
+    assert(q.pressed_count == 0u && c.breaks == capacity + 1u);
+    assert(c.extended_breaks == 0u); /* Rejected extended key was never stored. */
+    for (unsigned i = 1u; i <= capacity + 1u; ++i) {
+        event.source_identity = i;
+        dispatch(&q, &event, &c);
+    }
+    assert(c.breaks == capacity + 1u); /* No duplicate retirement releases. */
+    common_session_queue_dispose(&q);
+}
+
 int main(void)
 {
     int release_first, extended_first;
@@ -119,5 +174,6 @@ int main(void)
     check_sources(COMMON_SESSION_MACHINE_RUNNING);
     check_sources(COMMON_SESSION_MACHINE_PAUSED);
     check_text();
+    check_capacity();
     return 0;
 }

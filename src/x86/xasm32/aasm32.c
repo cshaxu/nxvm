@@ -3657,16 +3657,19 @@ static t_aasm_oprinfo parsearg(aasm32_context *aasmContext, char *arg)
 /* assembly compiler: code generator */
 static void _c_setbyte(aasm32_context *aasmContext, lib_u8 byte)
 {
+    if (1u > sizeof(acode) - iop) XASM32_TRACE_IMPOSSIBLE_RETURN;
     (*(lib_u8 *)(acode + iop)) = byte;
     iop += 1;
 }
 static void _c_setword(aasm32_context *aasmContext, lib_u16 word)
 {
+    if (2u > sizeof(acode) - iop) XASM32_TRACE_IMPOSSIBLE_RETURN;
     (*(lib_u16 *)(acode + iop)) = word;
     iop += 2;
 }
 static void _c_setdword(aasm32_context *aasmContext, lib_u32 dword)
 {
+    if (4u > sizeof(acode) - iop) XASM32_TRACE_IMPOSSIBLE_RETURN;
     (*(lib_u32 *)(acode + iop)) = dword;
     iop += 4;
 }
@@ -9899,6 +9902,8 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
             (*(rcode + len)) = 0x66;
             len++;
         }
+        if (iop > sizeof(acode) - len)
+            XASM32_TRACE_CHECK_RETURN_ZERO(XASM32_TRACE_SET_ERROR);
         lib_memory_copy((void *)(rcode + len), (void *)acode, iop);
         len += iop;
     }

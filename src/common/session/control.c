@@ -236,12 +236,13 @@ static void common_session_forget_pressed(common_session_queue *queue,
     }
 }
 
-static void common_session_remember_pressed(common_session_queue *queue,
+static int common_session_remember_pressed(common_session_queue *queue,
     const kvm_input_event *event)
 {
     common_session_forget_pressed(queue, event);
-    if (queue->pressed_count == COMMON_SESSION_EVENT_PRESSED_CAPACITY) return;
+    if (queue->pressed_count == COMMON_SESSION_EVENT_PRESSED_CAPACITY) return 0;
     queue->pressed[queue->pressed_count++] = *event;
+    return 1;
 }
 
 static int common_session_release_source(common_session_queue *queue,
@@ -272,8 +273,9 @@ int common_session_dispatch_input(common_session_queue *queue, const kvm_input_e
 {
     if (queue == NULL || event == NULL || sink == NULL) return 0;
     if (event->type == KVM_EVENT_KEY) {
-        if (event->data.key.pressed != 0u) common_session_remember_pressed(queue, event);
-        else common_session_forget_pressed(queue, event);
+        if (event->data.key.pressed != 0u) {
+            if (!common_session_remember_pressed(queue, event)) return 0;
+        } else common_session_forget_pressed(queue, event);
         return runtime_state != COMMON_SESSION_MACHINE_RUNNING ||
             sink(sink_context, event);
     }

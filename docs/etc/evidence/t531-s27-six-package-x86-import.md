@@ -68,4 +68,5 @@ and are copied identically to `build/output` and `assets/sessions`:
 
 PE inspection confirms `i386:x86-64` and `i386`, respectively.
 
-S27 remains admitted pending owner review; T531 is intentionally not closed.
+The owner accepted S27 on 2026-09-20. T531 remains intentionally open; S28
+refreshes the same six canonical packages from the next frozen SoftPC revision.

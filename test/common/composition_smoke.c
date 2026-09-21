@@ -252,6 +252,23 @@ int main(void)
         COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
     assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 1) == LIB_STATUS_OK);
     assert(status_builds == 4u && console_frames == 7u && window_frames == 5u);
+    /* UI deduplication needs equality only, including wrap and recreation. */
+    frame.graphics = 0u;
+    for (unsigned i = 0u; i < 2u; ++i) {
+        sequence = i == 0u ? LIB_UINT32_MAX : 1u;
+        unsigned wc = window_frames, cc = console_frames;
+        assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 0) == LIB_STATUS_OK);
+        assert(window_frames == wc + 1u && console_frames == cc + 1u);
+        assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 0) == LIB_STATUS_OK);
+        assert(window_frames == wc + 1u && console_frames == cc + 1u);
+    }
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_DESTROY_WINDOW,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    assert(common_ui_apply_action(ui, COMMON_UI_ACTION_CREATE_WINDOW,
+        COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
+    unsigned wc = window_frames;
+    assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 0) == LIB_STATUS_OK);
+    assert(window_frames == wc + 1u); /* Same serial, fresh presenter. */
     /* Real concurrent callback/control access uses the one existing atomic. */
     for (int source = 0; source < 2; ++source) {
         kvm_component_options *component = source ? &console_fake.options :

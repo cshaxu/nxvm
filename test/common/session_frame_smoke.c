@@ -147,5 +147,45 @@ int main(void)
     event.value.component.exists = 0;
     assert(common_session_process_completed(&session, &event));
     assert(delivered_sequence == 5u && !delivered_graphics && !delivered_status);
+    /* First consumption may already be near wrap; zero is never a frame. */
+    {
+        common_session_state state;
+        common_session_state_initialize(&state, COMMON_SESSION_DISPLAY_WINDOW, 1);
+        assert(!common_session_state_note_frame(&state, 0u, 1));
+        assert(common_session_state_note_frame(&state, LIB_UINT32_MAX, 0));
+        assert(common_session_state_note_frame(&state, 1u, 1));
+        assert(!common_session_state_note_frame(&state, LIB_UINT32_MAX, 0));
+        assert(!common_session_state_note_frame(&state, 1u, 0));
+        assert(!common_session_state_note_frame(&state, 0u, 0));
+        assert(state.observed_frame_sequence == 1u && state.graphics_actual);
+        /* Half-range is ambiguous and must not be accepted as newer. */
+        assert(!common_session_state_note_frame(&state, 0x80000001u, 0));
+        assert(common_session_state_note_frame(&state, 0x80000000u, 0));
+    }
+    session.state.observed_frame_sequence = LIB_UINT32_MAX - 1u;
+    session.frame.sequence = LIB_UINT32_MAX - 1u;
+    published.sequence = 1u;
+    event.kind = COMMON_SESSION_EVENT_FRAME_COMPLETED;
+    event.value.frame.sequence = LIB_UINT32_MAX;
+    lib_u32 before = copies;
+    assert(common_session_process_completed(&session, &event));
+    assert(copies == before + 1u && session.frame.sequence == 1u);
+    assert(session.state.observed_frame_sequence == 1u && delivered_sequence == 1u);
+    const lib_u32 stale[] = { LIB_UINT32_MAX - 1u, LIB_UINT32_MAX, 0u, 1u };
+    for (unsigned i = 0u; i < sizeof(stale) / sizeof(stale[0]); ++i) {
+        event.value.frame.sequence = stale[i];
+        assert(common_session_process_completed(&session, &event));
+        assert(copies == before + 1u && session.frame.sequence == 1u);
+    }
+    current_run = published_run = 8u;
+    published.sequence = 2u;
+    event.value.frame.sequence = 2u;
+    assert(common_session_process_completed(&session, &event));
+    assert(copies == before + 1u); /* Old run cannot cross the wrap boundary. */
+    common_session_state_note_runtime(&session.state, COMMON_SESSION_MACHINE_STOPPED);
+    common_session_state_note_runtime(&session.state, COMMON_SESSION_MACHINE_RUNNING);
+    event.run_generation = current_run;
+    assert(common_session_process_completed(&session, &event));
+    assert(copies == before + 2u && session.state.observed_frame_sequence == 2u);
     return 0;
 }

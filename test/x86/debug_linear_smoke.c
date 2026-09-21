@@ -101,6 +101,16 @@ int main(void)
     submit("xu 0"); assert(reads == 16);
     submit("xu"); assert(reads == 10);
 
+    /* Both debugger entry points stop on an overlong instruction, then recover. */
+    memset(memory, 0x66, 15);
+    assert(strstr(submit("u 0 l1"), "<ERROR>") != NULL && reads == 1);
+    assert(strstr(submit("xu 0 1"), "<ERROR>") != NULL && reads == 1);
+    memory[14] = 0x90;
+    assert(strstr(submit("u 0 l1"), "NOP") != NULL);
+    assert(debug->unassemble_offset == 15);
+    assert(strstr(submit("xu 0 1"), "NOP") != NULL);
+    assert(debug->unassemble_linear == 15);
+
     memory_base = 0x10000u;
     memcpy(memory, "AAAA", 4);
     assert(strcmp(submit("xs 10000 3 41 41"), "L00010000\nL00010001\n") == 0);

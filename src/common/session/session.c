@@ -178,7 +178,7 @@ static int common_session_process_completed(common_session *session,
         common_session_state_note_runtime(&session->state, event->value.runtime_state);
     } else if (event->kind == COMMON_SESSION_EVENT_FRAME_COMPLETED) {
         lib_u32 sequence = event->value.frame.sequence;
-        if (sequence > session->state.observed_frame_sequence &&
+        if (common_session_frame_is_newer(sequence, session->state.observed_frame_sequence) &&
             common_machine_copy_published_frame(session->machine, &session->frame,
                 event->run_generation))
             (void)common_session_state_note_frame(&session->state, session->frame.sequence,

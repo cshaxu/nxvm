@@ -27,6 +27,15 @@ typedef struct common_session_state {
     lib_u32 observed_frame_sequence;
 } common_session_state;
 
+/* Nonzero publication serials wrap. Compared positions must be less than
+ * 2^31 apart; zero is the initial observation, not a position on that ring. */
+static inline lib_bool common_session_frame_is_newer(lib_u32 sequence, lib_u32 previous)
+{
+    lib_u32 distance = (lib_u32)(sequence - previous);
+    return sequence != 0u && (previous == 0u ||
+        (distance != 0u && distance < 0x80000000u));
+}
+
 void common_session_state_initialize(common_session_state *state,
     common_session_display display, int console_control);
 void common_session_state_note_window_close(common_session_state *state);

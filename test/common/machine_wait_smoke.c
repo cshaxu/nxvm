@@ -339,6 +339,18 @@ static void check_publication(void)
         assert(common_machine_publish(active) == LIB_STATUS_OK);
         assert(common_machine_published_frame_sequence(active) == 6 + field);
     }
+    active->published_frame_sequence = LIB_UINT32_MAX - 1u;
+    candidate.window.text.base.cells[0].glyph_index = 'Y';
+    assert(common_machine_publish(active) == LIB_STATUS_OK);
+    assert(common_machine_published_frame_sequence(active) == LIB_UINT32_MAX);
+    common_machine_begin_cold_run(active, LIB_FALSE);
+    assert(common_machine_publish(active) == LIB_STATUS_OK);
+    assert(common_machine_copy_published_frame(active, &captured,
+        common_machine_run_generation(active)));
+    assert(captured.sequence == 1u); /* Restart retains the counter; wrap skips zero. */
+    assert(common_machine_published_frame_sequence(active) == 1u);
+    assert(common_machine_publish(active) == LIB_STATUS_OK); /* Unchanged text. */
+    assert(common_machine_published_frame_sequence(active) == 1u);
     assert(common_machine_destroy(active) == LIB_STATUS_OK);
 }
 

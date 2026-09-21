@@ -52,8 +52,78 @@ static size_t read_stream(void *bytes, size_t size, size_t count, FILE *stream)
 { return reject_read ? 0u : fread(bytes, size, count, stream); }
 #undef lib_c_fread
 #define lib_c_fread read_stream
+static unsigned write_calls, flush_calls, fail_write_at;
+static int reject_flush;
+static size_t write_stream(const void *bytes, size_t size, size_t count, FILE *stream)
+{
+    if (++write_calls == fail_write_at) count /= 2u;
+    return fwrite(bytes, size, count, stream);
+}
+static int flush_stream(FILE *stream)
+{
+    ++flush_calls;
+    return reject_flush ? EOF : fflush(stream);
+}
+#undef lib_c_fwrite
+#undef lib_c_fflush
+#define lib_c_fwrite write_stream
+#define lib_c_fflush flush_stream
 #include "lib/storage/file.c"
 #include "lib/storage/medium.c"
+
+static void medium_fill(void)
+{
+    lib_storage_medium medium = { .file = { tmpfile() },
+        .byte_count = 1024u * 1024u + 7u, .mode = LIB_STORAGE_MEDIUM_DIRECT };
+    unsigned char actual[513];
+    assert(medium.file.stream != NULL);
+    write_calls = flush_calls = 0;
+    assert(lib_storage_medium_fill_at(&medium, 0, medium.byte_count, 0x5a) == LIB_STATUS_OK);
+    assert(write_calls == 2049u && flush_calls == 1u);
+    rewind(medium.file.stream);
+    for (size_t left = medium.byte_count; left != 0u;) {
+        size_t count = left > sizeof(actual) ? sizeof(actual) : left;
+        assert(fread(actual, 1u, count, medium.file.stream) == count);
+        for (size_t i = 0; i < count; ++i) assert(actual[i] == 0x5a);
+        left -= count;
+    }
+    write_calls = flush_calls = 0;
+    assert(lib_storage_medium_fill_at(&medium, 3u, 1024u * 1024u, 0x6b) == LIB_STATUS_OK);
+    assert(write_calls == 2048u && flush_calls == 1u);
+    assert(lib_storage_medium_read_at(&medium, 2u, actual, 2u) == LIB_STATUS_OK);
+    assert(actual[0] == 0x5a && actual[1] == 0x6b);
+    assert(lib_storage_medium_read_at(&medium, medium.byte_count - 5u, actual, 5u) == LIB_STATUS_OK);
+    assert(actual[0] == 0x6b);
+    for (unsigned i = 1; i < 5; ++i) assert(actual[i] == 0x5a);
+    write_calls = flush_calls = 0;
+    assert(lib_storage_medium_fill_at(&medium, medium.byte_count, 0, 0) == LIB_STATUS_OK);
+    assert(lib_storage_medium_fill_at(&medium, medium.byte_count, 1, 0) == LIB_STATUS_INVALID_ARGUMENT);
+    assert(lib_storage_medium_fill_at(&medium, (lib_size)-1, 1, 0) == LIB_STATUS_INVALID_ARGUMENT);
+    assert(lib_storage_medium_fill_at(NULL, 0, 0, 0) == LIB_STATUS_INVALID_ARGUMENT);
+    assert(write_calls == 0u && flush_calls == 0u);
+    assert(lib_storage_medium_write_at(&medium, 0, "Z", 1) == LIB_STATUS_OK);
+    assert(write_calls == 1u && flush_calls == 1u);
+    for (unsigned failure = 1; failure <= 2; ++failure) {
+        for (reject_flush = 0; reject_flush <= 1; ++reject_flush) {
+            write_calls = flush_calls = 0;
+            fail_write_at = failure;
+            assert(lib_storage_medium_fill_at(&medium, 0, 1025u, 0x7c) == LIB_STATUS_IO_ERROR);
+            assert(write_calls == failure && flush_calls == 1u);
+        }
+    }
+    fail_write_at = 0;
+    reject_flush = 1;
+    write_calls = flush_calls = 0;
+    assert(lib_storage_medium_fill_at(&medium, 0, 1025u, 0x8d) == LIB_STATUS_IO_ERROR);
+    assert(write_calls == 3u && flush_calls == 1u);
+    reject_flush = 0;
+    write_calls = flush_calls = 0;
+    fail_write_at = 1;
+    assert(lib_storage_medium_write_at(&medium, 0, "XYZ", 3) == LIB_STATUS_IO_ERROR);
+    assert(write_calls == 1u && flush_calls == 0u); /* Ordinary write unchanged. */
+    fail_write_at = 0;
+    assert(lib_storage_file_close(&medium.file) == LIB_STATUS_OK);
+}
 
 static void overlay_index(const char *path)
 {
@@ -89,6 +159,12 @@ static void overlay_index(const char *path)
     assert(lib_storage_medium_read_at(medium, 4094u, actual, 12u) == LIB_STATUS_OK);
     assert(memcmp(actual, source, 12u) == 0);
     assert(lib_storage_medium_read_at(medium, sizeof(source), actual, 1u) == LIB_STATUS_INVALID_ARGUMENT);
+    flush_calls = 0;
+    assert(lib_storage_medium_fill_at(medium, 4094u, sizeof(source) - 4094u, 0x3a) == LIB_STATUS_OK);
+    assert(flush_calls == 0u);
+    assert(lib_storage_medium_read_at(medium, 0u, actual, sizeof(actual)) == LIB_STATUS_OK);
+    assert(memcmp(actual, source, 4094u) == 0);
+    for (size_t i = 4094u; i < sizeof(actual); ++i) assert(actual[i] == 0x3a);
     assert(lib_storage_medium_destroy(&medium) == LIB_STATUS_OK);
 
     assert(lib_storage_medium_create_zero_overlay(sizeof(source), &medium) == LIB_STATUS_OK);
@@ -189,6 +265,17 @@ int main(void)
         assert((medium->pages != NULL) == (mode == LIB_STORAGE_MEDIUM_OVERLAY));
         assert(lib_storage_medium_read_at(medium, 0u, actual, sizeof(actual)) == LIB_STATUS_OK);
         assert(lib_memory_compare(actual, payload, sizeof(payload)) == 0);
+        write_calls = flush_calls = 0;
+        assert(lib_storage_medium_fill_at(medium, sizeof(payload), 0u, 0u) == LIB_STATUS_OK);
+        assert(lib_storage_medium_fill_at(medium, 1u, 2u, 'F') ==
+            (mode == LIB_STORAGE_MEDIUM_READONLY ? LIB_STATUS_INVALID_STATE : LIB_STATUS_OK));
+        assert(flush_calls == (mode == LIB_STORAGE_MEDIUM_DIRECT ? 1u : 0u));
+        assert(lib_storage_medium_read_at(medium, 0u, actual, sizeof(actual)) == LIB_STATUS_OK);
+        assert(actual[0] == payload[0] && actual[3] == payload[3]);
+        if (mode == LIB_STORAGE_MEDIUM_READONLY) assert(memcmp(actual, payload, sizeof(payload)) == 0);
+        else assert(actual[1] == 'F' && actual[2] == 'F');
+        if (mode == LIB_STORAGE_MEDIUM_DIRECT)
+            assert(lib_storage_medium_write_at(medium, 0u, payload, sizeof(payload)) == LIB_STATUS_OK);
         unsigned char changed = 'Z';
         assert(lib_storage_medium_write_at(medium, 0u, &changed, 1u) ==
             (mode == LIB_STORAGE_MEDIUM_READONLY ? LIB_STATUS_INVALID_STATE : LIB_STATUS_OK));
@@ -214,6 +301,7 @@ int main(void)
     assert(lib_storage_file_read_owned(path, sizeof(payload), &owned, &length) == LIB_STATUS_IO_ERROR);
     assert(owned == NULL && live_allocations == 0u);
     reject_close = 0;
+    medium_fill();
     overlay_index(path);
     assert(softpc_test_remove_image(path));
     for (int mode = LIB_STORAGE_MEDIUM_DIRECT; mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++mode) {

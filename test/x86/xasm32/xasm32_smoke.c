@@ -1,5 +1,45 @@
 #include "x86/xasm32/xasm32_interface.h"
 
+/* Golden digest captured before the dispatch-table relocation. Hash bytes and
+ * lengths, never pointer values or host-width representations. */
+static lib_u32 dispatch_digest(void)
+{
+    static const lib_u8 addressing[] = {0x00, 0x04, 0x05, 0x44, 0x85, 0xc0, 0xdb, 0xff};
+    static const lib_u8 prefixes[] = {0, 0x66, 0x67};
+    lib_u32 hash = 2166136261u;
+    lib_u8 code[16];
+    char statement[X86_XASM32_MAX_STATEMENT_BYTES + 1u];
+    for (unsigned opcode = 0; opcode < 256; ++opcode) {
+        for (unsigned map = 0; map < 2; ++map) {
+            for (unsigned prefix = 0; prefix < sizeof(prefixes); ++prefix) {
+                for (unsigned addr = 0; addr < sizeof(addressing); ++addr) {
+                    for (int mode = 0; mode < 2; ++mode) {
+                        lib_size length = 0, text_length = 0, at = 0;
+                        lib_status status;
+                        lib_memory_set(code, 0xa5, sizeof(code));
+                        if (prefix) code[at++] = prefixes[prefix];
+                        if (map) code[at++] = 0x0f;
+                        code[at++] = (lib_u8)opcode;
+                        code[at] = addressing[addr];
+                        status = x86_xasm32_disassemble(code, sizeof(code),
+                            statement, sizeof(statement), &text_length, &length, mode);
+                        if (status != LIB_STATUS_OK && status != LIB_STATUS_UNSUPPORTED)
+                            return 0;
+                        hash = (hash ^ (status == LIB_STATUS_OK)) * 16777619u;
+                        hash = (hash ^ (lib_u32)length) * 16777619u;
+                        hash = (hash ^ (lib_u32)text_length) * 16777619u;
+                        if (status == LIB_STATUS_OK) {
+                            for (lib_size i = 0; i < text_length; ++i)
+                                hash = (hash ^ (lib_u8)statement[i]) * 16777619u;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return hash;
+}
+
 int main(void)
 {
     lib_u8 code[16] = {0};
@@ -7,6 +47,8 @@ int main(void)
     lib_size length;
     lib_size statement_length;
     lib_size paragraph_length;
+
+    if (dispatch_digest() != 0x70f241beu) return 19;
 
     if (x86_xasm32_assemble("nop", 3u, code, sizeof(code), &length,
             LIB_TRUE) != LIB_STATUS_OK || length != 1u || code[0] != 0x90u) return 11;

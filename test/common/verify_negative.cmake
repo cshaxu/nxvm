@@ -14,6 +14,19 @@ function(reject source build expected)
     endif()
 endfunction()
 reject("#include <windows.h>\n" "" "Noncanonical")
+foreach(header IN ITEMS assert limits stddef stdint stdio stdlib string stdarg
+        ctype math stdbool float)
+    reject("#include <${header}.h>\n" "" "Noncanonical Common include")
+    reject("#include \"${header}.h\"\n" "" "Noncanonical Common include")
+endforeach()
+foreach(symbol IN ITEMS UINT_MAX INT32_MAX INT32_MIN UINT32_MAX UINT64_MAX
+        SIZE_MAX UINT_FAST16_MAX PTRDIFF_MAX)
+    reject("unsigned value = ${symbol};\n" "" "Raw integer limit")
+    reject("#define LEGACY_LIMIT ${symbol}\n" "" "Raw integer limit")
+endforeach()
+file(WRITE "${PROBE_ROOT}/machine/probe_interface.h" "#include <stdint.h>\n")
+reject("" "" "Noncanonical Common include")
+file(REMOVE "${PROBE_ROOT}/machine/probe_interface.h")
 reject("#ifdef _WIN32\n#endif\n" "" "Platform implementation")
 reject("struct hidden { HANDLE event; };\n" "" "Platform implementation")
 reject("pthread_mutex_t gate;\n" "" "Platform implementation")
@@ -39,6 +52,17 @@ reject("" "target_link_libraries(common-machine PRIVATE common-ui)\n" "Forbidden
 reject("" "target_link_libraries(common-machine PRIVATE x86-debug)\n" "Forbidden Common edge")
 reject("" "TARGET_LINK_LIBRARIES(common-machine PRIVATE common-ui)\n" "Forbidden Common edge")
 reject("" "if(WIN32)\nendif()\n" "must not select platform")
+file(WRITE "${PROBE_ROOT}/machine/probe.c"
+    "#include \"lib/types/types_interface.h\"\nlib_u32 limit = LIB_UINT32_MAX;\n"
+    "lib_size size = LIB_SIZE_MAX;\n/* UINT_MAX */\nconst char *name = \"UINT32_MAX\";\n")
+file(WRITE "${PROBE_ROOT}/CMakeLists.txt"
+    "target_link_libraries(common-machine PRIVATE types)\n")
+execute_process(COMMAND "${CMAKE_COMMAND}" -DCOMMON_ROOT=${PROBE_ROOT}
+    -P "${COMMON_ROOT}/verify_corpus.cmake"
+    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(NOT result EQUAL 0)
+    message(FATAL_ERROR "Legal Types vocabulary rejected: ${output}${error}")
+endif()
 file(WRITE "${PROBE_ROOT}/machine/probe.c" "")
 file(WRITE "${PROBE_ROOT}/CMakeLists.txt" "")
 file(WRITE "${PROBE_ROOT}/MANIFEST.sha256" "# corpus-revision: probe\n")

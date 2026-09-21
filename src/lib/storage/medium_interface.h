@@ -29,6 +29,9 @@ lib_status lib_storage_medium_read_at(const lib_storage_medium *medium,
     lib_size offset, void *bytes, lib_size byte_count);
 lib_status lib_storage_medium_write_at(lib_storage_medium *medium,
     lib_size offset, const void *bytes, lib_size byte_count);
+/* Nonempty DIRECT fills flush once, including after partial failure.
+ * The first write error takes precedence; failure does not roll back writes.
+ * Empty fills do no I/O. Flush is not an OS power-loss durability guarantee. */
 lib_status lib_storage_medium_fill_at(lib_storage_medium *medium,
     lib_size offset, lib_size byte_count, lib_u8 value);
 

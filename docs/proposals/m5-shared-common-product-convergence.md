@@ -256,6 +256,17 @@ recorded evidence, never by following successive isolated failures.
     both stripped Release architectures, complete repository-only unit coverage
     and the external integration suite. This remains an import/adaptation S;
     T531 stays open for its two-product execution gate.
+28. **S28: canonical six-package corrective refresh.** Freeze SoftPC's latest
+    committed `src/lib`, `src/common`, `src/x86`, `test/lib`, `test/common`, and
+    `test/x86` corpus after confirming that those six trees are clean. Replace
+    the corresponding NXVM trees atomically and byte-for-byte; then adapt only
+    NXVM consumers, CMake and owner-local verification to the resulting public
+    contracts. Preserve the S27 architecture: neutral Common, selected x86
+    sibling, and no compatibility aliases or locally patched shared source.
+    Prove all six trees identical, component/manifests gates, both stripped
+    Release architectures, the complete repository-only unit suite and the
+    external integration suite. Record every non-green integration row without
+    attribution. T531 remains open for its two-product execution gate.
 
 ## Verification And Exit
 
