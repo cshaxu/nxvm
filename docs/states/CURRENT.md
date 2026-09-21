@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T533 S1 Packet
-
-| Field | Required record |
+| Task | Compact progress |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved queue-head implementation on 2026-09-21: execute the retained-machine fixed-profile refactor independently, beginning with S1. |
-| Objective | Freeze a complete, reproducible baseline ledger for every retained machine constructor, profile/asset route, App configuration route, build target and test receiver before structural implementation. |
-| Non-goals | No source relocation, CMake target change, asset mutation/import, firmware embedding, YAML/INI behavior change, machine retirement, PC110 implementation or developer artifact build. |
-| Reference Baseline | `4c40d46c` (M5 Td S170); current runnable baseline remains `vm-0-5-0532`. |
-| Candidate Proposal | [Fixed-machine products and architecture consolidation](../proposals/m5-fixed-machine-products.md) and new [task history](../history/M5-T533-fixed-machine-products.md). |
-| Files And ABI Surface | Task history, one indexed evidence ledger, status and only directly required proposal/status wording; no C, CMake, test or asset ABI surface. |
-| Applicable Rules | Task Reading Set; Execution lifecycle and coverage ledger; Documentation, Architecture and Coding rules; source policy for BYOB asset boundary. No external source or binary is imported. |
-| Verification | Actual source/CMake/test inventory cross-checked with tracked paths and current CMake registrations; documentation gate; `git diff --check`; complete repository-only unit suite before numbered-S closure. |
-| Expected Markers | Finite retained-machine/variant universe; every current constructor, reset/provider branch, asset role, YAML/config key, build/test route and next S receiver has one disposition; one external build-root contract and no implicit fallback. |
-| Asset Needs | Read-only names/contracts only. Do not access, copy, hash, download or commit `nxvm-assets` payloads. |
-| Reporting Requirements | Report the frozen universe, all live legacy routes that later S work must replace, no-change behavior boundary, verification and pushed P commit. |
-| Stop Conditions | Stop for an undisposed live machine/profile variant, a required protected asset action, a contradictory owner/architecture rule, or a scope expansion beyond the retained-machine proposal. |
-| Exit Criteria | A durable indexed S1 ledger maps the complete observed surface to S2-S5 receivers or explicit retained behavior; no production path changes; unit/documentation gates pass and the P is reviewable. |
-| Original Owner Request | Execute the approved NXVM refactor independently: retain current machines, give each compiled EXE a fixed Profile and external BYOB asset root, and use NXVM.ini only for runtime configuration. |
-| Similar-Issue Sweep | All `src/app`, `src/core`, CMake and `test/` profile/configuration/asset references, including integration YAML helpers, are inventoried rather than sampling one profile. |
+| T533 S1 | Accepted at `14572230`: the finite ledger freezes XT, IBM 5170, Model 40 and default PC/AT construction, asset, configuration, CMake and test routes; retains the full existing CPU corpus; and assigns every route to S2--S5 without changing production behavior. Documentation governance and `git diff --check` pass; an isolated x64 build reports 336/336 repository-only unit tests passing in 226.85 seconds. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s1-fixed-machine-baseline-ledger.md). |
 
 ## Current Technical Baseline
 

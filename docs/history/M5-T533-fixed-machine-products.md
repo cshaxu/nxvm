@@ -14,3 +14,10 @@ asset role, configuration key, build target and owned test before relocation.
 It freezes the direct profile/build/INI contract and maps each retained machine
 and CPU variant to its next migration receiver. S1 changes no production
 behavior; its ledger is the prerequisite for later source moves.
+
+Accepted in `14572230` after independent review: the ledger has a finite
+four-machine scope, preserves all existing CPU code and repository-only tests,
+assigns every observed construction/configuration/build route to S2--S5, and
+does not make a protected-asset claim. The x64 isolated build passed 336/336
+repository-only unit tests in 226.85 seconds; documentation governance and
+`git diff --check` passed.
