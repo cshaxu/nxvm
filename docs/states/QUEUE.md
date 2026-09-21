@@ -5,7 +5,6 @@ reserve a numeric task identifier, or define a technical baseline.
 
 ## M5 Candidates
 
-1. [M5 NXVM single-product layout](../proposals/m5-nxvm-single-product-layout.md)
 1. [M5 Bochs instruction-differential debug bridge](../proposals/m5-bochs-instruction-differential-debug-bridge.md)
 2. [M5 YAML asset and read-only CMOS seed contract](../proposals/m5-yaml-image-load-mode-contract.md)
 3. [M5 PIC8259A manual and board-integration reclosure](../proposals/m5-pic-board-integration-reclosure.md)

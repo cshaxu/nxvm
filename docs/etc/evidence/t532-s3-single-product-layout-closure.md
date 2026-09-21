@@ -1,7 +1,7 @@
 # T532 S3 Single-Product Layout Closure
 
 This evidence records the final closure sweep for the approved
-[single-product layout](../../proposals/m5-nxvm-single-product-layout.md).
+[single-product layout](../../history/M5-T532-nxvm-single-product-layout-proposal.md).
 The current [Architecture](../../design/ARCHITECTURE.md) and
 [Source Layout](../../design/CODING.md) remain the current authorities.
 

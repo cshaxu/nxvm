@@ -1,4 +1,4 @@
-# M5 NXVM Single-Product Layout
+# M5 T532 NXVM Single-Product Layout Proposal
 
 ## Goal
 

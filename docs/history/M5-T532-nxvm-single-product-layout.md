@@ -1,8 +1,8 @@
 # M5 T532 NXVM Single-Product Layout
 
 Owner admitted this task on 2026-09-20 to reorganize NXVM as one VM product.
-The durable candidate scope is retained in
-[the active proposal](../proposals/m5-nxvm-single-product-layout.md).
+The admitted scope is retained in the
+[archived proposal](M5-T532-nxvm-single-product-layout-proposal.md).
 
 S1 freezes a complete production/test/build path ledger before any structural
 move. Its completed ledger is
