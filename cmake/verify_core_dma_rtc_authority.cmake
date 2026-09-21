@@ -2,17 +2,17 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" core_board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" core_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_board.c" core_board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_scheduler.c" core_scheduler_source)
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     devices_source)
 
 foreach(required IN ITEMS "core_machine_configure_dma"

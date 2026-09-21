@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app/composition.c" app_source)
 
 if(source MATCHES "vm_platform_|run_handle|executor_fifo")
         message(FATAL_ERROR "VM machine lifecycle retains a platform run-handle path")

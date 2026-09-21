@@ -1,10 +1,10 @@
 #include "type.h"
 
-#include "core/machine/memory.h"
-#include "vm/machine/machine_private.h"
-#include "vm/machine/lifecycle.h"
-#include "vm/machine/media/fdd.h"
-#include "vm/machine/media/hdd.h"
+#include "core/core/memory.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/media/fdd.h"
+#include "core/machine/media/hdd.h"
 #include "test/integration/support/session_yaml.h"
 
 static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)

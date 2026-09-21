@@ -1,8 +1,8 @@
 #include "type.h"
 #include <windows.h>
-#include "vm/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
-#include "vm/machine/lifecycle.h"
+#include "core/machine/lifecycle.h"
 
 #include "test/integration/support/session_yaml.h"
 

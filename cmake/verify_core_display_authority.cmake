@@ -2,15 +2,15 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_display.c" core_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_display.c" core_display_source)
 set(core_source "${core_plan_source}${core_display_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/display.c" display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/display.c" display_source)
 
 foreach(required IN ITEMS "core_machine_display_config"
     "core_machine_configure_display" "core_machine_display_ports_are_vadp"
@@ -37,9 +37,9 @@ endif()
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
     "core_machine_vadp_configure_" "core_machine_install_port_provider")
     foreach(vm_source IN ITEMS
-        "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c"
-        "${PROJECT_SOURCE_DIR}/src/vm/machine/display.c")
-        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/machine/machine.c")
+        "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c"
+        "${PROJECT_SOURCE_DIR}/src/core/machine/display.c")
+        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
             set(vm_source_text "${machine_source}")
         else()
             set(vm_source_text "${display_source}")

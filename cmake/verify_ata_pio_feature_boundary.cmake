@@ -2,14 +2,14 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/hdc.c" hdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile_private.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile_private.h"
     profile_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/core/machine/core_machine_hdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/core/core/core_machine_hdc_smoke.c"
     core_fixture)
 
 if(hdc_source MATCHES "#include[ \t]+\"vm/")

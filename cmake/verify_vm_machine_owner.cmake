@@ -4,16 +4,16 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_text)
 if(cmake_text MATCHES "vm-composition" OR
-        cmake_text MATCHES "src/vm/composition/session")
+        cmake_text MATCHES "src/(vm|core/machine)/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor route remains in CMake")
 endif()
-if(EXISTS "${PROJECT_SOURCE_DIR}/src/vm/composition/session")
+if(EXISTS "${PROJECT_SOURCE_DIR}/src/core/machine/composition/session")
     message(FATAL_ERROR "obsolete VM composition executor source root remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/event_interface.h" event_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/event_interface.h" event_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app/composition.c" app_source)
 
 # Common owns the sole lifecycle queue and worker.  App composition constructs
 # it from the vm/machine driver, then forwards copied facts to Common Session.
@@ -41,7 +41,7 @@ endforeach()
 
 string(FIND "${lifecycle_source}" "common_machine_create" position)
 if(NOT position EQUAL -1)
-    message(FATAL_ERROR "vm/machine still constructs Common")
+    message(FATAL_ERROR "core/core still constructs Common")
 endif()
 
 foreach(required IN ITEMS
@@ -70,18 +70,15 @@ foreach(forbidden IN ITEMS "set_lifecycle_reporter" "set_display_reporter")
     endif()
 endforeach()
 
-file(GLOB_RECURSE vm_sources
-    "${PROJECT_SOURCE_DIR}/src/vm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/vm/*.h")
-foreach(source IN LISTS vm_sources)
-    file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/vm" "${source}")
-    if(relative MATCHES "^(machine|profile)/")
-        continue()
-    endif()
+file(GLOB_RECURSE app_sources
+    "${PROJECT_SOURCE_DIR}/src/app/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app/*.h")
+foreach(source IN LISTS app_sources)
+    file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/app" "${source}")
     file(READ "${source}" source_text)
     if(source_text MATCHES "core_machine_(create|destroy|reset|run|request_stop|capture_display_snapshot)")
-        message(FATAL_ERROR "direct Core runtime access outside vm/machine: ${relative}")
+        message(FATAL_ERROR "direct Core runtime access outside core/machine: ${relative}")
     endif()
 endforeach()
 
-message(STATUS "M5 VM machine Common-owner and copied-fact boundary verified")
+message(STATUS "M5 NXVM machine Common-owner and copied-fact boundary verified")

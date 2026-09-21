@@ -2,12 +2,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/test/core/machine/core_machine_fdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/test/core/core/core_machine_fdc_smoke.c"
     core_fixture)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/media/fdd.h" fdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd.h" fdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/media/fdd.c" fdd_source)
 
 foreach(forbidden IN ITEMS "pImgBase" "pCurrByte" "transCount"
     "core_machine_memory_" "core_machine_pic_set_irq" "t_fdd"

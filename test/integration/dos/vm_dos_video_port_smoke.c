@@ -1,10 +1,10 @@
 #include "type.h"
 
-#include "core/machine/debug_interface.h"
-#include "core/machine/machine_interface.h"
-#include "vm/machine/lifecycle.h"
-#include "vm/machine/machine_private.h"
-#include "vm/machine/waiting.h"
+#include "core/core/debug_interface.h"
+#include "core/core/machine_interface.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 #include "test/integration/support/session_yaml.h"
 

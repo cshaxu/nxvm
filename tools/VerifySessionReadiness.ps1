@@ -20,7 +20,7 @@ Get-Content -LiteralPath $inventoryPath | ForEach-Object {
 # Every retained mutable file-static object is initialized at its declaration.
 # Match that initializer, not a `static` function return type whose parameter
 # list starts on a following line.
-$declaration = '^\s*static\s+(?!const\b)[^;]*='
+$declaration = '^\s*static\s+(?![^;]*\bconst\b)[^;]*='
 $detected = @{}
 Get-ChildItem (Join-Path $root 'src') -Recurse -File -Filter '*.c' | ForEach-Object {
     $relative = $_.FullName.Substring($root.Length + 1).Replace('\', '/')

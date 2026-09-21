@@ -2,17 +2,17 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" machine_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine.c" machine_lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_scheduler.c" machine_scheduler_source)
 set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/clock.c" clock_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/execution_provider.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/clock.c" clock_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/execution_provider.h"
     provider_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile_private.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/pc_at_profile_private.h"
     profile_header)
 
 foreach(required IN ITEMS "dma_clock" "pit_clock" "vadp_clock" "kbc_clock"

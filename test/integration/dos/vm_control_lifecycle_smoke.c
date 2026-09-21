@@ -5,8 +5,8 @@
 
 
 
-#include "vm/machine/control.h"
-#include "vm/machine/machine_private.h"
+#include "core/machine/control.h"
+#include "core/machine/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)

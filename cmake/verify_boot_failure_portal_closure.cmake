@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" lifecycle)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/external_pc_at_rom.c" provider)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/profile/default_profile/external_pc_at_rom.c" provider)
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 
 foreach(required "vm_profile_external_pc_at_rom_provider"

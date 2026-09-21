@@ -2,13 +2,13 @@
 
 #include <windows.h>
 
-#include "core/machine/debug_interface.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/machine.h"
+#include "core/core/debug_interface.h"
+#include "core/core/machine_interface.h"
+#include "core/core/machine.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/machine_interface.h"
-#include "vm/machine/machine_private.h"
-#include "vm/machine/waiting.h"
+#include "core/core/machine_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 
 #define VM_T287_PROBE_FDD_BYTES (1440u * 1024u)
 #define VM_T287_PROBE_BUDGET 500000u

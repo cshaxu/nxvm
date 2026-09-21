@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(t338_source "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_instructions.c")
+set(t338_source "${PROJECT_SOURCE_DIR}/src/core/core/cpu_instructions.c")
 if(NOT EXISTS "${t338_source}")
     message(FATAL_ERROR "T338 source is missing: ${t338_source}")
 endif()

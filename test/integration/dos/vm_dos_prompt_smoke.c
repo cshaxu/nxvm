@@ -8,14 +8,14 @@
 
 
 
-#include "core/machine/debug_interface.h"
-#include "core/machine/machine_interface.h"
+#include "core/core/debug_interface.h"
+#include "core/core/machine_interface.h"
 
-#include "vm/machine/lifecycle.h"
+#include "core/machine/lifecycle.h"
 
-#include "vm/machine/control.h"
+#include "core/machine/control.h"
 
-#include "vm/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u

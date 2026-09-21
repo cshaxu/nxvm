@@ -2,10 +2,10 @@
 
 #include "type.h"
 
-#include "core/machine/guest_presentation_mailbox_interface.h"
-#include "vm/machine/control.h"
-#include "vm/machine/lifecycle.h"
-#include "vm/machine/machine_private.h"
+#include "core/core/guest_presentation_mailbox_interface.h"
+#include "core/machine/control.h"
+#include "core/machine/lifecycle.h"
+#include "core/machine/machine_private.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_T287_FDISK_CELLS (80u * 25u)

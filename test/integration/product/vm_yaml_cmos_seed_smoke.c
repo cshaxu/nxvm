@@ -1,9 +1,9 @@
 #include "type.h"
 
-#include "core/machine/machine.h"
-#include "core/machine/port.h"
+#include "core/core/machine.h"
+#include "core/core/port.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/machine_private.h"
+#include "core/machine/machine_private.h"
 
 static C_INT vm_yaml_cmos_seed_matches(const C_CHAR *directory,
     const C_CHAR *file_name, type_unsigned_8 index, type_unsigned_8 expected)

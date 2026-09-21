@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE vm_sources
-    "${PROJECT_SOURCE_DIR}/src/vm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/vm/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app/*.h")
 foreach(source IN LISTS vm_sources)
     file(READ "${source}" source_text)
     foreach(forbidden "firmware_portal" "qddisk" "int f4" "int f5")
@@ -15,7 +15,7 @@ foreach(source IN LISTS vm_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     machine_devices)
 foreach(required "core_machine_plan_configure_hdc")
     string(FIND "${machine_devices}" "${required}" position)
@@ -24,7 +24,7 @@ foreach(required "core_machine_plan_configure_hdc")
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c" machine_plan)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_plan.c" machine_plan)
 foreach(required "core_machine_configure_hdc")
     string(FIND "${machine_plan}" "${required}" position)
     if(position EQUAL -1)

@@ -3,14 +3,14 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(obsolete_adapter
-    "${PROJECT_SOURCE_DIR}/src/vm/machine/console_machine_adapter.c")
+    "${PROJECT_SOURCE_DIR}/src/core/machine/console_machine_adapter.c")
 if(EXISTS "${obsolete_adapter}")
     message(FATAL_ERROR "Retired Console-to-composition adapter remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/composition.c" app_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/app/command.c" product_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/debug_adapter.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app/command.c" product_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/debug_adapter.c"
     debug_source)
 
 foreach(obsolete_helper
@@ -26,8 +26,8 @@ foreach(obsolete_helper
 endforeach()
 
 foreach(removed_file
-    "${PROJECT_SOURCE_DIR}/src/vm/machine/selected_session.c"
-    "${PROJECT_SOURCE_DIR}/src/vm/machine/selected_session.h")
+    "${PROJECT_SOURCE_DIR}/src/core/machine/selected_session.c"
+    "${PROJECT_SOURCE_DIR}/src/core/machine/selected_session.h")
     if(EXISTS "${removed_file}")
         message(FATAL_ERROR "Console selected-session helper remains unnecessarily split")
     endif()

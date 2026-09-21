@@ -2,17 +2,17 @@
 
 #include <windows.h>
 
-#include "core/machine/cpu.h"
-#include "core/machine/debug_interface.h"
-#include "core/machine/machine.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/guest_presentation_mailbox_interface.h"
+#include "core/core/cpu.h"
+#include "core/core/debug_interface.h"
+#include "core/core/machine.h"
+#include "core/core/machine_interface.h"
+#include "core/core/guest_presentation_mailbox_interface.h"
 #include "test/integration/support/session_yaml.h"
-#include "vm/machine/control.h"
-#include "vm/machine/fault.h"
-#include "vm/machine/lifecycle.h"
-#include "vm/machine/machine_interface.h"
-#include "vm/machine/machine_private.h"
+#include "core/machine/control.h"
+#include "core/machine/fault.h"
+#include "core/machine/lifecycle.h"
+#include "core/core/machine_interface.h"
+#include "core/machine/machine_private.h"
 #include "../../core/support/core_machine_cpu_fixture.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)

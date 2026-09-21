@@ -7,32 +7,24 @@ contract evidence is supporting material indexed in
 
 ## Current And Target Trees
 
-The current M5 tree contains `src/lib/`, `src/core/`, `src/vm/`, and a
-non-runnable `src/vdm/` skeleton. The M5 target adds `src/common/` only for
-shared session, machine, UI, xasm32 and Debug components. `src/mantle/` and
-`src/dos/` appear only when their admitting milestones begin; empty placeholder
-roots are prohibited.
+NXVM is a single bootable-machine product. `src/lib/`, `src/common/`, and
+`src/x86/` are shared components; `src/app/` and `src/core/` are NXVM-owned.
+Empty future-product roots are prohibited.
 
 ```text
 src/
   lib/{types,console,base,console-broker,storage,kvm-base,kvm-console,kvm-window}/
   common/
     {contracts.h,session,machine,ui,xasm32,debug}/
-  core/{machine,product}/
-  vm/
+  app/
     main.c
-    app/{catalog,command,composition,config,recorder,version}/
+    request_interface.h
+    {catalog,command,composition,config,keyboard,recorder,version}/
+  core/
+    core/
     machine/
       media/
-    {platform,profile,session}/
-  mantle/
-    composition/
-    {machine,platform,product}/
-  dos/{machine,platform,product,profile}/
-  vdm/
-    main.c
-    composition/
-    {machine,platform,product,profile}/
+    profile/
 ```
 
 The diagram is a target source map, not permission to create every directory
@@ -44,8 +36,8 @@ admission and does not become a permanent source root.
 Headers stay beside their implementations. A public cross-module contract is
 named `*_interface.h`; an injected implementation is named `*_provider`.
 Public symbols use their ownership path, for example `core_machine_*`,
-`common_session_*`, `x86_debug_*`, `vm_app_*`, `mantle_platform_*`,
-`dos_machine_*`, and `vdm_product_*`. `src/lib/types` is the sole shared C
+`common_session_*`, `x86_debug_*`, and `vm_app_*`. Existing stable symbol
+prefixes need not mirror a directory rename. `src/lib/types` is the sole shared C
 type, status, atomic, and basic C-runtime vocabulary foundation.
 
 Files remain flat within a module until a real multi-file subsystem justifies a
@@ -55,9 +47,9 @@ root.
 ## Source Organization
 
 The retained test layout uses one repository-root `test/` directory.
-Repository-only test modules mirror their source owner: `test/core/`,
-`test/common/` and `test/vm/` follow their corresponding source roots; a
-directory is introduced only for a real source subsystem or cross-owner
-composition boundary. `test/support/`
+Repository-only test modules mirror their source owner: `test/app/`,
+`test/core/core/`, `test/core/machine/`, `test/core/profile/`, `test/common/`,
+and `test/x86/` follow their corresponding source components. A directory is
+introduced only for a real source subsystem or cross-owner composition boundary. `test/support/`
 contains setup-only helpers, never a second product path. External-asset
 product scenarios live only in `test/integration/`; they are not unit tests.

@@ -2,10 +2,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/guest_input_interface.h" input_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/guest_input.c" input_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/core/machine/core_machine_guest_input_source_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/guest_input_interface.h" input_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/guest_input.c" input_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/test/core/core/core_machine_guest_input_source_smoke.c"
     input_smoke_source)
 
 foreach(source_text IN ITEMS "${input_header}" "${input_source}"

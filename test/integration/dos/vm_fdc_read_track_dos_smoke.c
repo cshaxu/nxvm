@@ -2,12 +2,12 @@
 
 #include <windows.h>
 
-#include "core/machine/fdc.h"
-#include "core/machine/machine.h"
-#include "core/machine/machine_interface.h"
-#include "core/machine/memory_interface.h"
-#include "vm/machine/machine_private.h"
-#include "vm/machine/waiting.h"
+#include "core/core/fdc.h"
+#include "core/core/machine.h"
+#include "core/core/machine_interface.h"
+#include "core/core/memory_interface.h"
+#include "core/machine/machine_private.h"
+#include "core/machine/waiting.h"
 #include "test/integration/support/session_yaml.h"
 
 #define VM_FDC242_BOOT_BUDGET 6000000u

@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "vm/app/catalog.h"
+#include "app/catalog.h"
 #include "test/integration/support/nxvm_console_process.h"
 
 #define NXVM_CONSOLE_WAIT_MILLISECONDS 5000u

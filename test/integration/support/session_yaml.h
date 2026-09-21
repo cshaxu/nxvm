@@ -1,10 +1,10 @@
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_YAML_H
 
-#include "core/machine/media_interface.h"
-#include "vm/machine/media/media.h"
-#include "vm/machine/machine_interface.h"
-#include "vm/app/catalog.h"
+#include "core/core/media_interface.h"
+#include "core/machine/media/media.h"
+#include "core/core/machine_interface.h"
+#include "app/catalog.h"
 
 typedef struct integration_yaml_session integration_yaml_session;
 

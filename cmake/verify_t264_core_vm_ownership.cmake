@@ -14,7 +14,7 @@ foreach(source IN LISTS core_sources)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
     machine_devices)
 foreach(forbidden "core_machine_rtc_initialize" "core_machine_rtc_reset"
         "core_machine_rtc_advance" "core_machine_rtc_finalize")
@@ -25,13 +25,13 @@ foreach(forbidden "core_machine_rtc_initialize" "core_machine_rtc_reset"
 endforeach()
 
 file(GLOB_RECURSE vm_sources
-    "${PROJECT_SOURCE_DIR}/src/vm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/vm/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app/*.h")
 foreach(source IN LISTS vm_sources)
     file(READ "${source}" source_text)
     string(FIND "${source_text}" "core_machine_run(" run_position)
     if(NOT run_position EQUAL -1 AND
-        NOT source STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/machine/runner.c")
+        NOT source STREQUAL "${PROJECT_SOURCE_DIR}/src/core/machine/runner.c")
         message(FATAL_ERROR "VM-side CPU execution path: ${source}")
     endif()
 endforeach()

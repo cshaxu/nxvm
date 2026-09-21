@@ -2,11 +2,11 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/machine_devices.c" devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/dma.c" dma_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c" devices_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/dma.c" dma_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/core/machine_board.c" board_source)
 
 foreach(forbidden IN ITEMS "dma_primary" "dma_secondary" "dma_latch"
     "core_machine_dma_set_drq" "core_machine_memory_")
