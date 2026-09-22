@@ -66,7 +66,7 @@ static C_VOID vm_app_console_prompt(common_session_command_result *result,
     const C_CHAR *prompt)
 {
     if (result == LIB_NULL || prompt == STD_NULL) return;
-    (void)snprintf(result->prompt, sizeof(result->prompt), "%s", prompt);
+    (C_VOID)snprintf(result->prompt, sizeof(result->prompt), "%s", prompt);
     result->arm_prompt = LIB_TRUE;
 }
 
@@ -118,14 +118,14 @@ static C_VOID vm_app_console_info(vm_app_console_context *context,
         "Floppy Disk Drive: %.2f MB, %s\n",
         vm_machine_profile_name(information.profile_kind),
         core_machine_cpu_profile_name(information.cpu_profile),
-        (unsigned int)(information.memory_bytes < (1u << 20) ?
+        (C_UINT)(information.memory_bytes < (1u << 20) ?
             information.memory_bytes >> 10 : information.memory_bytes >> 20),
         information.memory_bytes < (1u << 20) ? "KB" : "MB",
         information.floppy_image_bytes * 1.0 / ((1 << 10) * 1000),
         information.floppy_media_inserted ? "inserted" : "not inserted");
     if (information.fixed_disk_present)
         vm_app_console_append(result, "Hard Disk Drive:   %u cylinders, %.2f MB, %s\n",
-            (unsigned int)information.fixed_disk_cylinders,
+            (C_UINT)information.fixed_disk_cylinders,
             information.fixed_disk_image_bytes * 1.0 / (1 << 20),
             information.fixed_disk_media_connected ? "connected" : "disconnected");
     vm_app_console_append(result, "\nBIOS: %s\nRunning: %s\n",
@@ -226,7 +226,7 @@ static C_VOID vm_app_console_submit_line(C_VOID *opaque,
         vm_app_console_submit_debug(context, line, result);
         return;
     }
-    (void)snprintf(context->command_buffer, sizeof(context->command_buffer), "%s", line);
+    (C_VOID)snprintf(context->command_buffer, sizeof(context->command_buffer), "%s", line);
     vm_app_console_parse(context, context->command_buffer);
     if (context->argument_count == 0u) return;
     if (!STD_STRCMP(context->arguments[0], "help")) vm_app_console_help(result);

@@ -92,7 +92,7 @@ static C_INT core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
     type_unsigned_32 *out_bits)
 {
     type_unsigned_32 bits = value->negative ? 0x80000000u : 0u;
-    int exponent;
+    C_INT exponent;
 
     if (value->kind == CORE_MACHINE_FPU_VALUE_ZERO) {
         *out_bits = bits;
@@ -102,7 +102,7 @@ static C_INT core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
         *out_bits = bits | 0x7f800000u;
         return 1;
     }
-    exponent = (int)value->exponent + 127;
+    exponent = (C_INT)value->exponent + 127;
     if (exponent <= 0 || exponent >= 0xff ||
         value->significand < 0x00800000u || value->significand >= 0x01000000u) {
         return 0;

@@ -144,7 +144,7 @@ type_status vm_app_ini_parse(const C_CHAR *directory, const C_CHAR *name,
         return TYPE_STATUS_INVALID_ARGUMENT;
     if (!vm_app_ini_copy(request.file_name, sizeof(request.file_name), name))
         return TYPE_STATUS_INVALID_ARGUMENT;
-    (void)vm_app_ini_copy(request.display, sizeof(request.display), "console");
+    (C_VOID)vm_app_ini_copy(request.display, sizeof(request.display), "console");
     request.floppy_mode[0u] = LIB_STORAGE_MEDIUM_OVERLAY;
     request.floppy_mode[1u] = LIB_STORAGE_MEDIUM_OVERLAY;
     request.fixed_disk_mode[0u] = LIB_STORAGE_MEDIUM_OVERLAY;
@@ -230,7 +230,7 @@ type_status vm_app_ini_load(const C_CHAR *path, vm_session_request *out_request)
     STD_FREE(bytes);
     if (!vm_app_ini_copy(directory, sizeof(directory), path)) { STD_FREE(document); return TYPE_STATUS_INVALID_ARGUMENT; }
     slash = vm_app_ini_last_separator(directory);
-    if (slash == STD_NULL) (void)vm_app_ini_copy(directory, sizeof(directory), ".");
+    if (slash == STD_NULL) (C_VOID)vm_app_ini_copy(directory, sizeof(directory), ".");
     else if (slash == directory) slash[1u] = '\0';
     else *slash = '\0';
     status = vm_app_ini_parse(directory, path, document, out_request);

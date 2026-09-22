@@ -454,3 +454,19 @@ S36 replaces each direct runtime call with its existing `STD_*` equivalent,
 without adding a wrapper or changing executor behavior. The direct-runtime
 sweep is empty, the focused executor-state smoke passes, and the complete
 334-case repository-only unit suite passes.
+
+## S37: App/Core Type-Vocabulary Convergence
+
+The post-S36 sweep found the same direct-C vocabulary defect one layer wider:
+the executor-state public surface and implementation retain raw `void`, `int`
+and `atomic_bool`, with equivalent raw spellings in Machine Debug, the Debug
+adapter, FPU conversion and App INI code. S37 replaces only those spellings
+with the existing `C_VOID`, `C_INT` and `STD_ATOMIC_BOOL` facade. No signature,
+ABI, state transition, parser or numeric representation may change.
+
+S37 closes the entire confirmed equivalence set, including callback ABI
+spellings and ignored-result casts. The complete raw-token sweep has no code
+match. Strict C11 `-Werror` checks cover every modified source; a fresh Make
+build passes all 334 repository-only unit tests in 17.67 seconds, and
+documentation governance passes. T534 remains open for the next independent
+App/Core audit pass.

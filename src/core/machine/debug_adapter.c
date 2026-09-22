@@ -33,7 +33,7 @@ static type_status vm_machine_debug_map_watch(
     }
 }
 
-static void vm_machine_debug_copy_observation(x86_debug_observation *out_observation,
+static C_VOID vm_machine_debug_copy_observation(x86_debug_observation *out_observation,
     const core_machine_debug_instruction_observation *source)
 {
     type_unsigned_8 index;
@@ -55,7 +55,7 @@ static void vm_machine_debug_copy_observation(x86_debug_observation *out_observa
     out_observation->watch_address = source->watch_address;
 }
 
-static void vm_machine_debug_copy_segment(
+static C_VOID vm_machine_debug_copy_segment(
     x86_debug_segment_snapshot *out_segment,
     const core_machine_debug_segment_snapshot *source)
 {
@@ -212,9 +212,9 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
     return LIB_STATUS_INVALID_ARGUMENT;
 }
 
-lib_status vm_machine_debug_execute(void *context,
-    const void *request, lib_size request_size,
-    void *response, lib_size response_capacity, lib_size *response_size)
+lib_status vm_machine_debug_execute(C_VOID *context,
+    const C_VOID *request, lib_size request_size,
+    C_VOID *response, lib_size response_capacity, lib_size *response_size)
 {
     lib_status status;
 

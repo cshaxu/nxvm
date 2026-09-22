@@ -65,7 +65,7 @@ type_status vm_machine_bind_execution_provider(vm_machine *machine)
 /* Common owns the sole host worker and lifecycle queue.  NXVM only adapts its
  * bounded Core executor at the explicit callbacks below; it does not retain a
  * second task, request FIFO, or generation counter. */
-static lib_bool vm_machine_driver_reset(void *context)
+static lib_bool vm_machine_driver_reset(C_VOID *context)
 {
     vm_machine *machine = (vm_machine *)context;
     type_status status;
@@ -75,7 +75,7 @@ static lib_bool vm_machine_driver_reset(void *context)
     return vm_machine_finish_reset(machine, status) == TYPE_STATUS_OK;
 }
 
-static lib_bool vm_machine_driver_run(void *context)
+static lib_bool vm_machine_driver_run(C_VOID *context)
 {
     vm_machine *machine = (vm_machine *)context;
 
@@ -85,17 +85,17 @@ static lib_bool vm_machine_driver_run(void *context)
     return !machine->runner_failed;
 }
 
-static void vm_machine_driver_request_stop(void *context)
+static C_VOID vm_machine_driver_request_stop(C_VOID *context)
 { vm_machine_control_stop(&((vm_machine *)context)->control); }
 
-static void vm_machine_driver_request_wake(void *context)
+static C_VOID vm_machine_driver_request_wake(C_VOID *context)
 { (C_VOID)context; }
 
-static void vm_machine_driver_set_heartbeat(void *context, lib_bool enabled)
+static C_VOID vm_machine_driver_set_heartbeat(C_VOID *context, lib_bool enabled)
 { (C_VOID)context; (C_VOID)enabled; }
 
-static void vm_machine_driver_set_executor_callback(void *context,
-    common_machine_executor_callback callback, void *callback_context)
+static C_VOID vm_machine_driver_set_executor_callback(C_VOID *context,
+    common_machine_executor_callback callback, C_VOID *callback_context)
 {
     vm_machine *machine = (vm_machine *)context;
 
@@ -104,11 +104,11 @@ static void vm_machine_driver_set_executor_callback(void *context,
     machine->executor_callback_context = callback_context;
 }
 
-static void vm_machine_driver_deliver_input(void *context,
+static C_VOID vm_machine_driver_deliver_input(C_VOID *context,
     const kvm_input_event *event)
 { (C_VOID)vm_machine_deliver_common_input((vm_machine *)context, event); }
 
-static lib_status vm_machine_driver_copy_frame(void *context, common_machine_frame *frame)
+static lib_status vm_machine_driver_copy_frame(C_VOID *context, common_machine_frame *frame)
 {
     if (context == NULL || frame == NULL) return LIB_STATUS_INVALID_ARGUMENT;
     /* Common clears staging validity before this call.  A Core display that
@@ -118,7 +118,7 @@ static lib_status vm_machine_driver_copy_frame(void *context, common_machine_fra
     return LIB_STATUS_OK;
 }
 
-static lib_bool vm_machine_driver_set_removable_media(void *context,
+static lib_bool vm_machine_driver_set_removable_media(C_VOID *context,
     const char *path, lib_storage_medium_mode mode)
 {
     vm_machine *machine = (vm_machine *)context;
@@ -127,7 +127,7 @@ static lib_bool vm_machine_driver_set_removable_media(void *context,
     return vm_machine_set_common_media(machine, path, mode) == TYPE_STATUS_OK;
 }
 
-static lib_bool vm_machine_driver_take_debug_stop(void *context)
+static lib_bool vm_machine_driver_take_debug_stop(C_VOID *context)
 {
     vm_machine *machine = (vm_machine *)context;
     vm_machine_debug_stop_reason reason;
@@ -136,7 +136,7 @@ static lib_bool vm_machine_driver_take_debug_stop(void *context)
         &machine->debug, &reason) ? LIB_TRUE : LIB_FALSE;
 }
 
-static void vm_machine_driver_cancel_debug(void *context)
+static C_VOID vm_machine_driver_cancel_debug(C_VOID *context)
 {
     vm_machine *machine = (vm_machine *)context;
     if (machine != STD_NULL) vm_machine_debug_reset(&machine->debug);

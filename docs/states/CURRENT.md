@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S36 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S35 whole-corpus runtime-facade sweep found Core executor state bypasses the required `type` facade for allocation and atomics. This bounded cleanup is within that approved objective. |
-| Objective | Route the complete executor-state implementation through the existing Core `STD_*` allocation and atomic facade without changing its state machine. |
-| Non-goals | Do not change executor lifecycle semantics, Common contracts, machine topology, timing, asset policy or product UX. |
-| Reference Baseline | S35 `41d8aff8`; new CQ-35 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S37 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S36 whole-corpus type-vocabulary sweep found raw C scalar and atomic spellings where existing project aliases already express the identical types. This bounded cleanup is within that approved objective. |
+| Objective | Route every confirmed App/Core raw C type spelling through the existing project type facade without changing behavior, ABI or ownership. |
+| Non-goals | Do not change executor/debug/FPU/INI semantics, Common contracts, machine topology, timing, asset policy or product UX. |
+| Reference Baseline | S36 `bb5394f`; new CQ-36 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/executor_state.c`, existing executor-state smoke, convergence ledger/history. No public interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete mechanism; [Coding](../rules/CODING.md): App/Core use the project type facade rather than parallel direct runtime operations; [Architecture](../rules/ARCHITECTURE.md): Core retains its executor-state owner. |
-| Verification | Full App/Core direct-runtime symbol sweep; focused executor-state smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No direct allocation, deallocation or atomic call remains in App/Core production source; executor start/stop/reset behavior is unchanged. |
+| Files And ABI Surface | `src/core/machine/executor_state.[ch]`, `src/core/machine/debug.[ch]`, `src/core/machine/debug_adapter.c`, `src/core/devices/fpu.c`, `src/app/ini.c`, `src/app/command.c`, existing executor-state smoke, convergence ledger/history. No public ABI change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete mechanism; [Coding](../rules/CODING.md): App/Core use one project type vocabulary rather than parallel direct C spellings; [Architecture](../rules/ARCHITECTURE.md): each affected owner and boundary remains unchanged. |
+| Verification | Complete App/Core raw-type sweep; focused executor-state smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No confirmed raw `void`, `int` or `atomic_bool` spelling remains in App/Core production source where the existing facade supplies an equivalent; behavior is unchanged. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-35, every direct-runtime sweep disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if the existing facade cannot express required executor-state semantics. |
-| Exit Criteria | CQ-35 is repaired: executor state uses one existing project runtime facade; focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-36, every raw-type sweep disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if an affected spelling has an intentional ABI distinction the existing facade cannot express. |
+| Exit Criteria | CQ-36 is repaired: every confirmed equivalent spelling uses the existing facade; focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all App/Core production source for direct allocation, deallocation and atomic calls outside the established facade. |
+| Similar-Issue Sweep | Sweep all App/Core production source for raw C scalar/atomic spellings that have an existing project facade equivalent. |
 
 ## Current Technical Baseline
 

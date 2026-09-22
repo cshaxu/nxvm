@@ -1,11 +1,11 @@
 #include "core/machine/debug.h"
 
-void vm_machine_debug_initialize(t_debug *debug)
+C_VOID vm_machine_debug_initialize(t_debug *debug)
 {
     if (debug != STD_NULL) STD_MEMSET(debug, 0, sizeof(*debug));
 }
 
-void vm_machine_debug_reset(t_debug *debug)
+C_VOID vm_machine_debug_reset(t_debug *debug)
 {
     if (debug == STD_NULL) return;
     STD_MEMSET(&debug->plan, 0, sizeof(debug->plan));
@@ -13,7 +13,7 @@ void vm_machine_debug_reset(t_debug *debug)
     debug->observation_valid = TYPE_FALSE;
 }
 
-void vm_machine_debug_refresh(t_debug *debug,
+C_VOID vm_machine_debug_refresh(t_debug *debug,
     const core_machine_debug_instruction_observation *observation)
 {
     if (debug == STD_NULL || observation == STD_NULL) return;
@@ -21,9 +21,9 @@ void vm_machine_debug_refresh(t_debug *debug,
     debug->observation_valid = TYPE_TRUE;
 }
 
-void vm_machine_debug_finalize(t_debug *debug)
+C_VOID vm_machine_debug_finalize(t_debug *debug)
 {
-    (void)debug;
+    (C_VOID)debug;
 }
 
 type_status vm_machine_debug_set_execution_plan(t_debug *debug,

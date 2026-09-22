@@ -8,8 +8,8 @@
 
 #include "core/machine/machine_interface.h"
 
-lib_status vm_machine_debug_execute(void *context,
-    const void *request, lib_size request_size,
-    void *response, lib_size response_capacity, lib_size *response_size);
+lib_status vm_machine_debug_execute(C_VOID *context,
+    const C_VOID *request, lib_size request_size,
+    C_VOID *response, lib_size response_capacity, lib_size *response_size);
 
 #endif
