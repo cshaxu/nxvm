@@ -8,7 +8,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         "speed turbo\r", "help\r", "info\r", "exit\r"
     };
     static const C_CHAR *const markers[] = {
-        "Speed: turbo", "VM Console Commands", "Device Info", ""
+        "Speed: turbo", "VM Console Commands", "Machine:           ibm-5170-model-339", ""
     };
 
     if (argc != 3 || !nxvm_console_process_run(argv[2], argv[1],

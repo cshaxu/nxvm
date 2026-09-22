@@ -564,3 +564,12 @@ The focused INI smoke, complete 334-case `-j8` unit replay and documentation
 governance pass. The same static-analysis sweep finds no other provably true or
 false condition; only non-semantic const-pointer advice and two CPU declaration
 parameter-name mismatches remain for separate disposition.
+
+## S46: Profile-Owned Console Identity
+
+The S45 manual App review found the `INFO` command reporting IBM PC/AT as a
+literal while separately displaying the selected Profile. This gave every
+non-default fixed product two conflicting board identities. S46 removes the
+literal and uses the frozen Profile name as the sole machine identity. The
+console unit, 5170 console-probe build, complete 334-case `-j8` unit replay
+and documentation governance pass.

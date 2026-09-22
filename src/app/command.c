@@ -113,7 +113,7 @@ static C_VOID vm_app_console_info(vm_app_console_context *context,
         return;
     }
     vm_app_console_append(result,
-        "Device Info\n===========\nMachine:           IBM PC/AT\nProfile:           %s\n"
+        "Device Info\n===========\nMachine:           %s\n"
         "CPU:               Intel %s\nRAM Size:          %u %s\n"
         "Floppy Disk Drive: %.2f MB, %s\n",
         vm_machine_profile_name(information.profile_kind),

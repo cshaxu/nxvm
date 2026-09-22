@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S45 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S44 static analysis found an App INI media-count predicate that is provably true after the immediately preceding ordered-slot check. This bounded simplification is within the approved quality and full-green objective. |
-| Objective | Remove the redundant INI media-count predicate while retaining the one ordered-media parsing rule. |
-| Non-goals | Do not change INI grammar, media paths/access modes, request publication, profile construction, reset behavior or Common lifecycle. |
-| Reference Baseline | S44 `6f2397af`; CQ-44 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S46 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S45 manual App review found `INFO` hardcodes IBM PC/AT even though this executable can be any fixed Profile. This bounded ownership repair is within the approved quality and full-green objective. |
+| Objective | Make `INFO` report the frozen Profile as the only Machine identity source. |
+| Non-goals | Do not alter profile construction, command grammar, CPU/device facts, Common session behavior or introduce a second machine-name mapping. |
+| Reference Baseline | S45 `57377a40`; CQ-45 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/ini.c`, convergence ledger/history. The private parser keeps its existing request layout and public App ABI. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): delete redundant conditions; [Architecture](../rules/ARCHITECTURE.md): App remains the sole INI/media-request owner. |
-| Verification | Static-analysis sweep for provable App/Core conditions; focused INI smoke; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | The post-ordering count advance is direct; no known-true condition remains in the App/Core static-analysis sweep; focused and full tests pass. |
+| Files And ABI Surface | `src/app/command.c`, integration console marker, convergence ledger/history. App removes one false product identity; public Machine facts and ABI remain unchanged. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the shared mechanism; [Coding](../rules/CODING.md): one meaning per symbol/output fact; [Architecture](../rules/ARCHITECTURE.md): Profile owns fixed board identity and App must not duplicate it. |
+| Verification | Complete App/Core hardcoded-machine-name sweep; focused console build/probe; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | `INFO` has one Profile-derived identity line and no hardcoded machine identity; all affected tests pass. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-44, the ordering-rule proof and full gate results in the ledger/history. |
-| Stop Conditions | Stop if the ordered-slot guard does not prove the count relationship or if a caller relies on sparse media slots; record the live contract rather than broadening grammar. |
-| Exit Criteria | CQ-44 is repaired: count advances directly after the retained ordered-slot guard, and static/focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-45, all hardcoded-machine-name dispositions and full gate results in the ledger/history. |
+| Stop Conditions | Stop if a user-visible Machine identity cannot be derived from the frozen Profile contract; report the missing owner rather than adding an App-local mapping. |
+| Exit Criteria | CQ-45 is repaired: `INFO` reports one Profile-owned identity and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep App/Core static-analysis findings for other provably true/false conditions and classify each before further simplification. |
+| Similar-Issue Sweep | Sweep all App/Core monitor text for hardcoded machine/profile identity and remove every duplicate identity source. |
 
 ## Current Technical Baseline
 
