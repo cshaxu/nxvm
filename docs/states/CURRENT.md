@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S23 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. S21's complete default build exposed two stale integration-test references to App/Core contracts removed by earlier T534 repairs; this bounded test-contract repair is within that approved objective. |
-| Objective | Make App destruction failure-atomic when its Common worker cannot be shut down. |
-| Non-goals | Do not restore deleted root facades, reintroduce YAML/profile selection into runtime request, alter production App/Core behavior, Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S22 `840d1481`; CQ-23 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S24 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S23 repeated runner audit found that an active direct-control reset failure is recorded but can still produce a normal Common completion. This bounded same-owner repair is within that approved objective. |
+| Objective | Preserve an active reset failure as an abnormal Machine runner completion. |
+| Non-goals | Do not restore deleted root facades, reintroduce YAML/profile selection into runtime request, alter Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
+| Reference Baseline | S23 `e308a78e`; CQ-24 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/{composition,main}.c`, `composition.h`, App composition smoke, convergence ledger/history. App-local destroy result only; no Common contract change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Coding](../rules/CODING.md): tests use their owner-local, current contracts; [Architecture](../rules/ARCHITECTURE.md): generated Profile remains the sole machine-selection owner. |
-| Verification | Full default build; focused affected integration targets; complete repository-only unit and external integration suites; source sweep for the deleted `STD_FPUTS` facade and `vm_session_request.profile`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | A shutdown failure leaves every App-owned object intact for retry; only successful worker shutdown permits downstream destruction. |
+| Files And ABI Surface | `src/core/machine/runner.c`, runner-outcome smoke, convergence ledger/history. No public or Common contract change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Coding](../rules/CODING.md): one owner-local abnormal-result conversion; [Architecture](../rules/ARCHITECTURE.md): Common remains the sole worker/lifecycle owner. |
+| Verification | Focused runner-outcome smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | An active reset failure records its existing outcome and makes the Common driver report `ERROR`, never normal `STOPPED`. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
 | Reporting Requirements | Record the retained output/profile owners, complete default-build result and sweep count in the ledger/history. |
 | Stop Conditions | Stop if either repair requires restoring a production compatibility facade or a runtime machine-profile selector. |
-| Exit Criteria | CQ-23 cannot release Common callback contexts before successful shutdown, reports the exact mapped failure, and passes focused/full/documentation/change gates. |
+| Exit Criteria | CQ-24 routes every active reset failure through the existing runner-failure owner and passes focused/full/documentation/change gates. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App teardown/error-cleanup path that destroys a Common machine or its callback contexts. |
+| Similar-Issue Sweep | Sweep every runner branch that can observe a reset failure and every Common driver callback that adapts reset completion. |
 
 ## Current Technical Baseline
 

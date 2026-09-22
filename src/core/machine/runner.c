@@ -41,7 +41,10 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             type_status reset_status = vm_machine_control_reset_at_boundary(control);
 
             (C_VOID)vm_machine_finish_reset(session, reset_status);
-            if (reset_status != TYPE_STATUS_OK) continue;
+            if (reset_status != TYPE_STATUS_OK) {
+                vm_machine_runner_fail(session);
+                continue;
+            }
         }
         vm_machine_control_refresh_debug(control);
         if (vm_machine_debug_breakpoint_due(&session->debug)) {

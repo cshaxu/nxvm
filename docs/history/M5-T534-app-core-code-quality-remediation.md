@@ -289,3 +289,17 @@ available for a later retry. Only successful shutdown enters UI/session/Common
 destruction and Machine unbinding. The composition fake boundary proves the
 failed attempt destroys nothing, followed by successful one-time cleanup on
 retry. The 335-case repository-only unit suite passes. S23 is closed.
+
+## S24: Reset Failure Propagation
+
+The repeat runner audit found one remaining abnormal terminal branch. A reset
+requested through the retained direct-control boundary records the Core reset
+failure, but its runner continued through the normal-stop result path. S24
+routes that exact branch through the existing Machine-owned `runner_failed`
+fact. It neither adds a lifecycle state nor changes Common's contract.
+
+The retained runner smoke now also swaps only the already-configured firmware
+reset callback after cold start, requests an active reset, and proves that
+`TYPE_STATUS_UNSUPPORTED` produces `COMMON_MACHINE_ERROR`. The existing
+non-fault Core-run probe remains in the same smoke. All 335 repository-only
+unit tests pass. S24 is closed.
