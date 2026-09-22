@@ -76,11 +76,13 @@ static type_status priority_query(C_VOID *owner, type_unsigned_32 physical,
         access != CORE_MACHINE_MEMORY_ACCESS_READ) return TYPE_STATUS_FAULT;
     return provider->decline ? TYPE_STATUS_UNSUPPORTED : TYPE_STATUS_OK;
 }
-static C_VOID initialize(t_vadp *adapter, t_ram *memory, t_port *port)
+static C_INT initialize(t_vadp *adapter, t_ram *memory, t_port *port)
 {
     core_machine_port_initialize(port);
-    core_machine_memory_initialize(memory);
+    if (core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u,
+            STD_NULL) != TYPE_STATUS_OK) return 0;
     core_machine_vadp_initialize(adapter, port);
+    return 1;
 }
 
 static C_VOID finalize(t_vadp *adapter, t_ram *memory)
@@ -137,7 +139,7 @@ C_INT main(C_VOID)
     C_INT filler = 0;
     C_INT failed = 0;
 
-    initialize(&adapter, &memory, &port);
+    if (!initialize(&adapter, &memory, &port)) return 1;
     allocation_failure = 1;
     failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
         &config) != TYPE_STATUS_NO_MEMORY;
@@ -150,7 +152,7 @@ C_INT main(C_VOID)
         memory.connect.device_provider_count != 1u;
     finalize(&adapter, &memory);
 
-    initialize(&adapter, &memory, &port);
+    if (!initialize(&adapter, &memory, &port)) return 1;
     {
         core_machine_memory_test_allocation allocation = { TYPE_TRUE, 0u };
 
@@ -175,7 +177,7 @@ C_INT main(C_VOID)
                 CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
     }
     finalize(&adapter, &memory);
-    initialize(&adapter, &memory, &port);
+    if (!initialize(&adapter, &memory, &port)) return 1;
     failed |= !register_provider_fillers(&memory, &filler,
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
     failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
@@ -184,7 +186,7 @@ C_INT main(C_VOID)
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
     finalize(&adapter, &memory);
 
-    initialize(&adapter, &memory, &port);
+    if (!initialize(&adapter, &memory, &port)) return 1;
     {
         priority_provider first = { 0x3cu, TYPE_FALSE };
         priority_provider overlay = { 0xa5u, TYPE_FALSE };
@@ -211,7 +213,7 @@ C_INT main(C_VOID)
         failed |= memory.connect.device_provider_count != 2u;
     }
     finalize(&adapter, &memory);
-    initialize(&adapter, &memory, &port);
+    if (!initialize(&adapter, &memory, &port)) return 1;
     failed |= !register_observer_fillers(&memory, &filler);
     failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
         &config) != TYPE_STATUS_NO_MEMORY;

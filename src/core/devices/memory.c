@@ -685,13 +685,6 @@ type_status core_machine_memory_query_physical(const t_ram *ram,
     return TYPE_STATUS_OK;
 }
 
-C_VOID core_machine_memory_initialize(t_ram *ram)
-{
-    if (ram == STD_NULL) return;
-    STD_MEMSET((C_VOID *)ram, TYPE_ZERO_8, sizeof(*ram));
-    (C_VOID)core_machine_memory_allocate_for(ram, 1u << 24);
-}
-
 type_status core_machine_memory_initialize_for(t_ram *ram, STD_SIZE_T bytes,
     core_machine_memory_test_allocation *test_allocation)
 {

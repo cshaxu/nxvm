@@ -198,9 +198,8 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_memory_initialize(&memory);
-    if (core_machine_memory_allocate_for(&memory, 2u * 1024u * 1024u) !=
-            TYPE_STATUS_OK ||
+    if (core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
+            STD_NULL) != TYPE_STATUS_OK ||
         core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
             &provider, &fixture, &binding) != TYPE_STATUS_INVALID_STATE) {
         failed = 1;

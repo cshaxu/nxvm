@@ -29,7 +29,7 @@ C_INT main(C_VOID)
 
     STD_MEMSET(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    core_machine_memory_initialize(&memory);
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     glyphs.present = TYPE_TRUE;
     glyphs.bytes['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] = 0x81u;

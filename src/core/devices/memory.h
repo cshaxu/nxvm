@@ -105,7 +105,6 @@ type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 phys
 type_status core_machine_memory_query_physical(const t_ram *ram,
     type_unsigned_32 physical, type_native_unsigned size,
     core_machine_memory_access access, core_machine_memory_route *out_route);
-C_VOID core_machine_memory_initialize(t_ram *ram);
 type_status core_machine_memory_initialize_for(t_ram *ram, STD_SIZE_T bytes,
     core_machine_memory_test_allocation *test_allocation);
 C_VOID core_machine_memory_reset(t_ram *ram);

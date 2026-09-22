@@ -39,8 +39,10 @@ C_INT main(C_VOID)
 
     core_machine_port_initialize(&port);
     core_machine_port_initialize(&generic_port);
-    core_machine_memory_initialize(&memory);
-    core_machine_memory_initialize(&generic_memory);
+    failed |= core_machine_memory_initialize_for(&memory,
+        16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&generic_memory,
+        16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_initialize(&generic_vadp, &generic_port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);

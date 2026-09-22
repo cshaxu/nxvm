@@ -43,7 +43,8 @@ static C_INT ram_fixture_retained(C_VOID)
     type_unsigned_8 observed = 0u;
     C_INT failed = 0;
 
-    core_machine_memory_initialize(&ram);
+    failed |= core_machine_memory_initialize_for(&ram,
+        CORE_MACHINE_DEFAULT_MEMORY_BYTES, STD_NULL) != TYPE_STATUS_OK;
     failed |= ram.connect.installed_bytes != CORE_MACHINE_DEFAULT_MEMORY_BYTES;
     failed |= core_machine_memory_allocate_for(&ram,
         CORE_MACHINE_MINIMUM_MEMORY_BYTES) != TYPE_STATUS_OK;

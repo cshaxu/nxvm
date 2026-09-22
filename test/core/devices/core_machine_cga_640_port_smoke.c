@@ -16,7 +16,7 @@ C_INT main(C_VOID)
 
     STD_MEMSET(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    core_machine_memory_initialize(&memory);
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_port_write(&port, 0x03d8u, 0x1au);
     core_machine_port_write(&port, 0x03d9u, 0x0cu);

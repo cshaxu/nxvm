@@ -291,9 +291,8 @@ C_INT main(C_VOID)
         state_probe.kind != CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE;
 
     core_machine_port_initialize(&port);
-    core_machine_memory_initialize(&memory);
-    failed |= core_machine_memory_allocate_for(&memory, 2u * 1024u * 1024u) !=
-        TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
+        STD_NULL) != TYPE_STATUS_OK;
     core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u);
     core_machine_dma_reset(&latch, &primary, &secondary);
     failed |= core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,

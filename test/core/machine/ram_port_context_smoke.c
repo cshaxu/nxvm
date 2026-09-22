@@ -23,8 +23,10 @@ C_INT main(C_VOID)
         STD_FREE(second_port);
         return 1;
     }
-    core_machine_memory_initialize(&first_memory);
-    core_machine_memory_initialize(&second_memory);
+    result |= core_machine_memory_initialize_for(&first_memory,
+        16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+    result |= core_machine_memory_initialize_for(&second_memory,
+        16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
     core_machine_port_initialize(first_port);
     core_machine_port_initialize(second_port);
 

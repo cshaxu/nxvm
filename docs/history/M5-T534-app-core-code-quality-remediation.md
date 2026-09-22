@@ -335,3 +335,17 @@ similar-symbol sweep finds no `VM_MACHINE_PAUSE_*` or retired direct Machine
 pause/step API caller. Focused Common-driven lifecycle and timer probes pass,
 as does the complete 335-case repository-only unit suite. S26 remains subject
 to the T-level repeated quality audit.
+
+## S27: Fallible RAM Fixture Construction
+
+The repeated audit found a void Core RAM convenience initializer that allocated
+16 MiB and discarded its only failure result. It had no production caller:
+eighteen repository-only Core fixtures used it. S27 deletes that implicit
+entry point and makes every fixture call the existing fallible initializer with
+its own requested capacity. The two fixtures that intentionally use 2 MiB now
+request 2 MiB directly instead of allocating 16 MiB then replacing it.
+
+The full caller sweep is empty. All eighteen affected RAM, DMA and VADP smokes
+pass after a fresh source compile/link, and the complete 335-case
+repository-only unit suite passes. S27 remains subject to the T-level repeated
+quality audit.

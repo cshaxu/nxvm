@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S26 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S25 repeated audit found that CQ-7's claimed removal is not true in the live corpus: Machine Control still owns direct step/pause-reason state and exposes test-only lifecycle operations beside Common. This bounded correction is within that approved objective. |
-| Objective | Remove the obsolete direct step/pause-reason lifecycle API and make every affected integration probe drive lifecycle and debug stepping through the existing Common Machine owner. |
-| Non-goals | Do not change Common/Lib/x86 public contracts, reintroduce a second worker, alter Core execution semantics, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S25 `04658f67`; CQ-7 correction in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S27 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S26 repeated audit found that the retained void default RAM initializer silently discards allocation failure. This bounded correction is within that approved objective. |
+| Objective | Remove the failure-masking default RAM initializer and make every owner-local caller use the existing fallible explicit-size constructor. |
+| Non-goals | Do not change Common/Lib/x86 public contracts, memory layout, machine topology, firmware, assets, timing or product UX. |
+| Reference Baseline | S26 `ab289e74`; new CQ-26 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/{control,runner,debug,debug_adapter}.*`, affected integration probes/support, convergence ledger/history. No Common/Lib/x86 signature change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): correct the false prior disposition and complete the caller sweep; [Coding](../rules/CODING.md): one lifecycle owner and no ignored semantic parameter; [Architecture](../rules/ARCHITECTURE.md): Common owns composed lifecycle and Core Machine remains one bounded executor adapter. |
-| Verification | Focused Common-driven pause/debug-step integration probes; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No live `vm_machine_control_{request_pause,wait_for_pause,get_pause_reason,continue,step}` or `VM_MACHINE_PAUSE_*` lifecycle control; Common is the sole composed pause/resume/step rendezvous route. |
+| Files And ABI Surface | `src/core/devices/memory.{c,h}`, all owner-local RAM test fixtures/callers, convergence ledger/history. No Common/Lib/x86 signature change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): close the full caller class; [Coding](../rules/CODING.md): no ignored semantic result or false success; [Architecture](../rules/ARCHITECTURE.md): RAM remains its sole allocation owner with one failure boundary. |
+| Verification | Full default-initializer caller sweep; focused RAM/port/display device smokes; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No `core_machine_memory_initialize()` void default constructor remains; every former caller observes the existing `core_machine_memory_initialize_for()` result. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record the false CQ-7 closure, every direct lifecycle caller's replacement, retained debug-stop owner, full build result and sweep count in the ledger/history. |
-| Stop Conditions | Stop if a needed behavior cannot be expressed through the existing Common lifecycle/debug lease, or requires a Common/Lib/x86 contract change. |
-| Exit Criteria | CQ-7 is truthfully repaired: direct step/pause-reason controls are absent, all affected probes use Common, and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-26, every default-initializer caller's replacement, the allocation failure boundary and full gate results in the ledger/history. |
+| Stop Conditions | Stop if a production caller requires an implicit default RAM size or a cross-component allocation contract change. |
+| Exit Criteria | CQ-26 is repaired: no void default constructor masks RAM allocation failure, every caller checks explicit construction, and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App/Core and test caller of direct Machine Control pause/step/reason operations, and every Machine runner reference to their backing state. |
+| Similar-Issue Sweep | Sweep all production/test callers of the void default RAM initializer and all App/Core allocation calls whose result is explicitly discarded. |
 
 ## Current Technical Baseline
 
