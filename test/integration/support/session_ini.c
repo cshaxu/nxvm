@@ -5,6 +5,7 @@
 #include "test/integration/support/session_ini.h"
 #include "app/config.h"
 #include "core/machine/machine_private.h"
+#include "lib/base/sync_interface.h"
 
 static C_INT integration_ini_session_find(const C_CHAR *directory,
     const C_CHAR *file_name, vm_session_request *out_request)
@@ -78,6 +79,60 @@ type_status integration_ini_session_start(integration_ini_session *session)
             TYPE_STATUS_OK)) return TYPE_STATUS_FAULT;
     return common_machine_start(session->common_machine) ? TYPE_STATUS_OK :
         TYPE_STATUS_INVALID_STATE;
+}
+
+C_INT integration_ini_session_wait_for_state(const integration_ini_session *session,
+    common_machine_state state, C_UINT milliseconds)
+{
+    C_UINT elapsed;
+
+    if (session == STD_NULL || session->common_machine == LIB_NULL) return 0;
+    for (elapsed = 0u; elapsed < milliseconds; ++elapsed) {
+        if (common_machine_state_get(session->common_machine) == state) return 1;
+        base_sync_sleep_milliseconds(1u);
+    }
+    return common_machine_state_get(session->common_machine) == state;
+}
+
+type_status integration_ini_session_pause(integration_ini_session *session,
+    C_UINT milliseconds)
+{
+    if (session == STD_NULL || session->common_machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (!integration_ini_session_wait_for_state(session, COMMON_MACHINE_RUNNING,
+            milliseconds)) return TYPE_STATUS_INVALID_STATE;
+    if (!common_machine_pause(session->common_machine)) return TYPE_STATUS_INVALID_STATE;
+    return integration_ini_session_wait_for_state(session, COMMON_MACHINE_PAUSED,
+        milliseconds) ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+}
+
+type_status integration_ini_session_resume(integration_ini_session *session,
+    C_UINT milliseconds)
+{
+    (C_VOID)milliseconds;
+    if (session == STD_NULL || session->common_machine == LIB_NULL ||
+        !common_machine_resume(session->common_machine)) return TYPE_STATUS_INVALID_STATE;
+    return TYPE_STATUS_OK;
+}
+
+type_status integration_ini_session_reset(integration_ini_session *session,
+    C_UINT milliseconds)
+{
+    lib_u32 generation;
+    C_UINT elapsed;
+
+    if (session == STD_NULL || session->common_machine == LIB_NULL)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    generation = common_machine_run_generation(session->common_machine);
+    if (!common_machine_reset(session->common_machine)) return TYPE_STATUS_INVALID_STATE;
+    for (elapsed = 0u; elapsed < milliseconds; ++elapsed) {
+        if (common_machine_run_generation(session->common_machine) != generation &&
+            common_machine_state_get(session->common_machine) == COMMON_MACHINE_PAUSED)
+            return TYPE_STATUS_OK;
+        base_sync_sleep_milliseconds(1u);
+    }
+    return common_machine_run_generation(session->common_machine) != generation &&
+        common_machine_state_get(session->common_machine) == COMMON_MACHINE_PAUSED ?
+        TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
 type_status integration_ini_session_open(const C_CHAR *directory,

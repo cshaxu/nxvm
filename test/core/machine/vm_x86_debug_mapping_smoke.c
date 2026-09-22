@@ -41,7 +41,7 @@ C_INT main(C_VOID)
     x86_debug_response result;
     type_unsigned_32 register_id;
     type_unsigned_8 byte = 0x5au;
-    vm_machine_pause_reason pause_reason;
+    vm_machine_debug_stop_reason stop_reason;
     type_unsigned_64 executed;
     lib_size response_size;
     core_machine *saved_core_machine;
@@ -134,13 +134,13 @@ C_INT main(C_VOID)
         goto failed;
     vm_machine_debug_complete_run(&machine->debug, 2u);
     if (machine->debug.plan.remaining != 3u ||
-        vm_machine_debug_completion_pending(&machine->debug, &pause_reason))
+        vm_machine_debug_completion_pending(&machine->debug, &stop_reason))
         goto failed;
     vm_machine_debug_complete_run(&machine->debug, 3u);
-    if (!vm_machine_debug_completion_pending(&machine->debug, &pause_reason) ||
-        pause_reason != VM_MACHINE_PAUSE_TRACE ||
-        !vm_machine_debug_take_completion(&machine->debug, &pause_reason,
-            &executed) || pause_reason != VM_MACHINE_PAUSE_TRACE || executed != 5u)
+    if (!vm_machine_debug_completion_pending(&machine->debug, &stop_reason) ||
+        stop_reason != VM_MACHINE_DEBUG_STOP_TRACE ||
+        !vm_machine_debug_take_completion(&machine->debug, &stop_reason,
+            &executed) || stop_reason != VM_MACHINE_DEBUG_STOP_TRACE || executed != 5u)
         goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_SET_EXECUTION_PLAN,
@@ -153,8 +153,8 @@ C_INT main(C_VOID)
     vm_machine_debug_complete_run(&machine->debug, 7u);
     if (!vm_machine_debug_breakpoint_due(&machine->debug)) goto failed;
     vm_machine_debug_complete_breakpoint(&machine->debug);
-    if (!vm_machine_debug_take_completion(&machine->debug, &pause_reason,
-            &executed) || pause_reason != VM_MACHINE_PAUSE_BREAKPOINT ||
+    if (!vm_machine_debug_take_completion(&machine->debug, &stop_reason,
+            &executed) || stop_reason != VM_MACHINE_DEBUG_STOP_BREAKPOINT ||
         executed != 7u) goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_CLEAR_EXECUTION_PLAN

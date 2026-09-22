@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S25 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S24 construction audit found that the direct Core create entry validates configuration before clearing its valid out pointer, unlike the plan route and every peer creator. This bounded Core-owner repair is within that approved objective. |
-| Objective | Give every direct Core-create failure the same null out-parameter contract. |
-| Non-goals | Do not restore deleted root facades, reintroduce YAML/profile selection into runtime request, alter Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S24 `4084761a`; CQ-25 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S26 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S25 repeated audit found that CQ-7's claimed removal is not true in the live corpus: Machine Control still owns direct step/pause-reason state and exposes test-only lifecycle operations beside Common. This bounded correction is within that approved objective. |
+| Objective | Remove the obsolete direct step/pause-reason lifecycle API and make every affected integration probe drive lifecycle and debug stepping through the existing Common Machine owner. |
+| Non-goals | Do not change Common/Lib/x86 public contracts, reintroduce a second worker, alter Core execution semantics, machine topology, firmware, assets, timing or product UX. |
+| Reference Baseline | S25 `04658f67`; CQ-7 correction in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/devices/machine.c`, Core configuration smoke, convergence ledger/history. No public signature or Common contract change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Coding](../rules/CODING.md): direct and plan construction share one output-ownership convention; [Architecture](../rules/ARCHITECTURE.md): Core remains the sole machine constructor. |
-| Verification | Focused Core configuration smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Any direct-create failure with a valid out parameter leaves it `NULL`, before all configuration validation. |
+| Files And ABI Surface | `src/core/machine/{control,runner,debug,debug_adapter}.*`, affected integration probes/support, convergence ledger/history. No Common/Lib/x86 signature change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): correct the false prior disposition and complete the caller sweep; [Coding](../rules/CODING.md): one lifecycle owner and no ignored semantic parameter; [Architecture](../rules/ARCHITECTURE.md): Common owns composed lifecycle and Core Machine remains one bounded executor adapter. |
+| Verification | Focused Common-driven pause/debug-step integration probes; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No live `vm_machine_control_{request_pause,wait_for_pause,get_pause_reason,continue,step}` or `VM_MACHINE_PAUSE_*` lifecycle control; Common is the sole composed pause/resume/step rendezvous route. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record the retained output/profile owners, complete default-build result and sweep count in the ledger/history. |
-| Stop Conditions | Stop if either repair requires restoring a production compatibility facade or a runtime machine-profile selector. |
-| Exit Criteria | CQ-25 clears the direct-create out parameter before validation and passes focused/full/documentation/change gates. |
+| Reporting Requirements | Record the false CQ-7 closure, every direct lifecycle caller's replacement, retained debug-stop owner, full build result and sweep count in the ledger/history. |
+| Stop Conditions | Stop if a needed behavior cannot be expressed through the existing Common lifecycle/debug lease, or requires a Common/Lib/x86 contract change. |
+| Exit Criteria | CQ-7 is truthfully repaired: direct step/pause-reason controls are absent, all affected probes use Common, and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App/Core pointer-returning creator and the direct/plan Core construction routes for this output-ownership ordering. |
+| Similar-Issue Sweep | Sweep every App/Core and test caller of direct Machine Control pause/step/reason operations, and every Machine runner reference to their backing state. |
 
 ## Current Technical Baseline
 

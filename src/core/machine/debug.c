@@ -76,7 +76,7 @@ C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug)
         X86_DEBUG_EXECUTION_BREAK_REAL && debug->plan.kind !=
         X86_DEBUG_EXECUTION_BREAK_LINEAR)) return;
     debug->plan.completion_pending = TYPE_TRUE;
-    debug->plan.completion_reason = VM_MACHINE_PAUSE_BREAKPOINT;
+    debug->plan.completion_reason = VM_MACHINE_DEBUG_STOP_BREAKPOINT;
     debug->plan.completion_executed = debug->plan.executed;
     debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
@@ -90,7 +90,7 @@ C_VOID vm_machine_debug_complete_watchpoint(t_debug *debug)
     executed = debug->plan.executed;
     debug->plan = (t_debug_execution_plan) {
         .completion_pending = TYPE_TRUE,
-        .completion_reason = VM_MACHINE_PAUSE_WATCHPOINT,
+        .completion_reason = VM_MACHINE_DEBUG_STOP_WATCHPOINT,
         .completion_executed = executed
     };
 }
@@ -110,13 +110,13 @@ C_VOID vm_machine_debug_complete_run(t_debug *debug, type_unsigned_64 executed)
         return;
     }
     debug->plan.completion_pending = TYPE_TRUE;
-    debug->plan.completion_reason = VM_MACHINE_PAUSE_TRACE;
+    debug->plan.completion_reason = VM_MACHINE_DEBUG_STOP_TRACE;
     debug->plan.completion_executed = debug->plan.executed;
     debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
 C_INT vm_machine_debug_completion_pending(const t_debug *debug,
-    vm_machine_pause_reason *out_reason)
+    vm_machine_debug_stop_reason *out_reason)
 {
     if (debug == STD_NULL || out_reason == STD_NULL ||
         !debug->plan.completion_pending) return TYPE_FALSE;
@@ -125,14 +125,14 @@ C_INT vm_machine_debug_completion_pending(const t_debug *debug,
 }
 
 C_INT vm_machine_debug_take_completion(t_debug *debug,
-    vm_machine_pause_reason *out_reason, type_unsigned_64 *out_executed)
+    vm_machine_debug_stop_reason *out_reason, type_unsigned_64 *out_executed)
 {
     if (debug == STD_NULL || out_reason == STD_NULL || out_executed == STD_NULL ||
         !debug->plan.completion_pending) return TYPE_FALSE;
     *out_reason = debug->plan.completion_reason;
     *out_executed = debug->plan.completion_executed;
     debug->plan.completion_pending = TYPE_FALSE;
-    debug->plan.completion_reason = VM_MACHINE_PAUSE_NONE;
+    debug->plan.completion_reason = VM_MACHINE_DEBUG_STOP_NONE;
     debug->plan.completion_executed = 0u;
     return TYPE_TRUE;
 }

@@ -193,7 +193,7 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
         return LIB_STATUS_OK;
     }
     if (request->operation == X86_DEBUG_GET_EXECUTION_RESULT) {
-        vm_machine_pause_reason reason;
+        vm_machine_debug_stop_reason reason;
         type_unsigned_64 executed;
 
         if (!vm_machine_debug_take_completion(&machine->debug, &reason,
@@ -204,9 +204,9 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
         if (machine->debug.observation_valid)
             vm_machine_debug_copy_observation(&out_result->observation,
                 &machine->debug.observation);
-        return reason == VM_MACHINE_PAUSE_TRACE ||
-            reason == VM_MACHINE_PAUSE_BREAKPOINT ||
-            reason == VM_MACHINE_PAUSE_WATCHPOINT ? LIB_STATUS_OK :
+        return reason == VM_MACHINE_DEBUG_STOP_TRACE ||
+            reason == VM_MACHINE_DEBUG_STOP_BREAKPOINT ||
+            reason == VM_MACHINE_DEBUG_STOP_WATCHPOINT ? LIB_STATUS_OK :
             LIB_STATUS_INVALID_STATE;
     }
     return LIB_STATUS_INVALID_ARGUMENT;

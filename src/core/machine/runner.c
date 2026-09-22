@@ -51,19 +51,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             vm_machine_debug_complete_breakpoint(&session->debug);
             continue;
         }
-        if (vm_machine_executor_state_pause_requested(control->state)) {
-            /* A paused observation is a safe snapshot boundary: publish the
-             * final guest frame before acknowledging it.  Otherwise a caller
-             * can observe PAUSED and still capture the preceding frame. */
-            (C_VOID)vm_machine_publish_display(session, TYPE_TRUE);
-            vm_machine_executor_state_acknowledge_pause(control->state);
-            vm_machine_control_signal_completion(control);
-            (C_VOID)base_sync_event_wait(control->control_ready, UINT32_MAX);
-            base_sync_event_reset(control->control_ready);
-            continue;
-        }
-        budget.instructions = vm_machine_control_step_requested(control) ? 1u :
-            session->speed == VM_MACHINE_SPEED_TURBO ?
+        budget.instructions = session->speed == VM_MACHINE_SPEED_TURBO ?
             VM_MACHINE_RUNNER_TURBO_QUANTUM_INSTRUCTIONS :
             VM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS;
         budget.instructions = vm_machine_debug_limit_instruction_budget(
@@ -72,8 +60,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
          * stay responsive, but it must not impose a second tick throttle.
          * Core still advances every retired instruction and every device
          * deadline on its one guest-time axis. */
-        budget.ticks = vm_machine_control_step_requested(control) ||
-            session->speed == VM_MACHINE_SPEED_TURBO ? 0u :
+        budget.ticks = session->speed == VM_MACHINE_SPEED_TURBO ? 0u :
             VM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS;
         {
             type_status run_status = core_machine_run(session->core_machine,
@@ -97,10 +84,13 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             continue;
         }
         vm_machine_debug_complete_run(&session->debug, result.executed);
-        if (vm_machine_control_take_step(control)) {
-            vm_machine_control_request_pause(control, VM_MACHINE_PAUSE_STEP);
-            continue;
-        }
+        /* A completed Core quantum is a safe Common rendezvous.  It must
+         * precede wall-clock pacing: otherwise Standard can defer a pending
+         * pause, reset, or debug completion behind a host wait even though
+         * Core is no longer executing. */
+        if (session->executor_callback != STD_NULL)
+            session->executor_callback(session->executor_callback_context);
+        if (!vm_machine_executor_state_is_active(control->state)) break;
         {
             if (vm_machine_pacing_wait(session) != TYPE_STATUS_OK) {
                 vm_machine_runner_fail(session);
@@ -115,8 +105,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
         if (result.reason == CORE_MACHINE_STOP_REQUESTED) {
             vm_machine_control_stop(control);
         }
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
-            !vm_machine_control_step_requested(control)) {
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             C_INT advanced = 0;
             type_status time_status = vm_machine_waiting_advance(
                 session, &result, &advanced);
@@ -130,5 +119,4 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             }
         }
     }
-    vm_machine_control_signal_completion(control);
 }

@@ -15,8 +15,6 @@
 
 #include "core/devices/machine_interface.h"
 
-#include "lib/base/sync_interface.h"
-
 #include "core/machine/control.h"
 
 #include "core/machine/lifecycle.h"
@@ -57,7 +55,6 @@ C_VOID vm_machine_control_start(vm_machine_control_state *control) {
     if (control == STD_NULL) return;
     machine = control->machine;
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
-    base_sync_event_reset(control->completion_ready);
     vm_machine_executor_state_start(control->state);
     vm_machine_runner_run(machine);
 }
@@ -67,7 +64,6 @@ type_status vm_machine_control_reset(vm_machine_control_state *control) {
     if (control == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_machine_executor_state_is_active(control->state)) {
         vm_machine_executor_state_request_reset(control->state);
-        base_sync_event_signal(control->control_ready);
         return TYPE_STATUS_OK;
     } else {
         type_status status = vm_machine_control_reset_machine(control->machine);
@@ -86,89 +82,14 @@ C_VOID vm_machine_control_stop(vm_machine_control_state *control)  {
     if (machine != STD_NULL && machine->core_machine != STD_NULL) {
         core_machine_request_stop(machine->core_machine);
     }
-    atomic_store(&control->step_requested, TYPE_FALSE);
-    atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     vm_machine_executor_state_stop(control->state);
-    base_sync_event_signal(control->control_ready);
 }
 
 C_VOID vm_machine_control_fault(vm_machine_control_state *control)
 {
-    vm_machine *machine;
-
     if (control == STD_NULL) return;
-    machine = control->machine;
-    atomic_store(&control->step_requested, TYPE_FALSE);
-    atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     vm_machine_executor_state_stop(control->state);
-    base_sync_event_signal(control->control_ready);
 }
-
-C_VOID vm_machine_control_request_pause(vm_machine_control_state *control,
-    vm_machine_pause_reason reason)
-{
-    if (control == STD_NULL) return;
-    atomic_store(&control->step_requested, TYPE_FALSE);
-    atomic_store(&control->pause_reason, reason);
-    vm_machine_executor_state_request_pause(control->state);
-    base_sync_event_signal(control->control_ready);
-}
-
-C_INT vm_machine_control_wait_for_pause(vm_machine_control_state *control,
-    C_UINT milliseconds)
-{
-    if (control == STD_NULL) return TYPE_FALSE;
-    if (!vm_machine_executor_state_is_paused(control->state)) (C_VOID)base_sync_event_wait(
-        control->completion_ready, milliseconds);
-    return vm_machine_executor_state_is_paused(control->state);
-}
-
-C_VOID vm_machine_control_signal_completion(
-    vm_machine_control_state *control)
-{
-    if (control != STD_NULL) base_sync_event_signal(control->completion_ready);
-}
-
-C_INT vm_machine_control_is_paused(const vm_machine_control_state *control)
-{
-    return control != STD_NULL && vm_machine_executor_state_is_paused(control->state);
-}
-
-vm_machine_pause_reason vm_machine_control_get_pause_reason(
-    const vm_machine_control_state *control)
-{
-    return control == STD_NULL ? VM_MACHINE_PAUSE_NONE :
-        (vm_machine_pause_reason)atomic_load(&control->pause_reason);
-}
-
-C_VOID vm_machine_control_continue(vm_machine_control_state *control)
-{
-    if (control == STD_NULL) return;
-    atomic_store(&control->step_requested, TYPE_FALSE);
-    atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
-    base_sync_event_reset(control->completion_ready);
-    vm_machine_executor_state_resume(control->state);
-    base_sync_event_signal(control->control_ready);
-}
-
-C_INT vm_machine_control_step(vm_machine_control_state *control)
-{
-    if (control == STD_NULL || !vm_machine_executor_state_is_paused(control->state)) {
-        return TYPE_FALSE;
-    }
-    atomic_store(&control->step_requested, TYPE_TRUE);
-    atomic_store(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
-    base_sync_event_reset(control->completion_ready);
-    vm_machine_executor_state_resume(control->state);
-    base_sync_event_signal(control->control_ready);
-    return TYPE_TRUE;
-}
-
-C_INT vm_machine_control_step_requested(const vm_machine_control_state *control)
-{ return control != STD_NULL && atomic_load(&control->step_requested); }
-
-C_INT vm_machine_control_take_step(vm_machine_control_state *control)
-{ return control != STD_NULL && atomic_exchange(&control->step_requested, TYPE_FALSE); }
 
 type_status vm_machine_control_reset_at_boundary(vm_machine_control_state *control)
 {
@@ -190,23 +111,8 @@ type_status vm_machine_control_initialize(vm_machine_control_state *control,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     STD_MEMSET((C_VOID *)(control), TYPE_ZERO_8, sizeof(*control));
-    atomic_init(&control->step_requested, TYPE_FALSE);
-    atomic_init(&control->pause_reason, VM_MACHINE_PAUSE_NONE);
     status = vm_machine_executor_state_create(&control->state);
-    if (status != LIB_STATUS_OK) return TYPE_STATUS_NO_MEMORY;
-    if (base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &control->completion_ready) != LIB_STATUS_OK) {
-        base_sync_event_destroy(control->completion_ready);
-        vm_machine_executor_state_destroy(control->state);
-        control->state = STD_NULL;
-        return TYPE_STATUS_NO_MEMORY;
-    }
-    if (base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &control->control_ready) != LIB_STATUS_OK) {
-        base_sync_event_destroy(control->completion_ready);
-        control->completion_ready = STD_NULL;
-        vm_machine_executor_state_destroy(control->state);
-        control->state = STD_NULL;
-        return TYPE_STATUS_NO_MEMORY;
-    }
+    if (status != TYPE_STATUS_OK) return status;
     control->machine = machine;
     vm_machine_debug_initialize(&machine->debug);
     status = vm_machine_devices_initialize_media(machine);
@@ -226,16 +132,11 @@ C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
     if (control == STD_NULL || machine == STD_NULL) return;
     vm_machine_devices_finalize(machine);
     vm_machine_debug_finalize(&machine->debug);
-    base_sync_event_destroy(control->completion_ready);
-    control->completion_ready = STD_NULL;
-    base_sync_event_destroy(control->control_ready);
-    control->control_ready = STD_NULL;
     vm_machine_executor_state_destroy(control->state);
     control->state = STD_NULL;
 }
 
 C_INT vm_machine_control_is_running(const vm_machine_control_state *control)
 {
-    return control != STD_NULL && vm_machine_executor_state_is_active(control->state) &&
-        !vm_machine_executor_state_is_paused(control->state);
+    return control != STD_NULL && vm_machine_executor_state_is_active(control->state);
 }

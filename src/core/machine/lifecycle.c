@@ -130,7 +130,7 @@ static lib_bool vm_machine_driver_set_removable_media(void *context,
 static lib_bool vm_machine_driver_take_debug_stop(void *context)
 {
     vm_machine *machine = (vm_machine *)context;
-    vm_machine_pause_reason reason;
+    vm_machine_debug_stop_reason reason;
 
     return machine != STD_NULL && vm_machine_debug_completion_pending(
         &machine->debug, &reason) ? LIB_TRUE : LIB_FALSE;

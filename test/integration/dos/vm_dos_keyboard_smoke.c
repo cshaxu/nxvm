@@ -4,7 +4,6 @@
 
 #include "core/devices/debug_interface.h"
 #include "core/devices/machine_interface.h"
-#include "core/machine/control.h"
 #include "core/machine/fault.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
@@ -189,9 +188,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (elapsed == prompt_timeout) {
         core_machine_cpu_state state;
 
-        vm_machine_control_request_pause(&session->control,
-            VM_MACHINE_PAUSE_EXPLICIT);
-        if (vm_machine_control_wait_for_pause(&session->control, 500u) &&
+        if (integration_ini_session_pause(&ini_session, 500u) == TYPE_STATUS_OK &&
             core_machine_debug_read_cpu(session->core_machine, &state) ==
                 TYPE_STATUS_OK) {
             STD_PRINTF("prompt pause: %04x:%08x flags=%08x\n", state.cs,
@@ -214,9 +211,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (elapsed == prompt_timeout) {
             core_machine_cpu_state state;
 
-            vm_machine_control_request_pause(&session->control,
-                VM_MACHINE_PAUSE_EXPLICIT);
-            if (vm_machine_control_wait_for_pause(&session->control, 500u) &&
+            if (integration_ini_session_pause(&ini_session, 500u) == TYPE_STATUS_OK &&
                 core_machine_debug_read_cpu(session->core_machine, &state) ==
                     TYPE_STATUS_OK) {
                 STD_PRINTF("date input pause: %04x:%08x flags=%08x\n", state.cs,
@@ -242,9 +237,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         vm_machine_fault_outcome outcome;
         core_machine_cpu_state state;
 
-        vm_machine_control_request_pause(&session->control,
-            VM_MACHINE_PAUSE_EXPLICIT);
-        if (vm_machine_control_wait_for_pause(&session->control, 500u) &&
+        if (integration_ini_session_pause(&ini_session, 500u) == TYPE_STATUS_OK &&
             core_machine_debug_read_cpu(session->core_machine, &state) ==
                 TYPE_STATUS_OK) {
             STD_PRINTF("edit pause: %04x:%08x flags=%08x\n", state.cs,
@@ -259,13 +252,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 outcome.diagnostic.first_fault.exception_code);
         } else {
             STD_PRINTF("edit run state: %s\n",
-                vm_machine_control_is_running(&session->control) ? "running" : "stopped");
+                common_machine_state_get(session->executor) == COMMON_MACHINE_RUNNING ?
+                    "running" : "stopped");
         }
     }
     if (elapsed != edit_timeout) {
-        vm_machine_control_request_pause(&session->control,
-            VM_MACHINE_PAUSE_EXPLICIT);
-        if (vm_machine_control_wait_for_pause(&session->control, 500u)) {
+        if (integration_ini_session_pause(&ini_session, 500u) == TYPE_STATUS_OK) {
             display_ok = vm_dos_keyboard_verify_text_frame(session);
         } else {
             STD_PRINTF("edit display: pause unavailable\n");

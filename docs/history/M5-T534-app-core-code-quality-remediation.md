@@ -315,3 +315,23 @@ the output parameter; no construction or configuration mechanism changes.
 The retained time smoke now supplies a non-null sentinel before its invalid
 time-axis configuration cases and proves it is cleared on the first failure.
 The complete 335-case repository-only unit suite passes. S25 is closed.
+
+## S26: Complete Lifecycle-Owner Correction
+
+The S6 facade removal did not remove the full defect: Machine Control still
+owned a private pause-reason/step state, and several integration probes drove
+that state directly. S26 removes that residual lifecycle state and its test
+entry points. The bounded executor now performs a Common rendezvous immediately
+after each completed Core quantum and before optional Standard pacing, so a
+pending Common pause, reset or Debug completion cannot be delayed behind a
+wall-clock wait.
+
+Integration probes now start, pause, reset and resume solely through Common.
+Their exact Debug work uses the established paused lease and x86 execution
+plan. The timer/firmware probe additionally uses that lease to write its
+real-mode programs, set a real-address breakpoint and read the outcome; it no
+longer calls Core run or memory APIs beside a paused Common session. The
+similar-symbol sweep finds no `VM_MACHINE_PAUSE_*` or retired direct Machine
+pause/step API caller. Focused Common-driven lifecycle and timer probes pass,
+as does the complete 335-case repository-only unit suite. S26 remains subject
+to the T-level repeated quality audit.

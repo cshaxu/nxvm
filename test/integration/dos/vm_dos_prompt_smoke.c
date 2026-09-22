@@ -14,8 +14,6 @@
 
 #include "core/machine/lifecycle.h"
 
-#include "core/machine/control.h"
-
 #include "core/machine/machine_private.h"
 #include "test/integration/support/session_ini.h"
 
@@ -24,12 +22,6 @@
 #define DOS_PROMPT_TIMEOUT_MILLISECONDS 5000u
 
 static C_INT has_dos_prompt(const vm_machine *session);
-
-static DWORD WINAPI vm_dos_prompt_run_machine(C_VOID *opaque)
-{
-    vm_machine_control_start(&((vm_machine *)opaque)->control);
-    return 0u;
-}
 
 static C_VOID dump_first_fault(core_machine *machine)
 {
@@ -55,7 +47,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT prompt_seen = 0;
     integration_ini_session ini_session;
     vm_machine *session;
-    HANDLE thread = STD_NULL;
     C_INT turbo = 0;
 
     if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
@@ -66,9 +57,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK)) {
         goto fail;
     }
-    thread = CreateThread(STD_NULL, 0u, vm_dos_prompt_run_machine, session,
-        0u, STD_NULL);
-    if (thread == STD_NULL) goto fail;
+    if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
 
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         if (has_dos_prompt(session)) {
@@ -77,28 +66,20 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         Sleep(10u);
     }
-    vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
-    if (!vm_machine_control_wait_for_pause(&session->control, 2000u)) goto fail;
+    if (integration_ini_session_pause(&ini_session, 2000u) != TYPE_STATUS_OK)
+        goto fail;
     if (!prompt_seen) prompt_seen = has_dos_prompt(session);
     if (!prompt_seen) {
         dump_first_fault(session->core_machine);
         STD_FPRINTF(STD_STDERR, "%s", "M5:T70:S2:DOS-PROMPT:TIMEOUT\n");
         goto fail;
     }
-    vm_machine_stop(session);
-    if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
-    CloseHandle(thread);
     integration_ini_session_close(&ini_session);
     puts(turbo ? "M5:T459:S1:DOS-PROMPT-TURBO:OK" : "M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
     if (session != STD_NULL) dump_first_fault(session->core_machine);
-    vm_machine_stop(session);
-    if (thread != STD_NULL) {
-        WaitForSingleObject(thread, 2000u);
-        CloseHandle(thread);
-    }
     integration_ini_session_close(&ini_session);
     return 1;
 }

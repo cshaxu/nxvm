@@ -468,19 +468,6 @@ static C_INT boot_timeout_parse(const C_CHAR *text, DWORD *out_timeout)
     return value != 0u;
 }
 
-static DWORD WINAPI boot_start(C_VOID *opaque)
-{
-    vm_machine *machine = (vm_machine *)opaque;
-    type_status status = vm_machine_reset(machine);
-
-    if (status != TYPE_STATUS_OK) {
-        STD_PRINTF("T515:INI-BOOT:START-FAILED:%d\n", (C_INT)status);
-        return 0u;
-    }
-    vm_machine_control_start(&machine->control);
-    return 0u;
-}
-
 static C_INT boot_cmos_seed_matches(const vm_machine *session)
 {
     t_port *port;
@@ -507,7 +494,6 @@ int main(int argc, char **argv)
 {
     integration_ini_session ini_session;
     vm_machine *session;
-    HANDLE thread = STD_NULL;
     const C_CHAR *terminal = STD_NULL;
     DWORD timeout = BOOT_TIMEOUT;
     ULONGLONG started;
@@ -551,7 +537,7 @@ int main(int argc, char **argv)
     }
     if (vm_machine_set_speed(session, standard_speed ? VM_MACHINE_SPEED_STANDARD :
             VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK ||
-        (thread = CreateThread(STD_NULL, 0u, boot_start, session, 0u, STD_NULL)) == STD_NULL) goto done;
+        integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto done;
     started = GetTickCount64();
     while (GetTickCount64() - started < timeout) {
         if (boot_post_reports_keyboard_failure(session)) keyboard_post_failure_seen = 1;
@@ -559,14 +545,10 @@ int main(int argc, char **argv)
         Sleep(BOOT_POLL);
     }
     if (terminal == STD_NULL || keyboard_post_failure_seen) {
-        vm_machine_control_request_pause(&session->control, VM_MACHINE_PAUSE_EXPLICIT);
-        if (vm_machine_control_wait_for_pause(&session->control, 2000u)) {
+        if (integration_ini_session_pause(&ini_session, 2000u) == TYPE_STATUS_OK) {
             boot_timeout_report(session, argv[2], trace_enabled ? &trace_probe : STD_NULL);
         }
     }
-    vm_machine_stop(session);
-    if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto done;
-    CloseHandle(thread); thread = STD_NULL;
     if (terminal == STD_NULL || keyboard_post_failure_seen) {
         if (keyboard_post_failure_seen) {
             STD_PRINTF("T515:INI-BOOT:%s:KEYBOARD-POST-FAILURE\n", argv[2]);
@@ -579,7 +561,6 @@ int main(int argc, char **argv)
     STD_PRINTF("T515:INI-BOOT:%s:%s\n", argv[2], terminal);
     result = 0;
 done:
-    if (thread != STD_NULL) CloseHandle(thread);
     integration_ini_session_close(&ini_session);
     return result;
 }

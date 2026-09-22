@@ -37,6 +37,14 @@ type_status integration_ini_session_restart(integration_ini_session *session);
  * a test drives a running guest.  Direct Core loops remain for owner-local
  * controller tests that deliberately do not submit host input. */
 type_status integration_ini_session_start(integration_ini_session *session);
+C_INT integration_ini_session_wait_for_state(const integration_ini_session *session,
+    common_machine_state state, C_UINT milliseconds);
+type_status integration_ini_session_pause(integration_ini_session *session,
+    C_UINT milliseconds);
+type_status integration_ini_session_resume(integration_ini_session *session,
+    C_UINT milliseconds);
+type_status integration_ini_session_reset(integration_ini_session *session,
+    C_UINT milliseconds);
 C_VOID integration_ini_session_close(integration_ini_session *session);
 
 #endif

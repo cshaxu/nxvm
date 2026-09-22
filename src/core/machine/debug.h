@@ -10,10 +10,18 @@ extern "C" {
 #include "type.h"
 #include "core/devices/debug_interface.h"
 #include "x86/debug/protocol_interface.h"
-#include "core/machine/control.h"
 #include "core/machine/machine_interface.h"
 
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
+
+/* Debug completion is product-visible execution metadata, not a second
+ * Machine lifecycle.  Common owns pause/resume state for composed runs. */
+typedef enum vm_machine_debug_stop_reason {
+    VM_MACHINE_DEBUG_STOP_NONE,
+    VM_MACHINE_DEBUG_STOP_BREAKPOINT,
+    VM_MACHINE_DEBUG_STOP_TRACE,
+    VM_MACHINE_DEBUG_STOP_WATCHPOINT
+} vm_machine_debug_stop_reason;
 
 typedef struct {
     x86_debug_execution_plan_kind kind;
@@ -21,7 +29,7 @@ typedef struct {
     type_unsigned_64 executed;
     type_unsigned_32 breakpoint_linear;
     type_bool completion_pending;
-    vm_machine_pause_reason completion_reason;
+    vm_machine_debug_stop_reason completion_reason;
     type_unsigned_64 completion_executed;
 } t_debug_execution_plan;
 
@@ -47,9 +55,9 @@ C_VOID vm_machine_debug_complete_watchpoint(t_debug *debug);
 C_VOID vm_machine_debug_complete_run(t_debug *debug,
     type_unsigned_64 executed);
 C_INT vm_machine_debug_completion_pending(const t_debug *debug,
-    vm_machine_pause_reason *out_reason);
+    vm_machine_debug_stop_reason *out_reason);
 C_INT vm_machine_debug_take_completion(t_debug *debug,
-    vm_machine_pause_reason *out_reason, type_unsigned_64 *out_executed);
+    vm_machine_debug_stop_reason *out_reason, type_unsigned_64 *out_executed);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
