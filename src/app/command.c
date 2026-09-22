@@ -20,7 +20,7 @@
 #define CONSOLE_MAXNARG 256u
 
 struct vm_app_console_context {
-    C_CHAR command_buffer[0x100];
+    C_CHAR command_buffer[COMMON_SESSION_TEXT_CAPACITY];
     C_CHAR *arguments[CONSOLE_MAXNARG];
     STD_SIZE_T argument_count;
     vm_app *session;

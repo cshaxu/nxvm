@@ -413,3 +413,17 @@ the created App graph, then returns success only if both execution and teardown
 succeed. The focused App INI smoke passes; a fresh executable launched beside
 no `NXVM.ini` prints the existing error and exits with code 1; and the complete
 334-case repository-only unit suite passes.
+
+## S34: Complete App Monitor-Input Copy
+
+The next audit found the App's ordinary command route copies a valid Common
+monitor line into a much smaller fixed buffer with silent `snprintf`
+truncation. S34 will make the App copy boundary match Common's already
+validated input capacity, retaining one parser and leaving the Debug route
+unchanged.
+
+S34 gives the App's sole copied command buffer the same capacity as its Common
+producer. The buffer is not an additional input queue or parser; it remains
+the one mutable copy required by tokenization. The App caller sweep finds no
+other monitor-line copy, the focused command smoke passes, and the complete
+334-case repository-only unit suite passes.

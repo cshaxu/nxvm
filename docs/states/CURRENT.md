@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S33 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S32 audit found the App console entry is `void`, so INI, composition and runner failures can still terminate the executable successfully. This bounded correction is within that approved objective. |
-| Objective | Give the App console entry one truthful status result and make the product process return failure when session construction or execution fails. |
-| Non-goals | Do not change INI grammar, Common/Core contracts, command semantics, machine topology, timing, asset policy or product UX text. |
-| Reference Baseline | S32 `ee338c5a`; new CQ-32 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S34 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S33 App input sweep found the monitor can deliver a valid 16 KiB line while the App silently truncates ordinary commands to 256 bytes. This bounded correction is within that approved objective. |
+| Objective | Make the App command-copy boundary match the accepted Common monitor-line capacity, so valid input is not silently changed before product parsing. |
+| Non-goals | Do not change monitor grammar, Common contracts, Debug parsing, machine topology, timing, asset policy or product UX text. |
+| Reference Baseline | S33 `248be2f4`; new CQ-33 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/command.[ch]`, `src/app/main.c`, existing App/unit and product build paths, convergence ledger/history. No Common/Lib/x86 interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the full entry-to-exit failure path; [Coding](../rules/CODING.md): return truthful outcomes; [Architecture](../rules/ARCHITECTURE.md): App owns process exit policy. |
-| Verification | Full App console-entry failure-path sweep; focused App/product build proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | INI failure, composition failure and abnormal Common session loop return all produce a non-OK App result and a nonzero process exit. |
+| Files And ABI Surface | `src/app/command.c`, existing App command/monitor tests, convergence ledger/history. No Common/Lib/x86 interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete input path; [Coding](../rules/CODING.md): one capacity contract and no silent input mutation; [Architecture](../rules/ARCHITECTURE.md): Common owns monitor delivery and App owns product parsing. |
+| Verification | Full App command-buffer and monitor-capacity caller sweep; focused App command proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Every valid Common monitor line reaches the App parser unchanged; no App-side smaller command-copy capacity remains. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-32, every console-entry failure disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if truthful process status requires a Common/Core behavior change. |
-| Exit Criteria | CQ-32 is repaired: the App process reports every console-entry failure through its one exit boundary; focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-33, every App monitor-line copy/disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if a correction requires a Common or Debug interface change. |
+| Exit Criteria | CQ-33 is repaired: App has one non-truncating monitor-command copy boundary; focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App entry/runner return path for discarded failure or false-success exit behavior. |
+| Similar-Issue Sweep | Sweep every App monitor-input copy and parser boundary for a smaller, silently truncating capacity. |
 
 ## Current Technical Baseline
 
