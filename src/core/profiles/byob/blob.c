@@ -119,11 +119,16 @@ type_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
     C_VOID *loaded = STD_NULL;
     STD_SIZE_T count;
     type_unsigned_8 digest[32];
+    lib_status status;
 
-    if (!vm_profile_byob_blob_is_valid(blob) || out_bytes == STD_NULL ||
-        lib_storage_file_read_owned(blob->path, blob->bytes, &loaded, &count) !=
-            LIB_STATUS_OK ||
-        count != blob->bytes) { STD_FREE(loaded); return TYPE_STATUS_FAULT; }
+    if (!vm_profile_byob_blob_is_valid(blob) || out_bytes == STD_NULL)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    status = lib_storage_file_read_owned(blob->path, blob->bytes, &loaded, &count);
+    if (status == LIB_STATUS_NO_MEMORY) return TYPE_STATUS_NO_MEMORY;
+    if (status != LIB_STATUS_OK || count != blob->bytes) {
+        STD_FREE(loaded);
+        return TYPE_STATUS_FAULT;
+    }
     STD_MEMCPY(out_bytes, loaded, count);
     STD_FREE(loaded);
     if (blob->sha256 == STD_NULL) return TYPE_STATUS_OK;

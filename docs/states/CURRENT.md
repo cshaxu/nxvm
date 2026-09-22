@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S30 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S29 audit found App INI loading collapses invalid arguments and Lib allocation failure into `FAULT`. This bounded correction is within that approved objective. |
-| Objective | Preserve invalid-argument and no-memory outcomes at App's sole INI file-loading boundary. |
-| Non-goals | Do not change INI grammar, Lib contracts, external assets, profile semantics, machine topology, timing or product UX. |
-| Reference Baseline | S29 `9084b298`; new CQ-29 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S31 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S30 audit found BYOB Profile asset loaders collapse invalid input and Lib allocation failure into `FAULT`, and their private output views retain stale state on failure. This bounded correction is within that approved objective. |
+| Objective | Make the one BYOB asset-loading family preserve truthful invalid-argument/no-memory outcomes and clear valid private output views before later failure. |
+| Non-goals | Do not change Lib contracts, asset formats, profile semantics, machine topology, timing or product UX. |
+| Reference Baseline | S30 `decc4374`; new CQ-30 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/ini.c`, existing App INI smoke, convergence ledger/history. No Common/Lib/x86 signature change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete boundary; [Coding](../rules/CODING.md): preserve truthful failures; [Architecture](../rules/ARCHITECTURE.md): App retains the one INI-to-request path. |
-| Verification | Full INI failure-classification sweep; focused App INI smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Null path/output returns `INVALID_ARGUMENT`; Lib no-memory result and App document allocation failure return `NO_MEMORY`; ordinary file failure remains `FAULT`. |
+| Files And ABI Surface | `src/core/profiles/byob/blob.c`, `src/core/profiles/machine_plan.c`, existing Profile/Machine construction smokes, convergence ledger/history. No Common/Lib/x86 signature change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete asset-loader family; [Coding](../rules/CODING.md): preserve truthful failures and output ownership; [Architecture](../rules/ARCHITECTURE.md): Profile retains the one BYOB asset-materialization boundary. |
+| Verification | Full Profile file-loader sweep; focused Profile/Machine construction smokes; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Invalid asset-loader inputs return `INVALID_ARGUMENT`; Lib allocation failure returns `NO_MEMORY`; ordinary file/size failure remains `FAULT`; private output views are clear after every failure. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-29, each INI failure classification and full gate results in the ledger/history. |
-| Stop Conditions | Stop if the correction requires a Lib contract change or changes INI grammar. |
-| Exit Criteria | CQ-29 is repaired: every reachable INI load failure has a truthful category and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-30, each BYOB file-loader disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if the correction requires a Lib contract change or changes asset semantics. |
+| Exit Criteria | CQ-30 is repaired: every reachable BYOB asset-loader failure has a truthful category and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep App file-loading boundaries for invalid-argument/no-memory collapse or duplicated status mapping. |
+| Similar-Issue Sweep | Sweep every Profile BYOB file-loading wrapper for invalid-argument/no-memory collapse and validation-before-output-clear ordering. |
 
 ## Current Technical Baseline
 

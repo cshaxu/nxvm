@@ -389,16 +389,21 @@ static type_status vm_profile_machine_file_load(const C_CHAR *path,
     STD_SIZE_T bytes, vm_machine_asset_bytes *out_view, type_unsigned_8 **out_owned)
 {
     type_unsigned_8 *owned;
+    type_status status;
 
-    if (path == STD_NULL || out_view == STD_NULL || out_owned == STD_NULL) {
+    if (out_view == STD_NULL || out_owned == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    *out_view = (vm_machine_asset_bytes) {0};
+    *out_owned = STD_NULL;
+    if (path == STD_NULL || bytes == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
     owned = (type_unsigned_8 *)STD_MALLOC(bytes);
     if (owned == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    if (vm_profile_byob_blob_load(&(vm_profile_byob_blob) {path, STD_NULL, bytes},
-            owned) != TYPE_STATUS_OK) {
+    status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {path, STD_NULL, bytes},
+        owned);
+    if (status != TYPE_STATUS_OK) {
         STD_FREE(owned);
-        return TYPE_STATUS_FAULT;
+        return status;
     }
     *out_view = (vm_machine_asset_bytes) {owned, bytes};
     *out_owned = owned;
@@ -410,10 +415,15 @@ static type_status vm_profile_machine_file_variable_load(const C_CHAR *path,
 {
     C_VOID *owned = STD_NULL;
     STD_SIZE_T bytes = 0u;
+    lib_status status;
 
-    if (path == STD_NULL || out_view == STD_NULL || out_owned == STD_NULL ||
-        maximum == 0u || lib_storage_file_read_owned(path, maximum, &owned, &bytes) !=
-            LIB_STATUS_OK || bytes == 0u) {
+    if (out_view == STD_NULL || out_owned == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_view = (vm_machine_asset_bytes) {0};
+    *out_owned = STD_NULL;
+    if (path == STD_NULL || maximum == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    status = lib_storage_file_read_owned(path, maximum, &owned, &bytes);
+    if (status == LIB_STATUS_NO_MEMORY) return TYPE_STATUS_NO_MEMORY;
+    if (status != LIB_STATUS_OK || bytes == 0u) {
         STD_FREE(owned);
         return TYPE_STATUS_FAULT;
     }

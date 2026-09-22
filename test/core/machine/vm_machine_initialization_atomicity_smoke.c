@@ -5,6 +5,7 @@
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
 #include "core/profiles/machine_plan_interface.h"
+#include "core/profiles/byob/blob.h"
 #include "core/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
@@ -45,6 +46,17 @@ static C_INT verify_constructor_output_contract(C_VOID)
     plan = (vm_profile_machine_plan *)(type_virtual_address)1u;
     return vm_profile_machine_plan_create_file_backed(STD_NULL, &plan) !=
         TYPE_STATUS_INVALID_ARGUMENT || plan != STD_NULL;
+}
+
+static C_INT verify_byob_blob_argument_contract(C_VOID)
+{
+    type_unsigned_8 bytes[1u] = {0};
+    const vm_profile_byob_blob invalid_blob = {STD_NULL, STD_NULL, sizeof(bytes)};
+
+    return vm_profile_byob_blob_load(STD_NULL, bytes) != TYPE_STATUS_INVALID_ARGUMENT ||
+        vm_profile_byob_blob_load(&invalid_blob, bytes) != TYPE_STATUS_INVALID_ARGUMENT ||
+        vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
+            "asset.rom", STD_NULL, sizeof(bytes)}, STD_NULL) != TYPE_STATUS_INVALID_ARGUMENT;
 }
 
 static C_INT profile_timing_is_materialized(const core_machine_config *config,
@@ -176,7 +188,8 @@ C_INT main(C_VOID)
         verify_invalid_media_slot(profile) != 0 ||
         verify_recovery() != 0 || verify_reset_outcome() != 0 ||
         verify_running_reset_outcome() != 0 ||
-        verify_constructor_output_contract() != 0) {
+        verify_constructor_output_contract() != 0 ||
+        verify_byob_blob_argument_contract() != 0) {
         return 1;
     }
     STD_PRINTF("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");

@@ -378,3 +378,15 @@ S30 keeps the existing single load/parse path. Its only behavioral change is
 the explicit status boundary: invalid App arguments return `INVALID_ARGUMENT`,
 allocation failures return `NO_MEMORY`, and ordinary storage failures remain
 `FAULT`. The focused smoke and the complete 335-test unit suite pass.
+
+## S31: Truthful BYOB Asset-Load Failures
+
+The next audit found the same status collapse in the Core Profile BYOB asset
+loading family. S31 keeps one materialization path while preserving invalid
+argument and allocation outcomes, and gives its private file loaders the same
+clear-output-on-failure rule as public constructors.
+
+The targeted Profile/Machine construction smokes and complete 335-test unit
+suite pass. The unit-level blob argument checks remain repository-only; an
+allocator-failure injection seam was deliberately not added merely to fabricate
+a `NO_MEMORY` branch, because Lib already owns that allocation result.
