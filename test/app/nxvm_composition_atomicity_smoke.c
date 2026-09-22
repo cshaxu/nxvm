@@ -73,8 +73,10 @@ type_status vm_app_configure_machine(const vm_session_request *request,
 
 C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_machine)
 {
-    if (config == STD_NULL || out_machine == STD_NULL || fixture.machine.live ||
-        fixture.failure == COMPOSITION_FAILURE_MACHINE_CREATE) return TYPE_STATUS_INVALID_STATE;
+    if (config == STD_NULL || out_machine == STD_NULL || fixture.machine.live)
+        return TYPE_STATUS_INVALID_STATE;
+    if (fixture.failure == COMPOSITION_FAILURE_MACHINE_CREATE)
+        return TYPE_STATUS_NO_MEMORY;
     fixture.machine.live = LIB_TRUE;
     *out_machine = &fixture.machine;
     return TYPE_STATUS_OK;
@@ -276,7 +278,7 @@ C_INT main(C_VOID)
         type_status expected;
     } machine_failures[] = {
         { COMPOSITION_FAILURE_CONFIGURE, TYPE_STATUS_INVALID_ARGUMENT },
-        { COMPOSITION_FAILURE_MACHINE_CREATE, TYPE_STATUS_INVALID_STATE },
+        { COMPOSITION_FAILURE_MACHINE_CREATE, TYPE_STATUS_NO_MEMORY },
         { COMPOSITION_FAILURE_DRIVER_DESCRIBE, TYPE_STATUS_INVALID_STATE },
         { COMPOSITION_FAILURE_COMMON_MACHINE_CREATE, TYPE_STATUS_INVALID_ARGUMENT },
         { COMPOSITION_FAILURE_MACHINE_BIND, TYPE_STATUS_INVALID_STATE }

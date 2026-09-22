@@ -1,9 +1,11 @@
 #include "type.h"
 
 #include "core/devices/machine.h"
+#include "core/devices/debug_interface.h"
 #include "lib/base/sync_interface.h"
 #include "x86/debug/protocol_interface.h"
 #include "core/machine/lifecycle.h"
+#include "core/machine/debug_adapter.h"
 #include "core/machine/machine_private.h"
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
@@ -41,12 +43,34 @@ C_INT main(C_VOID)
     type_unsigned_8 byte = 0x5au;
     vm_machine_pause_reason pause_reason;
     type_unsigned_64 executed;
+    lib_size response_size;
+    core_machine *saved_core_machine;
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &machine) !=
             TYPE_STATUS_OK || machine == STD_NULL ||
         vm_test_common_machine_bind(machine) != TYPE_STATUS_OK) return 1;
     if (!common_machine_reset(machine->executor) || !vm_debug_wait_paused(machine))
         goto failed;
+    /* Force a Core-originated classification through the adapter.  The
+     * paused Common lease prevents concurrent Core use; restore before any
+     * normal request or teardown. */
+    saved_core_machine = machine->core_machine;
+    machine->core_machine = STD_NULL;
+    if (core_machine_debug_read_register(machine->core_machine,
+            CORE_MACHINE_DEBUG_EAX, &register_id) != TYPE_STATUS_INVALID_ARGUMENT) {
+        machine->core_machine = saved_core_machine;
+        goto failed;
+    }
+    response_size = sizeof(result);
+    if (vm_machine_debug_execute(machine, &(x86_debug_request) {
+            .operation = X86_DEBUG_READ_REGISTER,
+            .register_id = CORE_MACHINE_DEBUG_EAX
+        }, sizeof(x86_debug_request), &result, sizeof(result), &response_size) !=
+            LIB_STATUS_INVALID_ARGUMENT || response_size != 0u) {
+        machine->core_machine = saved_core_machine;
+        goto failed;
+    }
+    machine->core_machine = saved_core_machine;
     if (common_machine_debug_acquire(machine->executor, &lease) != LIB_STATUS_OK)
         goto failed;
     for (register_id = CORE_MACHINE_DEBUG_EAX;

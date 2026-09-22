@@ -215,3 +215,17 @@ S18 removes both Core run-path rewrites of a cold-reset failure to generic
 `FAULT`.  Firmware reset remains the status owner; run now returns its exact
 result.  The firmware capability smoke proves `UNSUPPORTED` survives a pending
 stop reset, and the 334-case unit suite passes.
+
+## S19: Boundary Status Preservation
+
+The next repeat audit found two remaining status masks. App composition
+rewrites a Machine creation result to `INVALID_STATE`; Machine's x86 Debug
+adapter rewrites every Core Debug result to the same Lib state error. S19
+must preserve the former exactly and use one complete local Type-to-Lib
+mapping for the latter. It does not change Debug grammar or any public
+contract.
+
+P1 preserves Machine creation status in App and replaces the Debug adapter's
+per-operation generic-state rewrites with one complete private Type-to-Lib
+mapping. The focused composition and Debug mapping smokes, all 334
+repository-only unit tests and documentation governance pass. S19 is closed.

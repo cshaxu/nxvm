@@ -95,9 +95,8 @@ type_status vm_app_compose_machine(vm_app *app, const vm_session_request *reques
     if (app == STD_NULL || request == STD_NULL || app->machine != STD_NULL)
         return TYPE_STATUS_INVALID_STATE;
     status = vm_app_configure_machine(request, &config);
-    if (status == TYPE_STATUS_OK &&
-        vm_machine_create(&config, &machine) != TYPE_STATUS_OK) {
-        status = TYPE_STATUS_INVALID_STATE;
+    if (status == TYPE_STATUS_OK) {
+        status = vm_machine_create(&config, &machine);
     }
     if (status == TYPE_STATUS_OK) {
         status = vm_machine_describe_common_driver(machine, &driver);

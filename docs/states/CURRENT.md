@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S18 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S16 repaired CQ-15, but its required FDD/HDD sweep found the equivalent FDD ignored-path parameter. |
-| Objective | Preserve exact firmware cold-reset failures through both Core stop-request execution paths. |
-| Non-goals | Do not alter FDC command semantics, removable-media behavior, external assets, timing or Lib Storage contracts. |
-| Reference Baseline | S16 implementation and CQ-16 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S19 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The S18 repeat audit found App machine-creation and Machine-to-x86 Debug status masking; this bounded repair is within that approved objective. |
+| Objective | Preserve exact failure classifications through the App Machine creation and Machine-to-x86 Debug adaptation boundaries. |
+| Non-goals | Do not alter Debug grammar, Core Debug semantics, Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
+| Reference Baseline | S18 `bbed1c32`; CQ-18/CQ-19 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/devices/machine.c`, firmware capability smoke and the convergence ledger/history. No public interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and truthful bounded contract; [Coding](../rules/CODING.md): no ignored parameter or concealed failure; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Focused FDD provider and Machine creation probes; source sweep for retired path parameter and create-result disposition; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Floppy detach has no fake path input; configured blank FDD remains dependent on the already-fallible initialization result, with no silent allocation route. |
+| Files And ABI Surface | `src/app/composition.c`, `src/core/machine/debug_adapter.c`, focused App/x86 Debug tests and convergence ledger/history. No public interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and truthful boundary; [Coding](../rules/CODING.md): no concealed failure or duplicate mapping; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Focused App composition and x86 Debug Machine smokes; source sweep for direct Core/App failure-to-generic-state rewrites; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | A Machine creation failure reaches App unchanged; every Core Debug outcome crosses one complete Type-to-Lib mapping rather than being rewritten to `INVALID_STATE`. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Correct the S16 sweep record and document the FDD create/remove result disposition and focused proof in the ledger/history. |
-| Stop Conditions | Stop if correction requires a new Core, Lib/Common/x86 contract or changes live FDC device semantics. |
-| Exit Criteria | CQ-16 is repaired, every FDD remove caller uses the parameterless operation, the create-result disposition is proven, and unit/documentation/change gates pass. |
+| Reporting Requirements | Record the two discovered masking mechanisms, their mapping/retention boundary and focused proof in the ledger/history; state every remaining deliberate local classification. |
+| Stop Conditions | Stop if exact preservation requires a new Common/Lib/x86 status or public contract. |
+| Exit Criteria | CQ-18/CQ-19 use one complete local mapping or exact Type propagation, every similar direct rewrite is classified, and unit/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all FDD/HDD create/remove APIs and callers for ignored inputs; verify every blank-medium allocation originates in an initialization operation whose failure reaches Machine construction. |
+| Similar-Issue Sweep | Sweep all App/Machine Core-result and Type-to-Lib adaptation sites; classify each retained local precondition, exact propagation or one local complete mapping. |
 
 ## Current Technical Baseline
 
