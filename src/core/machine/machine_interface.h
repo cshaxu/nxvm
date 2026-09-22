@@ -69,8 +69,7 @@ type_status vm_machine_get_speed(const vm_machine *session,
     vm_machine_speed *out_speed);
 type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed);
 C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path);
-C_INT vm_machine_remove_fdd(vm_machine *session, const C_CHAR *path);
-C_INT vm_machine_insert_hdd(vm_machine *session, const C_CHAR *path);
+C_INT vm_machine_eject_fdd(vm_machine *session);
 /* Production host-input ingress.  A composed session copies events into
  * Common's ordered executor transport; it never mutates a running guest
  * device from the host thread.  An uncomposed deterministic Core loop may

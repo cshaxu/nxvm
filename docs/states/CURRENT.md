@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S10 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S9 classified CQ-9 as the next bounded repair batch. |
-| Objective | Remove the dead Machine media facade and FDC diagnostic output, leaving only supported transitions with truthful signatures. |
-| Non-goals | Do not add runtime HDD replacement, modify media semantics, or alter Lib/Common/x86 contracts.  CQ-10 watchpoint output is a separate follow-up because its existing copied Debug path must first be completed. |
-| Reference Baseline | S9 audit at `c0fd83c2`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S11 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S9 classified CQ-10 and S10 removed the unrelated media dead paths. |
+| Objective | Make Core publish a complete copied watchpoint result through the established Debug observation route, then remove CPU direct stdout reporting. |
+| Non-goals | Do not remove watchpoint behavior, change its command syntax, create a second Debug route, or alter Lib/Common public contracts. |
+| Reference Baseline | S10 implementation; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/machine.c`, `machine_interface.h`, `src/core/devices/fdc.[ch]`, `src/app/command.c`, and `test/core/machine/vm_machine_media_lifecycle_s3_smoke.c`; remove corresponding declarations/callers. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S, caller sweep and full unit; [Architecture](../rules/ARCHITECTURE.md): one media owner/direct data flow; [Coding](../rules/CODING.md): no dead public API, ignored parameter or diagnostic side path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Exact declaration/caller sweep for all retired names; focused `vm-machine-media-lifecycle-s3-smoke`; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No `vm_machine_insert_hdd`, `vm_machine_remove_fdd`, or `core_machine_fdc_print` declaration/caller remains; production exposes one no-argument floppy eject operation and startup-only fixed-disk attachment stays private. |
+| Files And ABI Surface | Core CPU watchpoint detection and copied debug observation, Machine Debug adaptation, existing x86 Debug observation consumption, and focused repository-only tests. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S, similar-issue sweep and full unit; [Architecture](../rules/ARCHITECTURE.md): Core owns raw state while Debug owns product text; [Coding](../rules/CODING.md): no duplicate output route or development stdout on a production path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Read/write/execute watchpoint focused proof through the copied observation and Debug command result; whole Core `STD_PRINTF` sweep; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Every watchpoint kind sets one copied observation; Debug reports it through its existing result text; active CPU execution contains no direct `STD_PRINTF` watchpoint report. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report the deleted API paths, retained media owner and caller-sweep result; record CQ-9 before/after evidence. |
-| Stop Conditions | Stop if a real runtime HDD-replacement requirement or a shared-contract change is discovered. |
-| Exit Criteria | CQ-9 is repaired with no stale declaration, caller, test-normalized failure or direct FDC dump; full unit suite passes. |
+| Reporting Requirements | Report each watchpoint's Core state, copied result and single report owner; record CQ-10 before/after evidence. |
+| Stop Conditions | Stop if preservation requires a new x86/Common/Lib public contract rather than the existing observation fields. |
+| Exit Criteria | CQ-10 is repaired without duplicate stdout output; focused proof and full unit suite pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Search all tracked source/tests/CMake for each retired identifier and for uncalled `*_print` device diagnostic APIs; classify every production hit. |
+| Similar-Issue Sweep | Sweep Core CPU execution for direct active user-output calls and all watchpoint kinds; classify comments and unrelated App startup errors separately. |
 
 ## Current Technical Baseline
 

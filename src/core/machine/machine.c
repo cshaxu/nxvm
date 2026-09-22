@@ -287,8 +287,8 @@ C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path)
     common_machine_set_removable_media(session->executor, path,
         LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 
-C_INT vm_machine_remove_fdd(vm_machine *session, const C_CHAR *path)
-{ (C_VOID)path; return session != STD_NULL && session->executor != LIB_NULL &&
+C_INT vm_machine_eject_fdd(vm_machine *session)
+{ return session != STD_NULL && session->executor != LIB_NULL &&
     common_machine_set_removable_media(session->executor, LIB_NULL,
         LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
@@ -318,12 +318,6 @@ static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
     return 0;
 }
 
-C_INT vm_machine_insert_hdd(vm_machine *session, const C_CHAR *path)
-{
-    (C_VOID)session;
-    (C_VOID)path;
-    return -1;
-}
 type_status vm_machine_storage_initialize(vm_machine *machine)
 {
     core_machine_plan_topology topology = {0};

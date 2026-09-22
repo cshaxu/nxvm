@@ -102,3 +102,16 @@ next S removes CQ-9; the following S must populate the established copied
 observation before removing the Core stdout path.  No other App/Core
 production owner, direct host API route, or composition rollback hole was
 found in this repeat sweep.
+
+## S10: Media Facade Subtraction
+
+P1 removes the fixed-disk insertion API that could only fail, changes floppy
+ejection to an exact no-argument operation, and deletes the uncalled FDC
+stdout dump.  The retained fixed-disk setup remains private to Machine
+initialization; removable media still changes only through Common.  The
+affected smoke now creates its ephemeral blank image with the existing Lib
+binary writer, so a clean compile no longer relied on absent root file wrappers.
+Focused proof passes from a newly linked executable, and the full
+repository-only unit suite passes 334/334 in 24.08 seconds.  The exact retired
+symbol sweep is empty.  S10 is closed; S11 completes the existing copied
+watchpoint result path before retiring direct CPU stdout output.

@@ -179,7 +179,7 @@ static C_VOID vm_app_console_floppy(vm_app_console_context *context,
         return;
     }
     if (context->argument_count == 2u && !STD_STRCMP(context->arguments[1], "eject")) {
-        vm_app_console_append(result, vm_machine_remove_fdd(machine, STD_NULL) ?
+        vm_app_console_append(result, vm_machine_eject_fdd(machine) ?
             "Cannot eject floppy disk.\n" : "Floppy disk ejected.\n");
         return;
     }

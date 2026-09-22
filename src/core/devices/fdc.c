@@ -1333,12 +1333,3 @@ C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc)
     STD_MEMSET(&fdc->data, TYPE_ZERO_8, sizeof(fdc->data));
     STD_MEMSET(&fdc->connect, TYPE_ZERO_8, sizeof(fdc->connect));
 }
-
-C_VOID core_machine_fdc_print(const core_machine_fdc *fdc)
-{
-    if (fdc == STD_NULL) return;
-    STD_PRINTF("FDC phase=%d msr=%02x dor=%02x ccr=%02x command=%u/%u result=%u/%u\\n",
-        fdc->data.phase, core_machine_fdc_msr(fdc), fdc->data.dor, fdc->data.ccr,
-        fdc->data.command_index, fdc->data.command_length, fdc->data.result_index,
-        fdc->data.result_length);
-}

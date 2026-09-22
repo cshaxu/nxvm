@@ -247,7 +247,6 @@ type_status core_machine_fdc_next_due_tick(const core_machine_fdc *fdc,
     type_unsigned_64 *out_due_tick);
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc);
-C_VOID core_machine_fdc_print(const core_machine_fdc *fdc);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
