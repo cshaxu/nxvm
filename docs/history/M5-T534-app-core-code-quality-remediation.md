@@ -84,3 +84,21 @@ forces every configurable stage failure, verifies the failed stage has no
 published App state, and retries the same App successfully.  The full unit
 suite passes 334/334 in 19.55 seconds.  S8 is closed; S9 repeats the full
 App/Core quality audit.
+
+## S9: Repeat Audit
+
+S9 re-read all tracked App/Core declarations, implementations and direct
+repository-only callers for stale public operations, duplicate state/output
+routes, host leakage and partial construction.  The recorder removal remains
+complete: no App/Core production, test or build route survives.
+
+The audit found two bounded repair batches.  CQ-9 is a subtraction-only media
+cleanup: the public fixed-disk insertion stub always fails, floppy ejection
+pretends to accept a path it ignores, and the FDC retains an uncalled direct
+stdout dump.  CQ-10 is not safe to delete mechanically: the CPU still emits
+watchpoint text directly while the retained Debug CLI has an existing copied
+result presentation route whose `watch_hit` fields are never populated.  The
+next S removes CQ-9; the following S must populate the established copied
+observation before removing the Core stdout path.  No other App/Core
+production owner, direct host API route, or composition rollback hole was
+found in this repeat sweep.

@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S9 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S9 is the next required repeat audit after S8 `c736e749`. |
-| Objective | Repeat the full ownership, duplication, failure-boundary and dead-path audit over App/Core. |
-| Non-goals | Do not close T534 from green gates alone or alter shared contracts without a classified App/Core mechanism. |
-| Reference Baseline | S8 implementation `c736e749`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S10 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S9 classified CQ-9 as the next bounded repair batch. |
+| Objective | Remove the dead Machine media facade and FDC diagnostic output, leaving only supported transitions with truthful signatures. |
+| Non-goals | Do not add runtime HDD replacement, modify media semantics, or alter Lib/Common/x86 contracts.  CQ-10 watchpoint output is a separate follow-up because its existing copied Debug path must first be completed. |
+| Reference Baseline | S9 audit at `c0fd83c2`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | All tracked `src/app/**`, `src/core/**` source and direct repository-only tests; audit only until every discovered mechanism is classified. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): one active S and actual-source review; [Architecture](../rules/ARCHITECTURE.md): single owner/direct data flow; [Coding](../rules/CODING.md): no redundant layer or dead path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Whole-tree source/caller inventories, targeted implementation and direct-test reads, documentation governance, `git diff --check` and actual findings review. |
-| Expected Markers | Every newly discovered live mechanism has an in-scope repair S or a durable, justified receiver; no inspected issue is left unclassified. |
+| Files And ABI Surface | `src/core/machine/machine.c`, `machine_interface.h`, `src/core/devices/fdc.[ch]`, `src/app/command.c`, and `test/core/machine/vm_machine_media_lifecycle_s3_smoke.c`; remove corresponding declarations/callers. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S, caller sweep and full unit; [Architecture](../rules/ARCHITECTURE.md): one media owner/direct data flow; [Coding](../rules/CODING.md): no dead public API, ignored parameter or diagnostic side path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Exact declaration/caller sweep for all retired names; focused `vm-machine-media-lifecycle-s3-smoke`; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No `vm_machine_insert_hdd`, `vm_machine_remove_fdd`, or `core_machine_fdc_print` declaration/caller remains; production exposes one no-argument floppy eject operation and startup-only fixed-disk attachment stays private. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report every finding's owner, concrete impact and repair boundary; do not call the corpus clean merely from a search or green gate. |
-| Stop Conditions | Stop if a repair needs an unapproved Lib/Common/x86 contract change or guest-behavior authorization. |
-| Exit Criteria | Every inspected finding has a durable disposition, and CQ-6 records this audit result. |
+| Reporting Requirements | Report the deleted API paths, retained media owner and caller-sweep result; record CQ-9 before/after evidence. |
+| Stop Conditions | Stop if a real runtime HDD-replacement requirement or a shared-contract change is discovered. |
+| Exit Criteria | CQ-9 is repaired with no stale declaration, caller, test-normalized failure or direct FDC dump; full unit suite passes. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Search App/Core declarations, callers and implementations for repeated mutable state, duplicate production routes, dead public APIs, platform leakage and failure-boundary holes. |
+| Similar-Issue Sweep | Search all tracked source/tests/CMake for each retired identifier and for uncalled `*_print` device diagnostic APIs; classify every production hit. |
 
 ## Current Technical Baseline
 
