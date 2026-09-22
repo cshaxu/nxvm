@@ -303,3 +303,15 @@ reset callback after cold start, requests an active reset, and proves that
 `TYPE_STATUS_UNSUPPORTED` produces `COMMON_MACHINE_ERROR`. The existing
 non-fault Core-run probe remains in the same smoke. All 335 repository-only
 unit tests pass. S24 is closed.
+
+## S25: Direct Constructor Output Ownership
+
+The direct Core create entry validated configuration before clearing its output
+pointer. That differed from Core plan construction and every peer owner-local
+creator, all of which establish the output contract before evaluating the
+remaining input. S25 moves the null assignment immediately after validating
+the output parameter; no construction or configuration mechanism changes.
+
+The retained time smoke now supplies a non-null sentinel before its invalid
+time-axis configuration cases and proves it is cleared on the first failure.
+The complete 335-case repository-only unit suite passes. S25 is closed.

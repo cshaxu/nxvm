@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S24 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S23 repeated runner audit found that an active direct-control reset failure is recorded but can still produce a normal Common completion. This bounded same-owner repair is within that approved objective. |
-| Objective | Preserve an active reset failure as an abnormal Machine runner completion. |
+| Identifier Mode | Continuation T534 S25 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S24 construction audit found that the direct Core create entry validates configuration before clearing its valid out pointer, unlike the plan route and every peer creator. This bounded Core-owner repair is within that approved objective. |
+| Objective | Give every direct Core-create failure the same null out-parameter contract. |
 | Non-goals | Do not restore deleted root facades, reintroduce YAML/profile selection into runtime request, alter Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S23 `e308a78e`; CQ-24 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Reference Baseline | S24 `4084761a`; CQ-25 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/runner.c`, runner-outcome smoke, convergence ledger/history. No public or Common contract change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Coding](../rules/CODING.md): one owner-local abnormal-result conversion; [Architecture](../rules/ARCHITECTURE.md): Common remains the sole worker/lifecycle owner. |
-| Verification | Focused runner-outcome smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | An active reset failure records its existing outcome and makes the Common driver report `ERROR`, never normal `STOPPED`. |
+| Files And ABI Surface | `src/core/devices/machine.c`, Core configuration smoke, convergence ledger/history. No public signature or Common contract change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Coding](../rules/CODING.md): direct and plan construction share one output-ownership convention; [Architecture](../rules/ARCHITECTURE.md): Core remains the sole machine constructor. |
+| Verification | Focused Core configuration smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Any direct-create failure with a valid out parameter leaves it `NULL`, before all configuration validation. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
 | Reporting Requirements | Record the retained output/profile owners, complete default-build result and sweep count in the ledger/history. |
 | Stop Conditions | Stop if either repair requires restoring a production compatibility facade or a runtime machine-profile selector. |
-| Exit Criteria | CQ-24 routes every active reset failure through the existing runner-failure owner and passes focused/full/documentation/change gates. |
+| Exit Criteria | CQ-25 clears the direct-create out parameter before validation and passes focused/full/documentation/change gates. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every runner branch that can observe a reset failure and every Common driver callback that adapts reset completion. |
+| Similar-Issue Sweep | Sweep every App/Core pointer-returning creator and the direct/plan Core construction routes for this output-ownership ordering. |
 
 ## Current Technical Baseline
 

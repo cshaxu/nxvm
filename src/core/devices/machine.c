@@ -379,7 +379,9 @@ static type_status core_machine_create_internal(
     core_machine_port_provider_entry *port_checkpoint;
     STD_SIZE_T memory_bytes;
     type_unsigned_8 dma_controller_count;
-    if (config == STD_NULL || out_machine == STD_NULL ||
+    if (out_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_machine = STD_NULL;
+    if (config == STD_NULL ||
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
         !core_machine_valid_fpu_profile(config->fpu_profile) ||
@@ -419,7 +421,6 @@ static type_status core_machine_create_internal(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
-    *out_machine = STD_NULL;
     memory_bytes = config->memory_bytes == 0u ?
         CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
     dma_controller_count = config->dma_controller_count == 0u ?

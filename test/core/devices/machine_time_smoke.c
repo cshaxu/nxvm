@@ -71,6 +71,9 @@ C_INT main(C_VOID)
         CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u };
     {
         core_machine_config invalid = config;
+        core_machine rejected_sentinel = {0};
+
+        rejected = &rejected_sentinel;
 
         invalid.time_axis.ticks_per_second = 0u;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
