@@ -4,13 +4,13 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S17 |
+| Identifier Mode | Continuation T534 S18 |
 | Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S16 repaired CQ-15, but its required FDD/HDD sweep found the equivalent FDD ignored-path parameter. |
-| Objective | Remove the FDD detach operation's ignored pathname and prove blank-FDD initialization already propagates its allocation result through Machine construction. |
+| Objective | Preserve exact firmware cold-reset failures through both Core stop-request execution paths. |
 | Non-goals | Do not alter FDC command semantics, removable-media behavior, external assets, timing or Lib Storage contracts. |
 | Reference Baseline | S16 implementation and CQ-16 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/media/fdd.*`, `machine.c`, FDD/media/Machine smokes, and the convergence ledger/history. No `*_interface.h` contract changes. |
+| Files And ABI Surface | `src/core/devices/machine.c`, firmware capability smoke and the convergence ledger/history. No public interface change. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and truthful bounded contract; [Coding](../rules/CODING.md): no ignored parameter or concealed failure; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
 | Verification | Focused FDD provider and Machine creation probes; source sweep for retired path parameter and create-result disposition; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
 | Expected Markers | Floppy detach has no fake path input; configured blank FDD remains dependent on the already-fallible initialization result, with no silent allocation route. |

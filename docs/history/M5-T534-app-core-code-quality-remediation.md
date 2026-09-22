@@ -208,3 +208,10 @@ P1 makes all FDD detach callers use the single parameterless operation.  The
 provider smoke proves empty initialization, blank-media activation and detach;
 direct/readonly/overlay, FDC-port and Model40 FDC smokes pass.  The complete
 334-case unit suite and documentation governance gate pass.  S17 is closed.
+
+## S18: Core Reset Failure Preservation
+
+S18 removes both Core run-path rewrites of a cold-reset failure to generic
+`FAULT`.  Firmware reset remains the status owner; run now returns its exact
+result.  The firmware capability smoke proves `UNSUPPORTED` survives a pending
+stop reset, and the 334-case unit suite passes.
