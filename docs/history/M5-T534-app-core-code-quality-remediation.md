@@ -499,3 +499,20 @@ S39 centralizes those waits in the repository-only fixture. The four focused
 tests pass in 3.79 seconds, their fixed-sleep scan is empty, and the complete
 334-case `-j8` replay passes in 16.64 seconds. No production source or shared
 component changed.
+
+## S40: Machine Creation Status Contract
+
+The post-S39 public-interface audit found that `vm_machine_create()` returns
+only `TYPE_STATUS_*` values and every consumer treats it as that domain, while
+its declaration and the App composition fake still declare raw `C_INT`. S40
+aligns that one cross-module result contract and classifies every App/Core
+creation entry before the next audit pass. It changes no status value,
+construction path or ownership boundary.
+
+S40 changes the declaration, implementation and composition fake to
+`type_status`. Strict C11/Werror checks, focused Machine initialization proof,
+documentation governance and a complete `-j8` replay pass 334/334 in 25.15
+seconds. One preceding parallel replay failed `vm-runner-error-propagation`
+once; it passed on 12 isolated repeats and on the final full replay, so it is
+recorded as a non-reproducible test observation rather than misclassified as a
+product defect.

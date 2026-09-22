@@ -472,7 +472,8 @@ type_status vm_machine_create_from_assets(const vm_machine_config *config,
     return vm_machine_create_from_plan(config, plan, out_session);
 }
 
-C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_session)
+type_status vm_machine_create(const vm_machine_config *config,
+    vm_machine **out_session)
 {
     vm_profile_machine_plan *plan = STD_NULL;
     type_status status;

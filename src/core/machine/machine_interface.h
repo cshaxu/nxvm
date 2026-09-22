@@ -51,7 +51,8 @@ typedef struct vm_machine_information {
     type_unsigned_32 fault_exception_eip;
 } vm_machine_information;
 
-C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_session);
+type_status vm_machine_create(const vm_machine_config *config,
+    vm_machine **out_session);
 type_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_session);
 C_VOID vm_machine_destroy(vm_machine *session);

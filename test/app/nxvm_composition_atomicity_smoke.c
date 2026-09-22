@@ -73,7 +73,8 @@ type_status vm_app_configure_machine(const vm_session_request *request,
     return TYPE_STATUS_OK;
 }
 
-C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_machine)
+type_status vm_machine_create(const vm_machine_config *config,
+    vm_machine **out_machine)
 {
     if (config == STD_NULL || out_machine == STD_NULL || fixture.machine.live)
         return TYPE_STATUS_INVALID_STATE;

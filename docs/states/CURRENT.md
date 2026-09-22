@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S39 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. S38's aggressive full-suite replay exposed the same fixed-sleep polling construction in four Core Machine unit tests. This bounded test-reliability repair is within the approved quality and full-green objective. |
-| Objective | Replace the complete known Core Machine state-polling test class with one event-backed, monotonic-deadline helper without changing production behavior or serializing the suite. |
-| Non-goals | Do not change Common's public protocol, Machine lifecycle semantics, scheduler timing, test assertions, timeout policy for unrelated tests, or production code. |
-| Reference Baseline | S38 `fc4ccc87`; CQ-38 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S40 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S39 public-interface audit found `vm_machine_create()` returns the Type-status domain in implementation and callers but advertises raw `C_INT`. This bounded contract correction is within the approved quality and full-green objective. |
+| Objective | Make the sole public Machine creation entry, implementation and its composition fake declare the same `type_status` result contract. |
+| Non-goals | Do not change numeric status values, creation behavior, construction ownership, callers, Common protocol, profile logic or any external asset path. |
+| Reference Baseline | S39 `d7faefce`; CQ-39 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `test/core/machine/support/common_machine_fixture.h`, `vm_console_pause_resume_smoke.c`, `vm_runner_display_cadence_smoke.c`, `vm_runner_error_propagation_smoke.c`, `vm_x86_debug_mapping_smoke.c`, convergence ledger/history. Repository-only test helper only; no production or public ABI change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): one clear test owner without duplicated polling; [Architecture](../rules/ARCHITECTURE.md): Common remains the only lifecycle owner and production path is untouched. |
-| Verification | Complete Core Machine fixed-sleep state-polling sweep; focused pause/resume, cadence, runner-error and Debug-mapping tests; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Every known Core Machine state wait blocks on its test-owned Common state notification and uses one monotonic deadline; no fixed `sleep(1)` polling remains in the swept tests; full parallel unit suite passes. |
+| Files And ABI Surface | `src/core/machine/machine_interface.h`, `src/core/machine/machine.c`, `test/app/nxvm_composition_atomicity_smoke.c`, convergence ledger/history. The Machine public result type is corrected to the existing Type-status contract; no numeric ABI or behavior changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated contract; [Coding](../rules/CODING.md): one clear status vocabulary; [Architecture](../rules/ARCHITECTURE.md): Machine owns its public failure contract without an ambiguous parallel type. |
+| Verification | Complete Machine creation declaration/definition/caller sweep; focused App composition and Machine initialization smokes; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Every `vm_machine_create()` declaration and definition uses `type_status`; the composition fake exactly matches; all callers retain their existing status comparisons and the full parallel unit suite passes. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-38, every fixed-sleep polling disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if a test requires an event notification that Common cannot expose without a shared-contract change; record the receiver instead of adding a parallel production path. |
-| Exit Criteria | CQ-38 is repaired: all four known polls share the event-backed helper, the sweep is empty, focused and full `-j8` unit gates pass, and documentation/change gates pass. |
+| Reporting Requirements | Record CQ-39, all `vm_machine_create()` declaration/definition/caller dispositions and full gate results in the ledger/history. |
+| Stop Conditions | Stop if a caller requires a distinct non-Type result domain; record the evidence rather than coercing it. |
+| Exit Criteria | CQ-39 is repaired: the public declaration, implementation and composition fake use the Type status result, the complete caller sweep has no raw return type, and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every Core Machine repository-only test for fixed-sleep lifecycle polling and repair every occurrence using the same existing Common state-sink capability. |
+| Similar-Issue Sweep | Sweep every public App/Core creation entry whose implementation returns Type statuses for a raw scalar declaration, and classify each result domain before changing it. |
 
 ## Current Technical Baseline
 
