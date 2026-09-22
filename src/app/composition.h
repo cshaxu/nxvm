@@ -11,10 +11,10 @@ typedef struct vm_app vm_app;
 
 type_status vm_app_create(vm_app **out_app);
 type_status vm_app_destroy(vm_app *app);
-common_session *vm_app_session(vm_app *app);
-vm_machine *vm_app_machine(vm_app *app);
-common_machine *vm_app_common_machine(vm_app *app);
-common_ui *vm_app_ui(vm_app *app);
+common_session *vm_app_session(const vm_app *app);
+vm_machine *vm_app_machine(const vm_app *app);
+common_machine *vm_app_common_machine(const vm_app *app);
+common_ui *vm_app_ui(const vm_app *app);
 type_status vm_app_compose_machine(vm_app *app,
     const vm_session_request *request);
 type_status vm_app_compose_control(vm_app *app,

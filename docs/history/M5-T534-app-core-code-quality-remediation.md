@@ -609,3 +609,16 @@ XT and Model 40. The 333-case unit replay and every configured external
 integration suite pass. The source revision, hashes, PE architecture and
 stripping verification are retained in the
 [artifact record](../etc/evidence/t534-s50-artifact-verification.md).
+
+## S51: App Read-only Interface Qualifiers
+
+The final static review identified exactly ten App inputs whose pointees are
+only read: three monitor-command handler contexts, four App composition getter
+inputs and three post-trim INI tokens. S51 qualifies those inputs without
+changing returned handles, parsing, object ownership or callback behavior.
+The two command contexts that submit a command or receive a runtime event stay
+mutable because those paths update control/debug state; INI values stay mutable
+because parsing splits and trims them. Core output buffers and the reported CPU
+declaration parameter-name differences are explicitly classified as analyzer
+limitations, not disguised const opportunities. Focused INI/composition tests
+and the complete 333-case `-j8` repository-only unit suite pass.

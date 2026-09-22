@@ -100,8 +100,8 @@ static C_INT vm_app_ini_medium(vm_session_request *request, C_INT floppy,
     STD_SIZE_T slot, const C_CHAR *directory, C_CHAR *value)
 {
     C_CHAR *separator;
-    C_CHAR *path;
-    C_CHAR *mode;
+    const C_CHAR *path;
+    const C_CHAR *mode;
     C_CHAR (*paths)[VM_SESSION_REQUEST_PATH_MAX];
     lib_storage_medium_mode *modes;
     STD_SIZE_T *count;
@@ -152,7 +152,7 @@ type_status vm_app_ini_parse(const C_CHAR *directory, const C_CHAR *name,
     cursor = document;
     while (cursor != STD_NULL && *cursor != '\0') {
         C_CHAR *equals;
-        C_CHAR *key;
+        const C_CHAR *key;
         C_CHAR *value;
         line = cursor;
         cursor = vm_app_ini_find(cursor, '\n');

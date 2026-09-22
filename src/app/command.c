@@ -101,7 +101,7 @@ static C_VOID vm_app_console_help(common_session_command_result *result)
         "EXIT    Stop the machine and quit the console\n\n");
 }
 
-static C_VOID vm_app_console_info(vm_app_console_context *context,
+static C_VOID vm_app_console_info(const vm_app_console_context *context,
     common_session_command_result *result)
 {
     vm_machine_information information;
@@ -136,7 +136,7 @@ static C_VOID vm_app_console_info(vm_app_console_context *context,
 static const C_CHAR *vm_app_console_speed_name(vm_machine_speed speed)
 { return speed == VM_MACHINE_SPEED_TURBO ? "turbo" : "standard"; }
 
-static C_VOID vm_app_console_speed(vm_app_console_context *context,
+static C_VOID vm_app_console_speed(const vm_app_console_context *context,
     common_session_command_result *result)
 {
     vm_machine_speed speed;
@@ -164,7 +164,7 @@ static C_VOID vm_app_console_speed(vm_app_console_context *context,
     else vm_app_console_append(result, "Cannot change speed while session is running.\n");
 }
 
-static C_VOID vm_app_console_floppy(vm_app_console_context *context,
+static C_VOID vm_app_console_floppy(const vm_app_console_context *context,
     common_session_machine_state state, common_session_command_result *result)
 {
     vm_machine *machine = vm_app_console_machine(context);
