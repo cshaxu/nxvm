@@ -193,8 +193,8 @@ else()
         CORE_MACHINE_RUNTIME_TRACE_ENABLED=0)
 endif()
 
-# Release artifacts omit development trace recording. A small set of unit
-# tests verifies that recording contract itself, so those tests link the same
+# Release artifacts omit development trace observation. A small set of unit
+# tests verifies that trace contract itself, so those tests link the same
 # Core sources in an observable test-only library rather than changing the
 # production library's build definition.
 get_target_property(PROJECT_CORE_MACHINE_SOURCES core-machine SOURCES)
@@ -1245,7 +1245,6 @@ set(VM_APP_SOURCES
     src/app/command.c
     src/app/keyboard.c
     src/app/ini.c
-    src/app/recorder.c
     src/app/composition.c
     src/app/config.c
 )
@@ -1853,10 +1852,6 @@ add_executable(vm-x86-debug-mapping-smoke
 target_link_libraries(vm-x86-debug-mapping-smoke PRIVATE
     vm-machine
 )
-add_executable(vm-debugger-recording-lifecycle-smoke
-    test/app/vm_app_recorder_smoke.c)
-target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-app)
-
 add_executable(vm-full-pc-session-smoke
     test/integration/dos/nxvm_full_pc_session_smoke.c
 )
@@ -2150,7 +2145,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-unified-debug-backend-smoke
     vm-app-console-smoke
     vm-x86-debug-mapping-smoke
-    vm-debugger-recording-lifecycle-smoke
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
     vm-machine-reconfigure-smoke
@@ -2607,7 +2601,6 @@ endforeach()
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
-    vm-debugger-recording-lifecycle-smoke
     vm-media-provider-smoke
     vm-media-direct-readonly-smoke
     vm-xt-5160-268-profile-smoke)
@@ -3024,12 +3017,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
 
 
-    add_custom_target(verify-t446-vm-debugger-recording-lifecycle
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t446_vm_debugger_recording_lifecycle.cmake"
-        COMMENT "Verifying VM debugger recorder lifecycle ownership"
-        VERBATIM)
-
     add_custom_target(verify-t447-build-ownership
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_build_ownership.cmake"
@@ -3350,7 +3337,6 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-bounded-formatting
     verify-vm-provider-composition
     verify-ram-reconfigure-closure
-    verify-t446-vm-debugger-recording-lifecycle
     verify-t447-build-ownership
     verify-t447-debugger-boundary
     verify-t447-collaborator-plan-boundary
@@ -3577,7 +3563,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/devices/rtc.c|machine-executor"
     "vm-app|src/app/command.c|console-product"
     "vm-app|src/app/keyboard.c|keyboard-product"
-    "vm-app|src/app/recorder.c|recorder-product"
     "vm-machine|src/core/machine/frame.c|display-adaptation"
     "vm-app|src/app/ini.c|session-ini"
     "vm-app|src/app/composition.c|session-composition"

@@ -365,7 +365,7 @@ and VADP layouts remain implementation-only.
 `core_machine_debug_instruction_observation` is a copied debugger record, not
 a `t_cpu` or `t_cpuins` copy. It names only the registers, segment bases,
 instruction location/bytes, code-default-size, and bounded memory accesses
-used by the retained VM breakpoint, recorder, and disassembly paths. The core
+used by the retained VM breakpoint and disassembly paths. The core
 captures it only at the existing debugger boundary. A source-shape recurrence
 gate rejects private core-machine includes or complete private layouts in any
 `*_interface.h`, alongside the existing raw-borrow and test-support checks.
@@ -552,9 +552,9 @@ provider-owned pointer.
 
 `core/platform/file` is the one synchronous owner of host file handles for
 the current FDD/HDD load, atomic media-save staging, Model-40 BYOB, session
-catalog, and instruction-recorder paths. Its calls return copied bytes or an
+catalog paths. Its calls return copied bytes or an
 opaque reader/writer that it alone opens and closes. A VM caller supplies a
-selected path and retains its own media, profile, catalog, or recorder state;
+selected path and retains its own media, profile or catalog state;
 Core does not interpret mounts, directories, DOS paths, source provenance, or
 product policy. The retired T271 generic backing-resource callback contract
 had no production consumer and has no compatibility route.
@@ -853,7 +853,7 @@ They act only through copied values and abstract targets; Common never selects
 a profile, creates a machine, owns an execution loop, receives native handles
 or determines product exit semantics. `lib` supplies its only dependency.
 
-NXVM Console commands, recording policy, display/Console ownership and
+NXVM Console commands, display/Console ownership and
 product-specific debugger integration belong in `vm/product`. The pure
 assembler/disassembler capability belongs in Common because it accesses neither
 a machine nor a native host provider.

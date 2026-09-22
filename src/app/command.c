@@ -16,7 +16,6 @@
 #include "app/ini_interface.h"
 #include "app/command.h"
 #include "app/keyboard.h"
-#include "app/recorder.h"
 
 #define CONSOLE_MAXNARG 256u
 
@@ -27,7 +26,6 @@ struct vm_app_console_context {
     vm_app *session;
     common_session *control;
     x86_debug *debug;
-    vm_app_recorder *recorder;
     C_INT debug_active;
     C_INT debug_requested;
 };
@@ -98,7 +96,6 @@ static C_VOID vm_app_console_help(common_session_command_result *result)
         "INFO    List device information\n"
         "SPEED   Show or select machine speed\n"
         "DEBUG   Launch hardware debugger\n"
-        "RECORD  Record cpu status for each instruction\n"
         "FLOPPY  Insert or eject removable floppy media\n"
         "START | RESET | STOP | RESUME\n"
         "EXIT    Stop the machine and quit the console\n\n");
@@ -165,27 +162,6 @@ static C_VOID vm_app_console_speed(vm_app_console_context *context,
     if (vm_machine_set_speed(machine, speed) == TYPE_STATUS_OK)
         vm_app_console_append(result, "Speed: %s\n", vm_app_console_speed_name(speed));
     else vm_app_console_append(result, "Cannot change speed while session is running.\n");
-}
-
-static C_VOID vm_app_console_record(vm_app_console_context *context,
-    common_session_machine_state state, common_session_command_result *result)
-{
-    if (context->argument_count < 2u) {
-        vm_app_console_append(result, "Usage: RECORD start <file> | stop\n");
-        return;
-    }
-    if (vm_app_console_is_running(state)) {
-        vm_app_console_append(result, "Cannot change record status while running.\n");
-        return;
-    }
-    if (!STD_STRCMP(context->arguments[1], "start") && context->argument_count == 3u) {
-        vm_app_console_append(result, vm_app_recorder_start(context->recorder,
-            context->arguments[2]) == TYPE_STATUS_OK ? "Record started.\n" :
-            "ERROR:\trecorder cannot open output file.\n");
-    } else if (!STD_STRCMP(context->arguments[1], "stop") && context->argument_count == 2u) {
-        vm_app_console_append(result, vm_app_recorder_stop(context->recorder) ==
-            TYPE_STATUS_OK ? "Record finished.\n" : "ERROR:\trecorder not turned on.\n");
-    } else vm_app_console_append(result, "Usage: RECORD start <file> | stop\n");
 }
 
 static C_VOID vm_app_console_floppy(vm_app_console_context *context,
@@ -256,8 +232,6 @@ static C_VOID vm_app_console_submit_line(C_VOID *opaque,
     if (!STD_STRCMP(context->arguments[0], "help")) vm_app_console_help(result);
     else if (!STD_STRCMP(context->arguments[0], "info")) vm_app_console_info(context, result);
     else if (!STD_STRCMP(context->arguments[0], "speed")) vm_app_console_speed(context, result);
-    else if (!STD_STRCMP(context->arguments[0], "record"))
-        vm_app_console_record(context, state, result);
     else if (!STD_STRCMP(context->arguments[0], "floppy"))
         vm_app_console_floppy(context, state, result);
     else if (!STD_STRCMP(context->arguments[0], "start")) result->request = COMMON_SESSION_REQUEST_START;
@@ -360,8 +334,7 @@ static C_INT vm_app_console_compose(vm_app_console_context *context,
     common_session_options session_options = {0};
     common_ui_options ui_options = {0};
 
-    if (vm_app_compose_machine(context->session, request) != TYPE_STATUS_OK) return 0;
-    if (vm_app_recorder_create(&context->recorder) != TYPE_STATUS_OK ||
+    if (vm_app_compose_machine(context->session, request) != TYPE_STATUS_OK ||
         x86_debug_create(&context->debug) != LIB_STATUS_OK) return 0;
     session_options.display = !STD_STRCMP(request->display, "window") ?
         COMMON_SESSION_DISPLAY_WINDOW : COMMON_SESSION_DISPLAY_CONSOLE;
@@ -400,7 +373,6 @@ C_VOID vm_app_console_context_destroy(vm_app_console_context *context)
 {
     if (context == STD_NULL) return;
     x86_debug_destroy(context->debug);
-    vm_app_recorder_destroy(context->recorder);
     STD_FREE(context);
 }
 

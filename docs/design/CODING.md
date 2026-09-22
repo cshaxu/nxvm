@@ -14,7 +14,7 @@ src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
   x86/{xasm32,debug}/
-  app/                  main, INI configuration, CLI, composition, recorder
+  app/                  main, INI configuration, CLI and composition
   core/
     devices/            reusable CPU/device/memory/bus/time and execution
     machine/            NXVM driver, asset/media and execution adapter

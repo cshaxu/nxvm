@@ -245,13 +245,6 @@ type_status vm_machine_bind_common_machine(vm_machine *machine,
     return TYPE_STATUS_OK;
 }
 
-void vm_machine_bind_debug_observer(vm_machine *machine,
-    vm_machine_debug_observer observer, C_VOID *context)
-{
-    if (machine == STD_NULL) return;
-    vm_machine_debug_bind_observer(&machine->debug, observer, context);
-}
-
 type_status vm_machine_pause_for_debug(vm_machine *machine,
     type_unsigned_32 timeout_milliseconds)
 {

@@ -22,34 +22,6 @@ const C_CHAR *vm_machine_profile_name(vm_machine_profile_kind kind);
 
 typedef struct vm_machine vm_machine;
 
-/* A copied diagnostic observation.  vm/machine maps the existing Core Debug
- * API record into this product-neutral VM value; consumers never receive a
- * Core or CPU pointer. */
-#define VM_MACHINE_DEBUG_INSTRUCTION_BYTES 15u
-#define VM_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY 8u
-typedef struct vm_machine_debug_memory_access {
-    type_unsigned_32 linear;
-    type_unsigned_8 bytes;
-    type_bool write;
-    type_unsigned_64 data;
-} vm_machine_debug_memory_access;
-
-typedef struct vm_machine_debug_observation {
-    type_unsigned_16 cs, ss, ds, es, fs, gs;
-    type_unsigned_32 cs_base, ss_base, eip, esp;
-    type_unsigned_32 eax, ecx, edx, ebx, ebp, esi, edi, eflags;
-    C_INT code_default_size;
-    type_unsigned_16 instruction_cs;
-    type_unsigned_32 instruction_eip, instruction_linear;
-    type_unsigned_8 instruction_bytes[VM_MACHINE_DEBUG_INSTRUCTION_BYTES];
-    type_unsigned_8 instruction_byte_count;
-    vm_machine_debug_memory_access
-        memory_accesses[VM_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY];
-    type_unsigned_8 memory_access_count;
-} vm_machine_debug_observation;
-typedef C_VOID (*vm_machine_debug_observer)(C_VOID *context,
-    const vm_machine_debug_observation *observation);
-
 typedef struct vm_machine_reset_vector {
     type_unsigned_16 cs;
     type_unsigned_16 ip;
@@ -91,8 +63,6 @@ type_status vm_machine_describe_common_driver(vm_machine *session,
  * that non-owning link during ordered teardown. */
 type_status vm_machine_bind_common_machine(vm_machine *session,
     common_machine *common_machine);
-void vm_machine_bind_debug_observer(vm_machine *session,
-    vm_machine_debug_observer observer, C_VOID *context);
 type_status vm_machine_pause_for_debug(vm_machine *session,
     type_unsigned_32 timeout_milliseconds);
 type_status vm_machine_reconfigure_memory(vm_machine *session,

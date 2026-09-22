@@ -16,11 +16,6 @@ extern "C" {
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 
 typedef struct {
-    vm_machine_debug_observer observer;
-    C_VOID *observer_context;
-} t_debug_connect;
-
-typedef struct {
     x86_debug_execution_plan_kind kind;
     type_unsigned_64 remaining;
     type_unsigned_64 executed;
@@ -34,7 +29,6 @@ typedef struct {
     t_debug_execution_plan plan;
     core_machine_debug_instruction_observation observation;
     type_bool observation_valid;
-    t_debug_connect connect;
 } t_debug;
 
 C_VOID vm_machine_debug_initialize(t_debug *debug);
@@ -42,8 +36,6 @@ C_VOID vm_machine_debug_reset(t_debug *debug);
 C_VOID vm_machine_debug_refresh(t_debug *debug,
     const core_machine_debug_instruction_observation *observation);
 C_VOID vm_machine_debug_finalize(t_debug *debug);
-C_VOID vm_machine_debug_bind_observer(t_debug *debug,
-    vm_machine_debug_observer observer, void *context);
 type_status vm_machine_debug_set_execution_plan(t_debug *debug,
     const x86_debug_request *request);
 C_VOID vm_machine_debug_clear_execution_plan(t_debug *debug);

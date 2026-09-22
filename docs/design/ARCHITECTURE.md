@@ -25,7 +25,7 @@ release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
 
-- `app` owns INI syntax, runtime-media paths, product CLI, recording and the one composition root.
+- `app` owns INI syntax, runtime-media paths, product CLI and the one composition root.
   It assembles Common Session/UI/Machine and the NXVM driver.
 - `core/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name

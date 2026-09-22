@@ -16,46 +16,14 @@ void vm_machine_debug_reset(t_debug *debug)
 void vm_machine_debug_refresh(t_debug *debug,
     const core_machine_debug_instruction_observation *observation)
 {
-    vm_machine_debug_observation copied;
-
     if (debug == STD_NULL || observation == STD_NULL) return;
     debug->observation = *observation;
     debug->observation_valid = TYPE_TRUE;
-    if (debug->connect.observer == STD_NULL) return;
-    copied = (vm_machine_debug_observation) {
-        .cs = observation->cs, .ss = observation->ss, .ds = observation->ds,
-        .es = observation->es, .fs = observation->fs, .gs = observation->gs,
-        .cs_base = observation->cs_base, .ss_base = observation->ss_base,
-        .eip = observation->eip, .esp = observation->esp,
-        .eax = observation->eax, .ecx = observation->ecx,
-        .edx = observation->edx, .ebx = observation->ebx,
-        .ebp = observation->ebp, .esi = observation->esi,
-        .edi = observation->edi, .eflags = observation->eflags,
-        .code_default_size = observation->code_default_size,
-        .instruction_cs = observation->instruction_cs,
-        .instruction_eip = observation->instruction_eip,
-        .instruction_linear = observation->instruction_linear,
-        .instruction_byte_count = observation->instruction_byte_count,
-        .memory_access_count = observation->memory_access_count
-    };
-    STD_MEMCPY(copied.instruction_bytes, observation->instruction_bytes,
-        sizeof(copied.instruction_bytes));
-    STD_MEMCPY(copied.memory_accesses, observation->memory_accesses,
-        sizeof(copied.memory_accesses));
-    debug->connect.observer(debug->connect.observer_context, &copied);
 }
 
 void vm_machine_debug_finalize(t_debug *debug)
 {
     (void)debug;
-}
-
-void vm_machine_debug_bind_observer(t_debug *debug,
-    vm_machine_debug_observer observer, void *context)
-{
-    if (debug == STD_NULL) return;
-    debug->connect.observer = observer;
-    debug->connect.observer_context = context;
 }
 
 type_status vm_machine_debug_set_execution_plan(t_debug *debug,

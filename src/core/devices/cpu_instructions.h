@@ -93,7 +93,7 @@ typedef struct {
     type_bool flagWR, flagWW, flagWE;
     type_unsigned_32 wrLinear, wwLinear, weLinear;
 
-    /* cpu recorder */
+    /* CPU retirement observation */
     type_bool flagIgnore;
     /* ENTER accepts an 80186 lexical level up to 255 and performs at most 510
      * recorded stack accesses. This is executor bookkeeping for CPU debug
