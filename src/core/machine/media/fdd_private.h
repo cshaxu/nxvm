@@ -52,7 +52,6 @@ C_INT vm_machine_fdd_write_byte(t_fdd *fdd, type_unsigned_16 cylinder,
     type_unsigned_8 value);
 C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
     type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_8 fill_byte);
-C_VOID vm_machine_fdd_initialize(t_fdd *fdd);
 C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
     const core_machine_media_geometry *geometry);
 C_VOID vm_machine_fdd_reset(t_fdd *fdd);

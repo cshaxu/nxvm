@@ -143,10 +143,6 @@ const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID)
     return &provider;
 }
 
-static const core_machine_media_geometry vm_machine_fdd_default_geometry = {
-    2880u, 512u, 80u, 2u, 18u
-};
-
 static C_INT vm_machine_fdd_geometry_is_valid(
     const core_machine_media_geometry *geometry)
 {
@@ -275,12 +271,6 @@ C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
         fdd->data.nbyte, fill_byte) != LIB_STATUS_OK) return TYPE_TRUE;
     ++fdd->connect.media_generation;
     return TYPE_FALSE;
-}
-
-C_VOID vm_machine_fdd_initialize(t_fdd *fdd)
-{
-    (C_VOID)vm_machine_fdd_initialize_with_geometry(fdd,
-        &vm_machine_fdd_default_geometry);
 }
 
 C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,

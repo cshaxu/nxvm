@@ -349,3 +349,11 @@ The full caller sweep is empty. All eighteen affected RAM, DMA and VADP smokes
 pass after a fresh source compile/link, and the complete 335-case
 repository-only unit suite passes. S27 remains subject to the T-level repeated
 quality audit.
+
+## S28: Fallible Default-FDD Construction
+
+The next repeated audit found the same failure-masking shape in the legacy
+default FDD fixture constructor.  Production already uses the fallible
+geometry constructor; only two repository-only media fixtures still invoke the
+void wrapper.  S28 removes the wrapper and makes those fixtures request the
+same default geometry explicitly, preserving one FDD allocation boundary.

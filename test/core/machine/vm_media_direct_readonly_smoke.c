@@ -10,6 +10,9 @@
 static const C_CHAR vm_media_direct_fdd_path[] = "vm_media_direct_fdd.img";
 static const C_CHAR vm_media_direct_hdd_path[] = "vm_media_direct_hdd.img";
 static type_unsigned_8 vm_media_direct_fdd_bytes[80u * 2u * 18u * 512u];
+static const core_machine_media_geometry vm_media_direct_fdd_geometry = {
+    2880u, 512u, 80u, 2u, 18u
+};
 
 static C_INT vm_media_direct_write(const C_CHAR *path, const C_VOID *bytes,
     STD_SIZE_T byte_count)
@@ -54,7 +57,8 @@ C_INT main(C_VOID)
         vm_media_direct_write(vm_media_direct_hdd_path, hdd_bytes, sizeof(hdd_bytes))) {
         return 1;
     }
-    vm_machine_fdd_initialize(&fdd);
+    if (vm_machine_fdd_initialize_with_geometry(&fdd,
+            &vm_media_direct_fdd_geometry) != TYPE_FALSE) return 1;
     vm_machine_hdd_initialize(&hdd);
     if (vm_machine_fdd_insert_for(&fdd, vm_media_direct_fdd_path,
             LIB_STORAGE_MEDIUM_READONLY) != TYPE_FALSE ||

@@ -9,6 +9,9 @@
 
 static const C_CHAR vm_media_fdd_path[] = "vm-media-overlay-fdd.img";
 static const C_CHAR vm_media_hdd_path[] = "vm-media-overlay-hdd.img";
+static const core_machine_media_geometry vm_media_fdd_geometry = {
+    2880u, 512u, 80u, 2u, 18u
+};
 
 static C_INT vm_media_write_file(const C_CHAR *path, const C_VOID *bytes,
     STD_SIZE_T count)
@@ -53,7 +56,8 @@ C_INT main(C_VOID)
     hdd_bytes[0] = 0x22u;
     if (vm_media_write_file(vm_media_fdd_path, fdd_bytes, sizeof(fdd_bytes)) ||
         vm_media_write_file(vm_media_hdd_path, hdd_bytes, sizeof(hdd_bytes))) failed = TYPE_TRUE;
-    vm_machine_fdd_initialize(&fdd);
+    if (vm_machine_fdd_initialize_with_geometry(&fdd,
+            &vm_media_fdd_geometry) != TYPE_FALSE) return 1;
     vm_machine_hdd_initialize(&hdd);
     if (vm_machine_fdd_has_media(&fdd)) failed = TYPE_TRUE;
     vm_machine_fdd_create_for(&fdd);
