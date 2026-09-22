@@ -46,3 +46,11 @@ Machine materializer.  Direct Profile contracts retain the former validation
 rules, including zero-ID, overlap and duplicate-line rejection.  The caller
 sweep is empty; 333/333 repository-only unit and 20/20 external integration
 pass; documentation governance and actual-diff review pass.  S3 is closed.
+
+## S4: Canonical INI File Route
+
+P1 replaces App's direct stream loader with the existing Lib storage reader,
+deletes every unused root file-operation wrapper, and preserves a root path's
+leading separator while resolving relative media.  The retained `STD_FILE`
+alias remains solely as the parameter type of existing diagnostic output.
+Focused INI proof and 333/333 repository-only unit pass.  S4 is closed.

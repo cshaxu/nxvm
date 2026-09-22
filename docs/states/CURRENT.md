@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S4 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S4 is the next confirmed batch in its accepted proposal. |
-| Objective | Remove or migrate the duplicate root host/file facade to canonical Lib capability, including App INI path edge cases and dead helpers. |
-| Non-goals | Do not change retained profile behavior, external assets, Common/Lib public contracts, or INI product semantics. |
-| Reference Baseline | S3 closed at `2a667f8f`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S5 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S5 is the repeated same-level audit required by its accepted proposal. |
+| Objective | Re-audit the full frozen App/Core corpus after S1-S4, classify every remaining quality finding, and repair each confirmed in-scope mechanism in a later admitted S before T534 closes. |
+| Non-goals | Do not close T534 from gate results alone, alter Lib/Common/x86 contracts, or change guest behavior without a concrete audited mechanism and a revised packet. |
+| Reference Baseline | S4 implementation closed at `2bb23664`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | Root `src/type.*`, App INI loading and path tests. No Lib/Common public-contract change is permitted. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): one active S, complete P and full unit suite; [Architecture](../rules/ARCHITECTURE.md): direct dependency/one owner; [Coding](../rules/CODING.md): remove obsolete path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Full facade/caller inventory, focused App INI/path tests, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
-| Expected Markers | One Lib-owned file/host path; App INI loading resolves its root-directory edge case; removed facade has no live caller. CQ-5 receives an explicit disposition. |
+| Files And ABI Surface | All tracked `src/app/**`, `src/core/**` and direct tests; no production change unless the audit produces a classified next repair. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): one active S and actual-source review; [Architecture](../rules/ARCHITECTURE.md): single owner/direct data flow; [Coding](../rules/CODING.md): no redundant layer or dead path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Whole-tree owner/caller/dead-code inventories, targeted source reads, direct-test review, documentation governance, `git diff --check` and an evidence-led findings review. |
+| Expected Markers | Every newly found App/Core mechanism is either repaired by its next S, proven a distinct retained owner/path, or assigned an explicit receiver. CQ-6 receives a current disposition. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report removed facade/dead helpers, App path ownership and root-path proof, tests and remaining T534 ledger state. |
-| Stop Conditions | Stop for a separate admission if repair requires a Lib/Common/x86 contract change or changes INI product semantics beyond the proven path boundary. |
-| Exit Criteria | CQ-5 has one canonical host/file route, all dead facade helpers are deleted, full unit and static/documentation checks pass. |
+| Reporting Requirements | Report every newly confirmed issue with owner, impact, repair boundary and receiver; do not report clean merely from build gates. |
+| Stop Conditions | Stop at any discovery requiring a Lib/Common/x86 contract change or external guest behavior change; revise/admit before implementation. |
+| Exit Criteria | The repeat audit has a durable ledger with no unclassified hit; each repair is either completed in its own S or transferred through the proposal/Queue/TODO process. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Inspect every root host/file facade caller and App path helper; remove duplicate or dead routes rather than leaving a compatibility wrapper. |
+| Similar-Issue Sweep | Search all App/Core production sources, direct tests and CMake lists for repeated state, duplicate paths, stale abstractions, dead helpers, platform leaks and unowned failure boundaries. |
 
 ## Current Technical Baseline
 
