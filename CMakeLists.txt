@@ -327,12 +327,6 @@ add_executable(vm-timer-firmware-smoke
 target_link_libraries(vm-timer-firmware-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-app-default-profile-smoke test/integration/dos/nxvm_default_profile_smoke.c)
 target_link_libraries(vm-app-default-profile-smoke PRIVATE integration-session-ini-support)
-add_executable(vm-app-console-smoke
-    test/app/nxvm_console_smoke.c
-    test/app/support/vm_machine_console.c)
-target_include_directories(vm-app-console-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(vm-app-console-smoke PRIVATE vm-app)
 add_executable(vm-app-console-lifecycle-smoke
     test/integration/product/nxvm_console_lifecycle_smoke.c
     test/integration/support/nxvm_console_process.c)
@@ -1186,7 +1180,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-app-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-composition-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -2131,7 +2124,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-console-pause-resume-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
-    vm-app-console-smoke
     vm-app-composition-atomicity-smoke
     vm-x86-debug-mapping-smoke
     vm-app-session-smoke

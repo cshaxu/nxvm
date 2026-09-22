@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S48 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S47 ownership audit found the fixed Profile-name switch is implemented in Machine although it depends only on the Profile selection enum. This bounded owner correction is within the approved quality and full-green objective. |
-| Objective | Move the fixed Profile-name mapping from Machine to the Profile selection owner. |
-| Non-goals | Do not alter Profile kinds, names, construction, App output wording, Machine information snapshots or add a registry/second mapping. |
-| Reference Baseline | S47 `6f0d6e0e`; CQ-47 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S49 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S48 test-owner audit found `vm-app-console-smoke` compiles a test-only command state machine and never enters production App Command. This bounded duplicate-test removal is within the approved quality and full-green objective. |
+| Objective | Delete the test-only parallel console state machine and its false production-smoke target. |
+| Non-goals | Do not alter production command parsing, Common Session lifecycle, console UX, integration probe semantics or add a test-only production interface. |
+| Reference Baseline | S48 `59572440`; CQ-48 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/profiles/selection_interface.h`, `machine_plan.c`, `src/core/machine/machine.[ch]`, App/test consumers, convergence ledger/history. A pure name lookup changes owner but retains its value contract. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete ownership mechanism; [Coding](../rules/CODING.md): one owner per meaning; [Architecture](../rules/ARCHITECTURE.md): Profiles own board identity and Machine has no machine-name switch. |
-| Verification | Complete Profile-name caller sweep; focused Profile/Machine/App builds and profile-name smoke; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No Machine Profile-name mapping remains; all consumers call the one Profile selection lookup; names and output remain byte-identical. |
+| Files And ABI Surface | `CMakeLists.txt`, `test/app/nxvm_console_smoke.c`, `test/app/support/vm_machine_console.[ch]`, convergence ledger/history. One repository-only target and its duplicate helper are removed; production ABI is unchanged. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): tests must prove an owned behavior and replacement removes retired paths; [Architecture](../rules/ARCHITECTURE.md): Common Session is the sole product-control reducer. |
+| Verification | Complete `vm_app_command` and target-registration sweep; clean configure/build; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No duplicate command state machine, support files or target remains; real App console integration target stays registered; all remaining unit tests pass. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-47, all former mapping callers and full gate results in the ledger/history. |
-| Stop Conditions | Stop if any name value depends on Machine runtime state; retain that distinct contract instead of incorrectly moving it to immutable Profile selection. |
-| Exit Criteria | CQ-47 is repaired: the name mapping has one Profile owner, values/output are unchanged, and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-48, all duplicate-test callers and target dispositions and full gate results in the ledger/history. |
+| Stop Conditions | Stop if the test helper exposes an actual production contract that cannot be reached through retained probes; retain that proof rather than deleting coverage. |
+| Exit Criteria | CQ-48 is repaired: only the duplicate test route is removed, actual console coverage remains, and configure/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all Machine functions that dispatch only on immutable Profile identity and move every confirmed Profile-only fact to its Profile owner. |
+| Similar-Issue Sweep | Sweep `test/app` for stand-alone state machines or parsers that duplicate App/Common production behavior, and remove every proven orphan rather than calling it coverage. |
 
 ## Current Technical Baseline
 

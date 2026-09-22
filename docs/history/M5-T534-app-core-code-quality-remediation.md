@@ -590,3 +590,12 @@ despite it depending only on immutable Profile selection. S48 moves the one
 mapping into Profile selection and changes its App and test consumers without
 changing any name. Focused XT Profile and App-console probes, the complete
 334-case `-j8` unit replay and documentation governance pass.
+
+## S49: Retired Parallel Console Test Removal
+
+The post-S48 test audit found the nominal App-console unit target exercised an
+entirely test-owned command parser/lifecycle state machine rather than
+production App Command. S49 removes that target and its three-file support
+corpus. The real Common-driven console integration target remains registered
+and builds. The remaining 333 repository-only unit tests pass at `-j8`, as
+does documentation governance.
