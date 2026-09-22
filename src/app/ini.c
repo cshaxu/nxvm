@@ -207,12 +207,17 @@ type_status vm_app_ini_load(const C_CHAR *path, vm_session_request *out_request)
     C_CHAR *slash;
     type_status status;
 
-    if (path == STD_NULL || out_request == STD_NULL ||
-        lib_storage_file_read_owned(path, VM_APP_INI_MAX_BYTES, &bytes, &byte_count) !=
-            LIB_STATUS_OK ||
-        (document = STD_MALLOC(byte_count + 1u)) == STD_NULL) {
+    lib_status load_status;
+
+    if (path == STD_NULL || out_request == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    load_status = lib_storage_file_read_owned(path, VM_APP_INI_MAX_BYTES, &bytes,
+        &byte_count);
+    if (load_status == LIB_STATUS_NO_MEMORY) return TYPE_STATUS_NO_MEMORY;
+    if (load_status != LIB_STATUS_OK) return TYPE_STATUS_FAULT;
+    document = STD_MALLOC(byte_count + 1u);
+    if (document == STD_NULL) {
         STD_FREE(bytes);
-        return TYPE_STATUS_FAULT;
+        return TYPE_STATUS_NO_MEMORY;
     }
     STD_MEMCPY(document, bytes, byte_count);
     document[byte_count] = '\0';

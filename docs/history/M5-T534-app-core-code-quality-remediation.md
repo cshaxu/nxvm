@@ -366,3 +366,15 @@ constructors can reject input or fail asset loading while leaving a valid
 caller-owned output pointer unchanged. S29 applies the established Core
 constructor rule to the entire Profile/Machine wrapper family and proves both
 invalid-input and file-backed failure cases clear the output.
+
+## S30: Truthful INI-Load Failures
+
+The next audit found the App INI loader combines caller validation, Lib file
+loading and local document allocation into one `FAULT` branch. S30 restores
+the existing status distinctions at the one App-owned boundary without adding a
+second parser or changing the INI grammar.
+
+S30 keeps the existing single load/parse path. Its only behavioral change is
+the explicit status boundary: invalid App arguments return `INVALID_ARGUMENT`,
+allocation failures return `NO_MEMORY`, and ordinary storage failures remain
+`FAULT`. The focused smoke and the complete 335-test unit suite pass.

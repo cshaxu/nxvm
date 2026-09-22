@@ -18,7 +18,9 @@ C_INT main(C_VOID)
     static C_CHAR root[] = "[media]\nfloppy0=boot.img|overlay\n";
     vm_session_request request;
 
-    if (!parse(valid, &request) || request.memory_bytes != 640u * 1024u ||
+    if (vm_app_ini_load(STD_NULL, &request) != TYPE_STATUS_INVALID_ARGUMENT ||
+        vm_app_ini_load("NXVM.ini", STD_NULL) != TYPE_STATUS_INVALID_ARGUMENT ||
+        !parse(valid, &request) || request.memory_bytes != 640u * 1024u ||
         STD_STRCMP(request.display, "window") || !request.console_control ||
         request.floppy_count != 2u || request.fixed_disk_count != 1u ||
         STD_STRCMP(request.floppy[0u], "unit-root/boot.img") ||

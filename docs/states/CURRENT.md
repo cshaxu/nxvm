@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S29 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S28 repeated audit found that Machine/Profile constructor wrappers leave valid output pointers unchanged when their pre-plan validation or BYOB asset load fails. This bounded correction is within that approved objective. |
-| Objective | Make every Machine/Profile plan construction entry establish the same failure-output contract: a valid output pointer is null before any other validation or file input. |
-| Non-goals | Do not change Common/Lib/x86 contracts, profile semantics, assets, firmware, machine topology, timing or product UX. |
-| Reference Baseline | S28 `208b0b40`; new CQ-28 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S30 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S29 audit found App INI loading collapses invalid arguments and Lib allocation failure into `FAULT`. This bounded correction is within that approved objective. |
+| Objective | Preserve invalid-argument and no-memory outcomes at App's sole INI file-loading boundary. |
+| Non-goals | Do not change INI grammar, Lib contracts, external assets, profile semantics, machine topology, timing or product UX. |
+| Reference Baseline | S29 `9084b298`; new CQ-29 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/profiles/machine_plan.c`, `src/core/machine/machine.c`, existing Machine initialization-atomicity smoke, convergence ledger/history. No Common/Lib/x86 signature change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): close the full wrapper class; [Coding](../rules/CODING.md): every failure has truthful output state; [Architecture](../rules/ARCHITECTURE.md): Profile/Machine retain one construction and rollback boundary. |
-| Verification | Full output-constructor sweep; focused invalid-config/file-backed plan and Machine creation proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Valid output pointers are cleared before invalid configuration or external asset failure in every Machine/Profile plan creation entry. |
+| Files And ABI Surface | `src/app/ini.c`, existing App INI smoke, convergence ledger/history. No Common/Lib/x86 signature change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete boundary; [Coding](../rules/CODING.md): preserve truthful failures; [Architecture](../rules/ARCHITECTURE.md): App retains the one INI-to-request path. |
+| Verification | Full INI failure-classification sweep; focused App INI smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Null path/output returns `INVALID_ARGUMENT`; Lib no-memory result and App document allocation failure return `NO_MEMORY`; ordinary file failure remains `FAULT`. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-28, every reviewed constructor's output-state disposition, and full gate results in the ledger/history. |
-| Stop Conditions | Stop if correcting output state requires a cross-component construction-contract change. |
-| Exit Criteria | CQ-28 is repaired: every relevant Machine/Profile constructor clears a valid output pointer before any later failure, focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-29, each INI failure classification and full gate results in the ledger/history. |
+| Stop Conditions | Stop if the correction requires a Lib contract change or changes INI grammar. |
+| Exit Criteria | CQ-29 is repaired: every reachable INI load failure has a truthful category and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App/Core constructor with an output pointer, including Profile plan and Machine wrappers, for validation-before-output-clear ordering. |
+| Similar-Issue Sweep | Sweep App file-loading boundaries for invalid-argument/no-memory collapse or duplicated status mapping. |
 
 ## Current Technical Baseline
 
