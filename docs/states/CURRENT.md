@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S51 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S50 exhaustive static review found a finite App set whose inputs are read-only but lack const qualification. This bounded interface-clarity repair is within the approved quality and full-green objective. |
-| Objective | Mark App command, composition and INI read-only inputs const without changing behavior or ownership. |
-| Non-goals | Do not alter mutable command context paths, Core output pointers, CPU contracts, App/Common APIs beyond const qualification, parsing, lifecycle or artifact identity. |
-| Reference Baseline | S50 `94abf974`; CQ-50 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S52 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. S51 changes current runnable App source, so T534 cannot claim its earlier artifacts as exact current-source outputs. Rebuilding the required dual-architecture products and refreshing the evidence is the approved task's final reproducibility gate. |
+| Objective | Rebuild and verify the eight fixed-product T534 artifacts from current source, then close the task only if all exit gates remain green. |
+| Non-goals | Do not change source behavior, profiles, BYOB asset paths, INI grammar, packaging locations or retain a compatibility artifact target. |
+| Reference Baseline | S51 `f52eb5ef`; CQ-51 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/command.c`, `composition.[ch]`, `ini.c`, convergence ledger/history. App API qualifiers become stricter; no object layout, result or behavior changes. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete confirmed mechanism; [Coding](../rules/CODING.md): clear, single-meaning interfaces; [Architecture](../rules/ARCHITECTURE.md): App retains the same owner boundaries. |
-| Verification | Complete App const-suggestion sweep; strict C11/Werror App build; focused INI/composition tests; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Read-only App parameters/tokens are const; known mutable context and output paths remain mutable; no App behavior changes; all gates pass. |
+| Files And ABI Surface | Ignored `assets/binary/<profile>/` outputs plus convergence ledger/history/current packet. Current source is compiled without ABI or behavior changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): runnable implementation closes only with its own current revision and dual optimized stripped artifacts; [Coding](../rules/CODING.md): one production path; [Architecture](../rules/ARCHITECTURE.md): each selected product deploys once in its sole profile directory. |
+| Verification | Configure/build current x64 and x86 artifact targets for default, 5170, XT and Model 40; inspect PE architecture and stripped release properties; verify adjacent INIs and artifact paths; replay complete repository-only unit and active integration suites; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Eight `0.5.0534` artifacts, two per fixed profile, are rebuilt from S51 source only in their profile directories with adjacent INI; every required gate remains green. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-50, every accepted/rejected const suggestion and full gate results in the ledger/history. |
-| Stop Conditions | Stop if a suggested pointer is an output, a mutable callback context or would weaken a product contract; record it as intentionally mutable rather than casting around it. |
-| Exit Criteria | CQ-50 is repaired: every genuine read-only App input is const, false-positive mutable outputs/contexts are explicitly classified, and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-51, source revision, artifact identities/architectures and all final gate results in the ledger/history. |
+| Stop Conditions | Stop if either toolchain cannot emit an optimized stripped artifact, a required asset is unavailable, or a product cannot deploy to its sole directory; report the exact profile/architecture. |
+| Exit Criteria | CQ-51 is repaired: all eight artifacts exactly match the current source revision and all T534 exit gates pass; then record formal task closure. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all remaining App/Core static-analysis const suggestions; apply only genuine input immutability and classify output/mutable-context/analysis-limit findings. |
+| Similar-Issue Sweep | Verify every selected product/architecture has one and only one current artifact in its profile directory, an adjacent INI, correct PE architecture and no debug section. |
 
 ## Current Technical Baseline
 

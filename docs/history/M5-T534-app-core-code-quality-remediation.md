@@ -622,3 +622,13 @@ because parsing splits and trims them. Core output buffers and the reported CPU
 declaration parameter-name differences are explicitly classified as analyzer
 limitations, not disguised const opportunities. Focused INI/composition tests
 and the complete 333-case `-j8` repository-only unit suite pass.
+
+## S52: Current-source Artifact Reproducibility
+
+S52 rebuilds the default, IBM 5170, XT and Model 40 products for both x64 and
+x86 from S51 source. All eight are deployed only to their profile-specific
+ignored directories beside NXVM.ini; PE inspection confirms architecture and
+the absence of debug sections. Default serial integration is 20/20 and the
+profile-specific sets are 5170 3/3, XT 1/1 and Model 40 3/3. A preceding
+default parallel run exposed a timer-firmware flake; its isolated and serial
+runs pass, but the finding is retained for repair before task closure.
