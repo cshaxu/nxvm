@@ -1,6 +1,9 @@
 #include "type.h"
 
 #include "app/ini_interface.h"
+#include "lib/storage/file_interface.h"
+
+#define VM_APP_INI_MAX_BYTES (64u * 1024u)
 
 static C_CHAR *vm_app_ini_trim(C_CHAR *text)
 {
@@ -197,27 +200,27 @@ type_status vm_app_ini_parse(const C_CHAR *directory, const C_CHAR *name,
 
 type_status vm_app_ini_load(const C_CHAR *path, vm_session_request *out_request)
 {
-    STD_FILE *file = STD_NULL;
-    C_LONG bytes;
+    C_VOID *bytes = STD_NULL;
+    STD_SIZE_T byte_count = 0u;
     C_CHAR *document;
     C_CHAR directory[VM_SESSION_REQUEST_PATH_MAX];
     C_CHAR *slash;
     type_status status;
 
-    if (path == STD_NULL || out_request == STD_NULL || (file = STD_FOPEN(path, "rb")) == STD_NULL ||
-        STD_FSEEK(file, 0, SEEK_END) != 0 || (bytes = STD_FTELL(file)) < 0 ||
-        STD_FSEEK(file, 0, SEEK_SET) != 0 || (document = STD_MALLOC((STD_SIZE_T)bytes + 1u)) == STD_NULL) {
-        if (file != STD_NULL) STD_FCLOSE(file);
+    if (path == STD_NULL || out_request == STD_NULL ||
+        lib_storage_file_read_owned(path, VM_APP_INI_MAX_BYTES, &bytes, &byte_count) !=
+            LIB_STATUS_OK ||
+        (document = STD_MALLOC(byte_count + 1u)) == STD_NULL) {
+        STD_FREE(bytes);
         return TYPE_STATUS_FAULT;
     }
-    if (STD_FREAD(document, 1u, (STD_SIZE_T)bytes, file) != (STD_SIZE_T)bytes) {
-        STD_FREE(document); STD_FCLOSE(file); return TYPE_STATUS_FAULT;
-    }
-    document[bytes] = '\0';
-    STD_FCLOSE(file);
+    STD_MEMCPY(document, bytes, byte_count);
+    document[byte_count] = '\0';
+    STD_FREE(bytes);
     if (!vm_app_ini_copy(directory, sizeof(directory), path)) { STD_FREE(document); return TYPE_STATUS_INVALID_ARGUMENT; }
     slash = vm_app_ini_last_separator(directory);
     if (slash == STD_NULL) (void)vm_app_ini_copy(directory, sizeof(directory), ".");
+    else if (slash == directory) slash[1u] = '\0';
     else *slash = '\0';
     status = vm_app_ini_parse(directory, path, document, out_request);
     STD_FREE(document);

@@ -15,6 +15,7 @@ C_INT main(C_VOID)
     static C_CHAR sparse[] = "[media]\nfloppy1=two.img|overlay\n";
     static C_CHAR forbidden[] = "[machine]\nprofile=ibm-5170-model-339\n";
     static C_CHAR bad_mode[] = "[media]\nfixed_disk0=disk.img|transient\n";
+    static C_CHAR root[] = "[media]\nfloppy0=boot.img|overlay\n";
     vm_session_request request;
 
     if (!parse(valid, &request) || request.memory_bytes != 640u * 1024u ||
@@ -27,6 +28,8 @@ C_INT main(C_VOID)
         request.fixed_disk_mode[0u] != LIB_STORAGE_MEDIUM_DIRECT) return 1;
     if (parse(duplicate, &request) || parse(sparse, &request) || parse(forbidden, &request) || parse(bad_mode, &request))
         return 1;
+    if (vm_app_ini_parse("\\", "\\NXVM.ini", root, &request) != TYPE_STATUS_OK ||
+        STD_STRCMP(request.floppy[0u], "\\boot.img")) return 1;
     STD_PRINTF("M5:T533:S4:NXVM-INI:OK\n");
     return 0;
 }
