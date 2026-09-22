@@ -11,3 +11,17 @@ S1 removes the unconnected instruction recorder as a complete mechanism.  It
 does not replace it, add a tracing abstraction or modify Debug semantics.
 Closure requires no production or test recorder route, no stale build/policy
 claim, complete repository-only unit proof and actual-diff review.
+
+P1 `4fc6828d` removes the command, App object, copied observer contract,
+dedicated smoke and build verifier. Actual-diff review confirmed that retained
+Core Debug observation remains private to the debugger execution path. Fresh
+repository-only unit proof is 334/334 passing; documentation governance and
+`git diff --check` pass. S1 is closed.
+
+## S2: Presentation Single Path
+
+S2 makes Machine-frame conversion failure-atomic and removes the duplicate
+Core presentation mailbox. Integration probes observe the one Common-frame
+production route through a test-only capture adapter. Closure requires 333/333
+repository-only unit and 20/20 external integration proof plus actual-diff
+review.

@@ -1,10 +1,10 @@
 #include "type.h"
 
 #include "core/devices/machine.h"
-#include "core/devices/guest_presentation_mailbox_interface.h"
 #include "core/machine/display.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
+#include "support/vm_presentation_capture.h"
 #include "support/rom/session_assets.h"
 #include "core/machine/machine_private.h"
 
@@ -18,8 +18,7 @@ static C_INT vm_display_s5_capture(vm_machine *session,
     core_machine_guest_display_frame *frame, core_machine_display_kind expected_kind)
 {
     return vm_machine_publish_display(session, TYPE_TRUE) == expected_kind &&
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            frame) == TYPE_STATUS_OK;
+        test_vm_machine_capture_presentation(session, frame) == TYPE_STATUS_OK;
 }
 
 static C_INT vm_display_s5_enable_planar(vm_machine *session)
@@ -89,8 +88,8 @@ C_INT main(C_VOID)
     cga_even = 0xffu;
     failed |= core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != TYPE_STATUS_OK ||
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK || frame.generation != cga_generation ||
+        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        frame.generation != cga_generation ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u || frame.pixels[2] != 2u;
 
     failed |= !vm_display_s5_enable_planar(session) ||
@@ -113,8 +112,8 @@ C_INT main(C_VOID)
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, TYPE_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK || frame.generation <= cga_generation ||
+        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        frame.generation <= cga_generation ||
         session->display_snapshot_generation != ega_snapshot_generation;
     ega_pixel = 0x5au;
     failed |= core_machine_memory_write(session->core_machine,
@@ -127,8 +126,8 @@ C_INT main(C_VOID)
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, TYPE_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK || frame.generation <= cga_generation ||
+        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        frame.generation <= cga_generation ||
         frame.pixels[0] != 0u || session->display_snapshot_generation !=
         observation.generation;
 
@@ -136,8 +135,7 @@ C_INT main(C_VOID)
     failed |= core_machine_get_timeline_observation(session->core_machine,
         &timeline) != TYPE_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK ||
+        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||

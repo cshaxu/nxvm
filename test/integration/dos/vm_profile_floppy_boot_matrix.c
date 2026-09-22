@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "core/devices/guest_presentation_mailbox_interface.h"
+#include "test/core/machine/support/vm_presentation_capture.h"
 #include "core/devices/machine.h"
 #include "core/devices/port.h"
 #include "core/machine/lifecycle.h"
@@ -168,7 +168,7 @@ static C_INT boot_terminal(const vm_machine *session, const C_CHAR **out_name)
     STD_SIZE_T cell;
 
     if (session == STD_NULL || out_name == STD_NULL ||
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox, &frame) !=
+        test_vm_machine_capture_presentation(session, &frame) !=
             TYPE_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < TEXT_CELLS; ++cell) {
         if (STD_ISALPHA((C_UCHAR)frame.characters[cell]) && frame.characters[cell + 1u] == ':' &&
@@ -191,7 +191,7 @@ static C_INT boot_post_reports_keyboard_failure(const vm_machine *session)
     core_machine_guest_display_frame frame;
 
     return session != STD_NULL &&
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox, &frame) ==
+        test_vm_machine_capture_presentation(session, &frame) ==
             TYPE_STATUS_OK && frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT &&
         (boot_text_has(&frame, "301-Keyboard") || boot_text_has(&frame, "303-Keyboard"));
 }
@@ -438,8 +438,8 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                 point->bytes[2u]);
         }
     }
-    if (core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return;
+    if (test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return;
     for (row = 0u; row < 25u; ++row) {
         C_INT nonblank = 0;
         for (index = 0u; index < 80u; ++index) {

@@ -136,8 +136,6 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
         }
     }
     frame.generation = machine->display_generation + 1u;
-    if (core_machine_guest_presentation_mailbox_publish(machine->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK) return snapshot.kind;
     vm_machine_display_result(machine, &frame);
     machine->display_generation = frame.generation;
     if (core_machine_observe_display_snapshot(machine->core_machine,

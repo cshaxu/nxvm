@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T534 S1 |
-| Admission And Approval | Owner goal on 2026-09-21: admit a T to repair every code-quality finding, repeat the same-level audit, and admit later S repairs until App/Core meet the standard. Owner additionally directed that recorder support be deleted completely rather than repaired. |
-| Objective | Remove the unsupported, disconnected App instruction recorder as one complete mechanism. |
-| Non-goals | Do not add recording, tracing, Debug, Lib/Common/x86, firmware, timing or UX functionality; do not alter retained machine behavior. |
-| Reference Baseline | Clean `main` after M5 Td S171; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S2 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S2 is the next confirmed batch in its accepted proposal. |
+| Objective | Make frame conversion failure-atomic and remove any test-only Core presentation route that diverges from the production Common UI frame path. |
+| Non-goals | Do not add a presentation abstraction, change profile display policy, or alter retained frame contents on successful conversion. |
+| Reference Baseline | S1 closed at `4fc6828d`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | Expected removal: `src/app/recorder.c`, `src/app/recorder.h`, recorder command/composition references, recorder test/build entries, and current App design claims. No replacement public API. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): one active S, complete P and full unit suite; [Architecture](../rules/ARCHITECTURE.md): one owner/production path; [Coding](../rules/CODING.md): remove obsolete mechanisms; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md): App owns CLI only and canonical shared capabilities remain unchanged. |
-| Verification | Focused recorder source/caller/build sweep proves no residual route; fresh affected build; complete repository-only unit suite; documentation governance; `git diff --check`; actual-diff review. Integration and dual artifacts are T-level closure requirements, not S1 proof unless this S changes their route. |
-| Expected Markers | No `vm_app_recorder*`, `record` CLI command or recorder test target remains. CQ-1 becomes repaired in the ledger. |
+| Files And ABI Surface | Frame conversion, Core presentation mailbox and their direct App/Core tests. No new public API unless the audit proves a current interface cannot state the single owner path. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): one active S, complete P and full unit suite; [Architecture](../rules/ARCHITECTURE.md): one owner/production path; [Coding](../rules/CODING.md): failure-atomic results; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Caller/owner inventory, focused conversion and presentation tests, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
+| Expected Markers | Conversion leaves prior destination untouched on failure; one production presentation publication route; integration observes that route. CQ-2/CQ-3 receive an explicit disposition. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report the initial source/caller sweep, source/test paths removed, full-unit result, net tracked code change and remaining T534 ledger state. |
-| Stop Conditions | Stop and request packet revision if removal exposes a real live consumer outside the inventoried App/Core recorder mechanism, changes Debug behavior, or needs a Lib/Common interface change. |
-| Exit Criteria | Unsupported recorder is absent from source, build, tests and current policies; full unit suite and required static/documentation checks pass; one complete pushed P receives actual-diff review. |
-| Original Owner Request | Admit a T to repair every code-quality finding, repeat the same-level audit and admit later S repairs until App/Core meet the standard. Recorder support may be deleted completely and is no longer required. |
-| Similar-Issue Sweep | Search all tracked source, CMake, tests, docs and tooling for recorder/recording/observer-only remnants; distinguish generic Debug observation from recorder-specific code before removal. |
+| Reporting Requirements | Report source/caller inventory, repaired ownership/data flow, tests and remaining T534 ledger state. |
+| Stop Conditions | Stop for a separate admission if repair requires a Lib/Common/x86 contract change or changes external guest/video behavior beyond the proven failure boundary. |
+| Exit Criteria | Both confirmed presentation findings have a proved single owner/path or an explicit justified receiver; full unit and static/documentation checks pass. |
+| Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
+| Similar-Issue Sweep | Inspect every frame conversion/publication caller and every test capture route; distinguish test observation from a live product route. |
 
 ## Current Technical Baseline
 

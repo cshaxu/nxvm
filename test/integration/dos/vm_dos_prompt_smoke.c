@@ -9,6 +9,7 @@
 
 
 #include "core/devices/debug_interface.h"
+#include "test/core/machine/support/vm_presentation_capture.h"
 #include "core/devices/machine_interface.h"
 
 #include "core/machine/lifecycle.h"
@@ -107,8 +108,7 @@ static C_INT has_dos_prompt(const vm_machine *session)
     STD_SIZE_T cell;
 
     if (session == STD_NULL) return 0;
-    (C_VOID)core_machine_guest_presentation_mailbox_capture(
-        session->presentation_mailbox, &frame);
+    (C_VOID)test_vm_machine_capture_presentation(session, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = frame.characters[cell];
         if (STD_ISALPHA((C_UCHAR)drive) && frame.characters[cell + 1u] == ':' &&

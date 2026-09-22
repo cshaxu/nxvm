@@ -6,7 +6,7 @@
 #include "core/devices/debug_interface.h"
 #include "core/devices/machine.h"
 #include "core/devices/machine_interface.h"
-#include "core/devices/guest_presentation_mailbox_interface.h"
+#include "test/core/machine/support/vm_presentation_capture.h"
 #include "test/integration/support/session_ini.h"
 #include "core/machine/control.h"
 #include "core/machine/fault.h"
@@ -42,8 +42,7 @@ static C_INT vm_t287_has_text(const vm_machine *session, const C_CHAR *text)
     STD_SIZE_T length = STD_STRLEN(text);
 
     if (session == STD_NULL || text == STD_NULL || length == 0u ||
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK) return 0;
+        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (C_UCHAR)text[character]) break;
@@ -58,8 +57,8 @@ static C_INT vm_t287_has_prompt(const vm_machine *session)
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
 
-    if (session == STD_NULL || core_machine_guest_presentation_mailbox_capture(
-            session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return 0;
+    if (session == STD_NULL || test_vm_machine_capture_presentation(session,
+            &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + 1u < VM_T287_TEXT_CELLS; ++cell) {
         if (frame.characters[cell] == 'C' && frame.characters[cell + 1u] == '>') {
             return 1;
@@ -152,8 +151,8 @@ static C_VOID vm_t287_print_frame(const vm_machine *session)
     STD_SIZE_T row;
     STD_SIZE_T column;
 
-    if (session == STD_NULL || core_machine_guest_presentation_mailbox_capture(
-            session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return;
+    if (session == STD_NULL || test_vm_machine_capture_presentation(session,
+            &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
             C_UCHAR character = frame.characters[row * 80u + column];

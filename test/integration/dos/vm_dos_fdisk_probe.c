@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-#include "core/devices/guest_presentation_mailbox_interface.h"
+#include "test/core/machine/support/vm_presentation_capture.h"
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
@@ -24,8 +24,7 @@ static C_INT vm_t287_fdisk_has_text(const vm_machine *session, const C_CHAR *tex
     STD_SIZE_T length = STD_STRLEN(text);
 
     if (session == STD_NULL || text == STD_NULL || length == 0u ||
-        core_machine_guest_presentation_mailbox_capture(session->presentation_mailbox,
-            &frame) != TYPE_STATUS_OK) return 0;
+        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_FDISK_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (type_unsigned_8)text[character]) break;

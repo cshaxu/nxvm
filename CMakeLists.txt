@@ -1287,12 +1287,6 @@ set(CORE_MACHINE_SOURCES
     src/core/devices/rtc.c
     src/core/devices/transaction.c
 )
-add_library(core-machine-boundary STATIC
-    src/core/devices/guest_presentation_mailbox.c)
-target_include_directories(core-machine-boundary PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-machine-boundary PUBLIC type-facade base)
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
 )
@@ -1323,7 +1317,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
-    core-machine-boundary
     storage
     type-facade)
 
@@ -1343,11 +1336,6 @@ target_link_libraries(vm-host-cancellation-smoke PRIVATE
     vm-machine)
 
 
-add_executable(core-machine-guest-presentation-mailbox-smoke
-    test/core/devices/core_machine_guest_presentation_mailbox_smoke.c
-)
-target_link_libraries(core-machine-guest-presentation-mailbox-smoke PRIVATE
-    core-machine-boundary)
 
 add_library(vm-media STATIC ${VM_MEDIA_SOURCES})
 target_include_directories(vm-media PUBLIC
@@ -1363,7 +1351,6 @@ target_include_directories(vm-machine PUBLIC
 )
 target_link_libraries(vm-machine PUBLIC
     core-machine
-    core-machine-boundary
     vm-profile
     common-machine
     storage
@@ -1380,7 +1367,6 @@ target_link_libraries(vm-app PUBLIC
     x86-debug
     x86-xasm32
     vm-machine
-    core-machine-boundary
     storage
     type-facade)
 
@@ -1519,7 +1505,7 @@ add_executable(core-machine-controller-authority-smoke
     test/core/devices/core_machine_controller_authority_smoke.c)
 target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-machine)
 add_executable(core-mantle-shape-smoke test/core/machine/core_mantle_shape_smoke.c)
-target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-machine-boundary)
+target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine)
 add_executable(vm-kbc-aux-guest-smoke
     test/core/machine/vm_kbc_aux_guest_smoke.c
 )
@@ -2129,7 +2115,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     storage-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
-    core-machine-guest-presentation-mailbox-smoke
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
@@ -3418,8 +3403,6 @@ if(PROJECT_ENABLE_BOCHX_RESEARCH)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(core-machine-boundary PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-guest-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-executor-state-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-media-direct-readonly-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3595,7 +3578,6 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     type-facade
     core-machine
     core-machine-executor
-    core-machine-boundary
     common-machine
     x86-xasm32
     x86-debug

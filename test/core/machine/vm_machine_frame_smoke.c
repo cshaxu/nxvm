@@ -40,5 +40,15 @@ C_INT main(C_VOID)
     if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_OK ||
         !destination.window.graphics || destination.window.image.width != 320u ||
         destination.window.image.height != 200u) return 1;
+    {
+        common_machine_frame *before = STD_MALLOC(sizeof(*before));
+
+        source.pixel_width = (type_unsigned_16)(KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u);
+        if (before == STD_NULL) return 1;
+        *before = destination;
+        if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_UNSUPPORTED ||
+            STD_MEMCMP(before, &destination, sizeof(destination)) != 0) return 1;
+        STD_FREE(before);
+    }
     return 0;
 }

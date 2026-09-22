@@ -6,7 +6,6 @@
 #include "core/devices/machine_interface.h"
 #include "core/devices/media_interface.h"
 #include "core/devices/display_interface.h"
-#include "core/devices/guest_presentation_mailbox_interface.h"
 #include "lib/base/sync_interface.h"
 #include "core/machine/control.h"
 #include "core/machine/fault.h"
@@ -37,7 +36,6 @@ struct vm_machine {
     t_debug debug;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
-    core_machine_guest_presentation_mailbox *presentation_mailbox;
     common_machine_executor_callback executor_callback;
     C_VOID *executor_callback_context;
     common_machine_frame latest_frame;

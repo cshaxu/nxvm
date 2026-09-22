@@ -7,6 +7,7 @@
 #include "core/machine/control.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
+#include "test/core/machine/support/vm_presentation_capture.h"
 #include "test/integration/support/session_ini.h"
 
 #define TEXT_VIDEO_BASE 0x000b8000u
@@ -32,8 +33,7 @@ static C_INT vm_dos_mem_fault_has_prompt(const vm_machine *session)
     core_machine_guest_display_frame frame;
     STD_SIZE_T cell;
 
-    (C_VOID)core_machine_guest_presentation_mailbox_capture(
-        session->presentation_mailbox, &frame);
+    (C_VOID)test_vm_machine_capture_presentation(session, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&
