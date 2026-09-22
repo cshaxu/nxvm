@@ -26,9 +26,6 @@ struct vm_machine {
     core_machine_controller_timing_rules controller_timing_rules;
     core_machine_plan *core_machine_plan;
     vm_profile_machine_plan *profile_plan;
-    /* Read-only descriptor projection for legacy diagnostics.  The selected
-     * plan remains the sole owner; Machine never resolves or mutates it. */
-    const vm_profile_default_pc_at_descriptor *profile;
     core_machine *core_machine;
     core_machine_dma_request_binding fdc_dma_request;
     union { t_fdd fdd; t_fdd floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };

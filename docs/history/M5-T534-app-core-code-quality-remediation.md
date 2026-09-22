@@ -525,3 +525,13 @@ that existing facade and routes its three Command formatting calls through it.
 It preserves every buffer, formatter and truncation result. Strict C11/Werror,
 the App-console smoke, documentation governance and the complete 334-case
 `-j8` unit replay pass in 16.36 seconds.
+
+## S42: Profile-Plan Boundary Tightening
+
+The public Profile-plan interface was importing two Profile private headers.
+Its PC/AT descriptor getter only populated an unconsumed Machine field. S42
+removes that projection and makes the retained Model40 ROM observation opaque
+at the public boundary; the one test that needs ROM bytes explicitly includes
+the Profile-private observation declaration. Focused Model40 and Machine
+initialization proof passes, as does the 334-case `-j8` unit replay in 15.39
+seconds.

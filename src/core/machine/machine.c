@@ -414,7 +414,6 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
     session->profile_plan = plan;
     session->core_machine_config = *vm_profile_machine_plan_core_config_get(session->profile_plan);
     session->controller_timing_rules = *vm_profile_machine_plan_timing_rules_get(session->profile_plan);
-    session->profile = vm_profile_machine_plan_pc_at_descriptor_get(session->profile_plan);
     session->floppy_kind = vm_profile_machine_plan_drive_floppy_get(session->profile_plan);
     session->fdd_media_kind = vm_profile_machine_plan_media_floppy_get(session->profile_plan);
     if (!vm_profile_machine_plan_hdc_present(session->profile_plan) &&

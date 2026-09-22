@@ -4,6 +4,7 @@
 #include "core/devices/machine_interface.h"
 #include "core/devices/memory.h"
 #include "core/machine/machine_private.h"
+#include "core/profiles/model40/model40_private.h"
 #include "core/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 

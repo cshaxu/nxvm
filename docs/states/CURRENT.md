@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S41 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S40 formatting audit found App Command bypasses the retained `STD_*` runtime vocabulary with direct `snprintf`/`vsnprintf`. This bounded facade correction is within the approved quality and full-green objective. |
-| Objective | Route every App Command formatting operation through the existing Type facade, adding only its missing va-list formatting equivalent. |
-| Non-goals | Do not change command grammar, output text, buffer sizes, truncation behavior, Common/x86 contracts, platform code or product behavior. |
-| Reference Baseline | S40 `e86fd7a0`; CQ-40 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S42 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S41 interface audit found the public Machine-plan header imports Profile private headers and a PC/AT descriptor projection is only written into dead Machine state. This bounded boundary cleanup is within the approved quality and full-green objective. |
+| Objective | Remove the unconsumed PC/AT descriptor projection and make the public Machine-plan header expose only an opaque Model40 ROM observation type. |
+| Non-goals | Do not change Profile construction, firmware bytes/mapping, Model40 ROM behavior, Machine media behavior, public asset roles or test coverage. |
+| Reference Baseline | S41 `bb104d5a`; CQ-41 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/type.h`, `src/type.c`, `src/app/command.c`, convergence ledger/history. One existing facade gains `STD_VSNPRINTF`; App Command consumes only `STD_*` formatting APIs. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): one C-runtime vocabulary; [Architecture](../rules/ARCHITECTURE.md): no ownership or path change. |
-| Verification | Complete App/Core direct formatting-call sweep; focused App command smoke; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | App Command contains no direct `snprintf`/`vsnprintf`; the facade has one behavior-equivalent va-list entry and all output paths remain covered. |
+| Files And ABI Surface | `src/core/profiles/machine_plan_interface.h`, `machine_plan.c`, `src/core/machine/machine_private.h`, `machine.c`, Model40 BYOB smoke, convergence ledger/history. Public Machine-plan users receive no Profile private header; the one test that dereferences Model40's private observation includes it explicitly. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): remove dead state and keep private layouts private; [Architecture](../rules/ARCHITECTURE.md): one Profile plan owner and no cross-component layout leak. |
+| Verification | Complete caller and include sweep for the removed projection/private includes; focused Model40 BYOB and Machine plan tests; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No Machine field or interface names the PC/AT descriptor projection; the public plan header has no private include; only explicit Model40 test code sees its ROM layout. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-40, all App/Core direct formatting-call dispositions and full gate results in the ledger/history. |
-| Stop Conditions | Stop if preserving a format path requires a platform- or product-specific contract; record it rather than creating a second facade. |
-| Exit Criteria | CQ-40 is repaired: App Command uses the Type facade exclusively, no direct formatting calls remain in App/Core, and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-41, the projection/private-include caller dispositions and full gate results in the ledger/history. |
+| Stop Conditions | Stop if a retained non-test consumer needs a concrete Profile private layout; record it rather than widening the public header. |
+| Exit Criteria | CQ-41 is repaired: the dead projection and fields are absent, public plan consumers no longer acquire private Profile includes, and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep App/Core for every direct C formatting call and route each equivalent through the one Type facade. |
+| Similar-Issue Sweep | Sweep all public App/Core interface headers for private-header imports and concrete Profile layout leakage; classify every remaining occurrence. |
 
 ## Current Technical Baseline
 

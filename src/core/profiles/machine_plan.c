@@ -513,13 +513,6 @@ type_bool vm_profile_machine_plan_memory_reconfigurable(const vm_profile_machine
 { return plan != STD_NULL && plan->memory_reconfigurable; }
 type_unsigned_8 vm_profile_machine_plan_floppy_slot_count(const vm_profile_machine_plan *plan)
 { return plan == STD_NULL ? 0u : plan->floppy_slot_count; }
-const vm_profile_default_pc_at_descriptor *
-vm_profile_machine_plan_pc_at_descriptor_get(const vm_profile_machine_plan *plan)
-{
-    return plan == STD_NULL || (plan->kind != VM_PROFILE_MACHINE_PLAN_DEFAULT_PC_AT &&
-        plan->kind != VM_PROFILE_MACHINE_PLAN_IBM_5170) ? STD_NULL :
-        &plan->profile.pc_at.descriptor;
-}
 const vm_profile_model40_external_rom *vm_profile_machine_plan_model40_rom_get(
     const vm_profile_machine_plan *plan)
 {

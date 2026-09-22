@@ -6,10 +6,9 @@
 #include "core/devices/firmware_interface.h"
 #include "core/devices/machine_interface.h"
 #include "core/profiles/device/floppy.h"
-#include "core/profiles/default_profile/pc_at_profile_private.h"
-#include "core/profiles/model40/model40_private.h"
 
 typedef struct vm_profile_machine_plan vm_profile_machine_plan;
+typedef struct vm_profile_model40_external_rom vm_profile_model40_external_rom;
 
 type_status vm_profile_machine_plan_create(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
@@ -36,8 +35,6 @@ type_bool vm_profile_machine_plan_memory_reconfigurable(
     const vm_profile_machine_plan *plan);
 type_unsigned_8 vm_profile_machine_plan_floppy_slot_count(
     const vm_profile_machine_plan *plan);
-const vm_profile_default_pc_at_descriptor *
-vm_profile_machine_plan_pc_at_descriptor_get(const vm_profile_machine_plan *plan);
 const vm_profile_model40_external_rom *vm_profile_machine_plan_model40_rom_get(
     const vm_profile_machine_plan *plan);
 type_bool vm_profile_machine_plan_is_model40(const vm_profile_machine_plan *plan);
