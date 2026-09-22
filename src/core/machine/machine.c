@@ -403,8 +403,9 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
     vm_machine *session;
     type_status status;
 
-    if (config == STD_NULL || plan == STD_NULL || out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_session = STD_NULL;
+    if (config == STD_NULL || plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     session = (vm_machine *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) {
         vm_profile_machine_plan_destroy(plan);
@@ -462,8 +463,11 @@ type_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_session)
 {
     vm_profile_machine_plan *plan = STD_NULL;
-    type_status status = vm_profile_machine_plan_create(config, assets, &plan);
+    type_status status;
 
+    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_session = STD_NULL;
+    status = vm_profile_machine_plan_create(config, assets, &plan);
     if (status != TYPE_STATUS_OK) return status;
     return vm_machine_create_from_plan(config, plan, out_session);
 }
@@ -473,7 +477,9 @@ C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_sessio
     vm_profile_machine_plan *plan = STD_NULL;
     type_status status;
 
-    if (config == STD_NULL || out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_session = STD_NULL;
+    if (config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     status = vm_profile_machine_plan_create_file_backed(config, &plan);
     if (status != TYPE_STATUS_OK) return status;
     return vm_machine_create_from_plan(config, plan, out_session);

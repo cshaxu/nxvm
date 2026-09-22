@@ -334,9 +334,10 @@ type_status vm_profile_machine_plan_create(const vm_machine_config *config,
     vm_profile_machine_plan *plan;
     type_status status;
 
-    if (config == STD_NULL || assets == STD_NULL || out_plan == STD_NULL ||
-        config->fixed_disk_image[1u] != STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_plan = STD_NULL;
+    if (config == STD_NULL || assets == STD_NULL ||
+        config->fixed_disk_image[1u] != STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     plan = (vm_profile_machine_plan *)STD_CALLOC(1u, sizeof(*plan));
     if (plan == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     if (config->profile_kind == VM_MACHINE_PROFILE_DEFAULT_PC_AT) {
@@ -428,7 +429,9 @@ type_status vm_profile_machine_plan_create_file_backed(const vm_machine_config *
     STD_SIZE_T bios_bytes;
     type_status status;
 
-    if (config == STD_NULL || out_plan == STD_NULL || config->bios_count == 0u ||
+    if (out_plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_plan = STD_NULL;
+    if (config == STD_NULL || config->bios_count == 0u ||
         config->bios_count > 2u || (config->profile_kind !=
             VM_MACHINE_PROFILE_IBM_5160_MODEL_268 && config->cmos_seed == STD_NULL)) {
         return TYPE_STATUS_INVALID_ARGUMENT;

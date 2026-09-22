@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S28 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S27 repeated audit found that the retained void default FDD initializer silently discards zero-overlay allocation failure. This bounded correction is within that approved objective. |
-| Objective | Remove the failure-masking default FDD initializer and make every owner-local caller use the existing fallible geometry constructor. |
-| Non-goals | Do not change Common/Lib/x86 public contracts, floppy geometry, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S27 `ca28805e`; new CQ-27 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S29 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S28 repeated audit found that Machine/Profile constructor wrappers leave valid output pointers unchanged when their pre-plan validation or BYOB asset load fails. This bounded correction is within that approved objective. |
+| Objective | Make every Machine/Profile plan construction entry establish the same failure-output contract: a valid output pointer is null before any other validation or file input. |
+| Non-goals | Do not change Common/Lib/x86 contracts, profile semantics, assets, firmware, machine topology, timing or product UX. |
+| Reference Baseline | S28 `208b0b40`; new CQ-28 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/media/fdd.{c,h,private.h}`, the two owner-local media fixtures/callers, convergence ledger/history. No Common/Lib/x86 signature change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): close the full caller class; [Coding](../rules/CODING.md): no ignored semantic result or false success; [Architecture](../rules/ARCHITECTURE.md): FDD remains its sole allocation owner with one failure boundary. |
-| Verification | Full default-initializer caller sweep; focused FDD/media smokes; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No `vm_machine_fdd_initialize()` void default constructor remains; every former caller observes `vm_machine_fdd_initialize_with_geometry()`. |
+| Files And ABI Surface | `src/core/profiles/machine_plan.c`, `src/core/machine/machine.c`, existing Machine initialization-atomicity smoke, convergence ledger/history. No Common/Lib/x86 signature change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): close the full wrapper class; [Coding](../rules/CODING.md): every failure has truthful output state; [Architecture](../rules/ARCHITECTURE.md): Profile/Machine retain one construction and rollback boundary. |
+| Verification | Full output-constructor sweep; focused invalid-config/file-backed plan and Machine creation proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Valid output pointers are cleared before invalid configuration or external asset failure in every Machine/Profile plan creation entry. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-27, every default-initializer caller's replacement, the allocation failure boundary and full gate results in the ledger/history. |
-| Stop Conditions | Stop if a production caller requires an implicit default FDD geometry or a cross-component allocation contract change. |
-| Exit Criteria | CQ-27 is repaired: no void default constructor masks FDD allocation failure, every caller checks explicit construction, and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-28, every reviewed constructor's output-state disposition, and full gate results in the ledger/history. |
+| Stop Conditions | Stop if correcting output state requires a cross-component construction-contract change. |
+| Exit Criteria | CQ-28 is repaired: every relevant Machine/Profile constructor clears a valid output pointer before any later failure, focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all production/test callers of the void default FDD initializer and all App/Core void constructors that allocate a resource or discard a fallible initializer result. |
+| Similar-Issue Sweep | Sweep every App/Core constructor with an output pointer, including Profile plan and Machine wrappers, for validation-before-output-clear ordering. |
 
 ## Current Technical Baseline
 

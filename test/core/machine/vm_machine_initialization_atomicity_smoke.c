@@ -4,6 +4,7 @@
 #include "core/machine/runner.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
+#include "core/profiles/machine_plan_interface.h"
 #include "core/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
@@ -25,6 +26,25 @@ static C_INT verify_reset_outcome(C_VOID)
 static C_INT verify_running_reset_outcome(C_VOID)
 {
     return verify_reset_outcome();
+}
+
+static C_INT verify_constructor_output_contract(C_VOID)
+{
+    const vm_machine_assets assets = {0};
+    vm_machine *session = (vm_machine *)(type_virtual_address)1u;
+    vm_profile_machine_plan *plan =
+        (vm_profile_machine_plan *)(type_virtual_address)1u;
+
+    if (vm_machine_create(STD_NULL, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+        session != STD_NULL) return 1;
+    session = (vm_machine *)(type_virtual_address)1u;
+    if (vm_machine_create_from_assets(STD_NULL, &assets, &session) !=
+        TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL) return 1;
+    if (vm_profile_machine_plan_create(STD_NULL, &assets, &plan) !=
+        TYPE_STATUS_INVALID_ARGUMENT || plan != STD_NULL) return 1;
+    plan = (vm_profile_machine_plan *)(type_virtual_address)1u;
+    return vm_profile_machine_plan_create_file_backed(STD_NULL, &plan) !=
+        TYPE_STATUS_INVALID_ARGUMENT || plan != STD_NULL;
 }
 
 static C_INT profile_timing_is_materialized(const core_machine_config *config,
@@ -155,7 +175,8 @@ C_INT main(C_VOID)
     if (profile == STD_NULL || verify_create_materialization(profile) != 0 ||
         verify_invalid_media_slot(profile) != 0 ||
         verify_recovery() != 0 || verify_reset_outcome() != 0 ||
-        verify_running_reset_outcome() != 0) {
+        verify_running_reset_outcome() != 0 ||
+        verify_constructor_output_contract() != 0) {
         return 1;
     }
     STD_PRINTF("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");

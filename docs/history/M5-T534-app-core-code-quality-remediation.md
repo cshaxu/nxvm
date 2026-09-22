@@ -357,3 +357,12 @@ default FDD fixture constructor.  Production already uses the fallible
 geometry constructor; only two repository-only media fixtures still invoke the
 void wrapper.  S28 removes the wrapper and makes those fixtures request the
 same default geometry explicitly, preserving one FDD allocation boundary.
+
+## S29: Constructor Output-State Convergence
+
+The next repeated audit found the same output-state ordering defect beneath the
+Machine boundary: Profile file-backed plan construction and Machine wrapper
+constructors can reject input or fail asset loading while leaving a valid
+caller-owned output pointer unchanged. S29 applies the established Core
+constructor rule to the entire Profile/Machine wrapper family and proves both
+invalid-input and file-backed failure cases clear the output.
