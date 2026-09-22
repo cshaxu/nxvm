@@ -1,5 +1,4 @@
 #include "type.h"
-#include "type.h"
 
 #include "lib/storage/file_interface.h"
 
