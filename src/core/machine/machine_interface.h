@@ -63,8 +63,6 @@ type_status vm_machine_describe_common_driver(vm_machine *session,
  * that non-owning link during ordered teardown. */
 type_status vm_machine_bind_common_machine(vm_machine *session,
     common_machine *common_machine);
-type_status vm_machine_pause_for_debug(vm_machine *session,
-    type_unsigned_32 timeout_milliseconds);
 type_status vm_machine_reconfigure_memory(vm_machine *session,
     STD_SIZE_T memory_bytes);
 type_status vm_machine_get_speed(const vm_machine *session,

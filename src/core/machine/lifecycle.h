@@ -20,9 +20,6 @@ type_status vm_machine_finish_reset(vm_machine *machine, type_status status);
 C_VOID vm_machine_stop(vm_machine *machine);
 type_status vm_machine_resume(vm_machine *machine);
 type_status vm_machine_request_pause(vm_machine *machine);
-type_status vm_machine_request_pause_reason(vm_machine *machine,
-    vm_machine_pause_reason reason);
-type_status vm_machine_request_step(vm_machine *machine);
 
 type_status vm_machine_initialize(vm_machine *machine);
 C_VOID vm_machine_finalize(vm_machine *machine);

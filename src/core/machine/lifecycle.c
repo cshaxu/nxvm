@@ -209,7 +209,9 @@ C_VOID vm_machine_stop(vm_machine *machine) {
 
 type_status vm_machine_request_pause(vm_machine *machine)
 {
-    return vm_machine_request_pause_reason(machine, VM_MACHINE_PAUSE_EXPLICIT);
+    return machine != STD_NULL && machine->executor != LIB_NULL &&
+        common_machine_pause(machine->executor) ?
+        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
 type_status vm_machine_describe_common_driver(vm_machine *machine,
@@ -243,39 +245,6 @@ type_status vm_machine_bind_common_machine(vm_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     machine->executor = common_machine;
     return TYPE_STATUS_OK;
-}
-
-type_status vm_machine_pause_for_debug(vm_machine *machine,
-    type_unsigned_32 timeout_milliseconds)
-{
-    if (machine == STD_NULL || machine->executor == LIB_NULL)
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    if (common_machine_state_get(machine->executor) == COMMON_MACHINE_RUNNING &&
-        !common_machine_pause(machine->executor))
-        return TYPE_STATUS_INVALID_STATE;
-    while (timeout_milliseconds-- != 0u) {
-        if (common_machine_state_get(machine->executor) == COMMON_MACHINE_PAUSED)
-            return TYPE_STATUS_OK;
-        base_sync_sleep_milliseconds(1u);
-    }
-    return TYPE_STATUS_INVALID_STATE;
-}
-
-type_status vm_machine_request_pause_reason(vm_machine *machine,
-    vm_machine_pause_reason reason)
-{
-    (C_VOID)reason;
-    return machine != STD_NULL && machine->executor != LIB_NULL &&
-        common_machine_pause(machine->executor) ?
-        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
-}
-
-type_status vm_machine_request_step(vm_machine *machine)
-{
-    if (machine == STD_NULL || machine->executor == LIB_NULL ||
-        common_machine_state_get(machine->executor) !=
-        COMMON_MACHINE_PAUSED) return TYPE_STATUS_INVALID_STATE;
-    return TYPE_STATUS_UNSUPPORTED;
 }
 
 C_INT vm_machine_is_running(const vm_machine *machine)
