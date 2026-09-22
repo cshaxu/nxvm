@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S6 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S6 repairs CQ-7 found by its required S5 repeat audit. |
-| Objective | Delete unused Machine lifecycle entry points that duplicate or misrepresent Common and x86 Debug control. |
-| Non-goals | Do not change Common lifecycle contracts, Core Debug execution-plan behavior or running-machine semantics. |
-| Reference Baseline | S5 audit from `6c3c7f8c`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S7 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S7 is the next required repeated audit. |
+| Objective | Repeat the same ownership, duplication, failure-boundary and dead-path audit after S6. |
+| Non-goals | Do not close T534 from green gates alone or change external/shared contracts without a classified mechanism. |
+| Reference Baseline | S6 implementation `721bffb9`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `core/machine` lifecycle and public interface, direct lifecycle tests. No Lib/Common/x86 contract change. |
+| Files And ABI Surface | All tracked `src/app/**`, `src/core/**` and their direct tests; audit only until a new mechanism is classified. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): one active S and actual-source review; [Architecture](../rules/ARCHITECTURE.md): single owner/direct data flow; [Coding](../rules/CODING.md): no redundant layer or dead path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Whole-tree caller sweep, focused lifecycle/Debug tests, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
-| Expected Markers | No polling pause, empty step request or ignored-reason wrapper remains. CQ-7 receives an explicit disposition. |
+| Verification | Whole-tree source/caller inventories, targeted path reads, direct-test review, documentation governance, `git diff --check` and evidence-led findings review. |
+| Expected Markers | Every new issue has a repair S or explicit justified receiver; CQ-6 is updated with the repeat-audit result. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report removed APIs, retained Common/Debug control paths and tests. |
-| Stop Conditions | Stop if removal exposes an external consumer or requires a Common/x86 contract change. |
-| Exit Criteria | CQ-7's callers are empty, retained lifecycle semantics pass complete unit verification and static checks. |
+| Reporting Requirements | Report findings with owner, impact and repair boundary; do not call the corpus clean merely from a search or test gate. |
+| Stop Conditions | Stop when a repair needs Lib/Common/x86 contract change or guest behavior authorization. |
+| Exit Criteria | Each finding has a durable disposition and no inspected mechanism is left unclassified. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Search all lifecycle and Debug public declarations/callers; remove the whole obsolete path rather than retaining aliases. |
+| Similar-Issue Sweep | Search App/Core public surfaces and implementations for repeated state, duplicate routes, dead API, platform leakage and failure-boundary holes. |
 
 ## Current Technical Baseline
 

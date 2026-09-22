@@ -62,3 +62,10 @@ driver and Debug-adapter boundaries.  It found CQ-7: three public lifecycle
 entry points have no caller and no unique behavior after Common lifecycle and
 x86 Debug execution plans became the sole routes.  S6 receives their complete
 removal; S5 itself makes no production change.
+
+## S6: Lifecycle Path Removal
+
+P1 `721bffb9` removes the uncalled polling pause, empty step and ignored-reason
+lifecycle APIs.  The remaining pause route directly requests Common ownership;
+x86 Debug continues through its existing execution plan.  The whole caller
+sweep is empty and 333/333 repository-only unit pass.  S6 is closed.
