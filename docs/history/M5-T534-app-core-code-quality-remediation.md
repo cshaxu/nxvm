@@ -550,3 +550,17 @@ status already returned by the reset path. S43 deletes its five fields and two
 helpers. The direct failure result remains unchanged. Focused lifecycle and
 runner-error proof plus the complete 334-case `-j8` suite pass in 15.52
 seconds.
+
+## S45: INI Ordered-Media Count Simplification
+
+The post-S44 static-analysis sweep found that the App INI parser first requires
+the requested media slot to equal the current count, then conditionally advances
+that count only when it is less than or equal to the same slot. The condition is
+therefore always true. S45 retains the ordered-slot guard and direct path/mode
+validation, then makes the successful count advance explicit. It changes no
+grammar, path, access-mode or request-publication behavior.
+
+The focused INI smoke, complete 334-case `-j8` unit replay and documentation
+governance pass. The same static-analysis sweep finds no other provably true or
+false condition; only non-semantic const-pointer advice and two CPU declaration
+parameter-name mismatches remain for separate disposition.

@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S43 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S42 state-owner audit found Machine `start_outcome` is reset and recorded but never observed. This bounded dead-state deletion is within the approved quality and full-green objective. |
-| Objective | Delete the unconsumed Machine start/reset outcome cache while preserving the direct reset status path. |
-| Non-goals | Do not change reset behavior, Common lifecycle protocol, runner-failure adaptation, Core diagnostics, profile construction or test semantics. |
-| Reference Baseline | S42 `7fb28954`; CQ-42 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S45 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S44 static analysis found an App INI media-count predicate that is provably true after the immediately preceding ordered-slot check. This bounded simplification is within the approved quality and full-green objective. |
+| Objective | Remove the redundant INI media-count predicate while retaining the one ordered-media parsing rule. |
+| Non-goals | Do not change INI grammar, media paths/access modes, request publication, profile construction, reset behavior or Common lifecycle. |
+| Reference Baseline | S44 `6f2397af`; CQ-44 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/machine_private.h`, `lifecycle.c`, convergence ledger/history. Private Machine layout loses one unconsumed cache; no public ABI changes. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): delete dead state; [Architecture](../rules/ARCHITECTURE.md): reset result remains owned by its direct return path. |
-| Verification | Complete `start_outcome` caller sweep; focused lifecycle/runner-error tests; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No `start_outcome` field/helper/reference remains; reset failures return their exact existing status; focused and full tests pass. |
+| Files And ABI Surface | `src/app/ini.c`, convergence ledger/history. The private parser keeps its existing request layout and public App ABI. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): delete redundant conditions; [Architecture](../rules/ARCHITECTURE.md): App remains the sole INI/media-request owner. |
+| Verification | Static-analysis sweep for provable App/Core conditions; focused INI smoke; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | The post-ordering count advance is direct; no known-true condition remains in the App/Core static-analysis sweep; focused and full tests pass. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-42, all cache caller dispositions and full gate results in the ledger/history. |
-| Stop Conditions | Stop if a live consumer requires retained completion metadata; record it rather than recreating parallel state. |
-| Exit Criteria | CQ-42 is repaired: the cache is absent, direct reset outcome remains exact, and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-44, the ordering-rule proof and full gate results in the ledger/history. |
+| Stop Conditions | Stop if the ordered-slot guard does not prove the count relationship or if a caller relies on sparse media slots; record the live contract rather than broadening grammar. |
+| Exit Criteria | CQ-44 is repaired: count advances directly after the retained ordered-slot guard, and static/focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all Machine state fields for write-only caches and remove every confirmed unconsumed result mirror. |
+| Similar-Issue Sweep | Sweep App/Core static-analysis findings for other provably true/false conditions and classify each before further simplification. |
 
 ## Current Technical Baseline
 

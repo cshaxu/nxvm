@@ -123,7 +123,7 @@ static C_INT vm_app_ini_medium(vm_session_request *request, C_INT floppy,
     if (slot != *count || paths[slot][0] != '\0' || !vm_app_ini_path(paths[slot],
             VM_SESSION_REQUEST_PATH_MAX, directory, path) || !vm_app_ini_mode(mode,
             &modes[slot])) return 0;
-    if (*count <= slot) *count = slot + 1u;
+    *count = slot + 1u;
     return 1;
 }
 
