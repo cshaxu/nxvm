@@ -133,8 +133,6 @@ C_VOID core_machine_display_provider_slot_freeze(
     core_machine_display_provider_slot *slot);
 C_VOID core_machine_display_provider_slot_destroy(
     core_machine_display_provider_slot *slot);
-C_VOID core_machine_display_notify_mode_changed_to(
-    const core_machine_display_provider_slot *slot);
 C_INT core_machine_display_capture_snapshot_from(
     const core_machine_display_provider_slot *slot,
     core_machine_display_snapshot *out_snapshot);

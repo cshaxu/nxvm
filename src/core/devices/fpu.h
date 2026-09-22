@@ -59,8 +59,6 @@ typedef enum core_machine_fpu_execute_result {
 C_VOID core_machine_fpu_initialize(core_machine_fpu *fpu,
     core_machine_fpu_profile profile);
 C_VOID core_machine_fpu_reset(core_machine_fpu *fpu);
-type_bool core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
-    core_machine_fpu_profile fpu);
 core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
     core_machine_fpu *fpu, core_machine_cpu_profile cpu,
     C_UCHAR escape_opcode, C_UCHAR modrm);
@@ -73,7 +71,6 @@ C_VOID core_machine_fpu_advance(core_machine_fpu *fpu,
     type_unsigned_64 elapsed_ticks);
 type_status core_machine_fpu_ticks_until_completion(const core_machine_fpu *fpu,
     type_unsigned_64 *out_ticks);
-type_bool core_machine_fpu_busy(const core_machine_fpu *fpu);
 C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
     core_machine_fpu_state *out_state);
 core_machine_fpu_execute_result core_machine_fpu_load_m32(core_machine_fpu *fpu,

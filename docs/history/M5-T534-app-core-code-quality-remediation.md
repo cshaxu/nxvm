@@ -134,3 +134,20 @@ write only their CMake-provided build artifacts through ISO-C streams; they are
 test-only output endpoints, not an App/Core host-file route.  A full fresh
 target build and 334/334 repository-only unit tests pass.  S11 is closed; S12
 repeats the same App/Core audit.
+
+## S13: Dead Boundary Subtraction
+
+The subsequent declaration/caller audit found CQ-12: several published
+helpers had no consumer beyond their own definition.  S13 removes the CPU
+segment switch wrapper, unused display mode notifier, FPU naming/busy helpers,
+unused firmware A20/stop capability, timing manifest count accessor, KBC
+output-port callback seam, and plan-level memory-device container.  The latter
+two removals include their dormant state and application loop, not only their
+public declarations.  Existing Core-local loaders, KBC A20/reset behavior,
+FPU dispatch, direct memory mapping and timing selection remain their sole
+live owners.
+
+The complete declaration sweep has no remaining CQ-12 symbol, the full clean
+unit target builds, 334/334 repository-only unit tests pass, and documentation
+governance plus whitespace checks pass.  S13 is closed; the repeated T534
+audit continues with the next App/Core mechanism family.

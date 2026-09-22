@@ -192,7 +192,6 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
         (plan->topology.hdc_present && !plan->topology.fdc_present &&
          plan->topology.hdc.protocol ==
              CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) ||
-        plan->memory_device_count > CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT ||
         (plan->topology.dma_present && plan->topology.dma.controller_count !=
             (plan->configuration.dma_controller_count == 0u ?
                 CORE_MACHINE_DMA_CONTROLLER_COUNT :
@@ -255,13 +254,6 @@ type_status core_machine_plan_apply_topology(core_machine *machine,
         status = core_machine_configure_absent_memory(machine,
             &topology->absent_memory[index]);
         if (status != TYPE_STATUS_OK) return status;
-    }
-    for (index = 0u; index < plan->memory_device_count; ++index) {
-        const core_machine_plan_memory_device *device = &plan->memory_devices[index];
-
-        if ((status = core_machine_register_memory_device(machine,
-                device->physical_start, device->bytes, &device->callbacks,
-                device->owner)) != TYPE_STATUS_OK) return status;
     }
     if (topology->planar_parity_present && (status = core_machine_configure_planar_parity(
             machine, &topology->planar_parity)) != TYPE_STATUS_OK) return status;
@@ -426,24 +418,6 @@ type_status core_machine_plan_configure_hdc(core_machine_plan *plan,
     plan->topology.hdc_media_id = media_id;
     plan->topology.hdc_slave_media_id = slave_media_id;
     plan->topology.hdc = *config;
-    return TYPE_STATUS_OK;
-}
-
-type_status core_machine_plan_register_memory_device(core_machine_plan *plan,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
-    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner)
-{
-    core_machine_plan_memory_device *device;
-
-    if (plan == STD_NULL || callbacks == STD_NULL || bytes == 0u ||
-        plan->memory_device_count >= CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    device = &plan->memory_devices[plan->memory_device_count++];
-    device->physical_start = physical_start;
-    device->bytes = bytes;
-    device->callbacks = *callbacks;
-    device->owner = owner;
     return TYPE_STATUS_OK;
 }
 

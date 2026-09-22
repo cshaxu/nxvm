@@ -398,32 +398,6 @@ C_INT core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
         (type_virtual_address)in_data, size);
 }
 
-C_INT core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
-    core_machine_cpu_segment segment, type_unsigned_16 selector)
-{
-    switch (segment) {
-    case CORE_MACHINE_CPU_SEGMENT_ES:
-        return core_machine_cpu_execution_load_segment(context,
-            &cpu_state.data.es, selector);
-    case CORE_MACHINE_CPU_SEGMENT_CS:
-        return core_machine_cpu_execution_load_segment(context,
-            &cpu_state.data.cs, selector);
-    case CORE_MACHINE_CPU_SEGMENT_SS:
-        return core_machine_cpu_execution_load_segment(context,
-            &cpu_state.data.ss, selector);
-    case CORE_MACHINE_CPU_SEGMENT_DS:
-        return core_machine_cpu_execution_load_segment(context,
-            &cpu_state.data.ds, selector);
-    case CORE_MACHINE_CPU_SEGMENT_FS:
-        return core_machine_cpu_execution_load_segment(context,
-            &cpu_state.data.fs, selector);
-    case CORE_MACHINE_CPU_SEGMENT_GS:
-        return core_machine_cpu_execution_load_segment(context,
-            &cpu_state.data.gs, selector);
-    }
-    return 1;
-}
-
 C_INT core_machine_cpu_get_code_default_size(const core_machine_cpu_execution_context *context)
 {
     return cpu_state.data.cs.seg.exec.defsize;

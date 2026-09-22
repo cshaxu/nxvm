@@ -29,7 +29,6 @@ type_status core_machine_firmware_invoke(core_machine *machine,
     machine->firmware_operation_active = 0;
     return status;
 }
-
 type_status core_machine_firmware_handle_software_interrupt(C_VOID *opaque,
     type_unsigned_8 vector, const core_machine_firmware_interrupt_frame *frame,
     core_machine_firmware_interrupt_result *result, type_bool *out_handled)
@@ -183,17 +182,6 @@ type_status core_machine_firmware_memory_write(
             physical, (type_virtual_address)data, size));
 }
 
-type_status core_machine_firmware_set_a20(
-    core_machine_firmware_context *firmware, type_bool enabled)
-{
-    if (!core_machine_firmware_context_is_active(firmware, 0)) {
-        return core_machine_firmware_operation_result(firmware,
-            TYPE_STATUS_INVALID_STATE);
-    }
-    firmware->machine->executor_memory.data.flagA20 = enabled ? TYPE_TRUE : TYPE_FALSE;
-    return TYPE_STATUS_OK;
-}
-
 type_status core_machine_firmware_port_read(
     core_machine_firmware_context *firmware, type_unsigned_16 port, type_unsigned_32 *out_value)
 {
@@ -233,15 +221,4 @@ type_status core_machine_firmware_port_write(
         }
         return core_machine_firmware_operation_result(firmware, status);
     }
-}
-
-type_status core_machine_firmware_request_stop(
-    core_machine_firmware_context *firmware)
-{
-    if (!core_machine_firmware_context_is_active(firmware, 0)) {
-        return core_machine_firmware_operation_result(firmware,
-            TYPE_STATUS_INVALID_STATE);
-    }
-    STD_ATOMIC_STORE(&firmware->machine->stop_requested, 1);
-    return TYPE_STATUS_OK;
 }

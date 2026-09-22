@@ -31,12 +31,6 @@ _Static_assert(sizeof(core_machine_cpu_timing_manifest_keys) /
     sizeof(core_machine_cpu_timing_manifest_keys[0]) == 4906u,
     "CPU timing canonical manifest count drifted");
 
-STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID)
-{
-    return sizeof(core_machine_cpu_timing_manifest_keys) /
-        sizeof(core_machine_cpu_timing_manifest_keys[0]);
-}
-
 static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
     const core_machine *machine)
 {

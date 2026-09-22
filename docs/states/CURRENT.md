@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S12 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S11 repaired CQ-10 and the fresh-build CQ-11 omission. |
-| Objective | Repeat the whole App/Core ownership, data-flow, duplicate-path and failure-boundary audit; classify every newly found live defect before closing T534. |
-| Non-goals | Do not relabel a passing test suite as an audit, add a framework, alter Lib/Common/x86 contracts, or silently expand into firmware, asset, timing-grade or UX policy work. |
-| Reference Baseline | S11 implementation; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S13 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S12 caller audit classified CQ-12. |
+| Objective | Remove every confirmed uncalled App/Core wrapper/declaration while preserving the one live owner path for each behavior. |
+| Non-goals | Do not remove a live lower-level owner, invent a replacement abstraction, alter Lib/Common/x86 contracts, or expand into firmware, asset, timing-grade or UX work. |
+| Reference Baseline | S12 audit classification; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | Every tracked `src/app/**` and `src/core/**` implementation/public declaration, its direct `test/app/**` and `test/core/**` callers, build declarations and the convergence ledger. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S, similar-issue sweep and full unit; [Architecture](../rules/ARCHITECTURE.md): one owner and one directional path; [Coding](../rules/CODING.md): no dead public path, duplicate owner or concealed failure; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Source/caller/build sweeps, direct read of every retained App/Core owner, classification of all findings in the ledger, full repository-only unit suite, documentation governance, `git diff --check` and actual-change review. |
-| Expected Markers | Every finding has a repaired/accepted/transferred disposition; no newly discovered live App/Core duplicate route, stale public API, unowned state or failure-atomicity violation is left unclassified. |
+| Files And ABI Surface | The CQ-12 Core CPU/display/FPU/KBC/firmware/timing/plan declarations and definitions, their lower-level retained owners, direct tests and the convergence ledger. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one explicit production operation; [Coding](../rules/CODING.md): no dead public path or forwarding wrapper; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Exact caller sweep before/after each retired symbol; focused affected builds/tests; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No CQ-12 declaration/implementation remains without a caller; each retained mechanism is reached through its existing live owner. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report each inspected family, evidence and disposition; append every new defect to the ledger before repair. |
-| Stop Conditions | Stop only if a newly found issue requires an unapproved firmware/asset/timing/UX scope change or a new Lib/Common/x86 contract. |
-| Exit Criteria | The repeated audit has no unclassified App/Core finding, or each concrete repair has a separately admitted continuation S. |
+| Reporting Requirements | Record every retired symbol, retained lower-level owner and caller-sweep result in the ledger/history. |
+| Stop Conditions | Stop if a candidate has a real external consumer or removing it needs a new Lib/Common/x86 contract. |
+| Exit Criteria | CQ-12 is resolved, all similarly uncalled wrappers have a disposition, and unit/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all App/Core public declarations for callers, all production output/file paths for their owner, construction/reset/finalization for partial-state handling, and tests/build rules for stale deleted interfaces. |
+| Similar-Issue Sweep | Sweep every App/Core declaration with only definition/header hits; classify all results as deleted, internalized, retained with a live indirect caller, or transferred. |
 
 ## Current Technical Baseline
 

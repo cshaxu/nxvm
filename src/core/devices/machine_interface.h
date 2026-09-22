@@ -565,9 +565,6 @@ type_status core_machine_plan_configure_hdc(core_machine_plan *plan,
     const core_machine_hdc_config *config);
 type_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
     const core_machine_d4_memory_config *config);
-type_status core_machine_plan_register_memory_device(core_machine_plan *plan,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
-    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);
 type_status core_machine_create_from_plan(const core_machine_plan *plan,
     core_machine **out_machine);
 type_status core_machine_get_timing_disposition(const core_machine *machine,

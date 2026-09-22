@@ -225,17 +225,6 @@ static C_INT core_machine_fpu_divide(core_machine_fpu *fpu,
     return 1;
 }
 
-const C_CHAR *core_machine_fpu_profile_name(core_machine_fpu_profile profile)
-{
-    switch (profile) {
-    case CORE_MACHINE_FPU_PROFILE_NONE: return "none";
-    case CORE_MACHINE_FPU_PROFILE_8087: return "8087";
-    case CORE_MACHINE_FPU_PROFILE_80287: return "80287";
-    case CORE_MACHINE_FPU_PROFILE_80387: return "80387";
-    }
-    return "invalid";
-}
-
 C_VOID core_machine_fpu_initialize(core_machine_fpu *fpu,
     core_machine_fpu_profile profile)
 {
@@ -300,7 +289,7 @@ core_machine_fpu_operation_metadata core_machine_fpu_operation_metadata_get(
     return metadata;
 }
 
-type_bool core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
+static type_bool core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
     core_machine_fpu_profile fpu)
 {
     if (fpu == CORE_MACHINE_FPU_PROFILE_NONE) return TYPE_TRUE;
@@ -409,11 +398,6 @@ core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
     return fpu->profile == CORE_MACHINE_FPU_PROFILE_8087 &&
         core_machine_fpu_operation_metadata_get(escape_opcode, modrm).valid ?
         CORE_MACHINE_FPU_ESCAPE_EXECUTE_8087 : CORE_MACHINE_FPU_ESCAPE_HANDOFF;
-}
-
-type_bool core_machine_fpu_busy(const core_machine_fpu *fpu)
-{
-    return fpu != STD_NULL && fpu->busy;
 }
 
 C_VOID core_machine_fpu_advance(core_machine_fpu *fpu,

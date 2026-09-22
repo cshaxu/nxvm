@@ -74,20 +74,11 @@ type_status core_machine_firmware_memory_read(
 type_status core_machine_firmware_memory_write(
     core_machine_firmware_context *firmware, type_unsigned_32 physical,
     const C_VOID *data, STD_SIZE_T size);
-/* AH=87h is the only current caller: it has the documented IBM AT sequence
- * of enabling A20 for its protected-mode transfer and disabling it on exit. */
-type_status core_machine_firmware_set_a20(
-    core_machine_firmware_context *firmware, type_bool enabled);
 type_status core_machine_firmware_port_read(
     core_machine_firmware_context *firmware, type_unsigned_16 port,
     type_unsigned_32 *out_value);
 type_status core_machine_firmware_port_write(
     core_machine_firmware_context *firmware, type_unsigned_16 port, type_unsigned_32 value);
-
-/* The sole admitted restricted state operation: firmware may factually ask
- * core to end the current product run after it has consumed its own report. */
-type_status core_machine_firmware_request_stop(
-    core_machine_firmware_context *firmware);
 
 #ifdef __cplusplus
 }

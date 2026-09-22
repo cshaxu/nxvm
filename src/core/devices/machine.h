@@ -50,18 +50,9 @@
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 #define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 8u
 #define CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY 128u
-#define CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT 4u
-
 #ifndef CORE_MACHINE_RUNTIME_TRACE_ENABLED
 #define CORE_MACHINE_RUNTIME_TRACE_ENABLED 1
 #endif
-
-typedef struct core_machine_plan_memory_device {
-    type_unsigned_32 physical_start;
-    STD_SIZE_T bytes;
-    core_machine_memory_device_callbacks callbacks;
-    C_VOID *owner;
-} core_machine_plan_memory_device;
 
 typedef struct core_machine_fdc_topology {
     const core_machine_media_registry *media_registry;
@@ -85,9 +76,6 @@ struct core_machine_plan {
         CORE_MACHINE_TIMING_CAPABILITY_COUNT];
     STD_SIZE_T declaration_count;
     core_machine_controller_timing_rules controller_timing;
-    core_machine_plan_memory_device memory_devices[
-        CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT];
-    STD_SIZE_T memory_device_count;
     core_machine_d4_memory_config d4_memory;
     const core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;

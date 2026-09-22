@@ -444,9 +444,6 @@ static C_VOID core_machine_kbc_apply_output_port(t_kbc *controller, type_unsigne
 {
     if (controller == STD_NULL) return;
     controller->data.output_port = value;
-    if (controller->connect.output_port != STD_NULL) {
-        controller->connect.output_port(controller->connect.output_port_owner, value);
-    }
     if (controller->connect.memory != STD_NULL) {
         controller->connect.memory->data.flagA20 =
             (value & CORE_MACHINE_KBC_OUTPUT_A20) != 0u;
@@ -455,17 +452,6 @@ static C_VOID core_machine_kbc_apply_output_port(t_kbc *controller, type_unsigne
         controller->connect.execution != STD_NULL) {
         core_machine_cpu_execution_request_reset(controller->connect.execution);
     }
-}
-
-C_INT core_machine_kbc_bind_output_port(t_kbc *controller,
-    core_machine_kbc_output_port_provider provider, C_VOID *owner)
-{
-    if (controller == STD_NULL || provider == STD_NULL ||
-        controller->connect.output_port != STD_NULL) return 0;
-    controller->connect.output_port = provider;
-    controller->connect.output_port_owner = owner;
-    provider(owner, controller->data.output_port);
-    return 1;
 }
 
 static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
@@ -883,7 +869,7 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
     controller->data.last_write_command = TYPE_FALSE;
 }
 
-C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
+static C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
 {
     core_machine_port_add_read(port, 0x0060,
         core_machine_kbc_read_data, controller);

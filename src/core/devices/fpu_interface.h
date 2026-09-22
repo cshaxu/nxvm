@@ -42,7 +42,6 @@ typedef struct core_machine_fpu_state {
     C_INT pending_unmasked_exception;
 } core_machine_fpu_state;
 
-const C_CHAR *core_machine_fpu_profile_name(core_machine_fpu_profile profile);
 core_machine_fpu_operation_metadata core_machine_fpu_operation_metadata_get(
     type_unsigned_8 escape_opcode, type_unsigned_8 modrm);
 

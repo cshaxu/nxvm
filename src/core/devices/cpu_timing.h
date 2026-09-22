@@ -39,7 +39,6 @@ typedef struct core_machine_cpu_timing_result {
 /* B0's only successful-retirement CPU timing selection entry. */
 C_INT core_machine_cpu_timing_select(core_machine *machine,
     core_machine_cpu_timing_result *out_result);
-STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID);
 /* Shared checked accumulation for timing selection and the retained run loop. */
 C_INT core_machine_timing_add_ticks(type_unsigned_64 *value,
     type_unsigned_64 delta);
