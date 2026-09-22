@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S13 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S12 caller audit classified CQ-12. |
-| Objective | Remove every confirmed uncalled App/Core wrapper/declaration while preserving the one live owner path for each behavior. |
-| Non-goals | Do not remove a live lower-level owner, invent a replacement abstraction, alter Lib/Common/x86 contracts, or expand into firmware, asset, timing-grade or UX work. |
-| Reference Baseline | S12 audit classification; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S14 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S13 removed CQ-12 and S12 classified CQ-13. |
+| Objective | Preserve the truthful inner failure at each App composition boundary while keeping its existing one-owner rollback behavior. |
+| Non-goals | Do not create a status framework, alter Lib/Common/x86 status values, change composition topology or expand into firmware, assets, timing or UX policy. |
+| Reference Baseline | S13 implementation and CQ-13 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | The CQ-12 Core CPU/display/FPU/KBC/firmware/timing/plan declarations and definitions, their lower-level retained owners, direct tests and the convergence ledger. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one explicit production operation; [Coding](../rules/CODING.md): no dead public path or forwarding wrapper; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Exact caller sweep before/after each retired symbol; focused affected builds/tests; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No CQ-12 declaration/implementation remains without a caller; each retained mechanism is reached through its existing live owner. |
+| Files And ABI Surface | `src/app/composition.c`, App composition smoke, Type/Lib status boundary, and the convergence ledger. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): failure boundary has one explicit contract; [Coding](../rules/CODING.md): no concealed failure or duplicate adapter; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Focused composition failures prove Type and Lib status preservation/mapping plus retry safety; source sweep for composition result flattening; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Callers can distinguish invalid input, invalid state, unsupported, allocation and I/O/fault outcomes; rollback returns every App field to its entry state. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record every retired symbol, retained lower-level owner and caller-sweep result in the ledger/history. |
-| Stop Conditions | Stop if a candidate has a real external consumer or removing it needs a new Lib/Common/x86 contract. |
-| Exit Criteria | CQ-12 is resolved, all similarly uncalled wrappers have a disposition, and unit/documentation/change gates pass. |
+| Reporting Requirements | Record the Type/Lib mapping, every composition stage and focused proof in the ledger/history. |
+| Stop Conditions | Stop if truthful propagation needs a new public Lib/Common/x86 contract. |
+| Exit Criteria | CQ-13 is repaired, no other App composition path masks a known inner status, and unit/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App/Core declaration with only definition/header hits; classify all results as deleted, internalized, retained with a live indirect caller, or transferred. |
+| Similar-Issue Sweep | Sweep all App composition/create/bind paths for `return TYPE_STATUS_INVALID_STATE` after a failed status-returning call; classify each as state validation, preserved failure, or a separately admitted defect. |
 
 ## Current Technical Baseline
 

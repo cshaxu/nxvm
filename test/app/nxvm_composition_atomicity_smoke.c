@@ -210,14 +210,15 @@ lib_status common_ui_destroy(common_ui *ui)
     return LIB_STATUS_OK;
 }
 
-static C_INT composition_machine_failure_recovers(composition_failure failure)
+static C_INT composition_machine_failure_recovers(composition_failure failure,
+    type_status expected)
 {
     vm_app *app = STD_NULL;
     vm_session_request request = {0};
 
     composition_fixture_reset(failure);
     if (vm_app_create(&app) != TYPE_STATUS_OK ||
-        vm_app_compose_machine(app, &request) == TYPE_STATUS_OK ||
+        vm_app_compose_machine(app, &request) != expected ||
         vm_app_machine(app) != STD_NULL || vm_app_common_machine(app) != LIB_NULL ||
         !composition_fixture_clean()) return 0;
     fixture.failure = COMPOSITION_FAILURE_NONE;
@@ -236,7 +237,7 @@ static C_INT composition_control_failure_recovers(C_VOID)
     composition_fixture_reset(COMPOSITION_FAILURE_SESSION_CREATE);
     if (vm_app_create(&app) != TYPE_STATUS_OK ||
         vm_app_compose_machine(app, &request) != TYPE_STATUS_OK ||
-        vm_app_compose_control(app, &options) == TYPE_STATUS_OK ||
+        vm_app_compose_control(app, &options) != TYPE_STATUS_INVALID_ARGUMENT ||
         vm_app_session(app) != LIB_NULL || !fixture.machine.live ||
         !fixture.common_machine.live || fixture.session.live) return 0;
     fixture.failure = COMPOSITION_FAILURE_NONE;
@@ -257,7 +258,7 @@ static C_INT composition_ui_failure_recovers(composition_failure failure)
     if (vm_app_create(&app) != TYPE_STATUS_OK ||
         vm_app_compose_machine(app, &request) != TYPE_STATUS_OK ||
         vm_app_compose_control(app, &session_options) != TYPE_STATUS_OK ||
-        vm_app_compose_ui(app, &ui_options) == TYPE_STATUS_OK ||
+        vm_app_compose_ui(app, &ui_options) != TYPE_STATUS_INVALID_ARGUMENT ||
         vm_app_ui(app) != LIB_NULL || !fixture.machine.live ||
         !fixture.common_machine.live || !fixture.session.live || fixture.ui.live ||
         fixture.session.ui != LIB_NULL) return 0;
@@ -270,18 +271,22 @@ static C_INT composition_ui_failure_recovers(composition_failure failure)
 
 C_INT main(C_VOID)
 {
-    static const composition_failure machine_failures[] = {
-        COMPOSITION_FAILURE_CONFIGURE,
-        COMPOSITION_FAILURE_MACHINE_CREATE,
-        COMPOSITION_FAILURE_DRIVER_DESCRIBE,
-        COMPOSITION_FAILURE_COMMON_MACHINE_CREATE,
-        COMPOSITION_FAILURE_MACHINE_BIND
+    static const struct {
+        composition_failure failure;
+        type_status expected;
+    } machine_failures[] = {
+        { COMPOSITION_FAILURE_CONFIGURE, TYPE_STATUS_INVALID_ARGUMENT },
+        { COMPOSITION_FAILURE_MACHINE_CREATE, TYPE_STATUS_INVALID_STATE },
+        { COMPOSITION_FAILURE_DRIVER_DESCRIBE, TYPE_STATUS_INVALID_STATE },
+        { COMPOSITION_FAILURE_COMMON_MACHINE_CREATE, TYPE_STATUS_INVALID_ARGUMENT },
+        { COMPOSITION_FAILURE_MACHINE_BIND, TYPE_STATUS_INVALID_STATE }
     };
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(machine_failures) / sizeof(machine_failures[0u]);
         ++index) {
-        if (!composition_machine_failure_recovers(machine_failures[index])) return 1;
+        if (!composition_machine_failure_recovers(machine_failures[index].failure,
+                machine_failures[index].expected)) return 1;
     }
     if (!composition_control_failure_recovers() ||
         !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_CREATE) ||

@@ -151,3 +151,17 @@ The complete declaration sweep has no remaining CQ-12 symbol, the full clean
 unit target builds, 334/334 repository-only unit tests pass, and documentation
 governance plus whitespace checks pass.  S13 is closed; the repeated T534
 audit continues with the next App/Core mechanism family.
+
+## S14: Truthful Composition Failures
+
+S14 removes the App composition boundary's false `INVALID_STATE` result.  Type
+status failures now return unchanged.  The one local boundary converter maps
+the stable Lib classifications to the corresponding Type outcome; unexpected
+Lib I/O or limit results become the existing Type fault rather than an invented
+parallel status domain.  The same rollback remains in place and is executed
+only after a later stage has actually allocated or bound an object.
+
+The App composition smoke now asserts the distinct configuration, creation,
+driver, Common-create, bind, session and UI failure classifications, as well
+as its existing retry checks.  It passes independently; complete unit and
+documentation evidence is recorded with the S14 commit.
