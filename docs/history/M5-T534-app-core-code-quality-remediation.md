@@ -399,3 +399,17 @@ the dormant implementation is already nonfunctional: helpers expand trace
 macros without a CPU context. S32 therefore removes that dead diagnostic path,
 while retaining decoder error-control flow and leaving the product debugger
 intact. The focused CPU-context smoke and complete 334-test unit suite pass.
+
+## S33: Truthful App Process Outcome
+
+The next audit found the console entry discards every non-success outcome,
+allowing the executable to return success after a failed INI load, composition
+or runner loop. S33 will make the App entry-to-exit result explicit without
+changing any machine or Common behavior.
+
+S33 makes the console entry return the exact INI or composition outcome and
+maps an abnormal Common runner completion to `FAULT`. `main()` always destroys
+the created App graph, then returns success only if both execution and teardown
+succeed. The focused App INI smoke passes; a fresh executable launched beside
+no `NXVM.ini` prints the existing error and exits with code 1; and the complete
+334-case repository-only unit suite passes.

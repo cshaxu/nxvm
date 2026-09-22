@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S32 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S31 audit found the disabled legacy development trace still allocates a per-machine trace stack and retains disabled-path work in production Core. This bounded correction is within that approved objective. |
-| Objective | Remove the nonfunctional legacy development trace completely while retaining its decoder error-control flow and the product debugger. |
-| Non-goals | Do not alter the product debugger, instruction execution, timing, Lib/Common/x86 public contracts or product UX. |
-| Reference Baseline | S31 `f0a2ead7`; new CQ-31 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S33 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S32 audit found the App console entry is `void`, so INI, composition and runner failures can still terminate the executable successfully. This bounded correction is within that approved objective. |
+| Objective | Give the App console entry one truthful status result and make the product process return failure when session construction or execution fails. |
+| Non-goals | Do not change INI grammar, Common/Core contracts, command semantics, machine topology, timing, asset policy or product UX text. |
+| Reference Baseline | S32 `ee338c5a`; new CQ-32 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/type.[ch]`, `src/core/devices/cpu.[ch]`, `src/core/devices/cpu_instructions.c`, existing CPU trace-context smoke, convergence ledger/history. No product-debugger or Common/Lib/x86 interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): remove the complete disabled development path; [Coding](../rules/CODING.md): no disabled-path allocation or side effect; [Architecture](../rules/ARCHITECTURE.md): product debugging and development diagnostics remain distinct. |
-| Verification | Full legacy-trace reference sweep; focused CPU trace-context smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Core contains no legacy trace field, allocation, trace call or unimplemented-path branch; decoder error-control flow and the product debugger remain unchanged. |
+| Files And ABI Surface | `src/app/command.[ch]`, `src/app/main.c`, existing App/unit and product build paths, convergence ledger/history. No Common/Lib/x86 interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the full entry-to-exit failure path; [Coding](../rules/CODING.md): return truthful outcomes; [Architecture](../rules/ARCHITECTURE.md): App owns process exit policy. |
+| Verification | Full App console-entry failure-path sweep; focused App/product build proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | INI failure, composition failure and abnormal Common session loop return all produce a non-OK App result and a nonzero process exit. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-31, every legacy-trace reference disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if the correction reaches the product debugger or changes execution behavior with trace disabled. |
-| Exit Criteria | CQ-31 is repaired: the nonfunctional development trace is gone without changing decoder error-control flow or the product debugger; focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-32, every console-entry failure disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if truthful process status requires a Common/Core behavior change. |
+| Exit Criteria | CQ-32 is repaired: the App process reports every console-entry failure through its one exit boundary; focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App/Core legacy development trace reference, including allocation, field ownership, macros, diagnostic calls and tests. |
+| Similar-Issue Sweep | Sweep every App entry/runner return path for discarded failure or false-success exit behavior. |
 
 ## Current Technical Baseline
 

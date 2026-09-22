@@ -328,14 +328,17 @@ static lib_bool vm_app_console_hotkey(C_VOID *opaque,
         identifier, result);
 }
 
-static C_INT vm_app_console_compose(vm_app_console_context *context,
+static type_status vm_app_console_compose(vm_app_console_context *context,
     const vm_session_request *request)
 {
     common_session_options session_options = {0};
     common_ui_options ui_options = {0};
 
-    if (vm_app_compose_machine(context->session, request) != TYPE_STATUS_OK ||
-        x86_debug_create(&context->debug) != LIB_STATUS_OK) return 0;
+    type_status status = vm_app_compose_machine(context->session, request);
+
+    if (status != TYPE_STATUS_OK) return status;
+    if (x86_debug_create(&context->debug) != LIB_STATUS_OK)
+        return TYPE_STATUS_NO_MEMORY;
     session_options.display = !STD_STRCMP(request->display, "window") ?
         COMMON_SESSION_DISPLAY_WINDOW : COMMON_SESSION_DISPLAY_CONSOLE;
     session_options.console_control = request->console_control ? LIB_TRUE : LIB_FALSE;
@@ -347,7 +350,8 @@ static C_INT vm_app_console_compose(vm_app_console_context *context,
     session_options.command.note_runtime = vm_app_console_note_runtime;
     session_options.command.note_monitor_current = vm_app_console_note_monitor_current;
     session_options.command.handle_hotkey = vm_app_console_hotkey;
-    if (vm_app_compose_control(context->session, &session_options) != TYPE_STATUS_OK) return 0;
+    status = vm_app_compose_control(context->session, &session_options);
+    if (status != TYPE_STATUS_OK) return status;
     context->control = vm_app_session(context->session);
     ui_options.event_context = context->control;
     ui_options.event_sink = common_session_enqueue_ui_event;
@@ -355,7 +359,7 @@ static C_INT vm_app_console_compose(vm_app_console_context *context,
     ui_options.paused_window_title = "NXVM (Paused)";
     ui_options.graphics_console_status_text = "NXVM graphics output is active in a Window.";
     vm_app_keyboard_register_hotkeys(&ui_options.hotkeys);
-    return vm_app_compose_ui(context->session, &ui_options) == TYPE_STATUS_OK;
+    return vm_app_compose_ui(context->session, &ui_options);
 }
 
 type_status vm_app_console_context_create(vm_app_console_context **out_context)
@@ -376,19 +380,24 @@ C_VOID vm_app_console_context_destroy(vm_app_console_context *context)
     STD_FREE(context);
 }
 
-C_VOID vm_app_console_main(vm_app_console_context *context,
+type_status vm_app_console_main(vm_app_console_context *context,
     vm_app *session, const C_CHAR *ini_path)
 {
     vm_session_request request;
-    if (context == STD_NULL || session == STD_NULL || ini_path == STD_NULL) return;
+    type_status status;
+
+    if (context == STD_NULL || session == STD_NULL || ini_path == STD_NULL)
+        return TYPE_STATUS_INVALID_ARGUMENT;
     context->session = session;
-    if (vm_app_ini_load(ini_path, &request) != TYPE_STATUS_OK) {
+    status = vm_app_ini_load(ini_path, &request);
+    if (status != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to load NXVM.ini.\n");
-        return;
+        return status;
     }
-    if (!vm_app_console_compose(context, &request)) {
+    status = vm_app_console_compose(context, &request);
+    if (status != TYPE_STATUS_OK) {
         STD_PRINTF("Unable to create session from '%s'.\n", request.file_name);
-        return;
+        return status;
     }
-    (C_VOID)common_session_run(context->control);
+    return common_session_run(context->control) ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }

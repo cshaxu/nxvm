@@ -36,6 +36,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_app *session = STD_NULL;
     vm_app_console_context *console_context = STD_NULL;
     C_CHAR ini_path[1024];
+    type_status status;
+    type_status destroy_status;
 
     PRODUCT_PRINT_BANNER();
     if (vm_app_create(&session) != TYPE_STATUS_OK ||
@@ -43,8 +45,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         (C_VOID)vm_app_destroy(session);
         return 1;
     }
-    vm_app_console_main(console_context, session,
+    status = vm_app_console_main(console_context, session,
         vm_main_ini_path(argc, argv, ini_path, sizeof(ini_path)));
     vm_app_console_context_destroy(console_context);
-    return vm_app_destroy(session) == TYPE_STATUS_OK ? 0 : 1;
+    destroy_status = vm_app_destroy(session);
+    return status == TYPE_STATUS_OK && destroy_status == TYPE_STATUS_OK ? 0 : 1;
 }

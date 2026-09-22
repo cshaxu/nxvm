@@ -20,8 +20,8 @@ extern "C"
     C_VOID vm_app_console_context_destroy(
         vm_app_console_context *context);
 
-    /* Entry point of product console */
-C_VOID vm_app_console_main(vm_app_console_context *context,
+/* Product console returns one outcome for the App process boundary. */
+type_status vm_app_console_main(vm_app_console_context *context,
     vm_app *session,
     const C_CHAR *ini_path);
 
