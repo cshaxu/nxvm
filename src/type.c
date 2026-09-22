@@ -47,6 +47,21 @@ C_INT STD_SNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format, ...) 
     return nWrittenBytes;
 }
 
+C_INT STD_VSNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format,
+    STD_VA_LIST _Arguments) {
+    C_INT nWrittenBytes;
+    if (_Format == STD_NULL || (_Size != 0u && _Dest == STD_NULL)) {
+        if (_Dest != STD_NULL && _Size != 0u) _Dest[0] = '\0';
+        return -1;
+    }
+    nWrittenBytes = vsnprintf(_Dest, _Size, _Format, _Arguments);
+    if (_Size != 0u) {
+        _Dest[_Size - 1u] = '\0';
+        if (nWrittenBytes < 0) _Dest[0] = '\0';
+    }
+    return nWrittenBytes;
+}
+
 C_INT STD_SNPRINTF_APPEND(C_CHAR **_Cursor, STD_SIZE_T *_Remaining,
     const C_CHAR *_Format, ...) {
     C_INT nWrittenBytes;

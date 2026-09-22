@@ -516,3 +516,12 @@ seconds. One preceding parallel replay failed `vm-runner-error-propagation`
 once; it passed on 12 isolated repeats and on the final full replay, so it is
 recorded as a non-reproducible test observation rather than misclassified as a
 product defect.
+
+## S41: App Formatting Facade Convergence
+
+The post-S40 App/Core audit found App Command alone bypassing the retained Type
+C-runtime formatting vocabulary. S41 adds the missing va-list equivalent at
+that existing facade and routes its three Command formatting calls through it.
+It preserves every buffer, formatter and truncation result. Strict C11/Werror,
+the App-console smoke, documentation governance and the complete 334-case
+`-j8` unit replay pass in 16.36 seconds.

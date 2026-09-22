@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S40 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S39 public-interface audit found `vm_machine_create()` returns the Type-status domain in implementation and callers but advertises raw `C_INT`. This bounded contract correction is within the approved quality and full-green objective. |
-| Objective | Make the sole public Machine creation entry, implementation and its composition fake declare the same `type_status` result contract. |
-| Non-goals | Do not change numeric status values, creation behavior, construction ownership, callers, Common protocol, profile logic or any external asset path. |
-| Reference Baseline | S39 `d7faefce`; CQ-39 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S41 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S40 formatting audit found App Command bypasses the retained `STD_*` runtime vocabulary with direct `snprintf`/`vsnprintf`. This bounded facade correction is within the approved quality and full-green objective. |
+| Objective | Route every App Command formatting operation through the existing Type facade, adding only its missing va-list formatting equivalent. |
+| Non-goals | Do not change command grammar, output text, buffer sizes, truncation behavior, Common/x86 contracts, platform code or product behavior. |
+| Reference Baseline | S40 `e86fd7a0`; CQ-40 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/machine_interface.h`, `src/core/machine/machine.c`, `test/app/nxvm_composition_atomicity_smoke.c`, convergence ledger/history. The Machine public result type is corrected to the existing Type-status contract; no numeric ABI or behavior changes. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated contract; [Coding](../rules/CODING.md): one clear status vocabulary; [Architecture](../rules/ARCHITECTURE.md): Machine owns its public failure contract without an ambiguous parallel type. |
-| Verification | Complete Machine creation declaration/definition/caller sweep; focused App composition and Machine initialization smokes; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Every `vm_machine_create()` declaration and definition uses `type_status`; the composition fake exactly matches; all callers retain their existing status comparisons and the full parallel unit suite passes. |
+| Files And ABI Surface | `src/type.h`, `src/type.c`, `src/app/command.c`, convergence ledger/history. One existing facade gains `STD_VSNPRINTF`; App Command consumes only `STD_*` formatting APIs. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): one C-runtime vocabulary; [Architecture](../rules/ARCHITECTURE.md): no ownership or path change. |
+| Verification | Complete App/Core direct formatting-call sweep; focused App command smoke; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | App Command contains no direct `snprintf`/`vsnprintf`; the facade has one behavior-equivalent va-list entry and all output paths remain covered. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-39, all `vm_machine_create()` declaration/definition/caller dispositions and full gate results in the ledger/history. |
-| Stop Conditions | Stop if a caller requires a distinct non-Type result domain; record the evidence rather than coercing it. |
-| Exit Criteria | CQ-39 is repaired: the public declaration, implementation and composition fake use the Type status result, the complete caller sweep has no raw return type, and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-40, all App/Core direct formatting-call dispositions and full gate results in the ledger/history. |
+| Stop Conditions | Stop if preserving a format path requires a platform- or product-specific contract; record it rather than creating a second facade. |
+| Exit Criteria | CQ-40 is repaired: App Command uses the Type facade exclusively, no direct formatting calls remain in App/Core, and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every public App/Core creation entry whose implementation returns Type statuses for a raw scalar declaration, and classify each result domain before changing it. |
+| Similar-Issue Sweep | Sweep App/Core for every direct C formatting call and route each equivalent through the one Type facade. |
 
 ## Current Technical Baseline
 

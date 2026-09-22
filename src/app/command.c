@@ -56,7 +56,7 @@ static C_VOID vm_app_console_append(common_session_command_result *result,
     used = STD_STRLEN(result->text);
     if (used >= sizeof(result->text)) return;
     va_start(arguments, format);
-    written = vsnprintf(result->text + used, sizeof(result->text) - used,
+    written = STD_VSNPRINTF(result->text + used, sizeof(result->text) - used,
         format, arguments);
     va_end(arguments);
     if (written < 0) result->text[used] = '\0';
@@ -66,7 +66,7 @@ static C_VOID vm_app_console_prompt(common_session_command_result *result,
     const C_CHAR *prompt)
 {
     if (result == LIB_NULL || prompt == STD_NULL) return;
-    (C_VOID)snprintf(result->prompt, sizeof(result->prompt), "%s", prompt);
+    (C_VOID)STD_SNPRINTF(result->prompt, sizeof(result->prompt), "%s", prompt);
     result->arm_prompt = LIB_TRUE;
 }
 
@@ -226,7 +226,7 @@ static C_VOID vm_app_console_submit_line(C_VOID *opaque,
         vm_app_console_submit_debug(context, line, result);
         return;
     }
-    (C_VOID)snprintf(context->command_buffer, sizeof(context->command_buffer), "%s", line);
+    (C_VOID)STD_SNPRINTF(context->command_buffer, sizeof(context->command_buffer), "%s", line);
     vm_app_console_parse(context, context->command_buffer);
     if (context->argument_count == 0u) return;
     if (!STD_STRCMP(context->arguments[0], "help")) vm_app_console_help(result);

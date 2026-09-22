@@ -265,6 +265,8 @@ typedef type_signed_32 type_native_signed;
     C_INT STD_PRINTF(const C_CHAR *_Format, ...);
     C_INT STD_FPRINTF(STD_FILE *_File, const C_CHAR *_Format, ...);
     C_INT STD_SNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format, ...);
+    C_INT STD_VSNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format,
+        STD_VA_LIST _Arguments);
     C_INT STD_SNPRINTF_APPEND(C_CHAR **_Cursor, STD_SIZE_T *_Remaining,
         const C_CHAR *_Format, ...);
     C_INT STD_ATOI(const C_CHAR *_String);
