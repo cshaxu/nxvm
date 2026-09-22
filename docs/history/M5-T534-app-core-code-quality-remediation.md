@@ -442,3 +442,15 @@ so malformed input cannot leak a partially parsed configuration. Focused tests
 start both request and configuration outputs with nonzero sentinels; invalid
 inputs leave them cleared. The complete 334-case repository-only unit suite
 passes.
+
+## S36: Core Executor-State Facade Convergence
+
+The next full App/Core source sweep found the executor-state owner alone uses
+direct C allocation and atomic functions despite the established project type
+facade. S36 will substitute the existing facade only; its active/reset state
+machine, callers and public interface remain unchanged.
+
+S36 replaces each direct runtime call with its existing `STD_*` equivalent,
+without adding a wrapper or changing executor behavior. The direct-runtime
+sweep is empty, the focused executor-state smoke passes, and the complete
+334-case repository-only unit suite passes.

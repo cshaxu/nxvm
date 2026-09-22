@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S35 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S34 App output sweep found configuration and INI entry points can return failure while retaining caller state or a partially parsed request. This bounded correction is within that approved objective. |
-| Objective | Make every public App configuration/INI output failure-atomic: clear a valid caller output first and publish a fully built value only on success. |
-| Non-goals | Do not change INI grammar, profile selection, media policy, Common/Core contracts, machine topology, timing, asset policy or product UX text. |
-| Reference Baseline | S34 `07a5c30f`; new CQ-34 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S36 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S35 whole-corpus runtime-facade sweep found Core executor state bypasses the required `type` facade for allocation and atomics. This bounded cleanup is within that approved objective. |
+| Objective | Route the complete executor-state implementation through the existing Core `STD_*` allocation and atomic facade without changing its state machine. |
+| Non-goals | Do not change executor lifecycle semantics, Common contracts, machine topology, timing, asset policy or product UX. |
+| Reference Baseline | S35 `41d8aff8`; new CQ-35 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/config.c`, `src/app/ini.c`, existing App configuration/INI tests, convergence ledger/history. No Common/Lib/x86 interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete configuration publication path; [Coding](../rules/CODING.md): valid outputs clear before failure and publish one complete value; [Architecture](../rules/ARCHITECTURE.md): App owns INI parsing and compiled-profile configuration. |
-| Verification | Full public App output-parameter sweep; focused configuration/INI failure-state proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Invalid App configuration, malformed INI and file-load failure leave every valid caller output cleared; a valid INI still publishes one complete request. |
+| Files And ABI Surface | `src/core/machine/executor_state.c`, existing executor-state smoke, convergence ledger/history. No public interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete mechanism; [Coding](../rules/CODING.md): App/Core use the project type facade rather than parallel direct runtime operations; [Architecture](../rules/ARCHITECTURE.md): Core retains its executor-state owner. |
+| Verification | Full App/Core direct-runtime symbol sweep; focused executor-state smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No direct allocation, deallocation or atomic call remains in App/Core production source; executor start/stop/reset behavior is unchanged. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-34, every App public-output disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if atomic publication requires an App interface or grammar change. |
-| Exit Criteria | CQ-34 is repaired: all public App configuration/INI output paths are failure-atomic; focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-35, every direct-runtime sweep disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if the existing facade cannot express required executor-state semantics. |
+| Exit Criteria | CQ-35 is repaired: executor state uses one existing project runtime facade; focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every public App configuration/INI output parameter for late clearing, stale state or partial-on-failure publication. |
+| Similar-Issue Sweep | Sweep all App/Core production source for direct allocation, deallocation and atomic calls outside the established facade. |
 
 ## Current Technical Baseline
 
