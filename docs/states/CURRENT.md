@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S37 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S36 whole-corpus type-vocabulary sweep found raw C scalar and atomic spellings where existing project aliases already express the identical types. This bounded cleanup is within that approved objective. |
-| Objective | Route every confirmed App/Core raw C type spelling through the existing project type facade without changing behavior, ABI or ownership. |
-| Non-goals | Do not change executor/debug/FPU/INI semantics, Common contracts, machine topology, timing, asset policy or product UX. |
-| Reference Baseline | S36 `bb5394f`; new CQ-36 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S38 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S37 full App/Core naming sweep found one migration-introduced camel-case callback in the otherwise snake-case Machine adapter. This bounded cleanup is within that approved objective. |
+| Objective | Restore one searchable snake-case name at the Machine display callback boundary without changing display behavior, ABI, ownership or callback wiring. |
+| Non-goals | Do not rename retained original CPU/device vocabulary, alter display cadence/snapshots, Common contracts, machine topology, timing, asset policy or product UX. |
+| Reference Baseline | S37 `4f706943`; new CQ-37 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/executor_state.[ch]`, `src/core/machine/debug.[ch]`, `src/core/machine/debug_adapter.c`, `src/core/devices/fpu.c`, `src/app/ini.c`, `src/app/command.c`, existing executor-state smoke, convergence ledger/history. No public ABI change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete mechanism; [Coding](../rules/CODING.md): App/Core use one project type vocabulary rather than parallel direct C spellings; [Architecture](../rules/ARCHITECTURE.md): each affected owner and boundary remains unchanged. |
-| Verification | Complete App/Core raw-type sweep; focused executor-state smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No confirmed raw `void`, `int` or `atomic_bool` spelling remains in App/Core production source where the existing facade supplies an equivalent; behavior is unchanged. |
+| Files And ABI Surface | `src/core/machine/display.c`, existing Machine display/frame tests, convergence ledger/history. Static private callback only; no public ABI change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete confirmed set; [Coding](../rules/CODING.md): use clear searchable names with one consistent meaning; [Architecture](../rules/ARCHITECTURE.md): callback owner and display path remain unchanged. |
+| Verification | Complete App/Core lower-prefix camel-case sweep; focused Machine display build/smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No migration-introduced lower-prefix camel-case symbol remains in App/Core production source; the same private display callback remains bound and behavior is unchanged. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-36, every raw-type sweep disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if an affected spelling has an intentional ABI distinction the existing facade cannot express. |
-| Exit Criteria | CQ-36 is repaired: every confirmed equivalent spelling uses the existing facade; focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-37, the complete naming-sweep disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if a matching identifier is retained original CPU/device vocabulary rather than a migration-introduced App/Core adapter symbol. |
+| Exit Criteria | CQ-37 is repaired: the confirmed migration-introduced callback name is snake-case, the matching sweep has no further candidate, and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all App/Core production source for raw C scalar/atomic spellings that have an existing project facade equivalent. |
+| Similar-Issue Sweep | Sweep all App/Core production source for lower-prefix camel-case symbols, classify original retained CPU/device vocabulary separately, and repair every confirmed migration-introduced adapter occurrence. |
 
 ## Current Technical Baseline
 

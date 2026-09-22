@@ -149,7 +149,7 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
     return snapshot.kind;
 }
 
-static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)
+static C_VOID vm_machine_display_mode_changed(C_VOID *context)
 {
     vm_machine *machine = context;
 
@@ -160,6 +160,6 @@ C_VOID vm_machine_bind_display(vm_machine *machine)
 {
     if (machine == STD_NULL) return;
     core_machine_display_provider_slot_bind(machine->display_provider,
-        machine, vmCompositionDisplayModeChanged,
+        machine, vm_machine_display_mode_changed,
         machine, vm_machine_capture_display_snapshot);
 }

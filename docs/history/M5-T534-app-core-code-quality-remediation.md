@@ -470,3 +470,19 @@ match. Strict C11 `-Werror` checks cover every modified source; a fresh Make
 build passes all 334 repository-only unit tests in 17.67 seconds, and
 documentation governance passes. T534 remains open for the next independent
 App/Core audit pass.
+
+## S38: Machine Display Callback Naming
+
+The next audit found a single lower-prefix camel-case callback introduced when
+T532 relocated the Machine display adapter. It is private, has one binding
+site, and differs from every adjacent `vm_machine_*` symbol only in naming.
+S38 restores that one snake-case identifier and classifies the complete
+App/Core lower-prefix camel-case sweep, preserving retained original CPU/device
+vocabulary rather than applying a bulk rename.
+
+S38 restores `vm_machine_display_mode_changed` at its sole bind site. The
+complete lower-prefix camel-case App/Core sweep is empty. Strict C11 `-Werror`,
+documentation governance and 334/334 repository-only unit tests at `-j4` in
+22.56 seconds pass. A separate host-scheduling finding from the intentionally
+more aggressive `-j8` replay is recorded as CQ-38; it is not attributed to the
+display rename or represented as a green parallel test result.
