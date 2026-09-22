@@ -1737,10 +1737,8 @@ int main(C_INT argc, C_CHAR **argv)
         return 77;
     session = ini_session.session;
     if (session == STD_NULL) goto done;
-    /* A diagnostic must begin at the same reset boundary as the delivery
-       runner.  Construction performs an initial Core reset, but
-       vm_machine_start() deliberately performs another full session reset
-       before it runs guest code. */
+    /* A diagnostic begins at the same explicit reset boundary as the delivery
+       runner, rather than inheriting construction's initial Core reset. */
     if (vm_machine_reset(session) != TYPE_STATUS_OK) {
         STD_PRINTF("BOOT-PROBE=reset-failed\n");
         goto done;

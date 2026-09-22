@@ -142,12 +142,6 @@ static C_VOID vm_machine_driver_cancel_debug(C_VOID *context)
     if (machine != STD_NULL) vm_machine_debug_reset(&machine->debug);
 }
 
-type_status vm_machine_start(vm_machine *machine) {
-    return machine != STD_NULL && machine->executor != LIB_NULL &&
-        common_machine_start(machine->executor) ?
-        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
-}
-
 type_status vm_machine_finish_reset(vm_machine *machine, type_status status)
 {
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -228,13 +222,6 @@ type_status vm_machine_bind_common_machine(vm_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     machine->executor = common_machine;
     return TYPE_STATUS_OK;
-}
-
-C_INT vm_machine_is_running(const vm_machine *machine)
-{
-    return machine != STD_NULL && machine->executor != LIB_NULL &&
-        common_machine_state_get(machine->executor) ==
-        COMMON_MACHINE_RUNNING;
 }
 
 type_status vm_machine_resume(vm_machine *machine) {

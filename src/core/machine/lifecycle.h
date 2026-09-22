@@ -14,7 +14,6 @@ extern "C" {
 #include "core/machine/control.h"
 #include "core/machine/executor_state.h"
 
-type_status vm_machine_start(vm_machine *machine);
 type_status vm_machine_reset(vm_machine *machine);
 type_status vm_machine_finish_reset(vm_machine *machine, type_status status);
 C_VOID vm_machine_stop(vm_machine *machine);

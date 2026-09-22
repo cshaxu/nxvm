@@ -85,5 +85,4 @@ type_status vm_machine_get_reset_vector(const vm_machine *session,
     vm_machine_reset_vector *out_vector);
 type_status vm_machine_get_information(const vm_machine *session,
     vm_machine_information *out_information);
-C_INT vm_machine_is_running(const vm_machine *session);
 #endif

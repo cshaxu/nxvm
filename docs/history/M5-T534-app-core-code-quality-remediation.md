@@ -536,6 +536,13 @@ the Profile-private observation declaration. Focused Model40 and Machine
 initialization proof passes, as does the 334-case `-j8` unit replay in 15.39
 seconds.
 
+## S44: Dead Machine Lifecycle Facades
+
+The lifecycle caller audit found `vm_machine_start()` and
+`vm_machine_is_running()` had no consumers. S44 removes both and corrects the
+one stale boot-probe comment. The runner regression and rebuilt DOS probe pass;
+the complete 334-case `-j8` unit suite passes in 15.65 seconds.
+
 ## S43: Machine Reset-Outcome Cache Removal
 
 The state-owner audit found `start_outcome` was a write-only mirror of the
