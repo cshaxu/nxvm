@@ -12,6 +12,7 @@ task.  It is evidence, not a second current architecture authority.
 | CQ-5 | Root `type.*` host/file facade and App INI path loading | App INI bypasses Lib storage; facade retains platform/file helpers; root-directory edge case | One canonical host/file capability and correct path resolution | Repaired by S4; App reads through Lib storage, all unused file wrappers are deleted, and root path parsing is covered. |
 | CQ-6 | Repeat App/Core audit | Initial audit is structural and key-path review, not proof of absence | Re-audit each completed batch and record every new finding/receiver | Pending |
 | CQ-7 | Machine legacy lifecycle entry points | `pause_for_debug` has no caller and polls; `request_step` has no caller and always returns unsupported; `request_pause_reason` discards its reason | Delete these obsolete paths; Common remains lifecycle owner and Debug uses its established execution-plan path | Repaired by S6 `721bffb9`; caller sweep empty and 333/333 unit pass. |
+| CQ-8 | App Machine/Control/UI composition | Short-circuit construction leaves objects owned by `vm_app` after a failed stage, so the caller cannot retry composition | Each layer rolls back only objects it created and restores its entry state | Repaired by S8 `c736e749`; a repository-only fake boundary forces each stage failure and proves same-App retry. |
 
 ## Completion Predicate
 

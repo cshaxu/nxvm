@@ -69,3 +69,18 @@ P1 `721bffb9` removes the uncalled polling pause, empty step and ignored-reason
 lifecycle APIs.  The remaining pause route directly requests Common ownership;
 x86 Debug continues through its existing execution plan.  The whole caller
 sweep is empty and 333/333 repository-only unit pass.  S6 is closed.
+
+## S7: Repeat Audit
+
+The next source-level audit found CQ-8: App's staged Machine/Control/UI
+composition leaves half-built state after a failure.  S8 must make each stage
+failure-atomic without adding a parallel composition route.
+
+## S8: Failure-Atomic App Composition
+
+P1 `c736e749` makes App publish Machine, Common Machine, Control and UI only
+after the respective stage succeeds.  A repository-only composition test
+forces every configurable stage failure, verifies the failed stage has no
+published App state, and retries the same App successfully.  The full unit
+suite passes 334/334 in 19.55 seconds.  S8 is closed; S9 repeats the full
+App/Core quality audit.

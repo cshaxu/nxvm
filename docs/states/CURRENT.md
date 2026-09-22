@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S7 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S7 is the next required repeated audit. |
-| Objective | Repeat the same ownership, duplication, failure-boundary and dead-path audit after S6. |
-| Non-goals | Do not close T534 from green gates alone or change external/shared contracts without a classified mechanism. |
-| Reference Baseline | S6 implementation `721bffb9`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S9 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S9 is the next required repeat audit after S8 `c736e749`. |
+| Objective | Repeat the full ownership, duplication, failure-boundary and dead-path audit over App/Core. |
+| Non-goals | Do not close T534 from green gates alone or alter shared contracts without a classified App/Core mechanism. |
+| Reference Baseline | S8 implementation `c736e749`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | All tracked `src/app/**`, `src/core/**` and their direct tests; audit only until a new mechanism is classified. |
+| Files And ABI Surface | All tracked `src/app/**`, `src/core/**` source and direct repository-only tests; audit only until every discovered mechanism is classified. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): one active S and actual-source review; [Architecture](../rules/ARCHITECTURE.md): single owner/direct data flow; [Coding](../rules/CODING.md): no redundant layer or dead path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Whole-tree source/caller inventories, targeted path reads, direct-test review, documentation governance, `git diff --check` and evidence-led findings review. |
-| Expected Markers | Every new issue has a repair S or explicit justified receiver; CQ-6 is updated with the repeat-audit result. |
+| Verification | Whole-tree source/caller inventories, targeted implementation and direct-test reads, documentation governance, `git diff --check` and actual findings review. |
+| Expected Markers | Every newly discovered live mechanism has an in-scope repair S or a durable, justified receiver; no inspected issue is left unclassified. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report findings with owner, impact and repair boundary; do not call the corpus clean merely from a search or test gate. |
-| Stop Conditions | Stop when a repair needs Lib/Common/x86 contract change or guest behavior authorization. |
-| Exit Criteria | Each finding has a durable disposition and no inspected mechanism is left unclassified. |
+| Reporting Requirements | Report every finding's owner, concrete impact and repair boundary; do not call the corpus clean merely from a search or green gate. |
+| Stop Conditions | Stop if a repair needs an unapproved Lib/Common/x86 contract change or guest-behavior authorization. |
+| Exit Criteria | Every inspected finding has a durable disposition, and CQ-6 records this audit result. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Search App/Core public surfaces and implementations for repeated state, duplicate routes, dead API, platform leakage and failure-boundary holes. |
+| Similar-Issue Sweep | Search App/Core declarations, callers and implementations for repeated mutable state, duplicate production routes, dead public APIs, platform leakage and failure-boundary holes. |
 
 ## Current Technical Baseline
 
