@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S34 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S33 App input sweep found the monitor can deliver a valid 16 KiB line while the App silently truncates ordinary commands to 256 bytes. This bounded correction is within that approved objective. |
-| Objective | Make the App command-copy boundary match the accepted Common monitor-line capacity, so valid input is not silently changed before product parsing. |
-| Non-goals | Do not change monitor grammar, Common contracts, Debug parsing, machine topology, timing, asset policy or product UX text. |
-| Reference Baseline | S33 `248be2f4`; new CQ-33 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S35 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S34 App output sweep found configuration and INI entry points can return failure while retaining caller state or a partially parsed request. This bounded correction is within that approved objective. |
+| Objective | Make every public App configuration/INI output failure-atomic: clear a valid caller output first and publish a fully built value only on success. |
+| Non-goals | Do not change INI grammar, profile selection, media policy, Common/Core contracts, machine topology, timing, asset policy or product UX text. |
+| Reference Baseline | S34 `07a5c30f`; new CQ-34 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/command.c`, existing App command/monitor tests, convergence ledger/history. No Common/Lib/x86 interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete input path; [Coding](../rules/CODING.md): one capacity contract and no silent input mutation; [Architecture](../rules/ARCHITECTURE.md): Common owns monitor delivery and App owns product parsing. |
-| Verification | Full App command-buffer and monitor-capacity caller sweep; focused App command proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Every valid Common monitor line reaches the App parser unchanged; no App-side smaller command-copy capacity remains. |
+| Files And ABI Surface | `src/app/config.c`, `src/app/ini.c`, existing App configuration/INI tests, convergence ledger/history. No Common/Lib/x86 interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete configuration publication path; [Coding](../rules/CODING.md): valid outputs clear before failure and publish one complete value; [Architecture](../rules/ARCHITECTURE.md): App owns INI parsing and compiled-profile configuration. |
+| Verification | Full public App output-parameter sweep; focused configuration/INI failure-state proof; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Invalid App configuration, malformed INI and file-load failure leave every valid caller output cleared; a valid INI still publishes one complete request. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-33, every App monitor-line copy/disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if a correction requires a Common or Debug interface change. |
-| Exit Criteria | CQ-33 is repaired: App has one non-truncating monitor-command copy boundary; focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-34, every App public-output disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if atomic publication requires an App interface or grammar change. |
+| Exit Criteria | CQ-34 is repaired: all public App configuration/INI output paths are failure-atomic; focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every App monitor-input copy and parser boundary for a smaller, silently truncating capacity. |
+| Similar-Issue Sweep | Sweep every public App configuration/INI output parameter for late clearing, stale state or partial-on-failure publication. |
 
 ## Current Technical Baseline
 

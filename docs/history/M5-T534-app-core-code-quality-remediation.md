@@ -427,3 +427,18 @@ producer. The buffer is not an additional input queue or parser; it remains
 the one mutable copy required by tokenization. The App caller sweep finds no
 other monitor-line copy, the focused command smoke passes, and the complete
 334-case repository-only unit suite passes.
+
+## S35: Failure-Atomic App Configuration Publication
+
+The next audit found a repeated App output-state defect: configuration and INI
+entry points can fail after leaving a caller's old value intact or after
+directly writing only part of a new request. S35 will establish the existing
+constructor rule at every public App output boundary: a valid output is first
+cleared and receives a complete value only after all work succeeds.
+
+S35 clears valid public App outputs before further validation. INI parsing
+builds one local request and assigns it only after the whole document succeeds,
+so malformed input cannot leak a partially parsed configuration. Focused tests
+start both request and configuration outputs with nonzero sentinels; invalid
+inputs leave them cleared. The complete 334-case repository-only unit suite
+passes.

@@ -130,6 +130,7 @@ static C_INT vm_app_ini_medium(vm_session_request *request, C_INT floppy,
 type_status vm_app_ini_parse(const C_CHAR *directory, const C_CHAR *name,
     C_CHAR *document, vm_session_request *out_request)
 {
+    vm_session_request request = {0};
     C_CHAR *line;
     C_CHAR *cursor;
     C_CHAR section[16] = {0};
@@ -137,16 +138,17 @@ type_status vm_app_ini_parse(const C_CHAR *directory, const C_CHAR *name,
     C_INT display_seen = 0;
     C_INT console_control_seen = 0;
 
-    if (directory == STD_NULL || name == STD_NULL || document == STD_NULL ||
-        out_request == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_request == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_request = (vm_session_request) {0};
-    if (!vm_app_ini_copy(out_request->file_name, sizeof(out_request->file_name), name))
+    if (directory == STD_NULL || name == STD_NULL || document == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
-    (void)vm_app_ini_copy(out_request->display, sizeof(out_request->display), "console");
-    out_request->floppy_mode[0u] = LIB_STORAGE_MEDIUM_OVERLAY;
-    out_request->floppy_mode[1u] = LIB_STORAGE_MEDIUM_OVERLAY;
-    out_request->fixed_disk_mode[0u] = LIB_STORAGE_MEDIUM_OVERLAY;
-    out_request->fixed_disk_mode[1u] = LIB_STORAGE_MEDIUM_OVERLAY;
+    if (!vm_app_ini_copy(request.file_name, sizeof(request.file_name), name))
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    (void)vm_app_ini_copy(request.display, sizeof(request.display), "console");
+    request.floppy_mode[0u] = LIB_STORAGE_MEDIUM_OVERLAY;
+    request.floppy_mode[1u] = LIB_STORAGE_MEDIUM_OVERLAY;
+    request.fixed_disk_mode[0u] = LIB_STORAGE_MEDIUM_OVERLAY;
+    request.fixed_disk_mode[1u] = LIB_STORAGE_MEDIUM_OVERLAY;
     cursor = document;
     while (cursor != STD_NULL && *cursor != '\0') {
         C_CHAR *equals;
@@ -171,31 +173,33 @@ type_status vm_app_ini_parse(const C_CHAR *directory, const C_CHAR *name,
         key = vm_app_ini_trim(line);
         value = vm_app_ini_trim(equals + 1u);
         if (!STD_STRCMP(section, "machine") && !STD_STRCMP(key, "memory_kib")) {
-            if (memory_seen || !vm_app_ini_memory(value, &out_request->memory_bytes))
+            if (memory_seen || !vm_app_ini_memory(value, &request.memory_bytes))
                 return TYPE_STATUS_INVALID_ARGUMENT;
             memory_seen = 1;
         } else if (!STD_STRCMP(section, "presentation") && !STD_STRCMP(key, "display")) {
             if (display_seen || (STD_STRCMP(value, "console") && STD_STRCMP(value, "window")) ||
-                !vm_app_ini_copy(out_request->display, sizeof(out_request->display), value))
+                !vm_app_ini_copy(request.display, sizeof(request.display), value))
                 return TYPE_STATUS_INVALID_ARGUMENT;
             display_seen = 1;
         } else if (!STD_STRCMP(section, "presentation") && !STD_STRCMP(key, "console_control")) {
             if (console_control_seen) return TYPE_STATUS_INVALID_ARGUMENT;
-            if (!STD_STRCMP(value, "true")) out_request->console_control = 1;
-            else if (!STD_STRCMP(value, "false")) out_request->console_control = 0;
+            if (!STD_STRCMP(value, "true")) request.console_control = 1;
+            else if (!STD_STRCMP(value, "false")) request.console_control = 0;
             else return TYPE_STATUS_INVALID_ARGUMENT;
             console_control_seen = 1;
         } else if (!STD_STRCMP(section, "media") && !STD_STRCMP(key, "floppy0")) {
-            if (!vm_app_ini_medium(out_request, 1, 0u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
+            if (!vm_app_ini_medium(&request, 1, 0u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
         } else if (!STD_STRCMP(section, "media") && !STD_STRCMP(key, "floppy1")) {
-            if (!vm_app_ini_medium(out_request, 1, 1u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
+            if (!vm_app_ini_medium(&request, 1, 1u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
         } else if (!STD_STRCMP(section, "media") && !STD_STRCMP(key, "fixed_disk0")) {
-            if (!vm_app_ini_medium(out_request, 0, 0u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
+            if (!vm_app_ini_medium(&request, 0, 0u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
         } else if (!STD_STRCMP(section, "media") && !STD_STRCMP(key, "fixed_disk1")) {
-            if (!vm_app_ini_medium(out_request, 0, 1u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
+            if (!vm_app_ini_medium(&request, 0, 1u, directory, value)) return TYPE_STATUS_INVALID_ARGUMENT;
         } else return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return section[0] == '\0' ? TYPE_STATUS_INVALID_ARGUMENT : TYPE_STATUS_OK;
+    if (section[0] == '\0') return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_request = request;
+    return TYPE_STATUS_OK;
 }
 
 type_status vm_app_ini_load(const C_CHAR *path, vm_session_request *out_request)
@@ -209,7 +213,9 @@ type_status vm_app_ini_load(const C_CHAR *path, vm_session_request *out_request)
 
     lib_status load_status;
 
-    if (path == STD_NULL || out_request == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_request == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_request = (vm_session_request) {0};
+    if (path == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     load_status = lib_storage_file_read_owned(path, VM_APP_INI_MAX_BYTES, &bytes,
         &byte_count);
     if (load_status == LIB_STATUS_NO_MEMORY) return TYPE_STATUS_NO_MEMORY;

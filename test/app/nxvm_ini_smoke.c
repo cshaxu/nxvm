@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "app/ini_interface.h"
+#include "app/config.h"
 
 static C_INT parse(C_CHAR *text, vm_session_request *request)
 { return vm_app_ini_parse("unit-root", "NXVM.ini", text, request) == TYPE_STATUS_OK; }
@@ -17,8 +18,13 @@ C_INT main(C_VOID)
     static C_CHAR bad_mode[] = "[media]\nfixed_disk0=disk.img|transient\n";
     static C_CHAR root[] = "[media]\nfloppy0=boot.img|overlay\n";
     vm_session_request request;
+    vm_machine_config config;
+    vm_session_request cleared_request = {0};
+    vm_machine_config cleared_config = {0};
 
+    STD_MEMSET(&request, 0xff, sizeof(request));
     if (vm_app_ini_load(STD_NULL, &request) != TYPE_STATUS_INVALID_ARGUMENT ||
+        STD_MEMCMP(&request, &cleared_request, sizeof(request)) ||
         vm_app_ini_load("NXVM.ini", STD_NULL) != TYPE_STATUS_INVALID_ARGUMENT ||
         !parse(valid, &request) || request.memory_bytes != 640u * 1024u ||
         STD_STRCMP(request.display, "window") || !request.console_control ||
@@ -28,10 +34,19 @@ C_INT main(C_VOID)
         request.floppy_mode[0u] != LIB_STORAGE_MEDIUM_OVERLAY ||
         request.floppy_mode[1u] != LIB_STORAGE_MEDIUM_READONLY ||
         request.fixed_disk_mode[0u] != LIB_STORAGE_MEDIUM_DIRECT) return 1;
-    if (parse(duplicate, &request) || parse(sparse, &request) || parse(forbidden, &request) || parse(bad_mode, &request))
+    STD_MEMSET(&request, 0xff, sizeof(request));
+    if (vm_app_ini_load("", &request) != TYPE_STATUS_FAULT ||
+        STD_MEMCMP(&request, &cleared_request, sizeof(request))) return 1;
+    STD_MEMSET(&request, 0xff, sizeof(request));
+    if (parse(duplicate, &request) ||
+        STD_MEMCMP(&request, &cleared_request, sizeof(request)) ||
+        parse(sparse, &request) || parse(forbidden, &request) || parse(bad_mode, &request))
         return 1;
     if (vm_app_ini_parse("\\", "\\NXVM.ini", root, &request) != TYPE_STATUS_OK ||
         STD_STRCMP(request.floppy[0u], "\\boot.img")) return 1;
+    STD_MEMSET(&config, 0xff, sizeof(config));
+    if (vm_app_configure_machine(STD_NULL, &config) != TYPE_STATUS_INVALID_ARGUMENT ||
+        STD_MEMCMP(&config, &cleared_config, sizeof(config))) return 1;
     STD_PRINTF("M5:T533:S4:NXVM-INI:OK\n");
     return 0;
 }

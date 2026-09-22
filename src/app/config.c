@@ -8,10 +8,10 @@ type_status vm_app_configure_machine(const vm_session_request *request,
 {
     STD_SIZE_T index;
 
-    if (request == STD_NULL || out_config == STD_NULL ||
-        (STD_STRCMP(request->display, "console") &&
-         STD_STRCMP(request->display, "window"))) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     STD_MEMSET(out_config, 0, sizeof(*out_config));
+    if (request == STD_NULL || (STD_STRCMP(request->display, "console") &&
+         STD_STRCMP(request->display, "window"))) return TYPE_STATUS_INVALID_ARGUMENT;
     out_config->profile_kind = VM_APP_PROFILE_KIND;
     out_config->cpu_profile = VM_APP_PROFILE_CPU;
     out_config->fpu_profile = VM_APP_PROFILE_FPU;
