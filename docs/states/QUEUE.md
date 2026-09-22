@@ -4,11 +4,10 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 ## M5 Candidates
 
-1. [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md) (admitted; retained here until task closure)
-2. [Retained CPU-family qualification](../proposals/m5-retained-cpu-qualification.md)
-3. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
-4. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-5. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+1. [Retained CPU-family qualification](../proposals/m5-retained-cpu-qualification.md)
+2. [Selected-controller and board qualification](../proposals/m5-selected-controller-qualification.md)
+3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 ## M6 Candidates
 

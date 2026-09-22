@@ -3,7 +3,7 @@
 The owner admitted T534 on 2026-09-21 to repair the whole-project quality
 audit's confirmed App/Core defects, repeating the audit until the frozen
 App/Core corpus has an explicit disposition for each finding.  The retained
-candidate proposal is [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md).
+candidate proposal is retained as [App/Core code-quality remediation](M5-T534-app-core-code-quality-remediation-proposal.md).
 
 ## S1: Remove Unsupported Recorder
 
@@ -644,3 +644,21 @@ single-step completion semantics. S53 removes only that duplicate assertion;
 the timer smoke still proves paused-state EIP stability, BDA tick advance, INT
 1Ah result and day rollover. The forced concurrency check, ordinary and
 delayed random default `-j4` integration routes, and 333/333 `-j8` units pass.
+
+## Task Closure
+
+The final coordinator audit re-read the owner request and proposal, reviewed
+the ledger's complete CQ-1--CQ-52 disposition, and rechecked the live App/Core
+boundaries: no public interface imports a private implementation, no Core
+component depends upward on App or Machine, and no App/Core TODO/FIXME marker
+is unclassified. The retained CPU `_______todo` spelling is a historical
+function-definition macro, not a deferred marker; every matching handler is
+covered by the existing CPU qualification corpus.
+
+The changed test removes a false idle-HLT EIP assumption only; it does not
+alter timer, firmware, profile, asset or artifact behavior. Current 0534
+artifacts remain valid production-source outputs; S53 changes test-only source.
+All task predicates are met: the 333-case unit suite, default 20-case parallel
+integration, 5170 3-case, XT 1-case and Model 40 3-case integration suites
+pass; current dual-architecture artifacts are recorded; and documentation
+governance plus actual-diff review pass. T534 closes at `f5170a5d`.

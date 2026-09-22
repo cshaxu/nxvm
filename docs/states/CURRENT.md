@@ -2,24 +2,8 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T534 S53 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. S52's default integration replay had one parallel `vm-timer-firmware-smoke` failure, while isolated and serial runs pass. T500 explicitly classifies this row as parallel-safe, so the discrepancy is an in-scope test/host-contract defect rather than a result to waive. |
-| Objective | Reproduce and repair or correctly constrain the timer-firmware integration's parallel execution contract, without weakening its guest-timer assertions. |
-| Non-goals | Do not alter guest timing, firmware, device behavior, timeout success criteria, integration inventory, asset ownership or force unrelated tests serial. |
-| Reference Baseline | S52 `143354a1`; CQ-52 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
-| Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `test/integration/dos/vm_timer_firmware_smoke.c`, shared integration support only if the complete mechanism requires it, CMake scheduling metadata only if a real finite shared resource is proved, convergence ledger/history. No production ABI change is presumed. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete confirmed mechanism; [Coding](../rules/CODING.md): tests have truthful bounded conditions and one owner; [Architecture](../rules/ARCHITECTURE.md): host timing never becomes a guest clock source. |
-| Verification | Repeat parallel default integration enough to classify the failure; focused timer proof; complete default integration at its supported parallel setting; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | The timer smoke waits only for observable owner state or a proven resource condition, preserves BDA/INT 1Ah/rollover assertions, and all parallel integration rows pass without a broad serial workaround. |
-| Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-52 reproduction, exact owner/resource analysis, rejected broad workarounds and full gate results in the ledger/history. |
-| Stop Conditions | Stop if reproductions prove a production guest-timer failure rather than test scheduling; then transfer it to the owning Core device mechanism with the exact evidence. |
-| Exit Criteria | CQ-52 is repaired: the parallel failure mechanism is removed or truthfully scoped to its sole proven shared resource, without a weaker guest assertion; full default parallel integration and unit gates pass. |
-| Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Inspect every default parallel integration row for shared mutable asset, host console, fixed workspace, worker or timing dependency; apply a narrow owner-local repair or resource contract only where evidence proves it. |
+No implementation task is admitted. M5 T534 is closed; the next candidate is the
+retained CPU-family qualification.
 
 ## Current Technical Baseline
 
@@ -38,6 +22,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T534 | Closed at `f5170a5d`: 53 bounded repairs exhaust the App/Core convergence ledger without a second production owner or unclassified finding. Current 0534 x64/x86 artifacts for default, 5170, XT and Model 40 are verified in their sole profile directories. 333/333 repository-only unit, default parallel 20/20 integration, 5170 3/3, XT 1/1 and Model 40 3/3 integration pass. [History](../history/M5-T534-app-core-code-quality-remediation.md), [closure ledger](../etc/evidence/t534-app-core-code-quality-ledger.md) and [artifact record](../etc/evidence/t534-s50-artifact-verification.md). |
 | T533 | Closed by `99de6d11` and deployment correction `6d5a4828`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |
 | T531 | Closed at owner direction on 2026-09-20 after S28 implementation `20c1e71b`: the final canonical SoftPC `2b17749a` six-tree Lib/Common/x86 source-and-test refresh is exact; 338/338 unit, specialized/documentation gates and stripped 0531 x64/x86 artifacts pass. The full external integration remains 41/42: `integration.vm-dos-keyboard-smoke` stays explicitly transferred to [TODO(High)](TODO.md), not relabelled green. [History](../history/M5-T531-shared-common-product-convergence.md). |
@@ -45,7 +30,6 @@
 | T529 | Closed at `cc5fd4a7`: S1 exhaustively classified the 29-file VM-machine corpus and S2 removed the only two proven dead controls. No Common migration was invented: Common remains the sole copied protocol owner; Core and CCPU executors remain distinct product adapters. 299/299 unit, focused regression, specialized/documentation gates and stripped 0528 x64/x86 artifacts pass. The unchanged 39/42 external-integration exception remains transferred to the Model-40/5170 boot-chain TODO. [History](../history/M5-T529-common-machine-residual-audit.md) and [evidence](../etc/evidence/t529-s2-dead-control-cleanup.md). |
 | T528 | Closed under the owner's 2026-09-12 exception after `9d892446`: all VM-machine duplicate owners are removed, 299 unit cases, specialized gates, documentation governance and stripped x64/x86 artifacts pass. The known 39/42 external-integration result is transferred unchanged to the external-ROM Model-40/IBM-5170 boot-chain TODO; it is not represented as green. [History](../history/M5-T528-vm-machine-owner-cleanup.md) and [evidence](../etc/evidence/t528-s7-task-closure-attempt.md). |
 | T527 | Common product-runtime convergence closed at `2c596f2c`: one Common corpus owns xasm32, Debug, session, machine and UI; NXVM retains one VM Core adapter, product policy owner and App composition root. Independent Common verification, 299/299 unit, 42/42 external integration, specialized gates and stripped x64/x86 artifacts pass. [History](../history/M5-T527-common-product-runtime-convergence.md) and [evidence](../etc/evidence/t527-s9-reusable-common-closure.md). |
-| T526 | Canonical-library integration repair closed at `98ac51a4`: 299/299 unit, 67/67 specialized gates, 42/42 external integration, actual-diff review and stripped x64/x86 artifacts accepted. |
 
 ## Recent Governance
 
