@@ -246,3 +246,22 @@ safe boundary and proves `COMMON_MACHINE_ERROR`; the existing fault-outcome
 smoke remains green.  A complete rebuild and 335/335 repository-only unit
 tests pass, as do documentation governance and whitespace checks. S20 is
 closed.
+
+## S21: Direct Copied-Frame Construction
+
+The next repeat audit found CQ-21: after it had already validated the input,
+the Machine display adapter allocated a complete temporary Common frame,
+populated it, copied it into its caller-owned destination, then freed the
+temporary on every published display update.  S21 removes that redundant
+allocation and full-frame copy.  Every fallible source validation remains
+before the first destination write, so an invalid event still leaves the
+previous copied frame byte-identical.
+
+The retained conversion contract and presentation route are unchanged: valid
+text and graphics events populate the supplied Common frame exactly once.
+The focused frame smoke covers both success shapes and unchanged rejection;
+the 335-case repository-only unit suite passes.  A complete default build also
+exposed two unrelated integration-test compile debts (`STD_FPUTS` after the
+root facade retirement and a removed `vm_session_request.profile` field). They
+are recorded for the continuing audit rather than hidden in this focused
+presentation repair. S21 is closed.

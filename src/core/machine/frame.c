@@ -34,7 +34,6 @@ type_status vm_machine_frame_from_display(
         0x25a0u, 0x00a0u
     };
     STD_SIZE_T cell;
-    common_machine_frame *converted;
 
     if (source == STD_NULL || destination == STD_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -45,61 +44,56 @@ type_status vm_machine_frame_from_display(
     if (!source->graphics && (source->columns > KVM_TEXT_COLUMNS ||
         source->rows > KVM_TEXT_ROWS || source->text_cell_height == 0u ||
         source->text_cell_height > 32u)) return TYPE_STATUS_UNSUPPORTED;
-    converted = STD_CALLOC(1u, sizeof(*converted));
-    if (converted == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    converted->window.valid = TYPE_TRUE;
-    converted->sequence = (type_unsigned_32)source->generation;
-    converted->window.graphics = source->graphics;
-    if (converted->window.graphics) {
-        converted->window.image.width = source->pixel_width;
-        converted->window.image.height = source->pixel_height;
-        converted->window.image.stride = source->pixel_width;
-        STD_MEMCPY(converted->window.image.pixels, source->pixels,
+    *destination = (common_machine_frame){0};
+    destination->window.valid = TYPE_TRUE;
+    destination->sequence = (type_unsigned_32)source->generation;
+    destination->window.graphics = source->graphics;
+    if (destination->window.graphics) {
+        destination->window.image.width = source->pixel_width;
+        destination->window.image.height = source->pixel_height;
+        destination->window.image.stride = source->pixel_width;
+        STD_MEMCPY(destination->window.image.pixels, source->pixels,
             (STD_SIZE_T)source->pixel_width * source->pixel_height);
-        STD_MEMCPY(converted->window.image.palette, source->palette_rgb,
-            sizeof(converted->window.image.palette));
-        *destination = *converted;
-        STD_FREE(converted);
+        STD_MEMCPY(destination->window.image.palette, source->palette_rgb,
+            sizeof(destination->window.image.palette));
         return TYPE_STATUS_OK;
     }
-    converted->window.text.base.text_columns = source->columns;
-    converted->window.text.base.text_rows = source->rows;
+    destination->window.text.base.text_columns = source->columns;
+    destination->window.text.base.text_rows = source->rows;
     /* The CRTC cell height describes cursor raster coordinates. The copied
      * glyph asset remains 8x16, so preserve its rendering geometry and map
      * the CRTC interval into that one glyph coordinate system. */
-    converted->window.text.base.font_height = 16u;
-    converted->window.text.base.cursor_column = source->cursor_x;
-    converted->window.text.base.cursor_row = source->cursor_y;
-    converted->window.text.base.cursor_top = (type_unsigned_8)((type_unsigned_32)source->cursor_top *
-        converted->window.text.base.font_height / source->text_cell_height);
-    converted->window.text.base.cursor_bottom = (type_unsigned_8)(
-        (((type_unsigned_32)source->cursor_bottom + 1u) * converted->window.text.base.font_height +
+    destination->window.text.base.font_height = 16u;
+    destination->window.text.base.cursor_column = source->cursor_x;
+    destination->window.text.base.cursor_row = source->cursor_y;
+    destination->window.text.base.cursor_top = (type_unsigned_8)((type_unsigned_32)source->cursor_top *
+        destination->window.text.base.font_height / source->text_cell_height);
+    destination->window.text.base.cursor_bottom = (type_unsigned_8)(
+        (((type_unsigned_32)source->cursor_bottom + 1u) * destination->window.text.base.font_height +
             source->text_cell_height - 1u) / source->text_cell_height - 1u);
-    if (converted->window.text.base.cursor_top >= converted->window.text.base.font_height)
-        converted->window.text.base.cursor_top = (type_unsigned_8)(converted->window.text.base.font_height - 1u);
-    if (converted->window.text.base.cursor_bottom >= converted->window.text.base.font_height)
-        converted->window.text.base.cursor_bottom = (type_unsigned_8)(converted->window.text.base.font_height - 1u);
-    converted->window.text.base.cursor_visible = source->cursor_visible;
-    converted->window.text.base.cursor_phase = source->cursor_visible;
+    if (destination->window.text.base.cursor_top >= destination->window.text.base.font_height)
+        destination->window.text.base.cursor_top = (type_unsigned_8)(destination->window.text.base.font_height - 1u);
+    if (destination->window.text.base.cursor_bottom >= destination->window.text.base.font_height)
+        destination->window.text.base.cursor_bottom = (type_unsigned_8)(destination->window.text.base.font_height - 1u);
+    destination->window.text.base.cursor_visible = source->cursor_visible;
+    destination->window.text.base.cursor_phase = source->cursor_visible;
     for (cell = 0u; cell < VM_MACHINE_EVENT_TEXT_CELLS; ++cell) {
         type_unsigned_8 attribute = source->attributes[cell];
-        converted->window.text.base.cells[cell] = (kvm_text_cell){
+        destination->window.text.base.cells[cell] = (kvm_text_cell){
             source->characters[cell], 0u, attribute & 0x0fu, attribute >> 4u };
     }
     for (cell = 0u; cell < 256u; ++cell) {
         type_unsigned_16 character = cell < 32u ? cp437_controls[cell] :
             cell == 127u ? cp437_controls[32u] :
             cell < 128u ? (type_unsigned_16)cell : cp437_extended[cell - 128u];
-        converted->characters.primary[cell] = character;
-        converted->characters.secondary[cell] = character;
+        destination->characters.primary[cell] = character;
+        destination->characters.secondary[cell] = character;
     }
-    STD_MEMCPY(converted->window.text.base.text_palette, source->palette_rgb,
-        sizeof(converted->window.text.base.text_palette));
+    STD_MEMCPY(destination->window.text.base.text_palette, source->palette_rgb,
+        sizeof(destination->window.text.base.text_palette));
     if (source->glyphs_present) {
-        STD_MEMCPY(converted->window.text.font, source->glyphs,
-            sizeof(converted->window.text.font));
+        STD_MEMCPY(destination->window.text.font, source->glyphs,
+            sizeof(destination->window.text.font));
     }
-    *destination = *converted;
-    STD_FREE(converted);
     return TYPE_STATUS_OK;
 }
