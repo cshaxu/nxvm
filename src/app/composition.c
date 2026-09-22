@@ -78,16 +78,23 @@ type_status vm_app_compose_machine(vm_app *app, const vm_session_request *reques
 {
     vm_machine_config config;
     common_machine_driver driver;
+    vm_machine *machine = STD_NULL;
+    common_machine *common_machine = LIB_NULL;
 
     if (app == STD_NULL || request == STD_NULL || app->machine != STD_NULL)
         return TYPE_STATUS_INVALID_STATE;
     if (vm_app_configure_machine(request, &config) != TYPE_STATUS_OK ||
-        vm_machine_create(&config, &app->machine) != TYPE_STATUS_OK ||
-        vm_machine_describe_common_driver(app->machine, &driver) != TYPE_STATUS_OK ||
-        common_machine_create(&app->common_machine, &driver) != LIB_STATUS_OK ||
-        vm_machine_bind_common_machine(app->machine, app->common_machine) !=
-            TYPE_STATUS_OK)
+        vm_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        vm_machine_describe_common_driver(machine, &driver) != TYPE_STATUS_OK ||
+        common_machine_create(&common_machine, &driver) != LIB_STATUS_OK ||
+        vm_machine_bind_common_machine(machine, common_machine) != TYPE_STATUS_OK) {
+        (C_VOID)vm_machine_bind_common_machine(machine, LIB_NULL);
+        common_machine_destroy(common_machine);
+        vm_machine_destroy(machine);
         return TYPE_STATUS_INVALID_STATE;
+    }
+    app->machine = machine;
+    app->common_machine = common_machine;
     return TYPE_STATUS_OK;
 }
 
@@ -95,29 +102,33 @@ type_status vm_app_compose_control(vm_app *app,
     const common_session_options *options)
 {
     common_session_options resolved;
+    common_session *session = LIB_NULL;
 
     if (app == STD_NULL || options == LIB_NULL || app->machine == STD_NULL ||
         app->session != LIB_NULL) return TYPE_STATUS_INVALID_STATE;
     resolved = *options;
     resolved.machine = app->common_machine;
-    if (common_session_create(&app->session, &resolved) != LIB_STATUS_OK)
+    if (common_session_create(&session, &resolved) != LIB_STATUS_OK)
         return TYPE_STATUS_INVALID_STATE;
     common_machine_set_state_sink(resolved.machine, vm_app_machine_state_completed,
-        app->session);
+        session);
     common_machine_set_frame_sink(resolved.machine, vm_app_machine_frame_published,
-        app->session);
+        session);
+    app->session = session;
     return TYPE_STATUS_OK;
 }
 
 type_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
 {
+    common_ui *ui = LIB_NULL;
+
     if (app == STD_NULL || options == LIB_NULL || app->ui != LIB_NULL)
         return TYPE_STATUS_INVALID_STATE;
-    if (common_ui_create(&app->ui, options) != LIB_STATUS_OK ||
-        common_session_bind_ui(app->session, app->ui) != LIB_STATUS_OK) {
-        common_ui_destroy(app->ui);
-        app->ui = LIB_NULL;
+    if (common_ui_create(&ui, options) != LIB_STATUS_OK ||
+        common_session_bind_ui(app->session, ui) != LIB_STATUS_OK) {
+        common_ui_destroy(ui);
         return TYPE_STATUS_INVALID_STATE;
     }
+    app->ui = ui;
     return TYPE_STATUS_OK;
 }

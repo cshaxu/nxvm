@@ -346,6 +346,12 @@ target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-sup
 add_executable(vm-app-ini-smoke
     test/app/nxvm_ini_smoke.c)
 target_link_libraries(vm-app-ini-smoke PRIVATE vm-app)
+add_executable(vm-app-composition-atomicity-smoke
+    test/app/nxvm_composition_atomicity_smoke.c
+    src/app/composition.c)
+target_include_directories(vm-app-composition-atomicity-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(vm-app-composition-atomicity-smoke PRIVATE type-facade)
 add_executable(vm-app-session-smoke test/core/machine/nxvm_machine_smoke.c)
 target_link_libraries(vm-app-session-smoke PRIVATE vm-machine)
 add_executable(vm-machine-initialization-atomicity-smoke
@@ -1183,6 +1189,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-app-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-app-composition-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -2129,6 +2136,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
     vm-app-console-smoke
+    vm-app-composition-atomicity-smoke
     vm-x86-debug-mapping-smoke
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
