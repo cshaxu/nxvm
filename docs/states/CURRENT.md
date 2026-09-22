@@ -2,8 +2,24 @@
 
 ## Current Work
 
-No implementation task is admitted. M5 T534 is closed; the next candidate is the
-retained CPU-family qualification.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T535 S1 |
+| Admission And Approval | Owner approved on 2026-09-22: admit a new T to import SoftPC's latest six shared source/test components. Scope is the committed SoftPC revision only; ordinary commits and pushes are permanently approved by the owner. |
+| Objective | Freeze and audit the committed SoftPC six-tree corpus before copying it, recording exact provenance, file/hash delta, public/build impact and NXVM-only adaptation boundary. |
+| Non-goals | Do not copy uncommitted SoftPC media; do not import SoftPC App/MVDM code, firmware, media or binaries; do not enable audio, alter guest/device behavior, or edit a shared-tree file for NXVM-specific behavior. |
+| Reference Baseline | NXVM `f5170a5d`, current `vm-0-5-0534`; SoftPC committed `1c5a47146dd4fd87b09423b7a7b960becb50cd67` (`1c5a4714`). Its dirty media paths are excluded. |
+| Candidate Proposal | [Canonical SoftPC six-component refresh](../history/M5-T535-canonical-softpc-six-component-refresh-proposal.md). S1 consumes the frozen six-tree inventory batch. |
+| Files And ABI Surface | Audit only: `src/{lib,common,x86}`, `test/{lib,common,x86}`, their manifests/CMake files and NXVM caller/build references. Potential added public Lib ABI is `lib_audio_stream_*`; no implementation source changes in S1. |
+| Applicable Rules | `AGENTS.md`; Task Reading Set; Execution, Architecture, Coding and Document rules; source policy. Evidence will record project-owned MIT provenance, exact commit and no independent notice. |
+| Verification | Relative-path/content-hash comparison across all six trees; inspect upstream CMake/manifests/public interfaces; static NXVM caller/build search; documentation governance and `git diff --check`. |
+| Expected Markers | Evidence names upstream commit, excludes dirty media, classifies every delta and states whether an NXVM adapter change is necessary; x86 remains exact. |
+| Asset Needs | None. SoftPC source is read-only comparison material; no firmware, media, ROM or external runtime asset is read or copied. |
+| Reporting Requirements | Report the frozen source revision, complete delta classification, blockers and proposed S2 boundary. Report no runtime behavior claim from S1. |
+| Stop Conditions | Stop and seek direction for an independent notice/license, an uncommitted source dependency, protected asset, required product behavior change, or a shared-tree local fork requirement. |
+| Exit Criteria | Durable [S1 audit](../etc/evidence/t535-s1-softpc-six-component-audit.md), approved import plan with exact corpus boundary, passing documentation/diff checks and a clean reviewable P commit. |
+| Original Owner Request | “准入新的t任务 从softpc项目引入最新的六组件” |
+| Similar-Issue Sweep | Search all six source/test roots plus build manifests for stale/cross-product references and every NXVM source/build consumer for a shared-tree private include or locally diverged public contract. |
 
 ## Current Technical Baseline
 
