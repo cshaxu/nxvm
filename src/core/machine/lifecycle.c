@@ -142,23 +142,6 @@ static C_VOID vm_machine_driver_cancel_debug(C_VOID *context)
     if (machine != STD_NULL) vm_machine_debug_reset(&machine->debug);
 }
 
-static C_VOID vm_machine_start_outcome_reset(vm_machine *machine)
-{
-    if (machine == STD_NULL) return;
-    machine->start_outcome.status = TYPE_STATUS_OK;
-    machine->start_outcome.valid = TYPE_FALSE;
-}
-
-static type_status vm_machine_start_outcome_record(vm_machine *machine,
-    type_status status)
-{
-    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    ++machine->start_outcome.sequence;
-    machine->start_outcome.status = status;
-    machine->start_outcome.valid = TYPE_TRUE;
-    return status;
-}
-
 type_status vm_machine_start(vm_machine *machine) {
     return machine != STD_NULL && machine->executor != LIB_NULL &&
         common_machine_start(machine->executor) ?
@@ -168,13 +151,11 @@ type_status vm_machine_start(vm_machine *machine) {
 type_status vm_machine_finish_reset(vm_machine *machine, type_status status)
 {
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (status != TYPE_STATUS_OK) return vm_machine_start_outcome_record(machine,
-        status);
+    if (status != TYPE_STATUS_OK) return status;
     vm_machine_pacing_reset(machine);
     machine->runner_failed = TYPE_FALSE;
     machine->display_snapshot_generation_valid = TYPE_FALSE;
     machine->model40_fdc_terminal_observation_valid = TYPE_FALSE;
-    vm_machine_start_outcome_reset(machine);
     if (!vm_machine_control_is_running(&machine->control)) {
         vm_machine_publish_display(machine, 1);
     }
@@ -274,7 +255,6 @@ type_status vm_machine_initialize(vm_machine *machine) {
         vm_machine_finalize(machine);
         return status;
     }
-    vm_machine_start_outcome_reset(machine);
     machine->active = 1;
     return TYPE_STATUS_OK;
 }

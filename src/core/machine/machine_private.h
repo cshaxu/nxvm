@@ -37,11 +37,6 @@ struct vm_machine {
     C_VOID *executor_callback_context;
     common_machine_frame latest_frame;
     type_bool latest_frame_valid;
-    struct {
-        type_unsigned_64 sequence;
-        type_status status;
-        type_bool valid;
-    } start_outcome;
     type_unsigned_64 display_generation;
     type_unsigned_64 display_snapshot_generation;
     type_bool display_snapshot_generation_valid;

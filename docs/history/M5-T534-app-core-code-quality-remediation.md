@@ -535,3 +535,11 @@ at the public boundary; the one test that needs ROM bytes explicitly includes
 the Profile-private observation declaration. Focused Model40 and Machine
 initialization proof passes, as does the 334-case `-j8` unit replay in 15.39
 seconds.
+
+## S43: Machine Reset-Outcome Cache Removal
+
+The state-owner audit found `start_outcome` was a write-only mirror of the
+status already returned by the reset path. S43 deletes its five fields and two
+helpers. The direct failure result remains unchanged. Focused lifecycle and
+runner-error proof plus the complete 334-case `-j8` suite pass in 15.52
+seconds.
