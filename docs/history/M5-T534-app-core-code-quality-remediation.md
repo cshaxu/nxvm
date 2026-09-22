@@ -54,3 +54,11 @@ deletes every unused root file-operation wrapper, and preserves a root path's
 leading separator while resolving relative media.  The retained `STD_FILE`
 alias remains solely as the parameter type of existing diagnostic output.
 Focused INI proof and 333/333 repository-only unit pass.  S4 is closed.
+
+## S5: Repeat Audit
+
+The repeat audit reviewed App composition/commands and Machine lifecycle,
+driver and Debug-adapter boundaries.  It found CQ-7: three public lifecycle
+entry points have no caller and no unique behavior after Common lifecycle and
+x86 Debug execution plans became the sole routes.  S6 receives their complete
+removal; S5 itself makes no production change.

@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S5 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S5 is the repeated same-level audit required by its accepted proposal. |
-| Objective | Re-audit the full frozen App/Core corpus after S1-S4, classify every remaining quality finding, and repair each confirmed in-scope mechanism in a later admitted S before T534 closes. |
-| Non-goals | Do not close T534 from gate results alone, alter Lib/Common/x86 contracts, or change guest behavior without a concrete audited mechanism and a revised packet. |
-| Reference Baseline | S4 implementation closed at `2bb23664`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S6 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S6 repairs CQ-7 found by its required S5 repeat audit. |
+| Objective | Delete unused Machine lifecycle entry points that duplicate or misrepresent Common and x86 Debug control. |
+| Non-goals | Do not change Common lifecycle contracts, Core Debug execution-plan behavior or running-machine semantics. |
+| Reference Baseline | S5 audit from `6c3c7f8c`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | All tracked `src/app/**`, `src/core/**` and direct tests; no production change unless the audit produces a classified next repair. |
+| Files And ABI Surface | `core/machine` lifecycle and public interface, direct lifecycle tests. No Lib/Common/x86 contract change. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): one active S and actual-source review; [Architecture](../rules/ARCHITECTURE.md): single owner/direct data flow; [Coding](../rules/CODING.md): no redundant layer or dead path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Whole-tree owner/caller/dead-code inventories, targeted source reads, direct-test review, documentation governance, `git diff --check` and an evidence-led findings review. |
-| Expected Markers | Every newly found App/Core mechanism is either repaired by its next S, proven a distinct retained owner/path, or assigned an explicit receiver. CQ-6 receives a current disposition. |
+| Verification | Whole-tree caller sweep, focused lifecycle/Debug tests, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
+| Expected Markers | No polling pause, empty step request or ignored-reason wrapper remains. CQ-7 receives an explicit disposition. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report every newly confirmed issue with owner, impact, repair boundary and receiver; do not report clean merely from build gates. |
-| Stop Conditions | Stop at any discovery requiring a Lib/Common/x86 contract change or external guest behavior change; revise/admit before implementation. |
-| Exit Criteria | The repeat audit has a durable ledger with no unclassified hit; each repair is either completed in its own S or transferred through the proposal/Queue/TODO process. |
+| Reporting Requirements | Report removed APIs, retained Common/Debug control paths and tests. |
+| Stop Conditions | Stop if removal exposes an external consumer or requires a Common/x86 contract change. |
+| Exit Criteria | CQ-7's callers are empty, retained lifecycle semantics pass complete unit verification and static checks. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Search all App/Core production sources, direct tests and CMake lists for repeated state, duplicate paths, stale abstractions, dead helpers, platform leaks and unowned failure boundaries. |
+| Similar-Issue Sweep | Search all lifecycle and Debug public declarations/callers; remove the whole obsolete path rather than retaining aliases. |
 
 ## Current Technical Baseline
 
