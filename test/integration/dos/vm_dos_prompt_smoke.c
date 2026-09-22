@@ -46,7 +46,7 @@ static C_VOID dump_first_fault(core_machine *machine)
     for (index = 0u; index < fault->point.byte_count; ++index) {
         STD_FPRINTF(STD_STDERR, "%02X", fault->point.bytes[index]);
     }
-    STD_FPUTC('\n', STD_STDERR);
+    STD_FPRINTF(STD_STDERR, "%s", "\n");
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
@@ -82,7 +82,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (!prompt_seen) prompt_seen = has_dos_prompt(session);
     if (!prompt_seen) {
         dump_first_fault(session->core_machine);
-        STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
+        STD_FPRINTF(STD_STDERR, "%s", "M5:T70:S2:DOS-PROMPT:TIMEOUT\n");
         goto fail;
     }
     vm_machine_stop(session);

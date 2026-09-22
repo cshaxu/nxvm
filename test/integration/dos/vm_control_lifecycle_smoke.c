@@ -31,14 +31,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine_control_reset(&session->control);
     thread = CreateThread(STD_NULL, 0u, run_device, &session->control, 0u, STD_NULL);
     if (thread == STD_NULL) {
-        STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", STD_STDERR);
+        STD_FPRINTF(STD_STDERR, "%s",
+            "M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n");
         integration_ini_session_close(&ini_session);
         return 1;
     }
 
     Sleep(10u);
     if (!vm_machine_control_is_running(&session->control)) {
-        STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:DEVICE-DID-NOT-START\n", STD_STDERR);
+        STD_FPRINTF(STD_STDERR, "%s",
+            "M5:T10:S4:CONTEXT-LIFECYCLE:DEVICE-DID-NOT-START\n");
         vm_machine_control_stop(&session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
@@ -50,7 +52,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine_control_request_pause(&session->control,
         VM_MACHINE_PAUSE_EXPLICIT);
     if (!vm_machine_control_wait_for_pause(&session->control, 2000u)) {
-        STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:PAUSE-FAILED\n", STD_STDERR);
+        STD_FPRINTF(STD_STDERR, "%s",
+            "M5:T10:S4:CONTEXT-LIFECYCLE:PAUSE-FAILED\n");
         vm_machine_control_stop(&session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
@@ -62,7 +65,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     while (!vm_machine_control_is_running(&session->control) &&
         GetTickCount() - result < 2000u) Sleep(10u);
     if (!vm_machine_control_is_running(&session->control)) {
-        STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:RESUME-FAILED\n", STD_STDERR);
+        STD_FPRINTF(STD_STDERR, "%s",
+            "M5:T10:S4:CONTEXT-LIFECYCLE:RESUME-FAILED\n");
         vm_machine_control_stop(&session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

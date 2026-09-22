@@ -265,3 +265,17 @@ exposed two unrelated integration-test compile debts (`STD_FPUTS` after the
 root facade retirement and a removed `vm_session_request.profile` field). They
 are recorded for the continuing audit rather than hidden in this focused
 presentation repair. S21 is closed.
+
+## S22: Integration Contract Catch-up
+
+The default build's next errors were stale integration-only references to six
+retired root output facades and one removed runtime `profile` request field.
+S22 replaces the test diagnostics with the retained test-local formatter and
+reads the frozen Machine profile kind for the Model 40-only probe. No
+production facade or runtime profile selector returns.
+
+All three affected integration targets compile, the lifecycle integration
+probe passes, and the complete 335-case repository-only unit suite remains
+green. The complete default Ninja target itself repeatedly deadlocks without
+a compiler child after its known targets complete; this is retained as build
+tooling evidence, not relabelled as a source failure. S22 is closed.

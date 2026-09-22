@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S21 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The S20 repeat audit found an avoidable per-frame heap allocation and full extra frame copy in the Machine display adapter; this bounded repair is within that approved objective. |
-| Objective | Construct each already caller-owned Common frame directly after validation, preserving failure atomicity without an intermediate heap frame. |
-| Non-goals | Do not alter the copied-frame ABI, presentation routing, Debug grammar, Core error classifications, Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S20 `912b0d52`; CQ-21 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S22 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. S21's complete default build exposed two stale integration-test references to App/Core contracts removed by earlier T534 repairs; this bounded test-contract repair is within that approved objective. |
+| Objective | Move the affected integration tests to the retained test-output and compiled-profile contracts so the default build has no stale root-facade or request-profile reference. |
+| Non-goals | Do not restore deleted root facades, reintroduce YAML/profile selection into runtime request, alter production App/Core behavior, Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
+| Reference Baseline | S21 `7c048a21`; CQ-22 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/frame.c`, its focused Machine frame smoke, CMake only if a new target is needed, and convergence ledger/history. No public interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and one copied presentation path; [Coding](../rules/CODING.md): no needless allocation, duplicated state or concealed failure; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Focused Machine frame smoke including rejection with an unchanged destination and both text/graphics success paths; source sweep of all display-conversion allocation/copy paths; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Valid text and graphics display events populate the supplied destination directly; rejected input leaves it byte-identical; no temporary `common_machine_frame` allocation, copy or `NO_MEMORY` branch remains. |
+| Files And ABI Surface | `test/integration/dos/{vm_control_lifecycle_smoke,vm_byob_dos_boot_probe}.c`, convergence ledger/history. No production or public interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Coding](../rules/CODING.md): tests use their owner-local, current contracts; [Architecture](../rules/ARCHITECTURE.md): generated Profile remains the sole machine-selection owner. |
+| Verification | Full default build; focused affected integration targets; complete repository-only unit and external integration suites; source sweep for the deleted `STD_FPUTS` facade and `vm_session_request.profile`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Integration tests build using existing `STD_FPRINTF` and the compiled Machine profile kind; neither deleted test facade nor runtime-request profile field remains. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record the direct-construction proof, validation-before-mutation order and retained copied-frame route in the ledger/history. |
-| Stop Conditions | Stop if direct construction would require a copied-frame ABI or Common presentation-contract change. |
-| Exit Criteria | CQ-21 has no temporary full-frame allocation/copy, preserves rejection atomicity and passes focused/full/documentation/change gates. |
+| Reporting Requirements | Record the retained output/profile owners, complete default-build result and sweep count in the ledger/history. |
+| Stop Conditions | Stop if either repair requires restoring a production compatibility facade or a runtime machine-profile selector. |
+| Exit Criteria | CQ-22 has no stale reference, affected integration targets and complete gates pass, and production contracts remain unchanged. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every `vm_machine_frame_from_display` caller and all display-to-Common conversion paths for temporary full-frame allocation, redundant full copy or mutation before validation. |
+| Similar-Issue Sweep | Sweep all integration sources for `STD_FPUTS` and `vm_session_request.profile`; distinguish remaining valid test-local `STD_FPRINTF` from retired root-facade use. |
 
 ## Current Technical Baseline
 

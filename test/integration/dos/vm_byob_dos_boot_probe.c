@@ -1781,7 +1781,8 @@ int main(C_INT argc, C_CHAR **argv)
         }
     }
     trace.machine = session->core_machine;
-    if (!STD_STRCMP(ini_session.request.profile, "compaq-deskpro-386-model-40")) {
+    if (session->retained_config.profile_kind ==
+        VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
         t_ram *memory = &session->core_machine->executor_memory;
 
         if (memory->connect.write_observer_count <
