@@ -30,18 +30,18 @@ The S1 inventory finds an exact x86 corpus and these upstream changes:
 
 ## Plan
 
-1. **S1 — freeze and audit the six-tree import.** Record the exact upstream
+1. **S1: freeze and audit the six-tree import.** Record the exact upstream
    commit, provenance, file/hash inventory, build-DAG consequences and every
    NXVM adaptation required outside the six trees. Do not copy source yet.
-2. **S2 — exact corpus replacement.** Replace all six trees from the frozen
+2. **S2: exact corpus replacement.** Replace all six trees from the frozen
    committed revision using one canonical copy operation. Preserve notices,
    manifests and independent source-only build/test entry points. Do not make
    NXVM-specific edits in a shared tree.
-3. **S3 — NXVM product adaptation.** Update only NXVM App/Core build and
+3. **S3: NXVM product adaptation.** Update only NXVM App/Core build and
    consumer wiring needed by the imported public contracts. Audio remains
    unconnected unless NXVM has one explicit product owner and a later approved
    use; importing its neutral corpus does not invent a PC-speaker route.
-4. **S4 — convergence and release proof.** Verify exact six-tree equality,
+4. **S4: convergence and release proof.** Verify exact six-tree equality,
    independent Lib/Common/x86 suites, NXVM's full unit and integration gates,
    and current optimized x64/x86 artifacts for every runnable fixed product.
 

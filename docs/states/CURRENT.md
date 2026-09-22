@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T535 S2 |
-| Admission And Approval | Owner's 2026-09-22 T535 approval; S1 `6eb052df` is accepted. Scope is exact replacement from frozen SoftPC `1c5a4714`; ordinary commits/pushes are permanently approved. |
-| Objective | Replace `src/{lib,common,x86}` and `test/{lib,common,x86}` exactly from the frozen committed SoftPC corpus, including manifests and source-only CMake/test contracts. |
-| Non-goals | Do not import dirty media, SoftPC App/MVDM, ROMs, firmware or binaries; do not connect audio to NXVM, alter product policy, or make NXVM-specific edits in a shared root. |
-| Reference Baseline | Accepted [S1 audit](../etc/evidence/t535-s1-softpc-six-component-audit.md): NXVM `6eb052df`; SoftPC `1c5a47146dd4fd87b09423b7a7b960becb50cd67`. |
-| Candidate Proposal | [Retained T535 proposal](../history/M5-T535-canonical-softpc-six-component-refresh-proposal.md); S2 consumes all six frozen source/test roots. |
-| Files And ABI Surface | The six shared roots and their manifests/CMake/readmes. The imported public addition is `lib_audio_stream_*`; no NXVM consumer/API is introduced. Fresh full-unit rebuild exposed five Default-profile and one Model40 test-only white-box includes that still expect a public layout after T533 made it opaque; S2 repairs those same-owner test includes to their existing private Profile contracts. |
-| Applicable Rules | `AGENTS.md`; Task Reading Set; Execution, Architecture, Coding and Document rules; source policy. Preserve project-owned MIT notices and canonical boundaries. |
-| Verification | Compare all six roots against SoftPC by relative path and normalized SHA-256; build each source-only Lib/Common/x86 suite; run its CTest; run NXVM complete repository-only unit suite; documentation governance and whitespace checks. |
-| Expected Markers | Six roots have exact equality; imported manifests verify; Lib exposes audio target and tests; Common state matrix proves the paused-window rule; x86 remains exactly equal; no test accesses a Profile layout through its opaque public header. |
-| Asset Needs | None. The import uses only committed project-owned source/test text; no external runtime assets are read/copy targets. |
-| Reporting Requirements | Report source/test exactness, change counts, independent/full unit result, source line delta and any NXVM-owned adaptation explicitly transferred to S3. |
-| Stop Conditions | Stop for a source/license mismatch, required edit inside shared corpus, product behavior change, unsupported build contract, or failed source-only corpus test that cannot be reproduced from frozen upstream. |
-| Exit Criteria | One pushed P with exact six-tree equality, passing required source-only/full-unit proof, actual-diff review and durable import evidence. |
+| Identifier Mode | Continuation T535 S4 |
+| Admission And Approval | Owner's 2026-09-22 T535 approval; S1 `6eb052df` and S2 `75f354ec` are accepted. S3 is explicitly skipped because S2 proves no NXVM adapter work exists. Ordinary commits/pushes are permanently approved. |
+| Objective | Complete T535 convergence: build and verify current optimized stripped x64/x86 artifacts for every runnable fixed product, run required external integration and prove the six imported roots remain exact. |
+| Non-goals | Do not change guest/device/product behavior, connect audio to NXVM, add an audio abstraction, import uncommitted SoftPC media or edit a shared tree for a local compatibility path. |
+| Reference Baseline | S2 `75f354ec`, [S2 evidence](../etc/evidence/t535-s2-canonical-six-component-import.md), frozen SoftPC `1c5a47146dd4fd87b09423b7a7b960becb50cd67`. |
+| Candidate Proposal | [Retained T535 proposal](../history/M5-T535-canonical-softpc-six-component-refresh-proposal.md); S4 consumes the final four-product x64/x86 artifact and external-integration batches. |
+| Files And ABI Surface | Build configuration/version/artifact evidence and status/history only unless a verified integration defect requires an owner-correct repair. Shared six roots must not change. |
+| Applicable Rules | `AGENTS.md`; Task Reading Set; Execution, Architecture, Coding and Document rules; source policy; artifact and test-closure rules. |
+| Verification | Recompare all six roots by relative path/hash; run complete repository-only unit suite; run default, 5170, XT and Model40 external integration labels; build/verify stripped Release x64/x86 artifacts in every `assets/binary/<profile>/`; documentation governance and whitespace checks. |
+| Expected Markers | Exact six-tree equality; all integration rows pass; T535 artifact identity/version, PE architecture, stripped status and SHA-256 are recorded for each required product/host architecture. |
+| Asset Needs | Owner-managed external BYOB ROM/CMOS/media inputs already configured for integration; no asset is copied or committed. |
+| Reporting Requirements | Report every integration/artifact row with its source commit/hash and any failure without relabelling it green. Record final code-line delta and retained owner paths. |
+| Stop Conditions | Stop for missing/invalid external asset, artifact toolchain failure, test regression, a necessary shared-tree local change, protected payload issue or source/license mismatch. |
+| Exit Criteria | Pushed final implementation and governance evidence proves all T535 completion predicates, current artifacts and exact source parity; then perform T-level closure audit. |
 | Original Owner Request | Owner requested admission of a new T to import SoftPC's latest six components. |
-| Similar-Issue Sweep | Compare every file in all six roots, not only changed paths; search every NXVM build/caller reference for stale shared-target names or a private shared include; search Profile white-box tests for opaque public-header includes coupled to private layouts. Record every hit/disposition. |
+| Similar-Issue Sweep | Recompare all six roots; search NXVM source/build/tests for `lib_audio_stream_*` consumers and for source divergence; verify no `session->profile` mirror survives. Any integration regression is classified at its owner rather than repaired by a shared-corpus fork. |
 
 ## Current Technical Baseline
 

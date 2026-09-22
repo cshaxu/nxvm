@@ -24,4 +24,12 @@ unit gate adds three canonical audio smokes and passes 336/336. The fresh build
 also exposed old test-only opaque-Profile/mirror assumptions; S2 removes those
 assumptions without altering production. [Evidence](../etc/evidence/t535-s2-canonical-six-component-import.md)
 proves exact equality and verifier results. No NXVM consumer adaptation exists,
-so S3 is skipped; S4 receives final integration/artifact convergence.
+so S3 is skipped. Coordinator review accepts S2 at `75f354ec`: all six trees
+remain exact, no local audio route exists, shared manifest/dependency gates and
+336/336 unit tests pass. S4 receives final integration/artifact convergence.
+
+## S4: Integration And Artifact Convergence
+
+Active. Rebuild T535's fixed products in optimized stripped x64/x86 form, run
+the owner-managed external integration matrix, recheck exact corpus equality,
+and close only if all required product/artifact evidence is current.
