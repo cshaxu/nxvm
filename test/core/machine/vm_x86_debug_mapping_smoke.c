@@ -2,7 +2,6 @@
 
 #include "core/devices/machine.h"
 #include "core/devices/debug_interface.h"
-#include "lib/base/sync_interface.h"
 #include "x86/debug/protocol_interface.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/debug_adapter.h"
@@ -22,21 +21,17 @@ static C_INT vm_debug_execute(vm_machine *machine,
             LIB_STATUS_OK && response_size == sizeof(*result);
 }
 
-static C_INT vm_debug_wait_paused(const vm_machine *machine)
+static C_INT vm_debug_wait_paused(const vm_machine *machine,
+    const vm_test_common_machine_state_waiter *waiter)
 {
-    C_UINT waited;
-
-    for (waited = 0u; waited < 2000u; ++waited) {
-        if (common_machine_state_get(machine->executor) == COMMON_MACHINE_PAUSED)
-            return TYPE_TRUE;
-        base_sync_sleep_milliseconds(1u);
-    }
-    return TYPE_FALSE;
+    return vm_test_common_machine_wait_state(machine, waiter,
+        COMMON_MACHINE_PAUSED, 2000u);
 }
 
 C_INT main(C_VOID)
 {
     vm_machine *machine = STD_NULL;
+    vm_test_common_machine_state_waiter waiter = {0};
     common_machine_debug_lease lease;
     x86_debug_response result;
     type_unsigned_32 register_id;
@@ -48,8 +43,11 @@ C_INT main(C_VOID)
 
     if (vm_test_default_pc_at_session_create(STD_NULL, &machine) !=
             TYPE_STATUS_OK || machine == STD_NULL ||
-        vm_test_common_machine_bind(machine) != TYPE_STATUS_OK) return 1;
-    if (!common_machine_reset(machine->executor) || !vm_debug_wait_paused(machine))
+        vm_test_common_machine_bind(machine) != TYPE_STATUS_OK ||
+        vm_test_common_machine_state_waiter_initialize(machine, &waiter) !=
+            TYPE_STATUS_OK) return 1;
+    if (!common_machine_reset(machine->executor) ||
+        !vm_debug_wait_paused(machine, &waiter))
         goto failed;
     /* Force a Core-originated classification through the adapter.  The
      * paused Common lease prevents concurrent Core use; restore before any
@@ -189,12 +187,14 @@ C_INT main(C_VOID)
             }, sizeof(x86_debug_request), &result, sizeof(result),
             &(lib_size){0u}) != LIB_STATUS_INVALID_STATE) goto failed;
     vm_test_common_machine_unbind(machine);
+    vm_test_common_machine_state_waiter_finalize(&waiter);
     vm_machine_destroy(machine);
     puts("M5:T531:S27:VM-X86-DEBUG-MAPPING:OK");
     return 0;
 
 failed:
     vm_test_common_machine_unbind(machine);
+    vm_test_common_machine_state_waiter_finalize(&waiter);
     vm_machine_destroy(machine);
     return 1;
 }

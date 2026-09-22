@@ -486,3 +486,16 @@ documentation governance and 334/334 repository-only unit tests at `-j4` in
 22.56 seconds pass. A separate host-scheduling finding from the intentionally
 more aggressive `-j8` replay is recorded as CQ-38; it is not attributed to the
 display rename or represented as a green parallel test result.
+
+## S39: Event-Backed Core Machine Test Waits
+
+CQ-38 identifies four repository-only Machine tests that independently poll
+Common state with fixed one-millisecond sleeps. S39 replaces that repeated
+host-scheduling-sensitive construction with one test-owned state-sink/event
+helper and a monotonic deadline. It does not change Common or Machine
+production behavior and must demonstrate a full `-j8` unit replay.
+
+S39 centralizes those waits in the repository-only fixture. The four focused
+tests pass in 3.79 seconds, their fixed-sleep scan is empty, and the complete
+334-case `-j8` replay passes in 16.64 seconds. No production source or shared
+component changed.
