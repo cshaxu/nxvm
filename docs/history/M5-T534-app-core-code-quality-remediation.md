@@ -599,3 +599,13 @@ production App Command. S49 removes that target and its three-file support
 corpus. The real Common-driven console integration target remains registered
 and builds. The remaining 333 repository-only unit tests pass at `-j8`, as
 does documentation governance.
+
+## S50: T534 Current Artifact Identity
+
+The task-exit audit found runnable T534 source still attached to the inherited
+0533 artifact target. S50 advances the sole current target and all build
+presets to 0534, then produces the x64/x86 artifacts for default, IBM 5170,
+XT and Model 40. The 333-case unit replay and every configured external
+integration suite pass. The source revision, hashes, PE architecture and
+stripping verification are retained in the
+[artifact record](../etc/evidence/t534-s50-artifact-verification.md).

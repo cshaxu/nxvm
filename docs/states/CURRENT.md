@@ -23,12 +23,12 @@
 
 ## Current Technical Baseline
 
-- `vm-0-5-0534` is the current target. T534 will produce eight stripped,
-  optimized x64/x86 artifacts for its four fixed products; each product has
-  only one executable location, `assets/binary/<profile>/`, with its adjacent
-  generated INI. T533's 0533 artifacts remain historical evidence in their
-  existing locations until the 0534 closure record replaces the current
-  baseline.
+- `vm-0-5-0534` is the current target. T534 produced eight stripped, optimized
+  x64/x86 artifacts for its four fixed products; each product has only one
+  executable location, `assets/binary/<profile>/`, with its adjacent generated
+  INI. The preset-selected default pair is `nxvm_default_0_5_0534_x64.exe` and
+  `nxvm_default_0_5_0534_x86.exe`. Paths, architectures, hashes and gate results are in the
+  [T534 artifact record](../etc/evidence/t534-s50-artifact-verification.md).
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:
   `machine`, `session`, and `ui`. The separately selected `src/x86` corpus owns

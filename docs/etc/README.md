@@ -26,6 +26,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t533-s4-fixed-profile-ini-cutover.md` | Fixed-machine product owner | T533 S4 records the four fixed product selections, sole INI route, path-resolution correction and real per-product boot dispositions. |
 | `evidence/t533-s5-product-convergence-ledger.md` | Fixed-machine product owner | T533 S5 records four-product closure, Common-input/HDD integration repair, and sole artifact-path evidence. |
 | `evidence/t534-app-core-code-quality-ledger.md` | App/Core quality owner | T534's current finite App/Core code-quality finding and disposition ledger; it records each repaired, retained or transferred mechanism through final re-audit. |
+| `evidence/t534-s50-artifact-verification.md` | App/Core quality owner | T534 S50 records the current 0534 fixed-product x64/x86 artifact identities, PE/stripping inspection, hashes and full gate results. |
 | `evidence/t534-s1-recorder-removal.md` | App/Core quality owner | T534 S1 records the complete unsupported App recorder deletion and its pending unit gate. |
 | `evidence/t534-s2-presentation-single-path.md` | App/Core quality owner | T534 S2 records failure-atomic frame conversion and removal of the duplicate Core presentation route. |
 | `evidence/td-s171-t533-architecture-documentation-audit.md` | Documentation governance owner | Td S171 reconciles live principal/supporting/proposal context with the completed T533 fixed-product, INI and sole-artifact baseline; it preserves rather than rewrites historical records. |
