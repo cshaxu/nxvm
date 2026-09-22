@@ -24,7 +24,7 @@ static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
     }
     vm_machine_reset(session);
     if (vm_machine_fdd_remove_for(&session->fdd, STD_NULL) ||
-        vm_machine_hdd_remove(&session->hdd, STD_NULL) ||
+        vm_machine_hdd_remove(&session->hdd) ||
         vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         integration_ini_session_close(&ini_session);

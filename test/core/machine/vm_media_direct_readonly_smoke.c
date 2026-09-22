@@ -70,7 +70,7 @@ C_INT main(C_VOID)
         failed = 1;
     }
     if (vm_machine_fdd_remove_for(&fdd, STD_NULL) != TYPE_FALSE ||
-        vm_machine_hdd_remove(&hdd, STD_NULL) != TYPE_FALSE) failed = 1;
+        vm_machine_hdd_remove(&hdd) != TYPE_FALSE) failed = 1;
     if (!failed && (vm_machine_fdd_insert_for(&fdd, vm_media_direct_fdd_path,
             LIB_STORAGE_MEDIUM_DIRECT) != TYPE_FALSE ||
         vm_machine_fdd_write_byte(&fdd, 0u, 0u, 1u, 0u, direct_value) != TYPE_FALSE ||
@@ -79,7 +79,7 @@ C_INT main(C_VOID)
         vm_machine_hdd_media_provider()->write_bytes(&hdd, 0u, &direct_value,
             1u) != CORE_MACHINE_MEDIA_RESULT_OK ||
         vm_machine_fdd_remove_for(&fdd, STD_NULL) != TYPE_FALSE ||
-        vm_machine_hdd_remove(&hdd, STD_NULL) != TYPE_FALSE ||
+        vm_machine_hdd_remove(&hdd) != TYPE_FALSE ||
         vm_media_direct_read_first(vm_media_direct_fdd_path, direct_value) ||
         vm_media_direct_read_first(vm_media_direct_hdd_path, direct_value))) failed = 1;
     vm_machine_fdd_finalize(&fdd);

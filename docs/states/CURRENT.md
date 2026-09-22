@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S15 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S14 repaired CQ-13 and the same audit classified CQ-14. |
-| Objective | Preserve Core failure results through the VM Machine adapter without changing local input or lifecycle validation. |
-| Non-goals | Do not alter Core statuses, create an adapter framework, change machine behavior or expand into firmware, assets, timing or UX policy. |
-| Reference Baseline | S14 implementation and CQ-14 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S16 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S15 repaired CQ-14 and the repeated media/constructor audit classified CQ-15. |
+| Objective | Make fixed-disk media semantics and blank-disk construction truthful: no false removable capability, no ignored removal path parameter, and no silent requested-disk allocation failure. |
+| Non-goals | Do not change HDC command semantics, runtime media policy, external assets, timing or Lib Storage contracts. |
+| Reference Baseline | S15 implementation and CQ-15 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/machine.c`, `machine_info.c`, affected machine smokes and the convergence ledger. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one directional failure boundary; [Coding](../rules/CODING.md): no concealed failure or forwarding error translation; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Focused Machine/Core failure probes plus direct source sweep; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Valid VM adapter requests return the actual Core failure; only invalid VM arguments and local lifecycle conditions synthesize a VM result. |
+| Files And ABI Surface | `src/core/machine/media/hdd.*`, `machine.c`, direct media and Machine smokes, and the convergence ledger/history. No `*_interface.h` contract changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and truthful bounded contract; [Coding](../rules/CODING.md): no ignored parameter or concealed failure; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Focused HDD provider and Machine creation probes; source sweep for retired path parameter and ignored creation return; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Fixed media reports only supported capabilities; HDD detach has no fake path input; requested blank HDD creation either publishes real media or fails construction. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record each changed adapter operation, retained local validation and focused proof in the ledger/history. |
-| Stop Conditions | Stop if preservation requires a new Core, Lib/Common/x86 contract. |
-| Exit Criteria | CQ-14 is repaired, equivalent Machine-to-Core failure masking has a disposition, and unit/documentation/change gates pass. |
+| Reporting Requirements | Record the complete fixed-media/constructor sweep, retained startup attachment route and focused proof in the ledger/history. |
+| Stop Conditions | Stop if correction requires a new Core, Lib/Common/x86 contract or changes live HDC device semantics. |
+| Exit Criteria | CQ-15 is repaired, equivalent ignored fixed-media parameters and requested-allocation failure paths have a disposition, and unit/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep VM Machine wrappers for a Core status-returning call followed by a synthetic `INVALID_STATE`; classify every hit as repaired, local validation or separately admitted. |
+| Similar-Issue Sweep | Sweep FDD/HDD create/remove APIs and callers for ignored path inputs, unsupported capability claims and allocation results that do not reach the owning construction boundary. |
 
 ## Current Technical Baseline
 

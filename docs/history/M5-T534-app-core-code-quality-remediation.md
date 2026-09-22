@@ -175,3 +175,22 @@ Core allocation, mapping or lifecycle result as a generic Machine state error.
 The reset-vector smoke also proves invalid Machine arguments remain local
 `INVALID_ARGUMENT` outcomes.  A static sweep has no remaining direct
 Core-failure-to-`INVALID_STATE` rewrite in App or Machine.
+
+## S16: Truthful Fixed-Media Construction
+
+The next repeated audit classified CQ-15.  HDD is an initialization-owned fixed
+medium, but its provider advertises removable/change-detectable capabilities,
+its internal detach operation accepts and ignores a pathname, and requested
+blank-disk creation silently leaves a machine without the requested medium if
+allocation fails.  S16 removes the false parameter/capabilities and carries
+that owner-local allocation result through the existing Machine construction
+boundary.  The retained startup attachment route remains private; no HDC
+protocol or Lib Storage interface changes are allowed.
+
+P1 makes the HDD provider report only geometry/format/read-only facts, removes
+the ignored pathname from its internal detach operation, and makes blank-disk
+creation return success or failure.  Machine now rejects a requested blank disk
+with `TYPE_STATUS_NO_MEMORY` if its allocation cannot complete.  The provider,
+direct/readonly/overlay and Machine construction probes pass, along with the
+334-case repository-only unit suite and documentation governance gate.  S16 is
+closed.

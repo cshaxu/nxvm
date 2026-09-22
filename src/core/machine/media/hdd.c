@@ -15,9 +15,7 @@ static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
 
     if (hdd == STD_NULL || out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     out_info->generation = hdd->connect.media_generation;
-    out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
-        CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
-        CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE |
+    out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
         CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE;
     if (hdd->connect.flagReadOnly)
         out_info->capabilities |= CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY;
@@ -211,18 +209,19 @@ C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
     }
 }
 
-C_VOID vm_machine_hdd_create(t_hdd *hdd, type_unsigned_16 cylinders) {
+C_INT vm_machine_hdd_create(t_hdd *hdd, type_unsigned_16 cylinders) {
     STD_SIZE_T virtual_byte_count;
     lib_storage_medium *candidate;
 
-    if (hdd == STD_NULL) return;
+    if (hdd == STD_NULL || cylinders == 0u) return TYPE_TRUE;
     virtual_byte_count = (STD_SIZE_T)cylinders * 16u * 63u * 512u;
     candidate = vm_machine_hdd_allocate_candidate(virtual_byte_count);
     if (virtual_byte_count != 0u && candidate == STD_NULL) {
-        return;
+        return TYPE_TRUE;
     }
     vm_machine_hdd_install_medium(hdd, candidate, virtual_byte_count,
         virtual_byte_count, cylinders);
+    return TYPE_FALSE;
 }
 C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     STD_SIZE_T raw_byte_count)
@@ -280,8 +279,7 @@ C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name,
     return mode <= LIB_STORAGE_MEDIUM_OVERLAY ?
         vm_machine_hdd_insert_medium(hdd, file_name, mode) : TYPE_TRUE;
 }
-C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
-    (C_VOID)file_name;
+C_INT vm_machine_hdd_remove(t_hdd *hdd) {
     if (hdd == STD_NULL) return TYPE_TRUE;
     lib_storage_medium_destroy(&hdd->connect.medium);
     hdd->connect.flagDiskExist = TYPE_FALSE;

@@ -447,8 +447,11 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
         return TYPE_STATUS_FAULT;
     }
     if (config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
-    if (vm_profile_machine_plan_hdc_present(session->profile_plan) && config->create_hdd_cylinders != 0u) {
-        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders);
+    if (vm_profile_machine_plan_hdc_present(session->profile_plan) &&
+        config->create_hdd_cylinders != 0u &&
+        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders) != TYPE_FALSE) {
+        vm_machine_destroy(session);
+        return TYPE_STATUS_NO_MEMORY;
     }
     status = vm_machine_reset(session);
     if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }

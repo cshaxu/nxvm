@@ -44,6 +44,7 @@ C_INT main(C_VOID)
     t_fdd fdd;
     t_hdd hdd;
     core_machine_media_registry *registry = STD_NULL;
+    core_machine_media_info hdd_info = {0};
     core_machine_media_result result;
     type_unsigned_8 value = 0x5au;
     C_INT failed = TYPE_FALSE;
@@ -54,7 +55,11 @@ C_INT main(C_VOID)
         vm_media_write_file(vm_media_hdd_path, hdd_bytes, sizeof(hdd_bytes))) failed = TYPE_TRUE;
     vm_machine_fdd_initialize(&fdd);
     vm_machine_hdd_initialize(&hdd);
-    if (!failed && (vm_machine_fdd_insert_for(&fdd, vm_media_fdd_path,
+    if (!failed && (vm_machine_hdd_create(&hdd, 0u) != TYPE_TRUE ||
+        vm_machine_hdd_create(&hdd, 1u) != TYPE_FALSE ||
+        !vm_machine_hdd_has_media(&hdd) ||
+        vm_machine_hdd_remove(&hdd) != TYPE_FALSE ||
+        vm_machine_fdd_insert_for(&fdd, vm_media_fdd_path,
         LIB_STORAGE_MEDIUM_OVERLAY) != TYPE_FALSE ||
         vm_machine_hdd_insert(&hdd, vm_media_hdd_path,
             LIB_STORAGE_MEDIUM_OVERLAY) != TYPE_FALSE ||
@@ -64,12 +69,20 @@ C_INT main(C_VOID)
         core_machine_media_registry_bind(registry, 2u, &hdd,
             vm_machine_hdd_media_provider()) != TYPE_STATUS_OK ||
         core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK ||
+        core_machine_media_query(registry, 2u, &hdd_info, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        (hdd_info.capabilities & (CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
+            CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE)) != 0u ||
+        (hdd_info.capabilities & (CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
+            CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE)) !=
+            (CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
+                CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE) ||
         core_machine_media_write_bytes(registry, 1u, 0u, &value, 1u,
             &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         core_machine_media_write_bytes(registry, 2u, 0u, &value, 1u,
             &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         vm_machine_fdd_remove_for(&fdd, vm_media_fdd_path) != TYPE_FALSE ||
-        vm_machine_hdd_remove(&hdd, vm_media_hdd_path) != TYPE_FALSE ||
+        vm_machine_hdd_remove(&hdd) != TYPE_FALSE ||
         vm_media_read_first(vm_media_fdd_path, 0x11u) ||
         vm_media_read_first(vm_media_hdd_path, 0x22u))) failed = TYPE_TRUE;
     core_machine_media_registry_destroy(registry);
