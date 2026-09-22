@@ -229,3 +229,20 @@ P1 preserves Machine creation status in App and replaces the Debug adapter's
 per-operation generic-state rewrites with one complete private Type-to-Lib
 mapping. The focused composition and Debug mapping smokes, all 334
 repository-only unit tests and documentation governance pass. S19 is closed.
+
+## S20: Runner Failure Propagation
+
+The next repeat audit found CQ-20: the bounded Machine runner treated a
+non-fault Core-run failure, pacing failure or waiting-advance failure as a
+normal stop.  Its Common driver therefore returned success and Common reported
+`STOPPED` rather than `ERROR`.  S20 keeps Core fault diagnostics distinct and
+uses one private Machine-owned `runner_failed` fact solely to adapt every
+abnormal runner exit to Common's existing boolean driver result.
+
+P1 sets that fact for Core fault, non-fault run, pacing and waiting-advance
+failure, while the ordinary Core stop-request path stays a normal stop.  The
+new Common-bound smoke forces a non-fault Core `INVALID_STATE` after a paused
+safe boundary and proves `COMMON_MACHINE_ERROR`; the existing fault-outcome
+smoke remains green.  A complete rebuild and 335/335 repository-only unit
+tests pass, as do documentation governance and whitespace checks. S20 is
+closed.

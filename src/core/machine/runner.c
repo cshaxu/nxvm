@@ -18,6 +18,13 @@
 #define VM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS 256u
 #define VM_MACHINE_RUNNER_TURBO_QUANTUM_INSTRUCTIONS 4096u
 
+static C_VOID vm_machine_runner_fail(vm_machine *session)
+{
+    if (session == STD_NULL) return;
+    session->runner_failed = TYPE_TRUE;
+    vm_machine_control_fault(&session->control);
+}
+
 C_VOID vm_machine_runner_run(vm_machine *session)
 {
     core_machine_run_budget budget;
@@ -72,11 +79,11 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             if (run_status == TYPE_STATUS_FAULT ||
                 result.reason == CORE_MACHINE_STOP_FAULT) {
                 vm_machine_fault_capture(session, &result);
-                vm_machine_control_fault(control);
+                vm_machine_runner_fail(session);
                 continue;
             }
             if (run_status != TYPE_STATUS_OK) {
-                vm_machine_control_stop(control);
+                vm_machine_runner_fail(session);
                 continue;
             }
         }
@@ -93,7 +100,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
         }
         {
             if (vm_machine_pacing_wait(session) != TYPE_STATUS_OK) {
-                vm_machine_control_stop(control);
+                vm_machine_runner_fail(session);
                 continue;
             }
         }
@@ -111,7 +118,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             type_status time_status = vm_machine_waiting_advance(
                 session, &result, &advanced);
 
-            if (time_status != TYPE_STATUS_OK) vm_machine_control_stop(control);
+            if (time_status != TYPE_STATUS_OK) vm_machine_runner_fail(session);
             else if (!advanced) {
                 /* Core has no source-qualified deadline to advance.  Yielding
                  * gives host input/control a turn without manufacturing guest

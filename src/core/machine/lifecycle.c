@@ -80,8 +80,9 @@ static lib_bool vm_machine_driver_run(void *context)
     vm_machine *machine = (vm_machine *)context;
 
     if (machine == STD_NULL) return LIB_FALSE;
+    machine->runner_failed = TYPE_FALSE;
     vm_machine_control_start(&machine->control);
-    return machine->fault_outcome.valid ? LIB_FALSE : LIB_TRUE;
+    return !machine->runner_failed;
 }
 
 static void vm_machine_driver_request_stop(void *context)
@@ -170,6 +171,7 @@ type_status vm_machine_finish_reset(vm_machine *machine, type_status status)
     if (status != TYPE_STATUS_OK) return vm_machine_start_outcome_record(machine,
         status);
     vm_machine_pacing_reset(machine);
+    machine->runner_failed = TYPE_FALSE;
     machine->display_snapshot_generation_valid = TYPE_FALSE;
     machine->model40_fdc_terminal_observation_valid = TYPE_FALSE;
     vm_machine_start_outcome_reset(machine);

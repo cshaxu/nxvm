@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S19 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The S18 repeat audit found App machine-creation and Machine-to-x86 Debug status masking; this bounded repair is within that approved objective. |
-| Objective | Preserve exact failure classifications through the App Machine creation and Machine-to-x86 Debug adaptation boundaries. |
-| Non-goals | Do not alter Debug grammar, Core Debug semantics, Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S18 `bbed1c32`; CQ-18/CQ-19 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S20 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The S19 repeat audit found that the Machine runner turns non-fault executor failures into normal Common stops; this bounded repair is within that approved objective. |
+| Objective | Preserve the distinction between normal Machine stop and any failed runner completion through the existing Common driver result. |
+| Non-goals | Do not alter Debug grammar, Core error classifications, Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
+| Reference Baseline | S19 `6dfb7ef3`; CQ-20 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/composition.c`, `src/core/machine/debug_adapter.c`, focused App/x86 Debug tests and convergence ledger/history. No public interface change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and truthful boundary; [Coding](../rules/CODING.md): no concealed failure or duplicate mapping; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Focused App composition and x86 Debug Machine smokes; source sweep for direct Core/App failure-to-generic-state rewrites; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | A Machine creation failure reaches App unchanged; every Core Debug outcome crosses one complete Type-to-Lib mapping rather than being rewritten to `INVALID_STATE`. |
+| Files And ABI Surface | `src/core/machine/{lifecycle,runner,machine_private}.h/.c`, one focused Machine lifecycle smoke, CMake registration and convergence ledger/history. No public interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and truthful failure boundary; [Coding](../rules/CODING.md): no concealed failure or duplicate terminal state; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Focused Common-bound Machine runner-error smoke plus existing fault-outcome runner smoke; source sweep of every runner terminal failure; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Core operational failure, pacing failure or waiting-advance failure makes the existing Common driver return false and produces `COMMON_MACHINE_ERROR`; normal stop remains `COMMON_MACHINE_STOPPED`. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record the two discovered masking mechanisms, their mapping/retention boundary and focused proof in the ledger/history; state every remaining deliberate local classification. |
-| Stop Conditions | Stop if exact preservation requires a new Common/Lib/x86 status or public contract. |
-| Exit Criteria | CQ-18/CQ-19 use one complete local mapping or exact Type propagation, every similar direct rewrite is classified, and unit/documentation/change gates pass. |
+| Reporting Requirements | Record the shared runner failure fact, every terminal path that sets it and focused proof in the ledger/history; state every retained normal-stop path. |
+| Stop Conditions | Stop if Common needs a richer public driver-result contract than its existing boolean success outcome. |
+| Exit Criteria | CQ-20 uses one Machine-owned terminal-failure fact, every non-normal runner path sets it, ordinary stop does not, and unit/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all App/Machine Core-result and Type-to-Lib adaptation sites; classify each retained local precondition, exact propagation or one local complete mapping. |
+| Similar-Issue Sweep | Sweep all `vm_machine_runner_run` terminal branches and every `vm_machine_driver_run` result path; classify normal stop, Core fault, non-fault Core error, pacing error and waiting-advance error. |
 
 ## Current Technical Baseline
 

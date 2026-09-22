@@ -1751,6 +1751,9 @@ target_link_libraries(vm-dos-mem-fault-smoke PRIVATE
 add_executable(vm-fault-outcome-runner-smoke
     test/core/machine/vm_fault_outcome_runner_smoke.c)
 target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-machine)
+add_executable(vm-runner-error-propagation-smoke
+    test/core/machine/vm_runner_error_propagation_smoke.c)
+target_link_libraries(vm-runner-error-propagation-smoke PRIVATE vm-machine)
 add_executable(core-machine-cpu-fpu-profile-smoke
     test/core/devices/cpu_fpu_profile_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
@@ -2126,6 +2129,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke
+    vm-runner-error-propagation-smoke
     vm-cmos-rtc-port-smoke
     vm-pcat-ownership-smoke
     vm-fdc-port-smoke

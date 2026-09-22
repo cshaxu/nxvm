@@ -51,6 +51,10 @@ struct vm_machine {
     type_unsigned_64 last_display_publish_milliseconds;
     core_machine_display_kind display_kind;
     vm_machine_fault_outcome fault_outcome;
+    /* The bounded runner owns this single fact for the existing Common
+     * boolean driver result.  It distinguishes an abnormal executor unwind
+     * from an ordinary product stop without inventing a second Core fault. */
+    type_bool runner_failed;
     vm_machine_control_state control;
     vm_machine_speed speed;
     type_unsigned_64 pacing_host_origin_units;
