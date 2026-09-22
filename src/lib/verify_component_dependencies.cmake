@@ -5,12 +5,13 @@ foreach(retired IN ITEMS kvm-base/mailbox_wake_interface.h
         message(FATAL_ERROR "Default mailbox wake must reuse Base Event: ${retired}")
     endif()
 endforeach()
-set(library_components types base console console-broker storage kvm-base kvm-window kvm-console)
+set(library_components types base console console-broker storage audio kvm-base kvm-window kvm-console)
 set(library_dependencies_types "")
 set(library_dependencies_base types)
 set(library_dependencies_console types base)
 set(library_dependencies_console-broker types base console)
 set(library_dependencies_storage types)
+set(library_dependencies_audio types base)
 set(library_dependencies_kvm-base types base)
 set(library_dependencies_kvm-window types kvm-base)
 set(library_dependencies_kvm-console types base console kvm-base)
@@ -100,6 +101,7 @@ if(EXISTS "${LIBRARY_ROOT}/CMakeLists.txt")
                 library_check_edge("${owner}" "${dependency}")
             elseif((dependency STREQUAL "user32" AND owner MATCHES "^(console-broker|kvm-base|kvm-window)$") OR
                    (dependency STREQUAL "gdi32" AND owner STREQUAL "kvm-window") OR
+                   (dependency STREQUAL "winmm" AND owner STREQUAL "audio") OR
                    (dependency STREQUAL "threads::threads" AND owner STREQUAL "base"))
                 continue()
             else()

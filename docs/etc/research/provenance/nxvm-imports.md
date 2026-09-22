@@ -44,3 +44,12 @@ M5 T531 S11 replaces the complete corpus byte-for-byte with SoftPC commit
 `ui-*` component roots to `kvm-*`; it remains free of independent third-party
 notices. The import excludes every SoftPC path outside `src/lib/`, including
 the unrelated dirty `assets/binary/softpc.ini` worktree asset.
+
+M5 T535 S2 replaces the complete six-tree Lib/Common/x86 source-and-test
+corpus byte-for-byte with SoftPC commit
+`1c5a47146dd4fd87b09423b7a7b960becb50cd67`. The project-owned MIT import is
+`src/{lib,common,x86}` and `test/{lib,common,x86}` only; it excludes SoftPC
+App/MVDM code, firmware, binaries and the unrelated dirty media worktree.
+The 97-file Lib adds the neutral PCM audio component, Common corrects one
+presentation-state rule, and x86 is unchanged. The exact inventory and
+verification are recorded in [T535 S2 evidence](../../evidence/t535-s2-canonical-six-component-import.md).

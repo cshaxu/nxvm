@@ -37,7 +37,6 @@ C_INT main(C_VOID)
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
         TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
-        session->profile != STD_NULL ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=

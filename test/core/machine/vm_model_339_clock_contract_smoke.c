@@ -4,7 +4,7 @@
 #include "core/devices/machine_interface.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "core/profiles/default_profile/pc_at_profile.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
 static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
@@ -47,9 +47,7 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         generic->clock_plan.rtc.numerator != 1u ||
         generic->clock_plan.rtc.denominator != 1u ||
         generic->rtc_ticks_per_second != 50000u;
-    failed |= session->profile == model_339 ||
-        STD_STRCMP(session->profile->identity, "pc-at-5170") != 0 ||
-        session->core_machine_config.memory_bytes != 512u * 1024u ||
+    failed |= session->core_machine_config.memory_bytes != 512u * 1024u ||
         session->core_machine_config.time_axis.kind !=
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         session->controller_timing_rules.dma_service !=

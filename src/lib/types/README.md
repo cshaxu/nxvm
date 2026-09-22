@@ -9,16 +9,16 @@ resource policy, platform worker, or product behavior.
 one-to-one wrappers, but does not compile a platform implementation. Each
 owning component supplies its own selected `win32` or `linux` source behind a
 uniform component-private contract: `base` owns synchronization; `console-broker` owns Console
-native work, `storage` owns file native work, and `kvm-base`/the KVM leaves own
-their own wake, input, and rendering work. `types` never interprets a
+native work, `storage` owns file native work, `audio` owns native PCM output,
+and `kvm-base`/the KVM leaves own their own wake, input, and rendering work. `types` never interprets a
 consumer's state machine or input protocol.
 
 The layout has one rule:
 
 - Top-level headers contain only common scalar/status, ISO C library, or
   compiler atomic vocabulary. They never select an operating system.
-- `win32/` contains the used Windows file, clock, input, sync, Console and
-  Window declaration groups. `linux/` contains the used POSIX file, clock and
+- `win32/` contains the used Windows file, clock, input, sync, Console, Window and
+  audio declaration groups. `linux/` contains the used POSIX file, clock and
   sync declaration groups. Platform sources explicitly include the matching
   group; no common header selects one and no platform header dispatches again.
 - `atomic.h` may select MSVC intrinsics versus C atomics by `_MSC_VER`.

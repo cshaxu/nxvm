@@ -92,7 +92,17 @@ add_library(storage STATIC ${LIBRARY_STORAGE_SOURCES})
 library_root(storage)
 target_link_libraries(storage PUBLIC types)
 
+add_library(audio STATIC audio/stream.c)
 if(WIN32)
+    target_sources(audio PRIVATE audio/win32/stream.c)
+else()
+    target_sources(audio PRIVATE audio/linux/stream.c)
+endif()
+library_root(audio)
+target_link_libraries(audio PUBLIC types base)
+
+if(WIN32)
+    target_link_libraries(audio PRIVATE winmm)
     target_link_libraries(kvm-base PRIVATE user32)
     target_link_libraries(kvm-window PRIVATE user32 gdi32)
     target_link_libraries(console-broker PRIVATE user32)
@@ -105,7 +115,7 @@ endif()
 # peer root remains independently compilable and names its exact dependencies.
 add_library(lib-neutral-corpus INTERFACE)
 target_link_libraries(lib-neutral-corpus INTERFACE
-    types base console console-broker storage kvm-base kvm-window kvm-console)
+    types base console console-broker storage audio kvm-base kvm-window kvm-console)
 
 add_custom_target(lib-verify-manifest
     COMMAND "${CMAKE_COMMAND}" -DLIBRARY_ROOT:PATH=${CMAKE_CURRENT_LIST_DIR}

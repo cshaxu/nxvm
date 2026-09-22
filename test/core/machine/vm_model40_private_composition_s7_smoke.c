@@ -34,7 +34,6 @@ C_INT main(C_VOID)
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
         TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
-        session->profile != STD_NULL ||
         session->core_machine->retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 2048u ||

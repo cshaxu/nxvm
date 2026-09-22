@@ -135,6 +135,37 @@ static void test_stopped_restore_paused_does_not_create_window(void)
         COMMON_UI_ACTION_CREATE_WINDOW);
 }
 
+static void test_nonrunning_missing_window_never_creates(void)
+{
+    common_session_state state;
+    common_session_machine_state states[] = {
+        COMMON_SESSION_MACHINE_INIT,
+        COMMON_SESSION_MACHINE_STOPPED,
+        COMMON_SESSION_MACHINE_RESET_COMPLETED,
+        COMMON_SESSION_MACHINE_PAUSED,
+        COMMON_SESSION_MACHINE_ERROR
+    };
+    common_session_display displays[] = {
+        COMMON_SESSION_DISPLAY_CONSOLE,
+        COMMON_SESSION_DISPLAY_WINDOW
+    };
+    lib_size display_index;
+    lib_size state_index;
+
+    for (display_index = 0u; display_index < sizeof(displays) / sizeof(displays[0]);
+         ++display_index) {
+        for (state_index = 0u; state_index < sizeof(states) / sizeof(states[0]);
+             ++state_index) {
+            common_session_state_initialize(&state, displays[display_index], 0);
+            assert(common_session_state_note_frame(&state, 1u, 1));
+            common_session_state_note_runtime(&state, states[state_index]);
+            assert(!state.window_actual);
+            assert(common_session_state_take_action(&state) !=
+                COMMON_UI_ACTION_CREATE_WINDOW);
+        }
+    }
+}
+
 int main(void)
 {
     test_console_text_to_graphics_monitor();
@@ -142,5 +173,6 @@ int main(void)
     test_static_window_pause_stop_and_close();
     test_reset_completion_restores_paused_view();
     test_stopped_restore_paused_does_not_create_window();
+    test_nonrunning_missing_window_never_creates();
     return 0;
 }

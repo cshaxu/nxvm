@@ -11,6 +11,7 @@ typedef uint8_t lib_u8;
 typedef uint16_t lib_u16;
 typedef uint32_t lib_u32;
 typedef uint64_t lib_u64;
+typedef int16_t lib_i16;
 typedef int32_t lib_i32;
 typedef int64_t lib_i64;
 typedef size_t lib_size;

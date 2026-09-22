@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/devices/machine.h"
+#include "core/devices/vadp.h"
 #include "core/machine/display.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"

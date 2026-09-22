@@ -2,6 +2,7 @@
 
 #include "core/devices/machine_interface.h"
 #include "core/devices/debug_interface.h"
+#include "core/devices/vadp.h"
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_interface.h"
 #include "support/rom/session_assets.h"

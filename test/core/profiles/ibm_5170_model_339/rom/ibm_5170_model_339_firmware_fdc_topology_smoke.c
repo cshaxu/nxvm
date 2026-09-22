@@ -4,7 +4,7 @@
 #include "core/devices/port.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "core/profiles/default_profile/pc_at_profile.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
 #include "../../../machine/support/rom/session_assets.h"
 
 int main(C_VOID)

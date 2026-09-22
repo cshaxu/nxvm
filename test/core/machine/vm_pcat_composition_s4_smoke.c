@@ -6,7 +6,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "core/profiles/default_profile/pc_at_profile.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
 
 #include "../devices/support/core_machine_cpu_fixture.h"
 #include "support/rom/session_assets.h"

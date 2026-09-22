@@ -50,7 +50,7 @@ An arrow means the component on the right may use the generic contract of the
 component on the left:
 
 ```text
-types -> base + console + console-broker + storage + kvm-base + kvm-window + kvm-console
+types -> base + console + console-broker + storage + audio + kvm-base + kvm-window + kvm-console
 base -> console + console-broker + kvm-base + kvm-console
 console -> console-broker + kvm-console
 kvm-base -> kvm-window + kvm-console
@@ -85,6 +85,11 @@ lifecycle controller, or public unified presenter API.
 - `storage` provides file and byte-medium primitives. Medium and writer own
   embedded file storage; owned-byte reads use a stack file. Closing consumes
   the stream, not its enclosing allocation; failed opens leave it empty.
+- `audio` provides bounded copied PCM playback. Windows owns four prepared
+  `waveOut` slots and exposes completed-slot readiness without invoking
+  producer code; one concurrent waiter may be cancelled without touching queued
+  PCM. Linux explicitly reports unsupported. Producers own synthesis, pacing
+  and guest-device semantics.
 - `kvm-base` provides copied frame/input values, source-local registered-hotkey
   matching, source identities, and private mailbox mechanics.
 - `kvm-window` owns one Window lifecycle; `kvm-console` owns one raw-Console

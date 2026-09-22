@@ -5,6 +5,7 @@
 
 typedef HANDLE lib_win32_handle;
 typedef DWORD lib_win32_dword;
+typedef DWORD_PTR lib_win32_dword_ptr;
 typedef LPVOID lib_win32_lpvoid;
 typedef LONG lib_win32_long;
 typedef LONG_PTR lib_win32_long_ptr;

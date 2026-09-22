@@ -4,6 +4,7 @@
 #include "type.h"
 #include "core/devices/rtc.h"
 #include "core/machine/machine_interface.h"
+#include "core/profiles/model40/model40_private.h"
 
 static inline C_VOID vm_model40_fixture_cmos_seed(
     type_unsigned_8 bytes[VM_MACHINE_CMOS_SEED_BYTES])

@@ -5,7 +5,7 @@
 #include "core/devices/port.h"
 #include "core/machine/machine_private.h"
 #include "core/machine/machine_interface.h"
-#include "core/profiles/default_profile/pc_at_profile.h"
+#include "core/profiles/default_profile/pc_at_profile_private.h"
 
 #include "support/rom/session_assets.h"
 
@@ -66,8 +66,6 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         vm_machine_destroy(session);
         return 1;
     }
-    failed |= (STD_STRCMP(session->profile->identity, "pc-at-5170") != 0 ||
-        !vm_profile_default_pc_at_descriptor_is_valid(session->profile)) ? 0x0001 : 0;
     failed |= (!session->core_machine->shared_vadp.data.text_glyphs.present ||
         session->core_machine->shared_vadp.data.text_glyphs.bytes['A' *
         CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] != 0x81u ||
@@ -147,7 +145,7 @@ static C_INT vm_model_339_floppy_contract(C_VOID)
         session == STD_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
         session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
-        session->fdd.data.nsector != 9u || session->profile->cmos.floppy_type != 0x20u ||
+        session->fdd.data.nsector != 9u ||
         session->core_machine->fdc.connect.drives.cylinder_count[0u] != 80u;
     vm_machine_destroy(session);
     session = STD_NULL;
@@ -320,7 +318,7 @@ C_INT main(C_VOID)
     const C_INT rom = vm_model_339_external_rom_route();
     const C_INT default_create = vm_test_create_default(&default_config,
         &default_session) != TYPE_STATUS_OK || default_session == STD_NULL ||
-        !default_session->profile->hdc_present;
+        !vm_profile_machine_plan_hdc_present(default_session->profile_plan);
     C_INT failed = selected || floppy || refresh || refresh_post || dma_word_io || rom || default_create;
 
     vm_machine_destroy(default_session);

@@ -171,7 +171,10 @@ common_ui_action common_session_state_next_action(const common_session_state *st
         return COMMON_UI_ACTION_DESTROY_VM_CONSOLE;
     /* Console activation may request foreground. Finish its ownership work
        before creating the Window that should receive the final activation. */
-    if (desired.window_enabled && !state->window_actual)
+    /* Paused state can retain a Window, but only a running machine may
+       synthesize one after it is absent. */
+    if (desired.window_enabled && !state->window_actual &&
+        state->runtime_actual == COMMON_SESSION_MACHINE_RUNNING)
         return COMMON_UI_ACTION_CREATE_WINDOW;
     if (!desired.window_enabled && state->window_actual)
         return COMMON_UI_ACTION_DESTROY_WINDOW;

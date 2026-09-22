@@ -123,7 +123,7 @@ C_INT main(C_VOID)
 {
     vm_machine *session = STD_NULL;
     if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    if (!session->active || session->profile == STD_NULL ||
+    if (!session->active || session->profile_plan == STD_NULL ||
         session->core_machine->fdc.connect.config.dor_port != 0x03f2u ||
         session->core_machine->fdc.connect.config.status_port != 0x03f4u ||
         session->core_machine->fdc.connect.config.data_port != 0x03f5u ||
