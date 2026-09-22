@@ -40,3 +40,9 @@ tests assert effective configuration and topology rather than ancestry text.
 
 Closure requires a whole-corpus caller sweep, focused retained-board proof,
 complete repository-only unit proof and actual-diff review.
+
+P1 `2a667f8f` deletes the resolver graph, per-field provenance and generic
+Machine materializer.  Direct Profile contracts retain the former validation
+rules, including zero-ID, overlap and duplicate-line rejection.  The caller
+sweep is empty; 333/333 repository-only unit and 20/20 external integration
+pass; documentation governance and actual-diff review pass.  S3 is closed.

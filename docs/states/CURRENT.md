@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S3 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S3 is the next confirmed batch in its accepted proposal. |
-| Objective | Replace recursive Profile inheritance/provenance mirrors and Machine-owned generic controller materialization with direct frozen Profile plans. |
-| Non-goals | Do not change retained board behavior, media ownership, external assets, Common/Lib contracts, or guest timing policy. |
-| Reference Baseline | S2 closed at `32d3585d`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S4 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S4 is the next confirmed batch in its accepted proposal. |
+| Objective | Remove or migrate the duplicate root host/file facade to canonical Lib capability, including App INI path edge cases and dead helpers. |
+| Non-goals | Do not change retained profile behavior, external assets, Common/Lib public contracts, or INI product semantics. |
+| Reference Baseline | S3 closed at `2a667f8f`; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `core/profiles` direct plan construction and validation; `core/machine` construction call site; profile tests. No new external/public product API. |
+| Files And ABI Surface | Root `src/type.*`, App INI loading and path tests. No Lib/Common public-contract change is permitted. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): one active S, complete P and full unit suite; [Architecture](../rules/ARCHITECTURE.md): direct dependency/one owner; [Coding](../rules/CODING.md): remove obsolete path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Resolver/materializer caller inventory, focused retained-profile tests, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
-| Expected Markers | No runtime parent/field-owner provenance state, no Machine callback for board controller materialization, and retained XT/AT/5170/Model 40 plans keep their prior effective configuration. CQ-4 receives an explicit disposition. |
+| Verification | Full facade/caller inventory, focused App INI/path tests, complete repository-only unit suite, documentation governance, `git diff --check` and actual-diff review. |
+| Expected Markers | One Lib-owned file/host path; App INI loading resolves its root-directory edge case; removed facade has no live caller. CQ-5 receives an explicit disposition. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report removed resolver/materializer paths, retained direct owners, effective-profile proof, tests and remaining T534 ledger state. |
-| Stop Conditions | Stop for a separate admission if repair requires a Lib/Common/x86 contract change or changes external guest/video behavior beyond the proven boundary. |
-| Exit Criteria | CQ-4 has a direct Profile-owned construction path, all recursive/provenance mirrors are deleted, full unit and static/documentation checks pass. |
+| Reporting Requirements | Report removed facade/dead helpers, App path ownership and root-path proof, tests and remaining T534 ledger state. |
+| Stop Conditions | Stop for a separate admission if repair requires a Lib/Common/x86 contract change or changes INI product semantics beyond the proven path boundary. |
+| Exit Criteria | CQ-5 has one canonical host/file route, all dead facade helpers are deleted, full unit and static/documentation checks pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Inspect every Profile resolver/materializer caller and test assertion; remove inheritance/provenance and Machine construction callbacks rather than leaving one retained variant. |
+| Similar-Issue Sweep | Inspect every root host/file facade caller and App path helper; remove duplicate or dead routes rather than leaving a compatibility wrapper. |
 
 ## Current Technical Baseline
 
