@@ -363,12 +363,12 @@ target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-machine)
 add_executable(vm-timing-qualification-smoke
     test/core/machine/vm_timing_qualification_smoke.c)
 target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-machine)
-add_executable(vm-profile-resolver-smoke
-    test/core/machine/vm_profile_resolver_smoke.c)
-target_link_libraries(vm-profile-resolver-smoke PRIVATE vm-profile)
-add_executable(vm-ibm-5170-root-resolver-smoke
-    test/core/machine/vm_ibm_5170_root_resolver_smoke.c)
-target_link_libraries(vm-ibm-5170-root-resolver-smoke PRIVATE vm-profile)
+add_executable(vm-profile-contract-smoke
+    test/core/machine/vm_profile_contract_smoke.c)
+target_link_libraries(vm-profile-contract-smoke PRIVATE vm-profile)
+add_executable(vm-ibm-5170-direct-plan-smoke
+    test/core/machine/vm_ibm_5170_direct_plan_smoke.c)
+target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE vm-profile)
 add_executable(vm-xt-5160-268-profile-smoke
     test/core/machine/vm_xt_5160_268_profile_smoke.c)
 target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-machine)
@@ -1226,7 +1226,7 @@ target_include_directories(type-facade PUBLIC
 )
 
 set(VM_PROFILE_SOURCES
-    src/core/profiles/profile_resolver.c
+    src/core/profiles/profile_contract.c
     src/core/profiles/byob/blob.c
     src/core/profiles/xt/xt_5160_268.c
     src/core/profiles/xt/rom/xt_5160_268_rom.c
@@ -2136,8 +2136,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-machine-media-lifecycle-s3-smoke
     vm-machine-speed-policy-smoke
     vm-timing-qualification-smoke
-    vm-profile-resolver-smoke
-    vm-ibm-5170-root-resolver-smoke
+    vm-profile-contract-smoke
+    vm-ibm-5170-direct-plan-smoke
     vm-xt-5160-268-profile-smoke)
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
     common-machine-smoke

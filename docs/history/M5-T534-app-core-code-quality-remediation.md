@@ -25,3 +25,18 @@ Core presentation mailbox. Integration probes observe the one Common-frame
 production route through a test-only capture adapter. Closure requires 333/333
 repository-only unit and 20/20 external integration proof plus actual-diff
 review.
+
+P1 `32d3585d` removes the Core mailbox and makes conversion failure-atomic.
+Focused proof, 333/333 repository-only unit and 20/20 external integration
+pass. S2 is closed.
+
+## S3: Direct Profile Plans
+
+S3 removes the runtime Profile-inheritance/provenance mirror and returns
+PC/AT board controller construction to Profile. Machine continues to own media
+objects and registry binding, but no longer provides a generic board
+materializer callback. The direct value contract validates each effective plan;
+tests assert effective configuration and topology rather than ancestry text.
+
+Closure requires a whole-corpus caller sweep, focused retained-board proof,
+complete repository-only unit proof and actual-diff review.

@@ -18,12 +18,6 @@ static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
 static C_INT vm_machine_remove_fdd_direct(vm_machine *session,
     const C_CHAR *path);
 
-static type_status vm_machine_generic_materialize(C_VOID *context,
-    core_machine_plan *plan)
-{
-    return vm_machine_devices_materialize_plan((vm_machine *)context, plan);
-}
-
 static C_VOID vm_machine_capture_fdc_terminal(C_VOID *opaque,
     const core_machine_fdc_terminal_observation *observation)
 {
@@ -376,7 +370,7 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
         return status;
     }
     status = vm_profile_machine_plan_materialize(machine->profile_plan,
-        machine->core_machine_plan, vm_machine_generic_materialize, machine,
+        machine->core_machine_plan,
         (core_machine_fdc_terminal_observation_provider) {
             vm_machine_capture_fdc_terminal, machine });
     if (status != TYPE_STATUS_OK) {

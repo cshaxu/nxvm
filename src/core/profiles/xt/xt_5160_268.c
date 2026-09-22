@@ -11,76 +11,71 @@ static const type_unsigned_32 vm_profile_xt_5160_268_contract_ids[] = {
     VM_PROFILE_XT_5160_268_CONTRACT_ID
 };
 
-type_status vm_profile_xt_5160_268_declaration_create(
-    vm_profile_resolver_declaration *out_declaration)
+type_status vm_profile_xt_5160_268_values_create(
+    vm_profile_contract_values *out_values)
 {
-    vm_profile_resolver_declaration declaration = {0};
+    vm_profile_contract_values values = {0};
+    const vm_profile_contract_catalog catalog = { vm_profile_xt_5160_268_contract_ids,
+        sizeof(vm_profile_xt_5160_268_contract_ids) /
+            sizeof(vm_profile_xt_5160_268_contract_ids[0]) };
 
-    if (out_declaration == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    declaration.identity = "ibm-5160-model-268";
-    declaration.provided_fields = VM_PROFILE_RESOLVER_FIELD_ALL;
-    declaration.owned_fields = VM_PROFILE_RESOLVER_FIELD_ALL;
-    declaration.values.core.contract_id = VM_PROFILE_XT_5160_268_CONTRACT_ID;
-    declaration.values.core.configuration.memory_bytes = 256u * 1024u;
-    declaration.values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8088;
-    declaration.values.core.configuration.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
-    declaration.values.core.configuration.shared_pit_personality =
+    if (out_values == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    values.core.id = VM_PROFILE_XT_5160_268_CONTRACT_ID;
+    values.core.configuration.memory_bytes = 256u * 1024u;
+    values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8088;
+    values.core.configuration.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    values.core.configuration.shared_pit_personality =
         CORE_MACHINE_PIT_PERSONALITY_8253;
-    declaration.values.core.configuration.pic_topology =
+    values.core.configuration.pic_topology =
         CORE_MACHINE_PIC_TOPOLOGY_SINGLE;
-    declaration.values.core.configuration.dma_controller_count = 1u;
-    declaration.values.core.configuration.keyboard_topology =
+    values.core.configuration.dma_controller_count = 1u;
+    values.core.configuration.keyboard_topology =
         CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI;
-    declaration.values.core.configuration.xt_ppi_keyboard =
+    values.core.configuration.xt_ppi_keyboard =
         (core_machine_xt_ppi_keyboard_config) {0x0060u, 0x0061u, 0x0062u,
             0x0063u, 1u, 0x0du, 0x02u};
     /* Manual values feed this explicit macro axis; 8088 retirement has not
      * qualified it as physical machine time. */
-    declaration.values.core.configuration.time_axis =
+    values.core.configuration.time_axis =
         (core_machine_time_axis) {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 4772727u};
-    declaration.values.core.configuration.l1_compatibility_policy =
+    values.core.configuration.l1_compatibility_policy =
         CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS;
     /* IBM derives the 8253 input (1.193182 MHz) as one quarter of the
      * 4.772727 MHz CPU board clock. This is frozen board data, not a
      * profile scheduler or another guest clock. */
-    declaration.values.core.configuration.clock_plan.pit =
+    values.core.configuration.clock_plan.pit =
         (core_machine_clock_ratio) {1u, 4u, 0u};
-    declaration.values.core.configuration.clock_plan.dma =
+    values.core.configuration.clock_plan.dma =
         (core_machine_clock_ratio) {1u, 1u, 0u};
-    declaration.values.core.controller_timing_rules =
+    values.core.controller_timing_rules =
         (core_machine_controller_timing_rules) {
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK};
-    declaration.values.core.configuration.ticks_per_instruction = 1u;
-    declaration.values.enabled_devices = VM_PROFILE_XT_5160_268_CORE_DEVICE;
-    declaration.values.firmware_policy = VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BYOB;
-    declaration.values.media_policy = VM_PROFILE_RESOLVER_MEDIA_POLICY_NONE;
-    declaration.values.allowed_session_options = 0u;
-    *out_declaration = declaration;
+    values.core.configuration.ticks_per_instruction = 1u;
+    values.enabled_devices = VM_PROFILE_XT_5160_268_CORE_DEVICE;
+    values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BYOB;
+    values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_NONE;
+    values.allowed_session_options = 0u;
+    if (vm_profile_contract_validate(&values, &catalog, 0u) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_values = values;
     return TYPE_STATUS_OK;
 }
 
-type_status vm_profile_xt_5160_268_resolve(
-    vm_profile_xt_5160_268_resolved_profile *out_profile,
+type_status vm_profile_xt_5160_268_plan_create(
+    vm_profile_xt_5160_268_plan_snapshot *out_profile,
     type_bool xebec_rom_present)
 {
-    vm_profile_resolver_declaration declaration;
-    type_status status;
-    const vm_profile_resolver_contract_catalog catalog = {
-        vm_profile_xt_5160_268_contract_ids,
-        sizeof(vm_profile_xt_5160_268_contract_ids) /
-            sizeof(vm_profile_xt_5160_268_contract_ids[0])};
-
-    if (out_profile == STD_NULL ||
-        vm_profile_xt_5160_268_declaration_create(&declaration) != TYPE_STATUS_OK) {
+    if (out_profile == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    status = vm_profile_resolver_resolve(&declaration, &catalog,
-        &(vm_profile_resolver_session_request) {0u}, &out_profile->resolved);
-    if (status != TYPE_STATUS_OK) return status;
+    if (vm_profile_xt_5160_268_values_create(&out_profile->values) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     out_profile->topology = (core_machine_plan_topology) {0};
     /* The fixed 256 KiB board leaves these windows unpopulated and POST probes
      * them as open bus.  A selected Xebec ROM is a frozen construction input:

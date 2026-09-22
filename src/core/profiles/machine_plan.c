@@ -8,6 +8,9 @@
 #include "core/profiles/model40/model40_private.h"
 #include "core/profiles/xt/xt_5160_268.h"
 
+#define VM_PROFILE_MACHINE_FDD_MEDIA_ID 1u
+#define VM_PROFILE_MACHINE_HDD_MEDIA_ID 2u
+
 typedef enum vm_profile_machine_plan_kind {
     VM_PROFILE_MACHINE_PLAN_DEFAULT_PC_AT,
     VM_PROFILE_MACHINE_PLAN_IBM_5170,
@@ -31,10 +34,10 @@ struct vm_profile_machine_plan {
     const core_machine_firmware_provider *firmware_provider;
     C_VOID *firmware_context;
     union {
-        vm_profile_default_pc_at_resolved_profile pc_at;
-        vm_resolved_profile model40;
-        vm_profile_xt_5160_268_resolved_profile xt;
-    } resolved;
+        vm_profile_default_pc_at_plan_snapshot pc_at;
+        vm_profile_contract_values model40;
+        vm_profile_xt_5160_268_plan_snapshot xt;
+    } profile;
     union {
         struct {
             type_unsigned_8 image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
@@ -201,16 +204,16 @@ static type_status vm_profile_machine_plan_default(vm_profile_machine_plan *plan
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY;
         request.floppy_cmos_type = vm_profile_floppy_cmos_type_get(plan->media_floppy);
     }
-    if (vm_profile_default_at_child_resolve(&request, &plan->resolved.pc_at) != TYPE_STATUS_OK ||
+    if (vm_profile_default_at_plan_create(&request, &plan->profile.pc_at) != TYPE_STATUS_OK ||
         vm_profile_machine_plan_pc_at_rom(plan, config, assets) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    plan->core_config = plan->resolved.pc_at.resolved.values.core.configuration;
-    plan->timing_rules = plan->resolved.pc_at.resolved.values.core.controller_timing_rules;
-    plan->topology = plan->resolved.pc_at.topology;
+    plan->core_config = plan->profile.pc_at.values.core.configuration;
+    plan->timing_rules = plan->profile.pc_at.values.core.controller_timing_rules;
+    plan->topology = plan->profile.pc_at.topology;
     plan->drive_floppy = plan->media_floppy;
     plan->floppy_slot_count = 1u;
-    plan->hdc_present = plan->resolved.pc_at.descriptor.hdc_present;
+    plan->hdc_present = plan->profile.pc_at.descriptor.hdc_present;
     plan->memory_reconfigurable = TYPE_TRUE;
     return TYPE_STATUS_OK;
 }
@@ -220,17 +223,17 @@ static type_status vm_profile_machine_plan_5170(vm_profile_machine_plan *plan,
 {
     if (vm_profile_machine_plan_floppy(config, VM_PROFILE_FLOPPY_525_1200K,
             TYPE_TRUE, &plan->media_floppy) != TYPE_STATUS_OK ||
-        vm_profile_ibm_5170_root_resolve_memory(config->memory_bytes,
-            &plan->resolved.pc_at) != TYPE_STATUS_OK ||
+        vm_profile_ibm_5170_plan_create_memory(config->memory_bytes,
+            &plan->profile.pc_at) != TYPE_STATUS_OK ||
         vm_profile_machine_plan_pc_at_rom(plan, config, assets) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    plan->core_config = plan->resolved.pc_at.resolved.values.core.configuration;
-    plan->timing_rules = plan->resolved.pc_at.resolved.values.core.controller_timing_rules;
-    plan->topology = plan->resolved.pc_at.topology;
+    plan->core_config = plan->profile.pc_at.values.core.configuration;
+    plan->timing_rules = plan->profile.pc_at.values.core.controller_timing_rules;
+    plan->topology = plan->profile.pc_at.topology;
     plan->drive_floppy = VM_PROFILE_FLOPPY_525_1200K;
     plan->floppy_slot_count = 1u;
-    plan->hdc_present = plan->resolved.pc_at.descriptor.hdc_present;
+    plan->hdc_present = plan->profile.pc_at.descriptor.hdc_present;
     plan->memory_reconfigurable = TYPE_TRUE;
     return TYPE_STATUS_OK;
 }
@@ -251,7 +254,7 @@ static type_status vm_profile_machine_plan_xt(vm_profile_machine_plan *plan,
             assets->bios[0u].bytes, config->bios_count == 2u ? assets->bios[1u].data : STD_NULL,
             config->bios_count == 2u ? assets->bios[1u].bytes : 0u, assets->video.data,
             assets->video.bytes, &source) != TYPE_STATUS_OK ||
-        vm_profile_xt_5160_268_resolve(&plan->resolved.xt, source.xebec_present) != TYPE_STATUS_OK) {
+        vm_profile_xt_5160_268_plan_create(&plan->profile.xt, source.xebec_present) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     plan->firmware.xt.system = (type_unsigned_8 *)STD_MALLOC(
@@ -277,9 +280,9 @@ static type_status vm_profile_machine_plan_xt(vm_profile_machine_plan *plan,
         plan->firmware.xt.video;
     plan->firmware_provider = vm_profile_xt_5160_268_firmware_provider();
     plan->firmware_context = &plan->firmware.xt.context;
-    plan->core_config = plan->resolved.xt.resolved.values.core.configuration;
-    plan->timing_rules = plan->resolved.xt.resolved.values.core.controller_timing_rules;
-    plan->topology = plan->resolved.xt.topology;
+    plan->core_config = plan->profile.xt.values.core.configuration;
+    plan->timing_rules = plan->profile.xt.values.core.controller_timing_rules;
+    plan->topology = plan->profile.xt.topology;
     plan->drive_floppy = VM_PROFILE_FLOPPY_525_360K;
     plan->floppy_slot_count = 1u;
     plan->hdc_present = source.xebec_present;
@@ -295,7 +298,7 @@ static type_status vm_profile_machine_plan_model40(vm_profile_machine_plan *plan
         (config->memory_bytes != 0u && config->memory_bytes != 1024u * 1024u) ||
         vm_profile_machine_plan_floppy(config, VM_PROFILE_FLOPPY_525_1200K, TYPE_TRUE,
             &plan->media_floppy) != TYPE_STATUS_OK ||
-        vm_profile_model40_child_resolve(&plan->resolved.model40) != TYPE_STATUS_OK ||
+        vm_profile_model40_values_create(&plan->profile.model40) != TYPE_STATUS_OK ||
         vm_profile_model40_external_rom_create(assets->bios[0u].data, assets->bios[0u].bytes,
             assets->bios[1u].data, assets->bios[1u].bytes, assets->video.data,
             assets->video.bytes, &source) != TYPE_STATUS_OK ||
@@ -314,8 +317,8 @@ static type_status vm_profile_machine_plan_model40(vm_profile_machine_plan *plan
         plan->firmware.model40.video;
     plan->firmware_provider = vm_profile_model40_firmware_provider();
     plan->firmware_context = &plan->firmware.model40.context;
-    plan->core_config = plan->resolved.model40.values.core.configuration;
-    plan->timing_rules = plan->resolved.model40.values.core.controller_timing_rules;
+    plan->core_config = plan->profile.model40.core.configuration;
+    plan->timing_rules = plan->profile.model40.core.controller_timing_rules;
     if (vm_profile_model40_topology_materialize(&plan->topology) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -502,20 +505,7 @@ vm_profile_machine_plan_pc_at_descriptor_get(const vm_profile_machine_plan *plan
 {
     return plan == STD_NULL || (plan->kind != VM_PROFILE_MACHINE_PLAN_DEFAULT_PC_AT &&
         plan->kind != VM_PROFILE_MACHINE_PLAN_IBM_5170) ? STD_NULL :
-        &plan->resolved.pc_at.descriptor;
-}
-const vm_profile_default_pc_at_resolved_profile *
-vm_profile_machine_plan_pc_at_resolved_get(const vm_profile_machine_plan *plan)
-{
-    return plan == STD_NULL || (plan->kind != VM_PROFILE_MACHINE_PLAN_DEFAULT_PC_AT &&
-        plan->kind != VM_PROFILE_MACHINE_PLAN_IBM_5170) ? STD_NULL :
-        &plan->resolved.pc_at;
-}
-const vm_resolved_profile *vm_profile_machine_plan_model40_resolved_get(
-    const vm_profile_machine_plan *plan)
-{
-    return plan == STD_NULL || plan->kind != VM_PROFILE_MACHINE_PLAN_MODEL40 ? STD_NULL :
-        &plan->resolved.model40;
+        &plan->profile.pc_at.descriptor;
 }
 const vm_profile_model40_external_rom *vm_profile_machine_plan_model40_rom_get(
     const vm_profile_machine_plan *plan)
@@ -548,19 +538,75 @@ type_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_pl
     return TYPE_STATUS_OK;
 }
 
-type_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
-    core_machine_plan *core_plan, vm_profile_machine_generic_materializer generic,
-    C_VOID *generic_context,
-    core_machine_fdc_terminal_observation_provider terminal_observation)
+static type_status vm_profile_machine_plan_materialize_pc_at(
+    const vm_profile_machine_plan *plan, core_machine_plan *core_plan)
 {
-    if (plan == STD_NULL || core_plan == STD_NULL || generic == STD_NULL) {
+    const vm_profile_default_pc_at_descriptor *profile;
+    const vm_profile_default_pc_at_port_leaf *dor_port;
+    const vm_profile_default_pc_at_port_leaf *status_port;
+    const vm_profile_default_pc_at_port_leaf *data_port;
+    const vm_profile_default_pc_at_port_leaf *control_port;
+    const vm_profile_default_pc_at_route *route;
+    core_machine_fdc_drive_bindings drives = {
+        {VM_PROFILE_MACHINE_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
+            CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
+        {0u, 0u, 0u, 0u}, 0u
+    };
+    core_machine_fdc_config fdc = {0};
+
+    if (plan == STD_NULL || core_plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    profile = &plan->profile.pc_at.descriptor;
+    if (!vm_profile_default_pc_at_descriptor_is_valid(profile)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    dor_port = vm_profile_default_pc_at_port_leaf_at(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0u);
+    status_port = vm_profile_default_pc_at_port_leaf_at(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 1u);
+    data_port = vm_profile_default_pc_at_port_leaf_at(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 2u);
+    control_port = vm_profile_default_pc_at_port_leaf_at(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 3u);
+    route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+    if (dor_port == STD_NULL || status_port == STD_NULL || data_port == STD_NULL ||
+        control_port == STD_NULL || route == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    fdc.dor_port = dor_port->port;
+    fdc.status_port = status_port->port;
+    fdc.data_port = data_port->port;
+    fdc.direction_port = control_port->port;
+    fdc.control_port = control_port->port;
+    fdc.irq = route->irq;
+    fdc.dma_channel = route->dma_channel;
+    fdc.ready_mask = profile->fdc_ready_mask;
+    fdc.clock_ticks_per_second = plan->core_config.time_axis.ticks_per_second;
+    drives.installed_mask = profile->fdc_installed_mask;
+    drives.double_sided_mask = profile->fdc_double_sided_mask;
+    STD_MEMCPY(drives.cylinder_count, profile->fdc_cylinder_count,
+        sizeof(drives.cylinder_count));
+    drives.track_zero_active_low_mask = profile->fdc_track_zero_active_low_mask;
+    fdc.diagnostic_port = profile->fdc_diagnostic_port;
+    fdc.diagnostic_read_value = profile->fdc_diagnostic_read_value;
+    if (core_machine_plan_configure_fdc(core_plan, &drives, &fdc) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (!profile->hdc_present) return TYPE_STATUS_OK;
+    return core_machine_plan_configure_hdc(core_plan, VM_PROFILE_MACHINE_HDD_MEDIA_ID,
+        CORE_MACHINE_MEDIA_ID_INVALID, &profile->hdc);
+}
+
+type_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
+    core_machine_plan *core_plan,
+    core_machine_fdc_terminal_observation_provider terminal_observation)
+{
+    if (plan == STD_NULL || core_plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (plan->kind == VM_PROFILE_MACHINE_PLAN_MODEL40) {
         return vm_profile_model40_materialize_plan(core_plan, terminal_observation);
     }
     if (plan->kind == VM_PROFILE_MACHINE_PLAN_XT) return TYPE_STATUS_OK;
-    return generic(generic_context, core_plan);
+    return vm_profile_machine_plan_materialize_pc_at(plan, core_plan);
 }
 
 type_bool vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *plan,

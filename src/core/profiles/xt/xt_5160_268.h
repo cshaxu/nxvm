@@ -1,7 +1,7 @@
 #ifndef VM_PROFILE_XT_5160_268_H
 #define VM_PROFILE_XT_5160_268_H
 
-#include "core/profiles/profile_resolver_interface.h"
+#include "core/profiles/profile_contract_interface.h"
 #include "core/devices/firmware_interface.h"
 
 #define VM_PROFILE_XT_5160_268_FDD_MEDIA_ID 1u
@@ -30,15 +30,15 @@ typedef struct vm_profile_xt_5160_268_external_rom {
 /* This is a construction-only snapshot.  The copied Core topology records
  * only B2-selected shared board facts; later device batches own their own
  * source-qualified additions. */
-typedef struct vm_profile_xt_5160_268_resolved_profile {
-    vm_resolved_profile resolved;
+typedef struct vm_profile_xt_5160_268_plan_snapshot {
+    vm_profile_contract_values values;
     core_machine_plan_topology topology;
-} vm_profile_xt_5160_268_resolved_profile;
+} vm_profile_xt_5160_268_plan_snapshot;
 
-type_status vm_profile_xt_5160_268_declaration_create(
-    vm_profile_resolver_declaration *out_declaration);
-type_status vm_profile_xt_5160_268_resolve(
-    vm_profile_xt_5160_268_resolved_profile *out_profile,
+type_status vm_profile_xt_5160_268_values_create(
+    vm_profile_contract_values *out_values);
+type_status vm_profile_xt_5160_268_plan_create(
+    vm_profile_xt_5160_268_plan_snapshot *out_profile,
     type_bool xebec_rom_present);
 C_INT vm_profile_xt_5160_268_byob_manifest_is_valid(
     const vm_profile_xt_5160_268_byob_manifest *manifest);

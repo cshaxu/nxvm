@@ -56,13 +56,13 @@ static C_INT vm_timing_qualification_model_40_configure(
 static C_INT vm_timing_qualification_xt_configure(
     core_machine_config *out_configuration)
 {
-    vm_profile_xt_5160_268_resolved_profile profile;
+    vm_profile_xt_5160_268_plan_snapshot profile;
 
     if (out_configuration == STD_NULL ||
-        vm_profile_xt_5160_268_resolve(&profile, TYPE_FALSE) != TYPE_STATUS_OK) {
+        vm_profile_xt_5160_268_plan_create(&profile, TYPE_FALSE) != TYPE_STATUS_OK) {
         return 1;
     }
-    *out_configuration = profile.resolved.values.core.configuration;
+    *out_configuration = profile.values.core.configuration;
     return 0;
 }
 

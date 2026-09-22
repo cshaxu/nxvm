@@ -91,13 +91,8 @@ C_INT main(C_VOID)
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != TYPE_STATUS_OK ||
-        STD_STRCMP(vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->identity,
-            "compaq-deskpro-386-model-40") != 0 ||
-        STD_STRCMP(vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->parent_identity, "pc-at-5170") != 0 ||
-        vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->values.core.configuration.memory_bytes !=
-            session->core_machine_config.memory_bytes ||
-        vm_profile_machine_plan_model40_resolved_get(session->profile_plan)->values.core.configuration.cpu_profile !=
-            session->core_machine_config.cpu_profile ||
+        session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
+        session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         session->core_machine->shared_kbc.data.aux_enabled ||
         (session->core_machine->shared_kbc.data.command_byte &
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;

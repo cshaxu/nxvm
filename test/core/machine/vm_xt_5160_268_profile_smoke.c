@@ -26,19 +26,16 @@ static const core_machine_media_provider vm_xt_5160_268_fdd_provider = {
     vm_xt_5160_268_fdd_query, STD_NULL, STD_NULL, STD_NULL, STD_NULL,
     STD_NULL, STD_NULL};
 
-static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
+static C_INT vm_xt_5160_268_contract_is_fixed(C_VOID)
 {
-    vm_profile_resolver_declaration declaration;
-    vm_profile_xt_5160_268_resolved_profile profile;
+    vm_profile_xt_5160_268_plan_snapshot profile;
 
-    if (vm_profile_xt_5160_268_declaration_create(&declaration) != TYPE_STATUS_OK ||
-        vm_profile_xt_5160_268_resolve(&profile, TYPE_FALSE) != TYPE_STATUS_OK ||
-        STD_STRCMP(profile.resolved.identity, "ibm-5160-model-268") != 0 ||
-        profile.resolved.owned_fields != VM_PROFILE_RESOLVER_FIELD_ALL ||
-        profile.resolved.values.core.configuration.memory_bytes != 256u * 1024u ||
-        profile.resolved.values.core.configuration.cpu_profile !=
+    if (vm_profile_xt_5160_268_values_create(&profile.values) != TYPE_STATUS_OK ||
+        vm_profile_xt_5160_268_plan_create(&profile, TYPE_FALSE) != TYPE_STATUS_OK ||
+        profile.values.core.configuration.memory_bytes != 256u * 1024u ||
+        profile.values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_8088 ||
-        profile.resolved.values.core.configuration.l1_compatibility_policy !=
+        profile.values.core.configuration.l1_compatibility_policy !=
             CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         profile.topology.absent_memory_count != 3u ||
         profile.topology.absent_memory[0].physical_start != 0x00040000u ||
@@ -50,26 +47,26 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.topology.absent_memory[2].physical_start != 0x000c0000u ||
         profile.topology.absent_memory[2].bytes != 0x00030000u ||
         profile.topology.absent_memory[2].read_value != 0xffu ||
-        profile.resolved.values.core.configuration.fpu_profile !=
+        profile.values.core.configuration.fpu_profile !=
             CORE_MACHINE_FPU_PROFILE_NONE ||
-        profile.resolved.values.core.configuration.shared_pit_personality !=
+        profile.values.core.configuration.shared_pit_personality !=
             CORE_MACHINE_PIT_PERSONALITY_8253 ||
-        profile.resolved.values.core.configuration.pic_topology !=
+        profile.values.core.configuration.pic_topology !=
             CORE_MACHINE_PIC_TOPOLOGY_SINGLE ||
-        profile.resolved.values.core.configuration.dma_controller_count != 1u ||
-        profile.resolved.values.core.configuration.keyboard_topology !=
+        profile.values.core.configuration.dma_controller_count != 1u ||
+        profile.values.core.configuration.keyboard_topology !=
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ||
-        profile.resolved.values.core.configuration.xt_ppi_keyboard.port_a != 0x0060u ||
-        profile.resolved.values.core.configuration.xt_ppi_keyboard.control_port != 0x0063u ||
-        profile.resolved.values.core.configuration.xt_ppi_keyboard.irq != 1u ||
-        profile.resolved.values.core.configuration.clock_plan.pit.numerator != 1u ||
-        profile.resolved.values.core.configuration.clock_plan.pit.denominator != 4u ||
-        profile.resolved.values.core.configuration.clock_plan.pit.reset_phase != 0u ||
-        profile.resolved.values.allowed_session_options != 0u ||
-        profile.resolved.values.port_leaf_count != 0u ||
-        profile.resolved.values.memory_window_count != 0u ||
-        profile.resolved.values.irq_route_count != 0u ||
-        profile.resolved.values.drq_route_count != 0u ||
+        profile.values.core.configuration.xt_ppi_keyboard.port_a != 0x0060u ||
+        profile.values.core.configuration.xt_ppi_keyboard.control_port != 0x0063u ||
+        profile.values.core.configuration.xt_ppi_keyboard.irq != 1u ||
+        profile.values.core.configuration.clock_plan.pit.numerator != 1u ||
+        profile.values.core.configuration.clock_plan.pit.denominator != 4u ||
+        profile.values.core.configuration.clock_plan.pit.reset_phase != 0u ||
+        profile.values.allowed_session_options != 0u ||
+        profile.values.port_leaf_count != 0u ||
+        profile.values.memory_window_count != 0u ||
+        profile.values.irq_route_count != 0u ||
+        profile.values.drq_route_count != 0u ||
         !profile.topology.dma_present ||
         !profile.topology.display_present ||
         !profile.topology.display.cga_vram_present ||
@@ -114,13 +111,12 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.topology.fdc.control_port != 0u || profile.topology.fdc.irq != 6u ||
         profile.topology.fdc.dma_channel != 2u ||
         profile.topology.fdc.clock_ticks_per_second != 4772727u) return 1;
-    declaration.values.core.configuration.memory_bytes = 512u * 1024u;
-    return profile.resolved.values.core.configuration.memory_bytes != 256u * 1024u;
+    return 0;
 }
 
 static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
 {
-    vm_profile_xt_5160_268_resolved_profile profile;
+    vm_profile_xt_5160_268_plan_snapshot profile;
     core_machine_plan *plan = STD_NULL;
     core_machine *machine = STD_NULL;
     core_machine_dma_request_binding binding = {0};
@@ -130,9 +126,9 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     type_unsigned_8 open_bus_byte = 0u;
     C_INT failed = 0;
 
-    failed |= vm_profile_xt_5160_268_resolve(&profile, TYPE_FALSE) != TYPE_STATUS_OK;
+    failed |= vm_profile_xt_5160_268_plan_create(&profile, TYPE_FALSE) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_plan_create(
-        &profile.resolved.values.core.configuration, &plan) != TYPE_STATUS_OK;
+        &profile.values.core.configuration, &plan) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_media_registry_create(&media) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_media_registry_bind(media,
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, STD_NULL,
@@ -232,7 +228,7 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
 
 int main(void)
 {
-    if (vm_xt_5160_268_declaration_is_fixed() ||
+    if (vm_xt_5160_268_contract_is_fixed() ||
         vm_xt_5160_268_topology_constructs_one_xt_route() ||
         vm_xt_5160_268_byob_session_uses_one_xt_route()) return 1;
     STD_PRINTF("M5:T484:S3:XT-FIXED-PROFILE:OK\n");

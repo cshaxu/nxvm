@@ -7,7 +7,7 @@
 #include "core/devices/fpu_interface.h"
 #include "core/devices/machine_interface.h"
 #include "core/devices/vadp.h"
-#include "core/profiles/profile_resolver_interface.h"
+#include "core/profiles/profile_contract_interface.h"
 
 typedef enum vm_profile_default_pc_at_device_role {
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC,
@@ -169,22 +169,22 @@ typedef struct vm_profile_default_pc_at_descriptor {
     type_unsigned_8 fdc_diagnostic_read_value;
 } vm_profile_default_pc_at_descriptor;
 
-#define VM_PROFILE_DEFAULT_PC_AT_RESOLVED_PORT_LEAF_CAPACITY 96u
-#define VM_PROFILE_DEFAULT_PC_AT_RESOLVED_ROUTE_CAPACITY 8u
-#define VM_PROFILE_DEFAULT_PC_AT_RESOLVED_FIRMWARE_SERVICE_CAPACITY 16u
+#define VM_PROFILE_DEFAULT_PC_AT_PLAN_PORT_LEAF_CAPACITY 96u
+#define VM_PROFILE_DEFAULT_PC_AT_PLAN_ROUTE_CAPACITY 8u
+#define VM_PROFILE_DEFAULT_PC_AT_PLAN_FIRMWARE_SERVICE_CAPACITY 16u
 
 /* In-place immutable result: its descriptor points only at its own copied
  * arrays, so it can become the later session input without static aliases. */
-typedef struct vm_profile_default_pc_at_resolved_profile {
-    vm_resolved_profile resolved;
+typedef struct vm_profile_default_pc_at_plan_snapshot {
+    vm_profile_contract_values values;
     vm_profile_default_pc_at_descriptor descriptor;
     core_machine_plan_topology topology;
     vm_profile_default_pc_at_port_leaf
-        port_leaves[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_PORT_LEAF_CAPACITY];
-    vm_profile_default_pc_at_route routes[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_ROUTE_CAPACITY];
+        port_leaves[VM_PROFILE_DEFAULT_PC_AT_PLAN_PORT_LEAF_CAPACITY];
+    vm_profile_default_pc_at_route routes[VM_PROFILE_DEFAULT_PC_AT_PLAN_ROUTE_CAPACITY];
     vm_profile_default_pc_at_firmware_service
-        firmware_services[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_FIRMWARE_SERVICE_CAPACITY];
-} vm_profile_default_pc_at_resolved_profile;
+        firmware_services[VM_PROFILE_DEFAULT_PC_AT_PLAN_FIRMWARE_SERVICE_CAPACITY];
+} vm_profile_default_pc_at_plan_snapshot;
 
 #define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU 0x01u
 #define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY 0x02u
@@ -216,21 +216,17 @@ type_status vm_profile_default_pc_at_topology_materialize(
     const vm_profile_default_pc_at_descriptor *descriptor,
     const core_machine_controller_timing_rules *timing_rules,
     core_machine_plan_topology *out_topology);
-type_status vm_profile_ibm_5170_root_declaration_create(
-    vm_profile_resolver_declaration *out_declaration);
-type_status vm_profile_ibm_5170_root_resolve(
-    vm_profile_default_pc_at_resolved_profile *out_profile);
+type_status vm_profile_ibm_5170_values_create(STD_SIZE_T memory_bytes,
+    vm_profile_contract_values *out_values);
+type_status vm_profile_ibm_5170_plan_create(
+    vm_profile_default_pc_at_plan_snapshot *out_profile);
 /* IBM's 128 KiB conventional-memory option and 512 KiB extended-memory
  * options are selected only while the frozen 5170 profile is constructed. */
-type_status vm_profile_ibm_5170_root_resolve_memory(STD_SIZE_T memory_bytes,
-    vm_profile_default_pc_at_resolved_profile *out_profile);
-type_status vm_profile_default_at_child_declaration_create(
-    const vm_profile_resolver_declaration *parent,
+type_status vm_profile_ibm_5170_plan_create_memory(STD_SIZE_T memory_bytes,
+    vm_profile_default_pc_at_plan_snapshot *out_profile);
+type_status vm_profile_default_at_plan_create(
     const vm_profile_default_at_request *request,
-    vm_profile_resolver_declaration *out_declaration);
-type_status vm_profile_default_at_child_resolve(
-    const vm_profile_default_at_request *request,
-    vm_profile_default_pc_at_resolved_profile *out_profile);
+    vm_profile_default_pc_at_plan_snapshot *out_profile);
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,

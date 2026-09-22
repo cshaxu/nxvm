@@ -49,12 +49,11 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         generic->rtc_ticks_per_second != 50000u;
     failed |= session->profile == model_339 ||
         STD_STRCMP(session->profile->identity, "pc-at-5170") != 0 ||
-        session->core_machine_config.memory_bytes !=
-            vm_profile_machine_plan_pc_at_resolved_get(session->profile_plan)->resolved.values.core.configuration.memory_bytes ||
+        session->core_machine_config.memory_bytes != 512u * 1024u ||
         session->core_machine_config.time_axis.kind !=
-            vm_profile_machine_plan_pc_at_resolved_get(session->profile_plan)->resolved.values.core.configuration.time_axis.kind ||
+            CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         session->controller_timing_rules.dma_service !=
-            vm_profile_machine_plan_pc_at_resolved_get(session->profile_plan)->resolved.values.core.controller_timing_rules.dma_service ||
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         session->core_machine->dma_clock.numerator != 3u ||
         session->core_machine->dma_clock.denominator != 8u ||
         session->core_machine->pit_clock.numerator != 596591u ||

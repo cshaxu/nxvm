@@ -11,11 +11,6 @@
 
 typedef struct vm_profile_machine_plan vm_profile_machine_plan;
 
-/* Profile owns selection and board facts.  Machine receives only this frozen,
- * opaque result; it never branches on a board identity or firmware identity. */
-typedef type_status (*vm_profile_machine_generic_materializer)(C_VOID *context,
-    core_machine_plan *plan);
-
 type_status vm_profile_machine_plan_create(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
 type_status vm_profile_machine_plan_create_file_backed(const vm_machine_config *config,
@@ -43,10 +38,6 @@ type_unsigned_8 vm_profile_machine_plan_floppy_slot_count(
     const vm_profile_machine_plan *plan);
 const vm_profile_default_pc_at_descriptor *
 vm_profile_machine_plan_pc_at_descriptor_get(const vm_profile_machine_plan *plan);
-const vm_profile_default_pc_at_resolved_profile *
-vm_profile_machine_plan_pc_at_resolved_get(const vm_profile_machine_plan *plan);
-const vm_resolved_profile *vm_profile_machine_plan_model40_resolved_get(
-    const vm_profile_machine_plan *plan);
 const vm_profile_model40_external_rom *vm_profile_machine_plan_model40_rom_get(
     const vm_profile_machine_plan *plan);
 type_bool vm_profile_machine_plan_is_model40(const vm_profile_machine_plan *plan);
@@ -56,8 +47,7 @@ type_status vm_profile_machine_plan_copy_cmos_seed(const vm_profile_machine_plan
 type_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_plan *plan,
     core_machine_vadp_text_glyph_config *out_glyphs);
 type_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
-    core_machine_plan *core_plan, vm_profile_machine_generic_materializer generic,
-    C_VOID *generic_context,
+    core_machine_plan *core_plan,
     core_machine_fdc_terminal_observation_provider terminal_observation);
 type_bool vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *plan,
     type_unsigned_16 *out_cylinders, type_unsigned_8 *out_heads,
