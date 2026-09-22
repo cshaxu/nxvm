@@ -23,7 +23,7 @@ static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
         return 1;
     }
     vm_machine_reset(session);
-    if (vm_machine_fdd_remove_for(&session->fdd, STD_NULL) ||
+    if (vm_machine_fdd_remove_for(&session->fdd) ||
         vm_machine_hdd_remove(&session->hdd) ||
         vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {

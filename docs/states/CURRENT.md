@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S16 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S15 repaired CQ-14 and the repeated media/constructor audit classified CQ-15. |
-| Objective | Make fixed-disk media semantics and blank-disk construction truthful: no false removable capability, no ignored removal path parameter, and no silent requested-disk allocation failure. |
-| Non-goals | Do not change HDC command semantics, runtime media policy, external assets, timing or Lib Storage contracts. |
-| Reference Baseline | S15 implementation and CQ-15 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S17 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S16 repaired CQ-15, but its required FDD/HDD sweep found the equivalent FDD ignored-path parameter. |
+| Objective | Remove the FDD detach operation's ignored pathname and prove blank-FDD initialization already propagates its allocation result through Machine construction. |
+| Non-goals | Do not alter FDC command semantics, removable-media behavior, external assets, timing or Lib Storage contracts. |
+| Reference Baseline | S16 implementation and CQ-16 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/machine/media/hdd.*`, `machine.c`, direct media and Machine smokes, and the convergence ledger/history. No `*_interface.h` contract changes. |
+| Files And ABI Surface | `src/core/machine/media/fdd.*`, `machine.c`, FDD/media/Machine smokes, and the convergence ledger/history. No `*_interface.h` contract changes. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one owner and truthful bounded contract; [Coding](../rules/CODING.md): no ignored parameter or concealed failure; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Focused HDD provider and Machine creation probes; source sweep for retired path parameter and ignored creation return; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Fixed media reports only supported capabilities; HDD detach has no fake path input; requested blank HDD creation either publishes real media or fails construction. |
+| Verification | Focused FDD provider and Machine creation probes; source sweep for retired path parameter and create-result disposition; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Floppy detach has no fake path input; configured blank FDD remains dependent on the already-fallible initialization result, with no silent allocation route. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record the complete fixed-media/constructor sweep, retained startup attachment route and focused proof in the ledger/history. |
-| Stop Conditions | Stop if correction requires a new Core, Lib/Common/x86 contract or changes live HDC device semantics. |
-| Exit Criteria | CQ-15 is repaired, equivalent ignored fixed-media parameters and requested-allocation failure paths have a disposition, and unit/documentation/change gates pass. |
+| Reporting Requirements | Correct the S16 sweep record and document the FDD create/remove result disposition and focused proof in the ledger/history. |
+| Stop Conditions | Stop if correction requires a new Core, Lib/Common/x86 contract or changes live FDC device semantics. |
+| Exit Criteria | CQ-16 is repaired, every FDD remove caller uses the parameterless operation, the create-result disposition is proven, and unit/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep FDD/HDD create/remove APIs and callers for ignored path inputs, unsupported capability claims and allocation results that do not reach the owning construction boundary. |
+| Similar-Issue Sweep | Sweep all FDD/HDD create/remove APIs and callers for ignored inputs; verify every blank-medium allocation originates in an initialization operation whose failure reaches Machine construction. |
 
 ## Current Technical Baseline
 

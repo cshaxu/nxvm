@@ -15,8 +15,7 @@
 
 static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
     const C_CHAR *path, lib_storage_medium_mode mode);
-static C_INT vm_machine_remove_fdd_direct(vm_machine *session,
-    const C_CHAR *path);
+static C_INT vm_machine_remove_fdd_direct(vm_machine *session);
 
 static C_VOID vm_machine_capture_fdc_terminal(C_VOID *opaque,
     const core_machine_fdc_terminal_observation *observation)
@@ -262,10 +261,10 @@ static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
     return 0;
 }
 
-static C_INT vm_machine_remove_fdd_direct(vm_machine *session, const C_CHAR *path)
+static C_INT vm_machine_remove_fdd_direct(vm_machine *session)
 {
     if (session == STD_NULL || vm_machine_control_is_running(&session->control) ||
-        vm_machine_fdd_remove_for(&session->fdd, path) != 0) return -1;
+        vm_machine_fdd_remove_for(&session->fdd) != 0) return -1;
     session->fdd_image_path[0] = '\0';
     session->retained_config.floppy_image[0u] = STD_NULL;
     return 0;
@@ -278,7 +277,7 @@ type_status vm_machine_set_common_media(vm_machine *session, const C_CHAR *path,
     if (path != STD_NULL && path[0] != '\0')
         return vm_machine_insert_floppy_at(session, 0u, path, mode) == 0 ?
             TYPE_STATUS_OK : TYPE_STATUS_FAULT;
-    return vm_machine_remove_fdd_direct(session, STD_NULL) == 0 ?
+    return vm_machine_remove_fdd_direct(session) == 0 ?
         TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 

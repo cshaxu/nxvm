@@ -364,9 +364,8 @@ C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name,
         vm_machine_fdd_insert_medium_for(fdd, file_name, mode) : TYPE_TRUE;
 }
 
-C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
+C_INT vm_machine_fdd_remove_for(t_fdd *fdd)
 {
-    (C_VOID)file_name;
     if (fdd == STD_NULL) return TYPE_TRUE;
     lib_storage_medium_destroy(&fdd->connect.medium);
     fdd->connect.flagDiskExist = TYPE_FALSE;

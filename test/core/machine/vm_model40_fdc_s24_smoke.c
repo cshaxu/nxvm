@@ -158,7 +158,7 @@ C_INT main(C_VOID)
             session->model40_fdc_terminal_observation.successful ||
             session->model40_fdc_terminal_observation.result[0] != result[0] ||
             session->model40_fdc_terminal_observation.result[1] != result[1];
-        failed |= vm_machine_fdd_remove_for(&session->fdd, STD_NULL) != TYPE_FALSE;
+        failed |= vm_machine_fdd_remove_for(&session->fdd) != TYPE_FALSE;
         core_machine_fdc_refresh(fdc);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
         failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE;

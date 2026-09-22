@@ -55,7 +55,11 @@ C_INT main(C_VOID)
         vm_media_write_file(vm_media_hdd_path, hdd_bytes, sizeof(hdd_bytes))) failed = TYPE_TRUE;
     vm_machine_fdd_initialize(&fdd);
     vm_machine_hdd_initialize(&hdd);
-    if (!failed && (vm_machine_hdd_create(&hdd, 0u) != TYPE_TRUE ||
+    if (vm_machine_fdd_has_media(&fdd)) failed = TYPE_TRUE;
+    vm_machine_fdd_create_for(&fdd);
+    if (!vm_machine_fdd_has_media(&fdd)) failed = TYPE_TRUE;
+    if (!failed && (vm_machine_fdd_remove_for(&fdd) != TYPE_FALSE ||
+        vm_machine_hdd_create(&hdd, 0u) != TYPE_TRUE ||
         vm_machine_hdd_create(&hdd, 1u) != TYPE_FALSE ||
         !vm_machine_hdd_has_media(&hdd) ||
         vm_machine_hdd_remove(&hdd) != TYPE_FALSE ||
@@ -81,7 +85,7 @@ C_INT main(C_VOID)
             &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         core_machine_media_write_bytes(registry, 2u, 0u, &value, 1u,
             &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
-        vm_machine_fdd_remove_for(&fdd, vm_media_fdd_path) != TYPE_FALSE ||
+        vm_machine_fdd_remove_for(&fdd) != TYPE_FALSE ||
         vm_machine_hdd_remove(&hdd) != TYPE_FALSE ||
         vm_media_read_first(vm_media_fdd_path, 0x11u) ||
         vm_media_read_first(vm_media_hdd_path, 0x22u))) failed = TYPE_TRUE;

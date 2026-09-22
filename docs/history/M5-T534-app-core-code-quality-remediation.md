@@ -194,3 +194,17 @@ with `TYPE_STATUS_NO_MEMORY` if its allocation cannot complete.  The provider,
 direct/readonly/overlay and Machine construction probes pass, along with the
 334-case repository-only unit suite and documentation governance gate.  S16 is
 closed.
+
+## S17: Truthful Floppy Detach Contract
+
+The S16 similarity sweep then found the equivalent false input in FDD detach:
+the operation takes a pathname it always ignores.  S17 removes that input from
+the private FDD owner and every caller.  FDD's blank-medium allocations already
+occur in `initialize_with_geometry`, whose result reaches Machine construction;
+the S verifies that this is the sole retained allocation boundary rather than
+inventing a second FDD creation status path.
+
+P1 makes all FDD detach callers use the single parameterless operation.  The
+provider smoke proves empty initialization, blank-media activation and detach;
+direct/readonly/overlay, FDC-port and Model40 FDC smokes pass.  The complete
+334-case unit suite and documentation governance gate pass.  S17 is closed.
