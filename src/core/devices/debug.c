@@ -156,6 +156,10 @@ type_status core_machine_debug_capture_instruction_observation(
         out_observation->memory_accesses[index].data =
             instructions->mem[index].data;
     }
+    out_observation->watch_hit = instructions->watch_hit;
+    out_observation->watch_kind = (core_machine_debug_watch_kind)
+        instructions->watch_kind;
+    out_observation->watch_address = instructions->watch_address;
     return TYPE_STATUS_OK;
 }
 

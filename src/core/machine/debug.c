@@ -81,6 +81,20 @@ C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug)
     debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
+C_VOID vm_machine_debug_complete_watchpoint(t_debug *debug)
+{
+    type_unsigned_64 executed;
+
+    if (debug == STD_NULL || !debug->observation_valid ||
+        !debug->observation.watch_hit) return;
+    executed = debug->plan.executed;
+    debug->plan = (t_debug_execution_plan) {
+        .completion_pending = TYPE_TRUE,
+        .completion_reason = VM_MACHINE_PAUSE_WATCHPOINT,
+        .completion_executed = executed
+    };
+}
+
 C_VOID vm_machine_debug_complete_run(t_debug *debug, type_unsigned_64 executed)
 {
     if (debug == STD_NULL || executed == 0u) return;

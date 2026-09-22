@@ -60,6 +60,18 @@ static C_VOID core_machine_cpu_execution_raise_exception(
 
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context);
 
+static C_VOID _debug_record_watchpoint(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind, type_unsigned_32 address)
+{
+    if (!instruction_state.data.watch_hit) {
+        instruction_state.data.watch_hit = TYPE_TRUE;
+        instruction_state.data.watch_kind = (type_unsigned_8)kind;
+        instruction_state.data.watch_address = address;
+    }
+    core_machine_cpu_execution_request_debug_pause(context);
+}
+
 /* The FLAGS image and a FLAGS load are distinct architectural operations, but
  * share one profile-owned set of defined 16-bit fields. An undefined bit is
  * canonicalized to zero in Core; that is a deterministic implementation
@@ -725,10 +737,8 @@ static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_c
             if (instruction_state.data.wrLinear >= instruction_state.data.mem[instruction_state.data.msize].linear &&
                 instruction_state.data.wrLinear < instruction_state.data.mem[instruction_state.data.msize].linear + byte)
             {
-                STD_PRINTF("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", instruction_state.data.linear,
-                           instruction_state.data.mem[instruction_state.data.msize].byte,
-                           instruction_state.data.mem[instruction_state.data.msize].data,
-                           instruction_state.data.mem[instruction_state.data.msize].linear);
+                _debug_record_watchpoint(context, CORE_MACHINE_CPU_WATCH_READ,
+                    instruction_state.data.wrLinear);
             }
         }
         /* for (i = 0;i < instruction_state.data.msize;++i) {
@@ -776,10 +786,8 @@ static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_
             if (instruction_state.data.wwLinear >= instruction_state.data.mem[instruction_state.data.msize].linear &&
                 instruction_state.data.wwLinear < instruction_state.data.mem[instruction_state.data.msize].linear + byte)
             {
-                STD_PRINTF("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", instruction_state.data.linear,
-                           instruction_state.data.mem[instruction_state.data.msize].byte,
-                           instruction_state.data.mem[instruction_state.data.msize].data,
-                           instruction_state.data.mem[instruction_state.data.msize].linear);
+                _debug_record_watchpoint(context, CORE_MACHINE_CPU_WATCH_WRITE,
+                    instruction_state.data.wwLinear);
             }
         }
         /* for (i = 0;i < instruction_state.data.msize;++i) {
@@ -17051,8 +17059,6 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
             TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        /* STD_PRINTF("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
-                instruction_state.data.linear, base, limit); */
         TYPE_TRACE_CHECK_RETURN(_s_load_gdtr(context, base, limit, _GetOperandSize));
         TYPE_TRACE_BLOCK_END;
         break;
@@ -17077,8 +17083,6 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
             TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        /* STD_PRINTF("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
-                 instruction_state.data.linear, base, limit); */
         TYPE_TRACE_CHECK_RETURN(_s_load_idtr(context, base, limit, _GetOperandSize));
         TYPE_TRACE_BLOCK_END;
         break;
@@ -17389,15 +17393,6 @@ static C_VOID MOV_CR_R32(core_machine_cpu_execution_context *context)
     {
         TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
     }
-    /* if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr0) {
-        STD_PRINTF("MOV_CR_R32: executed at L%08X, CR0=%08X\n", instruction_state.data.linear, cpu_state.data.cr0);
-    }
-    if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr2) {
-        STD_PRINTF("MOV_CR_R32: executed at L%08X, CR2=%08X\n", instruction_state.data.linear, cpu_state.data.cr2);
-    }
-    if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr3) {
-        STD_PRINTF("MOV_CR_R32: executed at L%08X, CR3=%08X\n", instruction_state.data.linear, cpu_state.data.cr3);
-    } */
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_DR_R32(core_machine_cpu_execution_context *context)
@@ -18136,6 +18131,7 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
 {
     instruction_state.data.flagIgnore = TYPE_FALSE;
     instruction_state.data.msize = 0;
+    instruction_state.data.watch_hit = TYPE_FALSE;
     instruction_state.data.reccs = cpu_state.data.cs.selector;
     instruction_state.data.receip = cpu_state.data.eip;
     instruction_state.data.linear = cpu_state.data.cs.base + cpu_state.data.eip;
@@ -18655,9 +18651,8 @@ static C_VOID ExecIns(core_machine_cpu_execution_context *context)
     _debug_complete_instruction(context, opcode);
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear)
     {
-        STD_PRINTF("Watch point caught at L%08x: EXECUTED\n", instruction_state.data.linear);
-        /* printCpuReg(); */
-        core_machine_cpu_execution_request_stop(context);
+        _debug_record_watchpoint(context, CORE_MACHINE_CPU_WATCH_EXECUTE,
+            instruction_state.data.weLinear);
     }
     ExecFinal(context);
 }
@@ -19262,6 +19257,7 @@ C_VOID core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context)
 {
     STD_MEMSET((C_VOID *)(&instruction_state.data), TYPE_ZERO_8, sizeof(t_cpuins_data));
+    context->debug_pause_requested = TYPE_FALSE;
     context->debug_trap_pending = TYPE_FALSE;
     context->debug_tf_before = TYPE_FALSE;
     context->debug_rf_before = TYPE_FALSE;
@@ -19279,6 +19275,7 @@ C_VOID core_machine_cpu_execution_refresh(
         ExecIns(context);
         context->instruction_in_progress = TYPE_FALSE;
     }
+    if (context->debug_pause_requested) return;
     ExecInt(context);
 }
 

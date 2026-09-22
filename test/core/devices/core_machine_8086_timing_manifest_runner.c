@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include <stdio.h>
+
 #include "core/devices/machine_interface.h"
 #include "core/devices/cpu.h"
 #include "core/devices/cpu_instructions.h"
@@ -853,7 +855,7 @@ static C_INT timing_manifest_probe_decoder_lexeme_candidates(C_VOID)
     type_unsigned_32 accepted_pairs;
     type_unsigned_32 accepted_opcodes = 0u;
     type_bool opcode_seen[0x100] = { TYPE_FALSE };
-    STD_FILE *file;
+    FILE *file;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
@@ -878,26 +880,26 @@ static C_INT timing_manifest_probe_decoder_lexeme_candidates(C_VOID)
      * semantic.  The form contract must refine these 233 opcode candidates. */
     if (accepted == 0u || accepted_opcodes != 233u) return 1;
     accepted_pairs = accepted;
-    file = STD_FOPEN(path, "wb");
-    if (file == STD_NULL || STD_FPRINTF(file,
+    file = fopen(path, "wb");
+    if (file == STD_NULL || fprintf(file,
             "{\n  \"schema\": \"nxvm.8086-decoder-inventory.v1\",\n"
             "  \"lexeme_opcode_modrm_candidates\": %u,\n"
             "  \"lexeme_primary_opcodes\": [", accepted_pairs) < 0) {
-        if (file != STD_NULL) STD_FCLOSE(file);
+        if (file != STD_NULL) fclose(file);
         return 1;
     }
     accepted = 0u;
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         if (!opcode_seen[opcode]) continue;
-        if ((accepted != 0u && STD_FPRINTF(file, ",") < 0) ||
-                STD_FPRINTF(file, "\"%02X\"", opcode) < 0) {
-            STD_FCLOSE(file);
+        if ((accepted != 0u && fprintf(file, ",") < 0) ||
+                fprintf(file, "\"%02X\"", opcode) < 0) {
+            fclose(file);
             return 1;
         }
         ++accepted;
     }
-    if (STD_FPRINTF(file, "],\n  \"semantic_only_prefixes\": "
-            "[\"F0\"]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
+    if (fprintf(file, "],\n  \"semantic_only_prefixes\": "
+            "[\"F0\"]\n}\n") < 0 || fclose(file) != 0) return 1;
     STD_PRINTF("M5:T435:S5:I86-DECODER-LEXEME-CANDIDATES:%u:%u\n", accepted,
         accepted_opcodes);
     return 0;
@@ -4024,15 +4026,15 @@ static C_INT timing_manifest_probe_xchg_memory_contexts(C_VOID)
 static C_INT timing_manifest_write_results(C_VOID)
 {
     const C_CHAR *const path = PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH;
-    STD_FILE *file = STD_FOPEN(path, "wb");
+    FILE *file = fopen(path, "wb");
     STD_SIZE_T index;
     STD_SIZE_T written = 0u;
 
     if (file == STD_NULL) return 1;
-    if (STD_FPRINTF(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
+    if (fprintf(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
             "  \"profile\": \"%s\",\n  \"results\": [\n",
             PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) < 0) {
-        STD_FCLOSE(file);
+        fclose(file);
         return 1;
     }
     for (index = 0u; index < sizeof(timing_manifest_records) /
@@ -4043,11 +4045,11 @@ static C_INT timing_manifest_write_results(C_VOID)
 
         if (!timing_manifest_is_active(record)) continue;
         if (!timing_manifest_observed[index]) {
-            STD_FCLOSE(file);
+            fclose(file);
             return 1;
         }
-        if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
-                STD_FPRINTF(file, "    {\"key_id\":\"%s\","
+        if ((written != 0u && fprintf(file, ",\n") < 0) ||
+                fprintf(file, "    {\"key_id\":\"%s\","
                 "\"profile\":\"%s\",\"level\":\"%s\","
                 "\"source_rule\":\"%s\",\"context\":\"%s\","
                 "\"ticks\":%llu,\"formula_inputs\":%u,"
@@ -4060,12 +4062,12 @@ static C_INT timing_manifest_write_results(C_VOID)
                 observation->source_timing_form_id ==
                     CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ?
                     "true" : "false") < 0) {
-            STD_FCLOSE(file);
+            fclose(file);
             return 1;
         }
         ++written;
     }
-    if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
+    if (fprintf(file, "\n  ]\n}\n") < 0 || fclose(file) != 0) return 1;
     return written == 1053u ? 0 : 1;
 }
 

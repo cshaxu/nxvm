@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S11 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S9 classified CQ-10 and S10 removed the unrelated media dead paths. |
-| Objective | Make Core publish a complete copied watchpoint result through the established Debug observation route, then remove CPU direct stdout reporting. |
-| Non-goals | Do not remove watchpoint behavior, change its command syntax, create a second Debug route, or alter Lib/Common public contracts. |
-| Reference Baseline | S10 implementation; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S12 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S11 repaired CQ-10 and the fresh-build CQ-11 omission. |
+| Objective | Repeat the whole App/Core ownership, data-flow, duplicate-path and failure-boundary audit; classify every newly found live defect before closing T534. |
+| Non-goals | Do not relabel a passing test suite as an audit, add a framework, alter Lib/Common/x86 contracts, or silently expand into firmware, asset, timing-grade or UX policy work. |
+| Reference Baseline | S11 implementation; [T534 proposal](../proposals/m5-app-core-code-quality-remediation.md) and [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | Core CPU watchpoint detection and copied debug observation, Machine Debug adaptation, existing x86 Debug observation consumption, and focused repository-only tests. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S, similar-issue sweep and full unit; [Architecture](../rules/ARCHITECTURE.md): Core owns raw state while Debug owns product text; [Coding](../rules/CODING.md): no duplicate output route or development stdout on a production path; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Read/write/execute watchpoint focused proof through the copied observation and Debug command result; whole Core `STD_PRINTF` sweep; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Every watchpoint kind sets one copied observation; Debug reports it through its existing result text; active CPU execution contains no direct `STD_PRINTF` watchpoint report. |
+| Files And ABI Surface | Every tracked `src/app/**` and `src/core/**` implementation/public declaration, its direct `test/app/**` and `test/core/**` callers, build declarations and the convergence ledger. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S, similar-issue sweep and full unit; [Architecture](../rules/ARCHITECTURE.md): one owner and one directional path; [Coding](../rules/CODING.md): no dead public path, duplicate owner or concealed failure; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Source/caller/build sweeps, direct read of every retained App/Core owner, classification of all findings in the ledger, full repository-only unit suite, documentation governance, `git diff --check` and actual-change review. |
+| Expected Markers | Every finding has a repaired/accepted/transferred disposition; no newly discovered live App/Core duplicate route, stale public API, unowned state or failure-atomicity violation is left unclassified. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Report each watchpoint's Core state, copied result and single report owner; record CQ-10 before/after evidence. |
-| Stop Conditions | Stop if preservation requires a new x86/Common/Lib public contract rather than the existing observation fields. |
-| Exit Criteria | CQ-10 is repaired without duplicate stdout output; focused proof and full unit suite pass. |
+| Reporting Requirements | Report each inspected family, evidence and disposition; append every new defect to the ledger before repair. |
+| Stop Conditions | Stop only if a newly found issue requires an unapproved firmware/asset/timing/UX scope change or a new Lib/Common/x86 contract. |
+| Exit Criteria | The repeated audit has no unclassified App/Core finding, or each concrete repair has a separately admitted continuation S. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep Core CPU execution for direct active user-output calls and all watchpoint kinds; classify comments and unrelated App startup errors separately. |
+| Similar-Issue Sweep | Sweep all App/Core public declarations for callers, all production output/file paths for their owner, construction/reset/finalization for partial-state handling, and tests/build rules for stale deleted interfaces. |
 
 ## Current Technical Baseline
 

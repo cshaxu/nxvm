@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include <stdio.h>
+
 #include "core/devices/machine.h"
 #include "core/devices/machine_interface.h"
 #include "core/devices/retirement_observation_interface.h"
@@ -446,17 +448,17 @@ static C_INT timing_80386_manifest_results_complete(C_VOID)
 static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
     C_INT final_results_authorized)
 {
-    STD_FILE *file;
+    FILE *file;
     STD_SIZE_T index;
     STD_SIZE_T written = 0u;
 
     if (path == STD_NULL || !final_results_authorized ||
         !timing_80386_manifest_results_complete()) return 1;
-    file = STD_FOPEN(path, "wb");
-    if (file == STD_NULL || STD_FPRINTF(file,
+    file = fopen(path, "wb");
+    if (file == STD_NULL || fprintf(file,
             "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
             "  \"profile\": \"80386DX\",\n  \"results\": [\n") < 0) {
-        if (file != STD_NULL) STD_FCLOSE(file);
+        if (file != STD_NULL) fclose(file);
         return 1;
     }
     for (index = 0u; index < sizeof(timing_80386_manifest_records) /
@@ -468,8 +470,8 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
 
         if (!timing_80386_manifest_is_i386(record) ||
             timing_80386_manifest_is_esc(record)) continue;
-        if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
-            STD_FPRINTF(file, "    {\"key_id\":\"%s\","
+        if ((written != 0u && fprintf(file, ",\n") < 0) ||
+            fprintf(file, "    {\"key_id\":\"%s\","
                 "\"profile\":\"%s\",\"level\":\"%s\","
                 "\"source_rule\":\"%s\",\"context\":\"%s\","
                 "\"timing_domain\":\"cpu\",\"ticks\":%llu,\"formula_inputs\":%u,"
@@ -481,13 +483,13 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
                 observation->timing_origin, observation->timing_disposition ==
                     CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ?
                     "true" : "false") < 0) {
-            STD_FCLOSE(file);
+            fclose(file);
             return 1;
         }
         ++written;
     }
-    if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
-        STD_FPRINTF(file, "    {\"key_id\":\"I386-ESC\","
+    if ((written != 0u && fprintf(file, ",\n") < 0) ||
+        fprintf(file, "    {\"key_id\":\"I386-ESC\","
             "\"profile\":\"80386DX\",\"level\":\"L2\","
             "\"source_rule\":\"I386DX-PRM-1990 Ch.17 delegates completion clocks to 80287/80387 data sheets; selected 80387 operation is a range\","
             "\"context\":\"BASE\",\"timing_domain\":\"mcp\","
@@ -500,11 +502,11 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
             timing_80386_manifest_esc.opcode, timing_80386_manifest_esc.modrm,
             timing_80386_manifest_esc.ticks_min,
             timing_80386_manifest_esc.ticks_max) < 0) {
-        STD_FCLOSE(file);
+        fclose(file);
         return 1;
     }
     ++written;
-    if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
+    if (fprintf(file, "\n  ]\n}\n") < 0 || fclose(file) != 0) return 1;
     return written == timing_80386_manifest_expected_count() ? 0 : 1;
 }
 

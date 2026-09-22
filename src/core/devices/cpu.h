@@ -34,6 +34,10 @@ C_VOID core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context);
 type_bool core_machine_cpu_execution_consume_stop_request(
     core_machine_cpu_execution_context *context);
+C_VOID core_machine_cpu_execution_request_debug_pause(
+    core_machine_cpu_execution_context *context);
+type_bool core_machine_cpu_execution_consume_debug_pause_request(
+    core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context);
 type_bool core_machine_cpu_execution_consume_reset_request(

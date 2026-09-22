@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include <stdio.h>
+
 #include "core/devices/cpu_instructions.h"
 
 /* S8 records the 80386DX lexical decoder universe.  It is audit evidence,
@@ -15,7 +17,7 @@ C_INT main(C_VOID)
     type_unsigned_32 pairs = 0u;
     type_unsigned_32 primary_count = 0u;
     type_unsigned_32 escaped_count = 0u;
-    STD_FILE *file;
+    FILE *file;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
@@ -47,32 +49,32 @@ C_INT main(C_VOID)
         if (primary_seen[opcode]) ++primary_count;
     }
     if (pairs != 63021u || primary_count != 253u) return 1;
-    file = STD_FOPEN(path, "wb");
-    if (file == STD_NULL || STD_FPRINTF(file,
+    file = fopen(path, "wb");
+    if (file == STD_NULL || fprintf(file,
             "{\n  \"schema\": \"nxvm.80386-decoder-inventory.v1\",\n"
             "  \"lexeme_opcode_modrm_candidates\": %u,\n"
             "  \"lexeme_primary_opcode_count\": %u,\n"
             "  \"accepted_modrm_masks\": {", pairs, primary_count) < 0) {
-        if (file != STD_NULL) STD_FCLOSE(file);
+        if (file != STD_NULL) fclose(file);
         return 1;
     }
     for (opcode = 0u, primary_count = 0u; opcode <= 0xffu; ++opcode) {
         type_unsigned_16 byte;
         if (!primary_seen[opcode]) continue;
-        if ((primary_count != 0u && STD_FPRINTF(file, ",") < 0) ||
-            STD_FPRINTF(file, "\n    \"%02X\":\"", opcode) < 0) return 1;
+        if ((primary_count != 0u && fprintf(file, ",") < 0) ||
+            fprintf(file, "\n    \"%02X\":\"", opcode) < 0) return 1;
         for (byte = 0u; byte < 32u; ++byte) {
             type_unsigned_8 bits = 0u;
             type_unsigned_8 bit;
             for (bit = 0u; bit < 8u; ++bit) {
                 if (primary_masks[opcode][byte * 8u + bit]) bits |= 1u << bit;
             }
-            if (STD_FPRINTF(file, "%02X", bits) < 0) return 1;
+            if (fprintf(file, "%02X", bits) < 0) return 1;
         }
-        if (STD_FPRINTF(file, "\"") < 0) return 1;
+        if (fprintf(file, "\"") < 0) return 1;
         ++primary_count;
     }
-    if (STD_FPRINTF(file, "\n  },\n  \"accepted_0f_modrm_masks\": {") < 0) return 1;
+    if (fprintf(file, "\n  },\n  \"accepted_0f_modrm_masks\": {") < 0) return 1;
     for (opcode = 0u, escaped_count = 0u; opcode <= 0xffu; ++opcode) {
         type_unsigned_16 byte;
         type_bool any = TYPE_FALSE;
@@ -80,20 +82,20 @@ C_INT main(C_VOID)
             if (escaped_masks[opcode][modrm]) any = TYPE_TRUE;
         }
         if (!any) continue;
-        if ((escaped_count != 0u && STD_FPRINTF(file, ",") < 0) ||
-            STD_FPRINTF(file, "\n    \"%02X\":\"", opcode) < 0) return 1;
+        if ((escaped_count != 0u && fprintf(file, ",") < 0) ||
+            fprintf(file, "\n    \"%02X\":\"", opcode) < 0) return 1;
         for (byte = 0u; byte < 32u; ++byte) {
             type_unsigned_8 bits = 0u;
             type_unsigned_8 bit;
             for (bit = 0u; bit < 8u; ++bit) {
                 if (escaped_masks[opcode][byte * 8u + bit]) bits |= 1u << bit;
             }
-            if (STD_FPRINTF(file, "%02X", bits) < 0) return 1;
+            if (fprintf(file, "%02X", bits) < 0) return 1;
         }
-        if (STD_FPRINTF(file, "\"") < 0) return 1;
+        if (fprintf(file, "\"") < 0) return 1;
         ++escaped_count;
     }
-    if (STD_FPRINTF(file, "\n  }\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
+    if (fprintf(file, "\n  }\n}\n") < 0 || fclose(file) != 0) return 1;
     STD_PRINTF("M5:T435:S8:I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
     return 0;
 }

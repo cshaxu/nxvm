@@ -17,6 +17,28 @@ static type_status vm_machine_debug_map_watch(
     }
 }
 
+static void vm_machine_debug_copy_observation(x86_debug_observation *out_observation,
+    const core_machine_debug_instruction_observation *source)
+{
+    type_unsigned_8 index;
+
+    if (out_observation == LIB_NULL || source == STD_NULL) return;
+    STD_MEMSET(out_observation, 0, sizeof(*out_observation));
+    out_observation->count = source->memory_access_count;
+    for (index = 0u; index < source->memory_access_count; ++index) {
+        out_observation->accesses[index] = (x86_debug_memory_access) {
+            .write = source->memory_accesses[index].write ? LIB_TRUE : LIB_FALSE,
+            .linear = source->memory_accesses[index].linear,
+            .bytes = source->memory_accesses[index].bytes,
+            .data = source->memory_accesses[index].data
+        };
+    }
+    if (!source->watch_hit) return;
+    out_observation->watch_hit = LIB_TRUE;
+    out_observation->watch_kind = (x86_debug_watch_kind)source->watch_kind;
+    out_observation->watch_address = source->watch_address;
+}
+
 static void vm_machine_debug_copy_segment(
     x86_debug_segment_snapshot *out_segment,
     const core_machine_debug_segment_snapshot *source)
@@ -129,8 +151,12 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
         out_result->enabled = LIB_TRUE;
         out_result->value = executed > UINT32_MAX ? UINT32_MAX :
             (type_unsigned_32)executed;
+        if (machine->debug.observation_valid)
+            vm_machine_debug_copy_observation(&out_result->observation,
+                &machine->debug.observation);
         return reason == VM_MACHINE_PAUSE_TRACE ||
-            reason == VM_MACHINE_PAUSE_BREAKPOINT ? LIB_STATUS_OK :
+            reason == VM_MACHINE_PAUSE_BREAKPOINT ||
+            reason == VM_MACHINE_PAUSE_WATCHPOINT ? LIB_STATUS_OK :
             LIB_STATUS_INVALID_STATE;
     }
     return LIB_STATUS_INVALID_ARGUMENT;

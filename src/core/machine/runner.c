@@ -80,6 +80,12 @@ C_VOID vm_machine_runner_run(vm_machine *session)
                 continue;
             }
         }
+        vm_machine_control_refresh_debug(control);
+        if (result.reason == CORE_MACHINE_STOP_PAUSED &&
+            session->debug.observation_valid && session->debug.observation.watch_hit) {
+            vm_machine_debug_complete_watchpoint(&session->debug);
+            continue;
+        }
         vm_machine_debug_complete_run(&session->debug, result.executed);
         if (vm_machine_control_take_step(control)) {
             vm_machine_control_request_pause(control, VM_MACHINE_PAUSE_STEP);

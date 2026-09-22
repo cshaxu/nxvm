@@ -42,6 +42,12 @@ type_status core_machine_debug_continue(
 #define CORE_MACHINE_DEBUG_EFLAGS_RF 0x00010000u
 #define CORE_MACHINE_DEBUG_EFLAGS_VM 0x00020000u
 
+typedef enum core_machine_debug_watch_kind {
+    CORE_MACHINE_DEBUG_WATCH_READ,
+    CORE_MACHINE_DEBUG_WATCH_WRITE,
+    CORE_MACHINE_DEBUG_WATCH_EXECUTE
+} core_machine_debug_watch_kind;
+
 typedef struct core_machine_debug_memory_access {
     C_INT write;
     type_unsigned_32 linear;
@@ -101,6 +107,9 @@ typedef struct core_machine_debug_instruction_observation {
     core_machine_debug_memory_access
         memory_accesses[CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY];
     type_unsigned_8 memory_access_count;
+    type_bool watch_hit;
+    core_machine_debug_watch_kind watch_kind;
+    type_unsigned_32 watch_address;
 } core_machine_debug_instruction_observation;
 
 typedef enum core_machine_debug_register {
@@ -123,12 +132,6 @@ typedef struct core_machine_debug_register_patch {
     type_unsigned_32 mask;
     type_unsigned_32 values[CORE_MACHINE_DEBUG_REGISTER_COUNT];
 } core_machine_debug_register_patch;
-
-typedef enum core_machine_debug_watch_kind {
-    CORE_MACHINE_DEBUG_WATCH_READ,
-    CORE_MACHINE_DEBUG_WATCH_WRITE,
-    CORE_MACHINE_DEBUG_WATCH_EXECUTE
-} core_machine_debug_watch_kind;
 
 type_status core_machine_debug_capture_instruction_observation(
     const core_machine *machine,

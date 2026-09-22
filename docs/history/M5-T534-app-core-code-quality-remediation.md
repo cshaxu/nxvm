@@ -115,3 +115,22 @@ Focused proof passes from a newly linked executable, and the full
 repository-only unit suite passes 334/334 in 24.08 seconds.  The exact retired
 symbol sweep is empty.  S10 is closed; S11 completes the existing copied
 watchpoint result path before retiring direct CPU stdout output.
+
+## S11: Watchpoint Result Path And Fresh-Test Repair
+
+S11 repairs the incomplete watchpoint migration rather than hiding its direct
+CPU text.  Core records the first read/write/execute match in the retired
+instruction observation and requests a debug pause, distinct from the
+machine-stop/reset request.  Machine copies that observation through the
+existing x86 result response, so the retained Debug command text is the only
+user-facing report owner.  Focused proof covers all three Core watch kinds and
+the Core-to-x86 copied result mapping; the CPU source sweep has no active
+`STD_PRINTF` call.
+
+The required fresh complete unit build also exposed CQ-11: two media smokes
+still named deleted root file wrappers, and generated-result runners did too.
+Media fixtures now use the retained Lib reader/writer.  The generator runners
+write only their CMake-provided build artifacts through ISO-C streams; they are
+test-only output endpoints, not an App/Core host-file route.  A full fresh
+target build and 334/334 repository-only unit tests pass.  S11 is closed; S12
+repeats the same App/Core audit.

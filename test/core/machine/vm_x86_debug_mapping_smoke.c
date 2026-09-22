@@ -136,6 +136,27 @@ C_INT main(C_VOID)
             .operation = X86_DEBUG_CLEAR_EXECUTION_PLAN
         }, &result) || machine->debug.plan.kind !=
             X86_DEBUG_EXECUTION_NONE) goto failed;
+    machine->debug.observation_valid = TYPE_TRUE;
+    machine->debug.observation.memory_access_count = 1u;
+    machine->debug.observation.memory_accesses[0] =
+        (core_machine_debug_memory_access) {
+            .write = TYPE_TRUE,
+            .linear = 0x4567u,
+            .bytes = 1u,
+            .data = 0x5au
+        };
+    machine->debug.observation.watch_hit = TYPE_TRUE;
+    machine->debug.observation.watch_kind = CORE_MACHINE_DEBUG_WATCH_WRITE;
+    machine->debug.observation.watch_address = 0x4567u;
+    vm_machine_debug_complete_watchpoint(&machine->debug);
+    if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
+            .operation = X86_DEBUG_GET_EXECUTION_RESULT
+        }, &result) || !result.enabled || !result.observation.watch_hit ||
+        result.observation.watch_kind != X86_DEBUG_WATCH_WRITE ||
+        result.observation.watch_address != 0x4567u ||
+        result.observation.count != 1u || !result.observation.accesses[0].write ||
+        result.observation.accesses[0].linear != 0x4567u ||
+        result.observation.accesses[0].data != 0x5au) goto failed;
     if (!common_machine_stop(machine->executor)) goto failed;
     if (common_machine_debug_execute_with_lease(machine->executor, &lease,
             &(x86_debug_request){

@@ -22,6 +22,8 @@ C_INT main(C_VOID)
     type_unsigned_32 value;
     C_UCHAR byte = 0x5au;
     C_UCHAR nop = 0x90u;
+    C_UCHAR read_moffs[] = {0xa0u, 0x00u, 0x00u};
+    C_UCHAR write_moffs[] = {0xa2u, 0x00u, 0x00u};
     debug_port_probe port_probe = {TYPE_STATUS_OK, 0x11u};
     core_machine_port_provider port_provider = {debug_port_read, debug_port_write};
 
@@ -91,6 +93,55 @@ C_INT main(C_VOID)
             TYPE_STATUS_INVALID_ARGUMENT ||
         core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
             &value) != TYPE_STATUS_OK || value != 0x12345678u) {
+        core_machine_destroy(machine);
+        return 1;
+    }
+
+    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != TYPE_STATUS_OK ||
+        core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_EXECUTE,
+            0xfffffff0u) != TYPE_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_PAUSED ||
+        core_machine_debug_capture_instruction_observation(machine,
+        &observation) != TYPE_STATUS_OK || !observation.watch_hit ||
+        observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_EXECUTE ||
+        observation.watch_address != 0xfffffff0u ||
+        core_machine_debug_clear_watchpoint(machine,
+            CORE_MACHINE_DEBUG_WATCH_EXECUTE) != TYPE_STATUS_OK) {
+        core_machine_destroy(machine);
+        return 1;
+    }
+    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, &byte, 1u) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff0u, read_moffs,
+            sizeof(read_moffs)) != TYPE_STATUS_OK ||
+        core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_READ,
+            0u) != TYPE_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_PAUSED ||
+        core_machine_debug_capture_instruction_observation(machine,
+            &observation) != TYPE_STATUS_OK || !observation.watch_hit ||
+        observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_READ ||
+        observation.watch_address != 0u ||
+        core_machine_debug_clear_watchpoint(machine,
+            CORE_MACHINE_DEBUG_WATCH_READ) != TYPE_STATUS_OK) {
+        core_machine_destroy(machine);
+        return 1;
+    }
+    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff0u, write_moffs,
+            sizeof(write_moffs)) != TYPE_STATUS_OK ||
+        core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_WRITE,
+            0u) != TYPE_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_PAUSED ||
+        core_machine_debug_capture_instruction_observation(machine,
+            &observation) != TYPE_STATUS_OK || !observation.watch_hit ||
+        observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_WRITE ||
+        observation.watch_address != 0u ||
+        core_machine_debug_clear_watchpoint(machine,
+            CORE_MACHINE_DEBUG_WATCH_WRITE) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }

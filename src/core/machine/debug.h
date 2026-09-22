@@ -43,6 +43,7 @@ type_unsigned_64 vm_machine_debug_limit_instruction_budget(
     const t_debug *debug, type_unsigned_64 requested);
 C_INT vm_machine_debug_breakpoint_due(const t_debug *debug);
 C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug);
+C_VOID vm_machine_debug_complete_watchpoint(t_debug *debug);
 C_VOID vm_machine_debug_complete_run(t_debug *debug,
     type_unsigned_64 executed);
 C_INT vm_machine_debug_completion_pending(const t_debug *debug,

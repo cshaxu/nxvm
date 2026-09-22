@@ -92,6 +92,9 @@ typedef struct {
     type_unsigned_32 linear;
     type_bool flagWR, flagWW, flagWE;
     type_unsigned_32 wrLinear, wwLinear, weLinear;
+    type_bool watch_hit;
+    type_unsigned_8 watch_kind;
+    type_unsigned_32 watch_address;
 
     /* CPU retirement observation */
     type_bool flagIgnore;
@@ -206,6 +209,7 @@ struct core_machine_cpu_execution_context {
     core_machine_cpu_firmware_interrupt_provider firmware_interrupt_provider;
     C_VOID *firmware_interrupt_context;
     type_bool stop_requested;
+    type_bool debug_pause_requested;
     type_bool reset_requested;
     type_bool shutdown_requested;
     /* Private execution-round outcome.  A successfully delivered synchronous

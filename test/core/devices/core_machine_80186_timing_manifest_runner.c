@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include <stdio.h>
+
 #include "core/devices/machine_interface.h"
 #include "core/devices/cpu.h"
 #include "core/devices/cpu_timing.h"
@@ -936,14 +938,14 @@ static C_INT timing_80186_manifest_run_repeat_segment_odd_recipe(
 static C_INT timing_80186_manifest_write_results(C_VOID)
 {
     const C_CHAR *const path = PROJECT_TEST_80186_RESULTS_PATH;
-    STD_FILE *file = STD_FOPEN(path, "wb");
+    FILE *file = fopen(path, "wb");
     STD_SIZE_T index;
     STD_SIZE_T written = 0u;
 
     if (file == STD_NULL) return 1;
-    if (STD_FPRINTF(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
+    if (fprintf(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
             "  \"profile\": \"80186\",\n  \"results\": [\n") < 0) {
-        STD_FCLOSE(file);
+        fclose(file);
         return 1;
     }
     for (index = 0u; index < sizeof(timing_80186_manifest_records) /
@@ -955,11 +957,11 @@ static C_INT timing_80186_manifest_write_results(C_VOID)
 
         if (!timing_80186_manifest_is_i186(record)) continue;
         if (!timing_80186_manifest_observed[index]) {
-            STD_FCLOSE(file);
+            fclose(file);
             return 1;
         }
-        if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
-            STD_FPRINTF(file, "    {\"key_id\":\"%s\","
+        if ((written != 0u && fprintf(file, ",\n") < 0) ||
+            fprintf(file, "    {\"key_id\":\"%s\","
                 "\"profile\":\"%s\",\"level\":\"%s\","
                 "\"source_rule\":\"%s\",\"context\":\"%s\","
                 "\"ticks\":%llu,\"formula_inputs\":%u,"
@@ -972,12 +974,12 @@ static C_INT timing_80186_manifest_write_results(C_VOID)
                 observation->timing_disposition ==
                     CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ?
                     "true" : "false") < 0) {
-            STD_FCLOSE(file);
+            fclose(file);
             return 1;
         }
         ++written;
     }
-    if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
+    if (fprintf(file, "\n  ]\n}\n") < 0 || fclose(file) != 0) return 1;
     return written == 616u ? 0 : 1;
 }
 

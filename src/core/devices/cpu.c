@@ -55,6 +55,7 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->firmware_interrupt_provider = STD_NULL;
     context->firmware_interrupt_context = STD_NULL;
     context->stop_requested = TYPE_FALSE;
+    context->debug_pause_requested = TYPE_FALSE;
     context->reset_requested = TYPE_FALSE;
     context->debug_trap_pending = TYPE_FALSE;
     context->debug_tf_before = TYPE_FALSE;
@@ -158,6 +159,7 @@ C_VOID core_machine_cpu_state_initialize(
         context->instructions == STD_NULL) return;
     if (context != STD_NULL) {
         context->stop_requested = TYPE_FALSE;
+        context->debug_pause_requested = TYPE_FALSE;
         context->reset_requested = TYPE_FALSE;
         context->shutdown_requested = TYPE_FALSE;
         context->debug_trap_pending = TYPE_FALSE;
@@ -181,6 +183,7 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
     STD_MEMSET((C_VOID *)context->cpu, TYPE_ZERO_8, sizeof(t_cpu));
     if (context != STD_NULL) {
         context->stop_requested = TYPE_FALSE;
+        context->debug_pause_requested = TYPE_FALSE;
         context->reset_requested = TYPE_FALSE;
         context->shutdown_requested = TYPE_FALSE;
         context->prefetch_count = 0u;
@@ -336,11 +339,25 @@ C_VOID core_machine_cpu_execution_request_stop(
 {
     if (context != STD_NULL) context->stop_requested = TYPE_TRUE;
 }
- type_bool core_machine_cpu_execution_consume_stop_request(
+type_bool core_machine_cpu_execution_consume_stop_request(
     core_machine_cpu_execution_context *context)
 {
     type_bool requested = context != STD_NULL && context->stop_requested;
     if (context != STD_NULL) context->stop_requested = TYPE_FALSE;
+    return requested;
+}
+C_VOID core_machine_cpu_execution_request_debug_pause(
+    core_machine_cpu_execution_context *context)
+{
+    if (context != STD_NULL) context->debug_pause_requested = TYPE_TRUE;
+}
+
+type_bool core_machine_cpu_execution_consume_debug_pause_request(
+    core_machine_cpu_execution_context *context)
+{
+    type_bool requested = context != STD_NULL && context->debug_pause_requested;
+
+    if (context != STD_NULL) context->debug_pause_requested = TYPE_FALSE;
     return requested;
 }
 C_VOID core_machine_cpu_execution_request_reset(

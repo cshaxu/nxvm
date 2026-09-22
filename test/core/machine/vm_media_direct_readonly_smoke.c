@@ -1,8 +1,11 @@
 #include "type.h"
 
+#include <stdio.h>
+
 #include "core/devices/media_interface.h"
 #include "core/machine/media/fdd_private.h"
 #include "core/machine/media/hdd_private.h"
+#include "lib/storage/file_interface.h"
 
 static const C_CHAR vm_media_direct_fdd_path[] = "vm_media_direct_fdd.img";
 static const C_CHAR vm_media_direct_hdd_path[] = "vm_media_direct_hdd.img";
@@ -11,23 +14,28 @@ static type_unsigned_8 vm_media_direct_fdd_bytes[80u * 2u * 18u * 512u];
 static C_INT vm_media_direct_write(const C_CHAR *path, const C_VOID *bytes,
     STD_SIZE_T byte_count)
 {
-    STD_FILE *file = STD_FOPEN(path, "wb");
-    C_INT failed = file == STD_NULL ||
-        (byte_count != 0u && STD_FWRITE(bytes, 1u, byte_count, file) != byte_count);
+    lib_storage_file_writer *writer = LIB_NULL;
+    C_INT failed = lib_storage_file_writer_open(path,
+        LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) != LIB_STATUS_OK ||
+        (byte_count != 0u && lib_storage_file_writer_write(writer, bytes,
+            byte_count) != LIB_STATUS_OK);
 
-    if (file != STD_NULL && STD_FCLOSE(file) != 0) failed = 1;
+    if (writer != LIB_NULL && lib_storage_file_writer_close(writer) !=
+            LIB_STATUS_OK) failed = 1;
     return failed;
 }
 
 static C_INT vm_media_direct_read_first(const C_CHAR *path,
     type_unsigned_8 expected)
 {
-    STD_FILE *file = STD_FOPEN(path, "rb");
+    lib_storage_file_reader *reader = LIB_NULL;
     type_unsigned_8 value = 0u;
-    C_INT failed = file == STD_NULL || STD_FREAD(&value, 1u, 1u, file) != 1u ||
+    C_INT failed = lib_storage_file_reader_open(path, &reader) != LIB_STATUS_OK ||
+        lib_storage_file_reader_read(reader, &value, 1u) != LIB_STATUS_OK ||
         value != expected;
 
-    if (file != STD_NULL && STD_FCLOSE(file) != 0) failed = 1;
+    if (reader != LIB_NULL && lib_storage_file_reader_close(reader) !=
+            LIB_STATUS_OK) failed = 1;
     return failed;
 }
 
@@ -76,8 +84,8 @@ C_INT main(C_VOID)
         vm_media_direct_read_first(vm_media_direct_hdd_path, direct_value))) failed = 1;
     vm_machine_fdd_finalize(&fdd);
     vm_machine_hdd_finalize(&hdd);
-    (C_VOID)STD_REMOVE(vm_media_direct_fdd_path);
-    (C_VOID)STD_REMOVE(vm_media_direct_hdd_path);
+    (C_VOID)remove(vm_media_direct_fdd_path);
+    (C_VOID)remove(vm_media_direct_hdd_path);
     if (failed) return 1;
     STD_PRINTF("M5:T524:S10:MEDIA-DIRECT-READONLY:OK\n");
     return 0;

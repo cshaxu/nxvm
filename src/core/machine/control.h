@@ -14,6 +14,7 @@ typedef enum vm_machine_pause_reason {
     VM_MACHINE_PAUSE_EXPLICIT,
     VM_MACHINE_PAUSE_BREAKPOINT,
     VM_MACHINE_PAUSE_TRACE,
+    VM_MACHINE_PAUSE_WATCHPOINT,
     VM_MACHINE_PAUSE_STEP
 } vm_machine_pause_reason;
 

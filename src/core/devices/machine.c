@@ -993,6 +993,13 @@ type_status core_machine_run(
                 result->linear_pc = core_machine_linear_pc(machine);
                 return TYPE_STATUS_OK;
             }
+            if (core_machine_cpu_execution_consume_debug_pause_request(
+                    &machine->executor_cpu_execution)) {
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                result->reason = CORE_MACHINE_STOP_PAUSED;
+                result->linear_pc = core_machine_linear_pc(machine);
+                return core_machine_complete_run_boundary(machine, result);
+            }
             if (STD_ATOMIC_LOAD(&machine->stop_requested) ||
                 core_machine_cpu_execution_consume_stop_request(
                     &machine->executor_cpu_execution)) {
@@ -1198,6 +1205,13 @@ type_status core_machine_run(
                 }
                 machine->cpu_retirement_source_ticks = 0u;
                 result->elapsed_ticks = machine->elapsed_ticks;
+            }
+            if (core_machine_cpu_execution_consume_debug_pause_request(
+                    &machine->executor_cpu_execution)) {
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                result->reason = CORE_MACHINE_STOP_PAUSED;
+                result->linear_pc = core_machine_linear_pc(machine);
+                return core_machine_complete_run_boundary(machine, result);
             }
             if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;

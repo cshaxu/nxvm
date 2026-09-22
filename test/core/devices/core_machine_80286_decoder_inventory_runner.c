@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include <stdio.h>
+
 #include "core/devices/cpu_instructions.h"
 
 /* S7 records the actual lexical decoder universe before comparing it with the
@@ -16,7 +18,7 @@ C_INT main(C_VOID)
     type_unsigned_16 modrm;
     type_unsigned_32 accepted_pairs = 0u;
     type_unsigned_32 accepted_opcodes = 0u;
-    STD_FILE *file;
+    FILE *file;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
@@ -50,28 +52,28 @@ C_INT main(C_VOID)
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         if (opcode_seen[opcode]) ++accepted_opcodes;
     }
-    file = STD_FOPEN(path, "wb");
-    if (file == STD_NULL || STD_FPRINTF(file,
+    file = fopen(path, "wb");
+    if (file == STD_NULL || fprintf(file,
             "{\n  \"schema\": \"nxvm.80286-decoder-inventory.v1\",\n"
             "  \"lexeme_opcode_modrm_candidates\": %u,\n"
             "  \"lexeme_primary_opcode_count\": %u,\n"
             "  \"lexeme_primary_opcodes\": [",
             accepted_pairs, accepted_opcodes) < 0) {
-        if (file != STD_NULL) STD_FCLOSE(file);
+        if (file != STD_NULL) fclose(file);
         return 1;
     }
     accepted_opcodes = 0u;
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         if (!opcode_seen[opcode]) continue;
-        if ((accepted_opcodes != 0u && STD_FPRINTF(file, ",") < 0) ||
-            STD_FPRINTF(file, "\"%02X\"", opcode) < 0) {
-            STD_FCLOSE(file);
+        if ((accepted_opcodes != 0u && fprintf(file, ",") < 0) ||
+            fprintf(file, "\"%02X\"", opcode) < 0) {
+            fclose(file);
             return 1;
         }
         ++accepted_opcodes;
     }
-    if (STD_FPRINTF(file, "],\n  \"accepted_modrm_masks\": {") < 0) {
-        STD_FCLOSE(file);
+    if (fprintf(file, "],\n  \"accepted_modrm_masks\": {") < 0) {
+        fclose(file);
         return 1;
     }
     accepted_opcodes = 0u;
@@ -79,9 +81,9 @@ C_INT main(C_VOID)
         type_unsigned_16 byte;
 
         if (!opcode_seen[opcode]) continue;
-        if ((accepted_opcodes != 0u && STD_FPRINTF(file, ",") < 0) ||
-            STD_FPRINTF(file, "\n    \"%02X\":\"", opcode) < 0) {
-            STD_FCLOSE(file);
+        if ((accepted_opcodes != 0u && fprintf(file, ",") < 0) ||
+            fprintf(file, "\n    \"%02X\":\"", opcode) < 0) {
+            fclose(file);
             return 1;
         }
         for (byte = 0u; byte < 32u; ++byte) {
@@ -91,27 +93,27 @@ C_INT main(C_VOID)
             for (bit = 0u; bit < 8u; ++bit) {
                 if (modrm_seen[opcode][byte * 8u + bit]) bits |= 1u << bit;
             }
-            if (STD_FPRINTF(file, "%02X", bits) < 0) {
-                STD_FCLOSE(file);
+            if (fprintf(file, "%02X", bits) < 0) {
+                fclose(file);
                 return 1;
             }
         }
-        if (STD_FPRINTF(file, "\"") < 0) {
-            STD_FCLOSE(file);
+        if (fprintf(file, "\"") < 0) {
+            fclose(file);
             return 1;
         }
         ++accepted_opcodes;
     }
-    if (STD_FPRINTF(file, "\n  },\n  \"accepted_0f_modrm_masks\": {") < 0) {
-        STD_FCLOSE(file);
+    if (fprintf(file, "\n  },\n  \"accepted_0f_modrm_masks\": {") < 0) {
+        fclose(file);
         return 1;
     }
     for (opcode = 0u; opcode < 5u; ++opcode) {
         type_unsigned_16 byte;
 
-        if ((opcode != 0u && STD_FPRINTF(file, ",") < 0) ||
-            STD_FPRINTF(file, "\n    \"%02X\":\"", escaped_opcodes[opcode]) < 0) {
-            STD_FCLOSE(file);
+        if ((opcode != 0u && fprintf(file, ",") < 0) ||
+            fprintf(file, "\n    \"%02X\":\"", escaped_opcodes[opcode]) < 0) {
+            fclose(file);
             return 1;
         }
         for (byte = 0u; byte < 32u; ++byte) {
@@ -123,19 +125,19 @@ C_INT main(C_VOID)
                     bits |= 1u << bit;
                 }
             }
-            if (STD_FPRINTF(file, "%02X", bits) < 0) {
-                STD_FCLOSE(file);
+            if (fprintf(file, "%02X", bits) < 0) {
+                fclose(file);
                 return 1;
             }
         }
-        if (STD_FPRINTF(file, "\"") < 0) {
-            STD_FCLOSE(file);
+        if (fprintf(file, "\"") < 0) {
+            fclose(file);
             return 1;
         }
     }
-    if (STD_FPRINTF(file,
+    if (fprintf(file,
             "\n  },\n  \"semantic_only_prefixes\": [\"F0\"]\n}\n") < 0 ||
-        STD_FCLOSE(file) != 0) return 1;
+        fclose(file) != 0) return 1;
     STD_PRINTF("M5:T435:S7:I286-DECODER-LEXEME:%u:%u\n", accepted_pairs,
         accepted_opcodes);
     return 0;
