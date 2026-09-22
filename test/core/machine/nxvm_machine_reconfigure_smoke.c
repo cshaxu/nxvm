@@ -32,6 +32,10 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK || bytes != 32u * 1024u * 1024u;
     failed |= vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u;
+    failed |= vm_machine_get_reset_vector(STD_NULL, &vector) !=
+        TYPE_STATUS_INVALID_ARGUMENT;
+    failed |= vm_machine_get_reset_vector(session, STD_NULL) !=
+        TYPE_STATUS_INVALID_ARGUMENT;
     vm_machine_destroy(session);
     if (failed) return 1;
     puts("M5:T173:S1:SESSION-RECONFIGURE:OK");

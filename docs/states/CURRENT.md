@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S14 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S13 removed CQ-12 and S12 classified CQ-13. |
-| Objective | Preserve the truthful inner failure at each App composition boundary while keeping its existing one-owner rollback behavior. |
-| Non-goals | Do not create a status framework, alter Lib/Common/x86 status values, change composition topology or expand into firmware, assets, timing or UX policy. |
-| Reference Baseline | S13 implementation and CQ-13 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S15 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted the complete App/Core remediation task; S14 repaired CQ-13 and the same audit classified CQ-14. |
+| Objective | Preserve Core failure results through the VM Machine adapter without changing local input or lifecycle validation. |
+| Non-goals | Do not alter Core statuses, create an adapter framework, change machine behavior or expand into firmware, assets, timing or UX policy. |
+| Reference Baseline | S14 implementation and CQ-14 audit evidence in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/composition.c`, App composition smoke, Type/Lib status boundary, and the convergence ledger. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): failure boundary has one explicit contract; [Coding](../rules/CODING.md): no concealed failure or duplicate adapter; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
-| Verification | Focused composition failures prove Type and Lib status preservation/mapping plus retry safety; source sweep for composition result flattening; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Callers can distinguish invalid input, invalid state, unsupported, allocation and I/O/fault outcomes; rollback returns every App field to its entry state. |
+| Files And ABI Surface | `src/core/machine/machine.c`, `machine_info.c`, affected machine smokes and the convergence ledger. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Architecture](../rules/ARCHITECTURE.md): one directional failure boundary; [Coding](../rules/CODING.md): no concealed failure or forwarding error translation; [Architecture design](../design/ARCHITECTURE.md) and [Source layout](../design/CODING.md). |
+| Verification | Focused Machine/Core failure probes plus direct source sweep; full repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Valid VM adapter requests return the actual Core failure; only invalid VM arguments and local lifecycle conditions synthesize a VM result. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record the Type/Lib mapping, every composition stage and focused proof in the ledger/history. |
-| Stop Conditions | Stop if truthful propagation needs a new public Lib/Common/x86 contract. |
-| Exit Criteria | CQ-13 is repaired, no other App composition path masks a known inner status, and unit/documentation/change gates pass. |
+| Reporting Requirements | Record each changed adapter operation, retained local validation and focused proof in the ledger/history. |
+| Stop Conditions | Stop if preservation requires a new Core, Lib/Common/x86 contract. |
+| Exit Criteria | CQ-14 is repaired, equivalent Machine-to-Core failure masking has a disposition, and unit/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all App composition/create/bind paths for `return TYPE_STATUS_INVALID_STATE` after a failed status-returning call; classify each as state validation, preserved failure, or a separately admitted defect. |
+| Similar-Issue Sweep | Sweep VM Machine wrappers for a Core status-returning call followed by a synthetic `INVALID_STATE`; classify every hit as repaired, local validation or separately admitted. |
 
 ## Current Technical Baseline
 

@@ -15,13 +15,16 @@ type_status vm_machine_get_information(const vm_machine *session,
     core_machine_cpu_profile cpu_profile;
     const vm_machine_fault_outcome *fault;
     STD_SIZE_T memory_bytes = 0u;
+    type_status status;
 
     if (session == STD_NULL || out_information == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
-            TYPE_STATUS_OK || core_machine_get_cpu_profile(session->core_machine,
-            &cpu_profile) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+    if (session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    status = core_machine_get_memory_bytes(session->core_machine, &memory_bytes);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_get_cpu_profile(session->core_machine, &cpu_profile);
+    if (status != TYPE_STATUS_OK) return status;
     STD_MEMSET(out_information, 0, sizeof(*out_information));
     out_information->profile_kind = session->retained_config.profile_kind;
     out_information->cpu_profile = cpu_profile;

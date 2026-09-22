@@ -480,14 +480,16 @@ C_INT vm_machine_create(const vm_machine_config *config, vm_machine **out_sessio
 type_status vm_machine_reconfigure_memory(vm_machine *session,
     STD_SIZE_T memory_bytes)
 {
+    type_status status;
+
     if (session == STD_NULL || !vm_profile_machine_plan_memory_reconfigurable(
             session->profile_plan) ||
         (session->executor != LIB_NULL && common_machine_state_get(
             session->executor) != COMMON_MACHINE_STOPPED)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (core_machine_reconfigure_memory(session->core_machine, memory_bytes) !=
-        TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+    status = core_machine_reconfigure_memory(session->core_machine, memory_bytes);
+    if (status != TYPE_STATUS_OK) return status;
     session->retained_config.memory_bytes = memory_bytes;
     session->core_machine_config.memory_bytes = memory_bytes;
     vm_machine_debug_reset(&session->debug);
@@ -507,11 +509,12 @@ type_status vm_machine_get_reset_vector(const vm_machine *session,
     vm_machine_reset_vector *out_vector)
 {
     core_machine_observation observation;
+    type_status status;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL ||
-        out_vector == STD_NULL) return TYPE_STATUS_INVALID_STATE;
-    if (core_machine_capture_observation(session->core_machine, &observation) !=
-        TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+    if (session == STD_NULL || out_vector == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    status = core_machine_capture_observation(session->core_machine, &observation);
+    if (status != TYPE_STATUS_OK) return status;
     out_vector->cs = observation.cpu.cs;
     out_vector->ip = (type_unsigned_16)observation.cpu.eip;
     return TYPE_STATUS_OK;

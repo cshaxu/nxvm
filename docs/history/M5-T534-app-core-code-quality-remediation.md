@@ -165,3 +165,13 @@ The App composition smoke now asserts the distinct configuration, creation,
 driver, Common-create, bind, session and UI failure classifications, as well
 as its existing retry checks.  It passes independently; complete unit and
 documentation evidence is recorded with the S14 commit.
+
+## S15: Core Result Preservation In Machine
+
+S15 applies the same failure-boundary rule to VM Machine.  Memory
+reconfiguration, reset-vector capture and information capture now return the
+actual Core status after their own local validation.  They no longer rewrite a
+Core allocation, mapping or lifecycle result as a generic Machine state error.
+The reset-vector smoke also proves invalid Machine arguments remain local
+`INVALID_ARGUMENT` outcomes.  A static sweep has no remaining direct
+Core-failure-to-`INVALID_STATE` rewrite in App or Machine.
