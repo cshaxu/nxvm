@@ -2674,7 +2674,7 @@ endforeach()
 endif()
 
 set(PROJECT_CURRENT_VM_RUNTIME_PATH
-    "${CMAKE_BINARY_DIR}/vm-0-5-0533.exe")
+    "${CMAKE_BINARY_DIR}/vm-0-5-0534.exe")
 configure_file("${CMAKE_SOURCE_DIR}/assets/sessions/${NXVM_PRODUCT_PROFILE}.ini"
     "${CMAKE_BINARY_DIR}/NXVM.ini" COPYONLY)
 function(project_add_t533_console_integration_test target)
@@ -2878,8 +2878,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0533)
-add_current_vm_artifact(vm-0-5-0533 "0.5.0533")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0534)
+add_current_vm_artifact(vm-0-5-0534 "0.5.0534")
 if(TARGET run-integration-tests)
     add_dependencies(run-integration-tests ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 endif()

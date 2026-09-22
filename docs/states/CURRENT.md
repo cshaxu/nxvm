@@ -4,31 +4,31 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S49 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S48 test-owner audit found `vm-app-console-smoke` compiles a test-only command state machine and never enters production App Command. This bounded duplicate-test removal is within the approved quality and full-green objective. |
-| Objective | Delete the test-only parallel console state machine and its false production-smoke target. |
-| Non-goals | Do not alter production command parsing, Common Session lifecycle, console UX, integration probe semantics or add a test-only production interface. |
-| Reference Baseline | S48 `59572440`; CQ-48 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S50 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The T534 exit audit found the current artifact target still names the inherited T533 revision despite runnable-source changes. Correcting the task identity and rebuilding its required artifacts is within the approved full-green objective. |
+| Objective | Publish the current T534 products as version `0.5.0534` and verify all required fixed-profile artifacts. |
+| Non-goals | Do not change product behavior, profiles, BYOB asset paths, INI grammar, packaging locations or retain a compatibility artifact target. |
+| Reference Baseline | S49 `931f0fce`; CQ-49 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `CMakeLists.txt`, `test/app/nxvm_console_smoke.c`, `test/app/support/vm_machine_console.[ch]`, convergence ledger/history. One repository-only target and its duplicate helper are removed; production ABI is unchanged. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete repeated mechanism; [Coding](../rules/CODING.md): tests must prove an owned behavior and replacement removes retired paths; [Architecture](../rules/ARCHITECTURE.md): Common Session is the sole product-control reducer. |
-| Verification | Complete `vm_app_command` and target-registration sweep; clean configure/build; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | No duplicate command state machine, support files or target remains; real App console integration target stays registered; all remaining unit tests pass. |
+| Files And ABI Surface | `CMakeLists.txt`, `CMakePresets.json`, Current/evidence/history, ignored `assets/binary/<profile>/` outputs. The single current artifact target changes identity from 0533 to 0534; runtime behavior and ABI remain unchanged. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): every runnable implementation task uses its own revision and dual optimized stripped artifacts; [Coding](../rules/CODING.md): one production path; [Architecture](../rules/ARCHITECTURE.md): each selected product deploys once in its sole profile directory. |
+| Verification | Configure/build current x64 and x86 artifact targets for default, 5170, XT and Model 40; inspect PE architecture and stripped release properties; verify adjacent INIs and artifact paths; complete repository-only unit and active integration suites; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No current 0533 target/preset remains; eight `0.5.0534` artifacts, two per fixed profile, exist only in their profile directories with adjacent INI; all gates pass. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-48, all duplicate-test callers and target dispositions and full gate results in the ledger/history. |
-| Stop Conditions | Stop if the test helper exposes an actual production contract that cannot be reached through retained probes; retain that proof rather than deleting coverage. |
-| Exit Criteria | CQ-48 is repaired: only the duplicate test route is removed, actual console coverage remains, and configure/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-49, all target/preset replacements, artifact identities/architectures and full gate results in the ledger/history. |
+| Stop Conditions | Stop if either toolchain cannot emit a stripped optimized artifact, an external asset is unavailable, or a product cannot deploy to its sole directory; report the exact failing profile/architecture. |
+| Exit Criteria | CQ-49 is repaired: current artifact identity is 0534, all eight fixed-product artifacts and required gates pass, and no former current target remains. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep `test/app` for stand-alone state machines or parsers that duplicate App/Common production behavior, and remove every proven orphan rather than calling it coverage. |
+| Similar-Issue Sweep | Sweep CMake, presets and live Current references for inherited current-artifact revision/target names; retain 0533 only in historical records and historical ignored artifacts. |
 
 ## Current Technical Baseline
 
-- `vm-0-5-0533` is the current target. T533 produced eight stripped, optimized
-  x64/x86 artifacts for its four fixed products; each product has only one
-  executable location, `assets/binary/<profile>/`, with its adjacent generated
-  INI. The preset-selected default pair is `nxvm_default_0_5_0533_x64.exe` and
-  `nxvm_default_0_5_0533_x86.exe`. Paths, hashes and terminal dispositions are recorded in the
-  [T533 convergence ledger](../etc/evidence/t533-s5-product-convergence-ledger.md).
+- `vm-0-5-0534` is the current target. T534 will produce eight stripped,
+  optimized x64/x86 artifacts for its four fixed products; each product has
+  only one executable location, `assets/binary/<profile>/`, with its adjacent
+  generated INI. T533's 0533 artifacts remain historical evidence in their
+  existing locations until the 0534 closure record replaces the current
+  baseline.
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:
   `machine`, `session`, and `ui`. The separately selected `src/x86` corpus owns
