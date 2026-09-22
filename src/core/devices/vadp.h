@@ -163,8 +163,6 @@ C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
     type_unsigned_64 elapsed_ticks);
 C_VOID core_machine_vadp_finalize(t_vadp *adapter);
 
-type_status core_machine_vadp_configure_text(t_vadp *adapter, type_unsigned_8 mode,
-    type_unsigned_16 columns, type_unsigned_16 rows, C_INT color_enabled);
 type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     const core_machine_vadp_text_timing *timing);
 type_status core_machine_vadp_configure_text_glyphs(t_vadp *adapter,

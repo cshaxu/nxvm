@@ -1771,28 +1771,6 @@ C_VOID core_machine_vadp_finalize(t_vadp *adapter)
     adapter->data.ega_planar_vram = 0u;
 }
 
-type_status core_machine_vadp_configure_text(t_vadp *adapter, type_unsigned_8 mode,
-    type_unsigned_16 columns, type_unsigned_16 rows, C_INT color_enabled)
-{
-    type_unsigned_8 mode_control;
-
-    if (adapter == STD_NULL || rows == 0u || rows > CORE_MACHINE_DISPLAY_MAX_ROWS ||
-        (columns != 40u && columns != 80u) || mode > 3u) {
-        return TYPE_STATUS_UNSUPPORTED;
-    }
-    mode_control = (columns == 80u ? 0x01u : 0u) |
-        (color_enabled ? 0x04u : 0u);
-    if (adapter->data.mode_control != mode_control ||
-        adapter->data.columns != columns || adapter->data.rows != rows) {
-        adapter->data.mode_control = mode_control;
-        adapter->data.columns = columns;
-        adapter->data.rows = rows;
-        adapter->data.color_enabled = color_enabled;
-        core_machine_vadp_mark_dirty(adapter);
-    }
-    return TYPE_STATUS_OK;
-}
-
 type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     const core_machine_vadp_text_timing *timing)
 {

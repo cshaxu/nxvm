@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S46 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S45 manual App review found `INFO` hardcodes IBM PC/AT even though this executable can be any fixed Profile. This bounded ownership repair is within the approved quality and full-green objective. |
-| Objective | Make `INFO` report the frozen Profile as the only Machine identity source. |
-| Non-goals | Do not alter profile construction, command grammar, CPU/device facts, Common session behavior or introduce a second machine-name mapping. |
-| Reference Baseline | S45 `57377a40`; CQ-45 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S47 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. The post-S46 complete caller sweep found the VADP direct text-mode configurator has only a declaration and definition. This bounded dead-entry removal is within the approved quality and full-green objective. |
+| Objective | Delete the uncalled VADP direct text-mode configurator and retain the actual timing/glyph configuration route. |
+| Non-goals | Do not change VADP state, port semantics, Profile display construction, text rendering, CRTC timing or presentation behavior. |
+| Reference Baseline | S46 `238c20b9`; CQ-46 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/app/command.c`, integration console marker, convergence ledger/history. App removes one false product identity; public Machine facts and ABI remain unchanged. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the shared mechanism; [Coding](../rules/CODING.md): one meaning per symbol/output fact; [Architecture](../rules/ARCHITECTURE.md): Profile owns fixed board identity and App must not duplicate it. |
-| Verification | Complete App/Core hardcoded-machine-name sweep; focused console build/probe; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | `INFO` has one Profile-derived identity line and no hardcoded machine identity; all affected tests pass. |
+| Files And ABI Surface | `src/core/devices/vadp.[ch]`, convergence ledger/history. One uncalled internal VADP API is deleted; retained VADP contracts remain unchanged. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete caller mechanism; [Coding](../rules/CODING.md): delete dead wrappers; [Architecture](../rules/ARCHITECTURE.md): VADP remains the sole video-state owner with one configuration path. |
+| Verification | Complete VADP configurator caller sweep; focused VADP text/display tests; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | No direct text configurator declaration/definition/caller remains; retained timing/glyph path and all tests pass. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-45, all hardcoded-machine-name dispositions and full gate results in the ledger/history. |
-| Stop Conditions | Stop if a user-visible Machine identity cannot be derived from the frozen Profile contract; report the missing owner rather than adding an App-local mapping. |
-| Exit Criteria | CQ-45 is repaired: `INFO` reports one Profile-owned identity and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-46, all configurator caller dispositions and full gate results in the ledger/history. |
+| Stop Conditions | Stop if a live caller requires the direct API's distinct mode-only behavior; record that behavior rather than deleting it or merging it into an unrelated VADP route. |
+| Exit Criteria | CQ-46 is repaired: the uncalled configurator is absent, retained VADP configuration behavior is verified, and focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all App/Core monitor text for hardcoded machine/profile identity and remove every duplicate identity source. |
+| Similar-Issue Sweep | Sweep all non-static App/Core definitions for declaration/definition-only facades, then distinguish live callback-table entries and test consumers from true dead APIs. |
 
 ## Current Technical Baseline
 

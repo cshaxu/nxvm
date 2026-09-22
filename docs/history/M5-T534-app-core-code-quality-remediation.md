@@ -573,3 +573,12 @@ non-default fixed product two conflicting board identities. S46 removes the
 literal and uses the frozen Profile name as the sole machine identity. The
 console unit, 5170 console-probe build, complete 334-case `-j8` unit replay
 and documentation governance pass.
+
+## S47: Dead VADP Text Configurator
+
+The post-S46 whole-caller audit found the direct VADP text configurator was an
+uncalled declaration/definition pair. Profile display construction already
+uses the retained timing and glyph configuration route. S47 deletes the
+obsolete setter without changing VADP state or display semantics. Focused VADP
+text/status probes, the complete 334-case `-j8` unit replay and documentation
+governance pass.
