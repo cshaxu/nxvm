@@ -390,3 +390,12 @@ The targeted Profile/Machine construction smokes and complete 335-test unit
 suite pass. The unit-level blob argument checks remain repository-only; an
 allocator-failure injection seam was deliberately not added merely to fabricate
 a `NO_MEMORY` branch, because Lib already owns that allocation result.
+
+## S32: Remove Disabled Development Trace from Production Core
+
+The next audit found a legacy development trace allocated even though its
+compile-time switch is disabled. An explicit trace-enabled compile then showed
+the dormant implementation is already nonfunctional: helpers expand trace
+macros without a CPU context. S32 therefore removes that dead diagnostic path,
+while retaining decoder error-control flow and leaving the product debugger
+intact. The focused CPU-context smoke and complete 334-test unit suite pass.

@@ -201,7 +201,6 @@ struct core_machine_cpu_execution_context {
     core_machine_transaction_state *transaction;
     t_pic *pic_master;
     t_pic *pic_slave;
-    type_trace *trace;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
     C_VOID *diagnostic_context;
     core_machine_cpu_external_cycle_provider external_cycle_provider;

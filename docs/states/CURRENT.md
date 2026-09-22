@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S31 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S30 audit found BYOB Profile asset loaders collapse invalid input and Lib allocation failure into `FAULT`, and their private output views retain stale state on failure. This bounded correction is within that approved objective. |
-| Objective | Make the one BYOB asset-loading family preserve truthful invalid-argument/no-memory outcomes and clear valid private output views before later failure. |
-| Non-goals | Do not change Lib contracts, asset formats, profile semantics, machine topology, timing or product UX. |
-| Reference Baseline | S30 `decc4374`; new CQ-30 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S32 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. The post-S31 audit found the disabled legacy development trace still allocates a per-machine trace stack and retains disabled-path work in production Core. This bounded correction is within that approved objective. |
+| Objective | Remove the nonfunctional legacy development trace completely while retaining its decoder error-control flow and the product debugger. |
+| Non-goals | Do not alter the product debugger, instruction execution, timing, Lib/Common/x86 public contracts or product UX. |
+| Reference Baseline | S31 `f0a2ead7`; new CQ-31 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `src/core/profiles/byob/blob.c`, `src/core/profiles/machine_plan.c`, existing Profile/Machine construction smokes, convergence ledger/history. No Common/Lib/x86 signature change. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete asset-loader family; [Coding](../rules/CODING.md): preserve truthful failures and output ownership; [Architecture](../rules/ARCHITECTURE.md): Profile retains the one BYOB asset-materialization boundary. |
-| Verification | Full Profile file-loader sweep; focused Profile/Machine construction smokes; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Invalid asset-loader inputs return `INVALID_ARGUMENT`; Lib allocation failure returns `NO_MEMORY`; ordinary file/size failure remains `FAULT`; private output views are clear after every failure. |
+| Files And ABI Surface | `src/type.[ch]`, `src/core/devices/cpu.[ch]`, `src/core/devices/cpu_instructions.c`, existing CPU trace-context smoke, convergence ledger/history. No product-debugger or Common/Lib/x86 interface change. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): remove the complete disabled development path; [Coding](../rules/CODING.md): no disabled-path allocation or side effect; [Architecture](../rules/ARCHITECTURE.md): product debugging and development diagnostics remain distinct. |
+| Verification | Full legacy-trace reference sweep; focused CPU trace-context smoke; complete repository-only unit suite; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | Core contains no legacy trace field, allocation, trace call or unimplemented-path branch; decoder error-control flow and the product debugger remain unchanged. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-30, each BYOB file-loader disposition and full gate results in the ledger/history. |
-| Stop Conditions | Stop if the correction requires a Lib contract change or changes asset semantics. |
-| Exit Criteria | CQ-30 is repaired: every reachable BYOB asset-loader failure has a truthful category and focused/full/documentation/change gates pass. |
+| Reporting Requirements | Record CQ-31, every legacy-trace reference disposition and full gate results in the ledger/history. |
+| Stop Conditions | Stop if the correction reaches the product debugger or changes execution behavior with trace disabled. |
+| Exit Criteria | CQ-31 is repaired: the nonfunctional development trace is gone without changing decoder error-control flow or the product debugger; focused/full/documentation/change gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep every Profile BYOB file-loading wrapper for invalid-argument/no-memory collapse and validation-before-output-clear ordering. |
+| Similar-Issue Sweep | Sweep every App/Core legacy development trace reference, including allocation, field ownership, macros, diagnostic calls and tests. |
 
 ## Current Technical Baseline
 

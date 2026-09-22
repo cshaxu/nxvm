@@ -21,11 +21,6 @@ extern "C"
 #endif
 /* ************************************************* */
 
-/* DEBUGGING OPTIONS ******************************* */
-#define TYPE_TRACE_ENABLED 0 /* enable trancer */
-#define TYPE_TRACE_DEBUG 0   /* debug tracer itself */
-    /* ************************************************* */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -283,73 +278,10 @@ typedef type_signed_32 type_native_signed;
     C_INT STD_MEMCMP(const C_VOID *_Buf1, const C_VOID *_Buf2, STD_SIZE_T _Size);
     C_VOID type_string_lower(C_CHAR *str);
 
-/* Legacy trace support is shared root diagnostic infrastructure. */
-#define TYPE_TRACE_MAX_STACK 0x100
-    typedef struct
-    {
-        C_CHAR *blockStack[TYPE_TRACE_MAX_STACK];
-        STD_SIZE_T blockCount;
-        C_CHAR *callName;
-    } type_trace_call;
-    typedef struct
-    {
-        type_trace_call callStack[TYPE_TRACE_MAX_STACK];
-        STD_SIZE_T callCount;
-        C_INT flagError;
-    } type_trace;
-
-    C_VOID type_trace_print(type_trace *rtrace);
-    C_VOID type_trace_initialize(type_trace *rtrace);
-    C_VOID type_trace_finalize(type_trace *rtrace);
-    C_VOID type_trace_call_begin(type_trace *rtrace, C_CHAR *callName);
-    C_VOID type_trace_call_end(type_trace *rtrace);
-    C_VOID type_trace_block_begin(type_trace *rtrace, C_CHAR *blockName);
-    C_VOID type_trace_block_end(type_trace *rtrace);
-
-    /* #define TYPE_TRACE_CONTEXT    tracer variable */
+    /* Error-flow macros preserve decoder exits without the retired trace. */
     /* #define TYPE_TRACE_ERROR  error condition */
     /* #define TYPE_TRACE_SET_ERROR set error statement */
 
-#if TYPE_TRACE_ENABLED == 1
-#define TYPE_TRACE_CALL_BEGIN(callName) type_trace_call_begin(&(TYPE_TRACE_CONTEXT), (callName))
-#define TYPE_TRACE_BLOCK_BEGIN(blockName) type_trace_block_begin(&(TYPE_TRACE_CONTEXT), (blockName))
-#define TYPE_TRACE_CALL_END type_trace_call_end(&(TYPE_TRACE_CONTEXT))
-#define TYPE_TRACE_BLOCK_END type_trace_block_end(&(TYPE_TRACE_CONTEXT))
-#define TYPE_TRACE_CHECK_BREAK(n)                       \
-    if (1)                                              \
-    {                                                   \
-        (n);                                            \
-        if (TYPE_TRACE_ERROR)                           \
-        {                                               \
-            (TYPE_TRACE_CONTEXT).flagError = 1;         \
-            type_trace_finalize(&(TYPE_TRACE_CONTEXT)); \
-            break;                                      \
-        }                                               \
-    }                                                   \
-    else
-#define TYPE_TRACE_CHECK_RETURN(n)                      \
-    do                                                  \
-    {                                                   \
-        (n);                                            \
-        if (TYPE_TRACE_ERROR)                           \
-        {                                               \
-            (TYPE_TRACE_CONTEXT).flagError = 1;         \
-            type_trace_finalize(&(TYPE_TRACE_CONTEXT)); \
-            return;                                     \
-        }                                               \
-    } while (0)
-#define TYPE_TRACE_CHECK_RETURN_ZERO(n)                 \
-    do                                                  \
-    {                                                   \
-        (n);                                            \
-        if (TYPE_TRACE_ERROR)                           \
-        {                                               \
-            (TYPE_TRACE_CONTEXT).flagError = 1;         \
-            type_trace_finalize(&(TYPE_TRACE_CONTEXT)); \
-            return 0;                                   \
-        }                                               \
-    } while (0)
-#else
 #define TYPE_TRACE_CALL_BEGIN(callName)
 #define TYPE_TRACE_BLOCK_BEGIN(blockName)
 #define TYPE_TRACE_CALL_END
@@ -382,7 +314,6 @@ typedef type_signed_32 type_native_signed;
             return 0;                   \
         }                               \
     } while (0)
-#endif
 
 #define TYPE_TRACE_IMPOSSIBLE_BREAK TYPE_TRACE_CHECK_BREAK(TYPE_TRACE_SET_ERROR);
 #define TYPE_TRACE_IMPOSSIBLE_RETURN TYPE_TRACE_CHECK_RETURN(TYPE_TRACE_SET_ERROR);

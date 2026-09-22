@@ -42,12 +42,6 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->transaction = STD_NULL;
     context->pic_master = STD_NULL;
     context->pic_slave = STD_NULL;
-    if (context->trace == STD_NULL) {
-        context->trace = (type_trace *)STD_MALLOC(sizeof(*context->trace));
-    }
-    if (context->trace != STD_NULL) {
-        STD_MEMSET((C_VOID *)context->trace, TYPE_ZERO_8, sizeof(*context->trace));
-    }
     context->diagnostic_provider = STD_NULL;
     context->diagnostic_context = STD_NULL;
     context->external_cycle_provider = STD_NULL;

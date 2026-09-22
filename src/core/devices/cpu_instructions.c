@@ -12,19 +12,12 @@
 #define instruction_state (*context->instructions)
 #define ExecCpuInstruction(handler) ((handler) ? ((handler)(context), 0) : 0)
 
-#define TYPE_TRACE_CONTEXT (*context->trace)
 #define TYPE_TRACE_ERROR instruction_state.data.except
 #define TYPE_TRACE_SET_ERROR (_SetExcept_CE(0xffffffff))
 
 /* indicates functions not implemented */
 #define _______todo static C_VOID
-/* Records an untested code path only when an explicit trace is active. */
-#define _new_code_path_                       \
-    do                                        \
-    {                                         \
-        if (context->trace != STD_NULL)       \
-            type_trace_print(context->trace); \
-    } while (0)
+#define _new_code_path_ do { } while (0)
 
 /* stack pointer size */
 #define _GetStackSize (cpu_state.data.ss.seg.data.big ? 4 : 2)
@@ -18200,10 +18193,6 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.mrm.offset = TYPE_ZERO_32;
     context->debug_tf_before = _GetEFLAGS_TF;
     context->debug_rf_before = _GetEFLAGS_RF;
-#if VCPUINS_TRACE == 1
-    if (context->trace != STD_NULL)
-        type_trace_initialize(context->trace);
-#endif
     if (context->diagnostic_provider != STD_NULL &&
         context->diagnostic_provider->record_instruction != STD_NULL)
     {
@@ -18232,7 +18221,6 @@ type_bool core_machine_cpu_execution_preview_lexeme(
     preview.cpu = &preview_cpu;
     preview.instructions = &preview_instructions;
     preview.transaction = STD_NULL;
-    preview.trace = STD_NULL;
     preview.diagnostic_provider = STD_NULL;
     preview.diagnostic_context = STD_NULL;
     preview.preview_mode = TYPE_TRUE;
@@ -18443,13 +18431,6 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
     }
-#if VCPUINS_TRACE == 1
-    if (context->trace != STD_NULL && context->trace->callCount &&
-        !instruction_state.data.except)
-        _SetExcept_CE(0);
-    if (context->trace != STD_NULL)
-        type_trace_finalize(context->trace);
-#endif
     if (instruction_state.data.except)
     {
         fault_cpu = instruction_state.data.oldcpu;
@@ -19293,9 +19274,5 @@ type_bool core_machine_cpu_execution_consume_instruction_fault_delivery(
 C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context)
 {
-    if (context != STD_NULL)
-    {
-        STD_FREE(context->trace);
-        context->trace = STD_NULL;
-    }
+    (C_VOID)context;
 }

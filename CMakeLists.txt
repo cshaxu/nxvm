@@ -1391,13 +1391,6 @@ target_link_libraries(core-machine-cpu-context-smoke PRIVATE
     core-machine
 )
 
-add_executable(core-machine-trace-context-smoke
-    test/core/devices/cpu_trace_context_smoke.c
-)
-target_link_libraries(core-machine-trace-context-smoke PRIVATE
-    core-machine
-)
-
 add_executable(core-machine-cpu-fault-diagnostic-smoke
     test/core/devices/cpu_fault_diagnostic_smoke.c
 )
@@ -2038,7 +2031,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-hardware-delivery-s3-smoke
     core-machine-interrupt-return-composition-s4-smoke
     core-machine-vm86-lgdt-lidt-s5-smoke
-    core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
     core-machine-port-ownership-smoke
