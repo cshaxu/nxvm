@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S22 |
+| Identifier Mode | Continuation T534 S23 |
 | Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation. S21's complete default build exposed two stale integration-test references to App/Core contracts removed by earlier T534 repairs; this bounded test-contract repair is within that approved objective. |
-| Objective | Move the affected integration tests to the retained test-output and compiled-profile contracts so the default build has no stale root-facade or request-profile reference. |
+| Objective | Make App destruction failure-atomic when its Common worker cannot be shut down. |
 | Non-goals | Do not restore deleted root facades, reintroduce YAML/profile selection into runtime request, alter production App/Core behavior, Common/Lib/x86 public contracts, machine topology, firmware, assets, timing or product UX. |
-| Reference Baseline | S21 `7c048a21`; CQ-22 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Reference Baseline | S22 `840d1481`; CQ-23 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | `test/integration/dos/{vm_control_lifecycle_smoke,vm_byob_dos_boot_probe}.c`, convergence ledger/history. No production or public interface change. |
+| Files And ABI Surface | `src/app/{composition,main}.c`, `composition.h`, App composition smoke, convergence ledger/history. App-local destroy result only; no Common contract change. |
 | Applicable Rules | [Execution](../rules/EXECUTION.md): complete S and similar-issue sweep; [Coding](../rules/CODING.md): tests use their owner-local, current contracts; [Architecture](../rules/ARCHITECTURE.md): generated Profile remains the sole machine-selection owner. |
 | Verification | Full default build; focused affected integration targets; complete repository-only unit and external integration suites; source sweep for the deleted `STD_FPUTS` facade and `vm_session_request.profile`; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Integration tests build using existing `STD_FPRINTF` and the compiled Machine profile kind; neither deleted test facade nor runtime-request profile field remains. |
+| Expected Markers | A shutdown failure leaves every App-owned object intact for retry; only successful worker shutdown permits downstream destruction. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
 | Reporting Requirements | Record the retained output/profile owners, complete default-build result and sweep count in the ledger/history. |
 | Stop Conditions | Stop if either repair requires restoring a production compatibility facade or a runtime machine-profile selector. |
-| Exit Criteria | CQ-22 has no stale reference, affected integration targets and complete gates pass, and production contracts remain unchanged. |
+| Exit Criteria | CQ-23 cannot release Common callback contexts before successful shutdown, reports the exact mapped failure, and passes focused/full/documentation/change gates. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Sweep all integration sources for `STD_FPUTS` and `vm_session_request.profile`; distinguish remaining valid test-local `STD_FPRINTF` from retired root-facade use. |
+| Similar-Issue Sweep | Sweep every App teardown/error-cleanup path that destroys a Common machine or its callback contexts. |
 
 ## Current Technical Baseline
 

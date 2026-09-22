@@ -279,3 +279,13 @@ probe passes, and the complete 335-case repository-only unit suite remains
 green. The complete default Ninja target itself repeatedly deadlocks without
 a compiler child after its known targets complete; this is retained as build
 tooling evidence, not relabelled as a source failure. S22 is closed.
+
+## S23: Failure-Atomic App Teardown
+
+S23 repairs App teardown against Common's existing shutdown contract. A failed
+worker join retains the Common object and its callback contexts, so App now
+returns the mapped failure immediately and leaves its complete object graph
+available for a later retry. Only successful shutdown enters UI/session/Common
+destruction and Machine unbinding. The composition fake boundary proves the
+failed attempt destroys nothing, followed by successful one-time cleanup on
+retry. The 335-case repository-only unit suite passes. S23 is closed.

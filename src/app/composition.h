@@ -10,7 +10,7 @@
 typedef struct vm_app vm_app;
 
 type_status vm_app_create(vm_app **out_app);
-C_VOID vm_app_destroy(vm_app *app);
+type_status vm_app_destroy(vm_app *app);
 common_session *vm_app_session(vm_app *app);
 vm_machine *vm_app_machine(vm_app *app);
 common_machine *vm_app_common_machine(vm_app *app);

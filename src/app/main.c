@@ -40,12 +40,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     PRODUCT_PRINT_BANNER();
     if (vm_app_create(&session) != TYPE_STATUS_OK ||
         vm_app_console_context_create(&console_context) != TYPE_STATUS_OK) {
-        vm_app_destroy(session);
+        (C_VOID)vm_app_destroy(session);
         return 1;
     }
     vm_app_console_main(console_context, session,
         vm_main_ini_path(argc, argv, ini_path, sizeof(ini_path)));
     vm_app_console_context_destroy(console_context);
-    vm_app_destroy(session);
-    return 0;
+    return vm_app_destroy(session) == TYPE_STATUS_OK ? 0 : 1;
 }

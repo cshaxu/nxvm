@@ -60,16 +60,23 @@ type_status vm_app_create(vm_app **out_app)
     return TYPE_STATUS_OK;
 }
 
-C_VOID vm_app_destroy(vm_app *app)
+type_status vm_app_destroy(vm_app *app)
 {
-    if (app == STD_NULL) return;
-    common_machine_shutdown(app->common_machine);
+    lib_status shutdown_status;
+
+    if (app == STD_NULL) return TYPE_STATUS_OK;
+    shutdown_status = common_machine_shutdown(app->common_machine);
+    if (shutdown_status != LIB_STATUS_OK)
+        return vm_app_status_from_lib(shutdown_status);
     common_ui_destroy(app->ui);
     common_session_destroy(app->session);
-    common_machine_destroy(app->common_machine);
+    shutdown_status = common_machine_destroy(app->common_machine);
+    if (shutdown_status != LIB_STATUS_OK)
+        return vm_app_status_from_lib(shutdown_status);
     (C_VOID)vm_machine_bind_common_machine(app->machine, LIB_NULL);
     vm_machine_destroy(app->machine);
     STD_FREE(app);
+    return TYPE_STATUS_OK;
 }
 
 common_session *vm_app_session(vm_app *app)

@@ -45,6 +45,7 @@ typedef struct composition_fixture {
     C_UINT common_machine_destroy_count;
     C_UINT session_destroy_count;
     C_UINT ui_destroy_count;
+    lib_status shutdown_status;
 } composition_fixture;
 
 static composition_fixture fixture;
@@ -53,6 +54,7 @@ static C_VOID composition_fixture_reset(composition_failure failure)
 {
     STD_MEMSET(&fixture, 0, sizeof(fixture));
     fixture.failure = failure;
+    fixture.shutdown_status = LIB_STATUS_OK;
 }
 
 static C_INT composition_fixture_clean(C_VOID)
@@ -122,7 +124,7 @@ lib_status common_machine_create(common_machine **out_machine,
 lib_status common_machine_shutdown(common_machine *machine)
 {
     (C_VOID)machine;
-    return LIB_STATUS_OK;
+    return fixture.shutdown_status;
 }
 
 lib_status common_machine_destroy(common_machine *machine)
@@ -271,6 +273,27 @@ static C_INT composition_ui_failure_recovers(composition_failure failure)
     return composition_fixture_clean();
 }
 
+static C_INT composition_destroy_failure_recovers(C_VOID)
+{
+    vm_app *app = STD_NULL;
+    vm_session_request request = {0};
+    common_session_options session_options = {0};
+    common_ui_options ui_options = {0};
+
+    composition_fixture_reset(COMPOSITION_FAILURE_NONE);
+    if (vm_app_create(&app) != TYPE_STATUS_OK ||
+        vm_app_compose_machine(app, &request) != TYPE_STATUS_OK ||
+        vm_app_compose_control(app, &session_options) != TYPE_STATUS_OK ||
+        vm_app_compose_ui(app, &ui_options) != TYPE_STATUS_OK) return 0;
+    fixture.shutdown_status = LIB_STATUS_IO_ERROR;
+    if (vm_app_destroy(app) != TYPE_STATUS_FAULT || !fixture.machine.live ||
+        !fixture.common_machine.live || !fixture.session.live || !fixture.ui.live ||
+        fixture.machine_destroy_count != 0u || fixture.common_machine_destroy_count != 0u ||
+        fixture.session_destroy_count != 0u || fixture.ui_destroy_count != 0u) return 0;
+    fixture.shutdown_status = LIB_STATUS_OK;
+    return vm_app_destroy(app) == TYPE_STATUS_OK && composition_fixture_clean();
+}
+
 C_INT main(C_VOID)
 {
     static const struct {
@@ -292,7 +315,8 @@ C_INT main(C_VOID)
     }
     if (!composition_control_failure_recovers() ||
         !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_CREATE) ||
-        !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_BIND)) return 1;
+        !composition_ui_failure_recovers(COMPOSITION_FAILURE_UI_BIND) ||
+        !composition_destroy_failure_recovers()) return 1;
     STD_PRINTF("M5:T534:S8:APP-COMPOSITION-ATOMICITY:OK\n");
     return 0;
 }
