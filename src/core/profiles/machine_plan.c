@@ -11,6 +11,21 @@
 #define VM_PROFILE_MACHINE_FDD_MEDIA_ID 1u
 #define VM_PROFILE_MACHINE_HDD_MEDIA_ID 2u
 
+const C_CHAR *vm_profile_name(vm_machine_profile_kind kind)
+{
+    if (kind == VM_MACHINE_PROFILE_DEFAULT_PC_AT) return "default-pc-at";
+    if (kind == VM_MACHINE_PROFILE_IBM_5170_MODEL_339) {
+        return "ibm-5170-model-339";
+    }
+    if (kind == VM_MACHINE_PROFILE_IBM_5160_MODEL_268) {
+        return "ibm-5160-model-268";
+    }
+    if (kind == VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+        return "compaq-deskpro-386-model-40";
+    }
+    return "unknown";
+}
+
 typedef enum vm_profile_machine_plan_kind {
     VM_PROFILE_MACHINE_PLAN_DEFAULT_PC_AT,
     VM_PROFILE_MACHINE_PLAN_IBM_5170,

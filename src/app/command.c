@@ -116,7 +116,7 @@ static C_VOID vm_app_console_info(vm_app_console_context *context,
         "Device Info\n===========\nMachine:           %s\n"
         "CPU:               Intel %s\nRAM Size:          %u %s\n"
         "Floppy Disk Drive: %.2f MB, %s\n",
-        vm_machine_profile_name(information.profile_kind),
+        vm_profile_name(information.profile_kind),
         core_machine_cpu_profile_name(information.cpu_profile),
         (C_UINT)(information.memory_bytes < (1u << 20) ?
             information.memory_bytes >> 10 : information.memory_bytes >> 20),

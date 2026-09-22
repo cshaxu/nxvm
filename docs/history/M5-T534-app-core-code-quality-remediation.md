@@ -582,3 +582,11 @@ uses the retained timing and glyph configuration route. S47 deletes the
 obsolete setter without changing VADP state or display semantics. Focused VADP
 text/status probes, the complete 334-case `-j8` unit replay and documentation
 governance pass.
+
+## S48: Profile-Owned Identity Mapping
+
+The post-S47 ownership audit found the fixed Profile-name switch in Machine,
+despite it depending only on immutable Profile selection. S48 moves the one
+mapping into Profile selection and changes its App and test consumers without
+changing any name. Focused XT Profile and App-console probes, the complete
+334-case `-j8` unit replay and documentation governance pass.

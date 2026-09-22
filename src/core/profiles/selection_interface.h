@@ -14,6 +14,8 @@ typedef enum vm_machine_profile_kind {
     VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
 } vm_machine_profile_kind;
 
+const C_CHAR *vm_profile_name(vm_machine_profile_kind kind);
+
 typedef enum vm_machine_floppy_format {
     VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT,
     VM_MACHINE_FLOPPY_FORMAT_360K,

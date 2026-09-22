@@ -205,7 +205,7 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
     type_unsigned_8 observed[2] = {0};
     C_INT failed = 0;
 
-    failed |= STD_STRCMP(vm_machine_profile_name(config.profile_kind),
+    failed |= STD_STRCMP(vm_profile_name(config.profile_kind),
         "ibm-5160-model-268") != 0;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;

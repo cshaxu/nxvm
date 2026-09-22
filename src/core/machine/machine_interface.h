@@ -18,8 +18,6 @@ typedef enum vm_machine_speed {
     VM_MACHINE_SPEED_TURBO
 } vm_machine_speed;
 
-const C_CHAR *vm_machine_profile_name(vm_machine_profile_kind kind);
-
 typedef struct vm_machine vm_machine;
 
 typedef struct vm_machine_reset_vector {

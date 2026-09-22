@@ -88,21 +88,6 @@ type_bool vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame
     return common_machine_frame_copy(frame, &machine->latest_frame);
 }
 
-const C_CHAR *vm_machine_profile_name(vm_machine_profile_kind kind)
-{
-    if (kind == VM_MACHINE_PROFILE_DEFAULT_PC_AT) return "default-pc-at";
-    if (kind == VM_MACHINE_PROFILE_IBM_5170_MODEL_339) {
-        return "ibm-5170-model-339";
-    }
-    if (kind == VM_MACHINE_PROFILE_IBM_5160_MODEL_268) {
-        return "ibm-5160-model-268";
-    }
-    if (kind == VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
-        return "compaq-deskpro-386-model-40";
-    }
-    return "unknown";
-}
-
 static C_INT vm_machine_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     const C_CHAR *source)
 {
