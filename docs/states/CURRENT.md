@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T534 S52 |
-| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. S51 changes current runnable App source, so T534 cannot claim its earlier artifacts as exact current-source outputs. Rebuilding the required dual-architecture products and refreshing the evidence is the approved task's final reproducibility gate. |
-| Objective | Rebuild and verify the eight fixed-product T534 artifacts from current source, then close the task only if all exit gates remain green. |
-| Non-goals | Do not change source behavior, profiles, BYOB asset paths, INI grammar, packaging locations or retain a compatibility artifact target. |
-| Reference Baseline | S51 `f52eb5ef`; CQ-51 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
+| Identifier Mode | Continuation T534 S53 |
+| Admission And Approval | Owner goal on 2026-09-21 admitted complete App/Core remediation; owner directed continued execution on 2026-09-22. S52's default integration replay had one parallel `vm-timer-firmware-smoke` failure, while isolated and serial runs pass. T500 explicitly classifies this row as parallel-safe, so the discrepancy is an in-scope test/host-contract defect rather than a result to waive. |
+| Objective | Reproduce and repair or correctly constrain the timer-firmware integration's parallel execution contract, without weakening its guest-timer assertions. |
+| Non-goals | Do not alter guest timing, firmware, device behavior, timeout success criteria, integration inventory, asset ownership or force unrelated tests serial. |
+| Reference Baseline | S52 `143354a1`; CQ-52 in the [convergence ledger](../etc/evidence/t534-app-core-code-quality-ledger.md). |
 | Candidate Proposal | [App/Core code-quality remediation](../proposals/m5-app-core-code-quality-remediation.md). |
-| Files And ABI Surface | Ignored `assets/binary/<profile>/` outputs plus convergence ledger/history/current packet. Current source is compiled without ABI or behavior changes. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): runnable implementation closes only with its own current revision and dual optimized stripped artifacts; [Coding](../rules/CODING.md): one production path; [Architecture](../rules/ARCHITECTURE.md): each selected product deploys once in its sole profile directory. |
-| Verification | Configure/build current x64 and x86 artifact targets for default, 5170, XT and Model 40; inspect PE architecture and stripped release properties; verify adjacent INIs and artifact paths; replay complete repository-only unit and active integration suites; documentation governance; `git diff --check`; actual-change review. |
-| Expected Markers | Eight `0.5.0534` artifacts, two per fixed profile, are rebuilt from S51 source only in their profile directories with adjacent INI; every required gate remains green. |
+| Files And ABI Surface | `test/integration/dos/vm_timer_firmware_smoke.c`, shared integration support only if the complete mechanism requires it, CMake scheduling metadata only if a real finite shared resource is proved, convergence ledger/history. No production ABI change is presumed. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): repair the complete confirmed mechanism; [Coding](../rules/CODING.md): tests have truthful bounded conditions and one owner; [Architecture](../rules/ARCHITECTURE.md): host timing never becomes a guest clock source. |
+| Verification | Repeat parallel default integration enough to classify the failure; focused timer proof; complete default integration at its supported parallel setting; complete repository-only unit suite at `-j8`; documentation governance; `git diff --check`; actual-change review. |
+| Expected Markers | The timer smoke waits only for observable owner state or a proven resource condition, preserves BDA/INT 1Ah/rollover assertions, and all parallel integration rows pass without a broad serial workaround. |
 | Asset Needs | None. No external asset, ROM, media or network input. |
-| Reporting Requirements | Record CQ-51, source revision, artifact identities/architectures and all final gate results in the ledger/history. |
-| Stop Conditions | Stop if either toolchain cannot emit an optimized stripped artifact, a required asset is unavailable, or a product cannot deploy to its sole directory; report the exact profile/architecture. |
-| Exit Criteria | CQ-51 is repaired: all eight artifacts exactly match the current source revision and all T534 exit gates pass; then record formal task closure. |
+| Reporting Requirements | Record CQ-52 reproduction, exact owner/resource analysis, rejected broad workarounds and full gate results in the ledger/history. |
+| Stop Conditions | Stop if reproductions prove a production guest-timer failure rather than test scheduling; then transfer it to the owning Core device mechanism with the exact evidence. |
+| Exit Criteria | CQ-52 is repaired: the parallel failure mechanism is removed or truthfully scoped to its sole proven shared resource, without a weaker guest assertion; full default parallel integration and unit gates pass. |
 | Original Owner Request | Repair every App/Core quality finding, repeat the same-level audit and admit later S repairs until the corpus meets the standard. |
-| Similar-Issue Sweep | Verify every selected product/architecture has one and only one current artifact in its profile directory, an adjacent INI, correct PE architecture and no debug section. |
+| Similar-Issue Sweep | Inspect every default parallel integration row for shared mutable asset, host console, fixed workspace, worker or timing dependency; apply a narrow owner-local repair or resource contract only where evidence proves it. |
 
 ## Current Technical Baseline
 

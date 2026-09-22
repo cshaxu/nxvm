@@ -19,29 +19,9 @@ static C_INT vm_timer_debug_execute(integration_ini_session *session,
         common_machine_debug_acquire(session->common_machine, &lease) != LIB_STATUS_OK ||
         common_machine_debug_execute_with_lease(session->common_machine, &lease,
             request, sizeof(*request), out_response, sizeof(*out_response),
-            &response_size) != LIB_STATUS_OK || response_size != sizeof(*out_response)) {
+            &response_size) != LIB_STATUS_OK || response_size != sizeof(*out_response))
         return 0;
-    }
     return 1;
-}
-
-static C_INT vm_timer_debug_trace(integration_ini_session *session,
-    type_unsigned_64 instructions)
-{
-    x86_debug_request request = {
-        .operation = X86_DEBUG_SET_EXECUTION_PLAN,
-        .execution_kind = X86_DEBUG_EXECUTION_TRACE,
-        .instruction_count = instructions
-    };
-    x86_debug_response response;
-
-    if (!vm_timer_debug_execute(session, &request, &response) ||
-        integration_ini_session_resume(session, 2000u) != TYPE_STATUS_OK ||
-        !integration_ini_session_wait_for_state(session, COMMON_MACHINE_PAUSED,
-            2000u)) return 0;
-    request = (x86_debug_request) { .operation = X86_DEBUG_GET_EXECUTION_RESULT };
-    return vm_timer_debug_execute(session, &request, &response) && response.enabled &&
-        response.value == instructions;
 }
 
 static C_INT vm_timer_debug_break_real(integration_ini_session *session,
@@ -111,7 +91,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_unsigned_32 int1a_ticks;
     type_unsigned_32 paused_eip;
     type_unsigned_32 observed_paused_eip;
-    type_unsigned_32 stepped_eip;
     type_unsigned_32 rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
     type_unsigned_8 rollover_byte = 0u;
     type_unsigned_32 register_value;
@@ -151,9 +130,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
     Sleep(25u);
     if (!vm_timer_debug_read_register(&ini_session, X86_DEBUG_EIP,
             &observed_paused_eip) || observed_paused_eip != paused_eip) goto fail;
-    if (!vm_timer_debug_trace(&ini_session, 1u) ||
-        !vm_timer_debug_read_register(&ini_session, X86_DEBUG_EIP,
-            &stepped_eip) || stepped_eip == paused_eip) goto fail;
     stage = 6;
     if (!vm_timer_debug_write_real(&ini_session, 0u, 0x1000u, int1a_program,
             sizeof(int1a_program)) ||

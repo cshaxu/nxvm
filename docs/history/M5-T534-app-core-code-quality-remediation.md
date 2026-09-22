@@ -632,3 +632,15 @@ the absence of debug sections. Default serial integration is 20/20 and the
 profile-specific sets are 5170 3/3, XT 1/1 and Model 40 3/3. A preceding
 default parallel run exposed a timer-firmware flake; its isolated and serial
 runs pass, but the finding is retained for repair before task closure.
+
+## S53: Timer-Firmware Parallel Contract
+
+S53 reproduces the default parallel failure by running the timer smoke beside
+three independent guest boots. The production timer remains correct: BDA ticks
+are positive. The failing assertion instead traced one arbitrary instruction
+from the paused firmware idle point and required EIP to change. At a valid HLT
+boundary that expectation is false, and the dedicated Debug tests already own
+single-step completion semantics. S53 removes only that duplicate assertion;
+the timer smoke still proves paused-state EIP stability, BDA tick advance, INT
+1Ah result and day rollover. The forced concurrency check, ordinary and
+delayed random default `-j4` integration routes, and 333/333 `-j8` units pass.
