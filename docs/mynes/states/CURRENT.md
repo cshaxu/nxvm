@@ -2,33 +2,41 @@
 
 ## Current Work
 
-**Active: M6 T40 S1 executable-directory Base capability.**
+**Active: M6 T40 S2 MyNES adjacent-INI adoption.**
 
-## M6 T40 S1 Packet
+## M6 T40 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved T40 to add a Shared Lib Base executable-directory capability and correct MyNES/NXVM adjacent-INI loading; SoftPC will adopt the shared revision separately. |
-| Objective | Define, implement and test one Base API that returns the current executable directory in a caller buffer. |
-| Non-goals | No Common or SoftPC change, no INI override/fallback policy, no product artifact refresh and no App adoption in S1. |
-| Reference Baseline | MyNES calls `GetModuleFileNameA` in App; NXVM derives an INI path from `argv[0]`; Base has only clock/sync host capabilities. |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T40 to add a Shared Lib Base executable-directory capability and correct MyNES/NXVM adjacent-INI loading; Shared S1 is complete in `4913410fb`; SoftPC will adopt the shared revision separately. |
+| Objective | Replace MyNES App's direct Win32 executable-path lookup with the S1 Base contract while preserving adjacent `mynes.ini` behavior. |
+| Non-goals | No Common or SoftPC change, no INI override/fallback policy and no NXVM adoption. This App startup change publishes the required `0_0_0040` MyNES x64/x86 pair. |
+| Reference Baseline | `4913410fb`; Base owns actual executable-directory discovery, while MyNES still calls `GetModuleFileNameA`. |
 | Candidate Proposal | [M6 executable-directory Base capability](../proposals/m6-executable-directory-base.md) |
-| Files And ABI Surface | Shared: `src/lib/base`, `src/lib/CMakeLists.txt`, `test/lib`, Lib manifest only. |
-| Applicable Rules | Base depends only on Types; public API exposes a bounded copied result; platform headers stay private; one target-scoped Shared P. |
-| Verification | x64/x86 Lib tests cover success and capacity rejection; Lib manifest/dependency checks pass. |
-| Expected Markers | A caller receives a nonempty directory with no trailing separator, or a defined status without modifying a rejected result. |
+| Files And ABI Surface | MyNES: `src/app-mynes/product/config.c`, App CMake, task evidence and the `0_0_0040` x64/x86 executable pair. |
+| Applicable Rules | App depends directly on Base for its host query; no Windows SDK include remains in the App config path; MyNES owns appending its INI filename. |
+| Verification | x64/x86 App config and Base process regressions pass; static sweep finds no MyNES `GetModuleFileName`/`windows.h` startup lookup; both `0_0_0040` artifacts are valid PE executables. |
+| Expected Markers | MyNES constructs `mynes.ini` from the Base directory and rejects insufficient buffer capacity without fallback to the working directory. |
 | Asset Needs | None. |
-| Reporting Requirements | Report Shared S1 source/test diff, retained owner, x64/x86 tests, P commit/push and transfers to S2/S3. |
-| Stop Conditions | A portable Linux executable-directory contract cannot be defined without an unbounded or ambiguous fallback. |
-| Exit Criteria | Shared API/implementations/tests pass and are pushed; MyNES/NXVM receive separate admitted P adoption steps. |
+| Reporting Requirements | Report MyNES S2 source/test diff, removed direct host dependency, x64/x86 tests, P commit/push and transfer to NXVM S3. |
+| Stop Conditions | The Base directory cannot safely append the fixed INI name within MyNES's declared path capacity. |
+| Exit Criteria | MyNES consumes Base, direct Win32 lookup is removed, focused dual-architecture tests pass, the current dual artifacts are published and the MyNES P is pushed. |
 | Original Owner Request | Lib Base should expose executable location; correct NXVM and MyNES INI loading, with SoftPC later importing the same Lib. |
-| Similar-Issue Sweep | All current executable-path/INI discovery references in Lib, MyNES and NXVM are inventoried; non-S1 product hits are transferred to S2/S3. |
+| Similar-Issue Sweep | MyNES startup/config source and tests are inspected for direct module-path/working-directory fallback; NXVM remains the named S3 receiver. |
 
-### S1 Brief
+### S2 Brief
 
-Implement the shared owner first. The API returns only the directory of the
-current executable, not an INI path; callers compose their product filename.
+MyNES consumes the shared owner. It appends only its own fixed filename and
+retains no direct platform lookup.
+
+## M6 T40 Progress
+
+| S | Result |
+| --- | --- |
+| S1 | Shared Base contract, Win32/Linux implementations and bounded-buffer regression passed in `4913410fb`. |
+| S2 | MyNES now composes its adjacent INI from Base; x64/x86 focused regressions and valid `0_0_0040` artifact headers passed. [Evidence](../etc/evidence/m6-t40-s2-mynes-adoption.md). |
+
 ## M6 T39 Progress
 
 | S | Result |
@@ -47,10 +55,10 @@ current executable, not an INI path; callers compose their product filename.
 ## Current Technical Baseline
 
 - Product: MyNes; MIT. M0--M5 and M6 T36 are closed.
-- Delivery kind: `product-execution`; current target: `mynes-0-0-0039`; artifacts
-  are `assets/binary-mynes/mynes_0_0_0039_x64.exe` and
-  `mynes_0_0_0039_x86.exe`. The one editable `mynes.ini` is adjacent; generated
-  no manifest participates in the current delivery path.
+- Delivery kind: `product-execution`; T40 S2 publishes `mynes-0-0-0040`; its
+  artifacts are `assets/binary-mynes/mynes_0_0_0040_x64.exe` and
+  `mynes_0_0_0040_x86.exe`. The one editable `mynes.ini` is adjacent; no
+  generated manifest participates in the delivery path.
 - MyNes snapshots are private versioned `MNS1` state images. App owns command/file
   policy and direct writer lifetime; Core owns image state and cartridge identity;
   Common/Lib remain neutral. ROMs remain ignored and no remote is configured.

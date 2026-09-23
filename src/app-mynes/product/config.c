@@ -1,9 +1,8 @@
 #include "product/config.h"
 
+#include "lib/base/process_interface.h"
 #include "lib/storage/file_interface.h"
 #include "lib/types/types_interface.h"
-
-#include <windows.h>
 
 static lib_bool app_config_space(char value)
 { return value == ' ' || value == '\t' || value == '\r'; }
@@ -101,15 +100,14 @@ int app_config_load_text(const char *text, lib_size text_length,
 
 static int app_config_path(char *path)
 {
-    DWORD length = GetModuleFileNameA(LIB_NULL, path, APP_CONFIG_PATH_CAPACITY);
-    char *separator = path;
+    lib_size length;
 
-    if (length == 0u || length >= APP_CONFIG_PATH_CAPACITY) return 0;
-    for (; *separator != '\0'; ++separator) { }
-    while (separator != path && separator[-1] != '\\' && separator[-1] != '/') --separator;
-    if (separator == path || (lib_size)(separator - path) + sizeof("mynes.ini") >
-            APP_CONFIG_PATH_CAPACITY) return 0;
-    lib_memory_copy(separator, "mynes.ini", sizeof("mynes.ini"));
+    if (base_process_executable_directory(path, APP_CONFIG_PATH_CAPACITY) != LIB_STATUS_OK)
+        return 0;
+    length = lib_text_length(path);
+    if (length + 1u + sizeof("mynes.ini") > APP_CONFIG_PATH_CAPACITY) return 0;
+    path[length] = '\\';
+    lib_memory_copy(path + length + 1u, "mynes.ini", sizeof("mynes.ini"));
     return 1;
 }
 
