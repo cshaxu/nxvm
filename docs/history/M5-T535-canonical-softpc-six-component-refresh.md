@@ -30,6 +30,10 @@ remain exact, no local audio route exists, shared manifest/dependency gates and
 
 ## S4: Integration And Artifact Convergence
 
-Active. Rebuild T535's fixed products in optimized stripped x64/x86 form, run
-the owner-managed external integration matrix, recheck exact corpus equality,
-and close only if all required product/artifact evidence is current.
+P1 advances the sole current artifact target and presets to 0535. It also
+adds the three imported Lib audio smoke targets to NXVM's aggregate build
+dependency list: CTest had already registered them, but the aggregate had not
+built their executables. The repair is an NXVM root-build integration change;
+the six copied trees remain byte-exact. The final 336/336 unit gate and all
+four external integration batches pass. The [S4 evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md)
+records exact corpus parity and all eight stripped Release artifacts.

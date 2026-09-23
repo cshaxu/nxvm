@@ -98,6 +98,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     lib-test-types_contract
     lib-test-storage_file_writer_binary
     lib-test-storage_position
+    lib-test-audio_stream
     lib-test-kvm_frame_copy
     lib-test-kvm_component_contract
     lib-test-kvm_mailbox_selection
@@ -126,6 +127,8 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
 if(WIN32)
     list(APPEND PROJECT_SHARED_CORPUS_TEST_TARGETS
         lib-test-lib_console_event_gate
+        lib-test-audio_native
+        lib-test-audio_win32_platform
         lib-test-kvm_frame_lock
         lib-test-console_broker
         lib-test-lib_failure_output_contract
@@ -2674,7 +2677,7 @@ endforeach()
 endif()
 
 set(PROJECT_CURRENT_VM_RUNTIME_PATH
-    "${CMAKE_BINARY_DIR}/vm-0-5-0534.exe")
+    "${CMAKE_BINARY_DIR}/vm-0-5-0535.exe")
 configure_file("${CMAKE_SOURCE_DIR}/assets/sessions/${NXVM_PRODUCT_PROFILE}.ini"
     "${CMAKE_BINARY_DIR}/NXVM.ini" COPYONLY)
 function(project_add_t533_console_integration_test target)
@@ -2878,8 +2881,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0534)
-add_current_vm_artifact(vm-0-5-0534 "0.5.0534")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0535)
+add_current_vm_artifact(vm-0-5-0535 "0.5.0535")
 if(TARGET run-integration-tests)
     add_dependencies(run-integration-tests ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 endif()

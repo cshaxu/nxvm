@@ -4,15 +4,15 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T535 S4 |
+| Identifier Mode | Continuation T535 S4 closure audit |
 | Admission And Approval | Owner's 2026-09-22 T535 approval; S1 `6eb052df` and S2 `75f354ec` are accepted. S3 is explicitly skipped because S2 proves no NXVM adapter work exists. Ordinary commits/pushes are permanently approved. |
-| Objective | Complete T535 convergence: build and verify current optimized stripped x64/x86 artifacts for every runnable fixed product, run required external integration and prove the six imported roots remain exact. |
+| Objective | Complete T535 closure audit: accept the 0535 artifact/test evidence and prove the six imported roots remain exact. |
 | Non-goals | Do not change guest/device/product behavior, connect audio to NXVM, add an audio abstraction, import uncommitted SoftPC media or edit a shared tree for a local compatibility path. |
-| Reference Baseline | S2 `75f354ec`, [S2 evidence](../etc/evidence/t535-s2-canonical-six-component-import.md), frozen SoftPC `1c5a47146dd4fd87b09423b7a7b960becb50cd67`. |
+| Reference Baseline | S2 `75f354ec`, S4 implementation, [S4 evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md), frozen SoftPC `1c5a47146dd4fd87b09423b7a7b960becb50cd67`. |
 | Candidate Proposal | [Retained T535 proposal](../history/M5-T535-canonical-softpc-six-component-refresh-proposal.md); S4 consumes the final four-product x64/x86 artifact and external-integration batches. |
 | Files And ABI Surface | Build configuration/version/artifact evidence and status/history only unless a verified integration defect requires an owner-correct repair. Shared six roots must not change. |
 | Applicable Rules | `AGENTS.md`; Task Reading Set; Execution, Architecture, Coding and Document rules; source policy; artifact and test-closure rules. |
-| Verification | Recompare all six roots by relative path/hash; run complete repository-only unit suite; run default, 5170, XT and Model40 external integration labels; build/verify stripped Release x64/x86 artifacts in every `assets/binary/<profile>/`; documentation governance and whitespace checks. |
+| Verification | Recompare all six roots by relative path/hash; 336/336 repository-only unit; default 20/20, 5170 3/3, XT 1/1 and Model40 3/3 external integration; eight stripped Release artifacts; documentation governance and whitespace checks. |
 | Expected Markers | Exact six-tree equality; all integration rows pass; T535 artifact identity/version, PE architecture, stripped status and SHA-256 are recorded for each required product/host architecture. |
 | Asset Needs | Owner-managed external BYOB ROM/CMOS/media inputs already configured for integration; no asset is copied or committed. |
 | Reporting Requirements | Report every integration/artifact row with its source commit/hash and any failure without relabelling it green. Record final code-line delta and retained owner paths. |
@@ -23,12 +23,12 @@
 
 ## Current Technical Baseline
 
-- `vm-0-5-0534` is the current target. T534 produced eight stripped, optimized
+- `vm-0-5-0535` is the current target. T535 produced eight stripped, optimized
   x64/x86 artifacts for its four fixed products; each product has only one
   executable location, `assets/binary/<profile>/`, with its adjacent generated
-  INI. The preset-selected default pair is `nxvm_default_0_5_0534_x64.exe` and
-  `nxvm_default_0_5_0534_x86.exe`. Paths, architectures, hashes and gate results are in the
-  [T534 artifact record](../etc/evidence/t534-s50-artifact-verification.md).
+  INI. The preset-selected default pair is `nxvm_default_0_5_0535_x64.exe` and
+  `nxvm_default_0_5_0535_x86.exe`. Paths, architectures, hashes and gate results are in the
+  [T535 artifact record](../etc/evidence/t535-s4-artifact-and-integration-verification.md).
 - `src/lib` is the canonical shared host-services corpus. `src/common` is an
   independently buildable, Lib-public-contract-only product-capability corpus:
   `machine`, `session`, and `ui`. The separately selected `src/x86` corpus owns
