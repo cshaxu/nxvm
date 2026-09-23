@@ -210,9 +210,11 @@ infrastructure, not a Lib public allocator API.
    compilation-preserving change.  This is intentionally isolated from shared
    Lib.
 6. **NXVM P6 — delete and prove.** Remove `src/type.h`, `src/type.c`, the
-   `type-facade` target and every link edge; reject root-header includes and
-   legacy facade tokens in NXVM corpus checks.  Rebuild all products and run
-   both architecture suites.
+   `type-facade` target and every link edge; remove its entries from NXVM's
+   strict-production target lists and target-classification rules; retire the
+   root-only `std-snprintf-smoke`; reject root-header includes and legacy
+   facade tokens in NXVM corpus checks.  Rebuild all products and run both
+   architecture suites.
 
 ## Acceptance and deletion proof
 
@@ -229,6 +231,11 @@ Before P6 closes:
   harness behavior; and
 - SoftPC/MyNES adoption remains optional and source-compatible: they consume
   the new generic Lib surface only when separately admitted.
+
+The build-graph audit proves that neither MyNES nor Lib includes root `type.h`;
+the facade is an NXVM-only target.  Its removal must nevertheless update every
+NXVM governance list that currently names it, so the configuration remains
+self-consistent rather than merely compiling by accident.
 
 ## Review decisions requested
 
