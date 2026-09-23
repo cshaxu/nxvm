@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**No active NXVM packet.**
+**Active: MyNES M6 T41 S3 Lib Types facade-retirement design.**
 
 | Field | Required record |
 | --- | --- |
@@ -22,6 +22,26 @@
 | Exit Criteria | Every exact existing Lib Types equivalent is adopted, no unclassified `type.h` caller or direct C/platform hit remains in NXVM scope, dual-architecture checks/evidence pass, and the S3 design input ledger is committed. |
 | Original Owner Request | Clean MyNES first; then clean NXVM with existing Lib Types only; then present a Lib Types expansion and complete root-type retirement design for owner review before implementation. |
 | Similar-Issue Sweep | Scan all NXVM production, unit and integration C/H sources for root-facade includes, direct standard/platform headers, raw fixed-width types and facade symbols; classify each as migrated in S2 or retained for S3 with its missing contract. |
+
+## Active S3 Design Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the ordered M6 T41 sequence. S2 closed in `e85bab86d`; the owner expressly requires review of the facade-retirement design before its implementation. |
+| Objective | Produce the minimal shared Lib Types contract, caller-migration batches, test plan and deletion proof needed to retire NXVM's root `type.h`, `type.c` and `type-facade` target. |
+| Non-goals | No `src/lib`/`test/lib`, NXVM source, CMake target, binary or API implementation changes; no deletion; no use of `lib_bool` where legacy byte layout must remain; no external asset change. |
+| Reference Baseline | S2 recorded 439 remaining `type.h` callers. The legacy facade mixes C aliases/runtime forwarding, byte booleans, host-address integers, outcome statuses, bit operations, trace macros and test output. Existing Lib already owns fixed-width scalars, `lib_status`, C stream formatting aliases and atomics. |
+| Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md) |
+| Files And ABI Surface | `docs/nxvm` only. The proposal defines later `src/lib/types`, `test/lib`, NXVM caller and CMake changes but does not make them. |
+| Applicable Rules | Lib gains only neutral cross-product vocabulary; byte-layout, pointer conversion, status and atomic behavior need explicit contract tests; product output policy remains outside Types; one P changes one target. |
+| Verification | Complete token inventory and current Lib comparison; proposal has an exact preservation/deletion matrix; documentation governance and actual-diff review pass. |
+| Expected Markers | Every root-facade symbol has one receiver: existing Lib, proposed Lib, local product helper, x86-specific helper, or deletion as dead; the later implementation can prove zero `type.h`/`type.c`/`type-facade` references. |
+| Asset Needs | None. Owner-local INIs remain untouched. |
+| Reporting Requirements | Report retained semantic decisions, proposed public Lib surface, migration order, ABI/behavior tests, deletion gates and the review boundary. |
+| Stop Conditions | Any proposed Lib item carries x86 machine semantics, console/output policy, product error behavior, mutable trace control, or a representation change without an ABI test; retain it outside Lib and record its receiver. |
+| Exit Criteria | Owner-reviewed design is committed and names every implementation batch and zero-reference proof. Implementation starts only after owner approval. |
+| Similar-Issue Sweep | Include all root aliases/macros/functions, all `type-facade` link edges, C standard/platform includes after S2, and MyNES/Shared compatibility impact. |
 
 ## Recent Delivery: MyNES M6 T41 S2
 

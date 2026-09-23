@@ -1,0 +1,195 @@
+# M6 T41 S3 — Lib Types Facade-Retirement Design
+
+## Decision
+
+Retire NXVM's root `type.h`, `type.c`, and `type-facade` target by moving only
+neutral, cross-product C representation contracts into Lib Types.  NXVM then
+uses ordinary C only where it is clearer than a project alias, and keeps
+machine policy, console policy, x86 trace control, and test fault injection at
+their actual owners.
+
+This is a design record.  It authorizes no source migration or deletion until
+the owner reviews it.
+
+## Evidence baseline
+
+S2 exhausted every exact existing Lib equivalent.  The remaining source and
+test corpus contains 439 root-header callers and these material families:
+
+| Family | Evidence | Design receiver |
+| --- | ---: | --- |
+| `C_INT`, `C_VOID`, `C_CHAR`, `C_UCHAR`, `C_UINT` | 9,366 direct uses | New minimal Lib scalar spelling, or direct ISO C where no public alias is needed. |
+| `type_bool` | 770 uses | `lib_u8`; it preserves the one-byte field and pointer ABI. `lib_bool` remains only for logical local results. |
+| host/pointer widths | 568 uses of `type_virtual_address`/`type_native_unsigned` plus one pointer alias | New `lib_uptr` and explicit pointer conversion helpers. |
+| outcome algebra | 1,221 `type_status`, 6,986 status constants | Extend `lib_status` with `LIB_STATUS_FAULT`; migrate ordinal-preservingly. |
+| fixed sub-byte/nonstandard widths | 17 `type_unsigned_4`, plus masks | Use storage-width `lib_u8/u32/u64` and explicit Lib bit helpers, never fictional C bit-width types. |
+| bit, BCD and address macros | 2,000+ material uses | Small type-neutral `lib_bits` helpers; x86/RTC-specific BCD helpers stay with their device owner. |
+| trace macros | 5,200+ instruction-decoder uses | New local `cpu_trace` compatibility header, then direct decoder refactor; never Lib. |
+| C stream/time/parse/text forwarding | 1,415 `STD_PRINTF`, 182 `STD_FPRINTF`, 9 `STD_TIME`, and sparse helpers | Existing `lib/types/file.h` for ISO stream vocabulary; Base clock for time; product/test output adapters for output policy. |
+| allocator injection | one live `STD_CALLOC` seam | NXVM test-only allocator dependency; ordinary code uses `lib_allocate_zero`. |
+
+The count is intentionally descriptive rather than a deletion gate.  Later
+implementation must produce a zero-reference scan for each retired family.
+
+## Shared Lib Types additions
+
+### Scalar and address contract
+
+`types_interface.h` gains only the aliases that replace an actual public
+facade contract:
+
+```c
+typedef void lib_void;
+typedef char lib_char;
+typedef unsigned char lib_uchar;
+typedef int lib_int;
+typedef unsigned int lib_uint;
+typedef float lib_f32;
+typedef double lib_f64;
+typedef uintptr_t lib_uptr;
+
+_Static_assert(sizeof(lib_uptr) == sizeof(void *),
+    "lib_uptr must preserve a host pointer");
+
+static inline lib_uptr lib_pointer_to_uptr(const void *pointer);
+static inline void *lib_uptr_to_pointer(lib_uptr value);
+```
+
+`lib_uptr` replaces the legacy native unsigned, virtual address and unsigned
+pointer aliases.  `lib_iptr` already exists and replaces the signed form.
+Callers whose value is a guest physical or linear address remain `lib_u32`;
+the migration must not widen guest architectural addresses merely because a
+host pointer is present elsewhere.
+
+`type_bool` becomes `lib_u8` at stored ABI boundaries.  `lib_bool` stays an
+`int` and is reserved for predicates, conditions and atomic API returns.
+This distinction is tested with struct-size and field-offset fixtures on x64
+and x86.
+
+### Outcome contract
+
+`lib_status` is the authoritative product-neutral outcome type.  Add:
+
+```c
+LIB_STATUS_FAULT = 6
+```
+
+All pre-existing numeric values remain unchanged, matching the root
+`type_status` ordinal sequence.  `TYPE_STATUS_*` maps one-for-one to
+`LIB_STATUS_*`; no product-specific error code is added.
+
+### Bit contract
+
+Add a dedicated `lib/types/bits.h`, included by `types_interface.h`, with
+width-explicit pure operations:
+
+```c
+lib_bool lib_bits_test_u8(lib_u8 value, lib_u8 mask);
+lib_bool lib_bits_test_u16(lib_u16 value, lib_u16 mask);
+lib_bool lib_bits_test_u32(lib_u32 value, lib_u32 mask);
+lib_bool lib_bits_test_u64(lib_u64 value, lib_u64 mask);
+lib_u8 lib_bits_mask_u8(lib_u8 value, lib_u8 mask);
+lib_u16 lib_bits_mask_u16(lib_u16 value, lib_u16 mask);
+lib_u32 lib_bits_mask_u32(lib_u32 value, lib_u32 mask);
+lib_u64 lib_bits_mask_u64(lib_u64 value, lib_u64 mask);
+```
+
+Mutation remains an ordinary typed assignment at the caller; Lib does not
+provide lvalue-mutating macros.  This prevents hidden multiple evaluation and
+makes register-width truncation explicit.  The `TYPE_GET/SET/CLEAR/MAKE_BIT`,
+mask and MSB/LSB macros migrate in compiler-checked batches with focused
+decoder, DMA, PIC, PIT, FDC and RTC tests.
+
+`TYPE_HEX_TO_BCD` and `TYPE_BCD_TO_HEX` are not Lib Types additions.  They
+belong to the RTC/device owner because their valid range and invalid BCD policy
+are machine behavior.  Likewise, `TYPE_EXECUTE_FUNCTION` is deleted or
+replaced locally only after confirming every call site is dead.
+
+### ISO C stream vocabulary
+
+Expand `lib/types/file.h` only with direct ISO C vocabulary needed by shared
+callers:
+
+```c
+#define lib_c_stdout stdout
+#define lib_c_stderr stderr
+#define lib_c_fprintf fprintf
+#define lib_c_printf printf
+#define lib_c_fflush fflush
+#define lib_c_isalpha isalpha
+#define lib_c_isspace isspace
+```
+
+`STD_SNPRINTF`, `STD_VSNPRINTF`, `STD_VA_LIST` and stream type already have
+Lib receivers.  A bounded append helper belongs in `lib/types/file.h` only if
+its current termination and cursor-advance contract is documented and tested;
+otherwise its three callers receive a local helper first.
+
+`STD_PRINTF` currently flushes after each call.  That is product/test output
+policy, not a Types operation.  Production callers move to their app output
+adapter; test probes use a test output helper.  `STD_FPRINTF` retains ordinary
+stream semantics through `lib_c_fprintf`.
+
+`STD_TIME`/`STD_LOCALTIME` must not be exposed from Types: elapsed-time callers
+use Base clock, while wall-clock calendar conversion needs a separately
+designed Base time API if it remains live.  `type_string_lower` becomes the
+owner-local parser helper; it is not a generic Types contract.
+
+## Explicit allocator-test redesign
+
+The sole remaining `STD_CALLOC` exists because
+`core_machine_ega_registration_transaction_smoke` compiles `vadp.c` with a
+macro override.  The final migration replaces this preprocessor interception
+with a `core_machine_vadp_test_allocator` passed only through the test setup or
+an internal allocation callback on the EGA configuration path.  Normal
+production construction calls `lib_allocate_zero`; the test callback can fail
+one requested allocation and observes call count.  The callback is NXVM test
+infrastructure, not a Lib public allocator API.
+
+## Migration sequence
+
+1. **Shared P1 — scalar/status/bit contract.** Add the proposed Lib Types
+   surface and dual-architecture layout/bit/status tests.  Update Lib manifests.
+2. **NXVM P2 — data representation.** Migrate primitive aliases, byte booleans,
+   pointer-width values and `type_status`; assert preserved public struct
+   layouts and x86/x64 product builds.
+3. **NXVM P3 — pure operations.** Replace bit/mask/reference/dereference
+   macros by typed helpers or explicit casts.  Audit each x86 device family and
+   its focused unit corpus.
+4. **NXVM P4 — runtime and local policy.** Move stream naming to `file.h`,
+   output to product/test adapters, time/text/BCD to their owners, and install
+   explicit EGA test allocation injection.
+5. **NXVM P5 — decoder trace retirement.** Replace no-op root trace macros in
+   `cpu_instructions` with a local decoder-only header or remove them in a
+   compilation-preserving change.  This is intentionally isolated from shared
+   Lib.
+6. **NXVM P6 — delete and prove.** Remove `src/type.h`, `src/type.c`, the
+   `type-facade` target and every link edge; reject root-header includes and
+   legacy facade tokens in NXVM corpus checks.  Rebuild all products and run
+   both architecture suites.
+
+## Acceptance and deletion proof
+
+Before P6 closes:
+
+- `rg` finds no `#include "type.h"`, `type-facade`, `src/type.c`, `C_*`,
+  `STD_*`, `TYPE_*` or `type_*` legacy facade use in the NXVM source/test
+  corpus, except explicitly retained historical documentation;
+- all new Lib public declarations have ownership/layout/behavior tests and
+  manifests on x64 and x86;
+- current NXVM repository unit suite passes on x64 and x86, and every product
+  target rebuilds as optimized Release;
+- no Lib addition refers to NXVM, x86 machine state, console policy or test
+  harness behavior; and
+- SoftPC/MyNES adoption remains optional and source-compatible: they consume
+  the new generic Lib surface only when separately admitted.
+
+## Review decisions requested
+
+1. Approve `lib_uptr` and `lib_u8` as the explicit address/byte-boolean
+   replacements rather than reshaping `lib_bool`.
+2. Approve `LIB_STATUS_FAULT = 6` as the ordinal-preserving shared outcome.
+3. Approve the limited typed `lib_bits` surface and keeping BCD/trace/output
+   policy outside Lib Types.
+4. Approve explicit NXVM test allocation injection in place of the global
+   `STD_CALLOC` compile override.
