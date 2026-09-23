@@ -86,9 +86,11 @@ existing Lib values, including `LIB_STATUS_IO_ERROR = 5` and
 `LIB_STATUS_LIMIT_EXCEEDED = 7`, do not move.
 
 Before that change, P2 audits that NXVM neither serializes status numbers nor
-uses numeric ordering/ranges.  The current consumers compare named outcomes
-and pass them in-process, which is the required contract.  `lib_status`
-remains an `int`; dual-architecture fixtures assert its representation remains
+uses numeric ordering/ranges.  The known non-comparison uses place a raw status
+value into in-process memory/port trace details and print it in test failure
+messages; P2 converts their interpretation and assertions to named outcome
+semantics.  They are not a persistence or external ABI.  `lib_status` remains
+an `int`; dual-architecture fixtures assert its representation remains
 compatible with the retired enum at every exposed function boundary.
 
 ### Atomic contract
@@ -190,7 +192,8 @@ infrastructure, not a Lib public allocator API.
    Lib manifests.
 2. **NXVM P2 — data representation.** Migrate primitive aliases, byte booleans,
    pointer-width values, `type_status` and the three internal atomic flags;
-   assert every applicable public layout and x86/x64 product build.
+   replace status-number diagnostic expectations with named outcomes; assert
+   every applicable public layout and x86/x64 product build.
 3. **NXVM P3 — pure operations.** Replace bit/mask/reference/dereference
    macros by typed helpers or explicit casts.  Audit each x86 device family and
    its focused unit corpus.
