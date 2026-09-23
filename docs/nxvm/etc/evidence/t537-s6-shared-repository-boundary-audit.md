@@ -34,6 +34,11 @@ formal library name, not a runtime dependency or product behavior.
 
 ## Boundary Result
 
+> **Superseded governance conclusion.** M5 T537 S7 replaced the exclusive
+> task-scope model on 2026-09-23. This S6 record remains evidence for its
+> configuration and corpus checks; it is not the current authority for task
+> targets or commit prefixes.
+
 The repository now has exactly three enforceable work scopes: `NXVM`, `MyNES`,
 and `Shared`.  A product task cannot alter a sibling or a shared component;
 Shared is the sole receiver for the six components, their tests, shared CMake

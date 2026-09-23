@@ -2,15 +2,24 @@
 
 ## Current Work
 
-**No active implementation packet.** M5 T537 is closed after independent
-MyNES/NXVM developer audits and its Shared repository-boundary audit.
+**No active implementation packet.** M5 T537 is closed after the independent
+NXVM, MyNES and Shared audits repaired the one discovered Shared test assertion,
+passed all current gates, and found no unassigned current issue.
 
-## Most Recent Closure: M5 T537 S6
+## Most Recent Closure: M5 T537 S7
+
+| Field | Required record |
+| --- | --- |
+| Objective | Repeat the three-view repository audit after the owner withdrew the earlier closure, and establish per-P target-scoped commits. |
+| Result | Shared governance now permits explicitly admitted multi-target tasks while preserving exactly one target per P/commit. Fresh NXVM 336/336 unit and 20/20 integration, MyNES 53/53, Shared static/corpus checks, documentation governance and actual-diff review pass. The only repair is a Shared Console test's nine-cell cursor expectation and manifest entry; no production Shared code changed. |
+| Evidence | [S7 second three-target audit](../etc/evidence/t537-s7-second-three-target-audit.md). |
+
+## Prior Delivery: M5 T537 S6
 
 | Field | Required record |
 | --- | --- |
 | Objective | Prove that the six shared components, shared configuration and shared governance have one neutral owner and that App boundaries remain exclusive. |
-| Result | Closed by Shared M5 T537 S6 P1. NXVM presets now explicitly disable MyNES; MyNES presets already explicitly disable NXVM. Lib/Common/x86 manifests and corpus checks pass, and product branding is absent from shared source/test code. |
+| Result | Delivered by Shared M5 T537 S6 P1. NXVM presets now explicitly disable MyNES; MyNES presets already explicitly disable NXVM. Lib/Common/x86 manifests and corpus checks pass, and product branding is absent from shared source/test code. The exclusive-scope conclusion is superseded by active S7; the technical evidence remains valid. |
 | Evidence | [S6 repository-boundary audit](../etc/evidence/t537-s6-shared-repository-boundary-audit.md). |
 
 ## Current Technical Baseline
