@@ -18,8 +18,9 @@ cmake --build --preset mynes-current-x64
 cmake --build --preset mynes-tests-x64
 ```
 
-For x86, configure `MYNES_CC_X86` with the approved cross compiler then use
-the `mynes-gcc-x86-release` and `mynes-current-x86` presets. CTest is serial
+For x86, the preset selects `i686-w64-mingw32-gcc`; set `MYNES_CC_X86` only to
+override the compiler used by the standalone shared-component verifier, then
+use the `mynes-gcc-x86-release` and `mynes-current-x86` presets. CTest is serial
 because native Console probes must not compete. Assertions stay enabled in
 Release; tests time out rather than hanging a run. Native GUI/Console tests
 need an interactive Windows host. A headless failure is not a passing test.

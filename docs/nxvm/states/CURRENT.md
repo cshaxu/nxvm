@@ -2,30 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T537 S3 multi-app repository consolidation.** The owner requires
-the final product-isolation audit and full x64/x86 build-and-test proof for
-both applications under the new structure.
+**Active: M5 T537 S5 multi-app repository consolidation.** The owner requires
+a clean NXVM-developer audit before the final repository-boundary audit.
 
-## M5 T537 S3 Packet
+## M5 T537 S5 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approval on 2026-09-23 to verify all documentation/references, preserve product isolation, and compile/test both applications in x64 and x86. |
-| Objective | Prove the post-consolidation topology has correct live references and that each product builds/tests independently in both required host architectures. |
-| Non-goals | No emulator behavior, ROM/media import, protected external asset bytes, MyNES CURRENT/Queue merge, or further root README change. |
-| Reference Baseline | M5 T537 S2 P1 `c17c2afa9`: product-selectable CMake, product-local documentation, and repaired NXVM tool roots. |
+| Admission And Approval | Owner approval on 2026-09-23 to audit the repository as a pure NXVM developer after S4's independent MyNES audit. |
+| Objective | Make the NXVM development path self-contained, comprehensible and independently verified under the consolidated repository. |
+| Non-goals | No MyNES-specific code, document, tool, asset or behavior change; no ROM/media import; no NXVM emulator feature unrelated to a demonstrated path defect; no root README change. |
+| Reference Baseline | M5 T537 S4 P1: MyNES ownership/CMake route repair, complete dual-architecture product verification, and the shared commit-scope convention. |
 | Candidate Proposal | [M5 multi-app repository consolidation](../proposals/m5-multi-app-repository-consolidation.md) |
-| Files And ABI Surface | CMake/presets, live documentation and reference validators, build/test output, and versioned product artifacts; no runtime API change is intended. |
-| Applicable Rules | Documentation, execution, architecture, coding and both product source policies; preserve shared-corpus neutrality. |
-| Verification | Full live-reference sweep; both product documentation checks; each product's x64/x86 configure, build and complete CTest selection; artifact/INI path inspection; actual-diff and ownership review. |
-| Expected Markers | No live broken local documentation reference; no nonshared App change crosses into its sibling; both architecture target/test routes pass; sole artifacts stay product-owned. |
-| Asset Needs | Existing owner-provided executable artifacts only; external firmware, media and ROM assets remain outside the repository. |
-| Reporting Requirements | Record reference-sweep scope/results, per-product/per-architecture build and test results, produced artifact identities, and any remaining host limitation. |
-| Stop Conditions | Stop for an irreconcilable governance conflict, protected-asset requirement, or behavior-changing build issue. |
-| Exit Criteria | All live references resolve or are fixed; both products pass their complete x64/x86 build/test routes; nonshared ownership is demonstrated; documentation state remains product-local; and root README remains exactly `36925a4b`. |
-| Original Owner Request | Ensure all documentation/references are correct, nonshared changes cannot alter a sibling App, and both applications fully build/test and are pushed under the new architecture. |
-| Similar-Issue Sweep | Search CMake presets/modules, product tools, validators, live documentation, source/test ownership and artifacts for cross-product settings, former root paths, broken links and nonshared cross-App dependencies. |
+| Files And ABI Surface | `docs/nxvm/`, `src/app-nxvm/`, `src/core/`, `test/app-nxvm/`, `test/core/`, `tools/nxvm/`, `assets/binary-nxvm/` and NXVM CMake routes. Shared files may change only for a demonstrated neutral defect and must retain MyNES behavior. |
+| Applicable Rules | Documentation, execution, architecture, coding and NXVM source policy; shared corpus remains neutral. |
+| Verification | Read every NXVM task-reading authority; audit NXVM source/test/tool/CMake/assets; run NXVM documentation governance and complete x64/x86 unit/integration routes using `O:\repos.hobby\nxvm-assets`; inspect emitted PE identities; actual-diff review. |
+| Expected Markers | An NXVM developer can follow only NXVM documents and tools; no product route depends on MyNES-owned input; every NXVM artifact remains under `assets/binary-nxvm/`; no sibling App changes. |
+| Asset Needs | Existing owner-provided external firmware/media from `O:\repos.hobby\nxvm-assets`; no protected input enters the repository. |
+| Reporting Requirements | Record every ambiguity/coupling hit and disposition, NXVM x64/x86 build/test results and artifact identities, plus an explicit no-MyNES-change review. |
+| Stop Conditions | Stop for protected-asset import, a required MyNES semantic change, an irreconcilable shared-contract conflict, or an unbounded emulator defect. |
+| Exit Criteria | NXVM documentation, source, test, asset, tool and CMake paths are coherent; all in-scope ambiguity/coupling is repaired or explicitly transferred; complete x64/x86 NXVM routes pass; no nonshared MyNES file changes. |
+| Original Owner Request | First audit MyNES as its own product developer, then do the equivalent for NXVM, then audit the overall multi-App setup. |
+| Similar-Issue Sweep | Search all NXVM-owned documents, source, tests, tools, CMake and artifact configuration for MyNES names, former-root paths, duplicate routes and unclear ownership; classify every hit. |
 
 ## Current Technical Baseline
 
@@ -44,6 +43,7 @@ both applications under the new structure.
 
 | Task | Compact result |
 | --- | --- |
+| T537 S4 | Closed in the next Shared-scoped P: a MyNES-only audit removed a misleading NXVM CMake reference, made x86 compiler/test routes self-contained, passed 53/53 product tests on x64 and x86, and verified both PE artifacts. [Evidence](../etc/evidence/t537-s4-mynes-developer-audit.md). |
 | T536 | Closed on 2026-09-22: the owner-provided product namespace is the sole live layout: `src/{lib,common,x86,app-nxvm}`, `test/{lib,common,x86,app-nxvm}`, and `assets/binary-nxvm/<profile>/`. CMake, INIs, tools and current documentation use renamed external archives `profiles-nxvm` and `media-nxvm`; historical records remain unchanged. Repository-only unit is 336/336. The 20 external integration rows register but skip because their owner-provided assets are unavailable here. [Evidence](../etc/evidence/t536-s1-product-namespaced-layout.md). |
 | T535 | Closed at `e774efb5`; corrective S5 replaces NXVM's duplicate shared-test executable list with three suite-owned aggregate targets, under the owner's explicit shared-corpus exception for later SoftPC/MyNES import. All three suites remain standalone; 336/336 repository-only unit and documentation governance pass. No runtime artifact changes. [History](../history/M5-T535-canonical-softpc-six-component-refresh.md) and [S5 evidence](../etc/evidence/t535-s5-shared-test-aggregation.md). |
 | T534 | Closed at `f5170a5d`: 53 bounded repairs exhaust the App/Core convergence ledger without a second production owner or unclassified finding. Current 0534 x64/x86 artifacts for default, 5170, XT and Model 40 are verified in their sole profile directories. 333/333 repository-only unit, default parallel 20/20 integration, 5170 3/3, XT 1/1 and Model 40 3/3 integration pass. [History](../history/M5-T534-app-core-code-quality-remediation.md), [closure ledger](../etc/evidence/t534-app-core-code-quality-ledger.md) and [artifact record](../etc/evidence/t534-s50-artifact-verification.md). |

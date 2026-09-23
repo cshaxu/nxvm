@@ -30,9 +30,9 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/test/app-mynes/integration" test-app-mynes
 set_property(TEST library.types-layout-selftest DIRECTORY
     "${CMAKE_SOURCE_DIR}/test/lib" PROPERTY TIMEOUT 180)
 
-# Imported MyNES test CMake currently owns direct CTest registration.  Keep a
-# product-local execution route without re-registering those cases through
-# NXVM's single-product test helper.
+# Imported MyNES test CMake owns direct CTest registration. Keep a
+# product-local execution route without registering a second copy of those
+# cases.
 add_custom_target(mynes-unit-test-binaries)
 foreach(mynes_test_directory IN ITEMS
     "${CMAKE_SOURCE_DIR}/test/app-mynes/unit/core"

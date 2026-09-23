@@ -63,6 +63,17 @@ each product remains independently buildable and testable.
 5. Audit every live reference and prove independent x64/x86 product builds and
    complete test routes; nonshared App/Core/test/tool changes may not cross
    into the sibling product.
+6. Audit the repository solely as a MyNES developer: follow every MyNES
+   authority, source, asset, test, tool and CMake route; repair only MyNES or
+   shared-neutral defects, then prove its x64/x86 artifacts and complete test
+   routes.
+7. Repeat the same end-to-end audit solely as an NXVM developer, including its
+   external-asset integration route; repair only NXVM or shared-neutral
+   defects, then prove its x64/x86 artifacts and complete test routes.
+8. Audit the resulting multi-App repository boundary: retain exactly the six
+   shared components and shared rules where both products need them, and split
+   every residual product-specific owner, document, test, tool, configuration
+   or artifact route without changing either product's behavior.
 
 ## Completion Standard
 

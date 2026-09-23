@@ -326,9 +326,21 @@ belongs to the admitted implementation task's subtask sequence. Before that
 admission it remains an unnumbered Queue candidate; do not allocate a numeric
 `T` merely to make prospective work look task-shaped.
 
-Commit subjects are `M<milestone> Td [S<subtask>] P<part>: description` for a
-standalone documentation task, or `M<milestone> T<task> S<subtask> P<part>:
-description` for an implementation task and its task-specific design work.
+Every commit subject starts with its ownership scope so the multi-App history
+is readable without opening the diff.  Use exactly one of `NXVM`, `MyNES`,
+`Lib`, `Common`, `x86`, or `Shared`: product prefixes own only that product;
+component prefixes own only that neutral component; `Shared` is for a coherent
+change spanning two or more neutral shared components or root governance.
+Do not use a product prefix for a shared-source change merely because that
+product packet admitted it.
+
+The resulting subjects are
+`<scope> M<milestone> Td [S<subtask>] P<part>: description` for a standalone
+documentation task, or
+`<scope> M<milestone> T<task> S<subtask> P<part>: description` for an
+implementation task and its task-specific design work.  For example:
+`MyNES M6 T38 S1 P1: reconcile product layout` and
+`Shared M5 T537 S4 P1: repair repository boundary`.
 
 ## Linear Identifier Allocation
 

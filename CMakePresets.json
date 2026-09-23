@@ -93,7 +93,7 @@
       "binaryDir": "${sourceDir}/build/mynes-gcc-x86-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_COMPILER": "$env{MYNES_CC_X86}",
+        "CMAKE_C_COMPILER": "i686-w64-mingw32-gcc",
         "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG",
         "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc",
         "MYNES_EXPECTED_POINTER_SIZE": "4",
@@ -144,6 +144,11 @@
     {
       "name": "mynes-tests-x64",
       "configurePreset": "mynes-gcc-x64-release",
+      "targets": ["run-mynes-tests"]
+    },
+    {
+      "name": "mynes-tests-x86",
+      "configurePreset": "mynes-gcc-x86-release",
       "targets": ["run-mynes-tests"]
     }
   ],

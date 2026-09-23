@@ -8,8 +8,12 @@ $ErrorActionPreference = 'Stop'
 $repository = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $compilerVariable = 'MYNES_CC_' + $Architecture.ToUpperInvariant()
 $compiler = [Environment]::GetEnvironmentVariable($compilerVariable)
-if (-not $compiler -or -not (Test-Path -LiteralPath $compiler)) {
-    throw "$compilerVariable must identify the compiler executable."
+if (-not $compiler) {
+    $compilerName = if ($Architecture -eq 'x86') { 'i686-w64-mingw32-gcc' } else { 'gcc' }
+    $compiler = (Get-Command $compilerName -ErrorAction Stop).Source
+}
+if (-not (Test-Path -LiteralPath $compiler)) {
+    throw "$compilerVariable must identify an existing compiler executable."
 }
 $originalPath = $env:PATH
 $cmake = (Get-Command cmake -ErrorAction Stop).Source
