@@ -1,4 +1,6 @@
 #include "lib/types/types_interface.h"
+
+_Static_assert(sizeof(lib_i8) == 1u, "lib_i8 must remain one byte");
 #include "lib/base/clock_interface.h"
 
 #define CHECK(expression) do { if (!(expression)) return __LINE__; } while (0)

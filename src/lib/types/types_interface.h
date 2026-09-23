@@ -11,6 +11,7 @@ typedef uint8_t lib_u8;
 typedef uint16_t lib_u16;
 typedef uint32_t lib_u32;
 typedef uint64_t lib_u64;
+typedef int8_t lib_i8;
 typedef int16_t lib_i16;
 typedef int32_t lib_i32;
 typedef int64_t lib_i64;
@@ -69,6 +70,7 @@ static inline lib_size lib_text_length(const char *text)
 
 #define lib_c_strcmp strcmp
 #define lib_c_strchr strchr
+#define lib_c_strstr strstr
 #define lib_c_strtok strtok
 
 static inline void *lib_allocate(lib_size byte_count)
