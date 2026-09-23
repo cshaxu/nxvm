@@ -5,7 +5,7 @@
 1. [M6 snapshot state](../proposals/m6-snapshot-state.md) - closed historical proposal.
 2. [M6 App/Core quality](../proposals/m6-app-core-quality.md) - closed historical proposal.
 3. [M6 product layout reconciliation](../proposals/m6-product-layout-reconciliation.md) - closed for product-tree reconciliation; owner review exposed a separate runtime receiver now carried by T39.
-4. [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) - closed: Start delivery was proved and the demonstrated PPU A12 publication omission received a MyNes-only repair and dual-architecture regression.
+4. [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) - reopened: S3 isolates a Cartridge MMC3 counter/reload/A12 repair receiver; Corrective S4 is pending admission.
 
 ## M5 Candidates
 

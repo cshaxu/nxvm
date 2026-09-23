@@ -27,7 +27,23 @@ all Mapper-004 games are compatible.
 - No shared `lib`/`common` change, NXVM-product change, broad mapper rewrite,
   new compatibility claim or release artifact refresh is implied.
 - No repair is selected from a title-screen frame, a finite instruction count,
-  or an unqualified optional-ROM probe alone.
+or an unqualified optional-ROM probe alone.
+
+## Corrective Continuation
+
+The original bounded result is insufficient for a gameplay conclusion.  A
+post-closure synchronized frame probe establishes that Start changes guest RAM
+while both trajectories retain the same black published frame.  Corrective S3
+therefore diagnoses the finite CPU IRQ, MMC3 IRQ/A12, PPU register/bus and
+frame-publication matrix before any repair is selected.  A later corrective S
+may change only the demonstrated MyNES owner and must prove a visible,
+input-dependent state transition with an ignored probe plus project-owned
+regression coverage.
+
+S3 selects the Cartridge's MMC3 counter/reload/A12 contract as the next
+receiver: `$C001` currently requests reload without clearing the live counter.
+The next corrective task will repair that finite state transition and its
+counter/acknowledge regression before making another visual claim.
 
 ## Completion Standard
 

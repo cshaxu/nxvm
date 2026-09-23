@@ -2,15 +2,16 @@
 
 ## Current Work
 
-**No active MyNes subtask.** M6 T39 S2 is ready for closure review; no further
-implementation may begin without a new packet.
+**No active MyNes subtask.** M6 T39 S3 selects a Cartridge-owned MMC3
+counter/reload contract repair; no repair begins until Corrective S4 is admitted.
 
 ## M6 T39 Progress
 
 | S | Result |
 | --- | --- |
 | S1 | Accepted: Start delivery reaches and is consumed by the owner-local guest; the project-owned fixture covers A and Start. [Evidence](../etc/evidence/m6-t39-s1-start-path.md). |
-| S2 | Accepted: PPU now publishes `$2006` completion and `$2007` pattern writes to Cartridge A12; the focused Mapper-004 regression and full x64/x86 suites pass. [Evidence](../etc/evidence/m6-t39-s2-a12-publication.md). |
+| S2 | Reopened finding: its narrow A12 publication regression passes, but the later synchronized frame probe exposes a black-frame IRQ/PPU initialization gap outside that regression. |
+| S3 | Accepted diagnosis: the bounded pre-S2 comparison does not select a reversion; an ignored A/B run selects the Cartridge MMC3 counter/reload/A12 contract as the next repair receiver. [Evidence](../etc/evidence/m6-t39-s3-irq-ppu-diagnosis.md). |
 
 ## Current Technical Baseline
 
