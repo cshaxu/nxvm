@@ -1,67 +1,45 @@
-# Documentation Guide
+# Repository Documentation Guide
 
-This is the sole documentation entry point.
+This is the entry point for the multi-application repository. It owns only
+repository-wide governance and orientation; product facts, design, task state,
+and evidence belong to the selected product documentation tree.
 
 ## Task Reading Set
 
-Before changing work for an S, every participant reads:
+Before changing a product, read:
 
 1. this guide;
-2. the active [Current](states/CURRENT.md) packet and its S brief;
-3. the [Execution Rules](rules/EXECUTION.md) reading index and the lifecycle
-   paragraphs it names; and
-4. [Contributing](../CONTRIBUTING.md).
+2. the selected product guide: [NXVM](nxvm/README.md) or [MyNES](mynes/README.md);
+3. that product's `states/CURRENT.md` packet and its S brief;
+4. the shared [Execution Rules](rules/EXECUTION.md) and the authorities named
+   by the product guide; and
+5. [Contributing](../CONTRIBUTING.md).
 
-The active packet or brief may name additional authorities, local instructions,
-evidence, or artifacts; those are also required. Then apply these triggers:
+Read the selected product's source-and-research policy before importing,
+deriving, packaging, or researching source, firmware, media, ROMs, or other
+third-party material. A shared change names every affected product and may not
+silently make one product's active packet authorize another product behavior.
 
-- A coordinator planning or admitting an S also reads [Queue](states/QUEUE.md) and
-  [Roadmap](design/ROADMAP.md). When closing an S, the coordinator also reads
-  [Documentation Rules](rules/DOCUMENT.md).
-- A code or build change reads [System Architecture](design/ARCHITECTURE.md),
-  [Source Layout](design/CODING.md), [Architecture Rules](rules/ARCHITECTURE.md),
-  and [Coding Rules](rules/CODING.md), plus any affected local guidance.
-- A documentation or governance change reads
-  [Documentation Rules](rules/DOCUMENT.md), every authority it directly
-  changes, and every authority whose normative requirements the change alters.
-  A UX change also reads [Product UX](design/UI.md).
-- Importing, deriving, researching, or packaging source, firmware, guest
-  media, Microsoft material, or third-party code first reads the
-  [source and research policy](etc/operations/policy/source-policy.md).
+## Repository Map
 
-This is the task-reading authority. Do not treat the following orientation map
-as a requirement to re-read every authority for every S.
+- `rules/` — shared governance invariants and execution process.
+- `nxvm/` — NXVM design, task queue, evidence, history, and product policy.
+- `mynes/` — MyNES design, task queue, evidence, history, and product policy.
+- `../src/{lib,common,x86}` and `../test/{lib,common,x86}` — neutral shared
+  source/test corpora.
+- `../src/app-nxvm`, `../test/app-nxvm`, `../tools/nxvm`, and
+  `../assets/binary-nxvm` — NXVM product ownership.
+- `../src/app-mynes`, `../test/app-mynes`, `../tools/mynes`, and
+  `../assets/binary-mynes` — MyNES product ownership.
 
-Read the fixed set when first starting an S and on its first resume. Re-read an
-authority when the packet, S brief, that authority, or the change surface has
-materially changed; routine implementation steps and progress reports do not
-require a full repeat reading. This cadence does not excuse reading every
-authority newly triggered by a revision or discovered change surface.
+## Product Task State
 
-## Orientation Map
-
-For system-wide orientation, read the current authorities in this order:
-
-1. [Project Goal](design/GOAL.md)
-2. [System Architecture](design/ARCHITECTURE.md)
-3. [Source Layout](design/CODING.md)
-4. [Product UX](design/UI.md)
-5. [Roadmap](design/ROADMAP.md)
-6. [Documentation Rules](rules/DOCUMENT.md)
-7. [Execution Rules](rules/EXECUTION.md)
-8. [Architecture Rules](rules/ARCHITECTURE.md)
-9. [Coding Rules](rules/CODING.md)
-
-## Daily Operation
-
-`states/CURRENT.md` is the only active-task and technical-baseline authority.
-`states/QUEUE.md` contains ordered, unnumbered candidate work; every candidate
-links to its proposal. Only an approved active task receives a numeric
-identifier. `states/TODO.md` contains unplanned debt only.
+Each product owns its own current packet, queue, TODO ledger, proposal series,
+history, and roadmap. Shared code remains neutral, but a shared change is
+admitted under one named product and identifies every affected consumer. The
+root does not create a second task queue or duplicate current-state authority.
 
 ## Supporting Detail
 
-[etc/README.md](etc/README.md) indexes owner-approved supporting material,
-including detailed contracts, verification material, research, provenance,
-fixtures, release material, templates, and legacy documentation. It cannot
-define a competing current architecture, rule, task queue, or active status.
+Each product's `etc/README.md` indexes its supporting material. Supporting
+records cannot supersede shared rules or product current state.

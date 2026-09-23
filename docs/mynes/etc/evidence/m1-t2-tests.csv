@@ -1,0 +1,7 @@
+entry,x64,x86,result
+aggregate root suite,62/62,62/62,passed
+standalone src/lib,built,built,passed
+standalone src/common,built,built,passed
+standalone test/lib,44/44,44/44,passed
+standalone test/common,18/18,18/18,passed
+library.types-layout-selftest,35.38 seconds,34.56 seconds,passed within 180-second limit

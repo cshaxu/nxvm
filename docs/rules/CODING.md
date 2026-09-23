@@ -6,8 +6,8 @@ judgment. If a change affects ownership, dependencies, interfaces, or adapter
 boundaries, also use the public
 [Architecture Governance skill](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md).
 
-The concrete source tree and naming map is
-[design/CODING.md](../design/CODING.md).
+The concrete source tree and naming map belongs to the selected product's
+`docs/<product>/design/CODING.md`.
 
 ## Source Discipline
 
@@ -49,8 +49,9 @@ The concrete source tree and naming map is
   a same-module implementation when necessary, but must not create mirror
   state, a test-only public contract, or product-visible behavior.
 - All test code is under the repository-root `test/` tree. Repository-only
-  modules follow their `src/` owner; external-ROM, disk, firmware, or other
-  owner-managed scenarios are only under `test/app-nxvm/integration/`.
+  modules follow their `src/` owner; external-ROM, disk, firmware, media, or
+  other owner-managed scenarios are only under the selected product's
+  `test/app-<product>/integration/` tree.
 
-Detailed historical vocabulary and migration inventory is retained in
-[etc/history/m5/c-library-facade.md](../etc/history/m5/c-library-facade.md).
+Product-specific migration records remain in the selected product's supporting
+documentation.

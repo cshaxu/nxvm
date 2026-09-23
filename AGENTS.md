@@ -1,9 +1,9 @@
 # Agent Instructions
 
 Before changing the repository, read `docs/README.md` and follow its **Task
-Reading Set**. Its fixed set is required for every S; its role- and change-
-triggered sets are required when applicable. Read every authority or local
-instruction named by the active packet or S brief.
+Reading Set**. Select the affected product guide (`docs/nxvm/README.md` or
+`docs/mynes/README.md`), then read that product's active packet and every
+authority named by its S brief.
 
 ## Authority
 
@@ -12,16 +12,16 @@ instruction named by the active packet or S brief.
   second architecture, policy, or status source.
 - Sibling repositories are read-only unless an approved task explicitly
   authorizes an import into this repository.
-- Read the [source and research policy](docs/etc/operations/policy/source-policy.md)
-  before importing, deriving, or researching source, firmware, guest media, or
-  Microsoft components. Do not commit protected guest media, Microsoft
-  binaries, machine-local paths, or unreviewed third-party code.
+- Read the selected product's source-and-research policy before importing,
+  deriving, or researching source, firmware, media, ROMs, Microsoft components,
+  or third-party code. Do not commit protected media, firmware, ROMs,
+  Microsoft binaries, machine-local paths, or unreviewed third-party code.
 
 ## Execution
 
-- `docs/states/CURRENT.md` holds the only active packet. Follow
-  `docs/rules/EXECUTION.md` for task allocation, evidence, artifacts, and
-  closure.
+- `docs/<product>/states/CURRENT.md` holds that product's active packet.
+  Follow `docs/rules/EXECUTION.md` for task allocation, evidence, artifacts,
+  and closure.
 - Apply the relevant architecture, coding, source, and documentation rules;
   record any owner-approved exception with the task evidence.
 - Preserve unrelated changes and avoid destructive Git operations.

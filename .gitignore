@@ -10,7 +10,12 @@
 *.obj
 *.exe
 *.dll
-/assets/binary-nxvm/*/*
-!/assets/binary-nxvm/README.md
-!/assets/binary-nxvm/*/
-!/assets/binary-nxvm/*/NXVM.ini
+# Product release artifacts are intentionally versioned with their adjacent
+# editable startup configuration. Protected firmware, media and ROM inputs
+# remain external and ignored by their own paths.
+!/assets/binary-nxvm/**
+!/assets/binary-mynes/**
+
+# MyNES integration ROM fixtures are owner-local BYOROM inputs.  Tests may
+# discover them locally, but no ROM bytes are repository artifacts.
+/test/app-mynes/roms/*.nes

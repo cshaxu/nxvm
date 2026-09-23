@@ -1,19 +1,20 @@
 # Contributing
 
-Read the [Documentation Guide](docs/README.md), the active
-[Project Status](docs/states/CURRENT.md), and [Execution Rules](docs/rules/EXECUTION.md)
-before proposing or changing work. Follow the guide's **Task Reading Set** for
-your role and change surface. The design and rule documents linked there are
-the implementation authorities; this file does not restate them.
+Read the [Repository Documentation Guide](docs/README.md), the selected
+product's guide and active status, and the shared
+[Execution Rules](docs/rules/EXECUTION.md) before proposing or changing work.
+NXVM work uses [NXVM status](docs/nxvm/states/CURRENT.md); MyNES work uses
+[MyNES status](docs/mynes/states/CURRENT.md). Follow the guide's **Task Reading
+Set** for your role and change surface.
 
 ## Change Submission
 
 - Follow the applicable [Architecture Rules](docs/rules/ARCHITECTURE.md) and
   [Coding Rules](docs/rules/CODING.md), and always follow
   [Execution Rules](docs/rules/EXECUTION.md).
-- Follow the [source and research procedure](docs/etc/operations/policy/source-policy.md)
-  before importing, deriving, or packaging third-party source, firmware, guest
-  media, or Microsoft material.
+- Follow the selected product's source-and-research procedure before importing,
+  deriving, or packaging third-party source, firmware, media, ROMs, or
+  Microsoft material.
 - Treat research and optional local tools as non-product inputs unless an
   approved task explicitly admits them.
 

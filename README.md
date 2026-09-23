@@ -1,4 +1,9 @@
-# NXVM
+# NXVM Repository
+
+This repository hosts two products under one root MIT license: NXVM, the x86
+whole-machine emulator, and MyNES, the NES emulator. Shared `lib`, `common`,
+and `x86` components remain neutral; each product owns its App/Core, tests,
+tools, documentation sequence, and versioned executable artifacts.
 
 Neko's x86 Virtual Machine is a portable x86 PC emulator with an integrated
 debugger. NXVM is the repository's current, bootable whole-machine product.
@@ -50,21 +55,26 @@ boundaries.
 ## Build
 
 The supported development path is 64-bit MinGW-w64 GCC, CMake 3.23 or later,
-and Ninja on Windows. Ensure `gcc` and `ninja` are available on `PATH`, then
-from the repository root run:
+and Ninja on Windows. Ensure `gcc` and `ninja` are available on `PATH`. From
+the repository root, build the selected product:
 
 ```powershell
 cmake --preset mingw-gcc-x64-release
 cmake --build --preset current-gcc
+
+# MyNES
+cmake --preset mynes-gcc-x64-release
+cmake --build --preset mynes-current-x64
 ```
 
-The current developer x64 artifact is copied to `build/output/` after a
-successful build. Task closure also emits the corresponding `_x86.exe` from
-the same source target using the documented x86 MinGW-w64 preset. Run the
-documentation governance gate with:
+Versioned runnable artifacts are retained under `assets/binary-nxvm/` and
+`assets/binary-mynes/`. Task closure builds the matching x86 artifact where
+the product supports it. Run the selected product documentation gate with:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File tools/shared/Verify-DocumentationGovernance.ps1 `
+  -RepositoryRoot . -Product nxvm
 ```
 
 When `ccache` is installed, an optional isolated repeat-build route is:
@@ -80,9 +90,7 @@ manual-project, Autotools, and Makefile instructions are retired.
 ## Quick Start
 
 1. Build NXVM using the commands above.
-2. Start the generated `nxvm_0_5_NNNN_x64.exe` or `nxvm_0_5_NNNN_x86.exe`
-   developer artifact from
-   `build/output/`.
+2. Start its selected artifact from `assets/binary-nxvm/<profile>/`.
 3. In the NXVM Console, use `help` to inspect available commands.
 4. Supply only your own legally obtained boot media when experimenting with a
    guest; the repository does not provide or distribute guest media.
@@ -90,7 +98,8 @@ manual-project, Autotools, and Makefile instructions are retired.
    and resume the session as supported by the current command surface.
 
 The exact current product and media boundaries are maintained in the
-[documentation guide](docs/README.md) and its linked authorities.
+[repository documentation guide](docs/README.md) and its selected product
+authorities.
 
 ## Components
 
@@ -139,11 +148,11 @@ or supported.
 
 ## Start Here
 
-- [Documentation Guide](docs/README.md) is the contributor and agent entry
-  point.
-- [Project Goals](docs/design/GOAL.md), [System Architecture](docs/design/ARCHITECTURE.md),
-  and [Roadmap](docs/design/ROADMAP.md) describe the current NXVM-first,
-  two-product direction.
+- [Repository Documentation Guide](docs/README.md) is the contributor and
+  agent entry point.
+- [NXVM documentation](docs/nxvm/README.md) and
+  [MyNES documentation](docs/mynes/README.md) own their respective goals,
+  architecture, roadmaps, and task queues.
 - [Contributing](CONTRIBUTING.md) describes the change and review process.
 
 ## Project Boundary
@@ -156,5 +165,5 @@ authorities. Read [AGENTS.md](AGENTS.md) before changing the repository.
 
 The project is informed by Intel 80386 architecture documentation, IBM PC/AT
 technical references, and other documented research sources. See the
-[documentation guide](docs/README.md) for the current source and research
+[repository documentation guide](docs/README.md) for the current source and research
 boundaries.

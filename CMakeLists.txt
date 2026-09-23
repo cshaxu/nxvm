@@ -24,7 +24,7 @@ if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "NXVM requires a 32-bit or 64-bit C toolchain.")
 endif()
 
-include(cmake/NxvmProductProfile.cmake)
+include(cmake/nxvm/NxvmProductProfile.cmake)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(project_artifact_architecture "x64")
@@ -52,16 +52,16 @@ add_custom_command(
     OUTPUT "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
         "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
     COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-        -File "${CMAKE_SOURCE_DIR}/tools/Export-CpuTimingManifestCatalog.ps1"
+        -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Export-CpuTimingManifestCatalog.ps1"
         -OutPath "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
         -MetadataOutPath "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
-    DEPENDS tools/Export-CpuTimingManifestCatalog.ps1
-        tools/Verify-CpuTimingManifestContract.ps1
-        docs/etc/cpu-timing/t435-s2-8086-timing-manifest.json
-        docs/etc/cpu-timing/t512-s5-8088-timing-manifest.json
-        docs/etc/cpu-timing/t435-s2-80186-timing-manifest.json
-        docs/etc/cpu-timing/t435-s2-80286-timing-manifest.json
-        docs/etc/cpu-timing/t435-s2-80386-timing-manifest.json
+    DEPENDS tools/nxvm/Export-CpuTimingManifestCatalog.ps1
+        tools/nxvm/Verify-CpuTimingManifestContract.ps1
+        docs/nxvm/etc/cpu-timing/t435-s2-8086-timing-manifest.json
+        docs/nxvm/etc/cpu-timing/t512-s5-8088-timing-manifest.json
+        docs/nxvm/etc/cpu-timing/t435-s2-80186-timing-manifest.json
+        docs/nxvm/etc/cpu-timing/t435-s2-80286-timing-manifest.json
+        docs/nxvm/etc/cpu-timing/t435-s2-80386-timing-manifest.json
     VERBATIM)
 add_custom_target(cpu-timing-manifest-catalog
     DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
@@ -81,6 +81,7 @@ endif()
 add_subdirectory(test/lib)
 add_subdirectory(test/common)
 add_subdirectory(test/x86)
+include(cmake/mynes/MyNesProduct.cmake)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(x86-test-debug_output PRIVATE -Wno-error=format-truncation)
     target_compile_options(x86-test-debug_linear PRIVATE -Wno-error=format-truncation)
@@ -1099,7 +1100,7 @@ file(GENERATE
 add_custom_target(verify-global-fixed-width-vocabulary
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T317_TYPE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t317_test_type_vocabulary.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t317_test_type_vocabulary.cmake"
     COMMENT "Verifying global fixed-width type vocabulary"
     VERBATIM)
 add_custom_target(verify-t317-test-type-vocabulary
@@ -1110,7 +1111,7 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         COMMAND "${CMAKE_COMMAND}"
             -DPROJECT_T317_STRICT_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
             -DPROJECT_T317_STRICT_NINJA=${CMAKE_MAKE_PROGRAM}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t317_strict_cpu_smoke_coverage.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t317_strict_cpu_smoke_coverage.cmake"
         DEPENDS ${PROJECT_T317_STRICT_CPU_SMOKE_TARGETS}
         COMMENT "Verifying T317 target-local strict CPU smoke compilation"
         VERBATIM)
@@ -1152,7 +1153,7 @@ if(POWERSHELL_EXECUTABLE)
     add_custom_target(generate-m1-probe
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${PROJECT_PROBE_DIR}"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/New-DosProbe.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/New-DosProbe.ps1"
             -OutputDirectory "${PROJECT_PROBE_DIR}"
             -Name "m1-text-exit"
             -Marker "NTVDM64:M1:TEXT:OK"
@@ -1758,11 +1759,11 @@ target_link_libraries(core-machine-cpu-fpu-profile-closure-smoke PRIVATE
     core-machine)
 add_custom_target(core-machine-cpu-fpu-static-closure
     COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -P ${CMAKE_SOURCE_DIR}/cmake/verify_cpu_fpu_closure.cmake
+        -P ${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_cpu_fpu_closure.cmake
     DEPENDS core-machine-cpu-fpu-profile-closure-smoke)
 add_custom_target(core-machine-lifecycle-ownership-closure
     COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -P ${CMAKE_SOURCE_DIR}/cmake/verify_core_lifecycle_ownership.cmake)
+        -P ${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_lifecycle_ownership.cmake)
 add_executable(vm-two-session-isolation-smoke
     test/app-nxvm/unit/core/machine/vm_two_session_isolation_smoke.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
@@ -2437,7 +2438,7 @@ add_custom_target(run-windows31-hdd-checkpoint
     COMMAND "${CMAKE_COMMAND}"
         "-DPROJECT_T355_CHECKPOINT_EXECUTABLE:FILEPATH=$<TARGET_FILE:vm-windows31-hdd-admission-probe>"
         "-DPROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE:FILEPATH=${PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE}"
-        -P "${CMAKE_SOURCE_DIR}/cmake/run_windows31_hdd_checkpoint.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/run_windows31_hdd_checkpoint.cmake"
     DEPENDS vm-windows31-hdd-admission-probe
     COMMENT "Running the opt-in owner-supplied Windows readiness HDD checkpoint"
     VERBATIM)
@@ -2540,7 +2541,7 @@ set_tests_properties("unit.core-machine-8088-timing-manifest-runner" PROPERTIES
 if(POWERSHELL_EXECUTABLE)
     add_test(NAME "unit.core-machine-8086-timing-results-s5"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/Verify-8086TimingResults.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-8086TimingResults.ps1"
             -ResultPath
             "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
     set_tests_properties("unit.core-machine-8086-timing-results-s5" PROPERTIES
@@ -2550,7 +2551,7 @@ if(POWERSHELL_EXECUTABLE)
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
     add_test(NAME "unit.core-machine-8088-timing-results-s5"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/Verify-8088TimingResults.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-8088TimingResults.ps1"
             -BaseResultPath
             "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
             -ResultPath
@@ -2562,7 +2563,7 @@ if(POWERSHELL_EXECUTABLE)
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
     add_test(NAME "unit.core-machine-8086-decoder-ledger-s5"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/Verify-8086DecoderLedger.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-8086DecoderLedger.ps1"
             -ResultPath
             "${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
     set_tests_properties("unit.core-machine-8086-decoder-ledger-s5" PROPERTIES
@@ -2693,20 +2694,20 @@ add_custom_target(verify-t344-unit-registration
         -DPROJECT_T344_CURRENT_AUXILIARY_TESTS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-unit-auxiliary-tests.txt
         -DPROJECT_T344_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
         -DPROJECT_T515_INI_BOOT_CASES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t515-ini-boot-tests.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_unit_test_registration.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t344_unit_test_registration.cmake"
     COMMENT "Verifying T344 unit registration integrity"
     VERBATIM)
 add_custom_target(verify-t533-integration-ini-boundary
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t533_integration_ini_boundary.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t533_integration_ini_boundary.cmake"
     COMMENT "Verifying integration sessions use the INI provider boundary"
     VERBATIM)
 
 if(POWERSHELL_EXECUTABLE)
     add_custom_target(run-unit-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/RunTestAggregate.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/RunTestAggregate.ps1"
             -CTestPath "${CMAKE_CTEST_COMMAND}"
             -TestDirectory "${CMAKE_BINARY_DIR}"
             -ParallelJobs "${PROJECT_UNIT_TEST_JOBS}"
@@ -2720,7 +2721,7 @@ if(POWERSHELL_EXECUTABLE)
 
     add_custom_target(run-integration-tests
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/RunTestAggregate.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/RunTestAggregate.ps1"
             -CTestPath "${CMAKE_CTEST_COMMAND}"
             -TestDirectory "${CMAKE_BINARY_DIR}"
             -ParallelJobs "${PROJECT_UNIT_TEST_JOBS}"
@@ -2732,7 +2733,7 @@ if(POWERSHELL_EXECUTABLE)
 
     add_custom_target(verify-t382-unit-aggregate
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/VerifyTestAggregate.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifyTestAggregate.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying T382 unit aggregate deadline and cleanup"
         VERBATIM)
@@ -2751,21 +2752,21 @@ add_custom_target(verify-t332-cpu-fixture-lifecycle
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T332_SOURCE_DIR=${CMAKE_SOURCE_DIR}
         -DPROJECT_T332_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t332_cpu_fixture_lifecycle.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t332_cpu_fixture_lifecycle.cmake"
     COMMENT "Verifying T332 CPU smoke fixture lifecycle closure"
     VERBATIM)
 
 add_custom_target(verify-t344-historical-fixture-shapes
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T344_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_historical_fixture_shapes.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t344_historical_fixture_shapes.cmake"
     COMMENT "Verifying T344 historical fixture shapes"
     VERBATIM)
 
 add_custom_target(verify-t338-legacy-profile-metadata
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t338_legacy_profile_metadata.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t338_legacy_profile_metadata.cmake"
     COMMENT "Verifying T338 8086/80186 profile metadata and LOCK ownership"
     VERBATIM)
 
@@ -2804,7 +2805,7 @@ function(add_current_vm_artifact target version)
         add_custom_command(TARGET ${target} PRE_LINK
             COMMAND ${CMAKE_COMMAND}
                 -DPROJECT_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_optimized.cmake"
+                -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_current_artifact_optimized.cmake"
             COMMENT "Verifying current NXVM artifact is optimized Release")
         add_custom_command(TARGET ${target} POST_BUILD
             COMMAND ${CMAKE_COMMAND}
@@ -2815,7 +2816,7 @@ function(add_current_vm_artifact target version)
                 -DPROJECT_RUNTIME_INI_SOURCE_PATH:FILEPATH=${CMAKE_SOURCE_DIR}/assets/binary-nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini
                 -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
                 -DPROJECT_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
-                -P "${CMAKE_SOURCE_DIR}/cmake/deploy_current_artifact.cmake")
+                -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/deploy_current_artifact.cmake")
     endif()
 endfunction()
 
@@ -2855,70 +2856,71 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
     if(POWERSHELL_EXECUTABLE)
     add_custom_target(verify-dependency-dag
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/Verify-DependencyDag.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-DependencyDag.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 source dependency allowlist"
         VERBATIM)
 
     add_custom_target(verify-live-machine-authority
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/VerifyLiveMachineAuthority.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifyLiveMachineAuthority.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 live-machine storage closure"
         VERBATIM)
 
     add_custom_target(verify-facade-ownership
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/VerifyFacadeOwnership.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifyFacadeOwnership.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 residual facade ownership baseline"
         VERBATIM)
 
     add_custom_target(verify-executor-closure
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/VerifyExecutorClosure.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifyExecutorClosure.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 single executor closure"
         VERBATIM)
 
     add_custom_target(verify-public-raw-borrow-closure
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/VerifyPublicRawBorrowClosure.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifyPublicRawBorrowClosure.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 public raw-borrow closure"
         VERBATIM)
 
     add_custom_target(verify-session-readiness
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/VerifySessionReadiness.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifySessionReadiness.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 mutable-state inventory"
         VERBATIM)
 
     add_custom_target(verify-product-session-manager
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/VerifyProductSessionManager.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/VerifyProductSessionManager.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 product single-session closure"
         VERBATIM)
 
     add_custom_target(verify-c-facade-headers
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/Verify-CFacadeHeaders.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Verify-CFacadeHeaders.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying ISO C header facade ownership"
         VERBATIM)
 
     add_custom_target(verify-bounded-formatting
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_bounded_formatting.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_bounded_formatting.cmake"
         COMMENT "Verifying bounded formatting facade closure"
         VERBATIM)
 
     add_custom_target(verify-documentation-governance
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-            -File "${CMAKE_SOURCE_DIR}/tools/Verify-DocumentationGovernance.ps1"
+            -File "${CMAKE_SOURCE_DIR}/tools/shared/Verify-DocumentationGovernance.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+            -Product nxvm
         COMMENT "Verifying documentation governance closure"
         VERBATIM)
     else()
@@ -2927,13 +2929,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
     add_custom_target(verify-vm-provider-composition
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_provider_composition.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_vm_provider_composition.cmake"
         COMMENT "Verifying VM provider composition separation"
         VERBATIM)
 
     add_custom_target(verify-ram-reconfigure-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ram_reconfigure_closure.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ram_reconfigure_closure.cmake"
         COMMENT "Verifying M5 RAM cold-reconfiguration closure"
         VERBATIM)
 
@@ -2941,38 +2943,38 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
     add_custom_target(verify-t447-build-ownership
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_build_ownership.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t447_build_ownership.cmake"
         COMMENT "Verifying VM build source and native-library ownership"
         VERBATIM)
 
     add_custom_target(verify-t447-debugger-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_debugger_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t447_debugger_boundary.cmake"
         COMMENT "Verifying Core debugger interpreter ownership"
         VERBATIM)
 
 
     add_custom_target(verify-t447-collaborator-plan-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_collaborator_plan_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t447_collaborator_plan_boundary.cmake"
         COMMENT "Verifying Core-owned machine collaborator and plan endpoints"
         VERBATIM)
 
     add_custom_target(verify-current-artifact-target
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_target.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_current_artifact_target.cmake"
         COMMENT "Verifying current artifact target truthfulness"
         VERBATIM)
 
     add_custom_target(verify-firmware-capability
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_firmware_capability.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_firmware_capability.cmake"
         COMMENT "Verifying M5 T297 firmware capability closure"
         VERBATIM)
 
     add_custom_target(verify-debugger-capability
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_debugger_capability.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_debugger_capability.cmake"
         COMMENT "Verifying M5 T298 debugger capability closure"
         VERBATIM)
 
@@ -2981,135 +2983,135 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
     add_custom_target(verify-dma-fdc-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_dma_fdc_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_dma_fdc_boundary.cmake"
         COMMENT "Verifying core DMA and FDC channel boundary"
         VERBATIM)
 
     add_custom_target(verify-fdc-state-machine-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_fdc_state_machine_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_fdc_state_machine_boundary.cmake"
         COMMENT "Verifying VM FDC/FDD state-machine ownership boundary"
         VERBATIM)
 
 
     add_custom_target(verify-keyboard-transport-surface
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_transport_surface.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_keyboard_transport_surface.cmake"
         COMMENT "Verifying VM keyboard transport surface closure"
         VERBATIM)
 
     add_custom_target(verify-console-adapter-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_console_adapter_closure.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_console_adapter_closure.cmake"
         COMMENT "Verifying Console adapter selected-borrow closure"
         VERBATIM)
 
     add_custom_target(verify-current-media-smoke-classification
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_integration_test_classification.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_integration_test_classification.cmake"
         COMMENT "Verifying current media smoke classification"
         VERBATIM)
 
     add_custom_target(verify-linux-adapter-hygiene
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_adapter_hygiene.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_linux_adapter_hygiene.cmake"
         COMMENT "Verifying Linux adapter hygiene"
         VERBATIM)
 
     add_custom_target(verify-default-pc-at-profile-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_default_pc_at_profile_closure.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_default_pc_at_profile_closure.cmake"
         COMMENT "Verifying default PC/AT profile ownership closure"
         VERBATIM)
 
     add_custom_target(verify-t264-core-vm-pcat-ownership
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t264_core_vm_ownership.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t264_core_vm_ownership.cmake"
         COMMENT "Verifying M5 T264 core/VM PC/AT ownership closure"
         VERBATIM)
 
     add_custom_target(verify-ega-sequencer-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_sequencer_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ega_sequencer_boundary.cmake"
         COMMENT "Verifying M5 T235 EGA sequencer ownership boundary"
         VERBATIM)
 
     add_custom_target(verify-ega-controller-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_controller_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ega_controller_boundary.cmake"
         COMMENT "Verifying M5 T236 EGA controller ownership boundary"
         VERBATIM)
 
     add_custom_target(verify-ega-crtc-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_crtc_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ega_crtc_boundary.cmake"
         COMMENT "Verifying T314 EGA CRTC boundary closure"
         VERBATIM)
 
 
     add_custom_target(verify-rom-ega-int10-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_rom_ega_int10_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rom_ega_int10_boundary.cmake"
         COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
         VERBATIM)
 
     add_custom_target(verify-keyboard-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_portal_closure.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_keyboard_portal_closure.cmake"
         COMMENT "Verifying M5 T210 keyboard portal retirement"
         VERBATIM)
 
     add_custom_target(verify-boot-failure-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_boot_failure_portal_closure.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_boot_failure_portal_closure.cmake"
         COMMENT "Verifying M5 T211 boot-failure portal retirement"
         VERBATIM)
 
     add_custom_target(verify-hdc-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdc_portal_closure.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_hdc_portal_closure.cmake"
         COMMENT "Verifying M5 T213 HDC portal retirement"
         VERBATIM)
 
     add_custom_target(verify-cmos-rtc-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_cmos_rtc_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_cmos_rtc_boundary.cmake"
         COMMENT "Verifying VM CMOS/RTC deterministic-time boundary"
         VERBATIM)
 
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_rational_clock_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
         COMMENT "Verifying core rational device-clock boundary"
         VERBATIM)
 
     add_custom_target(verify-core-event-deadline-scheduler
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_event_deadline_scheduler.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_event_deadline_scheduler.cmake"
         COMMENT "Verifying Core event-deadline scheduler convergence"
         VERBATIM)
 
     add_custom_target(verify-ata-pio-feature-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ata_pio_feature_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_ata_pio_feature_boundary.cmake"
         COMMENT "Verifying VM ATA PIO feature ownership boundary"
         VERBATIM)
 
     add_custom_target(verify-media-sole-route
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_media_sole_route.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_media_sole_route.cmake"
         COMMENT "Verifying the sole FDD/HDD media route"
         VERBATIM)
 
     add_custom_target(verify-core-debug-completion-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_debug_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_debug_boundary.cmake"
         COMMENT "Verifying independent Core debug boundary"
         VERBATIM)
 
     add_custom_target(verify-vm-machine-owner
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_machine_owner.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_vm_machine_owner.cmake"
         COMMENT "Verifying VM machine executor ownership"
         VERBATIM)
     list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
@@ -3119,7 +3121,7 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
     add_custom_target(verify-vm-machine-lifecycle
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_machine_lifecycle.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_vm_machine_lifecycle.cmake"
         COMMENT "Verifying VM machine lifecycle closure"
         VERBATIM)
     list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
@@ -3127,102 +3129,102 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
 
     add_custom_target(verify-fpu-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_fpu_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_fpu_boundary.cmake"
         COMMENT "Verifying T262 core-owned FPU boundary"
         VERBATIM)
 
     add_custom_target(verify-core-cpu-pic-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_cpu_pic_authority.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_cpu_pic_authority.cmake"
         COMMENT "Verifying T295 core-owned CPU/PIC lifecycle authority"
         VERBATIM)
 
     add_custom_target(verify-core-display-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_display_authority.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_display_authority.cmake"
         COMMENT "Verifying T296 core-owned display and port authority"
         VERBATIM)
 
     add_custom_target(verify-core-dma-rtc-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_dma_rtc_authority.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_dma_rtc_authority.cmake"
         COMMENT "Verifying T296 core-owned DMA and RTC/CMOS/NMI authority"
         VERBATIM)
 
     add_custom_target(verify-core-controller-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_controller_authority.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_controller_authority.cmake"
         COMMENT "Verifying T296 core-owned FDC/HDC controller authority"
         VERBATIM)
 
     add_custom_target(verify-t330-task-transition-construction
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t330_task_transition_construction.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t330_task_transition_construction.cmake"
         COMMENT "Verifying T330 task-transition construction closure"
         VERBATIM)
 
     add_custom_target(verify-t331-real-exception-final-construction
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t331_real_exception_final_construction.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t331_real_exception_final_construction.cmake"
         COMMENT "Verifying T331 real exception final-delivery construction"
         VERBATIM)
 
     add_custom_target(verify-t359-instruction-timing-inventory
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t359_instruction_timing_inventory.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t359_instruction_timing_inventory.cmake"
         COMMENT "Verifying T359 four-profile instruction timing inventory"
         VERBATIM)
 
     add_custom_target(verify-t360-timing-source-inventory
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t360_timing_source_inventory.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t360_timing_source_inventory.cmake"
         COMMENT "Verifying T360 four-profile timing source inventory"
         VERBATIM)
 
     add_custom_target(verify-t435-s3-cpu-timing-seam
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t435_s3_cpu_timing_seam.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t435_s3_cpu_timing_seam.cmake"
         COMMENT "Verifying T435 S3 single CPU timing selection/publication seam"
         VERBATIM)
 
     add_custom_target(verify-t388-successful-sentinel-matrix
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_successful_sentinel_matrix.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_successful_sentinel_matrix.cmake"
         COMMENT "Verifying T388 successful-sentinel matrix"
         VERBATIM)
     add_custom_target(verify-t388-physical-timebase-inventory
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_physical_timebase_inventory.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_physical_timebase_inventory.cmake"
         COMMENT "Verifying T388 four-profile physical-timebase inventory"
         VERBATIM)
     add_custom_target(verify-t388-physical-eligibility-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_physical_eligibility_boundary.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_physical_eligibility_boundary.cmake"
         COMMENT "Verifying T388 physical-eligibility boundary"
         VERBATIM)
     add_custom_target(verify-t388-residual-form-context-ledger
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_residual_form_context_ledger.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_residual_form_context_ledger.cmake"
         COMMENT "Verifying T388 residual form/context ledger"
         VERBATIM)
     add_custom_target(verify-t388-jcc-target-lexeme
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_jcc_target_lexeme.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_jcc_target_lexeme.cmake"
         COMMENT "Verifying T388 Jcc target-lexeme boundary"
         VERBATIM)
     add_custom_target(verify-t388-80286-appendix-b-context
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80286_appendix_b_context.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_80286_appendix_b_context.cmake"
         COMMENT "Verifying T388 80286 Appendix-B context"
         VERBATIM)
     add_custom_target(verify-t388-80286-lsl-architecture-reconciliation
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80286_lsl_architecture_reconciliation.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_80286_lsl_architecture_reconciliation.cmake"
         COMMENT "Verifying T388 80286 LSL architecture reconciliation"
         VERBATIM)
     add_custom_target(verify-t388-80386-lsl-granularity-capture
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80386_lsl_granularity_capture.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t388_80386_lsl_granularity_capture.cmake"
         COMMENT "Verifying T388 80386 LSL granularity capture"
         VERBATIM)
 endif()
@@ -3306,7 +3308,7 @@ add_custom_target(verify-unit-separation
         -DPROJECT_SPECIALIZED_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/current-specialized-verifier-targets.txt
         -DPROJECT_GATE_DEPENDENCIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/unit-dependencies.txt
         -DPROJECT_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_unit_test_separation.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_unit_test_separation.cmake"
     COMMENT "Verifying current smoke and specialized gate separation"
     VERBATIM)
 list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
@@ -3331,7 +3333,7 @@ file(GENERATE
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)
     add_executable(research-bochx-manifest-check
-        tools/research/bochx/bochx_manifest_check.c
+        tools/nxvm/research/bochx/bochx_manifest_check.c
     )
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(research-bochx-manifest-check PRIVATE
@@ -3608,7 +3610,7 @@ file(GENERATE
 add_custom_target(verify-t344-strict-declaration-uniqueness
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T344_STRICT_DECLARATION_MATRIX:FILEPATH=${CMAKE_BINARY_DIR}/t344-strict-declaration-matrix.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_strict_declaration_uniqueness.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t344_strict_declaration_uniqueness.cmake"
     COMMENT "Verifying T344 strict declaration uniqueness"
     VERBATIM)
 list(LENGTH PROJECT_T344_DIRECT_COMPILE_MATRIX project_t344_matrix_count)
@@ -3626,7 +3628,7 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         COMMAND "${CMAKE_COMMAND}"
             -DPROJECT_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
             -DPROJECT_T344_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_direct_compilation_matrix.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t344_direct_compilation_matrix.cmake"
         DEPENDS ${PROJECT_T344_STRICT_DIRECT_TARGETS}
         COMMENT "Verifying T344 direct strict-compilation matrix"
         VERBATIM)
@@ -3693,18 +3695,18 @@ add_custom_target(verify-t345-deferred-direct-ownership
         -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
         -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
         -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t345_deferred_direct_ownership.cmake"
     COMMENT "Verifying T345 deferred direct-compilation ownership"
     VERBATIM)
 add_custom_target(verify-t345-deferred-direct-ownership-selftest
     COMMAND "${CMAKE_COMMAND}"
-        -DPROJECT_T345_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake
+        -DPROJECT_T345_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t345_deferred_direct_ownership.cmake
         -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
         -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
         -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
         -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
         -DPROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt
-        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership_selftest.cmake"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t345_deferred_direct_ownership_selftest.cmake"
     COMMENT "Self-testing T345 deferred direct-compilation ownership verification"
     VERBATIM)
 if(CMAKE_GENERATOR MATCHES "Ninja")
@@ -3714,7 +3716,7 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
             -DPROJECT_T345_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
             -DPROJECT_T345_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -DPROJECT_T345_OUTPUT_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-warning-baseline.txt
-            -P "${CMAKE_SOURCE_DIR}/cmake/audit_t345_deferred_direct_warnings.cmake"
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/audit_t345_deferred_direct_warnings.cmake"
         COMMENT "Auditing T345 deferred direct-compilation warnings"
         VERBATIM)
 endif()

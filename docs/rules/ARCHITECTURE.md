@@ -1,8 +1,8 @@
 # Architecture Rules
 
 Use the public [Architecture Governance skill](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md).
-The concrete NXVM-repository component and composition map is
-[design/ARCHITECTURE.md](../design/ARCHITECTURE.md).
+The concrete component and composition map belongs to the selected product's
+`docs/<product>/design/ARCHITECTURE.md`.
 
 ## Non-Negotiable Invariants
 
@@ -33,5 +33,5 @@ The concrete NXVM-repository component and composition map is
   do not become a product dependency or release input without an owner-approved
   decision.
 
-Detailed source, license, firmware, and research handling is supporting
-material in [etc/operations/policy/source-policy.md](../etc/operations/policy/source-policy.md).
+Detailed source, license, firmware, media, ROM, and research handling belongs
+to the selected product's `etc/operations/policy/source-policy.md`.

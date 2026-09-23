@@ -1,14 +1,15 @@
 # Execution Policy
 
-This file owns the NXVM repository's mandatory request lifecycle, identifiers, evidence,
-artifact, and milestone gates. The public
+This file owns the multi-product repository's mandatory request lifecycle,
+identifiers, evidence, artifact, and milestone gates. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 is supplementary reusable guidance, not a prerequisite. One subtask is active
-at a time. Between accepted subtasks, the latest open numeric task may retain
+at a time **per product**. Between accepted subtasks, the latest open numeric task may retain
 only its compact progress and has no active packet. Follow the local
 requirement packet and closure audit defined here. Before implementation, the
 coordinator creates the one active subtask packet
-in `states/CURRENT.md` as the fixed two-column `Field | Required record` table;
+in the selected product's `docs/<product>/states/CURRENT.md` as the fixed
+two-column `Field | Required record` table;
 the executor reads, questions, and executes that packet. It must record
 identifier mode, admission and owner approval, objective, non-goals, reference
 baseline, candidate proposal, files/ABI surface, applicable rules, exact
@@ -36,7 +37,8 @@ Answer a question, discussion, or exploration normally. When an owner requests
 one or more changes, preserve the request, inspect the current system and
 applicable rules, and split the work into bounded tasks with explicit exit
 criteria before implementation. Obtain approval before admitting the work to
-`states/CURRENT.md`; only that one active packet may execute.
+the selected product's `states/CURRENT.md`; only that product's active packet
+may execute. A shared change explicitly names all affected product consumers.
 
 Use this entry table to select an existing path; it creates no additional
 authority or exception:
@@ -330,13 +332,13 @@ description` for an implementation task and its task-specific design work.
 
 ## Linear Identifier Allocation
 
-`states/QUEUE.md` holds ordered but unnumbered candidates. A candidate enters
-that Queue only after its proposal is stored in `docs/proposals/`. Allocate the
-next numeric task identifier only when the owner approves one candidate and it
-becomes the single active packet in `states/CURRENT.md`; at that transition,
-create its `docs/history/M<milestone>-T<task>-<name>.md` main record. At task
-closure, retain the proposal by moving it to
-`docs/history/M<milestone>-T<task>-<name>-proposal.md`. When a candidate or
+The selected product's `states/QUEUE.md` holds ordered but unnumbered candidates.
+A candidate enters that Queue only after its proposal is stored in the selected
+product's `proposals/`. Allocate the next numeric task identifier only when the
+owner approves one candidate and it becomes that product's active packet; at
+that transition, create its `history/M<milestone>-T<task>-<name>.md` main
+record. At task closure, retain the proposal by moving it to
+`history/M<milestone>-T<task>-<name>-proposal.md`. When a candidate or
 task is withdrawn and will not be implemented, clean up or retain its proposal
 and main record according to the documented retention decision. Reordering,
 withdrawing, or refining an unapproved candidate consumes no identifier.
@@ -413,15 +415,11 @@ does not create a task artifact or change the current artifact version.
 Every task and standalone `Td` closure runs:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/shared/Verify-DocumentationGovernance.ps1 -RepositoryRoot . -Product <product>
 ```
 
-For diagnosis, run `-Scope Documentation` or `-Scope GovernanceState`
-separately. The first checks topology, document schemas, Reading-Set navigation,
-`etc/` indexing, links, mojibake, and machine-local paths; the second checks
-packet fields and identifiers, the sole `CURRENT.md` technical baseline,
-queue/debt boundaries, artifact identity, and capped Status summaries.
-`current-gates-gcc` runs the combined check when PowerShell is available.
+The shared structural check validates the root rules plus the selected product's
+reading-set links, principal files and product-local state topology.
 Failure blocks closure. Passing this gate proves structural consistency only;
 it does not prove that Queue, history, baseline, evidence, and current runnable
 source truthfully agree. Coordinator closure review must inspect the actual
@@ -441,9 +439,9 @@ A claimed runtime gate invokes its registered CTest cases and fails on nonzero
 results; compiling a smoke executable is build coverage only. Source-shape and
 inventory checks remain named static gates.
 
-Each completed implementation task that changes a runnable path compiles,
-verifies, and copies two usable local developer artifacts to ignored
-`assets/binary-nxvm/<profile>/`: one `x64` and one `x86` Windows executable.
+Each completed implementation task that changes a runnable product path compiles,
+verifies, and copies two usable versioned artifacts to its
+`assets/binary-<product>/` location: one `x64` and one `x86` Windows executable.
 Its four-digit revision is the numeric task identifier
 (`T258` is `0.5.0258`): it is an identity, not sequencing, rule. All its
 subtasks rebuild that revision; source commit plus SHA-256 identify the build.

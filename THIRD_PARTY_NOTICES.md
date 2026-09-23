@@ -4,7 +4,8 @@
 
 This file records the current source-distribution notice set. It is not a
 binary-release manifest and does not authorize a release. A release must also
-produce the manifest and complete the checklist in `docs/etc/release/`.
+produce the selected product's manifest and complete its product-local release
+checklist.
 
 ## Project-Owned Material
 
@@ -29,7 +30,15 @@ Copyright (c) 2012-2014 Neko
 Copyright (c) 2012-2026 Neko
 ```
 
-See `docs/etc/research/provenance/nxvm-imports.md` for import scope and traceability.
+See `docs/nxvm/etc/research/provenance/nxvm-imports.md` for import scope and traceability.
+
+## MyNES Governance And Shared Material
+
+MyNES product source is project-owned material under the root MIT License. Its
+governance and shared-corpus provenance is retained in
+`docs/mynes/etc/provenance/`; this repository contains no game ROM or other
+protected MyNES input. The root MIT License is the sole license text for both
+products.
 
 ## Shipped Third-Party Components
 

@@ -1,0 +1,90 @@
+#include <assert.h>
+#include <string.h>
+
+#include "core/machine_interface.h"
+
+typedef struct opcode_form {
+    lib_u8 opcode;
+    lib_u8 bytes;
+    lib_u8 cycles;
+} opcode_form;
+
+/* Values transcribed from docs/etc/cpu-opcodes.csv.  Branch rows use reset P. */
+static const opcode_form forms[] = {
+    {0x00u,1u,7u},{0x01u,2u,6u},{0x05u,2u,3u},{0x06u,2u,5u},{0x08u,1u,3u},{0x09u,2u,2u},{0x0au,1u,2u},{0x0du,3u,4u},{0x0eu,3u,6u},{0x10u,2u,3u},{0x11u,2u,5u},{0x15u,2u,4u},{0x16u,2u,6u},{0x18u,1u,2u},{0x19u,3u,4u},{0x1du,3u,4u},{0x1eu,3u,7u},
+    {0x20u,3u,6u},{0x21u,2u,6u},{0x24u,2u,3u},{0x25u,2u,3u},{0x26u,2u,5u},{0x28u,1u,4u},{0x29u,2u,2u},{0x2au,1u,2u},{0x2cu,3u,4u},{0x2du,3u,4u},{0x2eu,3u,6u},{0x30u,2u,2u},{0x31u,2u,5u},{0x35u,2u,4u},{0x36u,2u,6u},{0x38u,1u,2u},{0x39u,3u,4u},{0x3du,3u,4u},{0x3eu,3u,7u},
+    {0x40u,1u,6u},{0x41u,2u,6u},{0x45u,2u,3u},{0x46u,2u,5u},{0x48u,1u,3u},{0x49u,2u,2u},{0x4au,1u,2u},{0x4cu,3u,3u},{0x4du,3u,4u},{0x4eu,3u,6u},{0x50u,2u,3u},{0x51u,2u,5u},{0x55u,2u,4u},{0x56u,2u,6u},{0x58u,1u,2u},{0x59u,3u,4u},{0x5du,3u,4u},{0x5eu,3u,7u},
+    {0x60u,1u,6u},{0x61u,2u,6u},{0x65u,2u,3u},{0x66u,2u,5u},{0x68u,1u,4u},{0x69u,2u,2u},{0x6au,1u,2u},{0x6cu,3u,5u},{0x6du,3u,4u},{0x6eu,3u,6u},{0x70u,2u,2u},{0x71u,2u,5u},{0x75u,2u,4u},{0x76u,2u,6u},{0x78u,1u,2u},{0x79u,3u,4u},{0x7du,3u,4u},{0x7eu,3u,7u},
+    {0x81u,2u,6u},{0x84u,2u,3u},{0x85u,2u,3u},{0x86u,2u,3u},{0x88u,1u,2u},{0x8au,1u,2u},{0x8cu,3u,4u},{0x8du,3u,4u},{0x8eu,3u,4u},{0x90u,2u,3u},{0x91u,2u,6u},{0x94u,2u,4u},{0x95u,2u,4u},{0x96u,2u,4u},{0x98u,1u,2u},{0x99u,3u,5u},{0x9au,1u,2u},{0x9du,3u,5u},
+    {0xa0u,2u,2u},{0xa1u,2u,6u},{0xa2u,2u,2u},{0xa4u,2u,3u},{0xa5u,2u,3u},{0xa6u,2u,3u},{0xa8u,1u,2u},{0xa9u,2u,2u},{0xaau,1u,2u},{0xacu,3u,4u},{0xadu,3u,4u},{0xaeu,3u,4u},{0xb0u,2u,2u},{0xb1u,2u,5u},{0xb4u,2u,4u},{0xb5u,2u,4u},{0xb6u,2u,4u},{0xb8u,1u,2u},{0xb9u,3u,4u},{0xbau,1u,2u},{0xbcu,3u,4u},{0xbdu,3u,4u},{0xbeu,3u,4u},
+    {0xc0u,2u,2u},{0xc1u,2u,6u},{0xc4u,2u,3u},{0xc5u,2u,3u},{0xc6u,2u,5u},{0xc8u,1u,2u},{0xc9u,2u,2u},{0xcau,1u,2u},{0xccu,3u,4u},{0xcdu,3u,4u},{0xceu,3u,6u},{0xd0u,2u,3u},{0xd1u,2u,5u},{0xd5u,2u,4u},{0xd6u,2u,6u},{0xd8u,1u,2u},{0xd9u,3u,4u},{0xddu,3u,4u},{0xdeu,3u,7u},
+    {0xe0u,2u,2u},{0xe1u,2u,6u},{0xe4u,2u,3u},{0xe5u,2u,3u},{0xe6u,2u,5u},{0xe8u,1u,2u},{0xe9u,2u,2u},{0xeau,1u,2u},{0xecu,3u,4u},{0xedu,3u,4u},{0xeeu,3u,6u},{0xf0u,2u,2u},{0xf1u,2u,5u},{0xf5u,2u,4u},{0xf6u,2u,6u},{0xf8u,1u,2u},{0xf9u,3u,4u},{0xfdu,3u,4u},{0xfeu,3u,7u}
+};
+
+static lib_u16 expected_pc(const opcode_form *form)
+{
+    if (form->opcode == 0x00u) return 0x8000u;
+    if (form->opcode == 0x20u || form->opcode == 0x4cu || form->opcode == 0x6cu ||
+        form->opcode == 0x40u) return 0u;
+    if (form->opcode == 0x60u) return 1u;
+    return (lib_u16)(0x8000u + form->bytes);
+}
+
+static lib_u8 expected_p(lib_u8 opcode)
+{
+    switch (opcode) {
+    case 0x01u: case 0x05u: case 0x06u: case 0x09u: case 0x0au: case 0x0du: case 0x0eu:
+    case 0x11u: case 0x15u: case 0x16u: case 0x19u: case 0x1du: case 0x1eu:
+    case 0x21u: case 0x24u: case 0x25u: case 0x26u: case 0x29u: case 0x2au: case 0x2cu: case 0x2du: case 0x2eu:
+    case 0x31u: case 0x35u: case 0x36u: case 0x39u: case 0x3du: case 0x3eu:
+    case 0x41u: case 0x45u: case 0x46u: case 0x49u: case 0x4au: case 0x4du: case 0x4eu:
+    case 0x51u: case 0x55u: case 0x56u: case 0x59u: case 0x5du: case 0x5eu:
+    case 0x61u: case 0x65u: case 0x66u: case 0x68u: case 0x69u: case 0x6au: case 0x6du: case 0x6eu:
+    case 0x71u: case 0x75u: case 0x76u: case 0x79u: case 0x7du: case 0x7eu:
+    case 0x8au: case 0x98u: case 0xa0u: case 0xa1u: case 0xa2u: case 0xa4u: case 0xa5u: case 0xa6u: case 0xa8u: case 0xa9u: case 0xaau:
+    case 0xacu: case 0xadu: case 0xaeu: case 0xb1u: case 0xb4u: case 0xb5u: case 0xb6u: case 0xb9u:
+    case 0xbcu: case 0xbdu: case 0xbeu:
+        return 0x26u;
+    case 0xc0u: case 0xc1u: case 0xc4u: case 0xc5u: case 0xc9u: case 0xccu: case 0xcdu:
+    case 0xd1u: case 0xd5u: case 0xd9u: case 0xddu: case 0xe0u: case 0xe4u: case 0xecu:
+        return 0x27u;
+    case 0x88u: case 0xbau: case 0xc6u: case 0xcau: case 0xceu: case 0xd6u: case 0xdeu:
+    case 0xe1u: case 0xe5u: case 0xe9u: case 0xedu: case 0xf1u: case 0xf5u: case 0xf9u: case 0xfdu:
+        return 0xa4u;
+    case 0x28u: case 0x40u: case 0x58u:
+        return 0x20u;
+    case 0x38u:
+        return 0x25u;
+    case 0xf8u:
+        return 0x2cu;
+    default:
+        return 0x24u;
+    }
+}
+
+int main(void)
+{
+    lib_size index;
+    for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
+        lib_u8 bytes[16u + 16384u];
+        core_machine_options options = { 0 };
+        core_machine *machine = LIB_NULL;
+        core_run_result result;
+        core_observation observation;
+        memset(bytes, 0, sizeof(bytes));
+        bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
+        bytes[4] = 1u;
+        bytes[16u] = forms[index].opcode;
+        bytes[16u + 0x3ffcu] = 0u; bytes[16u + 0x3ffdu] = 0x80u;
+        bytes[16u + 0x3ffeu] = 0u; bytes[16u + 0x3fffu] = 0x80u;
+        assert(core_machine_create(&machine, bytes, sizeof(bytes), &options) == LIB_STATUS_OK);
+        assert(core_machine_run(machine, 1u, 20u, &result) == LIB_STATUS_OK);
+        assert(!result.trap_valid && result.instructions == 1u);
+        assert(result.cycles == forms[index].cycles);
+        assert(core_machine_observe(machine, &observation) == LIB_STATUS_OK);
+        assert(observation.pc == expected_pc(&forms[index]));
+        assert(observation.p == expected_p(forms[index].opcode));
+        core_machine_destroy(machine);
+    }
+    return 0;
+}
