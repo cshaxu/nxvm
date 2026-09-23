@@ -21,7 +21,8 @@ test corpus contains 439 root-header callers and these material families:
 | `C_INT`, `C_VOID`, `C_CHAR`, `C_UCHAR`, `C_UINT` | 9,366 direct uses | New minimal Lib scalar spelling, or direct ISO C where no public alias is needed. |
 | `type_bool` | 770 uses | `lib_u8`; it preserves the one-byte field and pointer ABI. `lib_bool` remains only for logical local results. |
 | host/pointer widths | 568 uses of `type_virtual_address`/`type_native_unsigned` plus one pointer alias | New `lib_uptr` and explicit pointer conversion helpers. |
-| outcome algebra | 1,221 `type_status`, 6,986 status constants | Extend `lib_status` with `LIB_STATUS_FAULT`; migrate ordinal-preservingly. |
+| outcome algebra | 1,221 `type_status`, 6,986 status constants | Extend `lib_status` with `LIB_STATUS_FAULT`; migrate source semantics after proving status values are not serialized or numerically ordered. |
+| atomic vocabulary | one pointer-width nonce and three stop/reset flags | Add the missing neutral pointer-width atomic; represent NXVM's flags with existing `lib_atomic_i32` and explicit ordering. |
 | fixed sub-byte/nonstandard widths | 17 `type_unsigned_4`, plus masks | Use storage-width `lib_u8/u32/u64` and explicit Lib bit helpers, never fictional C bit-width types. |
 | bit, BCD and address macros | 2,000+ material uses | Small type-neutral `lib_bits` helpers; x86/RTC-specific BCD helpers stay with their device owner. |
 | trace macros | 5,200+ instruction-decoder uses | New local `cpu_trace` compatibility header, then direct decoder refactor; never Lib. |
@@ -51,6 +52,8 @@ typedef uintptr_t lib_uptr;
 _Static_assert(sizeof(lib_uptr) == sizeof(void *),
     "lib_uptr must preserve a host pointer");
 
+#define LIB_UPTR_MAX UINTPTR_MAX
+
 static inline lib_uptr lib_pointer_to_uptr(const void *pointer);
 static inline void *lib_uptr_to_pointer(lib_uptr value);
 ```
@@ -74,9 +77,40 @@ and x86.
 LIB_STATUS_FAULT = 6
 ```
 
-All pre-existing numeric values remain unchanged, matching the root
-`type_status` ordinal sequence.  `TYPE_STATUS_*` maps one-for-one to
-`LIB_STATUS_*`; no product-specific error code is added.
+The root `TYPE_STATUS_FAULT` currently has ordinal 5, while the pre-existing
+shared `LIB_STATUS_IO_ERROR` already owns ordinal 5.  The migration therefore
+cannot truthfully preserve the old numeric value without conflating an
+internal fault with I/O failure.  It preserves the source-level outcome
+meaning by mapping `TYPE_STATUS_FAULT` to the new `LIB_STATUS_FAULT = 6`;
+existing Lib values, including `LIB_STATUS_IO_ERROR = 5` and
+`LIB_STATUS_LIMIT_EXCEEDED = 7`, do not move.
+
+Before that change, P2 audits that NXVM neither serializes status numbers nor
+uses numeric ordering/ranges.  The current consumers compare named outcomes
+and pass them in-process, which is the required contract.  `lib_status`
+remains an `int`; dual-architecture fixtures assert its representation remains
+compatible with the retired enum at every exposed function boundary.
+
+### Atomic contract
+
+The existing Lib atomics cover flag, signed 32-bit, unsigned 32-bit and
+unsigned 64-bit storage.  They do not cover the two root uses precisely:
+
+* DMA allocates opaque binding nonces with one `atomic_uintptr_t` load and
+  strong compare-exchange.  P1 adds `lib_atomic_uptr`, with initialize, load
+  and strong compare-exchange explicit operations.  Its storage has pointer
+  width on both x86 and x64; tests cover the returned observed value on a CAS
+  failure and the `LIB_UPTR_MAX` exhaustion sentinel.
+* Machine stop/reset fields are logical flags.  They migrate to existing
+  `lib_atomic_i32`, storing `LIB_FALSE`/`LIB_TRUE`, rather than adding a
+  misleading byte-boolean atomic facade.  P2 audits their containing structs
+  as internal-only and records the x86/x64 layout change before accepting it.
+
+Every root non-explicit atomic operation maps to its explicit Lib equivalent
+with `LIB_MEMORY_ORDER_SEQ_CST`, preserving C11's default ordering.  The Lib
+implementation of `lib_atomic_uptr` uses C11 `atomic_uintptr_t` where present
+and the platform-width native interlocked primitive on MSVC; both variants are
+validated on x64 and x86.  It exposes no NXVM policy or machine state.
 
 ### Bit contract
 
@@ -116,12 +150,14 @@ callers:
 #define lib_c_fprintf fprintf
 #define lib_c_printf printf
 #define lib_c_fflush fflush
-#define lib_c_isalpha isalpha
-#define lib_c_isspace isspace
 ```
 
 `STD_SNPRINTF`, `STD_VSNPRINTF`, `STD_VA_LIST` and stream type already have
-Lib receivers.  A bounded append helper belongs in `lib/types/file.h` only if
+Lib receivers.  Character classification and case conversion must be safe
+`static inline` wrappers that cast their input through `unsigned char`, as the
+root facade does; direct macro aliases to `isalpha` or `isspace` would be
+incorrect for negative `char` values.  A bounded append helper belongs in
+`lib/types/file.h` only if
 its current termination and cursor-advance contract is documented and tested;
 otherwise its three callers receive a local helper first.
 
@@ -148,11 +184,13 @@ infrastructure, not a Lib public allocator API.
 
 ## Migration sequence
 
-1. **Shared P1 — scalar/status/bit contract.** Add the proposed Lib Types
-   surface and dual-architecture layout/bit/status tests.  Update Lib manifests.
+1. **Shared P1 — scalar/status/bit/atomic contract.** Add the proposed Lib
+   Types surface and dual-architecture layout, bit, status and atomic tests.
+   Audit status numeric escape paths before adding `LIB_STATUS_FAULT`; update
+   Lib manifests.
 2. **NXVM P2 — data representation.** Migrate primitive aliases, byte booleans,
-   pointer-width values and `type_status`; assert preserved public struct
-   layouts and x86/x64 product builds.
+   pointer-width values, `type_status` and the three internal atomic flags;
+   assert every applicable public layout and x86/x64 product build.
 3. **NXVM P3 — pure operations.** Replace bit/mask/reference/dereference
    macros by typed helpers or explicit casts.  Audit each x86 device family and
    its focused unit corpus.
@@ -188,7 +226,8 @@ Before P6 closes:
 
 1. Approve `lib_uptr` and `lib_u8` as the explicit address/byte-boolean
    replacements rather than reshaping `lib_bool`.
-2. Approve `LIB_STATUS_FAULT = 6` as the ordinal-preserving shared outcome.
+2. Approve `LIB_STATUS_FAULT = 6` as a source-semantic outcome: the root
+   fault ordinal changes because shared `IO_ERROR` already owns ordinal 5.
 3. Approve the limited typed `lib_bits` surface and keeping BCD/trace/output
    policy outside Lib Types.
 4. Approve explicit NXVM test allocation injection in place of the global
