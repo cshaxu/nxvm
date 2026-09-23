@@ -51,7 +51,7 @@ static lib_win32_dword LIB_WIN32_WINAPI kvm_console_worker(void *opaque)
             if (status == LIB_STATUS_OK)
                 kvm_component_mailboxes_acknowledge_frame(&console->base.mailboxes,
                     generation);
-            if (status != LIB_STATUS_OK && status != LIB_STATUS_NOT_CURRENT) {
+            if (status != LIB_STATUS_OK) {
                 kvm_component_fail(&console->base, status);
                 break;
             }

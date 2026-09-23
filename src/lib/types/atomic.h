@@ -12,6 +12,11 @@ typedef volatile long lib_atomic_flag;
 typedef volatile long lib_atomic_i32;
 typedef volatile long lib_atomic_u32;
 typedef volatile long long lib_atomic_u64;
+#if LIB_UPTR_IS_64_BIT
+typedef volatile long long lib_atomic_uptr;
+#else
+typedef volatile long lib_atomic_uptr;
+#endif
 
 typedef enum lib_memory_order
 {
@@ -157,6 +162,43 @@ static inline lib_bool lib_atomic_u64_compare_exchange_weak_explicit(
     return LIB_FALSE;
 }
 
+static inline void lib_atomic_uptr_initialize(lib_atomic_uptr *object,
+    lib_uptr value)
+{
+    *object = (intptr_t)value;
+}
+
+static inline lib_uptr lib_atomic_uptr_load_explicit(const lib_atomic_uptr *object,
+    lib_memory_order order)
+{
+    (void)order;
+#if LIB_UPTR_IS_64_BIT
+    return (lib_uptr)_InterlockedCompareExchange64((volatile long long *)object,
+        0LL, 0LL);
+#else
+    return (lib_uptr)_InterlockedCompareExchange((volatile long *)object, 0L, 0L);
+#endif
+}
+
+static inline lib_bool lib_atomic_uptr_compare_exchange_strong_explicit(
+    lib_atomic_uptr *object, lib_uptr *expected, lib_uptr desired,
+    lib_memory_order success_order, lib_memory_order failure_order)
+{
+    lib_uptr observed;
+    (void)success_order;
+    (void)failure_order;
+#if LIB_UPTR_IS_64_BIT
+    observed = (lib_uptr)_InterlockedCompareExchange64((volatile long long *)object,
+        (long long)desired, (long long)*expected);
+#else
+    observed = (lib_uptr)_InterlockedCompareExchange((volatile long *)object,
+        (long)desired, (long)*expected);
+#endif
+    if (observed == *expected) return LIB_TRUE;
+    *expected = observed;
+    return LIB_FALSE;
+}
+
 #else
 #include <stdatomic.h>
 
@@ -164,6 +206,7 @@ typedef atomic_flag lib_atomic_flag;
 typedef atomic_int lib_atomic_i32;
 typedef atomic_uint lib_atomic_u32;
 typedef atomic_uint_fast64_t lib_atomic_u64;
+typedef atomic_uintptr_t lib_atomic_uptr;
 typedef memory_order lib_memory_order;
 
 #define LIB_ATOMIC_FLAG_INITIALIZER ATOMIC_FLAG_INIT
@@ -193,6 +236,10 @@ typedef memory_order lib_memory_order;
 #define lib_atomic_u64_load_explicit atomic_load_explicit
 #define lib_atomic_u64_compare_exchange_weak_explicit \
     atomic_compare_exchange_weak_explicit
+#define lib_atomic_uptr_initialize atomic_init
+#define lib_atomic_uptr_load_explicit atomic_load_explicit
+#define lib_atomic_uptr_compare_exchange_strong_explicit \
+    atomic_compare_exchange_strong_explicit
 #endif
 
 #endif

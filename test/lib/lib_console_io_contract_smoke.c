@@ -194,7 +194,7 @@ int main(void)
     cursor_ok=1;
     assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     unsigned previous_writes=writes;
-    assert(console_broker_backend_write_bound(&b,b.console,2,"x",1)==LIB_STATUS_NOT_CURRENT);
+    assert(console_broker_backend_write_bound(&b,b.console,2,"x",1)==LIB_STATUS_OK);
     assert(console_broker_backend_write_bound(&b,b.console,1,"",0)==LIB_STATUS_OK);
     assert(b.previous_columns==80 && b.previous_rows==25);
     assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0 && writes==previous_writes);

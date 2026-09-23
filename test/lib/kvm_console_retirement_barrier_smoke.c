@@ -254,13 +254,12 @@ static void check_activation_frame(void)
         next_frame.characters.primary[i]=(lib_u16)i;
         next_frame.characters.secondary[i]=(lib_u16)i;
     }
-    next_frame.base.cells[0].glyph_index='X'; write_result=LIB_STATUS_NOT_CURRENT;
+    next_frame.base.cells[0].glyph_index='X'; write_result=LIB_STATUS_OK;
     assert(kvm_console_publish_frame(c,&next_frame)==0); idle_frame();
-    assert(frame_writes==1 && kvm_component_mailboxes_capture_frame(
+    assert(frame_writes==1 && !kvm_component_mailboxes_capture_frame(
         &c->base.mailboxes,&generation,&copied,sizeof(copied)));
     {
         static kvm_console_text_frame rejected;
-        lib_u32 pending_generation = generation;
         assert(kvm_console_publish_frame(NULL,&next_frame)==LIB_STATUS_INVALID_ARGUMENT);
         assert(kvm_console_publish_frame(c,NULL)==LIB_STATUS_INVALID_ARGUMENT);
         assert(kvm_console_publish_frame(c,&rejected)==LIB_STATUS_INVALID_ARGUMENT);
@@ -278,9 +277,8 @@ static void check_activation_frame(void)
             assert(kvm_console_publish_frame(c,&rejected)==LIB_STATUS_INVALID_ARGUMENT);
             *value=0;
         }
-        assert(kvm_component_mailboxes_capture_frame(&c->base.mailboxes,
+        assert(!kvm_component_mailboxes_capture_frame(&c->base.mailboxes,
             &generation,&copied,sizeof(copied)));
-        assert(generation==pending_generation && copied.base.cells[0].glyph_index=='X');
         assert(frame_writes==1 && probe.failures==0);
         assert(WaitForSingleObject(frame_idle,0)==WAIT_TIMEOUT);
         /* The worker is parked after its previous write; no rejected request
@@ -289,22 +287,21 @@ static void check_activation_frame(void)
     }
     write_result=LIB_STATUS_OK;
     assert(lib_console_deliver_event(logical,&activated)==0); idle_frame();
-    assert(frame_writes==2 && !kvm_component_mailboxes_capture_frame(
+    assert(frame_writes==1 && !kvm_component_mailboxes_capture_frame(
         &c->base.mailboxes,&generation,&copied,sizeof(copied)));
     assert(lib_console_deliver_event(logical,&activated)==0); idle_frame();
-    assert(frame_writes==2);
+    assert(frame_writes==1);
     publishing_console=c; next_frame.base.cells[0].glyph_index='A';
     assert(kvm_console_publish_frame(c,&next_frame)==0);
     idle_frame(); idle_frame();
-    assert(frame_writes==4 && last_frame_text=='B' && !kvm_component_mailboxes_capture_frame(
+    assert(frame_writes==3 && last_frame_text=='B' && !kvm_component_mailboxes_capture_frame(
         &c->base.mailboxes,&generation,&copied,sizeof(copied)));
-    assert(copied.base.cells[0].glyph_index=='X'); /* An empty capture does not change output. */
     next_frame.base.cells[0].glyph_index='A'; stop_after_publication=1;
     assert(kvm_console_publish_frame(c,&next_frame)==0);
     assert(WaitForSingleObject(probe.retired,5000)==WAIT_OBJECT_0);
     assert(kvm_console_publish_frame(c,&next_frame)==LIB_STATUS_INVALID_STATE);
     assert(kvm_console_destroy(c) == LIB_STATUS_OK);
-    assert(probe.event_count==1 && probe.failures==0 && frame_writes==5);
+    assert(probe.event_count==1 && probe.failures==0 && frame_writes==4);
     CloseHandle(probe.retired); CloseHandle(frame_idle); frame_idle=NULL;
 }
 
@@ -340,7 +337,7 @@ static void check_input_reset(void)
     assert(kvm_console_publish_frame(c,&frame)==0); /* No output sink: pending. */
     assert(lib_console_bind_generation(logical,2)==0);
     e.kind=LIB_CONSOLE_EVENT_INPUT_RESET;
-    assert(lib_console_deliver_event(logical,&e)==LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_deliver_event(logical,&e)==LIB_STATUS_OK);
     assert(c->base.hotkey_matcher.held_count==1);
     e.binding_generation=2;
     assert(lib_console_deliver_event(logical,&e)==0);
@@ -476,7 +473,7 @@ int main(void)
     check_retirement(1);
     check_io_failure(1, LIB_STATUS_OK);
     check_io_failure(0, LIB_STATUS_IO_ERROR);
-    check_io_failure(0, LIB_STATUS_NOT_CURRENT);
+    check_io_failure(0, LIB_STATUS_OK);
     check_activation_frame();
     check_input_reset();
     check_invalid_control();

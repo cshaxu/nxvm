@@ -111,7 +111,7 @@ lib_status lib_console_deliver_event(lib_console *console,
         copied.binding_generation != console->binding_generation) {
         base_sync_mutex_unlock(console->lock);
         base_sync_mutex_unlock(console->event_gate);
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_OK;
     }
     sink = console->event_sink;
     context = console->event_context;
@@ -157,7 +157,7 @@ lib_status lib_console_write_text(lib_console *console,
     base_sync_mutex_lock(console->output_lock);
     sink = console->output.text;
     context = console->output.context;
-    status = sink == LIB_NULL ? LIB_STATUS_NOT_CURRENT : sink(context, text, length);
+    status = sink == LIB_NULL ? LIB_STATUS_OK : sink(context, text, length);
     base_sync_mutex_unlock(console->output_lock);
     return status;
 }
@@ -185,7 +185,7 @@ lib_status lib_console_write_text_frame(lib_console *console,
     base_sync_mutex_lock(console->output_lock);
     sink = console->output.frame;
     context = console->output.context;
-    status = sink == LIB_NULL ? LIB_STATUS_NOT_CURRENT : sink(context, frame);
+    status = sink == LIB_NULL ? LIB_STATUS_OK : sink(context, frame);
     base_sync_mutex_unlock(console->output_lock);
     return status;
 }

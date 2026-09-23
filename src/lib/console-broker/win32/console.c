@@ -560,7 +560,7 @@ lib_status console_broker_backend_write_bound(console_broker_backend *backend,
     if (backend->console != expected_console ||
         backend->generation != expected_generation) {
         console_broker_backend_unlock_output(backend);
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_OK;
     }
     {
         /* A partial write can change cells even when the API reports failure. */
@@ -589,7 +589,7 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
     if (backend->console != expected_console ||
         backend->generation != expected_generation) {
         console_broker_backend_unlock_output(backend);
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_OK;
     }
     if (lib_memory_compare(frame->palette, backend->previous_palette,
             sizeof(frame->palette)) != 0) {

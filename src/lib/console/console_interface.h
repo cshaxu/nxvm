@@ -7,9 +7,6 @@
 
 #include "lib/types/types_interface.h"
 
-/* Console-only status; the established numeric ABI is unchanged. */
-enum { LIB_STATUS_NOT_CURRENT = 6 };
-
 /* A logical Console is a copied-value endpoint.  It deliberately has no
  * native handle, process ownership, reader, or presentation policy.  Host is
  * the only component that binds one logical object to native Console I/O. */

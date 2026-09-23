@@ -6,7 +6,14 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
+typedef void lib_void;
+typedef char lib_char;
+typedef unsigned char lib_uchar;
+typedef int lib_int;
+typedef unsigned int lib_uint;
+typedef double lib_f64;
 typedef uint8_t lib_u8;
 typedef uint16_t lib_u16;
 typedef uint32_t lib_u32;
@@ -17,6 +24,7 @@ typedef int32_t lib_i32;
 typedef int64_t lib_i64;
 typedef size_t lib_size;
 typedef intptr_t lib_iptr;
+typedef uintptr_t lib_uptr;
 typedef int lib_bool;
 
 typedef int lib_status;
@@ -29,6 +37,7 @@ enum {
     LIB_STATUS_UNSUPPORTED = 3,
     LIB_STATUS_NO_MEMORY = 4,
     LIB_STATUS_IO_ERROR = 5,
+    LIB_STATUS_INTERNAL_ERROR = 6,
     LIB_STATUS_LIMIT_EXCEEDED = 7
 };
 
@@ -41,7 +50,23 @@ enum {
 #define LIB_UINT32_MAX UINT32_MAX
 #define LIB_UINT64_MAX UINT64_MAX
 #define LIB_SIZE_MAX SIZE_MAX
+#define LIB_UPTR_MAX UINTPTR_MAX
 #define lib_offsetof(type, member) offsetof(type, member)
+
+#if UINTPTR_MAX > UINT32_MAX
+#define LIB_UPTR_IS_64_BIT 1
+#else
+#define LIB_UPTR_IS_64_BIT 0
+#endif
+
+_Static_assert(sizeof(lib_uptr) == sizeof(void *),
+    "lib_uptr must preserve every object-pointer bit");
+
+static inline lib_uptr lib_pointer_to_uptr(const void *pointer)
+{ return (lib_uptr)(uintptr_t)pointer; }
+
+static inline void *lib_uptr_to_pointer(lib_uptr value)
+{ return (void *)(uintptr_t)value; }
 
 /* Cross-platform C runtime vocabulary.  These functions deliberately expose
  * no platform handle, product state, or I/O policy. */
@@ -72,6 +97,12 @@ static inline lib_size lib_text_length(const char *text)
 #define lib_c_strchr strchr
 #define lib_c_strstr strstr
 #define lib_c_strtok strtok
+
+static inline lib_bool lib_c_isalpha(lib_char value)
+{ return isalpha((unsigned char)value) != 0 ? LIB_TRUE : LIB_FALSE; }
+
+static inline lib_bool lib_c_isspace(lib_char value)
+{ return isspace((unsigned char)value) != 0 ? LIB_TRUE : LIB_FALSE; }
 
 static inline void *lib_allocate(lib_size byte_count)
 { return malloc(byte_count); }

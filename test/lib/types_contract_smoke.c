@@ -1,6 +1,10 @@
 #include "lib/types/types_interface.h"
 
 _Static_assert(sizeof(lib_i8) == 1u, "lib_i8 must remain one byte");
+_Static_assert(sizeof(lib_u8) == 1u, "lib_u8 must remain one byte");
+_Static_assert(sizeof(lib_uchar) == 1u, "lib_uchar must remain one byte");
+_Static_assert(sizeof(lib_uptr) == sizeof(void *),
+    "lib_uptr must preserve every object-pointer bit");
 #include "lib/base/clock_interface.h"
 
 #define CHECK(expression) do { if (!(expression)) return __LINE__; } while (0)
@@ -11,7 +15,9 @@ int main(void)
     lib_atomic_i32 state;
     lib_atomic_u32 references;
     lib_atomic_u64 identity;
+    lib_atomic_uptr token;
     lib_u64 expected;
+    lib_uptr expected_token;
     lib_u64 before, after, frequency, next_frequency, milliseconds;
     char bytes[4];
     char *copy = lib_allocate_zero(4u, 1u);
@@ -23,6 +29,16 @@ int main(void)
     CHECK(lib_text_length(copy) == 3u);
     CHECK(lib_memory_find(copy, 'b', 4u) == copy + 1);
     lib_release(copy);
+    CHECK(lib_pointer_to_uptr(bytes) != 0u);
+    CHECK(lib_uptr_to_pointer(lib_pointer_to_uptr(bytes)) == bytes);
+    CHECK(lib_c_isalpha('A') == LIB_TRUE);
+    CHECK(lib_c_isalpha('1') == LIB_FALSE);
+    CHECK(lib_c_isspace('\t') == LIB_TRUE);
+    CHECK(lib_c_isspace('A') == LIB_FALSE);
+    CHECK(LIB_STATUS_OK == 0 && LIB_STATUS_INVALID_ARGUMENT == 1 &&
+        LIB_STATUS_INVALID_STATE == 2 && LIB_STATUS_UNSUPPORTED == 3 &&
+        LIB_STATUS_NO_MEMORY == 4 && LIB_STATUS_IO_ERROR == 5 &&
+        LIB_STATUS_INTERNAL_ERROR == 6 && LIB_STATUS_LIMIT_EXCEEDED == 7);
 
     CHECK(!lib_atomic_flag_test_and_set_explicit(&lock, LIB_MEMORY_ORDER_ACQUIRE));
     CHECK(lib_atomic_flag_test_and_set_explicit(&lock, LIB_MEMORY_ORDER_ACQUIRE));
@@ -49,6 +65,17 @@ int main(void)
     while (!lib_atomic_u64_compare_exchange_weak_explicit(&identity, &expected,
             7u, LIB_MEMORY_ORDER_ACQ_REL, LIB_MEMORY_ORDER_ACQUIRE)) { }
     CHECK(lib_atomic_u64_load_explicit(&identity, LIB_MEMORY_ORDER_ACQUIRE) == 7u);
+    lib_atomic_uptr_initialize(&token, 17u);
+    expected_token = 0u;
+    CHECK(!lib_atomic_uptr_compare_exchange_strong_explicit(&token,
+        &expected_token, 18u, LIB_MEMORY_ORDER_ACQ_REL,
+        LIB_MEMORY_ORDER_ACQUIRE));
+    CHECK(expected_token == 17u);
+    CHECK(lib_atomic_uptr_compare_exchange_strong_explicit(&token,
+        &expected_token, LIB_UPTR_MAX, LIB_MEMORY_ORDER_SEQ_CST,
+        LIB_MEMORY_ORDER_SEQ_CST));
+    CHECK(lib_atomic_uptr_load_explicit(&token, LIB_MEMORY_ORDER_ACQUIRE) ==
+        LIB_UPTR_MAX);
 
     CHECK(base_clock_monotonic_counter(LIB_NULL, &frequency) == LIB_STATUS_INVALID_ARGUMENT);
     CHECK(base_clock_monotonic_counter(&before, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);

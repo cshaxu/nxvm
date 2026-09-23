@@ -33,12 +33,12 @@ lib_status console_broker_backend_write_bound(console_broker_backend *backend,
     lib_console *expected_console, lib_u32 expected_generation,
     const char *text, lib_size length)
 { (void)backend; (void)expected_console; (void)expected_generation;
-  (void)text; (void)length; return LIB_STATUS_NOT_CURRENT; }
+  (void)text; (void)length; return LIB_STATUS_UNSUPPORTED; }
 lib_status console_broker_backend_write_text_frame_bound(console_broker_backend *backend,
     lib_console *expected_console, lib_u32 expected_generation,
     const lib_console_text_frame *frame)
 { (void)backend; (void)expected_console; (void)expected_generation;
-  (void)frame; return LIB_STATUS_NOT_CURRENT; }
+  (void)frame; return LIB_STATUS_UNSUPPORTED; }
 
 /* No backend can be created on this platform yet. */
 void console_broker_backend_lock_transaction(console_broker_backend *backend)

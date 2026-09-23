@@ -288,7 +288,7 @@ lib_status console_broker_request_cooked_line(console_broker *broker,
     if (broker->broken || broker->current != expected_current ||
         broker->current_mode != CONSOLE_BROKER_COOKED_LINES) {
         console_broker_unlock(broker);
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_INVALID_STATE;
     }
     status = console_broker_backend_request_cooked_line(broker->backend);
     console_broker_unlock(broker);
@@ -306,7 +306,7 @@ lib_status console_broker_cancel_cooked_line(console_broker *broker,
     if (broker->broken || broker->current != expected_current ||
         broker->current_mode != CONSOLE_BROKER_COOKED_LINES) {
         console_broker_unlock(broker);
-        return LIB_STATUS_NOT_CURRENT;
+        return LIB_STATUS_INVALID_STATE;
     }
     status = console_broker_backend_cancel_cooked_line(broker->backend, out_completed);
     if (status != LIB_STATUS_OK) broker->broken = LIB_TRUE;

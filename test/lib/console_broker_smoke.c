@@ -297,17 +297,17 @@ int main(void)
     console_broker_fail_next_activation=1;
     assert(console_broker_create(&broker,first,CONSOLE_BROKER_RAW_EVENTS)==LIB_STATUS_IO_ERROR);
     assert(!broker && deactivations==1 && disposals==1);
-    assert(lib_console_write_text(first,"x",1)==LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text(first,"x",1)==LIB_STATUS_OK);
     assert(lib_console_set_event_sink(first, activated_sink, NULL) == LIB_STATUS_OK);
     assert(console_broker_create(&broker, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_OK);
     assert(activations == 1);
     assert(console_broker_request_cooked_line(broker, second) ==
-        LIB_STATUS_NOT_CURRENT);
+        LIB_STATUS_INVALID_STATE);
     assert(console_broker_request_cooked_line(broker, first) ==
         LIB_STATUS_OK);
     assert(console_broker_cancel_cooked_line(broker, second, &completed) ==
-        LIB_STATUS_NOT_CURRENT && broker->backend->cooked_request);
+        LIB_STATUS_INVALID_STATE && broker->backend->cooked_request);
     assert(console_broker_cancel_cooked_line(broker, first, &completed) ==
         LIB_STATUS_OK && !completed && !broker->backend->cooked_request);
     assert(console_broker_request_cooked_line(broker, first) == LIB_STATUS_OK);
@@ -331,8 +331,8 @@ int main(void)
     assert(console_broker_replace(broker, first, second,
         CONSOLE_BROKER_RAW_EVENTS) == LIB_STATUS_OK);
     assert(console_broker_prepare_saw_active);
-    assert(lib_console_write_text(first, "a", 1u) == LIB_STATUS_NOT_CURRENT);
-    assert(lib_console_write_text_frame(first, &output_frame) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text(first, "a", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(first, &output_frame) == LIB_STATUS_OK);
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
     assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
     /* Reader retirement is an explicit transaction boundary.  After a failed
@@ -342,8 +342,8 @@ int main(void)
     unsigned resets_before_failure = input_resets;
     assert(console_broker_replace(broker, second, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_IO_ERROR);
-    assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_NOT_CURRENT);
-    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
     assert(input_resets == resets_before_failure);
     assert(console_broker_replace(broker, second, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_INVALID_STATE);
@@ -384,13 +384,13 @@ int main(void)
     console_broker_fail_next_activation = 2;
     assert(console_broker_replace(broker, second, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_IO_ERROR);
-    assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_NOT_CURRENT);
-    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
     assert(console_broker_replace(broker, second, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_INVALID_STATE);
     console_broker_destroy(broker);
-    assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_NOT_CURRENT);
-    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_NOT_CURRENT);
+    assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);
+    assert(lib_console_write_text_frame(second, &output_frame) == LIB_STATUS_OK);
     assert(console_broker_create(&second_broker, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_OK);
     console_broker_destroy(second_broker);

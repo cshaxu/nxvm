@@ -1,7 +1,8 @@
 # types
 
-`types` is the root component. It provides scalar aliases, status values,
-portable atomic helpers, and one-to-one C-runtime or SDK vocabulary wrappers.
+`types` is the root component. It provides scalar aliases, generic status
+values, portable atomic helpers, and one-to-one C-runtime or SDK vocabulary
+wrappers.
 Every other component may depend on it; it has no component dependency,
 resource policy, platform worker, or product behavior.
 
@@ -48,3 +49,20 @@ remain in storage. Counter validation/composition belongs to base; input
 normalization belongs to kvm-base and Window key-state queries to kvm-window.
 There is no runtime layer or zero-result
 fallback pretending to implement another platform's input query.
+
+The common scalar vocabulary includes `lib_void`, character and integer
+aliases, `lib_f64`, `lib_iptr`, and `lib_uptr`. `lib_uptr` has an explicit
+object-pointer round trip and an atomic counterpart for identity tokens and
+lock-free publication. `types` does not define a product pointer policy.
+
+Every public status is a portable outcome: invalid argument or state,
+unsupported operation, allocation failure, I/O failure, internal error, or a
+generic limit. Callers must translate a machine-specific detail into one of
+these outcomes; a stale asynchronous delivery is a successful no-op, not a
+public product-specific status.
+
+`types_interface.h` owns memory, text, allocation, and character-class
+vocabulary. `file.h` owns ISO C streams and formatted-output vocabulary.
+These wrappers preserve C runtime behavior, including the unsigned-character
+precondition for character classification; they do not add validation or
+ownership rules.

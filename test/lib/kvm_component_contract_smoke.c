@@ -63,7 +63,7 @@ int main(void)
     kvm_component_control control = { 0xabcdef01u,
         { 0 } };
     kvm_component_control taken;
-    atomic_uint_fast64_t identity_next;
+    lib_atomic_u64 identity_next;
     kvm_hotkey_registry hotkeys;
     lib_u64 identity;
     unsigned int index;
@@ -109,14 +109,15 @@ int main(void)
 
     /* Source identity is a single non-repeating epoch: issuing the final
        representable value permanently exhausts it instead of wrapping. */
-    atomic_init(&identity_next, UINT64_MAX - 1u);
+    lib_atomic_u64_initialize(&identity_next, LIB_UINT64_MAX - 1u);
     assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
-        LIB_STATUS_OK && identity == UINT64_MAX - 1u);
+        LIB_STATUS_OK && identity == LIB_UINT64_MAX - 1u);
     assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
-        LIB_STATUS_OK && identity == UINT64_MAX);
+        LIB_STATUS_OK && identity == LIB_UINT64_MAX);
     assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
         LIB_STATUS_LIMIT_EXCEEDED);
-    assert(atomic_load_explicit(&identity_next, memory_order_relaxed) == 0u);
+    assert(lib_atomic_u64_load_explicit(&identity_next,
+        LIB_MEMORY_ORDER_RELAXED) == 0u);
 
     event.type = KVM_EVENT_KEY;
     event.data.key.key = 'A';

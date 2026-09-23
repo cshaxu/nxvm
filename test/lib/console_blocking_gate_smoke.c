@@ -130,8 +130,8 @@ int main(void)
         assert(WaitForSingleObject(a, 5000) == WAIT_OBJECT_0);
         assert(WaitForSingleObject(b, 5000) == WAIT_OBJECT_0);
         if (mode < 2) {
-            assert(lib_console_write_text(object, "x", 1u) == LIB_STATUS_NOT_CURRENT);
-            assert(lib_console_write_text_frame(object, &frame) == LIB_STATUS_NOT_CURRENT);
+            assert(lib_console_write_text(object, "x", 1u) == LIB_STATUS_OK);
+            assert(lib_console_write_text_frame(object, &frame) == LIB_STATUS_OK);
         } else if (mode > 2) {
             replacement_calls = 0;
             assert(lib_console_write_text(object, "x", 1u) == LIB_STATUS_OK);
