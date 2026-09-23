@@ -11,10 +11,16 @@ static void write_fixture(void)
 {
     lib_u8 bytes[16u + 16384u];
     lib_storage_file_writer *writer = LIB_NULL;
-    /* Latch pad one, read A through $4016, store it at $0000, then loop. */
+    /* Latch pad one, read A through Start from $4016 into $0000..$0003,
+     * then loop.  This exercises the production serial order, rather than
+     * only the first A bit. */
     static const lib_u8 program[] = {
         0xa9u, 1u, 0x8du, 0x16u, 0x40u, 0xa9u, 0u, 0x8du, 0x16u, 0x40u,
-        0xadu, 0x16u, 0x40u, 0x8du, 0u, 0u, 0x4cu, 0u, 0x80u
+        0xadu, 0x16u, 0x40u, 0x8du, 0u, 0u,
+        0xadu, 0x16u, 0x40u, 0x8du, 1u, 0u,
+        0xadu, 0x16u, 0x40u, 0x8du, 2u, 0u,
+        0xadu, 0x16u, 0x40u, 0x8du, 3u, 0u,
+        0x4cu, 0u, 0x80u
     };
 
     memset(bytes, 0, sizeof(bytes));
@@ -45,6 +51,14 @@ int main(void)
     core_driver_deliver_input(driver, &input);
     for (index = 0u; index < 16u; ++index) assert(core_driver_run(driver));
     assert((driver->machine->ram[0] & 1u) == 0u);
+    input.data.key.key = KVM_KEY_ENTER; input.data.key.pressed = 1u;
+    core_driver_deliver_input(driver, &input);
+    for (index = 0u; index < 16u; ++index) assert(core_driver_run(driver));
+    assert((driver->machine->ram[3] & 1u) == 1u);
+    input.data.key.pressed = 0u;
+    core_driver_deliver_input(driver, &input);
+    for (index = 0u; index < 16u; ++index) assert(core_driver_run(driver));
+    assert((driver->machine->ram[3] & 1u) == 0u);
     assert(core_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

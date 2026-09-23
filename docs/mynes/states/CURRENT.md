@@ -2,29 +2,14 @@
 
 ## Current Work
 
-**Active: M6 T38 S1 owner verification.** The owner-selected MyNes product-tree
-move has passed automated closure checks and awaits the owner's binary review.
+**No active MyNes subtask.** M6 T39 S1 is ready for closure review; a separate
+continuation packet is required before any further implementation.
 
-## M6 T38 S1 Packet
+## M6 T39 Progress
 
-| Field | Required record |
+| S | Result |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner requested T38 after T37 closure to make the manually selected product layout buildable, testable and accurately documented. |
-| Objective | Reconnect MyNes source, tests, packaged artifacts and active documentation to `app-mynes` and `binary-mynes`. |
-| Non-goals | No Lib/Common source change, emulator behavior change, ROM-content change or historical-document rewrite. |
-| Reference Baseline | Owner-selected move committed in `7666ddd`; M6 T37 completed App/Core quality and dual-architecture verification. |
-| Candidate Proposal | [M6 product layout reconciliation](../proposals/m6-product-layout-reconciliation.md) |
-| Files And ABI Surface | CMake traversal and include roots; `assets/binary-mynes/mynes.ini`; versioned x64/x86 executables and manifest. |
-| Applicable Rules | Architecture, coding, documentation, execution and source rules; preserve the shared Lib/Common corpus. |
-| Verification | Fresh x64 and x86 builds each passed 118 CTest cases; documentation governance and release-manifest generation/verification passed. |
-| Expected Markers | No active old-layout references; both trees register the same product targets and test suite; sole configuration and binaries are packaged together. |
-| Asset Needs | Existing ignored owner-local ROMs remain ignored; the sole packaged `mynes.ini` remains versioned. |
-| Reporting Requirements | Record changed surfaces, add/remove totals, x64/x86 results, generated artifact paths and any remaining external-reference exclusions. |
-| Stop Conditions | Stop only for a new behavior defect, an irreconcilable build constraint or a required owner choice. |
-| Exit Criteria | Owner validates the rebuilt binaries or reports a reproducible regression. |
-| Original Owner Request | Reorganize source, tests and documentation around the owner-selected directory/file structure and ensure everything runs. |
-| Similar-Issue Sweep | Search build scripts, include directives, artifact tooling, active documentation and documentation-governance fixtures for former product paths. |
+| S1 | Start delivery is accepted: the project-owned serial fixture now proves A and Start, and the ignored owner-local probe observed guest consumption without a trap. The unresolved display-path receiver is the PPU-to-MMC3 A12 contract; see [S1 evidence](../etc/evidence/m6-t39-s1-start-path.md). |
 
 ## Current Technical Baseline
 
@@ -42,6 +27,7 @@ move has passed automated closure checks and awaits the owner's binary review.
 | --- | --- |
 | T36 | Closed: SoftPC-shaped `save`/`load`, Core/Driver state stream, matching-cartridge restore, rejected malformed/missing/truncated inputs and dual-architecture integration proof are recorded in [history](../history/M6-T36-snapshot-state.md). |
 | T37 | Closed in `7666ddd`: the completed App/Core quality work and the owner-selected source, test and packaged-artifact move were retained together for T38 reconciliation. |
+| T38 | Product-layout automation passed; owner binary review reported the TMNT3 title-flow regression. The layout result remains retained, and the runtime defect is now T39's bounded receiver. |
 | T35 | M5 closed in `d6da730`: six owner-local ROM roles passed both presenters/x64/x86. |
 
 ## Recent Governance

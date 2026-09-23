@@ -96,6 +96,7 @@ architecture, rule set or current task state.
 - `evidence/m5-t35-six-input-design.md`: [M5 T35 six-input design](evidence/m5-t35-six-input-design.md); owner-local acceptance matrix and proof sequence.
 - `evidence/m5-t35-s2-six-input.md`: [M5 T35 S2 execution](evidence/m5-t35-s2-six-input.md); six supplied local ROM roles through both presenters on x64/x86.
 - `evidence/m5-final-closure-audit.md`: [M5 final closure](evidence/m5-final-closure-audit.md); six-input matrix, dual-architecture evidence and exclusions.
+- `evidence/m6-t39-s1-start-path.md`: [T39 Start-path decision](evidence/m6-t39-s1-start-path.md); owner-local input boundary, project-owned Start serial regression and PPU-to-MMC3 receiver.
 - `evidence/m6-t37-s1-app-core-audit.md`: [M6 T37 S1 App/Core quality audit](evidence/m6-t37-s1-app-core-audit.md); product-only ownership, lifecycle, persistence and flattening review with repair and transfer dispositions.
 - `evidence/m6-t37-s2-shared-root-audit.md`: [M6 T37 S2 historical audit](evidence/m6-t37-s2-shared-root-audit.md); superseded because it used a mutable upstream worktree.
 - `evidence/m6-t37-s3-committed-corpus-import.md`: committed-SoftPC corpus reconciliation evidence for the four transferable roots and direct-writer receiver changes.

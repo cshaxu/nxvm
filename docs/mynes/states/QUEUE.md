@@ -4,7 +4,8 @@
 
 1. [M6 snapshot state](../proposals/m6-snapshot-state.md) - closed historical proposal.
 2. [M6 App/Core quality](../proposals/m6-app-core-quality.md) - closed historical proposal.
-3. [M6 product layout reconciliation](../proposals/m6-product-layout-reconciliation.md) - admitted: reconnect MyNes source, tests, packaging and active documentation to the owner-selected product tree; automated verification is complete and owner binary review remains.
+3. [M6 product layout reconciliation](../proposals/m6-product-layout-reconciliation.md) - closed for product-tree reconciliation; owner review exposed a separate runtime receiver now carried by T39.
+4. [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) - admitted: establish a finite cause for the owner-reported Mapper-004 title-flow failure and repair only a demonstrated MyNes mechanism.
 
 ## M5 Candidates
 
