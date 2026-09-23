@@ -86,6 +86,7 @@ int main(void)
     lib_u8 saved_ram[8192];
     core_machine *machine = LIB_NULL;
     core_machine_options options = { 0 };
+    lib_u32 index;
 
     make_image(image);
     assert(core_machine_create(&machine, image, sizeof(image), &options) == LIB_STATUS_OK);
@@ -151,6 +152,20 @@ int main(void)
     assert(machine->irq_asserted);
     mapper_write(machine, 0xe000u, 0u);
     assert(!machine->irq_asserted);
+
+    /* $2006 exposes the completed PPU address on the cartridge bus.  After
+     * eight low dots, a $0000->$1000 address transition is a qualified MMC3
+     * rising edge even before rendering starts. */
+    mapper_write(machine, 0xc000u, 0u);
+    mapper_write(machine, 0xc001u, 0u);
+    mapper_write(machine, 0xe001u, 0u);
+    core_ppu_cpu_write(&machine->ppu, machine->cartridge, 6u, 0u);
+    core_ppu_cpu_write(&machine->ppu, machine->cartridge, 6u, 0u);
+    for (index = 0u; index < 8u; ++index)
+        core_ppu_tick(&machine->ppu, machine->cartridge);
+    core_ppu_cpu_write(&machine->ppu, machine->cartridge, 6u, 0x10u);
+    core_ppu_cpu_write(&machine->ppu, machine->cartridge, 6u, 0u);
+    assert(core_cartridge_irq_asserted(machine->cartridge));
 
     core_machine_destroy(machine);
     make_chr_ram_image(chr_ram_image);

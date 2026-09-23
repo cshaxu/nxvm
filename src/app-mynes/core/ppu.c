@@ -35,6 +35,7 @@ static void core_ppu_memory_write(core_ppu *ppu, core_cartridge *cartridge,
 {
     address &= 0x3fffu;
     if (address < 0x2000u) {
+        core_cartridge_ppu_a12_tick(cartridge, (address & 0x1000u) != 0u);
         (void)core_cartridge_ppu_write(cartridge, address, value);
     } else if (address < 0x3f00u) {
         if (address >= 0x3000u) address = (lib_u16)(address - 0x1000u);
@@ -413,6 +414,10 @@ void core_ppu_cpu_write(core_ppu *ppu, core_cartridge *cartridge,
         } else {
             ppu->temporary_address = (lib_u16)((ppu->temporary_address & 0x7f00u) | value);
             ppu->address = ppu->temporary_address;
+            /* PPUADDR drives the external PPU address lines when the second
+             * write completes.  Mapper-004 software deliberately uses this
+             * low-to-high transition while initializing its IRQ counter. */
+            core_cartridge_ppu_a12_tick(cartridge, (ppu->address & 0x1000u) != 0u);
             ppu->address_high = LIB_FALSE;
         }
     } else if (register_index == 7u) {
