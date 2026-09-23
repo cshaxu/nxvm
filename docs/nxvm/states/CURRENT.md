@@ -2,14 +2,14 @@
 
 ## Current Work
 
-**No active implementation packet.** M5 T537 closed after its narrow S8
-corrective repair.
+**No active implementation packet.** M5 Td S172 completed the NXVM candidate
+relevance audit.
 
 | Field | Required record |
 | --- | --- |
-| Most Recent Closure | M5 T537 S8 |
-| Result | Common and X86 now declare `nxvm_shared_common` and `nxvm_shared_x86`, matching `nxvm_shared_library`. No target, API, source-layout, or consumer-link change occurred. |
-| Evidence | [S8 shared project identities](../etc/evidence/t537-s8-shared-project-identities.md). |
+| Most Recent Closure | M5 Td S172 |
+| Result | Removed the completed Multi-App repository consolidation candidate; retained the five independent CPU, controller, differential, guest, and PC110 receivers. |
+| Evidence | [Queue relevance audit](../etc/evidence/td-s172-nxvm-queue-relevance-audit.md). |
 
 ## Prior Delivery: M5 T537 S7
 
