@@ -2,9 +2,8 @@
 
 ## Current Work
 
-**No active MyNes subtask.** M6 T39 S6 restores the rendered Mapper-004
-scanline clock, but the direct visual disposition remains black; no S7 work
-starts until a new corrective packet is admitted.
+**No active MyNes subtask.** M6 T39 S7 selects a CPU IRQ-poll-state repair;
+no S8 change starts until admission.
 
 ## M6 T39 Progress
 
@@ -16,6 +15,7 @@ starts until a new corrective packet is admitted.
 | S4 | Accepted repair: `$C001` clears the live MMC3 count and reloads only on the next qualified edge; owned x64/x86 regressions pass, while the synchronized visual probe remains black. [Evidence](../etc/evidence/m6-t39-s4-mmc3-reload.md). |
 | S5 | Accepted diagnosis: the selected rendering layout yields zero qualified edges because unused sprite slots skip dummy pattern fetches; S6 receives the narrow PPU repair. [Evidence](../etc/evidence/m6-t39-s5-ppu-a12-schedule.md). |
 | S6 | Accepted repair: dummy sprite reads plus raw A12 short-low retention restore one qualified edge on each observed visible scanline; owned regressions pass but the Start frame remains black. [Evidence](../etc/evidence/m6-t39-s6-empty-sprite-fetch.md). |
+| S7 | Accepted diagnosis: accepted IRQs leave `irq_poll_i` stale, causing re-entry before handler execution and stack overflow; S8 receives the CPU repair. [Evidence](../etc/evidence/m6-t39-s7-irq-poll-diagnosis.md). |
 
 ## Current Technical Baseline
 
