@@ -2,26 +2,33 @@
 
 ## Current Work
 
-**Active: NXVM M6 T41 S4 Shared Lib Types foundation.**
+**Active: NXVM M6 T41 S5 data-representation migration.**
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approved S3's revised Lib status taxonomy and bounded Shared implementation on 2026-09-23. S3 design closed at `7debbb5be`; S4 begins the approved implementation sequence. This S declares the `Shared` target only. |
-| Objective | Establish the minimal neutral Lib contract required to retire NXVM root types: common scalar/address vocabulary, general status taxonomy without `NOT_CURRENT`, pointer-width atomics, safe live C-runtime vocabulary, and their tests. |
-| Non-goals | No NXVM caller migration, root `type.h`/`type.c` deletion, NXVM CMake change, MyNES code change, artifact deployment, x86 behavior change, machine/console policy outside removal of the specialized `NOT_CURRENT` result, or asset/INI change. No `lib_bits`, `lib_atomic_bool`, BCD, trace, allocator-injection or automatic-output policy API. |
-| Reference Baseline | Approved [S3 design](../proposals/m6-t41-s3-lib-types-facade-retirement.md). Lib currently has fixed-width scalars, `lib_iptr`, partial shared status enumeration, C stream aliases and integer atomics. `LIB_STATUS_NOT_CURRENT = 6` is declared only by Console but is consumed by Console Broker and KVM Console. |
+| Admission And Approval | The owner approved S3's bounded implementation sequence on 2026-09-23. Shared S4 closed in `9d7f6ba6c`; this S admits the first NXVM-only migration batch. |
+| Objective | Replace NXVM root-facade scalar, address, byte-boolean, status and logical-flag uses with the now-canonical Lib Types contract while preserving ABI, named error meaning and atomic ordering. |
+| Non-goals | No new Lib declaration, bit/BCD migration, output/trace policy migration, allocator-test redesign, root `type.h`/`type.c` deletion, artifact deployment, asset, or INI change. |
+| Reference Baseline | [S3 design](../proposals/m6-t41-s3-lib-types-facade-retirement.md) and [S4 evidence](../etc/evidence/m6-t41-s4-shared-types-foundation.md). Lib now provides neutral scalars, `lib_uptr`, `lib_atomic_uptr`, C vocabulary, and statuses through `LIB_STATUS_INTERNAL_ERROR = 6`. |
 | Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md) |
-| Files And ABI Surface | Shared only: `src/lib/types/types_interface.h`, `atomic.h`, `file.h`, `src/lib/console*`, `src/lib/console-broker*`, `src/lib/kvm-console*`, matching `test/lib` sources/CMake as necessary, Lib manifest/README, and Shared evidence. No product file is an allowed P target. |
-| Applicable Rules | Lib owns neutral C-runtime/platform vocabulary only; status names describe cross-product failures; stale asynchronous publication is a successful no-op; platform-presenter absence is `UNSUPPORTED`; public types preserve documented width and ordering; no reverse Lib dependency or product policy. Apply shared Architecture, Coding, Documentation and Execution rules. |
-| Verification | Focused Lib contract and Console/KVM stale-publication coverage; standalone `test/lib` x64/x86 configure-build-CTest; Lib manifest and dependency/layout checks; repository documentation governance; actual-diff review. |
-| Expected Markers | `LIB_STATUS_NOT_CURRENT` is absent; `LIB_STATUS_INTERNAL_ERROR = 6` is central; stale output paths no-op successfully; mode misuse is `INVALID_STATE`; unsupported Linux presenters report `UNSUPPORTED`; `lib_atomic_uptr` supplies explicit load/CAS; no raw C vocabulary bypass is introduced. |
+| Files And ABI Surface | NXVM only: `src/app-nxvm`, `test/app-nxvm`, and NXVM-local CMake/evidence as required. Lib is consumed unchanged. |
+| Applicable Rules | Stored one-byte booleans become `lib_u8`; predicates use `lib_bool`; guest addresses stay fixed-width; host identity values use `lib_uptr`; status returns use named general outcomes; prior default atomics become explicit `LIB_MEMORY_ORDER_SEQ_CST`; no product may redefine Lib vocabulary. |
+| Verification | Per-family static ledger, ABI/offset assertions for exposed structs, focused data/status/atomic tests, NXVM x64/x86 repository unit runs and optimized product builds, documentation governance and actual-diff review. |
+| Expected Markers | Every S5 caller has a representation-preserving mapping; no raw root status ordinal survives; no atomic default ordering is weakened; affected public layouts are asserted on both architectures. |
 | Asset Needs | None. Owner-local `assets/binary-mynes/mynes.ini` and `assets/binary-nxvm/**/NXVM.ini` remain untouched. |
-| Reporting Requirements | Report shared source/test add/remove/net counts, each status-path disposition, public declarations, x64/x86 test outcomes, manifest/layout/dependency results, commit/push and the NXVM S5 migration handoff. |
-| Stop Conditions | Any proposed declaration requires NXVM/x86/Console product semantics, any `NOT_CURRENT` caller needs visible behavior rather than stale-message discard or invalid-state handling, an ABI/layout assertion fails, or a platform-specific primitive cannot preserve C11 explicit-operation semantics. Stop and revise the packet before expanding scope. |
-| Exit Criteria | All approved Shared declarations and all `NOT_CURRENT` dispositions are implemented; relevant Lib tests pass x64/x86; manifest/layout/dependency/docs gates pass; actual review proves no undeclared product change; one pushed Shared implementation P and S4 closure record are ready. |
+| Reporting Requirements | Report NXVM source/test add/remove/net counts, mapping and retained-meaning ledger, x64/x86 outcomes, ABI evidence, product links, commit/push and the S6 handoff. |
+| Stop Conditions | A mapping changes field width/offset, guest address width, serialized/in-process status interpretation, or atomic ordering; retain and redesign it instead of silently migrating. |
+| Exit Criteria | The bounded data-representation batch has explicit layout/status/atomic proof, no unclassified caller in its ledger, and one pushed NXVM implementation P. |
 | Original Owner Request | Clean MyNES and NXVM usage of Lib Types, extend Lib Types only where necessary, then retire NXVM root `type.h`/`type.c` completely. Owner approved the standard/general status taxonomy, no `lib_bits`, and no `lib_atomic_bool`. |
-| Similar-Issue Sweep | Search the complete Lib corpus for `LIB_STATUS_NOT_CURRENT`, raw standard vocabulary newly covered by the declarations, and all status-code definitions. Classify each hit as no-op, `INVALID_STATE`, `UNSUPPORTED`, or an existing general result; add focused regressions for every behavior family. |
+| Similar-Issue Sweep | Scan every NXVM root-facade caller for scalar, address, byte boolean, status and atomic use. Classify each use as migrated, local-only, later S receiver, or dead; no implicit catchall mapping is allowed. |
+
+## M6 T41 S4 Shared Closure
+
+Shared S4 closed at `9d7f6ba6c`: Lib now has the approved neutral Types
+foundation; all `NOT_CURRENT` dispositions are implemented, and the shared
+x64/x86 non-desktop suites and static gates pass. The evidence records the
+separate existing KVM Window smoke failure rather than attributing it to S4.
 
 ## Retained M6 T41 S2 Progress
 
