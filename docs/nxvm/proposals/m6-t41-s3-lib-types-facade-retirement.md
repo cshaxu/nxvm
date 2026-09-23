@@ -26,7 +26,7 @@ test corpus contains 439 root-header callers and these material families:
 | fixed sub-byte/nonstandard widths | 17 `type_unsigned_4`, plus masks | Use storage-width `lib_u8/u32/u64` and explicit Lib bit helpers, never fictional C bit-width types. |
 | bit, BCD and address macros | 2,000+ material uses | Small type-neutral `lib_bits` helpers; x86/RTC-specific BCD helpers stay with their device owner. |
 | trace macros | 5,200+ instruction-decoder uses | New local `cpu_trace` compatibility header, then direct decoder refactor; never Lib. |
-| C stream/time/parse/text forwarding | 1,415 `STD_PRINTF`, 182 `STD_FPRINTF`, 9 `STD_TIME`, and sparse helpers | Existing `lib/types/file.h` for ISO stream vocabulary; Base clock for time; product/test output adapters for output policy. |
+| C stream/text forwarding | 1,415 `STD_PRINTF`, 182 `STD_FPRINTF`, and sparse helpers | Existing `lib/types/file.h` for ISO stream vocabulary; product/test output adapters for output policy. |
 | allocator injection | one live `STD_CALLOC` seam | NXVM test-only allocator dependency; ordinary code uses `lib_allocate_zero`. |
 
 The count is intentionally descriptive rather than a deletion gate.  Later
@@ -158,10 +158,15 @@ callers:
 Lib receivers.  Character classification and case conversion must be safe
 `static inline` wrappers that cast their input through `unsigned char`, as the
 root facade does; direct macro aliases to `isalpha` or `isspace` would be
-incorrect for negative `char` values.  A bounded append helper belongs in
-`lib/types/file.h` only if
-its current termination and cursor-advance contract is documented and tested;
-otherwise its three callers receive a local helper first.
+incorrect for negative `char` values.
+
+The root `STD_TIME`, `STD_LOCALTIME`, `STD_STRCAT`, `STD_STRCPY`, `STD_STRTOK`
+and `STD_ATOI` wrappers have no executable NXVM caller; the apparent
+`STD_TIME` hits are FDC comments.  They are deleted with `type.c`, not moved.
+`STD_SNPRINTF_APPEND` has one root-only smoke test and no NXVM product caller.
+That smoke target is retired with the wrapper.  The separately retained x86
+DEBUG command implementation has a different local truncation-result contract,
+so it is not a valid reason to make either behavior a shared Lib API.
 
 `STD_PRINTF` currently flushes after each call.  That is product/test output
 policy, not a Types operation.  Production callers move to their app output
