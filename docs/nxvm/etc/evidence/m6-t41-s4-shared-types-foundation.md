@@ -49,3 +49,13 @@ S5 migrates NXVM data representation callers to this contract: scalar and
 pointer aliases, byte-layout booleans, named status outcomes, and the three
 logical flags using existing `lib_atomic_i32`. It must prove every changed
 layout and status mapping on x64 and x86 before moving to bit operations.
+
+## Corrective addendum
+
+After review, the owner identified `lib_void` as an unjustified duplicate of
+the C keyword. The corrective S removes it; NXVM `C_VOID` callers will migrate
+directly to `void`. The scalar-alias sweep distinguishes this from width and
+semantic contracts: `lib_u8/u16/u32/u64`, `lib_size`, `lib_iptr`, `lib_uptr`,
+`lib_bool`, and `lib_status` retain a width or behavior purpose. The remaining
+plain C scalar aliases are not adopted by any Lib implementation and require a
+separate migration-design decision before NXVM uses them.

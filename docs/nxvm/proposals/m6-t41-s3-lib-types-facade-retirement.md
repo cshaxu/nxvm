@@ -40,7 +40,6 @@ implementation must produce a zero-reference scan for each retired family.
 facade contract:
 
 ```c
-typedef void lib_void;
 typedef char lib_char;
 typedef unsigned char lib_uchar;
 typedef int lib_int;
@@ -58,8 +57,9 @@ static inline lib_uptr lib_pointer_to_uptr(const void *pointer);
 static inline void *lib_uptr_to_pointer(lib_uptr value);
 ```
 
-`lib_uptr` replaces the legacy native unsigned, virtual address and unsigned
-pointer aliases.  `lib_iptr` already exists and replaces the signed form.
+`C_VOID` migrates directly to C `void`: it is a language keyword, not a Lib
+contract. `lib_uptr` replaces the legacy native unsigned, virtual address and
+unsigned pointer aliases. `lib_iptr` already exists and replaces the signed form.
 Callers whose value is a guest physical or linear address remain `lib_u32`;
 the migration must not widen guest architectural addresses merely because a
 host pointer is present elsewhere.

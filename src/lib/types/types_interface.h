@@ -8,7 +8,6 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef void lib_void;
 typedef char lib_char;
 typedef unsigned char lib_uchar;
 typedef int lib_int;
