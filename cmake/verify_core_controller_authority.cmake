@@ -2,13 +2,13 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(machine_source "${PROJECT_SOURCE_DIR}/src/core/devices/machine_board.c")
-set(machine_lifecycle_source "${PROJECT_SOURCE_DIR}/src/core/devices/machine.c")
-set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/core/devices/machine_plan.c")
-set(session_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c")
-set(composition_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
-set(fixture "${PROJECT_SOURCE_DIR}/test/core/devices/core_machine_controller_authority_smoke.c")
-foreach(source IN ITEMS "${machine_source}" "${machine_lifecycle_source}" "${machine_plan_source}" "${session_source}" "${composition_source}" "${fixture}")
+set(machine_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c")
+set(machine_lifecycle_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
+set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c")
+set(profile_plan_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c")
+set(composition_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c")
+set(fixture "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_controller_authority_smoke.c")
+foreach(source IN ITEMS "${machine_source}" "${machine_lifecycle_source}" "${machine_plan_source}" "${profile_plan_source}" "${composition_source}" "${fixture}")
     if(NOT EXISTS "${source}")
         message(FATAL_ERROR "T296 S4 authority source missing: ${source}")
     endif()
@@ -31,8 +31,8 @@ foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_h
 endforeach()
 
 file(GLOB_RECURSE vm_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/*.h")
 foreach(source IN LISTS vm_machine_sources)
     file(READ "${source}" source_text)
     foreach(forbidden IN ITEMS "core_machine_configuration_fdc_borrow"
@@ -56,10 +56,10 @@ foreach(source IN LISTS vm_machine_sources)
     endforeach()
 endforeach()
 
-file(READ "${session_source}" session_text)
+file(READ "${profile_plan_source}" profile_plan_text)
 foreach(required IN ITEMS "core_machine_plan_configure_fdc"
-    "core_machine_plan_configure_hdc" "config.dma_channel")
-    string(FIND "${session_text}" "${required}" position)
+    "core_machine_plan_configure_hdc" "fdc.dma_channel")
+    string(FIND "${profile_plan_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T296 S4 typed controller submission is incomplete: ${required}")
     endif()

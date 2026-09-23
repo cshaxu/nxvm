@@ -2,11 +2,11 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(session_dir "${PROJECT_SOURCE_DIR}/src/core/machine")
+set(session_dir "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine")
 set(devices "${session_dir}/machine_devices.c")
-set(firmware "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/external_pc_at_rom.c")
+set(firmware "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/external_pc_at_rom.c")
 set(info "${session_dir}/machine_info.c")
-set(factory "${PROJECT_SOURCE_DIR}/src/app/config.c")
+set(factory "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/config.c")
 
 foreach(file IN ITEMS "${devices}" "${firmware}" "${info}"
     "${factory}")

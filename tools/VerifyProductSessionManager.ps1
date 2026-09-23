@@ -6,7 +6,7 @@ $root = (Resolve-Path -LiteralPath $RepositoryRoot).Path
 $source = Get-ChildItem (Join-Path $root 'src') -Recurse -File -Include '*.c','*.h'
 $failures = @()
 
-if (@(Get-ChildItem -LiteralPath (Join-Path $root 'src/core/product/session') -File -ErrorAction SilentlyContinue).Count -ne 0) {
+if (@(Get-ChildItem -LiteralPath (Join-Path $root 'src/app-nxvm/product/session') -File -ErrorAction SilentlyContinue).Count -ne 0) {
     $failures += 'obsolete core product-session manager files remain'
 }
 foreach ($file in $source) {

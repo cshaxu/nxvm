@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c"
     machine_source)
 
 set(forbidden_vm_cpu_pic_wiring
@@ -14,7 +14,7 @@ if(vm_cpu_pic_wiring)
         "VM machine retains T295 CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine.c" core_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" core_source)
 string(FIND "${core_source}"
     "core_machine_cpu_execution_context_bind_pic(&machine->executor_cpu_execution,"
     core_cpu_pic_bind_call)

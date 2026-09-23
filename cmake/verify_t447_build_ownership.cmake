@@ -32,7 +32,7 @@ if(NOT vm_native_bypass EQUAL -1)
 endif()
 
 string(REGEX MATCH
-    "add_executable\\(\\$\\{target\\} EXCLUDE_FROM_ALL[ \t\r\n]+src/app/main\\.c\\)"
+    "add_executable\\(\\$\\{target\\} EXCLUDE_FROM_ALL[ \t\r\n]+src/app-nxvm/product/main\\.c\\)"
     artifact_source "${project_cmake}")
 if(NOT artifact_source)
     message(FATAL_ERROR "T447 artifact must compile only app/main.c directly")

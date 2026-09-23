@@ -50,7 +50,7 @@ The concrete source tree and naming map is
   state, a test-only public contract, or product-visible behavior.
 - All test code is under the repository-root `test/` tree. Repository-only
   modules follow their `src/` owner; external-ROM, disk, firmware, or other
-  owner-managed scenarios are only under `test/integration/`.
+  owner-managed scenarios are only under `test/app-nxvm/integration/`.
 
 Detailed historical vocabulary and migration inventory is retained in
 [etc/history/m5/c-library-facade.md](../etc/history/m5/c-library-facade.md).

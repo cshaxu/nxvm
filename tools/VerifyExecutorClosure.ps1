@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path -LiteralPath $RepositoryRoot).Path
 
 $rules = @(
-    @{ Pattern = 'core_machine_cpu_execution_refresh\s*\('; Allowed = @('src/core/devices/machine.c', 'src/core/devices/cpu_instructions.c') },
+    @{ Pattern = 'core_machine_cpu_execution_refresh\s*\('; Allowed = @('src/app-nxvm/devices/machine.c', 'src/app-nxvm/devices/cpu_instructions.c') },
     @{ Pattern = '\bvmachine(Refresh|Reset)\s*\('; Allowed = @() },
     @{ Pattern = '\bmachine_refresh\b'; Allowed = @() }
 )

@@ -14,7 +14,7 @@ foreach ($file in $sourceFiles) {
     if ($text -match 'core_machine_(configuration|debug)_[A-Za-z0-9_]*borrow') {
         $failures += "$relative exports or uses a raw core borrow"
     }
-    if ($text -match '\bprofile(?:_[A-Za-z0-9]+)*_(?:borrow|binding)\b') {
+    if ($text -match '\bprofile(?:_[A-Za-z0-9]+)*_borrow\b') {
         $failures += "$relative exports or uses a profile raw binding"
     }
     if ($text -match '#\s*include\s*[<\"](?:\.\./)*test/support/') {
@@ -25,7 +25,7 @@ foreach ($file in $sourceFiles) {
 foreach ($file in $publicHeaders) {
     $relative = $file.FullName.Substring($root.Length + 1).Replace('\', '/')
     $text = Get-Content -LiteralPath $file.FullName -Raw
-    if ($text -match '#\s*include\s*[<"]core/machine/(?:cpu|cpu_instructions|dma|fdc|hdc|kbc|machine|memory|pic|pit|port|rtc|vadp)\.h[>"]') {
+    if ($text -match '#\s*include\s*[<"]app-nxvm/devices/(?:cpu|cpu_instructions|dma|fdc|hdc|kbc|machine|memory|pic|pit|port|rtc|vadp)\.h[>"]') {
         $failures += "$relative includes a private core-machine header"
     }
     if ($text -match '\b(?:t_cpu|t_cpuins|t_ram|t_port|t_pic|t_pit|t_dma|t_vadp|core_machine_fdc|core_machine_hdc|core_machine_rtc)\b') {

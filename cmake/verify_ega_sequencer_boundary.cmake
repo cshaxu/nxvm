@@ -2,12 +2,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/vadp.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/memory.c" memory_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory.c" memory_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_plan.c" machine_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_display.c" machine_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" machine_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_display.c" machine_display_source)
 
 if(vadp_source MATCHES "#include[ \t]+\"(vm/|vdm/|core/platform/|core/product/)")
     message(FATAL_ERROR "T235 VADP imports a product or platform owner")

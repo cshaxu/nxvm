@@ -2,14 +2,14 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/hdc.c" hdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile_private.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
-    devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/core/devices/core_machine_hdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c"
+    plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_hdc_smoke.c"
     core_fixture)
 
 if(hdc_source MATCHES "#include[ \t]+\"vm/")
@@ -66,9 +66,13 @@ foreach(required IN ITEMS "core_machine_hdc_config hdc"
     endif()
 endforeach()
 
-string(FIND "${devices_source}" "&session->profile->hdc" lba_mapping_position)
+string(FIND "${plan_source}" "core_machine_plan_configure_hdc" lba_mapping_position)
 if(lba_mapping_position EQUAL -1)
-    message(FATAL_ERROR "ATA PIO composition omits the copied Core personality")
+    message(FATAL_ERROR "ATA PIO composition omits the Core plan personality")
+endif()
+string(FIND "${plan_source}" "&profile->hdc" lba_mapping_position)
+if(lba_mapping_position EQUAL -1)
+    message(FATAL_ERROR "ATA PIO plan omits the copied profile personality")
 endif()
 
 foreach(required IN ITEMS "descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO"

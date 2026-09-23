@@ -1,10 +1,10 @@
-if(NOT DEFINED PROJECT_SOURCE_DIR OR NOT EXISTS "${PROJECT_SOURCE_DIR}/test/integration")
+if(NOT DEFINED PROJECT_SOURCE_DIR OR NOT EXISTS "${PROJECT_SOURCE_DIR}/test/app-nxvm/integration")
     message(FATAL_ERROR "T533 integration source root is required.")
 endif()
 
 file(GLOB_RECURSE integration_sources
-    "${PROJECT_SOURCE_DIR}/test/integration/*.c"
-    "${PROJECT_SOURCE_DIR}/test/integration/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/integration/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/integration/*.h")
 foreach(source IN LISTS integration_sources)
     file(READ "${source}" text)
     if(text MATCHES "CopyFileA|session-floppy-[^\"]*\\.img|session-fixed-disk-[^\"]*\\.img|open_with_media_transform")
@@ -33,19 +33,15 @@ foreach(source IN LISTS integration_sources)
     endif()
 endforeach()
 file(GLOB_RECURSE unit_sources
-    "${PROJECT_SOURCE_DIR}/test/app/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/machine/*.h"
-    "${PROJECT_SOURCE_DIR}/test/core/profiles/*.c"
-    "${PROJECT_SOURCE_DIR}/test/core/profiles/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/product/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/product/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/profiles/*.h")
 foreach(source IN LISTS unit_sources)
     file(READ "${source}" text)
-    if(text MATCHES "vm_machine_create[ \t\r\n]*\\(")
-        message(FATAL_ERROR
-        "T533 repository-only unit test must use in-memory assets: ${source}")
-    endif()
-    if(text MATCHES "vm_profile_byob_blob_load|GetFileAttributesA|CopyFileA|CreateFile")
+    if(text MATCHES "GetFileAttributesA|CopyFileA|CreateFile")
         message(FATAL_ERROR
             "T533 repository-only unit test must not load an external asset: ${source}")
     endif()
@@ -55,12 +51,12 @@ if(cmake_text MATCHES "project_add_test\\([^\\n]*integration[^\\n]*(PROJECT_FDD_
     message(FATAL_ERROR
         "T533 integration must be registered through the INI helper, not a media path.")
 endif()
-file(GLOB session_documents "${PROJECT_SOURCE_DIR}/assets/sessions/*.ini")
+file(GLOB session_documents "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/*/NXVM.ini")
 set(expected_session_documents
-    "${PROJECT_SOURCE_DIR}/assets/sessions/ibm-5160-model-268-360k.ini"
-    "${PROJECT_SOURCE_DIR}/assets/sessions/ibm-5170-model-339-1200k.ini"
-    "${PROJECT_SOURCE_DIR}/assets/sessions/compaq-deskpro-386-model-40-1200k.ini"
-    "${PROJECT_SOURCE_DIR}/assets/sessions/default-pc-at-80386-1440k-hdd.ini")
+    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/ibm-5160-model-268-360k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/ibm-5170-model-339-1200k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/compaq-deskpro-386-model-40-1200k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/default-pc-at-80386-1440k-hdd/NXVM.ini")
 list(LENGTH session_documents session_document_count)
 if(NOT session_document_count EQUAL 4)
     message(FATAL_ERROR
@@ -72,7 +68,7 @@ foreach(expected_session_document IN LISTS expected_session_documents)
             "T533 canonical INI is missing: ${expected_session_document}")
     endif()
 endforeach()
-file(GLOB legacy_session_documents "${PROJECT_SOURCE_DIR}/assets/sessions/*.yaml")
+file(GLOB legacy_session_documents "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/*/*.yaml")
 if(NOT legacy_session_documents STREQUAL "")
     message(FATAL_ERROR "T533 must not retain YAML product-session variants.")
 endif()

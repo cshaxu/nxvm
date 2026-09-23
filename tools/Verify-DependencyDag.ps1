@@ -23,6 +23,9 @@ Get-Content $AllowlistPath | ForEach-Object {
 }
 
 function Get-Owner([string]$path) {
+    if ($path -match '^app-nxvm/(devices|machine|profiles|product)/') {
+        return "app-nxvm/$($Matches[1])"
+    }
     if ($path -match '^(core|vm|vdm)/([^/]+)/') {
         return "$($Matches[1])/$($Matches[2])"
     }
@@ -41,8 +44,10 @@ Get-ChildItem $sourceRoot -Recurse -File | Where-Object {
                 $targetOwner = Get-Owner $Matches[1]
                 if ($null -ne $targetOwner) {
                     $forbidden =
-                        (($sourceOwner -like "core/*") -and ($targetOwner -ne $sourceOwner) -and
-                            ($targetOwner -ne "core/utils")) -or
+                        ((($sourceOwner -like "core/*") -or
+                          ($sourceOwner -match '^app-nxvm/(devices|machine|profiles)$')) -and
+                         ($targetOwner -ne $sourceOwner) -and
+                         ($targetOwner -ne "core/utils")) -or
                         (($sourceOwner -match '^(vm|vdm)/') -and
                             ($sourceOwner -notmatch '^(vm|vdm)/composition$') -and
                             ($targetOwner -match '^(vm|vdm)/') -and

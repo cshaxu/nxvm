@@ -102,15 +102,16 @@ encoding through a separate owner-approved release policy.
 
 ## Shared Foundation
 
-The current component topology is `lib`, `common`, `core/machine` and `vm`.
-`lib` owns neutral C and host services; `common` owns reusable product-capacity
-contracts; `core/machine` owns guest execution and devices; `vm` owns NXVM
-composition, profile and product policy. Cross-component adaptation, including
-display and input bridging, occurs only in VM. No `core/composition` layer is
-permitted.
+The current component topology is `lib`, `common`, `x86`, and the NXVM product
+root `app-nxvm`. `lib` owns neutral C and host services; `common` owns reusable
+product-capacity contracts; `x86` owns shared x86 facilities; `app-nxvm`
+contains NXVM's devices, assembled machine, profiles, and product policy.
+Cross-component adaptation, including display and input bridging, occurs only
+inside the product root. A future peer product uses its own `app-<name>` root;
+it does not create a second shared stack.
 
 `src/type.h` is the system-wide type, `nxvm_core_status`, retained alias, and
-legacy helper foundation. NXVM's root `src/banner.h` supplies its entry version,
+legacy helper foundation. NXVM's `src/app-nxvm/product/banner.h` supplies its entry version,
 copyright, build time and printing format. Public symbols use their ownership
 path, for example `core_machine_*`, `vm_product_*`, `mantle_product_*`,
 `dos_machine_*`, and `vdm_platform_*`. The detailed

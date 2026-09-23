@@ -2,17 +2,17 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine.c" machine_lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_scheduler.c" machine_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" machine_lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" machine_scheduler_source)
 set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/clock.c" clock_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/execution_provider.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/clock.c" clock_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/execution_provider.h"
     provider_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile_private.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
 
 foreach(required IN ITEMS "dma_clock" "pit_clock" "vadp_clock" "kbc_clock"

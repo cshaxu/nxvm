@@ -2,17 +2,14 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | No active packet |
-| Latest Closure | Corrective T535 S5: each independently configurable shared suite owns its aggregate build target; the NXVM full-unit target consumes only `shared-lib-tests`, `shared-common-tests`, and `shared-x86-tests`. CTest registration and product behavior are unchanged. [Evidence](../etc/evidence/t535-s5-shared-test-aggregation.md). |
-| Next Admission | Owner-directed queue item only. |
+No implementation task is active.  The next candidate is the first entry in
+[Queue](QUEUE.md).
 
 ## Current Technical Baseline
 
 - `vm-0-5-0535` is the current target. T535 produced eight stripped, optimized
   x64/x86 artifacts for its four fixed products; each product has only one
-  executable location, `assets/binary/<profile>/`, with its adjacent generated
+  executable location, `assets/binary-nxvm/<profile>/`, with its adjacent generated
   INI. The preset-selected default pair is `nxvm_default_0_5_0535_x64.exe` and
   `nxvm_default_0_5_0535_x86.exe`. Paths, architectures, hashes and gate results are in the
   [T535 artifact record](../etc/evidence/t535-s4-artifact-and-integration-verification.md).
@@ -25,14 +22,14 @@
 
 | Task | Compact result |
 | --- | --- |
+| T536 | Closed on 2026-09-22: the owner-provided product namespace is the sole live layout: `src/{lib,common,x86,app-nxvm}`, `test/{lib,common,x86,app-nxvm}`, and `assets/binary-nxvm/<profile>/`. CMake, INIs, tools and current documentation use renamed external archives `profiles-nxvm` and `media-nxvm`; historical records remain unchanged. Repository-only unit is 336/336. The 20 external integration rows register but skip because their owner-provided assets are unavailable here. [Evidence](../etc/evidence/t536-s1-product-namespaced-layout.md). |
 | T535 | Closed at `e774efb5`; corrective S5 replaces NXVM's duplicate shared-test executable list with three suite-owned aggregate targets, under the owner's explicit shared-corpus exception for later SoftPC/MyNES import. All three suites remain standalone; 336/336 repository-only unit and documentation governance pass. No runtime artifact changes. [History](../history/M5-T535-canonical-softpc-six-component-refresh.md) and [S5 evidence](../etc/evidence/t535-s5-shared-test-aggregation.md). |
 | T534 | Closed at `f5170a5d`: 53 bounded repairs exhaust the App/Core convergence ledger without a second production owner or unclassified finding. Current 0534 x64/x86 artifacts for default, 5170, XT and Model 40 are verified in their sole profile directories. 333/333 repository-only unit, default parallel 20/20 integration, 5170 3/3, XT 1/1 and Model 40 3/3 integration pass. [History](../history/M5-T534-app-core-code-quality-remediation.md), [closure ledger](../etc/evidence/t534-app-core-code-quality-ledger.md) and [artifact record](../etc/evidence/t534-s50-artifact-verification.md). |
-| T533 | Closed by `99de6d11` and deployment correction `6d5a4828`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
+| T533 | Closed by `99de6d11` and deployment correction `6d5a4828`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary-nxvm/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |
 | T531 | Closed at owner direction on 2026-09-20 after S28 implementation `20c1e71b`: the final canonical SoftPC `2b17749a` six-tree Lib/Common/x86 source-and-test refresh is exact; 338/338 unit, specialized/documentation gates and stripped 0531 x64/x86 artifacts pass. The full external integration remains 41/42: `integration.vm-dos-keyboard-smoke` stays explicitly transferred to [TODO(High)](TODO.md), not relabelled green. [History](../history/M5-T531-shared-common-product-convergence.md). |
 | T530 | Closed at owner direction on 2026-09-13 after implementation bc9a1247; pinned canonical Lib import and Common adaptation, recorded 299/299 unit and 42/42 integration, both 0530 artifacts verified by hash. No new manual test is claimed. Later source revisions and Common UX convergence belong to the next task. [History](../history/M5-T530-canonical-softpc-lib-refresh.md). |
 | T529 | Closed at `cc5fd4a7`: S1 exhaustively classified the 29-file VM-machine corpus and S2 removed the only two proven dead controls. No Common migration was invented: Common remains the sole copied protocol owner; Core and CCPU executors remain distinct product adapters. 299/299 unit, focused regression, specialized/documentation gates and stripped 0528 x64/x86 artifacts pass. The unchanged 39/42 external-integration exception remains transferred to the Model-40/5170 boot-chain TODO. [History](../history/M5-T529-common-machine-residual-audit.md) and [evidence](../etc/evidence/t529-s2-dead-control-cleanup.md). |
-| T528 | Closed under the owner's 2026-09-12 exception after `9d892446`: all VM-machine duplicate owners are removed, 299 unit cases, specialized gates, documentation governance and stripped x64/x86 artifacts pass. The known 39/42 external-integration result is transferred unchanged to the external-ROM Model-40/IBM-5170 boot-chain TODO; it is not represented as green. [History](../history/M5-T528-vm-machine-owner-cleanup.md) and [evidence](../etc/evidence/t528-s7-task-closure-attempt.md). |
 
 ## Recent Governance
 

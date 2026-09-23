@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/cpu_instructions.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_instructions.c"
     cpu_instructions)
 
 string(REGEX MATCH "i386[ \t\r\n]*\\(" legacy_i386_gate

@@ -98,26 +98,20 @@ foundation-unit dependency, not a dependency between product forms or modules.
 The detailed C vocabulary and header boundary are defined only by
 [C-Library Facade](../history/m5/c-library-facade.md).
 
-`src/core/utils/` is the sole shared utility module. It contains only small,
-product-neutral facilities and callback contracts that require neither guest
-state nor host policy, such as an injected wait scope. It depends only on
-`type-facade`; it may not include any `core/{machine,platform,product}` or
-`vm/*`/`vdm/*` header. It is not a miscellaneous convenience layer: assembler,
-disassembler, debugger UX, registries, device code, platform implementation,
-and product policy remain with their named owners. Public symbols use the
-`core_utils_*` prefix.
+Shared host-neutral code is rooted in `src/lib/`, `src/common/`, and `src/x86/`.
+NXVM-specific code is rooted only in `src/app-nxvm/`: `product/` owns entry
+and product policy, `devices/` owns guest-device implementation, `machine/`
+owns its assembled machine adapter, and `profiles/` owns board compositions.
+The layout deliberately leaves room for a peer product such as `app-mynes/`
+without making either product a dependency of the shared components.
 
-NXVM's root `src/banner.h` supplies its entry banner's version, copyright and
-build time. No
+`src/app-nxvm/product/banner.h` supplies NXVM's entry banner's version,
+copyright and build time. No
 module contract contains an ABI version, timestamp, or compatibility probe;
 the repository is one synchronously built system.
 
-Public C symbols use their source ownership path: `core_machine_*`,
-`core_platform_*`, `vm_machine_*`, `vm_platform_*`,
-`vm_product_*`, `vm_profile_*`, `mantle_*`, `dos_*`, and `vdm_*`. Root
-composition exports its concrete session as `vm_session_*` or
-`mantle_session_*`. Internal composition helpers remain private to their
-component root.
+Public C symbols retain their established ownership prefixes during the
+directory migration; a path rename alone does not create a second ABI.
 
 Composition implementation and private headers live under
 `vm/composition/` or `mantle/composition/`. The component root owns that directory;

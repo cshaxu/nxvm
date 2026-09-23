@@ -10,5 +10,7 @@
 *.obj
 *.exe
 *.dll
-/assets/sessions/*/
-/assets/binary/*/
+/assets/binary-nxvm/*/*
+!/assets/binary-nxvm/README.md
+!/assets/binary-nxvm/*/
+!/assets/binary-nxvm/*/NXVM.ini

@@ -22,7 +22,7 @@ implementations. [rules/CODING.md](../../rules/CODING.md) defines the current C
 vocabulary and header boundary; [C-Library Facade Detail Record](../history/m5/c-library-facade.md)
 preserves the M5 inventory and rationale.
 
-NXVM's root `src/banner.h` defines `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, and
+NXVM's `src/app-nxvm/product/banner.h` defines `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, and
 `PRODUCT_BUILD_TIME`; its entry includes it before printing. No
 module contract contains an ABI version, timestamp, compatibility probe, or
 module-local status type.

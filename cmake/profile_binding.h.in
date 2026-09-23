@@ -1,7 +1,7 @@
 #ifndef VM_APP_PROFILE_BINDING_H
 #define VM_APP_PROFILE_BINDING_H
 
-#include "core/profiles/selection_interface.h"
+#include "app-nxvm/profiles/selection_interface.h"
 
 #define VM_APP_PROFILE_NAME "@NXVM_PRODUCT_PROFILE@"
 #define VM_APP_PROFILE_KIND @NXVM_PROFILE_KIND@

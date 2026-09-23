@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(GLOB core_debug_sources "${PROJECT_SOURCE_DIR}/src/core/debug/*")
+file(GLOB core_debug_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/debug/*")
 if(core_debug_sources)
     message(FATAL_ERROR "Debug implementation remains below core/debug")
 endif()

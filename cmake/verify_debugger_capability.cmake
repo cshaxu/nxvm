@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE debugger_sources
-    "${PROJECT_SOURCE_DIR}/src/core/machine/*.[ch]"
-    "${PROJECT_SOURCE_DIR}/src/core/machine/debug.[ch]")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/*.[ch]"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/debug.[ch]")
 foreach(source IN LISTS debugger_sources)
     file(READ "${source}" contents)
     foreach(forbidden "core_machine_debug_cpu_borrow"
@@ -22,7 +22,7 @@ foreach(source IN LISTS debugger_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/debug_interface.h" contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/debug_interface.h" contract)
 foreach(required "core_machine_debug_capture_instruction_observation"
         "core_machine_debug_read_register" "core_machine_debug_patch_registers"
         "core_machine_debug_read_linear" "core_machine_debug_write_linear"

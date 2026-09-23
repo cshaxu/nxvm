@@ -79,7 +79,7 @@ and integration route loads user-supplied external ROMs; missing firmware is
 an explicit error, not permission for an embedded BIOS fallback. This local
 use does not grant redistribution rights.
 
-The external `nxvm-assets/profiles` archive owns vendor payloads and manifests
+The external `nxvm-assets/profiles-nxvm` archive owns vendor payloads and manifests
 with slot, size, SHA-256, read-only mapping and provenance. At the approved
 cutover, CMake receives one local `NXVM_PROFILE_ASSETS_ROOT` for the selected
 machine build. It validates the selected Profile's manifest and generates an

@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(project_t331_cpu_source
-    "${PROJECT_SOURCE_DIR}/src/core/devices/cpu_instructions.c")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_instructions.c")
 if(NOT EXISTS "${project_t331_cpu_source}")
     message(FATAL_ERROR "T331 CPU instruction source is required.")
 endif()

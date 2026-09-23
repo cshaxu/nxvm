@@ -443,7 +443,7 @@ inventory checks remain named static gates.
 
 Each completed implementation task that changes a runnable path compiles,
 verifies, and copies two usable local developer artifacts to ignored
-`assets/binary/<profile>/`: one `x64` and one `x86` Windows executable.
+`assets/binary-nxvm/<profile>/`: one `x64` and one `x86` Windows executable.
 Its four-digit revision is the numeric task identifier
 (`T258` is `0.5.0258`): it is an identity, not sequencing, rule. All its
 subtasks rebuild that revision; source commit plus SHA-256 identify the build.
@@ -454,7 +454,7 @@ Until the fixed-product build cutover, executable names remain
 cutover, names use `nxvm_<machine>_0_5_NNNN_<arch>.exe`, with machine keys
 `xt`, `at`, `model40`, `default`, `pc110` and architectures `x64`, `x86`. Build only
 implemented profiles admitted as runnable. Each runnable product requires both
-host architectures in its one `assets/binary/<profile>/` directory,
+host architectures in its one `assets/binary-nxvm/<profile>/` directory,
 with its adjacent generated `NXVM.ini`. Any absent implementation must be reported, not replaced
 by a stub artifact. Product targets share one build recipe and revision
 declaration; each links exactly one profile, and the toolchain selects host
@@ -476,13 +476,13 @@ A current product artifact is a stripped Release build with no compiler debug in
 
 After every build, test, smoke, sanitizer, or failed verification, remove owned
 temporary products once the active or immediately next subtask no longer needs
-them. `assets/binary/` is the only current executable deployment target;
+them. `assets/binary-nxvm/` is the NXVM executable deployment target;
 historical task artifacts may remain as evidence but are never regenerated or
 used as a product route. Configuration
 trees, objects, generated tests, logs, traces, sanitizer trees, and stale
 CMake/Ninja state are disposable unless the active subtask records a need.
 Before recursive cleanup, verify the resolved target is below `build/`, exclude
-`assets/binary/`, and stop every owned process using it.
+`assets/binary-nxvm/`, and stop every owned process using it.
 
 Runnable evidence records the emitted identity/banner and version. Changing
 identity, version, or cutover state requires an approved subtask and regression

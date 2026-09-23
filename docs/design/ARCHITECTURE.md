@@ -136,10 +136,11 @@ Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
 Each selected product deploys once to the ignored
-`assets/binary/<profile>/` directory, alongside its generated
+`assets/binary-nxvm/<profile>/` directory, alongside its generated
 `NXVM.ini`. That is the only current executable location; `build/` remains
-compiler state apart from historical evidence, and `assets/sessions/` retains
-only checked-in INI templates and integration inputs for current work.
+compiler state apart from historical evidence. The tracked per-profile INI
+template is adjacent to its product output; ignored EXEs share that same
+directory without becoming repository content.
 
 ## Runtime Admission Boundary
 

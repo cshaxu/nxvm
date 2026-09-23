@@ -2,17 +2,17 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_board.c" core_board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_scheduler.c" core_scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" core_board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" core_scheduler_source)
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/machine_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/profiles/default_profile/pc_at_profile.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     devices_source)
 
 foreach(required IN ITEMS "core_machine_configure_dma"

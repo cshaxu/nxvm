@@ -5,17 +5,17 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current And Target Trees
 
-The App/Core/shared-corpus layout is current. `devices`, `machine` and
-`profiles` are live owner roots; `pc110` remains a future Profile only when its
-separate evidence task admits real source files.
+The product/shared-corpus layout is current. `devices`, `machine`, `product`
+and `profiles` are NXVM product roots below `app-nxvm`; `pc110` remains a
+future Profile only when its separate evidence task admits real source files.
 
 ```text
 src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
   x86/{xasm32,debug}/
-  app/                  main, INI configuration, CLI and composition
-  core/
+  app-nxvm/             NXVM product implementation
+    product/            main, INI configuration, CLI and composition
     devices/            reusable CPU/device/memory/bus/time and execution
     machine/            NXVM driver, asset/media and execution adapter
     profiles/
@@ -34,15 +34,15 @@ Do not add a framework or empty future directories. CPU-family implementations
 and selection tables stay in generic Core, not copied into board directories.
 
 Profile-specific ROM source, mapping declarations and an asset manifest live
-with the profile. Protected payloads remain external in the user-supplied,
-owner-managed `nxvm-assets/profiles/<machine>/` tree; original manuals remain
+with the NXVM product profile. Protected payloads remain external in the user-supplied,
+owner-managed `nxvm-assets/profiles-nxvm/<machine>/` tree; original manuals remain
 in `nxvm-assets/manuals/`. CMake receives the untracked absolute
 `NXVM_PROFILE_ASSETS_ROOT` for a selected build and creates an ignored generated
 configuration header/source containing that local root. It neither copies ROM
 bytes into the source/build output nor permits an unconfigured generic root.
 Documentation changes do not move assets. Each generated product EXE and its
 common NXVM.ini live only in the ignored
-`assets/binary/<profile>/` directory; relative runtime-media paths resolve from
+`assets/binary-nxvm/<profile>/` directory; relative runtime-media paths resolve from
 that file. It has no firmware/CMOS/font asset path keys. NXVM.ini is the sole
 product runtime configuration route; repository-only tests do not load it.
 Do not rename/move external assets merely to match target source directory names.
@@ -62,11 +62,13 @@ from actual construction requirements during implementation.
 
 ## Source Organization
 
-Repository-only tests mirror owners under `test/{app,core,lib,common,x86}`.
-Profile tests mirror `test/core/profiles/{xt,at,model40,default_profile,pc110}`
+Repository-only shared tests remain `test/{lib,common,x86}`. NXVM-only tests
+live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
+Profile tests mirror `test/app-nxvm/unit/core/profiles/{xt,at,model40,default_profile,pc110}`
 when implemented; migrate the current singular test owner with its source.
-Move generic Core tests to `test/core/devices` with their source owner, preserving
-CPU-family tests including unused models. `test/integration/` stays separate;
+Generic NXVM device tests live in `test/app-nxvm/unit/core/devices` with their
+source owner, preserving CPU-family tests including unused models.
+`test/app-nxvm/integration/` stays separate;
 at cutover it uses the real INI path and external assets. Unit tests use code-
 owned values without external ROM/INI/YAML/media dependencies.
 

@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/devices/vadp.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/display.c" display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/display.c" display_source)
 
 if(display_source MATCHES "ega_planar_vram|executor_memory|core_machine_vadp")
     message(FATAL_ERROR "T239 composition bypasses copied VADP frames")

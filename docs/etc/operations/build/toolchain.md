@@ -40,10 +40,10 @@ that compiler's `bin` directory first on `PATH`, then use
 `mingw-gcc-x86-release` and `current-gcc-x86`. This is a second compiler
 configuration, not a second source or product route.
 
-The checked-in INI templates in `assets/sessions/` name fixed-product runtime
+The checked-in INI templates in `assets/binary-nxvm/<profile>/` name fixed-product runtime
 media, access mode, memory and presentation settings (for example,
 `default-pc-at-80386-1440k-hdd.ini`). Integration registrations use those
 exact templates as input; a generated adjacent INI is the deployed product
 configuration. No YAML compatibility route remains. Release builds deploy the
 EXE and its generated adjacent INI only to
-`assets/binary/<profile>/`.
+`assets/binary-nxvm/<profile>/`.
