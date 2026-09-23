@@ -21,10 +21,10 @@ test corpus contains 439 root-header callers and these material families:
 | `C_INT`, `C_VOID`, `C_CHAR`, `C_UCHAR`, `C_UINT` | 9,366 direct uses | New minimal Lib scalar spelling, or direct ISO C where no public alias is needed. |
 | `type_bool` | 770 uses | `lib_u8`; it preserves the one-byte field and pointer ABI. `lib_bool` remains only for logical local results. |
 | host/pointer widths | 568 uses of `type_virtual_address`/`type_native_unsigned` plus one pointer alias | New `lib_uptr` and explicit pointer conversion helpers. |
-| outcome algebra | 1,221 `type_status`, 6,986 status constants | Extend `lib_status` with `LIB_STATUS_FAULT`; migrate source semantics after proving status values are not serialized or numerically ordered. |
+| outcome algebra | 1,221 `type_status`, 6,986 status constants | Remove Console-only `NOT_CURRENT`; add the general `LIB_STATUS_INTERNAL_ERROR`; migrate source semantics after proving status values are not serialized or numerically ordered. |
 | atomic vocabulary | one pointer-width nonce and three stop/reset flags | Add the missing neutral pointer-width atomic; represent NXVM's flags with existing `lib_atomic_i32` and explicit ordering. |
-| fixed sub-byte/nonstandard widths | 17 `type_unsigned_4`, plus masks | Use storage-width `lib_u8/u32/u64` and explicit Lib bit helpers, never fictional C bit-width types. |
-| bit, BCD and address macros | 2,000+ material uses | Small type-neutral `lib_bits` helpers; x86/RTC-specific BCD helpers stay with their device owner. |
+| fixed sub-byte/nonstandard widths | 17 `type_unsigned_4`, plus masks | Use storage-width `lib_u8/u32/u64` and explicit typed C masks, never fictional C bit-width types. |
+| bit, BCD and address macros | 2,000+ material uses | Explicit typed C expressions at their owners; x86/RTC-specific BCD helpers stay with their device owner. |
 | trace macros | 5,200+ instruction-decoder uses | New local `cpu_trace` compatibility header, then direct decoder refactor; never Lib. |
 | C stream/text forwarding | 1,415 `STD_PRINTF`, 182 `STD_FPRINTF`, and sparse helpers | Existing `lib/types/file.h` for ISO stream vocabulary; product/test output adapters for output policy. |
 | allocator injection | one live `STD_CALLOC` seam | NXVM test-only allocator dependency; ordinary code uses `lib_allocate_zero`. |
@@ -71,19 +71,40 @@ and x86.
 
 ### Outcome contract
 
-`lib_status` is the authoritative product-neutral outcome type.  Add:
+`lib_status` is the authoritative product-neutral outcome type.  Its final
+shared vocabulary is:
 
 ```c
-LIB_STATUS_FAULT = 6
+LIB_STATUS_OK = 0
+LIB_STATUS_INVALID_ARGUMENT = 1
+LIB_STATUS_INVALID_STATE = 2
+LIB_STATUS_UNSUPPORTED = 3
+LIB_STATUS_NO_MEMORY = 4
+LIB_STATUS_IO_ERROR = 5
+LIB_STATUS_INTERNAL_ERROR = 6
+LIB_STATUS_LIMIT_EXCEEDED = 7
 ```
 
-The root `TYPE_STATUS_FAULT` currently has ordinal 5, while the pre-existing
-shared `LIB_STATUS_IO_ERROR` already owns ordinal 5.  The migration therefore
-cannot truthfully preserve the old numeric value without conflating an
-internal fault with I/O failure.  It preserves the source-level outcome
-meaning by mapping `TYPE_STATUS_FAULT` to the new `LIB_STATUS_FAULT = 6`;
-existing Lib values, including `LIB_STATUS_IO_ERROR = 5` and
-`LIB_STATUS_LIMIT_EXCEEDED = 7`, do not move.
+`LIB_STATUS_NOT_CURRENT` is deleted.  It is a Console/KVM generation detail,
+not a product-neutral failure: stale asynchronous frames become successful
+no-ops, wrong Console operation mode becomes `INVALID_STATE`, and absent
+platform presenters return `UNSUPPORTED`.
+
+The root `TYPE_STATUS_FAULT` currently has ordinal 5, while shared
+`LIB_STATUS_IO_ERROR` already owns ordinal 5.  The migration therefore cannot
+preserve the old numeric value without conflating distinct meanings.  It
+maps only genuine completed-operation internal failures to
+`LIB_STATUS_INTERNAL_ERROR = 6`.  The primary NXVM example is a machine that
+has entered `CORE_MACHINE_STOP_FAULT`, including execution-invariant or timing
+overflow failure, for which the run result already carries a machine-specific
+detail code.  Existing Lib values do not move.
+
+The remaining root fault uses are not grandfathered as a catchall: mapping
+callbacks with invalid input become `INVALID_ARGUMENT` or `UNSUPPORTED`, DMA
+nonce exhaustion becomes `LIMIT_EXCEEDED`, resource-content mismatch and
+host loading failure become `IO_ERROR`, and composition paths preserve their
+specific status.  This keeps the shared status vocabulary general and makes
+NXVM's detailed machine fault a core concern rather than a Lib subtype.
 
 Before that change, P2 audits that NXVM neither serializes status numbers nor
 uses numeric ordering/ranges.  The known non-comparison uses place a raw status
@@ -116,25 +137,13 @@ validated on x64 and x86.  It exposes no NXVM policy or machine state.
 
 ### Bit contract
 
-Add a dedicated `lib/types/bits.h`, included by `types_interface.h`, with
-width-explicit pure operations:
-
-```c
-lib_bool lib_bits_test_u8(lib_u8 value, lib_u8 mask);
-lib_bool lib_bits_test_u16(lib_u16 value, lib_u16 mask);
-lib_bool lib_bits_test_u32(lib_u32 value, lib_u32 mask);
-lib_bool lib_bits_test_u64(lib_u64 value, lib_u64 mask);
-lib_u8 lib_bits_mask_u8(lib_u8 value, lib_u8 mask);
-lib_u16 lib_bits_mask_u16(lib_u16 value, lib_u16 mask);
-lib_u32 lib_bits_mask_u32(lib_u32 value, lib_u32 mask);
-lib_u64 lib_bits_mask_u64(lib_u64 value, lib_u64 mask);
-```
-
-Mutation remains an ordinary typed assignment at the caller; Lib does not
-provide lvalue-mutating macros.  This prevents hidden multiple evaluation and
-makes register-width truncation explicit.  The `TYPE_GET/SET/CLEAR/MAKE_BIT`,
-mask and MSB/LSB macros migrate in compiler-checked batches with focused
-decoder, DMA, PIC, PIT, FDC and RTC tests.
+Do not add `lib_bits`.  The legacy bit/mask macros are mechanical expressions,
+not a reusable behavioral contract.  They migrate to direct typed C
+expressions and explicit `lib_u8/u16/u32/u64` casts at their register owner.
+This prevents hidden multiple evaluation, preserves visible register-width
+truncation, and avoids a redundant utility surface.  The `TYPE_GET/SET/CLEAR/
+MAKE_BIT`, mask and MSB/LSB macros migrate in compiler-checked batches with
+focused decoder, DMA, PIC, PIT, FDC and RTC tests.
 
 `TYPE_HEX_TO_BCD` and `TYPE_BCD_TO_HEX` are not Lib Types additions.  They
 belong to the RTC/device owner because their valid range and invalid BCD policy
@@ -191,17 +200,17 @@ infrastructure, not a Lib public allocator API.
 
 ## Migration sequence
 
-1. **Shared P1 — scalar/status/bit/atomic contract.** Add the proposed Lib
-   Types surface and dual-architecture layout, bit, status and atomic tests.
-   Audit status numeric escape paths before adding `LIB_STATUS_FAULT`; update
-   Lib manifests.
+1. **Shared P1 — scalar/status/atomic contract.** Add the proposed Lib Types
+   surface, remove `NOT_CURRENT`, and add dual-architecture layout, status and
+   atomic tests.  Audit status numeric escape paths before adding
+   `LIB_STATUS_INTERNAL_ERROR`; update Lib manifests.
 2. **NXVM P2 — data representation.** Migrate primitive aliases, byte booleans,
    pointer-width values, `type_status` and the three internal atomic flags;
    replace status-number diagnostic expectations with named outcomes; assert
    every applicable public layout and x86/x64 product build.
 3. **NXVM P3 — pure operations.** Replace bit/mask/reference/dereference
-   macros by typed helpers or explicit casts.  Audit each x86 device family and
-   its focused unit corpus.
+   macros by direct typed expressions or explicit casts.  Audit each x86
+   device family and its focused unit corpus.
 4. **NXVM P4 — runtime and local policy.** Move stream naming to `file.h`,
    output to product/test adapters, time/text/BCD to their owners, and install
    explicit EGA test allocation injection.
@@ -241,9 +250,10 @@ self-consistent rather than merely compiling by accident.
 
 1. Approve `lib_uptr` and `lib_u8` as the explicit address/byte-boolean
    replacements rather than reshaping `lib_bool`.
-2. Approve `LIB_STATUS_FAULT = 6` as a source-semantic outcome: the root
-   fault ordinal changes because shared `IO_ERROR` already owns ordinal 5.
-3. Approve the limited typed `lib_bits` surface and keeping BCD/trace/output
-   policy outside Lib Types.
+2. Approve removal of `NOT_CURRENT` and `LIB_STATUS_INTERNAL_ERROR = 6` as a
+   source-semantic outcome: the root fault ordinal changes because shared
+   `IO_ERROR` already owns ordinal 5.
+3. Confirm no `lib_bits` surface: direct typed expressions own bit behavior;
+   BCD, trace and output policy remain outside Lib Types.
 4. Approve explicit NXVM test allocation injection in place of the global
    `STD_CALLOC` compile override.
