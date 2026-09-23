@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T537 S5 multi-app repository consolidation.** The owner requires
-a clean NXVM-developer audit before the final repository-boundary audit.
+**Active: M5 Td S172 shared change-scope boundary.** The owner requires an
+explicit product-isolation rule before S5 resumes.
 
-## M5 T537 S5 Packet
+## M5 Td S172 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approval on 2026-09-23 to audit the repository as a pure NXVM developer after S4's independent MyNES audit. |
-| Objective | Make the NXVM development path self-contained, comprehensible and independently verified under the consolidated repository. |
-| Non-goals | No MyNES-specific code, document, tool, asset or behavior change; no ROM/media import; no NXVM emulator feature unrelated to a demonstrated path defect; no root README change. |
-| Reference Baseline | M5 T537 S4 P1: MyNES ownership/CMake route repair, complete dual-architecture product verification, and the shared commit-scope convention. |
-| Candidate Proposal | [M5 multi-app repository consolidation](../proposals/m5-multi-app-repository-consolidation.md) |
-| Files And ABI Surface | `docs/nxvm/`, `src/app-nxvm/`, `src/core/`, `test/app-nxvm/`, `test/core/`, `tools/nxvm/`, `assets/binary-nxvm/` and NXVM CMake routes. Shared files may change only for a demonstrated neutral defect and must retain MyNES behavior. |
-| Applicable Rules | Documentation, execution, architecture, coding and NXVM source policy; shared corpus remains neutral. |
-| Verification | Read every NXVM task-reading authority; audit NXVM source/test/tool/CMake/assets; run NXVM documentation governance and complete x64/x86 unit/integration routes using `O:\repos.hobby\nxvm-assets`; inspect emitted PE identities; actual-diff review. |
-| Expected Markers | An NXVM developer can follow only NXVM documents and tools; no product route depends on MyNES-owned input; every NXVM artifact remains under `assets/binary-nxvm/`; no sibling App changes. |
-| Asset Needs | Existing owner-provided external firmware/media from `O:\repos.hobby\nxvm-assets`; no protected input enters the repository. |
-| Reporting Requirements | Record every ambiguity/coupling hit and disposition, NXVM x64/x86 build/test results and artifact identities, plus an explicit no-MyNES-change review. |
-| Stop Conditions | Stop for protected-asset import, a required MyNES semantic change, an irreconcilable shared-contract conflict, or an unbounded emulator defect. |
-| Exit Criteria | NXVM documentation, source, test, asset, tool and CMake paths are coherent; all in-scope ambiguity/coupling is repaired or explicitly transferred; complete x64/x86 NXVM routes pass; no nonshared MyNES file changes. |
-| Original Owner Request | First audit MyNES as its own product developer, then do the equivalent for NXVM, then audit the overall multi-App setup. |
-| Similar-Issue Sweep | Search all NXVM-owned documents, source, tests, tools, CMake and artifact configuration for MyNES names, former-root paths, duplicate routes and unclear ownership; classify every hit. |
+| Identifier Mode | New |
+| Admission And Approval | Owner approval on 2026-09-23 to make App ownership exclusive and reserve cross-product changes for Shared work. |
+| Objective | Establish an enforceable task-scope rule for NXVM, MyNES, individual neutral components and Shared work. |
+| Non-goals | No product behavior, source, tests, assets, artifacts, CMake configuration or root README change. |
+| Reference Baseline | Shared M5 T537 S4 P1 `472438541`; its new commit-scope prefixes need a matching change-scope rule. |
+| Candidate Proposal | [M5 shared change-scope boundary](../proposals/m5-shared-change-scope-boundary.md) |
+| Files And ABI Surface | `docs/rules/EXECUTION.md`, this packet and the named proposal only. |
+| Applicable Rules | Documentation and execution rules. |
+| Verification | Both product documentation-governance checks and actual-diff review. |
+| Expected Markers | Product tasks cannot modify a sibling; neutral-component tasks remain component-local; only a declared Shared task may span consumers. |
+| Asset Needs | None. |
+| Reporting Requirements | Record exact task scopes and cross-boundary escalation rule. |
+| Stop Conditions | Stop for a conflict with the owner-approved multi-App topology. |
+| Exit Criteria | The execution policy defines the exclusive scopes and both documentation checks pass. |
+| Original Owner Request | A T/Td for one App must absolutely never modify another App; only Shared work may span products. |
+| Similar-Issue Sweep | Review the prior commit-prefix convention and documentation ownership language for contrary wording. |
 
 ## Current Technical Baseline
 

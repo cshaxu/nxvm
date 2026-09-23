@@ -269,6 +269,22 @@ accepted brief, current evidence, unresolved objections, and worktree state
 before the receiving session resumes.
 ## Change Discipline
 
+**Exclusive task scope.** Every admitted T or Td declares exactly one scope:
+`NXVM`, `MyNES`, `Lib`, `Common`, `x86`, or `Shared`.
+
+- An `NXVM` or `MyNES` task changes only that App's code, configuration,
+  documentation, tests, tools, artifacts and media declarations. It does not
+  modify the sibling App or any neutral shared component.
+- A `Lib`, `Common` or `x86` task changes only its named neutral component and
+  its matching test root. It does not modify either App.
+- Only a `Shared` T or Td may change root shared configuration/governance,
+  more than one neutral component, or more than one App. Its packet names each
+  affected consumer and requires their applicable verification.
+
+Reading any sibling or shared path is allowed. A discovered need to change one
+is not an exception: record it and admit the correctly scoped follow-up before
+editing. Commit prefixes use the same scope vocabulary.
+
 Structural relocation uses `git mv`: repair direct includes and build paths,
 run the relevant checks, then continue with the next bounded move. A deferred
 issue uses `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only with a ledger entry
