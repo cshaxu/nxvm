@@ -76,6 +76,10 @@ int main(void)
     assert(core_machine_run(machine, 1u, 10u, &run) == LIB_STATUS_OK);
     assert(run.instructions == 1u && run.cycles == 2u);
     assert_entry(machine, 0x9100u, 0x8002u, 0x20u, 0xfau);
+    /* A level IRQ remains asserted, but I masks it until handler code has an
+     * opportunity to acknowledge the source. */
+    assert(core_machine_service_interrupt(machine, &serviced, &cycles) == LIB_STATUS_OK);
+    assert(!serviced && cycles == 0u);
     core_machine_destroy(machine);
 
     machine = make_machine();

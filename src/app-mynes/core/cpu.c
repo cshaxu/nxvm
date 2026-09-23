@@ -213,6 +213,7 @@ lib_status core_machine_service_interrupt(core_machine *machine,
     if (status != LIB_STATUS_OK) return status;
     machine->pc = (lib_u16)low | ((lib_u16)high << 8u);
     machine->p |= CORE_CPU_FLAG_I;
+    machine->irq_poll_i = LIB_TRUE;
     machine->cycles += 7u;
     *out_serviced = LIB_TRUE;
     *out_cycles = 7u;
