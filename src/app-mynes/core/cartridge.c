@@ -282,7 +282,10 @@ lib_bool core_cartridge_cpu_write(core_cartridge *cartridge, lib_u16 address,
             }
         } else if (address < 0xe000u) {
             if ((address & 1u) == 0u) cartridge->mmc3_irq_latch = value;
-            else cartridge->mmc3_irq_reload = LIB_TRUE;
+            else {
+                cartridge->mmc3_irq_counter = 0u;
+                cartridge->mmc3_irq_reload = LIB_TRUE;
+            }
         } else if ((address & 1u) == 0u) {
             cartridge->mmc3_irq_enabled = LIB_FALSE;
             cartridge->mmc3_irq_asserted = LIB_FALSE;

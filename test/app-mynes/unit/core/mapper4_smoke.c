@@ -151,7 +151,23 @@ int main(void)
     (void)bus_read(machine, 0u);
     assert(machine->irq_asserted);
     mapper_write(machine, 0xe000u, 0u);
+    assert(!core_cartridge_irq_asserted(machine->cartridge));
+    assert(!machine->cartridge->mmc3_irq_enabled);
     assert(!machine->irq_asserted);
+
+    /* $C001 clears a live counter.  Its latch is not visible until the next
+     * qualified A12 edge, so it cannot inherit a prior partial countdown. */
+    mapper_write(machine, 0xc000u, 3u);
+    mapper_write(machine, 0xc001u, 0u);
+    qualified_edge(machine->cartridge);
+    qualified_edge(machine->cartridge);
+    assert(machine->cartridge->mmc3_irq_counter == 2u);
+    mapper_write(machine, 0xc001u, 0u);
+    assert(machine->cartridge->mmc3_irq_counter == 0u);
+    assert(machine->cartridge->mmc3_irq_reload);
+    qualified_edge(machine->cartridge);
+    assert(machine->cartridge->mmc3_irq_counter == 3u);
+    assert(!machine->cartridge->mmc3_irq_reload);
 
     /* $2006 exposes the completed PPU address on the cartridge bus.  After
      * eight low dots, a $0000->$1000 address transition is a qualified MMC3

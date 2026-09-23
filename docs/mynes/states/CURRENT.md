@@ -2,8 +2,9 @@
 
 ## Current Work
 
-**No active MyNes subtask.** M6 T39 S3 selects a Cartridge-owned MMC3
-counter/reload contract repair; no repair begins until Corrective S4 is admitted.
+**No active MyNes subtask.** M6 T39 S4 repairs the finite `$C001` contract,
+but its direct visual disposition remains black; no S5 work starts until a new
+corrective packet is admitted.
 
 ## M6 T39 Progress
 
@@ -12,6 +13,7 @@ counter/reload contract repair; no repair begins until Corrective S4 is admitted
 | S1 | Accepted: Start delivery reaches and is consumed by the owner-local guest; the project-owned fixture covers A and Start. [Evidence](../etc/evidence/m6-t39-s1-start-path.md). |
 | S2 | Reopened finding: its narrow A12 publication regression passes, but the later synchronized frame probe exposes a black-frame IRQ/PPU initialization gap outside that regression. |
 | S3 | Accepted diagnosis: the bounded pre-S2 comparison does not select a reversion; an ignored A/B run selects the Cartridge MMC3 counter/reload/A12 contract as the next repair receiver. [Evidence](../etc/evidence/m6-t39-s3-irq-ppu-diagnosis.md). |
+| S4 | Accepted repair: `$C001` clears the live MMC3 count and reloads only on the next qualified edge; owned x64/x86 regressions pass, while the synchronized visual probe remains black. [Evidence](../etc/evidence/m6-t39-s4-mmc3-reload.md). |
 
 ## Current Technical Baseline
 

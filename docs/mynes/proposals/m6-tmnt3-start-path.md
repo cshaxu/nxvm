@@ -45,6 +45,11 @@ receiver: `$C001` currently requests reload without clearing the live counter.
 The next corrective task will repair that finite state transition and its
 counter/acknowledge regression before making another visual claim.
 
+S4 repairs that transition and retains its owned counter/acknowledgement
+regression, but the ignored synchronized visual probe still has identical
+black frames after Start.  The next diagnostic receiver is the PPU rendering
+fetch schedule's A12-level sequence, not the already-corrected reload write.
+
 ## Completion Standard
 
 The task records a finite decision result: Start reaches the controller serial
