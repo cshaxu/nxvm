@@ -269,23 +269,29 @@ accepted brief, current evidence, unresolved objections, and worktree state
 before the receiving session resumes.
 ## Change Discipline
 
-**Exclusive task scope.** Every admitted T or Td declares exactly one scope:
-`NXVM`, `MyNES`, or `Shared`.
+**Declared change targets.** An admitted T or Td has one numeric task identity
+and one product-local packet location, but neither is a restriction on the
+target of every later S or P. Each active S declares its allowed change targets
+from exactly `NXVM`, `MyNES`, and `Shared`; each P and its one Git commit have
+exactly one declared target.
 
-- An `NXVM` or `MyNES` task changes only that App's code, configuration,
-  documentation, tests, tools, artifacts and media declarations. It does not
-  modify the sibling App or any neutral shared component.
-- A `Shared` task owns all six shared source/test components (`lib`, `common`,
-  and `x86`), their shared configuration, and shared governance documents.
-  It may change more than one shared component where one coherent contract
-  requires it.
-- Only a `Shared` T or Td may change root shared configuration/governance, a
-  shared component, or more than one App. Its packet names each affected
-  consumer and requires their applicable verification.
+- `NXVM` owns only NXVM code, configuration, documentation, tests, tools,
+  artifacts and media declarations. `MyNES` owns the corresponding MyNES
+  surface.
+- `Shared` owns the six shared source/test components (`lib`, `common`, and
+  `x86`), shared configuration, and shared governance documents.
+- An S may name more than one target only when its packet identifies the
+  cross-target mechanism, every affected consumer, each boundary, and the
+  verification for every target. It delivers one P per target; no P or commit
+  may modify more than one target. A required cross-target result is therefore
+  split into ordered, independently reviewable P commits.
+- A product-led T may therefore deliver NXVM, MyNES, or Shared P commits when
+  those targets were explicitly admitted. The T identifier remains unchanged
+  across those P commits; it is the active task number, not an ownership label.
 
 Reading any sibling or shared path is allowed. A discovered need to change one
-is not an exception: record it and admit the correctly scoped follow-up before
-editing. Commit prefixes use the same scope vocabulary.
+is not permission to edit it: revise the active packet with owner approval or
+admit a follow-up whose declared targets cover it before editing.
 
 Structural relocation uses `git mv`: repair direct includes and build paths,
 run the relevant checks, then continue with the next bounded move. A deferred
@@ -344,19 +350,21 @@ belongs to the admitted implementation task's subtask sequence. Before that
 admission it remains an unnumbered Queue candidate; do not allocate a numeric
 `T` merely to make prospective work look task-shaped.
 
-Every commit subject starts with its ownership scope so the multi-App history
-is readable without opening the diff.  Use exactly one of `NXVM`, `MyNES`,
-`Lib`, `Common`, `x86`, or `Shared`: product prefixes own only that product;
-component prefixes own only that neutral component; `Shared` is for a coherent
-change spanning two or more neutral shared components or root governance.
+Every commit subject starts with its actual change target so the multi-App
+history is readable without opening the diff. Use exactly one of `NXVM`,
+`MyNES`, or `Shared`. `Shared` names only a shared-component or
+root-governance P; a product prefix names only its respective product surface.
+One P changes exactly one target.
 Do not use a product prefix for a shared-source change merely because that
-product packet admitted it.
+product's packet admitted it.
 
 The resulting subjects are
-`<scope> M<milestone> Td [S<subtask>] P<part>: description` for a standalone
+`<target> M<milestone> Td [S<subtask>] P<part>: description` for a standalone
 documentation task, or
-`<scope> M<milestone> T<task> S<subtask> P<part>: description` for an
-implementation task and its task-specific design work.  For example:
+`<target> M<milestone> T<task> S<subtask> P<part>: description` for an
+implementation task and its task-specific design work. The `T<task>` element
+is always the currently admitted task number, even when its P target differs
+from the product that hosts the active packet. For example:
 `MyNES M6 T38 S1 P1: reconcile product layout` and
 `Shared M5 T537 S4 P1: repair repository boundary`.
 

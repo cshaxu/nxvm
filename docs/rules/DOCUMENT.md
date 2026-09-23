@@ -16,9 +16,11 @@ shared rules instead of duplicating an authority.
 | `src/app-<product>` and matching `test/`, `tools/`, `assets/binary-<product>` roots | Product | Product implementation, tests, tools, and versioned artifacts. |
 
 There is one active packet per product, in
-`docs/<product>/states/CURRENT.md`. A shared change is admitted under one named
-product packet and lists all affected consumers. It does not create a root task
-queue or make a packet from one product authorize another product behavior.
+`docs/<product>/states/CURRENT.md`. A packet may declare NXVM, MyNES and/or
+Shared change targets; for a cross-target S it lists every affected consumer,
+boundary and verification. Its product-local location is task coordination,
+not implicit authorization to edit another target. It does not create a root
+task queue or authorize an undeclared target.
 
 Historical records preserve their original paths and terminology where needed.
 They are evidence, not current authority. Product `etc/README.md` files index

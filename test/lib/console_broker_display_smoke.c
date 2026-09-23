@@ -286,7 +286,8 @@ int main(void)
     }
     assert(lib_console_write_text(cooked, "ok\r\n\r\nMonitor> ", 15) == 0);
     snapshot(&after);
-    assert(after.info.dwCursorPosition.X == 8);
+    /* "Monitor> " is nine cells wide; the cursor is the next cell. */
+    assert(after.info.dwCursorPosition.X == 9);
     assert(after.info.dwCursorPosition.Y == before.info.dwCursorPosition.Y + 2);
     for (unsigned x = 2; x < 80; ++x)
         assert(after.cells[before.info.dwCursorPosition.Y * 120 + x].Char.UnicodeChar == ' ');
