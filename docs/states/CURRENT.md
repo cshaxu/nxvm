@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T535 S4 closure audit |
-| Admission And Approval | Owner's 2026-09-22 T535 approval; S1 `6eb052df` and S2 `75f354ec` are accepted. S3 is explicitly skipped because S2 proves no NXVM adapter work exists. Ordinary commits/pushes are permanently approved. |
-| Objective | Complete T535 closure audit: accept the 0535 artifact/test evidence and prove the six imported roots remain exact. |
+| Identifier Mode | No active implementation task; T535 closed |
+| Admission And Approval | T535 closed after coordinator review of S4 P1 `e774efb5`. Ordinary commits/pushes remain permanently approved. |
+| Objective | Await owner admission of the next queued task. |
 | Non-goals | Do not change guest/device/product behavior, connect audio to NXVM, add an audio abstraction, import uncommitted SoftPC media or edit a shared tree for a local compatibility path. |
-| Reference Baseline | S2 `75f354ec`, S4 implementation, [S4 evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md), frozen SoftPC `1c5a47146dd4fd87b09423b7a7b960becb50cd67`. |
-| Candidate Proposal | [Retained T535 proposal](../history/M5-T535-canonical-softpc-six-component-refresh-proposal.md); S4 consumes the final four-product x64/x86 artifact and external-integration batches. |
-| Files And ABI Surface | Build configuration/version/artifact evidence and status/history only unless a verified integration defect requires an owner-correct repair. Shared six roots must not change. |
-| Applicable Rules | `AGENTS.md`; Task Reading Set; Execution, Architecture, Coding and Document rules; source policy; artifact and test-closure rules. |
-| Verification | Recompare all six roots by relative path/hash; 336/336 repository-only unit; default 20/20, 5170 3/3, XT 1/1 and Model40 3/3 external integration; eight stripped Release artifacts; documentation governance and whitespace checks. |
-| Expected Markers | Exact six-tree equality; all integration rows pass; T535 artifact identity/version, PE architecture, stripped status and SHA-256 are recorded for each required product/host architecture. |
-| Asset Needs | Owner-managed external BYOB ROM/CMOS/media inputs already configured for integration; no asset is copied or committed. |
-| Reporting Requirements | Report every integration/artifact row with its source commit/hash and any failure without relabelling it green. Record final code-line delta and retained owner paths. |
-| Stop Conditions | Stop for missing/invalid external asset, artifact toolchain failure, test regression, a necessary shared-tree local change, protected payload issue or source/license mismatch. |
-| Exit Criteria | Pushed final implementation and governance evidence proves all T535 completion predicates, current artifacts and exact source parity; then perform T-level closure audit. |
-| Original Owner Request | Owner requested admission of a new T to import SoftPC's latest six components. |
-| Similar-Issue Sweep | Recompare all six roots; search NXVM source/build/tests for `lib_audio_stream_*` consumers and for source divergence; verify no `session->profile` mirror survives. Any integration regression is classified at its owner rather than repaired by a shared-corpus fork. |
+| Reference Baseline | T535 history and [S4 evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md). |
+| Candidate Proposal | None active. |
+| Files And ABI Surface | No active implementation surface. |
+| Applicable Rules | `AGENTS.md`; Task Reading Set; Execution, Architecture, Coding and Document rules. |
+| Verification | T535 closure: exact six-root hash parity; 336/336 unit; 27/27 external integration; eight stripped 0535 artifacts; documentation governance and whitespace checks. |
+| Expected Markers | A future task packet only after owner admission. |
+| Asset Needs | None. |
+| Reporting Requirements | Report the T535 closure and await owner direction. |
+| Stop Conditions | No active implementation task. |
+| Exit Criteria | Not applicable. |
+| Original Owner Request | Owner requested admission of a new T to import SoftPC's latest six components; complete at T535 closure. |
+| Similar-Issue Sweep | T535 completed: all six roots rechecked; no NXVM audio consumer and no retired `session->profile` mirror remain. |
 
 ## Current Technical Baseline
 
@@ -38,6 +38,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T535 | Closed at `e774efb5` pending this governance closure: the frozen SoftPC `1c5a4714` six-tree source/test corpus remains hash-exact. NXVM adds only aggregate build dependencies for the three CTest-registered audio smokes. 336/336 unit, default 20/20, 5170 3/3, XT 1/1 and Model 40 3/3 integration pass. Eight optimized, stripped 0535 x64/x86 artifacts are in their sole profile directories. [History](../history/M5-T535-canonical-softpc-six-component-refresh.md) and [evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md). |
 | T534 | Closed at `f5170a5d`: 53 bounded repairs exhaust the App/Core convergence ledger without a second production owner or unclassified finding. Current 0534 x64/x86 artifacts for default, 5170, XT and Model 40 are verified in their sole profile directories. 333/333 repository-only unit, default parallel 20/20 integration, 5170 3/3, XT 1/1 and Model 40 3/3 integration pass. [History](../history/M5-T534-app-core-code-quality-remediation.md), [closure ledger](../etc/evidence/t534-app-core-code-quality-ledger.md) and [artifact record](../etc/evidence/t534-s50-artifact-verification.md). |
 | T533 | Closed by `99de6d11` and deployment correction `6d5a4828`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |
@@ -45,7 +46,6 @@
 | T530 | Closed at owner direction on 2026-09-13 after implementation bc9a1247; pinned canonical Lib import and Common adaptation, recorded 299/299 unit and 42/42 integration, both 0530 artifacts verified by hash. No new manual test is claimed. Later source revisions and Common UX convergence belong to the next task. [History](../history/M5-T530-canonical-softpc-lib-refresh.md). |
 | T529 | Closed at `cc5fd4a7`: S1 exhaustively classified the 29-file VM-machine corpus and S2 removed the only two proven dead controls. No Common migration was invented: Common remains the sole copied protocol owner; Core and CCPU executors remain distinct product adapters. 299/299 unit, focused regression, specialized/documentation gates and stripped 0528 x64/x86 artifacts pass. The unchanged 39/42 external-integration exception remains transferred to the Model-40/5170 boot-chain TODO. [History](../history/M5-T529-common-machine-residual-audit.md) and [evidence](../etc/evidence/t529-s2-dead-control-cleanup.md). |
 | T528 | Closed under the owner's 2026-09-12 exception after `9d892446`: all VM-machine duplicate owners are removed, 299 unit cases, specialized gates, documentation governance and stripped x64/x86 artifacts pass. The known 39/42 external-integration result is transferred unchanged to the external-ROM Model-40/IBM-5170 boot-chain TODO; it is not represented as green. [History](../history/M5-T528-vm-machine-owner-cleanup.md) and [evidence](../etc/evidence/t528-s7-task-closure-attempt.md). |
-| T527 | Common product-runtime convergence closed at `2c596f2c`: one Common corpus owns xasm32, Debug, session, machine and UI; NXVM retains one VM Core adapter, product policy owner and App composition root. Independent Common verification, 299/299 unit, 42/42 external integration, specialized gates and stripped x64/x86 artifacts pass. [History](../history/M5-T527-common-product-runtime-convergence.md) and [evidence](../etc/evidence/t527-s9-reusable-common-closure.md). |
 
 ## Recent Governance
 

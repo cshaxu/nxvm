@@ -37,3 +37,15 @@ built their executables. The repair is an NXVM root-build integration change;
 the six copied trees remain byte-exact. The final 336/336 unit gate and all
 four external integration batches pass. The [S4 evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md)
 records exact corpus parity and all eight stripped Release artifacts.
+
+## T-Level Closure Audit
+
+Coordinator review accepts S4 P1 `e774efb5`. The admitted six-root universe is
+exhausted: all relative paths and SHA-256 values match the frozen committed
+SoftPC corpus; the only NXVM integration repair is the aggregate build list
+that makes CTest's three already-registered audio tests executable. No local
+shared-tree fork, guest-audio route, uncommitted upstream media, profile mirror
+or unclassified integration failure remains. Documentation governance and
+whitespace checks pass. T535 closes with 336/336 repository-only unit tests,
+27/27 external integration tests, and the complete eight-artifact 0535
+deployment matrix recorded in S4 evidence.
