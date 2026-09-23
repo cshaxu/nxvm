@@ -61,6 +61,13 @@ comparison is still black after Start, so the next task must diagnose the PPU
 pixel/scroll pipeline or the now-timed guest path rather than reopening the
 scanline counter.
 
+## Owner-Reopen Completion Standard
+
+Owner-reopened S9 must run the production Driver through a bounded Start and
+held-control sequence, inspect published RGB frames as well as machine health,
+and repeat that sequence after every selected repair. A static title-frame or
+input-serial observation cannot reopen the closure gate.
+
 ## Completion Standard
 
 The task records a finite decision result: Start reaches the controller serial

@@ -76,6 +76,9 @@ if(WIN32)
         target_compile_options(mynes-native-window-smoke PRIVATE -UNDEBUG)
     endif()
     add_test(NAME mynes.integration.native-window-smoke COMMAND mynes-native-window-smoke)
+    # This test creates a native Window and samples its composed client pixels.
+    # It is a desktop integration check, not a headless automatic unit gate.
+    set_property(TEST mynes.integration.native-window-smoke APPEND PROPERTY LABELS desktop)
 
     add_executable(mynes-native-console-smoke native_console_smoke.c)
     target_link_libraries(mynes-native-console-smoke PRIVATE mynes-app mynes-core-driver
@@ -84,4 +87,7 @@ if(WIN32)
         target_compile_options(mynes-native-console-smoke PRIVATE -UNDEBUG)
     endif()
     add_test(NAME mynes.integration.native-console-smoke COMMAND mynes-native-console-smoke)
+    # It drives and samples a native Console; keep it with the other
+    # desktop-composition checks rather than the headless automatic suite.
+    set_property(TEST mynes.integration.native-console-smoke APPEND PROPERTY LABELS desktop)
 endif()

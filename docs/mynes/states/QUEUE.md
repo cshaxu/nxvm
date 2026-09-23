@@ -5,7 +5,7 @@
 1. [M6 snapshot state](../proposals/m6-snapshot-state.md) - closed historical proposal.
 2. [M6 App/Core quality](../proposals/m6-app-core-quality.md) - closed historical proposal.
 3. [M6 product layout reconciliation](../proposals/m6-product-layout-reconciliation.md) - closed for product-tree reconciliation; owner review exposed a separate runtime receiver now carried by T39.
-4. [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) - reopened: S8 repairs IRQ re-entry and restores Start-driven RGB change; a sustained player-motion acceptance S is pending admission.
+4. [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) - owner-reopened in T39 S9: the controlled-play probe is executing; its closure requires production-Driver RGB/image and health evidence.
 
 ## M5 Candidates
 
