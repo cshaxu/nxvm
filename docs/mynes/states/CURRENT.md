@@ -2,36 +2,8 @@
 
 ## Current Work
 
-**Active: M6 T39 S10 release-artifact correction.** The owner reports that the
-deployed `0011` executable remains black; S10 must ship the repaired source as
-the task-39 artifact before any gameplay conclusion can stand.
-
-## M6 T39 S10 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Owner-Reopen |
-| Admission And Approval | Owner rejected T39 closure because only old `0011` binaries were deployed and explicitly directs that task-39 dual executables be placed in `assets/binary-mynes`; the owner also directs removal of `0011`. |
-| Objective | Build and deploy the repaired MyNES product as `mynes_0_0_0039_x64.exe` and `mynes_0_0_0039_x86.exe` beside the existing editable `mynes.ini`. |
-| Non-goals | No ROM import, no change to user `mynes.ini`, no shared-component change and no new emulator mechanism repair in this S. |
-| Reference Baseline | `3588fe945`; source repairs exist but deployed `0011` artifacts predate task-39 identity. |
-| Candidate Proposal | [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) |
-| Files And ABI Surface | MyNES product CMake, obsolete manifest tool, artifact directory and MyNES state/evidence only. |
-| Applicable Rules | Task revision is the four-digit task number; each runnable product task supplies optimized x64/x86 artifacts in `assets/binary-mynes`; delivery aligns with NXVM's EXE-plus-adjacent-INI model and owner-local media stays untracked. |
-| Verification | Build both architectures, verify PE machine type and versioned filenames, confirm no manifest generator/output participates in delivery, and run focused Core/Driver regressions. |
-| Expected Markers | `assets/binary-mynes` contains exactly the `0039` executable pair plus the sole editable `mynes.ini`; no manifest or `0011` executable remains there. |
-| Asset Needs | Existing local `mynes.ini` is retained unchanged; no ROM is read or committed. |
-| Reporting Requirements | Report S10 diff add/remove/net, files and rationale, build/test outcome, pushed commit, and clickable x64/x86 paths. |
-| Stop Conditions | A required toolchain cannot build a valid PE or artifact placement would overwrite the user configuration. |
-| Exit Criteria | Both versioned executables are present, architecture-verified, no manifest generator/output participates in delivery, old executables/asset manifest are removed, and the result is committed and pushed. |
-| Original Owner Request | Put the latest dual EXEs in assets; task 39 uses version `0_0_0039`; remove the old `0011` executables. |
-| Similar-Issue Sweep | Product target, artifact copy name, manifest name/version and CURRENT artifact baseline use the same task revision. |
-
-### S10 Brief
-
-Correct the task-39 artifact identity and deploy both built architectures to
-the one product artifact directory. Retire the obsolete MyNES manifest flow so
-delivery matches NXVM. Preserve the owner-managed INI verbatim.
+**No active MyNES subtask.** M6 T39 is closed after owner RDP acceptance of
+the task-39 product artifacts.
 ## M6 T39 Progress
 
 | S | Result |
@@ -44,6 +16,8 @@ delivery matches NXVM. Preserve the owner-managed INI verbatim.
 | S6 | Accepted repair: dummy sprite reads plus raw A12 short-low retention restore one qualified edge on each observed visible scanline; owned regressions pass but the Start frame remains black. [Evidence](../etc/evidence/m6-t39-s6-empty-sprite-fetch.md). |
 | S7 | Accepted diagnosis: accepted IRQs leave `irq_poll_i` stale, causing re-entry before handler execution and stack overflow; S8 receives the CPU repair. [Evidence](../etc/evidence/m6-t39-s7-irq-poll-diagnosis.md). |
 | S8 | Accepted repair: accepted interrupts mask the poll state, avoiding handler re-entry; x64/x86 regression passes and Start now changes published RGB. [Evidence](../etc/evidence/m6-t39-s8-irq-poll.md). |
+| S9 | Reopened automatic acceptance: production Driver input reaches a sustained nonblank game scene with healthy CPU/IRQ markers; non-desktop x64/x86 automatic suites pass. [Evidence](../etc/evidence/m6-t39-s9-controlled-play.md). |
+| S10 | Accepted delivery correction: task-39 artifacts are the `0_0_0039` x64/x86 pair beside the sole editable INI; obsolete `0011` outputs and MyNES manifest flow are retired. Owner RDP acceptance confirms TMNT3 gameplay. |
 
 ## Current Technical Baseline
 
@@ -63,7 +37,7 @@ delivery matches NXVM. Preserve the owner-managed INI verbatim.
 | T36 | Closed: SoftPC-shaped `save`/`load`, Core/Driver state stream, matching-cartridge restore, rejected malformed/missing/truncated inputs and dual-architecture integration proof are recorded in [history](../history/M6-T36-snapshot-state.md). |
 | T37 | Closed in `7666ddd`: the completed App/Core quality work and the owner-selected source, test and packaged-artifact move were retained together for T38 reconciliation. |
 | T38 | Product-layout automation passed; owner binary review reported the TMNT3 title-flow regression. The layout result remains retained, and the runtime defect is now T39's bounded receiver. |
-| T39 | Closed in `9fd404baa`: S9 production-Driver evidence confirms sustained controlled TMNT3 gameplay; x64/x86 non-desktop automatic suites pass. |
+| T39 | Closed in `9093f4014` plus this closure record: Core/PPU/MMC3/IRQ repairs, automated controlled-play evidence, task-39 dual artifacts, NXVM-aligned delivery and owner RDP acceptance establish the requested TMNT3 result. |
 | T35 | M5 closed in `d6da730`: six owner-local ROM roles passed both presenters/x64/x86. |
 
 ## Recent Governance
