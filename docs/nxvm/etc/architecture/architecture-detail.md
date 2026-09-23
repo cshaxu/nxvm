@@ -43,8 +43,8 @@ owner-approved Go decision changes that boundary.
 Forward source ownership and dependency decisions are defined exclusively by
 [Source Layout](../../design/CODING.md); detailed interface evidence is retained
 in [Machine Contract Details](machine-contract-details.md).
-[Coding Rules](../../rules/CODING.md), [Architecture Rules](../../rules/ARCHITECTURE.md),
-and [Execution Rules](../../rules/EXECUTION.md) define the corresponding
+[Coding Rules](../../../rules/CODING.md), [Architecture Rules](../../../rules/ARCHITECTURE.md),
+and [Execution Rules](../../../rules/EXECUTION.md) define the corresponding
 local coding, source, and execution rules. Historical records preserve
 rationale and evidence, but cannot redefine a current boundary, interface, or
 milestone scope.

@@ -1,8 +1,8 @@
 # Test Directory
 
-This README describes only the local test area. The authoritative global source
-map is [Source Layout](../docs/design/CODING.md), and task verification rules
-are in [Execution Rules](../docs/rules/EXECUTION.md).
+This README describes only the shared test area. Product source layouts live
+under their product documentation roots; shared test governance is in
+[Execution Rules](../docs/rules/EXECUTION.md).
 
 Current top-level suites cover `adapters`, `core`, `firmware`, `machine`,
 `platform`, `product`, `products`, and `support`. A test belongs with the

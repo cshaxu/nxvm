@@ -18,6 +18,11 @@
 #define PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH PROJECT_TEST_8086_RESULTS_PATH
 #endif
 
+#ifndef PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH
+#define PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH \
+    PROJECT_TEST_8086_DECODER_INVENTORY_PATH
+#endif
+
 /* This runner is deliberately not a passing CTest target until every I86 key
  * has a real recipe.  Its generated metadata prevents handwritten provenance
  * from drifting from the T435 S2 manifest. */
@@ -845,8 +850,7 @@ static C_INT timing_manifest_run_repeat_recipe(
  * cardinality and must never be used as a closure denominator. */
 static C_INT timing_manifest_probe_decoder_lexeme_candidates(C_VOID)
 {
-    const C_CHAR *const path =
-        "docs/etc/cpu-timing/t435-s5-8086-decoder-inventory.json";
+    const C_CHAR *const path = PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH;
     type_unsigned_16 opcode;
     type_unsigned_16 modrm;
     type_unsigned_32 accepted = 0u;

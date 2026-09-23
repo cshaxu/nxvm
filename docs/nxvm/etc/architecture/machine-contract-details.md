@@ -18,7 +18,7 @@ task record and history.
 `src/type.h` is the common system type header. It defines `type_status`,
 retained NXVM numeric aliases, common bit/constant helpers, and product-neutral
 legacy C-runtime and trace primitives. `src/type.c` owns their non-inline
-implementations. [rules/CODING.md](../../rules/CODING.md) defines the current C
+implementations. [rules/CODING.md](../../../rules/CODING.md) defines the current C
 vocabulary and header boundary; [C-Library Facade Detail Record](../history/m5/c-library-facade.md)
 preserves the M5 inventory and rationale.
 

@@ -60,6 +60,9 @@ each product remains independently buildable and testable.
    product-root-correct tools, unit/integration build separation, and no shared
    documentation outside `docs/rules/`. Root README restoration is an explicit
    frozen-owner exception, not a new shared documentation authority.
+5. Audit every live reference and prove independent x64/x86 product builds and
+   complete test routes; nonshared App/Core/test/tool changes may not cross
+   into the sibling product.
 
 ## Completion Standard
 

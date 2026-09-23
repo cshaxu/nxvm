@@ -1,6 +1,6 @@
 # T436 S1 80286 Canonical-Key Partition
 
-The executable [partition verifier](../../../tools/Verify-80286TaskPartition.ps1)
+The executable [partition verifier](../../../../tools/nxvm/Verify-80286TaskPartition.ps1)
 expands the retained 80286 manifest's 286 base forms, 423 legal single-axis
 contexts and 62 combined contexts. It assigns each canonical key to exactly
 one later implementation S; context keys inherit their base form's owner.

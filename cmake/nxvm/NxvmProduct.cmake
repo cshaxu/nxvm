@@ -405,12 +405,14 @@ endif()
 
 # The T435 S4 runner proves every frozen I86 key through a real instruction
 # execution; its result artifact is verified by the dependent CTest below.
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
 add_executable(core-machine-8086-timing-manifest-runner
     test/app-nxvm/unit/core/devices/core_machine_8086_timing_manifest_runner.c)
 target_link_libraries(core-machine-8086-timing-manifest-runner PRIVATE
     core-machine)
 target_compile_definitions(core-machine-8086-timing-manifest-runner PRIVATE
-    PROJECT_TEST_8086_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json")
+    PROJECT_TEST_8086_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
+    PROJECT_TEST_8086_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-decoder-inventory.json")
 add_dependencies(core-machine-8086-timing-manifest-runner
     cpu-timing-manifest-catalog)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -429,7 +431,8 @@ target_compile_definitions(core-machine-8088-timing-manifest-runner PRIVATE
     PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=CORE_MACHINE_CPU_PROFILE_8088
     PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME="8088"
     PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX="I88-"
-    PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json")
+    PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-timing-results.json"
+    PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-decoder-inventory.json")
 add_dependencies(core-machine-8088-timing-manifest-runner
     cpu-timing-manifest-catalog)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2538,7 +2541,7 @@ foreach(target IN LISTS PROJECT_INTEGRATION_FDD_HDD_TARGETS)
         project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini)
     elseif(target STREQUAL "vm-app-default-profile-smoke")
         project_add_t515_ini_integration_test(${target} default-pc-at-80386-1440k-hdd.ini
-            default-pc-at-80386-1440k-hdd.ini)
+            default-pc-at-80386-1440k-hdd/NXVM.ini)
     else()
         message(FATAL_ERROR "T515 INI integration mapping is missing: ${target}")
     endif()

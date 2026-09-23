@@ -242,8 +242,8 @@ open debt, task evidence, and applicable rules; it cannot be bypassed by a
 passing local implementation.
 
 **Per-S reading index.** Before first work, and again on its first resume, the
-executor first follows the [Task Reading Set](../README.md)
-and then reads the active packet plus the S-contract, P-lifecycle,
+executor first follows the selected product's Task Reading Set and then reads
+the active packet plus the S-contract, P-lifecycle,
 completion-goal, stop, and role-authority paragraphs above. It also reads each
 project rule triggered by the packet or change surface. This index is
 navigation only; the referenced authorities remain the sole requirements

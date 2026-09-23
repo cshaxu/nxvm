@@ -12,8 +12,6 @@ include("${PROJECT_SOURCE_DIR}/cmake/nxvm/verify_current_artifact_architecture.c
 
 set(project_runtime_ini_contents "")
 file(READ "${PROJECT_RUNTIME_INI_SOURCE_PATH}" project_runtime_ini_contents)
-string(REPLACE "../../../nxvm-assets/" "../../../../nxvm-assets/"
-    project_runtime_ini_contents "${project_runtime_ini_contents}")
 
 set(project_artifact_directory
     "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/${PROJECT_PRODUCT_PROFILE}")

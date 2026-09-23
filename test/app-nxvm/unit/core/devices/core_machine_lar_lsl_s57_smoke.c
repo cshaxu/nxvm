@@ -546,7 +546,7 @@ static C_INT lar_lsl_s57_test_memory_source(C_VOID)
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         lar_lsl_s57_machine state;
-        t_cpu after;
+        t_cpu after = { 0 };
         type_unsigned_16 source = selector;
         C_INT failed = !lar_lsl_s57_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);

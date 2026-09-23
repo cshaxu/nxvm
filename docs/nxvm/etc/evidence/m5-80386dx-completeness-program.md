@@ -35,7 +35,7 @@ project and are not silently admitted by this program.
 
 The ordered candidates in [QUEUE.md](../../states/QUEUE.md) are intentionally
 unnumbered. A package advances one admitted task at a time under
-[Execution Policy](../../rules/EXECUTION.md); it does not reserve numeric `T`
+[Execution Policy](../../../rules/EXECUTION.md); it does not reserve numeric `T`
 identifiers or create several active packets.
 
 | Family package | Expected bounded tasks | Completion evidence |
@@ -99,7 +99,7 @@ structure, naming, and local coding style. File size alone is not a reason to
 split behavior: further instruction implementations belong in
 `cpu_instructions.c` when they retain that file's CPU-instruction ownership and
 style. A split requires a real subsystem or ownership boundary under the
-[Coding Rules](../../rules/CODING.md).
+[Coding Rules](../../../rules/CODING.md).
 
 ## Efficient, Non-Deferred Verification
 

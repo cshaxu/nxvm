@@ -1,6 +1,6 @@
 # T437 S1 80386DX Canonical-Key Partition
 
-The executable [partition verifier](../../../tools/Verify-80386TaskPartition.ps1)
+The executable [partition verifier](../../../../tools/nxvm/Verify-80386TaskPartition.ps1)
 expands the retained 80386DX manifest's 450 base forms and 960 legal contexts.
 It assigns every canonical key to one later implementation S; a context inherits
 its base form's owner. This is a coverage/proof partition, not a timing result

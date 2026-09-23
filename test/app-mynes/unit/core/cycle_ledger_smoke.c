@@ -9,7 +9,7 @@ typedef struct opcode_form {
     lib_u8 cycles;
 } opcode_form;
 
-/* Values transcribed from docs/etc/cpu-opcodes.csv.  Branch rows use reset P. */
+/* Values transcribed from docs/mynes/etc/cpu-opcodes.csv.  Branch rows use reset P. */
 static const opcode_form forms[] = {
     {0x00u,1u,7u},{0x01u,2u,6u},{0x05u,2u,3u},{0x06u,2u,5u},{0x08u,1u,3u},{0x09u,2u,2u},{0x0au,1u,2u},{0x0du,3u,4u},{0x0eu,3u,6u},{0x10u,2u,3u},{0x11u,2u,5u},{0x15u,2u,4u},{0x16u,2u,6u},{0x18u,1u,2u},{0x19u,3u,4u},{0x1du,3u,4u},{0x1eu,3u,7u},
     {0x20u,3u,6u},{0x21u,2u,6u},{0x24u,2u,3u},{0x25u,2u,3u},{0x26u,2u,5u},{0x28u,1u,4u},{0x29u,2u,2u},{0x2au,1u,2u},{0x2cu,3u,4u},{0x2du,3u,4u},{0x2eu,3u,6u},{0x30u,2u,2u},{0x31u,2u,5u},{0x35u,2u,4u},{0x36u,2u,6u},{0x38u,1u,2u},{0x39u,3u,4u},{0x3du,3u,4u},{0x3eu,3u,7u},

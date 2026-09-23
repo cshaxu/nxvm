@@ -16,9 +16,7 @@ if(EXISTS "${KVM_NAMING_ROOT}/src/lib")
         "${KVM_NAMING_ROOT}/test/unit"
         "${KVM_NAMING_ROOT}/test/lib"
         "${KVM_NAMING_ROOT}/test/common"
-        "${KVM_NAMING_ROOT}/docs/design"
-        "${KVM_NAMING_ROOT}/docs/proposals"
-        "${KVM_NAMING_ROOT}/docs/states/CURRENT.md")
+        "${KVM_NAMING_ROOT}/docs/rules")
 else()
     set(naming_roots "${KVM_NAMING_ROOT}")
 endif()

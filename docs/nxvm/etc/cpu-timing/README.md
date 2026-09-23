@@ -67,7 +67,7 @@ all-key result publication is completed by the S8
 [result closure](t436-s8-80286-result-closure.md), whose generated 771-key
 result artifact is verified against the manifest contract.
 
-The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), [tracker](t435-s2-80386-implementation-tracker.md), and S8's executable [decoder-ledger verifier](../../../tools/Verify-80386DecoderLedger.ps1).
+The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), [tracker](t435-s2-80386-implementation-tracker.md), and S8's executable [decoder-ledger verifier](../../../../tools/nxvm/Verify-80386DecoderLedger.ps1).
 T437 S1's executable [canonical-key partition](t437-s1-80386-key-partition.md)
 assigns every retained 80386DX base and legal context key to one later
 implementation S before any new runtime timing result is claimed.

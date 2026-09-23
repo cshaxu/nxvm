@@ -2,30 +2,30 @@
 
 ## Current Work
 
-**Active: M5 T537 S2 multi-app repository consolidation.** The owner approved
-the follow-up cleanup: independent product CMake selection, product-scoped tool
-roots, separately scoped MyNES test builds, and product-local documentation.
+**Active: M5 T537 S3 multi-app repository consolidation.** The owner requires
+the final product-isolation audit and full x64/x86 build-and-test proof for
+both applications under the new structure.
 
-## M5 T537 S2 Packet
+## M5 T537 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approval on 2026-09-23 to implement the audit's cleanup items while restoring and freezing the pre-merge NXVM-only root README. |
-| Objective | Remove discovered CMake/tool/document duplication without merging product task state or changing emulator behavior. |
+| Admission And Approval | Owner approval on 2026-09-23 to verify all documentation/references, preserve product isolation, and compile/test both applications in x64 and x86. |
+| Objective | Prove the post-consolidation topology has correct live references and that each product builds/tests independently in both required host architectures. |
 | Non-goals | No emulator behavior, ROM/media import, protected external asset bytes, MyNES CURRENT/Queue merge, or further root README change. |
-| Reference Baseline | M5 T537 S1 consolidation at `cb6e0045b`; the owner requires the root README restored byte-for-byte to pre-merge NXVM-only form. |
+| Reference Baseline | M5 T537 S2 P1 `c17c2afa9`: product-selectable CMake, product-local documentation, and repaired NXVM tool roots. |
 | Candidate Proposal | [M5 multi-app repository consolidation](../proposals/m5-multi-app-repository-consolidation.md) |
-| Files And ABI Surface | Root CMake/presets, `cmake/{nxvm,mynes}`, product tool paths, the shared documentation rules/validator, and each product's local guide; this shared change affects both consumers without a runtime ABI change. |
+| Files And ABI Surface | CMake/presets, live documentation and reference validators, build/test output, and versioned product artifacts; no runtime API change is intended. |
 | Applicable Rules | Documentation, execution, architecture, coding and both product source policies; preserve shared-corpus neutrality. |
-| Verification | Both product documentation checks; NXVM/MyNES isolated CMake configure and target graph dry runs; direct NXVM tool-root probes; root README exact pre-merge comparison; actual-diff review. |
-| Expected Markers | Product-only CMake presets do not require another product's cache variables; unit targets do not build integration binaries; product-local tool roots resolve; only `docs/rules/` is shared. |
+| Verification | Full live-reference sweep; both product documentation checks; each product's x64/x86 configure, build and complete CTest selection; artifact/INI path inspection; actual-diff and ownership review. |
+| Expected Markers | No live broken local documentation reference; no nonshared App change crosses into its sibling; both architecture target/test routes pass; sole artifacts stay product-owned. |
 | Asset Needs | Existing owner-provided executable artifacts only; external firmware, media and ROM assets remain outside the repository. |
-| Reporting Requirements | Record each eliminated coupling, the restored README commit identity, validation output, and any build-host limitation. |
+| Reporting Requirements | Record reference-sweep scope/results, per-product/per-architecture build and test results, produced artifact identities, and any remaining host limitation. |
 | Stop Conditions | Stop for an irreconcilable governance conflict, protected-asset requirement, or behavior-changing build issue. |
-| Exit Criteria | NXVM/MyNES configure independently; MyNES unit/integration binary targets are separate; all known moved-tool roots resolve; documentation state remains product-local; and root README equals `36925a4b`. |
-| Original Owner Request | Apply the audit cleanup, but restore the root README to its pre-merge NXVM-only form and never modify it again. |
-| Similar-Issue Sweep | Search CMake presets/modules, product tools, validators, and live documentation for cross-product settings, former root paths, and shared non-rule documentation. |
+| Exit Criteria | All live references resolve or are fixed; both products pass their complete x64/x86 build/test routes; nonshared ownership is demonstrated; documentation state remains product-local; and root README remains exactly `36925a4b`. |
+| Original Owner Request | Ensure all documentation/references are correct, nonshared changes cannot alter a sibling App, and both applications fully build/test and are pushed under the new architecture. |
+| Similar-Issue Sweep | Search CMake presets/modules, product tools, validators, live documentation, source/test ownership and artifacts for cross-product settings, former root paths, broken links and nonshared cross-App dependencies. |
 
 ## Current Technical Baseline
 

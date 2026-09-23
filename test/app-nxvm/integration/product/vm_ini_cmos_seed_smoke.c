@@ -24,12 +24,12 @@ static C_INT vm_ini_cmos_seed_matches(const C_CHAR *directory,
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3) return 1;
-    if (!STD_STRCMP(argv[2], "compaq-deskpro-386-model-40-1200k.ini")) {
+    if (!STD_STRCMP(argv[2], "compaq-deskpro-386-model-40-1200k/NXVM.ini")) {
         if (!vm_ini_cmos_seed_matches(argv[1], argv[2], 0x31u, 0x04u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x33u, 0x80u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x2eu, 0x01u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x2fu, 0x69u)) return 1;
-    } else if (!STD_STRCMP(argv[2], "ibm-5170-model-339-1200k.ini")) {
+    } else if (!STD_STRCMP(argv[2], "ibm-5170-model-339-1200k/NXVM.ini")) {
         if (!vm_ini_cmos_seed_matches(argv[1], argv[2], 0x12u, 0x00u) ||
             !vm_ini_cmos_seed_matches(argv[1], argv[2], 0x2fu, 0x43u)) return 1;
     } else return 1;
