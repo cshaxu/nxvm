@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Active: MyNES M6 T41 S2 NXVM existing-Types adoption.**
+**No active NXVM packet.**
 
 | Field | Required record |
 | --- | --- |
@@ -22,6 +22,16 @@
 | Exit Criteria | Every exact existing Lib Types equivalent is adopted, no unclassified `type.h` caller or direct C/platform hit remains in NXVM scope, dual-architecture checks/evidence pass, and the S3 design input ledger is committed. |
 | Original Owner Request | Clean MyNES first; then clean NXVM with existing Lib Types only; then present a Lib Types expansion and complete root-type retirement design for owner review before implementation. |
 | Similar-Issue Sweep | Scan all NXVM production, unit and integration C/H sources for root-facade includes, direct standard/platform headers, raw fixed-width types and facade symbols; classify each as migrated in S2 or retained for S3 with its missing contract. |
+
+## Recent Delivery: MyNES M6 T41 S2
+
+| Field | Required record |
+| --- | --- |
+| Objective | Adopt every exact existing Lib Types equivalent in NXVM without changing Lib, then leave a complete facade-retirement design input. |
+| Result | 469 NXVM source/test callers directly consume Lib Types. Exact scalars, null, booleans, allocation, memory and selected text operations migrated; the one `STD_CALLOC` fault-injection seam is deliberately retained. Three x86 test fixtures now use static storage rather than overflowing the 32-bit default stack. `type.h` remains because all 439 callers retain at least one non-equivalent contract. |
+| Verification | Static completed-mapping sweep is zero; x64 and x86 optimized `vm-0-5-0535` products build; repository-only x64 and x86 suites each pass 337/337. Documentation governance passes. |
+| Evidence | [S2 existing Types adoption](../etc/evidence/m6-t41-s2-existing-types-adoption.md). |
+| Next receiver | M6 T41 S3 designs the bounded Lib Types additions and facade-retirement order for owner review before any `type.h`/`type.c` deletion. |
 
 ## Prior Delivery: M5 T537 S7
 
