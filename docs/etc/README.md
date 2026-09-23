@@ -17,6 +17,7 @@ principal documents named in [docs/README.md](../README.md).
 | `research/fixed-machine-selection.md` | Machine-selection owner | Historical candidate research, SoftPC INI inspection, composition observations and the later all-implemented-machine retention override. |
 | `history/retired-machine-plans/` | Product governance owner | Archived proposals/debt with historical receivers and the later XT/AT/DeskPro/default retention override; not a current queue or task-history record. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t535-s5-shared-test-aggregation.md` | Shared-test owner | Corrective T535 S5's suite-owned Lib/Common/x86 aggregate build targets, root dependency sweep, standalone-suite proof and final repository-only unit result. |
 | `evidence/t532-s1-single-product-layout-ledger.md` | NXVM layout owner | T532 S1 freezes the complete App/Core source and test relocation/deletion map before the single-product structural move. |
 | `evidence/t532-s2-single-product-layout-relocation.md` | NXVM layout owner | T532 S2 executes the frozen move/delete set, including the source-mirroring repository-only test tree, and records final path, build and static-gate proof. |
 | `evidence/t532-s3-single-product-layout-closure.md` | NXVM layout owner | T532 S3 records the final App/Core test-owner mirror, no-former-root sweep, dual 0532 Release artifacts, and complete unit/integration/gate proof. |

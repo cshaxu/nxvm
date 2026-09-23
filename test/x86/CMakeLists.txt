@@ -15,6 +15,7 @@ if(NOT TARGET x86-debug)
     add_subdirectory("${X86_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/x86")
 endif()
 
+set(SHARED_X86_TEST_TARGETS)
 function(x86_test source)
     get_filename_component(name "${source}" NAME)
     add_executable(x86-test-${name} ${source}_smoke.c)
@@ -27,6 +28,8 @@ function(x86_test source)
     add_test(NAME x86.${name} COMMAND x86-test-${name})
     set_tests_properties(x86.${name} PROPERTIES LABELS "unit;x86"
         TIMEOUT 30 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    list(APPEND SHARED_X86_TEST_TARGETS x86-test-${name})
+    set(SHARED_X86_TEST_TARGETS "${SHARED_X86_TEST_TARGETS}" PARENT_SCOPE)
 endfunction()
 
 x86_test(debug_output x86-debug)
@@ -49,3 +52,7 @@ add_test(NAME x86.verifier-negative COMMAND "${CMAKE_COMMAND}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_negative.cmake")
 add_test(NAME x86.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${COMMON_ROOT}/verify_manifest.cmake")
+
+# One suite-owned build entry for importing products.  CTest registration and
+# standalone configuration remain unchanged.
+add_custom_target(shared-x86-tests DEPENDS ${SHARED_X86_TEST_TARGETS})

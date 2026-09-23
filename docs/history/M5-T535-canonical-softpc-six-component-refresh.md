@@ -49,3 +49,15 @@ or unclassified integration failure remains. Documentation governance and
 whitespace checks pass. T535 closes with 336/336 repository-only unit tests,
 27/27 external integration tests, and the complete eight-artifact 0535
 deployment matrix recorded in S4 evidence.
+
+## Corrective S5: Suite-Owned Shared-Test Aggregation
+
+The owner later authorized a narrowly scoped shared-test corpus correction:
+SoftPC and MyNES will import this change after NXVM proves it.  Each shared
+test suite now owns one aggregate build target (`shared-lib-tests`,
+`shared-common-tests`, or `shared-x86-tests`).  The NXVM root full-unit target
+depends on only those three aggregates rather than maintaining a duplicate
+list of every shared executable.  CTest registration, test behavior and all
+product code remain unchanged, so each suite can still configure, build and
+run independently.  [S5 evidence](../etc/evidence/t535-s5-shared-test-aggregation.md)
+records the target sweep and final gates.

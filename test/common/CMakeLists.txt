@@ -18,6 +18,7 @@ if(NOT TARGET common-session)
     add_subdirectory("${COMMON_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/common")
 endif()
 
+set(SHARED_COMMON_TEST_TARGETS)
 function(common_test source)
     get_filename_component(name "${source}" NAME)
     add_executable(common-test-${name} ${source}_smoke.c)
@@ -30,6 +31,8 @@ function(common_test source)
     add_test(NAME common.${name} COMMAND common-test-${name})
     set_tests_properties(common.${name} PROPERTIES LABELS "unit;common"
         TIMEOUT 30 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    list(APPEND SHARED_COMMON_TEST_TARGETS common-test-${name})
+    set(SHARED_COMMON_TEST_TARGETS "${SHARED_COMMON_TEST_TARGETS}" PARENT_SCOPE)
 endfunction()
 
 common_test(sync common-session)
@@ -60,3 +63,7 @@ add_test(NAME common.verifier-negative COMMAND "${CMAKE_COMMAND}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_negative.cmake")
 add_test(NAME common.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}" -P "${COMMON_ROOT}/verify_manifest.cmake")
+
+# One suite-owned build entry for importing products.  CTest registration and
+# standalone configuration remain unchanged.
+add_custom_target(shared-common-tests DEPENDS ${SHARED_COMMON_TEST_TARGETS})

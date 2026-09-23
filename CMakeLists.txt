@@ -94,65 +94,9 @@ elseif(MSVC)
         /STACK:8388608)
 endif()
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
-    lib-test-lib_console
-    lib-test-types_contract
-    lib-test-storage_file_writer_binary
-    lib-test-storage_position
-    lib-test-audio_stream
-    lib-test-kvm_frame_copy
-    lib-test-kvm_component_contract
-    lib-test-kvm_mailbox_selection
-    lib-test-win32_presentation
-    lib-test-win32_window_bounds
-    lib-test-linux_wait_contract
-    lib-test-linux_storage_contract
-    lib-test-linux_input_contract
-    common-test-sync
-    common-test-session_queue_failure
-    common-test-presentation_plan
-    common-test-reconciler
-    common-test-control_state_matrix
-    common-test-control_reconciler_integration
-    common-test-input_queue_mouse_fifo
-    common-test-input_queue_ownership
-    common-test-physical_key_identity
-    common-test-session_frame
-    common-test-session_monitor
-    common-test-composition
-    x86-test-debug_output
-    x86-test-debug_linear
-    x86-test-xasm32
-    x86-test-xasm32_bounds
-    x86-test-xasm32_contract)
-if(WIN32)
-    list(APPEND PROJECT_SHARED_CORPUS_TEST_TARGETS
-        lib-test-lib_console_event_gate
-        lib-test-audio_native
-        lib-test-audio_win32_platform
-        lib-test-kvm_frame_lock
-        lib-test-console_broker
-        lib-test-lib_failure_output_contract
-        lib-test-win32_vocabulary_ownership
-        lib-test-win32_keyboard
-        lib-test-kvm_leaf_control_capacity
-        lib-test-kvm_console_retirement_barrier
-        lib-test-kvm_frame_damage_mouse
-        lib-test-kvm_window_retirement
-        lib-test-kvm_window_modal
-        lib-test-kvm_shutdown_failure
-        lib-test-console_broker_reader_failure
-        lib-test-console_broker_display
-        lib-test-console_broker_cancel
-        lib-test-kvm_input_admission
-        lib-test-console_blocking_gate
-        lib-test-base_sync_ownership
-        lib-test-kvm_keyboard_lifetime
-        lib-test-lib_console_io_contract
-        lib-test-kvm_window_capture_contract
-        common-test-machine_wait
-        common-test-common_machine
-        x86-test-debug_machine)
-endif()
+    shared-lib-tests
+    shared-common-tests
+    shared-x86-tests)
 
 add_library(core-machine STATIC
     src/core/devices/clock.c
@@ -2099,11 +2043,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-boot-failure-lifecycle-smoke
     common-machine-smoke
     std-snprintf-smoke
-    x86-test-xasm32
-    x86-test-xasm32_contract
-    x86-test-debug_output
-    x86-test-debug_linear
-    x86-test-debug_machine
     common-session-smoke
     common-ui-smoke
     common-adapter-conformance
@@ -2140,11 +2079,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-xt-5160-268-profile-smoke)
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
     common-machine-smoke
-    x86-test-xasm32
-    x86-test-xasm32_contract
-    x86-test-debug_output
-    x86-test-debug_linear
-    x86-test-debug_machine
     common-session-smoke
     common-ui-smoke
     common-adapter-conformance

@@ -4,22 +4,9 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | No active implementation task; T535 closed |
-| Admission And Approval | T535 closed after coordinator review of S4 P1 `e774efb5`. Ordinary commits/pushes remain permanently approved. |
-| Objective | Await owner admission of the next queued task. |
-| Non-goals | Do not change guest/device/product behavior, connect audio to NXVM, add an audio abstraction, import uncommitted SoftPC media or edit a shared tree for a local compatibility path. |
-| Reference Baseline | T535 history and [S4 evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md). |
-| Candidate Proposal | None active. |
-| Files And ABI Surface | No active implementation surface. |
-| Applicable Rules | `AGENTS.md`; Task Reading Set; Execution, Architecture, Coding and Document rules. |
-| Verification | T535 closure: exact six-root hash parity; 336/336 unit; 27/27 external integration; eight stripped 0535 artifacts; documentation governance and whitespace checks. |
-| Expected Markers | A future task packet only after owner admission. |
-| Asset Needs | None. |
-| Reporting Requirements | Report the T535 closure and await owner direction. |
-| Stop Conditions | No active implementation task. |
-| Exit Criteria | Not applicable. |
-| Original Owner Request | Owner requested admission of a new T to import SoftPC's latest six components; complete at T535 closure. |
-| Similar-Issue Sweep | T535 completed: all six roots rechecked; no NXVM audio consumer and no retired `session->profile` mirror remain. |
+| Identifier Mode | No active packet |
+| Latest Closure | Corrective T535 S5: each independently configurable shared suite owns its aggregate build target; the NXVM full-unit target consumes only `shared-lib-tests`, `shared-common-tests`, and `shared-x86-tests`. CTest registration and product behavior are unchanged. [Evidence](../etc/evidence/t535-s5-shared-test-aggregation.md). |
+| Next Admission | Owner-directed queue item only. |
 
 ## Current Technical Baseline
 
@@ -38,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T535 | Closed at `e774efb5` pending this governance closure: the frozen SoftPC `1c5a4714` six-tree source/test corpus remains hash-exact. NXVM adds only aggregate build dependencies for the three CTest-registered audio smokes. 336/336 unit, default 20/20, 5170 3/3, XT 1/1 and Model 40 3/3 integration pass. Eight optimized, stripped 0535 x64/x86 artifacts are in their sole profile directories. [History](../history/M5-T535-canonical-softpc-six-component-refresh.md) and [evidence](../etc/evidence/t535-s4-artifact-and-integration-verification.md). |
+| T535 | Closed at `e774efb5`; corrective S5 replaces NXVM's duplicate shared-test executable list with three suite-owned aggregate targets, under the owner's explicit shared-corpus exception for later SoftPC/MyNES import. All three suites remain standalone; 336/336 repository-only unit and documentation governance pass. No runtime artifact changes. [History](../history/M5-T535-canonical-softpc-six-component-refresh.md) and [S5 evidence](../etc/evidence/t535-s5-shared-test-aggregation.md). |
 | T534 | Closed at `f5170a5d`: 53 bounded repairs exhaust the App/Core convergence ledger without a second production owner or unclassified finding. Current 0534 x64/x86 artifacts for default, 5170, XT and Model 40 are verified in their sole profile directories. 333/333 repository-only unit, default parallel 20/20 integration, 5170 3/3, XT 1/1 and Model 40 3/3 integration pass. [History](../history/M5-T534-app-core-code-quality-remediation.md), [closure ledger](../etc/evidence/t534-app-core-code-quality-ledger.md) and [artifact record](../etc/evidence/t534-s50-artifact-verification.md). |
 | T533 | Closed by `99de6d11` and deployment correction `6d5a4828`: fixed XT, 5170, Model 40 and default PC/AT products each use one CMake-selected Profile, one external BYOB asset route and one adjacent NXVM.ini route. Common owns composed host-input ingress; HDD-only validation mutates the production media owner then resets. 335/335 repository-only unit and 20/20 optimized integration pass both serially and in parallel; dual stripped x64/x86 artifacts are verified only in `assets/binary/<profile>/`. [History](../history/M5-T533-fixed-machine-products.md) and [evidence](../etc/evidence/t533-s5-product-convergence-ledger.md). |
 | T532 | Closed at `0b8918ee`: S1 froze the full map; S2 implementation `66bba6f3` relocated App/Core and repository-only test owners, and retired VDM; S3 proves no former root remains, 336/336 unit and 42/42 integration pass, and stripped 0532 x64/x86 artifacts are byte-identical in both required locations. [History](../history/M5-T532-nxvm-single-product-layout.md) and [evidence](../etc/evidence/t532-s3-single-product-layout-closure.md). |

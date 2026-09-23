@@ -15,6 +15,7 @@ if(NOT TARGET types)
 endif()
 
 # Tests consume only shared sources; no importing product resources or targets.
+set(SHARED_LIB_TEST_TARGETS)
 function(lib_test name)
     add_executable(lib-test-${name} ${name}_smoke.c)
     target_link_libraries(lib-test-${name} PRIVATE ${ARGN})
@@ -26,6 +27,8 @@ function(lib_test name)
     add_test(NAME library.${name} COMMAND lib-test-${name})
     set_tests_properties(library.${name} PROPERTIES LABELS "unit;lib"
         TIMEOUT 30 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    list(APPEND SHARED_LIB_TEST_TARGETS lib-test-${name})
+    set(SHARED_LIB_TEST_TARGETS "${SHARED_LIB_TEST_TARGETS}" PARENT_SCOPE)
 endfunction()
 
 lib_test(lib_console console)
@@ -120,3 +123,8 @@ add_test(NAME library.types-layout-selftest COMMAND "${CMAKE_COMMAND}"
 add_test(NAME library.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${LIB_ROOT}/verify_manifest.cmake")
+
+# One suite-owned build entry for importing products.  CTest registration and
+# standalone configuration remain unchanged; this only builds every executable
+# CTest case before a parent invokes its aggregate test runner.
+add_custom_target(shared-lib-tests DEPENDS ${SHARED_LIB_TEST_TARGETS})
