@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/driver.h"
 #include "core/machine.h"
@@ -32,7 +31,7 @@ static void write_truncated_image(void)
 
 static void make_image(void)
 {
-    memset(image, 0, sizeof(image));
+    lib_memory_set(image, 0, sizeof(image));
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 8u; image[5] = 16u; image[6] = 0x41u;
     image[16u + 131072u - 4u] = 0u;

@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -19,7 +18,7 @@ static void run_memory_case(const shift_case *test)
     core_run_result run;
     core_observation observation;
     lib_u8 value;
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xa9u; bytes[17u] = test->input;
@@ -43,7 +42,7 @@ static void run_accumulator_case(const shift_case *test)
     core_machine *machine = LIB_NULL;
     core_run_result run;
     core_observation observation;
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xa9u; bytes[17u] = test->input;

@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 #include <windows.h>
 
 #include "product/command.h"
@@ -52,10 +51,10 @@ static void write_fixture(void)
         0xa5u, 0u, 0x8du, 7u, 0x20u, 0x4cu, 0x79u, 0x80u
     };
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0u;
     bytes[16u + 0x3ffdu] = 0x80u;
     assert(lib_storage_file_writer_open(FIXTURE_PATH,
@@ -111,10 +110,10 @@ static void wait_for_machine_state(common_machine *machine,
 static void submit_line(native_console_fixture *fixture, const char *text)
 {
     common_ui_event event = { 0 };
-    lib_size length = strlen(text);
+    lib_size length = lib_text_length(text);
     assert(length < sizeof(event.value.line.text));
     event.kind = COMMON_UI_EVENT_MONITOR_LINE;
-    memcpy(event.value.line.text, text, length);
+    lib_memory_copy(event.value.line.text, text, length);
     event.value.line.length = (lib_u32)length;
     assert(common_session_enqueue_ui_event(fixture->session, &event));
 }
@@ -161,7 +160,7 @@ static void capture_console(HANDLE output, console_image *image)
 
 static lib_bool image_differs(const console_image *left, const console_image *right)
 {
-    return memcmp(left->cells, right->cells, sizeof(left->cells)) != 0 ? LIB_TRUE : LIB_FALSE;
+    return lib_memory_compare(left->cells, right->cells, sizeof(left->cells)) != 0 ? LIB_TRUE : LIB_FALSE;
 }
 
 static void wait_for_frame(common_machine *machine, HANDLE output, console_image *image)

@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/cartridge.h"
 
@@ -7,7 +6,7 @@ static void make_image(lib_u8 *bytes, lib_u8 prg_banks, lib_u8 chr_banks)
 {
     lib_size index;
     lib_size size = 16u + (lib_size)prg_banks * 16384u + (lib_size)chr_banks * 8192u;
-    memset(bytes, 0, size);
+    lib_memory_set(bytes, 0, size);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = prg_banks; bytes[5] = chr_banks;
     for (index = 0u; index < (lib_size)prg_banks * 16384u; ++index)

@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/driver.h"
 #include "core/machine.h"
@@ -23,7 +22,7 @@ static void write_fixture(void)
 static void make_fixture(void)
 {
     fixture_size = 16u + 16384u;
-    memset(fixture, 0, fixture_size);
+    lib_memory_set(fixture, 0, fixture_size);
     fixture[0] = 'N'; fixture[1] = 'E'; fixture[2] = 'S'; fixture[3] = 0x1au;
     fixture[4] = 1u;
     fixture[16u + 0x3ffcu] = 0x00u;
@@ -35,7 +34,7 @@ static void make_uxrom_fixture(void)
     lib_size prg_offset = 16u + 7u * 16384u;
 
     fixture_size = sizeof(fixture);
-    memset(fixture, 0, fixture_size);
+    lib_memory_set(fixture, 0, fixture_size);
     fixture[0] = 'N'; fixture[1] = 'E'; fixture[2] = 'S'; fixture[3] = 0x1au;
     fixture[4] = 8u;
     fixture[6] = 0x20u;
@@ -51,7 +50,7 @@ static void make_cnrom_fixture(void)
     lib_size prg_offset = 16u;
 
     fixture_size = 16u + 32768u + 8192u;
-    memset(fixture, 0, fixture_size);
+    lib_memory_set(fixture, 0, fixture_size);
     fixture[0] = 'N'; fixture[1] = 'E'; fixture[2] = 'S'; fixture[3] = 0x1au;
     fixture[4] = 2u; fixture[5] = 1u; fixture[6] = 0x30u;
     fixture[prg_offset] = 0x4cu;

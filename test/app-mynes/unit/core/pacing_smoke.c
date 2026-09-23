@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/driver.h"
 #include "core/machine.h"

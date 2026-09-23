@@ -722,7 +722,7 @@ lib_status core_machine_step(core_machine *machine, lib_u32 *out_cycles)
             (opcode == 0xd0u && !core_cpu_flag_is_set(machine, CORE_CPU_FLAG_Z)) ||
             (opcode == 0xf0u && core_cpu_flag_is_set(machine, CORE_CPU_FLAG_Z));
         if (status == LIB_STATUS_OK && take) {
-            lib_u16 target = (lib_u16)(machine->pc + (lib_i32)(int8_t)operand);
+            lib_u16 target = (lib_u16)(machine->pc + (lib_i32)(lib_i8)operand);
             lib_u16 uncorrected = (lib_u16)((machine->pc & 0xff00u) |
                 (target & 0x00ffu));
             lib_u8 discarded;

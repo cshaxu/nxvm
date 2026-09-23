@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 #include <windows.h>
 
 #include "product/command.h"
@@ -64,10 +63,10 @@ static void write_fixture(void)
         0x4cu, 0x79u, 0x80u
     };
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0u;
     bytes[16u + 0x3ffdu] = 0x80u;
     assert(lib_storage_file_writer_open(FIXTURE_PATH,
@@ -185,7 +184,7 @@ static void wait_for_title(HWND window, const char *expected)
     do {
         char title[128];
         GetWindowTextA(window, title, (int)sizeof(title));
-        if (strcmp(title, expected) == 0) return;
+        if (lib_c_strcmp(title, expected) == 0) return;
         Sleep(10u);
     } while (GetTickCount() - started < 3000u);
     assert(!"Window did not reach its expected title");
@@ -210,10 +209,10 @@ static void wait_for_window_retirement(HWND window)
 static void submit_line(native_window_fixture *fixture, const char *text)
 {
     common_ui_event event = { 0 };
-    lib_size length = strlen(text);
+    lib_size length = lib_text_length(text);
     assert(length < sizeof(event.value.line.text));
     event.kind = COMMON_UI_EVENT_MONITOR_LINE;
-    memcpy(event.value.line.text, text, length);
+    lib_memory_copy(event.value.line.text, text, length);
     event.value.line.length = (lib_u32)length;
     assert(common_session_enqueue_ui_event(fixture->session, &event));
 }

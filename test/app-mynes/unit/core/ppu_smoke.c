@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/ppu.h"
 
@@ -85,7 +84,7 @@ int main(void)
     core_cartridge *vertical_cartridge = LIB_NULL;
     core_ppu ppu;
 
-    memset(image, 0, sizeof(image));
+    lib_memory_set(image, 0, sizeof(image));
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 1u;
     assert(core_cartridge_create(&cartridge, image, sizeof(image)) == LIB_STATUS_OK);
@@ -393,7 +392,7 @@ int main(void)
         ppu.oam[index * 4u] = 0xffu;
     ppu.selected_sprite_count = 0u;
     ppu.next_sprite_count = 0u;
-    memset(ppu.next_secondary_oam, 0, sizeof(ppu.next_secondary_oam));
+    lib_memory_set(ppu.next_secondary_oam, 0, sizeof(ppu.next_secondary_oam));
     ppu.scanline = 0u;
     for (lib_u32 index = 1u; index <= 64u; ++index) {
         ppu.dot = (lib_u16)index;

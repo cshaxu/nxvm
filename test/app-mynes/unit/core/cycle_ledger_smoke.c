@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -71,7 +70,7 @@ int main(void)
         core_machine *machine = LIB_NULL;
         core_run_result result;
         core_observation observation;
-        memset(bytes, 0, sizeof(bytes));
+        lib_memory_set(bytes, 0, sizeof(bytes));
         bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
         bytes[4] = 1u;
         bytes[16u] = forms[index].opcode;

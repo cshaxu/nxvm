@@ -1,17 +1,13 @@
 #include <assert.h>
-#include <string.h>
 
 #include "product/command.h"
 
 static int app_command_output_compare(const char *actual, const char *expected)
 {
-    lib_size length = strlen(expected);
-    return memcmp(actual, expected, length) != 0 || actual[length] != '\n' ||
+    lib_size length = lib_text_length(expected);
+    return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\n' ||
         actual[length + 1u] != '\0';
 }
-
-#undef lib_c_strcmp
-#define lib_c_strcmp app_command_output_compare
 
 int main(void)
 {
@@ -37,23 +33,23 @@ int main(void)
         COMMON_SESSION_MACHINE_RESET_COMPLETED, &result);
     assert(result.text[0] == '\0' && !result.arm_prompt);
     app_command_note_monitor_current(&startup_context, LIB_TRUE, &result);
-    assert(lib_c_strcmp(result.text, "Reset complete; machine paused.\n") == 0);
+    assert(app_command_output_compare(result.text, "Reset complete; machine paused.\n") == 0);
     app_command_note_runtime(&startup_context, COMMON_SESSION_MACHINE_PAUSED,
         COMMON_SESSION_MACHINE_RUNNING, &result);
     app_command_note_monitor_current(&startup_context, LIB_TRUE, &result);
-    assert(lib_c_strcmp(result.text, "Machine resumed.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine resumed.\n") == 0);
     app_command_note_runtime(&startup_context, COMMON_SESSION_MACHINE_RUNNING,
         COMMON_SESSION_MACHINE_PAUSED, &result);
     app_command_note_monitor_current(&startup_context, LIB_TRUE, &result);
-    assert(lib_c_strcmp(result.text, "Machine paused.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine paused.\n") == 0);
     app_command_note_runtime(&startup_context, COMMON_SESSION_MACHINE_PAUSED,
         COMMON_SESSION_MACHINE_STOPPED, &result);
     app_command_note_monitor_current(&startup_context, LIB_TRUE, &result);
-    assert(lib_c_strcmp(result.text, "Machine stopped.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine stopped.\n") == 0);
     app_command_note_runtime(&startup_context, COMMON_SESSION_MACHINE_RUNNING,
         COMMON_SESSION_MACHINE_ERROR, &result);
     app_command_note_monitor_current(&startup_context, LIB_TRUE, &result);
-    assert(lib_c_strcmp(result.text, "Machine host error; exit and restart.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine host error; exit and restart.\n") == 0);
     app_command_initialize(&window_start_context, 0, LIB_TRUE, LIB_FALSE,
         COMMON_SESSION_DISPLAY_WINDOW);
     window_start_context.started_after_reset = LIB_TRUE;
@@ -61,7 +57,7 @@ int main(void)
         COMMON_SESSION_MACHINE_RUNNING, &result);
     assert(result.text[0] == '\0' && !result.arm_prompt);
     app_command_note_monitor_current(&window_start_context, LIB_TRUE, &result);
-    assert(lib_c_strcmp(result.text, "Machine started.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine started.\n") == 0);
     app_command_initialize(&console_context, 0, LIB_TRUE, LIB_FALSE,
         COMMON_SESSION_DISPLAY_CONSOLE);
     app_command_note_runtime(&console_context, COMMON_SESSION_MACHINE_PAUSED,
@@ -69,7 +65,8 @@ int main(void)
     app_command_note_monitor_current(&console_context, LIB_TRUE, &result);
     assert(result.text[0] == '\0' && !result.arm_prompt);
     console_context.session.prompt_due = LIB_TRUE;
-    strcpy(console_context.session.pending_monitor_text, "stale monitor text\n\n");
+    lib_memory_copy(console_context.session.pending_monitor_text,
+        "stale monitor text\n\n", sizeof("stale monitor text\n\n"));
     app_command_note_broker(&console_context, COMMON_SESSION_MACHINE_RUNNING,
         LIB_TRUE, LIB_FALSE);
     app_command_note_monitor_current(&console_context, LIB_TRUE, &result);
@@ -82,44 +79,44 @@ int main(void)
         COMMON_SESSION_DISPLAY_WINDOW);
     app_command_open(&context, &result);
     assert(result.text[0] == 'M' && !result.arm_prompt);
-    assert(result.text[strlen(result.text) - 1u] == '\n' &&
-        result.text[strlen(result.text) - 2u] == '\n');
-    assert(strstr(result.text, "start               cold-reset") != NULL);
-    assert(strstr(result.text, "debug               enter the paused-machine debug command group") != NULL);
-    assert(strstr(result.text, "save <file>          save a running or paused machine") != NULL);
-    assert(strstr(result.text, "load <file>          load a snapshot while stopped") != NULL);
-    assert(strstr(result.text, "mem <addr> [count]") == NULL);
-    assert(strstr(result.text, "exit                close MyNes") != NULL);
-    assert(strstr(result.text, "Esc                 pause or resume") != NULL);
+    assert(result.text[lib_text_length(result.text) - 1u] == '\n' &&
+        result.text[lib_text_length(result.text) - 2u] == '\n');
+    assert(lib_c_strstr(result.text, "start               cold-reset") != LIB_NULL);
+    assert(lib_c_strstr(result.text, "debug               enter the paused-machine debug command group") != LIB_NULL);
+    assert(lib_c_strstr(result.text, "save <file>          save a running or paused machine") != LIB_NULL);
+    assert(lib_c_strstr(result.text, "load <file>          load a snapshot while stopped") != LIB_NULL);
+    assert(lib_c_strstr(result.text, "mem <addr> [count]") == LIB_NULL);
+    assert(lib_c_strstr(result.text, "exit                close MyNes") != LIB_NULL);
+    assert(lib_c_strstr(result.text, "Esc                 pause or resume") != LIB_NULL);
     app_command_note_runtime(&context, COMMON_SESSION_MACHINE_INIT,
         COMMON_SESSION_MACHINE_STOPPED, &result);
     assert(result.text[0] == '\0' && !result.arm_prompt);
     app_command_note_monitor_current(&context, LIB_TRUE, &result);
     assert(result.text[0] == '\0' && result.arm_prompt);
-    assert(strcmp(result.prompt, "MyNes> ") == 0);
+    assert(lib_c_strcmp(result.prompt, "MyNes> ") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "", &result);
     assert(result.text[0] == '\0' && result.arm_prompt &&
-        strcmp(result.prompt, "MyNes> ") == 0);
+        lib_c_strcmp(result.prompt, "MyNes> ") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "start", &result);
-    assert(lib_c_strcmp(result.text, "Insert a cartridge before starting.\n") == 0);
+    assert(app_command_output_compare(result.text, "Insert a cartridge before starting.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "save", &result);
-    assert(lib_c_strcmp(result.text, "Usage: save <file>\n") == 0);
+    assert(app_command_output_compare(result.text, "Usage: save <file>\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "save state.mns", &result);
-    assert(lib_c_strcmp(result.text, "Machine is stopped; use start before save.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine is stopped; use start before save.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_PAUSED, "load", &result);
-    assert(lib_c_strcmp(result.text, "Usage: load <file>\n") == 0);
+    assert(app_command_output_compare(result.text, "Usage: load <file>\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_RUNNING, "load state.mns", &result);
-    assert(lib_c_strcmp(result.text, "Machine is running; stop it before load.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine is running; stop it before load.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_PAUSED, "load state.mns", &result);
-    assert(lib_c_strcmp(result.text, "Machine is paused; stop it before load.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine is paused; stop it before load.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "debug", &result);
-    assert(strstr(result.text, "debug regs") != NULL);
+    assert(lib_c_strstr(result.text, "debug regs") != LIB_NULL);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "debug regs", &result);
-    assert(lib_c_strcmp(result.text, "Pause with a cartridge before debugging.\n") == 0);
+    assert(app_command_output_compare(result.text, "Pause with a cartridge before debugging.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "regs", &result);
-    assert(lib_c_strcmp(result.text, "Unknown command.\n") == 0);
+    assert(app_command_output_compare(result.text, "Unknown command.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "reset", &result);
-    assert(lib_c_strcmp(result.text, "Insert a cartridge before reset.\n") == 0);
+    assert(app_command_output_compare(result.text, "Insert a cartridge before reset.\n") == 0);
     app_command_initialize(&loaded_context, 0, LIB_TRUE, LIB_FALSE,
         COMMON_SESSION_DISPLAY_WINDOW);
     assert(app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_PAUSED,
@@ -141,9 +138,9 @@ int main(void)
     app_command_submit_line(&loaded_context, COMMON_SESSION_MACHINE_STOPPED, "start", &result);
     assert(result.request == COMMON_SESSION_REQUEST_RESET && !result.arm_prompt);
     app_command_submit_line(&loaded_context, COMMON_SESSION_MACHINE_STOPPED, "start", &result);
-    assert(lib_c_strcmp(result.text, "Machine command is still pending.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine command is still pending.\n") == 0);
     app_command_submit_line(&loaded_context, COMMON_SESSION_MACHINE_STOPPED, "help", &result);
-    assert(strstr(result.text, "MyNes\n=====") != NULL);
+    assert(lib_c_strstr(result.text, "MyNes\n=====") != LIB_NULL);
     app_command_note_runtime(&loaded_context, COMMON_SESSION_MACHINE_STOPPED,
         COMMON_SESSION_MACHINE_RESET_COMPLETED, &result);
     assert(result.request == COMMON_SESSION_REQUEST_RESUME && !result.arm_prompt);
@@ -158,47 +155,47 @@ int main(void)
         COMMON_SESSION_MACHINE_STOPPED, &result);
     app_command_note_monitor_current(&context, LIB_TRUE, &result);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "pause", &result);
-    assert(lib_c_strcmp(result.text, "Machine is not running.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine is not running.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "stop", &result);
-    assert(lib_c_strcmp(result.text, "Machine is already stopped.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine is already stopped.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_ERROR, "start", &result);
-    assert(lib_c_strcmp(result.text, "Machine host error; exit and restart.\n") == 0);
+    assert(app_command_output_compare(result.text, "Machine host error; exit and restart.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_ERROR, "help", &result);
-    assert(strstr(result.text, "While the game is running:") != NULL);
+    assert(lib_c_strstr(result.text, "While the game is running:") != LIB_NULL);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom insert", &result);
-    assert(lib_c_strcmp(result.text, "rom insert requires one ASCII file path.\n") == 0);
+    assert(app_command_output_compare(result.text, "rom insert requires one ASCII file path.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom insert \"\"", &result);
-    assert(lib_c_strcmp(result.text, "rom insert requires one ASCII file path.\n") == 0);
+    assert(app_command_output_compare(result.text, "rom insert requires one ASCII file path.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom insert demo.nes extra", &result);
-    assert(lib_c_strcmp(result.text, "rom insert requires one ASCII file path.\n") == 0);
+    assert(app_command_output_compare(result.text, "rom insert requires one ASCII file path.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom insert \"demo game.nes\"", &result);
-    assert(lib_c_strcmp(result.text, "Cartridge insertion failed.\n") == 0);
+    assert(app_command_output_compare(result.text, "Cartridge insertion failed.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom insert \x80", &result);
-    assert(lib_c_strcmp(result.text, "rom insert requires one ASCII file path.\n") == 0);
-    memcpy(path_line, "rom insert ", 11u);
-    memset(path_line + 11u, 'a', 1023u);
+    assert(app_command_output_compare(result.text, "rom insert requires one ASCII file path.\n") == 0);
+    lib_memory_copy(path_line, "rom insert ", 11u);
+    lib_memory_set(path_line + 11u, 'a', 1023u);
     path_line[11u + 1023u] = '\0';
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, path_line, &result);
-    assert(lib_c_strcmp(result.text, "Cartridge insertion failed.\n") == 0);
+    assert(app_command_output_compare(result.text, "Cartridge insertion failed.\n") == 0);
     path_line[11u + 1023u] = 'a';
     path_line[11u + 1024u] = '\0';
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, path_line, &result);
-    assert(lib_c_strcmp(result.text, "rom insert requires one ASCII file path.\n") == 0);
+    assert(app_command_output_compare(result.text, "rom insert requires one ASCII file path.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom insert a\n", &result);
-    assert(lib_c_strcmp(result.text, "rom insert requires one ASCII file path.\n") == 0);
+    assert(app_command_output_compare(result.text, "rom insert requires one ASCII file path.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom eject extra", &result);
-    assert(lib_c_strcmp(result.text, "rom eject accepts no arguments.\n") == 0);
+    assert(app_command_output_compare(result.text, "rom eject accepts no arguments.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "rom", &result);
-    assert(lib_c_strcmp(result.text, "Unknown command.\n") == 0);
+    assert(app_command_output_compare(result.text, "Unknown command.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "set mem.count 65536", &result);
-    assert(lib_c_strcmp(result.text, "Unknown command.\n") == 0);
+    assert(app_command_output_compare(result.text, "Unknown command.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "set disasm.count 0x10000", &result);
-    assert(lib_c_strcmp(result.text, "Unknown command.\n") == 0);
+    assert(app_command_output_compare(result.text, "Unknown command.\n") == 0);
     app_command_reject_line(&context, &result);
-    assert(lib_c_strcmp(result.text, "Command is too long.\n") == 0);
+    assert(app_command_output_compare(result.text, "Command is too long.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "exit", &result);
     assert(result.exit_requested && !result.arm_prompt);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "unknown", &result);
-    assert(lib_c_strcmp(result.text, "Unknown command.\n") == 0);
+    assert(app_command_output_compare(result.text, "Unknown command.\n") == 0);
     return 0;
 }

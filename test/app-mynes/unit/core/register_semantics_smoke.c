@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -23,9 +22,9 @@ int main(void)
         0xa9u, 0x80u, 0xaau, 0xe8u, 0xcau, 0xa8u, 0xc8u, 0x88u,
         0x8au, 0x98u, 0xa2u, 0u, 0x9au, 0xbau
     };
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
-    bytes[4] = 1u; memcpy(bytes + 16u, program, sizeof(program));
+    bytes[4] = 1u; lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0u; bytes[16u + 0x3ffdu] = 0x80u;
     assert(core_machine_create(&machine, bytes, sizeof(bytes), &options) == LIB_STATUS_OK);
     (void)step(machine);

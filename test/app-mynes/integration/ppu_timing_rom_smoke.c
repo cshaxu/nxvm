@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/driver.h"
 #include "core/machine.h"
@@ -60,10 +59,10 @@ static void write_fixture(lib_u8 fine_x)
     emit(program, &size, 0x4cu); emit(program, &size, (lib_u8)loop);
     emit(program, &size, (lib_u8)(0x80u + (loop >> 8u)));
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, size);
+    lib_memory_copy(bytes + 16u, program, size);
     bytes[16u + 0x3ffcu] = 0u; bytes[16u + 0x3ffdu] = 0x80u;
     assert(lib_storage_file_writer_open(FIXTURE_PATH, LIB_STORAGE_FILE_WRITER_TRUNCATE,
         &writer) == LIB_STATUS_OK);

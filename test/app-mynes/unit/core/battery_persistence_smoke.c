@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "core/bus.h"
 #include "core/driver.h"
@@ -12,7 +11,7 @@ static void write_image(const char *path, lib_u8 distinguishing_byte)
     lib_u8 image[IMAGE_BYTES];
     FILE *file;
 
-    memset(image, 0, sizeof(image));
+    lib_memory_set(image, 0, sizeof(image));
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 8u; image[5] = 16u; image[6] = 0x43u; image[8] = 1u;
     image[16u] = distinguishing_byte;

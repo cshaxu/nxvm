@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/apu.h"
 #include "core/bus.h"
@@ -11,7 +10,7 @@ static core_machine *make_machine(void)
     core_machine *machine = LIB_NULL;
     core_machine_options options = { 0 };
 
-    memset(image, 0, sizeof(image));
+    lib_memory_set(image, 0, sizeof(image));
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 1u;
     image[16u + 0x3ffcu] = 0u;

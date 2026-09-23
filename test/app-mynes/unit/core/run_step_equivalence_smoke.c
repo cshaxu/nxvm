@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine.h"
 #include "core/machine_interface.h"
@@ -11,9 +10,9 @@ static core_machine *make_machine(void)
     core_machine *machine = LIB_NULL;
     static const lib_u8 program[] = { 0x58u, 0xa9u, 0x42u, 0x85u, 0x10u, 0xeau };
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
-    bytes[4] = 1u; memcpy(bytes + 16u, program, sizeof(program));
+    bytes[4] = 1u; lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x1000u] = 0xeau;
     bytes[16u + 0x3ffau] = 0u; bytes[16u + 0x3ffbu] = 0x90u;
     bytes[16u + 0x3ffcu] = 0u; bytes[16u + 0x3ffdu] = 0x80u;
@@ -50,7 +49,7 @@ static void compare_checkpoint(core_machine *run_machine, core_machine *step_mac
     assert(core_machine_trace_copy(step_machine, step_trace, CORE_MACHINE_TRACE_CAPACITY,
         &step_count) == LIB_STATUS_OK);
     assert(run_count == step_count);
-    assert(memcmp(run_trace, step_trace, run_count * sizeof(run_trace[0])) == 0);
+    assert(lib_memory_compare(run_trace, step_trace, run_count * sizeof(run_trace[0])) == 0);
 }
 
 int main(void)

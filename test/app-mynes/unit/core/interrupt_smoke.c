@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/bus.h"
 #include "core/machine.h"
@@ -10,7 +9,7 @@ static core_machine *make_machine(void)
     lib_u8 bytes[16u + 16384u];
     core_machine_options options = { 0 };
     core_machine *machine = LIB_NULL;
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0x58u; bytes[17u] = 0xeau;       /* CLI; NOP */

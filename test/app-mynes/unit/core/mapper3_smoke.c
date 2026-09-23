@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/bus.h"
 #include "core/machine.h"
@@ -10,12 +9,12 @@ static void make_image(lib_u8 *image, lib_bool vertical)
 {
     lib_size index;
 
-    memset(image, 0, MAPPER3_IMAGE_BYTES);
+    lib_memory_set(image, 0, MAPPER3_IMAGE_BYTES);
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 2u; image[5] = 4u;
     image[6] = (lib_u8)(0x30u | (vertical ? 1u : 0u));
     for (index = 0u; index < 4u; ++index)
-        memset(image + 16u + 32768u + index * 8192u, (int)index, 8192u);
+        lib_memory_set(image + 16u + 32768u + index * 8192u, (int)index, 8192u);
     image[16u + 0u] = 2u;
     image[16u + 0x4000u] = 0u;
     image[16u + 0x4001u] = 1u;

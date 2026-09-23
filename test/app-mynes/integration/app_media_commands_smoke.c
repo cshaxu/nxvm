@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "product/command.h"
 #include "common/machine/machine_interface.h"
@@ -14,7 +13,7 @@ static void write_fixture(void)
     lib_u8 bytes[16u + 16384u];
     lib_storage_file_writer *writer = LIB_NULL;
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xeau;

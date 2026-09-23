@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "product/command.h"
 #include "common/machine/machine_interface.h"
@@ -11,8 +10,8 @@
 
 static int app_command_output_compare(const char *actual, const char *expected)
 {
-    lib_size length = strlen(expected);
-    return memcmp(actual, expected, length) != 0 || actual[length] != '\n' ||
+    lib_size length = lib_text_length(expected);
+    return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\n' ||
         actual[length + 1u] != '\0';
 }
 
@@ -22,10 +21,10 @@ static int app_command_output_compare(const char *actual, const char *expected)
 static void make_fixture(lib_u8 *bytes)
 {
     static const lib_u8 program[] = { 0xa9u, 0x2au, 0xeau, 0x4cu, 0x02u, 0x80u };
-    memset(bytes, 0, 16u + 16384u);
+    lib_memory_set(bytes, 0, 16u + 16384u);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0x00u;
     bytes[16u + 0x3ffdu] = 0x80u;
 }

@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 #include "core/opcode_interface.h"
@@ -22,7 +21,7 @@ int main(void)
         core_machine *machine = 0;
         core_run_result result;
         core_opcode_metadata metadata;
-        memset(bytes, 0, sizeof(bytes));
+        lib_memory_set(bytes, 0, sizeof(bytes));
         bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
         bytes[4] = 1u; bytes[16u] = (lib_u8)opcode;
         bytes[16u + 0x3ffcu] = 0u; bytes[16u + 0x3ffdu] = 0x80u;

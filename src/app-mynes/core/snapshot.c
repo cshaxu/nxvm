@@ -2,8 +2,6 @@
 
 #include "core/machine.h"
 
-#include <string.h>
-
 enum { CORE_SNAPSHOT_VERSION = 2u, CORE_SNAPSHOT_PRG_RAM_BYTES = 8192u };
 
 #define SNAPSHOT_STEP(expression) \
@@ -482,7 +480,8 @@ lib_status core_snapshot_read(core_machine *machine,
     if (machine == LIB_NULL || machine->cartridge == LIB_NULL || read == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     status = read(context, magic, sizeof(magic));
-    if (status != LIB_STATUS_OK || memcmp(magic, "MNS1", sizeof(magic)) != 0)
+    if (status != LIB_STATUS_OK ||
+        lib_memory_compare(magic, "MNS1", sizeof(magic)) != 0)
         return status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
     if ((status = snapshot_read_u32(read, context, &version)) != LIB_STATUS_OK || version != CORE_SNAPSHOT_VERSION ||
         (status = snapshot_read_u64(read, context, &identity)) != LIB_STATUS_OK ||
@@ -525,8 +524,10 @@ lib_status core_snapshot_read(core_machine *machine,
         machine->cartridge->prg_bytes = prg_bytes;
         machine->cartridge->chr_bytes = chr_bytes;
     }
-    if (staged_prg != LIB_NULL) memcpy(machine->cartridge->prg_ram, staged_prg, prg_ram_bytes);
-    if (staged_chr != LIB_NULL) memcpy(machine->cartridge->chr, staged_chr, chr_ram_bytes);
+    if (staged_prg != LIB_NULL)
+        lib_memory_copy(machine->cartridge->prg_ram, staged_prg, prg_ram_bytes);
+    if (staged_chr != LIB_NULL)
+        lib_memory_copy(machine->cartridge->chr, staged_chr, chr_ram_bytes);
     lib_release(staged_prg); lib_release(staged_chr);
     return LIB_STATUS_OK;
 }

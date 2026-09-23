@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -10,10 +9,10 @@ static void fixture(lib_u8 *bytes)
         0x8du, 0x00u, 0x02u, 0xa2u, 0x00u, 0xe8u, 0xcau, 0xe0u,
         0x00u, 0xd0u, 0x02u, 0xeau, 0x4cu, 0x14u, 0x80u
     };
-    memset(bytes, 0, 16u + 16384u);
+    lib_memory_set(bytes, 0, 16u + 16384u);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0x00u;
     bytes[16u + 0x3ffdu] = 0x80u;
 }

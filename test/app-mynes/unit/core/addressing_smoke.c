@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -22,10 +21,10 @@ int main(void)
         0xbdu, 0xffu, 0x80u
     };
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x100u] = 0x77u;
     bytes[16u + 0x3ffcu] = 0x00u; bytes[16u + 0x3ffdu] = 0x80u;
     assert(core_machine_create(&machine, bytes, sizeof(bytes), &options) == LIB_STATUS_OK);
@@ -50,7 +49,7 @@ int main(void)
     }
     core_machine_destroy(machine);
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xa0u; bytes[17u] = 0x01u;
@@ -71,7 +70,7 @@ int main(void)
     assert(core_machine_observe(machine, &observation) == LIB_STATUS_OK && observation.x == 0x66u);
     core_machine_destroy(machine);
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xa9u; bytes[17u] = 0x44u;
@@ -111,7 +110,7 @@ int main(void)
 
     /* Zero-page indexed forms use the unindexed zero-page address for their
      * fourth transfer, then perform the effective write. */
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xa2u; bytes[17u] = 0x01u;
@@ -136,7 +135,7 @@ int main(void)
 
     /* STA absolute,X consumes its fifth cycle as a read even when indexing
      * stays within the page.  The final write must follow that discard read. */
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xa9u; bytes[17u] = 0x55u;

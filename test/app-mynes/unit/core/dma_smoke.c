@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/bus.h"
 #include "core/machine.h"
@@ -14,7 +13,7 @@ int main(void)
     lib_u32 index;
     lib_u8 value;
 
-    memset(image, 0, sizeof(image));
+    lib_memory_set(image, 0, sizeof(image));
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 1u;
     image[16u + 0x3ffcu] = 0u;
@@ -87,7 +86,7 @@ int main(void)
             assert(run.instructions == 0u && run.cycles == budgets[index]);
         }
         assert(!partitioned->dma_active && !partitioned->dma_pending);
-        assert(memcmp(full->ppu.oam, partitioned->ppu.oam, sizeof(full->ppu.oam)) == 0);
+        assert(lib_memory_compare(full->ppu.oam, partitioned->ppu.oam, sizeof(full->ppu.oam)) == 0);
         assert(full->slots == partitioned->slots && full->cycles == partitioned->cycles &&
             full->ppu.scanline == partitioned->ppu.scanline && full->ppu.dot == partitioned->ppu.dot &&
             full->pc == partitioned->pc);

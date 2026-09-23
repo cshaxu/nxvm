@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "core/bus.h"
 #include "core/machine.h"
@@ -54,7 +53,7 @@ int main(void)
     lib_size index;
     lib_u8 value;
 
-    memset(image, 0, sizeof(image));
+    lib_memory_set(image, 0, sizeof(image));
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 2u; image[5] = 4u; image[6] = 0x10u;
     for (index = 0u; index < 32768u; ++index)

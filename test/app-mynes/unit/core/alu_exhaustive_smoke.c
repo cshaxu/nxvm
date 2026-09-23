@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -39,7 +38,7 @@ static void run_case(lib_u8 opcode, lib_u8 a, lib_u8 value, lib_bool carry,
     lib_u16 total = (lib_u16)a + (subtract ? (lib_u8)~value : value) +
         (carry ? 1u : 0u);
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u] = 0xa9u; bytes[17u] = a;

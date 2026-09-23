@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "core/bus.h"
 #include "core/driver.h"
@@ -13,7 +12,7 @@ static void make_image(lib_u8 *image)
 {
     lib_size index;
 
-    memset(image, 0, MAPPER4_IMAGE_BYTES);
+    lib_memory_set(image, 0, MAPPER4_IMAGE_BYTES);
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 8u; image[5] = 16u; image[6] = 0x43u; image[8] = 1u;
     for (index = 0u; index < 131072u; ++index)
@@ -26,7 +25,7 @@ static void make_image(lib_u8 *image)
 
 static void make_chr_ram_image(lib_u8 *image)
 {
-    memset(image, 0, MAPPER4_CHR_RAM_IMAGE_BYTES);
+    lib_memory_set(image, 0, MAPPER4_CHR_RAM_IMAGE_BYTES);
     image[0] = 'N'; image[1] = 'E'; image[2] = 'S'; image[3] = 0x1au;
     image[4] = 2u; image[5] = 0u; image[6] = 0x40u;
     image[MAPPER4_CHR_RAM_IMAGE_BYTES - 4u] = 0u;
@@ -189,7 +188,7 @@ int main(void)
     core_ppu_reset(&machine->ppu, CORE_RESET_POWER);
     machine->ppu.control = 0x08u;
     machine->ppu.mask = 0x18u;
-    memset(machine->ppu.oam, 0xff, sizeof(machine->ppu.oam));
+    lib_memory_set(machine->ppu.oam, 0xff, sizeof(machine->ppu.oam));
     machine->cartridge->mmc3_irq_counter = 200u;
     machine->cartridge->mmc3_irq_latch = 255u;
     machine->cartridge->mmc3_irq_reload = LIB_FALSE;

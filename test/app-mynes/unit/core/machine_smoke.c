@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -10,10 +9,10 @@ static void make_nrom_fixture(lib_u8 *bytes)
         0xe8u, 0xe0u, 0x0au, 0xd0u, 0xfbu, 0x4cu, 0x0du, 0x80u
     };
 
-    memset(bytes, 0, 16u + 16384u);
+    lib_memory_set(bytes, 0, 16u + 16384u);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0x00u;
     bytes[16u + 0x3ffdu] = 0x80u;
 }
@@ -67,7 +66,7 @@ int main(void)
     assert(core_machine_create(&machine, fixture, sizeof(fixture), &options) ==
         LIB_STATUS_INVALID_ARGUMENT);
 
-    memset(large_fixture, 0, sizeof(large_fixture));
+    lib_memory_set(large_fixture, 0, sizeof(large_fixture));
     large_fixture[0] = 'N'; large_fixture[1] = 'E';
     large_fixture[2] = 'S'; large_fixture[3] = 0x1au;
     large_fixture[4] = 2u;

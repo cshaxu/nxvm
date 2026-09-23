@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "core/machine_interface.h"
 
@@ -20,10 +19,10 @@ static void run_case(const branch_case *test)
     core_observation observation;
     lib_u16 branch_pc = (lib_u16)(0x8000u + test->setup_size);
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, test->setup, test->setup_size);
+    lib_memory_copy(bytes + 16u, test->setup, test->setup_size);
     bytes[16u + test->setup_size] = test->opcode;
     bytes[17u + test->setup_size] = 2u;
     bytes[16u + 0x3ffcu] = 0u; bytes[16u + 0x3ffdu] = 0x80u;
@@ -66,7 +65,7 @@ int main(void)
 
     for (index = 0u; index < sizeof(tests) / sizeof(tests[0]); ++index) run_case(&tests[index]);
 
-    memset(bytes, 0, sizeof(bytes));
+    lib_memory_set(bytes, 0, sizeof(bytes));
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
     bytes[16u + 0x00fdu] = 0x10u; bytes[16u + 0x00feu] = 1u;

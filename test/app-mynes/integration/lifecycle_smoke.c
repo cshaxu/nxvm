@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "common/machine/machine_interface.h"
 #include "core/driver_interface.h"
@@ -16,10 +15,10 @@ static void make_fixture(lib_u8 *bytes)
         0xe8u, 0xe0u, 0x0au, 0xd0u, 0xfbu, 0x4cu, 0x0du, 0x80u
     };
 
-    memset(bytes, 0, 16u + 16384u);
+    lib_memory_set(bytes, 0, 16u + 16384u);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0x00u;
     bytes[16u + 0x3ffdu] = 0x80u;
 }
@@ -73,7 +72,7 @@ int main(void)
     make_fixture(replacement);
     replacement[16u + 0x0010u] = 0xeau;
     replacement[16u + 0x3ffcu] = 0x10u;
-    memset(invalid, 0, sizeof(invalid));
+    lib_memory_set(invalid, 0, sizeof(invalid));
     write_fixture(FIXTURE_PATH, fixture, sizeof(fixture));
     write_fixture(REPLACEMENT_PATH, replacement, sizeof(replacement));
     write_fixture("mynes-invalid-fixture.nes", invalid, sizeof(invalid));
@@ -96,13 +95,13 @@ int main(void)
     }
     observe(machine, response);
     assert(response[13] == 0x0au && response[18] == 0x0du && response[19] == 0x80u);
-    memcpy(response_before_rejection, response, sizeof(response_before_rejection));
+    lib_memory_copy(response_before_rejection, response, sizeof(response_before_rejection));
     assert(!common_machine_set_removable_media(machine, "mynes-invalid-fixture.nes",
         LIB_STORAGE_MEDIUM_READONLY));
     assert(core_driver_has_cartridge(driver));
     assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
     observe(machine, response);
-    assert(memcmp(response, response_before_rejection, 52u) == 0);
+    assert(lib_memory_compare(response, response_before_rejection, 52u) == 0);
     assert(common_machine_set_removable_media(machine, REPLACEMENT_PATH,
         LIB_STORAGE_MEDIUM_READONLY));
     assert(core_driver_has_cartridge(driver));

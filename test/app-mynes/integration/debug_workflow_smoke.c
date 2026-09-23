@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "common/machine/machine_interface.h"
 #include "core/driver_interface.h"
@@ -36,10 +35,10 @@ static lib_u32 read_u32(const lib_u8 *bytes)
 static void make_fixture(lib_u8 *bytes)
 {
     static const lib_u8 program[] = { 0xa9u, 0x2au, 0xeau, 0x4cu, 0x02u, 0x80u };
-    memset(bytes, 0, 16u + 16384u);
+    lib_memory_set(bytes, 0, 16u + 16384u);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
     bytes[4] = 1u;
-    memcpy(bytes + 16u, program, sizeof(program));
+    lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0x00u;
     bytes[16u + 0x3ffdu] = 0x80u;
 }
@@ -166,14 +165,14 @@ int main(void)
 
     header(request, 3u, 5u);
     write_u16(request + 8u, 0x8000u); write_u16(request + 10u, 1u); request[12] = 0u;
-    memset(response, 0x5au, sizeof(response));
+    lib_memory_set(response, 0x5au, sizeof(response));
     assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     assert(common_machine_debug_execute_with_lease(machine, &lease, request, 13u,
         response, sizeof(response), &response_size) == LIB_STATUS_INVALID_ARGUMENT);
     assert(response_size == 0u && response[0] == 0x5au);
 
     header(request, 8u, 8u);
-    memset(request + 8u, 0, 8u);
+    lib_memory_set(request + 8u, 0, 8u);
     request[8u] = 1u;
     assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     assert(common_machine_debug_execute_with_lease(machine, &lease, request, 16u,
@@ -188,7 +187,7 @@ int main(void)
     assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     assert(common_machine_debug_execute_with_lease(machine, &lease, request, 20u,
         response, sizeof(response), &response_size) == LIB_STATUS_UNSUPPORTED);
-    memset(response, 0x5au, sizeof(response));
+    lib_memory_set(response, 0x5au, sizeof(response));
     header(request, 1u, 0u); request[0] = 2u;
     assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     assert(common_machine_debug_execute_with_lease(machine, &lease, request, 8u,
