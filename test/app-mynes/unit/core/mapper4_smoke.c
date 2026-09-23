@@ -183,6 +183,28 @@ int main(void)
     core_ppu_cpu_write(&machine->ppu, machine->cartridge, 6u, 0u);
     assert(core_cartridge_irq_asserted(machine->cartridge));
 
+    /* Rendering fetches a transparent dummy sprite tile for every unused
+     * slot.  With background at $0000 and sprites at $1000, the first dummy
+     * fetch after the background low phase supplies one qualified MMC3 edge. */
+    core_ppu_reset(&machine->ppu, CORE_RESET_POWER);
+    machine->ppu.control = 0x08u;
+    machine->ppu.mask = 0x18u;
+    memset(machine->ppu.oam, 0xff, sizeof(machine->ppu.oam));
+    machine->cartridge->mmc3_irq_counter = 200u;
+    machine->cartridge->mmc3_irq_latch = 255u;
+    machine->cartridge->mmc3_irq_reload = LIB_FALSE;
+    machine->cartridge->mmc3_irq_enabled = LIB_FALSE;
+    machine->cartridge->mmc3_irq_asserted = LIB_FALSE;
+    machine->cartridge->mmc3_a12_high = LIB_FALSE;
+    machine->cartridge->mmc3_a12_low_ticks = 8u;
+    for (index = 0u; index < 341u; ++index)
+        core_ppu_tick(&machine->ppu, machine->cartridge);
+    assert(machine->cartridge->mmc3_irq_counter == 199u);
+    for (index = 0u; index < 8u; ++index) {
+        assert(machine->ppu.sprite_pattern_low[index] == 0u);
+        assert(machine->ppu.sprite_pattern_high[index] == 0u);
+    }
+
     core_machine_destroy(machine);
     make_chr_ram_image(chr_ram_image);
     assert(core_machine_create(&machine, chr_ram_image, sizeof(chr_ram_image),

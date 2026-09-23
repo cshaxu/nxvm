@@ -2,8 +2,9 @@
 
 ## Current Work
 
-**No active MyNes subtask.** M6 T39 S5 selects PPU empty-sprite dummy fetches
-as the next finite A12 repair receiver; no S6 change starts until admission.
+**No active MyNes subtask.** M6 T39 S6 restores the rendered Mapper-004
+scanline clock, but the direct visual disposition remains black; no S7 work
+starts until a new corrective packet is admitted.
 
 ## M6 T39 Progress
 
@@ -14,6 +15,7 @@ as the next finite A12 repair receiver; no S6 change starts until admission.
 | S3 | Accepted diagnosis: the bounded pre-S2 comparison does not select a reversion; an ignored A/B run selects the Cartridge MMC3 counter/reload/A12 contract as the next repair receiver. [Evidence](../etc/evidence/m6-t39-s3-irq-ppu-diagnosis.md). |
 | S4 | Accepted repair: `$C001` clears the live MMC3 count and reloads only on the next qualified edge; owned x64/x86 regressions pass, while the synchronized visual probe remains black. [Evidence](../etc/evidence/m6-t39-s4-mmc3-reload.md). |
 | S5 | Accepted diagnosis: the selected rendering layout yields zero qualified edges because unused sprite slots skip dummy pattern fetches; S6 receives the narrow PPU repair. [Evidence](../etc/evidence/m6-t39-s5-ppu-a12-schedule.md). |
+| S6 | Accepted repair: dummy sprite reads plus raw A12 short-low retention restore one qualified edge on each observed visible scanline; owned regressions pass but the Start frame remains black. [Evidence](../etc/evidence/m6-t39-s6-empty-sprite-fetch.md). |
 
 ## Current Technical Baseline
 

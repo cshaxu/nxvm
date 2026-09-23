@@ -392,7 +392,12 @@ void core_cartridge_ppu_a12_tick(core_cartridge *cartridge, lib_bool high)
         cartridge->mmc3_a12_high = LIB_FALSE;
         return;
     }
-    if (cartridge->mmc3_a12_high || cartridge->mmc3_a12_low_ticks < 8u) return;
+    if (cartridge->mmc3_a12_high) return;
+    if (cartridge->mmc3_a12_low_ticks < 8u) {
+        cartridge->mmc3_a12_high = LIB_TRUE;
+        cartridge->mmc3_a12_low_ticks = 0u;
+        return;
+    }
     cartridge->mmc3_a12_high = LIB_TRUE;
     cartridge->mmc3_a12_low_ticks = 0u;
     if (cartridge->mmc3_irq_reload || cartridge->mmc3_irq_counter == 0u) {

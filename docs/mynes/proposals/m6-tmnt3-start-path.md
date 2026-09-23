@@ -55,6 +55,12 @@ background-low/sprite-high layout because empty sprite slots return before
 their required dummy pattern fetch.  S6 owns the narrow PPU fix and a
 project-owned empty-sprite Mapper-004 edge regression.
 
+S6 restores one qualified edge on each observed visible scanline by retaining
+dummy fetches and continuous raw A12 state across short gaps.  Its direct frame
+comparison is still black after Start, so the next task must diagnose the PPU
+pixel/scroll pipeline or the now-timed guest path rather than reopening the
+scanline counter.
+
 ## Completion Standard
 
 The task records a finite decision result: Start reaches the controller serial

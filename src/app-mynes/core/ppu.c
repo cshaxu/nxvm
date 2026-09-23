@@ -200,6 +200,8 @@ static void core_ppu_fetch_sprite_pattern(core_ppu *ppu, core_cartridge *cartrid
     lib_u8 row = target > sprite[0u] ? (lib_u8)(target - sprite[0u] - 1u) : height;
     lib_u16 pattern;
     if (slot >= ppu->secondary_oam_count || row >= height) {
+        (void)core_ppu_memory_read(ppu, cartridge,
+            (lib_u16)(0x1fe0u + (high ? 8u : 0u)));
         if (high) ppu->sprite_pattern_high[slot] = 0u; else ppu->sprite_pattern_low[slot] = 0u;
         return;
     }
@@ -323,8 +325,8 @@ void core_ppu_tick(core_ppu *ppu, core_cartridge *cartridge)
         if (ppu->dot >= 257u && ppu->dot <= 320u) {
             lib_u8 slot = (lib_u8)((ppu->dot - 257u) >> 3u);
             lib_u8 phase = (lib_u8)((ppu->dot - 257u) & 7u);
-            if (phase == 2u) core_ppu_fetch_sprite_pattern(ppu, cartridge, slot, LIB_FALSE);
-            else if (phase == 3u) core_ppu_fetch_sprite_pattern(ppu, cartridge, slot, LIB_TRUE);
+            if (phase == 5u) core_ppu_fetch_sprite_pattern(ppu, cartridge, slot, LIB_FALSE);
+            else if (phase == 7u) core_ppu_fetch_sprite_pattern(ppu, cartridge, slot, LIB_TRUE);
         }
         if (ppu->dot == 327u || ppu->dot == 335u) {
             lib_u8 slot = ppu->dot == 327u ? 0u : 1u;
