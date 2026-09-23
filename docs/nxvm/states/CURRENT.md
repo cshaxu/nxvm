@@ -2,14 +2,26 @@
 
 ## Current Work
 
-**No active implementation packet.** Shared M6 T40 S3 completed NXVM's
-adjacent-INI adoption.
+**Active: MyNES M6 T41 S2 NXVM existing-Types adoption.**
 
 | Field | Required record |
 | --- | --- |
-| Most Recent Closure | Shared M6 T40 S3 |
-| Result | NXVM's testable App startup module uses Base to compose adjacent `NXVM.ini`; `argv[0]` and working-directory fallback are gone. Current x64/x86 product links and focused regressions passed. |
-| Evidence | [T40 S3 adjacent-INI adoption](../etc/evidence/t40-s3-adjacent-ini-adoption.md). |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the ordered M6 T41 sequence on 2026-09-23: Shared/MyNES first, NXVM adoption using existing Lib Types second, then an owner-reviewed facade-retirement design before any final migration. MyNES S1 closed in `a2bfc76e7`. |
+| Objective | Replace every NXVM use of an exact existing Lib Types vocabulary item, remove the demonstrated unused standard include, and record the complete legacy-facade remainder without changing Lib. |
+| Non-goals | No `src/lib` or `test/lib` change; no `type.h`/`type.c` deletion; no replacement for aliases whose status, pointer-width, bit-width, atomic, formatting, time, trace, or I/O contract lacks an exact existing Lib counterpart; no firmware/media behavior change. |
+| Reference Baseline | 439 NXVM production/test files include `type.h`; all still require at least one facade token. Direct non-facade hits are `<limits.h>` in `product/command.c` with no use and `NULL` in `machine/lifecycle.c`. Shared already supplies `LIB_NULL`, `lib_u8/u16/u32/u64`, `lib_i8/i16/i32/i64`, `lib_size`, `lib_bool`, `LIB_TRUE/FALSE`, allocation, memory and selected text vocabulary. |
+| Candidate Proposal | [M6 T41 shared type vocabulary convergence](../../mynes/proposals/m6-t41-type-vocabulary-convergence.md) |
+| Files And ABI Surface | `src/app-nxvm`, `test/app-nxvm`, NXVM CMake only if direct Lib dependency declaration is needed, and NXVM task evidence/status. |
+| Applicable Rules | NXVM product code uses Lib vocabulary rather than duplicate aliases; Lib remains unchanged; every modified caller directly includes its declared owner; test-only native Win32 probes remain external-boundary tests. |
+| Verification | x64/x86 NXVM repository-only unit suites pass; relevant current product x64/x86 targets rebuild; static sweep accounts for every `type.h` include and every migrated or remaining facade family; documentation gate passes. |
+| Expected Markers | Direct `NULL`/unused C header are gone; all exact existing Lib mappings are migrated; the remaining ledger is sufficient to design S3 without rediscovering source scope. |
+| Asset Needs | None; owner-local firmware, media and INI content remain untouched. |
+| Reporting Requirements | Report NXVM source/test add/remove/net counts, mapping counts by vocabulary family, each retained facade family and reason, x64/x86 checks, product links, commit/push and the S3 design handoff. |
+| Stop Conditions | A candidate replacement changes width, status/error semantics, ownership, variadic formatting, atomic ordering, native-platform contract, or virtual-address meaning; retain it in the ledger for S3 rather than inventing a Lib capability. |
+| Exit Criteria | Every exact existing Lib Types equivalent is adopted, no unclassified `type.h` caller or direct C/platform hit remains in NXVM scope, dual-architecture checks/evidence pass, and the S3 design input ledger is committed. |
+| Original Owner Request | Clean MyNES first; then clean NXVM with existing Lib Types only; then present a Lib Types expansion and complete root-type retirement design for owner review before implementation. |
+| Similar-Issue Sweep | Scan all NXVM production, unit and integration C/H sources for root-facade includes, direct standard/platform headers, raw fixed-width types and facade symbols; classify each as migrated in S2 or retained for S3 with its missing contract. |
 
 ## Prior Delivery: M5 T537 S7
 
