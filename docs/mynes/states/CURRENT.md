@@ -2,9 +2,8 @@
 
 ## Current Work
 
-**No active MyNes subtask.** M6 T39 S4 repairs the finite `$C001` contract,
-but its direct visual disposition remains black; no S5 work starts until a new
-corrective packet is admitted.
+**No active MyNes subtask.** M6 T39 S5 selects PPU empty-sprite dummy fetches
+as the next finite A12 repair receiver; no S6 change starts until admission.
 
 ## M6 T39 Progress
 
@@ -14,6 +13,7 @@ corrective packet is admitted.
 | S2 | Reopened finding: its narrow A12 publication regression passes, but the later synchronized frame probe exposes a black-frame IRQ/PPU initialization gap outside that regression. |
 | S3 | Accepted diagnosis: the bounded pre-S2 comparison does not select a reversion; an ignored A/B run selects the Cartridge MMC3 counter/reload/A12 contract as the next repair receiver. [Evidence](../etc/evidence/m6-t39-s3-irq-ppu-diagnosis.md). |
 | S4 | Accepted repair: `$C001` clears the live MMC3 count and reloads only on the next qualified edge; owned x64/x86 regressions pass, while the synchronized visual probe remains black. [Evidence](../etc/evidence/m6-t39-s4-mmc3-reload.md). |
+| S5 | Accepted diagnosis: the selected rendering layout yields zero qualified edges because unused sprite slots skip dummy pattern fetches; S6 receives the narrow PPU repair. [Evidence](../etc/evidence/m6-t39-s5-ppu-a12-schedule.md). |
 
 ## Current Technical Baseline
 

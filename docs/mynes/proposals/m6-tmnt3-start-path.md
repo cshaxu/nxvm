@@ -50,6 +50,11 @@ regression, but the ignored synchronized visual probe still has identical
 black frames after Start.  The next diagnostic receiver is the PPU rendering
 fetch schedule's A12-level sequence, not the already-corrected reload write.
 
+S5 measures that sequence and finds zero qualified rises in the selected
+background-low/sprite-high layout because empty sprite slots return before
+their required dummy pattern fetch.  S6 owns the narrow PPU fix and a
+project-owned empty-sprite Mapper-004 edge regression.
+
 ## Completion Standard
 
 The task records a finite decision result: Start reaches the controller serial
