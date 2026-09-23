@@ -4,7 +4,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$root = Split-Path -Parent $PSScriptRoot
+$root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $records = @(& (Join-Path $PSScriptRoot "Verify-CpuTimingManifestContract.ps1") `
     -EmitCanonicalKeys | ConvertFrom-Json)
 if ($records.Count -eq 1 -and $records[0] -is [System.Array]) { $records = @($records[0]) }

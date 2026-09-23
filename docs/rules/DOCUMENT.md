@@ -2,10 +2,10 @@
 
 ## Authority Boundaries
 
-`docs/README.md` owns the repository reading set and the multi-product map.
-`docs/rules/` owns shared governance only. Each product owns its own
-`docs/<product>/README.md`, `design/`, `states/`, `proposals/`, `history/`, and
-`etc/` tree. Link across these boundaries instead of duplicating an authority.
+`docs/rules/` is the only shared documentation corpus and owns shared
+governance only. Each product owns its own `docs/<product>/README.md`,
+`design/`, `states/`, `proposals/`, `history/`, and `etc/` tree. Link to the
+shared rules instead of duplicating an authority.
 
 | Location | Owner | Purpose |
 | --- | --- | --- |

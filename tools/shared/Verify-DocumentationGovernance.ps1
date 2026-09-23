@@ -22,7 +22,6 @@ $productDocs = Join-Path $docs $Product
 $rootRules = Join-Path $docs 'rules'
 
 foreach ($path in @(
-    (Join-Path $docs 'README.md'),
     (Join-Path $rootRules 'ARCHITECTURE.md'),
     (Join-Path $rootRules 'CODING.md'),
     (Join-Path $rootRules 'DOCUMENT.md'),
@@ -44,10 +43,7 @@ foreach ($path in @(
 Require (-not (Test-Path -LiteralPath (Join-Path $productDocs 'rules'))) `
     "Product rules must use the shared docs/rules corpus: $productDocs/rules"
 
-$rootGuide = Get-Content -Raw -LiteralPath (Join-Path $docs 'README.md')
 $productGuide = Get-Content -Raw -LiteralPath (Join-Path $productDocs 'README.md')
-Require ($rootGuide -match "docs/$Product|$Product/") `
-    "Root documentation guide does not identify $Product."
 Require ($productGuide -match '\.\./rules/EXECUTION\.md') `
     "Product guide does not link the shared execution rules."
 Require ($productGuide -match 'states/CURRENT\.md') `

@@ -1,9 +1,8 @@
 # Agent Instructions
 
-Before changing the repository, read `docs/README.md` and follow its **Task
-Reading Set**. Select the affected product guide (`docs/nxvm/README.md` or
-`docs/mynes/README.md`), then read that product's active packet and every
-authority named by its S brief.
+Before changing a product, read its guide (`docs/nxvm/README.md` or
+`docs/mynes/README.md`), its active packet, and every authority named by its S
+brief. Read the shared rules under `docs/rules/` that the product guide names.
 
 ## Authority
 

@@ -3,7 +3,7 @@ param([string]$RepositoryRoot)
 
 $ErrorActionPreference = "Stop"
 if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
-    $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+    $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 }
 
 $legacyNames = @(

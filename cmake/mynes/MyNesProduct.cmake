@@ -33,27 +33,36 @@ set_property(TEST library.types-layout-selftest DIRECTORY
 # Imported MyNES test CMake currently owns direct CTest registration.  Keep a
 # product-local execution route without re-registering those cases through
 # NXVM's single-product test helper.
-add_custom_target(mynes-test-binaries)
+add_custom_target(mynes-unit-test-binaries)
 foreach(mynes_test_directory IN ITEMS
     "${CMAKE_SOURCE_DIR}/test/app-mynes/unit/core"
-    "${CMAKE_SOURCE_DIR}/test/app-mynes/unit/product"
-    "${CMAKE_SOURCE_DIR}/test/app-mynes/integration")
+    "${CMAKE_SOURCE_DIR}/test/app-mynes/unit/product")
     get_property(mynes_test_targets DIRECTORY "${mynes_test_directory}"
         PROPERTY BUILDSYSTEM_TARGETS)
-    add_dependencies(mynes-test-binaries ${mynes_test_targets})
+    add_dependencies(mynes-unit-test-binaries ${mynes_test_targets})
 endforeach()
+
+add_custom_target(mynes-integration-test-binaries)
+get_property(mynes_integration_test_targets DIRECTORY
+    "${CMAKE_SOURCE_DIR}/test/app-mynes/integration" PROPERTY BUILDSYSTEM_TARGETS)
+add_dependencies(mynes-integration-test-binaries ${mynes_integration_test_targets})
+
+add_custom_target(mynes-test-binaries)
+add_dependencies(mynes-test-binaries
+    mynes-unit-test-binaries
+    mynes-integration-test-binaries)
 
 add_custom_target(run-mynes-unit-tests
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
         --output-on-failure --no-tests=error -R "^mynes\\.(core|app)\\."
-    DEPENDS mynes-test-binaries
+    DEPENDS mynes-unit-test-binaries
     COMMENT "Executing MyNES unit tests"
     VERBATIM)
 
 add_custom_target(run-mynes-integration-tests
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
         --output-on-failure --no-tests=error -R "^mynes\\.integration\\."
-    DEPENDS mynes-test-binaries
+    DEPENDS mynes-integration-test-binaries
     COMMENT "Executing MyNES integration tests"
     VERBATIM)
 

@@ -5,8 +5,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$runner = Join-Path $RepositoryRoot 'tools\Invoke-NxvmBoundedProcess.ps1'
-$childScript = Join-Path $RepositoryRoot 'tools\TestBoundedProcessChild.ps1'
+$runner = Join-Path $RepositoryRoot 'tools\nxvm\Invoke-NxvmBoundedProcess.ps1'
+$childScript = Join-Path $RepositoryRoot 'tools\nxvm\TestBoundedProcessChild.ps1'
 $marker = Join-Path ([System.IO.Path]::GetTempPath()) ("nxvm-t382-child-$PID.txt")
 Remove-Item -LiteralPath $marker -Force -ErrorAction SilentlyContinue
 

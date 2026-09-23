@@ -1,7 +1,6 @@
 # Contributing
 
-Read the [Repository Documentation Guide](docs/README.md), the selected
-product's guide and active status, and the shared
+Read the selected product's guide and active status, and the shared
 [Execution Rules](docs/rules/EXECUTION.md) before proposing or changing work.
 NXVM work uses [NXVM status](docs/nxvm/states/CURRENT.md); MyNES work uses
 [MyNES status](docs/mynes/states/CURRENT.md). Follow the guide's **Task Reading

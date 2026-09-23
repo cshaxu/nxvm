@@ -2,30 +2,30 @@
 
 ## Current Work
 
-**Active: M5 T537 S1 multi-app repository consolidation.** The owner approved
-the NXVM/MyNES repository merger, including the owner-owned MyNES CMake/tool
-import, with independent product work sequences and shared root infrastructure.
+**Active: M5 T537 S2 multi-app repository consolidation.** The owner approved
+the follow-up cleanup: independent product CMake selection, product-scoped tool
+roots, separately scoped MyNES test builds, and product-local documentation.
 
-## M5 T537 S1 Packet
+## M5 T537 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approval on 2026-09-22 to consolidate the merged NXVM/MyNES repository while retaining NXVM as root. |
-| Objective | Establish the complete shared/product repository topology: governance, product CMake entry points, tools, notices, and versioned artifacts. |
-| Non-goals | No emulator behavior, ROM/media import, protected external asset bytes, or product feature change. |
-| Reference Baseline | Closed M5 T536 product-namespaced NXVM layout; owner-provided MyNES source/test/document move presently in the worktree. |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approval on 2026-09-23 to implement the audit's cleanup items while restoring and freezing the pre-merge NXVM-only root README. |
+| Objective | Remove discovered CMake/tool/document duplication without merging product task state or changing emulator behavior. |
+| Non-goals | No emulator behavior, ROM/media import, protected external asset bytes, MyNES CURRENT/Queue merge, or further root README change. |
+| Reference Baseline | M5 T537 S1 consolidation at `cb6e0045b`; the owner requires the root README restored byte-for-byte to pre-merge NXVM-only form. |
 | Candidate Proposal | [M5 multi-app repository consolidation](../proposals/m5-multi-app-repository-consolidation.md) |
-| Files And ABI Surface | Root governance documents, `docs/`, `cmake/{nxvm,mynes}`, root CMake/presets, product tool paths, notices, ignore rules, and versioned binary artifact roots; this shared change affects both NXVM and MyNES without a runtime ABI change. |
+| Files And ABI Surface | Root CMake/presets, `cmake/{nxvm,mynes}`, product tool paths, the shared documentation rules/validator, and each product's local guide; this shared change affects both consumers without a runtime ABI change. |
 | Applicable Rules | Documentation, execution, architecture, coding and both product source policies; preserve shared-corpus neutrality. |
-| Verification | Both product documentation checks; CMake configure; NXVM/MyNES target graph dry runs; upstream CMake/tool inventory; ROM staging exclusion scan; actual-diff review. |
-| Expected Markers | Shared root rules, independent product task sequences, product-scoped CMake/tool roots, and only versioned executable/INI artifacts staged. |
+| Verification | Both product documentation checks; NXVM/MyNES isolated CMake configure and target graph dry runs; direct NXVM tool-root probes; root README exact pre-merge comparison; actual-diff review. |
+| Expected Markers | Product-only CMake presets do not require another product's cache variables; unit targets do not build integration binaries; product-local tool roots resolve; only `docs/rules/` is shared. |
 | Asset Needs | Existing owner-provided executable artifacts only; external firmware, media and ROM assets remain outside the repository. |
-| Reporting Requirements | Record topology, authority split, MyNES CMake provenance, retained artifacts, external-ROM exclusion, and any build-host limitation. |
+| Reporting Requirements | Record each eliminated coupling, the restored README commit identity, validation output, and any build-host limitation. |
 | Stop Conditions | Stop for an irreconcilable governance conflict, protected-asset requirement, or behavior-changing build issue. |
-| Exit Criteria | Shared versus product-local ownership is explicit; every MyNES CMake file is present under the merged tree; CMake exposes both product paths; staged content contains no ROM/media; and validation results are recorded. |
-| Original Owner Request | Merge NXVM and MyNES under the NXVM root with shared infrastructure but independent per-app documentation, tools, queues and designs. |
-| Similar-Issue Sweep | Search root instructions, documentation links, validators, CMake paths and tooling for former single-product assumptions. |
+| Exit Criteria | NXVM/MyNES configure independently; MyNES unit/integration binary targets are separate; all known moved-tool roots resolve; documentation state remains product-local; and root README equals `36925a4b`. |
+| Original Owner Request | Apply the audit cleanup, but restore the root README to its pre-merge NXVM-only form and never modify it again. |
+| Similar-Issue Sweep | Search CMake presets/modules, product tools, validators, and live documentation for cross-product settings, former root paths, and shared non-rule documentation. |
 
 ## Current Technical Baseline
 

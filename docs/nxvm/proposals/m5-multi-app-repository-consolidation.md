@@ -56,6 +56,10 @@ each product remains independently buildable and testable.
    product-owned module directories; build both products.
 3. Consolidate tools, licenses/notices, artifact tracking and release paths;
    run documentation and build/test verification, then record closure.
+4. Remove post-consolidation coupling: product-selectable CMake graphs,
+   product-root-correct tools, unit/integration build separation, and no shared
+   documentation outside `docs/rules/`. Root README restoration is an explicit
+   frozen-owner exception, not a new shared documentation authority.
 
 ## Completion Standard
 

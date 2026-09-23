@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$repositoryRoot = Split-Path -Parent $PSScriptRoot
+$repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Push-Location -LiteralPath $repositoryRoot
 try {
     $records = @(& (Join-Path $PSScriptRoot "Verify-CpuTimingManifestContract.ps1") `

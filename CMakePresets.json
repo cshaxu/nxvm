@@ -83,7 +83,7 @@
         "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc",
         "MYNES_EXPECTED_POINTER_SIZE": "8",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x64",
-        "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
+        "REPOSITORY_BUILD_NXVM": "OFF"
       }
     },
     {
@@ -98,7 +98,7 @@
         "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc",
         "MYNES_EXPECTED_POINTER_SIZE": "4",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
-        "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
+        "REPOSITORY_BUILD_NXVM": "OFF"
       }
     }
   ],

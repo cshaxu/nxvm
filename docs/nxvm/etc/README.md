@@ -5,7 +5,7 @@ that does not fit the principal `rules/` and `design/` authorities. A supporting
 document may explain evidence, implementation detail, research, or a retired
 decision, but it cannot redefine current architecture, source layout, product
 UX, roadmap, rules, status, queue, or debt. Conflicts are resolved by the
-principal documents named in [docs/README.md](../README.md).
+principal documents named in [the NXVM documentation guide](../README.md).
 
 | Current category | Owner | Purpose |
 | --- | --- | --- |
@@ -18,6 +18,7 @@ principal documents named in [docs/README.md](../README.md).
 | `history/retired-machine-plans/` | Product governance owner | Archived proposals/debt with historical receivers and the later XT/AT/DeskPro/default retention override; not a current queue or task-history record. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
 | `evidence/t537-s1-multi-app-consolidation.md` | Repository-consolidation owner | Merged NXVM/MyNES topology, CMake/tool provenance, artifact/ROM boundary, and validation record. |
+| `evidence/t537-s2-post-consolidation-cleanup.md` | Repository-consolidation owner | Product-selectable CMake, namespaced tool-root repair, MyNES test-build separation, and product-local documentation closure record. |
 | `evidence/t535-s5-shared-test-aggregation.md` | Shared-test owner | Corrective T535 S5's suite-owned Lib/Common/x86 aggregate build targets, root dependency sweep, standalone-suite proof and final repository-only unit result. |
 | `evidence/t532-s1-single-product-layout-ledger.md` | NXVM layout owner | T532 S1 freezes the complete App/Core source and test relocation/deletion map before the single-product structural move. |
 | `evidence/t532-s2-single-product-layout-relocation.md` | NXVM layout owner | T532 S2 executes the frozen move/delete set, including the source-mirroring repository-only test tree, and records final path, build and static-gate proof. |

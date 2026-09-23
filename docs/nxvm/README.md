@@ -1,11 +1,11 @@
 # Documentation Guide
 
-This is the NXVM product documentation entry point. Repository-wide governance
-starts at [the root guide](../README.md).
+This is the NXVM product documentation entry point. Shared governance is under
+[`../rules/`](../rules/).
 
 ## Task Reading Set
 
-Before changing work for an S, every participant reads:
+Before changing NXVM work, every participant reads:
 
 1. this guide;
 2. the active [Current](states/CURRENT.md) packet and its S brief;
@@ -30,18 +30,12 @@ evidence, or artifacts; those are also required. Then apply these triggers:
   media, Microsoft material, or third-party code first reads the
   [source and research policy](etc/operations/policy/source-policy.md).
 
-This is the task-reading authority. Do not treat the following orientation map
-as a requirement to re-read every authority for every S.
-
-Read the fixed set when first starting an S and on its first resume. Re-read an
-authority when the packet, S brief, that authority, or the change surface has
-materially changed; routine implementation steps and progress reports do not
-require a full repeat reading. This cadence does not excuse reading every
-authority newly triggered by a revision or discovered change surface.
+Read this fixed set when first starting an S and on its first resume. Re-read
+an authority when its packet, brief, or change surface materially changes.
 
 ## Orientation Map
 
-For system-wide orientation, read the current authorities in this order:
+For NXVM orientation, read the current authorities in this order:
 
 1. [Project Goal](design/GOAL.md)
 2. [System Architecture](design/ARCHITECTURE.md)
