@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    project(common_corpus LANGUAGES C)
+    project(nxvm_shared_common LANGUAGES C)
     set(COMMON_LIB_ROOT "" CACHE PATH "Explicit path to the shared Lib corpus")
     if(NOT EXISTS "${COMMON_LIB_ROOT}/CMakeLists.txt")
         message(FATAL_ERROR "COMMON_LIB_ROOT must name the shared Lib corpus")
