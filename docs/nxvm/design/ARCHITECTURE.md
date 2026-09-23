@@ -27,15 +27,15 @@ release behavior remains the baseline until an implemented, verified cutover.
 
 - `app` owns INI syntax, runtime-media paths, product CLI and the one composition root.
   It assembles Common Session/UI/Machine and the NXVM driver.
-- `core/machine` is that driver: asset/media lifetime, bounded execution,
+- `app-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
-- `core/profiles` owns each board's actual composition: device construction,
+- `app-nxvm/profiles` owns each board's actual composition: device construction,
   wiring, clocks, memory constraints, firmware slots, fixed relative asset names
   and board-specific behavior.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
-- `core/devices` (currently `core/core`) owns CPU, memory, bus, devices, reset,
+- `app-nxvm/devices` owns CPU, memory, bus, devices, reset,
   generic execution and faults and the sole guest
   timeline. Generic mechanisms know hardware contracts, not product names.
 - `common/machine` owns the shared execution/control protocol and paused-debug
@@ -135,12 +135,11 @@ and parser, not a promise that every memory size or disk fits every board.
 Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
-Each selected product deploys once to the ignored
-`assets/binary-nxvm/<profile>/` directory, alongside its generated
-`NXVM.ini`. That is the only current executable location; `build/` remains
-compiler state apart from historical evidence. The tracked per-profile INI
-template is adjacent to its product output; ignored EXEs share that same
-directory without becoming repository content.
+Each selected product deploys once to the versioned
+`assets/binary-nxvm/<profile>/` directory, alongside its generated `NXVM.ini`.
+That is the only current executable location; `build/` remains compiler state
+apart from historical evidence. The tracked executable/INI pair is adjacent
+and updated only for the selected profile.
 
 ## Runtime Admission Boundary
 

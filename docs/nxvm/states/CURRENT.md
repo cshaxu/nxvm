@@ -2,22 +2,30 @@
 
 ## Current Work
 
-**Active: M5 Td S173 shared three-scope governance correction.** The owner
-clarified that the repository has exactly three task scopes: NXVM, MyNES and
-Shared. S5 is paused while this standalone governance correction closes.
+**Active: M5 T537 S6 shared repository-boundary audit.** The independent
+MyNES and NXVM developer audits are closed; Shared now audits only the shared
+six-component/configuration/governance boundary.
 
-## M5 Td S173 Packet
+## M5 T537 S6 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Standalone governance correction |
-| Admission And Approval | Owner clarification on 2026-09-23. |
-| Objective | Define exactly three exclusive task scopes: NXVM, MyNES and Shared. |
-| Non-goals | No App, source, test, asset, build or product-document change. |
-| Reference Baseline | Shared M5 Td S172 P1 `5734e1e3d`. |
-| Files And ABI Surface | `docs/rules/EXECUTION.md`, this packet and [three-scope boundary](../proposals/m5-shared-three-scope-boundary.md). |
-| Verification | Documentation governance, actual-diff review and explicit three-scope wording review. |
-| Exit Criteria | The rules name no fourth scope; the shared six-component corpus and shared configuration/documents belong to Shared; App isolation remains absolute. |
+| Identifier Mode | Continuation, Shared scope |
+| Admission And Approval | Owner approval on 2026-09-23 to audit the resulting multi-App repository after independent MyNES and NXVM audits. |
+| Objective | Prove that the six shared components, shared configuration and shared governance have one neutral owner and that App boundaries remain exclusive. |
+| Non-goals | No emulator behavior, protected asset, root README, or App-specific feature change; a discovered App-only defect transfers to that App's own admitted task. |
+| Reference Baseline | Shared M5 Td S173 P1 `a7ba9733b`: exactly three exclusive task scopes; T537 S4 and S5 developer-audit evidence. |
+| Candidate Proposal | [M5 multi-app repository consolidation](../proposals/m5-multi-app-repository-consolidation.md) |
+| Files And ABI Surface | `src/{lib,common,x86}`, `test/{lib,common,x86}`, root shared CMake/configuration and `docs/rules/`; App trees are read-only unless a Shared packet explicitly names a necessary compatible adaptation and both consumers. |
+| Applicable Rules | Documentation, execution, architecture and coding rules; both product guides/source policies; the exclusive task-scope rule. |
+| Verification | Audit shared-source/test identity and dependency direction; inspect root CMake's independent-product selection; run applicable standalone shared tests and both product documentation gates; actual-diff review by scope. |
+| Expected Markers | No duplicated shared implementation; no shared component knows product/guest semantics; NXVM and MyNES retain independent product routes; root configuration can select either product without silently configuring the other. |
+| Asset Needs | None unless a shared test already has an owner-provided product receiver. |
+| Reporting Requirements | Record every shared finding, consumer, disposition and any required App-task transfer. |
+| Stop Conditions | Stop for protected assets, a required product-only repair, or an unbounded product defect. |
+| Exit Criteria | Shared ownership and independent build graph are verified or all remaining defects have bounded Shared/App receivers; no accidental App-scope modification. |
+| Original Owner Request | Audit MyNES, NXVM, then the overall multi-App repository. |
+| Similar-Issue Sweep | Sweep shared source/tests/configuration/governance for product names, duplicated service implementations and implicit product build/test coupling. |
 
 ## Current Technical Baseline
 
@@ -36,6 +44,7 @@ Shared. S5 is paused while this standalone governance correction closes.
 
 | Task | Compact result |
 | --- | --- |
+| T537 S5 | Closed in the next NXVM-scoped P: NXVM authorities now use the live App roots and versioned artifact rule; a standalone NXVM tool guide documents the BYOB x64/x86 routes. Fresh default x64/x86 builds pass 336/336 unit and 20/20 external integration each. The root preset's implicit MyNES graph is explicitly transferred to Shared S6. [Evidence](../etc/evidence/t537-s5-nxvm-developer-audit.md). |
 | T537 S4 | Closed in the next Shared-scoped P: a MyNES-only audit removed a misleading NXVM CMake reference, made x86 compiler/test routes self-contained, passed 53/53 product tests on x64 and x86, and verified both PE artifacts. [Evidence](../etc/evidence/t537-s4-mynes-developer-audit.md). |
 | T536 | Closed on 2026-09-22: the owner-provided product namespace is the sole live layout: `src/{lib,common,x86,app-nxvm}`, `test/{lib,common,x86,app-nxvm}`, and `assets/binary-nxvm/<profile>/`. CMake, INIs, tools and current documentation use renamed external archives `profiles-nxvm` and `media-nxvm`; historical records remain unchanged. Repository-only unit is 336/336. The 20 external integration rows register but skip because their owner-provided assets are unavailable here. [Evidence](../etc/evidence/t536-s1-product-namespaced-layout.md). |
 | T535 | Closed at `e774efb5`; corrective S5 replaces NXVM's duplicate shared-test executable list with three suite-owned aggregate targets, under the owner's explicit shared-corpus exception for later SoftPC/MyNES import. All three suites remain standalone; 336/336 repository-only unit and documentation governance pass. No runtime artifact changes. [History](../history/M5-T535-canonical-softpc-six-component-refresh.md) and [S5 evidence](../etc/evidence/t535-s5-shared-test-aggregation.md). |
