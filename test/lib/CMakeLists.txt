@@ -33,6 +33,7 @@ endfunction()
 
 lib_test(lib_console console)
 lib_test(types_contract base)
+lib_test(process_directory base)
 lib_test(storage_file_writer_binary storage)
 lib_test(storage_position storage)
 lib_test(audio_stream types base)
