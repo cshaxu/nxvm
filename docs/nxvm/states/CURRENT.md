@@ -2,11 +2,16 @@
 
 ## Current Work
 
-**No active implementation packet.** M5 T537 is closed after the independent
-NXVM, MyNES and Shared audits repaired the one discovered Shared test assertion,
-passed all current gates, and found no unassigned current issue.
+**No active implementation packet.** M5 T537 closed after its narrow S8
+corrective repair.
 
-## Most Recent Closure: M5 T537 S7
+| Field | Required record |
+| --- | --- |
+| Most Recent Closure | M5 T537 S8 |
+| Result | Common and X86 now declare `nxvm_shared_common` and `nxvm_shared_x86`, matching `nxvm_shared_library`. No target, API, source-layout, or consumer-link change occurred. |
+| Evidence | [S8 shared project identities](../etc/evidence/t537-s8-shared-project-identities.md). |
+
+## Prior Delivery: M5 T537 S7
 
 | Field | Required record |
 | --- | --- |
