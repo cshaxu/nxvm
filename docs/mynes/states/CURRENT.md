@@ -2,7 +2,35 @@
 
 ## Current Work
 
-**No active MyNES subtask.** M6 T39 closed after S9 automated controlled-play acceptance.`r`n
+**Active: M6 T39 S10 release-artifact correction.** The owner reports that the
+deployed `0011` executable remains black; S10 must ship the repaired source as
+the task-39 artifact before any gameplay conclusion can stand.
+
+## M6 T39 S10 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Owner-Reopen |
+| Admission And Approval | Owner rejected T39 closure because only old `0011` binaries were deployed and explicitly directs that task-39 dual executables be placed in `assets/binary-mynes`; the owner also directs removal of `0011`. |
+| Objective | Build and deploy the repaired MyNES product as `mynes_0_0_0039_x64.exe` and `mynes_0_0_0039_x86.exe` beside the existing editable `mynes.ini`. |
+| Non-goals | No ROM import, no change to user `mynes.ini`, no shared-component change and no new emulator mechanism repair in this S. |
+| Reference Baseline | `3588fe945`; source repairs exist but deployed `0011` artifacts predate task-39 identity. |
+| Candidate Proposal | [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) |
+| Files And ABI Surface | MyNES product CMake, release-manifest tool, artifact directory and MyNES state/evidence only. |
+| Applicable Rules | Task revision is the four-digit task number; each runnable product task supplies optimized x64/x86 artifacts in `assets/binary-mynes`; owner-local media stays untracked. |
+| Verification | Build both architectures, verify PE machine type and versioned filenames, generate manifest, and run focused Core/Driver regressions. |
+| Expected Markers | Exactly the `0039` dual executables and matching manifest are in the artifact directory; no `0011` executable remains. |
+| Asset Needs | Existing local `mynes.ini` is retained unchanged; no ROM is read or committed. |
+| Reporting Requirements | Report S10 diff add/remove/net, files and rationale, build/test outcome, pushed commit, and clickable x64/x86 paths. |
+| Stop Conditions | A required toolchain cannot build a valid PE or artifact placement would overwrite the user configuration. |
+| Exit Criteria | Both versioned executables are present, architecture-verified, manifest-backed, old executables removed, and the result is committed and pushed. |
+| Original Owner Request | Put the latest dual EXEs in assets; task 39 uses version `0_0_0039`; remove the old `0011` executables. |
+| Similar-Issue Sweep | Product target, artifact copy name, manifest name/version and CURRENT artifact baseline use the same task revision. |
+
+### S10 Brief
+
+Correct the task-39 artifact identity and deploy both built architectures to
+the one product artifact directory. Preserve the owner-managed INI verbatim.
 ## M6 T39 Progress
 
 | S | Result |

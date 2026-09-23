@@ -6,8 +6,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path $RepositoryRoot).Path
 $binary = Join-Path $root 'assets/binary-mynes'
-$manifest = Join-Path $binary 'mynes_0_1_0011_manifest.txt'
-$artifacts = @('mynes_0_1_0011_x64.exe', 'mynes_0_1_0011_x86.exe', 'mynes.ini')
+$manifest = Join-Path $PSScriptRoot '..\..\build\mynes_0_0_0039_manifest.txt'
+$artifacts = @('mynes_0_0_0039_x64.exe', 'mynes_0_0_0039_x86.exe', 'mynes.ini')
 
 function Get-ReleaseHash([string]$Path) {
     (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToUpperInvariant()
@@ -34,7 +34,7 @@ function Get-ManifestLines([string]$Revision) {
         '# MyNes release manifest',
         'format = 1',
         'product = MyNes',
-        'version = 0.1.0011',
+        'version = 0.0.0039',
         "source_revision = $revision",
         "cmake = $cmake",
         "toolchain_x64 = $(Get-ToolchainIdentity 'build/mynes-gcc-x64-release')",
