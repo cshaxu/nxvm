@@ -2,26 +2,13 @@
 
 ## Current Work
 
-**Active: NXVM M6 T41 S5 corrective Shared Types cleanup.**
+**No active NXVM subtask.**
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved this corrective addition on 2026-09-23 after S4 closure: remove `lib_void`, which duplicates C's built-in `void` and has no Lib caller. This replaces the not-yet-started S5 migration admission; no NXVM migration runs in this corrective S. |
-| Objective | Remove the unjustified `lib_void` public alias and correct S4 documentation/evidence so Lib Types contains no false claim that `void` requires a wrapper. |
-| Non-goals | No NXVM caller migration, no removal or use of the other proposed scalar aliases, no new Lib declaration, bit/BCD migration, output/trace policy migration, allocator-test redesign, root `type.h`/`type.c` deletion, artifact deployment, asset, or INI change. |
-| Reference Baseline | `9d7f6ba6c` and [S4 evidence](../etc/evidence/m6-t41-s4-shared-types-foundation.md). `void` is a C language keyword, has no representation ambiguity, and needs no wrapper to cross a platform or library boundary. |
-| Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md) |
-| Files And ABI Surface | Shared only: `src/lib/types/types_interface.h`, `src/lib/types/README.md`, matching Lib manifest and S4 evidence/status. No product file is allowed. |
-| Applicable Rules | Lib wraps a neutral shared contract, not C language keywords. Preserve fixed-width, pointer-width and semantic aliases; do not widen this corrective change into a scalar-alias redesign. |
-| Verification | `lib_void` is absent from Lib source/test and future design declarations; corrective historical evidence may name it. Standalone Lib x64/x86 Types contract builds pass; Lib manifest/layout and documentation governance pass; actual-diff review proves no product change. |
-| Expected Markers | `void` remains direct C throughout Lib; `lib_void` is absent; S4 records the correction and the later migration is not falsely claimed active. |
-| Asset Needs | None. Owner-local `assets/binary-mynes/mynes.ini` and `assets/binary-nxvm/**/NXVM.ini` remain untouched. |
-| Reporting Requirements | Report Shared source/test add/remove/net counts, the scalar-alias audit conclusion, x64/x86 outcomes, commit/push and the restored migration handoff. |
-| Stop Conditions | The removal reveals a Lib or external consumer, or requires changing a product caller; stop and revise instead of adding compatibility aliases. |
-| Exit Criteria | The narrow Shared correction is pushed with zero-reference and dual-architecture proof, and S5 data migration is ready to be re-admitted. |
-| Original Owner Request | Clean MyNES and NXVM usage of Lib Types, extend Lib Types only where necessary, then retire NXVM root `type.h`/`type.c` completely. Owner approved the standard/general status taxonomy, no `lib_bits`, and no `lib_atomic_bool`. |
-| Similar-Issue Sweep | Classify every Lib Types scalar alias as C-keyword duplication, width/address contract, semantic outcome, or external-boundary vocabulary. Record any deferred scalar-alias redesign rather than silently retaining or deleting it. |
+M6 T41 S5 corrective Shared Types cleanup closed at `aa4a483c0`: `lib_void`
+is removed, the active design no longer proposes it, and the dual-architecture
+Types checks, Lib integrity gates, and documentation governance passed. The
+next NXVM data-migration packet must decide whether the remaining plain C
+scalar aliases should be used at all; they are not silently adopted.
 
 ## M6 T41 S4 Shared Closure
 
