@@ -14,7 +14,7 @@ The suite owns test registration, fixtures, failure injection and its manifest.
 Production verifiers remain in src/lib. Platform probes are selected explicitly
 by CMake; Linux fakes test algorithms, not native Linux runtime availability.
 Assertions remain enabled in Release. Scratch files stay in the build directory.
-The shared file cleanup helper is also used by product tests.
+The shared file cleanup helper belongs to this suite's storage probes.
 
 The `desktop` label marks real native Window/Console tests, including tests
 that hide a window only after creating it. Run these explicitly with `-L desktop

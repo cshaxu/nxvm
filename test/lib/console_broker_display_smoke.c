@@ -242,7 +242,7 @@ int main(void)
         assert(WriteConsoleOutputCharacterA(broker->backend->output, "wide history", 12, marker, &written));
         assert(written == 12);
     }
-    assert(lib_console_write_text(cooked, "history\r\nSoftPC> start\r\n", 24) == 0);
+    assert(lib_console_write_text(cooked, "history\r\nMonitor> start\r\n", 25) == 0);
     snapshot(&before);
 
     /* Allocation failure happens in prepare, before any old reader/display changes. */
@@ -284,7 +284,7 @@ int main(void)
         assert(console_broker_replace(broker, raw, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
         expect_display(&before);
     }
-    assert(lib_console_write_text(cooked, "ok\r\n\r\nSoftPC> ", 14) == 0);
+    assert(lib_console_write_text(cooked, "ok\r\n\r\nMonitor> ", 15) == 0);
     snapshot(&after);
     assert(after.info.dwCursorPosition.X == 8);
     assert(after.info.dwCursorPosition.Y == before.info.dwCursorPosition.Y + 2);

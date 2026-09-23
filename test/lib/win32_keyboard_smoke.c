@@ -6,18 +6,18 @@
 #include <string.h>
 
 #ifdef _WIN32
-typedef struct softpc_keyboard_capture {
+typedef struct shared_keyboard_capture {
     uint8_t keys[16];
     uint8_t releases[16];
     uint8_t modifiers[16];
     lib_u32 identities[16];
     lib_u32 flags[16];
     unsigned int count;
-} softpc_keyboard_capture;
+} shared_keyboard_capture;
 
 static int capture_key(void *context, const kvm_input_event *event)
 {
-    softpc_keyboard_capture *capture = (softpc_keyboard_capture *)context;
+    shared_keyboard_capture *capture = (shared_keyboard_capture *)context;
     if (event == NULL || event->type != KVM_EVENT_KEY ||
         capture->count == sizeof(capture->keys)) return 0;
     capture->keys[capture->count] = (uint8_t)event->data.key.scan_code;
@@ -28,15 +28,15 @@ static int capture_key(void *context, const kvm_input_event *event)
     return 1;
 }
 
-typedef struct softpc_hotkey_capture {
+typedef struct shared_hotkey_capture {
     kvm_hotkey_matcher matcher;
     kvm_input_event events[8];
     unsigned int count;
-} softpc_hotkey_capture;
+} shared_hotkey_capture;
 
 static int capture_hotkey(void *context, const kvm_input_event *event)
 {
-    softpc_hotkey_capture *capture = (softpc_hotkey_capture *)context;
+    shared_hotkey_capture *capture = (shared_hotkey_capture *)context;
     if (capture == NULL || event == NULL || capture->count == 8u) return 0;
     capture->events[capture->count++] = *event;
     return 1;
@@ -44,7 +44,7 @@ static int capture_hotkey(void *context, const kvm_input_event *event)
 
 static int normalize_and_match(void *context, const kvm_input_event *event)
 {
-    softpc_hotkey_capture *capture = (softpc_hotkey_capture *)context;
+    shared_hotkey_capture *capture = (shared_hotkey_capture *)context;
     return capture != NULL && kvm_hotkey_matcher_submit(&capture->matcher,
         event, capture_hotkey, capture, LIB_TRUE);
 }
@@ -52,7 +52,7 @@ static int normalize_and_match(void *context, const kvm_input_event *event)
 static void assert_registered_raw_chord(lib_u32 trigger, const char *identifier)
 {
     kvm_hotkey_registry registry;
-    softpc_hotkey_capture capture = { 0 };
+    shared_hotkey_capture capture = { 0 };
     const lib_u8 control_alt = KVM_HOTKEY_MODIFIER_CONTROL |
         KVM_HOTKEY_MODIFIER_ALT;
 
@@ -87,9 +87,9 @@ static void assert_registered_raw_chord(lib_u32 trigger, const char *identifier)
 
 int main(void)
 {
-    softpc_keyboard_capture capture = { 0 };
+    shared_keyboard_capture capture = { 0 };
     kvm_keyboard_normalizer normalizer = { 0 };
-    softpc_hotkey_capture text = { 0 };
+    shared_hotkey_capture text = { 0 };
     assert(kvm_keyboard_submit_record(&normalizer, NULL, &text, capture_hotkey,
         &(kvm_keyboard_record){ .kind=KVM_KEYBOARD_CHARACTER, .utf16=0xd83du, .repeat_count=1u }));
     assert(text.count == 0u);

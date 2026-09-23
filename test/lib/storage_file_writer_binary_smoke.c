@@ -208,7 +208,7 @@ int main(void)
     assert(lib_storage_file_close(&positioned) == LIB_STATUS_OK);
     static const unsigned char payload[] = { 'A', 0u, 'B', '\n' };
     unsigned char actual[sizeof(payload)] = { 0u };
-    const char *path = "softpc-storage-writer-binary-smoke.bin";
+    const char *path = "shared-storage-writer-binary-smoke.bin";
     lib_storage_file_writer *writer = LIB_NULL;
     FILE *file;
 
@@ -303,7 +303,7 @@ int main(void)
     reject_close = 0;
     medium_fill();
     overlay_index(path);
-    assert(softpc_test_remove_image(path));
+    assert(shared_test_remove_file(path));
     for (int mode = LIB_STORAGE_MEDIUM_DIRECT; mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++mode) {
         assert(lib_storage_medium_open(path, (lib_storage_medium_mode)mode, &medium) == LIB_STATUS_IO_ERROR);
         assert(medium == NULL && live_allocations == 0u);

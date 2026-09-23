@@ -22,6 +22,7 @@ principal documents named in [the NXVM documentation guide](../README.md).
 | `evidence/t537-s3-independent-product-matrix.md` | Repository-consolidation owner | Live-reference, ownership, external-asset route and full x64/x86 product-matrix proof after consolidation. |
 | `evidence/t537-s4-mynes-developer-audit.md` | Repository-consolidation owner | MyNES-only documentation, code, test, tooling, asset and CMake audit; x64/x86 route repair and proof. |
 | `evidence/t537-s5-nxvm-developer-audit.md` | Repository-consolidation owner | NXVM-only documentation, code, test, tooling, BYOB asset and CMake-route audit; x64/x86 route proof and Shared transfer. |
+| `evidence/t537-s6-shared-repository-boundary-audit.md` | Repository-consolidation owner | Shared six-component/configuration boundary audit; independent product presets, manifest repair and neutral shared-test proof. |
 | `evidence/t535-s5-shared-test-aggregation.md` | Shared-test owner | Corrective T535 S5's suite-owned Lib/Common/x86 aggregate build targets, root dependency sweep, standalone-suite proof and final repository-only unit result. |
 | `evidence/t532-s1-single-product-layout-ledger.md` | NXVM layout owner | T532 S1 freezes the complete App/Core source and test relocation/deletion map before the single-product structural move. |
 | `evidence/t532-s2-single-product-layout-relocation.md` | NXVM layout owner | T532 S2 executes the frozen move/delete set, including the source-mirroring repository-only test tree, and records final path, build and static-gate proof. |

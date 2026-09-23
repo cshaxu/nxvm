@@ -15,6 +15,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x64",
+        "REPOSITORY_BUILD_MYNES": "OFF",
         "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
       }
     },
@@ -54,6 +55,7 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "$env{NXVM_I686_GCC}",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
+        "REPOSITORY_BUILD_MYNES": "OFF",
         "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
       }
     },
@@ -68,6 +70,7 @@
         "CMAKE_C_COMPILER_TARGET": "i686-w64-windows-gnu",
         "CMAKE_SYSROOT": "$env{NXVM_I686_SYSROOT}",
         "PROJECT_ARTIFACT_ARCHITECTURE": "x86",
+        "REPOSITORY_BUILD_MYNES": "OFF",
         "NXVM_PRODUCT_PROFILE": "default-pc-at-80386-1440k-hdd"
       }
     },
