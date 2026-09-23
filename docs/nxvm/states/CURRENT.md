@@ -2,14 +2,14 @@
 
 ## Current Work
 
-**No active implementation packet.** M5 Td S172 completed the NXVM candidate
-relevance audit.
+**No active implementation packet.** Shared M6 T40 S3 completed NXVM's
+adjacent-INI adoption.
 
 | Field | Required record |
 | --- | --- |
-| Most Recent Closure | M5 Td S172 |
-| Result | Removed the completed Multi-App repository consolidation candidate; retained the five independent CPU, controller, differential, guest, and PC110 receivers. |
-| Evidence | [Queue relevance audit](../etc/evidence/td-s172-nxvm-queue-relevance-audit.md). |
+| Most Recent Closure | Shared M6 T40 S3 |
+| Result | NXVM's testable App startup module uses Base to compose adjacent `NXVM.ini`; `argv[0]` and working-directory fallback are gone. Current x64/x86 product links and focused regressions passed. |
+| Evidence | [T40 S3 adjacent-INI adoption](../etc/evidence/t40-s3-adjacent-ini-adoption.md). |
 
 ## Prior Delivery: M5 T537 S7
 

@@ -1129,6 +1129,7 @@ set(VM_APP_SOURCES
     src/app-nxvm/product/command.c
     src/app-nxvm/product/keyboard.c
     src/app-nxvm/product/ini.c
+    src/app-nxvm/product/startup.c
     src/app-nxvm/product/composition.c
     src/app-nxvm/product/config.c
 )
@@ -1252,6 +1253,7 @@ target_link_libraries(vm-app PUBLIC
     x86-xasm32
     vm-machine
     storage
+    base
     type-facade)
 
 add_executable(vm-control-lifecycle-smoke

@@ -2,6 +2,7 @@
 
 #include "app-nxvm/product/ini_interface.h"
 #include "app-nxvm/product/config.h"
+#include "app-nxvm/product/startup.h"
 
 static C_INT parse(C_CHAR *text, vm_session_request *request)
 { return vm_app_ini_parse("unit-root", "NXVM.ini", text, request) == TYPE_STATUS_OK; }
@@ -21,6 +22,9 @@ C_INT main(C_VOID)
     vm_machine_config config;
     vm_session_request cleared_request = {0};
     vm_machine_config cleared_config = {0};
+    C_CHAR executable_ini_path[1024];
+    C_CHAR rejected_path[] = "unchanged";
+    STD_SIZE_T executable_ini_length;
 
     STD_MEMSET(&request, 0xff, sizeof(request));
     if (vm_app_ini_load(STD_NULL, &request) != TYPE_STATUS_INVALID_ARGUMENT ||
@@ -44,6 +48,14 @@ C_INT main(C_VOID)
         return 1;
     if (vm_app_ini_parse("\\", "\\NXVM.ini", root, &request) != TYPE_STATUS_OK ||
         STD_STRCMP(request.floppy[0u], "\\boot.img")) return 1;
+    if (vm_app_ini_executable_path(executable_ini_path, sizeof(executable_ini_path)) !=
+            TYPE_STATUS_OK) return 1;
+    executable_ini_length = STD_STRLEN(executable_ini_path);
+    if (executable_ini_length < sizeof("NXVM.ini") ||
+        STD_STRCMP(executable_ini_path + executable_ini_length - sizeof("NXVM.ini") + 1u,
+            "NXVM.ini")) return 1;
+    if (vm_app_ini_executable_path(rejected_path, sizeof("NXVM.ini")) !=
+            TYPE_STATUS_INVALID_ARGUMENT || STD_STRCMP(rejected_path, "unchanged")) return 1;
     STD_MEMSET(&config, 0xff, sizeof(config));
     if (vm_app_configure_machine(STD_NULL, &config) != TYPE_STATUS_INVALID_ARGUMENT ||
         STD_MEMCMP(&config, &cleared_config, sizeof(config))) return 1;

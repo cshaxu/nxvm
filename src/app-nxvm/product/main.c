@@ -12,26 +12,9 @@
 #include "banner.h"
 #include "app-nxvm/product/composition.h"
 #include "app-nxvm/product/command.h"
+#include "app-nxvm/product/startup.h"
 
-static const C_CHAR *vm_main_ini_path(C_INT argc, C_CHAR **argv,
-    C_CHAR *path, STD_SIZE_T capacity)
-{
-    C_CHAR *cursor;
-    STD_SIZE_T length;
-
-    if (path == STD_NULL || capacity < sizeof("NXVM.ini") || argc <= 0 || argv == STD_NULL ||
-        argv[0] == STD_NULL) return "NXVM.ini";
-    length = STD_STRLEN(argv[0]);
-    if (length + sizeof("NXVM.ini") >= capacity) return "NXVM.ini";
-    STD_MEMCPY(path, argv[0], length + 1u);
-    cursor = path + length;
-    while (cursor != path && cursor[-1] != '/' && cursor[-1] != '\\') --cursor;
-    if (cursor == path) return "NXVM.ini";
-    STD_MEMCPY(cursor, "NXVM.ini", sizeof("NXVM.ini"));
-    return path;
-}
-
-C_INT main(C_INT argc, C_CHAR **argv)
+C_INT main(C_VOID)
 {
     vm_app *session = STD_NULL;
     vm_app_console_context *console_context = STD_NULL;
@@ -40,13 +23,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_status destroy_status;
 
     PRODUCT_PRINT_BANNER();
+    if (vm_app_ini_executable_path(ini_path, sizeof(ini_path)) != TYPE_STATUS_OK) {
+        STD_PRINTF("Unable to determine NXVM.ini path.\n");
+        return 1;
+    }
     if (vm_app_create(&session) != TYPE_STATUS_OK ||
         vm_app_console_context_create(&console_context) != TYPE_STATUS_OK) {
         (C_VOID)vm_app_destroy(session);
         return 1;
     }
-    status = vm_app_console_main(console_context, session,
-        vm_main_ini_path(argc, argv, ini_path, sizeof(ini_path)));
+    status = vm_app_console_main(console_context, session, ini_path);
     vm_app_console_context_destroy(console_context);
     destroy_status = vm_app_destroy(session);
     return status == TYPE_STATUS_OK && destroy_status == TYPE_STATUS_OK ? 0 : 1;
