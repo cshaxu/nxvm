@@ -2,29 +2,22 @@
 
 ## Current Work
 
-**Active: M5 Td S172 shared change-scope boundary.** The owner requires an
-explicit product-isolation rule before S5 resumes.
+**Active: M5 Td S173 shared three-scope governance correction.** The owner
+clarified that the repository has exactly three task scopes: NXVM, MyNES and
+Shared. S5 is paused while this standalone governance correction closes.
 
-## M5 Td S172 Packet
+## M5 Td S173 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approval on 2026-09-23 to make App ownership exclusive and reserve cross-product changes for Shared work. |
-| Objective | Establish an enforceable task-scope rule for NXVM, MyNES, individual neutral components and Shared work. |
-| Non-goals | No product behavior, source, tests, assets, artifacts, CMake configuration or root README change. |
-| Reference Baseline | Shared M5 T537 S4 P1 `472438541`; its new commit-scope prefixes need a matching change-scope rule. |
-| Candidate Proposal | [M5 shared change-scope boundary](../proposals/m5-shared-change-scope-boundary.md) |
-| Files And ABI Surface | `docs/rules/EXECUTION.md`, this packet and the named proposal only. |
-| Applicable Rules | Documentation and execution rules. |
-| Verification | Both product documentation-governance checks and actual-diff review. |
-| Expected Markers | Product tasks cannot modify a sibling; neutral-component tasks remain component-local; only a declared Shared task may span consumers. |
-| Asset Needs | None. |
-| Reporting Requirements | Record exact task scopes and cross-boundary escalation rule. |
-| Stop Conditions | Stop for a conflict with the owner-approved multi-App topology. |
-| Exit Criteria | The execution policy defines the exclusive scopes and both documentation checks pass. |
-| Original Owner Request | A T/Td for one App must absolutely never modify another App; only Shared work may span products. |
-| Similar-Issue Sweep | Review the prior commit-prefix convention and documentation ownership language for contrary wording. |
+| Identifier Mode | Standalone governance correction |
+| Admission And Approval | Owner clarification on 2026-09-23. |
+| Objective | Define exactly three exclusive task scopes: NXVM, MyNES and Shared. |
+| Non-goals | No App, source, test, asset, build or product-document change. |
+| Reference Baseline | Shared M5 Td S172 P1 `5734e1e3d`. |
+| Files And ABI Surface | `docs/rules/EXECUTION.md`, this packet and [three-scope boundary](../proposals/m5-shared-three-scope-boundary.md). |
+| Verification | Documentation governance, actual-diff review and explicit three-scope wording review. |
+| Exit Criteria | The rules name no fourth scope; the shared six-component corpus and shared configuration/documents belong to Shared; App isolation remains absolute. |
 
 ## Current Technical Baseline
 
