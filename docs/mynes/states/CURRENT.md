@@ -16,21 +16,22 @@ the task-39 artifact before any gameplay conclusion can stand.
 | Non-goals | No ROM import, no change to user `mynes.ini`, no shared-component change and no new emulator mechanism repair in this S. |
 | Reference Baseline | `3588fe945`; source repairs exist but deployed `0011` artifacts predate task-39 identity. |
 | Candidate Proposal | [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) |
-| Files And ABI Surface | MyNES product CMake, release-manifest tool, artifact directory and MyNES state/evidence only. |
-| Applicable Rules | Task revision is the four-digit task number; each runnable product task supplies optimized x64/x86 artifacts in `assets/binary-mynes`; owner-local media stays untracked. |
-| Verification | Build both architectures, verify PE machine type and versioned filenames, generate the ignored build manifest, and run focused Core/Driver regressions. |
+| Files And ABI Surface | MyNES product CMake, obsolete manifest tool, artifact directory and MyNES state/evidence only. |
+| Applicable Rules | Task revision is the four-digit task number; each runnable product task supplies optimized x64/x86 artifacts in `assets/binary-mynes`; delivery aligns with NXVM's EXE-plus-adjacent-INI model and owner-local media stays untracked. |
+| Verification | Build both architectures, verify PE machine type and versioned filenames, confirm no manifest generator/output participates in delivery, and run focused Core/Driver regressions. |
 | Expected Markers | `assets/binary-mynes` contains exactly the `0039` executable pair plus the sole editable `mynes.ini`; no manifest or `0011` executable remains there. |
 | Asset Needs | Existing local `mynes.ini` is retained unchanged; no ROM is read or committed. |
 | Reporting Requirements | Report S10 diff add/remove/net, files and rationale, build/test outcome, pushed commit, and clickable x64/x86 paths. |
 | Stop Conditions | A required toolchain cannot build a valid PE or artifact placement would overwrite the user configuration. |
-| Exit Criteria | Both versioned executables are present, architecture-verified, the ignored manifest is generated, old executables/asset manifest are removed, and the result is committed and pushed. |
+| Exit Criteria | Both versioned executables are present, architecture-verified, no manifest generator/output participates in delivery, old executables/asset manifest are removed, and the result is committed and pushed. |
 | Original Owner Request | Put the latest dual EXEs in assets; task 39 uses version `0_0_0039`; remove the old `0011` executables. |
 | Similar-Issue Sweep | Product target, artifact copy name, manifest name/version and CURRENT artifact baseline use the same task revision. |
 
 ### S10 Brief
 
 Correct the task-39 artifact identity and deploy both built architectures to
-the one product artifact directory. Preserve the owner-managed INI verbatim.
+the one product artifact directory. Retire the obsolete MyNES manifest flow so
+delivery matches NXVM. Preserve the owner-managed INI verbatim.
 ## M6 T39 Progress
 
 | S | Result |
@@ -50,7 +51,7 @@ the one product artifact directory. Preserve the owner-managed INI verbatim.
 - Delivery kind: `product-execution`; current target: `mynes-0-0-0039`; artifacts
   are `assets/binary-mynes/mynes_0_0_0039_x64.exe` and
   `mynes_0_0_0039_x86.exe`. The one editable `mynes.ini` is adjacent; generated
-  manifests stay ignored under `build/`.
+  no manifest participates in the current delivery path.
 - MyNes snapshots are private versioned `MNS1` state images. App owns command/file
   policy and direct writer lifetime; Core owns image state and cartridge identity;
   Common/Lib remain neutral. ROMs remain ignored and no remote is configured.
