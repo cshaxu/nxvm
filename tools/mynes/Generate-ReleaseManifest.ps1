@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path $RepositoryRoot).Path
 $binary = Join-Path $root 'assets/binary-mynes'
-$manifest = Join-Path $PSScriptRoot '..\..\build\mynes_0_0_0039_manifest.txt'
+$manifest = Join-Path $root 'build\mynes_0_0_0039_manifest.txt'
 $artifacts = @('mynes_0_0_0039_x64.exe', 'mynes_0_0_0039_x86.exe', 'mynes.ini')
 
 function Get-ReleaseHash([string]$Path) {
