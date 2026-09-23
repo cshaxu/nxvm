@@ -2,8 +2,33 @@
 
 ## Current Work
 
-**No active MyNES subtask.** M6 T39 is closed after owner RDP acceptance of
-the task-39 product artifacts.
+**Active: M6 T40 S1 executable-directory Base capability.**
+
+## M6 T40 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved T40 to add a Shared Lib Base executable-directory capability and correct MyNES/NXVM adjacent-INI loading; SoftPC will adopt the shared revision separately. |
+| Objective | Define, implement and test one Base API that returns the current executable directory in a caller buffer. |
+| Non-goals | No Common or SoftPC change, no INI override/fallback policy, no product artifact refresh and no App adoption in S1. |
+| Reference Baseline | MyNES calls `GetModuleFileNameA` in App; NXVM derives an INI path from `argv[0]`; Base has only clock/sync host capabilities. |
+| Candidate Proposal | [M6 executable-directory Base capability](../proposals/m6-executable-directory-base.md) |
+| Files And ABI Surface | Shared: `src/lib/base`, `src/lib/CMakeLists.txt`, `test/lib`, Lib manifest only. |
+| Applicable Rules | Base depends only on Types; public API exposes a bounded copied result; platform headers stay private; one target-scoped Shared P. |
+| Verification | x64/x86 Lib tests cover success and capacity rejection; Lib manifest/dependency checks pass. |
+| Expected Markers | A caller receives a nonempty directory with no trailing separator, or a defined status without modifying a rejected result. |
+| Asset Needs | None. |
+| Reporting Requirements | Report Shared S1 source/test diff, retained owner, x64/x86 tests, P commit/push and transfers to S2/S3. |
+| Stop Conditions | A portable Linux executable-directory contract cannot be defined without an unbounded or ambiguous fallback. |
+| Exit Criteria | Shared API/implementations/tests pass and are pushed; MyNES/NXVM receive separate admitted P adoption steps. |
+| Original Owner Request | Lib Base should expose executable location; correct NXVM and MyNES INI loading, with SoftPC later importing the same Lib. |
+| Similar-Issue Sweep | All current executable-path/INI discovery references in Lib, MyNES and NXVM are inventoried; non-S1 product hits are transferred to S2/S3. |
+
+### S1 Brief
+
+Implement the shared owner first. The API returns only the directory of the
+current executable, not an INI path; callers compose their product filename.
 ## M6 T39 Progress
 
 | S | Result |
