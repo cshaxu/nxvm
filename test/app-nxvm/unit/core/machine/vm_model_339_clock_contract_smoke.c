@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -16,13 +17,13 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
     };
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_time_observation time_observation;
     C_INT failed = 0;
 
-    if (model_339 == STD_NULL || generic == STD_NULL ||
+    if (model_339 == LIB_NULL || generic == LIB_NULL ||
         vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) {
+        session == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
     }

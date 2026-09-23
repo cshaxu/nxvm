@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_HDC_H
 #define CORE_MACHINE_HDC_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -43,53 +44,53 @@ typedef enum core_machine_xebec_phase {
 } core_machine_xebec_phase;
 
 typedef struct core_machine_xebec_data {
-    type_unsigned_8 dcb[6];
-    type_unsigned_8 dcb_count;
-    type_unsigned_8 initialize[8];
-    type_unsigned_8 initialize_count;
-    type_unsigned_8 response[5];
-    type_unsigned_8 response_count;
-    type_unsigned_8 response_index;
-    type_unsigned_8 last_sense[4];
-    type_unsigned_8 mask_pattern;
-    type_unsigned_16 byte_index;
-    type_unsigned_8 sectors_remaining;
+    lib_u8 dcb[6];
+    lib_u8 dcb_count;
+    lib_u8 initialize[8];
+    lib_u8 initialize_count;
+    lib_u8 response[5];
+    lib_u8 response_count;
+    lib_u8 response_index;
+    lib_u8 last_sense[4];
+    lib_u8 mask_pattern;
+    lib_u16 byte_index;
+    lib_u8 sectors_remaining;
     core_machine_xebec_phase phase;
 } core_machine_xebec_data;
 
 typedef struct core_machine_hdc_data {
-    type_unsigned_8 features;
-    type_unsigned_8 error;
-    type_unsigned_8 sector_count;
-    type_unsigned_8 sector_number;
-    type_unsigned_8 cylinder_low;
-    type_unsigned_8 cylinder_high;
-    type_unsigned_8 drive_head;
+    lib_u8 features;
+    lib_u8 error;
+    lib_u8 sector_count;
+    lib_u8 sector_number;
+    lib_u8 cylinder_low;
+    lib_u8 cylinder_high;
+    lib_u8 drive_head;
     /* IBM's fixed-disk register at 3F6 supplies head bit 3; it is not ATA
      * device control and must not alter the task-file drive-select bit. */
-    type_unsigned_8 fixed_disk_register;
-    type_unsigned_8 step_rate_selector;
-    type_unsigned_16 step_pulse_limit;
-    type_unsigned_32 step_rate_ticks;
-    type_unsigned_8 status;
-    type_unsigned_8 device_control;
+    lib_u8 fixed_disk_register;
+    lib_u8 step_rate_selector;
+    lib_u16 step_pulse_limit;
+    lib_u32 step_rate_ticks;
+    lib_u8 status;
+    lib_u8 device_control;
     type_bool irq_pending;
     type_bool reset_asserted;
-    type_unsigned_8 last_command;
-    type_unsigned_8 pending_command;
-    type_unsigned_8 pending_features;
-    type_unsigned_8 pending_sector_count;
-    type_unsigned_8 pending_sector_number;
-    type_unsigned_8 pending_cylinder_low;
-    type_unsigned_8 pending_cylinder_high;
-    type_unsigned_8 pending_drive_head;
-    type_unsigned_16 sectors_remaining;
-    type_unsigned_32 command_count;
-    type_unsigned_64 elapsed_ticks;
-    type_unsigned_64 next_service_tick;
+    lib_u8 last_command;
+    lib_u8 pending_command;
+    lib_u8 pending_features;
+    lib_u8 pending_sector_count;
+    lib_u8 pending_sector_number;
+    lib_u8 pending_cylinder_low;
+    lib_u8 pending_cylinder_high;
+    lib_u8 pending_drive_head;
+    lib_u16 sectors_remaining;
+    lib_u32 command_count;
+    lib_u64 elapsed_ticks;
+    lib_u64 next_service_tick;
     core_machine_hdc_phase phase;
-    type_unsigned_16 data_index;
-    type_unsigned_8 data[512];
+    lib_u16 data_index;
+    lib_u8 data[512];
 } core_machine_hdc_data;
 
 typedef struct core_machine_hdc_connection {
@@ -128,9 +129,9 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc);
  * production scheduler advances the same owner only through elapsed ticks. */
 C_VOID core_machine_hdc_advance(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
-    type_unsigned_64 elapsed_ticks);
+    lib_u64 elapsed_ticks);
 type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
-    type_unsigned_64 *out_due_tick);
+    lib_u64 *out_due_tick);
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc);
 const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID);
 const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID);

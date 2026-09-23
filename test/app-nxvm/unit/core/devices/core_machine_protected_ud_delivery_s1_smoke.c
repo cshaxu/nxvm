@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -19,13 +20,13 @@ static C_VOID ud_s1_reset(C_VOID *opaque)
 {
     ud_s1_machine *state = (ud_s1_machine *)opaque;
 
-    if (state != STD_NULL) {
+    if (state != LIB_NULL) {
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
 static const core_machine_execution_provider ud_s1_provider = {
-    ud_s1_reset, STD_NULL
+    ud_s1_reset, LIB_NULL
 };
 
 static C_INT ud_s1_prepare(ud_s1_machine *state)
@@ -36,10 +37,10 @@ static C_INT ud_s1_prepare(ud_s1_machine *state)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    if (state == STD_NULL) {
+    if (state == LIB_NULL) {
         return 0;
     }
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &ud_s1_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -58,15 +59,15 @@ static C_INT ud_s1_gprs_same(const t_cpu *before, const t_cpu *after)
 
 static C_INT ud_s1_data_sregs_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es,
+    return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss,
+        lib_memory_compare(&before->data.ss, &after->data.ss,
             sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
+        lib_memory_compare(&before->data.ds, &after->data.ds,
             sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs,
+        lib_memory_compare(&before->data.fs, &after->data.fs,
             sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs,
+        lib_memory_compare(&before->data.gs, &after->data.gs,
             sizeof(before->data.gs)) == 0;
 }
 
@@ -80,14 +81,14 @@ static C_INT ud_s1_delivered(const core_machine_cpu_diagnostic *diagnostic)
 }
 
 static C_INT ud_s1_boot_protected(ud_s1_machine *state,
-    const type_unsigned_8 *code, STD_SIZE_T bytes, type_bool valid_gate)
+    const lib_u8 *code, lib_size bytes, type_bool valid_gate)
 {
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt[] = {
         0u,0u,0u,0u,0u,0u,0u,0u,
         0xffu,0xffu,0u,0x20u,0u,0x9au,0u,0u,
         0xffu,0xffu,0u,0x30u,0u,0x92u,0u,0u
     };
-    type_unsigned_8 idt[6u * 8u + 8u] = { 0u };
+    lib_u8 idt[6u * 8u + 8u] = { 0u };
     t_cpu *cpu;
 
     if (!ud_s1_prepare(state)) {
@@ -107,34 +108,34 @@ static C_INT ud_s1_boot_protected(ud_s1_machine *state,
             bytes) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine,
             UD_S1_CODE_BASE + UD_S1_HANDLER_OFFSET,
-            (const type_unsigned_8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK) {
+            (const lib_u8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK) {
         return 0;
     }
     cpu = &state->machine->executor_cpu;
     cpu->data.cr0 = VCPU_CR0_PE;
     cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
-    cpu->data.gdtr.flagValid = TYPE_TRUE;
+    cpu->data.gdtr.flagValid = LIB_TRUE;
     cpu->data.gdtr.sregtype = SREG_GDTR;
     cpu->data.gdtr.base = UD_S1_GDT_BASE;
     cpu->data.gdtr.limit = sizeof(gdt) - 1u;
-    cpu->data.idtr.flagValid = TYPE_TRUE;
+    cpu->data.idtr.flagValid = LIB_TRUE;
     cpu->data.idtr.sregtype = SREG_IDTR;
     cpu->data.idtr.base = UD_S1_IDT_BASE;
     cpu->data.idtr.limit = sizeof(idt) - 1u;
     cpu->data.cs.selector = 0x0008u;
     cpu->data.cs.base = UD_S1_CODE_BASE;
     cpu->data.cs.limit = 0xffffu;
-    cpu->data.cs.flagValid = TYPE_TRUE;
+    cpu->data.cs.flagValid = LIB_TRUE;
     cpu->data.cs.sregtype = SREG_CODE;
     cpu->data.cs.dpl = 0u;
-    cpu->data.cs.seg.executable = TYPE_TRUE;
+    cpu->data.cs.seg.executable = LIB_TRUE;
     cpu->data.ss.selector = 0x0010u;
     cpu->data.ss.base = UD_S1_STACK_BASE;
     cpu->data.ss.limit = 0xffffu;
-    cpu->data.ss.flagValid = TYPE_TRUE;
+    cpu->data.ss.flagValid = LIB_TRUE;
     cpu->data.ss.sregtype = SREG_STACK;
     cpu->data.ss.dpl = 0u;
-    cpu->data.ss.seg.data.writable = TYPE_TRUE;
+    cpu->data.ss.seg.data.writable = LIB_TRUE;
     cpu->data.ds = cpu->data.ss;
     cpu->data.ds.sregtype = SREG_DATA;
     cpu->data.es = cpu->data.ds;
@@ -145,16 +146,16 @@ static C_INT ud_s1_boot_protected(ud_s1_machine *state,
     return 1;
 }
 
-static C_INT ud_s1_protected_delivery(const type_unsigned_8 *code,
-    STD_SIZE_T bytes)
+static C_INT ud_s1_protected_delivery(const lib_u8 *code,
+    lib_size bytes)
 {
-    type_unsigned_32 frame[3u] = { 0u, 0u, 0u };
+    lib_u32 frame[3u] = { 0u, 0u, 0u };
     ud_s1_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ud_s1_boot_protected(&state, code, bytes, TYPE_TRUE);
+    C_INT failed = !ud_s1_boot_protected(&state, code, bytes, LIB_TRUE);
 
     if (!failed) {
         before = state.machine->executor_cpu;
@@ -188,39 +189,39 @@ static C_INT ud_s1_protected_delivery(const type_unsigned_8 *code,
 
 static C_INT ud_s1_metadata_and_lexeme(C_VOID)
 {
-    static const type_unsigned_8 reserved[] = { 0x0fu, 0x25u, 0xc0u };
-    static const type_unsigned_8 adjacent[][3] = {
+    static const lib_u8 reserved[] = { 0x0fu, 0x25u, 0xc0u };
+    static const lib_u8 adjacent[][3] = {
         { 0x0fu, 0x20u, 0xc0u }, { 0x0fu, 0x21u, 0xc0u },
         { 0x0fu, 0x22u, 0xc0u }, { 0x0fu, 0x23u, 0xc0u },
         { 0x0fu, 0x24u, 0xf0u }, { 0x0fu, 0x26u, 0xf0u }
     };
     core_machine_cpu_instruction_lexeme lexeme;
-    STD_SIZE_T index;
+    lib_size index;
 
     if (core_machine_cpu_instruction_metadata_get(
             CORE_MACHINE_CPU_INSTRUCTION_0F, 0x25u, 0xc0u).valid ||
         core_machine_cpu_instruction_lexeme_scan(reserved, sizeof(reserved),
-            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme)) return 0;
+            CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE, &lexeme)) return 0;
     for (index = 0u; index != sizeof(adjacent) / sizeof(adjacent[0]); ++index) {
         if (!core_machine_cpu_instruction_metadata_get(
                 CORE_MACHINE_CPU_INSTRUCTION_0F, adjacent[index][1],
                 adjacent[index][2]).valid ||
             !core_machine_cpu_instruction_lexeme_scan(adjacent[index],
                 sizeof(adjacent[index]), CORE_MACHINE_CPU_PROFILE_80386,
-                TYPE_TRUE, &lexeme) || !lexeme.available) return 0;
+                LIB_TRUE, &lexeme) || !lexeme.available) return 0;
     }
     return 1;
 }
 static C_INT ud_s1_lexeme_memory_form_rejection(C_VOID)
 {
-    static const type_unsigned_8 invalid[][3] = {
+    static const lib_u8 invalid[][3] = {
         { 0x62u, 0xc0u, 0u }, { 0x8du, 0xc0u, 0u },
         { 0xc4u, 0xc0u, 0u }, { 0xc5u, 0xc0u, 0u },
         { 0xffu, 0xd8u, 0u }, { 0xffu, 0xe8u, 0u },
         { 0x0fu, 0x01u, 0xc0u }, { 0x0fu, 0xb2u, 0xc0u },
         { 0x0fu, 0xb4u, 0xc0u }, { 0x0fu, 0xb5u, 0xc0u }
     };
-    static const type_unsigned_8 valid[][3] = {
+    static const lib_u8 valid[][3] = {
         { 0x62u, 0x00u, 0u }, { 0x8du, 0x00u, 0u },
         { 0xc4u, 0x00u, 0u }, { 0xc5u, 0x00u, 0u },
         { 0xffu, 0x18u, 0u }, { 0xffu, 0x28u, 0u },
@@ -228,66 +229,66 @@ static C_INT ud_s1_lexeme_memory_form_rejection(C_VOID)
         { 0x0fu, 0xb4u, 0x00u }, { 0x0fu, 0xb5u, 0x00u }
     };
     core_machine_cpu_instruction_lexeme lexeme;
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index != sizeof(invalid) / sizeof(invalid[0]); ++index) {
         if (core_machine_cpu_instruction_lexeme_scan(invalid[index],
                 sizeof(invalid[index]), CORE_MACHINE_CPU_PROFILE_80386,
-                TYPE_TRUE, &lexeme)) return 0;
+                LIB_TRUE, &lexeme)) return 0;
     }
     for (index = 0u; index != sizeof(valid) / sizeof(valid[0]); ++index) {
         if (!core_machine_cpu_instruction_lexeme_scan(valid[index],
                 sizeof(valid[index]), CORE_MACHINE_CPU_PROFILE_80386,
-                TYPE_TRUE, &lexeme) || !lexeme.available) return 0;
+                LIB_TRUE, &lexeme) || !lexeme.available) return 0;
     }
     return 1;
 }
 static C_INT ud_s1_lexeme_primary_group_rejection(C_VOID)
 {
-    static const type_unsigned_8 invalid[][2] = {
+    static const lib_u8 invalid[][2] = {
         { 0x8fu, 0xc8u }, { 0xc6u, 0xc8u }, { 0xc7u, 0xc8u },
         { 0xf6u, 0xc8u }, { 0xf7u, 0xc8u }, { 0xfeu, 0xd0u },
         { 0xffu, 0xf8u }
     };
-    static const type_unsigned_8 valid[][2] = {
+    static const lib_u8 valid[][2] = {
         { 0x8fu, 0xc0u }, { 0xf6u, 0xd0u }, { 0xf7u, 0xd0u },
         { 0xfeu, 0xc0u }, { 0xffu, 0xf0u }
     };
     core_machine_cpu_instruction_lexeme lexeme;
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index != sizeof(invalid) / sizeof(invalid[0]); ++index) {
         if (core_machine_cpu_instruction_lexeme_scan(invalid[index],
                 sizeof(invalid[index]), CORE_MACHINE_CPU_PROFILE_80386,
-                TYPE_TRUE, &lexeme)) return 0;
+                LIB_TRUE, &lexeme)) return 0;
     }
     for (index = 0u; index != sizeof(valid) / sizeof(valid[0]); ++index) {
         if (!core_machine_cpu_instruction_lexeme_scan(valid[index],
                 sizeof(valid[index]), CORE_MACHINE_CPU_PROFILE_80386,
-                TYPE_TRUE, &lexeme) || !lexeme.available) return 0;
+                LIB_TRUE, &lexeme) || !lexeme.available) return 0;
     }
     if (!core_machine_cpu_instruction_lexeme_scan(
-            (const type_unsigned_8[]){ 0xc6u, 0xc0u, 0x12u }, 3u,
-            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme) ||
+            (const lib_u8[]){ 0xc6u, 0xc0u, 0x12u }, 3u,
+            CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE, &lexeme) ||
         !core_machine_cpu_instruction_lexeme_scan(
-            (const type_unsigned_8[]){ 0xc7u, 0xc0u, 0x78u, 0x56u, 0x34u, 0x12u },
-            6u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme)) return 0;
+            (const lib_u8[]){ 0xc7u, 0xc0u, 0x78u, 0x56u, 0x34u, 0x12u },
+            6u, CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE, &lexeme)) return 0;
     return 1;
 }
 static C_INT ud_s1_lexeme_8086_pop_cs(C_VOID)
 {
-    static const type_unsigned_8 pop_cs[] = { 0x0fu };
+    static const lib_u8 pop_cs[] = { 0x0fu };
     core_machine_cpu_instruction_lexeme lexeme;
 
     return core_machine_cpu_instruction_lexeme_scan(pop_cs, sizeof(pop_cs),
-        CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE, &lexeme) && lexeme.available &&
+        CORE_MACHINE_CPU_PROFILE_8086, LIB_FALSE, &lexeme) && lexeme.available &&
         lexeme.byte_count == 1u && lexeme.component_count == 1u &&
         !core_machine_cpu_instruction_lexeme_scan(pop_cs, sizeof(pop_cs),
-            CORE_MACHINE_CPU_PROFILE_80186, TYPE_FALSE, &lexeme);
+            CORE_MACHINE_CPU_PROFILE_80186, LIB_FALSE, &lexeme);
 }
 static C_INT ud_s1_primary_metadata_and_lexeme(C_VOID)
 {
-    static const type_unsigned_8 reserved[] = { 0xf1u };
+    static const lib_u8 reserved[] = { 0xf1u };
     core_machine_cpu_instruction_lexeme lexeme;
     core_machine_cpu_instruction_metadata metadata =
         core_machine_cpu_instruction_metadata_get(
@@ -295,9 +296,9 @@ static C_INT ud_s1_primary_metadata_and_lexeme(C_VOID)
 
     return !metadata.valid && !core_machine_cpu_instruction_lexeme_scan(
         reserved, sizeof(reserved), CORE_MACHINE_CPU_PROFILE_80386,
-        TYPE_TRUE, &lexeme);
+        LIB_TRUE, &lexeme);
 }
-static core_machine_cpu_profile ud_s1_primary_expected_minimum(type_unsigned_8 opcode)
+static core_machine_cpu_profile ud_s1_primary_expected_minimum(lib_u8 opcode)
 {
     if ((opcode >= 0x60u && opcode <= 0x62u) || opcode == 0x68u ||
         opcode == 0x69u || opcode == 0x6au || opcode == 0x6bu ||
@@ -312,10 +313,10 @@ static core_machine_cpu_profile ud_s1_primary_expected_minimum(type_unsigned_8 o
 
 static C_INT ud_s1_primary_metadata_matrix(C_VOID)
 {
-    type_unsigned_16 value;
+    lib_u16 value;
 
     for (value = 0u; value != 0x100u; ++value) {
-        type_unsigned_8 opcode = (type_unsigned_8)value;
+        lib_u8 opcode = (lib_u8)value;
         core_machine_cpu_instruction_metadata metadata =
             core_machine_cpu_instruction_metadata_get(
                 CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, opcode, 0u);
@@ -326,7 +327,7 @@ static C_INT ud_s1_primary_metadata_matrix(C_VOID)
     }
     return 1;
 }
-static core_machine_cpu_profile ud_s1_0f_expected_minimum(type_unsigned_8 opcode)
+static core_machine_cpu_profile ud_s1_0f_expected_minimum(lib_u8 opcode)
 {
     if (opcode == 0x00u || opcode == 0x01u || opcode == 0x02u ||
         opcode == 0x03u || opcode == 0x06u) return CORE_MACHINE_CPU_PROFILE_80286;
@@ -344,10 +345,10 @@ static core_machine_cpu_profile ud_s1_0f_expected_minimum(type_unsigned_8 opcode
 
 static C_INT ud_s1_0f_metadata_matrix(C_VOID)
 {
-    type_unsigned_16 value;
+    lib_u16 value;
 
     for (value = 0u; value != 0x100u; ++value) {
-        type_unsigned_8 opcode = (type_unsigned_8)value;
+        lib_u8 opcode = (lib_u8)value;
         core_machine_cpu_instruction_metadata metadata =
             core_machine_cpu_instruction_metadata_get(
                 CORE_MACHINE_CPU_INSTRUCTION_0F, opcode, 0xc0u);
@@ -364,13 +365,13 @@ static C_INT ud_s1_0f_metadata_matrix(C_VOID)
 }
 static C_INT ud_s1_protected_invalid_gate(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0x0fu, 0x01u, 0xf8u };
+    static const lib_u8 code[] = { 0x0fu, 0x01u, 0xf8u };
     ud_s1_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ud_s1_boot_protected(&state, code, sizeof(code), TYPE_FALSE);
+    C_INT failed = !ud_s1_boot_protected(&state, code, sizeof(code), LIB_FALSE);
 
     if (!failed) {
         before = state.machine->executor_cpu;
@@ -393,19 +394,19 @@ static C_INT ud_s1_protected_invalid_gate(C_VOID)
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 invalid_primary[] = { 0xf1u };
-    static const type_unsigned_8 reserved_0f[] = { 0x0fu, 0x01u, 0xf8u };
-    static const type_unsigned_8 reserved_0f25[] = { 0x0fu, 0x25u, 0xc0u };
-    static const type_unsigned_8 invalid_operand[] = { 0x62u, 0xc0u };
-    static const type_unsigned_8 invalid_lock[] = { 0xf0u, 0x90u };
-    const type_unsigned_8 *forms[] = {
+    static const lib_u8 invalid_primary[] = { 0xf1u };
+    static const lib_u8 reserved_0f[] = { 0x0fu, 0x01u, 0xf8u };
+    static const lib_u8 reserved_0f25[] = { 0x0fu, 0x25u, 0xc0u };
+    static const lib_u8 invalid_operand[] = { 0x62u, 0xc0u };
+    static const lib_u8 invalid_lock[] = { 0xf0u, 0x90u };
+    const lib_u8 *forms[] = {
         invalid_primary, reserved_0f, reserved_0f25, invalid_operand, invalid_lock
     };
-    const STD_SIZE_T sizes[] = {
+    const lib_size sizes[] = {
         sizeof(invalid_primary), sizeof(reserved_0f), sizeof(reserved_0f25), sizeof(invalid_operand),
         sizeof(invalid_lock)
     };
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
         if (!ud_s1_protected_delivery(forms[index], sizes[index])) {

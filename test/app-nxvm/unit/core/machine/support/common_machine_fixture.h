@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #ifndef TEST_VM_COMMON_MACHINE_FIXTURE_H
 #define TEST_VM_COMMON_MACHINE_FIXTURE_H
 
@@ -17,13 +18,13 @@ static inline C_VOID vm_test_common_machine_state_changed(C_VOID *context,
 
     (C_VOID)state;
     (C_VOID)run_generation;
-    if (waiter != STD_NULL) (C_VOID)base_sync_event_signal(waiter->event);
+    if (waiter != LIB_NULL) (C_VOID)base_sync_event_signal(waiter->event);
 }
 
 static inline type_status vm_test_common_machine_state_waiter_initialize(
     vm_machine *machine, vm_test_common_machine_state_waiter *waiter)
 {
-    if (machine == STD_NULL || machine->executor == LIB_NULL || waiter == STD_NULL)
+    if (machine == LIB_NULL || machine->executor == LIB_NULL || waiter == LIB_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
     *waiter = (vm_test_common_machine_state_waiter){0};
     if (base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET, &waiter->event) !=
@@ -36,7 +37,7 @@ static inline type_status vm_test_common_machine_state_waiter_initialize(
 static inline C_VOID vm_test_common_machine_state_waiter_finalize(
     vm_test_common_machine_state_waiter *waiter)
 {
-    if (waiter == STD_NULL) return;
+    if (waiter == LIB_NULL) return;
     base_sync_event_destroy(waiter->event);
     waiter->event = LIB_NULL;
 }
@@ -48,24 +49,24 @@ static inline type_bool vm_test_common_machine_wait_state(const vm_machine *mach
     lib_u64 now;
     lib_u64 deadline;
 
-    if (machine == STD_NULL || machine->executor == LIB_NULL ||
-        waiter == STD_NULL || waiter->event == LIB_NULL ||
-        base_clock_milliseconds(&now) != LIB_STATUS_OK) return TYPE_FALSE;
+    if (machine == LIB_NULL || machine->executor == LIB_NULL ||
+        waiter == LIB_NULL || waiter->event == LIB_NULL ||
+        base_clock_milliseconds(&now) != LIB_STATUS_OK) return LIB_FALSE;
     deadline = now + timeout_milliseconds;
-    if (deadline < now) return TYPE_FALSE;
+    if (deadline < now) return LIB_FALSE;
     for (;;) {
         lib_u64 remaining;
         base_sync_wait_result result;
 
         if (common_machine_state_get(machine->executor) == expected)
-            return TYPE_TRUE;
+            return LIB_TRUE;
         if (base_clock_milliseconds(&now) != LIB_STATUS_OK || now >= deadline)
-            return TYPE_FALSE;
+            return LIB_FALSE;
         remaining = deadline - now;
         result = base_sync_event_wait(waiter->event,
             remaining > LIB_UINT32_MAX ? LIB_UINT32_MAX : (lib_u32)remaining);
         if (result != BASE_SYNC_WAIT_SIGNALED && result != BASE_SYNC_WAIT_TIMED_OUT)
-            return TYPE_FALSE;
+            return LIB_FALSE;
     }
 }
 
@@ -87,7 +88,7 @@ static C_VOID vm_test_common_machine_unbind(vm_machine *machine)
 {
     common_machine *common_machine;
 
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     common_machine = machine->executor;
     common_machine_destroy(common_machine);
     (C_VOID)vm_machine_bind_common_machine(machine, LIB_NULL);

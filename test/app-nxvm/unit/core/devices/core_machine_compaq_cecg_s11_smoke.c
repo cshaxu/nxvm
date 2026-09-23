@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/memory.h"
@@ -16,8 +17,8 @@ static C_INT t386_s11_query_route(t_ram *memory, core_machine_memory_route expec
 C_INT main(C_VOID)
 {
     const core_machine_vadp_cecg_config config = {
-        0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE,
-        0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE
+        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE
     };
     t_port port;
     t_port generic_port;
@@ -27,7 +28,7 @@ C_INT main(C_VOID)
     t_vadp generic_vadp;
     core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE
+        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
     };
     core_machine_vadp_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
@@ -40,9 +41,9 @@ C_INT main(C_VOID)
     core_machine_port_initialize(&port);
     core_machine_port_initialize(&generic_port);
     failed |= core_machine_memory_initialize_for(&memory,
-        16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+        16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
     failed |= core_machine_memory_initialize_for(&generic_memory,
-        16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+        16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_initialize(&generic_vadp, &generic_port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);

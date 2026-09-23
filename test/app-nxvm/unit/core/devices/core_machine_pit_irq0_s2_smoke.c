@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pic.h"
@@ -41,10 +42,10 @@ static C_VOID pit_irq0_finalize(pit_irq0_fixture *fixture)
     core_machine_port_finalize(&fixture->port);
 }
 
-static C_VOID pit_irq0_program(t_port *port, type_unsigned_8 control,
-    type_unsigned_16 count)
+static C_VOID pit_irq0_program(t_port *port, lib_u8 control,
+    lib_u16 count)
 {
-    type_unsigned_16 data_port = (type_unsigned_16)(0x0040u +
+    lib_u16 data_port = (lib_u16)(0x0040u +
         ((control >> 6u) & 0x03u));
 
     core_machine_port_write(port, 0x0043u, control);
@@ -83,7 +84,7 @@ static C_INT pit_irq0_test_mode2_edge(C_VOID)
 static C_INT pit_irq0_test_counter_forms(C_VOID)
 {
     pit_irq0_fixture fixture;
-    type_unsigned_8 status;
+    lib_u8 status;
     C_INT failed = 0;
 
     pit_irq0_initialize(&fixture);
@@ -106,7 +107,7 @@ static C_INT pit_irq0_test_counter_forms(C_VOID)
     failed |= !core_machine_pit_get_output(&fixture.pit, 1u) ||
         fixture.pit.data.count[1u] != 0x0002u;
     core_machine_port_write(&fixture.port, 0x0043u, 0x00eau);
-    status = (type_unsigned_8)core_machine_port_read(&fixture.port, 0x0041u);
+    status = (lib_u8)core_machine_port_read(&fixture.port, 0x0041u);
     failed |= (status & (VPIT_SB_OUT | VPIT_SB_NC | VPIT_SB_RW | VPIT_SB_M |
         VPIT_SB_BCD)) != (VPIT_SB_OUT | 0x30u | 0x04u | VPIT_SB_BCD);
     pit_irq0_finalize(&fixture);
@@ -120,10 +121,10 @@ static C_INT pit_irq0_test_gate_and_reset(C_VOID)
 
     pit_irq0_initialize(&fixture);
     pit_irq0_program(&fixture.port, 0x32u, 3u);
-    core_machine_pit_set_gate(&fixture.pit, 0u, TYPE_FALSE);
+    core_machine_pit_set_gate(&fixture.pit, 0u, LIB_FALSE);
     core_machine_pit_advance(&fixture.pit, 4u);
     failed |= !core_machine_pit_get_output(&fixture.pit, 0u) || fixture.irq0.asserted;
-    core_machine_pit_set_gate(&fixture.pit, 0u, TYPE_TRUE);
+    core_machine_pit_set_gate(&fixture.pit, 0u, LIB_TRUE);
     core_machine_pit_advance(&fixture.pit, 4u);
     failed |= !core_machine_pit_get_output(&fixture.pit, 0u) || !fixture.irq0.asserted;
     core_machine_pic_reset(&fixture.master, &fixture.slave);

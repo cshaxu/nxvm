@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/memory.h"
@@ -27,8 +28,8 @@
 #define _GetAddressSize ((cpu_state.data.cs.seg.exec.defsize ^ instruction_state.data.prefix_addrsize) ? 4 : 2)
 /* if opcode indicates a prefix */
 static C_VOID core_machine_cpu_execution_raise_exception(
-    core_machine_cpu_execution_context *context, type_unsigned_32 exception,
-    type_unsigned_32 code)
+    core_machine_cpu_execution_context *context, lib_u32 exception,
+    lib_u32 code)
 {
     TYPE_SET_BIT(instruction_state.data.except, exception);
     instruction_state.data.excode = code;
@@ -55,11 +56,11 @@ static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context);
 
 static C_VOID _debug_record_watchpoint(
     core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind, type_unsigned_32 address)
+    core_machine_cpu_watchpoint kind, lib_u32 address)
 {
     if (!instruction_state.data.watch_hit) {
-        instruction_state.data.watch_hit = TYPE_TRUE;
-        instruction_state.data.watch_kind = (type_unsigned_8)kind;
+        instruction_state.data.watch_hit = LIB_TRUE;
+        instruction_state.data.watch_kind = (lib_u8)kind;
         instruction_state.data.watch_address = address;
     }
     core_machine_cpu_execution_request_debug_pause(context);
@@ -69,34 +70,34 @@ static C_VOID _debug_record_watchpoint(
  * share one profile-owned set of defined 16-bit fields. An undefined bit is
  * canonicalized to zero in Core; that is a deterministic implementation
  * value, not a claim about a processor's externally observable bit image. */
-static type_unsigned_16 _e_real_flags_defined_mask(
+static lib_u16 _e_real_flags_defined_mask(
     const core_machine_cpu_execution_context *context)
 {
-    if (context == STD_NULL ||
+    if (context == LIB_NULL ||
         context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286) {
         return 0x0fd5u;
     }
     return 0x7fd5u;
 }
 
-static type_unsigned_16 _e_real_flags_load_16(
-    const core_machine_cpu_execution_context *context, type_unsigned_16 flags)
+static lib_u16 _e_real_flags_load_16(
+    const core_machine_cpu_execution_context *context, lib_u16 flags)
 {
     return TYPE_MASK_UNSIGNED_16((flags &
         _e_real_flags_defined_mask(context)) | 0x02u);
 }
 
-static type_unsigned_16 _e_real_flags_image_16(
-    const core_machine_cpu_execution_context *context, type_unsigned_16 flags)
+static lib_u16 _e_real_flags_image_16(
+    const core_machine_cpu_execution_context *context, lib_u16 flags)
 {
     return TYPE_MASK_UNSIGNED_16((flags &
         _e_real_flags_defined_mask(context)) | 0x02u);
 }
 
-static type_unsigned_32 _e_eflags_load(
-    const core_machine_cpu_execution_context *context, type_unsigned_32 flags)
+static lib_u32 _e_eflags_load(
+    const core_machine_cpu_execution_context *context, lib_u32 flags)
 {
-    if (context == STD_NULL ||
+    if (context == LIB_NULL ||
         context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386) {
         return _e_real_flags_load_16(context, TYPE_MASK_UNSIGNED_16(flags));
     }
@@ -104,16 +105,16 @@ static type_unsigned_32 _e_eflags_load(
 }
 
 static type_status _e_try_firmware_software_interrupt(
-    core_machine_cpu_execution_context *context, type_unsigned_8 intid,
+    core_machine_cpu_execution_context *context, lib_u8 intid,
     type_bool *out_handled)
 {
     core_machine_firmware_interrupt_frame frame;
     core_machine_firmware_interrupt_result result;
     type_status status;
 
-    if (out_handled == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_handled = TYPE_FALSE;
-    if (context == STD_NULL || context->firmware_interrupt_provider == STD_NULL) {
+    if (out_handled == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_handled = LIB_FALSE;
+    if (context == LIB_NULL || context->firmware_interrupt_provider == LIB_NULL) {
         return TYPE_STATUS_OK;
     }
     frame.ax = cpu_state.data.ax;
@@ -139,29 +140,29 @@ static type_status _e_try_firmware_software_interrupt(
 /* memory management unit */
 /* kernel memory accessing */
 /* read content from reference */
-static C_VOID _kma_read_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _kma_read_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_read_ref");
-    STD_MEMCPY((C_VOID *)rdata, (C_VOID *)ref, byte);
+    lib_memory_copy((C_VOID *)rdata, (C_VOID *)ref, byte);
     TYPE_TRACE_CALL_END;
 }
 /* write content to reference */
-static C_VOID _kma_write_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _kma_write_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_write_ref");
-    STD_MEMCPY((C_VOID *)ref, (C_VOID *)rdata, byte);
+    lib_memory_copy((C_VOID *)ref, (C_VOID *)rdata, byte);
     TYPE_TRACE_CALL_END;
 }
 /* Observation only: this does not assert that a serial logical access already
  * overlaps a physical 80386 external bus cycle. */
 static C_VOID _kma_publish_external_cycle(
     core_machine_cpu_execution_context *context,
-    core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
-    type_unsigned_8 byte, type_bool write,
+    core_machine_cpu_external_cycle_phase phase, lib_u32 physical,
+    lib_u8 byte, type_bool write,
     core_machine_cpu_memory_access_provenance provenance)
 {
-    if (context != STD_NULL && !context->preview_mode &&
-        context->external_cycle_provider != STD_NULL) {
+    if (context != LIB_NULL && !context->preview_mode &&
+        context->external_cycle_provider != LIB_NULL) {
         context->external_cycle_provider(context->external_cycle_context, phase,
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, write,
             provenance);
@@ -169,11 +170,11 @@ static C_VOID _kma_publish_external_cycle(
 }
 static C_VOID _p_publish_external_cycle(
     core_machine_cpu_execution_context *context,
-    core_machine_cpu_external_cycle_phase phase, type_unsigned_16 portid,
-    type_unsigned_8 byte, type_bool write)
+    core_machine_cpu_external_cycle_phase phase, lib_u16 portid,
+    lib_u8 byte, type_bool write)
 {
-    if (context != STD_NULL && !context->preview_mode &&
-        context->external_cycle_provider != STD_NULL) {
+    if (context != LIB_NULL && !context->preview_mode &&
+        context->external_cycle_provider != LIB_NULL) {
         context->external_cycle_provider(context->external_cycle_context, phase,
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, write,
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
@@ -182,12 +183,12 @@ static C_VOID _p_publish_external_cycle(
 
 static C_INT _kma_is_reset_vector_fetch(
     const core_machine_cpu_execution_context *context,
-    type_unsigned_32 physical, type_unsigned_8 bytes,
+    lib_u32 physical, lib_u8 bytes,
     core_machine_cpu_memory_access_provenance provenance)
 {
-    type_unsigned_32 reset_vector;
+    lib_u32 reset_vector;
 
-    if (context == STD_NULL || bytes == 0u ||
+    if (context == LIB_NULL || bytes == 0u ||
         (provenance != CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH &&
          provenance != CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH)) {
         return 0;
@@ -200,11 +201,11 @@ static C_INT _kma_is_reset_vector_fetch(
         return 0;
     }
     return physical >= reset_vector &&
-        physical <= UINT32_MAX - (type_unsigned_32)(bytes - 1u);
+        physical <= UINT32_MAX - (lib_u32)(bytes - 1u);
 }
 
 /* read content from physical */
-static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
+static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, lib_u32 physical, type_virtual_address rdata, lib_u8 byte, core_machine_cpu_memory_access_provenance provenance)
 {
     type_status memory_status;
     TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
@@ -218,13 +219,13 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
         physical &= 0x00ffffffu;
     }
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        physical, byte, TYPE_FALSE, provenance);
-    if (!context->preview_mode && context->transaction != STD_NULL && core_machine_transaction_begin(
+        physical, byte, LIB_FALSE, provenance);
+    if (!context->preview_mode && context->transaction != LIB_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, physical, byte, provenance) !=
             TYPE_STATUS_OK) {
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, TYPE_FALSE, provenance);
+            physical, byte, LIB_FALSE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     memory_status = _kma_is_reset_vector_fetch(context, physical, byte, provenance) ?
@@ -238,15 +239,15 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
     if (memory_status != TYPE_STATUS_OK) {
         if (!context->preview_mode) core_machine_transaction_cancel(context->transaction);
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, TYPE_FALSE, provenance);
+            physical, byte, LIB_FALSE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     if (!context->preview_mode) core_machine_transaction_commit(context->transaction);
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        physical, byte, TYPE_FALSE, provenance);
+        physical, byte, LIB_FALSE, provenance);
     TYPE_TRACE_CALL_END;
 }/* write content to physical */
-static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
+static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, lib_u32 physical, type_virtual_address rdata, lib_u8 byte, core_machine_cpu_memory_access_provenance provenance)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_write_physical");
     if (context->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80186) {
@@ -255,47 +256,47 @@ static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, t
         physical &= 0x00ffffffu;
     }
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        physical, byte, TYPE_TRUE, provenance);
-    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+        physical, byte, LIB_TRUE, provenance);
+    if (context->transaction != LIB_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE, physical, byte, provenance) !=
             TYPE_STATUS_OK) {
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, TYPE_TRUE, provenance);
+            physical, byte, LIB_TRUE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     if (core_machine_memory_write_physical(context->memory, physical, rdata,
             byte) != TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, TYPE_TRUE, provenance);
+            physical, byte, LIB_TRUE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     core_machine_transaction_commit(context->transaction);
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        physical, byte, TYPE_TRUE, provenance);
+        physical, byte, LIB_TRUE, provenance);
     TYPE_TRACE_CALL_END;
 }typedef struct t_kma_linear_translation {
-    type_unsigned_32 physical;
-    type_unsigned_32 ppde;
-    type_unsigned_32 ppte;
-    type_unsigned_32 cpde;
-    type_unsigned_32 cpte;
+    lib_u32 physical;
+    lib_u32 ppde;
+    lib_u32 ppte;
+    lib_u32 cpde;
+    lib_u32 cpte;
     type_bool paging;
 } t_kma_linear_translation;
 
 /* Validate a linear page translation without publishing page-table side effects. */
-static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl, t_kma_linear_translation *translation)
+static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_u8 byte, type_bool write, lib_u8 vpl, t_kma_linear_translation *translation)
 {
-    type_unsigned_32 ppde, ppte; /* page table entries */
-    type_unsigned_32 cpde, cpte;
+    lib_u32 ppde, ppte; /* page table entries */
+    lib_u32 cpde, cpte;
     TYPE_TRACE_CALL_BEGIN("_kma_prepare_physical_linear");
     if (_GetLinear_Offset(linear) > TYPE_MASK_UNSIGNED_32(_GetPageSize - byte))
         TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (!_IsPaging)
     {
         translation->physical = linear;
-        translation->paging = TYPE_FALSE;
+        translation->paging = LIB_FALSE;
         TYPE_TRACE_CALL_END;
         return;
     }
@@ -366,7 +367,7 @@ static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *c
     translation->ppte = ppte;
     translation->cpde = cpde;
     translation->cpte = cpte;
-    translation->paging = TYPE_TRUE;
+    translation->paging = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 
@@ -391,7 +392,7 @@ static C_VOID _kma_commit_physical_linear(core_machine_cpu_execution_context *co
 }
 
 /* Translate and publish a single checked linear page access. */
-static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl)
+static lib_u32 _kma_physical_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_u8 byte, type_bool write, lib_u8 vpl)
 {
     t_kma_linear_translation translation;
 
@@ -404,10 +405,10 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
     return translation.physical;
 }
 /* translate logical to linear - segmentation mechanism */
-static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl, type_bool force)
+static lib_u32 _kma_linear_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_u8 byte, type_bool write, lib_u8 vpl, type_bool force)
 {
-    type_unsigned_32 linear;
-    type_unsigned_32 upper, lower;
+    lib_u32 linear;
+    lib_u32 upper, lower;
     TYPE_TRACE_CALL_BEGIN("_kma_linear_logical");
     switch (rsreg->sregtype)
     {
@@ -576,7 +577,7 @@ static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *
     }
     linear = rsreg->base + offset;
     if (offset < lower || offset > upper || (byte != 0u &&
-        (type_unsigned_32)(byte - 1u) > upper - offset))
+        (lib_u32)(byte - 1u) > upper - offset))
     {
         TYPE_TRACE_BLOCK_BEGIN("offset(<lower/>upper)");
         switch (rsreg->sregtype)
@@ -610,10 +611,10 @@ static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *
     return linear;
 }
 /* read content from logical */
-static C_VOID _kma_read_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_virtual_address rdata, type_unsigned_8 byte, type_unsigned_8 vpl, type_bool force)
+static C_VOID _kma_read_linear(core_machine_cpu_execution_context *context, lib_u32 linear, type_virtual_address rdata, lib_u8 byte, lib_u8 vpl, type_bool force)
 {
-    type_unsigned_32 phy1, phy2;
-    type_unsigned_8 byte1, byte2;
+    lib_u32 phy1, phy2;
+    lib_u8 byte1, byte2;
     TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
     if (_GetLinear_Offset(linear) > TYPE_MASK_UNSIGNED_32(_GetPageSize - byte))
     {
@@ -649,10 +650,10 @@ static C_VOID _kma_read_linear(core_machine_cpu_execution_context *context, type
     TYPE_TRACE_CALL_END;
 }
 /* write content to logical */
-static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_virtual_address rdata, type_unsigned_8 byte, type_unsigned_8 vpl, type_bool force)
+static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, lib_u32 linear, type_virtual_address rdata, lib_u8 byte, lib_u8 vpl, type_bool force)
 {
-    type_unsigned_32 phy1, phy2;
-    type_unsigned_8 byte1, byte2;
+    lib_u32 phy1, phy2;
+    lib_u8 byte1, byte2;
     TYPE_TRACE_CALL_BEGIN("_kma_write_linear");
     if (_GetLinear_Offset(linear) > TYPE_MASK_UNSIGNED_32(_GetPageSize - byte))
     {
@@ -688,24 +689,24 @@ static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, typ
     TYPE_TRACE_CALL_END;
 }
 static type_bool _kma_real_legacy_segment_wrap(
-    core_machine_cpu_execution_context *context, type_unsigned_32 offset,
-    type_unsigned_8 byte)
+    core_machine_cpu_execution_context *context, lib_u32 offset,
+    lib_u8 byte)
 {
-    return context != STD_NULL && !_GetCR0_PE &&
+    return context != LIB_NULL && !_GetCR0_PE &&
         (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
          context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 ||
          context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) &&
         offset <= 0x0000ffffu && byte != 0u &&
-        (type_unsigned_32)(byte - 1u) > 0x0000ffffu - offset;
+        (lib_u32)(byte - 1u) > 0x0000ffffu - offset;
 }
 /* read content from logical */
-static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte, type_unsigned_8 vpl, type_bool force)
+static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, type_virtual_address rdata, lib_u8 byte, lib_u8 vpl, type_bool force)
 {
     /* type_native_unsigned i; */
-    type_unsigned_32 linear;
+    lib_u32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
     if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
-        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+        const lib_u8 first = (lib_u8)(0x00010000u - offset);
 
         TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, rsreg, offset,
             rdata, first, vpl, force));
@@ -720,9 +721,9 @@ static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_c
         CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
     {
         TYPE_TRACE_BLOCK_BEGIN("!force");
-        instruction_state.data.mem[instruction_state.data.msize].flagWrite = TYPE_FALSE;
+        instruction_state.data.mem[instruction_state.data.msize].flagWrite = LIB_FALSE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        STD_MEMCPY((C_VOID *)TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (C_VOID *)rdata, byte);
+        lib_memory_copy((C_VOID *)TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (C_VOID *)rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWR)
@@ -748,13 +749,13 @@ static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_c
     TYPE_TRACE_CALL_END;
 }
 /* write content to logical */
-static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte, type_unsigned_8 vpl, type_bool force)
+static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, type_virtual_address rdata, lib_u8 byte, lib_u8 vpl, type_bool force)
 {
     /* type_native_unsigned i; */
-    type_unsigned_32 linear;
+    lib_u32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_write_logical");
     if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
-        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+        const lib_u8 first = (lib_u8)(0x00010000u - offset);
 
         TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, rsreg, offset,
             rdata, first, vpl, force));
@@ -769,9 +770,9 @@ static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_
         CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
     {
         TYPE_TRACE_BLOCK_BEGIN("!force");
-        instruction_state.data.mem[instruction_state.data.msize].flagWrite = TYPE_TRUE;
+        instruction_state.data.mem[instruction_state.data.msize].flagWrite = LIB_TRUE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        STD_MEMCPY((C_VOID *)TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (C_VOID *)rdata, byte);
+        lib_memory_copy((C_VOID *)TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (C_VOID *)rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWW)
@@ -797,10 +798,10 @@ static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_
     TYPE_TRACE_CALL_END;
 }
 /* test logical accessing */
-static C_VOID _kma_test_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl, type_bool force)
+static C_VOID _kma_test_linear(core_machine_cpu_execution_context *context, lib_u32 linear, lib_u8 byte, type_bool write, lib_u8 vpl, type_bool force)
 {
-    type_unsigned_32 phy1, phy2;
-    type_unsigned_8 byte1, byte2;
+    lib_u32 phy1, phy2;
+    lib_u8 byte1, byte2;
     TYPE_TRACE_CALL_BEGIN("_kma_test_linear");
     if (_GetLinear_Offset(linear) > TYPE_MASK_UNSIGNED_32(_GetPageSize - byte))
     {
@@ -832,12 +833,12 @@ static C_VOID _kma_test_linear(core_machine_cpu_execution_context *context, type
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kma_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl, type_bool force)
+static C_VOID _kma_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_u8 byte, type_bool write, lib_u8 vpl, type_bool force)
 {
-    type_unsigned_32 linear;
+    lib_u32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_test_logical");
     if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
-        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+        const lib_u8 first = (lib_u8)(0x00010000u - offset);
 
         TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, rsreg, offset,
             first, write, vpl, force));
@@ -849,12 +850,12 @@ static C_VOID _kma_test_logical(core_machine_cpu_execution_context *context, t_c
     TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl, type_bool force)
+static C_VOID _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_u8 byte, type_bool write, lib_u8 vpl, type_bool force)
 {
-    type_unsigned_32 linear;
+    lib_u32 linear;
     TYPE_TRACE_CALL_BEGIN("_kma_test_access");
     if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
-        const type_unsigned_8 first = (type_unsigned_8)(0x00010000u - offset);
+        const lib_u8 first = (lib_u8)(0x00010000u - offset);
 
         TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, rsreg, offset,
             first, write, vpl, force));
@@ -869,7 +870,7 @@ static C_VOID _kma_test_access(core_machine_cpu_execution_context *context, t_cp
 }
 
 /* general memory accessing */
-static C_VOID _m_read_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _m_read_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_m_read_ref");
     /* _m_write_ref allows in-module reads only */
@@ -881,7 +882,7 @@ static C_VOID _m_read_ref(core_machine_cpu_execution_context *context, type_virt
     TYPE_TRACE_CHECK_RETURN(_kma_read_ref(context, ref, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_write_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _m_write_ref(core_machine_cpu_execution_context *context, type_virtual_address ref, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_m_write_ref");
     /* _m_write_ref allows in-module writes only */
@@ -893,26 +894,26 @@ static C_VOID _m_write_ref(core_machine_cpu_execution_context *context, type_vir
     TYPE_TRACE_CHECK_RETURN(_kma_write_ref(context, ref, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _m_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_m_read_logical");
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _m_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_m_write_logical");
     TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_unsigned_8 byte, type_bool write)
+static C_VOID _m_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_u8 byte, type_bool write)
 {
     type_virtual_address ref = 0;
     TYPE_TRACE_CALL_BEGIN("_m_test_access");
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, rsreg, offset, byte, write, _GetCPL, 0));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_unsigned_8 byte, type_bool write)
+static C_VOID _m_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_u8 byte, type_bool write)
 {
     type_virtual_address ref = 0;
     TYPE_TRACE_CALL_BEGIN("_m_test_logical");
@@ -920,7 +921,7 @@ static C_VOID _m_test_logical(core_machine_cpu_execution_context *context, t_cpu
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _m_read_rm(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _m_read_rm(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_m_read_rm");
     instruction_state.data.crm = 0;
@@ -930,7 +931,7 @@ static C_VOID _m_read_rm(core_machine_cpu_execution_context *context, type_unsig
         TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, instruction_state.data.rrm, TYPE_REFERENCE_OF(instruction_state.data.crm), byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_write_rm(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _m_write_rm(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_m_write_rm");
     if (instruction_state.data.flagMem)
@@ -942,7 +943,7 @@ static C_VOID _m_write_rm(core_machine_cpu_execution_context *context, type_unsi
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
-static C_VOID _ksa_read_idt(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_virtual_address rdata)
+static C_VOID _ksa_read_idt(core_machine_cpu_execution_context *context, lib_u8 intid, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_idt");
     if (!_GetCR0_PE)
@@ -963,7 +964,7 @@ static C_VOID _ksa_read_idt(core_machine_cpu_execution_context *context, type_un
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ksa_read_ldt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _ksa_read_ldt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_ksa_read_ldt");
     if (!_GetCR0_PE)
@@ -979,7 +980,7 @@ static C_VOID _ksa_read_ldt(core_machine_cpu_execution_context *context, type_un
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ksa_read_gdt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _ksa_read_gdt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_ksa_read_gdt");
     if (!_GetCR0_PE)
@@ -995,7 +996,7 @@ static C_VOID _ksa_read_gdt(core_machine_cpu_execution_context *context, type_un
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ksa_read_xdt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _ksa_read_xdt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_ksa_read_xdt");
     if (!_GetCR0_PE)
@@ -1014,7 +1015,7 @@ static C_VOID _ksa_read_xdt(core_machine_cpu_execution_context *context, type_un
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ksa_write_ldt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _ksa_write_ldt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_ksa_write_ldt");
     if (!_GetCR0_PE)
@@ -1026,7 +1027,7 @@ static C_VOID _ksa_write_ldt(core_machine_cpu_execution_context *context, type_u
     TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ksa_write_gdt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _ksa_write_gdt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_ksa_write_gdt");
     if (!_GetCR0_PE)
@@ -1038,7 +1039,7 @@ static C_VOID _ksa_write_gdt(core_machine_cpu_execution_context *context, type_u
     TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ksa_write_xdt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _ksa_write_xdt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_ksa_write_xdt");
     if (!_GetCR0_PE)
@@ -1058,7 +1059,7 @@ static C_VOID _ksa_write_xdt(core_machine_cpu_execution_context *context, type_u
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ksa_test_write_xdt(core_machine_cpu_execution_context *context,
-    type_unsigned_16 selector)
+    lib_u16 selector)
 {
     TYPE_TRACE_CALL_BEGIN("_ksa_test_write_xdt");
     if (!_GetCR0_PE)
@@ -1082,10 +1083,10 @@ static C_VOID _ksa_test_write_xdt(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context,
-    type_unsigned_16 selector, type_unsigned_8 cpl, t_cpu_data_sreg *rsreg,
-    type_unsigned_64 *rdescriptor)
+    lib_u16 selector, lib_u8 cpl, t_cpu_data_sreg *rsreg,
+    lib_u64 *rdescriptor)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_ksa_prepare_code_sreg");
     TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
@@ -1096,12 +1097,12 @@ static C_VOID _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
     _SetDescUserAccessed(descriptor);
     TYPE_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
-    rsreg->flagValid = TYPE_TRUE;
+    rsreg->flagValid = LIB_TRUE;
     rsreg->selector = (selector & ~VCPU_SELECTOR_RPL) | cpl;
     rsreg->sregtype = SREG_CODE;
-    rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+    rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
     rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-    rsreg->limit = (type_unsigned_32)(_IsDescSegGranularLarge(descriptor) ?
+    rsreg->limit = (lib_u32)(_IsDescSegGranularLarge(descriptor) ?
         ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) :
         _GetDescSeg_Limit(descriptor));
     rsreg->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
@@ -1113,10 +1114,10 @@ static C_VOID _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *context,
-    type_unsigned_16 selector, type_unsigned_8 cpl, t_cpu_data_sreg *rsreg,
-    type_unsigned_64 *rdescriptor)
+    lib_u16 selector, lib_u8 cpl, t_cpu_data_sreg *rsreg,
+    lib_u64 *rdescriptor)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_ksa_prepare_stack_sreg");
     TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
@@ -1128,16 +1129,16 @@ static C_VOID _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *contex
         TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(selector & 0xfffcu));
     _SetDescUserAccessed(descriptor);
     TYPE_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
-    rsreg->flagValid = TYPE_TRUE;
+    rsreg->flagValid = LIB_TRUE;
     rsreg->selector = selector;
     rsreg->sregtype = SREG_STACK;
-    rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+    rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
     rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-    rsreg->limit = (type_unsigned_32)(_IsDescSegGranularLarge(descriptor) ?
+    rsreg->limit = (lib_u32)(_IsDescSegGranularLarge(descriptor) ?
         ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) :
         _GetDescSeg_Limit(descriptor));
     rsreg->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
-    rsreg->seg.executable = TYPE_FALSE;
+    rsreg->seg.executable = LIB_FALSE;
     rsreg->seg.data.big = (type_bool)_IsDescDataBig(descriptor);
     rsreg->seg.data.expdown = (type_bool)_IsDescDataExpDown(descriptor);
     rsreg->seg.data.writable = (type_bool)_IsDescDataWritable(descriptor);
@@ -1148,28 +1149,28 @@ static C_VOID _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *contex
  * segment reload, including the far transfer which reloads CS, replaces the
  * selected cache with real-address attributes. */
 static C_VOID _ksa_load_real_sreg(t_cpu_data_sreg *rsreg,
-    type_unsigned_16 selector, type_bool vm86)
+    lib_u16 selector, type_bool vm86)
 {
-    rsreg->flagValid = TYPE_TRUE;
+    rsreg->flagValid = LIB_TRUE;
     rsreg->selector = selector;
-    rsreg->base = (type_unsigned_32)selector << 4u;
+    rsreg->base = (lib_u32)selector << 4u;
     rsreg->limit = 0x0000ffffu;
     rsreg->dpl = vm86 ? 3u : 0u;
-    rsreg->seg.accessed = TYPE_TRUE;
+    rsreg->seg.accessed = LIB_TRUE;
     rsreg->seg.executable = rsreg->sregtype == SREG_CODE;
     if (rsreg->sregtype == SREG_CODE) {
-        rsreg->seg.exec.defsize = TYPE_FALSE;
-        rsreg->seg.exec.conform = TYPE_FALSE;
-        rsreg->seg.exec.readable = TYPE_TRUE;
+        rsreg->seg.exec.defsize = LIB_FALSE;
+        rsreg->seg.exec.conform = LIB_FALSE;
+        rsreg->seg.exec.readable = LIB_TRUE;
     } else {
-        rsreg->seg.data.big = TYPE_FALSE;
-        rsreg->seg.data.expdown = TYPE_FALSE;
-        rsreg->seg.data.writable = TYPE_TRUE;
+        rsreg->seg.data.big = LIB_FALSE;
+        rsreg->seg.data.expdown = LIB_FALSE;
+        rsreg->seg.data.writable = LIB_TRUE;
     }
 }
-static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_16 selector)
+static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u16 selector)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_ksa_load_sreg");
     switch (rsreg->sregtype)
     {
@@ -1200,11 +1201,11 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
             }
             _SetDescUserAccessed(descriptor);
             TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-            rsreg->flagValid = TYPE_TRUE;
-            rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+            rsreg->flagValid = LIB_TRUE;
+            rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
             if (_IsDescCodeNonConform(descriptor))
                 rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-            rsreg->limit = (type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+            rsreg->limit = (lib_u32)((_IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
             rsreg->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
             rsreg->seg.executable = (type_bool)_IsDescUserExecutable(descriptor);
             rsreg->seg.exec.defsize = (type_bool)_IsDescCode32(descriptor);
@@ -1230,7 +1231,7 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
             if (_IsSelectorNull(selector))
             {
                 TYPE_TRACE_BLOCK_BEGIN("selector(null)");
-                rsreg->flagValid = TYPE_FALSE;
+                rsreg->flagValid = LIB_FALSE;
                 rsreg->selector = selector;
                 TYPE_TRACE_BLOCK_END;
             }
@@ -1264,11 +1265,11 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
                 }
                 _SetDescUserAccessed(descriptor);
                 TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-                rsreg->flagValid = TYPE_TRUE;
+                rsreg->flagValid = LIB_TRUE;
                 rsreg->selector = selector;
-                rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+                rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
                 rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-                rsreg->limit = (type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+                rsreg->limit = (lib_u32)((_IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
                 rsreg->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
                 rsreg->seg.executable = (type_bool)_IsDescUserExecutable(descriptor);
                 if (rsreg->seg.executable)
@@ -1334,11 +1335,11 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
             }
             _SetDescUserAccessed(descriptor);
             TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-            rsreg->flagValid = TYPE_TRUE;
+            rsreg->flagValid = LIB_TRUE;
             rsreg->selector = selector;
-            rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+            rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
             rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-            rsreg->limit = (type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+            rsreg->limit = (lib_u32)((_IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
             rsreg->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
             rsreg->seg.executable = (type_bool)_IsDescUserExecutable(descriptor);
             rsreg->seg.data.big = (type_bool)_IsDescDataBig(descriptor);
@@ -1384,11 +1385,11 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
         }
         _SetDescTSSBusy(descriptor);
         TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-        rsreg->flagValid = TYPE_TRUE;
+        rsreg->flagValid = LIB_TRUE;
         rsreg->selector = selector;
-        rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+        rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
         rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-        rsreg->limit = (type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ? (_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+        rsreg->limit = (lib_u32)((_IsDescSegGranularLarge(descriptor) ? (_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
         rsreg->sys.type = (type_unsigned_4)_GetDesc_Type(descriptor);
         TYPE_TRACE_BLOCK_END;
         break;
@@ -1403,7 +1404,7 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
         if (_IsSelectorNull(selector))
         {
             TYPE_TRACE_BLOCK_BEGIN("selector(null)");
-            rsreg->flagValid = TYPE_FALSE;
+            rsreg->flagValid = LIB_FALSE;
             rsreg->selector = selector;
             TYPE_TRACE_BLOCK_END;
         }
@@ -1423,11 +1424,11 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
                 TYPE_TRACE_BLOCK_END;
             }
-            rsreg->flagValid = TYPE_TRUE;
+            rsreg->flagValid = LIB_TRUE;
             rsreg->selector = selector;
-            rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+            rsreg->base = (lib_u32)_GetDescSeg_Base(descriptor);
             rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-            rsreg->limit = (type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ? (_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+            rsreg->limit = (lib_u32)((_IsDescSegGranularLarge(descriptor) ? (_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
             rsreg->sys.type = (type_unsigned_4)_GetDesc_Type(descriptor);
             TYPE_TRACE_BLOCK_END;
         }
@@ -1443,31 +1444,31 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
 }
 
 /* regular segment accessing */
-static type_bool _s_check_selector(core_machine_cpu_execution_context *context, type_unsigned_16 selector)
+static type_bool _s_check_selector(core_machine_cpu_execution_context *context, lib_u16 selector)
 {
     /* 0 = succ, 1 = fail */
     TYPE_TRACE_CALL_BEGIN("_s_check_selector");
     if (_IsSelectorNull(selector))
     {
         TYPE_TRACE_CALL_END;
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
     if (TYPE_MASK_UNSIGNED_32(_GetSelector_Offset(selector) + 7) >
         (_GetSelector_TI(selector) ? TYPE_MASK_UNSIGNED_32(cpu_state.data.ldtr.limit) : TYPE_MASK_UNSIGNED_32(cpu_state.data.gdtr.limit)))
     {
         TYPE_TRACE_CALL_END;
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
     TYPE_TRACE_CALL_END;
-    return TYPE_FALSE;
+    return LIB_FALSE;
 }
-static C_VOID _s_read_idt(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_virtual_address rdata)
+static C_VOID _s_read_idt(core_machine_cpu_execution_context *context, lib_u8 intid, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_idt");
     TYPE_TRACE_CHECK_RETURN(_ksa_read_idt(context, intid, rdata));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_xdt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _s_read_xdt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_xdt");
     if (!_GetCR0_PE)
@@ -1475,30 +1476,30 @@ static C_VOID _s_read_xdt(core_machine_cpu_execution_context *context, type_unsi
     TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, rdata));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_tss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_read_tss(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_tss");
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.tr, offset, rdata, byte, 0, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_es(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_read_es(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_es");
     TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.es, offset, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_cs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_read_cs(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     core_machine_cpu_memory_access_provenance previous =
         context->memory_access_provenance;
-    type_unsigned_32 linear = cpu_state.data.cs.base + offset;
-    type_unsigned_32 prefetch_offset;
+    lib_u32 linear = cpu_state.data.cs.base + offset;
+    lib_u32 prefetch_offset;
     TYPE_TRACE_CALL_BEGIN("_s_read_cs");
     if (context->prefetch_valid && linear >= context->prefetch_linear &&
         (prefetch_offset = linear - context->prefetch_linear) <=
             context->prefetch_count && byte <= context->prefetch_count -
             prefetch_offset) {
-        STD_MEMCPY((C_VOID *)rdata, context->prefetch_bytes + prefetch_offset,
+        lib_memory_copy((C_VOID *)rdata, context->prefetch_bytes + prefetch_offset,
             byte);
     } else {
         context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH;
@@ -1508,37 +1509,37 @@ static C_VOID _s_read_cs(core_machine_cpu_execution_context *context, type_unsig
     context->memory_access_provenance = previous;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_ss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_read_ss(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_ss");
     TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.ss, offset, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_ds(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_read_ds(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_ds");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_fs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_read_fs(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_fs");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_read_gs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_read_gs(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_gs");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_idt(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_virtual_address rdata)
+static C_VOID _s_write_idt(core_machine_cpu_execution_context *context, lib_u8 intid, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_idt");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_xdt(core_machine_cpu_execution_context *context, type_unsigned_16 selector, type_virtual_address rdata)
+static C_VOID _s_write_xdt(core_machine_cpu_execution_context *context, lib_u16 selector, type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_xdt");
     if (!_GetCR0_PE)
@@ -1546,64 +1547,64 @@ static C_VOID _s_write_xdt(core_machine_cpu_execution_context *context, type_uns
     TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, rdata));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_tss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_write_tss(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_tss");
     TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.tr,
         offset, rdata, byte, 0, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_es(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_write_es(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_es");
     TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.es, offset, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_cs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_write_cs(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_cs");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_ss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_write_ss(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_ss");
     TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ss, offset, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_ds(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_write_ds(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_ds");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_fs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_write_fs(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_fs");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_write_gs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _s_write_gs(core_machine_cpu_execution_context *context, lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_gs");
     TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_test_tss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_unsigned_8 byte)
+static C_VOID _s_test_tss(core_machine_cpu_execution_context *context, lib_u32 offset, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_test_cs");
     TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.tr, offset, byte, 0, 0x00, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_test_cs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_unsigned_8 byte)
+static C_VOID _s_test_cs(core_machine_cpu_execution_context *context, lib_u32 offset, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_test_cs");
     TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.cs, offset, byte, 0, 0x00, 1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_test_ss_push(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _s_test_ss_push(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_32 cesp = 0x00000000;
+    lib_u32 cesp = 0x00000000;
     TYPE_TRACE_CALL_BEGIN("_s_test_ss_push");
     switch (_GetStackSize)
     {
@@ -1628,10 +1629,10 @@ static C_VOID _s_test_ss_push(core_machine_cpu_execution_context *context, type_
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_test_stack_frame_16(core_machine_cpu_execution_context *context,
-    t_cpu_data_sreg *stack, type_unsigned_16 sp, type_unsigned_8 words,
-    type_unsigned_8 cpl)
+    t_cpu_data_sreg *stack, lib_u16 sp, lib_u8 words,
+    lib_u8 cpl)
 {
-    type_unsigned_8 index;
+    lib_u8 index;
 
     TYPE_TRACE_CALL_BEGIN("_s_test_stack_frame_16");
     for (index = 0; index < words; ++index)
@@ -1645,10 +1646,10 @@ static C_VOID _s_test_stack_frame_16(core_machine_cpu_execution_context *context
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_test_stack_frame_32(core_machine_cpu_execution_context *context,
-    t_cpu_data_sreg *stack, type_unsigned_32 esp, type_unsigned_8 dwords,
-    type_unsigned_8 cpl)
+    t_cpu_data_sreg *stack, lib_u32 esp, lib_u8 dwords,
+    lib_u8 cpl)
 {
-    type_unsigned_8 index;
+    lib_u8 index;
 
     TYPE_TRACE_CALL_BEGIN("_s_test_stack_frame_32");
     for (index = 0u; index < dwords; ++index)
@@ -1659,7 +1660,7 @@ static C_VOID _s_test_stack_frame_32(core_machine_cpu_execution_context *context
             esp -= 4u;
         }
         else {
-            type_unsigned_16 sp = TYPE_MASK_UNSIGNED_16(esp);
+            lib_u16 sp = TYPE_MASK_UNSIGNED_16(esp);
 
             if (sp && sp < 4u)
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(0));
@@ -1670,9 +1671,9 @@ static C_VOID _s_test_stack_frame_32(core_machine_cpu_execution_context *context
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_test_ss_pop(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _s_test_ss_pop(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_32 cesp = 0x00000000;
+    lib_u32 cesp = 0x00000000;
     TYPE_TRACE_CALL_BEGIN("_s_test_ss_pop");
     switch (_GetStackSize)
     {
@@ -1694,7 +1695,7 @@ static C_VOID _s_test_ss_pop(core_machine_cpu_execution_context *context, type_u
 }
 static C_VOID _s_test_ss_iret_pop_286(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 offset;
+    lib_u8 offset;
 
     TYPE_TRACE_CALL_BEGIN("_s_test_ss_iret_pop_286");
     /* Intel's 80286 IRET real-mode exception is tied to an individual pop
@@ -1708,9 +1709,9 @@ static C_VOID _s_test_ss_iret_pop_286(core_machine_cpu_execution_context *contex
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_peek_ss_pop(core_machine_cpu_execution_context *context,
-    type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
+    lib_u32 offset, type_virtual_address rdata, lib_u8 byte)
 {
-    type_unsigned_32 cesp;
+    lib_u32 cesp;
 
     TYPE_TRACE_CALL_BEGIN("_s_peek_ss_pop");
     switch (_GetStackSize)
@@ -1728,13 +1729,13 @@ static C_VOID _s_peek_ss_pop(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cesp, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_16 selector)
+static C_VOID _s_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u16 selector)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_sreg");
     TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, rsreg, selector));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_gdtr(core_machine_cpu_execution_context *context, type_unsigned_32 base, type_unsigned_16 limit, type_unsigned_8 byte)
+static C_VOID _s_load_gdtr(core_machine_cpu_execution_context *context, lib_u32 base, lib_u16 limit, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_gdtr");
     if (_GetCPL)
@@ -1760,7 +1761,7 @@ static C_VOID _s_load_gdtr(core_machine_cpu_execution_context *context, type_uns
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_idtr(core_machine_cpu_execution_context *context, type_unsigned_32 base, type_unsigned_16 limit, type_unsigned_8 byte)
+static C_VOID _s_load_idtr(core_machine_cpu_execution_context *context, lib_u32 base, lib_u16 limit, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_idtr");
     if (_GetCPL)
@@ -1786,7 +1787,7 @@ static C_VOID _s_load_idtr(core_machine_cpu_execution_context *context, type_uns
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_ldtr(core_machine_cpu_execution_context *context, type_unsigned_16 selector)
+static C_VOID _s_load_ldtr(core_machine_cpu_execution_context *context, lib_u16 selector)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_ldtr");
     if (_GetCPL)
@@ -1804,7 +1805,7 @@ static C_VOID _s_load_ldtr(core_machine_cpu_execution_context *context, type_uns
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ldtr, selector));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_tr(core_machine_cpu_execution_context *context, type_unsigned_16 selector)
+static C_VOID _s_load_tr(core_machine_cpu_execution_context *context, lib_u16 selector)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_tr");
     if (_GetCPL)
@@ -1822,7 +1823,7 @@ static C_VOID _s_load_tr(core_machine_cpu_execution_context *context, type_unsig
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.tr, selector));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_cr0_msw(core_machine_cpu_execution_context *context, type_unsigned_16 msw)
+static C_VOID _s_load_cr0_msw(core_machine_cpu_execution_context *context, lib_u16 msw)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_cr0_msw");
     if (_GetCPL)
@@ -1846,11 +1847,11 @@ static C_VOID _s_load_cr0_msw(core_machine_cpu_execution_context *context, type_
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_write_cr0_80386(core_machine_cpu_execution_context *context,
-    type_unsigned_32 value)
+    lib_u32 value)
 {
-    const type_unsigned_32 mutable_mask = VCPU_CR0_PE | VCPU_CR0_MP |
+    const lib_u32 mutable_mask = VCPU_CR0_PE | VCPU_CR0_MP |
         VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_ET | VCPU_CR0_PG;
-    const type_unsigned_32 retained_mask = ~mutable_mask;
+    const lib_u32 retained_mask = ~mutable_mask;
 
     TYPE_TRACE_CALL_BEGIN("_s_write_cr0_80386");
     if ((value & retained_mask) != (cpu_state.data.cr0 & retained_mask))
@@ -1872,7 +1873,7 @@ static C_VOID _s_write_cr0_80386(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_write_cr3_80386(core_machine_cpu_execution_context *context,
-    type_unsigned_32 value)
+    lib_u32 value)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_cr3_80386");
     if (value & ~VCPU_CR3_BASE)
@@ -1884,37 +1885,37 @@ static C_VOID _s_write_cr3_80386(core_machine_cpu_execution_context *context,
     cpu_state.data.cr3 = value;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_cs(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+static C_VOID _s_load_cs(core_machine_cpu_execution_context *context, lib_u16 newcs)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_cs");
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.cs, newcs));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_ss(core_machine_cpu_execution_context *context, type_unsigned_16 newss)
+static C_VOID _s_load_ss(core_machine_cpu_execution_context *context, lib_u16 newss)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_ss");
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ss, newss));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_ds(core_machine_cpu_execution_context *context, type_unsigned_16 newds)
+static C_VOID _s_load_ds(core_machine_cpu_execution_context *context, lib_u16 newds)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_ds");
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ds, newds));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_es(core_machine_cpu_execution_context *context, type_unsigned_16 newes)
+static C_VOID _s_load_es(core_machine_cpu_execution_context *context, lib_u16 newes)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_es");
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.es, newes));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_fs(core_machine_cpu_execution_context *context, type_unsigned_16 newfs)
+static C_VOID _s_load_fs(core_machine_cpu_execution_context *context, lib_u16 newfs)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_fs");
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.fs, newfs));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _s_load_gs(core_machine_cpu_execution_context *context, type_unsigned_16 newgs)
+static C_VOID _s_load_gs(core_machine_cpu_execution_context *context, lib_u16 newgs)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_gs");
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.gs, newgs));
@@ -1929,7 +1930,7 @@ static C_VOID _s_test_eip(core_machine_cpu_execution_context *context)
 }
 static C_VOID _s_test_esp(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 cesp;
+    lib_u32 cesp;
     TYPE_TRACE_CALL_BEGIN("_s_test_esp");
     switch (_GetStackSize)
     {
@@ -1949,12 +1950,12 @@ static C_VOID _s_test_esp(core_machine_cpu_execution_context *context)
 
 /* portid accessing unit */
 /* kernel portid accessing */
-_______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_unsigned_8 byte)
+_______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, lib_u16 portid, lib_u8 byte)
 {
-    type_unsigned_16 iomap_base;
-    type_unsigned_32 bitmap_offset;
-    type_unsigned_32 checked_port;
-    type_unsigned_8 bitmap_byte;
+    lib_u16 iomap_base;
+    lib_u32 bitmap_offset;
+    lib_u32 checked_port;
+    lib_u8 bitmap_byte;
 
     TYPE_TRACE_CALL_BEGIN("_kpa_test_iomap");
     if (byte != 1u && byte != 2u && byte != 4u) {
@@ -1988,10 +1989,10 @@ _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, type_un
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kpa_test_mode(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_unsigned_8 byte)
+static C_VOID _kpa_test_mode(core_machine_cpu_execution_context *context, lib_u16 portid, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_p_test");
-    if (_GetCR0_PE && (_GetCPL > (type_unsigned_8)_GetEFLAGS_IOPL || _GetEFLAGS_VM))
+    if (_GetCR0_PE && (_GetCPL > (lib_u8)_GetEFLAGS_IOPL || _GetEFLAGS_VM))
     {
         TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1),(CPL>IOPL/EFLAGS_VM(1))");
         TYPE_TRACE_CHECK_RETURN(_kpa_test_iomap(context, portid, byte));
@@ -2000,7 +2001,7 @@ static C_VOID _kpa_test_mode(core_machine_cpu_execution_context *context, type_u
     TYPE_TRACE_CALL_END;
 }
 /* regular portid accessing */
-static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _p_input(core_machine_cpu_execution_context *context, lib_u16 portid, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_p_input");
     TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
@@ -2008,20 +2009,20 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     }
     _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        portid, byte, TYPE_FALSE);
-    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+        portid, byte, LIB_FALSE);
+    if (context->transaction != LIB_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_PORT_READ, portid, byte, 0u) !=
             TYPE_STATUS_OK) {
         _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            portid, byte, TYPE_FALSE);
+            portid, byte, LIB_FALSE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     if (core_machine_port_execute_read_width(context->port, portid, byte) !=
             TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
         _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            portid, byte, TYPE_FALSE);
+            portid, byte, LIB_FALSE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     core_machine_transaction_set_value(context->transaction,
@@ -2053,13 +2054,13 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
         TYPE_TRACE_BLOCK_END;
         break;
     }
-    instruction_state.data.flagIgnore = TYPE_TRUE;
+    instruction_state.data.flagIgnore = LIB_TRUE;
     core_machine_transaction_commit(context->transaction);
     _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        portid, byte, TYPE_FALSE);
+        portid, byte, LIB_FALSE);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _p_output(core_machine_cpu_execution_context *context, lib_u16 portid, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_p_output");
     TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
@@ -2090,8 +2091,8 @@ static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsign
         break;
     }
     _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        portid, byte, TYPE_TRUE);
-    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+        portid, byte, LIB_TRUE);
+    if (context->transaction != LIB_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE, portid,
             byte == 1u ? context->port->data.ioByte :
@@ -2099,26 +2100,26 @@ static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsign
             byte) !=
             TYPE_STATUS_OK) {
         _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            portid, byte, TYPE_TRUE);
+            portid, byte, LIB_TRUE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     if (core_machine_port_execute_write_width(context->port, portid, byte) !=
             TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
         _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            portid, byte, TYPE_TRUE);
+            portid, byte, LIB_TRUE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
-    instruction_state.data.flagIgnore = TYPE_TRUE;
+    instruction_state.data.flagIgnore = LIB_TRUE;
     core_machine_transaction_commit(context->transaction);
     _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        portid, byte, TYPE_TRUE);
+        portid, byte, LIB_TRUE);
     TYPE_TRACE_CALL_END;
 }
 
 /* decoding unit */
 /* kernel decoding function */
-static type_bool _kdf_check_prefix(core_machine_cpu_execution_context *context, type_unsigned_8 opcode)
+static type_bool _kdf_check_prefix(core_machine_cpu_execution_context *context, lib_u8 opcode)
 {
     switch (opcode)
     {
@@ -2129,25 +2130,25 @@ static type_bool _kdf_check_prefix(core_machine_cpu_execution_context *context, 
     case 0x36:
     case 0x3e:
     case 0x26:
-        return TYPE_TRUE;
+        return LIB_TRUE;
         break;
     case 0x64:
     case 0x65:
     case 0x66:
     case 0x67:
         if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
-            return TYPE_TRUE;
+            return LIB_TRUE;
         else
-            return TYPE_FALSE;
+            return LIB_FALSE;
         break;
     default:
-        return TYPE_FALSE;
+        return LIB_FALSE;
         break;
     }
-    return TYPE_FALSE;
+    return LIB_FALSE;
 }
 
-static C_VOID _kdf_skip(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _kdf_skip(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kdf_skip");
     if (cpu_state.data.cs.seg.exec.defsize)
@@ -2156,30 +2157,30 @@ static C_VOID _kdf_skip(core_machine_cpu_execution_context *context, type_unsign
         TYPE_TRACE_CHECK_RETURN(cpu_state.data.eip = TYPE_MASK_UNSIGNED_16(
             cpu_state.data.eip + byte));
     context->prefetch_expected_linear = cpu_state.data.cs.base + cpu_state.data.eip;
-    context->prefetch_expected_valid = TYPE_TRUE;
+    context->prefetch_expected_valid = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kdf_code(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _kdf_code(core_machine_cpu_execution_context *context, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kdf_code");
     TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, rdata, byte));
     TYPE_TRACE_CHECK_RETURN(_kdf_skip(context, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kdf_modrm_with_mod_quirk(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte, type_bool ignore_mod)
+static C_VOID _kdf_modrm_with_mod_quirk(core_machine_cpu_execution_context *context, lib_u8 regbyte, lib_u8 rmbyte, type_bool ignore_mod)
 {
-    type_signed_8 disp8;
-    type_unsigned_16 disp16;
-    type_unsigned_32 disp32;
-    type_unsigned_32 sibindex;
-    type_unsigned_8 modrm, sib;
+    lib_i8 disp8;
+    lib_u16 disp16;
+    lib_u32 disp32;
+    lib_u32 sibindex;
+    lib_u8 modrm, sib;
     TYPE_TRACE_CALL_BEGIN("_kdf_modrm");
     TYPE_TRACE_CHECK_RETURN(_kdf_code(context, TYPE_REFERENCE_OF(modrm), 1));
-    instruction_state.data.flagMem = TYPE_TRUE;
-    instruction_state.data.mrm.rsreg = STD_NULL;
+    instruction_state.data.flagMem = LIB_TRUE;
+    instruction_state.data.mrm.rsreg = LIB_NULL;
     instruction_state.data.mrm.offset = 0;
     instruction_state.data.cr = instruction_state.data.crm = 0;
-    instruction_state.data.rrm = instruction_state.data.rr = (type_virtual_address)STD_NULL;
+    instruction_state.data.rrm = instruction_state.data.rr = (type_virtual_address)LIB_NULL;
     /* The normal architecture requires MOD=11 for MOV CR. Selected original
      * 80386 silicon instead takes only the r/m register bits: no effective
      * address, SIB, displacement, or memory operation is decoded. */
@@ -2635,7 +2636,7 @@ static C_VOID _kdf_modrm_with_mod_quirk(core_machine_cpu_execution_context *cont
     if (_GetModRM_MOD(modrm) == 3 || ignore_mod)
     {
         TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(3)");
-        instruction_state.data.flagMem = TYPE_FALSE;
+        instruction_state.data.flagMem = LIB_FALSE;
         switch (rmbyte)
         {
         case 1:
@@ -2859,9 +2860,9 @@ static C_VOID _kdf_modrm_with_mod_quirk(core_machine_cpu_execution_context *cont
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context,
-    type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
+    lib_u8 regbyte, lib_u8 rmbyte)
 {
-    _kdf_modrm_with_mod_quirk(context, regbyte, rmbyte, TYPE_FALSE);
+    _kdf_modrm_with_mod_quirk(context, regbyte, rmbyte, LIB_FALSE);
 }
 
 static C_VOID _kdf_modrm_creg(core_machine_cpu_execution_context *context)
@@ -2869,29 +2870,29 @@ static C_VOID _kdf_modrm_creg(core_machine_cpu_execution_context *context)
     _kdf_modrm_with_mod_quirk(context, 0, 4,
         context->cpu_80386_cr_mov_ignores_mod);
 }
-static C_VOID _d_skip(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _d_skip(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_skip");
     TYPE_TRACE_CHECK_RETURN(_kdf_skip(context, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_code(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _d_code(core_machine_cpu_execution_context *context, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_code");
     TYPE_TRACE_CHECK_RETURN(_kdf_code(context, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_imm(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _d_imm(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_imm");
     instruction_state.data.cimm = 0;
     TYPE_TRACE_CHECK_RETURN(_d_code(context, TYPE_REFERENCE_OF(instruction_state.data.cimm), byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_moffs(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _d_moffs(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_moffs");
-    instruction_state.data.flagMem = TYPE_TRUE;
+    instruction_state.data.flagMem = LIB_TRUE;
     instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
     instruction_state.data.mrm.offset = 0;
     switch (_GetAddressSize)
@@ -2912,11 +2913,11 @@ static C_VOID _d_moffs(core_machine_cpu_execution_context *context, type_unsigne
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm_sreg(core_machine_cpu_execution_context *context, type_unsigned_8 rmbyte)
+static C_VOID _d_modrm_sreg(core_machine_cpu_execution_context *context, lib_u8 rmbyte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
     TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, rmbyte));
-    instruction_state.data.rmovsreg = STD_NULL;
+    instruction_state.data.rmovsreg = LIB_NULL;
     switch (instruction_state.data.cr)
     {
     case 0:
@@ -2949,7 +2950,7 @@ static C_VOID _d_modrm_sreg(core_machine_cpu_execution_context *context, type_un
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm_ea(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
+static C_VOID _d_modrm_ea(core_machine_cpu_execution_context *context, lib_u8 regbyte, lib_u8 rmbyte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm_ea");
     TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
@@ -2962,7 +2963,7 @@ static C_VOID _d_modrm_ea(core_machine_cpu_execution_context *context, type_unsi
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _d_modrm_table_memory(core_machine_cpu_execution_context *context,
-    type_unsigned_8 modrm)
+    lib_u8 modrm)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm_table_memory");
     /* Reject a register form before the six-byte memory operand is decoded. */
@@ -2976,10 +2977,10 @@ static C_VOID _d_modrm_table_memory(core_machine_cpu_execution_context *context,
  * observes FF there to distinguish a 286 from a 386.  Keep that observable
  * compatibility value at this sole table-register boundary. */
 static C_VOID _m_write_table_pseudo_descriptor(
-    core_machine_cpu_execution_context *context, type_unsigned_16 limit,
-    type_unsigned_32 base)
+    core_machine_cpu_execution_context *context, lib_u16 limit,
+    lib_u32 base)
 {
-    type_unsigned_8 image[6];
+    lib_u8 image[6];
     TYPE_TRACE_CALL_BEGIN("_m_write_table_pseudo_descriptor");
     image[0] = TYPE_MASK_UNSIGNED_8(limit);
     image[1] = TYPE_MASK_UNSIGNED_8(limit >> 8u);
@@ -2990,13 +2991,13 @@ static C_VOID _m_write_table_pseudo_descriptor(
         0xffu : TYPE_MASK_UNSIGNED_8(base >> 24u);
     TYPE_TRACE_CHECK_RETURN(_m_test_access(context,
         instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
-        6, TYPE_TRUE));
+        6, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_m_write_logical(context,
         instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
         (type_virtual_address)image, 6));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
+static C_VOID _d_modrm(core_machine_cpu_execution_context *context, lib_u8 regbyte, lib_u8 rmbyte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm");
     TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
@@ -3011,9 +3012,9 @@ static C_VOID _d_modrm(core_machine_cpu_execution_context *context, type_unsigne
 
 /* execution control unit: _e_ */
 /* kernel execution control */
-static C_VOID _kec_push(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _kec_push(core_machine_cpu_execution_context *context, type_virtual_address rdata, lib_u8 byte)
 {
-    type_unsigned_32 cesp;
+    lib_u32 cesp;
     TYPE_TRACE_CALL_BEGIN("_kec_push");
     TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, byte));
     switch (_GetStackSize)
@@ -3043,9 +3044,9 @@ static C_VOID _kec_push(core_machine_cpu_execution_context *context, type_virtua
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kec_pop(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _kec_pop(core_machine_cpu_execution_context *context, type_virtual_address rdata, lib_u8 byte)
 {
-    type_unsigned_32 cesp;
+    lib_u32 cesp;
     TYPE_TRACE_CALL_BEGIN("_kec_pop");
     switch (_GetStackSize)
     {
@@ -3077,9 +3078,9 @@ static C_VOID _kec_pop(core_machine_cpu_execution_context *context, type_virtual
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kec_call_far(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _kec_call_far(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    type_unsigned_32 oldcs = cpu_state.data.cs.selector;
+    lib_u32 oldcs = cpu_state.data.cs.selector;
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     TYPE_TRACE_CALL_BEGIN("_kec_call_far");
     switch (byte)
@@ -3114,7 +3115,7 @@ static C_VOID _kec_call_far(core_machine_cpu_execution_context *context, type_un
     cpu_state.data.eip = neweip;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kec_call_near(core_machine_cpu_execution_context *context, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _kec_call_near(core_machine_cpu_execution_context *context, lib_u32 neweip, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kec_call_near");
     switch (byte)
@@ -3142,8 +3143,8 @@ static C_VOID _kec_call_near(core_machine_cpu_execution_context *context, type_u
     cpu_state.data.eip = neweip;
     TYPE_TRACE_CALL_END;
 }
-_______todo _kec_task_switch(type_unsigned_16 newtss);
-static C_VOID _kec_jmp_far(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+_______todo _kec_task_switch(lib_u16 newtss);
+static C_VOID _kec_jmp_far(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     TYPE_TRACE_CALL_BEGIN("_kec_jmp_far");
@@ -3167,7 +3168,7 @@ static C_VOID _kec_jmp_far(core_machine_cpu_execution_context *context, type_uns
     cpu_state.data.eip = neweip;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kec_jmp_near(core_machine_cpu_execution_context *context, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _kec_jmp_near(core_machine_cpu_execution_context *context, lib_u32 neweip, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kec_jmp_near");
     switch (byte)
@@ -3188,7 +3189,7 @@ static C_VOID _kec_jmp_near(core_machine_cpu_execution_context *context, type_un
     cpu_state.data.eip = neweip;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kec_ret_far(core_machine_cpu_execution_context *context, type_unsigned_32 newcs, type_unsigned_32 neweip, type_unsigned_16 parambyte, type_unsigned_16 byte)
+static C_VOID _kec_ret_far(core_machine_cpu_execution_context *context, lib_u32 newcs, lib_u32 neweip, lib_u16 parambyte, lib_u16 byte)
 {
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     TYPE_TRACE_CALL_BEGIN("_kec_ret_far");
@@ -3224,9 +3225,9 @@ static C_VOID _kec_ret_far(core_machine_cpu_execution_context *context, type_uns
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kec_ret_near(core_machine_cpu_execution_context *context, type_unsigned_16 parambyte, type_unsigned_8 byte)
+static C_VOID _kec_ret_near(core_machine_cpu_execution_context *context, lib_u16 parambyte, lib_u8 byte)
 {
-    type_unsigned_32 neweip = 0;
+    lib_u32 neweip = 0;
     TYPE_TRACE_CALL_BEGIN("_kec_ret_near");
     switch (byte)
     {
@@ -3264,7 +3265,7 @@ static C_VOID _kec_ret_near(core_machine_cpu_execution_context *context, type_un
     TYPE_TRACE_CALL_END;
 }
 /* sub execution routine */
-static C_VOID _ser_call_far_real(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _ser_call_far_real(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_real");
     if (_IsProtected)
@@ -3272,9 +3273,9 @@ static C_VOID _ser_call_far_real(core_machine_cpu_execution_context *context, ty
     TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_cs_conf(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+_______todo _ser_call_far_cs_conf(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_cs_conf");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3296,9 +3297,9 @@ _______todo _ser_call_far_cs_conf(core_machine_cpu_execution_context *context, t
     TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+_______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_cs_nonc");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3322,10 +3323,10 @@ _______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, t
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_check_call_gate_stack_sreg(
-    core_machine_cpu_execution_context *context, type_unsigned_16 selector,
-    type_unsigned_8 target_cpl, type_virtual_address out_descriptor)
+    core_machine_cpu_execution_context *context, lib_u16 selector,
+    lib_u8 target_cpl, type_virtual_address out_descriptor)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_ser_check_call_gate_stack_sreg");
     if (_IsSelectorNull(selector) || _GetSelector_TI(selector) ||
@@ -3338,30 +3339,30 @@ static C_VOID _ser_check_call_gate_stack_sreg(
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
     if (!_IsDescPresent(descriptor))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(selector & 0xfffcu));
-    STD_MEMCPY((C_VOID *)out_descriptor, (C_VOID *)TYPE_REFERENCE_OF(descriptor),
+    lib_memory_copy((C_VOID *)out_descriptor, (C_VOID *)TYPE_REFERENCE_OF(descriptor),
         sizeof(descriptor));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *context,
-    type_unsigned_16 gate_selector)
+    lib_u16 gate_selector)
 {
-    type_unsigned_64 gate_desc;
-    type_unsigned_64 code_desc;
-    type_unsigned_64 ss_desc;
-    type_unsigned_16 newcs;
-    type_unsigned_16 newss;
-    type_unsigned_16 oldcs;
-    type_unsigned_16 oldss;
-    type_unsigned_32 newesp;
-    type_unsigned_32 oldeip;
-    type_unsigned_32 oldesp;
-    type_unsigned_32 oldcs_frame;
-    type_unsigned_32 oldss_frame;
-    type_unsigned_32 parameters[31];
-    type_unsigned_8 oldcpl;
-    type_unsigned_8 target_cpl;
-    type_unsigned_8 parameter_count;
-    type_unsigned_8 index;
+    lib_u64 gate_desc;
+    lib_u64 code_desc;
+    lib_u64 ss_desc;
+    lib_u16 newcs;
+    lib_u16 newss;
+    lib_u16 oldcs;
+    lib_u16 oldss;
+    lib_u32 newesp;
+    lib_u32 oldeip;
+    lib_u32 oldesp;
+    lib_u32 oldcs_frame;
+    lib_u32 oldss_frame;
+    lib_u32 parameters[31];
+    lib_u8 oldcpl;
+    lib_u8 target_cpl;
+    lib_u8 parameter_count;
+    lib_u8 index;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
 
@@ -3386,7 +3387,7 @@ static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *con
     if (!_IsDescCodeNonConform(code_desc) ||
         _GetDesc_DPL(code_desc) > oldcpl)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
-    target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
+    target_cpl = (lib_u8)_GetDesc_DPL(code_desc);
     if (!_IsDescPresent(code_desc))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     oldcs = cpu_state.data.cs.selector;
@@ -3412,15 +3413,15 @@ static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *con
             TYPE_REFERENCE_OF(newss), 2u));
         TYPE_TRACE_CHECK_RETURN(_ser_check_call_gate_stack_sreg(context, newss,
             target_cpl, TYPE_REFERENCE_OF(ss_desc)));
-        parameter_count = (type_unsigned_8)_GetDescCall_Count(gate_desc);
+        parameter_count = (lib_u8)_GetDescCall_Count(gate_desc);
         newss_cache = cpu_state.data.ss;
         TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
             target_cpl, &newss_cache, &ss_desc));
         TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
-            newesp, (type_unsigned_8)(4u + parameter_count), target_cpl));
+            newesp, (lib_u8)(4u + parameter_count), target_cpl));
         for (index = 0u; index < parameter_count; ++index)
             TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-                (type_unsigned_32)index * 4u,
+                (lib_u32)index * 4u,
                 TYPE_REFERENCE_OF(parameters[index]), 4u));
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
             TYPE_REFERENCE_OF(ss_desc)));
@@ -3451,24 +3452,24 @@ static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *con
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *context,
-    type_unsigned_16 gate_selector, type_unsigned_8 byte)
+    lib_u16 gate_selector, lib_u8 byte)
 {
-    type_unsigned_64 gate_desc;
-    type_unsigned_64 code_desc;
-    type_unsigned_64 ss_desc;
-    type_unsigned_16 newcs;
-    type_unsigned_16 newss;
-    type_unsigned_16 newsp;
-    type_unsigned_32 newesp = 0;
-    type_unsigned_16 oldss;
-    type_unsigned_16 oldsp;
-    type_unsigned_16 oldcs;
-    type_unsigned_16 oldip;
-    type_unsigned_16 parameters[31];
-    type_unsigned_8 oldcpl;
-    type_unsigned_8 target_cpl;
-    type_unsigned_8 parameter_count;
-    type_unsigned_8 index;
+    lib_u64 gate_desc;
+    lib_u64 code_desc;
+    lib_u64 ss_desc;
+    lib_u16 newcs;
+    lib_u16 newss;
+    lib_u16 newsp;
+    lib_u32 newesp = 0;
+    lib_u16 oldss;
+    lib_u16 oldsp;
+    lib_u16 oldcs;
+    lib_u16 oldip;
+    lib_u16 parameters[31];
+    lib_u8 oldcpl;
+    lib_u8 target_cpl;
+    lib_u8 parameter_count;
+    lib_u8 index;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
 
@@ -3507,7 +3508,7 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     if (!_IsDescPresent(code_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     }
-    target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
+    target_cpl = (lib_u8)_GetDesc_DPL(code_desc);
     if (target_cpl > oldcpl) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
@@ -3515,7 +3516,7 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     oldsp = cpu_state.data.sp;
     oldcs = cpu_state.data.cs.selector;
     oldip = cpu_state.data.ip;
-    parameter_count = (type_unsigned_8)_GetDescCall_Count(gate_desc);
+    parameter_count = (lib_u8)_GetDescCall_Count(gate_desc);
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
@@ -3553,10 +3554,10 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
         TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
             target_cpl, &newss_cache, &ss_desc));
         TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
-            newsp, (type_unsigned_8)(4u + parameter_count), target_cpl));
+            newsp, (lib_u8)(4u + parameter_count), target_cpl));
         for (index = 0u; index < parameter_count; ++index)
             TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-                (type_unsigned_32)index * 2u,
+                (lib_u32)index * 2u,
                 TYPE_REFERENCE_OF(parameters[index]), 2u));
 
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
@@ -3584,15 +3585,15 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs, type_bool nested);
+    lib_u16 newcs, type_bool nested);
 static C_VOID _ser_task_return_tss(core_machine_cpu_execution_context *context);
 
 static C_VOID _ser_task_gate_descriptor(
-    core_machine_cpu_execution_context *context, type_unsigned_64 descriptor,
-    type_unsigned_16 gate_error, type_bool check_privilege,
+    core_machine_cpu_execution_context *context, lib_u64 descriptor,
+    lib_u16 gate_error, type_bool check_privilege,
     type_bool nested)
 {
-    type_unsigned_16 target_selector;
+    lib_u16 target_selector;
 
     TYPE_TRACE_CALL_BEGIN("_ser_task_gate_descriptor");
     if (!_IsDescTaskGate(descriptor))
@@ -3610,9 +3611,9 @@ static C_VOID _ser_task_gate_descriptor(
 }
 
 static C_VOID _ser_task_gate_target(core_machine_cpu_execution_context *context,
-    type_unsigned_16 gate_selector, type_bool nested)
+    lib_u16 gate_selector, type_bool nested)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_ser_task_gate_target");
     if (!_IsProtected || _GetEFLAGS_VM)
@@ -3624,31 +3625,31 @@ static C_VOID _ser_task_gate_target(core_machine_cpu_execution_context *context,
     if (_GetDesc_DPL(descriptor) < _GetSelector_RPL(gate_selector))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
     TYPE_TRACE_CHECK_RETURN(_ser_task_gate_descriptor(context, descriptor,
-        gate_selector & 0xfffcu, TYPE_TRUE, nested));
+        gate_selector & 0xfffcu, LIB_TRUE, nested));
     TYPE_TRACE_CALL_END;
 }
 
 static C_VOID _ser_call_far_task_gate(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs)
+    lib_u16 newcs)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_task_gate");
-    TYPE_TRACE_CHECK_RETURN(_ser_task_gate_target(context, newcs, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_gate_target(context, newcs, LIB_TRUE));
     TYPE_TRACE_CALL_END;
 }
 
 static C_VOID _ser_call_far_tss(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs)
+    lib_u16 newcs)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_tss");
-    TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, newcs, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, newcs, LIB_TRUE));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_unsigned_8 byte)
+static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, lib_u8 intid, lib_u8 byte)
 {
-    type_unsigned_16 cip;
-    type_unsigned_16 oldflags;
-    type_unsigned_32 vector;
-    type_unsigned_32 oldcs = cpu_state.data.cs.selector;
+    lib_u16 cip;
+    lib_u16 oldflags;
+    lib_u32 vector;
+    lib_u32 oldcs = cpu_state.data.cs.selector;
     TYPE_TRACE_CALL_BEGIN("_ser_int_real");
     if (_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3675,7 +3676,7 @@ static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_un
         TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 12));
         {
-            type_unsigned_32 frame_flags =
+            lib_u32 frame_flags =
                 _e_real_flags_image_16(context, cpu_state.data.flags);
             TYPE_TRACE_CHECK_RETURN(_kec_push(context,
                 TYPE_REFERENCE_OF(frame_flags), 4));
@@ -3699,30 +3700,30 @@ static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_un
     TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, TYPE_MASK_UNSIGNED_16(vector >> 16)));
     TYPE_TRACE_CALL_END;
 }
-static type_unsigned_16 _ser_idt_error_code(type_unsigned_8 intid)
+static lib_u16 _ser_idt_error_code(lib_u8 intid)
 {
     /* All currently admitted IDT validation is a synchronous CPU event. */
     return TYPE_MASK_UNSIGNED_16(intid * 8u + 2u);
 }
 static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_bool software_origin, type_bool error_frame)
+    lib_u8 intid, type_bool software_origin, type_bool error_frame)
 {
-    type_unsigned_64 gate_desc;
-    type_unsigned_64 code_desc;
-    type_unsigned_64 ss_desc;
-    type_unsigned_16 newcs;
-    type_unsigned_16 newss;
-    type_unsigned_16 newsp;
-    type_unsigned_32 newesp;
-    type_unsigned_16 oldss;
-    type_unsigned_16 oldsp;
-    type_unsigned_16 oldcs;
-    type_unsigned_16 oldip;
-    type_unsigned_16 oldflags;
-    type_unsigned_16 error_code;
-    type_unsigned_8 oldcpl;
-    type_unsigned_8 target_cpl;
-    type_unsigned_8 frame_words;
+    lib_u64 gate_desc;
+    lib_u64 code_desc;
+    lib_u64 ss_desc;
+    lib_u16 newcs;
+    lib_u16 newss;
+    lib_u16 newsp;
+    lib_u32 newesp;
+    lib_u16 oldss;
+    lib_u16 oldsp;
+    lib_u16 oldcs;
+    lib_u16 oldip;
+    lib_u16 oldflags;
+    lib_u16 error_code;
+    lib_u8 oldcpl;
+    lib_u8 target_cpl;
+    lib_u8 frame_words;
     type_bool interrupt_gate;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
@@ -3756,7 +3757,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     if (!_IsDescPresent(code_desc))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
-    target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
+    target_cpl = (lib_u8)_GetDesc_DPL(code_desc);
     if (target_cpl > oldcpl) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
@@ -3773,7 +3774,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
         TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
-    frame_words = (type_unsigned_8)(3u + (error_frame ? 1u : 0u));
+    frame_words = (lib_u8)(3u + (error_frame ? 1u : 0u));
     if (target_cpl < oldcpl) {
         if (!cpu_state.data.tr.flagValid) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
@@ -3807,7 +3808,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
         TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
             target_cpl, &newss_cache, &ss_desc));
         TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
-            newsp, (type_unsigned_8)(frame_words + 2u), target_cpl));
+            newsp, (lib_u8)(frame_words + 2u), target_cpl));
 
         /* All faulting reads and writes are preflighted before CPU mutation. */
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
@@ -3822,7 +3823,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     }
     else {
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context,
-            (type_unsigned_8)(frame_words * 2u)));
+            (lib_u8)(frame_words * 2u)));
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
             TYPE_REFERENCE_OF(code_desc)));
     }
@@ -3840,33 +3841,33 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_unsigned_64 gate_desc, type_bool software_origin,
+    lib_u8 intid, lib_u64 gate_desc, type_bool software_origin,
     type_bool error_frame)
 {
-    type_unsigned_64 code_desc;
-    type_unsigned_64 ss_desc;
-    type_unsigned_16 newcs;
-    type_unsigned_16 newss;
-    type_unsigned_16 oldcs;
-    type_unsigned_16 oldss;
-    type_unsigned_16 oldes;
-    type_unsigned_16 oldds;
-    type_unsigned_16 oldfs;
-    type_unsigned_16 oldgs;
-    type_unsigned_32 newesp;
-    type_unsigned_32 oldeip;
-    type_unsigned_32 oldesp;
-    type_unsigned_32 oldeflags;
-    type_unsigned_32 oldcs_frame;
-    type_unsigned_32 oldss_frame;
-    type_unsigned_32 oldes_frame;
-    type_unsigned_32 oldds_frame;
-    type_unsigned_32 oldfs_frame;
-    type_unsigned_32 oldgs_frame;
-    type_unsigned_32 error_code;
-    type_unsigned_8 oldcpl;
-    type_unsigned_8 target_cpl;
-    type_unsigned_8 frame_dwords;
+    lib_u64 code_desc;
+    lib_u64 ss_desc;
+    lib_u16 newcs;
+    lib_u16 newss;
+    lib_u16 oldcs;
+    lib_u16 oldss;
+    lib_u16 oldes;
+    lib_u16 oldds;
+    lib_u16 oldfs;
+    lib_u16 oldgs;
+    lib_u32 newesp;
+    lib_u32 oldeip;
+    lib_u32 oldesp;
+    lib_u32 oldeflags;
+    lib_u32 oldcs_frame;
+    lib_u32 oldss_frame;
+    lib_u32 oldes_frame;
+    lib_u32 oldds_frame;
+    lib_u32 oldfs_frame;
+    lib_u32 oldgs_frame;
+    lib_u32 error_code;
+    lib_u8 oldcpl;
+    lib_u8 target_cpl;
+    lib_u8 frame_dwords;
     type_bool interrupt_gate;
     type_bool vm86_origin;
     t_cpu_data_sreg newcs_cache;
@@ -3909,7 +3910,7 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
         TYPE_REFERENCE_OF(code_desc)));
     if (!_IsDescCodeNonConform(code_desc) || _GetDesc_DPL(code_desc) > oldcpl)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
-    target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
+    target_cpl = (lib_u8)_GetDesc_DPL(code_desc);
     if (target_cpl >= oldcpl)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (!_IsDescPresent(code_desc))
@@ -3936,7 +3937,7 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
         oldss_frame = oldss;
     }
     error_code = TYPE_MASK_UNSIGNED_32(instruction_state.data.excode);
-    frame_dwords = (type_unsigned_8)(5u + (vm86_origin ? 4u : 0u) +
+    frame_dwords = (lib_u8)(5u + (vm86_origin ? 4u : 0u) +
         (error_frame ? 1u : 0u));
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
@@ -3975,10 +3976,10 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(error_code),
             4u));
     if (vm86_origin) {
-        STD_MEMSET(&cpu_state.data.es, 0, sizeof(cpu_state.data.es));
-        STD_MEMSET(&cpu_state.data.ds, 0, sizeof(cpu_state.data.ds));
-        STD_MEMSET(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
-        STD_MEMSET(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
+        lib_memory_set(&cpu_state.data.es, 0, sizeof(cpu_state.data.es));
+        lib_memory_set(&cpu_state.data.ds, 0, sizeof(cpu_state.data.ds));
+        lib_memory_set(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
+        lib_memory_set(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
     }
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.eip = TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc));
@@ -3987,17 +3988,17 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_unsigned_64 gate_desc, type_bool software_origin,
+    lib_u8 intid, lib_u64 gate_desc, type_bool software_origin,
     type_bool error_frame)
 {
-    type_unsigned_64 code_desc;
-    type_unsigned_16 newcs;
-    type_unsigned_16 oldcs;
-    type_unsigned_32 oldeip;
-    type_unsigned_32 oldeflags;
-    type_unsigned_32 oldcs_frame;
-    type_unsigned_32 error_code;
-    type_unsigned_8 oldcpl;
+    lib_u64 code_desc;
+    lib_u16 newcs;
+    lib_u16 oldcs;
+    lib_u32 oldeip;
+    lib_u32 oldeflags;
+    lib_u32 oldcs_frame;
+    lib_u32 error_code;
+    lib_u8 oldcpl;
     type_bool interrupt_gate;
     t_cpu_data_sreg newcs_cache;
 
@@ -4055,10 +4056,10 @@ static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *con
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_unsigned_8 byte, type_bool software_origin,
+    lib_u8 intid, lib_u8 byte, type_bool software_origin,
     type_bool flagext)
 {
-    type_unsigned_64 gate_desc;
+    lib_u64 gate_desc;
 
     TYPE_TRACE_CALL_BEGIN("_ser_int_protected");
     if (!_GetCR0_PE)
@@ -4093,7 +4094,7 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
         break;
     case VCPU_DESC_SYS_TYPE_TASKGATE:
         TYPE_TRACE_CHECK_RETURN(_ser_task_gate_descriptor(context, gate_desc,
-            _ser_idt_error_code(intid), software_origin, TYPE_TRUE));
+            _ser_idt_error_code(intid), software_origin, LIB_TRUE));
         break;
     default:
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
@@ -4101,7 +4102,7 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ser_ret_far_real(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_16 parambyte, type_unsigned_16 byte)
+static C_VOID _ser_ret_far_real(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u16 parambyte, lib_u16 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_ret_far_real");
     if (_IsProtected)
@@ -4109,7 +4110,7 @@ static C_VOID _ser_ret_far_real(core_machine_cpu_execution_context *context, typ
     TYPE_TRACE_CHECK_RETURN(_kec_ret_far(context, newcs, neweip, parambyte, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ser_ret_far_same(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_16 parambyte, type_unsigned_16 byte)
+static C_VOID _ser_ret_far_same(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u16 parambyte, lib_u16 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_ret_far_same");
     if (!_IsProtected)
@@ -4118,41 +4119,41 @@ static C_VOID _ser_ret_far_same(core_machine_cpu_execution_context *context, typ
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_ret_far_outer(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_16 parambyte,
-    type_unsigned_16 byte)
+    lib_u16 newcs, lib_u32 neweip, lib_u16 parambyte,
+    lib_u16 byte)
 {
-    type_unsigned_64 code_desc;
-    type_unsigned_64 ss_desc;
-    type_unsigned_16 newss;
-    type_unsigned_32 newesp;
-    type_unsigned_32 xs_sel;
+    lib_u64 code_desc;
+    lib_u64 ss_desc;
+    lib_u16 newss;
+    lib_u32 newesp;
+    lib_u32 xs_sel;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
-    type_unsigned_8 target_cpl;
+    lib_u8 target_cpl;
 
     TYPE_TRACE_CALL_BEGIN("_ser_ret_far_outer");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    target_cpl = (type_unsigned_8)_GetSelector_RPL(newcs);
+    target_cpl = (lib_u8)_GetSelector_RPL(newcs);
     switch (byte)
     {
     case 2:
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 4u));
         TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-            (type_unsigned_32)parambyte + 4u, TYPE_REFERENCE_OF(newesp), 2u));
+            (lib_u32)parambyte + 4u, TYPE_REFERENCE_OF(newesp), 2u));
         xs_sel = 0u;
         TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-            (type_unsigned_32)parambyte + 6u, TYPE_REFERENCE_OF(xs_sel), 2u));
+            (lib_u32)parambyte + 6u, TYPE_REFERENCE_OF(xs_sel), 2u));
         neweip = TYPE_MASK_UNSIGNED_16(neweip);
         newesp = TYPE_MASK_UNSIGNED_16(newesp);
         break;
     case 4:
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 8u));
         TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-            (type_unsigned_32)parambyte + 8u, TYPE_REFERENCE_OF(newesp), 4u));
+            (lib_u32)parambyte + 8u, TYPE_REFERENCE_OF(newesp), 4u));
         xs_sel = 0u;
         TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-            (type_unsigned_32)parambyte + 12u, TYPE_REFERENCE_OF(xs_sel), 4u));
+            (lib_u32)parambyte + 12u, TYPE_REFERENCE_OF(xs_sel), 4u));
         break;
     default:
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
@@ -4191,7 +4192,7 @@ static C_VOID _ser_ret_far_outer(core_machine_cpu_execution_context *context,
     cpu_state.data.eip = neweip;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ser_jmp_far_real(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _ser_jmp_far_real(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_real");
     if (_IsProtected)
@@ -4199,9 +4200,9 @@ static C_VOID _ser_jmp_far_real(core_machine_cpu_execution_context *context, typ
     TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_cs_conf");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4223,9 +4224,9 @@ static C_VOID _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, 
     TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_cs_nonc");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4249,12 +4250,12 @@ static C_VOID _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, 
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context,
-    type_unsigned_16 gate_selector)
+    lib_u16 gate_selector)
 {
-    type_unsigned_64 gate_desc;
-    type_unsigned_64 code_desc;
-    type_unsigned_16 target_selector;
-    type_unsigned_8 cpl;
+    lib_u64 gate_desc;
+    lib_u64 code_desc;
+    lib_u16 target_selector;
+    lib_u8 cpl;
     type_bool gate32;
     t_cpu_data_sreg newcs_cache;
 
@@ -4304,41 +4305,41 @@ static C_VOID _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs)
+    lib_u16 newcs)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_task_gate");
-    TYPE_TRACE_CHECK_RETURN(_ser_task_gate_target(context, newcs, TYPE_FALSE));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_gate_target(context, newcs, LIB_FALSE));
     TYPE_TRACE_CALL_END;
 }
 typedef struct task_switch_state_16 {
-    type_unsigned_16 ip;
-    type_unsigned_16 flags;
-    type_unsigned_16 ax;
-    type_unsigned_16 cx;
-    type_unsigned_16 dx;
-    type_unsigned_16 bx;
-    type_unsigned_16 sp;
-    type_unsigned_16 bp;
-    type_unsigned_16 si;
-    type_unsigned_16 di;
-    type_unsigned_16 es;
-    type_unsigned_16 cs;
-    type_unsigned_16 ss;
-    type_unsigned_16 ds;
-    type_unsigned_16 ldtr;
+    lib_u16 ip;
+    lib_u16 flags;
+    lib_u16 ax;
+    lib_u16 cx;
+    lib_u16 dx;
+    lib_u16 bx;
+    lib_u16 sp;
+    lib_u16 bp;
+    lib_u16 si;
+    lib_u16 di;
+    lib_u16 es;
+    lib_u16 cs;
+    lib_u16 ss;
+    lib_u16 ds;
+    lib_u16 ldtr;
 } task_switch_state_16;
 
 static C_VOID _s_task_cache_descriptor(t_cpu_data_sreg *cache,
-    type_unsigned_16 selector, type_unsigned_64 descriptor,
+    lib_u16 selector, lib_u64 descriptor,
     t_cpu_data_sreg_type sregtype)
 {
     TYPE_TRACE_CALL_BEGIN("_s_task_cache_descriptor");
-    STD_MEMSET(cache, 0, sizeof(*cache));
-    cache->flagValid = TYPE_TRUE;
+    lib_memory_set(cache, 0, sizeof(*cache));
+    cache->flagValid = LIB_TRUE;
     cache->selector = selector;
     cache->sregtype = sregtype;
-    cache->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
-    cache->limit = (type_unsigned_32)(_IsDescSegGranularLarge(descriptor) ?
+    cache->base = (lib_u32)_GetDescSeg_Base(descriptor);
+    cache->limit = (lib_u32)(_IsDescSegGranularLarge(descriptor) ?
         (_GetDescSeg_Limit(descriptor) << 12u | 0x0fffu) :
         _GetDescSeg_Limit(descriptor));
     cache->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
@@ -4346,13 +4347,13 @@ static C_VOID _s_task_cache_descriptor(t_cpu_data_sreg *cache,
         cache->sys.type = (type_unsigned_4)_GetDesc_Type(descriptor);
     } else if (_IsDescCode(descriptor)) {
         cache->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
-        cache->seg.executable = TYPE_TRUE;
+        cache->seg.executable = LIB_TRUE;
         cache->seg.exec.defsize = (type_bool)_IsDescCode32(descriptor);
         cache->seg.exec.conform = (type_bool)_IsDescCodeConform(descriptor);
         cache->seg.exec.readable = (type_bool)_IsDescCodeReadable(descriptor);
     } else {
         cache->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
-        cache->seg.executable = TYPE_FALSE;
+        cache->seg.executable = LIB_FALSE;
         cache->seg.data.big = (type_bool)_IsDescDataBig(descriptor);
         cache->seg.data.expdown = (type_bool)_IsDescDataExpDown(descriptor);
         cache->seg.data.writable = (type_bool)_IsDescDataWritable(descriptor);
@@ -4361,12 +4362,12 @@ static C_VOID _s_task_cache_descriptor(t_cpu_data_sreg *cache,
 }
 
 static C_VOID _s_task_prepare_ldtr(core_machine_cpu_execution_context *context,
-    type_unsigned_16 selector, t_cpu_data_sreg *out_cache)
+    lib_u16 selector, t_cpu_data_sreg *out_cache)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_s_task_prepare_ldtr");
-    STD_MEMSET(out_cache, 0, sizeof(*out_cache));
+    lib_memory_set(out_cache, 0, sizeof(*out_cache));
     out_cache->sregtype = SREG_LDTR;
     if (_IsSelectorNull(selector)) {
         out_cache->selector = selector;
@@ -4386,7 +4387,7 @@ static C_VOID _s_task_prepare_ldtr(core_machine_cpu_execution_context *context,
 }
 
 static C_VOID _s_task_read_selector(core_machine_cpu_execution_context *context,
-    t_cpu_data_sreg *ldtr, type_unsigned_16 selector,
+    t_cpu_data_sreg *ldtr, lib_u16 selector,
     type_virtual_address rdata)
 {
     TYPE_TRACE_CALL_BEGIN("_s_task_read_selector");
@@ -4399,22 +4400,22 @@ static C_VOID _s_task_read_selector(core_machine_cpu_execution_context *context,
         7u) > TYPE_MASK_UNSIGNED_16(ldtr->limit))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, ldtr,
-        _GetSelector_Offset(selector), rdata, 8u, 0u, TYPE_TRUE));
+        _GetSelector_Offset(selector), rdata, 8u, 0u, LIB_TRUE));
     TYPE_TRACE_CALL_END;
 }
 
 static C_VOID _s_task_validate_data_selector(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *ldtr,
-    type_unsigned_16 selector, t_cpu_data_sreg_type sregtype,
+    lib_u16 selector, t_cpu_data_sreg_type sregtype,
     t_cpu_data_sreg *out_cache)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_s_task_validate_data_selector");
     if (_IsSelectorNull(selector)) {
         if (sregtype == SREG_STACK)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
-        STD_MEMSET(out_cache, 0, sizeof(*out_cache));
+        lib_memory_set(out_cache, 0, sizeof(*out_cache));
         out_cache->selector = selector;
         out_cache->sregtype = sregtype;
         TYPE_TRACE_CALL_END;
@@ -4437,9 +4438,9 @@ static C_VOID _s_task_validate_data_selector(
 
 static C_VOID _s_task_validate_code_selector(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *ldtr,
-    type_unsigned_16 selector, type_unsigned_32 eip, t_cpu_data_sreg *out_cache)
+    lib_u16 selector, lib_u32 eip, t_cpu_data_sreg *out_cache)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_s_task_validate_code_selector");
     if (_IsSelectorNull(selector) || _GetSelector_RPL(selector) != 0u) {
@@ -4455,13 +4456,13 @@ static C_VOID _s_task_validate_code_selector(
     }
     _s_task_cache_descriptor(out_cache, selector, descriptor, SREG_CODE);
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, out_cache, eip, 1u,
-        TYPE_FALSE, 0u, TYPE_TRUE));
+        LIB_FALSE, 0u, LIB_TRUE));
     TYPE_TRACE_CALL_END;
 }
 
 typedef struct task_switch_sreg_32 {
-    type_unsigned_16 selector;
-    type_unsigned_16 reserved;
+    lib_u16 selector;
+    lib_u16 reserved;
 } task_switch_sreg_32;
 
 #define TASK_SWITCH_TSS32_CR3_OFFSET 0x1cu
@@ -4488,17 +4489,17 @@ typedef struct task_switch_sreg_32 {
 #define TASK_SWITCH_TSS32_INCOMING_BYTES 0x4au
 
 typedef struct task_switch_state_32 {
-    type_unsigned_32 cr3;
-    type_unsigned_32 eip;
-    type_unsigned_32 eflags;
-    type_unsigned_32 eax;
-    type_unsigned_32 ecx;
-    type_unsigned_32 edx;
-    type_unsigned_32 ebx;
-    type_unsigned_32 esp;
-    type_unsigned_32 ebp;
-    type_unsigned_32 esi;
-    type_unsigned_32 edi;
+    lib_u32 cr3;
+    lib_u32 eip;
+    lib_u32 eflags;
+    lib_u32 eax;
+    lib_u32 ecx;
+    lib_u32 edx;
+    lib_u32 ebx;
+    lib_u32 esp;
+    lib_u32 ebp;
+    lib_u32 esi;
+    lib_u32 edi;
     task_switch_sreg_32 es;
     task_switch_sreg_32 cs;
     task_switch_sreg_32 ss;
@@ -4533,7 +4534,7 @@ _Static_assert(offsetof(task_switch_state_32, cr3) == 0u &&
     "80386 TSS image fields retain their named offsets");
 
 static C_VOID _e_except_n(core_machine_cpu_execution_context *context,
-    type_unsigned_8 exid, type_unsigned_8 byte);
+    lib_u8 exid, lib_u8 byte);
 
 static C_VOID _s_task_write_state_32(core_machine_cpu_execution_context *context,
     const task_switch_state_32 *state)
@@ -4620,12 +4621,12 @@ static C_VOID _s_task_write_state_16(core_machine_cpu_execution_context *context
  * architectural layouts explicit, but stage their common transition before
  * the first descriptor, TSS, or CPU-state publication. */
 static C_VOID _ser_task_transition_tss_plan(
-    core_machine_cpu_execution_context *context, type_unsigned_16 newcs,
+    core_machine_cpu_execution_context *context, lib_u16 newcs,
     type_bool nested, type_bool returning, type_bool old_is_32,
     type_bool new_is_32)
 {
-    type_unsigned_64 old_descriptor;
-    type_unsigned_64 new_descriptor;
+    lib_u64 old_descriptor;
+    lib_u64 new_descriptor;
     t_cpu_data_sreg newtr;
     t_cpu_data_sreg newldtr;
     t_cpu_data_sreg newcs_cache;
@@ -4638,8 +4639,8 @@ static C_VOID _ser_task_transition_tss_plan(
     task_switch_state_16 outgoing16;
     task_switch_state_32 incoming32;
     task_switch_state_32 outgoing32;
-    type_unsigned_16 backlink;
-    type_unsigned_16 debug_trap = 0u;
+    lib_u16 backlink;
+    lib_u16 debug_trap = 0u;
 
     TYPE_TRACE_CALL_BEGIN("_ser_task_transition_tss_plan");
     if (!_IsProtected || context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 ||
@@ -4673,26 +4674,26 @@ static C_VOID _ser_task_transition_tss_plan(
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.tr,
         old_is_32 ? TASK_SWITCH_TSS32_CR3_OFFSET : 0x0eu,
         old_is_32 ? TASK_SWITCH_TSS32_STATE_BYTES : sizeof(outgoing16),
-        TYPE_TRUE, 0u, TYPE_TRUE));
+        LIB_TRUE, 0u, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr,
         new_is_32 ? TASK_SWITCH_TSS32_CR3_OFFSET : 0x0eu,
         new_is_32 ? TASK_SWITCH_TSS32_INCOMING_BYTES : sizeof(incoming16),
-        TYPE_FALSE, 0u, TYPE_TRUE));
+        LIB_FALSE, 0u, LIB_TRUE));
     if (nested)
         TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr,
-            TASK_SWITCH_TSS_BACKLINK_OFFSET, 2u, TYPE_TRUE, 0u, TYPE_TRUE));
+            TASK_SWITCH_TSS_BACKLINK_OFFSET, 2u, LIB_TRUE, 0u, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
-        _GetSelector_Offset(cpu_state.data.tr.selector), 8u, TYPE_TRUE, 0u,
-        TYPE_TRUE));
+        _GetSelector_Offset(cpu_state.data.tr.selector), 8u, LIB_TRUE, 0u,
+        LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
-        _GetSelector_Offset(newcs), 8u, TYPE_TRUE, 0u, TYPE_TRUE));
+        _GetSelector_Offset(newcs), 8u, LIB_TRUE, 0u, LIB_TRUE));
     if (new_is_32) {
         TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &newtr,
             TASK_SWITCH_TSS32_CR3_OFFSET, TYPE_REFERENCE_OF(incoming32),
-            sizeof(incoming32), 0u, TYPE_TRUE));
+            sizeof(incoming32), 0u, LIB_TRUE));
         TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &newtr,
             TASK_SWITCH_TSS32_DEBUG_TRAP_OFFSET, TYPE_REFERENCE_OF(debug_trap),
-            2u, 0u, TYPE_TRUE));
+            2u, 0u, LIB_TRUE));
         if (incoming32.cr3 & ~VCPU_CR3_BASE)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
         TYPE_TRACE_CHECK_RETURN(_s_task_prepare_ldtr(context,
@@ -4710,10 +4711,10 @@ static C_VOID _ser_task_transition_tss_plan(
         TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context,
             &newldtr, incoming32.gs.selector, SREG_DATA, &newgs_cache));
         TYPE_TRACE_CHECK_RETURN(_m_test_logical(context, &newss_cache,
-            incoming32.esp, 0u, TYPE_FALSE));
+            incoming32.esp, 0u, LIB_FALSE));
     } else {
         TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &newtr, 0x0eu,
-            TYPE_REFERENCE_OF(incoming16), sizeof(incoming16), 0u, TYPE_TRUE));
+            TYPE_REFERENCE_OF(incoming16), sizeof(incoming16), 0u, LIB_TRUE));
         TYPE_TRACE_CHECK_RETURN(_s_task_prepare_ldtr(context, incoming16.ldtr,
             &newldtr));
         TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context,
@@ -4727,7 +4728,7 @@ static C_VOID _ser_task_transition_tss_plan(
     }
 
     if (old_is_32) {
-        STD_MEMSET(&outgoing32, 0, sizeof(outgoing32));
+        lib_memory_set(&outgoing32, 0, sizeof(outgoing32));
         outgoing32.cr3 = cpu_state.data.cr3;
         outgoing32.eip = cpu_state.data.eip;
         outgoing32.eflags = cpu_state.data.eflags;
@@ -4776,7 +4777,7 @@ static C_VOID _ser_task_transition_tss_plan(
     if (nested)
         TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &newtr,
             TASK_SWITCH_TSS_BACKLINK_OFFSET, TYPE_REFERENCE_OF(backlink), 2u,
-            0u, TYPE_TRUE));
+            0u, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, cpu_state.data.tr.selector,
         TYPE_REFERENCE_OF(old_descriptor)));
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newtr.selector,
@@ -4816,9 +4817,9 @@ static C_VOID _ser_task_transition_tss_plan(
         cpu_state.data.cs = newcs_cache;
         cpu_state.data.ss = newss_cache;
         cpu_state.data.ds = newds_cache;
-        STD_MEMSET(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
+        lib_memory_set(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
         cpu_state.data.fs.sregtype = SREG_DATA;
-        STD_MEMSET(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
+        lib_memory_set(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
         cpu_state.data.gs.sregtype = SREG_DATA;
     }
     cpu_state.data.ldtr = newldtr;
@@ -4832,8 +4833,8 @@ static C_VOID _ser_task_transition_tss_plan(
 
         cpu_state.data.dr6 |= VCPU_DR6_BT;
         TYPE_TRACE_CHECK_RETURN(_e_except_n(context, 0x01u, _GetOperandSize));
-        if (context->diagnostic_provider != STD_NULL &&
-            context->diagnostic_provider->record_delivered_exception != STD_NULL) {
+        if (context->diagnostic_provider != LIB_NULL &&
+            context->diagnostic_provider->record_delivered_exception != LIB_NULL) {
             t_cpuins diagnostic_instructions = instruction_state;
 
             /* The task-switch #DB is a trap at the incoming task's EIP.  It is
@@ -4851,10 +4852,10 @@ static C_VOID _ser_task_transition_tss_plan(
 }
 
 static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs, type_bool nested, type_bool returning)
+    lib_u16 newcs, type_bool nested, type_bool returning)
 {
-    type_unsigned_64 old_descriptor;
-    type_unsigned_64 new_descriptor;
+    lib_u64 old_descriptor;
+    lib_u64 new_descriptor;
     t_cpu_data_sreg newtr;
     t_cpu_data_sreg newldtr;
     t_cpu_data_sreg newcs_cache;
@@ -4862,7 +4863,7 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
     t_cpu_data_sreg newds_cache;
     t_cpu_data_sreg newes_cache;
     task_switch_state_16 state;
-    type_unsigned_64 cross_descriptor;
+    lib_u64 cross_descriptor;
     type_bool old_is_32;
     type_bool new_is_32;
 
@@ -4914,19 +4915,19 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
     }
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.tr,
-        0x0eu, sizeof(state), TYPE_TRUE, 0u, TYPE_TRUE));
+        0x0eu, sizeof(state), LIB_TRUE, 0u, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr, 0x0eu, 0x1eu,
-        TYPE_FALSE, 0u, TYPE_TRUE));
+        LIB_FALSE, 0u, LIB_TRUE));
     if (nested)
         TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr,
-            TASK_SWITCH_TSS_BACKLINK_OFFSET, 2u, TYPE_TRUE, 0u, TYPE_TRUE));
+            TASK_SWITCH_TSS_BACKLINK_OFFSET, 2u, LIB_TRUE, 0u, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
-        _GetSelector_Offset(cpu_state.data.tr.selector), 8u, TYPE_TRUE, 0u,
-        TYPE_TRUE));
+        _GetSelector_Offset(cpu_state.data.tr.selector), 8u, LIB_TRUE, 0u,
+        LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
-        _GetSelector_Offset(newcs), 8u, TYPE_TRUE, 0u, TYPE_TRUE));
+        _GetSelector_Offset(newcs), 8u, LIB_TRUE, 0u, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &newtr, 0x0eu,
-        TYPE_REFERENCE_OF(state), sizeof(state), 0u, TYPE_TRUE));
+        TYPE_REFERENCE_OF(state), sizeof(state), 0u, LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_s_task_prepare_ldtr(context, state.ldtr,
         &newldtr));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context, &newldtr,
@@ -4946,7 +4947,7 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
         TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &newtr,
             TASK_SWITCH_TSS_BACKLINK_OFFSET,
             TYPE_REFERENCE_OF(cpu_state.data.tr.selector), 2u, 0u,
-            TYPE_TRUE));
+            LIB_TRUE));
     TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x0eu,
         TYPE_REFERENCE_OF(cpu_state.data.ip), 2u));
     TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x10u,
@@ -5007,9 +5008,9 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
     cpu_state.data.ss = newss_cache;
     cpu_state.data.ds = newds_cache;
     cpu_state.data.ldtr = newldtr;
-    STD_MEMSET(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
+    lib_memory_set(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
     cpu_state.data.fs.sregtype = SREG_DATA;
-    STD_MEMSET(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
+    lib_memory_set(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
     cpu_state.data.gs.sregtype = SREG_DATA;
     newtr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
     cpu_state.data.tr = newtr;
@@ -5018,17 +5019,17 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
 }
 
 static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs, type_bool nested)
+    lib_u16 newcs, type_bool nested)
 {
     TYPE_TRACE_CALL_BEGIN("_ser_task_switch_tss");
     TYPE_TRACE_CHECK_RETURN(_ser_task_transition_tss(context, newcs, nested,
-        TYPE_FALSE));
+        LIB_FALSE));
     TYPE_TRACE_CALL_END;
 }
 
 static C_VOID _ser_task_return_tss(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 backlink;
+    lib_u16 backlink;
 
     TYPE_TRACE_CALL_BEGIN("_ser_task_return_tss");
     if (!_IsProtected || !cpu_state.data.tr.flagValid ||
@@ -5042,25 +5043,25 @@ static C_VOID _ser_task_return_tss(core_machine_cpu_execution_context *context)
     if (_IsSelectorNull(backlink) || _GetSelector_TI(backlink))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(backlink & 0xfffcu));
     TYPE_TRACE_CHECK_RETURN(_ser_task_transition_tss(context, backlink,
-        TYPE_FALSE, TYPE_TRUE));
+        LIB_FALSE, LIB_TRUE));
     TYPE_TRACE_CALL_END;
 }
 /* regular execute control */
-static C_VOID _e_push(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _e_push(core_machine_cpu_execution_context *context, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_push");
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_pop(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _e_pop(core_machine_cpu_execution_context *context, type_virtual_address rdata, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_pop");
     TYPE_TRACE_CHECK_RETURN(_kec_pop(context, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_call_far(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _e_call_far(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_e_call_far");
     if (!_IsProtected)
     {
@@ -5098,13 +5099,13 @@ static C_VOID _e_call_far(core_machine_cpu_execution_context *context, type_unsi
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_call_near(core_machine_cpu_execution_context *context, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _e_call_near(core_machine_cpu_execution_context *context, lib_u32 neweip, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_call_near");
     TYPE_TRACE_CHECK_RETURN(_kec_call_near(context, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-_______todo _e_int3(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+_______todo _e_int3(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_int3");
     if (!_GetCR0_PE)
@@ -5117,12 +5118,12 @@ _______todo _e_int3(core_machine_cpu_execution_context *context, type_unsigned_8
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x03u, byte,
-            TYPE_TRUE, TYPE_FALSE));
+            LIB_TRUE, LIB_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
 }
-_______todo _e_into(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+_______todo _e_into(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_into");
     if (_GetEFLAGS_OF)
@@ -5138,14 +5139,14 @@ _______todo _e_into(core_machine_cpu_execution_context *context, type_unsigned_8
         {
             TYPE_TRACE_BLOCK_BEGIN("!Real");
             TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x04u, byte,
-                TYPE_TRUE, TYPE_FALSE));
+                LIB_TRUE, LIB_FALSE));
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
 }
-_______todo _e_int_n(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_unsigned_8 byte)
+_______todo _e_int_n(core_machine_cpu_execution_context *context, lib_u8 intid, lib_u8 byte)
 {
     type_bool handled;
 
@@ -5167,13 +5168,13 @@ _______todo _e_int_n(core_machine_cpu_execution_context *context, type_unsigned_
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         else
             TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte,
-                TYPE_TRUE, TYPE_FALSE));
+                LIB_TRUE, LIB_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
 }
 _______todo _e_intr_n(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_unsigned_8 byte, type_bool external_origin)
+    lib_u8 intid, lib_u8 byte, type_bool external_origin)
 {
     TYPE_TRACE_CALL_BEGIN("_e_intr_n");
     if (!_GetCR0_PE)
@@ -5189,18 +5190,18 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context,
             TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         else
             TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte,
-                TYPE_FALSE, TYPE_FALSE));
+                LIB_FALSE, LIB_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
 }
-static type_bool _e_exception_has_error_code(type_unsigned_8 exid)
+static type_bool _e_exception_has_error_code(lib_u8 exid)
 {
     return exid == 0x08u || exid == 0x0au || exid == 0x0bu ||
         exid == 0x0cu || exid == 0x0du || exid == 0x0eu || exid == 0x11u;
 }
 
-_______todo _e_except_n(core_machine_cpu_execution_context *context, type_unsigned_8 exid, type_unsigned_8 byte)
+_______todo _e_except_n(core_machine_cpu_execution_context *context, lib_u8 exid, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_except_n");
     instruction_state.data.except &= ~(1 << exid);
@@ -5214,25 +5215,25 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, type_unsign
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, exid, byte,
-            TYPE_FALSE, _e_exception_has_error_code(exid)));
+            LIB_FALSE, _e_exception_has_error_code(exid)));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_iret_protected_outer(core_machine_cpu_execution_context *context,
-    type_unsigned_8 byte)
+    lib_u8 byte)
 {
-    type_unsigned_16 newcs;
-    type_unsigned_16 newss;
-    type_unsigned_32 neweip;
-    type_unsigned_32 newesp;
-    type_unsigned_32 newflags;
-    type_unsigned_32 selector;
-    type_unsigned_64 code_desc;
-    type_unsigned_64 ss_desc;
-    type_unsigned_8 oldcpl;
-    type_unsigned_8 newcpl;
-    type_unsigned_32 flags_mask;
+    lib_u16 newcs;
+    lib_u16 newss;
+    lib_u32 neweip;
+    lib_u32 newesp;
+    lib_u32 newflags;
+    lib_u32 selector;
+    lib_u64 code_desc;
+    lib_u64 ss_desc;
+    lib_u8 oldcpl;
+    lib_u8 newcpl;
+    lib_u32 flags_mask;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
 
@@ -5285,7 +5286,7 @@ static C_VOID _ser_iret_protected_outer(core_machine_cpu_execution_context *cont
     if (!_IsDescPresent(code_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     }
-    newcpl = (type_unsigned_8)_GetSelector_RPL(newcs);
+    newcpl = (lib_u8)_GetSelector_RPL(newcs);
     if (newcpl <= oldcpl || newcpl != _GetDesc_DPL(code_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
@@ -5339,15 +5340,15 @@ static C_VOID _ser_iret_protected_outer(core_machine_cpu_execution_context *cont
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *context,
-    type_unsigned_8 byte)
+    lib_u8 byte)
 {
-    type_unsigned_16 newcs;
-    type_unsigned_32 neweip;
-    type_unsigned_32 neweflags;
-    type_unsigned_32 selector;
-    type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
-    type_unsigned_64 code_desc;
-    type_unsigned_8 cpl;
+    lib_u16 newcs;
+    lib_u32 neweip;
+    lib_u32 neweflags;
+    lib_u32 selector;
+    lib_u32 mask = VCPU_EFLAGS_RESERVED;
+    lib_u64 code_desc;
+    lib_u8 cpl;
     t_cpu_data_sreg newcs_cache;
 
     TYPE_TRACE_CALL_BEGIN("_ser_iret_protected_same");
@@ -5428,34 +5429,34 @@ static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *conte
  * protected-mode selectors: they cannot require a descriptor-table lookup
  * and therefore this helper is deliberately infallible. */
 static C_VOID _ser_iret_vm86_sreg(t_cpu_data_sreg *rsreg,
-    type_unsigned_16 selector, type_unsigned_8 sregtype)
+    lib_u16 selector, lib_u8 sregtype)
 {
-    rsreg->flagValid = TYPE_TRUE;
+    rsreg->flagValid = LIB_TRUE;
     rsreg->selector = selector;
-    rsreg->base = (type_unsigned_32)selector << 4u;
+    rsreg->base = (lib_u32)selector << 4u;
     rsreg->limit = 0x0000ffffu;
     rsreg->dpl = 3u;
     rsreg->sregtype = sregtype;
-    rsreg->seg.accessed = TYPE_FALSE;
+    rsreg->seg.accessed = LIB_FALSE;
     rsreg->seg.executable = sregtype == SREG_CODE;
     if (sregtype == SREG_CODE) {
-        rsreg->seg.exec.defsize = TYPE_FALSE;
-        rsreg->seg.exec.conform = TYPE_FALSE;
-        rsreg->seg.exec.readable = TYPE_TRUE;
+        rsreg->seg.exec.defsize = LIB_FALSE;
+        rsreg->seg.exec.conform = LIB_FALSE;
+        rsreg->seg.exec.readable = LIB_TRUE;
     } else {
-        rsreg->seg.data.big = TYPE_FALSE;
-        rsreg->seg.data.expdown = TYPE_FALSE;
-        rsreg->seg.data.writable = TYPE_TRUE;
+        rsreg->seg.data.big = LIB_FALSE;
+        rsreg->seg.data.expdown = LIB_FALSE;
+        rsreg->seg.data.writable = LIB_TRUE;
     }
 }
 static C_VOID _ser_iret_protected_to_vm86(
     core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 neweip;
-    type_unsigned_32 newflags;
-    type_unsigned_32 newesp;
-    type_unsigned_32 selector;
-    type_unsigned_16 newcs, newss, newes, newds, newfs, newgs;
+    lib_u32 neweip;
+    lib_u32 newflags;
+    lib_u32 newesp;
+    lib_u32 selector;
+    lib_u16 newcs, newss, newes, newds, newfs, newgs;
     t_cpu_data_sreg newcs_cache = cpu_state.data.cs;
     t_cpu_data_sreg newss_cache = cpu_state.data.ss;
     t_cpu_data_sreg newes_cache = cpu_state.data.es;
@@ -5511,13 +5512,13 @@ static C_VOID _ser_iret_protected_to_vm86(
     _MakeCPL(3u);
     TYPE_TRACE_CALL_END;
 }
-_______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+_______todo _e_iret(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_16 newcs, newss, newds, newes, newfs, newgs;
-    type_unsigned_16 return_cs;
-    type_unsigned_32 neweip = TYPE_ZERO_32, newesp, neweflags = TYPE_ZERO_32;
-    type_unsigned_32 xs_sel;
-    type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
+    lib_u16 newcs, newss, newds, newes, newfs, newgs;
+    lib_u16 return_cs;
+    lib_u32 neweip = TYPE_ZERO_32, newesp, neweflags = TYPE_ZERO_32;
+    lib_u32 xs_sel;
+    lib_u32 mask = VCPU_EFLAGS_RESERVED;
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     TYPE_TRACE_CALL_BEGIN("_e_iret");
     if (!_GetCR0_PE)
@@ -5565,7 +5566,7 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
         if (!_GetEFLAGS_VM && !_GetEFLAGS_NT) {
-            type_unsigned_32 return_flags = 0u;
+            lib_u32 return_flags = 0u;
 
             switch (byte) {
             case 2:
@@ -5701,9 +5702,9 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_jcc(core_machine_cpu_execution_context *context, type_unsigned_32 csrc, type_unsigned_8 byte, type_bool condition)
+static C_VOID _e_jcc(core_machine_cpu_execution_context *context, lib_u32 csrc, lib_u8 byte, type_bool condition)
 {
-    type_unsigned_32 neweip = cpu_state.data.eip;
+    lib_u32 neweip = cpu_state.data.eip;
     TYPE_TRACE_CALL_BEGIN("_e_jcc");
     if (condition)
     {
@@ -5711,13 +5712,13 @@ static C_VOID _e_jcc(core_machine_cpu_execution_context *context, type_unsigned_
         switch (byte)
         {
         case 1:
-            neweip += (type_signed_8)csrc;
+            neweip += (lib_i8)csrc;
             break;
         case 2:
-            neweip += (type_signed_16)csrc;
+            neweip += (lib_i16)csrc;
             break;
         case 4:
-            neweip += (type_signed_32)csrc;
+            neweip += (lib_i32)csrc;
             break;
         default:
             TYPE_TRACE_BLOCK_BEGIN("byte");
@@ -5730,9 +5731,9 @@ static C_VOID _e_jcc(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_jmp_far(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _e_jmp_far(core_machine_cpu_execution_context *context, lib_u16 newcs, lib_u32 neweip, lib_u8 byte)
 {
-    type_unsigned_64 descriptor;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_e_jmp_far");
     if (!_IsProtected)
     {
@@ -5760,7 +5761,7 @@ static C_VOID _e_jmp_far(core_machine_cpu_execution_context *context, type_unsig
             TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_task_gate(context, newcs));
         else if (_IsDescTSS(descriptor))
             TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, newcs,
-                TYPE_FALSE));
+                LIB_FALSE));
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("newcs(invalid)");
@@ -5773,13 +5774,13 @@ static C_VOID _e_jmp_far(core_machine_cpu_execution_context *context, type_unsig
     instruction_state.data.opr2 = cpu_state.data.eip;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_jmp_near(core_machine_cpu_execution_context *context, type_unsigned_32 neweip, type_unsigned_8 byte)
+static C_VOID _e_jmp_near(core_machine_cpu_execution_context *context, lib_u32 neweip, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_jmp_near");
     TYPE_TRACE_CHECK_RETURN(_kec_jmp_near(context, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_virtual_address rdest, type_unsigned_16 selector, type_unsigned_32 offset, type_unsigned_8 byte)
+static C_VOID _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_virtual_address rdest, lib_u16 selector, lib_u32 offset, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_load_far");
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, rsreg, selector));
@@ -5802,14 +5803,14 @@ static C_VOID _e_load_far(core_machine_cpu_execution_context *context, t_cpu_dat
         break;
     }
     if (rsreg->sregtype == SREG_STACK)
-        instruction_state.data.flagMaskInt = TYPE_TRUE;
+        instruction_state.data.flagMaskInt = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _e_pop_sreg(core_machine_cpu_execution_context *context,
-    t_cpu_data_sreg *rsreg, type_unsigned_8 byte)
+    t_cpu_data_sreg *rsreg, lib_u8 byte)
 {
-    type_unsigned_32 selector;
-    type_unsigned_32 cesp;
+    lib_u32 selector;
+    lib_u32 cesp;
 
     TYPE_TRACE_CALL_BEGIN("_e_pop_sreg");
     switch (_GetStackSize)
@@ -5841,13 +5842,13 @@ static C_VOID _e_pop_sreg(core_machine_cpu_execution_context *context,
         break;
     }
     if (rsreg->sregtype == SREG_STACK)
-        instruction_state.data.flagMaskInt = TYPE_TRUE;
+        instruction_state.data.flagMaskInt = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_loopcc(core_machine_cpu_execution_context *context, type_signed_8 csrc, type_bool condition)
+static C_VOID _e_loopcc(core_machine_cpu_execution_context *context, lib_i8 csrc, type_bool condition)
 {
-    type_unsigned_32 cecx;
-    type_unsigned_32 neweip = cpu_state.data.eip;
+    lib_u32 cecx;
+    lib_u32 neweip = cpu_state.data.eip;
     TYPE_TRACE_CALL_BEGIN("_e_loopcc");
     switch (_GetAddressSize)
     {
@@ -5882,18 +5883,18 @@ static C_VOID _e_loopcc(core_machine_cpu_execution_context *context, type_signed
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_ret_near(core_machine_cpu_execution_context *context, type_unsigned_16 parambyte, type_unsigned_8 byte)
+static C_VOID _e_ret_near(core_machine_cpu_execution_context *context, lib_u16 parambyte, lib_u8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_ret_near");
     TYPE_TRACE_CHECK_RETURN(_kec_ret_near(context, parambyte, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsigned_16 parambyte, type_unsigned_16 byte)
+static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, lib_u16 parambyte, lib_u16 byte)
 {
-    type_unsigned_16 newcs;
-    type_unsigned_32 xs_sel;
-    type_unsigned_32 neweip = 0;
-    type_unsigned_64 descriptor;
+    lib_u16 newcs;
+    lib_u32 xs_sel;
+    lib_u32 neweip = 0;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_e_ret_far");
     switch (byte)
     {
@@ -6121,7 +6122,7 @@ static C_VOID _kaf_calc_AF(core_machine_cpu_execution_context *context)
 }
 static C_VOID _kaf_calc_PF(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 res8 = TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    lib_u8 res8 = TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     type_bool even = 1;
     TYPE_TRACE_CALL_BEGIN("_kaf_calc_PF");
     while (res8)
@@ -6160,7 +6161,7 @@ static C_VOID _kaf_calc_SF(core_machine_cpu_execution_context *context)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kaf_set_flags(core_machine_cpu_execution_context *context, type_unsigned_16 flags)
+static C_VOID _kaf_set_flags(core_machine_cpu_execution_context *context, lib_u16 flags)
 {
     TYPE_TRACE_CALL_BEGIN("_kaf_set_flags");
     if (flags & VCPU_EFLAGS_CF)
@@ -6177,7 +6178,7 @@ static C_VOID _kaf_set_flags(core_machine_cpu_execution_context *context, type_u
         TYPE_TRACE_CHECK_RETURN(_kaf_calc_OF(context));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kas_move_index(core_machine_cpu_execution_context *context, type_unsigned_8 byte, type_bool flagsi, type_bool flagdi)
+static C_VOID _kas_move_index(core_machine_cpu_execution_context *context, lib_u8 byte, type_bool flagsi, type_bool flagdi)
 {
     TYPE_TRACE_CALL_BEGIN("_kas_move_index");
     switch (_GetAddressSize)
@@ -6269,7 +6270,7 @@ static C_VOID _kas_move_index(core_machine_cpu_execution_context *context, type_
             instruction_state.data.bit = 16;                                          \
             instruction_state.data.type = (type12);                                   \
             instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);               \
-            instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((type_signed_8)csrc); \
+            instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((lib_i8)csrc); \
             instruction_state.data.result = TYPE_MASK_UNSIGNED_16(expr12);            \
             break;                                                                    \
         case 16:                                                                      \
@@ -6283,7 +6284,7 @@ static C_VOID _kas_move_index(core_machine_cpu_execution_context *context, type_
             instruction_state.data.bit = 32;                                          \
             instruction_state.data.type = (type20);                                   \
             instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32(cdest);               \
-            instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((type_signed_8)csrc); \
+            instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((lib_i8)csrc); \
             instruction_state.data.result = TYPE_MASK_UNSIGNED_32(expr20);            \
             break;                                                                    \
         case 32:                                                                      \
@@ -6301,7 +6302,7 @@ static C_VOID _kas_move_index(core_machine_cpu_execution_context *context, type_
         }                                                                             \
         TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, funflag));                    \
     } while (0)
-static C_VOID _a_add(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_add(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_add");
     _kac_arith2(ADD_FLAG,
@@ -6312,7 +6313,7 @@ static C_VOID _a_add(core_machine_cpu_execution_context *context, type_unsigned_
                 ADD32, (instruction_state.data.opr1 + instruction_state.data.opr2));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_adc(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_adc(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_adc");
     _kac_arith2(ADC_FLAG,
@@ -6323,7 +6324,7 @@ static C_VOID _a_adc(core_machine_cpu_execution_context *context, type_unsigned_
                 ADC32, (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_and(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_and(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_and");
     _kac_arith2(AND_FLAG,
@@ -6337,7 +6338,7 @@ static C_VOID _a_and(core_machine_cpu_execution_context *context, type_unsigned_
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_or(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_or(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_or");
     _kac_arith2(OR_FLAG,
@@ -6351,7 +6352,7 @@ static C_VOID _a_or(core_machine_cpu_execution_context *context, type_unsigned_6
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_sbb(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_sbb(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_sbb");
     _kac_arith2(SBB_FLAG,
@@ -6362,7 +6363,7 @@ static C_VOID _a_sbb(core_machine_cpu_execution_context *context, type_unsigned_
                 SBB32, (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_sub(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_sub(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_sub");
     _kac_arith2(SUB_FLAG,
@@ -6373,7 +6374,7 @@ static C_VOID _a_sub(core_machine_cpu_execution_context *context, type_unsigned_
                 SUB32, (instruction_state.data.opr1 - instruction_state.data.opr2));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_xor(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_xor(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_xor");
     _kac_arith2(XOR_FLAG,
@@ -6387,18 +6388,18 @@ static C_VOID _a_xor(core_machine_cpu_execution_context *context, type_unsigned_
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_cmp(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_cmp(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_cmp");
     _kac_arith2(CMP_FLAG,
-                CMP8, ((type_unsigned_8)instruction_state.data.opr1 - (type_signed_8)instruction_state.data.opr2),
-                CMP16, ((type_unsigned_16)instruction_state.data.opr1 - (type_signed_8)instruction_state.data.opr2),
-                CMP16, ((type_unsigned_16)instruction_state.data.opr1 - (type_signed_16)instruction_state.data.opr2),
-                CMP32, ((type_unsigned_32)instruction_state.data.opr1 - (type_signed_8)instruction_state.data.opr2),
-                CMP32, ((type_unsigned_32)instruction_state.data.opr1 - (type_signed_32)instruction_state.data.opr2));
+                CMP8, ((lib_u8)instruction_state.data.opr1 - (lib_i8)instruction_state.data.opr2),
+                CMP16, ((lib_u16)instruction_state.data.opr1 - (lib_i8)instruction_state.data.opr2),
+                CMP16, ((lib_u16)instruction_state.data.opr1 - (lib_i16)instruction_state.data.opr2),
+                CMP32, ((lib_u32)instruction_state.data.opr1 - (lib_i8)instruction_state.data.opr2),
+                CMP32, ((lib_u32)instruction_state.data.opr1 - (lib_i32)instruction_state.data.opr2));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_test(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_test(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_test");
     _kac_arith2(TEST_FLAG,
@@ -6412,7 +6413,7 @@ static C_VOID _a_test(core_machine_cpu_execution_context *context, type_unsigned
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_inc(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 bit)
+static C_VOID _a_inc(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_inc");
     instruction_state.data.opr2 = 1;
@@ -6422,7 +6423,7 @@ static C_VOID _a_inc(core_machine_cpu_execution_context *context, type_unsigned_
                 ADD32, (instruction_state.data.opr1 + instruction_state.data.opr2));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_dec(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 bit)
+static C_VOID _a_dec(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_dec");
     instruction_state.data.opr2 = 1;
@@ -6432,7 +6433,7 @@ static C_VOID _a_dec(core_machine_cpu_execution_context *context, type_unsigned_
                 SUB32, (instruction_state.data.opr1 - instruction_state.data.opr2));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_not(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 bit)
+static C_VOID _a_not(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_not");
     instruction_state.data.opr2 = 0;
@@ -6442,7 +6443,7 @@ static C_VOID _a_not(core_machine_cpu_execution_context *context, type_unsigned_
                 ARITHTYPE_NULL, (~instruction_state.data.opr1));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_neg(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 bit)
+static C_VOID _a_neg(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_neg");
     instruction_state.data.opr2 = cdest;
@@ -6454,9 +6455,9 @@ static C_VOID _a_neg(core_machine_cpu_execution_context *context, type_unsigned_
     TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!instruction_state.data.opr2);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_mul(core_machine_cpu_execution_context *context, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_mul(core_machine_cpu_execution_context *context, lib_u64 csrc, lib_u8 bit)
 {
-    type_unsigned_64 cdest;
+    lib_u64 cdest;
     TYPE_TRACE_CALL_BEGIN("_a_mul");
     switch (bit)
     {
@@ -6508,9 +6509,9 @@ static C_VOID _a_mul(core_machine_cpu_execution_context *context, type_unsigned_
                                    VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_imul(core_machine_cpu_execution_context *context, lib_u64 csrc, lib_u8 bit)
 {
-    type_signed_64 cdest;
+    lib_i64 cdest;
     TYPE_TRACE_CALL_BEGIN("_a_imul");
     switch (bit)
     {
@@ -6518,10 +6519,10 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = cpu_state.data.al;
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_8((type_signed_8)csrc);
-        cdest = TYPE_MASK_UNSIGNED_16((type_signed_8)cpu_state.data.al * (type_signed_8)instruction_state.data.opr2);
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_8((lib_i8)csrc);
+        cdest = TYPE_MASK_UNSIGNED_16((lib_i8)cpu_state.data.al * (lib_i8)instruction_state.data.opr2);
         cpu_state.data.ax = TYPE_MASK_UNSIGNED_16(cdest);
-        if ((type_signed_16)cdest == (type_signed_16)(type_signed_8)cpu_state.data.al)
+        if ((lib_i16)cdest == (lib_i16)(lib_i8)cpu_state.data.al)
         {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
@@ -6538,11 +6539,11 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = cpu_state.data.ax;
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((type_signed_16)csrc);
-        cdest = TYPE_MASK_UNSIGNED_32((type_signed_16)cpu_state.data.ax * (type_signed_16)instruction_state.data.opr2);
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((lib_i16)csrc);
+        cdest = TYPE_MASK_UNSIGNED_32((lib_i16)cpu_state.data.ax * (lib_i16)instruction_state.data.opr2);
         cpu_state.data.ax = TYPE_MASK_UNSIGNED_16(cdest);
         cpu_state.data.dx = TYPE_MASK_UNSIGNED_16(cdest >> 16);
-        if ((type_signed_32)cdest == (type_signed_32)(type_signed_16)cpu_state.data.ax)
+        if ((lib_i32)cdest == (lib_i32)(lib_i16)cpu_state.data.ax)
         {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
@@ -6559,12 +6560,12 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
         TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
         instruction_state.data.opr1 = cpu_state.data.eax;
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((type_signed_32)csrc);
-        cdest = TYPE_MASK_UNSIGNED_64((type_signed_64)(type_signed_32)cpu_state.data.eax *
-                                      (type_signed_64)(type_signed_32)instruction_state.data.opr2);
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((lib_i32)csrc);
+        cdest = TYPE_MASK_UNSIGNED_64((lib_i64)(lib_i32)cpu_state.data.eax *
+                                      (lib_i64)(lib_i32)instruction_state.data.opr2);
         cpu_state.data.eax = TYPE_MASK_UNSIGNED_32(cdest);
         cpu_state.data.edx = TYPE_MASK_UNSIGNED_32(cdest >> 32);
-        if ((type_signed_64)cdest == (type_signed_64)(type_signed_32)cpu_state.data.eax)
+        if ((lib_i64)cdest == (lib_i64)(lib_i32)cpu_state.data.eax)
         {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
@@ -6587,9 +6588,9 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
                                    VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_div(core_machine_cpu_execution_context *context, lib_u64 csrc, lib_u8 bit)
 {
-    type_unsigned_64 temp = 0x0000000000000000;
+    lib_u64 temp = 0x0000000000000000;
     TYPE_TRACE_CALL_BEGIN("_a_div");
     switch (bit)
     {
@@ -6607,7 +6608,7 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            temp = TYPE_MASK_UNSIGNED_16((type_unsigned_16)instruction_state.data.opr1 / (type_unsigned_8)instruction_state.data.opr2);
+            temp = TYPE_MASK_UNSIGNED_16((lib_u16)instruction_state.data.opr1 / (lib_u8)instruction_state.data.opr2);
             if (temp > TYPE_MAX_UNSIGNED_8)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(>0xff)");
@@ -6617,7 +6618,7 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
             else
             {
                 cpu_state.data.al = TYPE_MASK_UNSIGNED_8(temp);
-                cpu_state.data.ah = TYPE_MASK_UNSIGNED_8((type_unsigned_16)instruction_state.data.opr1 % (type_unsigned_8)instruction_state.data.opr2);
+                cpu_state.data.ah = TYPE_MASK_UNSIGNED_8((lib_u16)instruction_state.data.opr1 % (lib_u8)instruction_state.data.opr2);
             }
             TYPE_TRACE_BLOCK_END;
         }
@@ -6638,7 +6639,7 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            temp = TYPE_MASK_UNSIGNED_32((type_unsigned_32)instruction_state.data.opr1 / (type_unsigned_16)instruction_state.data.opr2);
+            temp = TYPE_MASK_UNSIGNED_32((lib_u32)instruction_state.data.opr1 / (lib_u16)instruction_state.data.opr2);
             if (temp > TYPE_MAX_UNSIGNED_16)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(>0xffff)");
@@ -6648,7 +6649,7 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
             else
             {
                 cpu_state.data.ax = TYPE_MASK_UNSIGNED_16(temp);
-                cpu_state.data.dx = TYPE_MASK_UNSIGNED_16((type_unsigned_32)instruction_state.data.opr1 % (type_unsigned_16)instruction_state.data.opr2);
+                cpu_state.data.dx = TYPE_MASK_UNSIGNED_16((lib_u32)instruction_state.data.opr1 % (lib_u16)instruction_state.data.opr2);
             }
             TYPE_TRACE_BLOCK_END;
         }
@@ -6658,7 +6659,7 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
     case 32:
         TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_64(((type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax);
+        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_64(((lib_u64)cpu_state.data.edx << 32) | cpu_state.data.eax);
         instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32(csrc);
         if (!instruction_state.data.opr2)
         {
@@ -6669,7 +6670,7 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            temp = TYPE_MASK_UNSIGNED_64((type_unsigned_64)instruction_state.data.opr1 / (type_unsigned_32)instruction_state.data.opr2);
+            temp = TYPE_MASK_UNSIGNED_64((lib_u64)instruction_state.data.opr1 / (lib_u32)instruction_state.data.opr2);
             if (temp > TYPE_MAX_UNSIGNED_32)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(>0xffffffff)");
@@ -6679,11 +6680,11 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
             else
             {
                 cpu_state.data.eax = TYPE_MASK_UNSIGNED_32(temp);
-                cpu_state.data.edx = TYPE_MASK_UNSIGNED_32((type_unsigned_64)instruction_state.data.opr1 % (type_unsigned_32)instruction_state.data.opr2);
+                cpu_state.data.edx = TYPE_MASK_UNSIGNED_32((lib_u64)instruction_state.data.opr1 % (lib_u32)instruction_state.data.opr2);
             }
             TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.result = ((type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax;
+        instruction_state.data.result = ((lib_u64)cpu_state.data.edx << 32) | cpu_state.data.eax;
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6696,19 +6697,19 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
                                    VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_OF);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_idiv(core_machine_cpu_execution_context *context, lib_u64 csrc, lib_u8 bit)
 {
-    type_signed_64 temp;
-    type_signed_64 dividend;
-    type_signed_64 divisor;
+    lib_i64 temp;
+    lib_i64 dividend;
+    lib_i64 divisor;
     TYPE_TRACE_CALL_BEGIN("_a_idiv");
     switch (bit)
     {
     case 8:
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16((type_signed_16)cpu_state.data.ax);
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_8((type_signed_8)csrc);
+        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16((lib_i16)cpu_state.data.ax);
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_8((lib_i8)csrc);
         if (!instruction_state.data.opr2)
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
@@ -6718,8 +6719,8 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            dividend = (type_signed_16)cpu_state.data.ax;
-            divisor = (type_signed_8)csrc;
+            dividend = (lib_i16)cpu_state.data.ax;
+            divisor = (lib_i8)csrc;
             temp = dividend / divisor;
             if (temp > 0x7f || temp < -0x80)
             {
@@ -6740,8 +6741,8 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32((type_signed_32)((cpu_state.data.dx << 16) | cpu_state.data.ax));
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((type_signed_16)csrc);
+        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32((lib_i32)((cpu_state.data.dx << 16) | cpu_state.data.ax));
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((lib_i16)csrc);
         if (!instruction_state.data.opr2)
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
@@ -6751,9 +6752,9 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            dividend = (type_signed_32)(((type_unsigned_32)cpu_state.data.dx << 16) | cpu_state.data.ax);
-            divisor = (type_signed_16)csrc;
-            if (dividend == ((type_signed_32)-2147483647 - 1) && divisor == -1)
+            dividend = (lib_i32)(((lib_u32)cpu_state.data.dx << 16) | cpu_state.data.ax);
+            divisor = (lib_i16)csrc;
+            if (dividend == ((lib_i32)-2147483647 - 1) && divisor == -1)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(overflow)");
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -6772,14 +6773,14 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
             }
             TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.result = ((type_unsigned_32)cpu_state.data.dx << 16) | cpu_state.data.ax;
+        instruction_state.data.result = ((lib_u32)cpu_state.data.dx << 16) | cpu_state.data.ax;
         TYPE_TRACE_BLOCK_END;
         break;
     case 32:
         TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_64((type_signed_64)(((type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax));
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((type_signed_32)csrc);
+        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_64((lib_i64)(((lib_u64)cpu_state.data.edx << 32) | cpu_state.data.eax));
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((lib_i32)csrc);
         if (!instruction_state.data.opr2)
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
@@ -6789,9 +6790,9 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            dividend = (type_signed_64)(((type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax);
-            divisor = (type_signed_32)csrc;
-            if (dividend == ((type_signed_64)-9223372036854775807LL - 1LL) && divisor == -1)
+            dividend = (lib_i64)(((lib_u64)cpu_state.data.edx << 32) | cpu_state.data.eax);
+            divisor = (lib_i32)csrc;
+            if (dividend == ((lib_i64)-9223372036854775807LL - 1LL) && divisor == -1)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(overflow)");
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -6810,7 +6811,7 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
             }
             TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.result = ((type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax;
+        instruction_state.data.result = ((lib_u64)cpu_state.data.edx << 32) | cpu_state.data.eax;
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6824,20 +6825,20 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigned_64 csrc1, type_unsigned_64 csrc2, type_unsigned_8 bit)
+static C_VOID _a_imul3(core_machine_cpu_execution_context *context, lib_u64 csrc1, lib_u64 csrc2, lib_u8 bit)
 {
-    type_signed_64 cdest;
+    lib_i64 cdest;
     TYPE_TRACE_CALL_BEGIN("_a_imul3");
     switch (bit)
     {
     case 12:
         TYPE_TRACE_BLOCK_BEGIN("bit(16+8)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = (type_signed_16)csrc1;
-        instruction_state.data.opr2 = (type_signed_8)csrc2;
-        cdest = TYPE_MASK_UNSIGNED_32((type_signed_16)instruction_state.data.opr1 * (type_signed_8)instruction_state.data.opr2);
+        instruction_state.data.opr1 = (lib_i16)csrc1;
+        instruction_state.data.opr2 = (lib_i8)csrc2;
+        cdest = TYPE_MASK_UNSIGNED_32((lib_i16)instruction_state.data.opr1 * (lib_i8)instruction_state.data.opr2);
         instruction_state.data.result = TYPE_MASK_UNSIGNED_16(cdest);
-        if (TYPE_MASK_UNSIGNED_32(cdest) != TYPE_MASK_UNSIGNED_32((type_signed_16)instruction_state.data.result))
+        if (TYPE_MASK_UNSIGNED_32(cdest) != TYPE_MASK_UNSIGNED_32((lib_i16)instruction_state.data.result))
         {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
@@ -6852,11 +6853,11 @@ static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigne
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16+16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = (type_signed_16)csrc1;
-        instruction_state.data.opr2 = (type_signed_16)csrc2;
-        cdest = TYPE_MASK_UNSIGNED_32((type_signed_16)instruction_state.data.opr1 * (type_signed_16)instruction_state.data.opr2);
+        instruction_state.data.opr1 = (lib_i16)csrc1;
+        instruction_state.data.opr2 = (lib_i16)csrc2;
+        cdest = TYPE_MASK_UNSIGNED_32((lib_i16)instruction_state.data.opr1 * (lib_i16)instruction_state.data.opr2);
         instruction_state.data.result = TYPE_MASK_UNSIGNED_16(cdest);
-        if (TYPE_MASK_UNSIGNED_32(cdest) != TYPE_MASK_UNSIGNED_32((type_signed_16)instruction_state.data.result))
+        if (TYPE_MASK_UNSIGNED_32(cdest) != TYPE_MASK_UNSIGNED_32((lib_i16)instruction_state.data.result))
         {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
@@ -6871,11 +6872,11 @@ static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigne
     case 20:
         TYPE_TRACE_BLOCK_BEGIN("bit(32+8)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = (type_signed_32)csrc1;
-        instruction_state.data.opr2 = (type_signed_8)csrc2;
-        cdest = TYPE_MASK_UNSIGNED_64((type_signed_32)instruction_state.data.opr1 * (type_signed_8)instruction_state.data.opr2);
+        instruction_state.data.opr1 = (lib_i32)csrc1;
+        instruction_state.data.opr2 = (lib_i8)csrc2;
+        cdest = TYPE_MASK_UNSIGNED_64((lib_i32)instruction_state.data.opr1 * (lib_i8)instruction_state.data.opr2);
         instruction_state.data.result = TYPE_MASK_UNSIGNED_32(cdest);
-        if (TYPE_MASK_UNSIGNED_64(cdest) != TYPE_MASK_UNSIGNED_64((type_signed_32)instruction_state.data.result))
+        if (TYPE_MASK_UNSIGNED_64(cdest) != TYPE_MASK_UNSIGNED_64((lib_i32)instruction_state.data.result))
         {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
@@ -6890,12 +6891,12 @@ static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigne
     case 32:
         TYPE_TRACE_BLOCK_BEGIN("bit(32+32");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = (type_signed_32)csrc1;
-        instruction_state.data.opr2 = (type_signed_32)csrc2;
-        cdest = TYPE_MASK_UNSIGNED_64((type_signed_64)(type_signed_32)instruction_state.data.opr1 *
-            (type_signed_64)(type_signed_32)instruction_state.data.opr2);
+        instruction_state.data.opr1 = (lib_i32)csrc1;
+        instruction_state.data.opr2 = (lib_i32)csrc2;
+        cdest = TYPE_MASK_UNSIGNED_64((lib_i64)(lib_i32)instruction_state.data.opr1 *
+            (lib_i64)(lib_i32)instruction_state.data.opr2);
         instruction_state.data.result = TYPE_MASK_UNSIGNED_32(cdest);
-        if (TYPE_MASK_UNSIGNED_64(cdest) != TYPE_MASK_UNSIGNED_64((type_signed_32)instruction_state.data.result))
+        if (TYPE_MASK_UNSIGNED_64(cdest) != TYPE_MASK_UNSIGNED_64((lib_i32)instruction_state.data.result))
         {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
@@ -6918,16 +6919,16 @@ static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigne
     TYPE_TRACE_CALL_END;
 }
 
-static type_unsigned_8 _a_shift_rotate_count(core_machine_cpu_execution_context *context,
-    type_unsigned_8 csrc)
+static lib_u8 _a_shift_rotate_count(core_machine_cpu_execution_context *context,
+    lib_u8 csrc)
 {
     return core_machine_cpu_profile_has_8086_semantics(context->cpu_profile) ? csrc :
-        (type_unsigned_8)(csrc & 0x1fu);
+        (lib_u8)(csrc & 0x1fu);
 }
-static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
+static C_VOID _a_rol(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    type_unsigned_8 count;
-    type_unsigned_32 flagcf;
+    lib_u8 count;
+    lib_u32 flagcf;
     TYPE_TRACE_CALL_BEGIN("_a_rol");
     switch (bit)
     {
@@ -7008,10 +7009,10 @@ static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
+static C_VOID _a_ror(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    type_unsigned_8 count;
-    type_unsigned_32 flagcf;
+    lib_u8 count;
+    lib_u32 flagcf;
     TYPE_TRACE_CALL_BEGIN("_a_ror");
     switch (bit)
     {
@@ -7092,10 +7093,10 @@ static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
+static C_VOID _a_rcl(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    type_unsigned_8 count;
-    type_unsigned_32 flagcf;
+    lib_u8 count;
+    lib_u32 flagcf;
     TYPE_TRACE_CALL_BEGIN("_a_rcl");
     switch (bit)
     {
@@ -7180,10 +7181,10 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
+static C_VOID _a_rcr(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    type_unsigned_8 count;
-    type_unsigned_32 flagcf;
+    lib_u8 count;
+    lib_u32 flagcf;
     TYPE_TRACE_CALL_BEGIN("_a_rcr");
     switch (bit)
     {
@@ -7268,9 +7269,9 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_shl(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
+static C_VOID _a_shl(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    type_unsigned_8 count;
+    lib_u8 count;
     TYPE_TRACE_CALL_BEGIN("_a_shl");
     count = _a_shift_rotate_count(context, csrc);
     instruction_state.data.opr2 = count;
@@ -7361,9 +7362,9 @@ static C_VOID _a_shl(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_shr(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
+static C_VOID _a_shr(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    type_unsigned_8 count;
+    lib_u8 count;
     TYPE_TRACE_CALL_BEGIN("_a_shr");
     count = _a_shift_rotate_count(context, csrc);
     instruction_state.data.opr2 = count;
@@ -7451,9 +7452,9 @@ static C_VOID _a_shr(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_sar(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
+static C_VOID _a_sar(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u8 csrc, lib_u8 bit)
 {
-    type_unsigned_8 count;
+    lib_u8 count;
     type_bool tempcf;
     TYPE_TRACE_CALL_BEGIN("_a_shr");
     count = _a_shift_rotate_count(context, csrc);
@@ -7470,7 +7471,7 @@ static C_VOID _a_sar(core_machine_cpu_execution_context *context, type_unsigned_
         {
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!TYPE_GET_LSB_UNSIGNED_8(instruction_state.data.result)));
             tempcf = TYPE_GET_MSB_8(instruction_state.data.result);
-            instruction_state.data.result = TYPE_MASK_UNSIGNED_8((type_signed_8)instruction_state.data.result >> 1);
+            instruction_state.data.result = TYPE_MASK_UNSIGNED_8((lib_i8)instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
@@ -7495,7 +7496,7 @@ static C_VOID _a_sar(core_machine_cpu_execution_context *context, type_unsigned_
         while (count)
         {
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!TYPE_GET_LSB_UNSIGNED_16(instruction_state.data.result)));
-            instruction_state.data.result = TYPE_MASK_UNSIGNED_16((type_signed_16)instruction_state.data.result >> 1);
+            instruction_state.data.result = TYPE_MASK_UNSIGNED_16((lib_i16)instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
@@ -7520,7 +7521,7 @@ static C_VOID _a_sar(core_machine_cpu_execution_context *context, type_unsigned_
         while (count)
         {
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!TYPE_GET_LSB_UNSIGNED_32(instruction_state.data.result)));
-            instruction_state.data.result = TYPE_MASK_UNSIGNED_32((type_signed_32)instruction_state.data.result >> 1);
+            instruction_state.data.result = TYPE_MASK_UNSIGNED_32((lib_i32)instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
@@ -7545,9 +7546,9 @@ static C_VOID _a_sar(core_machine_cpu_execution_context *context, type_unsigned_
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _p_ins(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _p_ins(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_32 cedi, data = 0;
+    lib_u32 cedi, data = 0;
     TYPE_TRACE_CALL_BEGIN("_p_ins");
     switch (_GetAddressSize)
     {
@@ -7595,9 +7596,9 @@ static C_VOID _p_ins(core_machine_cpu_execution_context *context, type_unsigned_
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _p_outs(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _p_outs(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_32 cesi, data = 0;
+    lib_u32 cesi, data = 0;
     TYPE_TRACE_CALL_BEGIN("_p_outs");
     switch (_GetAddressSize)
     {
@@ -7642,10 +7643,10 @@ static C_VOID _p_outs(core_machine_cpu_execution_context *context, type_unsigned
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_movs(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _m_movs(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_32 data = 0;
-    type_unsigned_32 cesi, cedi;
+    lib_u32 data = 0;
+    lib_u32 cesi, cedi;
     TYPE_TRACE_CALL_BEGIN("_m_movs");
     switch (_GetAddressSize)
     {
@@ -7692,9 +7693,9 @@ static C_VOID _m_movs(core_machine_cpu_execution_context *context, type_unsigned
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_stos(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _m_stos(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_32 cedi;
+    lib_u32 cedi;
     TYPE_TRACE_CALL_BEGIN("_m_stos");
     switch (_GetAddressSize)
     {
@@ -7736,9 +7737,9 @@ static C_VOID _m_stos(core_machine_cpu_execution_context *context, type_unsigned
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _m_lods(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
+static C_VOID _m_lods(core_machine_cpu_execution_context *context, lib_u8 byte)
 {
-    type_unsigned_32 cesi = 0x00000000;
+    lib_u32 cesi = 0x00000000;
     TYPE_TRACE_CALL_BEGIN("_m_lods");
     switch (_GetAddressSize)
     {
@@ -7786,9 +7787,9 @@ static C_VOID _m_lods(core_machine_cpu_execution_context *context, type_unsigned
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_cmps(core_machine_cpu_execution_context *context, type_unsigned_8 bit)
+static C_VOID _a_cmps(core_machine_cpu_execution_context *context, lib_u8 bit)
 {
-    type_unsigned_32 cesi, cedi;
+    lib_u32 cesi, cedi;
     TYPE_TRACE_CALL_BEGIN("_a_cmps");
     instruction_state.data.opr1 = 0;
     instruction_state.data.opr2 = 0;
@@ -7847,9 +7848,9 @@ static C_VOID _a_cmps(core_machine_cpu_execution_context *context, type_unsigned
     TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, CMP_FLAG));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_scas(core_machine_cpu_execution_context *context, type_unsigned_8 bit)
+static C_VOID _a_scas(core_machine_cpu_execution_context *context, lib_u8 bit)
 {
-    type_unsigned_32 cedi;
+    lib_u32 cedi;
     TYPE_TRACE_CALL_BEGIN("_a_scas");
     instruction_state.data.opr1 = 0;
     instruction_state.data.opr2 = 0;
@@ -7909,21 +7910,21 @@ static C_VOID _a_scas(core_machine_cpu_execution_context *context, type_unsigned
 #define _adv TYPE_TRACE_CHECK_RETURN(_d_skip(context, 1))
 
 static type_bool core_machine_cpu_instruction_lexeme_is_prefix(
-    type_unsigned_8 byte, core_machine_cpu_profile profile)
+    lib_u8 byte, core_machine_cpu_profile profile)
 {
     switch (byte) {
     case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
     case 0xf0u: case 0xf2u: case 0xf3u:
-        return TYPE_TRUE;
+        return LIB_TRUE;
     case 0x64u: case 0x65u: case 0x66u: case 0x67u:
         return profile >= CORE_MACHINE_CPU_PROFILE_80386;
     default:
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
 }
 
 static type_bool core_machine_cpu_instruction_lexeme_has_modrm(
-    type_unsigned_8 opcode, type_bool extended)
+    lib_u8 opcode, type_bool extended)
 {
     if (extended) {
         return opcode <= 0x03u ||
@@ -7949,24 +7950,24 @@ static type_bool core_machine_cpu_instruction_lexeme_has_modrm(
 }
 
 static type_bool core_machine_cpu_instruction_lexeme_modrm_form_valid(
-    type_unsigned_8 opcode, type_bool extended, type_unsigned_8 modrm,
+    lib_u8 opcode, type_bool extended, lib_u8 modrm,
     type_bool cpu_80386_cr_mov_ignores_mod)
 {
-    type_unsigned_8 reg = (modrm >> 3u) & 7u;
+    lib_u8 reg = (modrm >> 3u) & 7u;
 
     if (extended) {
-        if ((opcode == 0x21u || opcode == 0x23u) && (reg == 4u || reg == 5u)) return TYPE_FALSE;
-        if ((opcode == 0x24u || opcode == 0x26u) && reg < 6u) return TYPE_FALSE;
-        if (opcode == 0x01u && (reg == 5u || reg == 7u)) return TYPE_FALSE;
+        if ((opcode == 0x21u || opcode == 0x23u) && (reg == 4u || reg == 5u)) return LIB_FALSE;
+        if ((opcode == 0x24u || opcode == 0x26u) && reg < 6u) return LIB_FALSE;
+        if (opcode == 0x01u && (reg == 5u || reg == 7u)) return LIB_FALSE;
         if (opcode >= 0x20u && opcode <= 0x24u || opcode == 0x26u) {
             if ((opcode == 0x20u || opcode == 0x22u) &&
-                cpu_80386_cr_mov_ignores_mod) return TYPE_TRUE;
+                cpu_80386_cr_mov_ignores_mod) return LIB_TRUE;
             return (modrm >> 6u) == 3u;
         }
         if ((opcode == 0x01u && reg <= 3u) || opcode == 0xb2u ||
             opcode == 0xb4u || opcode == 0xb5u)
             return (modrm >> 6u) != 3u;
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
     if (opcode == 0x62u || opcode == 0x8du || opcode == 0xc4u || opcode == 0xc5u)
         return (modrm >> 6u) != 3u;
@@ -7980,11 +7981,11 @@ static type_bool core_machine_cpu_instruction_lexeme_modrm_form_valid(
         return reg <= 1u;
     if (opcode == 0xffu)
         return reg <= 6u;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
-static type_unsigned_8 core_machine_cpu_instruction_lexeme_immediate_bytes(
-    type_unsigned_8 opcode, type_bool extended, type_unsigned_8 modrm,
-    type_unsigned_8 operand_bytes, type_unsigned_8 address_bytes)
+static lib_u8 core_machine_cpu_instruction_lexeme_immediate_bytes(
+    lib_u8 opcode, type_bool extended, lib_u8 modrm,
+    lib_u8 operand_bytes, lib_u8 address_bytes)
 {
     if (extended) {
         if (opcode >= 0x80u && opcode <= 0x8fu) return operand_bytes;
@@ -8013,50 +8014,50 @@ static type_unsigned_8 core_machine_cpu_instruction_lexeme_immediate_bytes(
 }
 
 static type_bool core_machine_cpu_instruction_lexeme_scan_with_options(
-    const type_unsigned_8 *bytes, type_unsigned_8 available_bytes,
+    const lib_u8 *bytes, lib_u8 available_bytes,
     core_machine_cpu_profile profile, type_bool code_32,
     type_bool cpu_80386_cr_mov_ignores_mod,
     core_machine_cpu_instruction_lexeme *out_lexeme)
 {
-    type_unsigned_8 index = 0u;
-    type_unsigned_8 components = 0u;
-    type_unsigned_8 opcode;
-    type_unsigned_8 modrm = 0u;
-    type_unsigned_8 operand_bytes;
-    type_unsigned_8 address_bytes;
-    type_unsigned_8 displacement = 0u;
-    type_unsigned_8 immediate;
-    type_bool extended = TYPE_FALSE;
-    type_bool lock_prefix = TYPE_FALSE;
-    type_bool operand_size_prefix = TYPE_FALSE;
-    type_bool address_size_prefix = TYPE_FALSE;
+    lib_u8 index = 0u;
+    lib_u8 components = 0u;
+    lib_u8 opcode;
+    lib_u8 modrm = 0u;
+    lib_u8 operand_bytes;
+    lib_u8 address_bytes;
+    lib_u8 displacement = 0u;
+    lib_u8 immediate;
+    type_bool extended = LIB_FALSE;
+    type_bool lock_prefix = LIB_FALSE;
+    type_bool operand_size_prefix = LIB_FALSE;
+    type_bool address_size_prefix = LIB_FALSE;
     core_machine_cpu_instruction_metadata metadata;
 
-    if (out_lexeme == STD_NULL) return TYPE_FALSE;
-    *out_lexeme = (core_machine_cpu_instruction_lexeme) { 0u, 0u, TYPE_FALSE };
-    if (bytes == STD_NULL || available_bytes == 0u ||
+    if (out_lexeme == LIB_NULL) return LIB_FALSE;
+    *out_lexeme = (core_machine_cpu_instruction_lexeme) { 0u, 0u, LIB_FALSE };
+    if (bytes == LIB_NULL || available_bytes == 0u ||
         profile < CORE_MACHINE_CPU_PROFILE_8086 ||
-        profile > CORE_MACHINE_CPU_PROFILE_80386) return TYPE_FALSE;
+        profile > CORE_MACHINE_CPU_PROFILE_80386) return LIB_FALSE;
     while (index < available_bytes && index < 15u &&
         core_machine_cpu_instruction_lexeme_is_prefix(bytes[index], profile)) {
-        if (bytes[index] == 0xf0u) lock_prefix = TYPE_TRUE;
+        if (bytes[index] == 0xf0u) lock_prefix = LIB_TRUE;
         ++index;
         ++components;
     }
     if (index < available_bytes && profile < CORE_MACHINE_CPU_PROFILE_80386 &&
         (bytes[index] == 0x64u || bytes[index] == 0x65u ||
-         bytes[index] == 0x66u || bytes[index] == 0x67u)) return TYPE_FALSE;
-    if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
+         bytes[index] == 0x66u || bytes[index] == 0x67u)) return LIB_FALSE;
+    if (index >= available_bytes || index >= 15u) return LIB_FALSE;
     opcode = bytes[index++];
     ++components;
     operand_bytes = code_32 ? 4u : 2u;
     address_bytes = code_32 ? 4u : 2u;
     if (profile >= CORE_MACHINE_CPU_PROFILE_80386) {
-        type_unsigned_8 prefix_index;
+        lib_u8 prefix_index;
 
         for (prefix_index = 0u; prefix_index < index - 1u; ++prefix_index) {
-            if (bytes[prefix_index] == 0x66u) operand_size_prefix = TYPE_TRUE;
-            if (bytes[prefix_index] == 0x67u) address_size_prefix = TYPE_TRUE;
+            if (bytes[prefix_index] == 0x66u) operand_size_prefix = LIB_TRUE;
+            if (bytes[prefix_index] == 0x67u) address_size_prefix = LIB_TRUE;
         }
         if (operand_size_prefix)
             operand_bytes = code_32 ? 2u : 4u;
@@ -8065,17 +8066,17 @@ static type_bool core_machine_cpu_instruction_lexeme_scan_with_options(
     }
     if (opcode == 0x0fu && !core_machine_cpu_profile_has_8086_semantics(profile)) {
         if (profile != CORE_MACHINE_CPU_PROFILE_80286 &&
-            profile != CORE_MACHINE_CPU_PROFILE_80386) return TYPE_FALSE;
-        if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
+            profile != CORE_MACHINE_CPU_PROFILE_80386) return LIB_FALSE;
+        if (index >= available_bytes || index >= 15u) return LIB_FALSE;
         opcode = bytes[index++];
         ++components;
-        extended = TYPE_TRUE;
+        extended = LIB_TRUE;
     }
     if (core_machine_cpu_instruction_lexeme_has_modrm(opcode, extended)) {
-        type_unsigned_8 mod;
-        type_unsigned_8 rm;
+        lib_u8 mod;
+        lib_u8 rm;
 
-        if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
+        if (index >= available_bytes || index >= 15u) return LIB_FALSE;
         modrm = bytes[index++];
         ++components;
         mod = modrm >> 6u;
@@ -8084,9 +8085,9 @@ static type_bool core_machine_cpu_instruction_lexeme_scan_with_options(
             (opcode == 0x20u || opcode == 0x22u))) {
             if (address_bytes == 4u) {
                 if (rm == 4u) {
-                    type_unsigned_8 sib;
+                    lib_u8 sib;
 
-                    if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
+                    if (index >= available_bytes || index >= 15u) return LIB_FALSE;
                     sib = bytes[index++];
                     ++components;
                     if (mod == 0u && (sib & 7u) == 5u) displacement = 4u;
@@ -8104,33 +8105,33 @@ static type_bool core_machine_cpu_instruction_lexeme_scan_with_options(
     }
     if (!core_machine_cpu_instruction_lexeme_modrm_form_valid(opcode, extended, modrm,
         cpu_80386_cr_mov_ignores_mod))
-        return TYPE_FALSE;
+        return LIB_FALSE;
     metadata = core_machine_cpu_instruction_metadata_get(extended ?
         CORE_MACHINE_CPU_INSTRUCTION_0F : CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
         opcode, modrm);
     if (!metadata.valid || profile < metadata.minimum_cpu || lock_prefix) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
     immediate = core_machine_cpu_instruction_lexeme_immediate_bytes(opcode,
         extended, modrm, operand_bytes, address_bytes);
-    if ((type_unsigned_16)index + displacement + immediate > available_bytes ||
-        (type_unsigned_16)index + displacement + immediate > 15u) return TYPE_FALSE;
+    if ((lib_u16)index + displacement + immediate > available_bytes ||
+        (lib_u16)index + displacement + immediate > 15u) return LIB_FALSE;
     if (displacement != 0u) {
-        index = (type_unsigned_8)(index + displacement);
+        index = (lib_u8)(index + displacement);
         ++components;
     }
     if (immediate != 0u) {
-        index = (type_unsigned_8)(index + immediate);
+        index = (lib_u8)(index + immediate);
         ++components;
     }
     out_lexeme->byte_count = index;
     out_lexeme->component_count = components;
-    out_lexeme->available = TYPE_TRUE;
-    return TYPE_TRUE;
+    out_lexeme->available = LIB_TRUE;
+    return LIB_TRUE;
 }
 
 core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
-    core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm)
+    core_machine_cpu_instruction_space space, lib_u8 opcode, lib_u8 modrm)
 {
     core_machine_cpu_instruction_metadata metadata = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_NONE, 1};
@@ -8231,23 +8232,23 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
 
 static C_INT core_machine_cpu_profile_allows_form(
     const core_machine_cpu_execution_context *context,
-    core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm)
+    core_machine_cpu_instruction_space space, lib_u8 opcode, lib_u8 modrm)
 {
     core_machine_cpu_instruction_metadata metadata;
 
-    if (context == STD_NULL)
+    if (context == LIB_NULL)
         return 0;
     metadata = core_machine_cpu_instruction_metadata_get(space, opcode, modrm);
     return metadata.valid && context->cpu_profile >= metadata.minimum_cpu;
 }
 
 type_bool core_machine_cpu_instruction_lexeme_scan(
-    const type_unsigned_8 *bytes, type_unsigned_8 available_bytes,
+    const lib_u8 *bytes, lib_u8 available_bytes,
     core_machine_cpu_profile profile, type_bool code_32,
     core_machine_cpu_instruction_lexeme *out_lexeme)
 {
     return core_machine_cpu_instruction_lexeme_scan_with_options(bytes,
-        available_bytes, profile, code_32, TYPE_FALSE, out_lexeme);
+        available_bytes, profile, code_32, LIB_FALSE, out_lexeme);
 }
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context)
 {
@@ -8261,9 +8262,9 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
     core_machine_fpu_escape_action action;
     core_machine_cpu_instruction_metadata metadata;
     core_machine_fpu_operation_metadata fpu_metadata;
-    type_unsigned_8 escape_opcode;
-    type_unsigned_8 modrm;
-    type_unsigned_32 fpu_m32;
+    lib_u8 escape_opcode;
+    lib_u8 modrm;
+    lib_u32 fpu_m32;
 
     TYPE_TRACE_CALL_BEGIN("FPU_ESCAPE");
     TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
@@ -8291,11 +8292,11 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
         }
         else if (action != CORE_MACHINE_FPU_ESCAPE_CONSUME_NONE &&
-            !context->preview_mode && context->transaction != STD_NULL &&
+            !context->preview_mode && context->transaction != LIB_NULL &&
             core_machine_transaction_begin(context->transaction,
                 CORE_MACHINE_TRANSACTION_OWNER_CPU,
                 CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND, escape_opcode, modrm,
-                (type_unsigned_32)context->fpu->profile) == TYPE_STATUS_OK)
+                (lib_u32)context->fpu->profile) == TYPE_STATUS_OK)
         {
             core_machine_transaction_commit(context->transaction);
         }
@@ -8329,7 +8330,7 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
             case CORE_MACHINE_FPU_OPERATION_FSUB_ST0_STI:
             case CORE_MACHINE_FPU_OPERATION_FDIV_ST0_STI:
                 (C_VOID)core_machine_fpu_binary_st0_sti(context->fpu,
-                    fpu_metadata.operation, (type_unsigned_8)(modrm & 7u));
+                    fpu_metadata.operation, (lib_u8)(modrm & 7u));
                 break;
             default: break;
             }
@@ -8476,7 +8477,7 @@ static C_VOID ADD_EAX_I32(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSH_ES(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 xs_sel;
+    lib_u32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("PUSH_ES");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -8638,7 +8639,7 @@ static C_VOID OR_EAX_I32(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSH_CS(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 xs_sel;
+    lib_u32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("PUSH_CS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -8656,7 +8657,7 @@ static C_VOID POP_CS(core_machine_cpu_execution_context *context)
 {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
-    type_unsigned_32 xs_sel;
+    lib_u32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("POP_CS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -8672,8 +8673,8 @@ static C_VOID POP_CS(core_machine_cpu_execution_context *context)
 }
 static C_VOID INS_0F(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 opcode = 0x00;
-    type_unsigned_8 modrm = 0x00;
+    lib_u8 opcode = 0x00;
+    lib_u8 modrm = 0x00;
     TYPE_TRACE_CALL_BEGIN("INS_0F");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
     {
@@ -8832,7 +8833,7 @@ static C_VOID ADC_EAX_I32(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSH_SS(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 xs_sel;
+    lib_u32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("PUSH_SS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -8994,7 +8995,7 @@ static C_VOID SBB_EAX_I32(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSH_DS(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 xs_sel;
+    lib_u32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("PUSH_DS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -9173,7 +9174,7 @@ static C_VOID PREFIX_ES(core_machine_cpu_execution_context *context)
 }
 static C_VOID DAA(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 oldAL = cpu_state.data.al;
+    lib_u8 oldAL = cpu_state.data.al;
     TYPE_TRACE_CALL_BEGIN("DAA");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
         _adv;
@@ -9196,7 +9197,7 @@ static C_VOID DAA(core_machine_cpu_execution_context *context)
     else
         _ClrEFLAGS_CF;
     instruction_state.data.bit = 8;
-    instruction_state.data.result = (type_unsigned_32)cpu_state.data.al;
+    instruction_state.data.result = (lib_u32)cpu_state.data.al;
     TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, DAA_FLAG));
     instruction_state.data.udf |= VCPU_EFLAGS_OF;
     TYPE_TRACE_CALL_END;
@@ -9351,7 +9352,7 @@ static C_VOID PREFIX_CS(core_machine_cpu_execution_context *context)
 }
 static C_VOID DAS(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 oldAL = cpu_state.data.al;
+    lib_u8 oldAL = cpu_state.data.al;
     TYPE_TRACE_CALL_BEGIN("DAS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
         _adv;
@@ -9374,7 +9375,7 @@ static C_VOID DAS(core_machine_cpu_execution_context *context)
     else
         _ClrEFLAGS_CF;
     instruction_state.data.bit = 8;
-    instruction_state.data.result = (type_unsigned_32)cpu_state.data.al;
+    instruction_state.data.result = (lib_u32)cpu_state.data.al;
     TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, DAS_FLAG));
     instruction_state.data.udf |= VCPU_EFLAGS_OF;
     TYPE_TRACE_CALL_END;
@@ -10395,7 +10396,7 @@ static C_VOID PUSH_ESP(core_machine_cpu_execution_context *context)
          * push the pre-instruction value. */
         if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286)
         {
-            type_unsigned_16 value = cpu_state.data.sp - 2;
+            lib_u16 value = cpu_state.data.sp - 2;
 
             TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(value), 2));
         }
@@ -10737,7 +10738,7 @@ static C_VOID POP_EDI(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSHA(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 cesp;
+    lib_u32 cesp;
     TYPE_TRACE_CALL_BEGIN("PUSHA");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
@@ -10781,7 +10782,7 @@ static C_VOID PUSHA(core_machine_cpu_execution_context *context)
 }
 static C_VOID POPA(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 cesp;
+    lib_u32 cesp;
     TYPE_TRACE_CALL_BEGIN("POPA");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
@@ -10823,8 +10824,8 @@ static C_VOID POPA(core_machine_cpu_execution_context *context)
 }
 static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context)
 {
-    type_signed_16 a16, l16, u16;
-    type_signed_32 a32, l32, u32;
+    lib_i16 a16, l16, u16;
+    lib_i32 a32, l32, u32;
     TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
@@ -10840,24 +10841,24 @@ static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context)
         {
         case 2:
             TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-            a16 = (type_signed_16)instruction_state.data.cr;
+            a16 = (lib_i16)instruction_state.data.cr;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-            l16 = (type_signed_16)instruction_state.data.crm;
+            l16 = (lib_i16)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 2;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-            u16 = (type_signed_16)instruction_state.data.crm;
+            u16 = (lib_i16)instruction_state.data.crm;
             if (a16 < l16 || a16 > u16)
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_BR(0));
             TYPE_TRACE_BLOCK_END;
             break;
         case 4:
             TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            a32 = (type_signed_32)instruction_state.data.cr;
+            a32 = (lib_i32)instruction_state.data.cr;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
-            l32 = (type_signed_32)instruction_state.data.crm;
+            l32 = (lib_i32)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 4;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
-            u32 = (type_signed_32)instruction_state.data.crm;
+            u32 = (lib_i32)instruction_state.data.crm;
             if (a32 < l32 || a32 > u32)
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_BR(0));
             TYPE_TRACE_BLOCK_END;
@@ -10932,7 +10933,7 @@ static C_VOID PREFIX_OprSize(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
-        instruction_state.data.prefix_oprsize = TYPE_TRUE;
+        instruction_state.data.prefix_oprsize = LIB_TRUE;
     }
     else
         UndefinedOpcode(context);
@@ -10944,7 +10945,7 @@ static C_VOID PREFIX_AddrSize(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
-        instruction_state.data.prefix_addrsize = TYPE_TRUE;
+        instruction_state.data.prefix_addrsize = LIB_TRUE;
     }
     else
         UndefinedOpcode(context);
@@ -10990,7 +10991,7 @@ static C_VOID PUSH_I8(core_machine_cpu_execution_context *context)
         if (instruction_state.data.flagLock)
             TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        instruction_state.data.cimm = (type_signed_8)instruction_state.data.cimm;
+        instruction_state.data.cimm = (lib_i8)instruction_state.data.cimm;
         TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(instruction_state.data.cimm), _GetOperandSize));
     }
     else
@@ -11040,7 +11041,7 @@ static C_VOID INSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -11053,7 +11054,7 @@ static C_VOID INSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -11094,7 +11095,7 @@ static C_VOID INSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -11107,7 +11108,7 @@ static C_VOID INSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -11148,7 +11149,7 @@ static C_VOID OUTSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -11161,7 +11162,7 @@ static C_VOID OUTSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -11202,7 +11203,7 @@ static C_VOID OUTSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -11215,7 +11216,7 @@ static C_VOID OUTSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -11695,7 +11696,7 @@ static C_VOID INS_81(core_machine_cpu_execution_context *context)
 }
 static C_VOID INS_83(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 bit;
+    lib_u8 bit;
     TYPE_TRACE_CALL_BEGIN("INS_83");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -12048,13 +12049,13 @@ static C_VOID MOV_SREG_RM16(core_machine_cpu_execution_context *context)
     TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg,
         TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
     if (instruction_state.data.rmovsreg->sregtype == SREG_STACK)
-        instruction_state.data.flagMaskInt = TYPE_TRUE;
+        instruction_state.data.flagMaskInt = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INS_8F(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 modrm;
-    type_unsigned_32 value;
+    lib_u8 modrm;
+    lib_u32 value;
 
     TYPE_TRACE_CALL_BEGIN("INS_8F");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
@@ -12455,10 +12456,10 @@ static C_VOID CBW(core_machine_cpu_execution_context *context)
         switch (_GetOperandSize)
         {
         case 2:
-            cpu_state.data.ax = (type_signed_8)cpu_state.data.al;
+            cpu_state.data.ax = (lib_i8)cpu_state.data.al;
             break;
         case 4:
-            cpu_state.data.eax = (type_signed_16)cpu_state.data.ax;
+            cpu_state.data.eax = (lib_i16)cpu_state.data.ax;
             break;
         default:
             TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -12468,7 +12469,7 @@ static C_VOID CBW(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        cpu_state.data.ax = (type_signed_8)cpu_state.data.al;
+        cpu_state.data.ax = (lib_i8)cpu_state.data.al;
     }
     TYPE_TRACE_CALL_END;
 }
@@ -12503,8 +12504,8 @@ static C_VOID CWD(core_machine_cpu_execution_context *context)
 }
 static C_VOID CALL_PTR16_32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 newcs;
-    type_unsigned_32 neweip;
+    lib_u16 newcs;
+    lib_u32 neweip;
     TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -12567,7 +12568,7 @@ static C_VOID WAIT(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSHF(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 ceflags;
+    lib_u32 ceflags;
     TYPE_TRACE_CALL_BEGIN("PUSHF");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -12613,8 +12614,8 @@ static C_VOID PUSHF(core_machine_cpu_execution_context *context)
 }
 static C_VOID POPF(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 mask = VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF;
-    type_unsigned_32 ceflags = TYPE_ZERO_32;
+    lib_u32 mask = VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF;
+    lib_u32 ceflags = TYPE_ZERO_32;
     TYPE_TRACE_CALL_BEGIN("POPF");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -12726,7 +12727,7 @@ static C_VOID POPF(core_machine_cpu_execution_context *context)
 }
 static C_VOID SAHF(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
+    lib_u32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                              VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF);
     TYPE_TRACE_CALL_BEGIN("SAHF");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
@@ -12875,7 +12876,7 @@ static C_VOID MOVSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -12888,7 +12889,7 @@ static C_VOID MOVSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -12911,7 +12912,7 @@ static C_VOID MOVSB(core_machine_cpu_execution_context *context)
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -12943,7 +12944,7 @@ static C_VOID MOVSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -12956,7 +12957,7 @@ static C_VOID MOVSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -12979,7 +12980,7 @@ static C_VOID MOVSW(core_machine_cpu_execution_context *context)
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13013,7 +13014,7 @@ static C_VOID CMPSB(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13028,7 +13029,7 @@ static C_VOID CMPSB(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.ecx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13053,7 +13054,7 @@ static C_VOID CMPSB(core_machine_cpu_execution_context *context)
             if (cpu_state.data.cx &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13087,7 +13088,7 @@ static C_VOID CMPSW(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13102,7 +13103,7 @@ static C_VOID CMPSW(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.ecx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13127,7 +13128,7 @@ static C_VOID CMPSW(core_machine_cpu_execution_context *context)
             if (cpu_state.data.cx &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13208,7 +13209,7 @@ static C_VOID STOSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13221,7 +13222,7 @@ static C_VOID STOSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13244,7 +13245,7 @@ static C_VOID STOSB(core_machine_cpu_execution_context *context)
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13276,7 +13277,7 @@ static C_VOID STOSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13289,7 +13290,7 @@ static C_VOID STOSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13312,7 +13313,7 @@ static C_VOID STOSW(core_machine_cpu_execution_context *context)
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13344,7 +13345,7 @@ static C_VOID LODSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13357,7 +13358,7 @@ static C_VOID LODSB(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13380,7 +13381,7 @@ static C_VOID LODSB(core_machine_cpu_execution_context *context)
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13412,7 +13413,7 @@ static C_VOID LODSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13425,7 +13426,7 @@ static C_VOID LODSW(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx)
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13448,7 +13449,7 @@ static C_VOID LODSW(core_machine_cpu_execution_context *context)
                 cpu_state.data.cx--;
             }
             if (cpu_state.data.cx)
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13482,7 +13483,7 @@ static C_VOID SCASB(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13497,7 +13498,7 @@ static C_VOID SCASB(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.ecx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13522,7 +13523,7 @@ static C_VOID SCASB(core_machine_cpu_execution_context *context)
             if (cpu_state.data.cx &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -13556,7 +13557,7 @@ static C_VOID SCASW(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
@@ -13571,7 +13572,7 @@ static C_VOID SCASW(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.ecx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = TYPE_TRUE;
+                    instruction_state.data.flagInsLoop = LIB_TRUE;
                 TYPE_TRACE_BLOCK_END;
                 break;
             default:
@@ -13596,7 +13597,7 @@ static C_VOID SCASW(core_machine_cpu_execution_context *context)
             if (cpu_state.data.cx &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                 !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = TYPE_TRUE;
+                instruction_state.data.flagInsLoop = LIB_TRUE;
         }
     }
     TYPE_TRACE_CALL_END;
@@ -14118,8 +14119,8 @@ static C_VOID RET(core_machine_cpu_execution_context *context)
 }
 static C_VOID LES_R32_M16_32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 selector;
-    type_unsigned_32 offset;
+    lib_u16 selector;
+    lib_u32 offset;
     TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -14159,8 +14160,8 @@ static C_VOID LES_R32_M16_32(core_machine_cpu_execution_context *context)
 }
 static C_VOID LDS_R32_M16_32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 selector;
-    type_unsigned_32 offset;
+    lib_u16 selector;
+    lib_u32 offset;
     TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -14373,19 +14374,19 @@ static C_VOID INS_C7(core_machine_cpu_execution_context *context)
 }
 static C_VOID ENTER(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 data = 0;
-    type_unsigned_32 temp = 0;
+    lib_u32 data = 0;
+    lib_u32 temp = 0;
     type_native_unsigned i = 0;
-    type_unsigned_16 size = TYPE_ZERO_16;
-    type_unsigned_8 level = TYPE_ZERO_8;
+    lib_u16 size = TYPE_ZERO_16;
+    lib_u8 level = TYPE_ZERO_8;
     TYPE_TRACE_CALL_BEGIN("ENTER");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-        size = (type_unsigned_16)instruction_state.data.cimm;
+        size = (lib_u16)instruction_state.data.cimm;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        level = (type_unsigned_8)instruction_state.data.cimm;
+        level = (lib_u8)instruction_state.data.cimm;
         /* The 80186 defines the byte as an unsigned lexical level through
          * 255.  The later 80286/80386 architecture limits it to 0--31. */
         if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
@@ -14537,7 +14538,7 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context)
 }
 static C_VOID LEAVE(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 stack = TYPE_ZERO_32;
+    lib_u32 stack = TYPE_ZERO_32;
     TYPE_TRACE_CALL_BEGIN("LEAVE");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
@@ -14651,13 +14652,13 @@ static C_VOID INT_I8(core_machine_cpu_execution_context *context)
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         TYPE_TRACE_CHECK_RETURN(_e_int_n(context,
-            (type_unsigned_8)instruction_state.data.cimm, _GetOperandSize));
+            (lib_u8)instruction_state.data.cimm, _GetOperandSize));
     }
     else
     {
         cpu_state.data.ip++;
         _d_imm(context, 1);
-        _e_int_n(context, (type_unsigned_8)instruction_state.data.cimm, 2);
+        _e_int_n(context, (lib_u8)instruction_state.data.cimm, 2);
     }
     TYPE_TRACE_CALL_END;
 }
@@ -15047,7 +15048,7 @@ static C_VOID INS_D3(core_machine_cpu_execution_context *context)
 }
 static C_VOID AAM(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 base;
+    lib_u8 base;
     TYPE_TRACE_CALL_BEGIN("AAM");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -15075,7 +15076,7 @@ static C_VOID AAM(core_machine_cpu_execution_context *context)
 }
 static C_VOID AAD(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 base;
+    lib_u8 base;
     TYPE_TRACE_CALL_BEGIN("AAD");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -15138,7 +15139,7 @@ static C_VOID LOOPNZ_REL8(core_machine_cpu_execution_context *context)
         cpu_state.data.ip++;
     }
     TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
-    TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (type_signed_8)instruction_state.data.cimm, !_GetEFLAGS_ZF));
+    TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, !_GetEFLAGS_ZF));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID LOOPZ_REL8(core_machine_cpu_execution_context *context)
@@ -15153,7 +15154,7 @@ static C_VOID LOOPZ_REL8(core_machine_cpu_execution_context *context)
         cpu_state.data.ip++;
     }
     TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
-    TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (type_signed_8)instruction_state.data.cimm, _GetEFLAGS_ZF));
+    TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, _GetEFLAGS_ZF));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID LOOP_REL8(core_machine_cpu_execution_context *context)
@@ -15168,12 +15169,12 @@ static C_VOID LOOP_REL8(core_machine_cpu_execution_context *context)
         cpu_state.data.ip++;
     }
     TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
-    TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (type_signed_8)instruction_state.data.cimm, 1));
+    TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (lib_i8)instruction_state.data.cimm, 1));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JCXZ_REL8(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 cecx = 0x00000000;
+    lib_u32 cecx = 0x00000000;
     TYPE_TRACE_CALL_BEGIN("JCXZ_REL8");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -15310,14 +15311,14 @@ static C_VOID CALL_REL32(core_machine_cpu_execution_context *context)
         case 2:
             TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-            TYPE_TRACE_CHECK_RETURN(_e_call_near(context, TYPE_MASK_UNSIGNED_16(cpu_state.data.ip + (type_signed_16)instruction_state.data.cimm), 2));
+            TYPE_TRACE_CHECK_RETURN(_e_call_near(context, TYPE_MASK_UNSIGNED_16(cpu_state.data.ip + (lib_i16)instruction_state.data.cimm), 2));
             TYPE_TRACE_BLOCK_END;
             break;
         case 4:
             TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
-            TYPE_TRACE_CHECK_RETURN(_e_call_near(context, TYPE_MASK_UNSIGNED_32(cpu_state.data.eip + (type_signed_32)instruction_state.data.cimm), 4));
+            TYPE_TRACE_CHECK_RETURN(_e_call_near(context, TYPE_MASK_UNSIGNED_32(cpu_state.data.eip + (lib_i32)instruction_state.data.cimm), 4));
             TYPE_TRACE_BLOCK_END;
             break;
         default:
@@ -15331,7 +15332,7 @@ static C_VOID CALL_REL32(core_machine_cpu_execution_context *context)
     {
         cpu_state.data.ip++;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-        TYPE_TRACE_CHECK_RETURN(_e_call_near(context, TYPE_MASK_UNSIGNED_16(cpu_state.data.ip + (type_signed_16)instruction_state.data.cimm), 2));
+        TYPE_TRACE_CHECK_RETURN(_e_call_near(context, TYPE_MASK_UNSIGNED_16(cpu_state.data.ip + (lib_i16)instruction_state.data.cimm), 2));
     }
     TYPE_TRACE_CALL_END;
 }
@@ -15354,8 +15355,8 @@ static C_VOID JMP_REL32(core_machine_cpu_execution_context *context)
 }
 static C_VOID JMP_PTR16_32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 newcs = 0x0000;
-    type_unsigned_32 neweip = 0x00000000;
+    lib_u16 newcs = 0x0000;
+    lib_u32 neweip = 0x00000000;
     TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -15365,18 +15366,18 @@ static C_VOID JMP_PTR16_32(core_machine_cpu_execution_context *context)
         case 2:
             TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-            neweip = (type_unsigned_16)instruction_state.data.cimm;
+            neweip = (lib_u16)instruction_state.data.cimm;
             TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-            newcs = (type_unsigned_16)instruction_state.data.cimm;
+            newcs = (lib_u16)instruction_state.data.cimm;
             TYPE_TRACE_BLOCK_END;
             break;
         case 4:
             TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
-            neweip = (type_unsigned_32)instruction_state.data.cimm;
+            neweip = (lib_u32)instruction_state.data.cimm;
             TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-            newcs = (type_unsigned_16)instruction_state.data.cimm;
+            newcs = (lib_u16)instruction_state.data.cimm;
             TYPE_TRACE_BLOCK_END;
             break;
         default:
@@ -15389,9 +15390,9 @@ static C_VOID JMP_PTR16_32(core_machine_cpu_execution_context *context)
     {
         cpu_state.data.ip++;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-        neweip = (type_unsigned_16)instruction_state.data.cimm;
+        neweip = (lib_u16)instruction_state.data.cimm;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
-        newcs = (type_unsigned_16)instruction_state.data.cimm;
+        newcs = (lib_u16)instruction_state.data.cimm;
         TYPE_TRACE_CHECK_RETURN(_e_jmp_far(context, newcs, neweip, 2));
     }
     TYPE_TRACE_CALL_END;
@@ -15503,10 +15504,10 @@ static C_VOID OUT_DX_EAX(core_machine_cpu_execution_context *context)
 }
 static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 opcode = 0x00;
-    type_unsigned_8 modrm = 0x00;
-    type_unsigned_8 opcode_0f = 0x00;
-    type_unsigned_32 ceip = cpu_state.data.eip;
+    lib_u8 opcode = 0x00;
+    lib_u8 modrm = 0x00;
+    lib_u8 opcode_0f = 0x00;
+    lib_u32 ceip = cpu_state.data.eip;
     TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -15539,7 +15540,7 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
             TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip,
                 TYPE_REFERENCE_OF(modrm), 1));
             if (_GetModRM_REG(modrm) <= 1u)
-                instruction_state.data.flagLock = TYPE_TRUE;
+                instruction_state.data.flagLock = LIB_TRUE;
             else
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
             TYPE_TRACE_BLOCK_END;
@@ -15550,7 +15551,7 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
             TYPE_TRACE_BLOCK_BEGIN("opcode(0x80/0x81/0x83)");
             TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, TYPE_REFERENCE_OF(modrm), 1));
             if (_GetModRM_REG(modrm) != 7)
-                instruction_state.data.flagLock = TYPE_TRUE;
+                instruction_state.data.flagLock = LIB_TRUE;
             else
             {
                 TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
@@ -15567,14 +15568,14 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
             case 0xab: /* BTS */
             case 0xb3: /* BTR */
             case 0xbb: /* BTC */
-                instruction_state.data.flagLock = TYPE_TRUE;
+                instruction_state.data.flagLock = LIB_TRUE;
                 break;
             case 0xba:
                 TYPE_TRACE_BLOCK_BEGIN("opcode_0f(0xba)");
                 TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip + 1u,
                     TYPE_REFERENCE_OF(modrm), 1));
                 if (_GetModRM_REG(modrm) >= 5u)
-                    instruction_state.data.flagLock = TYPE_TRUE;
+                    instruction_state.data.flagLock = LIB_TRUE;
                 else
                     TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
                 TYPE_TRACE_BLOCK_END;
@@ -15593,7 +15594,7 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
             TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip,
                 TYPE_REFERENCE_OF(modrm), 1));
             if (_GetModRM_REG(modrm) == 2u || _GetModRM_REG(modrm) == 3u)
-                instruction_state.data.flagLock = TYPE_TRUE;
+                instruction_state.data.flagLock = LIB_TRUE;
             else
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
             TYPE_TRACE_BLOCK_END;
@@ -15603,7 +15604,7 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
             TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip,
                 TYPE_REFERENCE_OF(modrm), 1));
             if (_GetModRM_REG(modrm) <= 1u)
-                instruction_state.data.flagLock = TYPE_TRUE;
+                instruction_state.data.flagLock = LIB_TRUE;
             else
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
             TYPE_TRACE_BLOCK_END;
@@ -15622,7 +15623,7 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
          * in protected mode; it does not use the later 80386 opcode whitelist.
          */
         if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
-            _IsProtected && _GetCPL > (type_unsigned_8)_GetEFLAGS_IOPL)
+            _IsProtected && _GetCPL > (lib_u8)_GetEFLAGS_IOPL)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         else
             _adv;
@@ -15670,7 +15671,7 @@ static C_VOID HLT(core_machine_cpu_execution_context *context)
         TYPE_TRACE_BLOCK_END;
     }
     _adv;
-    cpu_state.data.flagHalt = TYPE_TRUE;
+    cpu_state.data.flagHalt = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID CMC(core_machine_cpu_execution_context *context)
@@ -15919,7 +15920,7 @@ static C_VOID CLI(core_machine_cpu_execution_context *context)
             if (!_GetEFLAGS_VM)
             {
                 TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(0)");
-                if (_GetCPL <= (type_unsigned_8)(_GetEFLAGS_IOPL))
+                if (_GetCPL <= (lib_u8)(_GetEFLAGS_IOPL))
                     _ClrEFLAGS_IF;
                 else
                     TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
@@ -15959,7 +15960,7 @@ static C_VOID STI(core_machine_cpu_execution_context *context)
             if (!_GetEFLAGS_VM)
             {
                 TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(0)");
-                if (_GetCPL <= (type_unsigned_8)(_GetEFLAGS_IOPL))
+                if (_GetCPL <= (lib_u8)(_GetEFLAGS_IOPL))
                     _SetEFLAGS_IF;
                 else
                     TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
@@ -15982,7 +15983,7 @@ static C_VOID STI(core_machine_cpu_execution_context *context)
         cpu_state.data.ip++;
         _SetEFLAGS_IF;
     }
-    instruction_state.data.flagMaskInt = TYPE_TRUE;
+    instruction_state.data.flagMaskInt = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID CLD(core_machine_cpu_execution_context *context)
@@ -16082,9 +16083,9 @@ static C_VOID INS_FE(core_machine_cpu_execution_context *context)
 }
 static C_VOID INS_FF(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 modrm;
-    type_unsigned_16 newcs;
-    type_unsigned_32 neweip;
+    lib_u8 modrm;
+    lib_u16 newcs;
+    lib_u32 neweip;
     TYPE_TRACE_CALL_BEGIN("INS_FF");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -16130,7 +16131,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
                 TYPE_TRACE_BLOCK_END;
             }
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
-            neweip = (type_unsigned_32)instruction_state.data.crm;
+            neweip = (lib_u32)instruction_state.data.crm;
             instruction_state.data.mrm.offset += _GetOperandSize;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
             newcs = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
@@ -16157,7 +16158,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
                 TYPE_TRACE_BLOCK_END;
             }
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
-            neweip = (type_unsigned_32)instruction_state.data.crm;
+            neweip = (lib_u32)instruction_state.data.crm;
             instruction_state.data.mrm.offset += _GetOperandSize;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
             newcs = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
@@ -16227,7 +16228,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
                 TYPE_TRACE_BLOCK_END;
             }
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-            neweip = (type_unsigned_16)instruction_state.data.crm;
+            neweip = (lib_u16)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 2;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
             newcs = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
@@ -16254,7 +16255,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
                 TYPE_TRACE_BLOCK_END;
             }
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-            neweip = (type_unsigned_16)instruction_state.data.crm;
+            neweip = (lib_u16)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 2;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
             newcs = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
@@ -16447,12 +16448,12 @@ static C_VOID _d_modrm_treg(core_machine_cpu_execution_context *context)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte, type_bool write)
+static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, lib_u8 regbyte, lib_u8 rmbyte, type_bool write)
 {
     /* xrm = actual destination, cimm = (1 << bitoffset) */
-    type_signed_16 bitoff16 = 0;
-    type_signed_32 bitoff32 = 0;
-    type_unsigned_32 bitoperand = 0;
+    lib_i16 bitoff16 = 0;
+    lib_i32 bitoff32 = 0;
+    lib_u32 bitoperand = 0;
     TYPE_TRACE_CALL_BEGIN("_d_bit_rmimm");
     TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
     if (!regbyte)
@@ -16465,12 +16466,12 @@ static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, type_uns
         {
             /* valid for btcc_m16_r16 */
             TYPE_TRACE_BLOCK_BEGIN("flagMem(1),regbyte(1)");
-            bitoff16 = (type_signed_16)instruction_state.data.cr;
+            bitoff16 = (lib_i16)instruction_state.data.cr;
             if (bitoff16 >= 0)
                 instruction_state.data.mrm.offset += 2 * (bitoff16 / 16);
             else
                 instruction_state.data.mrm.offset += 2 * ((bitoff16 - 15) / 16);
-            bitoperand = ((type_unsigned_16)bitoff16) % 16;
+            bitoperand = ((lib_u16)bitoff16) % 16;
             TYPE_TRACE_BLOCK_END;
         }
         else if (regbyte)
@@ -16492,12 +16493,12 @@ static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, type_uns
         if (instruction_state.data.flagMem && regbyte)
         {
             TYPE_TRACE_BLOCK_BEGIN("flagMem(1),regbyte(1)");
-            bitoff32 = (type_signed_32)instruction_state.data.cr;
+            bitoff32 = (lib_i32)instruction_state.data.cr;
             if (bitoff32 >= 0)
                 instruction_state.data.mrm.offset += 4 * (bitoff32 / 32);
             else
                 instruction_state.data.mrm.offset += 4 * ((bitoff32 - 31) / 32);
-            bitoperand = ((type_unsigned_32)bitoff32) % 32;
+            bitoperand = ((lib_u32)bitoff32) % 32;
             TYPE_TRACE_BLOCK_END;
         }
         else if (regbyte)
@@ -16548,9 +16549,9 @@ static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, type_uns
         TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, TYPE_GET_BIT(instruction_state.data.opr1, instruction_state.data.opr2)); \
     } while (0)
 
-static C_VOID _a_bscc(core_machine_cpu_execution_context *context, type_unsigned_64 csrc, type_unsigned_8 bit, type_bool forward)
+static C_VOID _a_bscc(core_machine_cpu_execution_context *context, lib_u64 csrc, lib_u8 bit, type_bool forward)
 {
-    type_unsigned_32 temp;
+    lib_u32 temp;
     TYPE_TRACE_CALL_BEGIN("_a_bscc");
     if (forward)
         temp = 0;
@@ -16604,27 +16605,27 @@ static C_VOID _a_bscc(core_machine_cpu_execution_context *context, type_unsigned
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_bt(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_32 bitoperand, type_unsigned_8 bit)
+static C_VOID _a_bt(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u32 bitoperand, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_bt");
     _kac_btcc;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_btc(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_32 bitoperand, type_unsigned_8 bit)
+static C_VOID _a_btc(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u32 bitoperand, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_btc");
     _kac_btcc;
     TYPE_MAKE_BIT(instruction_state.data.result, instruction_state.data.opr2, !_GetEFLAGS_CF);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_btr(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_32 bitoperand, type_unsigned_8 bit)
+static C_VOID _a_btr(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u32 bitoperand, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_btr");
     _kac_btcc;
     TYPE_CLEAR_BIT(instruction_state.data.result, instruction_state.data.opr2);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_bts(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_32 bitoperand, type_unsigned_8 bit)
+static C_VOID _a_bts(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u32 bitoperand, lib_u8 bit)
 {
     TYPE_TRACE_CALL_BEGIN("_a_bts");
     _kac_btcc;
@@ -16632,9 +16633,9 @@ static C_VOID _a_bts(core_machine_cpu_execution_context *context, type_unsigned_
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _a_imul2(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 bit)
+static C_VOID _a_imul2(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 bit)
 {
-    type_unsigned_64 temp;
+    lib_u64 temp;
     TYPE_TRACE_CALL_BEGIN("_a_imul2");
     switch (bit)
     {
@@ -16642,11 +16643,11 @@ static C_VOID _a_imul2(core_machine_cpu_execution_context *context, type_unsigne
         TYPE_TRACE_BLOCK_BEGIN("bit(16+16)");
         _new_code_path_;
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16((type_signed_16)cdest);
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((type_signed_16)csrc);
-        temp = TYPE_MASK_UNSIGNED_32((type_signed_16)instruction_state.data.opr1 * (type_signed_16)instruction_state.data.opr2);
+        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16((lib_i16)cdest);
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_16((lib_i16)csrc);
+        temp = TYPE_MASK_UNSIGNED_32((lib_i16)instruction_state.data.opr1 * (lib_i16)instruction_state.data.opr2);
         instruction_state.data.result = TYPE_MASK_UNSIGNED_16(temp);
-        if (TYPE_MASK_UNSIGNED_32(temp) != TYPE_MASK_UNSIGNED_32((type_signed_16)instruction_state.data.result))
+        if (TYPE_MASK_UNSIGNED_32(temp) != TYPE_MASK_UNSIGNED_32((lib_i16)instruction_state.data.result))
         {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
@@ -16662,12 +16663,12 @@ static C_VOID _a_imul2(core_machine_cpu_execution_context *context, type_unsigne
         TYPE_TRACE_BLOCK_BEGIN("bit(32+32");
         _new_code_path_;
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32((type_signed_32)cdest);
-        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((type_signed_32)csrc);
-        temp = TYPE_MASK_UNSIGNED_64((type_signed_64)(type_signed_32)instruction_state.data.opr1 *
-                                     (type_signed_64)(type_signed_32)instruction_state.data.opr2);
+        instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32((lib_i32)cdest);
+        instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((lib_i32)csrc);
+        temp = TYPE_MASK_UNSIGNED_64((lib_i64)(lib_i32)instruction_state.data.opr1 *
+                                     (lib_i64)(lib_i32)instruction_state.data.opr2);
         instruction_state.data.result = TYPE_MASK_UNSIGNED_32(temp);
-        if (TYPE_MASK_UNSIGNED_64(temp) != TYPE_MASK_UNSIGNED_64((type_signed_32)instruction_state.data.result))
+        if (TYPE_MASK_UNSIGNED_64(temp) != TYPE_MASK_UNSIGNED_64((lib_i32)instruction_state.data.result))
         {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
@@ -16687,11 +16688,11 @@ static C_VOID _a_imul2(core_machine_cpu_execution_context *context, type_unsigne
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_shld(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 count, type_unsigned_8 bit)
+static C_VOID _a_shld(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 count, lib_u8 bit)
 {
     type_bool flagcf;
     type_bool flagbit;
-    type_signed_32 i;
+    lib_i32 i;
     TYPE_TRACE_CALL_BEGIN("_a_shld");
     count &= 0x1f;
     if (!count)
@@ -16720,12 +16721,12 @@ static C_VOID _a_shld(core_machine_cpu_execution_context *context, type_unsigned
             flagcf = !!TYPE_GET_MSB_16(instruction_state.data.result);
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           TYPE_GET_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << (bit - count))));
-            for (i = (type_signed_32)(bit - 1); i >= (type_signed_32)count; --i)
+            for (i = (lib_i32)(bit - 1); i >= (lib_i32)count; --i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr1, TYPE_MASK_UNSIGNED_64(1 << (i - count)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (type_signed_32)(count - 1); i >= 0; --i)
+            for (i = (lib_i32)(count - 1); i >= 0; --i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr2, TYPE_MASK_UNSIGNED_64(1 << (i - count + bit)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
@@ -16746,12 +16747,12 @@ static C_VOID _a_shld(core_machine_cpu_execution_context *context, type_unsigned
             flagcf = !!TYPE_GET_MSB_32(instruction_state.data.result);
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           TYPE_GET_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << (bit - count))));
-            for (i = (type_signed_32)(bit - 1); i >= (type_signed_32)count; --i)
+            for (i = (lib_i32)(bit - 1); i >= (lib_i32)count; --i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr1, TYPE_MASK_UNSIGNED_64(1 << (i - count)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (type_signed_32)(count - 1); i >= 0; --i)
+            for (i = (lib_i32)(count - 1); i >= 0; --i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr2, TYPE_MASK_UNSIGNED_64(1 << (i - count + bit)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
@@ -16774,11 +16775,11 @@ static C_VOID _a_shld(core_machine_cpu_execution_context *context, type_unsigned
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _a_shrd(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_64 csrc, type_unsigned_8 count, type_unsigned_8 bit)
+static C_VOID _a_shrd(core_machine_cpu_execution_context *context, lib_u64 cdest, lib_u64 csrc, lib_u8 count, lib_u8 bit)
 {
     type_bool flagcf;
     type_bool flagbit;
-    type_signed_32 i;
+    lib_i32 i;
     TYPE_TRACE_CALL_BEGIN("_a_shrd");
     count &= 0x1f;
     if (!count)
@@ -16807,12 +16808,12 @@ static C_VOID _a_shrd(core_machine_cpu_execution_context *context, type_unsigned
             flagcf = !!TYPE_GET_MSB_16(instruction_state.data.result);
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           TYPE_GET_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << (count - 1))));
-            for (i = 0; i <= (type_signed_32)(bit - count - 1); ++i)
+            for (i = 0; i <= (lib_i32)(bit - count - 1); ++i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr1, TYPE_MASK_UNSIGNED_64(1 << (i + count)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (type_signed_32)(bit - count); i <= (type_signed_32)(bit - 1); ++i)
+            for (i = (lib_i32)(bit - count); i <= (lib_i32)(bit - 1); ++i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr2, TYPE_MASK_UNSIGNED_64(1 << (i + count - bit)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
@@ -16833,12 +16834,12 @@ static C_VOID _a_shrd(core_machine_cpu_execution_context *context, type_unsigned
             flagcf = !!TYPE_GET_MSB_32(instruction_state.data.result);
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                           TYPE_GET_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << (count - 1))));
-            for (i = 0; i <= (type_signed_32)(bit - count - 1); ++i)
+            for (i = 0; i <= (lib_i32)(bit - count - 1); ++i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr1, TYPE_MASK_UNSIGNED_64(1 << (i + count)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (type_signed_32)(bit - count); i <= (type_signed_32)(bit - 1); ++i)
+            for (i = (lib_i32)(bit - count); i <= (lib_i32)(bit - 1); ++i)
             {
                 flagbit = TYPE_GET_BIT(instruction_state.data.opr2, TYPE_MASK_UNSIGNED_64(1 << (i + count - bit)));
                 TYPE_MAKE_BIT(instruction_state.data.result, TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
@@ -16873,8 +16874,8 @@ static C_VOID _m_setcc_rm(core_machine_cpu_execution_context *context, type_bool
 
 static C_VOID INS_0F_00(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 modrm;
-    type_unsigned_64 descriptor;
+    lib_u8 modrm;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _adv;
     if (_IsProtected)
@@ -17005,9 +17006,9 @@ static C_VOID INS_0F_00(core_machine_cpu_execution_context *context)
 }
 static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 modrm;
-    type_unsigned_16 limit;
-    type_unsigned_32 base;
+    lib_u8 modrm;
+    lib_u16 limit;
+    lib_u32 base;
     TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _adv;
     TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, TYPE_REFERENCE_OF(modrm), 1));
@@ -17111,8 +17112,8 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
 }
 static C_VOID LAR_R32_RM32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 selector;
-    type_unsigned_64 descriptor;
+    lib_u16 selector;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _adv;
     if (_IsProtected)
@@ -17203,9 +17204,9 @@ static C_VOID LAR_R32_RM32(core_machine_cpu_execution_context *context)
 }
 static C_VOID LSL_R32_RM32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 selector;
-    type_unsigned_32 limit;
-    type_unsigned_64 descriptor;
+    lib_u16 selector;
+    lib_u32 limit;
+    lib_u64 descriptor;
     TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _adv;
     if (_IsProtected)
@@ -17261,7 +17262,7 @@ static C_VOID LSL_R32_RM32(core_machine_cpu_execution_context *context)
                 TYPE_TRACE_BLOCK_BEGIN("EFLAGS_ZF");
                 limit = _IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : _GetDescSeg_Limit(descriptor);
                 if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                    instruction_state.data.source_lsl_granularity_valid = TYPE_TRUE;
+                    instruction_state.data.source_lsl_granularity_valid = LIB_TRUE;
                     instruction_state.data.source_lsl_page_granular =
                         _IsDescSegGranularLarge(descriptor);
                 }
@@ -17319,7 +17320,7 @@ _______todo WBINVD(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("WBINVD");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = TYPE_TRUE;
+    instruction_state.data.flagIgnore = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_R32_CR(core_machine_cpu_execution_context *context)
@@ -17437,14 +17438,14 @@ _______todo WRMSR(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("WRMSR");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = TYPE_TRUE;
+    instruction_state.data.flagIgnore = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 _______todo RDMSR(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("RDMSR");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = TYPE_TRUE;
+    instruction_state.data.flagIgnore = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JO_REL32(core_machine_cpu_execution_context *context)
@@ -17738,7 +17739,7 @@ static C_VOID SETG_RM8(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSH_FS(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 xs_sel;
+    lib_u32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("PUSH_FS");
     _adv;
     xs_sel = cpu_state.data.fs.selector;
@@ -17757,7 +17758,7 @@ _______todo CPUID(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("CPUID");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = TYPE_TRUE;
+    instruction_state.data.flagIgnore = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID BT_RM32_R32(core_machine_cpu_execution_context *context)
@@ -17766,7 +17767,7 @@ static C_VOID BT_RM32_R32(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 0));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_a_bt(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+    TYPE_TRACE_CHECK_RETURN(_a_bt(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context)
@@ -17800,7 +17801,7 @@ static C_VOID SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context)
 }
 static C_VOID PUSH_GS(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 xs_sel;
+    lib_u32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("PUSH_GS");
     _adv;
     xs_sel = cpu_state.data.gs.selector;
@@ -17819,7 +17820,7 @@ _______todo RSM(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("RSM");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = TYPE_TRUE;
+    instruction_state.data.flagIgnore = LIB_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID BTS_RM32_R32(core_machine_cpu_execution_context *context)
@@ -17828,7 +17829,7 @@ static C_VOID BTS_RM32_R32(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_a_bts(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+    TYPE_TRACE_CHECK_RETURN(_a_bts(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     TYPE_TRACE_CALL_END;
@@ -17874,8 +17875,8 @@ static C_VOID IMUL_R32_RM32(core_machine_cpu_execution_context *context)
 }
 static C_VOID LSS_R32_M16_32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 selector;
-    type_unsigned_32 offset;
+    lib_u16 selector;
+    lib_u32 offset;
     TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
@@ -17905,15 +17906,15 @@ static C_VOID BTR_RM32_R32(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_a_btr(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+    TYPE_TRACE_CHECK_RETURN(_a_btr(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID LFS_R32_M16_32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 selector;
-    type_unsigned_32 offset;
+    lib_u16 selector;
+    lib_u32 offset;
     TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
@@ -17939,8 +17940,8 @@ static C_VOID LFS_R32_M16_32(core_machine_cpu_execution_context *context)
 }
 static C_VOID LGS_R32_M16_32(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_16 selector;
-    type_unsigned_32 offset;
+    lib_u16 selector;
+    lib_u32 offset;
     TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _new_code_path_;
     _adv;
@@ -17971,7 +17972,7 @@ static C_VOID MOVZX_R32_RM8(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 1));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
-    instruction_state.data.crm = (type_unsigned_8)instruction_state.data.crm;
+    instruction_state.data.crm = (lib_u8)instruction_state.data.crm;
     TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
@@ -17981,14 +17982,14 @@ static C_VOID MOVZX_R32_RM16(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 2));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-    instruction_state.data.crm = (type_unsigned_16)instruction_state.data.crm;
+    instruction_state.data.crm = (lib_u16)instruction_state.data.crm;
     TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INS_0F_BA(core_machine_cpu_execution_context *context)
 {
     type_bool write = 0;
-    type_unsigned_8 modrm = 0x00;
+    lib_u8 modrm = 0x00;
     TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _new_code_path_;
     _adv;
@@ -18023,26 +18024,26 @@ static C_VOID INS_0F_BA(core_machine_cpu_execution_context *context)
         break;
     case 4: /* BT_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("BT_RM32_I8");
-        TYPE_TRACE_CHECK_RETURN(_a_bt(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+        TYPE_TRACE_CHECK_RETURN(_a_bt(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
         TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* BTS_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("BTS_RM32_I8");
-        TYPE_TRACE_CHECK_RETURN(_a_bts(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+        TYPE_TRACE_CHECK_RETURN(_a_bts(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
         TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* BTR_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("BTR_RM32_I8");
-        TYPE_TRACE_CHECK_RETURN(_a_btr(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+        TYPE_TRACE_CHECK_RETURN(_a_btr(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
         TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* BTC_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("BTC_RM32_I8");
-        TYPE_TRACE_CHECK_RETURN(_a_btc(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+        TYPE_TRACE_CHECK_RETURN(_a_btc(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
         TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
         TYPE_TRACE_BLOCK_END;
@@ -18060,7 +18061,7 @@ static C_VOID BTC_RM32_R32(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_a_btc(context, (type_unsigned_32)instruction_state.data.crm, (type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+    TYPE_TRACE_CHECK_RETURN(_a_btc(context, (lib_u32)instruction_state.data.crm, (lib_u32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
     TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     TYPE_TRACE_CALL_END;
@@ -18103,7 +18104,7 @@ static C_VOID MOVSX_R32_RM8(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 1));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
-    instruction_state.data.crm = (type_signed_8)instruction_state.data.crm;
+    instruction_state.data.crm = (lib_i8)instruction_state.data.crm;
     TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
@@ -18113,7 +18114,7 @@ static C_VOID MOVSX_R32_RM16(core_machine_cpu_execution_context *context)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 2));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-    instruction_state.data.crm = (type_signed_16)instruction_state.data.crm;
+    instruction_state.data.crm = (lib_i16)instruction_state.data.crm;
     TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
@@ -18122,9 +18123,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context);
 
 static C_VOID ExecInit(core_machine_cpu_execution_context *context)
 {
-    instruction_state.data.flagIgnore = TYPE_FALSE;
+    instruction_state.data.flagIgnore = LIB_FALSE;
     instruction_state.data.msize = 0;
-    instruction_state.data.watch_hit = TYPE_FALSE;
+    instruction_state.data.watch_hit = LIB_FALSE;
     instruction_state.data.reccs = cpu_state.data.cs.selector;
     instruction_state.data.receip = cpu_state.data.eip;
     instruction_state.data.linear = cpu_state.data.cs.base + cpu_state.data.eip;
@@ -18136,13 +18137,13 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     if (!context->prefetch_valid || instruction_state.data.linear <
         context->prefetch_linear || instruction_state.data.linear -
         context->prefetch_linear >= context->prefetch_count) {
-        type_unsigned_8 prefetch_bytes = context->prefetch_capacity;
+        lib_u8 prefetch_bytes = context->prefetch_capacity;
 
         core_machine_cpu_execution_invalidate_prefetch(context);
         if (cpu_state.data.eip <= cpu_state.data.cs.limit &&
-            (type_unsigned_64)cpu_state.data.cs.limit - cpu_state.data.eip + 1u <
+            (lib_u64)cpu_state.data.cs.limit - cpu_state.data.eip + 1u <
                 prefetch_bytes) {
-            prefetch_bytes = (type_unsigned_8)((type_unsigned_64)
+            prefetch_bytes = (lib_u8)((lib_u64)
                 cpu_state.data.cs.limit - cpu_state.data.eip + 1u);
         }
         context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
@@ -18153,16 +18154,16 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
         if (!instruction_state.data.except) {
             context->prefetch_linear = instruction_state.data.linear;
             context->prefetch_count = prefetch_bytes;
-            context->prefetch_valid = TYPE_TRUE;
+            context->prefetch_valid = LIB_TRUE;
         }
     }
     if (context->prefetch_valid && instruction_state.data.linear >=
         context->prefetch_linear && instruction_state.data.linear -
         context->prefetch_linear < context->prefetch_count) {
-        type_unsigned_8 available = context->prefetch_count -
-            (type_unsigned_8)(instruction_state.data.linear - context->prefetch_linear);
-        STD_MEMSET(instruction_state.data.opcodes, 0, 15u);
-        STD_MEMCPY(instruction_state.data.opcodes, context->prefetch_bytes +
+        lib_u8 available = context->prefetch_count -
+            (lib_u8)(instruction_state.data.linear - context->prefetch_linear);
+        lib_memory_set(instruction_state.data.opcodes, 0, 15u);
+        lib_memory_copy(instruction_state.data.opcodes, context->prefetch_bytes +
             (instruction_state.data.linear - context->prefetch_linear), available);
     }
     if (instruction_state.data.except) {
@@ -18173,28 +18174,28 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
         instruction_state.data.oplen = 15;
     }
 
-    instruction_state.data.flagLock = TYPE_FALSE;
+    instruction_state.data.flagLock = LIB_FALSE;
     instruction_state.data.roverds = &cpu_state.data.ds;
     instruction_state.data.roverss = &cpu_state.data.ss;
     instruction_state.data.prefix_rep = PREFIX_REP_NONE;
-    instruction_state.data.prefix_oprsize = TYPE_FALSE;
-    instruction_state.data.prefix_addrsize = TYPE_FALSE;
-    instruction_state.data.flagMem = TYPE_FALSE;
-    instruction_state.data.source_lsl_granularity_valid = TYPE_FALSE;
-    instruction_state.data.source_lsl_page_granular = TYPE_FALSE;
-    instruction_state.data.flagInsLoop = TYPE_FALSE;
-    instruction_state.data.flagMaskInt = TYPE_FALSE;
+    instruction_state.data.prefix_oprsize = LIB_FALSE;
+    instruction_state.data.prefix_addrsize = LIB_FALSE;
+    instruction_state.data.flagMem = LIB_FALSE;
+    instruction_state.data.source_lsl_granularity_valid = LIB_FALSE;
+    instruction_state.data.source_lsl_page_granular = LIB_FALSE;
+    instruction_state.data.flagInsLoop = LIB_FALSE;
+    instruction_state.data.flagMaskInt = LIB_FALSE;
     instruction_state.data.bit = 0;
     instruction_state.data.opr1 = 0;
     instruction_state.data.opr2 = 0;
     instruction_state.data.result = 0;
     instruction_state.data.udf = TYPE_ZERO_32;
-    instruction_state.data.mrm.rsreg = STD_NULL;
+    instruction_state.data.mrm.rsreg = LIB_NULL;
     instruction_state.data.mrm.offset = TYPE_ZERO_32;
     context->debug_tf_before = _GetEFLAGS_TF;
     context->debug_rf_before = _GetEFLAGS_RF;
-    if (context->diagnostic_provider != STD_NULL &&
-        context->diagnostic_provider->record_instruction != STD_NULL)
+    if (context->diagnostic_provider != LIB_NULL &&
+        context->diagnostic_provider->record_instruction != LIB_NULL)
     {
         context->diagnostic_provider->record_instruction(context->diagnostic_context,
                                                          &cpu_state, &instruction_state);
@@ -18209,31 +18210,31 @@ type_bool core_machine_cpu_execution_preview_lexeme(
     t_cpu preview_cpu;
     t_cpuins preview_instructions;
 
-    if (out_lexeme == STD_NULL) return TYPE_FALSE;
-    *out_lexeme = (core_machine_cpu_instruction_lexeme) { 0u, 0u, TYPE_FALSE };
-    if (context == STD_NULL || context->cpu == STD_NULL ||
-        context->instructions == STD_NULL || context->memory == STD_NULL) {
-        return TYPE_FALSE;
+    if (out_lexeme == LIB_NULL) return LIB_FALSE;
+    *out_lexeme = (core_machine_cpu_instruction_lexeme) { 0u, 0u, LIB_FALSE };
+    if (context == LIB_NULL || context->cpu == LIB_NULL ||
+        context->instructions == LIB_NULL || context->memory == LIB_NULL) {
+        return LIB_FALSE;
     }
     preview_cpu = *context->cpu;
     preview_instructions = *context->instructions;
     preview = *context;
     preview.cpu = &preview_cpu;
     preview.instructions = &preview_instructions;
-    preview.transaction = STD_NULL;
-    preview.diagnostic_provider = STD_NULL;
-    preview.diagnostic_context = STD_NULL;
-    preview.preview_mode = TYPE_TRUE;
+    preview.transaction = LIB_NULL;
+    preview.diagnostic_provider = LIB_NULL;
+    preview.diagnostic_context = LIB_NULL;
+    preview.preview_mode = LIB_TRUE;
     ExecInit(&preview);
-    if (preview_instructions.data.except) return TYPE_FALSE;
+    if (preview_instructions.data.except) return LIB_FALSE;
     return core_machine_cpu_instruction_lexeme_scan_with_options(
         preview_instructions.data.opcodes,
-        (type_unsigned_8)sizeof(preview_instructions.data.opcodes),
+        (lib_u8)sizeof(preview_instructions.data.opcodes),
         preview.cpu_profile, preview_cpu.data.cs.seg.exec.defsize,
         preview.cpu_80386_cr_mov_ignores_mod, out_lexeme);
 }
 
-static type_unsigned_32 _debug_breakpoint_address(type_unsigned_8 index,
+static lib_u32 _debug_breakpoint_address(lib_u8 index,
     const t_cpu *cpu)
 {
     switch (index) {
@@ -18245,16 +18246,16 @@ static type_unsigned_32 _debug_breakpoint_address(type_unsigned_8 index,
     }
 }
 
-static type_bool _debug_breakpoint_enabled(type_unsigned_8 index,
+static type_bool _debug_breakpoint_enabled(lib_u8 index,
     const t_cpu *cpu)
 {
-    type_unsigned_32 enable_mask = ((type_unsigned_32)1u << (index * 2u)) |
-        ((type_unsigned_32)1u << (index * 2u + 1u));
+    lib_u32 enable_mask = ((lib_u32)1u << (index * 2u)) |
+        ((lib_u32)1u << (index * 2u + 1u));
 
     return (cpu->data.dr7 & enable_mask) != TYPE_ZERO_32;
 }
 
-static type_unsigned_8 _debug_breakpoint_length(type_unsigned_8 length)
+static lib_u8 _debug_breakpoint_length(lib_u8 length)
 {
     switch (length) {
     case 0u: return 1u;
@@ -18264,34 +18265,34 @@ static type_unsigned_8 _debug_breakpoint_length(type_unsigned_8 length)
     }
 }
 
-static type_unsigned_32 _debug_match_instruction_breakpoint(
+static lib_u32 _debug_match_instruction_breakpoint(
     core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 enabled = TYPE_ZERO_32;
-    type_unsigned_8 index;
+    lib_u32 enabled = TYPE_ZERO_32;
+    lib_u8 index;
 
     if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 ||
         context->debug_rf_before) return TYPE_ZERO_32;
     for (index = 0u; index < 4u; ++index) {
-        type_unsigned_32 control = (cpu_state.data.dr7 >> (16u + index * 4u)) &
+        lib_u32 control = (cpu_state.data.dr7 >> (16u + index * 4u)) &
             0x0fu;
 
         if ((control & 3u) != 0u || (control >> 2u) != 0u ||
             _debug_breakpoint_address(index, &cpu_state) !=
                 instruction_state.data.linear) continue;
         if (_debug_breakpoint_enabled(index, &cpu_state)) {
-            enabled |= (type_unsigned_32)1u << index;
+            enabled |= (lib_u32)1u << index;
         }
     }
     return enabled;
 }
 
-static type_unsigned_32 _debug_match_data_breakpoint(
+static lib_u32 _debug_match_data_breakpoint(
     core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 enabled = TYPE_ZERO_32;
-    type_unsigned_8 index;
-    type_unsigned_16 access_index;
+    lib_u32 enabled = TYPE_ZERO_32;
+    lib_u8 index;
+    lib_u16 access_index;
 
     if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386) return TYPE_ZERO_32;
     for (access_index = 0u; access_index < instruction_state.data.msize;
@@ -18300,24 +18301,24 @@ static type_unsigned_32 _debug_match_data_breakpoint(
             &instruction_state.data.mem[access_index];
 
         for (index = 0u; index < 4u; ++index) {
-            type_unsigned_32 control =
+            lib_u32 control =
                 (cpu_state.data.dr7 >> (16u + index * 4u)) & 0x0fu;
-            type_unsigned_8 rw = control & 3u;
-            type_unsigned_8 length = _debug_breakpoint_length(control >> 2u);
-            type_unsigned_64 address;
-            type_unsigned_64 first;
-            type_unsigned_64 last;
+            lib_u8 rw = control & 3u;
+            lib_u8 length = _debug_breakpoint_length(control >> 2u);
+            lib_u64 address;
+            lib_u64 first;
+            lib_u64 last;
 
             if (access->byte == 0u || rw == 0u || rw == 2u ||
                 (rw == 1u && !access->flagWrite) ||
                 length == 0u) continue;
             address = _debug_breakpoint_address(index, &cpu_state) &
-                ~(type_unsigned_32)(length - 1u);
+                ~(lib_u32)(length - 1u);
             first = access->linear;
             last = first + access->byte - 1u;
             if (last < address || first >= address + length) continue;
             if (_debug_breakpoint_enabled(index, &cpu_state)) {
-                enabled |= (type_unsigned_32)1u << index;
+                enabled |= (lib_u32)1u << index;
             }
         }
     }
@@ -18325,18 +18326,18 @@ static type_unsigned_32 _debug_match_data_breakpoint(
 }
 
 static C_VOID _debug_schedule_trap(core_machine_cpu_execution_context *context,
-    type_unsigned_32 cause)
+    lib_u32 cause)
 {
     if (cause == TYPE_ZERO_32) return;
     cpu_state.data.dr6 |= cause;
-    context->debug_trap_pending = TYPE_TRUE;
+    context->debug_trap_pending = LIB_TRUE;
     context->debug_trap_cause |= cause;
 }
 
 static C_VOID _debug_complete_instruction(
-    core_machine_cpu_execution_context *context, type_unsigned_8 opcode)
+    core_machine_cpu_execution_context *context, lib_u8 opcode)
 {
-    type_unsigned_32 cause;
+    lib_u32 cause;
 
     if (instruction_state.data.except) return;
     cause = _debug_match_data_breakpoint(context);
@@ -18351,18 +18352,18 @@ static C_VOID _debug_complete_instruction(
 static C_VOID _debug_deliver_trap(core_machine_cpu_execution_context *context)
 {
     t_cpu trap_cpu;
-    type_unsigned_32 cause;
+    lib_u32 cause;
 
     if (!context->debug_trap_pending) return;
     cause = context->debug_trap_cause;
-    context->debug_trap_pending = TYPE_FALSE;
+    context->debug_trap_pending = LIB_FALSE;
     context->debug_trap_cause = TYPE_ZERO_32;
     trap_cpu = cpu_state;
     ExecInit(context);
-    _e_intr_n(context, 0x01u, _GetOperandSize, TYPE_TRUE);
+    _e_intr_n(context, 0x01u, _GetOperandSize, LIB_TRUE);
     if (!instruction_state.data.except && context->diagnostic_provider !=
-        STD_NULL && context->diagnostic_provider->record_delivered_exception !=
-        STD_NULL) {
+        LIB_NULL && context->diagnostic_provider->record_delivered_exception !=
+        LIB_NULL) {
         instruction_state.data.except = VCPUINS_EXCEPT_DB;
         instruction_state.data.excode = cause;
         context->diagnostic_provider->record_delivered_exception(
@@ -18372,7 +18373,7 @@ static C_VOID _debug_deliver_trap(core_machine_cpu_execution_context *context)
     }
     ExecFinal(context);
 }
-static type_bool _e_is_contributory_exception(type_unsigned_32 exception)
+static type_bool _e_is_contributory_exception(lib_u32 exception)
 {
     return exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
         exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP;
@@ -18382,10 +18383,10 @@ static type_bool _e_is_contributory_exception(type_unsigned_32 exception)
  * only the common fault-state restoration around IVT delivery. */
 static type_bool _e_final_deliver_real_exception(
     core_machine_cpu_execution_context *context, const t_cpu *fault_cpu,
-    type_unsigned_8 exception_vector)
+    lib_u8 exception_vector)
 {
-    type_unsigned_32 original_except;
-    type_unsigned_32 original_excode;
+    lib_u32 original_except;
+    lib_u32 original_excode;
 
     TYPE_TRACE_CALL_BEGIN("_e_final_deliver_real_exception");
     original_except = instruction_state.data.except;
@@ -18397,10 +18398,10 @@ static type_bool _e_final_deliver_real_exception(
         instruction_state.data.except = original_except;
         instruction_state.data.excode = original_excode;
         TYPE_TRACE_CALL_END;
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
-    if (context->diagnostic_provider != STD_NULL &&
-        context->diagnostic_provider->record_delivered_exception != STD_NULL) {
+    if (context->diagnostic_provider != LIB_NULL &&
+        context->diagnostic_provider->record_delivered_exception != LIB_NULL) {
         instruction_state.data.except = original_except;
         instruction_state.data.excode = original_excode;
         context->diagnostic_provider->record_delivered_exception(
@@ -18408,23 +18409,23 @@ static type_bool _e_final_deliver_real_exception(
         instruction_state.data.except = 0u;
     }
     TYPE_TRACE_CALL_END;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 static C_VOID _e_mark_instruction_fault_delivered(
     core_machine_cpu_execution_context *context)
 {
-    if (context != STD_NULL && context->instruction_in_progress) {
-        context->instruction_fault_delivered = TYPE_TRUE;
+    if (context != LIB_NULL && context->instruction_in_progress) {
+        context->instruction_fault_delivered = LIB_TRUE;
     }
 }
 
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 {
     t_cpu fault_cpu;
-    type_unsigned_32 original_except;
-    type_unsigned_32 original_excode;
-    type_unsigned_8 exception_vector;
+    lib_u32 original_except;
+    lib_u32 original_excode;
+    lib_u8 exception_vector;
     type_bool exception_deliverable;
     if (instruction_state.data.flagInsLoop)
     {
@@ -18436,15 +18437,15 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         fault_cpu = instruction_state.data.oldcpu;
         if (instruction_state.data.except == VCPUINS_EXCEPT_SHUTDOWN) {
             cpu_state = fault_cpu;
-            if (context->diagnostic_provider != STD_NULL &&
-                context->diagnostic_provider->record_delivered_exception != STD_NULL) {
+            if (context->diagnostic_provider != LIB_NULL &&
+                context->diagnostic_provider->record_delivered_exception != LIB_NULL) {
                 context->diagnostic_provider->record_delivered_exception(
                     context->diagnostic_context, &fault_cpu, &instruction_state);
             }
             core_machine_cpu_execution_request_shutdown(context);
             core_machine_cpu_execution_request_stop(context);
             if (context->instruction_in_progress)
-                context->instruction_fault_delivered = TYPE_TRUE;
+                context->instruction_fault_delivered = LIB_TRUE;
             return;
         }
         if (instruction_state.data.except == VCPUINS_EXCEPT_DB) {
@@ -18456,52 +18457,52 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             fault_cpu.data.cr2 = cpu_state.data.cr2;
         }
         exception_vector = 0u;
-        exception_deliverable = TYPE_FALSE;
+        exception_deliverable = LIB_FALSE;
         if (instruction_state.data.except == VCPUINS_EXCEPT_DE) {
             exception_vector = 0x00u;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_DB) {
             exception_vector = 0x01u;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_GP) {
             exception_vector = 0x0du;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_UD) {
             exception_vector = 0x06u;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_NM) {
             exception_vector = 0x07u;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_BR) {
             exception_vector = 0x05u;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_NP) {
             exception_vector = 0x0bu;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
             context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286) {
             exception_vector = 0x0cu;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_TS &&
             context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286) {
             exception_vector = 0x0au;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_PF) {
             exception_vector = 0x0eu;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_MF) {
             exception_vector = 0x10u;
-            exception_deliverable = TYPE_TRUE;
+            exception_deliverable = LIB_TRUE;
         }
         if (TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             exception_deliverable) {
@@ -18510,9 +18511,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             cpu_state = fault_cpu;
             _e_except_n(context, exception_vector, _GetOperandSize);
             if (!instruction_state.data.except) {
-                if (context->diagnostic_provider != STD_NULL &&
+                if (context->diagnostic_provider != LIB_NULL &&
                     context->diagnostic_provider->record_delivered_exception !=
-                        STD_NULL) {
+                        LIB_NULL) {
                     instruction_state.data.except = original_except;
                     instruction_state.data.excode = original_excode;
                     context->diagnostic_provider->record_delivered_exception(
@@ -18532,9 +18533,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                 instruction_state.data.excode = 0u;
                 _e_except_n(context, 0x08u, _GetOperandSize);
                 if (!instruction_state.data.except) {
-                    if (context->diagnostic_provider != STD_NULL &&
+                    if (context->diagnostic_provider != LIB_NULL &&
                         context->diagnostic_provider->record_delivered_exception !=
-                            STD_NULL) {
+                            LIB_NULL) {
                         instruction_state.data.except = VCPUINS_EXCEPT_DF;
                         instruction_state.data.excode = 0u;
                         context->diagnostic_provider->record_delivered_exception(
@@ -18591,8 +18592,8 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             return;
         }
 
-        if (context->diagnostic_provider != STD_NULL &&
-            context->diagnostic_provider->record_fault != STD_NULL)
+        if (context->diagnostic_provider != LIB_NULL &&
+            context->diagnostic_provider->record_fault != LIB_NULL)
         {
             context->diagnostic_provider->record_fault(context->diagnostic_context,
                                                        &fault_cpu, &instruction_state);
@@ -18603,8 +18604,8 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 }
 static C_VOID ExecIns(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 opcode = 0;
-    type_unsigned_32 debug_cause;
+    lib_u8 opcode = 0;
+    lib_u32 debug_cause;
 
     ExecInit(context);
     debug_cause = _debug_match_instruction_breakpoint(context);
@@ -18639,16 +18640,16 @@ static C_VOID ExecIns(core_machine_cpu_execution_context *context)
 }
 static C_VOID ExecInt(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_8 intr = 0x00;
+    lib_u8 intr = 0x00;
     /* hardware interrupt handler */
     if (!instruction_state.data.flagMaskInt && !cpu_state.data.flagMaskNMI &&
         cpu_state.data.flagNMI)
     {
         ExecInit(context);
-        _e_intr_n(context, 0x02, _GetOperandSize, TYPE_TRUE);
+        _e_intr_n(context, 0x02, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
-            cpu_state.data.flagHalt = TYPE_FALSE;
-            cpu_state.data.flagNMI = TYPE_FALSE;
+            cpu_state.data.flagHalt = LIB_FALSE;
+            cpu_state.data.flagNMI = LIB_FALSE;
         }
         ExecFinal(context);
     }
@@ -18658,7 +18659,7 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
         core_machine_pic_scan_interrupt(
                              context->pic_master, context->pic_slave))
     {
-        if (context->transaction != STD_NULL && core_machine_transaction_begin(
+        if (context->transaction != LIB_NULL && core_machine_transaction_begin(
                 context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
                 CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE, 0u, 0u,
                 0u) != TYPE_STATUS_OK) return;
@@ -18666,15 +18667,15 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
          * CPU consumes the vector through its existing interrupt-entry path. */
         intr = core_machine_pic_get_interrupt(context->pic_master,
             context->pic_slave);
-        if (context->transaction != STD_NULL) {
+        if (context->transaction != LIB_NULL) {
             core_machine_transaction_set_value(context->transaction, intr);
             core_machine_transaction_commit(context->transaction);
         }
         ExecInit(context);
-        _e_intr_n(context, intr, _GetOperandSize, TYPE_TRUE);
+        _e_intr_n(context, intr, _GetOperandSize, LIB_TRUE);
         if (!instruction_state.data.except) {
-            cpu_state.data.flagHalt = TYPE_FALSE;
-            instruction_state.data.flagIgnore = TYPE_TRUE;
+            cpu_state.data.flagHalt = LIB_FALSE;
+            instruction_state.data.flagIgnore = LIB_TRUE;
         }
         ExecFinal(context);
     }
@@ -18683,10 +18684,10 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
 /* external interface */
 type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
-    type_unsigned_16 selector)
+    lib_u16 selector)
 {
     type_bool fail;
-    type_unsigned_32 oldexcept = instruction_state.data.except;
+    lib_u32 oldexcept = instruction_state.data.except;
     instruction_state.data.except = 0;
     _ksa_load_sreg(context, rsreg, selector);
     fail = !!instruction_state.data.except;
@@ -18694,11 +18695,11 @@ type_bool core_machine_cpu_execution_load_segment(
     return fail;
 }
 type_bool core_machine_cpu_execution_read_linear(
-    core_machine_cpu_execution_context *context, type_unsigned_32 linear,
-    type_virtual_address rdata, type_unsigned_8 byte)
+    core_machine_cpu_execution_context *context, lib_u32 linear,
+    type_virtual_address rdata, lib_u8 byte)
 {
     type_bool fail;
-    type_unsigned_32 oldexcept = instruction_state.data.except;
+    lib_u32 oldexcept = instruction_state.data.except;
     instruction_state.data.except = 0;
     _kma_read_linear(context, linear, rdata, byte, 0x00, 1);
     fail = !!instruction_state.data.except;
@@ -18706,11 +18707,11 @@ type_bool core_machine_cpu_execution_read_linear(
     return fail;
 }
 type_bool core_machine_cpu_execution_write_linear(
-    core_machine_cpu_execution_context *context, type_unsigned_32 linear,
-    type_virtual_address rdata, type_unsigned_8 byte)
+    core_machine_cpu_execution_context *context, lib_u32 linear,
+    type_virtual_address rdata, lib_u8 byte)
 {
     type_bool fail;
-    type_unsigned_32 oldexcept = instruction_state.data.except;
+    lib_u32 oldexcept = instruction_state.data.except;
     instruction_state.data.except = 0;
     _kma_write_linear(context, linear, rdata, byte, 0x00, 1);
     fail = !!instruction_state.data.except;
@@ -19237,24 +19238,24 @@ C_VOID core_machine_cpu_execution_initialize(
 C_VOID core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context)
 {
-    STD_MEMSET((C_VOID *)(&instruction_state.data), TYPE_ZERO_8, sizeof(t_cpuins_data));
-    context->debug_pause_requested = TYPE_FALSE;
-    context->debug_trap_pending = TYPE_FALSE;
-    context->debug_tf_before = TYPE_FALSE;
-    context->debug_rf_before = TYPE_FALSE;
+    lib_memory_set((C_VOID *)(&instruction_state.data), TYPE_ZERO_8, sizeof(t_cpuins_data));
+    context->debug_pause_requested = LIB_FALSE;
+    context->debug_trap_pending = LIB_FALSE;
+    context->debug_tf_before = LIB_FALSE;
+    context->debug_rf_before = LIB_FALSE;
     context->debug_trap_cause = TYPE_ZERO_32;
-    context->instruction_in_progress = TYPE_FALSE;
-    context->instruction_fault_delivered = TYPE_FALSE;
+    context->instruction_in_progress = LIB_FALSE;
+    context->instruction_fault_delivered = LIB_FALSE;
 }
 C_VOID core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context)
 {
-    context->instruction_fault_delivered = TYPE_FALSE;
+    context->instruction_fault_delivered = LIB_FALSE;
     if (!cpu_state.data.flagHalt)
     {
-        context->instruction_in_progress = TYPE_TRUE;
+        context->instruction_in_progress = LIB_TRUE;
         ExecIns(context);
-        context->instruction_in_progress = TYPE_FALSE;
+        context->instruction_in_progress = LIB_FALSE;
     }
     if (context->debug_pause_requested) return;
     ExecInt(context);
@@ -19265,9 +19266,9 @@ type_bool core_machine_cpu_execution_consume_instruction_fault_delivery(
 {
     type_bool delivered;
 
-    if (context == STD_NULL) return TYPE_FALSE;
+    if (context == LIB_NULL) return LIB_FALSE;
     delivered = context->instruction_fault_delivered;
-    context->instruction_fault_delivered = TYPE_FALSE;
+    context->instruction_fault_delivered = LIB_FALSE;
     return delivered;
 }
 

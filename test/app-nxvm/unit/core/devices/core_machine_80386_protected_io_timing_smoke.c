@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,36 +10,36 @@
 #define TIMING_S7_IOMAP_BASE 0x0080u
 
 typedef struct timing_s7_state {
-    type_unsigned_32 reads;
-    type_unsigned_32 writes;
-    type_unsigned_64 advanced_ticks;
+    lib_u32 reads;
+    lib_u32 writes;
+    lib_u64 advanced_ticks;
 } timing_s7_state;
 
 typedef struct timing_s7_form {
-    type_unsigned_8 opcode;
-    type_unsigned_64 protected_ticks;
-    type_unsigned_64 permission_ticks;
+    lib_u8 opcode;
+    lib_u64 protected_ticks;
+    lib_u64 permission_ticks;
     C_INT input;
 } timing_s7_form;
 
-static type_status timing_s7_port_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status timing_s7_port_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *out_value)
 {
     timing_s7_state *state = (timing_s7_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u)
+    if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = 0x5au;
     return TYPE_STATUS_OK;
 }
 
-static type_status timing_s7_port_write(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status timing_s7_port_write(C_VOID *owner, lib_u16 port,
+    lib_u32 value)
 {
     timing_s7_state *state = (timing_s7_state *)owner;
 
-    if (state == STD_NULL || port != 0x00e0u || value > 0xffffu)
+    if (state == LIB_NULL || port != 0x00e0u || value > 0xffffu)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     return TYPE_STATUS_OK;
@@ -51,13 +52,13 @@ static const core_machine_port_provider timing_s7_ports = {
 static C_VOID timing_s7_reset(C_VOID *opaque)
 {
     timing_s7_state *state = (timing_s7_state *)opaque;
-    if (state != STD_NULL) state->advanced_ticks = 0u;
+    if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID timing_s7_advance(C_VOID *opaque, type_unsigned_64 ticks)
+static C_VOID timing_s7_advance(C_VOID *opaque, lib_u64 ticks)
 {
     timing_s7_state *state = (timing_s7_state *)opaque;
-    if (state != STD_NULL) state->advanced_ticks += ticks;
+    if (state != LIB_NULL) state->advanced_ticks += ticks;
 }
 
 static const core_machine_execution_provider timing_s7_execution = {
@@ -71,9 +72,9 @@ static C_INT timing_s7_prepare(core_machine **out_machine, timing_s7_state *stat
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || state == STD_NULL ||
+    if (out_machine == LIB_NULL || state == LIB_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_S7_RESET_LINEAR, TIMING_S7_RESET_PHYSICAL, 16u) !=
@@ -88,10 +89,10 @@ static C_INT timing_s7_prepare(core_machine **out_machine, timing_s7_state *stat
     return 1;
 }
 
-static C_INT timing_s7_load(core_machine *machine, type_unsigned_8 opcode)
+static C_INT timing_s7_load(core_machine *machine, lib_u8 opcode)
 {
-    type_unsigned_8 code[] = { opcode, 0xe0u };
-    STD_SIZE_T bytes = opcode >= 0xecu ? 1u : sizeof(code);
+    lib_u8 code[] = { opcode, 0xe0u };
+    lib_size bytes = opcode >= 0xecu ? 1u : sizeof(code);
 
     return core_machine_reset(machine) == TYPE_STATUS_OK &&
         core_machine_memory_write(machine, TIMING_S7_RESET_LINEAR, code, bytes) ==
@@ -99,11 +100,11 @@ static C_INT timing_s7_load(core_machine *machine, type_unsigned_8 opcode)
 }
 
 static C_INT timing_s7_allow_permission(core_machine *machine, C_INT vm86,
-    type_unsigned_8 bitmap)
+    lib_u8 bitmap)
 {
-    type_unsigned_16 iomap_base = TIMING_S7_IOMAP_BASE;
+    lib_u16 iomap_base = TIMING_S7_IOMAP_BASE;
 
-    if (machine == STD_NULL) return 0;
+    if (machine == LIB_NULL) return 0;
     machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
     machine->executor_cpu.data.eflags = vm86 ?
         VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL : 0u;
@@ -114,7 +115,7 @@ static C_INT timing_s7_allow_permission(core_machine *machine, C_INT vm86,
     machine->executor_cpu.data.ds.dpl = 3u;
     machine->executor_cpu.data.es.selector = 0x0023u;
     machine->executor_cpu.data.es.dpl = 3u;
-    machine->executor_cpu.data.tr.flagValid = TYPE_TRUE;
+    machine->executor_cpu.data.tr.flagValid = LIB_TRUE;
     machine->executor_cpu.data.tr.selector = 0x0028u;
     machine->executor_cpu.data.tr.base = TIMING_S7_TSS_BASE;
     machine->executor_cpu.data.tr.limit = 0x00ffu;
@@ -130,8 +131,8 @@ static C_INT timing_s7_run_form(const timing_s7_form *form, C_INT mode)
     timing_s7_state state = { 0u, 0u, 0u };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
-    type_unsigned_64 ticks = mode == 0 ? form->protected_ticks :
+    core_machine *machine = LIB_NULL;
+    lib_u64 ticks = mode == 0 ? form->protected_ticks :
         form->permission_ticks;
     C_INT failed = !timing_s7_prepare(&machine, &state) ||
         !timing_s7_load(machine, form->opcode);
@@ -166,7 +167,7 @@ static C_INT timing_s7_test_success(C_VOID)
         { 0xe6u, 4u, 24u, 0 }, { 0xe7u, 4u, 24u, 0 },
         { 0xeeu, 5u, 25u, 0 }, { 0xefu, 5u, 25u, 0 }
     };
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
         if (!timing_s7_run_form(&forms[index], 0) ||
@@ -181,7 +182,7 @@ static C_INT timing_s7_test_denied(C_VOID)
     timing_s7_state state = { 0u, 0u, 0u };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_s7_prepare(&machine, &state) ||
         !timing_s7_load(machine, 0xe4u);
 
@@ -202,19 +203,19 @@ static C_INT timing_s7_test_permission_strings(C_VOID)
         { 0x6cu, 0u, 0u, 1 }, { 0x6eu, 0u, 0u, 0 }
     };
     C_INT vm86;
-    STD_SIZE_T index;
+    lib_size index;
 
     for (vm86 = 0; vm86 != 2; ++vm86) {
         for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-            type_unsigned_8 bitmap;
+            lib_u8 bitmap;
 
             for (bitmap = 0u; bitmap != 2u; ++bitmap) {
                 timing_s7_state state = { 0u, 0u, 0u };
                 const core_machine_run_budget budget = { 1u, 0u };
                 core_machine_run_result result;
-                core_machine *machine = STD_NULL;
-                type_unsigned_8 source = 0x4au;
-                type_unsigned_8 destination = 0u;
+                core_machine *machine = LIB_NULL;
+                lib_u8 source = 0x4au;
+                lib_u8 destination = 0u;
                 C_INT failed = !timing_s7_prepare(&machine, &state) ||
                     !timing_s7_load(machine, forms[index].opcode) ||
                     !timing_s7_allow_permission(machine, vm86, bitmap);
@@ -259,7 +260,7 @@ static C_INT timing_s7_test_permission_budget(C_VOID)
     const core_machine_run_budget sufficient = { 1u, 106u };
     core_machine_run_result result;
     timing_s7_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_s7_prepare(&machine, &state) ||
         !timing_s7_load(machine, 0xecu) ||
         !timing_s7_allow_permission(machine, 0, 0u);

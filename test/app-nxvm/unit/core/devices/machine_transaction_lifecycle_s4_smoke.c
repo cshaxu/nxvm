@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -7,7 +8,7 @@
 
 typedef struct lifecycle_probe {
     core_machine_trace_event events[32];
-    type_unsigned_32 count;
+    lib_u32 count;
 } lifecycle_probe;
 
 static C_VOID lifecycle_trace(C_VOID *opaque,
@@ -15,18 +16,18 @@ static C_VOID lifecycle_trace(C_VOID *opaque,
 {
     lifecycle_probe *probe = (lifecycle_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 32u) {
+    if (probe != LIB_NULL && probe->count < 32u) {
         probe->events[probe->count++] = *event;
     }
 }
 
 static C_INT lifecycle_find_transaction(const lifecycle_probe *probe,
     core_machine_trace_event_type type, core_machine_transaction_owner owner,
-    core_machine_transaction_kind kind, type_unsigned_32 *out_index)
+    core_machine_transaction_kind kind, lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
@@ -40,11 +41,11 @@ static C_INT lifecycle_find_transaction(const lifecycle_probe *probe,
 }
 
 static C_INT lifecycle_find_event(const lifecycle_probe *probe,
-    core_machine_trace_event_type type, type_unsigned_32 *out_index)
+    core_machine_trace_event_type type, lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = 0u; index < probe->count; ++index) {
         if (probe->events[index].type == type) {
             *out_index = index;
@@ -56,19 +57,19 @@ static C_INT lifecycle_find_event(const lifecycle_probe *probe,
 
 C_INT main(C_VOID)
 {
-    const type_unsigned_8 nop = 0x90u;
-    core_machine *machine = STD_NULL;
+    const lib_u8 nop = 0x90u;
+    core_machine *machine = LIB_NULL;
     core_machine_config config = {0};
     core_machine_trace_provider trace;
     core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     lifecycle_probe probe = {{{0}}, 0u};
-    type_unsigned_32 begin = 0u;
-    type_unsigned_32 cancel = 0u;
-    type_unsigned_32 reset = 0u;
-    type_unsigned_32 cpu_begin = 0u;
-    type_unsigned_32 cpu_commit = 0u;
-    type_unsigned_32 cpu_retire = 0u;
+    lib_u32 begin = 0u;
+    lib_u32 cancel = 0u;
+    lib_u32 reset = 0u;
+    lib_u32 cpu_begin = 0u;
+    lib_u32 cpu_commit = 0u;
+    lib_u32 cpu_retire = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;

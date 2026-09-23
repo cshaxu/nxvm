@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -5,15 +6,15 @@
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 
-static C_INT read_byte(core_machine *machine, type_unsigned_32 physical,
-    type_unsigned_8 *out_value)
+static C_INT read_byte(core_machine *machine, lib_u32 physical,
+    lib_u8 *out_value)
 {
     return core_machine_memory_read(machine, physical, out_value,
         sizeof(*out_value)) == TYPE_STATUS_OK;
 }
 
-static C_INT write_byte(core_machine *machine, type_unsigned_32 physical,
-    type_unsigned_8 value)
+static C_INT write_byte(core_machine *machine, lib_u32 physical,
+    lib_u8 value)
 {
     return core_machine_memory_write(machine, physical, &value,
         sizeof(value)) == TYPE_STATUS_OK;
@@ -21,20 +22,20 @@ static C_INT write_byte(core_machine *machine, type_unsigned_32 physical,
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     core_machine_d4_platform_observation observation;
-    vm_machine *session = STD_NULL;
-    type_unsigned_8 value = 0u;
-    type_unsigned_32 port_value = 0u;
-    const type_unsigned_32 parity_physical = 0x00012345u;
-    const type_unsigned_32 clear_physical = 0x00012346u;
+    vm_machine *session = LIB_NULL;
+    lib_u8 value = 0u;
+    lib_u32 port_value = 0u;
+    const lib_u32 parity_physical = 0x00012345u;
+    const lib_u32 clear_physical = 0x00012346u;
     C_INT failed = 0;
     C_INT step = 0;
 
 #define CHECK(expression) do { ++step; if (!(expression)) failed = step; } while (0)
     CHECK(vm_model40_fixture_create_bytes(even, odd, &session) == TYPE_STATUS_OK &&
-        session != STD_NULL);
+        session != LIB_NULL);
     if (!failed) {
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, &value) && value == 0x8fu);
@@ -48,7 +49,7 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK);
         CHECK(session->core_machine->executor_memory.connect.parity != 0u);
         if (!failed) {
-            ((type_unsigned_8 *)session->core_machine->executor_memory.connect.parity)
+            ((lib_u8 *)session->core_machine->executor_memory.connect.parity)
                 [parity_physical] ^= 1u;
         }
         CHECK(read_byte(session->core_machine, parity_physical, &value) && value == 0x5au);

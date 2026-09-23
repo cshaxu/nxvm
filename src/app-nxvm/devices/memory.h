@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/memory_interface.h"
@@ -21,8 +22,8 @@ typedef struct {
 } t_ram_data;
 
 typedef struct {
-    type_unsigned_32 physical_start;
-    type_unsigned_32 backing_start;
+    lib_u32 physical_start;
+    lib_u32 backing_start;
     type_native_unsigned bytes;
     type_bool selected;
 } core_machine_memory_mapping;
@@ -38,7 +39,7 @@ typedef struct {
 #define CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT 64u
 
 typedef struct {
-    type_unsigned_32 physical_start;
+    lib_u32 physical_start;
     type_native_unsigned bytes;
     core_machine_memory_device_read read;
     core_machine_memory_device_write write;
@@ -84,28 +85,28 @@ typedef struct t_ram {
 /* Private test-only observation for one Core-owned allocation. */
 struct core_machine_memory_test_allocation {
     type_bool fail;
-    STD_SIZE_T attempts;
+    lib_size attempts;
 };
 
 #define VRAM_BIT_A20  0x00100000
 #define VRAM_FLAG_A20 0x02
 
 
-type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physical,
+type_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
     type_virtual_address destination, type_native_unsigned size);
 /* CPU reset-cache fetches are the one architectural access which precedes
  * board-controlled A20 routing.  This route accepts only an already-registered
  * immutable/device provider at the raw physical address; it never falls back
  * to RAM or changes ordinary memory-access semantics. */
 type_status core_machine_memory_read_reset_physical(t_ram *ram,
-    type_unsigned_32 physical, type_virtual_address destination,
+    lib_u32 physical, type_virtual_address destination,
     type_native_unsigned size);
-type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 physical,
+type_status core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
     type_virtual_address source, type_native_unsigned size);
 type_status core_machine_memory_query_physical(const t_ram *ram,
-    type_unsigned_32 physical, type_native_unsigned size,
+    lib_u32 physical, type_native_unsigned size,
     core_machine_memory_access access, core_machine_memory_route *out_route);
-type_status core_machine_memory_initialize_for(t_ram *ram, STD_SIZE_T bytes,
+type_status core_machine_memory_initialize_for(t_ram *ram, lib_size bytes,
     core_machine_memory_test_allocation *test_allocation);
 C_VOID core_machine_memory_reset(t_ram *ram);
 C_VOID core_machine_memory_finalize(t_ram *ram);
@@ -114,44 +115,44 @@ type_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
     core_machine_a20_wrap_policy policy);
 
 
-type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes);
-type_status core_machine_memory_enable_parity(t_ram *ram, STD_SIZE_T bytes,
+type_status core_machine_memory_allocate_for(t_ram *ram, lib_size bytes);
+type_status core_machine_memory_enable_parity(t_ram *ram, lib_size bytes,
     core_machine_memory_parity_fault_observer fault, C_VOID *owner);
 type_status core_machine_memory_register_mapping(t_ram *ram,
-    type_unsigned_32 physical_start,
-    type_unsigned_32 backing_start, STD_SIZE_T bytes, type_bool selected);
+    lib_u32 physical_start,
+    lib_u32 backing_start, lib_size bytes, type_bool selected);
 type_status core_machine_memory_register_write_observer(t_ram *ram,
     core_machine_memory_write_observer callback, C_VOID *owner);
 type_status core_machine_memory_register_device_provider(t_ram *ram,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
 type_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
 type_status core_machine_memory_register_pre_a20_overlay_device_provider(t_ram *ram,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
 type_status core_machine_memory_register_replacement_device_provider(t_ram *ram,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
 type_status core_machine_memory_register_fallback_device_provider(t_ram *ram,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
 type_status core_machine_memory_register_device_provider_and_write_observer(
-    t_ram *ram, type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    t_ram *ram, lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner,
     core_machine_memory_write_observer callback);
 C_VOID core_machine_memory_freeze_mappings(t_ram *ram);
-type_status core_machine_memory_read_real_from(t_ram *ram, type_unsigned_16 segment,
-    type_unsigned_16 offset, C_VOID *out_data, STD_SIZE_T size);
-type_status core_machine_memory_write_real_to(t_ram *ram, type_unsigned_16 segment,
-    type_unsigned_16 offset, const C_VOID *in_data, STD_SIZE_T size);
+type_status core_machine_memory_read_real_from(t_ram *ram, lib_u16 segment,
+    lib_u16 offset, C_VOID *out_data, lib_size size);
+type_status core_machine_memory_write_real_to(t_ram *ram, lib_u16 segment,
+    lib_u16 offset, const C_VOID *in_data, lib_size size);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

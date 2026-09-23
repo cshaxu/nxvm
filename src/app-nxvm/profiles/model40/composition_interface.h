@@ -1,5 +1,6 @@
 #ifndef VM_PROFILE_MODEL40_COMPOSITION_INTERFACE_H
 #define VM_PROFILE_MODEL40_COMPOSITION_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/machine_interface.h"

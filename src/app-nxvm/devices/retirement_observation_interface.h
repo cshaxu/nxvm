@@ -2,6 +2,7 @@
 #define CORE_MACHINE_RETIREMENT_OBSERVATION_INTERFACE_H
 
 #include "app-nxvm/devices/cpu_interface.h"
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #ifdef __cplusplus
@@ -58,65 +59,65 @@ typedef enum core_machine_retirement_io_direction {
 
 /* The timing form is an opaque Core-owned identifier. A classified path
  * without a ledger lookup intentionally reports this sentinel. */
-#define CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ((type_unsigned_32)-1)
-#define CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ((type_unsigned_8)-1)
+#define CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ((lib_u32)-1)
+#define CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ((lib_u8)-1)
 
 /* A semantic retirement identity; it deliberately contains no instruction
  * addresses, literal operands, firmware identity, or elapsed-time result. */
 typedef struct core_machine_retirement_eligibility_key {
     core_machine_cpu_profile cpu_profile;
     core_machine_retirement_timing_origin timing_origin;
-    type_unsigned_32 source_timing_form_id;
-    type_unsigned_8 opcode;
-    type_unsigned_8 escape_opcode;
+    lib_u32 source_timing_form_id;
+    lib_u8 opcode;
+    lib_u8 escape_opcode;
     core_machine_retirement_modrm_form modrm_form;
-    type_unsigned_8 modrm_extension;
+    lib_u8 modrm_extension;
     core_machine_retirement_control_outcome control_outcome;
-    type_unsigned_8 next_lexeme_components;
+    lib_u8 next_lexeme_components;
     core_machine_retirement_repeat_phase repeat_phase;
-    type_unsigned_8 cpl;
+    lib_u8 cpl;
     type_bool protected_mode;
     type_bool virtual_8086_mode;
     type_bool operand_size_32;
     type_bool address_size_32;
     type_bool lock_prefix;
-    type_unsigned_8 repeat_prefix;
+    lib_u8 repeat_prefix;
 } core_machine_retirement_eligibility_key;
 
 typedef struct core_machine_retirement_qualification_descriptor {
     const core_machine_retirement_eligibility_key *entries;
-    STD_SIZE_T entry_count;
+    lib_size entry_count;
 } core_machine_retirement_qualification_descriptor;
 
 typedef struct core_machine_retirement_observation {
-    type_unsigned_64 sequence;
-    type_unsigned_64 elapsed_ticks;
-    type_unsigned_64 timeline_ticks;
-    type_unsigned_64 source_ticks;
+    lib_u64 sequence;
+    lib_u64 elapsed_ticks;
+    lib_u64 timeline_ticks;
+    lib_u64 source_ticks;
     core_machine_retirement_eligibility_key eligibility_key;
     core_machine_cpu_execution_point point;
     core_machine_cpu_profile cpu_profile;
     core_machine_retirement_timing_disposition timing_disposition;
     core_machine_retirement_timing_origin timing_origin;
-    type_unsigned_32 source_timing_form_id;
-    type_unsigned_32 timing_key_id;
-    type_unsigned_32 formula_inputs;
+    lib_u32 source_timing_form_id;
+    lib_u32 timing_key_id;
+    lib_u32 formula_inputs;
     core_machine_retirement_modrm_form modrm_form;
-    type_unsigned_8 modrm_extension;
+    lib_u8 modrm_extension;
     core_machine_retirement_control_outcome control_outcome;
-    type_unsigned_8 next_lexeme_components;
+    lib_u8 next_lexeme_components;
     core_machine_retirement_repeat_phase repeat_phase;
     core_machine_retirement_io_direction io_direction;
-    type_unsigned_16 io_port;
-    type_unsigned_8 io_bytes;
-    type_unsigned_32 io_value;
-    type_unsigned_8 cpl;
+    lib_u16 io_port;
+    lib_u8 io_bytes;
+    lib_u32 io_value;
+    lib_u8 cpl;
     type_bool protected_mode;
     type_bool virtual_8086_mode;
     type_bool operand_size_32;
     type_bool address_size_32;
     type_bool lock_prefix;
-    type_unsigned_8 repeat_prefix;
+    lib_u8 repeat_prefix;
 } core_machine_retirement_observation;
 
 typedef C_VOID (*core_machine_retirement_observation_callback)(

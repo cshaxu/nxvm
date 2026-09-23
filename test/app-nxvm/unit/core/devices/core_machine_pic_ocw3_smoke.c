@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pic.h"
@@ -10,7 +11,7 @@ typedef struct pic_ocw3_fixture {
 } pic_ocw3_fixture;
 
 static C_VOID pic_ocw3_initialize(pic_ocw3_fixture *fixture,
-    type_unsigned_8 master_icw4)
+    lib_u8 master_icw4)
 {
     core_machine_port_initialize(&fixture->port);
     core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
@@ -33,7 +34,7 @@ static C_VOID pic_ocw3_finalize(pic_ocw3_fixture *fixture)
 }
 
 static C_VOID pic_ocw3_raise(pic_ocw3_fixture *fixture,
-    core_machine_pic_irq_source *source, type_unsigned_8 irq)
+    core_machine_pic_irq_source *source, lib_u8 irq)
 {
     core_machine_pic_irq_source_bind(source, &fixture->master, &fixture->slave,
         irq);

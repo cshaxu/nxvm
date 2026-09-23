@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_XT_PPI_KEYBOARD_H
 #define CORE_MACHINE_XT_PPI_KEYBOARD_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -23,11 +24,11 @@ typedef struct core_machine_xt_ppi_keyboard {
     core_machine_xt_ppi_keyboard_config config;
     t_port *port;
     core_machine_pic_irq_source irq1_source;
-    type_unsigned_8 mode_control;
-    type_unsigned_8 port_a_latch;
-    type_unsigned_8 port_b_latch;
-    type_unsigned_8 port_c_latch;
-    type_unsigned_8 current_byte;
+    lib_u8 mode_control;
+    lib_u8 port_a_latch;
+    lib_u8 port_b_latch;
+    lib_u8 port_c_latch;
+    lib_u8 current_byte;
     type_bool byte_ready;
     type_bool irq1_asserted;
     type_bool io_check_asserted;
@@ -64,6 +65,6 @@ type_status core_machine_xt_ppi_keyboard_set_fault_input(
     C_INT asserted);
 C_VOID core_machine_xt_ppi_keyboard_refresh_nmi(core_machine_xt_ppi_keyboard *keyboard);
 type_status core_machine_xt_ppi_keyboard_receive_device_byte(
-    core_machine_xt_ppi_keyboard *keyboard, type_unsigned_8 native_byte);
+    core_machine_xt_ppi_keyboard *keyboard, lib_u8 native_byte);
 
 #endif

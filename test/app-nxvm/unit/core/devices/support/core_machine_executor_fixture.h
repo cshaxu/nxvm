@@ -1,10 +1,11 @@
+#include "lib/types/types_interface.h"
 #ifndef TEST_CORE_MACHINE_EXECUTOR_FIXTURE_H
 #define TEST_CORE_MACHINE_EXECUTOR_FIXTURE_H
 
 #include "app-nxvm/devices/machine_interface.h"
 
 static type_status test_core_machine_create_executor(
-    STD_SIZE_T memory_bytes,
+    lib_size memory_bytes,
     core_machine **out_machine)
 {
     core_machine_config config = { .memory_bytes = memory_bytes };
@@ -13,7 +14,7 @@ static type_status test_core_machine_create_executor(
     status = core_machine_create(&config, out_machine);
     if (status != TYPE_STATUS_OK) {
         core_machine_destroy(*out_machine);
-        *out_machine = STD_NULL;
+        *out_machine = LIB_NULL;
     }
     return status;
 }

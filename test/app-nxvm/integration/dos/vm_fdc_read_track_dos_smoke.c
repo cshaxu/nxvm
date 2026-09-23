@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -20,26 +21,26 @@
 #define VM_FDC242_RESULT_OFFSET 0x02a1u
 #define VM_FDC242_DISPLAY_OBSERVATION_QUANTUM 256u
 
-static type_unsigned_16 vm_fdc242_fat_get(const type_unsigned_8 *fat, type_unsigned_16 cluster)
+static lib_u16 vm_fdc242_fat_get(const lib_u8 *fat, lib_u16 cluster)
 {
-    type_unsigned_32 offset = cluster + cluster / 2u;
-    type_unsigned_16 pair = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8));
+    lib_u32 offset = cluster + cluster / 2u;
+    lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8));
     return (cluster & 1u) ? pair >> 4u : pair & 0x0fffu;
 }
 
-static C_VOID vm_fdc242_fat_set(type_unsigned_8 *fat, type_unsigned_16 cluster, type_unsigned_16 value)
+static C_VOID vm_fdc242_fat_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
 {
-    type_unsigned_32 offset = cluster + cluster / 2u;
-    type_unsigned_16 pair = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8));
-    if (cluster & 1u) pair = (type_unsigned_16)((pair & 0x000fu) | (value << 4u));
-    else pair = (type_unsigned_16)((pair & 0xf000u) | value);
-    fat[offset] = (type_unsigned_8)pair;
-    fat[offset + 1u] = (type_unsigned_8)(pair >> 8u);
+    lib_u32 offset = cluster + cluster / 2u;
+    lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8));
+    if (cluster & 1u) pair = (lib_u16)((pair & 0x000fu) | (value << 4u));
+    else pair = (lib_u16)((pair & 0xf000u) | value);
+    fat[offset] = (lib_u8)pair;
+    fat[offset + 1u] = (lib_u8)(pair >> 8u);
 }
 
-static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size)
+static C_INT vm_fdc242_install(lib_u8 *image, DWORD size)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0x1e,0x31,0xc0,0x8e,0xd8,0xb8,0x80,0x02,0xa3,0x38,0x00,
         0x0e,0x58,0xa3,0x3a,0x00,0x1f, 0xe4,0x21,0x24,0xbf,0xe6,0x21,0xfb,
         0xb0,0x06,0xe6,0x0a, 0x30,0xc0,0xe6,0x0d, 0xe6,0x0c, 0xe6,0x04, 0xb0,0x00,0xe6,0x04,
@@ -79,60 +80,60 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size)
         0xe4,0x21,0x0c,0x40,0xe6,0x21,0xb0,0x20,0xe6,0x20,
         0x1f,0x58,0xcf
     };
-    type_unsigned_32 bps, spc, reserved, fats, roots, spf, root_start, root_bytes,
+    lib_u32 bps, spc, reserved, fats, roots, spf, root_start, root_bytes,
         data_start, clusters, cluster, root;
-    type_unsigned_8 *entry = STD_NULL;
-    if (image == STD_NULL || size < 512u) return 0;
-    bps = image[11u] | ((type_unsigned_32)image[12u] << 8u); spc = image[13u];
-    reserved = image[14u] | ((type_unsigned_32)image[15u] << 8u); fats = image[16u];
-    roots = image[17u] | ((type_unsigned_32)image[18u] << 8u);
-    spf = image[22u] | ((type_unsigned_32)image[23u] << 8u);
+    lib_u8 *entry = LIB_NULL;
+    if (image == LIB_NULL || size < 512u) return 0;
+    bps = image[11u] | ((lib_u32)image[12u] << 8u); spc = image[13u];
+    reserved = image[14u] | ((lib_u32)image[15u] << 8u); fats = image[16u];
+    roots = image[17u] | ((lib_u32)image[18u] << 8u);
+    spf = image[22u] | ((lib_u32)image[23u] << 8u);
     if (!bps || !spc || !fats || !spf) return 0;
     root_start = (reserved + fats * spf) * bps; root_bytes = roots * 32u;
     data_start = root_start + ((root_bytes + bps - 1u) / bps) * bps;
     if (data_start >= size || root_start + root_bytes > size || sizeof(program) > bps * spc)
         return 0;
     for (root = 0u; root < roots; ++root) {
-        type_unsigned_8 *candidate = image + root_start + root * 32u;
+        lib_u8 *candidate = image + root_start + root * 32u;
         if (candidate[0] == 0u || candidate[0] == 0xe5u) { entry = candidate; break; }
     }
     clusters = (size - data_start) / (bps * spc);
     for (cluster = 2u; cluster < clusters + 2u; ++cluster) {
-        if (vm_fdc242_fat_get(image + reserved * bps, (type_unsigned_16)cluster) == 0u) break;
+        if (vm_fdc242_fat_get(image + reserved * bps, (lib_u16)cluster) == 0u) break;
     }
-    if (entry == STD_NULL || cluster >= clusters + 2u) return 0;
-    STD_MEMSET(entry, 0, 32u); STD_MEMCPY(entry, "FDC242  COM", 11u);
-    entry[11u] = 0x20u; entry[26u] = (type_unsigned_8)cluster; entry[27u] = (type_unsigned_8)(cluster >> 8u);
-    entry[28u] = (type_unsigned_8)sizeof(program); entry[29u] = (type_unsigned_8)(sizeof(program) >> 8u);
+    if (entry == LIB_NULL || cluster >= clusters + 2u) return 0;
+    lib_memory_set(entry, 0, 32u); lib_memory_copy(entry, "FDC242  COM", 11u);
+    entry[11u] = 0x20u; entry[26u] = (lib_u8)cluster; entry[27u] = (lib_u8)(cluster >> 8u);
+    entry[28u] = (lib_u8)sizeof(program); entry[29u] = (lib_u8)(sizeof(program) >> 8u);
     for (root = 0u; root < fats; ++root) vm_fdc242_fat_set(image +
-        (reserved + root * spf) * bps, (type_unsigned_16)cluster, 0x0fffu);
-    STD_MEMCPY(image + data_start + (cluster - 2u) * bps * spc, program, sizeof(program));
+        (reserved + root * spf) * bps, (lib_u16)cluster, 0x0fffu);
+    lib_memory_copy(image + data_start + (cluster - 2u) * bps * spc, program, sizeof(program));
     return 1;
 }
 
 static type_status vm_fdc242_install_on_overlay(
     integration_ini_session *ini_session, C_VOID *opaque)
 {
-    type_unsigned_8 *image = STD_NULL;
-    type_unsigned_8 *expected = (type_unsigned_8 *)opaque;
-    STD_SIZE_T size = 0u;
+    lib_u8 *image = LIB_NULL;
+    lib_u8 *expected = (lib_u8 *)opaque;
+    lib_size size = 0u;
     C_INT installed;
 
-    if (ini_session == STD_NULL || expected == STD_NULL ||
+    if (ini_session == LIB_NULL || expected == LIB_NULL ||
         integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             (C_VOID **)&image, &size) != TYPE_STATUS_OK || size > MAXDWORD) return TYPE_STATUS_FAULT;
     installed = vm_fdc242_install(image, (DWORD)size) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             image, size) == TYPE_STATUS_OK;
-    if (installed) STD_MEMCPY(expected, image, VM_FDC242_TRACK_BYTES);
-    STD_FREE(image);
+    if (installed) lib_memory_copy(expected, image, VM_FDC242_TRACK_BYTES);
+    lib_release(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
 static C_INT vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
 {
-    STD_SIZE_T index;
-    if (snapshot == STD_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+    lib_size index;
+    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
     for (index = 0u; index + 3u < 2000u; ++index) {
         if (STD_ISALPHA(snapshot->characters[index]) && snapshot->characters[index + 1u] == ':' &&
             snapshot->characters[index + 2u] == '\\' && snapshot->characters[index + 3u] == '>') return 1;
@@ -140,11 +141,11 @@ static C_INT vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
     return 0;
 }
 
-static C_INT vm_fdc242_run_until(vm_machine *session, type_unsigned_32 limit,
-    type_unsigned_32 quantum, C_INT require_marker)
+static C_INT vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
+    lib_u32 quantum, C_INT require_marker)
 {
     core_machine_run_budget budget = {quantum, 0u}; core_machine_run_result result;
-    core_machine_display_snapshot snapshot; type_unsigned_32 used = 0u;
+    core_machine_display_snapshot snapshot; lib_u32 used = 0u;
     while (used < limit) {
         C_INT advanced = 0;
 
@@ -171,21 +172,21 @@ static C_INT vm_fdc242_run_until(vm_machine *session, type_unsigned_32 limit,
 }
 
 typedef struct vm_fdc242_result {
-    type_unsigned_8 bytes[VM_FDC242_TRACK_BYTES];
-    type_unsigned_8 result[10];
-    type_unsigned_8 off_result[9];
+    lib_u8 bytes[VM_FDC242_TRACK_BYTES];
+    lib_u8 result[10];
+    lib_u8 off_result[9];
 } vm_fdc242_result;
 
 static C_INT vm_fdc242_run_case(integration_ini_session *ini_session,
-    type_unsigned_32 quantum, vm_fdc242_result *out_result)
+    lib_u32 quantum, vm_fdc242_result *out_result)
 {
-    static const type_unsigned_8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
-    vm_machine *session = STD_NULL;
-    type_unsigned_16 program_cs = 0u;
-    STD_SIZE_T index;
+    static const lib_u8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
+    vm_machine *session = LIB_NULL;
+    lib_u16 program_cs = 0u;
+    lib_size index;
     C_INT ok = 0;
 
-    if (ini_session == STD_NULL || out_result == STD_NULL || quantum == 0u ||
+    if (ini_session == LIB_NULL || out_result == LIB_NULL || quantum == 0u ||
         integration_ini_session_restart(ini_session) != TYPE_STATUS_OK) goto done;
     session = ini_session->session;
     vm_machine_executor_state_start(session->control.state);
@@ -197,24 +198,24 @@ static C_INT vm_fdc242_run_case(integration_ini_session *ini_session,
         out_result->bytes, sizeof(out_result->bytes)) != TYPE_STATUS_OK) goto done;
     if (core_machine_memory_read(session->core_machine, 0x003au, &program_cs,
         sizeof(program_cs)) != TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
-        ((type_unsigned_32)program_cs << 4u) + VM_FDC242_IRQ_COUNT_OFFSET, out_result->result,
+        ((lib_u32)program_cs << 4u) + VM_FDC242_IRQ_COUNT_OFFSET, out_result->result,
         sizeof(out_result->result)) != TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
-        ((type_unsigned_32)program_cs << 4u) + 0x02b0u, out_result->off_result,
+        ((lib_u32)program_cs << 4u) + 0x02b0u, out_result->off_result,
         sizeof(out_result->off_result)) != TYPE_STATUS_OK) goto done;
     ok = 1;
 done:
-    if (session != STD_NULL) vm_machine_executor_state_stop(session->control.state);
+    if (session != LIB_NULL) vm_machine_executor_state_stop(session->control.state);
     return ok;
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session;
-    type_unsigned_8 expected[VM_FDC242_TRACK_BYTES];
+    lib_u8 expected[VM_FDC242_TRACK_BYTES];
     vm_fdc242_result one_instruction = {0};
     vm_fdc242_result short_quantum = {0};
     C_INT passed = 0;
-    STD_SIZE_T first_mismatch = sizeof(expected);
+    lib_size first_mismatch = sizeof(expected);
 
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
             vm_fdc242_install_on_overlay, expected, &ini_session) != TYPE_STATUS_OK) {
@@ -222,8 +223,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     passed = vm_fdc242_run_case(&ini_session, 1u, &one_instruction) &&
         vm_fdc242_run_case(&ini_session, 128u, &short_quantum) &&
-        STD_MEMCMP(expected, one_instruction.bytes, sizeof(expected)) == 0 &&
-        STD_MEMCMP(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0 &&
+        lib_memory_compare(expected, one_instruction.bytes, sizeof(expected)) == 0 &&
+        lib_memory_compare(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0 &&
         one_instruction.result[0] == 1u && one_instruction.result[1] == 0x20u &&
         one_instruction.result[2] == 0u && one_instruction.result[3] == 0u &&
         one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
@@ -233,18 +234,18 @@ C_INT main(C_INT argc, C_CHAR **argv)
         one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
         0x80u;
     if (!passed) {
-        for (STD_SIZE_T index = 0u; index < sizeof(expected); ++index) {
+        for (lib_size index = 0u; index < sizeof(expected); ++index) {
             if (expected[index] != one_instruction.bytes[index]) {
                 first_mismatch = index;
                 break;
             }
         }
         STD_FPRINTF(STD_STDERR, "M5:T242:S4:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
-            STD_MEMCMP(expected, one_instruction.bytes, sizeof(expected)) == 0,
+            lib_memory_compare(expected, one_instruction.bytes, sizeof(expected)) == 0,
             first_mismatch,
             first_mismatch < sizeof(expected) ? expected[first_mismatch] : 0u,
             first_mismatch < sizeof(expected) ? one_instruction.bytes[first_mismatch] : 0u,
-            STD_MEMCMP(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0,
+            lib_memory_compare(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0,
             one_instruction.result[0] == 1u && one_instruction.result[1] == 0x20u &&
             one_instruction.result[2] == 0u && one_instruction.result[3] == 0u &&
             one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&

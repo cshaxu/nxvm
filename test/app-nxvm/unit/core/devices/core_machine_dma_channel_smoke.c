@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -5,8 +6,8 @@
 #include "app-nxvm/devices/port.h"
 
 typedef struct core_machine_dma_fixture {
-    type_unsigned_8 bytes[2];
-    type_unsigned_8 next;
+    lib_u8 bytes[2];
+    lib_u8 next;
     C_UINT terminal_count;
 } core_machine_dma_fixture;
 
@@ -19,8 +20,8 @@ typedef struct core_machine_dma_eop_fixture {
 } core_machine_dma_eop_fixture;
 
 typedef struct core_machine_dma_word_fixture {
-    type_unsigned_16 words[3];
-    type_unsigned_8 next;
+    lib_u16 words[3];
+    lib_u8 next;
 } core_machine_dma_word_fixture;
 
 typedef struct core_machine_dma_failure_fixture {
@@ -31,7 +32,7 @@ static C_VOID core_machine_dma_fixture_read(C_VOID *owner, t_latch *latch)
 {
     core_machine_dma_fixture *fixture = (core_machine_dma_fixture *)owner;
 
-    if (fixture == STD_NULL || latch == STD_NULL) return;
+    if (fixture == LIB_NULL || latch == LIB_NULL) return;
     latch->data.byte = fixture->bytes[fixture->next++];
 }
 
@@ -40,7 +41,7 @@ static C_VOID core_machine_dma_fixture_terminal(C_VOID *owner, t_latch *latch)
     core_machine_dma_fixture *fixture = (core_machine_dma_fixture *)owner;
 
     (C_VOID)latch;
-    if (fixture != STD_NULL) ++fixture->terminal_count;
+    if (fixture != LIB_NULL) ++fixture->terminal_count;
 }
 
 static C_VOID core_machine_dma_eop_fixture_read(C_VOID *owner, t_latch *latch)
@@ -48,10 +49,10 @@ static C_VOID core_machine_dma_eop_fixture_read(C_VOID *owner, t_latch *latch)
     core_machine_dma_eop_fixture *fixture =
         (core_machine_dma_eop_fixture *)owner;
 
-    if (fixture == STD_NULL || latch == STD_NULL) return;
+    if (fixture == LIB_NULL || latch == LIB_NULL) return;
     latch->data.byte = fixture->transfer.bytes[fixture->transfer.next++];
     if (fixture->terminate_on_read) {
-        fixture->terminate_on_read = TYPE_FALSE;
+        fixture->terminate_on_read = LIB_FALSE;
         core_machine_dma_request_terminate(fixture->primary, fixture->secondary,
             fixture->binding);
     }
@@ -64,7 +65,7 @@ static C_VOID core_machine_dma_eop_fixture_terminal(C_VOID *owner,
         (core_machine_dma_eop_fixture *)owner;
 
     (C_VOID)latch;
-    if (fixture != STD_NULL) ++fixture->transfer.terminal_count;
+    if (fixture != LIB_NULL) ++fixture->transfer.terminal_count;
 }
 
 static C_VOID core_machine_dma_word_fixture_read(C_VOID *owner, t_latch *latch)
@@ -72,7 +73,7 @@ static C_VOID core_machine_dma_word_fixture_read(C_VOID *owner, t_latch *latch)
     core_machine_dma_word_fixture *fixture =
         (core_machine_dma_word_fixture *)owner;
 
-    if (fixture == STD_NULL || latch == STD_NULL) return;
+    if (fixture == LIB_NULL || latch == LIB_NULL) return;
     latch->data.word = fixture->words[fixture->next++];
 }
 
@@ -83,11 +84,11 @@ static C_VOID core_machine_dma_failure_fixture_write(C_VOID *owner,
         (core_machine_dma_failure_fixture *)owner;
 
     (C_VOID)latch;
-    if (fixture != STD_NULL) ++fixture->writes;
+    if (fixture != LIB_NULL) ++fixture->writes;
 }
 
-static C_VOID core_machine_dma_write_channel2(t_port *port, type_unsigned_16 address,
-    type_unsigned_8 page, type_unsigned_16 count, type_unsigned_8 mode)
+static C_VOID core_machine_dma_write_channel2(t_port *port, lib_u16 address,
+    lib_u8 page, lib_u16 count, lib_u8 mode)
 {
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, 0x0004u, address & 0xffu);
@@ -99,79 +100,79 @@ static C_VOID core_machine_dma_write_channel2(t_port *port, type_unsigned_16 add
 }
 
 static C_VOID core_machine_dma_write_primary_channel(t_port *port,
-    type_unsigned_8 channel, type_unsigned_16 address, type_unsigned_16 count, type_unsigned_8 mode)
+    lib_u8 channel, lib_u16 address, lib_u16 count, lib_u8 mode)
 {
-    type_unsigned_16 address_port = (type_unsigned_16)(channel * 2u);
+    lib_u16 address_port = (lib_u16)(channel * 2u);
 
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, address_port, address & 0xffu);
     core_machine_port_write(port, address_port, address >> 8u);
-    core_machine_port_write(port, (type_unsigned_16)(address_port + 1u), count & 0xffu);
-    core_machine_port_write(port, (type_unsigned_16)(address_port + 1u), count >> 8u);
+    core_machine_port_write(port, (lib_u16)(address_port + 1u), count & 0xffu);
+    core_machine_port_write(port, (lib_u16)(address_port + 1u), count >> 8u);
     core_machine_port_write(port, 0x000bu, mode);
 }
 
-static type_unsigned_16 core_machine_dma_secondary_page_port(
-    type_unsigned_8 channel)
+static lib_u16 core_machine_dma_secondary_page_port(
+    lib_u8 channel)
 {
-    static const type_unsigned_16 ports[] = {0x008fu, 0x008bu, 0x0089u,
+    static const lib_u16 ports[] = {0x008fu, 0x008bu, 0x0089u,
         0x008au};
 
     return ports[channel];
 }
 
 static C_VOID core_machine_dma_write_secondary_channel(t_port *port,
-    type_unsigned_8 channel, type_unsigned_16 address, type_unsigned_16 count,
-    type_unsigned_8 page, type_unsigned_8 mode)
+    lib_u8 channel, lib_u16 address, lib_u16 count,
+    lib_u8 page, lib_u8 mode)
 {
-    type_unsigned_16 address_port = (type_unsigned_16)(0x00c0u + channel * 4u);
+    lib_u16 address_port = (lib_u16)(0x00c0u + channel * 4u);
 
     core_machine_port_write(port, 0x00d8u, 0u);
     core_machine_port_write(port, address_port, address & 0xffu);
     core_machine_port_write(port, address_port, address >> 8u);
-    core_machine_port_write(port, (type_unsigned_16)(address_port + 2u),
+    core_machine_port_write(port, (lib_u16)(address_port + 2u),
         count & 0xffu);
-    core_machine_port_write(port, (type_unsigned_16)(address_port + 2u),
+    core_machine_port_write(port, (lib_u16)(address_port + 2u),
         count >> 8u);
     core_machine_port_write(port, core_machine_dma_secondary_page_port(channel),
         page);
     core_machine_port_write(port, 0x00d6u, mode);
 }
 
-static type_unsigned_16 core_machine_dma_read_pair(t_port *port,
-    type_unsigned_16 clear_port, type_unsigned_16 value_port)
+static lib_u16 core_machine_dma_read_pair(t_port *port,
+    lib_u16 clear_port, lib_u16 value_port)
 {
-    type_unsigned_16 value;
+    lib_u16 value;
 
     core_machine_port_write(port, clear_port, 0u);
-    value = (type_unsigned_16)core_machine_port_read(port, value_port);
-    return (type_unsigned_16)(value |
+    value = (lib_u16)core_machine_port_read(port, value_port);
+    return (lib_u16)(value |
         (core_machine_port_read(port, value_port) << 8u));
 }
 
 static C_VOID core_machine_dma_advance_phases(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_ram *memory, type_unsigned_64 ticks)
+    t_dma *secondary, t_ram *memory, lib_u64 ticks)
 {
     core_machine_dma_advance_transaction(latch, primary, secondary, memory,
-        STD_NULL, ticks);
+        LIB_NULL, ticks);
 }
 
 C_INT main(C_VOID)
 {
     static const core_machine_dma_channel_provider provider = {
         core_machine_dma_fixture_read,
-        STD_NULL,
+        LIB_NULL,
         core_machine_dma_fixture_terminal
     };
     static const core_machine_dma_channel_provider word_provider = {
-        core_machine_dma_word_fixture_read, STD_NULL, STD_NULL
+        core_machine_dma_word_fixture_read, LIB_NULL, LIB_NULL
     };
     static const core_machine_dma_channel_provider eop_provider = {
-        core_machine_dma_eop_fixture_read, STD_NULL,
+        core_machine_dma_eop_fixture_read, LIB_NULL,
         core_machine_dma_eop_fixture_terminal
     };
     static const core_machine_dma_channel_provider failure_provider = {
-        STD_NULL, core_machine_dma_failure_fixture_write, STD_NULL
+        LIB_NULL, core_machine_dma_failure_fixture_write, LIB_NULL
     };
     t_latch latch = {0};
     t_dma primary = {0};
@@ -186,20 +187,20 @@ C_INT main(C_VOID)
     core_machine_dma_fixture fixture = {{0xa5u, 0x5au}, 0u, 0u};
     core_machine_dma_fixture priority_fixture = {{0x71u, 0x72u}, 0u, 0u};
     core_machine_dma_eop_fixture eop_fixture = {{{0x91u, 0x92u}, 0u, 0u},
-        STD_NULL, STD_NULL, STD_NULL, TYPE_FALSE};
+        LIB_NULL, LIB_NULL, LIB_NULL, LIB_FALSE};
     core_machine_dma_failure_fixture failure_fixture = {0u};
     core_machine_dma_word_fixture word_fixture = {{0x1234u, 0x5678u,
         0x9abcu}, 0u};
-    type_unsigned_8 bytes[2] = {0};
-    type_unsigned_8 zeroes[2] = {0};
-    type_unsigned_16 words[2] = {0};
-    type_unsigned_8 channel;
-    type_unsigned_16 page_port;
+    lib_u8 bytes[2] = {0};
+    lib_u8 zeroes[2] = {0};
+    lib_u16 words[2] = {0};
+    lib_u8 channel;
+    lib_u16 page_port;
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
     if (core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
-            STD_NULL) != TYPE_STATUS_OK ||
+            LIB_NULL) != TYPE_STATUS_OK ||
         core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
             &provider, &fixture, &binding) != TYPE_STATUS_INVALID_STATE) {
         failed = 1;
@@ -489,7 +490,7 @@ C_INT main(C_VOID)
     /* IBM 5170 POST writes and immediately reads the whole page-register
      * block.  Every decoded latch must preserve all eight written bits. */
     for (page_port = 0x0080u; page_port <= 0x008fu; ++page_port) {
-        type_unsigned_8 value = (type_unsigned_8)(page_port - 0x0080u);
+        lib_u8 value = (lib_u8)(page_port - 0x0080u);
 
         core_machine_port_write(&port, page_port, value);
         if (core_machine_port_read(&port, page_port) != value) failed = 1;
@@ -540,17 +541,17 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x00dcu, 0u);
     word_fixture.next = 0u;
     for (channel = 1u; channel <= 3u; ++channel) {
-        type_unsigned_32 physical = 0x20000u +
-            ((type_unsigned_32)(0x0100u + channel) << 1u);
+        lib_u32 physical = 0x20000u +
+            ((lib_u32)(0x0100u + channel) << 1u);
 
         core_machine_dma_write_secondary_channel(&port, channel,
-            (type_unsigned_16)(0x0100u + channel), 0u, 0x02u,
-            (type_unsigned_8)(0x84u | channel));
+            (lib_u16)(0x0100u + channel), 0u, 0x02u,
+            (lib_u8)(0x84u | channel));
         if (core_machine_dma_read_pair(&port, 0x00d8u,
-                (type_unsigned_16)(0x00c0u + channel * 4u)) !=
-                (type_unsigned_16)(0x0100u + channel) ||
+                (lib_u16)(0x00c0u + channel * 4u)) !=
+                (lib_u16)(0x0100u + channel) ||
             core_machine_dma_read_pair(&port, 0x00d8u,
-                (type_unsigned_16)(0x00c2u + channel * 4u)) != 0u) {
+                (lib_u16)(0x00c2u + channel * 4u)) != 0u) {
             failed = 1;
         }
         core_machine_dma_request_assert(&primary, &secondary,
@@ -843,7 +844,7 @@ C_INT main(C_VOID)
     eop_fixture.transfer.bytes[1] = 0xd2u;
     eop_fixture.transfer.next = 0u;
     eop_fixture.transfer.terminal_count = 0u;
-    eop_fixture.terminate_on_read = TYPE_TRUE;
+    eop_fixture.terminate_on_read = LIB_TRUE;
     core_machine_dma_write_primary_channel(&port, 3u, 0x1b00u, 2u, 0x87u);
     core_machine_port_write(&port, 0x000eu, 0u);
     core_machine_dma_request_assert(&primary, &secondary, &eop_binding);
@@ -861,7 +862,7 @@ C_INT main(C_VOID)
     eop_fixture.transfer.bytes[0] = 0xe1u;
     eop_fixture.transfer.next = 0u;
     eop_fixture.transfer.terminal_count = 0u;
-    eop_fixture.terminate_on_read = TYPE_TRUE;
+    eop_fixture.terminate_on_read = LIB_TRUE;
     core_machine_dma_write_primary_channel(&port, 3u, 0x1b10u, 2u, 0x97u);
     core_machine_port_write(&port, 0x000eu, 0u);
     core_machine_dma_request_assert(&primary, &secondary, &eop_binding);

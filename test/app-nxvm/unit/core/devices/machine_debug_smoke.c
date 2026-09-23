@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 
@@ -5,21 +6,21 @@
 #include "app-nxvm/devices/debug_interface.h"
 #include "support/core_machine_executor_fixture.h"
 
-typedef struct debug_port_probe { type_status status; type_unsigned_32 value; } debug_port_probe;
-static type_status debug_port_read(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 *out)
+typedef struct debug_port_probe { type_status status; lib_u32 value; } debug_port_probe;
+static type_status debug_port_read(C_VOID *owner, lib_u16 port, lib_u32 *out)
 { debug_port_probe *probe = owner; (C_VOID)port; if (probe->status != TYPE_STATUS_OK) return probe->status; *out = probe->value; return TYPE_STATUS_OK; }
-static type_status debug_port_write(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 value)
+static type_status debug_port_write(C_VOID *owner, lib_u16 port, lib_u32 value)
 { debug_port_probe *probe = owner; (C_VOID)port; if (probe->status != TYPE_STATUS_OK) return probe->status; probe->value = value; return TYPE_STATUS_OK; }
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_state cpu;
     core_machine_debug_instruction_observation observation;
     core_machine_debug_register_patch patch = {0};
     core_machine_run_result result;
     core_machine_run_budget budget = { 2u, 0u };
-    type_unsigned_32 value;
+    lib_u32 value;
     C_UCHAR byte = 0x5au;
     C_UCHAR nop = 0x90u;
     C_UCHAR read_moffs[] = {0xa0u, 0x00u, 0x00u};

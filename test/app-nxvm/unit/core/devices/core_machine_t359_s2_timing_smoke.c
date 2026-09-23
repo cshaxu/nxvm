@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -8,17 +9,17 @@
 #define T359_S2_WINDOW_BYTES 16u
 
 typedef struct t359_s2_timing_state {
-    type_unsigned_64 advanced_ticks;
+    lib_u64 advanced_ticks;
 } t359_s2_timing_state;
 
 typedef C_INT (*t359_s2_setup)(core_machine *machine, C_VOID *opaque);
 
 typedef struct t359_s2_word_seed {
-    type_unsigned_16 ax;
-    type_unsigned_16 cx;
-    type_unsigned_16 dx;
-    type_unsigned_16 memory;
-    type_unsigned_32 memory_address;
+    lib_u16 ax;
+    lib_u16 cx;
+    lib_u16 dx;
+    lib_u16 memory;
+    lib_u32 memory_address;
     C_INT write_memory;
 } t359_s2_word_seed;
 
@@ -26,15 +27,15 @@ static C_VOID t359_s2_timing_reset(C_VOID *opaque)
 {
     t359_s2_timing_state *state = (t359_s2_timing_state *)opaque;
 
-    if (state != STD_NULL) state->advanced_ticks = 0u;
+    if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
 static C_VOID t359_s2_timing_advance(C_VOID *opaque,
-    type_unsigned_64 elapsed_ticks)
+    lib_u64 elapsed_ticks)
 {
     t359_s2_timing_state *state = (t359_s2_timing_state *)opaque;
 
-    if (state != STD_NULL) state->advanced_ticks += elapsed_ticks;
+    if (state != LIB_NULL) state->advanced_ticks += elapsed_ticks;
 }
 
 static const core_machine_execution_provider t359_s2_timing_provider = {
@@ -46,9 +47,9 @@ static C_INT t359_s2_prepare(core_machine_cpu_profile profile,
     core_machine **out_machine, t359_s2_timing_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || state == STD_NULL ||
+    if (out_machine == LIB_NULL || state == LIB_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T359_S2_RESET_LINEAR, T359_S2_RESET_PHYSICAL,
@@ -65,15 +66,15 @@ static C_INT t359_s2_prepare(core_machine_cpu_profile profile,
 }
 
 static C_INT t359_s2_run_with_setup(core_machine *machine,
-    const type_unsigned_8 *program, STD_SIZE_T program_bytes,
-    type_unsigned_64 expected_ticks, t359_s2_timing_state *state,
+    const lib_u8 *program, lib_size program_bytes,
+    lib_u64 expected_ticks, t359_s2_timing_state *state,
     t359_s2_setup setup, C_VOID *opaque)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = { 0 };
-    C_INT passed = machine != STD_NULL && program != STD_NULL && state != STD_NULL &&
+    C_INT passed = machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
         core_machine_reset(machine) == TYPE_STATUS_OK &&
-        (setup == STD_NULL || setup(machine, opaque)) &&
+        (setup == LIB_NULL || setup(machine, opaque)) &&
         core_machine_memory_write(machine, T359_S2_RESET_LINEAR, program,
             program_bytes) == TYPE_STATUS_OK &&
         core_machine_run(machine, budget, &result) == TYPE_STATUS_OK &&
@@ -85,25 +86,25 @@ static C_INT t359_s2_run_with_setup(core_machine *machine,
         STD_PRINTF("T359 S2 timing expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
             (unsigned long long)expected_ticks, (unsigned long long)result.ticks,
             (unsigned long long)result.executed, (C_INT)result.reason,
-            state == STD_NULL ? 0ull : (unsigned long long)state->advanced_ticks,
-            program == STD_NULL ? 0u : program[0]);
+            state == LIB_NULL ? 0ull : (unsigned long long)state->advanced_ticks,
+            program == LIB_NULL ? 0u : program[0]);
     }
     return passed;
 }
 
 static C_INT t359_s2_run(core_machine *machine,
-    const type_unsigned_8 *program, STD_SIZE_T program_bytes,
-    type_unsigned_64 expected_ticks, t359_s2_timing_state *state)
+    const lib_u8 *program, lib_size program_bytes,
+    lib_u64 expected_ticks, t359_s2_timing_state *state)
 {
     return t359_s2_run_with_setup(machine, program, program_bytes,
-        expected_ticks, state, STD_NULL, STD_NULL);
+        expected_ticks, state, LIB_NULL, LIB_NULL);
 }
 
 static C_INT t359_s2_seed_words(core_machine *machine, C_VOID *opaque)
 {
     const t359_s2_word_seed *seed = (const t359_s2_word_seed *)opaque;
 
-    if (machine == STD_NULL || seed == STD_NULL) return 0;
+    if (machine == LIB_NULL || seed == LIB_NULL) return 0;
     machine->executor_cpu.data.ax = seed->ax;
     machine->executor_cpu.data.cx = seed->cx;
     machine->executor_cpu.data.dx = seed->dx;
@@ -113,23 +114,23 @@ static C_INT t359_s2_seed_words(core_machine *machine, C_VOID *opaque)
 }
 
 static C_INT t359_s2_test_profile_rows(core_machine_cpu_profile profile,
-    type_unsigned_64 add_register_ticks, type_unsigned_64 add_memory_ticks,
-    type_unsigned_64 sub_read_ticks, type_unsigned_64 mov_immediate_ticks,
-    type_unsigned_64 lea_ticks, type_unsigned_64 adjust_ticks,
-    type_unsigned_64 conversion_ticks)
+    lib_u64 add_register_ticks, lib_u64 add_memory_ticks,
+    lib_u64 sub_read_ticks, lib_u64 mov_immediate_ticks,
+    lib_u64 lea_ticks, lib_u64 adjust_ticks,
+    lib_u64 conversion_ticks)
 {
-    static const type_unsigned_8 add_register[] = { 0x01u, 0xc8u };
-    static const type_unsigned_8 add_memory[] = { 0x01u, 0x0eu, 0x00u, 0x10u };
-    static const type_unsigned_8 sub_read[] = { 0x2bu, 0x06u, 0x00u, 0x10u };
-    static const type_unsigned_8 mov_immediate[] = {
+    static const lib_u8 add_register[] = { 0x01u, 0xc8u };
+    static const lib_u8 add_memory[] = { 0x01u, 0x0eu, 0x00u, 0x10u };
+    static const lib_u8 sub_read[] = { 0x2bu, 0x06u, 0x00u, 0x10u };
+    static const lib_u8 mov_immediate[] = {
         0xc7u, 0x06u, 0x00u, 0x10u, 0x34u, 0x12u
     };
-    static const type_unsigned_8 lea[] = { 0x8du, 0x42u, 0x00u };
-    static const type_unsigned_8 aaa[] = { 0x37u };
-    static const type_unsigned_8 cwd[] = { 0x99u };
-    const type_unsigned_16 memory_value = 1u;
+    static const lib_u8 lea[] = { 0x8du, 0x42u, 0x00u };
+    static const lib_u8 aaa[] = { 0x37u };
+    static const lib_u8 cwd[] = { 0x99u };
+    const lib_u16 memory_value = 1u;
     t359_s2_timing_state state = { 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !t359_s2_prepare(profile, &machine, &state);
 
     if (!failed) {
@@ -166,12 +167,12 @@ static C_INT t359_s2_test_profile_rows(core_machine_cpu_profile profile,
 
 static C_INT t359_s2_test_setcc(C_VOID)
 {
-    static const type_unsigned_8 set_register[] = { 0x0fu, 0x95u, 0xc0u };
-    static const type_unsigned_8 set_memory[] = {
+    static const lib_u8 set_register[] = { 0x0fu, 0x95u, 0xc0u };
+    static const lib_u8 set_memory[] = {
         0x0fu, 0x95u, 0x06u, 0x00u, 0x10u
     };
     t359_s2_timing_state state = { 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &machine, &state);
 
@@ -189,10 +190,10 @@ static C_INT t359_s2_test_setcc(C_VOID)
 
 static C_INT t359_s2_test_legacy_odd_word_transfers(C_VOID)
 {
-    static const type_unsigned_8 add_memory[] = {
+    static const lib_u8 add_memory[] = {
         0x01u, 0x0eu, 0x01u, 0x10u
     };
-    static const type_unsigned_8 sub_read[] = {
+    static const lib_u8 sub_read[] = {
         0x2bu, 0x06u, 0x01u, 0x10u
     };
     static const core_machine_cpu_profile profiles[] = {
@@ -200,16 +201,16 @@ static C_INT t359_s2_test_legacy_odd_word_transfers(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const type_unsigned_64 add_ticks[] = { 30u, 18u, 11u };
-    static const type_unsigned_64 read_ticks[] = { 19u, 14u, 9u };
+    static const lib_u64 add_ticks[] = { 30u, 18u, 11u };
+    static const lib_u64 read_ticks[] = { 19u, 14u, 9u };
     const t359_s2_word_seed seed = {
-        0u, 1u, 0u, 1u, 0x1001u, TYPE_TRUE
+        0u, 1u, 0u, 1u, 0x1001u, LIB_TRUE
     };
-    type_unsigned_32 index;
+    lib_u32 index;
 
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0u]); ++index) {
         t359_s2_timing_state state = { 0u };
-        core_machine *machine = STD_NULL;
+        core_machine *machine = LIB_NULL;
         C_INT failed = !t359_s2_prepare(profiles[index], &machine, &state);
 
         if (!failed) {
@@ -228,16 +229,16 @@ static C_INT t359_s2_test_legacy_odd_word_transfers(C_VOID)
 
 static C_INT t359_s2_test_dynamic_multiply(C_VOID)
 {
-    static const type_unsigned_8 mul_zero[] = { 0xf7u, 0xe1u };
-    static const type_unsigned_8 imul_immediate8[] = { 0x6bu, 0xc1u, 0x04u };
-    static const type_unsigned_8 imul_immediate16[] = {
+    static const lib_u8 mul_zero[] = { 0xf7u, 0xe1u };
+    static const lib_u8 imul_immediate8[] = { 0x6bu, 0xc1u, 0x04u };
+    static const lib_u8 imul_immediate16[] = {
         0x69u, 0xc1u, 0x04u, 0x00u
     };
     const t359_s2_word_seed multiplier = {
-        0u, 16u, 0u, 0u, 0u, TYPE_FALSE
+        0u, 16u, 0u, 0u, 0u, LIB_FALSE
     };
     t359_s2_timing_state state = { 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &machine, &state);
 
@@ -255,30 +256,30 @@ static C_INT t359_s2_test_dynamic_multiply(C_VOID)
 
 static C_INT t359_s2_test_group3_rows(C_VOID)
 {
-    static const type_unsigned_8 not_register[] = { 0xf7u, 0xd1u };
-    static const type_unsigned_8 neg_memory[] = {
+    static const lib_u8 not_register[] = { 0xf7u, 0xd1u };
+    static const lib_u8 neg_memory[] = {
         0xf7u, 0x1eu, 0x00u, 0x10u
     };
-    static const type_unsigned_8 mul_register[] = { 0xf7u, 0xe1u };
-    static const type_unsigned_8 div_register[] = { 0xf7u, 0xf1u };
-    static const type_unsigned_8 idiv_register[] = { 0xf7u, 0xf9u };
-    static const type_unsigned_8 imul_immediate[] = {
+    static const lib_u8 mul_register[] = { 0xf7u, 0xe1u };
+    static const lib_u8 div_register[] = { 0xf7u, 0xf1u };
+    static const lib_u8 idiv_register[] = { 0xf7u, 0xf9u };
+    static const lib_u8 imul_immediate[] = {
         0x69u, 0xc1u, 0x04u, 0x00u
     };
-    static const type_unsigned_8 mul_memory[] = {
+    static const lib_u8 mul_memory[] = {
         0xf7u, 0x26u, 0x00u, 0x10u
     };
-    static const type_unsigned_8 idiv_memory[] = {
+    static const lib_u8 idiv_memory[] = {
         0x66u, 0xf7u, 0x3eu, 0x00u, 0x10u
     };
     const t359_s2_word_seed seed = {
-        0u, 1u, 0u, 1u, 0x1000u, TYPE_TRUE
+        0u, 1u, 0u, 1u, 0x1000u, LIB_TRUE
     };
     const core_machine_run_budget insufficient = { 1u, 105u };
     const core_machine_run_budget sufficient = { 1u, 106u };
     t359_s2_timing_state state = { 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_8086,
         &machine, &state);
 
@@ -290,7 +291,7 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
             (C_VOID *)&seed);
     }
     core_machine_destroy(machine);
-    machine = STD_NULL;
+    machine = LIB_NULL;
     state.advanced_ticks = 0u;
     failed |= !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80186, &machine,
         &state);
@@ -302,7 +303,7 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
             (C_VOID *)&seed);
     }
     core_machine_destroy(machine);
-    machine = STD_NULL;
+    machine = LIB_NULL;
     state.advanced_ticks = 0u;
     failed |= !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80286, &machine,
         &state);
@@ -322,7 +323,7 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
             (C_VOID *)&seed);
     }
     core_machine_destroy(machine);
-    machine = STD_NULL;
+    machine = LIB_NULL;
     state.advanced_ticks = 0u;
     failed |= !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
         &state);
@@ -361,35 +362,35 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
 
 static C_INT t359_s2_test_80386_width_prefixes(C_VOID)
 {
-    static const type_unsigned_8 operand_size_add[] = { 0x66u, 0x01u, 0xc8u };
-    static const type_unsigned_8 address_size_add[] = {
+    static const lib_u8 operand_size_add[] = { 0x66u, 0x01u, 0xc8u };
+    static const lib_u8 address_size_add[] = {
         0x67u, 0x01u, 0x0du, 0x00u, 0x10u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 combined_mov[] = {
+    static const lib_u8 combined_mov[] = {
         0x66u, 0x67u, 0xc7u, 0x05u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x34u, 0x12u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 combined_setcc[] = {
+    static const lib_u8 combined_setcc[] = {
         0x66u, 0x67u, 0x0fu, 0x95u, 0xc0u
     };
-    static const type_unsigned_8 operand_size_mov[] = { 0x66u, 0x89u, 0xc8u };
-    static const type_unsigned_8 address_size_mov[] = {
+    static const lib_u8 operand_size_mov[] = { 0x66u, 0x89u, 0xc8u };
+    static const lib_u8 address_size_mov[] = {
         0x67u, 0x8bu, 0x0du, 0x00u, 0x10u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 address_size_moffs[] = {
+    static const lib_u8 address_size_moffs[] = {
         0x67u, 0xa1u, 0x00u, 0x10u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 operand_size_immediate[] = {
+    static const lib_u8 operand_size_immediate[] = {
         0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 segment_add[] = {
+    static const lib_u8 segment_add[] = {
         0x26u, 0x01u, 0x0eu, 0x00u, 0x10u
     };
-    static const type_unsigned_8 locked_add[] = {
+    static const lib_u8 locked_add[] = {
         0xf0u, 0x01u, 0x0eu, 0x00u, 0x10u
     };
     t359_s2_timing_state state = { 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &machine, &state);
 
@@ -417,11 +418,11 @@ static C_INT t359_s2_test_80386_width_prefixes(C_VOID)
 
 static C_INT t359_s2_test_legacy_segment_override(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0x26u, 0x01u, 0x0eu, 0x00u, 0x10u
     };
     t359_s2_timing_state state = { 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_8086,
         &machine, &state);
 

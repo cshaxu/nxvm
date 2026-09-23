@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -22,11 +23,11 @@
 #define VM_T288_POST_COPY_TIMEOUT_MILLISECONDS 720000u
 
 static C_INT vm_t287_submit_input(vm_machine *session,
-    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+    lib_u16 scan_code, lib_u16 virtual_key, C_INT pressed)
 {
     core_machine_guest_input_event event = { 0 };
 
-    if (session == STD_NULL) return 0;
+    if (session == LIB_NULL) return 0;
     event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
@@ -37,11 +38,11 @@ static C_INT vm_t287_submit_input(vm_machine *session,
 static C_INT vm_t287_has_text(const vm_machine *session, const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
-    STD_SIZE_T character;
-    STD_SIZE_T length = STD_STRLEN(text);
+    lib_size cell;
+    lib_size character;
+    lib_size length = lib_text_length(text);
 
-    if (session == STD_NULL || text == STD_NULL || length == 0u ||
+    if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
         test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
@@ -55,9 +56,9 @@ static C_INT vm_t287_has_text(const vm_machine *session, const C_CHAR *text)
 static C_INT vm_t287_has_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
+    lib_size cell;
 
-    if (session == STD_NULL || test_vm_machine_capture_presentation(session,
+    if (session == LIB_NULL || test_vm_machine_capture_presentation(session,
             &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + 1u < VM_T287_TEXT_CELLS; ++cell) {
         if (frame.characters[cell] == 'C' && frame.characters[cell + 1u] == '>') {
@@ -78,8 +79,8 @@ static C_INT vm_t287_wait_for(const vm_machine *session, const C_CHAR *text,
     DWORD elapsed;
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
-        if ((text == STD_NULL && vm_t287_has_prompt(session)) ||
-            (text != STD_NULL && vm_t287_has_text(session, text))) return 1;
+        if ((text == LIB_NULL && vm_t287_has_prompt(session)) ||
+            (text != LIB_NULL && vm_t287_has_text(session, text))) return 1;
         if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
             return 0;
         }
@@ -97,17 +98,17 @@ static C_INT vm_t287_submit_return(vm_machine *session)
 
 static C_INT vm_t287_type_setup(vm_machine *session)
 {
-    static const type_unsigned_8 scan_codes[] = {
+    static const lib_u8 scan_codes[] = {
         0x2bu, 0x12u, 0x11u, 0x17u, 0x31u, 0x04u, 0x02u, 0x2bu, 0x1fu,
         0x12u, 0x14u, 0x16u, 0x19u, 0x34u, 0x12u, 0x2du, 0x12u, 0x1cu
     };
-    static const type_unsigned_8 virtual_keys[] = {
+    static const lib_u8 virtual_keys[] = {
         VK_OEM_5, 'E', 'W', 'I', 'N', '3', '1', VK_OEM_5, 'S', 'E', 'T',
         'U', 'P', VK_OEM_PERIOD, 'E', 'X', 'E', VK_RETURN
     };
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (session == STD_NULL) return 0;
+    if (session == LIB_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
             return 0;
@@ -123,15 +124,15 @@ static C_INT vm_t287_type_setup(vm_machine *session)
 
 static C_INT vm_t288_type_windows(vm_machine *session)
 {
-    static const type_unsigned_8 scan_codes[] = {
+    static const lib_u8 scan_codes[] = {
         0x11u, 0x17u, 0x31u, 0x20u, 0x18u, 0x11u, 0x1fu, 0x1cu
     };
-    static const type_unsigned_8 virtual_keys[] = {
+    static const lib_u8 virtual_keys[] = {
         'W', 'I', 'N', 'D', 'O', 'W', 'S', VK_RETURN
     };
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (session == STD_NULL) return 0;
+    if (session == LIB_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         if (!vm_t287_submit_input(session, scan_codes[index], virtual_keys[index], 1)) {
             return 0;
@@ -148,10 +149,10 @@ static C_INT vm_t288_type_windows(vm_machine *session)
 static C_VOID vm_t287_print_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T row;
-    STD_SIZE_T column;
+    lib_size row;
+    lib_size column;
 
-    if (session == STD_NULL || test_vm_machine_capture_presentation(session,
+    if (session == LIB_NULL || test_vm_machine_capture_presentation(session,
             &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
@@ -167,9 +168,9 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
 {
     core_machine_cpu_diagnostic diagnostic = {0};
     t_cpu cpu;
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (session == STD_NULL) return;
+    if (session == LIB_NULL) return;
     (C_VOID)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
     STD_PRINTF("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
@@ -201,7 +202,7 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
         }
     }
     cpu = test_core_machine_fixture_capture_cpu_after_run(session->core_machine);
-    if (session->core_machine != STD_NULL) {
+    if (session->core_machine != LIB_NULL) {
         STD_PRINTF("M5:T287:S23:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
             "gdtr=%08X/%04X idtr=%08X/%04X cs=%04X:%08X/%08X ds=%04X:%08X/%08X "
             "ss=%04X:%08X/%08X\n", cpu.data.cr0, cpu.data.cr2, cpu.data.cr3,
@@ -217,7 +218,7 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     const C_CHAR *stage = "create";
     C_INT observed_setup_inf = 0;
     C_INT passed = 0;
@@ -228,7 +229,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
-    if (session == STD_NULL) goto fail;
+    if (session == LIB_NULL) goto fail;
     if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
     stage = "boot";
     for (elapsed = 0u; elapsed < VM_T287_BOOT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
@@ -248,7 +249,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             !vm_t287_submit_return(session)) goto fail;
     }
     stage = "prompt";
-    if (!vm_t287_wait_for(session, STD_NULL, VM_T287_BOOT_TIMEOUT_MILLISECONDS)) goto fail;
+    if (!vm_t287_wait_for(session, LIB_NULL, VM_T287_BOOT_TIMEOUT_MILLISECONDS)) goto fail;
     stage = "setup-command";
     if (!vm_t287_type_setup(session)) goto fail;
     stage = "setup-result";
@@ -296,7 +297,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
 
 done:
-    if (session != STD_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return passed ? 0 : 1;
 

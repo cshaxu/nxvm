@@ -1,16 +1,17 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_VOID vadp_write_crtc(t_port *port, type_unsigned_8 index, type_unsigned_8 value)
+static C_VOID vadp_write_crtc(t_port *port, lib_u8 index, lib_u8 value)
 {
     core_machine_port_write(port, 0x03d4u, index);
     core_machine_port_write(port, 0x03d5u, value);
 }
 
-static type_unsigned_8 vadp_read_crtc(t_port *port, type_unsigned_8 index)
+static lib_u8 vadp_read_crtc(t_port *port, lib_u8 index)
 {
     core_machine_port_write(port, 0x03d4u, index);
     return core_machine_port_read(port, 0x03d5u);
@@ -19,7 +20,7 @@ static type_unsigned_8 vadp_read_crtc(t_port *port, type_unsigned_8 index)
 static C_INT vadp_capture(t_vadp *vadp, t_ram *memory,
     core_machine_display_snapshot *snapshot)
 {
-    STD_MEMSET(snapshot, 0, sizeof(*snapshot));
+    lib_memory_set(snapshot, 0, sizeof(*snapshot));
     return core_machine_vadp_capture_text_snapshot(vadp, memory, snapshot);
 }
 
@@ -30,13 +31,13 @@ C_INT main(C_VOID)
     t_port port;
     t_ram memory;
     t_vadp vadp;
-    type_unsigned_8 value;
-    type_unsigned_8 initial_status;
+    lib_u8 value;
+    lib_u8 initial_status;
     C_INT failed = 0;
 
-    STD_MEMSET(&memory, 0, sizeof(memory));
+    lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     failed |= core_machine_vadp_configure_text_timing(&vadp, &timing) !=
         TYPE_STATUS_OK;

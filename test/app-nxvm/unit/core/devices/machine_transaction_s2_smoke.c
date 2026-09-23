@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -10,18 +11,18 @@
 
 typedef struct transaction_probe {
     core_machine_trace_event events[256];
-    type_unsigned_32 count;
-    type_unsigned_32 port_value;
+    lib_u32 count;
+    lib_u32 port_value;
 } transaction_probe;
 
 typedef struct dma_source {
-    type_unsigned_8 value;
+    lib_u8 value;
 } dma_source;
 
 typedef struct transaction_state_probe {
-    type_unsigned_32 begin_count;
-    type_unsigned_32 commit_count;
-    type_unsigned_32 cancel_count;
+    lib_u32 begin_count;
+    lib_u32 commit_count;
+    lib_u32 cancel_count;
     core_machine_transaction_owner owner;
     core_machine_transaction_kind kind;
 } transaction_state_probe;
@@ -31,29 +32,29 @@ static C_VOID transaction_trace(C_VOID *opaque,
 {
     transaction_probe *probe = (transaction_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 256u) {
+    if (probe != LIB_NULL && probe->count < 256u) {
         probe->events[probe->count++] = *event;
     }
 }
 
 static type_status transaction_port_read(C_VOID *opaque,
-    type_unsigned_16 port, type_unsigned_32 *out_value)
+    lib_u16 port, lib_u32 *out_value)
 {
     transaction_probe *probe = (transaction_probe *)opaque;
 
     (C_VOID)port;
-    if (probe == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (probe == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = probe->port_value;
     return TYPE_STATUS_OK;
 }
 
 static type_status transaction_port_write(C_VOID *opaque,
-    type_unsigned_16 port, type_unsigned_32 value)
+    lib_u16 port, lib_u32 value)
 {
     transaction_probe *probe = (transaction_probe *)opaque;
 
     (C_VOID)port;
-    if (probe == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (probe == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     probe->port_value = value;
     return TYPE_STATUS_OK;
 }
@@ -62,22 +63,22 @@ static C_VOID transaction_dma_read(C_VOID *opaque, t_latch *latch)
 {
     dma_source *source = (dma_source *)opaque;
 
-    if (source != STD_NULL && latch != STD_NULL) {
+    if (source != LIB_NULL && latch != LIB_NULL) {
         latch->data.byte = source->value;
     }
 }
 
 static C_VOID transaction_state_trace(C_VOID *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
-    core_machine_transaction_phase phase, type_unsigned_32 address,
-    type_unsigned_32 value, type_unsigned_32 detail)
+    core_machine_transaction_phase phase, lib_u32 address,
+    lib_u32 value, lib_u32 detail)
 {
     transaction_state_probe *probe = (transaction_state_probe *)opaque;
 
     (C_VOID)address;
     (C_VOID)value;
     (C_VOID)detail;
-    if (probe == STD_NULL) return;
+    if (probe == LIB_NULL) return;
     probe->owner = owner;
     probe->kind = kind;
     if (phase == CORE_MACHINE_TRANSACTION_PHASE_BEGIN) ++probe->begin_count;
@@ -87,10 +88,10 @@ static C_VOID transaction_state_trace(C_VOID *opaque,
 
 static C_INT transaction_has_pair(const transaction_probe *probe,
     core_machine_trace_event_type begin_type,
-    core_machine_trace_event_type end_type, type_unsigned_8 owner,
-    type_unsigned_8 kind)
+    core_machine_trace_event_type end_type, lib_u8 owner,
+    lib_u8 kind)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
     for (index = 0u; index + 1u < probe->count; ++index) {
         if (probe->events[index].type == begin_type &&
@@ -106,7 +107,7 @@ static C_INT transaction_has_pair(const transaction_probe *probe,
 static C_INT transaction_has_provenance_pair(const transaction_probe *probe,
     core_machine_cpu_memory_access_provenance provenance)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
     for (index = 0u; index + 1u < probe->count; ++index) {
         if (probe->events[index].type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
@@ -120,11 +121,11 @@ static C_INT transaction_has_provenance_pair(const transaction_probe *probe,
 }
 
 static C_INT transaction_has_port_write_value(const transaction_probe *probe,
-    type_unsigned_16 port, type_unsigned_8 value)
+    lib_u16 port, lib_u8 value)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL) return 0;
+    if (probe == LIB_NULL) return 0;
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
@@ -140,11 +141,11 @@ static C_INT transaction_has_port_write_value(const transaction_probe *probe,
 static C_INT transaction_find_external_cycle(const transaction_probe *probe,
     core_machine_trace_event_type type,
     core_machine_cpu_memory_access_provenance provenance,
-    type_unsigned_32 *out_index)
+    lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = 0u; index < probe->count; ++index) {
         if (probe->events[index].type == type &&
             probe->events[index].detail == provenance) {
@@ -154,14 +155,14 @@ static C_INT transaction_find_external_cycle(const transaction_probe *probe,
     }
     return 0;
 }
-static type_unsigned_32 transaction_count_external_cycles(
+static lib_u32 transaction_count_external_cycles(
     const transaction_probe *probe, core_machine_trace_event_type type,
     core_machine_cpu_memory_access_provenance provenance)
 {
-    type_unsigned_32 index;
-    type_unsigned_32 count = 0u;
+    lib_u32 index;
+    lib_u32 count = 0u;
 
-    if (probe == STD_NULL) return 0u;
+    if (probe == LIB_NULL) return 0u;
     for (index = 0u; index < probe->count; ++index) {
         if (probe->events[index].type == type &&
             probe->events[index].detail == provenance) ++count;
@@ -187,22 +188,22 @@ C_INT main(C_VOID)
         transaction_port_read, transaction_port_write
     };
     static const core_machine_dma_channel_provider dma_provider = {
-        transaction_dma_read, STD_NULL, STD_NULL
+        transaction_dma_read, LIB_NULL, LIB_NULL
     };
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0xebu, 0x01u, 0x90u, 0xb0u, 0x5au, 0xe6u, 0xe0u,
         0xa0u, 0x10u, 0u, 0xf4u
     };
-    static const type_unsigned_8 reset_code[] = {
+    static const lib_u8 reset_code[] = {
         0xb0u, 0x6cu, 0xe6u, 0xe0u, 0xf4u
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_config config = {0};
     core_machine_trace_provider trace;
     core_machine_run_budget budget = {5u, 0u};
     core_machine_run_result result;
     transaction_probe probe = {{{0}}, 0u, 0u};
-    type_unsigned_8 data = 0x3cu;
+    lib_u8 data = 0x3cu;
     t_latch latch = {0};
     t_dma primary = {0};
     t_dma secondary = {0};
@@ -212,8 +213,8 @@ C_INT main(C_VOID)
     core_machine_transaction_state transaction;
     transaction_state_probe state_probe = {0};
     dma_source source = {0xa5u};
-    type_unsigned_32 external_begin = 0u;
-    type_unsigned_32 external_commit = 0u;
+    lib_u32 external_begin = 0u;
+    lib_u32 external_commit = 0u;
     C_INT failed = 0;
 
     trace.callback = transaction_trace;
@@ -292,7 +293,7 @@ C_INT main(C_VOID)
 
     core_machine_port_initialize(&port);
     failed |= core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
-        STD_NULL) != TYPE_STATUS_OK;
+        LIB_NULL) != TYPE_STATUS_OK;
     core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u);
     core_machine_dma_reset(&latch, &primary, &secondary);
     failed |= core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
@@ -300,7 +301,7 @@ C_INT main(C_VOID)
     transaction_dma_program_channel2(&port);
     core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_transaction_initialize(&transaction);
-    STD_MEMSET(&state_probe, 0, sizeof(state_probe));
+    lib_memory_set(&state_probe, 0, sizeof(state_probe));
     core_machine_transaction_bind_trace(&transaction, transaction_state_trace,
         &state_probe);
     /* 8237A normal timing selects the channel, then completes S1..S4 before

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -13,12 +14,12 @@ static C_VOID enter_leave_reset(C_VOID *opaque)
 {
     enter_leave_machine *state = (enter_leave_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider enter_leave_provider = {
-    enter_leave_reset, STD_NULL
+    enter_leave_reset, LIB_NULL
 };
 
 static C_INT enter_leave_prepare(core_machine_cpu_profile profile,
@@ -30,7 +31,7 @@ static C_INT enter_leave_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &enter_leave_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -54,13 +55,13 @@ static C_VOID enter_leave_seed(enter_leave_machine *state)
 
 static C_INT enter_leave_sregs_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 && STD_MEMCMP(&before->data.cs,
-        &after->data.cs, sizeof(before->data.cs)) == 0 && STD_MEMCMP(
+    return lib_memory_compare(&before->data.es, &after->data.es,
+        sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
+        &after->data.cs, sizeof(before->data.cs)) == 0 && lib_memory_compare(
         &before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
-        sizeof(before->data.ds)) == 0 && STD_MEMCMP(&before->data.fs,
-        &after->data.fs, sizeof(before->data.fs)) == 0 && STD_MEMCMP(
+        lib_memory_compare(&before->data.ds, &after->data.ds,
+        sizeof(before->data.ds)) == 0 && lib_memory_compare(&before->data.fs,
+        &after->data.fs, sizeof(before->data.fs)) == 0 && lib_memory_compare(
         &before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
@@ -79,16 +80,16 @@ static C_INT enter_leave_cpu_same(const t_cpu *before, const t_cpu *after)
         enter_leave_sregs_same(before, after);
 }
 
-static C_INT enter_leave_read(enter_leave_machine *state, type_unsigned_32 address,
-    type_unsigned_8 width, type_unsigned_32 *value)
+static C_INT enter_leave_read(enter_leave_machine *state, lib_u32 address,
+    lib_u8 width, lib_u32 *value)
 {
     *value = 0u;
     return core_machine_memory_read_physical(&state->machine->executor_memory,
         address, TYPE_REFERENCE_OF(*value), width) == TYPE_STATUS_OK;
 }
 
-static C_INT enter_leave_run(enter_leave_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, core_machine_run_budget budget, t_cpu *after,
+static C_INT enter_leave_run(enter_leave_machine *state, const lib_u8 *code,
+    lib_u8 bytes, core_machine_run_budget budget, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *status,
     core_machine_run_result *result)
 {
@@ -103,17 +104,17 @@ static C_INT enter_leave_run(enter_leave_machine *state, const type_unsigned_8 *
 }
 
 static C_INT enter_leave_expect_image(enter_leave_machine *state,
-    type_unsigned_32 address, type_unsigned_8 width, type_unsigned_32 expected)
+    lib_u32 address, lib_u8 width, lib_u32 expected)
 {
-    type_unsigned_32 observed;
+    lib_u32 observed;
 
     return enter_leave_read(state, address, width, &observed) && observed ==
         (width == 2u ? (expected & 0xffffu) : expected);
 }
 
 static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width, type_unsigned_16 allocation,
-    type_unsigned_8 level, C_INT stack32)
+    const lib_u8 *code, lib_u8 bytes, lib_u8 width, lib_u16 allocation,
+    lib_u8 level, C_INT stack32)
 {
     enter_leave_machine state;
     t_cpu before;
@@ -121,12 +122,12 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    type_unsigned_32 old_stack;
-    type_unsigned_32 frame;
-    type_unsigned_32 final_stack;
-    type_unsigned_32 display0 = 0x11112222u;
-    type_unsigned_32 display1 = 0x33334444u;
-    type_unsigned_8 effective_level = level;
+    lib_u32 old_stack;
+    lib_u32 frame;
+    lib_u32 final_stack;
+    lib_u32 display0 = 0x11112222u;
+    lib_u32 display1 = 0x33334444u;
+    lib_u8 effective_level = level;
     C_INT failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
@@ -134,7 +135,7 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
         enter_leave_seed(&state);
         if (stack32)
         {
-            state.machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
+            state.machine->executor_cpu.data.ss.seg.data.big = LIB_TRUE;
             state.machine->executor_cpu.data.esp = 0x00008000u;
         }
         if (width == 4u)
@@ -143,7 +144,7 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
             state.machine->executor_cpu.data.sp;
         if (effective_level > 1u)
         {
-            type_unsigned_32 source = width == 2u ?
+            lib_u32 source = width == 2u ?
                 state.machine->executor_cpu.data.bp :
                 state.machine->executor_cpu.data.ebp;
 
@@ -197,7 +198,7 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
 }
 
 static C_INT enter_leave_test_leave(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width, C_INT stack32)
+    const lib_u8 *code, lib_u8 bytes, lib_u8 width, C_INT stack32)
 {
     enter_leave_machine state;
     t_cpu before;
@@ -205,15 +206,15 @@ static C_INT enter_leave_test_leave(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    type_unsigned_32 old_bp = width == 2u ? 0xface4321u : 0xface4321u;
-    type_unsigned_32 frame = stack32 ? 0x00008020u : 0x00008020u;
+    lib_u32 old_bp = width == 2u ? 0xface4321u : 0xface4321u;
+    lib_u32 frame = stack32 ? 0x00008020u : 0x00008020u;
     C_INT failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
     {
         enter_leave_seed(&state);
         if (stack32)
-            state.machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
+            state.machine->executor_cpu.data.ss.seg.data.big = LIB_TRUE;
         state.machine->executor_cpu.data.ebp = width == 2u ? 0xe1e28020u :
             frame;
         failed |= core_machine_memory_write(state.machine, frame, &old_bp,
@@ -249,13 +250,13 @@ static C_INT enter_leave_test_defaults(C_VOID)
     static const core_machine_cpu_profile supported[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386};
-    static const type_unsigned_8 enter0[] = {0xc8u, 0x04u, 0x00u, 0x00u};
-    static const type_unsigned_8 enter1[] = {0xc8u, 0x00u, 0x00u, 0x01u};
-    static const type_unsigned_8 enter3[] = {0xc8u, 0x04u, 0x00u, 0x03u};
-    static const type_unsigned_8 enter33[] = {0xc8u, 0x02u, 0x00u, 0x21u};
-    static const type_unsigned_8 enter255[] = {0xc8u, 0x00u, 0x00u, 0xffu};
-    static const type_unsigned_8 leave[] = {0xc9u};
-    type_unsigned_8 profile;
+    static const lib_u8 enter0[] = {0xc8u, 0x04u, 0x00u, 0x00u};
+    static const lib_u8 enter1[] = {0xc8u, 0x00u, 0x00u, 0x01u};
+    static const lib_u8 enter3[] = {0xc8u, 0x04u, 0x00u, 0x03u};
+    static const lib_u8 enter33[] = {0xc8u, 0x02u, 0x00u, 0x21u};
+    static const lib_u8 enter255[] = {0xc8u, 0x00u, 0x00u, 0xffu};
+    static const lib_u8 leave[] = {0xc9u};
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(supported) / sizeof(supported[0]);
          ++profile)
@@ -286,13 +287,13 @@ static C_INT enter_leave_test_defaults(C_VOID)
 
 static C_INT enter_leave_test_attributes(C_VOID)
 {
-    static const type_unsigned_8 enter32[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
-    static const type_unsigned_8 leave32[] = {0x66u, 0xc9u};
-    static const type_unsigned_8 enter67[] = {0x67u, 0xc8u, 0x04u, 0x00u, 0x00u};
-    static const type_unsigned_8 leave67[] = {0x67u, 0xc9u};
-    static const type_unsigned_8 enter3267[] = {0x66u, 0x67u, 0xc8u, 0x04u, 0x00u,
+    static const lib_u8 enter32[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
+    static const lib_u8 leave32[] = {0x66u, 0xc9u};
+    static const lib_u8 enter67[] = {0x67u, 0xc8u, 0x04u, 0x00u, 0x00u};
+    static const lib_u8 leave67[] = {0x67u, 0xc9u};
+    static const lib_u8 enter3267[] = {0x66u, 0x67u, 0xc8u, 0x04u, 0x00u,
         0x01u};
-    static const type_unsigned_8 leave3267[] = {0x66u, 0x67u, 0xc9u};
+    static const lib_u8 leave3267[] = {0x66u, 0x67u, 0xc9u};
 
     if (!enter_leave_test_enter(CORE_MACHINE_CPU_PROFILE_80386, enter32,
         sizeof(enter32), 4u, 8u, 2u, 0))
@@ -316,7 +317,7 @@ static C_INT enter_leave_test_attributes(C_VOID)
 }
 
 static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes)
+    const lib_u8 *code, lib_u8 bytes)
 {
     enter_leave_machine state;
     t_cpu before;
@@ -324,8 +325,8 @@ static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    type_unsigned_32 image = 0xdecafbad;
-    type_unsigned_32 observed;
+    lib_u32 image = 0xdecafbad;
+    lib_u32 observed;
     C_INT failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
@@ -353,9 +354,9 @@ static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
 
 static C_INT enter_leave_test_rejections(C_VOID)
 {
-    static const type_unsigned_8 enter[] = {0xc8u, 0x04u, 0x00u, 0x00u};
-    static const type_unsigned_8 leave[] = {0xc9u};
-    static const type_unsigned_8 attributes[][6] = {
+    static const lib_u8 enter[] = {0xc8u, 0x04u, 0x00u, 0x00u};
+    static const lib_u8 leave[] = {0xc9u};
+    static const lib_u8 attributes[][6] = {
         {0x66u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u},
         {0x67u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u},
         {0x66u, 0x67u, 0xc8u, 0x04u, 0x00u, 0x00u},
@@ -363,20 +364,20 @@ static C_INT enter_leave_test_rejections(C_VOID)
         {0x67u, 0xc9u, 0u, 0u, 0u, 0u},
         {0x66u, 0x67u, 0xc9u, 0u, 0u, 0u}
     };
-    static const type_unsigned_8 attribute_bytes[] = {5u, 5u, 6u, 2u, 2u, 3u};
-    static const type_unsigned_8 lock[][7] = {
+    static const lib_u8 attribute_bytes[] = {5u, 5u, 6u, 2u, 2u, 3u};
+    static const lib_u8 lock[][7] = {
         {0xf0u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u, 0u},
         {0xf0u, 0xc9u, 0u, 0u, 0u, 0u, 0u},
         {0xf0u, 0x66u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u},
         {0xf0u, 0x67u, 0xc9u, 0u, 0u, 0u, 0u},
         {0xf0u, 0x66u, 0x67u, 0xc8u, 0x04u, 0x00u, 0x00u}
     };
-    static const type_unsigned_8 lock_bytes[] = {5u, 2u, 6u, 3u, 7u};
+    static const lib_u8 lock_bytes[] = {5u, 2u, 6u, 3u, 7u};
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286};
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    lib_u8 profile;
+    lib_u8 form;
 
     if (!enter_leave_test_reject_case(CORE_MACHINE_CPU_PROFILE_8086, enter,
         sizeof(enter)) || !enter_leave_test_reject_case(
@@ -404,20 +405,20 @@ static C_INT enter_leave_test_rejections(C_VOID)
 
 static C_INT enter_leave_boot_protected(enter_leave_machine *state)
 {
-    static const type_unsigned_8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    static const lib_u8 gdt[] = {
         0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
         0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x40u, 0u, 0x92u, 0u, 0u
     };
-    static const type_unsigned_8 bootstrap[] = {
+    static const lib_u8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u,
         0x8eu, 0xc0u, 0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u, 0xbcu,
         0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const type_unsigned_8 halt[] = {0xf4u};
+    static const lib_u8 halt[] = {0xf4u};
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x0100u, pointer,
@@ -433,14 +434,14 @@ static C_INT enter_leave_boot_protected(enter_leave_machine *state)
 
 static C_INT enter_leave_test_protected_stack32(C_VOID)
 {
-    static const type_unsigned_8 enter[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
-    static const type_unsigned_8 leave[] = {0x66u, 0xc9u};
+    static const lib_u8 enter[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
+    static const lib_u8 leave[] = {0x66u, 0xc9u};
     enter_leave_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_unsigned_32 parent = 0x11112222u;
+    lib_u32 parent = 0x11112222u;
     C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
@@ -449,7 +450,7 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
     if (!failed)
     {
         enter_leave_seed(&state);
-        state.machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
+        state.machine->executor_cpu.data.ss.seg.data.big = LIB_TRUE;
         state.machine->executor_cpu.data.esp = 0x00008000u;
         state.machine->executor_cpu.data.ebp = 0x00009000u;
         failed |= core_machine_memory_write(state.machine, 0xcffcu, &parent,
@@ -498,17 +499,17 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
 
 static C_INT enter_leave_test_protected_faults(C_VOID)
 {
-    static const type_unsigned_8 enter[] = {0xc8u, 0x00u, 0x00u, 0x03u};
-    static const type_unsigned_8 leave[] = {0xc9u};
+    static const lib_u8 enter[] = {0xc8u, 0x00u, 0x00u, 0x03u};
+    static const lib_u8 leave[] = {0xc9u};
     enter_leave_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    type_unsigned_16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
+    lib_u16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
         0xeeeeu};
-    type_unsigned_32 value;
+    lib_u32 value;
     C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
@@ -517,16 +518,16 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
     if (!failed)
     {
         enter_leave_seed(&state);
-        state.machine->executor_cpu.data.ss.seg.data.expdown = TYPE_TRUE;
+        state.machine->executor_cpu.data.ss.seg.data.expdown = LIB_TRUE;
         state.machine->executor_cpu.data.ss.limit = 0x18u;
         state.machine->executor_cpu.data.esp = 0x12340020u;
         stack_image[0] = 0x1111u;
         stack_image[1] = 0x2222u;
         failed |= core_machine_memory_write(state.machine, 0xcffeu,
-            &stack_image[0], sizeof(type_unsigned_16)) != TYPE_STATUS_OK ||
+            &stack_image[0], sizeof(lib_u16)) != TYPE_STATUS_OK ||
             core_machine_memory_write(state.machine, 0xcffcu, &stack_image[1],
-            sizeof(type_unsigned_16)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x4018u, &stack_image[2], sizeof(type_unsigned_16)) !=
+            sizeof(lib_u16)) != TYPE_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x4018u, &stack_image[2], sizeof(lib_u16)) !=
             TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
             enter, sizeof(enter)) != TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
@@ -559,7 +560,7 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
         state.machine->executor_cpu.data.ss.limit = 0x1fu;
         state.machine->executor_cpu.data.ebp = 0xe1e20020u;
         failed |= core_machine_memory_write(state.machine, 0x4020u, stack_image,
-            sizeof(type_unsigned_16)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(lib_u16)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x2000u, leave, sizeof(leave)) != TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -579,13 +580,13 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
 
 static C_INT enter_leave_test_irq_no_shadow(C_VOID)
 {
-    static const type_unsigned_8 codes[][5] = {
+    static const lib_u8 codes[][5] = {
         {0xc8u, 0x04u, 0x00u, 0x00u, 0x90u},
         {0xc9u, 0x90u, 0u, 0u, 0u}
     };
-    static const type_unsigned_8 bytes[] = {5u, 2u};
-    static const type_unsigned_8 halt = 0xf4u;
-    type_unsigned_8 form;
+    static const lib_u8 bytes[] = {5u, 2u};
+    static const lib_u8 halt = 0xf4u;
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form)
     {
@@ -594,10 +595,10 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        type_unsigned_16 offset = 0x100u;
-        type_unsigned_16 segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
-        type_unsigned_16 old_bp = 0x4567u;
+        lib_u16 offset = 0x100u;
+        lib_u16 segment = 0u;
+        lib_u16 frame_ip = 0u;
+        lib_u16 old_bp = 0x4567u;
         C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -620,7 +621,7 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
         if (!failed)
         {
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave,
@@ -633,7 +634,7 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != (form == 0u ? 4u : 1u) ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,

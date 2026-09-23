@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,12 +13,12 @@ static C_VOID clts_s62_reset(C_VOID *opaque)
 {
     clts_s62_machine *state = (clts_s62_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider clts_s62_provider = {
-    clts_s62_reset, STD_NULL
+    clts_s62_reset, LIB_NULL
 };
 
 static C_INT clts_s62_prepare(clts_s62_machine *state,
@@ -29,7 +30,7 @@ static C_INT clts_s62_prepare(clts_s62_machine *state,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &clts_s62_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -53,7 +54,7 @@ static C_VOID clts_s62_seed(clts_s62_machine *state)
 
 static C_INT clts_s62_data_equal(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data, &after->data, sizeof(before->data)) == 0;
+    return lib_memory_compare(&before->data, &after->data, sizeof(before->data)) == 0;
 }
 
 static C_INT clts_s62_nonstack_data_equal(const t_cpu *before, const t_cpu *after)
@@ -65,22 +66,22 @@ static C_INT clts_s62_nonstack_data_equal(const t_cpu *before, const t_cpu *afte
         after->data.ebp == before->data.ebp &&
         after->data.esi == before->data.esi &&
         after->data.edi == before->data.edi &&
-        STD_MEMCMP(&before->data.cs, &after->data.cs,
+        lib_memory_compare(&before->data.cs, &after->data.cs,
             sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
+        lib_memory_compare(&before->data.ds, &after->data.ds,
             sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.es, &after->data.es,
+        lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss,
+        lib_memory_compare(&before->data.ss, &after->data.ss,
             sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs,
+        lib_memory_compare(&before->data.fs, &after->data.fs,
             sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs,
+        lib_memory_compare(&before->data.gs, &after->data.gs,
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT clts_s62_run(clts_s62_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, type_unsigned_32 cycles, type_status *status,
+static C_INT clts_s62_run(clts_s62_machine *state, const lib_u8 *code,
+    lib_u8 bytes, lib_u32 cycles, type_status *status,
     core_machine_run_result *result, core_machine_cpu_diagnostic *diagnostic)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
@@ -93,7 +94,7 @@ static C_INT clts_s62_run(clts_s62_machine *state, const type_unsigned_8 *code,
 }
 
 static C_INT clts_s62_expect_ud(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes)
+    const lib_u8 *code, lib_u8 bytes)
 {
     clts_s62_machine state;
     t_cpu before;
@@ -125,13 +126,13 @@ static C_INT clts_s62_test_real_and_attributes(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 attributes[][4] = {
+    static const lib_u8 attributes[][4] = {
         {0x66u,0x0fu,0x06u,0u}, {0x67u,0x0fu,0x06u,0u},
         {0x66u,0x67u,0x0fu,0x06u}
     };
-    static const type_unsigned_8 plain[] = {0x0fu,0x06u};
-    type_unsigned_8 profile;
-    type_unsigned_8 attribute;
+    static const lib_u8 plain[] = {0x0fu,0x06u};
+    lib_u8 profile;
+    lib_u8 attribute;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         clts_s62_machine state;
@@ -166,7 +167,7 @@ static C_INT clts_s62_test_real_and_attributes(C_VOID)
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
         type_status status = TYPE_STATUS_INVALID_STATE;
-        const type_unsigned_8 bytes = attribute == 2u ? 4u : 3u;
+        const lib_u8 bytes = attribute == 2u ? 4u : 3u;
         C_INT failed = !clts_s62_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -201,19 +202,19 @@ static C_INT clts_s62_test_real_and_attributes(C_VOID)
         sizeof(plain));
 }
 
-static C_VOID clts_s62_enter_protected(clts_s62_machine *state, type_unsigned_8 cpl,
+static C_VOID clts_s62_enter_protected(clts_s62_machine *state, lib_u8 cpl,
     C_INT vm86)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
     TYPE_SET_BIT(cpu->data.cr0, VCPU_CR0_PE);
-    cpu->data.cs.selector = (type_unsigned_16)(0x0008u | cpl);
+    cpu->data.cs.selector = (lib_u16)(0x0008u | cpl);
     cpu->data.cs.base = 0u;
     cpu->data.cs.limit = 0xffffu;
     cpu->data.cs.dpl = cpl;
-    cpu->data.cs.flagValid = TYPE_TRUE;
+    cpu->data.cs.flagValid = LIB_TRUE;
     cpu->data.cs.sregtype = SREG_CODE;
-    cpu->data.cs.seg.executable = TYPE_TRUE;
+    cpu->data.cs.seg.executable = LIB_TRUE;
     if (vm86) {
         TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_VM);
         cpu->data.cs.dpl = 3u;
@@ -222,12 +223,12 @@ static C_VOID clts_s62_enter_protected(clts_s62_machine *state, type_unsigned_8 
 
 static C_INT clts_s62_test_privilege(C_VOID)
 {
-    static const type_unsigned_8 code[] = {0x0fu,0x06u};
+    static const lib_u8 code[] = {0x0fu,0x06u};
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    type_unsigned_8 profile;
-    type_unsigned_8 cpl;
+    lib_u8 profile;
+    lib_u8 cpl;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         clts_s62_machine state;
@@ -297,12 +298,12 @@ static C_INT clts_s62_test_privilege(C_VOID)
 
 static C_INT clts_s62_test_lock(C_VOID)
 {
-    static const type_unsigned_8 forms[][5] = {
+    static const lib_u8 forms[][5] = {
         {0xf0u,0x0fu,0x06u,0u,0u}, {0xf0u,0x66u,0x0fu,0x06u,0u},
         {0xf0u,0x67u,0x0fu,0x06u,0u}, {0xf0u,0x66u,0x67u,0x0fu,0x06u}
     };
-    static const type_unsigned_8 bytes[] = {3u,4u,4u,5u};
-    type_unsigned_8 index;
+    static const lib_u8 bytes[] = {3u,4u,4u,5u};
+    lib_u8 index;
 
     for (index = 0u; index != sizeof(forms) / sizeof(forms[0]); ++index)
         if (!clts_s62_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, forms[index],
@@ -313,16 +314,16 @@ static C_INT clts_s62_test_lock(C_VOID)
 
 static C_INT clts_s62_test_irq(C_VOID)
 {
-    static const type_unsigned_8 code[] = {0x0fu,0x06u,0x90u};
-    static const type_unsigned_8 hlt = 0xf4u;
+    static const lib_u8 code[] = {0x0fu,0x06u,0x90u};
+    static const lib_u8 hlt = 0xf4u;
     clts_s62_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_unsigned_16 offset = 0x0100u;
-    type_unsigned_16 segment = 0u;
-    type_unsigned_16 frame_ip = 0u;
+    lib_u16 offset = 0x0100u;
+    lib_u16 segment = 0u;
+    lib_u16 frame_ip = 0u;
     C_INT failed = !clts_s62_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -337,7 +338,7 @@ static C_INT clts_s62_test_irq(C_VOID)
         clts_s62_seed(&state);
         state.machine->executor_cpu.data.cr0 |= VCPU_CR0_TS;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        STD_MEMSET(&irq, 0, sizeof(irq));
+        lib_memory_set(&irq, 0, sizeof(irq));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -348,7 +349,7 @@ static C_INT clts_s62_test_irq(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (type_unsigned_16)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
+            after.data.ss.base + (lib_u16)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
             sizeof(frame_ip)) != TYPE_STATUS_OK || after.data.eip != 0x101u ||
             frame_ip != 2u || !clts_s62_nonstack_data_equal(&before, &after) ||
             after.data.cr0 != (before.data.cr0 & ~VCPU_CR0_TS) ||

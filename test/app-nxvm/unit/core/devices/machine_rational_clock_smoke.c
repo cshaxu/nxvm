@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/clock.h"
@@ -7,23 +8,23 @@
 #define RATIONAL_CLOCK_STEPS 4u
 
 typedef struct rational_clock_probe {
-    type_unsigned_64 ticks[RATIONAL_CLOCK_STEPS];
-    type_unsigned_32 count;
+    lib_u64 ticks[RATIONAL_CLOCK_STEPS];
+    lib_u32 count;
 } rational_clock_probe;
 
 static C_VOID rational_clock_probe_reset(C_VOID *opaque)
 {
     rational_clock_probe *probe = (rational_clock_probe *)opaque;
 
-    if (probe != STD_NULL) STD_MEMSET(probe, 0, sizeof(*probe));
+    if (probe != LIB_NULL) lib_memory_set(probe, 0, sizeof(*probe));
 }
 
 static C_VOID rational_clock_probe_advance(C_VOID *opaque,
-    type_unsigned_64 elapsed_ticks)
+    lib_u64 elapsed_ticks)
 {
     rational_clock_probe *probe = (rational_clock_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < RATIONAL_CLOCK_STEPS) {
+    if (probe != LIB_NULL && probe->count < RATIONAL_CLOCK_STEPS) {
         probe->ticks[probe->count++] = elapsed_ticks;
     }
 }
@@ -36,7 +37,7 @@ static const core_machine_execution_provider rational_clock_provider = {
 static C_INT rational_clock_prepare(core_machine **out_machine,
     rational_clock_probe *probe)
 {
-    const type_unsigned_8 program[RATIONAL_CLOCK_STEPS] = {
+    const lib_u8 program[RATIONAL_CLOCK_STEPS] = {
         0x90u, 0x90u, 0x90u, 0x90u
     };
     core_machine_config config = { 0 };
@@ -56,7 +57,7 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
         core_machine_memory_write(*out_machine, 0xfffffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK) {
         core_machine_destroy(*out_machine);
-        *out_machine = STD_NULL;
+        *out_machine = LIB_NULL;
         return 0;
     }
     return 1;
@@ -64,7 +65,7 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
 
 static C_INT rational_clock_restart(core_machine *machine)
 {
-    const type_unsigned_8 program[RATIONAL_CLOCK_STEPS] = {
+    const lib_u8 program[RATIONAL_CLOCK_STEPS] = {
         0x90u, 0x90u, 0x90u, 0x90u
     };
 
@@ -73,11 +74,11 @@ static C_INT rational_clock_restart(core_machine *machine)
             sizeof(program)) == TYPE_STATUS_OK;
 }
 
-static C_INT rational_clock_run(core_machine *machine, type_unsigned_32 quantum)
+static C_INT rational_clock_run(core_machine *machine, lib_u32 quantum)
 {
     core_machine_run_budget budget = { quantum, 0u };
     core_machine_run_result result;
-    type_unsigned_32 remaining = RATIONAL_CLOCK_STEPS;
+    lib_u32 remaining = RATIONAL_CLOCK_STEPS;
 
     while (remaining != 0u) {
         if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
@@ -98,7 +99,7 @@ C_INT main(C_VOID)
     rational_clock_probe single = { { 0u }, 0u };
     rational_clock_probe reset = { { 0u }, 0u };
     rational_clock_probe split = { { 0u }, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = 0;
 
     failed |= core_machine_clock_domain_initialize(&domain, &ratio) !=
@@ -121,14 +122,14 @@ C_INT main(C_VOID)
         failed |= !rational_clock_restart(machine);
         failed |= !rational_clock_run(machine, 2u);
         core_machine_destroy(machine);
-        machine = STD_NULL;
+        machine = LIB_NULL;
     } else {
         failed = 1;
     }
     if (!failed && rational_clock_prepare(&machine, &split)) {
         failed |= !rational_clock_run(machine, 1u);
         core_machine_destroy(machine);
-        machine = STD_NULL;
+        machine = LIB_NULL;
     } else {
         failed = 1;
     }
@@ -137,8 +138,8 @@ C_INT main(C_VOID)
         split.count != RATIONAL_CLOCK_STEPS ||
         single.ticks[0] != 5u || single.ticks[1] != 4u ||
         single.ticks[2] != 5u || single.ticks[3] != 4u ||
-        STD_MEMCMP(reset.ticks, single.ticks, sizeof(single.ticks)) != 0 ||
-        STD_MEMCMP(reset.ticks, split.ticks, sizeof(single.ticks)) != 0;
+        lib_memory_compare(reset.ticks, single.ticks, sizeof(single.ticks)) != 0 ||
+        lib_memory_compare(reset.ticks, split.ticks, sizeof(single.ticks)) != 0;
 
     core_machine_destroy(machine);
     if (failed) return 1;

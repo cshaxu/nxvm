@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -13,25 +14,25 @@
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 image[MODEL40_FDD_BYTES];
+    static lib_u8 image[MODEL40_FDD_BYTES];
     vm_machine_config model339_config = {0};
-    vm_machine *model40 = STD_NULL;
-    vm_machine *model40_360k = STD_NULL;
-    vm_machine *default_session = STD_NULL;
-    vm_machine *model339 = STD_NULL;
+    vm_machine *model40 = LIB_NULL;
+    vm_machine *model40_360k = LIB_NULL;
+    vm_machine *default_session = LIB_NULL;
+    vm_machine *model339 = LIB_NULL;
     core_machine_media_info info;
     core_machine_media_result result;
     C_INT failed = 0;
 
     if (vm_model40_fixture_create(&model40) != TYPE_STATUS_OK ||
-        model40 == STD_NULL || model40->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        model40 == LIB_NULL || model40->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         model40->fdd.data.ncyl != 80u || model40->fdd.data.nhead != 2u ||
         model40->fdd.data.nsector != 15u || model40->fdd.data.nbyte != 512u ||
         vm_machine_fdd_image_size(&model40->fdd) != MODEL40_FDD_BYTES ||
         vm_machine_fdd_replace_bytes(&model40->fdd, image, sizeof(image) - 1u) ==
-            TYPE_FALSE ||
+            LIB_FALSE ||
         vm_machine_fdd_replace_bytes(&model40->fdd, image, sizeof(image)) !=
-            TYPE_FALSE ||
+            LIB_FALSE ||
         core_machine_media_query(model40->media_registry, VM_MACHINE_MEDIA_FDD_ID,
             &info, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.cylinders != 80u || info.geometry.heads != 2u ||
@@ -51,26 +52,26 @@ C_INT main(C_VOID)
     }
 
     {
-        type_unsigned_8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
-        type_unsigned_8 odd_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-        static type_unsigned_8 compatible_media[MODEL40_COMPATIBLE_MEDIA_BYTES];
+        lib_u8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
+        lib_u8 odd_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+        static lib_u8 compatible_media[MODEL40_COMPATIBLE_MEDIA_BYTES];
 
-        STD_MEMSET(odd_bytes, 1, sizeof(odd_bytes));
+        lib_memory_set(odd_bytes, 1, sizeof(odd_bytes));
         if (vm_model40_fixture_create_bytes_with_floppy_format(even_bytes, odd_bytes,
                 VM_MACHINE_FLOPPY_FORMAT_360K, &model40_360k) !=
-                TYPE_STATUS_OK || model40_360k == STD_NULL ||
+                TYPE_STATUS_OK || model40_360k == LIB_NULL ||
             model40_360k->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
             model40_360k->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
             model40_360k->fdd.data.ncyl != 40u ||
             vm_machine_fdd_replace_bytes(&model40_360k->fdd, compatible_media,
-                sizeof(compatible_media)) != TYPE_FALSE) {
+                sizeof(compatible_media)) != LIB_FALSE) {
             failed = 1;
             goto done;
         }
     }
 
     model339_config.profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339;
-    if (vm_test_default_pc_at_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != TYPE_STATUS_OK ||
         vm_test_ibm_5170_session_create(&model339_config, &model339) != TYPE_STATUS_OK ||
         default_session->fdd.data.nsector != 18u ||
         model339->fdd.data.nsector != 15u) {

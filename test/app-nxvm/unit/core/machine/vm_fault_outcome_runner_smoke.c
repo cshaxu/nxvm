@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -14,9 +15,9 @@
 
 static C_INT vm_fault_outcome_prepare(vm_machine *session)
 {
-    const type_unsigned_8 program[] = { 0xd6u };
+    const lib_u8 program[] = { 0xd6u };
 
-    if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
+    if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
     return test_core_machine_fixture_prepare_real_mode_execution(
             session->core_machine, 0u) && core_machine_memory_write(session->core_machine, 0u, program,
         sizeof(program)) == TYPE_STATUS_OK &&
@@ -25,7 +26,7 @@ static C_INT vm_fault_outcome_prepare(vm_machine *session)
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     vm_machine_fault_outcome outcome;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run;
@@ -33,7 +34,7 @@ C_INT main(C_VOID)
     core_machine_lifecycle lifecycle;
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
         !vm_fault_outcome_prepare(session)) goto fail;
     vm_machine_control_start(&session->control);
     failed |= vm_machine_control_is_running(&session->control);

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/machine/machine_private.h"
@@ -9,31 +10,31 @@
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_machine_config invalid_config = {
         .profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
     };
     vm_machine_assets missing_assets = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_cpu_profile cpu_profile;
-    STD_SIZE_T memory_bytes;
+    lib_size memory_bytes;
     core_machine_d4_platform_observation d4;
     core_machine_speaker_observation speaker;
-    type_unsigned_32 value = 0u;
-    type_unsigned_8 rom_byte = 0u;
+    lib_u32 value = 0u;
+    lib_u8 rom_byte = 0u;
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     C_INT failed = 0;
-    type_unsigned_8 fifo_count;
+    lib_u8 fifo_count;
 
     even[0x3ff8u] = 0x26u;
     odd[0x3ff8u] = 0x90u;
 
     failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+        TYPE_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
         session->core_machine->retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 2048u ||
@@ -50,8 +51,8 @@ C_INT main(C_VOID)
         session->core_machine->transaction_contract.external_access_wait_windows[6].space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
         session->core_machine->transaction_contract.external_access_wait_windows[6].first_address != 0x000a0000u ||
         session->core_machine->transaction_contract.external_access_wait_windows[6].last_address != 0x000affffu ||
-        session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE ||
-        session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled != TYPE_TRUE ||
+        session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled != LIB_TRUE ||
+        session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled != LIB_TRUE ||
         session->core_machine->transaction_contract.external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
         session->core_machine->dma_clock.numerator != 1u ||

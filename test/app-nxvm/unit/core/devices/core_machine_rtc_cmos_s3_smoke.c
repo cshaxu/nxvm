@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -44,15 +45,15 @@ static C_VOID rtc_cmos_s3_finalize(rtc_cmos_s3_fixture *fixture)
     core_machine_port_finalize(&fixture->port);
 }
 
-static C_VOID rtc_cmos_s3_write(core_machine_rtc *rtc, type_unsigned_8 index,
-    type_unsigned_8 value)
+static C_VOID rtc_cmos_s3_write(core_machine_rtc *rtc, lib_u8 index,
+    lib_u8 value)
 {
     core_machine_rtc_select_register(rtc, index);
     core_machine_rtc_write_selected(rtc, value);
 }
 
-static type_unsigned_8 rtc_cmos_s3_read(core_machine_rtc *rtc,
-    type_unsigned_8 index)
+static lib_u8 rtc_cmos_s3_read(core_machine_rtc *rtc,
+    lib_u8 index)
 {
     core_machine_rtc_select_register(rtc, index);
     return core_machine_rtc_read_selected(rtc);
@@ -61,7 +62,7 @@ static type_unsigned_8 rtc_cmos_s3_read(core_machine_rtc *rtc,
 static C_INT rtc_cmos_s3_test_events_and_irq8(C_VOID)
 {
     rtc_cmos_s3_fixture fixture;
-    type_unsigned_8 flags;
+    lib_u8 flags;
     C_INT failed = 0;
 
     rtc_cmos_s3_initialize(&fixture);
@@ -144,8 +145,8 @@ static C_INT rtc_cmos_s3_test_cmos_adapter(C_VOID)
 {
     core_machine_config config = { 0 };
     core_machine_rtc_cmos_config rtc_config = { 0 };
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
     C_INT masked = 0;
     C_INT failed = 0;
 
@@ -232,7 +233,7 @@ static C_INT rtc_cmos_s3_test_phase_and_divider(C_VOID)
 static C_INT rtc_cmos_s3_test_alarm_deadline(C_VOID)
 {
     rtc_cmos_s3_fixture fixture;
-    type_unsigned_64 ticks = 0u;
+    lib_u64 ticks = 0u;
     C_INT failed = 0;
 
     rtc_cmos_s3_initialize(&fixture);

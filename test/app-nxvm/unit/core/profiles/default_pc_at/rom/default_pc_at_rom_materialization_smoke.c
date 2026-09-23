@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -6,16 +7,16 @@
 
 int main(C_VOID)
 {
-    type_unsigned_8 image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES] = {0};
+    lib_u8 image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES] = {0};
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         .bios_count = 1u
     };
     vm_machine_assets assets = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_memory_route route;
-    type_unsigned_8 observed[2] = {0};
-    type_unsigned_8 overwrite = 0u;
+    lib_u8 observed[2] = {0};
+    lib_u8 overwrite = 0u;
     C_INT failed;
 
     image[0u] = 0x56u;
@@ -23,7 +24,7 @@ int main(C_VOID)
     image[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES - 16u] = 0xf4u;
     assets.bios[0u] = (vm_machine_asset_bytes) { image, sizeof(image) };
     failed = vm_machine_create_from_assets(&config, &assets, &session) !=
-            TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_external_firmware(
+            TYPE_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
                 session->profile_plan);
     if (!failed) {
         failed |= core_machine_memory_query(session->core_machine, 0x000f0000u,

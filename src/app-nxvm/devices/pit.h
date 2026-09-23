@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/controller_interface.h"
@@ -22,12 +23,12 @@ typedef C_VOID (*core_machine_pit_output_provider)(C_VOID *owner,
 
 typedef struct {
     /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
-    type_unsigned_8 cw[4];
+    lib_u8 cw[4];
 
-    type_unsigned_16 init[3];  /* initial counts */
-    type_unsigned_16 count[3]; /* counter[0-2] */
-    type_unsigned_16 latch[3]; /* latch counts */
-    type_unsigned_8 status_latch[3]; /* read-back status bytes */
+    lib_u16 init[3];  /* initial counts */
+    lib_u16 count[3]; /* counter[0-2] */
+    lib_u16 latch[3]; /* latch counts */
+    lib_u8 status_latch[3]; /* read-back status bytes */
 
     type_bool flagReady[3]; /* flag of ready */
     type_bool flagLatch[3]; /* flag of latch status */
@@ -39,9 +40,9 @@ typedef struct {
     type_bool flagTrigger[3]; /* rising GATE trigger for modes 1/5 */
     type_bool flagRestart[3]; /* rising GATE reload for modes 2/3 */
 
-    type_unsigned_32 reload[3]; /* effective binary/BCD reload; zero is never stored */
-    type_unsigned_32 remaining[3]; /* effective count exposed through count[] */
-    type_unsigned_32 phase[3]; /* remaining high/low phase for mode 3 */
+    lib_u32 reload[3]; /* effective binary/BCD reload; zero is never stored */
+    lib_u32 remaining[3]; /* effective count exposed through count[] */
+    lib_u32 phase[3]; /* remaining high/low phase for mode 3 */
 
     t_pit_data_status_rw flagRead[3];  /* flag of low byte read */
     t_pit_data_status_rw flagWrite[3]; /* flag of low byte write */
@@ -96,17 +97,17 @@ C_VOID core_machine_pit_initialize_as(t_pit *pit, t_port *port,
     core_machine_pit_personality personality);
 /* One PIT mechanism may be composed at a documented four-port topology. */
 C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
-    type_unsigned_16 base_port);
+    lib_u16 base_port);
 C_VOID core_machine_pit_reset(t_pit *pit);
-C_VOID core_machine_pit_advance(t_pit *pit, type_unsigned_64 elapsed_ticks);
+C_VOID core_machine_pit_advance(t_pit *pit, lib_u64 elapsed_ticks);
 C_VOID core_machine_pit_finalize(t_pit *pit);
-C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
+C_VOID core_machine_pit_set_output(t_pit *pit, lib_u8 id,
     core_machine_pit_output_provider provider, C_VOID *owner);
-C_VOID core_machine_pit_set_gate(t_pit *pit, type_unsigned_8 id,
+C_VOID core_machine_pit_set_gate(t_pit *pit, lib_u8 id,
     type_bool asserted);
-type_bool core_machine_pit_get_output(const t_pit *pit, type_unsigned_8 id);
+type_bool core_machine_pit_get_output(const t_pit *pit, lib_u8 id);
 type_status core_machine_pit_ticks_until_output(const t_pit *pit,
-    type_unsigned_8 id, type_unsigned_64 *out_ticks);
+    lib_u8 id, lib_u64 *out_ticks);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

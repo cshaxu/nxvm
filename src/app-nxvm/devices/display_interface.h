@@ -1,6 +1,7 @@
 /* Product-neutral display-mode notification and text snapshot contracts. */
 #ifndef CORE_MACHINE_DISPLAY_INTERFACE_H
 #define CORE_MACHINE_DISPLAY_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -23,25 +24,25 @@
     (CORE_MACHINE_DISPLAY_TEXT_GLYPH_COUNT * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS)
 
 typedef struct core_machine_vadp_text_timing {
-    type_unsigned_32 active_display_ticks;
-    type_unsigned_32 horizontal_blank_ticks;
-    type_unsigned_32 vertical_retrace_ticks;
+    lib_u32 active_display_ticks;
+    lib_u32 horizontal_blank_ticks;
+    lib_u32 vertical_retrace_ticks;
 } core_machine_vadp_text_timing;
 
 /* A construction-time character generator is normalized by VM composition;
  * VADP thereafter owns the copied 8x16 glyph state exposed to presenters. */
 typedef struct core_machine_vadp_text_glyph_config {
     type_bool present;
-    type_unsigned_8 bytes[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
+    lib_u8 bytes[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
 } core_machine_vadp_text_glyph_config;
 
 typedef struct core_machine_vadp_ega_sequencer_config {
-    type_unsigned_32 aperture_base;
-    type_unsigned_32 aperture_bytes;
-    type_unsigned_8 reset;
-    type_unsigned_8 clocking_mode;
-    type_unsigned_8 map_mask;
-    type_unsigned_8 memory_mode;
+    lib_u32 aperture_base;
+    lib_u32 aperture_bytes;
+    lib_u8 reset;
+    lib_u8 clocking_mode;
+    lib_u8 map_mask;
+    lib_u8 memory_mode;
     type_bool planar_ega;
 } core_machine_vadp_ega_sequencer_config;
 
@@ -53,23 +54,23 @@ typedef enum core_machine_vadp_ega_personality {
 /* Composition declares board-fixed CECG switch state; VADP owns the
  * resulting register state and reset behavior. */
 typedef struct core_machine_vadp_cecg_config {
-    type_unsigned_8 control_mode;
-    type_unsigned_8 environment;
-    type_unsigned_8 display_type;
-    type_unsigned_8 initial_mode;
+    lib_u8 control_mode;
+    lib_u8 environment;
+    lib_u8 display_type;
+    lib_u8 initial_mode;
     type_bool lightpen_switch_open;
     type_bool cpu_video_memory_disabled;
     type_bool color_io_base;
-    type_unsigned_8 sw1_closed_mask;
-    type_unsigned_8 clock_switch_select;
+    lib_u8 sw1_closed_mask;
+    lib_u8 clock_switch_select;
     type_bool special_features_present;
     type_bool vertical_retrace_irq_enabled;
     type_bool odd_even_high_page;
 } core_machine_vadp_cecg_config;
 
 typedef struct core_machine_vadp_ega_controller_config {
-    type_unsigned_8 graphics[CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT];
-    type_unsigned_8 attribute[CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT];
+    lib_u8 graphics[CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT];
+    lib_u8 attribute[CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT];
 } core_machine_vadp_ega_controller_config;
 
 typedef enum core_machine_display_kind {
@@ -86,26 +87,26 @@ typedef C_VOID (*core_machine_display_provider)(C_VOID *context);
 
 typedef struct core_machine_display_snapshot {
     core_machine_display_kind kind;
-    type_unsigned_16 columns;
-    type_unsigned_16 rows;
+    lib_u16 columns;
+    lib_u16 rows;
     /* Current CRTC character-cell scan-line count, not a font-asset default. */
-    type_unsigned_8 text_cell_height;
-    type_unsigned_8 cursor_top;
-    type_unsigned_8 cursor_bottom;
+    lib_u8 text_cell_height;
+    lib_u8 cursor_top;
+    lib_u8 cursor_bottom;
     /* Text coordinates are column then row, relative to display start. */
-    type_unsigned_8 cursor_x;
-    type_unsigned_8 cursor_y;
+    lib_u8 cursor_x;
+    lib_u8 cursor_y;
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
     type_bool text_glyphs_present;
-    type_unsigned_8 text_glyphs[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
-    type_unsigned_8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
-    type_unsigned_8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
-    type_unsigned_16 pixel_width;
-    type_unsigned_16 pixel_height;
-    type_unsigned_8 pixels[CORE_MACHINE_DISPLAY_MAX_PIXELS];
-    type_unsigned_32 palette_rgb[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES];
+    lib_u8 text_glyphs[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
+    lib_u8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
+    lib_u8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
+    lib_u16 pixel_width;
+    lib_u16 pixel_height;
+    lib_u8 pixels[CORE_MACHINE_DISPLAY_MAX_PIXELS];
+    lib_u32 palette_rgb[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES];
 } core_machine_display_snapshot;
 
 /* A copied-frame consumer may acknowledge this opaque generation only after a
@@ -113,7 +114,7 @@ typedef struct core_machine_display_snapshot {
  * input to the selected frame (CGA/text VRAM, EGA planar, or VGA chain-4).
  * Other display paths retain normal capture. */
 typedef struct core_machine_display_snapshot_observation {
-    type_unsigned_64 generation;
+    lib_u64 generation;
     type_bool generation_reliable;
     type_bool capture_required;
 } core_machine_display_snapshot_observation;

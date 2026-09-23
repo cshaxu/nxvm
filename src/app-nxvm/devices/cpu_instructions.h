@@ -8,6 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -48,14 +49,14 @@ typedef type_bool t_cpuins_data_prefix;
 
 typedef struct {
     t_cpu_data_sreg *rsreg;
-    type_unsigned_32 offset;
+    lib_u32 offset;
 } t_cpuins_data_logical;
 
 typedef struct {
     type_bool flagWrite;
-    type_unsigned_32 byte;
-    type_unsigned_32 linear;
-    type_unsigned_64 data;
+    lib_u32 byte;
+    lib_u32 linear;
+    lib_u64 data;
 } t_cpuins_data_memory;
 
 typedef struct {
@@ -73,28 +74,28 @@ typedef struct {
     /* memory management */
     t_cpuins_data_logical mrm;
     type_virtual_address rrm, rr;
-    type_unsigned_64 crm, cr, cimm;
+    lib_u64 crm, cr, cimm;
     type_bool flagMem; /* if rm is in memory */
     type_bool flagLock;
     type_bool source_lsl_granularity_valid;
     type_bool source_lsl_page_granular;
 
     /* arithmetic operands */
-    type_unsigned_64 opr1, opr2, result;
-    type_unsigned_32 bit;
+    lib_u64 opr1, opr2, result;
+    lib_u32 bit;
     t_cpuins_data_arithtype type;
-    type_unsigned_32 udf; /* undefined eflags bits */
+    lib_u32 udf; /* undefined eflags bits */
 
     /* exception handler */
-    type_unsigned_32 except, excode;
+    lib_u32 except, excode;
 
     /* debugger */
-    type_unsigned_32 linear;
+    lib_u32 linear;
     type_bool flagWR, flagWW, flagWE;
-    type_unsigned_32 wrLinear, wwLinear, weLinear;
+    lib_u32 wrLinear, wwLinear, weLinear;
     type_bool watch_hit;
-    type_unsigned_8 watch_kind;
-    type_unsigned_32 watch_address;
+    lib_u8 watch_kind;
+    lib_u32 watch_address;
 
     /* CPU retirement observation */
     type_bool flagIgnore;
@@ -102,11 +103,11 @@ typedef struct {
      * recorded stack accesses. This is executor bookkeeping for CPU debug
      * breakpoints, not the copied debugger-observation limit. */
     t_cpuins_data_memory mem[CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY];
-    type_unsigned_16 msize;
-    type_unsigned_8 oplen;
-    type_unsigned_8 opcodes[15];
-    type_unsigned_16 reccs;
-    type_unsigned_32 receip;
+    lib_u16 msize;
+    lib_u8 oplen;
+    lib_u8 opcodes[15];
+    lib_u16 reccs;
+    lib_u32 receip;
 } t_cpuins_data;
 
 typedef struct t_cpuins t_cpuins;
@@ -118,7 +119,7 @@ typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
 
 typedef type_status (*core_machine_cpu_firmware_interrupt_provider)(
-    C_VOID *opaque, type_unsigned_8 vector,
+    C_VOID *opaque, lib_u8 vector,
     const core_machine_firmware_interrupt_frame *frame,
     core_machine_firmware_interrupt_result *result, type_bool *out_handled);
 typedef C_VOID (*core_machine_cpu_instruction_handler)(
@@ -153,8 +154,8 @@ typedef enum core_machine_cpu_external_cycle_phase {
 
 typedef C_VOID (*core_machine_cpu_external_cycle_provider)(C_VOID *context,
     core_machine_cpu_external_cycle_phase phase,
-    core_machine_cpu_external_cycle_space space, type_unsigned_32 address,
-    type_unsigned_8 bytes, type_bool write,
+    core_machine_cpu_external_cycle_space space, lib_u32 address,
+    lib_u8 bytes, type_bool write,
     core_machine_cpu_memory_access_provenance provenance);
 
 typedef struct core_machine_cpu_instruction_metadata {
@@ -167,8 +168,8 @@ typedef struct core_machine_cpu_instruction_metadata {
  * names only the byte-layout components used by 80386 Jcc's `m` timing term.
  * It never validates operands or applies instruction semantics. */
 typedef struct core_machine_cpu_instruction_lexeme {
-    type_unsigned_8 byte_count;
-    type_unsigned_8 component_count;
+    lib_u8 byte_count;
+    lib_u8 component_count;
     type_bool available;
 } core_machine_cpu_instruction_lexeme;
 
@@ -220,21 +221,21 @@ struct core_machine_cpu_execution_context {
     type_bool debug_trap_pending;
     type_bool debug_tf_before;
     type_bool debug_rf_before;
-    type_unsigned_32 debug_trap_cause;
+    lib_u32 debug_trap_cause;
     /* A temporary CPU-owned lexical fetch may validate bytes without any
      * architectural, transaction, trace, or diagnostic publication. */
     type_bool preview_mode;
     core_machine_cpu_memory_access_provenance memory_access_provenance;
-    type_unsigned_32 prefetch_linear;
-    type_unsigned_32 prefetch_expected_linear;
-    type_unsigned_8 prefetch_bytes[15];
-    type_unsigned_8 prefetch_count;
-    type_unsigned_8 prefetch_capacity;
+    lib_u32 prefetch_linear;
+    lib_u32 prefetch_expected_linear;
+    lib_u8 prefetch_bytes[15];
+    lib_u8 prefetch_count;
+    lib_u8 prefetch_capacity;
     type_bool prefetch_valid;
     type_bool prefetch_expected_valid;
     type_bool prefetch_reservation_valid;
-    type_unsigned_32 prefetch_reservation_linear;
-    type_unsigned_8 prefetch_reservation_count;
+    lib_u32 prefetch_reservation_linear;
+    lib_u8 prefetch_reservation_count;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     type_bool cpu_80386_cr_mov_ignores_mod;
@@ -264,13 +265,13 @@ C_VOID core_machine_cpu_execution_context_bind_transaction(
     core_machine_transaction_state *transaction);
 type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
-    type_unsigned_16 selector);
+    lib_u16 selector);
 type_bool core_machine_cpu_execution_read_linear(
-    core_machine_cpu_execution_context *context, type_unsigned_32 linear,
-    type_virtual_address rdata, type_unsigned_8 byte);
+    core_machine_cpu_execution_context *context, lib_u32 linear,
+    type_virtual_address rdata, lib_u8 byte);
 type_bool core_machine_cpu_execution_write_linear(
-    core_machine_cpu_execution_context *context, type_unsigned_32 linear,
-    type_virtual_address rdata, type_unsigned_8 byte);
+    core_machine_cpu_execution_context *context, lib_u32 linear,
+    type_virtual_address rdata, lib_u8 byte);
 C_VOID core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context);
 /* Core invalidates queued instruction bytes after a stopped-state physical write.
@@ -290,9 +291,9 @@ type_bool core_machine_cpu_execution_consume_instruction_fault_delivery(
 C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
 core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
-    core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm);
+    core_machine_cpu_instruction_space space, lib_u8 opcode, lib_u8 modrm);
 type_bool core_machine_cpu_instruction_lexeme_scan(
-    const type_unsigned_8 *bytes, type_unsigned_8 available_bytes,
+    const lib_u8 *bytes, lib_u8 available_bytes,
     core_machine_cpu_profile profile, type_bool code_32,
     core_machine_cpu_instruction_lexeme *out_lexeme);
 type_bool core_machine_cpu_execution_preview_lexeme(

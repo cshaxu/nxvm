@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -10,18 +11,18 @@
 
 typedef struct refresh_probe {
     core_machine_trace_event events[REFRESH_PROBE_EVENT_CAPACITY];
-    type_unsigned_32 count;
+    lib_u32 count;
 } refresh_probe;
 
 typedef struct refresh_dma_source {
-    type_unsigned_8 value;
+    lib_u8 value;
 } refresh_dma_source;
 
 static C_VOID refresh_trace(C_VOID *opaque, const core_machine_trace_event *event)
 {
     refresh_probe *probe = (refresh_probe *)opaque;
 
-    if (probe != STD_NULL && event != STD_NULL &&
+    if (probe != LIB_NULL && event != LIB_NULL &&
         probe->count < REFRESH_PROBE_EVENT_CAPACITY) {
         probe->events[probe->count++] = *event;
     }
@@ -31,7 +32,7 @@ static C_VOID refresh_dma_read(C_VOID *opaque, t_latch *latch)
 {
     refresh_dma_source *source = (refresh_dma_source *)opaque;
 
-    if (source != STD_NULL && latch != STD_NULL) {
+    if (source != LIB_NULL && latch != LIB_NULL) {
         latch->data.byte = source->value;
     }
 }
@@ -50,12 +51,12 @@ static C_VOID refresh_program_dma_channel2(t_port *port)
 
 static C_INT refresh_find_transaction_after(const refresh_probe *probe,
     core_machine_trace_event_type phase, core_machine_transaction_owner owner,
-    core_machine_transaction_kind kind, type_unsigned_32 start,
-    type_unsigned_32 *out_index)
+    core_machine_transaction_kind kind, lib_u32 start,
+    lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = start; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
@@ -70,11 +71,11 @@ static C_INT refresh_find_transaction_after(const refresh_probe *probe,
 
 static C_INT refresh_find_hold_after(const refresh_probe *probe,
     core_machine_trace_event_type phase, core_machine_transaction_owner owner,
-    type_unsigned_32 start, type_unsigned_32 *out_index)
+    lib_u32 start, lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = start; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
@@ -87,11 +88,11 @@ static C_INT refresh_find_hold_after(const refresh_probe *probe,
 }
 
 static C_INT refresh_has_cpu_transaction_between(const refresh_probe *probe,
-    type_unsigned_32 first, type_unsigned_32 last)
+    lib_u32 first, lib_u32 last)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || first >= last) return 0;
+    if (probe == LIB_NULL || first >= last) return 0;
     for (index = first + 1u; index < last; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
@@ -109,8 +110,8 @@ static C_INT refresh_non_d4_contract(C_VOID)
     core_machine_config config = {0};
     core_machine_trace_provider trace;
     refresh_probe probe = {{{0}}, 0u};
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 index = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 index = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
@@ -133,7 +134,7 @@ static C_INT refresh_non_d4_contract(C_VOID)
 C_INT main(C_VOID)
 {
     static const core_machine_dma_channel_provider dma_provider = {
-        refresh_dma_read, STD_NULL, STD_NULL
+        refresh_dma_read, LIB_NULL, LIB_NULL
     };
     core_machine_config config = {0};
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
@@ -141,22 +142,22 @@ C_INT main(C_VOID)
     core_machine_dma_request_binding binding = {0};
     refresh_probe probe = {{{0}}, 0u};
     refresh_dma_source source = {0xa5u};
-    core_machine *machine = STD_NULL;
-    type_unsigned_8 byte = 0u;
-    type_unsigned_32 start;
-    type_unsigned_32 refresh_request = 0u;
-    type_unsigned_32 refresh_acknowledge = 0u;
-    type_unsigned_32 refresh_begin = 0u;
-    type_unsigned_32 refresh_commit = 0u;
-    type_unsigned_32 refresh_release = 0u;
-    type_unsigned_32 dma_begin = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u8 byte = 0u;
+    lib_u32 start;
+    lib_u32 refresh_request = 0u;
+    lib_u32 refresh_acknowledge = 0u;
+    lib_u32 refresh_begin = 0u;
+    lib_u32 refresh_commit = 0u;
+    lib_u32 refresh_release = 0u;
+    lib_u32 dma_begin = 0u;
     core_machine_time_observation observation;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.dma_cycle_wait_quanta = 1u;
-    config.transaction_contract.dma_cycle_bus_ready_gate_enabled = TYPE_TRUE;
-    config.auxiliary_pit_present = TYPE_TRUE;
+    config.transaction_contract.dma_cycle_bus_ready_gate_enabled = LIB_TRUE;
+    config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = refresh_trace;
     trace.context = &probe;

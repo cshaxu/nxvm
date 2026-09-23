@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -20,8 +21,8 @@
 
 static C_VOID vm_machine_runner_fail(vm_machine *session)
 {
-    if (session == STD_NULL) return;
-    session->runner_failed = TYPE_TRUE;
+    if (session == LIB_NULL) return;
+    session->runner_failed = LIB_TRUE;
     vm_machine_control_fault(&session->control);
 }
 
@@ -31,10 +32,10 @@ C_VOID vm_machine_runner_run(vm_machine *session)
     core_machine_run_result result;
     vm_machine_control_state *control;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL) return;
+    if (session == LIB_NULL || session->core_machine == LIB_NULL) return;
     control = &session->control;
     while (vm_machine_executor_state_is_active(control->state)) {
-        if (session->executor_callback != STD_NULL)
+        if (session->executor_callback != LIB_NULL)
             session->executor_callback(session->executor_callback_context);
         if (!vm_machine_executor_state_is_active(control->state)) break;
         if (vm_machine_executor_state_take_reset(control->state)) {
@@ -88,7 +89,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
          * precede wall-clock pacing: otherwise Standard can defer a pending
          * pause, reset, or debug completion behind a host wait even though
          * Core is no longer executing. */
-        if (session->executor_callback != STD_NULL)
+        if (session->executor_callback != LIB_NULL)
             session->executor_callback(session->executor_callback_context);
         if (!vm_machine_executor_state_is_active(control->state)) break;
         {
@@ -97,7 +98,7 @@ C_VOID vm_machine_runner_run(vm_machine *session)
                 continue;
             }
         }
-        (C_VOID)vm_machine_publish_display(session, TYPE_FALSE);
+        (C_VOID)vm_machine_publish_display(session, LIB_FALSE);
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             /* Core reset the requested processor state before returning. */
             vm_machine_debug_reset(&session->debug);

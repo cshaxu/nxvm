@@ -7,6 +7,7 @@
 extern "C"
 {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/controller_interface.h"
@@ -14,7 +15,7 @@ extern "C"
 
 #define CORE_MACHINE_DEVICE_DMA "Intel 8237A"
 
-    typedef type_unsigned_8 t_page;
+    typedef lib_u8 t_page;
     typedef struct t_latch t_latch;
     typedef struct t_ram t_ram;
     typedef struct core_machine_transaction_state core_machine_transaction_state;
@@ -31,34 +32,34 @@ extern "C"
     typedef struct
     {
 
-        type_unsigned_16 baseAddr[VDMA_CHANNEL_COUNT];  /* base address */
-        type_unsigned_16 baseCount[VDMA_CHANNEL_COUNT]; /* base word count */
-        type_unsigned_16 currAddr[VDMA_CHANNEL_COUNT];  /* current address */
-        type_unsigned_16 currCount[VDMA_CHANNEL_COUNT]; /* current word count */
-        type_unsigned_8 mode[VDMA_CHANNEL_COUNT];       /* mode register */
+        lib_u16 baseAddr[VDMA_CHANNEL_COUNT];  /* base address */
+        lib_u16 baseCount[VDMA_CHANNEL_COUNT]; /* base word count */
+        lib_u16 currAddr[VDMA_CHANNEL_COUNT];  /* current address */
+        lib_u16 currCount[VDMA_CHANNEL_COUNT]; /* current word count */
+        lib_u8 mode[VDMA_CHANNEL_COUNT];       /* mode register */
         t_page page[VDMA_CHANNEL_COUNT];                /* page register */
         /* The AT page-register block also decodes eight spare, readable
          * latches.  They do not select a DMA channel, but firmware uses
          * them as ordinary board-visible reset state. */
         t_page page_spare[8];
 
-        type_unsigned_8 command; /* command register */
-        type_unsigned_8 status;  /* status register */
-        type_unsigned_8 mask;    /* mask register */
-        type_unsigned_8 request; /* request register */
+        lib_u8 command; /* command register */
+        lib_u8 status;  /* status register */
+        lib_u8 mask;    /* mask register */
+        lib_u8 request; /* request register */
         /* Logical DACK state: set only after the controller accepts a
          * request for service, and cleared when that service releases. This
          * is not an electrical pin-level model. */
-        type_unsigned_8 acknowledged;
-        type_unsigned_8 temp;    /* temporary register */
-        type_unsigned_8 drx;     /* dreq id of highest priority */
+        lib_u8 acknowledged;
+        lib_u8 temp;    /* temporary register */
+        lib_u8 drx;     /* dreq id of highest priority */
         type_bool flagMSB;       /* flip-flop for msb/lsb */
         type_bool flagEOP;       /* end of process */
         type_bool flagM2MWrite;  /* channel-0 read completed; channel-1 write next */
-        type_unsigned_8 phase;   /* Intel 8237A logical service phase */
+        lib_u8 phase;   /* Intel 8237A logical service phase */
 
         /* id of request in service in D5-D4, flag of in service in D0 */
-        type_unsigned_8 isr;
+        lib_u8 isr;
     } t_dma_data;
 
     typedef struct
@@ -81,8 +82,8 @@ extern "C"
 
     typedef union
     {
-        type_unsigned_8 byte;
-        type_unsigned_16 word;
+        lib_u8 byte;
+        lib_u16 word;
     } t_latch_data;
 
     struct t_latch
@@ -190,20 +191,20 @@ extern "C"
 #define VDMA_PHASE_S24 12u
 
 C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_port *port, type_unsigned_8 controller_count);
+    t_dma *secondary, t_port *port, lib_u8 controller_count);
     C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
                                   t_dma *secondary);
     C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
                                     t_dma *secondary, t_ram *ram,
-                                    type_unsigned_64 elapsed_ticks);
+                                    lib_u64 elapsed_ticks);
     C_VOID core_machine_dma_advance_transaction(t_latch *latch,
         t_dma *primary, t_dma *secondary, t_ram *ram,
         core_machine_transaction_state *transaction,
-        type_unsigned_64 elapsed_ticks);
+        lib_u64 elapsed_ticks);
     C_INT core_machine_dma_has_pending_request(const t_dma *primary,
         const t_dma *secondary);
     type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
-        t_dma *secondary, type_unsigned_8 channel,
+        t_dma *secondary, lib_u8 channel,
         const core_machine_dma_channel_provider *provider, C_VOID *device_owner,
         core_machine_dma_request_binding *out_binding);
     C_VOID core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,

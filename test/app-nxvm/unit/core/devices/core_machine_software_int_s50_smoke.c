@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #define main cli_sti_s22_main
 #include "core_machine_cli_sti_smoke.c"
 #undef main
@@ -7,9 +8,9 @@
 #undef main
 
 typedef struct software_int_form {
-    type_unsigned_8 vector;
-    type_unsigned_8 opcode[2];
-    type_unsigned_8 bytes;
+    lib_u8 vector;
+    lib_u8 opcode[2];
+    lib_u8 bytes;
     C_INT requires_overflow;
 } software_int_form;
 
@@ -29,21 +30,21 @@ static C_INT software_int_s50_gprs_same(const t_cpu *before,
 static C_INT software_int_s50_sregs_same(const t_cpu *before,
     const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es,
+    return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.cs, &after->data.cs,
+        lib_memory_compare(&before->data.cs, &after->data.cs,
             sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss,
+        lib_memory_compare(&before->data.ss, &after->data.ss,
             sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
+        lib_memory_compare(&before->data.ds, &after->data.ds,
             sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs,
+        lib_memory_compare(&before->data.fs, &after->data.fs,
             sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs,
+        lib_memory_compare(&before->data.gs, &after->data.gs,
             sizeof(before->data.gs)) == 0;
 }
 
-static C_VOID software_int_s50_seed(cli_sti_machine *state, type_unsigned_32 flags)
+static C_VOID software_int_s50_seed(cli_sti_machine *state, lib_u32 flags)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -58,14 +59,14 @@ static C_VOID software_int_s50_seed(cli_sti_machine *state, type_unsigned_32 fla
     cpu->data.eflags = flags;
 }
 
-static type_unsigned_16 software_int_s50_real_flags_image(
-    core_machine_cpu_profile profile, type_unsigned_16 flags)
+static lib_u16 software_int_s50_real_flags_image(
+    core_machine_cpu_profile profile, lib_u16 flags)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) flags &= 0x0fffu;
-    return (type_unsigned_16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
+    return (lib_u16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
 }
 
-static type_unsigned_16 software_int_s50_real_flags_known_mask(
+static lib_u16 software_int_s50_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
@@ -74,15 +75,15 @@ static type_unsigned_16 software_int_s50_real_flags_known_mask(
 
 static C_INT software_int_s50_prepare_real(cli_sti_machine *state,
     core_machine_cpu_profile profile, const software_int_form *form,
-    const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes)
+    const lib_u8 *prefix, lib_u8 prefix_bytes)
 {
-    static const type_unsigned_8 hlt = 0xf4u;
-    const type_unsigned_16 offset = 0x0100u;
-    const type_unsigned_16 segment = 0u;
-    type_unsigned_8 code[5] = { 0u };
+    static const lib_u8 hlt = 0xf4u;
+    const lib_u16 offset = 0x0100u;
+    const lib_u16 segment = 0u;
+    lib_u8 code[5] = { 0u };
 
-    STD_MEMCPY(code, prefix, prefix_bytes);
-    STD_MEMCPY(code + prefix_bytes, form->opcode, form->bytes);
+    lib_memory_copy(code, prefix, prefix_bytes);
+    lib_memory_copy(code + prefix_bytes, form->opcode, form->bytes);
     return cli_sti_prepare(profile, state) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) &&
         core_machine_memory_write(state->machine, form->vector * 4u, &offset,
@@ -95,25 +96,25 @@ static C_INT software_int_s50_prepare_real(cli_sti_machine *state,
 }
 
 static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
-    const t_cpu *before, const t_cpu *after, type_unsigned_32 return_ip,
-    type_unsigned_8 width, core_machine_cpu_profile profile)
+    const t_cpu *before, const t_cpu *after, lib_u32 return_ip,
+    lib_u8 width, core_machine_cpu_profile profile)
 {
     if (width == 2u) {
-        type_unsigned_16 frame[3] = { 0u, 0u, 0u };
+        lib_u16 frame[3] = { 0u, 0u, 0u };
 
         return core_machine_memory_read_physical(&state->machine->executor_memory,
-                after->data.ss.base + (type_unsigned_16)after->data.esp,
+                after->data.ss.base + (lib_u16)after->data.esp,
                 (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
             frame[0] == return_ip && frame[1] == before->data.cs.selector &&
             (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
             (software_int_s50_real_flags_image(profile,
-                (type_unsigned_16)before->data.eflags) &
+                (lib_u16)before->data.eflags) &
                 software_int_s50_real_flags_known_mask(profile)) &&
             (profile != CORE_MACHINE_CPU_PROFILE_80386 ||
                 (frame[2] & 0x8000u) == 0u);
     }
     {
-        type_unsigned_32 frame[3] = { 0u, 0u, 0u };
+        lib_u32 frame[3] = { 0u, 0u, 0u };
 
         return core_machine_memory_read_physical(&state->machine->executor_memory,
                 after->data.ss.base + after->data.esp,
@@ -121,7 +122,7 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
             frame[0] == return_ip && frame[1] == before->data.cs.selector &&
             (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
             (software_int_s50_real_flags_image(profile,
-                (type_unsigned_16)before->data.eflags) &
+                (lib_u16)before->data.eflags) &
                 software_int_s50_real_flags_known_mask(profile)) &&
             (profile != CORE_MACHINE_CPU_PROFILE_80386 ||
                 (frame[2] & 0x8000u) == 0u);
@@ -129,18 +130,18 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
 }
 
 static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
-    const software_int_form *form, const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes)
+    const software_int_form *form, const lib_u8 *prefix, lib_u8 prefix_bytes)
 {
-    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
+    const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
         VCPU_EFLAGS_TF | VCPU_EFLAGS_DF | VCPU_EFLAGS_OF | 0x8000u;
-    const type_unsigned_8 width = prefix_bytes != 0u && prefix[0] == 0x66u ? 4u : 2u;
+    const lib_u8 width = prefix_bytes != 0u && prefix[0] == 0x66u ? 4u : 2u;
     cli_sti_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
     type_status status;
-    type_unsigned_32 return_ip = prefix_bytes + form->bytes;
+    lib_u32 return_ip = prefix_bytes + form->bytes;
     C_INT failed = !software_int_s50_prepare_real(&state, profile, form, prefix,
         prefix_bytes);
 
@@ -176,23 +177,23 @@ static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
 }
 
 static C_INT software_int_s50_real_into_clear(core_machine_cpu_profile profile,
-    const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes)
+    const lib_u8 *prefix, lib_u8 prefix_bytes)
 {
     const software_int_form into = { 0x04u, { 0xceu, 0u }, 1u, 1 };
-    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
+    const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
         VCPU_EFLAGS_DF;
-    static const type_unsigned_8 hlt = 0xf4u;
+    static const lib_u8 hlt = 0xf4u;
     cli_sti_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
     type_status status;
-    type_unsigned_8 code[5] = { 0u };
+    lib_u8 code[5] = { 0u };
     C_INT failed = !cli_sti_prepare(profile, &state);
 
     if (!failed) {
-        STD_MEMCPY(code, prefix, prefix_bytes);
+        lib_memory_copy(code, prefix, prefix_bytes);
         code[prefix_bytes] = into.opcode[0];
         code[prefix_bytes + 1u] = hlt;
         failed = !test_core_machine_fixture_prepare_real_mode_execution(
@@ -235,17 +236,17 @@ static C_INT software_int_s50_test_real_forms(C_VOID)
         { 0x31u, { 0xcdu, 0x31u }, 2u, 0 },
         { 0x04u, { 0xceu, 0u }, 1u, 1 }
     };
-    static const type_unsigned_8 no_prefix[] = { 0u };
-    static const type_unsigned_8 prefixes[][2] = {
+    static const lib_u8 no_prefix[] = { 0u };
+    static const lib_u8 prefixes[][2] = {
         { 0x66u, 0u },
         { 0x67u, 0u },
         { 0x66u, 0x67u }
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
-        type_unsigned_8 form;
+        lib_u8 form;
 
         for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
             if (!software_int_s50_real_transfer(profiles[profile], &forms[form],
@@ -257,8 +258,8 @@ static C_INT software_int_s50_test_real_forms(C_VOID)
     }
     for (profile = 0u; profile != sizeof(prefixes) / sizeof(prefixes[0]);
         ++profile) {
-        type_unsigned_8 form;
-        type_unsigned_8 prefix_bytes = profile == 2u ? 2u : 1u;
+        lib_u8 form;
+        lib_u8 prefix_bytes = profile == 2u ? 2u : 1u;
 
         for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
             if (!software_int_s50_real_transfer(CORE_MACHINE_CPU_PROFILE_80386,
@@ -279,7 +280,7 @@ static C_INT software_int_s50_test_rejections(C_VOID)
         { 0x31u, { 0xcdu, 0x31u }, 2u, 0 },
         { 0x04u, { 0xceu, 0u }, 1u, 1 }
     };
-    static const type_unsigned_8 prefixes[][2] = {
+    static const lib_u8 prefixes[][2] = {
         { 0x66u, 0u },
         { 0x67u, 0u },
         { 0x66u, 0x67u }
@@ -290,15 +291,15 @@ static C_INT software_int_s50_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
-        type_unsigned_8 prefix;
+        lib_u8 prefix;
 
         for (prefix = 0u; prefix != sizeof(prefixes) / sizeof(prefixes[0]);
             ++prefix) {
-            type_unsigned_8 form;
+            lib_u8 form;
 
             for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
                 cli_sti_machine state;
@@ -307,14 +308,14 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                 t_cpu before;
                 t_cpu after;
                 type_status status;
-                type_unsigned_8 code[5] = { 0u };
-                type_unsigned_8 prefix_bytes = prefix == 2u ? 2u : 1u;
-                type_unsigned_8 stack_before[16] = { 0u };
-                type_unsigned_8 stack_after[16] = { 0u };
+                lib_u8 code[5] = { 0u };
+                lib_u8 prefix_bytes = prefix == 2u ? 2u : 1u;
+                lib_u8 stack_before[16] = { 0u };
+                lib_u8 stack_after[16] = { 0u };
                 C_INT failed = !cli_sti_prepare(legacy[profile], &state);
 
-                STD_MEMCPY(code, prefixes[prefix], prefix_bytes);
-                STD_MEMCPY(code + prefix_bytes, forms[form].opcode,
+                lib_memory_copy(code, prefixes[prefix], prefix_bytes);
+                lib_memory_copy(code + prefix_bytes, forms[form].opcode,
                     forms[form].bytes);
                 if (!failed) {
                     failed = !test_core_machine_fixture_prepare_real_mode_execution(
@@ -342,12 +343,12 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                     failed |= !diagnostic.first_fault.valid;
                     failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_UD);
-                    failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+                    failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
                     failed |= core_machine_memory_read_physical(
                         &state.machine->executor_memory, 0x7ff0u,
                         (type_virtual_address)stack_after,
                         sizeof(stack_after)) != TYPE_STATUS_OK;
-                    failed |= STD_MEMCMP(stack_before, stack_after,
+                    failed |= lib_memory_compare(stack_before, stack_after,
                         sizeof(stack_before)) != 0;
                 }
                 core_machine_destroy(state.machine);
@@ -357,7 +358,7 @@ static C_INT software_int_s50_test_rejections(C_VOID)
         }
     }
     for (profile = 0u; profile != 4u; ++profile) {
-        type_unsigned_8 form;
+        lib_u8 form;
 
         for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
             cli_sti_machine state;
@@ -366,18 +367,18 @@ static C_INT software_int_s50_test_rejections(C_VOID)
             t_cpu before;
             t_cpu after;
             type_status status;
-            type_unsigned_8 code[] = { 0xf0u, 0u, 0u, 0u, 0u };
-            type_unsigned_8 prefix_bytes = profile == 0u ? 0u :
+            lib_u8 code[] = { 0xf0u, 0u, 0u, 0u, 0u };
+            lib_u8 prefix_bytes = profile == 0u ? 0u :
                 profile == 3u ? 2u : 1u;
-            type_unsigned_8 bytes;
-            type_unsigned_8 stack_before[16] = { 0u };
-            type_unsigned_8 stack_after[16] = { 0u };
+            lib_u8 bytes;
+            lib_u8 stack_before[16] = { 0u };
+            lib_u8 stack_after[16] = { 0u };
             C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
             if (profile != 0u)
-                STD_MEMCPY(code + 1u, prefixes[profile - 1u], prefix_bytes);
-            STD_MEMCPY(code + 1u + prefix_bytes, forms[form].opcode,
+                lib_memory_copy(code + 1u, prefixes[profile - 1u], prefix_bytes);
+            lib_memory_copy(code + 1u + prefix_bytes, forms[form].opcode,
                 forms[form].bytes);
             bytes = 1u + prefix_bytes + forms[form].bytes;
             if (!failed) {
@@ -406,12 +407,12 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                 failed |= !diagnostic.first_fault.valid;
                 failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
-                failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+                failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory, 0x7ff0u,
                     (type_virtual_address)stack_after,
                     sizeof(stack_after)) != TYPE_STATUS_OK;
-                failed |= STD_MEMCMP(stack_before, stack_after,
+                failed |= lib_memory_compare(stack_before, stack_after,
                     sizeof(stack_before)) != 0;
             }
             core_machine_destroy(state.machine);
@@ -429,15 +430,15 @@ static C_INT software_int_s50_test_protected(C_VOID)
         { IE_VECTOR, { 0xcdu, IE_VECTOR }, 2u, 0 },
         { 0x04u, { 0xceu, 0u }, 1u, 1 }
     };
-    type_unsigned_8 form;
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
         interrupt_entry_machine state;
         core_machine_cpu_diagnostic diagnostic;
         t_cpu after;
-        type_unsigned_32 frame[3] = { 0u, 0u, 0u };
-        type_unsigned_8 code[2] = { forms[form].opcode[0], forms[form].opcode[1] };
-        type_unsigned_32 flags = 0x00000302u |
+        lib_u32 frame[3] = { 0u, 0u, 0u };
+        lib_u8 code[2] = { forms[form].opcode[0], forms[form].opcode[1] };
+        lib_u32 flags = 0x00000302u |
             (forms[form].requires_overflow ? VCPU_EFLAGS_OF : 0u);
         C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
             VCPU_DESC_SYS_TYPE_INTGATE_32);
@@ -470,7 +471,7 @@ static C_INT software_int_s50_test_protected(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_unsigned_8 code[2] = { forms[form].opcode[0], forms[form].opcode[1] };
+        lib_u8 code[2] = { forms[form].opcode[0], forms[form].opcode[1] };
         C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
             VCPU_DESC_SYS_TYPE_INTGATE_32);
 
@@ -486,7 +487,7 @@ static C_INT software_int_s50_test_protected(C_VOID)
                 state.machine);
             failed |= !ie_run(&state, 1, &after, &diagnostic);
             failed |= !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u);
-            failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+            failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
         }
         core_machine_destroy(state.machine);
         if (failed)
@@ -501,7 +502,7 @@ static C_INT software_int_s50_test_protected_faults_and_vm86(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 target_access = 0x92u;
+    lib_u8 target_access = 0x92u;
     C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_IDT_LIMIT,
         VCPU_DESC_SYS_TYPE_INTGATE_32);
 
@@ -509,7 +510,7 @@ static C_INT software_int_s50_test_protected_faults_and_vm86(C_VOID)
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed = !ie_run(&state, 1, &after, &diagnostic);
         failed |= !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u);
-        failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(state.machine);
     if (failed)
@@ -523,7 +524,7 @@ static C_INT software_int_s50_test_protected_faults_and_vm86(C_VOID)
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !ie_run(&state, 1, &after, &diagnostic);
         failed |= !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u);
-        failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(state.machine);
     if (failed)
@@ -538,7 +539,7 @@ static C_INT software_int_s50_test_protected_faults_and_vm86(C_VOID)
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed = !ie_run(&state, 1, &after, &diagnostic);
         failed |= !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u);
-        failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -547,17 +548,17 @@ static C_INT software_int_s50_test_protected_faults_and_vm86(C_VOID)
 static C_INT software_int_s50_test_pic_boundary(C_VOID)
 {
     const software_int_form form = { 0x31u, { 0xcdu, 0x31u }, 2u, 0 };
-    const type_unsigned_32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
+    const lib_u32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
     cli_sti_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu after;
     C_INT failed = !software_int_s50_prepare_real(&state,
-        CORE_MACHINE_CPU_PROFILE_80386, &form, (const type_unsigned_8[]){ 0u }, 0u);
+        CORE_MACHINE_CPU_PROFILE_80386, &form, (const lib_u8[]){ 0u }, 0u);
 
     if (!failed) {
         software_int_s50_seed(&state, flags);
-        STD_MEMSET(&source, 0, sizeof(source));
+        lib_memory_set(&source, 0, sizeof(source));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&source,
             &state.machine->shared_pic_master,

@@ -2,6 +2,7 @@
 
 #ifndef VM_MACHINE_MACHINE_DEVICES_H
 #define VM_MACHINE_MACHINE_DEVICES_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/machine_interface.h"

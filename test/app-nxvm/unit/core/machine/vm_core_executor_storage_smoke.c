@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/machine/machine_private.h"
 
@@ -11,10 +12,10 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *machine = STD_NULL;
+    vm_machine *machine = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &machine) != TYPE_STATUS_OK ||
-        machine == STD_NULL || machine->core_machine == STD_NULL ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) != TYPE_STATUS_OK ||
+        machine == LIB_NULL || machine->core_machine == LIB_NULL ||
         !test_core_machine_fixture_executor_storage_is_coherent(
             machine->core_machine)) {
         vm_machine_destroy(machine);

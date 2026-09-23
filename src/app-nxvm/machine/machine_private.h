@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #ifndef VM_MACHINE_H
 #define VM_MACHINE_H
 
@@ -37,10 +38,10 @@ struct vm_machine {
     C_VOID *executor_callback_context;
     common_machine_frame latest_frame;
     type_bool latest_frame_valid;
-    type_unsigned_64 display_generation;
-    type_unsigned_64 display_snapshot_generation;
+    lib_u64 display_generation;
+    lib_u64 display_snapshot_generation;
     type_bool display_snapshot_generation_valid;
-    type_unsigned_64 last_display_publish_milliseconds;
+    lib_u64 last_display_publish_milliseconds;
     core_machine_display_kind display_kind;
     vm_machine_fault_outcome fault_outcome;
     /* The bounded runner owns this single fact for the existing Common
@@ -49,12 +50,12 @@ struct vm_machine {
     type_bool runner_failed;
     vm_machine_control_state control;
     vm_machine_speed speed;
-    type_unsigned_64 pacing_host_origin_units;
-    type_unsigned_64 pacing_host_units_per_second;
-    type_unsigned_64 pacing_core_origin_ticks;
+    lib_u64 pacing_host_origin_units;
+    lib_u64 pacing_host_units_per_second;
+    lib_u64 pacing_core_origin_ticks;
     type_bool pacing_origin_valid;
     vm_machine_config retained_config;
-    type_unsigned_8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
+    lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
     type_bool cmos_seed_present;
     core_machine_vadp_text_glyph_config text_glyphs;
     vm_profile_floppy_kind floppy_kind;

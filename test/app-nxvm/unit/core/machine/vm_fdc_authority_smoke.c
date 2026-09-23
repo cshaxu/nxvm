@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -19,20 +20,20 @@ C_INT main(C_VOID)
     vm_machine *session;
     const vm_machine *machine;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) return 1;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL) return 1;
     machine = session;
-    if (machine == STD_NULL ||
-        machine->media_registry == STD_NULL ||
+    if (machine == LIB_NULL ||
+        machine->media_registry == LIB_NULL ||
         machine->core_machine->fdc.connect.drives.media_id[0] !=
             VM_MACHINE_MEDIA_FDD_ID ||
         machine->core_machine->fdc.connect.drives.media_id[1] !=
             CORE_MACHINE_MEDIA_ID_INVALID ||
         machine->core_machine->fdc.connect.dma_request.core_token == 0u ||
         machine->core_machine->fdc.connect.dma_request.channel != 2u ||
-        machine->core_machine->fdc.connect.irq_source.master == STD_NULL ||
-        machine->core_machine->fdc.connect.irq_source.slave == STD_NULL ||
-        machine->core_machine->fdc.connect.port == STD_NULL) {
+        machine->core_machine->fdc.connect.irq_source.master == LIB_NULL ||
+        machine->core_machine->fdc.connect.irq_source.slave == LIB_NULL ||
+        machine->core_machine->fdc.connect.port == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
     }

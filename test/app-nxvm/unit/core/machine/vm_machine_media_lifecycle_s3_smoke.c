@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "lib/storage/file_interface.h"
@@ -15,7 +16,7 @@ static C_INT vm_machine_media_create_floppy(const C_CHAR *path)
     lib_size remaining = 1440u * 1024u;
     C_INT failed = 0;
 
-    if (path == STD_NULL || lib_storage_file_writer_open(path,
+    if (path == LIB_NULL || lib_storage_file_writer_open(path,
             LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) != LIB_STATUS_OK) return -1;
     while (remaining != 0u) {
         const lib_size chunk = remaining < sizeof(zeroes) ? remaining : sizeof(zeroes);
@@ -37,14 +38,14 @@ C_INT main(C_VOID)
         .create_fdd = 1,
         .create_hdd_cylinders = 1u
     };
-    vm_machine *session = STD_NULL;
-    type_unsigned_64 fdd_generation;
+    vm_machine *session = LIB_NULL;
+    lib_u64 fdd_generation;
     static const C_CHAR floppy_path[] = "t531-media-lifecycle.img";
     C_INT failed = 0;
 
     if (vm_machine_media_create_floppy(floppy_path) != 0) return 1;
     if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || vm_test_common_machine_bind(session) != TYPE_STATUS_OK) {
+        session == LIB_NULL || vm_test_common_machine_bind(session) != TYPE_STATUS_OK) {
         vm_test_common_machine_unbind(session);
         vm_machine_destroy(session);
         (C_VOID)remove(floppy_path);
@@ -65,7 +66,7 @@ C_INT main(C_VOID)
     vm_machine_executor_state_stop(session->control.state);
     failed |= vm_machine_eject_fdd(session) != 0 ||
         session->fdd.connect.flagDiskExist || session->fdd_image_path[0] != '\0' ||
-        session->retained_config.floppy_image[0u] != STD_NULL;
+        session->retained_config.floppy_image[0u] != LIB_NULL;
     vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);
     (C_VOID)remove(floppy_path);

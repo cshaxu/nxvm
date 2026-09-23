@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -20,11 +21,11 @@ static C_INT vm_pcat_s4_topology_matches(
     const vm_profile_default_pc_at_route *aux_route;
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
-    STD_SIZE_T index;
+    lib_size index;
     C_INT failed = 0;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL ||
-        profile == STD_NULL) return 1;
+    if (session == LIB_NULL || session->core_machine == LIB_NULL ||
+        profile == LIB_NULL) return 1;
     for (index = 0u; index < profile->port_leaf_count; ++index) {
         const vm_profile_default_pc_at_port_leaf *leaf =
             &profile->port_leaves[index];
@@ -44,8 +45,8 @@ static C_INT vm_pcat_s4_topology_matches(
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
     fdc_route = vm_profile_default_pc_at_route_find(profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
-    failed |= pit_route == STD_NULL || keyboard_route == STD_NULL || aux_route == STD_NULL ||
-        cmos_route == STD_NULL || fdc_route == STD_NULL ||
+    failed |= pit_route == LIB_NULL || keyboard_route == LIB_NULL || aux_route == LIB_NULL ||
+        cmos_route == LIB_NULL || fdc_route == LIB_NULL ||
         session->core_machine->shared_pit_irq0_source.irq != pit_route->irq ||
         session->core_machine->shared_kbc.connect.irq1_source.irq !=
             keyboard_route->irq ||
@@ -90,9 +91,9 @@ static C_INT vm_pcat_s4_reset_state_matches(vm_machine *session,
 {
     core_machine_timeline_observation timeline;
     vm_machine_reset_vector vector;
-    C_INT nmi_masked = TYPE_TRUE;
+    C_INT nmi_masked = LIB_TRUE;
 
-    return session == STD_NULL || session->core_machine == STD_NULL ||
+    return session == LIB_NULL || session->core_machine == LIB_NULL ||
         !session->active ||
         vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u ||
@@ -109,13 +110,13 @@ static C_INT vm_pcat_s4_reset_rearms_selected_machine(
     vm_machine *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
-    static const type_unsigned_8 nop = 0x90u;
+    static const lib_u8 nop = 0x90u;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
-    C_INT nmi_masked = TYPE_FALSE;
+    C_INT nmi_masked = LIB_FALSE;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL ||
+    if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         !test_core_machine_fixture_prepare_real_mode_execution(
             session->core_machine, 0x1000u) ||
         core_machine_memory_write(session->core_machine, 0x1000u, &nop,
@@ -138,13 +139,13 @@ C_INT main(C_VOID)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT failed;
 
-    if (profile == STD_NULL ||
+    if (profile == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
-        vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) {
+        vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
     }

@@ -4,6 +4,7 @@
  * Repository: https://github.com/cshaxu/nxvm
  * Start:      01/25/2012
  */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -16,8 +17,8 @@
 
 C_INT main(C_VOID)
 {
-    vm_app *session = STD_NULL;
-    vm_app_console_context *console_context = STD_NULL;
+    vm_app *session = LIB_NULL;
+    vm_app_console_context *console_context = LIB_NULL;
     C_CHAR ini_path[1024];
     type_status status;
     type_status destroy_status;

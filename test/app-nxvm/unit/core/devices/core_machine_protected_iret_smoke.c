@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -26,18 +27,18 @@ static C_VOID iret_reset(C_VOID *opaque)
 {
     iret_machine *state = (iret_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
 static const core_machine_execution_provider iret_provider = {
-    iret_reset, STD_NULL
+    iret_reset, LIB_NULL
 };
 
-static C_INT iret_write(iret_machine *state, type_unsigned_32 address,
-    const C_VOID *data, STD_SIZE_T bytes)
+static C_INT iret_write(iret_machine *state, lib_u32 address,
+    const C_VOID *data, lib_size bytes)
 {
-    return state != STD_NULL && state->machine != STD_NULL &&
+    return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, data, bytes) ==
             TYPE_STATUS_OK;
 }
@@ -50,15 +51,15 @@ static C_INT iret_prepare(iret_machine *state, iret_negative negative,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    type_unsigned_8 gdt[] = {
+    lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0
     };
     t_cpu *cpu;
 
-    if (state == STD_NULL) return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 0;
+    lib_memory_set(state, 0, sizeof(*state));
     if (negative == IRET_NEGATIVE_NONPRESENT) gdt[13u] &= 0x7fu;
     if (conforming) gdt[13u] = 0x9eu;
     if (negative == IRET_NEGATIVE_CODE_TYPE) gdt[13u] = 0x92u;
@@ -75,47 +76,47 @@ static C_INT iret_prepare(iret_machine *state, iret_negative negative,
             &iret_provider, state, &state->machine) ||
         !iret_write(state, IRET_GDT_BASE, gdt, sizeof(gdt))) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     cpu = &state->machine->executor_cpu;
     cpu->data.cr0 = VCPU_CR0_PE;
-    cpu->data.gdtr.flagValid = TYPE_TRUE;
+    cpu->data.gdtr.flagValid = LIB_TRUE;
     cpu->data.gdtr.sregtype = SREG_GDTR;
     cpu->data.gdtr.base = IRET_GDT_BASE;
     cpu->data.gdtr.limit = sizeof(gdt) - 1u;
-    cpu->data.cs.flagValid = TYPE_TRUE;
+    cpu->data.cs.flagValid = LIB_TRUE;
     cpu->data.cs.selector = user_cpl ? 0x000bu : 0x0008u;
     cpu->data.cs.sregtype = SREG_CODE;
     cpu->data.cs.base = IRET_CODE_BASE;
     cpu->data.cs.limit = 0xffffu;
     cpu->data.cs.dpl = user_cpl ? 3u : 0u;
-    cpu->data.cs.seg.accessed = TYPE_FALSE;
-    cpu->data.cs.seg.executable = TYPE_TRUE;
-    cpu->data.cs.seg.exec.defsize = TYPE_TRUE;
-    cpu->data.cs.seg.exec.conform = TYPE_FALSE;
-    cpu->data.cs.seg.exec.readable = TYPE_TRUE;
-    cpu->data.ss.flagValid = TYPE_TRUE;
+    cpu->data.cs.seg.accessed = LIB_FALSE;
+    cpu->data.cs.seg.executable = LIB_TRUE;
+    cpu->data.cs.seg.exec.defsize = LIB_TRUE;
+    cpu->data.cs.seg.exec.conform = LIB_FALSE;
+    cpu->data.cs.seg.exec.readable = LIB_TRUE;
+    cpu->data.ss.flagValid = LIB_TRUE;
     cpu->data.ss.selector = user_cpl ? 0x0013u : 0x0010u;
     cpu->data.ss.sregtype = SREG_STACK;
     cpu->data.ss.base = 0u;
     cpu->data.ss.limit = negative == IRET_NEGATIVE_STACK_LIMIT ? 1u :
         0xffffffffu;
     cpu->data.ss.dpl = user_cpl ? 3u : 0u;
-    cpu->data.ss.seg.accessed = TYPE_FALSE;
-    cpu->data.ss.seg.executable = TYPE_FALSE;
-    cpu->data.ss.seg.data.big = small_stack ? TYPE_FALSE : TYPE_TRUE;
-    cpu->data.ss.seg.data.expdown = TYPE_FALSE;
-    cpu->data.ss.seg.data.writable = TYPE_TRUE;
+    cpu->data.ss.seg.accessed = LIB_FALSE;
+    cpu->data.ss.seg.executable = LIB_FALSE;
+    cpu->data.ss.seg.data.big = small_stack ? LIB_FALSE : LIB_TRUE;
+    cpu->data.ss.seg.data.expdown = LIB_FALSE;
+    cpu->data.ss.seg.data.writable = LIB_TRUE;
     cpu->data.eip = 0u;
     cpu->data.esp = small_stack ? 0x00018000u : IRET_STACK;
     cpu->data.eflags = user_cpl ? 0x00000002u : 0x00000202u;
-    cpu->data.flagHalt = TYPE_FALSE;
+    cpu->data.flagHalt = LIB_FALSE;
     return 1;
 }
 
 static C_INT iret_fault_is(const core_machine_cpu_diagnostic *diagnostic,
-    type_unsigned_32 mask, type_unsigned_32 code)
+    lib_u32 mask, lib_u32 code)
 {
     return diagnostic->first_fault.valid && TYPE_GET_BIT(
         diagnostic->first_fault.exception_mask, mask) &&
@@ -137,16 +138,16 @@ static C_INT iret_run(iret_machine *state, C_INT expect_fault, t_cpu *after,
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
 }
 
-static C_INT iret_test_success(type_unsigned_8 prefix, C_INT operand16,
+static C_INT iret_test_success(lib_u8 prefix, C_INT operand16,
     C_INT small_stack, C_INT conforming)
 {
     iret_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    type_unsigned_8 code[] = { prefix, 0xcfu, 0xf4u };
-    type_unsigned_32 frame32[] = { prefix ? 2u : 1u, 0x0008u, 0x00000203u };
-    type_unsigned_16 frame16[] = { 2u, 0x0008u, 0x0203u };
-    type_unsigned_32 expected_esp = small_stack ?
+    lib_u8 code[] = { prefix, 0xcfu, 0xf4u };
+    lib_u32 frame32[] = { prefix ? 2u : 1u, 0x0008u, 0x00000203u };
+    lib_u16 frame16[] = { 2u, 0x0008u, 0x0203u };
+    lib_u32 expected_esp = small_stack ?
         (operand16 ? 0x00018006u : 0x0001800cu) :
         (operand16 ? IRET_STACK + 6u : IRET_STACK + 12u);
     C_INT failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, small_stack,
@@ -165,18 +166,18 @@ static C_INT iret_test_success(type_unsigned_8 prefix, C_INT operand16,
     return !failed;
 }
 
-static C_INT iret_test_failure(iret_negative negative, type_unsigned_32 mask,
-    type_unsigned_32 code)
+static C_INT iret_test_failure(iret_negative negative, lib_u32 mask,
+    lib_u32 code)
 {
     iret_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 program[] = {0xcfu,0xf4u};
-    type_unsigned_32 frame[] = { negative == IRET_NEGATIVE_LIMIT ? 1u : 1u,
+    lib_u8 program[] = {0xcfu,0xf4u};
+    lib_u32 frame[] = { negative == IRET_NEGATIVE_LIMIT ? 1u : 1u,
         0x0008u, 0x00000203u };
-    type_unsigned_8 access_before = 0u;
-    type_unsigned_8 access_after = 0u;
+    lib_u8 access_before = 0u;
+    lib_u8 access_after = 0u;
     C_INT failed = !iret_prepare(&state, negative, 0, 0, 0);
 
     if (!failed) {
@@ -191,8 +192,8 @@ static C_INT iret_test_failure(iret_negative negative, type_unsigned_32 mask,
                 IRET_CODE_ACCESS, TYPE_REFERENCE_OF(access_after), 1u) != TYPE_STATUS_OK ||
             after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
             after.data.eflags != before.data.eflags ||
-            STD_MEMCMP(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) != 0 ||
-            STD_MEMCMP(&after.data.ss, &before.data.ss, sizeof(before.data.ss)) != 0 ||
+            lib_memory_compare(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) != 0 ||
+            lib_memory_compare(&after.data.ss, &before.data.ss, sizeof(before.data.ss)) != 0 ||
             access_after != access_before;
     }
     core_machine_destroy(state.machine);
@@ -206,8 +207,8 @@ static C_INT iret_test_user_flags(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     iret_machine state;
     t_cpu after;
-    type_unsigned_8 program[] = {0xcfu,0x90u};
-    type_unsigned_32 frame[] = {1u,0x000bu,0x00013203u};
+    lib_u8 program[] = {0xcfu,0x90u};
+    lib_u32 frame[] = {1u,0x000bu,0x00013203u};
     C_INT failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, 0, 0, 1);
 
     if (!failed) {

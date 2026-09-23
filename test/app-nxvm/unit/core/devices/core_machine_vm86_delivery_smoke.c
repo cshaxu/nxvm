@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -19,19 +20,19 @@ typedef struct vm86_delivery_state { core_machine *machine; } vm86_delivery_stat
 static C_VOID vm86_delivery_reset(C_VOID *opaque)
 {
     vm86_delivery_state *state = (vm86_delivery_state *)opaque;
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 static const core_machine_execution_provider vm86_delivery_provider = {
-    vm86_delivery_reset, STD_NULL
+    vm86_delivery_reset, LIB_NULL
 };
 
 static C_INT vm86_delivery_write_u32(core_machine *machine,
-    type_unsigned_32 address, type_unsigned_32 value)
+    lib_u32 address, lib_u32 value)
 {
     return core_machine_memory_write(machine, address, &value, sizeof(value)) ==
         TYPE_STATUS_OK;
 }
-static C_INT vm86_delivery_prepare(vm86_delivery_state *state, type_unsigned_8 vector)
+static C_INT vm86_delivery_prepare(vm86_delivery_state *state, lib_u8 vector)
 {
     const core_machine_config config = {
         .memory_bytes = 0x100000u,
@@ -44,21 +45,21 @@ static C_INT vm86_delivery_prepare(vm86_delivery_state *state, type_unsigned_8 v
         .clock_plan.kbc = { 1u, 1000000u, 0u },
         .clock_plan.provider = { 1u, 1000000u, 0u }
     };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0, 0x67u,0,0,0x06u,0,0x8bu,0,0
     };
-    type_unsigned_8 idt[0x108u] = {0u};
-    type_unsigned_8 tss[12u] = {0u};
-    type_unsigned_32 esp0 = VM86_STACK_TOP;
-    type_unsigned_16 ss0 = 0x0010u;
+    lib_u8 idt[0x108u] = {0u};
+    lib_u8 tss[12u] = {0u};
+    lib_u32 esp0 = VM86_STACK_TOP;
+    lib_u16 ss0 = 0x0010u;
     t_cpu *cpu;
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     idt[vector * 8u] = 0u; idt[vector * 8u + 1u] = 0x01u;
     idt[vector * 8u + 2u] = 0x08u; idt[vector * 8u + 5u] = 0x8eu;
     idt[8u] = 0u; idt[9u] = 0x01u; idt[10u] = 0x08u; idt[13u] = 0x8eu;
-    STD_MEMCPY(&tss[4u], &esp0, sizeof(esp0)); STD_MEMCPY(&tss[8u], &ss0, sizeof(ss0));
+    lib_memory_copy(&tss[4u], &esp0, sizeof(esp0)); lib_memory_copy(&tss[8u], &ss0, sizeof(ss0));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &vm86_delivery_provider, state) ||
@@ -66,15 +67,15 @@ static C_INT vm86_delivery_prepare(vm86_delivery_state *state, type_unsigned_8 v
         core_machine_memory_write(state->machine, VM86_IDT_BASE, idt, sizeof(idt)) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, VM86_TSS_BASE, tss, sizeof(tss)) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, VM86_HANDLER_BASE,
-            (const type_unsigned_8[]){0xf4u}, 1u) != TYPE_STATUS_OK) return 0;
+            (const lib_u8[]){0xf4u}, 1u) != TYPE_STATUS_OK) return 0;
     cpu = &state->machine->executor_cpu;
     cpu->data.cr0 = VCPU_CR0_PE;
     cpu->data.eflags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IF;
-    cpu->data.idtr.flagValid = TYPE_TRUE; cpu->data.idtr.sregtype = SREG_IDTR;
+    cpu->data.idtr.flagValid = LIB_TRUE; cpu->data.idtr.sregtype = SREG_IDTR;
     cpu->data.idtr.base = VM86_IDT_BASE; cpu->data.idtr.limit = sizeof(idt) - 1u;
-    cpu->data.gdtr.flagValid = TYPE_TRUE; cpu->data.gdtr.sregtype = SREG_GDTR;
+    cpu->data.gdtr.flagValid = LIB_TRUE; cpu->data.gdtr.sregtype = SREG_GDTR;
     cpu->data.gdtr.base = VM86_GDT_BASE; cpu->data.gdtr.limit = sizeof(gdt) - 1u;
-    cpu->data.tr.flagValid = TYPE_TRUE; cpu->data.tr.selector = 0x0018u; cpu->data.tr.sregtype = SREG_TR;
+    cpu->data.tr.flagValid = LIB_TRUE; cpu->data.tr.selector = 0x0018u; cpu->data.tr.sregtype = SREG_TR;
     cpu->data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY; cpu->data.tr.base = VM86_TSS_BASE;
     cpu->data.tr.limit = sizeof(tss) - 1u; cpu->data.tr.dpl = 0u;
     cpu->data.cs.selector = 0x0200u; cpu->data.cs.base = 0x2000u; cpu->data.cs.limit = 0xffffu;
@@ -84,21 +85,21 @@ static C_INT vm86_delivery_prepare(vm86_delivery_state *state, type_unsigned_8 v
     cpu->data.fs.selector = 0x0600u; cpu->data.fs.base = 0x6000u; cpu->data.fs.limit = 0xffffu;
     cpu->data.gs.selector = 0x0700u; cpu->data.gs.base = 0x7000u; cpu->data.gs.limit = 0xffffu;
     cpu->data.esp = 0x00001234u;
-    cpu->data.cs.flagValid = TYPE_TRUE; cpu->data.cs.sregtype = SREG_CODE; cpu->data.cs.dpl = 3u;
-    cpu->data.cs.seg.executable = TYPE_TRUE;
-    cpu->data.ss.flagValid = TYPE_TRUE; cpu->data.ss.sregtype = SREG_STACK; cpu->data.ss.dpl = 3u;
-    cpu->data.ss.seg.data.writable = TYPE_TRUE;
-    cpu->data.ds.flagValid = TYPE_TRUE; cpu->data.ds.sregtype = SREG_DATA; cpu->data.ds.dpl = 3u;
-    cpu->data.es.flagValid = TYPE_TRUE; cpu->data.es.sregtype = SREG_DATA; cpu->data.es.dpl = 3u;
-    cpu->data.fs.flagValid = TYPE_TRUE; cpu->data.fs.sregtype = SREG_DATA; cpu->data.fs.dpl = 3u;
-    cpu->data.gs.flagValid = TYPE_TRUE; cpu->data.gs.sregtype = SREG_DATA; cpu->data.gs.dpl = 3u;
+    cpu->data.cs.flagValid = LIB_TRUE; cpu->data.cs.sregtype = SREG_CODE; cpu->data.cs.dpl = 3u;
+    cpu->data.cs.seg.executable = LIB_TRUE;
+    cpu->data.ss.flagValid = LIB_TRUE; cpu->data.ss.sregtype = SREG_STACK; cpu->data.ss.dpl = 3u;
+    cpu->data.ss.seg.data.writable = LIB_TRUE;
+    cpu->data.ds.flagValid = LIB_TRUE; cpu->data.ds.sregtype = SREG_DATA; cpu->data.ds.dpl = 3u;
+    cpu->data.es.flagValid = LIB_TRUE; cpu->data.es.sregtype = SREG_DATA; cpu->data.es.dpl = 3u;
+    cpu->data.fs.flagValid = LIB_TRUE; cpu->data.fs.sregtype = SREG_DATA; cpu->data.fs.dpl = 3u;
+    cpu->data.gs.flagValid = LIB_TRUE; cpu->data.gs.sregtype = SREG_DATA; cpu->data.gs.dpl = 3u;
     return 1;
 }
-static C_INT vm86_delivery_fault(type_unsigned_8 vector, const type_unsigned_8 *code,
-    STD_SIZE_T bytes, C_INT error_frame)
+static C_INT vm86_delivery_fault(lib_u8 vector, const lib_u8 *code,
+    lib_size bytes, C_INT error_frame)
 {
     vm86_delivery_state state; core_machine_run_result result; core_machine_cpu_diagnostic diagnostic;
-    type_unsigned_32 frame[10u] = {0u}; C_INT failed = !vm86_delivery_prepare(&state, vector);
+    lib_u32 frame[10u] = {0u}; C_INT failed = !vm86_delivery_prepare(&state, vector);
     if (!failed && vector == 7u) TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_EM);
     if (!failed) failed |= core_machine_memory_write(state.machine, 0x2000u, code, bytes) != TYPE_STATUS_OK ||
         core_machine_run(state.machine, (core_machine_run_budget){8u,0u}, &result) != TYPE_STATUS_OK ||
@@ -124,11 +125,11 @@ static C_INT vm86_delivery_fault(type_unsigned_8 vector, const type_unsigned_8 *
 static C_INT vm86_delivery_debug_tf(C_VOID)
 {
     vm86_delivery_state state; core_machine_run_result result; core_machine_cpu_diagnostic diagnostic;
-    type_unsigned_32 frame[9u] = {0u}; C_INT failed = !vm86_delivery_prepare(&state, 1u);
+    lib_u32 frame[9u] = {0u}; C_INT failed = !vm86_delivery_prepare(&state, 1u);
     if (!failed) {
         TYPE_SET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF);
         failed |= core_machine_memory_write(state.machine, 0x2000u,
-            (const type_unsigned_8[]){0x90u}, 1u) != TYPE_STATUS_OK ||
+            (const lib_u8[]){0x90u}, 1u) != TYPE_STATUS_OK ||
             core_machine_run(state.machine, (core_machine_run_budget){4u,0u}, &result) != TYPE_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
             TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_VM) ||
@@ -146,7 +147,7 @@ static C_INT vm86_delivery_debug_breakpoint(C_VOID)
     vm86_delivery_state state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_unsigned_32 frame[9u] = {0u};
+    lib_u32 frame[9u] = {0u};
     C_INT failed = !vm86_delivery_prepare(&state, 1u);
 
     if (!failed) {
@@ -154,7 +155,7 @@ static C_INT vm86_delivery_debug_breakpoint(C_VOID)
         state.machine->executor_cpu.data.dr6 = 0u;
         state.machine->executor_cpu.data.dr7 = 0x00000001u;
         failed |= core_machine_memory_write(state.machine, 0x2000u,
-            (const type_unsigned_8[]){0x90u}, 1u) != TYPE_STATUS_OK ||
+            (const lib_u8[]){0x90u}, 1u) != TYPE_STATUS_OK ||
             core_machine_run(state.machine, (core_machine_run_budget){4u,0u},
                 &result) != TYPE_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
@@ -174,11 +175,11 @@ static C_INT vm86_delivery_debug_breakpoint(C_VOID)
 static C_INT vm86_delivery_irq0(C_VOID)
 {
     vm86_delivery_state state; core_machine_pic_irq_source irq; core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic; type_unsigned_32 frame[9u] = {0u}; C_INT failed = !vm86_delivery_prepare(&state, 0x20u);
+    core_machine_cpu_diagnostic diagnostic; lib_u32 frame[9u] = {0u}; C_INT failed = !vm86_delivery_prepare(&state, 0x20u);
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0x2000u,
-            (const type_unsigned_8[]){0x90u,0xf4u}, 2u) != TYPE_STATUS_OK;
-        STD_MEMSET(&irq, 0, sizeof(irq)); state.machine->shared_pic_master.data.icw2 = 0x20u;
+            (const lib_u8[]){0x90u,0xf4u}, 2u) != TYPE_STATUS_OK;
+        lib_memory_set(&irq, 0, sizeof(irq)); state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u); core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
@@ -212,10 +213,10 @@ static C_INT vm86_delivery_irq0_iret_round_trip(C_VOID)
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0x2000u,
-            (const type_unsigned_8[]){ 0x90u, 0x90u }, 2u) != TYPE_STATUS_OK ||
+            (const lib_u8[]){ 0x90u, 0x90u }, 2u) != TYPE_STATUS_OK ||
             core_machine_memory_write(state.machine, VM86_HANDLER_BASE,
-                (const type_unsigned_8[]){ 0xcfu }, 1u) != TYPE_STATUS_OK;
-        STD_MEMSET(&irq, 0, sizeof(irq));
+                (const lib_u8[]){ 0xcfu }, 1u) != TYPE_STATUS_OK;
+        lib_memory_set(&irq, 0, sizeof(irq));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -241,7 +242,7 @@ static C_INT vm86_delivery_irq0_iret_round_trip(C_VOID)
 static C_INT vm86_delivery_enable_paging(vm86_delivery_state *state,
     type_bool source_page_present)
 {
-    const type_unsigned_32 page_entry = VM86_PAGE_FLAGS;
+    const lib_u32 page_entry = VM86_PAGE_FLAGS;
 
     if (!(vm86_delivery_write_u32(state->machine, VM86_PAGE_DIRECTORY,
             VM86_PAGE_TABLE | VM86_PAGE_FLAGS) &&
@@ -262,18 +263,18 @@ static C_INT vm86_delivery_enable_paging(vm86_delivery_state *state,
 
 static C_INT vm86_delivery_paging_composition(C_VOID)
 {
-    static const type_unsigned_8 ud[] = { 0x0fu, 0x0bu };
-    static const type_unsigned_8 nop[] = { 0x90u };
+    static const lib_u8 ud[] = { 0x0fu, 0x0bu };
+    static const lib_u8 nop[] = { 0x90u };
     vm86_delivery_state state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_unsigned_32 frame[10u] = { 0u };
+    lib_u32 frame[10u] = { 0u };
     C_INT failed = !vm86_delivery_prepare(&state, 6u);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0x2000u, ud,
                 sizeof(ud)) != TYPE_STATUS_OK ||
-            !vm86_delivery_enable_paging(&state, TYPE_TRUE) ||
+            !vm86_delivery_enable_paging(&state, LIB_TRUE) ||
             core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
                 &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -299,7 +300,7 @@ static C_INT vm86_delivery_paging_composition(C_VOID)
         state.machine->executor_cpu.data.cs.base = 0x4000u;
         failed |= core_machine_memory_write(state.machine, 0x4000u, nop,
                 sizeof(nop)) != TYPE_STATUS_OK ||
-            !vm86_delivery_enable_paging(&state, TYPE_FALSE) ||
+            !vm86_delivery_enable_paging(&state, LIB_FALSE) ||
             core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
                 &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -327,25 +328,25 @@ static C_INT vm86_delivery_expect_prepublication(vm86_delivery_state *state)
 {
     core_machine_run_result result; core_machine_cpu_diagnostic diagnostic; t_cpu before, after;
     C_INT failed = core_machine_memory_write(state->machine, 0x2000u,
-        (const type_unsigned_8[]){0x0fu,0x0bu}, 2u) != TYPE_STATUS_OK;
+        (const lib_u8[]){0x0fu,0x0bu}, 2u) != TYPE_STATUS_OK;
     before = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     (C_VOID)core_machine_run(state->machine, (core_machine_run_budget){2u,0u}, &result);
     after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     failed |= core_machine_get_cpu_diagnostic(state->machine, &diagnostic) != TYPE_STATUS_OK ||
-        !diagnostic.first_fault.valid || STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+        !diagnostic.first_fault.valid || lib_memory_compare(&before, &after, sizeof(before)) != 0;
     return !failed;
 }
 static C_INT vm86_delivery_invalid_gate(C_VOID)
 {
     vm86_delivery_state state; C_INT failed = !vm86_delivery_prepare(&state, 6u);
     if (!failed) {
-        type_unsigned_8 absent[8u] = {0u};
+        lib_u8 absent[8u] = {0u};
         failed |= core_machine_memory_write(state.machine, VM86_IDT_BASE + 6u * 8u, absent,
             sizeof(absent)) != TYPE_STATUS_OK || !vm86_delivery_expect_prepublication(&state);
     }
     core_machine_destroy(state.machine); return !failed;
 }
-static C_INT vm86_delivery_bad_gate_access(type_unsigned_8 access)
+static C_INT vm86_delivery_bad_gate_access(lib_u8 access)
 {
     vm86_delivery_state state; C_INT failed = !vm86_delivery_prepare(&state, 6u);
     if (!failed) {
@@ -359,7 +360,7 @@ static C_INT vm86_delivery_invalid_tss(C_VOID)
 {
     vm86_delivery_state state; C_INT failed = !vm86_delivery_prepare(&state, 6u);
     if (!failed) {
-        state.machine->executor_cpu.data.tr.flagValid = TYPE_FALSE;
+        state.machine->executor_cpu.data.tr.flagValid = LIB_FALSE;
         failed |= !vm86_delivery_expect_prepublication(&state);
     }
     core_machine_destroy(state.machine); return !failed;
@@ -376,7 +377,7 @@ static C_INT vm86_delivery_bad_tss(C_INT short_tss)
 }
 static C_INT vm86_delivery_invalid_ss0(C_VOID)
 {
-    vm86_delivery_state state; type_unsigned_16 ss0 = 0u;
+    vm86_delivery_state state; lib_u16 ss0 = 0u;
     C_INT failed = !vm86_delivery_prepare(&state, 6u);
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, VM86_TSS_BASE + 8u, &ss0,
@@ -384,8 +385,8 @@ static C_INT vm86_delivery_invalid_ss0(C_VOID)
     }
     core_machine_destroy(state.machine); return !failed;
 }
-static C_INT vm86_delivery_bad_ss0(type_unsigned_16 ss0, type_unsigned_8 access,
-    type_unsigned_32 esp0)
+static C_INT vm86_delivery_bad_ss0(lib_u16 ss0, lib_u8 access,
+    lib_u32 esp0)
 {
     vm86_delivery_state state; C_INT failed = !vm86_delivery_prepare(&state, 6u);
     if (!failed) {
@@ -399,9 +400,9 @@ static C_INT vm86_delivery_bad_ss0(type_unsigned_16 ss0, type_unsigned_8 access,
 }
 static C_INT vm86_delivery_short_stack(C_VOID)
 {
-    vm86_delivery_state state; type_unsigned_8 limit_lo = 0x1fu;
-    type_unsigned_8 limit_hi = 0u; type_unsigned_8 flags = 0x40u;
-    type_unsigned_32 esp0 = 0x00000020u;
+    vm86_delivery_state state; lib_u8 limit_lo = 0x1fu;
+    lib_u8 limit_hi = 0u; lib_u8 flags = 0x40u;
+    lib_u32 esp0 = 0x00000020u;
     C_INT failed = !vm86_delivery_prepare(&state, 6u);
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, VM86_TSS_BASE + 4u, &esp0,
@@ -416,9 +417,9 @@ static C_INT vm86_delivery_short_stack(C_VOID)
 }
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 ud[] = {0x0fu,0x0bu};
-    static const type_unsigned_8 gp[] = {0xfau};
-    static const type_unsigned_8 nm[] = {0xd8u,0xc0u};
+    static const lib_u8 ud[] = {0x0fu,0x0bu};
+    static const lib_u8 gp[] = {0xfau};
+    static const lib_u8 nm[] = {0xd8u,0xc0u};
     if (!vm86_delivery_fault(6u, ud, sizeof(ud), 0) ||
         !vm86_delivery_fault(13u, gp, sizeof(gp), 1) ||
         !vm86_delivery_fault(7u, nm, sizeof(nm), 0) || !vm86_delivery_debug_tf() ||

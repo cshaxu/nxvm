@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/memory.h"
@@ -9,14 +10,14 @@
 _Static_assert(T314_CRTC_ADJACENT_INDEX < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT,
     "T314 adjacent CRTC test index must fit the VADP CRTC register bank");
 
-static C_VOID core_machine_ega_crtc_write(t_port *port, type_unsigned_8 index,
-    type_unsigned_8 value)
+static C_VOID core_machine_ega_crtc_write(t_port *port, lib_u8 index,
+    lib_u8 value)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, index);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, value);
 }
 
-static type_unsigned_8 core_machine_ega_crtc_read(t_port *port, type_unsigned_8 index)
+static lib_u8 core_machine_ega_crtc_read(t_port *port, lib_u8 index)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, index);
     return core_machine_port_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA);
@@ -26,7 +27,7 @@ C_INT main(C_VOID)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE
+        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
     };
     const core_machine_vadp_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
@@ -38,10 +39,10 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
-    type_unsigned_8 mode;
-    type_unsigned_8 color;
-    type_unsigned_8 index;
-    static const type_unsigned_8 masks[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT] = {
+    lib_u8 mode;
+    lib_u8 color;
+    lib_u8 index;
+    static const lib_u8 masks[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT] = {
         0xffu, 0xffu, 0xffu, 0x7fu, 0xffu, 0xffu, 0xffu, 0x3fu,
         0x1fu, 0x1fu, 0x1fu, 0x7fu, 0xffu, 0xffu, 0xffu, 0xffu,
         0xffu, 0x3fu, 0xffu, 0xffu, 0x1fu, 0xffu, 0x1fu, 0xffu,
@@ -49,9 +50,9 @@ C_INT main(C_VOID)
     };
     C_INT failed = 0;
 
-    STD_MEMSET(&memory, 0, sizeof(memory));
+    lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
@@ -80,20 +81,20 @@ C_INT main(C_VOID)
         vadp.data.crtc[T314_CRTC_ADJACENT_INDEX] != 0x5du ||
         core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_MODE) != mode ||
         core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_COLOR) != color;
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16;
 
     core_machine_ega_crtc_write(&port, 0x07u, 0x00u);
     core_machine_ega_crtc_write(&port, 0x12u, 0xc7u);
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_640X200X16 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 200u;
 
     core_machine_ega_crtc_write(&port, 0x01u, 0x27u);
     core_machine_ega_crtc_write(&port, 0x13u, 0x14u);
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
 

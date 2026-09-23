@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #ifndef VM_PROFILE_MACHINE_PLAN_INTERFACE_H
 #define VM_PROFILE_MACHINE_PLAN_INTERFACE_H
 
@@ -33,21 +34,21 @@ vm_profile_floppy_kind vm_profile_machine_plan_media_floppy_get(
 type_bool vm_profile_machine_plan_hdc_present(const vm_profile_machine_plan *plan);
 type_bool vm_profile_machine_plan_memory_reconfigurable(
     const vm_profile_machine_plan *plan);
-type_unsigned_8 vm_profile_machine_plan_floppy_slot_count(
+lib_u8 vm_profile_machine_plan_floppy_slot_count(
     const vm_profile_machine_plan *plan);
 const vm_profile_model40_external_rom *vm_profile_machine_plan_model40_rom_get(
     const vm_profile_machine_plan *plan);
 type_bool vm_profile_machine_plan_is_model40(const vm_profile_machine_plan *plan);
 type_bool vm_profile_machine_plan_external_firmware(const vm_profile_machine_plan *plan);
 type_status vm_profile_machine_plan_copy_cmos_seed(const vm_profile_machine_plan *plan,
-    type_unsigned_8 *out_seed, type_bool *out_present);
+    lib_u8 *out_seed, type_bool *out_present);
 type_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_plan *plan,
     core_machine_vadp_text_glyph_config *out_glyphs);
 type_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
     core_machine_plan *core_plan,
     core_machine_fdc_terminal_observation_provider terminal_observation);
 type_bool vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *plan,
-    type_unsigned_16 *out_cylinders, type_unsigned_8 *out_heads,
-    type_unsigned_8 *out_sectors);
+    lib_u16 *out_cylinders, lib_u8 *out_heads,
+    lib_u8 *out_sectors);
 
 #endif

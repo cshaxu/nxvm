@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -16,14 +17,14 @@ static C_VOID lar_lsl_s57_reset(C_VOID *opaque)
 {
     lar_lsl_s57_machine *state = (lar_lsl_s57_machine *)opaque;
 
-    if (state != STD_NULL) {
+    if (state != LIB_NULL) {
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
 static const core_machine_execution_provider lar_lsl_s57_execution_provider = {
     lar_lsl_s57_reset,
-    STD_NULL
+    LIB_NULL
 };
 
 static C_INT lar_lsl_s57_prepare(lar_lsl_s57_machine *state,
@@ -37,17 +38,17 @@ static C_INT lar_lsl_s57_prepare(lar_lsl_s57_machine *state,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
 
-    if (state == STD_NULL) {
+    if (state == LIB_NULL) {
         return 0;
     }
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) {
         return 0;
     }
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &lar_lsl_s57_execution_provider, state)) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     return 1;
@@ -55,10 +56,10 @@ static C_INT lar_lsl_s57_prepare(lar_lsl_s57_machine *state,
 
 static C_INT lar_lsl_s57_install_gdt(core_machine *machine)
 {
-    static const type_unsigned_8 pointer[] = {
+    static const lib_u8 pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt[] = {
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x20u, 0x00u, 0x9au, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x30u, 0x00u, 0x92u, 0x00u, 0x00u,
@@ -75,9 +76,9 @@ static C_INT lar_lsl_s57_install_gdt(core_machine *machine)
 }
 
 static C_INT lar_lsl_s57_run_protected(lar_lsl_s57_machine *state,
-    const type_unsigned_8 *code, STD_SIZE_T code_size, t_cpu *out_cpu)
+    const lib_u8 *code, lib_size code_size, t_cpu *out_cpu)
 {
-    static const type_unsigned_8 real_code[] = {
+    static const lib_u8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0x0fu, 0x01u, 0x1eu, 0x10u, 0x01u,
         0xb8u, 0x01u, 0x00u,
@@ -88,27 +89,27 @@ static C_INT lar_lsl_s57_run_protected(lar_lsl_s57_machine *state,
         0x8eu, 0xd0u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const type_unsigned_8 idt_pointer[] = {
+    static const lib_u8 idt_pointer[] = {
         0x07u, 0x01u, 0x00u, 0x04u, 0x00u, 0x00u
     };
     const core_machine_run_budget budget = { 64u, 0u };
     core_machine_run_result result;
-    type_unsigned_8 idt[0x108u] = { 0u };
+    lib_u8 idt[0x108u] = { 0u };
 
     idt[0x100u] = 0x00u;
     idt[0x101u] = 0x01u;
     idt[0x102u] = 0x08u;
     idt[0x105u] = 0x8eu;
 
-    if (state == STD_NULL || state->machine == STD_NULL ||
-        code == STD_NULL || out_cpu == STD_NULL ||
+    if (state == LIB_NULL || state->machine == LIB_NULL ||
+        code == LIB_NULL || out_cpu == LIB_NULL ||
         !lar_lsl_s57_install_gdt(state->machine) ||
         core_machine_memory_write(state->machine, 0x0110u, idt_pointer,
             sizeof(idt_pointer)) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, 0x0400u, idt,
             sizeof(idt)) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, LAR_LSL_S57_CODE_ADDRESS +
-            0x100u, (const type_unsigned_8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK ||
+            0x100u, (const lib_u8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, 0u, real_code,
             sizeof(real_code)) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, LAR_LSL_S57_CODE_ADDRESS,
@@ -124,17 +125,17 @@ static C_INT lar_lsl_s57_run_protected(lar_lsl_s57_machine *state,
 static C_INT lar_lsl_s57_boot_protected(lar_lsl_s57_machine *state,
     t_cpu *out_cpu)
 {
-    static const type_unsigned_8 hlt[] = { 0xf4u };
+    static const lib_u8 hlt[] = { 0xf4u };
 
     return lar_lsl_s57_run_protected(state, hlt, sizeof(hlt), out_cpu);
 }
 
 static C_INT lar_lsl_s57_resume(lar_lsl_s57_machine *state,
-    const type_unsigned_8 *code, STD_SIZE_T code_size, const core_machine_run_budget *budget,
+    const lib_u8 *code, lib_size code_size, const core_machine_run_budget *budget,
     core_machine_run_result *result)
 {
-    if (state == STD_NULL || state->machine == STD_NULL || code == STD_NULL ||
-        budget == STD_NULL || result == STD_NULL ||
+    if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
+        budget == LIB_NULL || result == LIB_NULL ||
         core_machine_memory_write(state->machine, LAR_LSL_S57_CODE_ADDRESS,
             code, code_size) != TYPE_STATUS_OK) {
         return 0;
@@ -145,17 +146,17 @@ static C_INT lar_lsl_s57_resume(lar_lsl_s57_machine *state,
 
 static C_INT lar_lsl_s57_sregs_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es,
+    return lib_memory_compare(&before->data.es, &after->data.es,
         sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.cs, &after->data.cs,
+        lib_memory_compare(&before->data.cs, &after->data.cs,
         sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss,
+        lib_memory_compare(&before->data.ss, &after->data.ss,
         sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
+        lib_memory_compare(&before->data.ds, &after->data.ds,
         sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs,
+        lib_memory_compare(&before->data.fs, &after->data.fs,
         sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs,
+        lib_memory_compare(&before->data.gs, &after->data.gs,
         sizeof(before->data.gs)) == 0;
 }
 
@@ -182,8 +183,8 @@ static C_INT lar_lsl_s57_gprs_same_except_eax_ecx(const t_cpu *before,
         before->data.edi == after->data.edi;
 }
 
-static C_INT lar_lsl_s57_pic_frame_matches(const type_unsigned_32 *frame,
-    type_unsigned_32 expected_ip, const t_cpu *before, type_unsigned_8 expected_zf)
+static C_INT lar_lsl_s57_pic_frame_matches(const lib_u32 *frame,
+    lib_u32 expected_ip, const t_cpu *before, lib_u8 expected_zf)
 {
     return frame[0u] == expected_ip &&
         ((frame[2u] & ~VCPU_EFLAGS_ZF) ==
@@ -193,12 +194,12 @@ static C_INT lar_lsl_s57_pic_frame_matches(const type_unsigned_32 *frame,
 
 static C_INT lar_lsl_s57_test_default(C_VOID)
 {
-    static const type_unsigned_8 lar[] = { 0x0fu, 0x02u, 0xc1u, 0xf4u };
-    static const type_unsigned_8 lsl[] = { 0x0fu, 0x03u, 0xc1u, 0xf4u };
-    const type_unsigned_32 expected[] = { 0xa1a19300u, 0xa1afffffu };
-    const type_unsigned_8 *codes[] = { lar, lsl };
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    static const lib_u8 lar[] = { 0x0fu, 0x02u, 0xc1u, 0xf4u };
+    static const lib_u8 lsl[] = { 0x0fu, 0x03u, 0xc1u, 0xf4u };
+    const lib_u32 expected[] = { 0xa1a19300u, 0xa1afffffu };
+    const lib_u8 *codes[] = { lar, lsl };
+    lib_u8 profile;
+    lib_u8 form;
 
     for (profile = 0u; profile != 2u; ++profile) {
         for (form = 0u; form != 2u; ++form) {
@@ -235,10 +236,10 @@ static C_INT lar_lsl_s57_test_default(C_VOID)
 
 static C_INT lar_lsl_s57_test_invalid_selector(C_VOID)
 {
-    static const type_unsigned_8 lar[] = { 0x0fu, 0x02u, 0xc1u, 0xf4u };
-    static const type_unsigned_8 lsl[] = { 0x0fu, 0x03u, 0xc1u, 0xf4u };
-    const type_unsigned_8 *codes[] = { lar, lsl };
-    type_unsigned_8 form;
+    static const lib_u8 lar[] = { 0x0fu, 0x02u, 0xc1u, 0xf4u };
+    static const lib_u8 lsl[] = { 0x0fu, 0x03u, 0xc1u, 0xf4u };
+    const lib_u8 *codes[] = { lar, lsl };
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
         lar_lsl_s57_machine state;
@@ -278,25 +279,25 @@ static C_INT lar_lsl_s57_test_invalid_selector(C_VOID)
 
 static C_INT lar_lsl_s57_test_attributes(C_VOID)
 {
-    static const type_unsigned_8 lar_66[] = { 0x66u, 0x0fu, 0x02u, 0xc1u, 0xf4u };
-    static const type_unsigned_8 lar_67[] = { 0x67u, 0x0fu, 0x02u, 0xc1u, 0xf4u };
-    static const type_unsigned_8 lar_6667[] = {
+    static const lib_u8 lar_66[] = { 0x66u, 0x0fu, 0x02u, 0xc1u, 0xf4u };
+    static const lib_u8 lar_67[] = { 0x67u, 0x0fu, 0x02u, 0xc1u, 0xf4u };
+    static const lib_u8 lar_6667[] = {
         0x66u, 0x67u, 0x0fu, 0x02u, 0xc1u, 0xf4u
     };
-    static const type_unsigned_8 lsl_66[] = { 0x66u, 0x0fu, 0x03u, 0xc1u, 0xf4u };
-    static const type_unsigned_8 lsl_67[] = { 0x67u, 0x0fu, 0x03u, 0xc1u, 0xf4u };
-    static const type_unsigned_8 lsl_6667[] = {
+    static const lib_u8 lsl_66[] = { 0x66u, 0x0fu, 0x03u, 0xc1u, 0xf4u };
+    static const lib_u8 lsl_67[] = { 0x67u, 0x0fu, 0x03u, 0xc1u, 0xf4u };
+    static const lib_u8 lsl_6667[] = {
         0x66u, 0x67u, 0x0fu, 0x03u, 0xc1u, 0xf4u
     };
-    const type_unsigned_8 *codes[] = {
+    const lib_u8 *codes[] = {
         lar_66, lar_67, lar_6667, lsl_66, lsl_67, lsl_6667
     };
-    const type_unsigned_8 lengths[] = { 5u, 5u, 6u, 5u, 5u, 6u };
-    const type_unsigned_32 expected[] = {
+    const lib_u8 lengths[] = { 5u, 5u, 6u, 5u, 5u, 6u };
+    const lib_u32 expected[] = {
         0x00009300u, 0xa1a19300u, 0x00009300u,
         0x0000ffffu, 0xa1a1ffffu, 0x0000ffffu
     };
-    type_unsigned_8 form;
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         lar_lsl_s57_machine state;
@@ -328,7 +329,7 @@ static C_INT lar_lsl_s57_test_attributes(C_VOID)
 
 static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
 {
-    static const type_unsigned_8 forms[][6] = {
+    static const lib_u8 forms[][6] = {
         { 0x0fu, 0x02u, 0xc1u },
         { 0x0fu, 0x03u, 0xc1u },
         { 0x66u, 0x0fu, 0x02u, 0xc1u },
@@ -346,7 +347,7 @@ static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
         { 0xf0u, 0x66u, 0x67u, 0x0fu, 0x02u, 0xc1u },
         { 0xf0u, 0x66u, 0x67u, 0x0fu, 0x03u, 0xc1u }
     };
-    static const type_unsigned_8 lengths[] = {
+    static const lib_u8 lengths[] = {
         3u, 3u, 4u, 4u, 5u, 4u, 4u, 5u, 4u, 4u,
         5u, 5u, 5u, 5u, 6u, 6u
     };
@@ -354,8 +355,8 @@ static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    lib_u8 profile;
+    lib_u8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -383,7 +384,7 @@ static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
                     !diagnostic.first_fault.valid ||
                     !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_UD);
-                failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+                failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
             }
             core_machine_destroy(state.machine);
             if (failed) {
@@ -415,7 +416,7 @@ static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
                 !diagnostic.first_fault.valid ||
                 !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
-            failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+            failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
         }
         core_machine_destroy(state.machine);
         if (failed) {
@@ -427,7 +428,7 @@ static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
 
 static C_INT lar_lsl_s57_test_real_mode_rejects(C_VOID)
 {
-    static const type_unsigned_8 forms[][3] = {
+    static const lib_u8 forms[][3] = {
         { 0x0fu, 0x02u, 0xc1u },
         { 0x0fu, 0x03u, 0xc1u }
     };
@@ -435,8 +436,8 @@ static C_INT lar_lsl_s57_test_real_mode_rejects(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    lib_u8 profile;
+    lib_u8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -484,26 +485,26 @@ static C_INT lar_lsl_s57_test_real_mode_rejects(C_VOID)
 
 static C_INT lar_lsl_s57_test_descriptor_matrix(C_VOID)
 {
-    static const type_unsigned_8 nonpresent_lar[] = {
+    static const lib_u8 nonpresent_lar[] = {
         0xb8u, 0x18u, 0x00u, 0xb9u, 0x34u, 0x12u,
         0x0fu, 0x02u, 0xc8u, 0xf4u
     };
-    static const type_unsigned_8 privilege_lsl[] = {
+    static const lib_u8 privilege_lsl[] = {
         0xb8u, 0x23u, 0x00u, 0xb9u, 0x34u, 0x12u,
         0x0fu, 0x03u, 0xc8u, 0xf4u
     };
-    static const type_unsigned_8 granular_lsl[] = {
+    static const lib_u8 granular_lsl[] = {
         0xb8u, 0x28u, 0x00u, 0xb9u, 0x34u, 0x12u,
         0x0fu, 0x03u, 0xc8u, 0xf4u
     };
-    const type_unsigned_8 *codes[] = {
+    const lib_u8 *codes[] = {
         nonpresent_lar, privilege_lsl, granular_lsl
     };
-    const type_unsigned_32 expected_ecx[] = {
+    const lib_u32 expected_ecx[] = {
         0x00001234u, 0x00001234u, 0x00000fffu
     };
-    const type_unsigned_8 expected_zf[] = { 0u, 0u, 1u };
-    type_unsigned_8 form;
+    const lib_u8 expected_zf[] = { 0u, 0u, 1u };
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         lar_lsl_s57_machine state;
@@ -529,25 +530,25 @@ static C_INT lar_lsl_s57_test_descriptor_matrix(C_VOID)
 
 static C_INT lar_lsl_s57_test_memory_source(C_VOID)
 {
-    static const type_unsigned_8 lar[] = {
+    static const lib_u8 lar[] = {
         0xb9u, 0x34u, 0x12u,
         0x0fu, 0x02u, 0x0eu, 0x00u, 0x01u,
         0xf4u
     };
-    static const type_unsigned_8 lsl[] = {
+    static const lib_u8 lsl[] = {
         0xb9u, 0x34u, 0x12u,
         0x0fu, 0x03u, 0x0eu, 0x00u, 0x01u,
         0xf4u
     };
-    const type_unsigned_8 *codes[] = { lar, lsl };
-    const type_unsigned_16 selector = 0x0010u;
-    const type_unsigned_32 expected[] = { 0x00009300u, 0x0000ffffu };
-    type_unsigned_8 form;
+    const lib_u8 *codes[] = { lar, lsl };
+    const lib_u16 selector = 0x0010u;
+    const lib_u32 expected[] = { 0x00009300u, 0x0000ffffu };
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         lar_lsl_s57_machine state;
         t_cpu after = { 0 };
-        type_unsigned_16 source = selector;
+        lib_u16 source = selector;
         C_INT failed = !lar_lsl_s57_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -572,15 +573,15 @@ static C_INT lar_lsl_s57_test_memory_source(C_VOID)
 
 static C_INT lar_lsl_s57_test_67_sib_ss_source(C_VOID)
 {
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0x66u, 0xbcu, 0x00u, 0x01u, 0x00u, 0x00u,
         0x67u, 0x0fu, 0x02u, 0x0cu, 0x24u,
         0xf4u
     };
-    const type_unsigned_16 selector = 0x0010u;
+    const lib_u16 selector = 0x0010u;
     lar_lsl_s57_machine state;
     t_cpu after;
-    type_unsigned_16 source = selector;
+    lib_u16 source = selector;
     C_INT failed = !lar_lsl_s57_prepare(&state,
         CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -603,15 +604,15 @@ static C_INT lar_lsl_s57_test_67_sib_ss_source(C_VOID)
 
 static C_INT lar_lsl_s57_test_bp_ss_source(C_VOID)
 {
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0xbdu, 0x00u, 0x01u, 0xb9u, 0x34u, 0x12u,
         0x0fu, 0x03u, 0x4eu, 0x00u,
         0xf4u
     };
-    const type_unsigned_16 selector = 0x0010u;
+    const lib_u16 selector = 0x0010u;
     lar_lsl_s57_machine state;
     t_cpu after;
-    type_unsigned_16 source = selector;
+    lib_u16 source = selector;
     C_INT failed = !lar_lsl_s57_prepare(&state,
         CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -630,23 +631,23 @@ static C_INT lar_lsl_s57_test_bp_ss_source(C_VOID)
 
 static C_INT lar_lsl_s57_test_override_sources(C_VOID)
 {
-    static const type_unsigned_8 codes[][7] = {
+    static const lib_u8 codes[][7] = {
         { 0x2eu, 0x0fu, 0x02u, 0x0eu, 0x20u, 0x01u, 0xf4u },
         { 0x26u, 0x0fu, 0x03u, 0x0eu, 0x20u, 0x01u, 0xf4u },
         { 0x64u, 0x0fu, 0x02u, 0x0eu, 0x20u, 0x01u, 0xf4u },
         { 0x65u, 0x0fu, 0x03u, 0x0eu, 0x20u, 0x01u, 0xf4u }
     };
-    const type_unsigned_32 bases[] = { 0x2000u, 0x4000u, 0x5000u, 0x6000u };
-    const type_unsigned_32 expected[] = {
+    const lib_u32 bases[] = { 0x2000u, 0x4000u, 0x5000u, 0x6000u };
+    const lib_u32 expected[] = {
         0x00009300u, 0x0000ffffu, 0x00009300u, 0x0000ffffu
     };
-    type_unsigned_8 form;
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         lar_lsl_s57_machine state;
         t_cpu before;
         t_cpu after;
-        type_unsigned_16 source = 0x0010u;
+        lib_u16 source = 0x0010u;
         C_INT failed = !lar_lsl_s57_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -657,10 +658,10 @@ static C_INT lar_lsl_s57_test_override_sources(C_VOID)
             state.machine->executor_cpu.data.es.base = 0x4000u;
             state.machine->executor_cpu.data.fs.base = 0x5000u;
             state.machine->executor_cpu.data.fs.selector = 0x0010u;
-            state.machine->executor_cpu.data.fs.flagValid = TYPE_TRUE;
+            state.machine->executor_cpu.data.fs.flagValid = LIB_TRUE;
             state.machine->executor_cpu.data.gs.base = 0x6000u;
             state.machine->executor_cpu.data.gs.selector = 0x0010u;
-            state.machine->executor_cpu.data.gs.flagValid = TYPE_TRUE;
+            state.machine->executor_cpu.data.gs.flagValid = LIB_TRUE;
             failed |= core_machine_memory_write(state.machine,
                 bases[form] + 0x120u, &source, sizeof(source)) !=
                 TYPE_STATUS_OK;
@@ -693,12 +694,12 @@ static C_INT lar_lsl_s57_test_override_sources(C_VOID)
 
 static C_INT lar_lsl_s57_test_source_limit(C_VOID)
 {
-    static const type_unsigned_8 codes[][5] = {
+    static const lib_u8 codes[][5] = {
         { 0x0fu, 0x02u, 0x0eu, 0x10u, 0x00u },
         { 0x0fu, 0x03u, 0x0eu, 0x10u, 0x00u }
     };
     const core_machine_run_budget budget = { 64u, 0u };
-    type_unsigned_8 form;
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
         lar_lsl_s57_machine state;
@@ -706,7 +707,7 @@ static C_INT lar_lsl_s57_test_source_limit(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_unsigned_16 source = 0x0010u;
+        lib_u16 source = 0x0010u;
         C_INT failed = !lar_lsl_s57_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -748,12 +749,12 @@ static C_INT lar_lsl_s57_test_source_limit(C_VOID)
 
 static C_INT lar_lsl_s57_test_vm86(C_VOID)
 {
-    static const type_unsigned_8 codes[][3] = {
+    static const lib_u8 codes[][3] = {
         { 0x0fu, 0x02u, 0xc1u },
         { 0x0fu, 0x03u, 0xc1u }
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    type_unsigned_8 form;
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
     lar_lsl_s57_machine state;
@@ -775,9 +776,9 @@ static C_INT lar_lsl_s57_test_vm86(C_VOID)
         state.machine->executor_cpu.data.cs.limit = 0xffffu;
         state.machine->executor_cpu.data.ds.limit = 0xffffu;
         state.machine->executor_cpu.data.ss.limit = 0xffffu;
-        state.machine->executor_cpu.data.cs.flagValid = TYPE_TRUE;
-        state.machine->executor_cpu.data.ds.flagValid = TYPE_TRUE;
-        state.machine->executor_cpu.data.ss.flagValid = TYPE_TRUE;
+        state.machine->executor_cpu.data.cs.flagValid = LIB_TRUE;
+        state.machine->executor_cpu.data.ds.flagValid = LIB_TRUE;
+        state.machine->executor_cpu.data.ss.flagValid = LIB_TRUE;
         state.machine->executor_cpu.data.eax = 0xa1a10010u;
         state.machine->executor_cpu.data.ecx = 0x00000010u;
         before = state.machine->executor_cpu;
@@ -804,13 +805,13 @@ static C_INT lar_lsl_s57_test_vm86(C_VOID)
 
 static C_INT lar_lsl_s57_test_pic_lar(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0xfbu, 0x0fu, 0x02u, 0xc1u, 0x90u };
+    static const lib_u8 code[] = { 0xfbu, 0x0fu, 0x02u, 0xc1u, 0x90u };
     lar_lsl_s57_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_unsigned_32 frame[3u] = { 0u };
+    lib_u32 frame[3u] = { 0u };
     C_INT failed = !lar_lsl_s57_prepare(&state,
         CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -825,7 +826,7 @@ static C_INT lar_lsl_s57_test_pic_lar(C_VOID)
         failed |= core_machine_memory_write(state.machine,
             LAR_LSL_S57_CODE_ADDRESS, code, sizeof(code)) != TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-        STD_MEMSET(&source, 0, sizeof(source));
+        lib_memory_set(&source, 0, sizeof(source));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -844,7 +845,7 @@ static C_INT lar_lsl_s57_test_pic_lar(C_VOID)
             TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (type_unsigned_16)after.data.esp,
+            after.data.ss.base + (lib_u16)after.data.esp,
             (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
             !lar_lsl_s57_pic_frame_matches(frame, 4u, &before, 1u);
     }
@@ -854,15 +855,15 @@ static C_INT lar_lsl_s57_test_pic_lar(C_VOID)
 
 static C_INT lar_lsl_s57_test_80386_timing_granularity(C_VOID)
 {
-    static const type_unsigned_8 lsl[] = { 0x0fu, 0x03u, 0xc8u };
-    static const type_unsigned_8 lsl_memory[] = {
+    static const lib_u8 lsl[] = { 0x0fu, 0x03u, 0xc8u };
+    static const lib_u8 lsl_memory[] = {
         0x0fu, 0x03u, 0x0eu, 0x00u, 0x10u
     };
-    const type_unsigned_8 *codes[] = { lsl, lsl, lsl_memory, lsl_memory };
+    const lib_u8 *codes[] = { lsl, lsl, lsl_memory, lsl_memory };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_16 selectors[] = { 0x0010u, 0x0028u, 0x0010u, 0x0028u };
-    const type_unsigned_64 expected[] = { 21u, 25u, 22u, 26u };
-    type_unsigned_8 index;
+    const lib_u16 selectors[] = { 0x0010u, 0x0028u, 0x0010u, 0x0028u };
+    const lib_u64 expected[] = { 21u, 25u, 22u, 26u };
+    lib_u8 index;
 
     for (index = 0u; index < 4u; ++index) {
         lar_lsl_s57_machine state;
@@ -890,15 +891,15 @@ static C_INT lar_lsl_s57_test_80386_timing_granularity(C_VOID)
 }
 static C_INT lar_lsl_s57_test_pic_lsl_and_invalid(C_VOID)
 {
-    static const type_unsigned_8 codes[][8] = {
+    static const lib_u8 codes[][8] = {
         { 0xfbu, 0x0fu, 0x03u, 0xc1u, 0x90u },
         { 0xfbu, 0x0fu, 0x02u, 0xc1u, 0x90u }
     };
-    const type_unsigned_8 lengths[] = { 5u, 5u };
-    const type_unsigned_32 expected[] = { 0xa1a1ffffu, 0xa1a10000u };
-    const type_unsigned_8 expected_zf[] = { 1u, 0u };
-    const type_unsigned_32 expected_ip[] = { 4u, 4u };
-    type_unsigned_8 form;
+    const lib_u8 lengths[] = { 5u, 5u };
+    const lib_u32 expected[] = { 0xa1a1ffffu, 0xa1a10000u };
+    const lib_u8 expected_zf[] = { 1u, 0u };
+    const lib_u32 expected_ip[] = { 4u, 4u };
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
         lar_lsl_s57_machine state;
@@ -906,7 +907,7 @@ static C_INT lar_lsl_s57_test_pic_lsl_and_invalid(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        type_unsigned_32 frame[3u] = { 0u };
+        lib_u32 frame[3u] = { 0u };
         C_INT failed = !lar_lsl_s57_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -922,7 +923,7 @@ static C_INT lar_lsl_s57_test_pic_lsl_and_invalid(C_VOID)
             failed |= core_machine_memory_write(state.machine,
                 LAR_LSL_S57_CODE_ADDRESS, codes[form], lengths[form]) != TYPE_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
@@ -939,7 +940,7 @@ static C_INT lar_lsl_s57_test_pic_lsl_and_invalid(C_VOID)
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
                 TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
                 !lar_lsl_s57_pic_frame_matches(frame, expected_ip[form],
                     &before, expected_zf[form]);
@@ -954,22 +955,22 @@ static C_INT lar_lsl_s57_test_pic_lsl_and_invalid(C_VOID)
 
 static C_INT lar_lsl_s57_test_ldt_selector(C_VOID)
 {
-    static const type_unsigned_8 ldt_descriptor[] = {
+    static const lib_u8 ldt_descriptor[] = {
         0xffu, 0xffu, 0x00u, 0x70u, 0x00u, 0x92u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 lar[] = {
+    static const lib_u8 lar[] = {
         0xb8u, 0x30u, 0x00u, 0x0fu, 0x00u, 0xd0u,
         0xb8u, 0x0cu, 0x00u, 0xb9u, 0x34u, 0x12u,
         0x0fu, 0x02u, 0xc8u, 0xf4u
     };
-    static const type_unsigned_8 lsl[] = {
+    static const lib_u8 lsl[] = {
         0xb8u, 0x30u, 0x00u, 0x0fu, 0x00u, 0xd0u,
         0xb8u, 0x0cu, 0x00u, 0xb9u, 0x34u, 0x12u,
         0x0fu, 0x03u, 0xc8u, 0xf4u
     };
-    const type_unsigned_8 *codes[] = { lar, lsl };
-    const type_unsigned_32 expected[] = { 0x00009200u, 0x0000ffffu };
-    type_unsigned_8 form;
+    const lib_u8 *codes[] = { lar, lsl };
+    const lib_u32 expected[] = { 0x00009200u, 0x0000ffffu };
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         lar_lsl_s57_machine state;

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -16,28 +17,28 @@ typedef struct oas_machine {
 } oas_machine;
 
 typedef struct oas_port_state {
-    type_unsigned_32 reads;
-    type_unsigned_32 writes;
-    type_unsigned_32 last_write;
+    lib_u32 reads;
+    lib_u32 writes;
+    lib_u32 last_write;
 } oas_port_state;
 
-static type_status oas_port_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status oas_port_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *out_value)
 {
     oas_port_state *state = (oas_port_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u)
+    if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = 0x5au;
     return TYPE_STATUS_OK;
 }
 
-static type_status oas_port_write(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 value)
+static type_status oas_port_write(C_VOID *owner, lib_u16 port, lib_u32 value)
 {
     oas_port_state *state = (oas_port_state *)owner;
 
-    if (state == STD_NULL || port != 0x00e0u || value > 0xffu)
+    if (state == LIB_NULL || port != 0x00e0u || value > 0xffu)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     state->last_write = value;
@@ -54,18 +55,18 @@ static C_VOID oas_reset(C_VOID *opaque)
 {
     oas_machine *state = (oas_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
 static const core_machine_execution_provider oas_provider = {
-    oas_reset, STD_NULL
+    oas_reset, LIB_NULL
 };
 
-static C_INT oas_write(oas_machine *state, type_unsigned_32 address,
-    const C_VOID *bytes, STD_SIZE_T byte_count)
+static C_INT oas_write(oas_machine *state, lib_u32 address,
+    const C_VOID *bytes, lib_size byte_count)
 {
-    return state != STD_NULL && state->machine != STD_NULL &&
+    return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, bytes, byte_count) ==
             TYPE_STATUS_OK;
 }
@@ -78,29 +79,29 @@ static C_INT oas_prepare(oas_machine *state, core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const type_unsigned_8 gdt_pointer[] = { 0x1fu,0,0,0x03u,0,0 };
-    type_unsigned_8 gdt[] = {
+    const lib_u8 gdt_pointer[] = { 0x1fu,0,0,0x03u,0,0 };
+    lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0xcfu,0,
         0xffu,0xffu,0,0x40u,0,0x92u,0x40u,0
     };
-    const type_unsigned_8 real_code[] = {
+    const lib_u8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    const type_unsigned_8 halt[] = { 0xf4u };
+    const lib_u8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
 
-    if (state == STD_NULL) return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 0;
+    lib_memory_set(state, 0, sizeof(*state));
     gdt[14] = code32 ? 0x40u : 0u;
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
-        (oas_next_port_state != STD_NULL && core_machine_install_port_provider(
+        (oas_next_port_state != LIB_NULL && core_machine_install_port_provider(
             state->machine, 0x00e0u, 0x00e0u, &oas_port_provider,
             oas_next_port_state) != TYPE_STATUS_OK) ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
@@ -112,14 +113,14 @@ static C_INT oas_prepare(oas_machine *state, core_machine_cpu_profile profile,
         core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     return 1;
 }
 
-static C_INT oas_run_halt(oas_machine *state, const type_unsigned_8 *code,
-    STD_SIZE_T code_size, t_cpu *out_cpu)
+static C_INT oas_run_halt(oas_machine *state, const lib_u8 *code,
+    lib_size code_size, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 48u, 0u };
     core_machine_run_result result;
@@ -133,8 +134,8 @@ static C_INT oas_run_halt(oas_machine *state, const type_unsigned_8 *code,
     return 1;
 }
 
-static C_INT oas_run_gp(oas_machine *state, const type_unsigned_8 *code,
-    STD_SIZE_T code_size, t_cpu *out_cpu)
+static C_INT oas_run_gp(oas_machine *state, const lib_u8 *code,
+    lib_size code_size, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
     core_machine_run_result result;
@@ -158,23 +159,23 @@ static C_INT oas_run_gp(oas_machine *state, const type_unsigned_8 *code,
 
 static C_INT oas_test_prefix_and_ea(C_VOID)
 {
-    static const type_unsigned_8 repeat_prefix[] = {
+    static const lib_u8 repeat_prefix[] = {
         0x66u,0x66u,0xb8u,0x34u,0x12u,0xb9u,0x78u,0x56u,0x34u,0x12u,0xf4u
     };
-    static const type_unsigned_8 address16[] = { 0x67u,0x8bu,0x00u,0xf4u };
-    static const type_unsigned_8 operand16[] = { 0x66u,0x8bu,0x00u,0xf4u };
-    static const type_unsigned_8 moffs16[] = { 0x67u,0xa1u,0x60u,0x00u,0xf4u };
-    static const type_unsigned_8 sib_scaled[] = { 0x8bu,0x44u,0x88u,0xfcu,0xf4u };
-    static const type_unsigned_8 sib_absolute[] = {
+    static const lib_u8 address16[] = { 0x67u,0x8bu,0x00u,0xf4u };
+    static const lib_u8 operand16[] = { 0x66u,0x8bu,0x00u,0xf4u };
+    static const lib_u8 moffs16[] = { 0x67u,0xa1u,0x60u,0x00u,0xf4u };
+    static const lib_u8 sib_scaled[] = { 0x8bu,0x44u,0x88u,0xfcu,0xf4u };
+    static const lib_u8 sib_absolute[] = {
         0x8bu,0x04u,0x25u,0x20u,0x01u,0x00u,0x00u,0xf4u
     };
-    static const type_unsigned_8 ss_default[] = { 0x8bu,0x45u,0x00u,0xf4u };
-    static const type_unsigned_8 ds_override[] = { 0x3eu,0x8bu,0x45u,0x00u,0xf4u };
-    const type_unsigned_32 word_source = 0x1234beefu;
-    const type_unsigned_32 sib_source = 0x87654321u;
-    const type_unsigned_32 absolute_source = 0x0badf00du;
-    const type_unsigned_32 ds_source = 0x13579bdfu;
-    const type_unsigned_32 ss_source = 0x2468ace0u;
+    static const lib_u8 ss_default[] = { 0x8bu,0x45u,0x00u,0xf4u };
+    static const lib_u8 ds_override[] = { 0x3eu,0x8bu,0x45u,0x00u,0xf4u };
+    const lib_u32 word_source = 0x1234beefu;
+    const lib_u32 sib_source = 0x87654321u;
+    const lib_u32 absolute_source = 0x0badf00du;
+    const lib_u32 ds_source = 0x13579bdfu;
+    const lib_u32 ss_source = 0x2468ace0u;
     oas_machine state;
     t_cpu cpu;
     C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
@@ -245,22 +246,22 @@ static C_INT oas_test_prefix_and_ea(C_VOID)
 
 static C_INT oas_test_16bit_code_and_faults(C_VOID)
 {
-    static const type_unsigned_8 defaults16[] = {
+    static const lib_u8 defaults16[] = {
         0x66u,0xb8u,0x78u,0x56u,0x34u,0x12u,0xb9u,0x34u,0x12u,0xf4u
     };
-    static const type_unsigned_8 address32[] = { 0x67u,0x8bu,0x00u,0xf4u };
-    static const type_unsigned_8 invalid_data[] = {
+    static const lib_u8 address32[] = { 0x67u,0x8bu,0x00u,0xf4u };
+    static const lib_u8 invalid_data[] = {
         0x8bu,0x05u,0x20u,0x00u,0x00u,0x00u
     };
-    static const type_unsigned_8 invalid_expand_down[] = {
+    static const lib_u8 invalid_expand_down[] = {
         0x8bu,0x05u,0x10u,0x00u,0x00u,0x00u
     };
-    static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 halt[] = { 0xf4u };
+    static const lib_u8 nop[] = { 0x90u };
+    static const lib_u8 halt[] = { 0xf4u };
     oas_machine state;
     t_cpu before;
     t_cpu after;
-    const type_unsigned_32 source = 0xcafebabeu;
+    const lib_u32 source = 0xcafebabeu;
     C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
 
     if (!failed) {
@@ -281,8 +282,8 @@ static C_INT oas_test_16bit_code_and_faults(C_VOID)
     if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
     if (!failed) {
         state.machine->executor_cpu.data.ds.limit = 0x10u;
-        state.machine->executor_cpu.data.ds.seg.data.expdown = TYPE_TRUE;
-        state.machine->executor_cpu.data.ds.seg.data.big = TYPE_FALSE;
+        state.machine->executor_cpu.data.ds.seg.data.expdown = LIB_TRUE;
+        state.machine->executor_cpu.data.ds.seg.data.big = LIB_FALSE;
         state.machine->executor_cpu.data.eax = 0x11223344u;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !oas_run_gp(&state, invalid_expand_down,
@@ -314,29 +315,29 @@ static C_INT oas_test_16bit_code_and_faults(C_VOID)
     return !failed;
 }
 
-static C_VOID oas_set_stack32(oas_machine *state, type_unsigned_32 esp)
+static C_VOID oas_set_stack32(oas_machine *state, lib_u32 esp)
 {
-    state->machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
+    state->machine->executor_cpu.data.ss.seg.data.big = LIB_TRUE;
     state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
     state->machine->executor_cpu.data.esp = esp;
 }
 
 static C_INT oas_test_stack_forms(C_VOID)
 {
-    static const type_unsigned_8 push_pop32[] = { 0x50u,0x59u,0xf4u };
-    static const type_unsigned_8 push_pop16[] = { 0x66u,0x50u,0x66u,0x5bu,0xf4u };
-    static const type_unsigned_8 pusha[] = { 0x60u,0xf4u };
-    static const type_unsigned_8 popa[] = { 0x61u,0xf4u };
-    static const type_unsigned_8 pushf[] = { 0x9cu,0xf4u };
-    static const type_unsigned_8 popf[] = { 0x9du,0xf4u };
-    static const type_unsigned_8 enter_leave[] = {
+    static const lib_u8 push_pop32[] = { 0x50u,0x59u,0xf4u };
+    static const lib_u8 push_pop16[] = { 0x66u,0x50u,0x66u,0x5bu,0xf4u };
+    static const lib_u8 pusha[] = { 0x60u,0xf4u };
+    static const lib_u8 popa[] = { 0x61u,0xf4u };
+    static const lib_u8 pushf[] = { 0x9cu,0xf4u };
+    static const lib_u8 popf[] = { 0x9du,0xf4u };
+    static const lib_u8 enter_leave[] = {
         0xc8u,0x10u,0x00u,0x02u,0xc9u,0xf4u
     };
-    static const type_unsigned_8 enter_leave16[] = {
+    static const lib_u8 enter_leave16[] = {
         0x66u,0xc8u,0x08u,0x00u,0x01u,0x66u,0xc9u,0xf4u
     };
-    const type_unsigned_32 ignored_slot = 0xfeedfaceu;
-    const type_unsigned_32 flags = VCPU_EFLAGS_IF | 0x00000002u;
+    const lib_u32 ignored_slot = 0xfeedfaceu;
+    const lib_u32 flags = VCPU_EFLAGS_IF | 0x00000002u;
     oas_machine state;
     t_cpu before;
     t_cpu after;
@@ -422,12 +423,12 @@ static C_INT oas_test_stack_forms(C_VOID)
 
 static C_INT oas_test_io_strings(C_VOID)
 {
-    static const type_unsigned_8 outsb[] = { 0x66u,0xbau,0xe0u,0,0xbeu,0,1,0,0,
+    static const lib_u8 outsb[] = { 0x66u,0xbau,0xe0u,0,0xbeu,0,1,0,0,
         0xb9u,2,0,0,0,0xf3u,0x6eu,0xf4u };
-    static const type_unsigned_8 insb[] = { 0x66u,0xbau,0xe0u,0,0xbfu,0,1,0,0,
+    static const lib_u8 insb[] = { 0x66u,0xbau,0xe0u,0,0xbfu,0,1,0,0,
         0xb9u,2,0,0,0,0xf3u,0x6cu,0xf4u };
-    static const type_unsigned_8 source[] = { 0x31u,0x42u };
-    type_unsigned_8 destination[2] = {0};
+    static const lib_u8 source[] = { 0x31u,0x42u };
+    lib_u8 destination[2] = {0};
     oas_port_state port = {0};
     oas_machine state;
     t_cpu after;
@@ -435,16 +436,16 @@ static C_INT oas_test_io_strings(C_VOID)
 
     oas_next_port_state = &port;
     failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
-    oas_next_port_state = STD_NULL;
+    oas_next_port_state = LIB_NULL;
     if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0100u,
         source, sizeof(source)) || !oas_run_halt(&state, outsb, sizeof(outsb),
         &after) || port.reads || port.writes != 2u || port.last_write != 0x42u ||
         after.data.esi != 0x0102u || after.data.ecx != 0u;
     core_machine_destroy(state.machine);
-    STD_MEMSET(&port, 0, sizeof(port));
+    lib_memory_set(&port, 0, sizeof(port));
     oas_next_port_state = &port;
     failed |= !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
-    oas_next_port_state = STD_NULL;
+    oas_next_port_state = LIB_NULL;
     if (!failed) failed |= !oas_run_halt(&state, insb, sizeof(insb), &after) ||
         port.reads != 2u || port.writes || after.data.edi != 0x0102u ||
         after.data.ecx != 0u || core_machine_memory_read(state.machine,
@@ -456,18 +457,18 @@ static C_INT oas_test_io_strings(C_VOID)
 
 static C_INT oas_test_memory_strings(C_VOID)
 {
-    static const type_unsigned_8 movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
+    static const lib_u8 movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
         0xb9u,2,0,0,0,0xf3u,0xa4u,0xf4u };
-    static const type_unsigned_8 stos_lods[] = { 0xb8u,0x5au,0,0,0,0xbfu,0,3,0,0,
+    static const lib_u8 stos_lods[] = { 0xb8u,0x5au,0,0,0,0xbfu,0,3,0,0,
         0xaau,0xbeu,0,3,0,0,0xacu,0xf4u };
-    static const type_unsigned_8 df_movs[] = { 0xbeu,1,1,0,0,0xbfu,1,2,0,0,
+    static const lib_u8 df_movs[] = { 0xbeu,1,1,0,0,0xbfu,1,2,0,0,
         0xfdu,0xa4u,0xf4u };
-    static const type_unsigned_8 wrap_movs[] = { 0x66u,0xbeu,0xffu,0xffu,
+    static const lib_u8 wrap_movs[] = { 0x66u,0xbeu,0xffu,0xffu,
         0x66u,0xbfu,0xffu,0xffu,0x66u,0xb9u,1,0,0xf3u,0x67u,0xa4u,0xf4u };
-    static const type_unsigned_8 limited_movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
+    static const lib_u8 limited_movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
         0xb9u,1,0,0,0,0xf3u,0xa4u };
-    static const type_unsigned_8 source[] = { 0x31u,0x42u };
-    type_unsigned_8 destination[2] = {0};
+    static const lib_u8 source[] = { 0x31u,0x42u };
+    lib_u8 destination[2] = {0};
     oas_machine state;
     t_cpu after;
     C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
@@ -477,7 +478,7 @@ static C_INT oas_test_memory_strings(C_VOID)
         &after) || after.data.esi != 0x0102u || after.data.edi != 0x0202u ||
         after.data.ecx != 0u || core_machine_memory_read(state.machine,
             OAS_DATA_ADDRESS + 0x0200u, destination, sizeof(destination)) !=
-            TYPE_STATUS_OK || STD_MEMCMP(source, destination, sizeof(source));
+            TYPE_STATUS_OK || lib_memory_compare(source, destination, sizeof(source));
     core_machine_destroy(state.machine);
     if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
     if (!failed) {

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -17,29 +18,29 @@ static C_VOID pushf_popf_s47_reset(C_VOID *opaque)
 {
     pushf_popf_s47_machine *state = (pushf_popf_s47_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider pushf_popf_s47_provider = {
-    pushf_popf_s47_reset, STD_NULL
+    pushf_popf_s47_reset, LIB_NULL
 };
 
-static type_unsigned_16 pushf_popf_s47_real_flags_image(
-    core_machine_cpu_profile profile, type_unsigned_16 flags)
+static lib_u16 pushf_popf_s47_real_flags_image(
+    core_machine_cpu_profile profile, lib_u16 flags)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) flags &= 0x0fffu;
-    return (type_unsigned_16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
+    return (lib_u16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
 }
 
-static type_unsigned_16 pushf_popf_s47_real_flags_load(
-    core_machine_cpu_profile profile, type_unsigned_16 flags)
+static lib_u16 pushf_popf_s47_real_flags_load(
+    core_machine_cpu_profile profile, lib_u16 flags)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) flags &= 0x0fffu;
-    return (type_unsigned_16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
+    return (lib_u16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
 }
 
-static type_unsigned_16 pushf_popf_s47_real_flags_known_mask(
+static lib_u16 pushf_popf_s47_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
@@ -55,7 +56,7 @@ static C_INT pushf_popf_s47_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &pushf_popf_s47_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -74,16 +75,16 @@ static C_INT pushf_popf_s47_gprs_same(const t_cpu *before, const t_cpu *after)
 
 static C_INT pushf_popf_s47_sregs_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es, sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.cs, &after->data.cs, sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds, sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs, sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
+    return lib_memory_compare(&before->data.es, &after->data.es, sizeof(before->data.es)) == 0 &&
+        lib_memory_compare(&before->data.cs, &after->data.cs, sizeof(before->data.cs)) == 0 &&
+        lib_memory_compare(&before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
+        lib_memory_compare(&before->data.ds, &after->data.ds, sizeof(before->data.ds)) == 0 &&
+        lib_memory_compare(&before->data.fs, &after->data.fs, sizeof(before->data.fs)) == 0 &&
+        lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
 static C_INT pushf_popf_s47_step(pushf_popf_s47_machine *state,
-    const type_unsigned_8 *code, type_unsigned_8 bytes, type_status *status,
+    const lib_u8 *code, lib_u8 bytes, type_status *status,
     core_machine_cpu_diagnostic *diagnostic, t_cpu *after)
 {
     core_machine_run_result result;
@@ -103,15 +104,15 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 opcodes[] = {0x9cu, 0x9du};
-    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
+    static const lib_u8 opcodes[] = {0x9cu, 0x9du};
+    const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
         VCPU_EFLAGS_OF | 0x8002u;
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     {
-        type_unsigned_8 form;
+        lib_u8 form;
 
         for (form = 0u; form != sizeof(opcodes); ++form)
         {
@@ -120,9 +121,9 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
             type_status status;
             t_cpu before;
             t_cpu after;
-            type_unsigned_32 image = form == 0u ? 0u : VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
+            lib_u32 image = form == 0u ? 0u : VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
                 VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_NT | 0x8000u;
-            type_unsigned_32 observed = 0u;
+            lib_u32 observed = 0u;
             C_INT failed = !pushf_popf_s47_prepare(profiles[profile], &state);
 
             if (!failed)
@@ -144,7 +145,7 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
                         0x7ffeu, TYPE_REFERENCE_OF(observed), 2u) != TYPE_STATUS_OK ||
                         (observed & pushf_popf_s47_real_flags_known_mask(profiles[profile])) !=
                         (pushf_popf_s47_real_flags_image(profiles[profile],
-                            (type_unsigned_16)flags) &
+                            (lib_u16)flags) &
                             pushf_popf_s47_real_flags_known_mask(profiles[profile])) ||
                         (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 &&
                             (observed & 0x8000u) != 0u);
@@ -152,7 +153,7 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
                     failed |= (after.data.eflags &
                         pushf_popf_s47_real_flags_known_mask(profiles[profile])) !=
                         (pushf_popf_s47_real_flags_load(profiles[profile],
-                            (type_unsigned_16)image) &
+                            (lib_u16)image) &
                             pushf_popf_s47_real_flags_known_mask(profiles[profile])) ||
                         (after.data.eflags & 0xffff0000u) !=
                         (flags & 0xffff0000u);
@@ -167,16 +168,16 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
 
 static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
 {
-    static const type_unsigned_8 prefixes[][2] = {{0x66u, 0u}, {0x67u, 0u},
+    static const lib_u8 prefixes[][2] = {{0x66u, 0u}, {0x67u, 0u},
         {0x66u, 0x67u}};
     static const core_machine_cpu_profile legacy[] = {CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286};
-    type_unsigned_8 attribute;
+    lib_u8 attribute;
 
     for (attribute = 0u; attribute != sizeof(prefixes) / sizeof(prefixes[0]);
         ++attribute)
     {
-        type_unsigned_8 opcode;
+        lib_u8 opcode;
 
         for (opcode = 0x9cu; opcode <= 0x9du; ++opcode)
         {
@@ -185,11 +186,11 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
             type_status status;
             t_cpu before;
             t_cpu after;
-            type_unsigned_8 code[] = {prefixes[attribute][0], opcode, 0u};
-            type_unsigned_8 bytes = attribute == 2u ? 3u : 2u;
-            type_unsigned_8 width = attribute == 0u || attribute == 2u ? 4u : 2u;
-            type_unsigned_32 image = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
-            type_unsigned_32 observed = 0u;
+            lib_u8 code[] = {prefixes[attribute][0], opcode, 0u};
+            lib_u8 bytes = attribute == 2u ? 3u : 2u;
+            lib_u8 width = attribute == 0u || attribute == 2u ? 4u : 2u;
+            lib_u32 image = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
+            lib_u32 observed = 0u;
             C_INT failed = !pushf_popf_s47_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
@@ -238,10 +239,10 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
     }
     for (attribute = 0u; attribute != sizeof(legacy) / sizeof(legacy[0]); ++attribute)
     {
-        type_unsigned_8 prefix;
+        lib_u8 prefix;
         for (prefix = 0u; prefix != sizeof(prefixes) / sizeof(prefixes[0]); ++prefix)
         {
-            type_unsigned_8 opcode;
+            lib_u8 opcode;
             for (opcode = 0x9cu; opcode <= 0x9du; ++opcode)
             {
                 pushf_popf_s47_machine state;
@@ -249,8 +250,8 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
                 type_status status;
                 t_cpu before;
                 t_cpu after;
-                type_unsigned_8 code[] = {prefixes[prefix][0], opcode, 0u};
-                type_unsigned_8 bytes = prefix == 2u ? 3u : 2u;
+                lib_u8 code[] = {prefixes[prefix][0], opcode, 0u};
+                lib_u8 bytes = prefix == 2u ? 3u : 2u;
                 C_INT failed = !pushf_popf_s47_prepare(legacy[attribute], &state);
 
                 if (prefix == 2u)
@@ -267,7 +268,7 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
                         &diagnostic, &after) || status != TYPE_STATUS_FAULT ||
                         !diagnostic.first_fault.valid || !TYPE_GET_BIT(
                         diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                        STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+                        lib_memory_compare(&before, &after, sizeof(before)) != 0;
                 }
                 core_machine_destroy(state.machine);
                 if (failed)
@@ -280,14 +281,14 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
 
 static C_INT pushf_popf_s47_test_lock(C_VOID)
 {
-    static const type_unsigned_8 prefixes[][2] = {{0u, 0u}, {0x66u, 0u}, {0x67u, 0u},
+    static const lib_u8 prefixes[][2] = {{0u, 0u}, {0x66u, 0u}, {0x67u, 0u},
         {0x66u, 0x67u}};
-    type_unsigned_8 attribute;
+    lib_u8 attribute;
 
     for (attribute = 0u; attribute != sizeof(prefixes) / sizeof(prefixes[0]);
         ++attribute)
     {
-        type_unsigned_8 opcode;
+        lib_u8 opcode;
         for (opcode = 0x9cu; opcode <= 0x9du; ++opcode)
         {
             pushf_popf_s47_machine state;
@@ -295,10 +296,10 @@ static C_INT pushf_popf_s47_test_lock(C_VOID)
             type_status status;
             t_cpu before;
             t_cpu after;
-            type_unsigned_8 code[] = {0xf0u, opcode, 0u, 0u};
-            type_unsigned_8 bytes = attribute == 0u ? 2u : attribute == 3u ? 4u : 3u;
-            type_unsigned_32 sentinel = 0xa55aa55au;
-            type_unsigned_32 observed = 0u;
+            lib_u8 code[] = {0xf0u, opcode, 0u, 0u};
+            lib_u8 bytes = attribute == 0u ? 2u : attribute == 3u ? 4u : 3u;
+            lib_u32 sentinel = 0xa55aa55au;
+            lib_u32 observed = 0u;
             C_INT failed = !pushf_popf_s47_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
             if (attribute != 0u)
@@ -323,7 +324,7 @@ static C_INT pushf_popf_s47_test_lock(C_VOID)
                 failed |= !pushf_popf_s47_step(&state, code, bytes, &status, &diagnostic,
                     &after) || status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
                     !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                    STD_MEMCMP(&before, &after, sizeof(before)) != 0 ||
+                    lib_memory_compare(&before, &after, sizeof(before)) != 0 ||
                     core_machine_memory_read_physical(&state.machine->executor_memory, 0x7ffcu,
                     TYPE_REFERENCE_OF(observed), sizeof(observed)) != TYPE_STATUS_OK ||
                     observed != sentinel || core_machine_memory_read_physical(
@@ -340,9 +341,9 @@ static C_INT pushf_popf_s47_test_lock(C_VOID)
 
 static C_INT pushf_popf_s47_test_irq(C_VOID)
 {
-    static const type_unsigned_8 codes[][2] = {{0x9cu, 0x90u}, {0x9du, 0x90u}};
-    static const type_unsigned_8 halt = 0xf4u;
-    type_unsigned_8 form;
+    static const lib_u8 codes[][2] = {{0x9cu, 0x90u}, {0x9du, 0x90u}};
+    static const lib_u8 halt = 0xf4u;
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
@@ -351,11 +352,11 @@ static C_INT pushf_popf_s47_test_irq(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        type_unsigned_16 offset = 0x100u;
-        type_unsigned_16 segment = 0u;
-        type_unsigned_16 frame = 0u;
-        type_unsigned_16 image = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        type_unsigned_16 observed = 0u;
+        lib_u16 offset = 0x100u;
+        lib_u16 segment = 0u;
+        lib_u16 frame = 0u;
+        lib_u16 image = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+        lib_u16 observed = 0u;
         C_INT failed = !pushf_popf_s47_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -373,7 +374,7 @@ static C_INT pushf_popf_s47_test_irq(C_VOID)
                 core_machine_memory_write(state.machine, 0x100u, &halt, 1u) !=
                 TYPE_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
@@ -384,7 +385,7 @@ static C_INT pushf_popf_s47_test_irq(C_VOID)
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp, TYPE_REFERENCE_OF(frame),
+                after.data.ss.base + (lib_u16)after.data.esp, TYPE_REFERENCE_OF(frame),
                 2u) != TYPE_STATUS_OK || after.data.eip != 0x101u || frame != 1u ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
                 VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,

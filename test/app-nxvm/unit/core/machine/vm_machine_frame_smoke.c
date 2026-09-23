@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/machine/frame.h"
@@ -5,9 +6,9 @@
 C_INT main(C_VOID)
 {
     vm_machine_display_event source = {0};
-    common_machine_frame destination = {0};
+    static common_machine_frame destination;
 
-    source.graphics = TYPE_FALSE;
+    source.graphics = LIB_FALSE;
     source.generation = 7u;
     source.columns = 80u;
     source.rows = 25u;
@@ -34,21 +35,21 @@ C_INT main(C_VOID)
         destination.characters.primary[0u] != 0x0020u ||
         destination.characters.primary[219u] != 0x2588u) return 1;
 
-    source.graphics = TYPE_TRUE;
+    source.graphics = LIB_TRUE;
     source.pixel_width = 320u;
     source.pixel_height = 200u;
     if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_OK ||
         !destination.window.graphics || destination.window.image.width != 320u ||
         destination.window.image.height != 200u) return 1;
     {
-        common_machine_frame *before = STD_MALLOC(sizeof(*before));
+        common_machine_frame *before = lib_allocate(sizeof(*before));
 
-        source.pixel_width = (type_unsigned_16)(KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u);
-        if (before == STD_NULL) return 1;
+        source.pixel_width = (lib_u16)(KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u);
+        if (before == LIB_NULL) return 1;
         *before = destination;
         if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_UNSUPPORTED ||
-            STD_MEMCMP(before, &destination, sizeof(destination)) != 0) return 1;
-        STD_FREE(before);
+            lib_memory_compare(before, &destination, sizeof(destination)) != 0) return 1;
+        lib_release(before);
     }
     return 0;
 }

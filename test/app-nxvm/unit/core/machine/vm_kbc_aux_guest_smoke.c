@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/entry_plan_interface.h"
@@ -11,7 +12,7 @@
 #define VM_KBC_AUX_COUNT_ADDRESS 0x0500u
 #define VM_KBC_AUX_BYTES_ADDRESS 0x0510u
 
-static const type_unsigned_8 vm_kbc_aux_boot_code[] = {
+static const lib_u8 vm_kbc_aux_boot_code[] = {
     0xfau, 0x31u, 0xc0u, 0x8eu, 0xd8u,
     0xc7u, 0x06u, 0xd0u, 0x01u, 0x80u, 0x7cu,
     0xc7u, 0x06u, 0xd2u, 0x01u, 0x00u, 0x00u,
@@ -30,24 +31,24 @@ static const type_unsigned_8 vm_kbc_aux_boot_code[] = {
     0xf4u, 0xebu, 0xfdu
 };
 
-static const type_unsigned_8 vm_kbc_aux_irq12_handler[] = {
+static const lib_u8 vm_kbc_aux_irq12_handler[] = {
     0x50u, 0x53u, 0xe4u, 0x60u, 0x8bu, 0x1eu, 0x00u, 0x05u,
     0x88u, 0x87u, 0x10u, 0x05u, 0x43u, 0x89u, 0x1eu, 0x00u, 0x05u,
     0xb0u, 0x20u, 0xe6u, 0xa0u, 0xe6u, 0x20u, 0x5bu, 0x58u, 0xcfu
 };
 
-static C_INT vm_kbc_aux_read_count(vm_machine *session, type_unsigned_16 *out_count)
+static C_INT vm_kbc_aux_read_count(vm_machine *session, lib_u16 *out_count)
 {
     return core_machine_memory_read(session->core_machine,
         VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_kbc_aux_run_until_count(vm_machine *session, type_unsigned_16 expected)
+static C_INT vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    type_unsigned_32 instruction;
-    type_unsigned_16 count = 0u;
+    lib_u32 instruction;
+    lib_u16 count = 0u;
 
     for (instruction = 0u; instruction < VM_KBC_AUX_BOOT_BUDGET; ++instruction) {
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
@@ -74,16 +75,16 @@ C_INT main(C_VOID)
         .preloads = preloads,
         .preload_count = sizeof(preloads) / sizeof(preloads[0])
     };
-    vm_machine *session = STD_NULL;
-    type_unsigned_8 bytes[4] = {0};
-    type_unsigned_16 count = 0u;
+    vm_machine *session = LIB_NULL;
+    lib_u8 bytes[4] = {0};
+    lib_u16 count = 0u;
     C_INT passed = 0;
     C_INT stage = 0;
     type_status create_status;
     type_status plan_status = TYPE_STATUS_OK;
 
     create_status = vm_test_default_pc_at_session_create(&config, &session);
-    if (create_status != TYPE_STATUS_OK || session == STD_NULL ||
+    if (create_status != TYPE_STATUS_OK || session == LIB_NULL ||
         (plan_status = core_machine_apply_entry_plan(session->core_machine,
             &plan)) != TYPE_STATUS_OK) { stage = 1; goto done; }
     if (!vm_kbc_aux_run_until_count(session, 1u) ||

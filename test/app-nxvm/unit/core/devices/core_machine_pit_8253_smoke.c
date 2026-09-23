@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pit.h"
@@ -7,8 +8,8 @@ C_INT main(C_VOID)
 {
     t_pit pit;
     t_port port;
-    type_unsigned_8 control;
-    type_unsigned_16 count;
+    lib_u8 control;
+    lib_u16 count;
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);

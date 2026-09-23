@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 
@@ -29,9 +30,9 @@ type_status integration_ini_session_open_with_overlay_transform(const C_CHAR *di
     const C_CHAR *file_name, integration_ini_session_overlay_transform transform,
     C_VOID *opaque, integration_ini_session *out_session);
 type_status integration_ini_session_overlay_read(const integration_ini_session *session,
-    core_machine_media_id id, C_VOID **out_bytes, STD_SIZE_T *out_count);
+    core_machine_media_id id, C_VOID **out_bytes, lib_size *out_count);
 type_status integration_ini_session_overlay_write(integration_ini_session *session,
-    core_machine_media_id id, const C_VOID *bytes, STD_SIZE_T byte_count);
+    core_machine_media_id id, const C_VOID *bytes, lib_size byte_count);
 type_status integration_ini_session_restart(integration_ini_session *session);
 /* Integration uses the same composed Common executor as the product whenever
  * a test drives a running guest.  Direct Core loops remain for owner-local

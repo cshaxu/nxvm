@@ -1,5 +1,6 @@
 #ifndef VM_MACHINE_FAULT_H
 #define VM_MACHINE_FAULT_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 

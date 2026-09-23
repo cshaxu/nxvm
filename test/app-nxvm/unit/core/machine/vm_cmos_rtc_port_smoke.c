@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pic.h"
@@ -9,16 +10,16 @@
 #include "app-nxvm/devices/rtc.h"
 #include "support/rom/session_assets.h"
 
-static C_VOID cmos_write(t_port *port, type_unsigned_8 reg, type_unsigned_8 value)
+static C_VOID cmos_write(t_port *port, lib_u8 reg, lib_u8 value)
 {
     core_machine_port_write(port, 0x0070u, reg);
     core_machine_port_write(port, 0x0071u, value);
 }
 
-static type_unsigned_8 cmos_read(t_port *port, type_unsigned_8 reg)
+static lib_u8 cmos_read(t_port *port, lib_u8 reg)
 {
     core_machine_port_write(port, 0x0070u, reg);
-    return (type_unsigned_8)core_machine_port_read(port, 0x0071u);
+    return (lib_u8)core_machine_port_read(port, 0x0071u);
 }
 
 static C_VOID initialize_pic(t_port *port)
@@ -33,7 +34,7 @@ static C_VOID initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static C_VOID advance_cmos(core_machine_rtc *cmos, type_unsigned_64 elapsed_ticks)
+static C_VOID advance_cmos(core_machine_rtc *cmos, lib_u64 elapsed_ticks)
 {
     core_machine_rtc_advance(cmos, elapsed_ticks);
     core_machine_pic_refresh(cmos->irq_source.master,
@@ -42,37 +43,37 @@ static C_VOID advance_cmos(core_machine_rtc *cmos, type_unsigned_64 elapsed_tick
 
 static C_INT default_at_cmos_seed_is_loaded(C_VOID)
 {
-    type_unsigned_8 seed[VM_MACHINE_CMOS_SEED_BYTES] = {0};
+    lib_u8 seed[VM_MACHINE_CMOS_SEED_BYTES] = {0};
     vm_machine_config config = {0};
     vm_machine_assets assets;
-    vm_machine *session = STD_NULL;
-    type_unsigned_16 checksum = 0u;
-    STD_SIZE_T index;
+    vm_machine *session = LIB_NULL;
+    lib_u16 checksum = 0u;
+    lib_size index;
     C_INT failed = 0;
 
     for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
-        seed[index] = (type_unsigned_8)(0xa5u ^ index);
+        seed[index] = (lib_u8)(0xa5u ^ index);
     }
     /* A session seed owns the whole board-NVRAM image, not just vendor bytes.
      * Supply a valid AT checksum exactly as an external .cmos asset would. */
     for (index = 0x10u; index < 0x2eu; ++index) {
-        checksum = (type_unsigned_16)(checksum + seed[index]);
+        checksum = (lib_u16)(checksum + seed[index]);
     }
     seed[0x2eu] = TYPE_MASK_UNSIGNED_8(checksum >> 8u);
     seed[0x2fu] = TYPE_MASK_UNSIGNED_8(checksum);
     vm_test_default_pc_at_assets(&assets,
-        (type_unsigned_8[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES]) {0});
+        (lib_u8[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES]) {0});
     /* The helper's ROM array must outlive composition only; session copies it. */
     assets.cmos_seed = (vm_machine_asset_bytes) { seed, sizeof(seed) };
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.bios_count = 1u;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+        session == LIB_NULL;
     if (!failed) {
         t_port *port = &session->core_machine->executor_port;
 
         for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
-            failed |= cmos_read(port, (type_unsigned_8)index) != seed[index];
+            failed |= cmos_read(port, (lib_u8)index) != seed[index];
         }
     }
     vm_machine_destroy(session);
@@ -81,14 +82,14 @@ static C_INT default_at_cmos_seed_is_loaded(C_VOID)
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     t_port *port;
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) return 1;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL) return 1;
     port = session->core_machine->fdc.connect.port;
-    if (!session->active || port == STD_NULL) failed = 1;
+    if (!session->active || port == LIB_NULL) failed = 1;
     initialize_pic(port);
 
     if (cmos_read(port, CORE_MACHINE_RTC_REG_D) != CORE_MACHINE_RTC_REG_D_VRT) failed |= 0x0001;

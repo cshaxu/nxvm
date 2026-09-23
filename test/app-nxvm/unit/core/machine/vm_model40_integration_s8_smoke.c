@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/machine/machine_private.h"
@@ -12,31 +13,31 @@
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_machine_config invalid_config = {
         .profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
     };
     vm_machine_assets missing_assets = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_cpu_profile cpu_profile;
-    STD_SIZE_T memory_bytes;
+    lib_size memory_bytes;
     core_machine_d4_platform_observation d4;
-    type_unsigned_32 value = 0u;
-    type_unsigned_8 rom_byte = 0u;
-    type_unsigned_8 sense_status = 0u;
-    type_unsigned_8 sense_cylinder = 0u;
-    type_unsigned_8 reset_status[CORE_MACHINE_FDC_DRIVE_COUNT] = {0};
+    lib_u32 value = 0u;
+    lib_u8 rom_byte = 0u;
+    lib_u8 sense_status = 0u;
+    lib_u8 sense_cylinder = 0u;
+    lib_u8 reset_status[CORE_MACHINE_FDC_DRIVE_COUNT] = {0};
     C_INT failed = 0;
     C_INT stage = 0;
-    type_unsigned_8 fifo_count;
+    lib_u8 fifo_count;
 
     even[0x3ff8u] = 0xa5u;
 
     failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+        TYPE_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
@@ -121,9 +122,9 @@ C_INT main(C_VOID)
             core_machine_port_write(&session->core_machine->executor_port,
                 0x03f5u, 0x08u);
             core_machine_fdc_advance(&session->core_machine->fdc);
-            reset_status[sense_status] = (type_unsigned_8)core_machine_port_read(
+            reset_status[sense_status] = (lib_u8)core_machine_port_read(
                 &session->core_machine->executor_port, 0x03f5u);
-            sense_cylinder = (type_unsigned_8)core_machine_port_read(
+            sense_cylinder = (lib_u8)core_machine_port_read(
                 &session->core_machine->executor_port, 0x03f5u);
             failed |= reset_status[sense_status] !=
                 (core_machine_fdc_ST0_READY_CHANGE | sense_status) ||
@@ -131,9 +132,9 @@ C_INT main(C_VOID)
         }
         core_machine_port_write(&session->core_machine->executor_port, 0x03f5u, 0x08u);
         core_machine_fdc_advance(&session->core_machine->fdc);
-        sense_status = (type_unsigned_8)core_machine_port_read(
+        sense_status = (lib_u8)core_machine_port_read(
             &session->core_machine->executor_port, 0x03f5u);
-        sense_cylinder = (type_unsigned_8)core_machine_port_read(
+        sense_cylinder = (lib_u8)core_machine_port_read(
             &session->core_machine->executor_port, 0x03f5u);
         failed |= sense_status != 0x80u || sense_cylinder != 0u;
         if (failed) stage = 4;
@@ -158,7 +159,7 @@ C_INT main(C_VOID)
                 0x01f1u) != CORE_MACHINE_HDC_ERROR_ABORT;
         if (failed) stage = 5;
     }
-    if (failed && session != STD_NULL) {
+    if (failed && session != LIB_NULL) {
         STD_PRINTF("M5:T386:S8:MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
             (unsigned int)stage,
             (unsigned int)session->core_machine->fdc_topology.drives.installed_mask,

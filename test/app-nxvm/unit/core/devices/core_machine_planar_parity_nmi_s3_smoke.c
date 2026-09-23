@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -15,9 +16,9 @@ static C_INT planar_parity_s4_shared_memory(C_VOID)
         .refresh_status_toggle_ticks = 0u
     };
     core_machine_planar_parity_observation observation;
-    core_machine *machine = STD_NULL;
-    type_unsigned_8 written = 0x5au;
-    type_unsigned_8 read = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u8 written = 0x5au;
+    lib_u8 read = 0u;
     C_INT failed = 0;
 
     config.memory_bytes = 512u * 1024u;
@@ -29,7 +30,7 @@ static C_INT planar_parity_s4_shared_memory(C_VOID)
             sizeof(written)) != TYPE_STATUS_OK ||
         machine->executor_memory.connect.parity == 0u ||
         core_machine_reconfigure_memory(machine, 512u * 1024u) != TYPE_STATUS_INVALID_STATE;
-    if (!failed) ((type_unsigned_8 *)machine->executor_memory.connect.parity)[0x1234u] ^= 1u;
+    if (!failed) ((lib_u8 *)machine->executor_memory.connect.parity)[0x1234u] ^= 1u;
     if (!failed) failed |= core_machine_memory_read(machine, 0x1234u, &read,
             sizeof(read)) != TYPE_STATUS_OK || read != written ||
         core_machine_get_planar_parity_observation(machine, &observation) !=
@@ -41,7 +42,7 @@ static C_INT planar_parity_s4_shared_memory(C_VOID)
 static C_INT planar_parity_s4_unbound_reconfigure(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = 0;
 
     config.memory_bytes = 2u * 1024u * 1024u;
@@ -64,8 +65,8 @@ C_INT main(C_VOID)
     };
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_planar_parity_observation observation;
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 1u;

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/display_interface.h"
@@ -15,18 +16,18 @@
 
 static C_INT vm_machine_display_publish_is_due(vm_machine *machine, C_INT force)
 {
-    type_unsigned_64 now;
+    lib_u64 now;
 
-    if (machine == STD_NULL || base_clock_milliseconds(&now) != LIB_STATUS_OK) {
-        return TYPE_TRUE;
+    if (machine == LIB_NULL || base_clock_milliseconds(&now) != LIB_STATUS_OK) {
+        return LIB_TRUE;
     }
     if (!force && now >= machine->last_display_publish_milliseconds &&
         now - machine->last_display_publish_milliseconds <
             VM_MACHINE_DISPLAY_CADENCE_MILLISECONDS) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
     machine->last_display_publish_milliseconds = now;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 static C_INT vm_machine_capture_display_snapshot(C_VOID *context,
@@ -34,7 +35,7 @@ static C_INT vm_machine_capture_display_snapshot(C_VOID *context,
 {
     vm_machine *session = (vm_machine *)context;
 
-    return session != STD_NULL && core_machine_capture_display_snapshot(
+    return session != LIB_NULL && core_machine_capture_display_snapshot(
         session->core_machine, out_snapshot) == TYPE_STATUS_OK;
 }
 
@@ -43,7 +44,7 @@ static C_VOID vm_machine_display_result(vm_machine *machine,
 {
     vm_machine_display_event display = {0};
 
-    if (machine == STD_NULL || frame == STD_NULL) return;
+    if (machine == LIB_NULL || frame == LIB_NULL) return;
     display.graphics = frame->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
     display.columns = frame->columns;
     display.rows = frame->rows;
@@ -59,13 +60,13 @@ static C_VOID vm_machine_display_result(vm_machine *machine,
     display.pixel_width = frame->pixel_width;
     display.pixel_height = frame->pixel_height;
     display.generation = frame->generation;
-    STD_MEMCPY(display.characters, frame->characters, sizeof(display.characters));
-    STD_MEMCPY(display.attributes, frame->attributes, sizeof(display.attributes));
-    STD_MEMCPY(display.glyphs, frame->text_glyphs, sizeof(display.glyphs));
-    STD_MEMCPY(display.pixels, frame->pixels, sizeof(display.pixels));
-    STD_MEMCPY(display.palette_rgb, frame->palette_rgb, sizeof(display.palette_rgb));
+    lib_memory_copy(display.characters, frame->characters, sizeof(display.characters));
+    lib_memory_copy(display.attributes, frame->attributes, sizeof(display.attributes));
+    lib_memory_copy(display.glyphs, frame->text_glyphs, sizeof(display.glyphs));
+    lib_memory_copy(display.pixels, frame->pixels, sizeof(display.pixels));
+    lib_memory_copy(display.palette_rgb, frame->palette_rgb, sizeof(display.palette_rgb));
     if (vm_machine_frame_from_display(&display, &machine->latest_frame) ==
-        TYPE_STATUS_OK) machine->latest_frame_valid = TYPE_TRUE;
+        TYPE_STATUS_OK) machine->latest_frame_valid = LIB_TRUE;
 }
 
 core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
@@ -73,14 +74,14 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
 {
     core_machine_guest_display_frame frame;
     core_machine_display_snapshot_observation observation;
-    type_unsigned_16 row;
-    type_unsigned_16 column;
+    lib_u16 row;
+    lib_u16 column;
     C_INT buffer_changed;
     C_INT cursor_changed;
 
     core_machine_display_snapshot snapshot;
 
-    if (machine == STD_NULL) return CORE_MACHINE_DISPLAY_KIND_TEXT;
+    if (machine == LIB_NULL) return CORE_MACHINE_DISPLAY_KIND_TEXT;
     if (!vm_machine_display_publish_is_due(machine, force)) return machine->display_kind;
     if (!force && core_machine_observe_display_snapshot(machine->core_machine,
             machine->display_snapshot_generation_valid,
@@ -88,7 +89,7 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
         !observation.capture_required) {
         return machine->display_kind;
     }
-    STD_MEMSET(&observation, 0, sizeof(observation));
+    lib_memory_set(&observation, 0, sizeof(observation));
     if (!core_machine_display_capture_snapshot_from(machine->display_provider,
         &snapshot)) return machine->display_kind;
     machine->display_kind = snapshot.kind;
@@ -96,7 +97,7 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
     cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return snapshot.kind;
 
-    STD_MEMSET(&frame, 0, sizeof(frame));
+    lib_memory_set(&frame, 0, sizeof(frame));
     frame.kind = snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ?
         CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS : CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
     frame.buffer_changed = buffer_changed;
@@ -104,8 +105,8 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
     if (frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS) {
         frame.pixel_width = snapshot.pixel_width;
         frame.pixel_height = snapshot.pixel_height;
-        STD_MEMCPY(frame.pixels, snapshot.pixels, sizeof(frame.pixels));
-        STD_MEMCPY(frame.palette_rgb, snapshot.palette_rgb,
+        lib_memory_copy(frame.pixels, snapshot.pixels, sizeof(frame.pixels));
+        lib_memory_copy(frame.palette_rgb, snapshot.palette_rgb,
             sizeof(frame.palette_rgb));
     } else {
         frame.columns = snapshot.columns;
@@ -123,13 +124,13 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
         frame.cursor_y = snapshot.cursor_y;
         frame.cursor_visible = snapshot.cursor_visible;
         frame.text_glyphs_present = snapshot.text_glyphs_present;
-        STD_MEMCPY(frame.text_glyphs, snapshot.text_glyphs,
+        lib_memory_copy(frame.text_glyphs, snapshot.text_glyphs,
             sizeof(frame.text_glyphs));
-        STD_MEMCPY(frame.palette_rgb, snapshot.palette_rgb,
+        lib_memory_copy(frame.palette_rgb, snapshot.palette_rgb,
             sizeof(frame.palette_rgb));
         for (row = 0u; row < frame.rows; ++row) {
             for (column = 0u; column < frame.columns; ++column) {
-                type_unsigned_16 index = row * CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS + column;
+                lib_u16 index = row * CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS + column;
                 frame.characters[index] = snapshot.characters[index];
                 frame.attributes[index] = snapshot.attributes[index];
             }
@@ -139,12 +140,12 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
     vm_machine_display_result(machine, &frame);
     machine->display_generation = frame.generation;
     if (core_machine_observe_display_snapshot(machine->core_machine,
-            TYPE_FALSE, 0u, &observation) == TYPE_STATUS_OK &&
+            LIB_FALSE, 0u, &observation) == TYPE_STATUS_OK &&
         observation.generation_reliable) {
         machine->display_snapshot_generation = observation.generation;
-        machine->display_snapshot_generation_valid = TYPE_TRUE;
+        machine->display_snapshot_generation_valid = LIB_TRUE;
     } else {
-        machine->display_snapshot_generation_valid = TYPE_FALSE;
+        machine->display_snapshot_generation_valid = LIB_FALSE;
     }
     return snapshot.kind;
 }
@@ -158,7 +159,7 @@ static C_VOID vm_machine_display_mode_changed(C_VOID *context)
 
 C_VOID vm_machine_bind_display(vm_machine *machine)
 {
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     core_machine_display_provider_slot_bind(machine->display_provider,
         machine, vm_machine_display_mode_changed,
         machine, vm_machine_capture_display_snapshot);

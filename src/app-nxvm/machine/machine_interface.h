@@ -1,5 +1,6 @@
 #ifndef VM_MACHINE_INTERFACE_H
 #define VM_MACHINE_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -21,8 +22,8 @@ typedef enum vm_machine_speed {
 typedef struct vm_machine vm_machine;
 
 typedef struct vm_machine_reset_vector {
-    type_unsigned_16 cs;
-    type_unsigned_16 ip;
+    lib_u16 cs;
+    lib_u16 ip;
 } vm_machine_reset_vector;
 
 /* Copied monitor facts.  The product formats these facts; vm/machine never
@@ -30,23 +31,23 @@ typedef struct vm_machine_reset_vector {
 typedef struct vm_machine_information {
     vm_machine_profile_kind profile_kind;
     core_machine_cpu_profile cpu_profile;
-    STD_SIZE_T memory_bytes;
-    STD_SIZE_T floppy_image_bytes;
+    lib_size memory_bytes;
+    lib_size floppy_image_bytes;
     C_INT floppy_media_inserted;
     C_INT fixed_disk_present;
-    type_unsigned_32 fixed_disk_cylinders;
-    STD_SIZE_T fixed_disk_image_bytes;
+    lib_u32 fixed_disk_cylinders;
+    lib_size fixed_disk_image_bytes;
     C_INT fixed_disk_media_connected;
     C_INT external_firmware;
     C_INT active;
     C_INT fault_valid;
-    type_unsigned_32 fault_detail;
-    type_unsigned_32 fault_linear_pc;
+    lib_u32 fault_detail;
+    lib_u32 fault_linear_pc;
     C_INT fault_exception_valid;
-    type_unsigned_32 fault_exception_mask;
-    type_unsigned_32 fault_exception_code;
-    type_unsigned_16 fault_exception_cs;
-    type_unsigned_32 fault_exception_eip;
+    lib_u32 fault_exception_mask;
+    lib_u32 fault_exception_code;
+    lib_u16 fault_exception_cs;
+    lib_u32 fault_exception_eip;
 } vm_machine_information;
 
 type_status vm_machine_create(const vm_machine_config *config,
@@ -63,7 +64,7 @@ type_status vm_machine_describe_common_driver(vm_machine *session,
 type_status vm_machine_bind_common_machine(vm_machine *session,
     common_machine *common_machine);
 type_status vm_machine_reconfigure_memory(vm_machine *session,
-    STD_SIZE_T memory_bytes);
+    lib_size memory_bytes);
 type_status vm_machine_get_speed(const vm_machine *session,
     vm_machine_speed *out_speed);
 type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed);

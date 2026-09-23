@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/controller_interface.h"
@@ -31,64 +32,64 @@ typedef enum core_machine_fdc_phase {
 } core_machine_fdc_phase;
 
 typedef struct {
-    type_unsigned_8 dor; /* digital output register */
-    type_unsigned_8 msr; /* main status register */
-    type_unsigned_8 dr;  /* data register */
-    type_unsigned_8 dir; /* digital input register */
-    type_unsigned_8 ccr; /* configuration control register */
+    lib_u8 dor; /* digital output register */
+    lib_u8 msr; /* main status register */
+    lib_u8 dr;  /* data register */
+    lib_u8 dir; /* digital input register */
+    lib_u8 ccr; /* configuration control register */
 
     type_unsigned_4 hut; /* head unload STD_TIME */
     type_unsigned_4 hlt; /* head load STD_TIME */
-    type_unsigned_8 srt; /* step rate STD_TIME */
+    lib_u8 srt; /* step rate STD_TIME */
     type_bool flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
     type_bool flagINTR; /* 0 = no intr; 1 = has intr */
 
     core_machine_fdc_phase phase;
-    type_unsigned_8 command_length;
-    type_unsigned_8 command_index;
-    type_unsigned_8 result_length;
-    type_unsigned_8 result_index;
-    type_unsigned_8 cmd[9];
-    type_unsigned_8 ret[7];
-    type_unsigned_8 st0, st1, st2, st3; /* state registers */
-    type_unsigned_8 pending_st0;
-    type_unsigned_8 pending_st1;
-    type_unsigned_8 pending_st2;
+    lib_u8 command_length;
+    lib_u8 command_index;
+    lib_u8 result_length;
+    lib_u8 result_index;
+    lib_u8 cmd[9];
+    lib_u8 ret[7];
+    lib_u8 st0, st1, st2, st3; /* state registers */
+    lib_u8 pending_st0;
+    lib_u8 pending_st1;
+    lib_u8 pending_st2;
     type_bool transfer_expect_deleted;
     type_bool transfer_write_deleted;
-    type_unsigned_8 scan_mode;
+    lib_u8 scan_mode;
     type_bool scan_sector_satisfies;
-    type_unsigned_16 cylinder;
-    type_unsigned_16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_unsigned_16 seek_target[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_unsigned_64 seek_due_tick[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u16 cylinder;
+    lib_u16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u16 seek_target[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u64 seek_due_tick[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool seek_pending[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_unsigned_8 seek_result_st0[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_unsigned_8 seek_result_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_unsigned_8 seek_result_count;
-    type_unsigned_16 head;
-    type_unsigned_16 sector;
-    type_unsigned_16 eot;
-    type_unsigned_16 byte_offset;
-    type_unsigned_32 transfer_remaining;
-    type_unsigned_16 format_headers_remaining;
-    type_unsigned_8 format_id[4];
-    type_unsigned_8 format_id_index;
-    type_unsigned_8 selected_drive;
+    lib_u8 seek_result_st0[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 seek_result_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 seek_result_count;
+    lib_u16 head;
+    lib_u16 sector;
+    lib_u16 eot;
+    lib_u16 byte_offset;
+    lib_u32 transfer_remaining;
+    lib_u16 format_headers_remaining;
+    lib_u8 format_id[4];
+    lib_u8 format_id_index;
+    lib_u8 selected_drive;
     /* Reset queues the controller's pending Sense-Interrupt drive reports. */
-    type_unsigned_8 reset_sense_mask;
-    type_unsigned_64 reset_due_tick;
+    lib_u8 reset_sense_mask;
+    lib_u64 reset_due_tick;
     type_bool reset_pending;
-    type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool initial_media_baseline_pending;
     type_bool ready_poll_enabled;
     type_bool dma_byte_gate_pending;
     type_bool ndma_byte_gate_pending;
-    type_unsigned_64 elapsed_ticks;
-    type_unsigned_64 next_dma_byte_tick;
-    type_unsigned_64 next_ndma_byte_tick;
+    lib_u64 elapsed_ticks;
+    lib_u64 next_dma_byte_tick;
+    lib_u64 next_ndma_byte_tick;
 } core_machine_fdc_data;
 
 typedef C_VOID (*core_machine_fdc_dma_request_operation)(C_VOID *owner,
@@ -105,7 +106,7 @@ typedef struct {
     t_port *port;
     core_machine_fdc_config config;
     core_machine_fdc_terminal_observation_provider observation_provider;
-    type_unsigned_64 observation_sequence;
+    lib_u64 observation_sequence;
 } core_machine_fdc_connection;
 
 typedef struct {
@@ -199,7 +200,7 @@ typedef struct {
 
 /* convert byte per sector from or to bps type  */
 #define VFDC_GetBPS(cb) (0x0080 << (cb))  /* convert bps type to bps */
-type_unsigned_8 VFDC_GetBPSC(type_unsigned_16 cb); /* convert bps to bps type */
+lib_u8 VFDC_GetBPSC(lib_u16 cb); /* convert bps to bps type */
 
 /* #define VFDC_Get_A0(cbyte)  * Address Line 0 */
 /* #define VFDC_Get_C(cbyte)   * Cylinder Number (0-79) */
@@ -242,9 +243,9 @@ C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_reset(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_advance(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
-    type_unsigned_64 elapsed_ticks);
+    lib_u64 elapsed_ticks);
 type_status core_machine_fdc_next_due_tick(const core_machine_fdc *fdc,
-    type_unsigned_64 *out_due_tick);
+    lib_u64 *out_due_tick);
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc);
 

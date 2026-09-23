@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -7,12 +8,12 @@
 #include "app-nxvm/devices/port.h"
 
 typedef struct core_machine_fdc_fixture_media {
-    type_unsigned_8 bytes[512];
-    type_unsigned_64 generation;
-    type_unsigned_32 query_count;
-    type_unsigned_32 read_count;
-    type_unsigned_32 write_count;
-    type_unsigned_32 format_count;
+    lib_u8 bytes[512];
+    lib_u64 generation;
+    lib_u32 query_count;
+    lib_u32 read_count;
+    lib_u32 write_count;
+    lib_u32 format_count;
     core_machine_media_address_mark mark;
     type_bool present;
     type_bool read_only;
@@ -26,11 +27,11 @@ static core_machine_media_result core_machine_fdc_fixture_query(C_VOID *context,
 {
     core_machine_fdc_fixture_media *media = context;
 
-    if (media == STD_NULL || out_info == STD_NULL) {
+    if (media == LIB_NULL || out_info == LIB_NULL) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     ++media->query_count;
-    STD_MEMSET(out_info, 0, sizeof(*out_info));
+    lib_memory_set(out_info, 0, sizeof(*out_info));
     out_info->generation = media->generation;
     out_info->present = media->present;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
@@ -48,11 +49,11 @@ static core_machine_media_result core_machine_fdc_fixture_query(C_VOID *context,
 }
 
 static core_machine_media_result core_machine_fdc_fixture_read(C_VOID *context,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
 {
     core_machine_fdc_fixture_media *media = context;
 
-    if (media == STD_NULL || buffer == STD_NULL || !media->present) {
+    if (media == LIB_NULL || buffer == LIB_NULL || !media->present) {
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     }
     if (media->forced_read_result != CORE_MACHINE_MEDIA_RESULT_OK) {
@@ -62,16 +63,16 @@ static core_machine_media_result core_machine_fdc_fixture_read(C_VOID *context,
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     ++media->read_count;
-    *(type_unsigned_8 *)buffer = media->bytes[offset];
+    *(lib_u8 *)buffer = media->bytes[offset];
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_fdc_fixture_write(C_VOID *context,
-    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count)
 {
     core_machine_fdc_fixture_media *media = context;
 
-    if (media == STD_NULL || buffer == STD_NULL || !media->present) {
+    if (media == LIB_NULL || buffer == LIB_NULL || !media->present) {
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     }
     if (media->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
@@ -82,16 +83,16 @@ static core_machine_media_result core_machine_fdc_fixture_write(C_VOID *context,
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     ++media->write_count;
-    media->bytes[offset] = *(const type_unsigned_8 *)buffer;
+    media->bytes[offset] = *(const lib_u8 *)buffer;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_fdc_fixture_format(C_VOID *context,
-    type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill)
+    lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill)
 {
     core_machine_fdc_fixture_media *media = context;
 
-    if (media == STD_NULL || !media->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (media == LIB_NULL || !media->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (media->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
     if (media->forced_format_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         return media->forced_format_result;
@@ -101,16 +102,16 @@ static core_machine_media_result core_machine_fdc_fixture_format(C_VOID *context
     }
     ++media->format_count;
     ++media->generation;
-    STD_MEMSET(media->bytes, fill, sizeof(media->bytes));
+    lib_memory_set(media->bytes, fill, sizeof(media->bytes));
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_fdc_fixture_get_mark(C_VOID *context,
-    type_unsigned_64 logical_sector, core_machine_media_address_mark *out_mark)
+    lib_u64 logical_sector, core_machine_media_address_mark *out_mark)
 {
     core_machine_fdc_fixture_media *media = context;
 
-    if (media == STD_NULL || out_mark == STD_NULL || !media->present)
+    if (media == LIB_NULL || out_mark == LIB_NULL || !media->present)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (logical_sector != 0u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     *out_mark = media->mark;
@@ -118,11 +119,11 @@ static core_machine_media_result core_machine_fdc_fixture_get_mark(C_VOID *conte
 }
 
 static core_machine_media_result core_machine_fdc_fixture_set_mark(C_VOID *context,
-    type_unsigned_64 logical_sector, core_machine_media_address_mark mark)
+    lib_u64 logical_sector, core_machine_media_address_mark mark)
 {
     core_machine_fdc_fixture_media *media = context;
 
-    if (media == STD_NULL || !media->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (media == LIB_NULL || !media->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (media->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
     if (logical_sector != 0u || (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
         mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA))
@@ -136,29 +137,29 @@ static const core_machine_media_provider core_machine_fdc_fixture_provider = {
     core_machine_fdc_fixture_read,
     core_machine_fdc_fixture_write,
     core_machine_fdc_fixture_format,
-    STD_NULL,
+    LIB_NULL,
     core_machine_fdc_fixture_get_mark,
     core_machine_fdc_fixture_set_mark
 };
 
 static C_VOID core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
-    const type_unsigned_8 *bytes, STD_SIZE_T count)
+    const lib_u8 *bytes, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
     core_machine_fdc_advance(fdc);
-    for (type_unsigned_8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
         if (fdc->data.seek_pending[drive]) {
             core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[drive]);
         }
     }
 }
 
-static C_VOID core_machine_fdc_write_dma2(t_port *port, type_unsigned_16 address,
-    type_unsigned_16 count)
+static C_VOID core_machine_fdc_write_dma2(t_port *port, lib_u16 address,
+    lib_u16 count)
 {
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, 0x0004u, address & 0xffu);
@@ -171,51 +172,51 @@ static C_VOID core_machine_fdc_write_dma2(t_port *port, type_unsigned_16 address
 }
 
 static C_INT core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
-    type_unsigned_8 *result, STD_SIZE_T count)
+    lib_u8 *result, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
     core_machine_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
-        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+        result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
-    static const type_unsigned_8 read_sector[] = {
+    static const lib_u8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
+    static const lib_u8 read_sector[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 read_sector_dma_terminal[] = {
+    static const lib_u8 read_sector_dma_terminal[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x0fu, 0x2au, 0xffu
     };
-    static const type_unsigned_8 write_sector[] = {
+    static const lib_u8 write_sector[] = {
         0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 read_deleted_sector[] = {
+    static const lib_u8 read_deleted_sector[] = {
         0xecu, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 write_deleted_sector[] = {
+    static const lib_u8 write_deleted_sector[] = {
         0xc9u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 scan_equal[] = {
+    static const lib_u8 scan_equal[] = {
         0x11u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 scan_low_or_equal[] = {
+    static const lib_u8 scan_low_or_equal[] = {
         0x19u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 scan_high_or_equal[] = {
+    static const lib_u8 scan_high_or_equal[] = {
         0x1du, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 scan_equal_skip[] = {
+    static const lib_u8 scan_equal_skip[] = {
         0x31u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 format_track[] = {
+    static const lib_u8 format_track[] = {
         0x4du, 0x00u, 0x02u, 0x01u, 0x1bu, 0xa5u
     };
-    static const type_unsigned_8 format_id[] = {0x00u, 0x00u, 0x01u, 0x02u};
+    static const lib_u8 format_id[] = {0x00u, 0x00u, 0x01u, 0x02u};
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -237,21 +238,21 @@ C_INT main(C_VOID)
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_fdc_fixture_media fixture = {
-        .generation = 1u, .present = TYPE_TRUE,
+        .generation = 1u, .present = LIB_TRUE,
         .forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK,
         .forced_write_result = CORE_MACHINE_MEDIA_RESULT_OK,
         .forced_format_result = CORE_MACHINE_MEDIA_RESULT_OK
     };
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_fdc *fdc;
     t_port *port;
-    type_unsigned_8 result[7];
-    type_unsigned_8 scan_dma[512];
-    type_unsigned_64 ndma_gate_tick;
-    type_unsigned_32 fallback_read_count;
+    lib_u8 result[7];
+    lib_u8 scan_dma[512];
+    lib_u64 ndma_gate_tick;
+    lib_u32 fallback_read_count;
     C_INT failed = 0;
 
     fixture.bytes[0] = 0x4au;
@@ -260,7 +261,7 @@ C_INT main(C_VOID)
     if (!failed) {
         fdc = &machine->fdc;
         port = &machine->executor_port;
-        if (fdc == STD_NULL || port == STD_NULL ||
+        if (fdc == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 1u, &fixture,
                 &core_machine_fdc_fixture_provider) != TYPE_STATUS_OK ||
             core_machine_media_registry_freeze(media) != TYPE_STATUS_OK ||
@@ -287,10 +288,10 @@ C_INT main(C_VOID)
                 failed |= fdc->connect.irq_source.asserted;
                 core_machine_fdc_advance_at(fdc, 8192u);
                 failed |= !fdc->connect.irq_source.asserted;
-                for (type_unsigned_8 reset_drive = 0u;
+                for (lib_u8 reset_drive = 0u;
                     reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
-                        (const type_unsigned_8[]){0x08u}, 1u);
+                        (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || fdc->connect.irq_source.asserted;
@@ -301,10 +302,10 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x07u, 0u}, 2u);
+                    (const lib_u8[]){0x07u, 0u}, 2u);
                 core_machine_fdc_advance(fdc);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x08u}, 1u);
+                    (const lib_u8[]){0x08u}, 1u);
                 failed |= fdc->data.reset_sense_mask != 0u ||
                     !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                     result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u;
@@ -312,7 +313,7 @@ C_INT main(C_VOID)
                     sizeof(specify_non_dma));
                 core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_RATE_250);
 
-                core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x10u}, 1u);
+                core_machine_fdc_command(fdc, port, (const lib_u8[]){0x10u}, 1u);
                 failed |= fdc->connect.irq_source.asserted ||
                     !core_machine_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u || fdc->data.phase != core_machine_fdc_PHASE_COMMAND;
@@ -328,10 +329,10 @@ C_INT main(C_VOID)
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
                     fdc->data.hlt != 0x01u;
-                for (type_unsigned_8 reset_drive = 0u;
+                for (lib_u8 reset_drive = 0u;
                     reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
-                        (const type_unsigned_8[]){0x08u}, 1u);
+                        (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || fdc->connect.irq_source.asserted;
@@ -345,15 +346,15 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.data_port, 0x00u);
                 core_machine_port_write(port, fdc_config.data_port, 0x03u);
                 core_machine_fdc_advance_at(fdc, 100u);
-                failed |= fdc->data.seek_pending[0u] == TYPE_FALSE ||
+                failed |= fdc->data.seek_pending[0u] == LIB_FALSE ||
                     fdc->data.cylinder != 0u || fdc->connect.irq_source.asserted ||
                     fdc->data.seek_due_tick[0u] != 72100u;
                 core_machine_fdc_advance_at(fdc, 72099u);
-                failed |= fdc->data.seek_pending[0u] == TYPE_FALSE ||
+                failed |= fdc->data.seek_pending[0u] == LIB_FALSE ||
                     fdc->connect.irq_source.asserted;
                 core_machine_fdc_advance_at(fdc, 72100u);
                 failed |= fdc->data.cylinder != 3u || !fdc->connect.irq_source.asserted;
-                core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+                core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
                 failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                     result[1] != 3u;
 
@@ -390,8 +391,8 @@ C_INT main(C_VOID)
                 fdc->connect.drives.installed_mask |= 0x02u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x2du);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x0fu, 0x01u, 0x01u}, 3u);
-                core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+                    (const lib_u8[]){0x0fu, 0x01u, 0x01u}, 3u);
+                core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
                 if (!core_machine_fdc_read_result(fdc, port, result, 2u) ||
                     result[0] != (core_machine_fdc_ST0_NORMAL |
                     VFDC_ST0_SEEK_END | 1u) || result[1] != 1u) failed |= 0x100;
@@ -401,12 +402,12 @@ C_INT main(C_VOID)
                 fdc->data.cylinder = 0u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x2du);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x04u, 0x01u}, 2u);
+                    (const lib_u8[]){0x04u, 0x01u}, 2u);
                 if (!core_machine_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x21u) failed |= 0x200;
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
 
-                for (type_unsigned_32 index = 0u; index < sizeof(read_sector); ++index) {
+                for (lib_u32 index = 0u; index < sizeof(read_sector); ++index) {
                     core_machine_port_write(port, fdc_config.data_port, read_sector[index]);
                 }
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMMAND ||
@@ -415,7 +416,7 @@ C_INT main(C_VOID)
                 core_machine_fdc_advance(fdc);
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ;
                 failed |= core_machine_port_read(port, fdc_config.data_port) != 0x4au;
-                for (type_unsigned_32 index = 1u; index < 512u; ++index) {
+                for (lib_u32 index = 1u; index < 512u; ++index) {
                     (C_VOID)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
@@ -431,7 +432,7 @@ C_INT main(C_VOID)
 
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 failed |= core_machine_port_read(port, fdc_config.data_port) != 0x4au;
-                for (type_unsigned_32 index = 1u; index < 512u; ++index) {
+                for (lib_u32 index = 1u; index < 512u; ++index) {
                     (C_VOID)core_machine_port_read(port, fdc_config.data_port);
                 }
                 core_machine_fdc_advance(fdc);
@@ -442,14 +443,14 @@ C_INT main(C_VOID)
 
                 fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     (C_VOID)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & VFDC_ST2_CONTROL_MARK) == 0u;
                 core_machine_fdc_command(fdc, port, read_deleted_sector,
                     sizeof(read_deleted_sector));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     (C_VOID)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
@@ -458,7 +459,7 @@ C_INT main(C_VOID)
                 fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
                 core_machine_fdc_command(fdc, port, write_deleted_sector,
                     sizeof(write_deleted_sector));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x6bu : 0u);
                 }
@@ -469,7 +470,7 @@ C_INT main(C_VOID)
 
                 fixture.write_count = 0u;
                 core_machine_fdc_command(fdc, port, write_sector, sizeof(write_sector));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x5au : 0u);
                 }
@@ -482,7 +483,7 @@ C_INT main(C_VOID)
                    FFh is the documented no-care compare byte. */
                 fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
                 core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x5au : 0xffu);
                 }
@@ -491,7 +492,7 @@ C_INT main(C_VOID)
                         VFDC_ST2_SCAN_MATCH || fixture.bytes[0] != 0x5au;
                 core_machine_fdc_command(fdc, port, scan_low_or_equal,
                     sizeof(scan_low_or_equal));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x50u : 0xffu);
                 }
@@ -500,7 +501,7 @@ C_INT main(C_VOID)
                         VFDC_ST2_SCAN_MATCH;
                 core_machine_fdc_command(fdc, port, scan_high_or_equal,
                     sizeof(scan_high_or_equal));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x60u : 0xffu);
                 }
@@ -508,7 +509,7 @@ C_INT main(C_VOID)
                     (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH)) !=
                         VFDC_ST2_SCAN_MATCH;
                 core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x50u : 0xffu);
                 }
@@ -517,7 +518,7 @@ C_INT main(C_VOID)
                         VFDC_ST2_SCAN_MISMATCH;
                 fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
                 core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x5au : 0xffu);
                 }
@@ -538,8 +539,8 @@ C_INT main(C_VOID)
                     fixture.generation != 2u || fixture.bytes[511] != 0xa5u;
 
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x0fu, 0x00u, 0x00u}, 3u);
-                core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+                    (const lib_u8[]){0x0fu, 0x00u, 0x00u}, 3u);
+                core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
                 failed |= !core_machine_fdc_read_result(fdc, port, result, 2u);
                 core_machine_fdc_refresh(fdc);
                 failed |= (core_machine_port_read(port, fdc_config.direction_port) & VFDC_DIR_DC) != 0u;
@@ -552,7 +553,7 @@ C_INT main(C_VOID)
                 fixture.read_count = 0u;
                 core_machine_port_write(port, fdc_config.control_port, 0u);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                    (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
                 core_machine_fdc_write_dma2(port, 0x0600u, 1u);
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 core_machine_fdc_advance_at(fdc, 100u);
@@ -578,13 +579,13 @@ C_INT main(C_VOID)
                     fdc->data.dma_byte_gate_pending || fdc->data.next_dma_byte_tick != 0u;
                 core_machine_fdc_advance_at(fdc, 229u);
                 failed |= !fdc->connect.irq_source.asserted;
-                result[0] = (type_unsigned_8)core_machine_port_read(port,
+                result[0] = (lib_u8)core_machine_port_read(port,
                     fdc_config.data_port);
                 failed |= fdc->connect.irq_source.asserted || fdc->data.flagINTR ||
                     result[0] != core_machine_fdc_ST0_NORMAL;
-                for (type_unsigned_8 result_index = 1u; result_index < sizeof(result);
+                for (lib_u8 result_index = 1u; result_index < sizeof(result);
                     ++result_index) {
-                    result[result_index] = (type_unsigned_8)core_machine_port_read(port,
+                    result[result_index] = (lib_u8)core_machine_port_read(port,
                         fdc_config.data_port);
                 }
                 failed |= (core_machine_port_read(port, fdc_config.status_port) &
@@ -598,15 +599,15 @@ C_INT main(C_VOID)
                    seven-byte IRQ result phase. */
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                    (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
                 core_machine_port_write(port, fdc_config.control_port, 0u);
-                STD_MEMSET(scan_dma, 0xa5u, sizeof(scan_dma));
+                lib_memory_set(scan_dma, 0xa5u, sizeof(scan_dma));
                 failed |= core_machine_memory_write_physical(&machine->executor_memory,
                     0x0600u, (type_virtual_address)scan_dma, sizeof(scan_dma)) != TYPE_STATUS_OK;
                 core_machine_fdc_write_dma2(port, 0x0600u, 511u);
                 core_machine_port_write(port, 0x000bu, 0x4au);
                 core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
-                for (type_unsigned_32 index = 0u; index < sizeof(scan_dma); ++index) {
+                for (lib_u32 index = 0u; index < sizeof(scan_dma); ++index) {
                     core_machine_dma_advance(&machine->shared_dma_latch,
                         &machine->shared_dma_primary, &machine->shared_dma_secondary,
                         &machine->executor_memory, 1u);
@@ -631,13 +632,13 @@ C_INT main(C_VOID)
                 fixture.read_count = 0u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                    (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
                 core_machine_port_write(port, fdc_config.control_port,
                     VFDC_CCR_RATE_300);
                 core_machine_fdc_write_dma2(port, 0x0600u, 511u);
                 core_machine_fdc_command(fdc, port, read_sector_dma_terminal,
                     sizeof(read_sector_dma_terminal));
-                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                for (lib_u32 index = 0u; index < 512u; ++index) {
                     core_machine_dma_advance(&machine->shared_dma_latch,
                         &machine->shared_dma_primary, &machine->shared_dma_secondary,
                         &machine->executor_memory, 1u);
@@ -651,10 +652,10 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
-                for (type_unsigned_8 reset_drive = 0u;
+                for (lib_u8 reset_drive = 0u;
                     reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
-                        (const type_unsigned_8[]){0x08u}, 1u);
+                        (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || fdc->connect.irq_source.asserted;
@@ -669,20 +670,20 @@ C_INT main(C_VOID)
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x04u) == 0u;
                 fixture.forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK;
-                fixture.read_only = TYPE_TRUE;
+                fixture.read_only = LIB_TRUE;
                 core_machine_fdc_command(fdc, port, write_sector, sizeof(write_sector));
                 core_machine_port_write(port, fdc_config.data_port, 0x33u);
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x02u) == 0u;
-                fixture.read_only = TYPE_FALSE;
-                fixture.present = TYPE_FALSE;
+                fixture.read_only = LIB_FALSE;
+                fixture.present = LIB_FALSE;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x04u) == 0u;
 
                 /* The same MFM byte-service interval applies when the host
                    services 3F5h directly rather than through DMA2. */
-                fixture.present = TYPE_TRUE;
+                fixture.present = LIB_TRUE;
                 fixture.read_count = 0u;
                 core_machine_port_write(port, fdc_config.control_port, 0u);
                 core_machine_fdc_command(fdc, port, specify_non_dma,
@@ -710,10 +711,10 @@ C_INT main(C_VOID)
                    uses the 31-us byte gate, and DOR reset cancels it. */
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
-                for (type_unsigned_8 reset_drive = 0u;
+                for (lib_u8 reset_drive = 0u;
                     reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
-                        (const type_unsigned_8[]){0x08u}, 1u);
+                        (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || fdc->connect.irq_source.asserted;
@@ -737,7 +738,7 @@ C_INT main(C_VOID)
                 fdc->connect.config.clock_ticks_per_second = 0u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_command(fdc, port,
-                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                    (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
                 core_machine_fdc_write_dma2(port, 0x0600u, 1u);
                 fallback_read_count = fixture.read_count;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));

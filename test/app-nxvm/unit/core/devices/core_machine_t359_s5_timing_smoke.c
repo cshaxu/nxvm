@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -8,32 +9,32 @@
 #define T359_S5_DATA 0x00001000u
 
 typedef struct t359_s5_state {
-    type_unsigned_64 advanced_ticks;
+    lib_u64 advanced_ticks;
 } t359_s5_state;
 
 typedef struct t359_s5_row {
-    const type_unsigned_8 *program;
-    STD_SIZE_T program_bytes;
-    type_unsigned_64 ticks;
-    type_unsigned_32 eflags;
-    type_unsigned_32 eax;
-    type_unsigned_32 ecx;
-    type_unsigned_32 esi;
-    type_unsigned_32 memory;
+    const lib_u8 *program;
+    lib_size program_bytes;
+    lib_u64 ticks;
+    lib_u32 eflags;
+    lib_u32 eax;
+    lib_u32 ecx;
+    lib_u32 esi;
+    lib_u32 memory;
 } t359_s5_row;
 
 static C_VOID t359_s5_reset(C_VOID *opaque)
 {
     t359_s5_state *state = (t359_s5_state *)opaque;
 
-    if (state != STD_NULL) state->advanced_ticks = 0u;
+    if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID t359_s5_advance(C_VOID *opaque, type_unsigned_64 ticks)
+static C_VOID t359_s5_advance(C_VOID *opaque, lib_u64 ticks)
 {
     t359_s5_state *state = (t359_s5_state *)opaque;
 
-    if (state != STD_NULL) state->advanced_ticks += ticks;
+    if (state != LIB_NULL) state->advanced_ticks += ticks;
 }
 
 static const core_machine_execution_provider t359_s5_execution = {
@@ -45,9 +46,9 @@ static C_INT t359_s5_prepare(core_machine **out_machine, t359_s5_state *state)
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || state == STD_NULL ||
+    if (out_machine == LIB_NULL || state == LIB_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T359_S5_RESET_LINEAR, T359_S5_RESET_PHYSICAL, 16u) !=
@@ -71,7 +72,7 @@ static C_INT t359_s5_run(core_machine *machine, t359_s5_state *state,
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
 
-    if (machine == STD_NULL || state == STD_NULL || row == STD_NULL ||
+    if (machine == LIB_NULL || state == LIB_NULL || row == LIB_NULL ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_memory_write(machine, T359_S5_RESET_LINEAR, row->program,
             row->program_bytes) != TYPE_STATUS_OK ||
@@ -92,36 +93,36 @@ static C_INT t359_s5_run(core_machine *machine, t359_s5_state *state,
 
 static C_INT t359_s5_test_secondary_rows(C_VOID)
 {
-    static const type_unsigned_8 near_not_taken[] = { 0x0fu, 0x85u, 0u, 0u };
-    static const type_unsigned_8 near_taken[] = { 0x0fu, 0x84u, 2u, 0u };
-    static const type_unsigned_8 bt_register[] = { 0x0fu, 0xa3u, 0xc1u };
-    static const type_unsigned_8 bt_memory[] = {
+    static const lib_u8 near_not_taken[] = { 0x0fu, 0x85u, 0u, 0u };
+    static const lib_u8 near_taken[] = { 0x0fu, 0x84u, 2u, 0u };
+    static const lib_u8 bt_register[] = { 0x0fu, 0xa3u, 0xc1u };
+    static const lib_u8 bt_memory[] = {
         0x0fu, 0xa3u, 0x0eu, 0u, 0x10u
     };
-    static const type_unsigned_8 bts_register[] = { 0x0fu, 0xabu, 0xc1u };
-    static const type_unsigned_8 bts_memory[] = {
+    static const lib_u8 bts_register[] = { 0x0fu, 0xabu, 0xc1u };
+    static const lib_u8 bts_memory[] = {
         0x0fu, 0xabu, 0x0eu, 0u, 0x10u
     };
-    static const type_unsigned_8 btc_immediate_memory[] = {
+    static const lib_u8 btc_immediate_memory[] = {
         0x0fu, 0xbau, 0x3eu, 0u, 0x10u, 1u
     };
-    static const type_unsigned_8 shld_register[] = {
+    static const lib_u8 shld_register[] = {
         0x0fu, 0xa4u, 0xc1u, 1u
     };
-    static const type_unsigned_8 shrd_memory[] = {
+    static const lib_u8 shrd_memory[] = {
         0x0fu, 0xadu, 0x0eu, 0u, 0x10u
     };
-    static const type_unsigned_8 movzx_register[] = { 0x0fu, 0xb6u, 0xc1u };
-    static const type_unsigned_8 movsx_memory[] = {
+    static const lib_u8 movzx_register[] = { 0x0fu, 0xb6u, 0xc1u };
+    static const lib_u8 movsx_memory[] = {
         0x0fu, 0xbeu, 0x0eu, 0u, 0x10u
     };
-    static const type_unsigned_8 movzx_fs_memory[] = {
+    static const lib_u8 movzx_fs_memory[] = {
         0x64u, 0x0fu, 0xb6u, 0x06u, 0u, 0x10u
     };
-    static const type_unsigned_8 bsf[] = { 0x0fu, 0xbcu, 0xc1u };
-    static const type_unsigned_8 bsr[] = { 0x0fu, 0xbdu, 0xc1u };
-    static const type_unsigned_8 imul_register[] = { 0x0fu, 0xafu, 0xc1u };
-    static const type_unsigned_8 imul_memory[] = {
+    static const lib_u8 bsf[] = { 0x0fu, 0xbcu, 0xc1u };
+    static const lib_u8 bsr[] = { 0x0fu, 0xbdu, 0xc1u };
+    static const lib_u8 imul_register[] = { 0x0fu, 0xafu, 0xc1u };
+    static const lib_u8 imul_memory[] = {
         0x0fu, 0xafu, 0x0eu, 0u, 0x10u
     };
     static const t359_s5_row rows[] = {
@@ -143,14 +144,14 @@ static C_INT t359_s5_test_secondary_rows(C_VOID)
         { imul_memory, sizeof(imul_memory), 13u, 0u, 2u, 0u, 0u, 16u }
     };
     t359_s5_state state = { 0u };
-    core_machine *machine = STD_NULL;
-    STD_SIZE_T index;
+    core_machine *machine = LIB_NULL;
+    lib_size index;
     C_INT failed = !t359_s5_prepare(&machine, &state);
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {
         if (!t359_s5_run(machine, &state, &rows[index])) {
             STD_FPRINTF(STD_STDERR, "S5 secondary row %u failed\n",
-                (type_unsigned_32)index);
+                (lib_u32)index);
             failed = 1;
         }
     }
@@ -160,13 +161,13 @@ static C_INT t359_s5_test_secondary_rows(C_VOID)
 
 static C_INT t359_s5_test_attributes_and_preflight(C_VOID)
 {
-    static const type_unsigned_8 operand_size[] = { 0x66u, 0x0fu, 0xb7u, 0xc1u };
-    static const type_unsigned_8 address_size[] = { 0x67u, 0x0fu, 0xb6u, 0x06u };
-    static const type_unsigned_8 locked_bts[] = {
+    static const lib_u8 operand_size[] = { 0x66u, 0x0fu, 0xb7u, 0xc1u };
+    static const lib_u8 address_size[] = { 0x67u, 0x0fu, 0xb6u, 0x06u };
+    static const lib_u8 locked_bts[] = {
         0xf0u, 0x0fu, 0xabu, 0x0eu, 0u, 0x10u
     };
-    static const type_unsigned_8 illegal_lock[] = { 0xf0u, 0x0fu, 0xa3u, 0xc1u };
-    static const type_unsigned_8 bsr_zero[] = { 0x66u, 0x0fu, 0xbdu, 0xc1u };
+    static const lib_u8 illegal_lock[] = { 0xf0u, 0x0fu, 0xa3u, 0xc1u };
+    static const lib_u8 bsr_zero[] = { 0x66u, 0x0fu, 0xbdu, 0xc1u };
     const t359_s5_row rows[] = {
         { operand_size, sizeof(operand_size), 3u, 0u, 0u, 0x0080u, 0u, 0u },
         { address_size, sizeof(address_size), 6u, 0u, 0u, 0u, T359_S5_DATA, 0x80u },
@@ -177,8 +178,8 @@ static C_INT t359_s5_test_attributes_and_preflight(C_VOID)
     const core_machine_run_budget sufficient = { 1u, 106u };
     core_machine_run_result result;
     t359_s5_state state = { 0u };
-    core_machine *machine = STD_NULL;
-    STD_SIZE_T index;
+    core_machine *machine = LIB_NULL;
+    lib_size index;
     C_INT failed = !t359_s5_prepare(&machine, &state);
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {

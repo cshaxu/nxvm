@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/media_interface.h"
@@ -20,67 +21,67 @@
 #define CORE_MACHINE_XEBEC_MASK_IRQ_ENABLE 0x02u
 static C_INT core_machine_hdc_is_compaq_wd_40mb(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && hdc->connect.config.protocol ==
+    return hdc != LIB_NULL && hdc->connect.config.protocol ==
         CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB;
 }
 
 static C_INT core_machine_hdc_is_ibm_wd1003(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && hdc->connect.config.protocol ==
+    return hdc != LIB_NULL && hdc->connect.config.protocol ==
         CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506;
 }
 
 static C_INT core_machine_hdc_is_xebec_xt(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && hdc->connect.config.protocol ==
+    return hdc != LIB_NULL && hdc->connect.config.protocol ==
         CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT;
 }
 
 static C_INT core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && (core_machine_hdc_is_compaq_wd_40mb(hdc) ||
+    return hdc != LIB_NULL && (core_machine_hdc_is_compaq_wd_40mb(hdc) ||
         (hdc->data.status & (CORE_MACHINE_HDC_STATUS_BSY |
             CORE_MACHINE_HDC_STATUS_DRQ)) == 0u);
 }
 
 static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) == 0u;
+    return hdc != LIB_NULL && (hdc->data.drive_head & 0x10u) == 0u;
 }
 
-static type_unsigned_8 core_machine_hdc_current_head(const core_machine_hdc *hdc)
+static lib_u8 core_machine_hdc_current_head(const core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return 0u;
+    if (hdc == LIB_NULL) return 0u;
     if (core_machine_hdc_is_ibm_wd1003(hdc)) {
-        return (type_unsigned_8)((hdc->data.drive_head & 0x07u) |
+        return (lib_u8)((hdc->data.drive_head & 0x07u) |
             (hdc->data.fixed_disk_register & 0x08u));
     }
     return hdc->data.drive_head & 0x0fu;
 }
 
 static C_VOID core_machine_hdc_set_current_head(core_machine_hdc *hdc,
-    type_unsigned_8 head)
+    lib_u8 head)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     if (core_machine_hdc_is_ibm_wd1003(hdc)) {
-        hdc->data.drive_head = (type_unsigned_8)((hdc->data.drive_head & 0xf8u) |
+        hdc->data.drive_head = (lib_u8)((hdc->data.drive_head & 0xf8u) |
             (head & 0x07u));
-        hdc->data.fixed_disk_register = (type_unsigned_8)((hdc->data.fixed_disk_register &
+        hdc->data.fixed_disk_register = (lib_u8)((hdc->data.fixed_disk_register &
             0xf7u) | (head & 0x08u));
         return;
     }
-    hdc->data.drive_head = (type_unsigned_8)((hdc->data.drive_head & 0xf0u) | head);
+    hdc->data.drive_head = (lib_u8)((hdc->data.drive_head & 0xf0u) | head);
 }
 
 static C_INT core_machine_hdc_lba_mode(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && !core_machine_hdc_is_compaq_wd_40mb(hdc) &&
+    return hdc != LIB_NULL && !core_machine_hdc_is_compaq_wd_40mb(hdc) &&
         hdc->connect.config.bus.task_file.lba28_supported &&
         (hdc->data.drive_head & 0x40u) != 0u;
 }
 
 static C_INT core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
-    type_unsigned_8 command)
+    lib_u8 command)
 {
     if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
         return (command & 0xfeu) == CORE_MACHINE_HDC_COMMAND_READ_SECTORS;
@@ -92,7 +93,7 @@ static C_INT core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
 }
 
 static C_INT core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
-    type_unsigned_8 command)
+    lib_u8 command)
 {
     if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
         return (command & 0xfeu) == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
@@ -104,9 +105,9 @@ static C_INT core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
 }
 
 static C_VOID core_machine_hdc_select_ibm_step_rate(core_machine_hdc *hdc,
-    type_unsigned_8 selector, type_unsigned_16 pulse_limit)
+    lib_u8 selector, lib_u16 pulse_limit)
 {
-    type_unsigned_32 ticks_per_second;
+    lib_u32 ticks_per_second;
 
     if (!core_machine_hdc_is_ibm_wd1003(hdc)) return;
     ticks_per_second = hdc->connect.config.bus.task_file.clock_ticks_per_second;
@@ -119,7 +120,7 @@ static C_VOID core_machine_hdc_select_ibm_step_rate(core_machine_hdc *hdc,
 
 static C_VOID core_machine_hdc_sync_irq(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     if (hdc->data.irq_pending &&
         (hdc->data.device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) == 0u) {
         core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
@@ -130,36 +131,36 @@ static C_VOID core_machine_hdc_sync_irq(core_machine_hdc *hdc)
 
 static C_VOID core_machine_hdc_clear_irq(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
-    hdc->data.irq_pending = TYPE_FALSE;
+    if (hdc == LIB_NULL) return;
+    hdc->data.irq_pending = LIB_FALSE;
     core_machine_hdc_sync_irq(hdc);
 }
 
 static C_VOID core_machine_hdc_raise_irq(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
-    hdc->data.irq_pending = TYPE_TRUE;
+    if (hdc == LIB_NULL) return;
+    hdc->data.irq_pending = LIB_TRUE;
     core_machine_hdc_sync_irq(hdc);
 }
 
-static type_unsigned_32 core_machine_hdc_lba(const core_machine_hdc *hdc)
+static lib_u32 core_machine_hdc_lba(const core_machine_hdc *hdc)
 {
-    return (type_unsigned_32)hdc->data.sector_number |
-        ((type_unsigned_32)hdc->data.cylinder_low << 8u) |
-        ((type_unsigned_32)hdc->data.cylinder_high << 16u) |
-        ((type_unsigned_32)(hdc->data.drive_head & 0x0fu) << 24u);
+    return (lib_u32)hdc->data.sector_number |
+        ((lib_u32)hdc->data.cylinder_low << 8u) |
+        ((lib_u32)hdc->data.cylinder_high << 16u) |
+        ((lib_u32)(hdc->data.drive_head & 0x0fu) << 24u);
 }
 
 static core_machine_media_id core_machine_hdc_selected_media_id(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) != 0u ?
+    return hdc != LIB_NULL && (hdc->data.drive_head & 0x10u) != 0u ?
         hdc->connect.slave_media_id : hdc->connect.media_id;
 }
 
 static C_INT core_machine_hdc_media_info(const core_machine_hdc *hdc,
     core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
-    return hdc != STD_NULL && hdc->connect.media_registry != STD_NULL &&
+    return hdc != LIB_NULL && hdc->connect.media_registry != LIB_NULL &&
         core_machine_hdc_selected_media_id(hdc) != CORE_MACHINE_MEDIA_ID_INVALID &&
         core_machine_media_query(hdc->connect.media_registry,
             core_machine_hdc_selected_media_id(hdc), out_info, out_result) == TYPE_STATUS_OK &&
@@ -178,16 +179,16 @@ static C_VOID core_machine_hdc_refresh_compaq_selection_status(core_machine_hdc 
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
 }
 
-static STD_SIZE_T core_machine_hdc_sector_capacity(
+static lib_size core_machine_hdc_sector_capacity(
     const core_machine_media_info *info)
 {
-    return info == STD_NULL || info->geometry.bytes_per_sector == 0u ? 0u :
-        (STD_SIZE_T)info->geometry.logical_sector_count;
+    return info == LIB_NULL || info->geometry.bytes_per_sector == 0u ? 0u :
+        (lib_size)info->geometry.logical_sector_count;
 }
 
 static C_VOID core_machine_hdc_complete(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
     hdc->data.next_service_tick = 0u;
     hdc->data.data_index = 0u;
@@ -195,9 +196,9 @@ static C_VOID core_machine_hdc_complete(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, type_unsigned_8 error)
+static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, lib_u8 error)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     hdc->data.error = error;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
     hdc->data.next_service_tick = 0u;
@@ -207,16 +208,16 @@ static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, type_unsigned_8 error
 }
 
 static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
-    type_bool write_to_media, STD_SIZE_T *out_offset)
+    type_bool write_to_media, lib_size *out_offset)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    type_unsigned_16 cylinder;
-    type_unsigned_8 head;
-    type_unsigned_8 sector;
-    type_unsigned_32 lba;
+    lib_u16 cylinder;
+    lib_u8 head;
+    lib_u8 sector;
+    lib_u32 lba;
 
-    if (hdc == STD_NULL || out_offset == STD_NULL ||
+    if (hdc == LIB_NULL || out_offset == LIB_NULL ||
         !core_machine_hdc_media_info(hdc, &info, &media_result) || !info.present ||
         (write_to_media && (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
@@ -225,16 +226,16 @@ static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
     if (core_machine_hdc_lba_mode(hdc)) {
         lba = core_machine_hdc_lba(hdc);
         if (!core_machine_hdc_selected_master(hdc) ||
-            (STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info) ||
+            (lib_size)lba >= core_machine_hdc_sector_capacity(&info) ||
             info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
             core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
             return 0;
         }
-        *out_offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
+        *out_offset = (lib_size)lba * info.geometry.bytes_per_sector;
         return 1;
     }
-    cylinder = (type_unsigned_16)hdc->data.cylinder_low |
-        ((type_unsigned_16)hdc->data.cylinder_high << 8u);
+    cylinder = (lib_u16)hdc->data.cylinder_low |
+        ((lib_u16)hdc->data.cylinder_high << 8u);
     head = core_machine_hdc_current_head(hdc);
     sector = hdc->data.sector_number;
     if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) ||
@@ -244,7 +245,7 @@ static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    *out_offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
+    *out_offset = (((lib_size)cylinder * info.geometry.heads + head) *
         info.geometry.sectors_per_track + (sector - 1u)) * info.geometry.bytes_per_sector;
     return 1;
 }
@@ -252,9 +253,9 @@ static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
 static C_INT core_machine_hdc_load_sector(core_machine_hdc *hdc)
 {
     core_machine_media_result media_result;
-    STD_SIZE_T offset;
+    lib_size offset;
 
-    if (!core_machine_hdc_resolve_sector(hdc, TYPE_FALSE, &offset)) return 0;
+    if (!core_machine_hdc_resolve_sector(hdc, LIB_FALSE, &offset)) return 0;
     if (core_machine_media_read_bytes(hdc->connect.media_registry,
         core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
@@ -269,9 +270,9 @@ static C_INT core_machine_hdc_load_sector(core_machine_hdc *hdc)
 static C_INT core_machine_hdc_store_sector(core_machine_hdc *hdc)
 {
     core_machine_media_result media_result;
-    STD_SIZE_T offset;
+    lib_size offset;
 
-    if (!core_machine_hdc_resolve_sector(hdc, TYPE_TRUE, &offset)) return 0;
+    if (!core_machine_hdc_resolve_sector(hdc, LIB_TRUE, &offset)) return 0;
     if (core_machine_media_write_bytes(hdc->connect.media_registry,
             core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
@@ -287,29 +288,29 @@ static C_VOID core_machine_hdc_identify(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    type_unsigned_16 word;
+    lib_u16 word;
 
-    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == LIB_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !core_machine_hdc_selected_master(hdc) ||
         !info.present || info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
     }
-    STD_MEMSET(hdc->data.data, 0, sizeof(hdc->data.data));
+    lib_memory_set(hdc->data.data, 0, sizeof(hdc->data.data));
     word = 0x0040u;
-    STD_MEMCPY(&hdc->data.data[0], &word, sizeof(word));
+    lib_memory_copy(&hdc->data.data[0], &word, sizeof(word));
     word = info.geometry.cylinders;
-    STD_MEMCPY(&hdc->data.data[2], &word, sizeof(word));
+    lib_memory_copy(&hdc->data.data[2], &word, sizeof(word));
     word = info.geometry.heads;
-    STD_MEMCPY(&hdc->data.data[6], &word, sizeof(word));
+    lib_memory_copy(&hdc->data.data[6], &word, sizeof(word));
     word = info.geometry.sectors_per_track;
-    STD_MEMCPY(&hdc->data.data[12], &word, sizeof(word));
+    lib_memory_copy(&hdc->data.data[12], &word, sizeof(word));
     word = 0x0200u;
-    STD_MEMCPY(&hdc->data.data[98], &word, sizeof(word));
-    word = (type_unsigned_16)core_machine_hdc_sector_capacity(&info);
-    STD_MEMCPY(&hdc->data.data[120], &word, sizeof(word));
-    word = (type_unsigned_16)(core_machine_hdc_sector_capacity(&info) >> 16u);
-    STD_MEMCPY(&hdc->data.data[122], &word, sizeof(word));
+    lib_memory_copy(&hdc->data.data[98], &word, sizeof(word));
+    word = (lib_u16)core_machine_hdc_sector_capacity(&info);
+    lib_memory_copy(&hdc->data.data[120], &word, sizeof(word));
+    word = (lib_u16)(core_machine_hdc_sector_capacity(&info) >> 16u);
+    lib_memory_copy(&hdc->data.data[122], &word, sizeof(word));
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
     hdc->data.data_index = 0u;
     hdc->data.error = 0u;
@@ -322,19 +323,19 @@ static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    type_unsigned_16 cylinder;
-    type_unsigned_8 head;
-    type_unsigned_8 sector;
+    lib_u16 cylinder;
+    lib_u8 head;
+    lib_u8 sector;
 
-    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == LIB_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
-    cylinder = (type_unsigned_16)hdc->data.cylinder_low |
-        ((type_unsigned_16)hdc->data.cylinder_high << 8u);
+    cylinder = (lib_u16)hdc->data.cylinder_low |
+        ((lib_u16)hdc->data.cylinder_high << 8u);
     head = core_machine_hdc_current_head(hdc);
-    sector = (type_unsigned_8)(hdc->data.sector_number + 1u);
+    sector = (lib_u8)(hdc->data.sector_number + 1u);
     if (sector > info.geometry.sectors_per_track) {
         sector = 1u;
         ++head;
@@ -348,8 +349,8 @@ static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
         return 0;
     }
     hdc->data.sector_number = sector;
-    hdc->data.cylinder_low = (type_unsigned_8)cylinder;
-    hdc->data.cylinder_high = (type_unsigned_8)(cylinder >> 8u);
+    hdc->data.cylinder_low = (lib_u8)cylinder;
+    hdc->data.cylinder_high = (lib_u8)(cylinder >> 8u);
     core_machine_hdc_set_current_head(hdc, head);
     return 1;
 }
@@ -358,23 +359,23 @@ static C_INT core_machine_hdc_advance_lba(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    type_unsigned_32 lba;
+    lib_u32 lba;
 
-    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == LIB_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     lba = core_machine_hdc_lba(hdc) + 1u;
-    if ((STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info)) {
+    if ((lib_size)lba >= core_machine_hdc_sector_capacity(&info)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    hdc->data.sector_number = (type_unsigned_8)lba;
-    hdc->data.cylinder_low = (type_unsigned_8)(lba >> 8u);
-    hdc->data.cylinder_high = (type_unsigned_8)(lba >> 16u);
+    hdc->data.sector_number = (lib_u8)lba;
+    hdc->data.cylinder_low = (lib_u8)(lba >> 8u);
+    hdc->data.cylinder_high = (lib_u8)(lba >> 16u);
     hdc->data.drive_head = (hdc->data.drive_head & 0xf0u) |
-        (type_unsigned_8)(lba >> 24u);
+        (lib_u8)(lba >> 24u);
     return 1;
 }
 
@@ -386,14 +387,14 @@ static C_INT core_machine_hdc_advance_sector(core_machine_hdc *hdc)
 
 static C_VOID core_machine_hdc_complete_data_sector(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL || hdc->data.sectors_remaining == 0u) return;
+    if (hdc == LIB_NULL || hdc->data.sectors_remaining == 0u) return;
     --hdc->data.sectors_remaining;
     --hdc->data.sector_count;
 }
 
 static C_VOID core_machine_hdc_next_read_sector(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     core_machine_hdc_complete_data_sector(hdc);
     if (hdc->data.sectors_remaining == 0u) {
         core_machine_hdc_complete(hdc);
@@ -411,7 +412,7 @@ static C_VOID core_machine_hdc_next_read_sector(core_machine_hdc *hdc)
 
 static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     if (!core_machine_hdc_store_sector(hdc)) return;
     core_machine_hdc_complete_data_sector(hdc);
     if (hdc->data.sectors_remaining == 0u) {
@@ -420,7 +421,7 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
     }
     if (!core_machine_hdc_advance_sector(hdc)) return;
     hdc->data.data_index = 0u;
-    STD_MEMSET(hdc->data.data, 0, sizeof(hdc->data.data));
+    lib_memory_set(hdc->data.data, 0, sizeof(hdc->data.data));
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_WRITE;
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
         CORE_MACHINE_HDC_STATUS_DRQ;
@@ -428,17 +429,17 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
 }
 
 static C_VOID core_machine_hdc_schedule_service(core_machine_hdc *hdc,
-    type_unsigned_32 service_ticks)
+    lib_u32 service_ticks)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     hdc->data.next_service_tick = service_ticks == 0u ? hdc->data.elapsed_ticks :
         hdc->data.elapsed_ticks + service_ticks;
 }
 
 static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
-    type_unsigned_8 command)
+    lib_u8 command)
 {
-    if (hdc == STD_NULL || hdc->data.reset_asserted ||
+    if (hdc == LIB_NULL || hdc->data.reset_asserted ||
         !core_machine_hdc_task_file_is_writable(hdc)) return;
     hdc->data.pending_command = command;
     hdc->data.pending_features = hdc->data.features;
@@ -468,9 +469,9 @@ static C_VOID core_machine_hdc_begin_read(core_machine_hdc *hdc)
 
 static C_VOID core_machine_hdc_begin_write(core_machine_hdc *hdc)
 {
-    STD_SIZE_T offset;
+    lib_size offset;
 
-    if (!core_machine_hdc_resolve_sector(hdc, TYPE_TRUE, &offset)) return;
+    if (!core_machine_hdc_resolve_sector(hdc, LIB_TRUE, &offset)) return;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_WRITE;
     hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
         hdc->data.sector_count;
@@ -480,11 +481,11 @@ static C_VOID core_machine_hdc_begin_write(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsigned_8 command)
+static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, lib_u8 command)
 {
-    type_unsigned_16 cylinder;
+    lib_u16 cylinder;
 
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
     if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) &&
@@ -534,8 +535,8 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
         if ((command & CORE_MACHINE_HDC_COMMAND_SEEK_MASK) ==
             CORE_MACHINE_HDC_COMMAND_SEEK_VALUE) {
             core_machine_hdc_select_ibm_step_rate(hdc, command & 0x0fu, 0u);
-            cylinder = (type_unsigned_16)hdc->data.cylinder_low |
-                ((type_unsigned_16)hdc->data.cylinder_high << 8u);
+            cylinder = (lib_u16)hdc->data.cylinder_low |
+                ((lib_u16)hdc->data.cylinder_high << 8u);
             if (cylinder > 1023u) {
                 core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
             } else {
@@ -555,28 +556,28 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
 
 static C_VOID core_machine_xebec_reset(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
-    if (hdc->connect.dma_request_deassert != STD_NULL) {
+    if (hdc == LIB_NULL) return;
+    if (hdc->connect.dma_request_deassert != LIB_NULL) {
         hdc->connect.dma_request_deassert(hdc->connect.dma_request_owner,
             &hdc->connect.dma_request);
     }
-    STD_MEMSET(&hdc->xebec, 0, sizeof(hdc->xebec));
+    lib_memory_set(&hdc->xebec, 0, sizeof(hdc->xebec));
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
     core_machine_hdc_clear_irq(hdc);
 }
 
 static C_VOID core_machine_xebec_response(core_machine_hdc *hdc,
-    type_unsigned_8 status, const type_unsigned_8 *sense)
+    lib_u8 status, const lib_u8 *sense)
 {
-    type_unsigned_8 drive;
+    lib_u8 drive;
 
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     drive = (hdc->xebec.dcb[1] >> 5u) & 1u;
-    hdc->xebec.response[0] = (type_unsigned_8)((drive << 5u) | status);
+    hdc->xebec.response[0] = (lib_u8)((drive << 5u) | status);
     hdc->xebec.response_count = 1u;
     hdc->xebec.response_index = 0u;
-    if ((status & 0x02u) != 0u && sense != STD_NULL) {
-        STD_MEMCPY(hdc->xebec.last_sense, sense, sizeof(hdc->xebec.last_sense));
+    if ((status & 0x02u) != 0u && sense != LIB_NULL) {
+        lib_memory_copy(hdc->xebec.last_sense, sense, sizeof(hdc->xebec.last_sense));
     }
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_RESPONSE;
     if ((hdc->xebec.mask_pattern & CORE_MACHINE_XEBEC_MASK_IRQ_ENABLE) != 0u) {
@@ -586,7 +587,7 @@ static C_VOID core_machine_xebec_response(core_machine_hdc *hdc,
 
 static C_VOID core_machine_xebec_request_dma(core_machine_hdc *hdc)
 {
-    if (hdc != STD_NULL && hdc->connect.dma_request_assert != STD_NULL) {
+    if (hdc != LIB_NULL && hdc->connect.dma_request_assert != LIB_NULL) {
         hdc->connect.dma_request_assert(hdc->connect.dma_request_owner,
             &hdc->connect.dma_request);
     }
@@ -594,7 +595,7 @@ static C_VOID core_machine_xebec_request_dma(core_machine_hdc *hdc)
 
 static C_VOID core_machine_xebec_release_dma(core_machine_hdc *hdc)
 {
-    if (hdc != STD_NULL && hdc->connect.dma_request_deassert != STD_NULL) {
+    if (hdc != LIB_NULL && hdc->connect.dma_request_deassert != LIB_NULL) {
         hdc->connect.dma_request_deassert(hdc->connect.dma_request_owner,
             &hdc->connect.dma_request);
     }
@@ -602,7 +603,7 @@ static C_VOID core_machine_xebec_release_dma(core_machine_hdc *hdc)
 
 static C_VOID core_machine_xebec_sync_dma_request(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     if ((hdc->xebec.mask_pattern & CORE_MACHINE_XEBEC_MASK_DMA_ENABLE) != 0u &&
         (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
             hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_DMA_WRITE)) {
@@ -618,8 +619,8 @@ static C_INT core_machine_xebec_media_info(const core_machine_hdc *hdc,
     core_machine_media_id media_id;
     const core_machine_media_geometry *expected;
 
-    if (hdc == STD_NULL || out_info == STD_NULL || out_result == STD_NULL ||
-        hdc->connect.media_registry == STD_NULL ||
+    if (hdc == LIB_NULL || out_info == LIB_NULL || out_result == LIB_NULL ||
+        hdc->connect.media_registry == LIB_NULL ||
         ((hdc->xebec.dcb[1] >> 5u) & 1u) != 0u) return 0;
     media_id = hdc->connect.media_id;
     if (media_id == CORE_MACHINE_MEDIA_ID_INVALID ||
@@ -636,22 +637,22 @@ static C_INT core_machine_xebec_media_info(const core_machine_hdc *hdc,
 }
 
 static C_INT core_machine_xebec_sector(const core_machine_hdc *hdc,
-    type_unsigned_64 *out_sector)
+    lib_u64 *out_sector)
 {
     const core_machine_media_geometry *geometry;
-    type_unsigned_16 cylinder;
-    type_unsigned_8 head;
-    type_unsigned_8 sector;
+    lib_u16 cylinder;
+    lib_u8 head;
+    lib_u8 sector;
 
-    if (hdc == STD_NULL || out_sector == STD_NULL) return 0;
+    if (hdc == LIB_NULL || out_sector == LIB_NULL) return 0;
     geometry = &hdc->connect.config.bus.xebec.expected_media_geometry;
-    cylinder = (type_unsigned_16)hdc->xebec.dcb[3] |
-        ((type_unsigned_16)(hdc->xebec.dcb[2] & 0xc0u) << 2u);
+    cylinder = (lib_u16)hdc->xebec.dcb[3] |
+        ((lib_u16)(hdc->xebec.dcb[2] & 0xc0u) << 2u);
     head = hdc->xebec.dcb[1] & 0x1fu;
     sector = hdc->xebec.dcb[2] & 0x3fu;
     if (cylinder >= geometry->cylinders || head >= geometry->heads ||
         sector >= geometry->sectors_per_track) return 0;
-    *out_sector = ((type_unsigned_64)cylinder * geometry->heads + head) *
+    *out_sector = ((lib_u64)cylinder * geometry->heads + head) *
         geometry->sectors_per_track + sector;
     return 1;
 }
@@ -661,7 +662,7 @@ static C_INT core_machine_xebec_transfer_sector(core_machine_hdc *hdc,
 {
     core_machine_media_info info;
     core_machine_media_result result;
-    type_unsigned_64 sector;
+    lib_u64 sector;
     type_status status;
 
     if (!core_machine_xebec_media_info(hdc, &info, &result) ||
@@ -684,7 +685,7 @@ static C_INT core_machine_xebec_can_transfer(const core_machine_hdc *hdc,
 {
     core_machine_media_info info;
     core_machine_media_result result;
-    type_unsigned_64 sector;
+    lib_u64 sector;
 
     return core_machine_xebec_media_info(hdc, &info, &result) &&
         core_machine_xebec_sector(hdc, &sector) &&
@@ -695,16 +696,16 @@ static C_INT core_machine_xebec_can_transfer(const core_machine_hdc *hdc,
 static C_INT core_machine_xebec_next_sector(core_machine_hdc *hdc)
 {
     const core_machine_media_geometry *geometry;
-    type_unsigned_16 cylinder;
-    type_unsigned_8 head;
-    type_unsigned_8 sector;
+    lib_u16 cylinder;
+    lib_u8 head;
+    lib_u8 sector;
 
-    if (hdc == STD_NULL) return 0;
+    if (hdc == LIB_NULL) return 0;
     geometry = &hdc->connect.config.bus.xebec.expected_media_geometry;
-    cylinder = (type_unsigned_16)hdc->xebec.dcb[3] |
-        ((type_unsigned_16)(hdc->xebec.dcb[2] & 0xc0u) << 2u);
+    cylinder = (lib_u16)hdc->xebec.dcb[3] |
+        ((lib_u16)(hdc->xebec.dcb[2] & 0xc0u) << 2u);
     head = hdc->xebec.dcb[1] & 0x1fu;
-    sector = (type_unsigned_8)((hdc->xebec.dcb[2] & 0x3fu) + 1u);
+    sector = (lib_u8)((hdc->xebec.dcb[2] & 0x3fu) + 1u);
     if (sector == geometry->sectors_per_track) {
         sector = 0u;
         if (++head == geometry->heads) {
@@ -714,30 +715,30 @@ static C_INT core_machine_xebec_next_sector(core_machine_hdc *hdc)
     }
     hdc->xebec.dcb[1] = (hdc->xebec.dcb[1] & 0xe0u) | head;
     hdc->xebec.dcb[2] = (hdc->xebec.dcb[2] & 0x3fu) |
-        (type_unsigned_8)((cylinder >> 2u) & 0xc0u);
+        (lib_u8)((cylinder >> 2u) & 0xc0u);
     hdc->xebec.dcb[2] = (hdc->xebec.dcb[2] & 0xc0u) | sector;
-    hdc->xebec.dcb[3] = (type_unsigned_8)cylinder;
+    hdc->xebec.dcb[3] = (lib_u8)cylinder;
     return 1;
 }
 
 static C_VOID core_machine_xebec_start_transfer(core_machine_hdc *hdc)
 {
-    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
+    lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
 
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     sense[1] = hdc->xebec.dcb[1] & 0x20u;
     sense[2] = hdc->xebec.dcb[2];
     sense[3] = hdc->xebec.dcb[3];
     hdc->xebec.byte_index = 0u;
     if (hdc->xebec.dcb[0] == 0x08u) {
-        if (hdc->xebec.dcb[4] == 0u || !core_machine_xebec_transfer_sector(hdc, TYPE_FALSE)) {
+        if (hdc->xebec.dcb[4] == 0u || !core_machine_xebec_transfer_sector(hdc, LIB_FALSE)) {
             core_machine_xebec_response(hdc, 0x02u, sense);
             return;
         }
         hdc->xebec.sectors_remaining = hdc->xebec.dcb[4];
         hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_DMA_READ;
     } else {
-        if (hdc->xebec.dcb[4] == 0u || !core_machine_xebec_can_transfer(hdc, TYPE_TRUE)) {
+        if (hdc->xebec.dcb[4] == 0u || !core_machine_xebec_can_transfer(hdc, LIB_TRUE)) {
             /* A Write Data block count is documented, but zero's meaning is
              * not; reject it rather than inventing an implicit 256-sector form. */
             core_machine_xebec_response(hdc, 0x02u, sense);
@@ -749,7 +750,7 @@ static C_VOID core_machine_xebec_start_transfer(core_machine_hdc *hdc)
     core_machine_xebec_sync_dma_request(hdc);
 }
 
-static C_INT core_machine_xebec_command_is_defined(type_unsigned_8 command)
+static C_INT core_machine_xebec_command_is_defined(lib_u8 command)
 {
     return (command <= 0x01u || (command >= 0x03u && command <= 0x08u) ||
         (command >= 0x0au && command <= 0x0fu) || command == 0xe0u ||
@@ -758,11 +759,11 @@ static C_INT core_machine_xebec_command_is_defined(type_unsigned_8 command)
 
 static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
 {
-    type_unsigned_8 sense[4] = {0u, 0u, 0u, 0u};
+    lib_u8 sense[4] = {0u, 0u, 0u, 0u};
 
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     if (hdc->xebec.dcb[0] == 0x03u) {
-        STD_MEMCPY(hdc->xebec.response, hdc->xebec.last_sense,
+        lib_memory_copy(hdc->xebec.response, hdc->xebec.last_sense,
             sizeof(hdc->xebec.last_sense));
         hdc->xebec.response_count = sizeof(hdc->xebec.last_sense);
         hdc->xebec.response_index = 0u;
@@ -782,7 +783,7 @@ static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
      * every DCB is an explicitly sourced "drive not ready" completion, not
      * an ATA fallback or a made-up media result. */
     sense[0] = 0x04u;
-    sense[1] = (type_unsigned_8)((hdc->xebec.dcb[1] >> 5u) & 1u) << 5u;
+    sense[1] = (lib_u8)((hdc->xebec.dcb[1] >> 5u) & 1u) << 5u;
     sense[2] = hdc->xebec.dcb[2];
     sense[3] = hdc->xebec.dcb[3];
     core_machine_xebec_response(hdc, 0x02u, sense);
@@ -790,15 +791,15 @@ static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
 
 static C_VOID core_machine_xebec_schedule_dcb_completion(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND;
     core_machine_hdc_schedule_service(hdc, hdc->connect.config.service.command_ticks);
 }
 
 static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
-    type_unsigned_16 port, type_unsigned_32 *out_value)
+    lib_u16 port, lib_u32 *out_value)
 {
-    if (hdc == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (port == hdc->connect.config.bus.xebec.data_port) {
         if (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
             hdc->xebec.response_index >= hdc->xebec.response_count) return TYPE_STATUS_OK;
@@ -806,7 +807,7 @@ static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
         core_machine_hdc_clear_irq(hdc);
         if (hdc->xebec.response_index == hdc->xebec.response_count) {
             if (hdc->xebec.dcb[0] == 0x03u)
-                STD_MEMSET(hdc->xebec.last_sense, 0, sizeof(hdc->xebec.last_sense));
+                lib_memory_set(hdc->xebec.last_sense, 0, sizeof(hdc->xebec.last_sense));
             hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
             hdc->xebec.dcb_count = 0u;
         }
@@ -816,15 +817,15 @@ static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
 }
 
 static type_status core_machine_xebec_port_write(core_machine_hdc *hdc,
-    type_unsigned_16 port, type_unsigned_32 value)
+    lib_u16 port, lib_u32 value)
 {
-    if (hdc == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (port == hdc->connect.config.bus.xebec.hardware_status_reset_port) {
         core_machine_xebec_reset(hdc);
         return TYPE_STATUS_OK;
     }
     if (port == hdc->connect.config.bus.xebec.dma_irq_mask_port) {
-        hdc->xebec.mask_pattern = (type_unsigned_8)value;
+        hdc->xebec.mask_pattern = (lib_u8)value;
         core_machine_xebec_sync_dma_request(hdc);
         return TYPE_STATUS_OK;
     }
@@ -838,26 +839,26 @@ static type_status core_machine_xebec_port_write(core_machine_hdc *hdc,
         hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_IDLE ||
         hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_RESPONSE) return TYPE_STATUS_OK;
     if (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_DCB) {
-        hdc->xebec.dcb[hdc->xebec.dcb_count++] = (type_unsigned_8)value;
+        hdc->xebec.dcb[hdc->xebec.dcb_count++] = (lib_u8)value;
         if (hdc->xebec.dcb_count == sizeof(hdc->xebec.dcb)) {
             if (hdc->xebec.dcb[0] == 0x0cu) hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_INITIALIZE;
             else core_machine_xebec_schedule_dcb_completion(hdc);
         }
     } else if (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_INITIALIZE) {
-        hdc->xebec.initialize[hdc->xebec.initialize_count++] = (type_unsigned_8)value;
+        hdc->xebec.initialize[hdc->xebec.initialize_count++] = (lib_u8)value;
         if (hdc->xebec.initialize_count == sizeof(hdc->xebec.initialize))
             core_machine_xebec_schedule_dcb_completion(hdc);
     }
     return TYPE_STATUS_OK;
 }
 
-static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status core_machine_hdc_port_read(C_VOID *opaque, lib_u16 port,
+    lib_u32 *out_value)
 {
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
-    type_unsigned_16 word;
+    lib_u16 word;
 
-    if (hdc == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = 0u;
     if (core_machine_hdc_is_xebec_xt(hdc)) return core_machine_xebec_port_read(hdc, port, out_value);
     if (port == hdc->connect.config.bus.task_file.data_port) {
@@ -865,9 +866,9 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
             hdc->data.data_index >= sizeof(hdc->data.data)) {
             return TYPE_STATUS_OK;
         }
-        STD_MEMCPY(&word, &hdc->data.data[hdc->data.data_index], sizeof(word));
+        lib_memory_copy(&word, &hdc->data.data[hdc->data.data_index], sizeof(word));
         *out_value = word;
-        hdc->data.data_index = (type_unsigned_16)(hdc->data.data_index + sizeof(word));
+        hdc->data.data_index = (lib_u16)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR;
             hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
@@ -903,21 +904,21 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
     return TYPE_STATUS_OK;
 }
 
-static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status core_machine_hdc_port_write(C_VOID *opaque, lib_u16 port,
+    lib_u32 value)
 {
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
 
-    if (hdc == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (core_machine_hdc_is_xebec_xt(hdc)) return core_machine_xebec_port_write(hdc, port, value);
     if (port == hdc->connect.config.bus.task_file.data_port) {
-        type_unsigned_16 word = (type_unsigned_16)value;
+        lib_u16 word = (lib_u16)value;
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
             return TYPE_STATUS_OK;
         }
-        STD_MEMCPY(&hdc->data.data[hdc->data.data_index], &word, sizeof(word));
-        hdc->data.data_index = (type_unsigned_16)(hdc->data.data_index + sizeof(word));
+        lib_memory_copy(&hdc->data.data[hdc->data.data_index], &word, sizeof(word));
+        hdc->data.data_index = (lib_u16)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR;
             hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
@@ -934,32 +935,32 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
             port == hdc->connect.config.bus.task_file.cylinder_high_port ||
             port == hdc->connect.config.bus.task_file.drive_head_port)) return TYPE_STATUS_OK;
     if (port == hdc->connect.config.bus.task_file.error_features_port) {
-        hdc->data.features = (type_unsigned_8)value;
+        hdc->data.features = (lib_u8)value;
     } else if (port == hdc->connect.config.bus.task_file.sector_count_port) {
-        hdc->data.sector_count = (type_unsigned_8)value;
+        hdc->data.sector_count = (lib_u8)value;
     } else if (port == hdc->connect.config.bus.task_file.sector_number_port) {
-        hdc->data.sector_number = (type_unsigned_8)value;
+        hdc->data.sector_number = (lib_u8)value;
     } else if (port == hdc->connect.config.bus.task_file.cylinder_low_port) {
-        hdc->data.cylinder_low = (type_unsigned_8)value;
+        hdc->data.cylinder_low = (lib_u8)value;
     } else if (port == hdc->connect.config.bus.task_file.cylinder_high_port) {
-        hdc->data.cylinder_high = (type_unsigned_8)value;
+        hdc->data.cylinder_high = (lib_u8)value;
     } else if (port == hdc->connect.config.bus.task_file.drive_head_port) {
-        hdc->data.drive_head = (type_unsigned_8)value;
+        hdc->data.drive_head = (lib_u8)value;
         core_machine_hdc_refresh_compaq_selection_status(hdc);
     } else if (port == hdc->connect.config.bus.task_file.status_command_port) {
-        core_machine_hdc_capture_command(hdc, (type_unsigned_8)value);
+        core_machine_hdc_capture_command(hdc, (lib_u8)value);
     } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port &&
         core_machine_hdc_is_ibm_wd1003(hdc)) {
-        hdc->data.fixed_disk_register = (type_unsigned_8)value & 0x08u;
+        hdc->data.fixed_disk_register = (lib_u8)value & 0x08u;
     } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port) {
-        type_unsigned_8 device_control = (type_unsigned_8)value;
+        lib_u8 device_control = (lib_u8)value;
         type_bool reset_asserted = (device_control &
             CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;
 
         hdc->data.device_control = device_control;
         core_machine_hdc_sync_irq(hdc);
         if (reset_asserted && !hdc->data.reset_asserted) {
-            hdc->data.reset_asserted = TYPE_TRUE;
+            hdc->data.reset_asserted = LIB_TRUE;
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
             hdc->data.data_index = 0u;
             hdc->data.sectors_remaining = 0u;
@@ -984,18 +985,18 @@ static const core_machine_port_provider core_machine_hdc_ports = {
 static C_VOID core_machine_xebec_dma_read(C_VOID *owner, t_latch *latch)
 {
     core_machine_hdc *hdc = owner;
-    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
+    lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
 
-    if (hdc == STD_NULL || latch == STD_NULL ||
+    if (hdc == LIB_NULL || latch == LIB_NULL ||
         hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
         hdc->xebec.byte_index >= sizeof(hdc->data.data)) return;
     latch->data.byte = hdc->data.data[hdc->xebec.byte_index++];
     if (hdc->xebec.byte_index == sizeof(hdc->data.data)) {
         if (--hdc->xebec.sectors_remaining == 0u) {
             core_machine_xebec_release_dma(hdc);
-            core_machine_xebec_response(hdc, 0u, STD_NULL);
+            core_machine_xebec_response(hdc, 0u, LIB_NULL);
         } else if (!core_machine_xebec_next_sector(hdc) ||
-            !core_machine_xebec_transfer_sector(hdc, TYPE_FALSE)) {
+            !core_machine_xebec_transfer_sector(hdc, LIB_FALSE)) {
             sense[1] = hdc->xebec.dcb[1] & 0x20u;
             sense[2] = hdc->xebec.dcb[2];
             sense[3] = hdc->xebec.dcb[3];
@@ -1008,9 +1009,9 @@ static C_VOID core_machine_xebec_dma_read(C_VOID *owner, t_latch *latch)
 static C_VOID core_machine_xebec_dma_write(C_VOID *owner, t_latch *latch)
 {
     core_machine_hdc *hdc = owner;
-    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
+    lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
 
-    if (hdc == STD_NULL || latch == STD_NULL ||
+    if (hdc == LIB_NULL || latch == LIB_NULL ||
         hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE ||
         hdc->xebec.byte_index >= sizeof(hdc->data.data)) return;
     hdc->data.data[hdc->xebec.byte_index++] = latch->data.byte;
@@ -1018,7 +1019,7 @@ static C_VOID core_machine_xebec_dma_write(C_VOID *owner, t_latch *latch)
     sense[1] = hdc->xebec.dcb[1] & 0x20u;
     sense[2] = hdc->xebec.dcb[2];
     sense[3] = hdc->xebec.dcb[3];
-    if (!core_machine_xebec_transfer_sector(hdc, TYPE_TRUE) ||
+    if (!core_machine_xebec_transfer_sector(hdc, LIB_TRUE) ||
         hdc->xebec.sectors_remaining == 0u) {
         core_machine_xebec_release_dma(hdc);
         core_machine_xebec_response(hdc, 0x02u, sense);
@@ -1026,11 +1027,11 @@ static C_VOID core_machine_xebec_dma_write(C_VOID *owner, t_latch *latch)
     }
     if (--hdc->xebec.sectors_remaining == 0u) {
         core_machine_xebec_release_dma(hdc);
-        core_machine_xebec_response(hdc, 0u, STD_NULL);
+        core_machine_xebec_response(hdc, 0u, LIB_NULL);
         return;
     }
     if (!core_machine_xebec_next_sector(hdc) ||
-        !core_machine_xebec_can_transfer(hdc, TYPE_TRUE)) {
+        !core_machine_xebec_can_transfer(hdc, LIB_TRUE)) {
         core_machine_xebec_release_dma(hdc);
         core_machine_xebec_response(hdc, 0x02u, sense);
         return;
@@ -1041,10 +1042,10 @@ static C_VOID core_machine_xebec_dma_write(C_VOID *owner, t_latch *latch)
 static C_VOID core_machine_xebec_dma_terminal(C_VOID *owner, t_latch *latch)
 {
     core_machine_hdc *hdc = owner;
-    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
+    lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
 
     (C_VOID)latch;
-    if (hdc == STD_NULL || (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ &&
+    if (hdc == LIB_NULL || (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ &&
         hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE)) return;
     sense[1] = hdc->xebec.dcb[1] & 0x20u;
     sense[2] = hdc->xebec.dcb[2];
@@ -1063,7 +1064,7 @@ C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config)
 {
-    if (hdc == STD_NULL || config == STD_NULL) return;
+    if (hdc == LIB_NULL || config == LIB_NULL) return;
     hdc->connect.media_registry = media_registry;
     hdc->connect.media_id = media_id;
     hdc->connect.slave_media_id = slave_media_id;
@@ -1079,8 +1080,8 @@ C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
     C_VOID (*request_deassert)(C_VOID *owner,
         const core_machine_dma_request_binding *binding), C_VOID *owner)
 {
-    if (hdc == STD_NULL || binding == STD_NULL || request_assert == STD_NULL ||
-        request_deassert == STD_NULL || owner == STD_NULL) return;
+    if (hdc == LIB_NULL || binding == LIB_NULL || request_assert == LIB_NULL ||
+        request_deassert == LIB_NULL || owner == LIB_NULL) return;
     hdc->connect.dma_request = *binding;
     hdc->connect.dma_request_assert = request_assert;
     hdc->connect.dma_request_deassert = request_deassert;
@@ -1089,9 +1090,9 @@ C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
 
 C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
-    STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
-    STD_MEMSET(&hdc->xebec, 0, sizeof(hdc->xebec));
+    if (hdc == LIB_NULL) return;
+    lib_memory_set(&hdc->data, 0, sizeof(hdc->data));
+    lib_memory_set(&hdc->xebec, 0, sizeof(hdc->xebec));
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
     core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
     core_machine_hdc_reset(hdc);
@@ -1099,8 +1100,8 @@ C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc)
 
 C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
-    STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
+    if (hdc == LIB_NULL) return;
+    lib_memory_set(&hdc->data, 0, sizeof(hdc->data));
     if (core_machine_hdc_is_xebec_xt(hdc)) core_machine_xebec_reset(hdc);
     core_machine_hdc_clear_irq(hdc);
     hdc->data.error = CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
@@ -1110,9 +1111,9 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
 }
 
 C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
-    type_unsigned_64 elapsed_ticks)
+    lib_u64 elapsed_ticks)
 {
-    if (hdc == STD_NULL || elapsed_ticks == 0u || UINT64_MAX -
+    if (hdc == LIB_NULL || elapsed_ticks == 0u || UINT64_MAX -
         hdc->data.elapsed_ticks < elapsed_ticks) return;
     hdc->data.elapsed_ticks += elapsed_ticks;
     if (hdc->data.next_service_tick != 0u &&
@@ -1138,9 +1139,9 @@ C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
 
 C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
 {
-    type_unsigned_64 ticks = 1u;
+    lib_u64 ticks = 1u;
 
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     if (hdc->data.next_service_tick > hdc->data.elapsed_ticks) {
         ticks = hdc->data.next_service_tick - hdc->data.elapsed_ticks;
     }
@@ -1148,9 +1149,9 @@ C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
 }
 
 type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
-    type_unsigned_64 *out_due_tick)
+    lib_u64 *out_due_tick)
 {
-    if (hdc == STD_NULL || out_due_tick == STD_NULL ||
+    if (hdc == LIB_NULL || out_due_tick == LIB_NULL ||
         hdc->data.next_service_tick == 0u) return TYPE_STATUS_INVALID_STATE;
     if (core_machine_hdc_is_xebec_xt(hdc)) {
         if (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND)
@@ -1164,11 +1165,11 @@ type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
 
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)
 {
-    if (hdc == STD_NULL) return;
+    if (hdc == LIB_NULL) return;
     core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
-    STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
-    STD_MEMSET(&hdc->xebec, 0, sizeof(hdc->xebec));
-    STD_MEMSET(&hdc->connect, 0, sizeof(hdc->connect));
+    lib_memory_set(&hdc->data, 0, sizeof(hdc->data));
+    lib_memory_set(&hdc->xebec, 0, sizeof(hdc->xebec));
+    lib_memory_set(&hdc->connect, 0, sizeof(hdc->connect));
 }
 
 const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID)
@@ -1183,6 +1184,6 @@ const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID)
 
 type_bool core_machine_hdc_irq_pending(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && hdc->data.irq_pending &&
+    return hdc != LIB_NULL && hdc->data.irq_pending &&
         (hdc->data.device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) == 0u;
 }

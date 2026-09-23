@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -10,11 +11,11 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT failed = 0;
 
     if (vm_model40_fixture_create(&session) != TYPE_STATUS_OK ||
-        session == STD_NULL || !session->core_machine->dma_configured ||
+        session == LIB_NULL || !session->core_machine->dma_configured ||
         session->core_machine->transaction_contract.dma_cycle_wait_quanta != 1u ||
         !session->core_machine->transaction_contract.dma_cycle_bus_ready_gate_enabled ||
         !session->core_machine->dma_cycle_bus_ready ||

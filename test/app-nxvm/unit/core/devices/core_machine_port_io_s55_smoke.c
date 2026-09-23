@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -6,11 +7,11 @@
 #include "support/core_machine_cpu_fixture.h"
 
 typedef struct port_io_s55_port {
-    type_unsigned_32 input;
-    type_unsigned_32 last_write;
-    type_unsigned_16 last_port;
-    type_unsigned_32 reads;
-    type_unsigned_32 writes;
+    lib_u32 input;
+    lib_u32 last_write;
+    lib_u16 last_port;
+    lib_u32 reads;
+    lib_u32 writes;
     C_INT fail;
 } port_io_s55_port;
 
@@ -19,12 +20,12 @@ typedef struct port_io_s55_machine {
     port_io_s55_port port;
 } port_io_s55_machine;
 
-static type_status port_io_s55_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *value)
+static type_status port_io_s55_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *value)
 {
     port_io_s55_port *state = (port_io_s55_port *)owner;
 
-    if (state == STD_NULL || value == STD_NULL || state->fail)
+    if (state == LIB_NULL || value == LIB_NULL || state->fail)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     state->last_port = port;
@@ -32,12 +33,12 @@ static type_status port_io_s55_read(C_VOID *owner, type_unsigned_16 port,
     return TYPE_STATUS_OK;
 }
 
-static type_status port_io_s55_write(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status port_io_s55_write(C_VOID *owner, lib_u16 port,
+    lib_u32 value)
 {
     port_io_s55_port *state = (port_io_s55_port *)owner;
 
-    if (state == STD_NULL || state->fail)
+    if (state == LIB_NULL || state->fail)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     state->last_port = port;
@@ -54,13 +55,13 @@ static C_VOID port_io_s55_reset(C_VOID *opaque)
 {
     port_io_s55_machine *state = (port_io_s55_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider port_io_s55_execution_provider = {
     port_io_s55_reset,
-    STD_NULL
+    LIB_NULL
 };
 
 static C_INT port_io_s55_prepare(port_io_s55_machine *state,
@@ -72,7 +73,7 @@ static C_INT port_io_s55_prepare(port_io_s55_machine *state,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
         core_machine_install_port_provider(state->machine, 0x005au, 0x005au,
             &port_io_s55_provider, &state->port) == TYPE_STATUS_OK &&
@@ -112,23 +113,23 @@ static C_INT port_io_s55_gprs_same_except_eax(const t_cpu *before,
 
 static C_INT port_io_s55_sregs_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es,
+    return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.cs, &after->data.cs,
+        lib_memory_compare(&before->data.cs, &after->data.cs,
             sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss,
+        lib_memory_compare(&before->data.ss, &after->data.ss,
             sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
+        lib_memory_compare(&before->data.ds, &after->data.ds,
             sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs,
+        lib_memory_compare(&before->data.fs, &after->data.fs,
             sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs,
+        lib_memory_compare(&before->data.gs, &after->data.gs,
             sizeof(before->data.gs)) == 0;
 }
 
 static C_INT port_io_s55_success(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes, C_INT input, type_unsigned_8 width,
-    type_unsigned_16 port)
+    const lib_u8 *code, lib_u8 bytes, C_INT input, lib_u8 width,
+    lib_u16 port)
 {
     port_io_s55_machine state;
     core_machine_run_result result;
@@ -136,7 +137,7 @@ static C_INT port_io_s55_success(core_machine_cpu_profile profile,
     t_cpu before;
     t_cpu after;
     type_status status;
-    type_unsigned_32 expected;
+    lib_u32 expected;
     C_INT failed = !port_io_s55_prepare(&state, profile);
 
     if (!failed) {
@@ -188,21 +189,21 @@ static C_INT port_io_s55_success(core_machine_cpu_profile profile,
 
 static C_INT port_io_s55_test_default_forms(C_VOID)
 {
-    static const type_unsigned_8 codes[][2] = {
+    static const lib_u8 codes[][2] = {
         { 0xe4u, 0x5au }, { 0xe5u, 0x5au }, { 0xe6u, 0x5au },
         { 0xe7u, 0x5au }, { 0xecu, 0u }, { 0xedu, 0u },
         { 0xeeu, 0u }, { 0xefu, 0u }
     };
-    static const type_unsigned_8 input[] = { 1u, 1u, 0u, 0u, 1u, 1u, 0u, 0u };
-    static const type_unsigned_8 widths[] = { 1u, 2u, 1u, 2u, 1u, 2u, 1u, 2u };
+    static const lib_u8 input[] = { 1u, 1u, 0u, 0u, 1u, 1u, 0u, 0u };
+    static const lib_u8 widths[] = { 1u, 2u, 1u, 2u, 1u, 2u, 1u, 2u };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    lib_u8 profile;
+    lib_u8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile) {
@@ -221,21 +222,21 @@ static C_INT port_io_s55_test_default_forms(C_VOID)
 
 static C_INT port_io_s55_test_386_attributes(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = {
+    static const lib_u8 opcodes[] = {
         0xe4u, 0xe5u, 0xe6u, 0xe7u, 0xecu, 0xedu, 0xeeu, 0xefu
     };
-    static const type_unsigned_8 input[] = {
+    static const lib_u8 input[] = {
         1u, 1u, 0u, 0u, 1u, 1u, 0u, 0u
     };
-    type_unsigned_8 attribute;
-    type_unsigned_8 form;
+    lib_u8 attribute;
+    lib_u8 form;
 
     for (attribute = 0u; attribute != 3u; ++attribute) {
         for (form = 0u; form != sizeof(opcodes); ++form) {
-            type_unsigned_8 code[4];
-            type_unsigned_8 prefix_bytes = attribute == 2u ? 2u : 1u;
-            type_unsigned_8 code_bytes;
-            type_unsigned_8 width = form % 2u == 0u ? 1u :
+            lib_u8 code[4];
+            lib_u8 prefix_bytes = attribute == 2u ? 2u : 1u;
+            lib_u8 code_bytes;
+            lib_u8 width = form % 2u == 0u ? 1u :
                 (attribute == 0u || attribute == 2u ? 4u : 2u);
 
             if (attribute == 0u)
@@ -261,14 +262,14 @@ static C_INT port_io_s55_test_386_attributes(C_VOID)
 
 static C_INT port_io_s55_test_provider_error(C_VOID)
 {
-    static const type_unsigned_8 in_code[] = { 0xe4u, 0x5au };
-    static const type_unsigned_8 out_code[] = { 0xe7u, 0x5au };
+    static const lib_u8 in_code[] = { 0xe4u, 0x5au };
+    static const lib_u8 out_code[] = { 0xe7u, 0x5au };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    STD_SIZE_T profile;
-    type_unsigned_8 form;
+    lib_size profile;
+    lib_u8 form;
 
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -279,7 +280,7 @@ static C_INT port_io_s55_test_provider_error(C_VOID)
             t_cpu before;
             t_cpu after;
             type_status status;
-            const type_unsigned_8 *code = form == 0u ? in_code : out_code;
+            const lib_u8 *code = form == 0u ? in_code : out_code;
             C_INT failed = !port_io_s55_prepare(&state,
                 profiles[profile]);
 
@@ -317,7 +318,7 @@ static C_INT port_io_s55_test_provider_error(C_VOID)
 
 static C_INT port_io_s55_test_vm86(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0xe4u, 0x5au };
+    static const lib_u8 code[] = { 0xe4u, 0x5au };
     port_io_s55_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -361,9 +362,9 @@ static C_INT port_io_s55_test_vm86(C_VOID)
 
 static C_INT port_io_s55_test_tss_iomap(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0xe4u, 0xe0u };
-    const type_unsigned_16 iomap_base = 0x0080u;
-    type_unsigned_8 denied;
+    static const lib_u8 code[] = { 0xe4u, 0xe0u };
+    const lib_u16 iomap_base = 0x0080u;
+    lib_u8 denied;
 
     for (denied = 0u; denied != 3u; ++denied) {
         port_io_s55_machine state;
@@ -372,7 +373,7 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        type_unsigned_8 bitmap = denied == 1u ? 0x01u : 0u;
+        lib_u8 bitmap = denied == 1u ? 0x01u : 0u;
         C_INT code_write;
         C_INT iomap_write;
         C_INT bitmap_write;
@@ -387,7 +388,7 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
                 VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL : VCPU_EFLAGS_IF;
             state.machine->executor_cpu.data.cs.dpl = 3u;
             state.machine->executor_cpu.data.ss.dpl = 3u;
-            state.machine->executor_cpu.data.tr.flagValid = TYPE_TRUE;
+            state.machine->executor_cpu.data.tr.flagValid = LIB_TRUE;
             state.machine->executor_cpu.data.tr.selector = 0x0028u;
             state.machine->executor_cpu.data.tr.base = 0x0600u;
             state.machine->executor_cpu.data.tr.limit = 0x00ffu;
@@ -444,7 +445,7 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
 }
 
 static C_INT port_io_s55_expect_ud(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes)
+    const lib_u8 *code, lib_u8 bytes)
 {
     port_io_s55_machine state;
     core_machine_run_result result;
@@ -486,7 +487,7 @@ static C_INT port_io_s55_expect_ud(core_machine_cpu_profile profile,
 
 static C_INT port_io_s55_test_rejections(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = {
+    static const lib_u8 opcodes[] = {
         0xe4u, 0xe5u, 0xe6u, 0xe7u, 0xecu, 0xedu, 0xeeu, 0xefu
     };
     static const core_machine_cpu_profile pre386[] = {
@@ -494,41 +495,41 @@ static C_INT port_io_s55_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    type_unsigned_8 profile;
-    type_unsigned_8 opcode;
+    lib_u8 profile;
+    lib_u8 opcode;
 
     for (profile = 0u; profile != sizeof(pre386) / sizeof(pre386[0]);
             ++profile) {
         for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-            type_unsigned_8 attr66[] = { 0x66u, opcodes[opcode], 0x5au };
-            type_unsigned_8 attr67[] = { 0x67u, opcodes[opcode], 0x5au };
-            type_unsigned_8 combined[] = { 0x66u, 0x67u, opcodes[opcode], 0x5au };
-            type_unsigned_8 bytes = opcode < 4u ? 3u : 2u;
+            lib_u8 attr66[] = { 0x66u, opcodes[opcode], 0x5au };
+            lib_u8 attr67[] = { 0x67u, opcodes[opcode], 0x5au };
+            lib_u8 combined[] = { 0x66u, 0x67u, opcodes[opcode], 0x5au };
+            lib_u8 bytes = opcode < 4u ? 3u : 2u;
 
             if (!port_io_s55_expect_ud(pre386[profile], attr66,
                     bytes) || !port_io_s55_expect_ud(pre386[profile],
                     attr67, bytes) || !port_io_s55_expect_ud(pre386[profile],
-                    combined, (type_unsigned_8)(bytes + 1u)))
+                    combined, (lib_u8)(bytes + 1u)))
                 return 0;
         }
     }
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-        type_unsigned_8 lock[] = { 0xf0u, opcodes[opcode], 0x5au };
-        type_unsigned_8 lock66[] = { 0xf0u, 0x66u, opcodes[opcode], 0x5au };
-        type_unsigned_8 lock67[] = { 0xf0u, 0x67u, opcodes[opcode], 0x5au };
-        type_unsigned_8 lock_combined[] = {
+        lib_u8 lock[] = { 0xf0u, opcodes[opcode], 0x5au };
+        lib_u8 lock66[] = { 0xf0u, 0x66u, opcodes[opcode], 0x5au };
+        lib_u8 lock67[] = { 0xf0u, 0x67u, opcodes[opcode], 0x5au };
+        lib_u8 lock_combined[] = {
             0xf0u, 0x66u, 0x67u, opcodes[opcode], 0x5au
         };
-        type_unsigned_8 bytes = opcode < 4u ? 3u : 2u;
+        lib_u8 bytes = opcode < 4u ? 3u : 2u;
 
         if (!port_io_s55_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock,
                 bytes) || !port_io_s55_expect_ud(
                 CORE_MACHINE_CPU_PROFILE_80386, lock66,
-                (type_unsigned_8)(bytes + 1u)) || !port_io_s55_expect_ud(
+                (lib_u8)(bytes + 1u)) || !port_io_s55_expect_ud(
                 CORE_MACHINE_CPU_PROFILE_80386, lock67,
-                (type_unsigned_8)(bytes + 1u)) || !port_io_s55_expect_ud(
+                (lib_u8)(bytes + 1u)) || !port_io_s55_expect_ud(
                 CORE_MACHINE_CPU_PROFILE_80386, lock_combined,
-                (type_unsigned_8)(bytes + 2u)))
+                (lib_u8)(bytes + 2u)))
             return 0;
     }
     return 1;
@@ -536,10 +537,10 @@ static C_INT port_io_s55_test_rejections(C_VOID)
 
 static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
 {
-    static const type_unsigned_8 in_code[] = { 0xe4u, 0x5au, 0x90u };
-    static const type_unsigned_8 out_code[] = { 0xeeu, 0x90u };
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 form;
+    static const lib_u8 in_code[] = { 0xe4u, 0x5au, 0x90u };
+    static const lib_u8 out_code[] = { 0xeeu, 0x90u };
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
         port_io_s55_machine state;
@@ -547,11 +548,11 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        type_unsigned_16 vector_offset = 0x0100u;
-        type_unsigned_16 vector_segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
-        const type_unsigned_8 *code = form == 0u ? in_code : out_code;
-        type_unsigned_8 bytes = form == 0u ? sizeof(in_code) : sizeof(out_code);
+        lib_u16 vector_offset = 0x0100u;
+        lib_u16 vector_segment = 0u;
+        lib_u16 frame_ip = 0u;
+        const lib_u8 *code = form == 0u ? in_code : out_code;
+        lib_u8 bytes = form == 0u ? sizeof(in_code) : sizeof(out_code);
         C_INT failed = !port_io_s55_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -571,7 +572,7 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
                 sizeof(hlt)) != TYPE_STATUS_OK;
         }
         if (!failed) {
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master,
@@ -592,7 +593,7 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
             failed |= !port_io_s55_sregs_same(&before, &after);
             failed |= core_machine_memory_read_physical(
                 &state.machine->executor_memory, after.data.ss.base +
-                (type_unsigned_16)after.data.esp, (type_virtual_address)&frame_ip,
+                (lib_u16)after.data.esp, (type_virtual_address)&frame_ip,
                 sizeof(frame_ip)) != TYPE_STATUS_OK;
             failed |= frame_ip != (form == 0u ? 2u : 1u);
             failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,

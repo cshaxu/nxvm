@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -15,7 +16,7 @@ static C_INT run_case(core_machine_cpu_profile profile)
     };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = 0;
 
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) goto fail;

@@ -1,5 +1,6 @@
 #ifndef VM_MACHINE_DEBUG_TARGET_H
 #define VM_MACHINE_DEBUG_TARGET_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 

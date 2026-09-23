@@ -1,4 +1,5 @@
 /* Copyright 2012-2014 Neko. */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -11,7 +12,7 @@
 
 type_status vm_machine_devices_initialize_media(vm_machine *session)
 {
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_machine_fdd_initialize_with_geometry(&session->fdd,
             vm_profile_floppy_geometry_get(session->fdd_media_kind))) return TYPE_STATUS_FAULT;
     if (vm_profile_machine_plan_floppy_slot_count(session->profile_plan) > 1u &&
@@ -28,7 +29,7 @@ type_status vm_machine_devices_bind_media(vm_machine *session)
 {
     type_status status;
 
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     status = core_machine_media_registry_bind(session->media_registry,
         VM_MACHINE_MEDIA_FDD_ID, &session->fdd, vm_machine_fdd_media_provider());
     if (status != TYPE_STATUS_OK) return status;
@@ -48,7 +49,7 @@ type_status vm_machine_devices_bind_media(vm_machine *session)
 
 C_VOID vm_machine_devices_reset(vm_machine *session)
 {
-    if (session == STD_NULL) return;
+    if (session == LIB_NULL) return;
     vm_machine_fdd_reset(&session->fdd);
     if (vm_profile_machine_plan_floppy_slot_count(session->profile_plan) > 1u)
         vm_machine_fdd_reset(&session->floppy[1u]);
@@ -59,7 +60,7 @@ C_VOID vm_machine_devices_reset(vm_machine *session)
 
 C_VOID vm_machine_devices_finalize(vm_machine *session)
 {
-    if (session == STD_NULL) return;
+    if (session == LIB_NULL) return;
     vm_machine_fdd_finalize(&session->fdd);
     if (vm_profile_machine_plan_floppy_slot_count(session->profile_plan) > 1u)
         vm_machine_fdd_finalize(&session->floppy[1u]);

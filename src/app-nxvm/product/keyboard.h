@@ -1,5 +1,6 @@
 #ifndef VM_APP_KEYBOARD_H
 #define VM_APP_KEYBOARD_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 

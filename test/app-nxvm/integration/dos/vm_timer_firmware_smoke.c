@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -15,7 +16,7 @@ static C_INT vm_timer_debug_execute(integration_ini_session *session,
     common_machine_debug_lease lease;
     lib_size response_size = 0u;
 
-    if (session == STD_NULL || session->common_machine == LIB_NULL ||
+    if (session == LIB_NULL || session->common_machine == LIB_NULL ||
         common_machine_debug_acquire(session->common_machine, &lease) != LIB_STATUS_OK ||
         common_machine_debug_execute_with_lease(session->common_machine, &lease,
             request, sizeof(*request), out_response, sizeof(*out_response),
@@ -25,7 +26,7 @@ static C_INT vm_timer_debug_execute(integration_ini_session *session,
 }
 
 static C_INT vm_timer_debug_break_real(integration_ini_session *session,
-    type_unsigned_32 linear)
+    lib_u32 linear)
 {
     x86_debug_request request = {
         .operation = X86_DEBUG_SET_EXECUTION_PLAN,
@@ -43,8 +44,8 @@ static C_INT vm_timer_debug_break_real(integration_ini_session *session,
 }
 
 static C_INT vm_timer_debug_write_real(integration_ini_session *session,
-    type_unsigned_16 segment, type_unsigned_16 offset, const type_unsigned_8 *data,
-    type_unsigned_8 bytes)
+    lib_u16 segment, lib_u16 offset, const lib_u8 *data,
+    lib_u8 bytes)
 {
     x86_debug_request request = {
         .operation = X86_DEBUG_WRITE_REAL, .segment = segment, .offset = offset,
@@ -53,12 +54,12 @@ static C_INT vm_timer_debug_write_real(integration_ini_session *session,
     x86_debug_response response;
 
     if (bytes > X86_DEBUG_BYTES) return 0;
-    STD_MEMCPY(request.data, data, bytes);
+    lib_memory_copy(request.data, data, bytes);
     return vm_timer_debug_execute(session, &request, &response);
 }
 
 static C_INT vm_timer_debug_write_register(integration_ini_session *session,
-    x86_debug_register register_id, type_unsigned_32 value)
+    x86_debug_register register_id, lib_u32 value)
 {
     x86_debug_request request = {
         .operation = X86_DEBUG_WRITE_REGISTER, .register_id = register_id,
@@ -70,14 +71,14 @@ static C_INT vm_timer_debug_write_register(integration_ini_session *session,
 }
 
 static C_INT vm_timer_debug_read_register(integration_ini_session *session,
-    x86_debug_register register_id, type_unsigned_32 *out_value)
+    x86_debug_register register_id, lib_u32 *out_value)
 {
     x86_debug_request request = {
         .operation = X86_DEBUG_READ_REGISTER, .register_id = register_id
     };
     x86_debug_response response;
 
-    if (out_value == STD_NULL || !vm_timer_debug_execute(session, &request, &response))
+    if (out_value == LIB_NULL || !vm_timer_debug_execute(session, &request, &response))
         return 0;
     *out_value = response.value;
     return 1;
@@ -87,16 +88,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session;
     DWORD elapsed;
-    type_unsigned_32 bda_ticks = 0u;
-    type_unsigned_32 int1a_ticks;
-    type_unsigned_32 paused_eip;
-    type_unsigned_32 observed_paused_eip;
-    type_unsigned_32 rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
-    type_unsigned_8 rollover_byte = 0u;
-    type_unsigned_32 register_value;
+    lib_u32 bda_ticks = 0u;
+    lib_u32 int1a_ticks;
+    lib_u32 paused_eip;
+    lib_u32 observed_paused_eip;
+    lib_u32 rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
+    lib_u8 rollover_byte = 0u;
+    lib_u32 register_value;
     C_INT stage = 0;
-    static const type_unsigned_8 int1a_program[] = { 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u };
-    static const type_unsigned_8 rollover_program[] = {
+    static const lib_u8 int1a_program[] = { 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u };
+    static const lib_u8 rollover_program[] = {
         0xcdu, 0x08u, 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u
     };
 
@@ -120,7 +121,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         x86_debug_response response;
 
         if (!vm_timer_debug_execute(&ini_session, &request, &response)) goto fail;
-        STD_MEMCPY(&bda_ticks, response.data, sizeof(bda_ticks));
+        lib_memory_copy(&bda_ticks, response.data, sizeof(bda_ticks));
         if (bda_ticks == 0u) goto fail;
     }
     stage = 5;
@@ -146,7 +147,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         int1a_ticks != bda_ticks || (register_value & 0xffu) != 0u) goto fail;
     stage = 9;
     if (!vm_timer_debug_write_real(&ini_session, 0u, VM_TIMER_BDA_TICKS,
-            (const type_unsigned_8 *)&rollover_seed, sizeof(rollover_seed)) ||
+            (const lib_u8 *)&rollover_seed, sizeof(rollover_seed)) ||
         !vm_timer_debug_write_real(&ini_session, 0u, VM_TIMER_BDA_ROLLOVER,
             &rollover_byte, sizeof(rollover_byte)) ||
         !vm_timer_debug_write_real(&ini_session, 0u, 0x1100u, rollover_program,

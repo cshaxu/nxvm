@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -15,13 +16,13 @@
 
 typedef struct corpus_port_event {
     C_INT write;
-    type_unsigned_16 port;
-    type_unsigned_32 value;
+    lib_u16 port;
+    lib_u32 value;
 } corpus_port_event;
 
 typedef struct corpus_port_state {
     corpus_port_event events[4];
-    STD_SIZE_T event_count;
+    lib_size event_count;
 } corpus_port_state;
 
 static C_INT corpus_prepare_machine(core_machine **out_machine,
@@ -33,14 +34,14 @@ static C_INT corpus_prepare_machine(core_machine **out_machine,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
             TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             CORPUS_RESET_LINEAR, CORPUS_RESET_PHYSICAL,
             CORPUS_RESET_WINDOW) != TYPE_STATUS_OK ||
-        (port_provider != STD_NULL && core_machine_install_port_provider(
+        (port_provider != LIB_NULL && core_machine_install_port_provider(
             machine, 0x00e0u, 0x00e1u, port_provider, port_owner) !=
             TYPE_STATUS_OK) ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
@@ -52,19 +53,19 @@ static C_INT corpus_prepare_machine(core_machine **out_machine,
     return 0;
 }
 
-static C_INT corpus_run_to_ud(core_machine *machine, const type_unsigned_8 *program,
-    STD_SIZE_T program_bytes, core_machine_cpu_fault_snapshot *out_fault)
+static C_INT corpus_run_to_ud(core_machine *machine, const lib_u8 *program,
+    lib_size program_bytes, core_machine_cpu_fault_snapshot *out_fault)
 {
-    static const type_unsigned_8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
-    static const type_unsigned_8 ud_vector[] = { 0x00u, 0x03u, 0x00u, 0x00u };
-    static const type_unsigned_8 ud_handler[] = { 0xf4u };
+    static const lib_u8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
+    static const lib_u8 ud_vector[] = { 0x00u, 0x03u, 0x00u, 0x00u };
+    static const lib_u8 ud_handler[] = { 0xf4u };
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     type_status status;
     C_INT failed = 0;
 
-    if (machine == STD_NULL || program == STD_NULL || out_fault == STD_NULL)
+    if (machine == LIB_NULL || program == LIB_NULL || out_fault == LIB_NULL)
         return 1;
     failed |= core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
         sizeof(reset_jump)) != TYPE_STATUS_OK || core_machine_memory_write(
@@ -88,14 +89,14 @@ static C_INT corpus_run_to_ud(core_machine *machine, const type_unsigned_8 *prog
     return failed;
 }
 
-static C_INT corpus_run_to_halt(core_machine *machine, const type_unsigned_8 *program,
-    STD_SIZE_T program_bytes)
+static C_INT corpus_run_to_halt(core_machine *machine, const lib_u8 *program,
+    lib_size program_bytes)
 {
-    static const type_unsigned_8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
+    static const lib_u8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
 
-    return machine == STD_NULL || program == STD_NULL ||
+    return machine == LIB_NULL || program == LIB_NULL ||
         core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
             sizeof(reset_jump)) != TYPE_STATUS_OK ||
         core_machine_memory_write(machine, 0u, program, program_bytes) !=
@@ -106,11 +107,11 @@ static C_INT corpus_run_to_halt(core_machine *machine, const type_unsigned_8 *pr
 
 static C_INT corpus_test_segment_override(C_VOID)
 {
-    static const type_unsigned_8 program[] = { 0x2eu, 0xa0u, 0x00u, 0x01u, 0x66u };
-    static const type_unsigned_8 source = 0xa5u;
+    static const lib_u8 program[] = { 0x2eu, 0xa0u, 0x00u, 0x01u, 0x66u };
+    static const lib_u8 source = 0xa5u;
     core_machine_cpu_fault_snapshot fault;
-    core_machine *machine = STD_NULL;
-    C_INT failed = corpus_prepare_machine(&machine, STD_NULL, STD_NULL);
+    core_machine *machine = LIB_NULL;
+    C_INT failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x0100u, &source,
@@ -124,7 +125,7 @@ static C_INT corpus_test_segment_override(C_VOID)
 
 static C_INT corpus_test_rep_direction(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb8u, 0x00u, 0x00u,
         0x8eu, 0xd8u,
         0x8eu, 0xc0u,
@@ -140,13 +141,13 @@ static C_INT corpus_test_rep_direction(C_VOID)
         0xaau,
         0xf4u
     };
-    static const type_unsigned_8 source[] = { 0x11u, 0x22u, 0x33u };
-    type_unsigned_8 source_before[3] = { 0u, 0u, 0u };
-    type_unsigned_8 source_after[3] = { 0u, 0u, 0u };
-    type_unsigned_8 copied[3] = { 0u, 0u, 0u };
-    type_unsigned_8 stored = 0u;
-    core_machine *machine = STD_NULL;
-    C_INT failed = corpus_prepare_machine(&machine, STD_NULL, STD_NULL);
+    static const lib_u8 source[] = { 0x11u, 0x22u, 0x33u };
+    lib_u8 source_before[3] = { 0u, 0u, 0u };
+    lib_u8 source_after[3] = { 0u, 0u, 0u };
+    lib_u8 copied[3] = { 0u, 0u, 0u };
+    lib_u8 stored = 0u;
+    core_machine *machine = LIB_NULL;
+    C_INT failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x0100u, source,
@@ -181,17 +182,17 @@ static C_INT corpus_test_rep_direction(C_VOID)
 
 static C_INT corpus_test_int_iret(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xbcu, 0x00u, 0x10u,
         0xf9u,
         0xcdu, 0x60u,
         0x66u
     };
-    static const type_unsigned_8 ivt_entry[] = { 0x00u, 0x02u, 0x00u, 0x00u };
-    static const type_unsigned_8 handler[] = { 0xb8u, 0x34u, 0x12u, 0xcfu };
+    static const lib_u8 ivt_entry[] = { 0x00u, 0x02u, 0x00u, 0x00u };
+    static const lib_u8 handler[] = { 0xb8u, 0x34u, 0x12u, 0xcfu };
     core_machine_cpu_fault_snapshot fault;
-    core_machine *machine = STD_NULL;
-    C_INT failed = corpus_prepare_machine(&machine, STD_NULL, STD_NULL);
+    core_machine *machine = LIB_NULL;
+    C_INT failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x0180u, ivt_entry,
@@ -207,12 +208,12 @@ static C_INT corpus_test_int_iret(C_VOID)
     return failed;
 }
 
-static type_status corpus_port_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status corpus_port_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *out_value)
 {
     corpus_port_state *state = (corpus_port_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || state->event_count >=
+    if (state == LIB_NULL || out_value == LIB_NULL || state->event_count >=
             sizeof(state->events) / sizeof(state->events[0])) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -224,12 +225,12 @@ static type_status corpus_port_read(C_VOID *owner, type_unsigned_16 port,
     return TYPE_STATUS_OK;
 }
 
-static type_status corpus_port_write(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status corpus_port_write(C_VOID *owner, lib_u16 port,
+    lib_u32 value)
 {
     corpus_port_state *state = (corpus_port_state *)owner;
 
-    if (state == STD_NULL || state->event_count >=
+    if (state == LIB_NULL || state->event_count >=
             sizeof(state->events) / sizeof(state->events[0])) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -242,7 +243,7 @@ static type_status corpus_port_write(C_VOID *owner, type_unsigned_16 port,
 
 static C_INT corpus_test_port_transactions(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb0u, 0x5au,
         0xe6u, 0xe0u,
         0xbau, 0xe1u, 0x00u,
@@ -257,7 +258,7 @@ static C_INT corpus_test_port_transactions(C_VOID)
     };
     corpus_port_state port_state = { { { 0, 0u, 0u } }, 0u };
     core_machine_cpu_fault_snapshot fault;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = corpus_prepare_machine(&machine, &provider, &port_state);
 
     if (!failed) {

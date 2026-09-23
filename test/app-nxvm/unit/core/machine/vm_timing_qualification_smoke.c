@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -23,7 +24,7 @@ static C_INT vm_timing_qualification_default_configure(
     vm_profile_default_pc_at_cpu_contract contract;
     core_machine_controller_timing_rules rules;
 
-    return out_configuration == STD_NULL || profile == STD_NULL ||
+    return out_configuration == LIB_NULL || profile == LIB_NULL ||
         !vm_profile_default_pc_at_cpu_contract_select(profile, profile->cpu_profile,
             profile->fpu_profile, &contract) ||
         !vm_profile_default_pc_at_core_config_materialize(profile, &contract,
@@ -38,7 +39,7 @@ static C_INT vm_timing_qualification_model_339_configure(
     vm_profile_default_pc_at_cpu_contract contract;
     core_machine_controller_timing_rules rules;
 
-    return out_configuration == STD_NULL || profile == STD_NULL ||
+    return out_configuration == LIB_NULL || profile == LIB_NULL ||
         !vm_profile_default_pc_at_cpu_contract_select(profile, profile->cpu_profile,
             profile->fpu_profile, &contract) ||
         !vm_profile_default_pc_at_core_config_materialize(profile, &contract,
@@ -48,7 +49,7 @@ static C_INT vm_timing_qualification_model_339_configure(
 static C_INT vm_timing_qualification_model_40_configure(
     core_machine_config *out_configuration)
 {
-    if (out_configuration == STD_NULL) return 1;
+    if (out_configuration == LIB_NULL) return 1;
     vm_profile_model40_core_config_initialize(out_configuration);
     return 0;
 }
@@ -58,8 +59,8 @@ static C_INT vm_timing_qualification_xt_configure(
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
 
-    if (out_configuration == STD_NULL ||
-        vm_profile_xt_5160_268_plan_create(&profile, TYPE_FALSE) != TYPE_STATUS_OK) {
+    if (out_configuration == LIB_NULL ||
+        vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != TYPE_STATUS_OK) {
         return 1;
     }
     *out_configuration = profile.values.core.configuration;
@@ -73,12 +74,12 @@ static C_INT vm_timing_qualification_assert_case(
     core_machine_dma_wiring wiring = {0};
     core_machine_dma_request_binding request = {0};
     core_machine_time_observation observation;
-    core_machine_plan *plan = STD_NULL;
-    core_machine *machine = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
     type_status status;
     C_INT failed = 0;
 
-    if (test_case == STD_NULL || test_case->configure == STD_NULL ||
+    if (test_case == LIB_NULL || test_case->configure == LIB_NULL ||
         test_case->configure(&configuration) ||
         configuration.clock_plan.dma.numerator == 0u ||
         configuration.clock_plan.dma.denominator == 0u) return 1;
@@ -143,7 +144,7 @@ int main(void)
         {"compaq-deskpro-386-model-40", vm_timing_qualification_model_40_configure},
         {"ibm-5160-model-268", vm_timing_qualification_xt_configure}
     };
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
         if (vm_timing_qualification_assert_case(&cases[index])) {

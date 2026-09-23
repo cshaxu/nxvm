@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -7,7 +8,7 @@ type_status core_machine_capture_display_snapshot(const core_machine *machine,
 {
     core_machine *mutable_machine = (core_machine *)machine;
 
-    if (machine == STD_NULL || out_snapshot == STD_NULL) {
+    if (machine == LIB_NULL || out_snapshot == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
@@ -21,10 +22,10 @@ type_status core_machine_capture_display_snapshot(const core_machine *machine,
 
 type_status core_machine_observe_display_snapshot(const core_machine *machine,
     type_bool acknowledged_generation_valid,
-    type_unsigned_64 acknowledged_generation,
+    lib_u64 acknowledged_generation,
     core_machine_display_snapshot_observation *out_observation)
 {
-    if (machine == STD_NULL || out_observation == STD_NULL) {
+    if (machine == LIB_NULL || out_observation == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
@@ -41,10 +42,10 @@ static C_INT core_machine_display_ports_are_vadp(
 {
     const core_machine_display_port_topology *ports;
 
-    if (config == STD_NULL) return TYPE_FALSE;
+    if (config == LIB_NULL) return LIB_FALSE;
     ports = &config->ports;
     if (ports->crtc_first != CORE_MACHINE_VADP_PORT_CRTC_INDEX ||
-        ports->crtc_last != CORE_MACHINE_VADP_PORT_STATUS) return TYPE_FALSE;
+        ports->crtc_last != CORE_MACHINE_VADP_PORT_STATUS) return LIB_FALSE;
     return !config->ega_present ||
         (ports->attribute_first == CORE_MACHINE_VADP_PORT_ATTRIBUTE &&
         ports->attribute_last == CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ &&
@@ -63,7 +64,7 @@ type_status core_machine_configure_display(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) || machine->display_configured) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (config == STD_NULL || !core_machine_display_ports_are_vadp(config) ||
+    if (config == LIB_NULL || !core_machine_display_ports_are_vadp(config) ||
         (config->ega_present && config->ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
         !core_machine_vadp_cecg_config_is_valid(&config->cecg))) {
@@ -112,6 +113,6 @@ type_status core_machine_configure_display(core_machine *machine,
         }
     }
     machine->display_ports = config->ports;
-    machine->display_configured = TYPE_TRUE;
+    machine->display_configured = LIB_TRUE;
     return TYPE_STATUS_OK;
 }

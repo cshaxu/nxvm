@@ -1,11 +1,12 @@
+#include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"
 
 static C_INT vm_profile_contract_catalog_contains(
-    const vm_profile_contract_catalog *catalog, type_unsigned_32 id)
+    const vm_profile_contract_catalog *catalog, lib_u32 id)
 {
-    STD_SIZE_T first;
+    lib_size first;
 
-    if (catalog == STD_NULL || catalog->ids == STD_NULL || id == 0u) return 0;
+    if (catalog == LIB_NULL || catalog->ids == LIB_NULL || id == 0u) return 0;
     for (first = 0u; first < catalog->count; ++first) {
         if (catalog->ids[first] == id) return 1;
     }
@@ -13,11 +14,11 @@ static C_INT vm_profile_contract_catalog_contains(
 }
 
 static C_INT vm_profile_contract_windows_are_valid(
-    const vm_profile_contract_window *windows, STD_SIZE_T count, STD_SIZE_T capacity,
-    type_unsigned_32 enabled_devices)
+    const vm_profile_contract_window *windows, lib_size count, lib_size capacity,
+    lib_u32 enabled_devices)
 {
-    STD_SIZE_T first;
-    STD_SIZE_T second;
+    lib_size first;
+    lib_size second;
 
     if (count > capacity) return 0;
     for (first = 0u; first < count; ++first) {
@@ -32,11 +33,11 @@ static C_INT vm_profile_contract_windows_are_valid(
 }
 
 static C_INT vm_profile_contract_port_leaves_are_valid(
-    const vm_profile_contract_port_leaf *leaves, STD_SIZE_T count,
-    type_unsigned_32 enabled_devices)
+    const vm_profile_contract_port_leaf *leaves, lib_size count,
+    lib_u32 enabled_devices)
 {
-    STD_SIZE_T first;
-    STD_SIZE_T second;
+    lib_size first;
+    lib_size second;
 
     if (count > VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY) return 0;
     for (first = 0u; first < count; ++first) {
@@ -51,11 +52,11 @@ static C_INT vm_profile_contract_port_leaves_are_valid(
 }
 
 static C_INT vm_profile_contract_routes_are_valid(
-    const vm_profile_contract_route *routes, STD_SIZE_T count, STD_SIZE_T capacity,
-    type_unsigned_32 enabled_devices)
+    const vm_profile_contract_route *routes, lib_size count, lib_size capacity,
+    lib_u32 enabled_devices)
 {
-    STD_SIZE_T first;
-    STD_SIZE_T second;
+    lib_size first;
+    lib_size second;
 
     if (count > capacity) return 0;
     for (first = 0u; first < count; ++first) {
@@ -69,9 +70,9 @@ static C_INT vm_profile_contract_routes_are_valid(
 }
 
 type_status vm_profile_contract_validate(const vm_profile_contract_values *values,
-    const vm_profile_contract_catalog *catalog, type_unsigned_32 requested_options)
+    const vm_profile_contract_catalog *catalog, lib_u32 requested_options)
 {
-    if (values == STD_NULL || catalog == STD_NULL || values->enabled_devices == 0u ||
+    if (values == LIB_NULL || catalog == LIB_NULL || values->enabled_devices == 0u ||
         values->core.configuration.memory_bytes == 0u ||
         values->core.configuration.cpu_profile == CORE_MACHINE_CPU_PROFILE_DEFAULT ||
         (values->firmware_policy != VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BUILTIN &&

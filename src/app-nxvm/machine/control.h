@@ -1,5 +1,6 @@
 #ifndef VM_MACHINE_CONTROL_H
 #define VM_MACHINE_CONTROL_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/machine/executor_state.h"

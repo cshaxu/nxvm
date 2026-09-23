@@ -1,10 +1,11 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pit.h"
 #include "app-nxvm/devices/port.h"
 
-static C_VOID core_machine_pit_write_counter(t_port *port, type_unsigned_16 control,
-    type_unsigned_16 count)
+static C_VOID core_machine_pit_write_counter(t_port *port, lib_u16 control,
+    lib_u16 count)
 {
     core_machine_port_write(port, 0x0043u, control);
     core_machine_port_write(port, 0x0040u + ((control >> 6) & 0x03u),
@@ -13,23 +14,23 @@ static C_VOID core_machine_pit_write_counter(t_port *port, type_unsigned_16 cont
         count >> 8);
 }
 
-static type_unsigned_8 core_machine_pit_read_byte(t_port *port, type_unsigned_16 port_id)
+static lib_u8 core_machine_pit_read_byte(t_port *port, lib_u16 port_id)
 {
-    return (type_unsigned_8)core_machine_port_read(port, port_id);
+    return (lib_u8)core_machine_port_read(port, port_id);
 }
 
 C_INT main(C_VOID)
 {
     t_pit pit;
     t_port port;
-    type_unsigned_8 status_before;
-    type_unsigned_8 status_after;
+    lib_u8 status_before;
+    lib_u8 status_after;
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_pit_initialize(&pit, &port);
     core_machine_pit_reset(&pit);
-    core_machine_pit_set_output(&pit, 0u, STD_NULL, STD_NULL);
+    core_machine_pit_set_output(&pit, 0u, LIB_NULL, LIB_NULL);
 
     core_machine_port_write(&port, 0x0043u, 0x0036u);
     core_machine_port_write(&port, 0x0043u, 0x00ecu);

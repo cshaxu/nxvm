@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #define main cli_sti_s22_main
 #include "core_machine_cli_sti_smoke.c"
 #undef main
@@ -18,27 +19,27 @@ static C_INT cli_sti_s48_gprs_preserved(const t_cpu *before,
 static C_INT cli_sti_s48_sregs_preserved(const t_cpu *before,
     const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es,
+    return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.cs, &after->data.cs,
+        lib_memory_compare(&before->data.cs, &after->data.cs,
             sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss,
+        lib_memory_compare(&before->data.ss, &after->data.ss,
             sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
+        lib_memory_compare(&before->data.ds, &after->data.ds,
             sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs,
+        lib_memory_compare(&before->data.fs, &after->data.fs,
             sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs,
+        lib_memory_compare(&before->data.gs, &after->data.gs,
             sizeof(before->data.gs)) == 0;
 }
 
 static C_INT cli_sti_s48_test_80286_defaults(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xfau, 0xfbu };
-    const type_unsigned_32 preserved = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+    static const lib_u8 opcodes[] = { 0xfau, 0xfbu };
+    const lib_u32 preserved = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
         VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF |
         VCPU_EFLAGS_DF | VCPU_EFLAGS_OF;
-    type_unsigned_8 opcode_index;
+    lib_u8 opcode_index;
 
     for (opcode_index = 0u;
         opcode_index != sizeof(opcodes) / sizeof(opcodes[0]);
@@ -46,7 +47,7 @@ static C_INT cli_sti_s48_test_80286_defaults(C_VOID)
         cli_sti_machine state;
         t_cpu before;
         t_cpu after;
-        type_unsigned_32 expected;
+        lib_u32 expected;
         C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80286,
             &state);
 
@@ -73,18 +74,18 @@ static C_INT cli_sti_s48_test_80286_defaults(C_VOID)
 
 static C_INT cli_sti_s48_test_80286_irq_contracts(C_VOID)
 {
-    static const type_unsigned_8 cli_nop[] = { 0xfau, 0x90u };
-    static const type_unsigned_8 sti_nop[] = { 0xfbu, 0x90u };
-    static const type_unsigned_8 hlt = 0xf4u;
-    const type_unsigned_32 vector = 0x20u;
-    const type_unsigned_16 offset = 0x0100u;
-    const type_unsigned_16 segment = 0u;
+    static const lib_u8 cli_nop[] = { 0xfau, 0x90u };
+    static const lib_u8 sti_nop[] = { 0xfbu, 0x90u };
+    static const lib_u8 hlt = 0xf4u;
+    const lib_u32 vector = 0x20u;
+    const lib_u16 offset = 0x0100u;
+    const lib_u16 segment = 0u;
     cli_sti_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_unsigned_16 frame_ip = 0u;
+    lib_u16 frame_ip = 0u;
     C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
 
     if (!failed) {
@@ -96,7 +97,7 @@ static C_INT cli_sti_s48_test_80286_irq_contracts(C_VOID)
     if (!failed) {
         state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        STD_MEMSET(&source, 0, sizeof(source));
+        lib_memory_set(&source, 0, sizeof(source));
         core_machine_pic_irq_source_bind(&source,
             &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -136,8 +137,8 @@ static C_INT cli_sti_s48_test_80286_irq_contracts(C_VOID)
     if (!failed) {
         state.machine->executor_cpu.data.eflags &= ~VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        STD_MEMSET(&source, 0, sizeof(source));
-        state.machine->shared_pic_master.data.icw2 = (type_unsigned_8)vector;
+        lib_memory_set(&source, 0, sizeof(source));
+        state.machine->shared_pic_master.data.icw2 = (lib_u8)vector;
         core_machine_pic_irq_source_bind(&source,
             &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -157,7 +158,7 @@ static C_INT cli_sti_s48_test_80286_irq_contracts(C_VOID)
         failed |= after.data.esi != before.data.esi;
         failed |= after.data.edi != before.data.edi;
         failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
-            (type_unsigned_16)(before.data.esp - 6u));
+            (lib_u16)(before.data.esp - 6u));
         failed |= !cli_sti_s48_sregs_preserved(&before, &after);
         failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
             VPIC_ISR_IRQ(0u));
@@ -165,7 +166,7 @@ static C_INT cli_sti_s48_test_80286_irq_contracts(C_VOID)
             VPIC_IRR_IRQ(0u));
         failed |= core_machine_memory_read_physical(
             &state.machine->executor_memory,
-            after.data.ss.base + (type_unsigned_16)after.data.esp,
+            after.data.ss.base + (lib_u16)after.data.esp,
             (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK;
         failed |= frame_ip != 2u;
     }
@@ -175,7 +176,7 @@ static C_INT cli_sti_s48_test_80286_irq_contracts(C_VOID)
 
 static C_INT cli_sti_s48_test_prefixes(C_VOID)
 {
-    static const type_unsigned_8 prefixes[][2] = {
+    static const lib_u8 prefixes[][2] = {
         { 0x66u, 0u },
         { 0x67u, 0u },
         { 0x66u, 0x67u }
@@ -185,15 +186,15 @@ static C_INT cli_sti_s48_test_prefixes(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
-        type_unsigned_8 prefix;
+        lib_u8 prefix;
 
         for (prefix = 0u; prefix != sizeof(prefixes) / sizeof(prefixes[0]);
             ++prefix) {
-            type_unsigned_8 opcode;
+            lib_u8 opcode;
 
             for (opcode = 0xfau; opcode <= 0xfbu; ++opcode) {
                 cli_sti_machine state;
@@ -202,8 +203,8 @@ static C_INT cli_sti_s48_test_prefixes(C_VOID)
                 type_status status;
                 t_cpu before;
                 t_cpu after;
-                type_unsigned_8 code[] = { prefixes[prefix][0], opcode, 0u };
-                type_unsigned_8 bytes = prefix == 2u ? 3u : 2u;
+                lib_u8 code[] = { prefixes[prefix][0], opcode, 0u };
+                lib_u8 bytes = prefix == 2u ? 3u : 2u;
                 C_INT failed = !cli_sti_prepare(legacy[profile], &state);
 
                 if (prefix == 2u) {
@@ -227,7 +228,7 @@ static C_INT cli_sti_s48_test_prefixes(C_VOID)
                     failed |= !diagnostic.first_fault.valid;
                     failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_UD);
-                    failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+                    failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
                 }
                 core_machine_destroy(state.machine);
                 if (failed)
@@ -240,25 +241,25 @@ static C_INT cli_sti_s48_test_prefixes(C_VOID)
 
 static C_INT cli_sti_s48_test_386_prefix_and_lock(C_VOID)
 {
-    static const type_unsigned_8 prefixes[][2] = {
+    static const lib_u8 prefixes[][2] = {
         { 0x66u, 0u },
         { 0x67u, 0u },
         { 0x66u, 0x67u }
     };
-    type_unsigned_8 attribute;
+    lib_u8 attribute;
 
     for (attribute = 0u; attribute != sizeof(prefixes) / sizeof(prefixes[0]);
         ++attribute) {
-        type_unsigned_8 opcode;
+        lib_u8 opcode;
 
         for (opcode = 0xfau; opcode <= 0xfbu; ++opcode) {
             cli_sti_machine state;
             core_machine_cpu_diagnostic diagnostic;
             t_cpu before;
             t_cpu after;
-            type_unsigned_8 code[] = { prefixes[attribute][0], opcode, 0u };
-            type_unsigned_8 bytes = attribute == 2u ? 3u : 2u;
-            type_unsigned_32 expected_flags;
+            lib_u8 code[] = { prefixes[attribute][0], opcode, 0u };
+            lib_u8 bytes = attribute == 2u ? 3u : 2u;
+            lib_u32 expected_flags;
             C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
@@ -289,7 +290,7 @@ static C_INT cli_sti_s48_test_386_prefix_and_lock(C_VOID)
         }
     }
     for (attribute = 0u; attribute != 4u; ++attribute) {
-        type_unsigned_8 opcode;
+        lib_u8 opcode;
 
         for (opcode = 0xfau; opcode <= 0xfbu; ++opcode) {
             cli_sti_machine state;
@@ -298,8 +299,8 @@ static C_INT cli_sti_s48_test_386_prefix_and_lock(C_VOID)
             type_status status;
             t_cpu before;
             t_cpu after;
-            type_unsigned_8 code[] = { 0xf0u, opcode, 0u, 0u };
-            type_unsigned_8 bytes = attribute == 0u ? 2u :
+            lib_u8 code[] = { 0xf0u, opcode, 0u, 0u };
+            lib_u8 bytes = attribute == 0u ? 2u :
                 attribute == 3u ? 4u : 3u;
             C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
@@ -329,7 +330,7 @@ static C_INT cli_sti_s48_test_386_prefix_and_lock(C_VOID)
                 failed |= !diagnostic.first_fault.valid;
                 failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
-                failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+                failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
             }
             core_machine_destroy(state.machine);
             if (failed)

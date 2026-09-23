@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/debug_interface.h"
@@ -15,28 +16,28 @@
 #define VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET 6000000u
 #define VM_HDC_HDD_BOOT_QUANTUM 128u
 
-static type_unsigned_32 vm_hdc_hdd_boot_partition_lba(const vm_machine *session)
+static lib_u32 vm_hdc_hdd_boot_partition_lba(const vm_machine *session)
 {
-    type_unsigned_8 entry[4];
+    lib_u8 entry[4];
     core_machine_media_result result;
 
-    if (session == STD_NULL || core_machine_media_read_bytes(session->media_registry,
+    if (session == LIB_NULL || core_machine_media_read_bytes(session->media_registry,
         VM_MACHINE_MEDIA_HDD_ID, VM_HDC_HDD_PARTITION_TABLE_OFFSET +
         VM_HDC_HDD_PARTITION_LBA_OFFSET, entry, sizeof(entry), &result) !=
         TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0u;
-    return (type_unsigned_32)entry[0u] | ((type_unsigned_32)entry[1u] << 8u) |
-        ((type_unsigned_32)entry[2u] << 16u) | ((type_unsigned_32)entry[3u] << 24u);
+    return (lib_u32)entry[0u] | ((lib_u32)entry[1u] << 8u) |
+        ((lib_u32)entry[2u] << 16u) | ((lib_u32)entry[3u] << 24u);
 }
 
 static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
 {
-    type_unsigned_8 boot_sector[VM_HDC_HDD_BOOT_BYTES];
-    type_unsigned_32 partition_lba;
-    type_unsigned_8 image[11];
+    lib_u8 boot_sector[VM_HDC_HDD_BOOT_BYTES];
+    lib_u32 partition_lba;
+    lib_u8 image[11];
     core_machine_media_result result;
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL ||
+    if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         core_machine_debug_read_memory(session->core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, boot_sector, sizeof(boot_sector)) !=
             TYPE_STATUS_OK) {
@@ -45,7 +46,7 @@ static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
     partition_lba = vm_hdc_hdd_boot_partition_lba(session);
     if (partition_lba == 0u) return 0;
     if (core_machine_media_read_bytes(session->media_registry, VM_MACHINE_MEDIA_HDD_ID,
-        (STD_SIZE_T)partition_lba * VM_HDC_HDD_BOOT_BYTES, image, sizeof(image),
+        (lib_size)partition_lba * VM_HDC_HDD_BOOT_BYTES, image, sizeof(image),
         &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0;
     /* The VBR is already executing when this boundary is observed. Its BPB
        contains boot-time writable fields, so compare its stable identity. */
@@ -63,11 +64,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     const core_machine_run_budget budget = {
         VM_HDC_HDD_BOOT_QUANTUM, 0u
     };
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     type_status run_status;
-    type_unsigned_32 executed = 0u;
+    lib_u32 executed = 0u;
     C_INT loaded = 0;
 
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
@@ -78,7 +79,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
      * This probe's distinct subject is HDD firmware handoff, so remove that
      * declared removable medium through the production owner and reset before
      * executing.  It is not a second profile or boot-order configuration. */
-    if (vm_machine_set_common_media(session, STD_NULL,
+    if (vm_machine_set_common_media(session, LIB_NULL,
             LIB_STORAGE_MEDIUM_OVERLAY) != TYPE_STATUS_OK ||
         vm_machine_reset(session) != TYPE_STATUS_OK) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {
@@ -115,14 +116,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     if (!loaded) {
-        type_unsigned_8 bytes[16] = {0};
-        type_unsigned_8 image_bytes[4] = {0};
+        lib_u8 bytes[16] = {0};
+        lib_u8 image_bytes[4] = {0};
         core_machine_media_result image_result;
 
         (C_VOID)core_machine_debug_read_memory(session->core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, bytes, sizeof(bytes));
         (C_VOID)core_machine_media_read_bytes(session->media_registry,
-            VM_MACHINE_MEDIA_HDD_ID, (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) *
+            VM_MACHINE_MEDIA_HDD_ID, (lib_size)vm_hdc_hdd_boot_partition_lba(session) *
             VM_HDC_HDD_BOOT_BYTES, image_bytes, sizeof(image_bytes), &image_result);
         STD_FPRINTF(STD_STDERR,
             "M5:T213:S3:HDC:SYSTEM-NO-HANDOFF count=%u command=%02X memory=%02X%02X%02X%02X expected=%02X%02X%02X%02X\n",

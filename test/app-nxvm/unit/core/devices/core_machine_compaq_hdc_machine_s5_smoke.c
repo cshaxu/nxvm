@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -6,15 +7,15 @@
 #include "app-nxvm/devices/port.h"
 
 typedef struct core_machine_compaq_hdc_machine_fdc_media {
-    type_unsigned_8 byte;
+    lib_u8 byte;
 } core_machine_compaq_hdc_machine_fdc_media;
 
 static core_machine_media_result core_machine_compaq_hdc_machine_fdc_query(C_VOID *opaque,
     core_machine_media_info *out_info)
 {
-    if (opaque == STD_NULL || out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
-    STD_MEMSET(out_info, 0, sizeof(*out_info));
-    out_info->present = TYPE_TRUE;
+    if (opaque == LIB_NULL || out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    lib_memory_set(out_info, 0, sizeof(*out_info));
+    out_info->present = LIB_TRUE;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
         CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN;
     out_info->geometry.cylinders = 1u;
@@ -26,33 +27,33 @@ static core_machine_media_result core_machine_compaq_hdc_machine_fdc_query(C_VOI
 }
 
 static core_machine_media_result core_machine_compaq_hdc_machine_fdc_read(C_VOID *opaque,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
 {
     core_machine_compaq_hdc_machine_fdc_media *media = opaque;
 
-    if (media == STD_NULL || buffer == STD_NULL || offset >= 512u || byte_count != 1u) {
+    if (media == LIB_NULL || buffer == LIB_NULL || offset >= 512u || byte_count != 1u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
-    *(type_unsigned_8 *)buffer = media->byte;
+    *(lib_u8 *)buffer = media->byte;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider core_machine_compaq_hdc_machine_fdc_provider = {
     core_machine_compaq_hdc_machine_fdc_query,
     core_machine_compaq_hdc_machine_fdc_read,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL
 };
 
 static core_machine_media_result core_machine_compaq_hdc_machine_hdc_query(C_VOID *opaque,
     core_machine_media_info *out_info)
 {
-    if (opaque == STD_NULL || out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
-    STD_MEMSET(out_info, 0, sizeof(*out_info));
-    out_info->present = TYPE_TRUE;
+    if (opaque == LIB_NULL || out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    lib_memory_set(out_info, 0, sizeof(*out_info));
+    out_info->present = LIB_TRUE;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN;
     out_info->geometry.cylinders = 1u;
     out_info->geometry.heads = 16u;
@@ -63,25 +64,25 @@ static core_machine_media_result core_machine_compaq_hdc_machine_hdc_query(C_VOI
 }
 
 static core_machine_media_result core_machine_compaq_hdc_machine_hdc_read(C_VOID *opaque,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
 {
-    type_unsigned_8 *sector = opaque;
+    lib_u8 *sector = opaque;
 
-    if (sector == STD_NULL || buffer == STD_NULL || offset != 0u || byte_count != 512u) {
+    if (sector == LIB_NULL || buffer == LIB_NULL || offset != 0u || byte_count != 512u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
-    STD_MEMCPY(buffer, sector, byte_count);
+    lib_memory_copy(buffer, sector, byte_count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider core_machine_compaq_hdc_machine_hdc_provider = {
     core_machine_compaq_hdc_machine_hdc_query,
     core_machine_compaq_hdc_machine_hdc_read,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL
 };
 
 C_INT main(C_VOID)
@@ -112,16 +113,16 @@ C_INT main(C_VOID)
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
-            .drive_address_port = 0x03f7u, .lba28_supported = TYPE_FALSE}
+            .drive_address_port = 0x03f7u, .lba28_supported = LIB_FALSE}
     };
     core_machine_compaq_hdc_machine_fdc_media fdc_media = {.byte = 0x5au};
-    type_unsigned_8 hdc_sector[512] = {0};
-    core_machine_media_registry *media = STD_NULL;
+    lib_u8 hdc_sector[512] = {0};
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology fdc_topology = {0};
     core_machine_hdc_topology hdc_topology = {0};
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 drive_address;
+    core_machine *machine = LIB_NULL;
+    lib_u32 drive_address;
     C_INT failed = 0;
 
     if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||

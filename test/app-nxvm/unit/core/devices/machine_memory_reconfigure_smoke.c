@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -10,23 +11,23 @@ typedef struct reset_probe {
 static C_VOID reset_probe_reset(C_VOID *opaque)
 {
     reset_probe *probe = (reset_probe *)opaque;
-    if (probe != STD_NULL) ++probe->reset_count;
+    if (probe != LIB_NULL) ++probe->reset_count;
 }
 
 static const core_machine_execution_provider reset_probe_provider = {
     reset_probe_reset,
-    STD_NULL
+    LIB_NULL
 };
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     reset_probe probe = { 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run_result;
     C_UCHAR value = 0xa5u;
     C_UCHAR observed = 0xffu;
-    STD_SIZE_T memory_bytes = 0u;
+    lib_size memory_bytes = 0u;
     C_INT failed = 0;
 
     failed |= test_core_machine_create_executor(2u * 1024u * 1024u, &machine) !=

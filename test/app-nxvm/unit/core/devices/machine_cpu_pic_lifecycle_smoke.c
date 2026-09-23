@@ -1,10 +1,11 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 
 static C_INT cpu_pic_binding_is_owned(const core_machine *machine)
 {
-    return machine == STD_NULL ||
+    return machine == LIB_NULL ||
         machine->executor_cpu_execution.cpu != &machine->executor_cpu ||
         machine->executor_cpu_execution.instructions !=
             &machine->executor_cpu_instructions ||
@@ -15,7 +16,7 @@ static C_INT cpu_pic_binding_is_owned(const core_machine *machine)
 C_INT main(C_VOID)
 {
     core_machine_config config = { .memory_bytes = 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = 0;
 
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
@@ -23,13 +24,13 @@ C_INT main(C_VOID)
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine);
-    if (machine != STD_NULL) {
+    if (machine != LIB_NULL) {
         machine->shared_pic_master.data.irr = 0xffu;
         machine->shared_pic_slave.data.irr = 0xffu;
     }
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine);
-    failed |= machine == STD_NULL || machine->shared_pic_master.data.irr != 0u ||
+    failed |= machine == LIB_NULL || machine->shared_pic_master.data.irr != 0u ||
         machine->shared_pic_slave.data.irr != 0u;
 
     core_machine_destroy(machine);

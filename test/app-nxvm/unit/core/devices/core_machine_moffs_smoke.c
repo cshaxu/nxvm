@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,12 +13,12 @@ static C_VOID moffs_reset(C_VOID *opaque)
 {
     moffs_machine *state = (moffs_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider moffs_provider = {
-    moffs_reset, STD_NULL
+    moffs_reset, LIB_NULL
 };
 
 static C_INT moffs_prepare(core_machine_cpu_profile profile, moffs_machine *state)
@@ -28,12 +29,12 @@ static C_INT moffs_prepare(core_machine_cpu_profile profile, moffs_machine *stat
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &moffs_provider, state, &state->machine);
 }
 
-static C_INT moffs_run(moffs_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
+static C_INT moffs_run(moffs_machine *state, const lib_u8 *code, lib_u8 bytes,
     t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -60,7 +61,7 @@ static C_VOID moffs_set_registers(moffs_machine *state)
 }
 
 static C_INT moffs_nonparticipants(const t_cpu *before, const t_cpu *after,
-    type_unsigned_8 opcode)
+    lib_u8 opcode)
 {
     return before->data.ecx == after->data.ecx &&
         before->data.edx == after->data.edx &&
@@ -77,9 +78,9 @@ static C_INT moffs_test_default(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
-    type_unsigned_8 profile;
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
+    lib_u8 profile;
+    lib_u8 opcode;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     {
@@ -90,16 +91,16 @@ static C_INT moffs_test_default(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            type_unsigned_8 code[] = { opcodes[opcode], 0x00u, 0x10u };
-            type_unsigned_32 image = opcodes[opcode] == 0xa0u || opcodes[opcode] == 0xa2u ?
+            lib_u8 code[] = { opcodes[opcode], 0x00u, 0x10u };
+            lib_u32 image = opcodes[opcode] == 0xa0u || opcodes[opcode] == 0xa2u ?
                 0x0000005au : 0x0000beefu;
-            type_unsigned_32 expected_eax;
+            lib_u32 expected_eax;
             C_INT failed;
 
-            STD_MEMSET(&state, 0, sizeof(state));
-            STD_MEMSET(&before, 0, sizeof(before));
-            STD_MEMSET(&after, 0, sizeof(after));
-            STD_MEMSET(&diagnostic, 0, sizeof(diagnostic));
+            lib_memory_set(&state, 0, sizeof(state));
+            lib_memory_set(&before, 0, sizeof(before));
+            lib_memory_set(&after, 0, sizeof(after));
+            lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
             status = TYPE_STATUS_INVALID_ARGUMENT;
             failed = !moffs_prepare(profiles[profile], &state);
             if (!failed)
@@ -141,14 +142,14 @@ static C_INT moffs_test_default(C_VOID)
 
 static C_INT moffs_test_386_attributes(C_VOID)
 {
-    static const type_unsigned_8 read32[] = { 0x66u,0x67u,0xa1u,0x00u,0x00u,0x01u,0x00u };
-    static const type_unsigned_8 write32[] = { 0x66u,0x67u,0xa3u,0x00u,0x00u,0x01u,0x00u };
-    static const type_unsigned_8 read8[] = { 0x66u,0x67u,0xa0u,0x00u,0x00u,0x01u,0x00u };
-    static const type_unsigned_8 write8[] = { 0x66u,0x67u,0xa2u,0x00u,0x00u,0x01u,0x00u };
-    const type_unsigned_8 *codes[] = { read32, write32, read8, write8 };
-    const type_unsigned_8 write[] = { 0u, 1u, 0u, 1u };
-    const type_unsigned_8 widths[] = { 4u, 4u, 1u, 1u };
-    type_unsigned_8 form;
+    static const lib_u8 read32[] = { 0x66u,0x67u,0xa1u,0x00u,0x00u,0x01u,0x00u };
+    static const lib_u8 write32[] = { 0x66u,0x67u,0xa3u,0x00u,0x00u,0x01u,0x00u };
+    static const lib_u8 read8[] = { 0x66u,0x67u,0xa0u,0x00u,0x00u,0x01u,0x00u };
+    static const lib_u8 write8[] = { 0x66u,0x67u,0xa2u,0x00u,0x00u,0x01u,0x00u };
+    const lib_u8 *codes[] = { read32, write32, read8, write8 };
+    const lib_u8 write[] = { 0u, 1u, 0u, 1u };
+    const lib_u8 widths[] = { 4u, 4u, 1u, 1u };
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
@@ -156,7 +157,7 @@ static C_INT moffs_test_386_attributes(C_VOID)
         t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic = {0};
         type_status status = TYPE_STATUS_INVALID_STATE;
-        type_unsigned_32 image = 0x1122335au;
+        lib_u32 image = 0x1122335au;
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
@@ -188,8 +189,8 @@ static C_INT moffs_test_386_attributes(C_VOID)
 
 static C_INT moffs_test_386_single_attributes(C_VOID)
 {
-    type_unsigned_8 attribute;
-    type_unsigned_8 opcode;
+    lib_u8 attribute;
+    lib_u8 opcode;
 
     for (attribute = 0u; attribute != 3u; ++attribute)
     for (opcode = 0xa0u; opcode != 0xa4u; ++opcode) {
@@ -198,13 +199,13 @@ static C_INT moffs_test_386_single_attributes(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_8 code[] = {0x66u,0x67u,opcode,0,0x80u,0,0};
-        const type_unsigned_8 bytes = attribute == 0u ? 4u :
+        lib_u8 code[] = {0x66u,0x67u,opcode,0,0x80u,0,0};
+        const lib_u8 bytes = attribute == 0u ? 4u :
             attribute == 1u ? 6u : 7u;
-        const type_unsigned_32 address = attribute == 0u ? 0x1000u : 0x8000u;
-        const type_unsigned_8 width = opcode == 0xa0u || opcode == 0xa2u ?
+        const lib_u32 address = attribute == 0u ? 0x1000u : 0x8000u;
+        const lib_u8 width = opcode == 0xa0u || opcode == 0xa2u ?
             1u : attribute == 1u ? 2u : 4u;
-        type_unsigned_32 image = 0x1122335au;
+        lib_u32 image = 0x1122335au;
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -257,11 +258,11 @@ static C_INT moffs_test_reject(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const type_unsigned_8 prefixes[] = { 0x66u, 0x67u };
-    static const type_unsigned_8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
-    type_unsigned_8 profile;
-    type_unsigned_8 prefix;
-    type_unsigned_8 opcode;
+    static const lib_u8 prefixes[] = { 0x66u, 0x67u };
+    static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
+    lib_u8 profile;
+    lib_u8 prefix;
+    lib_u8 opcode;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (prefix = 0u; prefix != sizeof(prefixes); ++prefix)
@@ -272,7 +273,7 @@ static C_INT moffs_test_reject(C_VOID)
         t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic = {0};
         type_status status = TYPE_STATUS_INVALID_STATE;
-        type_unsigned_8 code[] = { prefixes[prefix], opcodes[opcode], 0u, 0x10u };
+        lib_u8 code[] = { prefixes[prefix], opcodes[opcode], 0u, 0x10u };
         C_INT failed = !moffs_prepare(profiles[profile], &state);
 
         if (!failed) {
@@ -300,8 +301,8 @@ static C_INT moffs_test_reject(C_VOID)
 
 static C_INT moffs_test_lock(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
@@ -310,7 +311,7 @@ static C_INT moffs_test_lock(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_8 code[] = { 0xf0u, opcodes[opcode], 0u, 0x10u };
+        lib_u8 code[] = { 0xf0u, opcodes[opcode], 0u, 0x10u };
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -333,15 +334,15 @@ static C_INT moffs_test_lock(C_VOID)
 
 static C_INT moffs_test_segment_overrides(C_VOID)
 {
-    static const type_unsigned_8 codes[][4] = {
+    static const lib_u8 codes[][4] = {
         { 0xa0u, 0x10u, 0x00u, 0u },
         { 0x26u, 0xa0u, 0x10u, 0x00u },
         { 0x64u, 0xa0u, 0x10u, 0x00u },
         { 0x65u, 0xa0u, 0x10u, 0x00u }
     };
-    static const type_unsigned_8 values[] = { 0x11u, 0x22u, 0x33u, 0x44u };
-    static const type_unsigned_8 bytes[] = { 3u, 4u, 4u, 4u };
-    type_unsigned_8 form;
+    static const lib_u8 values[] = { 0x11u, 0x22u, 0x33u, 0x44u };
+    static const lib_u8 bytes[] = { 3u, 4u, 4u, 4u };
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(values); ++form)
     {
@@ -350,7 +351,7 @@ static C_INT moffs_test_segment_overrides(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_32 address = form == 0u ? 0x10u : (type_unsigned_32)form * 0x100u + 0x10u;
+        lib_u32 address = form == 0u ? 0x10u : (lib_u32)form * 0x100u + 0x10u;
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -377,15 +378,15 @@ static C_INT moffs_test_segment_overrides(C_VOID)
 
 static C_INT moffs_test_segment_writes(C_VOID)
 {
-    static const type_unsigned_8 codes[][4] = {
+    static const lib_u8 codes[][4] = {
         { 0xa2u, 0x10u, 0x00u, 0u },
         { 0x26u, 0xa3u, 0x10u, 0x00u },
         { 0x64u, 0xa2u, 0x10u, 0x00u },
         { 0x65u, 0xa3u, 0x10u, 0x00u }
     };
-    static const type_unsigned_8 bytes[] = { 3u, 4u, 4u, 4u };
-    static const type_unsigned_8 widths[] = { 1u, 2u, 1u, 2u };
-    type_unsigned_8 form;
+    static const lib_u8 bytes[] = { 3u, 4u, 4u, 4u };
+    static const lib_u8 widths[] = { 1u, 2u, 1u, 2u };
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(bytes); ++form)
     {
@@ -394,8 +395,8 @@ static C_INT moffs_test_segment_writes(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_32 image = 0u;
-        type_unsigned_32 address = form == 0u ? 0x10u : (type_unsigned_32)form * 0x100u + 0x10u;
+        lib_u32 image = 0u;
+        lib_u32 address = form == 0u ? 0x10u : (lib_u32)form * 0x100u + 0x10u;
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -415,27 +416,27 @@ static C_INT moffs_test_segment_writes(C_VOID)
 
 static C_INT moffs_test_protected_read_limit(C_VOID)
 {
-    static const type_unsigned_8 gdt_pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt_pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const lib_u8 gdt[] = {
         0, 0, 0, 0, 0, 0, 0, 0,
         0xffu, 0xffu, 0, 0x20u, 0, 0x9au, 0, 0,
         0x0fu, 0, 0, 0x30u, 0, 0x92u, 0, 0,
         0xffu, 0xffu, 0, 0x40u, 0, 0x92u, 0, 0
     };
-    static const type_unsigned_8 bootstrap[] = {
+    static const lib_u8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
         0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
         0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u,
         0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const type_unsigned_8 halt[] = { 0xf4u };
-    static const type_unsigned_8 read_code[] = { 0xa0u, 0x10u, 0x00u };
-    static const type_unsigned_8 write_code[] = { 0x66u, 0xa3u, 0x10u, 0x00u };
-    const type_unsigned_8 *codes[] = { read_code, write_code };
-    const type_unsigned_8 bytes[] = { sizeof(read_code), sizeof(write_code) };
-    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-    type_unsigned_8 form;
+    static const lib_u8 halt[] = { 0xf4u };
+    static const lib_u8 read_code[] = { 0xa0u, 0x10u, 0x00u };
+    static const lib_u8 write_code[] = { 0x66u, 0xa3u, 0x10u, 0x00u };
+    const lib_u8 *codes[] = { read_code, write_code };
+    const lib_u8 bytes[] = { sizeof(read_code), sizeof(write_code) };
+    const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
@@ -444,7 +445,7 @@ static C_INT moffs_test_protected_read_limit(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        type_unsigned_32 image = 0x11223344u;
+        lib_u32 image = 0x11223344u;
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
@@ -501,12 +502,12 @@ static C_INT moffs_test_protected_read_limit(C_VOID)
 
 static C_INT moffs_test_irq_no_shadow(C_VOID)
 {
-    static const type_unsigned_8 codes[][4] = {
+    static const lib_u8 codes[][4] = {
         { 0xa0u, 0x00u, 0x10u, 0x90u },
         { 0xa2u, 0x00u, 0x10u, 0x90u }
     };
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 form;
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
@@ -514,10 +515,10 @@ static C_INT moffs_test_irq_no_shadow(C_VOID)
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        type_unsigned_16 vector_offset = 0x0100u;
-        type_unsigned_16 vector_segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
-        type_unsigned_8 image = form == 0u ? 0x5au : 0u;
+        lib_u16 vector_offset = 0x0100u;
+        lib_u16 vector_segment = 0u;
+        lib_u16 frame_ip = 0u;
+        lib_u8 image = form == 0u ? 0x5au : 0u;
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
@@ -539,7 +540,7 @@ static C_INT moffs_test_irq_no_shadow(C_VOID)
         {
             moffs_set_registers(&state);
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave,
@@ -551,7 +552,7 @@ static C_INT moffs_test_irq_no_shadow(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    after.data.ss.base + (type_unsigned_16)after.data.esp,
+                    after.data.ss.base + (lib_u16)after.data.esp,
                     (type_virtual_address)&frame_ip, sizeof(frame_ip)) !=
                     TYPE_STATUS_OK || after.data.eip != 0x0101u || frame_ip != 3u ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,

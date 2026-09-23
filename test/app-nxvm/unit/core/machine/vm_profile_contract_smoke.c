@@ -1,6 +1,7 @@
+#include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"
 
-static const type_unsigned_32 vm_profile_contract_ids[] = {7u};
+static const lib_u32 vm_profile_contract_ids[] = {7u};
 
 static vm_profile_contract_values vm_profile_contract_values_create(C_VOID)
 {
@@ -11,7 +12,7 @@ static vm_profile_contract_values vm_profile_contract_values_create(C_VOID)
     values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
     values.enabled_devices = 1u;
     values.port_leaves[0] = (vm_profile_contract_port_leaf) {
-        1u, 0x20u, TYPE_TRUE, TYPE_TRUE};
+        1u, 0x20u, LIB_TRUE, LIB_TRUE};
     values.port_leaf_count = 1u;
     values.memory_windows[0] = (vm_profile_contract_window) {0u, 0xffu, 1u};
     values.memory_window_count = 1u;

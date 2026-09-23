@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,12 +13,12 @@ static C_VOID sign_extend_reset(C_VOID *opaque)
 {
     sign_extend_machine *state = (sign_extend_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider sign_extend_provider = {
-    sign_extend_reset, STD_NULL
+    sign_extend_reset, LIB_NULL
 };
 
 static C_INT sign_extend_prepare(core_machine_cpu_profile profile,
@@ -29,13 +30,13 @@ static C_INT sign_extend_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &sign_extend_provider, state, &state->machine);
 }
 
-static C_INT sign_extend_run(sign_extend_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT sign_extend_run(sign_extend_machine *state, const lib_u8 *code,
+    lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status)
 {
     core_machine_run_result result;
@@ -78,7 +79,7 @@ static C_INT sign_extend_state_equal(const t_cpu *before, const t_cpu *after)
 }
 
 static C_INT sign_extend_nonparticipants_equal(const t_cpu *before,
-    const t_cpu *after, type_unsigned_8 opcode)
+    const t_cpu *after, lib_u8 opcode)
 {
     return before->data.ecx == after->data.ecx &&
         before->data.ebx == after->data.ebx &&
@@ -99,10 +100,10 @@ static C_INT sign_extend_test_default(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 opcodes[] = { 0x98u, 0x99u };
-    type_unsigned_8 profile;
-    type_unsigned_8 opcode;
-    type_unsigned_8 sign;
+    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
+    lib_u8 profile;
+    lib_u8 opcode;
+    lib_u8 sign;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile)
@@ -116,15 +117,15 @@ static C_INT sign_extend_test_default(C_VOID)
                 t_cpu after;
                 core_machine_cpu_diagnostic diagnostic;
                 type_status status;
-                type_unsigned_8 code[] = { opcodes[opcode] };
-                type_unsigned_32 expected_eax;
-                type_unsigned_32 expected_edx;
+                lib_u8 code[] = { opcodes[opcode] };
+                lib_u32 expected_eax;
+                lib_u32 expected_edx;
                 C_INT failed;
 
-                STD_MEMSET(&state, 0, sizeof(state));
-                STD_MEMSET(&before, 0, sizeof(before));
-                STD_MEMSET(&after, 0, sizeof(after));
-                STD_MEMSET(&diagnostic, 0, sizeof(diagnostic));
+                lib_memory_set(&state, 0, sizeof(state));
+                lib_memory_set(&before, 0, sizeof(before));
+                lib_memory_set(&after, 0, sizeof(after));
+                lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
                 status = TYPE_STATUS_INVALID_ARGUMENT;
                 failed = !sign_extend_prepare(profiles[profile], &state);
                 if (!failed)
@@ -165,9 +166,9 @@ static C_INT sign_extend_test_default(C_VOID)
 
 static C_INT sign_extend_test_operand32(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0x98u, 0x99u };
-    type_unsigned_8 opcode;
-    type_unsigned_8 sign;
+    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
+    lib_u8 opcode;
+    lib_u8 sign;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
@@ -178,15 +179,15 @@ static C_INT sign_extend_test_operand32(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            type_unsigned_8 code[] = { 0x66u, opcodes[opcode] };
-            type_unsigned_32 expected_eax;
-            type_unsigned_32 expected_edx;
+            lib_u8 code[] = { 0x66u, opcodes[opcode] };
+            lib_u32 expected_eax;
+            lib_u32 expected_edx;
             C_INT failed;
 
-            STD_MEMSET(&state, 0, sizeof(state));
-            STD_MEMSET(&before, 0, sizeof(before));
-            STD_MEMSET(&after, 0, sizeof(after));
-            STD_MEMSET(&diagnostic, 0, sizeof(diagnostic));
+            lib_memory_set(&state, 0, sizeof(state));
+            lib_memory_set(&before, 0, sizeof(before));
+            lib_memory_set(&after, 0, sizeof(after));
+            lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
             status = TYPE_STATUS_INVALID_ARGUMENT;
             failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
@@ -227,8 +228,8 @@ static C_INT sign_extend_test_operand32(C_VOID)
 
 static C_INT sign_extend_test_address_prefix(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0x98u, 0x99u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
@@ -237,13 +238,13 @@ static C_INT sign_extend_test_address_prefix(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_8 code[] = { 0x67u, opcodes[opcode] };
+        lib_u8 code[] = { 0x67u, opcodes[opcode] };
         C_INT failed;
 
-        STD_MEMSET(&state, 0, sizeof(state));
-        STD_MEMSET(&before, 0, sizeof(before));
-        STD_MEMSET(&after, 0, sizeof(after));
-        STD_MEMSET(&diagnostic, 0, sizeof(diagnostic));
+        lib_memory_set(&state, 0, sizeof(state));
+        lib_memory_set(&before, 0, sizeof(before));
+        lib_memory_set(&after, 0, sizeof(after));
+        lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
         status = TYPE_STATUS_INVALID_ARGUMENT;
         failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed)
@@ -280,11 +281,11 @@ static C_INT sign_extend_test_prefix_reject(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const type_unsigned_8 prefixes[] = { 0x66u, 0x67u };
-    static const type_unsigned_8 opcodes[] = { 0x98u, 0x99u };
-    type_unsigned_8 profile;
-    type_unsigned_8 prefix;
-    type_unsigned_8 opcode;
+    static const lib_u8 prefixes[] = { 0x66u, 0x67u };
+    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
+    lib_u8 profile;
+    lib_u8 prefix;
+    lib_u8 opcode;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile)
@@ -298,13 +299,13 @@ static C_INT sign_extend_test_prefix_reject(C_VOID)
                 t_cpu after;
                 core_machine_cpu_diagnostic diagnostic;
                 type_status status;
-                type_unsigned_8 code[] = { prefixes[prefix], opcodes[opcode] };
+                lib_u8 code[] = { prefixes[prefix], opcodes[opcode] };
                 C_INT failed;
 
-                STD_MEMSET(&state, 0, sizeof(state));
-                STD_MEMSET(&before, 0, sizeof(before));
-                STD_MEMSET(&after, 0, sizeof(after));
-                STD_MEMSET(&diagnostic, 0, sizeof(diagnostic));
+                lib_memory_set(&state, 0, sizeof(state));
+                lib_memory_set(&before, 0, sizeof(before));
+                lib_memory_set(&after, 0, sizeof(after));
+                lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
                 status = TYPE_STATUS_INVALID_ARGUMENT;
                 failed = !sign_extend_prepare(profiles[profile], &state);
                 if (!failed)
@@ -335,9 +336,9 @@ static C_INT sign_extend_test_prefix_reject(C_VOID)
 
 static C_INT sign_extend_test_irq(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0x98u, 0x99u };
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
@@ -345,16 +346,16 @@ static C_INT sign_extend_test_irq(C_VOID)
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        type_unsigned_8 code[] = { opcodes[opcode], 0x90u };
-        type_unsigned_16 offset = 0x0100u;
-        type_unsigned_16 segment = 0u;
-        type_unsigned_16 frame = 0u;
+        lib_u8 code[] = { opcodes[opcode], 0x90u };
+        lib_u16 offset = 0x0100u;
+        lib_u16 segment = 0u;
+        lib_u16 frame = 0u;
         C_INT failed;
 
-        STD_MEMSET(&state, 0, sizeof(state));
-        STD_MEMSET(&source, 0, sizeof(source));
-        STD_MEMSET(&result, 0, sizeof(result));
-        STD_MEMSET(&after, 0, sizeof(after));
+        lib_memory_set(&state, 0, sizeof(state));
+        lib_memory_set(&source, 0, sizeof(source));
+        lib_memory_set(&result, 0, sizeof(result));
+        lib_memory_set(&after, 0, sizeof(after));
         failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed)
         {
@@ -384,7 +385,7 @@ static C_INT sign_extend_test_irq(C_VOID)
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(
                 &state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 (type_virtual_address)&frame, 2u) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u ||
                 frame != 1u ||
@@ -404,8 +405,8 @@ static C_INT sign_extend_test_irq(C_VOID)
 
 static C_INT sign_extend_test_lock_diagnostic(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0x98u, 0x99u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
@@ -414,13 +415,13 @@ static C_INT sign_extend_test_lock_diagnostic(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_8 code[] = { 0xf0u, opcodes[opcode] };
+        lib_u8 code[] = { 0xf0u, opcodes[opcode] };
         C_INT failed;
 
-        STD_MEMSET(&state, 0, sizeof(state));
-        STD_MEMSET(&before, 0, sizeof(before));
-        STD_MEMSET(&after, 0, sizeof(after));
-        STD_MEMSET(&diagnostic, 0, sizeof(diagnostic));
+        lib_memory_set(&state, 0, sizeof(state));
+        lib_memory_set(&before, 0, sizeof(before));
+        lib_memory_set(&after, 0, sizeof(after));
+        lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
         status = TYPE_STATUS_INVALID_ARGUMENT;
         failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed)

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <assert.h>
@@ -52,7 +53,7 @@ static composition_fixture fixture;
 
 static C_VOID composition_fixture_reset(composition_failure failure)
 {
-    STD_MEMSET(&fixture, 0, sizeof(fixture));
+    lib_memory_set(&fixture, 0, sizeof(fixture));
     fixture.failure = failure;
     fixture.shutdown_status = LIB_STATUS_OK;
 }
@@ -67,7 +68,7 @@ static C_INT composition_fixture_clean(C_VOID)
 type_status vm_app_configure_machine(const vm_session_request *request,
     vm_machine_config *out_config)
 {
-    if (request == STD_NULL || out_config == STD_NULL ||
+    if (request == LIB_NULL || out_config == LIB_NULL ||
         fixture.failure == COMPOSITION_FAILURE_CONFIGURE) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_config = (vm_machine_config){0};
     return TYPE_STATUS_OK;
@@ -76,7 +77,7 @@ type_status vm_app_configure_machine(const vm_session_request *request,
 type_status vm_machine_create(const vm_machine_config *config,
     vm_machine **out_machine)
 {
-    if (config == STD_NULL || out_machine == STD_NULL || fixture.machine.live)
+    if (config == LIB_NULL || out_machine == LIB_NULL || fixture.machine.live)
         return TYPE_STATUS_INVALID_STATE;
     if (fixture.failure == COMPOSITION_FAILURE_MACHINE_CREATE)
         return TYPE_STATUS_NO_MEMORY;
@@ -87,7 +88,7 @@ type_status vm_machine_create(const vm_machine_config *config,
 
 C_VOID vm_machine_destroy(vm_machine *machine)
 {
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     ++fixture.machine_destroy_count;
     machine->bound = LIB_NULL;
     machine->live = LIB_FALSE;
@@ -96,7 +97,7 @@ C_VOID vm_machine_destroy(vm_machine *machine)
 type_status vm_machine_describe_common_driver(vm_machine *machine,
     common_machine_driver *out_driver)
 {
-    if (machine == STD_NULL || out_driver == LIB_NULL || !machine->live ||
+    if (machine == LIB_NULL || out_driver == LIB_NULL || !machine->live ||
         fixture.failure == COMPOSITION_FAILURE_DRIVER_DESCRIBE) return TYPE_STATUS_INVALID_STATE;
     *out_driver = (common_machine_driver){0};
     return TYPE_STATUS_OK;
@@ -105,7 +106,7 @@ type_status vm_machine_describe_common_driver(vm_machine *machine,
 type_status vm_machine_bind_common_machine(vm_machine *machine,
     common_machine *common_machine)
 {
-    if (machine == STD_NULL || !machine->live) return TYPE_STATUS_INVALID_STATE;
+    if (machine == LIB_NULL || !machine->live) return TYPE_STATUS_INVALID_STATE;
     if (common_machine != LIB_NULL && fixture.failure == COMPOSITION_FAILURE_MACHINE_BIND)
         return TYPE_STATUS_INVALID_STATE;
     machine->bound = common_machine;
@@ -185,7 +186,7 @@ C_INT common_session_enqueue_runtime_completed(common_session *session,
     (C_VOID)session;
     (C_VOID)state;
     (C_VOID)generation;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 C_INT common_session_enqueue_frame_completed(common_session *session,
@@ -195,7 +196,7 @@ C_INT common_session_enqueue_frame_completed(common_session *session,
     (C_VOID)sequence;
     (C_VOID)graphics;
     (C_VOID)generation;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 lib_status common_ui_create(common_ui **out_ui, const common_ui_options *options)
@@ -218,24 +219,24 @@ lib_status common_ui_destroy(common_ui *ui)
 static C_INT composition_machine_failure_recovers(composition_failure failure,
     type_status expected)
 {
-    vm_app *app = STD_NULL;
+    vm_app *app = LIB_NULL;
     vm_session_request request = {0};
 
     composition_fixture_reset(failure);
     if (vm_app_create(&app) != TYPE_STATUS_OK ||
         vm_app_compose_machine(app, &request) != expected ||
-        vm_app_machine(app) != STD_NULL || vm_app_common_machine(app) != LIB_NULL ||
+        vm_app_machine(app) != LIB_NULL || vm_app_common_machine(app) != LIB_NULL ||
         !composition_fixture_clean()) return 0;
     fixture.failure = COMPOSITION_FAILURE_NONE;
     if (vm_app_compose_machine(app, &request) != TYPE_STATUS_OK ||
-        vm_app_machine(app) == STD_NULL || vm_app_common_machine(app) == LIB_NULL) return 0;
+        vm_app_machine(app) == LIB_NULL || vm_app_common_machine(app) == LIB_NULL) return 0;
     vm_app_destroy(app);
     return composition_fixture_clean();
 }
 
 static C_INT composition_control_failure_recovers(C_VOID)
 {
-    vm_app *app = STD_NULL;
+    vm_app *app = LIB_NULL;
     vm_session_request request = {0};
     common_session_options options = {0};
 
@@ -254,7 +255,7 @@ static C_INT composition_control_failure_recovers(C_VOID)
 
 static C_INT composition_ui_failure_recovers(composition_failure failure)
 {
-    vm_app *app = STD_NULL;
+    vm_app *app = LIB_NULL;
     vm_session_request request = {0};
     common_session_options session_options = {0};
     common_ui_options ui_options = {0};
@@ -276,7 +277,7 @@ static C_INT composition_ui_failure_recovers(composition_failure failure)
 
 static C_INT composition_destroy_failure_recovers(C_VOID)
 {
-    vm_app *app = STD_NULL;
+    vm_app *app = LIB_NULL;
     vm_session_request request = {0};
     common_session_options session_options = {0};
     common_ui_options ui_options = {0};
@@ -307,7 +308,7 @@ C_INT main(C_VOID)
         { COMPOSITION_FAILURE_COMMON_MACHINE_CREATE, TYPE_STATUS_INVALID_ARGUMENT },
         { COMPOSITION_FAILURE_MACHINE_BIND, TYPE_STATUS_INVALID_STATE }
     };
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < sizeof(machine_failures) / sizeof(machine_failures[0u]);
         ++index) {

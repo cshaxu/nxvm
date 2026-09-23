@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -53,12 +54,12 @@ static C_INT plan_default_and_copy(C_VOID)
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
-    core_machine_plan *plan = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
     core_machine_timing_declaration temporary;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_timing_declaration declaration;
     core_machine_timing_disposition disposition;
-    STD_SIZE_T index;
+    lib_size index;
     C_INT failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
@@ -79,7 +80,7 @@ static C_INT plan_default_and_copy(C_VOID)
         plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT];
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT] = temporary;
     failed |= core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK ||
-        machine == STD_NULL;
+        machine == LIB_NULL;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     failed |= !failed && core_machine_get_timing_disposition(machine,
@@ -96,51 +97,51 @@ static C_INT plan_default_and_copy(C_VOID)
 
 static C_INT plan_rejects_incomplete_or_unavailable(C_VOID)
 {
-    core_machine_plan *plan = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(type_virtual_address)1u;
-    STD_SIZE_T index;
+    lib_size index;
     C_INT failed = 0;
 
-    failed |= core_machine_plan_create(STD_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
     --plan->declaration_count;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(STD_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
     plan->declarations[1].capability = plan->declarations[0].capability;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(STD_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(STD_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(STD_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC].seam =
         CORE_MACHINE_TIMING_SEAM_TRANSACTION;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
         const core_machine_timing_capability capability =
             (core_machine_timing_capability)index;
 
         core_machine_plan_destroy(plan);
-        failed |= core_machine_plan_create(STD_NULL, &plan) != TYPE_STATUS_OK;
+        failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
         machine = (core_machine *)(type_virtual_address)1u;
         plan->declarations[index].disposition =
             plan_capability_is_non_guest_time(capability) ?
             CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK :
             CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
         failed |= core_machine_create_from_plan(plan, &machine) !=
-            TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+            TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     }
     core_machine_plan_destroy(plan);
     return failed;
@@ -150,20 +151,20 @@ static C_INT plan_rejects_topology_before_publication(C_VOID)
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
-    core_machine_plan *plan = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(type_virtual_address)1u;
     C_INT failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
-    plan->topology.fdc_present = TYPE_TRUE;
+    plan->topology.fdc_present = LIB_TRUE;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
     plan->topology.absent_memory_count = 1u;
     plan->topology.absent_memory[0].physical_start = 0x00100000u;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     return failed;
 }
@@ -172,14 +173,14 @@ static C_INT plan_rejects_invalid_transaction_contract_before_publication(C_VOID
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
-    core_machine_plan *plan = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(type_virtual_address)1u;
     C_INT failed = 0;
 
     configuration.transaction_contract.external_cycle_timing.page_bytes = 3u;
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     return failed;
 }
@@ -195,8 +196,8 @@ static C_INT plan_controller_timing_rules_are_copied_and_validated(C_VOID)
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK
     };
-    core_machine_plan *plan = STD_NULL;
-    core_machine *machine = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_timing_disposition disposition;
     C_INT failed = 0;
 
@@ -234,7 +235,7 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK
     };
-    core_machine_plan *plan = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(type_virtual_address)1u;
     C_INT failed = 0;
 
@@ -242,7 +243,7 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != TYPE_STATUS_OK;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL);
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
     configuration.clock_plan.pit = (core_machine_clock_ratio) {1u, 4u, 0u};
@@ -252,7 +253,7 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
         &rules) != TYPE_STATUS_OK;
     machine = (core_machine *)(type_virtual_address)1u;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL);
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
     rules.dma_clock = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
@@ -261,7 +262,7 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
         &rules) != TYPE_STATUS_OK;
     machine = (core_machine *)(type_virtual_address)1u;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL);
+        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     return failed;
 }
@@ -275,11 +276,11 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
         .dma_controller_count = 1u
     };
     core_machine_plan_topology topology = {0};
-    core_machine_plan *plan = STD_NULL;
-    core_machine *machine = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = 0;
 
-    topology.dma_present = TYPE_TRUE;
+    topology.dma_present = LIB_TRUE;
     topology.dma = (core_machine_dma_wiring) {
         CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND, 1u, 0u};
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
@@ -319,11 +320,11 @@ static C_INT plan_l2_pit_deadline_remains_schedulable(C_VOID)
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .clock_plan.pit = {1u, 1u, 0u}
     };
-    core_machine_plan *plan = STD_NULL;
-    core_machine *machine = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_time_observation observation;
     core_machine_timing_disposition disposition;
-    type_bool advanced = TYPE_FALSE;
+    type_bool advanced = LIB_FALSE;
     C_INT failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
@@ -363,11 +364,11 @@ static C_INT plan_source_dma_deadline_is_schedulable(C_VOID)
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .clock_plan.dma = {3u, 8u, 0u}
     };
-    core_machine_plan *plan = STD_NULL;
-    core_machine *machine = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
     core_machine_time_observation observation;
-    type_bool advanced = TYPE_FALSE;
+    type_bool advanced = LIB_FALSE;
     C_INT failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
@@ -376,7 +377,7 @@ static C_INT plan_source_dma_deadline_is_schedulable(C_VOID)
     failed |= !failed && core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_dma_bind_channel(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u, &provider,
-        STD_NULL, &binding) != TYPE_STATUS_OK;
+        LIB_NULL, &binding) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;

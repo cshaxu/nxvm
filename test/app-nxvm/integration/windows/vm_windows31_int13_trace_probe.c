@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -13,16 +14,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
     const core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session;
     core_machine_run_result result;
-    vm_machine *session = STD_NULL;
-    type_unsigned_16 int13[2] = {0};
-    type_unsigned_32 int13_linear = 0u;
-    type_unsigned_32 instruction;
-    type_unsigned_8 active_ah = 0u;
-    type_unsigned_8 active_dl = 0u;
-    type_unsigned_8 opcode;
-    type_unsigned_32 read_count = 0u;
-    type_unsigned_32 hdd_calls = 0u;
-    type_unsigned_32 hdd_returns = 0u;
+    vm_machine *session = LIB_NULL;
+    lib_u16 int13[2] = {0};
+    lib_u32 int13_linear = 0u;
+    lib_u32 instruction;
+    lib_u8 active_ah = 0u;
+    lib_u8 active_dl = 0u;
+    lib_u8 opcode;
+    lib_u32 read_count = 0u;
+    lib_u32 hdd_calls = 0u;
+    lib_u32 hdd_returns = 0u;
     C_INT geometry_ok = 0;
     C_INT int13_ready = 0;
     C_INT active = 0;
@@ -38,13 +39,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (!int13_ready && core_machine_memory_read(session->core_machine,
                 0x004cu, int13, sizeof(int13)) == TYPE_STATUS_OK &&
             int13[0] != 0u && int13[1] != 0u) {
-            int13_linear = (type_unsigned_32)int13[1] * 16u + int13[0];
+            int13_linear = (lib_u32)int13[1] * 16u + int13[0];
             int13_ready = 1;
         }
         if (int13_ready && !active && core_machine_linear_pc(session->core_machine) ==
             int13_linear) {
-            active_ah = (type_unsigned_8)(cpu->data.eax >> 8u);
-            active_dl = (type_unsigned_8)cpu->data.edx;
+            active_ah = (lib_u8)(cpu->data.eax >> 8u);
+            active_dl = (lib_u8)cpu->data.edx;
             active = active_dl >= 0x80u;
             if (active) ++hdd_calls;
         }
@@ -71,11 +72,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
             ++hdd_returns;
             STD_PRINTF("M5:T287:S18:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
                 "cx=%04X dx=%04X\n", active_ah, active_dl,
-                cpu->data.eflags & 1u, (type_unsigned_16)cpu->data.eax,
-                (type_unsigned_16)cpu->data.ecx, (type_unsigned_16)cpu->data.edx);
+                cpu->data.eflags & 1u, (lib_u16)cpu->data.eax,
+                (lib_u16)cpu->data.ecx, (lib_u16)cpu->data.edx);
             if (active_ah == 0x08u && (cpu->data.eflags & 1u) == 0u &&
-                ((type_unsigned_16)cpu->data.ecx & 0x003fu) != 0u &&
-                (type_unsigned_8)(cpu->data.edx >> 8u) != 0u) {
+                ((lib_u16)cpu->data.ecx & 0x003fu) != 0u &&
+                (lib_u8)(cpu->data.edx >> 8u) != 0u) {
                 geometry_ok = 1;
             }
             if (active_ah == 0x02u && (cpu->data.eflags & 1u) == 0u) {

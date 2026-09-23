@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -11,9 +12,9 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u,
             0x0du, 0x02u}
     };
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
-    type_unsigned_8 scan_set = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
+    lib_u8 scan_set = 0u;
     core_machine_speaker_observation speaker;
     C_INT failed = 0;
 
@@ -100,9 +101,9 @@ static C_INT core_machine_xt_ppi_does_not_change_at_8042(C_VOID)
     const core_machine_config configuration = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
     };
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
-    type_unsigned_8 scan_set = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
+    lib_u8 scan_set = 0u;
     C_INT failed = 0;
 
     failed |= core_machine_create(&configuration, &machine) != TYPE_STATUS_OK;
@@ -125,8 +126,8 @@ static C_INT core_machine_xt_ppi_parity_nmi_path(C_VOID)
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
     };
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
     C_INT failed = 0;
 
     failed |= core_machine_create(&configuration, &machine) != TYPE_STATUS_OK;
@@ -140,7 +141,7 @@ static C_INT core_machine_xt_ppi_parity_nmi_path(C_VOID)
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x30u) !=
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_set_xt_ppi_fault_input(machine,
-        CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY, TYPE_TRUE) != TYPE_STATUS_OK;
+        CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY, LIB_TRUE) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_bus_read(machine, 0x0062u, &value) !=
         TYPE_STATUS_OK;
     failed |= !failed && value != 0x80u;
@@ -154,16 +155,16 @@ static C_INT core_machine_xt_ppi_parity_nmi_path(C_VOID)
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x30u) !=
         TYPE_STATUS_OK;
-    failed |= !failed && core_machine_set_nmi_mask(machine, TYPE_TRUE) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_set_nmi_mask(machine, LIB_TRUE) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_set_xt_ppi_fault_input(machine,
-        CORE_MACHINE_XT_PPI_FAULT_IO_CHECK, TYPE_TRUE) != TYPE_STATUS_OK;
+        CORE_MACHINE_XT_PPI_FAULT_IO_CHECK, LIB_TRUE) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_bus_read(machine, 0x0062u, &value) !=
         TYPE_STATUS_OK;
     failed |= !failed && value != 0x40u;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x10u) !=
         TYPE_STATUS_OK;
     failed |= !failed && machine->executor_cpu.data.flagNMI;
-    failed |= !failed && core_machine_set_nmi_mask(machine, TYPE_FALSE) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_set_nmi_mask(machine, LIB_FALSE) != TYPE_STATUS_OK;
     failed |= !failed && !machine->executor_cpu.data.flagNMI;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
@@ -183,10 +184,10 @@ static C_INT core_machine_xt_keyboard_reset_bat_path(C_VOID)
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_time_observation time_observation;
-    type_unsigned_32 value = 0u;
-    const type_unsigned_8 full_fifo[16] = {
+    lib_u32 value = 0u;
+    const lib_u8 full_fifo[16] = {
         0x10u, 0x11u, 0x12u, 0x13u, 0x14u, 0x15u, 0x16u, 0x17u,
         0x18u, 0x19u, 0x1au, 0x1bu, 0x1cu, 0x1du, 0x1eu, 0x1fu
     };

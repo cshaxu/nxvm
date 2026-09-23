@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -8,12 +9,12 @@ typedef struct fs_gs_machine { core_machine *machine; } fs_gs_machine;
 static C_VOID fs_gs_reset(C_VOID *opaque)
 {
     fs_gs_machine *state = (fs_gs_machine *)opaque;
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider fs_gs_provider = {
-    fs_gs_reset, STD_NULL
+    fs_gs_reset, LIB_NULL
 };
 
 static C_INT fs_gs_prepare(core_machine_cpu_profile profile, fs_gs_machine *state)
@@ -23,12 +24,12 @@ static C_INT fs_gs_prepare(core_machine_cpu_profile profile, fs_gs_machine *stat
         .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &fs_gs_provider, state, &state->machine);
 }
 
-static C_INT fs_gs_run(fs_gs_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
+static C_INT fs_gs_run(fs_gs_machine *state, const lib_u8 *code, lib_u8 bytes,
     t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -44,19 +45,19 @@ static C_INT fs_gs_run(fs_gs_machine *state, const type_unsigned_8 *code, type_u
 
 static C_INT fs_gs_test_real(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xa0u, 0xa1u, 0xa8u, 0xa9u };
-    type_unsigned_8 opcode;
-    type_unsigned_8 size;
+    static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa8u, 0xa9u };
+    lib_u8 opcode;
+    lib_u8 size;
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
     for (size = 0u; size != 2u; ++size) {
         fs_gs_machine state;
         core_machine_cpu_diagnostic diagnostic;
         t_cpu after;
         type_status status;
-        type_unsigned_8 code[] = { 0x0fu, opcodes[opcode], 0u };
-        type_unsigned_32 image = 0u;
-        type_unsigned_32 before_esp = 0x8000u;
-        type_unsigned_16 selector = opcode < 2u ? 0x1234u : 0x5678u;
+        lib_u8 code[] = { 0x0fu, opcodes[opcode], 0u };
+        lib_u32 image = 0u;
+        lib_u32 before_esp = 0x8000u;
+        lib_u16 selector = opcode < 2u ? 0x1234u : 0x5678u;
         C_INT pop = (opcodes[opcode] & 1u) != 0u;
         C_INT failed = !fs_gs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed && size) {
@@ -84,7 +85,7 @@ static C_INT fs_gs_test_real(C_VOID)
             if (!pop)
                 failed |= core_machine_memory_read(state.machine, after.data.ss.base + after.data.esp,
                     &image, size ? 4u : 2u) != TYPE_STATUS_OK ||
-                    (size ? image != (type_unsigned_32)selector : (image & 0xffffu) != selector);
+                    (size ? image != (lib_u32)selector : (image & 0xffffu) != selector);
             else if (opcode < 2u) failed |= after.data.fs.selector != selector;
             else failed |= after.data.gs.selector != selector;
         }
@@ -97,9 +98,9 @@ static C_INT fs_gs_test_real(C_VOID)
 
 static C_INT fs_gs_test_80286_reject(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xa0u, 0xa1u, 0xa8u, 0xa9u };
-    type_unsigned_8 opcode;
-    type_unsigned_8 size;
+    static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa8u, 0xa9u };
+    lib_u8 opcode;
+    lib_u8 size;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (size = 0u; size != 2u; ++size) {
@@ -108,7 +109,7 @@ static C_INT fs_gs_test_80286_reject(C_VOID)
             t_cpu before;
             t_cpu after;
             type_status status;
-            type_unsigned_8 code[] = { 0x0fu, opcodes[opcode], 0u };
+            lib_u8 code[] = { 0x0fu, opcodes[opcode], 0u };
             C_INT failed = !fs_gs_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
 
             if (!failed && size) {
@@ -143,17 +144,17 @@ static C_INT fs_gs_test_80286_reject(C_VOID)
 
 static C_INT fs_gs_prepare_protected(fs_gs_machine *state)
 {
-    static const type_unsigned_8 pointer[] = { 0x1fu,0,0,0x03u,0,0 };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = { 0x1fu,0,0,0x03u,0,0 };
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const type_unsigned_8 bootstrap[] = {
+    static const lib_u8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
         0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const type_unsigned_8 halt[] = { 0xf4u };
+    static const lib_u8 halt[] = { 0xf4u };
     core_machine_run_result result;
     return fs_gs_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
         core_machine_memory_write(state->machine, 0x0100u, pointer, sizeof(pointer)) == TYPE_STATUS_OK &&
@@ -166,19 +167,19 @@ static C_INT fs_gs_prepare_protected(fs_gs_machine *state)
 
 static C_INT fs_gs_test_protected_pop(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xa1u, 0xa9u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xa1u, 0xa9u };
+    lib_u8 opcode;
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         fs_gs_machine state;
         core_machine_run_result result;
         t_cpu after;
-        type_unsigned_16 selector = 0x0010u;
+        lib_u16 selector = 0x0010u;
         C_INT failed = !fs_gs_prepare_protected(&state);
         if (!failed) {
             state.machine->executor_cpu.data.fs.selector = 0x1111u;
             state.machine->executor_cpu.data.gs.selector = 0x2222u;
             failed |= core_machine_memory_write(state.machine, 0xc000u, &selector, 2u) != TYPE_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x2000u, (type_unsigned_8[]){0x0fu,opcodes[opcode]}, 2u) != TYPE_STATUS_OK;
+                core_machine_memory_write(state.machine, 0x2000u, (lib_u8[]){0x0fu,opcodes[opcode]}, 2u) != TYPE_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine, (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET;
@@ -194,15 +195,15 @@ static C_INT fs_gs_test_protected_pop(C_VOID)
 
 static C_INT fs_gs_test_pop_stack_fault(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xa1u, 0xa9u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xa1u, 0xa9u };
+    lib_u8 opcode;
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         fs_gs_machine state;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
         t_cpu after;
-        type_unsigned_16 before_selector;
-        type_unsigned_32 before_flags;
+        lib_u16 before_selector;
+        lib_u32 before_flags;
         C_INT failed = !fs_gs_prepare_protected(&state);
         if (!failed) {
             state.machine->executor_cpu.data.ss.limit = 0x7fffu;
@@ -214,7 +215,7 @@ static C_INT fs_gs_test_pop_stack_fault(C_VOID)
                 state.machine->executor_cpu.data.gs.selector;
             before_flags = state.machine->executor_cpu.data.eflags;
             failed |= core_machine_memory_write(state.machine, 0x2000u,
-                    (type_unsigned_8[]){0x0fu,opcodes[opcode]}, 2u) != TYPE_STATUS_OK;
+                    (lib_u8[]){0x0fu,opcodes[opcode]}, 2u) != TYPE_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
                     &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||

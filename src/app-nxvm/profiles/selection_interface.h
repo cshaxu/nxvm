@@ -1,5 +1,6 @@
 #ifndef VM_PROFILE_SELECTION_INTERFACE_H
 #define VM_PROFILE_SELECTION_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -33,7 +34,7 @@ typedef enum vm_machine_floppy_format {
 
 typedef struct vm_machine_config {
     vm_machine_profile_kind profile_kind;
-    STD_SIZE_T memory_bytes;
+    lib_size memory_bytes;
     const C_CHAR *floppy_image[VM_MACHINE_FLOPPY_SLOT_COUNT];
     const C_CHAR *fixed_disk_image[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
     lib_storage_medium_mode floppy_mode[VM_MACHINE_FLOPPY_SLOT_COUNT];
@@ -41,18 +42,18 @@ typedef struct vm_machine_config {
     const C_CHAR *cmos_seed;
     const C_CHAR *font_path;
     const C_CHAR *bios_path[2];
-    STD_SIZE_T bios_count;
+    lib_size bios_count;
     const C_CHAR *video_path;
     vm_machine_floppy_format floppy_format;
     C_INT create_fdd;
-    type_unsigned_16 create_hdd_cylinders;
+    lib_u16 create_hdd_cylinders;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
 } vm_machine_config;
 
 typedef struct vm_machine_asset_bytes {
-    const type_unsigned_8 *data;
-    STD_SIZE_T bytes;
+    const lib_u8 *data;
+    lib_size bytes;
 } vm_machine_asset_bytes;
 
 typedef struct vm_machine_assets {

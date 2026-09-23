@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -32,8 +33,8 @@ static C_INT machine_explicit_time_rejects_unstarted_lifecycle(C_VOID)
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286
     };
-    core_machine *machine = STD_NULL;
-    type_unsigned_64 elapsed = 1u;
+    core_machine *machine = LIB_NULL;
+    lib_u64 elapsed = 1u;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_advance_time(machine, 1u) != TYPE_STATUS_INVALID_STATE ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != TYPE_STATUS_INVALID_STATE ||
@@ -45,15 +46,15 @@ static C_INT machine_explicit_time_rejects_unstarted_lifecycle(C_VOID)
 
 C_INT main(C_VOID)
 {
-    const type_unsigned_8 halt = 0xf4u;
+    const lib_u8 halt = 0xf4u;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result first;
     core_machine_run_result second;
     core_machine_timeline_observation before;
     core_machine_timeline_observation after;
-    core_machine *machine = STD_NULL;
-    type_unsigned_64 elapsed = 0u;
-    type_unsigned_8 second_before_explicit_time = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u64 elapsed = 0u;
+    lib_u8 second_before_explicit_time = 0u;
     C_INT failed = 0;
 
     if (machine_explicit_time_rejects_unstarted_lifecycle() ||

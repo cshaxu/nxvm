@@ -1,9 +1,10 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 
 static type_status machine_configuration_port_read(C_VOID *owner,
-    type_unsigned_16 port, type_unsigned_32 *out_value)
+    lib_u16 port, lib_u32 *out_value)
 {
     (C_VOID)owner;
     (C_VOID)port;
@@ -19,10 +20,10 @@ static C_INT machine_configuration_expect(type_status actual,
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
     core_machine_port_provider port_provider = {
-        machine_configuration_port_read, STD_NULL
+        machine_configuration_port_read, LIB_NULL
     };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run_result;
@@ -34,16 +35,16 @@ C_INT main(C_VOID)
     failed |= machine_configuration_expect(core_machine_reset(machine),
         TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_install_port_provider(
-        machine, 0x300u, 0x300u, &port_provider, STD_NULL), TYPE_STATUS_OK);
+        machine, 0x300u, 0x300u, &port_provider, LIB_NULL), TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_freeze_execution_providers(
         machine), TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_freeze_execution_providers(
         machine), TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_install_port_provider(
-        machine, 0x301u, 0x301u, &port_provider, STD_NULL),
+        machine, 0x301u, 0x301u, &port_provider, LIB_NULL),
         TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_bind_execution_provider(
-        machine, STD_NULL, STD_NULL), TYPE_STATUS_INVALID_STATE);
+        machine, LIB_NULL, LIB_NULL), TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_reset(machine),
         TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_memory_write(machine,

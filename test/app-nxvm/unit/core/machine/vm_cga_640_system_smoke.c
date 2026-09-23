@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,11 +10,11 @@
 #define VM_CGA254_IMAGE_BYTES (1440u * 1024u)
 #define VM_CGA254_BOOT_BUDGET 500000u
 
-static type_unsigned_8 vm_cga254_image[VM_CGA254_IMAGE_BYTES];
+static lib_u8 vm_cga254_image[VM_CGA254_IMAGE_BYTES];
 
 static C_VOID vm_cga254_boot_fixture(C_VOID)
 {
-    static const type_unsigned_8 boot_code[] = {
+    static const lib_u8 boot_code[] = {
         0x31u, 0xc0u, 0x8eu, 0xd8u,
         0xb8u, 0x06u, 0x00u, 0xcdu, 0x10u,
         0xb8u, 0x00u, 0xb8u, 0x8eu, 0xc0u, 0x31u, 0xffu,
@@ -21,8 +22,8 @@ static C_VOID vm_cga254_boot_fixture(C_VOID)
         0xb8u, 0x03u, 0x00u, 0xcdu, 0x10u,
         0xebu, 0xfeu
     };
-    STD_MEMSET(vm_cga254_image, 0, sizeof(vm_cga254_image));
-    STD_MEMCPY(vm_cga254_image, boot_code, sizeof(boot_code));
+    lib_memory_set(vm_cga254_image, 0, sizeof(vm_cga254_image));
+    lib_memory_copy(vm_cga254_image, boot_code, sizeof(boot_code));
     vm_cga254_image[510u] = 0x55u;
     vm_cga254_image[511u] = 0xaau;
 }
@@ -37,9 +38,9 @@ C_INT main(C_VOID)
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
-    vm_machine *session = STD_NULL;
-    type_unsigned_8 mode = 0u;
-    type_unsigned_32 instruction;
+    vm_machine *session = LIB_NULL;
+    lib_u8 mode = 0u;
+    lib_u32 instruction;
     C_INT saw_cga = 0;
     C_INT saw_text = 0;
 
@@ -48,7 +49,7 @@ C_INT main(C_VOID)
         vm_machine_config fixture_config = config;
 
         if (vm_test_default_pc_at_session_create(&fixture_config, &session) !=
-                TYPE_STATUS_OK || session == STD_NULL ||
+                TYPE_STATUS_OK || session == LIB_NULL ||
             vm_machine_fdd_replace_bytes(&session->fdd, vm_cga254_image,
                 sizeof(vm_cga254_image)) != 0) goto done;
     }

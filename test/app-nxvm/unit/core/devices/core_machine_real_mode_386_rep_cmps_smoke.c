@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -21,10 +22,10 @@ static C_INT t292_prepare(core_machine_cpu_profile profile, core_machine **out_m
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    static const type_unsigned_8 reset_jump[] = {0xeau, 0u, 0u, 0u, 0u};
-    core_machine *machine = STD_NULL;
+    static const lib_u8 reset_jump[] = {0xeau, 0u, 0u, 0u, 0u};
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
             TYPE_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
             machine, T292_RESET_LINEAR,
             T292_RESET_PHYSICAL, T292_RESET_WINDOW) != TYPE_STATUS_OK ||
@@ -41,23 +42,23 @@ static C_INT t292_prepare(core_machine_cpu_profile profile, core_machine **out_m
 
 int main(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb8u, 0u, 0u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
         0x66u, 0xbeu, 0u, 0u, 0x02u, 0u,
         0x66u, 0xbfu, 0u, 0u, 0x03u, 0u,
         0x66u, 0xb9u, 0x03u, 0u, 0u, 0u,
         0xfcu, 0xf3u, 0x67u, 0xa6u, 0xf4u
     };
-    static const type_unsigned_8 source[] = {0x11u, 0x22u, 0x33u};
-    static const type_unsigned_8 destination[] = {0x11u, 0xffu, 0x33u};
-    static const type_unsigned_8 scas_program[] = {
+    static const lib_u8 source[] = {0x11u, 0x22u, 0x33u};
+    static const lib_u8 destination[] = {0x11u, 0xffu, 0x33u};
+    static const lib_u8 scas_program[] = {
         0xb8u, 0u, 0u, 0x8eu, 0xc0u,
         0x66u, 0xbfu, 0u, 0u, 0x02u, 0u,
         0x66u, 0xb9u, 0x03u, 0u, 0u, 0u,
         0xb0u, 0x22u, 0xfcu, 0xf2u, 0x67u, 0xaeu, 0xf4u
     };
-    static const type_unsigned_8 scas_bytes[] = {0x11u, 0x22u, 0x33u};
-    static const type_unsigned_8 segment_program[] = {
+    static const lib_u8 scas_bytes[] = {0x11u, 0x22u, 0x33u};
+    static const lib_u8 segment_program[] = {
         0xb8u, 0x00u, 0x10u, 0x8eu, 0xd8u,
         0x31u, 0xc0u, 0x8eu, 0xc0u,
         0x66u, 0xbeu, 0u, 0x10u, 0u, 0u,
@@ -65,13 +66,13 @@ int main(C_VOID)
         0x66u, 0xb9u, 0x01u, 0u, 0u, 0u,
         0xfcu, 0x2eu, 0xf3u, 0x67u, 0xa6u, 0xf4u
     };
-    static const type_unsigned_8 segment_source[] = {0x5au};
-    static const type_unsigned_8 segment_default[] = {0xeeu};
-    static const type_unsigned_8 segment_destination[] = {0x5au};
+    static const lib_u8 segment_source[] = {0x5au};
+    static const lib_u8 segment_default[] = {0xeeu};
+    static const lib_u8 segment_destination[] = {0x5au};
     const core_machine_run_budget budget = {256u, 0u};
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine);
 
     if (!failed) {
@@ -89,7 +90,7 @@ int main(C_VOID)
             (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) != 0u;
     }
     core_machine_destroy(machine);
-    machine = STD_NULL;
+    machine = LIB_NULL;
     if (!failed) {
         failed |= !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, scas_program,
@@ -104,7 +105,7 @@ int main(C_VOID)
             (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
     }
     core_machine_destroy(machine);
-    machine = STD_NULL;
+    machine = LIB_NULL;
     if (!failed) {
         failed |= !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, segment_program,

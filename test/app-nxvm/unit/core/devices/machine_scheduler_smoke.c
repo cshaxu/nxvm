@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -5,22 +6,22 @@
 
 typedef struct scheduler_provider_probe {
     C_UINT advances;
-    type_unsigned_64 advanced_ticks;
+    lib_u64 advanced_ticks;
 } scheduler_provider_probe;
 
 static C_VOID scheduler_provider_advance(C_VOID *opaque,
-    type_unsigned_64 elapsed_ticks)
+    lib_u64 elapsed_ticks)
 {
     scheduler_provider_probe *probe = (scheduler_provider_probe *)opaque;
 
-    if (probe != STD_NULL) {
+    if (probe != LIB_NULL) {
         ++probe->advances;
         probe->advanced_ticks += elapsed_ticks;
     }
 }
 
 static const core_machine_execution_provider scheduler_provider = {
-    STD_NULL,
+    LIB_NULL,
     scheduler_provider_advance
 };
 
@@ -29,9 +30,9 @@ C_INT main(C_VOID)
     core_machine_config config = { 0 };
     core_machine_run_budget budget = { 0u, 1u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     scheduler_provider_probe provider_probe = { 0u, 0u };
-    const type_unsigned_8 nop = 0x90u;
+    const lib_u8 nop = 0x90u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 2u;

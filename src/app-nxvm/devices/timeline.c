@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/timeline.h"
@@ -10,9 +11,9 @@ static C_INT core_machine_timeline_precedes(const core_machine_timeline_event *l
 }
 
 static C_VOID core_machine_timeline_heap_swap(core_machine_timeline *timeline,
-    type_unsigned_32 left, type_unsigned_32 right)
+    lib_u32 left, lib_u32 right)
 {
-    type_unsigned_32 slot = timeline->heap[left];
+    lib_u32 slot = timeline->heap[left];
 
     timeline->heap[left] = timeline->heap[right];
     timeline->heap[right] = slot;
@@ -21,10 +22,10 @@ static C_VOID core_machine_timeline_heap_swap(core_machine_timeline *timeline,
 }
 
 static C_VOID core_machine_timeline_heap_up(core_machine_timeline *timeline,
-    type_unsigned_32 index)
+    lib_u32 index)
 {
     while (index != 0u) {
-        type_unsigned_32 parent = (index - 1u) / 2u;
+        lib_u32 parent = (index - 1u) / 2u;
 
         if (!core_machine_timeline_precedes(&timeline->events[timeline->heap[index]],
                 &timeline->events[timeline->heap[parent]])) break;
@@ -34,12 +35,12 @@ static C_VOID core_machine_timeline_heap_up(core_machine_timeline *timeline,
 }
 
 static C_VOID core_machine_timeline_heap_down(core_machine_timeline *timeline,
-    type_unsigned_32 index)
+    lib_u32 index)
 {
     for (;;) {
-        type_unsigned_32 left = index * 2u + 1u;
-        type_unsigned_32 right = left + 1u;
-        type_unsigned_32 smallest = index;
+        lib_u32 left = index * 2u + 1u;
+        lib_u32 right = left + 1u;
+        lib_u32 smallest = index;
 
         if (left < timeline->heap_size && core_machine_timeline_precedes(
                 &timeline->events[timeline->heap[left]],
@@ -54,11 +55,11 @@ static C_VOID core_machine_timeline_heap_down(core_machine_timeline *timeline,
 }
 
 static C_VOID core_machine_timeline_heap_remove(core_machine_timeline *timeline,
-    type_unsigned_32 index)
+    lib_u32 index)
 {
-    type_unsigned_32 last;
+    lib_u32 last;
 
-    if (timeline == STD_NULL || index >= timeline->heap_size) return;
+    if (timeline == LIB_NULL || index >= timeline->heap_size) return;
     last = --timeline->heap_size;
     if (index == last) return;
     timeline->heap[index] = timeline->heap[last];
@@ -74,23 +75,23 @@ static C_VOID core_machine_timeline_heap_remove(core_machine_timeline *timeline,
 
 type_status core_machine_timeline_initialize(core_machine_timeline *timeline)
 {
-    if (timeline == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (timeline == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     core_machine_timeline_reset(timeline);
     return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_timeline_reset(core_machine_timeline *timeline)
 {
-    if (timeline != STD_NULL) STD_MEMSET(timeline, 0, sizeof(*timeline));
+    if (timeline != LIB_NULL) lib_memory_set(timeline, 0, sizeof(*timeline));
 }
 
 type_status core_machine_timeline_schedule(core_machine_timeline *timeline,
-    type_unsigned_64 due_tick, core_machine_timeline_callback callback,
+    lib_u64 due_tick, core_machine_timeline_callback callback,
     C_VOID *context, core_machine_timeline_token *out_token)
 {
-    type_unsigned_32 slot;
+    lib_u32 slot;
 
-    if (timeline == STD_NULL || callback == STD_NULL || out_token == STD_NULL ||
+    if (timeline == LIB_NULL || callback == LIB_NULL || out_token == LIB_NULL ||
         due_tick < timeline->now || timeline->next_sequence == UINT64_MAX) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -103,7 +104,7 @@ type_status core_machine_timeline_schedule(core_machine_timeline *timeline,
             event->callback = callback;
             event->context = context;
             event->heap_index = timeline->heap_size;
-            event->active = TYPE_TRUE;
+            event->active = LIB_TRUE;
             timeline->heap[timeline->heap_size++] = slot;
             core_machine_timeline_heap_up(timeline, event->heap_index);
             out_token->slot = slot;
@@ -119,7 +120,7 @@ type_status core_machine_timeline_cancel(core_machine_timeline *timeline,
 {
     core_machine_timeline_event *event;
 
-    if (timeline == STD_NULL || token == STD_NULL ||
+    if (timeline == LIB_NULL || token == LIB_NULL ||
         token->slot >= CORE_MACHINE_TIMELINE_EVENT_CAPACITY) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -128,16 +129,16 @@ type_status core_machine_timeline_cancel(core_machine_timeline *timeline,
         return TYPE_STATUS_INVALID_STATE;
     }
     core_machine_timeline_heap_remove(timeline, event->heap_index);
-    event->active = TYPE_FALSE;
-    event->callback = STD_NULL;
-    event->context = STD_NULL;
+    event->active = LIB_FALSE;
+    event->callback = LIB_NULL;
+    event->context = LIB_NULL;
     return TYPE_STATUS_OK;
 }
 
 type_status core_machine_timeline_advance(core_machine_timeline *timeline,
-    type_unsigned_64 target_tick)
+    lib_u64 target_tick)
 {
-    if (timeline == STD_NULL || target_tick < timeline->now) {
+    if (timeline == LIB_NULL || target_tick < timeline->now) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     for (;;) {
@@ -149,12 +150,12 @@ type_status core_machine_timeline_advance(core_machine_timeline *timeline,
         {
             core_machine_timeline_callback callback = next->callback;
             C_VOID *context = next->context;
-            type_unsigned_64 due_tick = next->due_tick;
+            lib_u64 due_tick = next->due_tick;
 
             core_machine_timeline_heap_remove(timeline, 0u);
-            next->active = TYPE_FALSE;
-            next->callback = STD_NULL;
-            next->context = STD_NULL;
+            next->active = LIB_FALSE;
+            next->callback = LIB_NULL;
+            next->context = LIB_NULL;
             timeline->now = due_tick;
             callback(context, due_tick);
         }
@@ -164,9 +165,9 @@ type_status core_machine_timeline_advance(core_machine_timeline *timeline,
 }
 
 type_status core_machine_timeline_next_due(const core_machine_timeline *timeline,
-    type_unsigned_64 *out_due_tick)
+    lib_u64 *out_due_tick)
 {
-    if (timeline == STD_NULL || out_due_tick == STD_NULL) {
+    if (timeline == LIB_NULL || out_due_tick == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (timeline->heap_size == 0u) return TYPE_STATUS_INVALID_STATE;
@@ -174,13 +175,13 @@ type_status core_machine_timeline_next_due(const core_machine_timeline *timeline
     return TYPE_STATUS_OK;
 }
 
-type_unsigned_32 core_machine_timeline_pending_count(
+lib_u32 core_machine_timeline_pending_count(
     const core_machine_timeline *timeline)
 {
-    type_unsigned_32 count = 0u;
-    type_unsigned_32 index;
+    lib_u32 count = 0u;
+    lib_u32 index;
 
-    if (timeline == STD_NULL) return 0u;
+    if (timeline == LIB_NULL) return 0u;
     for (index = 0u; index < CORE_MACHINE_TIMELINE_EVENT_CAPACITY; ++index) {
         if (timeline->events[index].active) ++count;
     }

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "app-nxvm/machine/debug_adapter.h"
 
 #include "app-nxvm/devices/debug_interface.h"
@@ -24,7 +25,7 @@ static type_status vm_machine_debug_map_watch(
     x86_debug_watch_kind source,
     core_machine_debug_watch_kind *out_target)
 {
-    if (out_target == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_target == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     switch (source) {
     case X86_DEBUG_WATCH_READ: *out_target = CORE_MACHINE_DEBUG_WATCH_READ; return TYPE_STATUS_OK;
     case X86_DEBUG_WATCH_WRITE: *out_target = CORE_MACHINE_DEBUG_WATCH_WRITE; return TYPE_STATUS_OK;
@@ -36,10 +37,10 @@ static type_status vm_machine_debug_map_watch(
 static C_VOID vm_machine_debug_copy_observation(x86_debug_observation *out_observation,
     const core_machine_debug_instruction_observation *source)
 {
-    type_unsigned_8 index;
+    lib_u8 index;
 
-    if (out_observation == LIB_NULL || source == STD_NULL) return;
-    STD_MEMSET(out_observation, 0, sizeof(*out_observation));
+    if (out_observation == LIB_NULL || source == LIB_NULL) return;
+    lib_memory_set(out_observation, 0, sizeof(*out_observation));
     out_observation->count = source->memory_access_count;
     for (index = 0u; index < source->memory_access_count; ++index) {
         out_observation->accesses[index] = (x86_debug_memory_access) {
@@ -59,7 +60,7 @@ static C_VOID vm_machine_debug_copy_segment(
     x86_debug_segment_snapshot *out_segment,
     const core_machine_debug_segment_snapshot *source)
 {
-    if (out_segment == STD_NULL || source == STD_NULL) return;
+    if (out_segment == LIB_NULL || source == LIB_NULL) return;
     *out_segment = (x86_debug_segment_snapshot) {
         .selector = source->selector, .base = source->base,
         .limit = source->limit, .dpl = source->dpl,
@@ -77,11 +78,11 @@ static lib_status vm_machine_debug_capture_cpu(vm_machine *machine,
     core_machine_debug_cpu_snapshot state;
     type_status status;
 
-    if (machine == STD_NULL || out_snapshot == LIB_NULL)
+    if (machine == LIB_NULL || out_snapshot == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     status = core_machine_debug_capture_cpu_snapshot(machine->core_machine, &state);
     if (status != TYPE_STATUS_OK) return vm_machine_debug_status_from_type(status);
-    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     vm_machine_debug_copy_segment(&out_snapshot->es, &state.es);
     vm_machine_debug_copy_segment(&out_snapshot->cs, &state.cs);
     vm_machine_debug_copy_segment(&out_snapshot->ss, &state.ss);
@@ -103,12 +104,12 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
 {
     core_machine_debug_register register_id;
     core_machine_debug_watch_kind watch_kind;
-    type_unsigned_32 value = 0u;
+    lib_u32 value = 0u;
     type_status status;
 
-    if (machine == STD_NULL || request == LIB_NULL || out_result == LIB_NULL ||
+    if (machine == LIB_NULL || request == LIB_NULL || out_result == LIB_NULL ||
         request->bytes > X86_DEBUG_BYTES) return LIB_STATUS_INVALID_ARGUMENT;
-    STD_MEMSET(out_result, 0, sizeof(*out_result));
+    lib_memory_set(out_result, 0, sizeof(*out_result));
     if (request->operation == X86_DEBUG_READ_REGISTER || request->operation == X86_DEBUG_WRITE_REGISTER) {
         if (request->register_id >= CORE_MACHINE_DEBUG_REGISTER_COUNT) return LIB_STATUS_INVALID_ARGUMENT;
         register_id = (core_machine_debug_register)request->register_id;
@@ -157,7 +158,7 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
         status = core_machine_debug_get_code_default_size(machine->core_machine,
             &code_size);
         if (status != TYPE_STATUS_OK) return vm_machine_debug_status_from_type(status);
-        out_result->value = (type_unsigned_32)code_size; return LIB_STATUS_OK;
+        out_result->value = (lib_u32)code_size; return LIB_STATUS_OK;
     }
     if (request->operation == X86_DEBUG_GET_CODE_BASE) {
         status = core_machine_debug_get_code_base(machine->core_machine,
@@ -194,13 +195,13 @@ static lib_status vm_machine_debug_execute_request(vm_machine *machine,
     }
     if (request->operation == X86_DEBUG_GET_EXECUTION_RESULT) {
         vm_machine_debug_stop_reason reason;
-        type_unsigned_64 executed;
+        lib_u64 executed;
 
         if (!vm_machine_debug_take_completion(&machine->debug, &reason,
                 &executed)) return LIB_STATUS_OK;
         out_result->enabled = LIB_TRUE;
         out_result->value = executed > UINT32_MAX ? UINT32_MAX :
-            (type_unsigned_32)executed;
+            (lib_u32)executed;
         if (machine->debug.observation_valid)
             vm_machine_debug_copy_observation(&out_result->observation,
                 &machine->debug.observation);

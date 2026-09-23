@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -17,11 +18,11 @@
 #define VM_T287_COMMAND_TIMEOUT_MILLISECONDS 5000u
 
 static C_INT vm_t287_submit_input(vm_machine *session,
-    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+    lib_u16 scan_code, lib_u16 virtual_key, C_INT pressed)
 {
     core_machine_guest_input_event event = { 0 };
 
-    if (session == STD_NULL) return 0;
+    if (session == LIB_NULL) return 0;
     event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
@@ -32,11 +33,11 @@ static C_INT vm_t287_submit_input(vm_machine *session,
 static C_INT vm_t287_has_text(const vm_machine *session, const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
-    STD_SIZE_T character;
-    STD_SIZE_T length = STD_STRLEN(text);
+    lib_size cell;
+    lib_size character;
+    lib_size length = lib_text_length(text);
 
-    if (session == STD_NULL || text == STD_NULL || length == 0u ||
+    if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
         test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
@@ -54,13 +55,13 @@ static const C_CHAR *vm_t287_wait_for_text(const vm_machine *session,
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (vm_t287_has_text(session, first)) return first;
-        if (second != STD_NULL && vm_t287_has_text(session, second)) return second;
+        if (second != LIB_NULL && vm_t287_has_text(session, second)) return second;
         if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
-            return STD_NULL;
+            return LIB_NULL;
         }
         Sleep(10u);
     }
-    return STD_NULL;
+    return LIB_NULL;
 }
 
 static C_INT vm_t287_wait_for_hdc_command(const vm_machine *session,
@@ -68,7 +69,7 @@ static C_INT vm_t287_wait_for_hdc_command(const vm_machine *session,
 {
     DWORD elapsed;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
+    if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (session->core_machine->hdc.data.command_count != 0u) return 1;
         if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
@@ -79,10 +80,10 @@ static C_INT vm_t287_wait_for_hdc_command(const vm_machine *session,
     return 0;
 }
 
-static C_VOID vm_t287_submit_key(const vm_machine *session, type_unsigned_16 scan_code,
-    type_unsigned_16 virtual_key)
+static C_VOID vm_t287_submit_key(const vm_machine *session, lib_u16 scan_code,
+    lib_u16 virtual_key)
 {
-    if (session == STD_NULL) return;
+    if (session == LIB_NULL) return;
     if (!vm_t287_submit_input((vm_machine *)session, scan_code, virtual_key, 1)) return;
     Sleep(25u);
     (C_VOID)vm_t287_submit_input((vm_machine *)session, scan_code, virtual_key, 0);
@@ -91,7 +92,7 @@ static C_VOID vm_t287_submit_key(const vm_machine *session, type_unsigned_16 sca
 
 static C_VOID vm_t287_submit_colon(const vm_machine *session)
 {
-    if (session == STD_NULL) return;
+    if (session == LIB_NULL) return;
     if (!vm_t287_submit_input((vm_machine *)session, 0x2au, VK_SHIFT, 1)) return;
     Sleep(25u);
     vm_t287_submit_key(session, 0x27u, VK_OEM_1);
@@ -103,10 +104,10 @@ static C_VOID vm_t287_report(const vm_machine *session, const C_CHAR *stage)
 {
     core_machine_guest_display_frame frame;
     core_machine_cpu_diagnostic diagnostic = {0};
-    STD_SIZE_T row;
-    STD_SIZE_T column;
+    lib_size row;
+    lib_size column;
 
-    if (session == STD_NULL) return;
+    if (session == LIB_NULL) return;
     STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         vm_machine_control_is_running(&session->control),
@@ -114,7 +115,7 @@ static C_VOID vm_t287_report(const vm_machine *session, const C_CHAR *stage)
         session->core_machine->hdc.data.last_command);
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             TYPE_STATUS_OK && diagnostic.first_fault.valid) {
-        STD_SIZE_T index;
+        lib_size index;
 
         STD_PRINTF("M5:T287:S17:FAULT cs=%04X ip=%08X opcode=%02X%02X%02X "
             "eax=%08X ebx=%08X ecx=%08X edx=%08X esi=%08X edi=%08X\n",
@@ -144,10 +145,10 @@ static C_VOID vm_t287_report(const vm_machine *session, const C_CHAR *stage)
 static C_VOID vm_t287_report_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T row;
-    STD_SIZE_T column;
+    lib_size row;
+    lib_size column;
 
-    if (session == STD_NULL || test_vm_machine_capture_presentation(session,
+    if (session == LIB_NULL || test_vm_machine_capture_presentation(session,
             &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
@@ -161,9 +162,9 @@ static C_VOID vm_t287_report_frame(const vm_machine *session)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session = {0};
-    vm_machine *session = STD_NULL;
-    type_unsigned_8 hdd_count = 0u;
-    type_unsigned_8 hdd_bda[4] = {0};
+    vm_machine *session = LIB_NULL;
+    lib_u8 hdd_count = 0u;
+    lib_u8 hdd_bda[4] = {0};
     C_UINT ata_commands = 0u;
     C_INT c_present;
     const C_CHAR *drive_result;
@@ -173,27 +174,27 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
-    if (session == STD_NULL) goto fail;
+    if (session == LIB_NULL) goto fail;
     if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
     stage = "date";
     boot_text = vm_t287_wait_for_text(session, "Enter new date", "A:\\>",
         VM_T287_BOOT_TIMEOUT_MILLISECONDS);
-    if (boot_text == STD_NULL) goto fail;
-    if (STD_STRCMP(boot_text, "A:\\>") != 0) {
+    if (boot_text == LIB_NULL) goto fail;
+    if (lib_c_strcmp(boot_text, "A:\\>") != 0) {
         vm_t287_submit_key(session, 0x1cu, VK_RETURN);
     }
     stage = "time";
-    if (STD_STRCMP(boot_text, "A:\\>") != 0) {
+    if (lib_c_strcmp(boot_text, "A:\\>") != 0) {
         boot_text = vm_t287_wait_for_text(session, "Enter new time", "A:\\>",
             VM_T287_BOOT_TIMEOUT_MILLISECONDS);
-        if (boot_text == STD_NULL) goto fail;
-        if (STD_STRCMP(boot_text, "A:\\>") != 0) {
+        if (boot_text == LIB_NULL) goto fail;
+        if (lib_c_strcmp(boot_text, "A:\\>") != 0) {
             vm_t287_submit_key(session, 0x1cu, VK_RETURN);
         }
     }
     stage = "prompt";
-    if (vm_t287_wait_for_text(session, "A:\\>", STD_NULL,
-            VM_T287_BOOT_TIMEOUT_MILLISECONDS) == STD_NULL) {
+    if (vm_t287_wait_for_text(session, "A:\\>", LIB_NULL,
+            VM_T287_BOOT_TIMEOUT_MILLISECONDS) == LIB_NULL) {
         goto fail;
     }
     stage = "c-command";
@@ -203,7 +204,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     stage = "c-drive";
     drive_result = vm_t287_wait_for_text(session, "C:\\>",
         "Invalid drive specification", VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
-    c_present = drive_result != STD_NULL && !STD_STRCMP(drive_result, "C:\\>");
+    c_present = drive_result != LIB_NULL && !lib_c_strcmp(drive_result, "C:\\>");
     if (!c_present) goto fail;
     stage = "c-dir";
     vm_t287_submit_key(session, 0x20u, 'D');
@@ -228,7 +229,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
 fail:
     vm_t287_report(session, stage);
-    if (session != STD_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;
 }

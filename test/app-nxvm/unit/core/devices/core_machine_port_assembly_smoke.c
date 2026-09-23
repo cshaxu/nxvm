@@ -1,30 +1,31 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
 
 typedef struct port_assembly_probe_state {
-    type_unsigned_32 value;
+    lib_u32 value;
 } port_assembly_probe_state;
 
-static type_status port_assembly_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status port_assembly_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *out_value)
 {
     port_assembly_probe_state *state = (port_assembly_probe_state *)owner;
 
     (C_VOID)port;
-    if (state == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (state == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = state->value;
     return TYPE_STATUS_OK;
 }
 
-static type_status port_assembly_write(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status port_assembly_write(C_VOID *owner, lib_u16 port,
+    lib_u32 value)
 {
     port_assembly_probe_state *state = (port_assembly_probe_state *)owner;
 
     (C_VOID)port;
-    if (state == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (state == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     state->value = value;
     return TYPE_STATUS_OK;
 }
@@ -32,7 +33,7 @@ static type_status port_assembly_write(C_VOID *owner, type_unsigned_16 port,
 static C_INT port_assembly_fresh_default_create(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK;
 
     core_machine_destroy(machine);
@@ -45,8 +46,8 @@ static C_INT port_assembly_range_transaction(C_VOID)
     const core_machine_port_provider provider = { port_assembly_read, port_assembly_write };
     core_machine_port_test_allocation allocation = { 3u, 0u };
     port_assembly_probe_state state = {0u};
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK;
 
     if (!failed) {
@@ -81,7 +82,7 @@ static C_INT port_assembly_create_failure(C_VOID)
     type_status status = core_machine_create_with_test_port_allocation(&config,
         &machine, &allocation);
 
-    if (status != TYPE_STATUS_NO_MEMORY || machine != STD_NULL ||
+    if (status != TYPE_STATUS_NO_MEMORY || machine != LIB_NULL ||
         allocation.attempts != 2u) {
         core_machine_destroy(machine);
         return 1;
@@ -95,10 +96,10 @@ static C_INT port_assembly_fdc_transaction(C_VOID)
     const core_machine_dma_wiring wiring = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding request = {0};
     core_machine_fdc_topology topology = {
-        .media_registry = STD_NULL,
+        .media_registry = LIB_NULL,
         .drives = {{1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID}},
         .config = {.dor_port = 0x03f2u, .status_port = 0x03f4u,
@@ -106,7 +107,7 @@ static C_INT port_assembly_fdc_transaction(C_VOID)
             .control_port = 0x03f7u, .irq = 6u, .dma_channel = 2u}
     };
     core_machine_port_test_allocation allocation = { 2u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_fdc fdc_zero = {0};
     core_machine_fdc_topology topology_zero = {0};
     C_INT failed = 0;
@@ -120,8 +121,8 @@ static C_INT port_assembly_fdc_transaction(C_VOID)
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_fdc(machine, &topology) != TYPE_STATUS_NO_MEMORY ||
             machine->fdc_configured ||
-            STD_MEMCMP(&machine->fdc, &fdc_zero, sizeof(fdc_zero)) != 0 ||
-            STD_MEMCMP(&machine->fdc_topology, &topology_zero,
+            lib_memory_compare(&machine->fdc, &fdc_zero, sizeof(fdc_zero)) != 0 ||
+            lib_memory_compare(&machine->fdc_topology, &topology_zero,
                 sizeof(topology_zero)) != 0 ||
             core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
             core_machine_port_has_read(&machine->executor_port, 0x03f5u) ||
@@ -137,7 +138,7 @@ static C_INT port_assembly_fdc_transaction(C_VOID)
     return failed || port_assembly_fresh_default_create();
 }
 
-static C_INT port_assembly_rtc_transaction(STD_SIZE_T fail_at)
+static C_INT port_assembly_rtc_transaction(lib_size fail_at)
 {
     const core_machine_config machine_config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
@@ -150,15 +151,15 @@ static C_INT port_assembly_rtc_transaction(STD_SIZE_T fail_at)
     core_machine_port_test_allocation allocation = { fail_at, 0u };
     core_machine_rtc rtc_zero = {0};
     core_machine_rtc_cmos_config config_zero = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK;
 
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_rtc_cmos(machine, &rtc_config) !=
                 TYPE_STATUS_NO_MEMORY || machine->rtc_cmos_configured ||
-            STD_MEMCMP(&machine->shared_rtc, &rtc_zero, sizeof(rtc_zero)) != 0 ||
-            STD_MEMCMP(&machine->rtc_cmos_config, &config_zero,
+            lib_memory_compare(&machine->shared_rtc, &rtc_zero, sizeof(rtc_zero)) != 0 ||
+            lib_memory_compare(&machine->rtc_cmos_config, &config_zero,
                 sizeof(config_zero)) != 0 ||
             core_machine_port_has_write(&machine->executor_port, 0x0070u) ||
             core_machine_port_has_read(&machine->executor_port, 0x0071u) ||
@@ -177,9 +178,9 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
     const core_machine_config machine_config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
     };
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_hdc_topology topology = {
-        .media_registry = STD_NULL, .media_id = 1u,
+        .media_registry = LIB_NULL, .media_id = 1u,
         .config = {.protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO, .irq = 14u,
             .bus.task_file = {
                 .data_port = 0x01f0u, .error_features_port = 0x01f1u,
@@ -187,12 +188,12 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
                 .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
                 .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
                 .alternate_status_device_control_port = 0x03f6u,
-                .lba28_supported = TYPE_TRUE}}
+                .lba28_supported = LIB_TRUE}}
     };
     core_machine_port_test_allocation allocation = {17u, 0u};
     core_machine_hdc hdc_zero = {0};
     core_machine_hdc_topology topology_zero = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = 0;
 
     failed |= core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
@@ -202,8 +203,8 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_NO_MEMORY ||
             machine->hdc_configured ||
-            STD_MEMCMP(&machine->hdc, &hdc_zero, sizeof(hdc_zero)) != 0 ||
-            STD_MEMCMP(&machine->hdc_topology, &topology_zero,
+            lib_memory_compare(&machine->hdc, &hdc_zero, sizeof(hdc_zero)) != 0 ||
+            lib_memory_compare(&machine->hdc_topology, &topology_zero,
                 sizeof(topology_zero)) != 0 ||
             core_machine_port_has_read(&machine->executor_port, 0x01f0u) ||
             core_machine_port_has_write(&machine->executor_port, 0x01f0u) ||

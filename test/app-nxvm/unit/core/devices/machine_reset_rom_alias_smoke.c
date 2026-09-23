@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/firmware_interface.h"
@@ -7,8 +8,8 @@
 static type_status reset_rom_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
-    static const type_unsigned_8 halt[] = {0xf4u};
-    static const type_unsigned_8 reset_jump[] = {
+    static const lib_u8 halt[] = {0xf4u};
+    static const lib_u8 reset_jump[] = {
         0xeau, 0x00u, 0x00u, 0x00u, 0xf0u,
         0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u,
         0x90u, 0x90u, 0x90u, 0x90u
@@ -30,7 +31,7 @@ static type_status reset_rom_reset(C_VOID *opaque,
 }
 
 static const core_machine_firmware_provider reset_rom_provider = {
-    reset_rom_configure, reset_rom_reset, STD_NULL, STD_NULL
+    reset_rom_configure, reset_rom_reset, LIB_NULL, LIB_NULL
 };
 
 static C_INT reset_rom_run(core_machine_cpu_profile profile)
@@ -42,19 +43,19 @@ static C_INT reset_rom_run(core_machine_cpu_profile profile)
         .ticks_per_instruction = 1u
     };
     const core_machine_run_budget budget = {4u, 0u};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     const core_machine_absent_memory_config absent_memory = {
         0x00100000u, 0x00f00000u, 0xffu
     };
-    type_unsigned_8 reset_byte = 0u;
+    lib_u8 reset_byte = 0u;
     C_INT failed = 0;
 
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_configure_absent_memory(machine,
         &absent_memory) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_bind_firmware_provider(machine,
-        &reset_rom_provider, STD_NULL) != TYPE_STATUS_OK;
+        &reset_rom_provider, LIB_NULL) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_memory_read_reset_physical(
         &machine->executor_memory,
         profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x00fffff0u : 0xfffffff0u,

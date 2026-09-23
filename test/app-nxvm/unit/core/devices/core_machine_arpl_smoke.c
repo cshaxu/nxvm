@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -18,13 +19,13 @@ static C_VOID arpl_reset(C_VOID *opaque)
 {
     arpl_machine *state = (arpl_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
 static const core_machine_execution_provider arpl_execution_provider = {
     arpl_reset,
-    STD_NULL
+    LIB_NULL
 };
 
 static C_INT arpl_prepare(arpl_machine *state,
@@ -36,12 +37,12 @@ static C_INT arpl_prepare(arpl_machine *state,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    if (state == STD_NULL) return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 0;
+    lib_memory_set(state, 0, sizeof(*state));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
             &arpl_execution_provider, state, &state->machine)) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     return 1;
@@ -49,10 +50,10 @@ static C_INT arpl_prepare(arpl_machine *state,
 
 static C_INT arpl_install_gdt(core_machine *machine)
 {
-    static const type_unsigned_8 gdt_pointer[] = {
+    static const lib_u8 gdt_pointer[] = {
         0x17u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt[] = {
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x20u, 0x00u, 0x9au, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x30u, 0x00u, 0x92u, 0x00u, 0x00u
@@ -65,10 +66,10 @@ static C_INT arpl_install_gdt(core_machine *machine)
 }
 
 static C_INT arpl_run_protected(arpl_machine *state,
-    const type_unsigned_8 *protected_code, STD_SIZE_T protected_code_size,
+    const lib_u8 *protected_code, lib_size protected_code_size,
     t_cpu *out_cpu)
 {
-    static const type_unsigned_8 real_code[] = {
+    static const lib_u8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
@@ -82,8 +83,8 @@ static C_INT arpl_run_protected(arpl_machine *state,
     core_machine_run_result result;
     type_status run_status;
 
-    if (state == STD_NULL || state->machine == STD_NULL ||
-        protected_code == STD_NULL || out_cpu == STD_NULL ||
+    if (state == LIB_NULL || state->machine == LIB_NULL ||
+        protected_code == LIB_NULL || out_cpu == LIB_NULL ||
         !arpl_install_gdt(state->machine) ||
         core_machine_memory_write(state->machine, 0u, real_code,
             sizeof(real_code)) != TYPE_STATUS_OK ||
@@ -104,13 +105,13 @@ static C_INT arpl_run_protected(arpl_machine *state,
 
 static C_INT arpl_test_register_forms(C_VOID)
 {
-    static const type_unsigned_8 adjust_code[] = {
+    static const lib_u8 adjust_code[] = {
         0xb8u, 0x01u, 0x00u,
         0xb9u, 0x03u, 0x00u,
         0x63u, 0xc8u,
         0xf4u
     };
-    static const type_unsigned_8 retain_code[] = {
+    static const lib_u8 retain_code[] = {
         0xb8u, 0x03u, 0x00u,
         0xb9u, 0x01u, 0x00u,
         0x63u, 0xc8u,
@@ -133,7 +134,7 @@ static C_INT arpl_test_register_forms(C_VOID)
         }
     }
     core_machine_destroy(state.machine);
-    state.machine = STD_NULL;
+    state.machine = LIB_NULL;
     if (!failed) failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
     if (!failed) {
         C_INT ran = arpl_run_protected(&state, retain_code, sizeof(retain_code),
@@ -153,12 +154,12 @@ static C_INT arpl_test_register_forms(C_VOID)
 
 static C_INT arpl_test_memory_prefix_form(C_VOID)
 {
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0xb9u, 0x03u, 0x00u,
         0x26u, 0x63u, 0x0eu, 0x00u, 0x04u,
         0xf4u
     };
-    type_unsigned_16 selector = 0x0001u;
+    lib_u16 selector = 0x0001u;
     t_cpu cpu;
     arpl_machine state;
     C_INT failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
@@ -187,7 +188,7 @@ static C_INT arpl_test_memory_prefix_form(C_VOID)
 
 static C_INT arpl_test_rejected_forms(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb8u, 0x01u, 0x00u,
         0xb9u, 0x03u, 0x00u,
         0x63u, 0xc8u
@@ -198,7 +199,7 @@ static C_INT arpl_test_rejected_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    STD_SIZE_T index;
+    lib_size index;
     C_INT failed = 0;
 
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {

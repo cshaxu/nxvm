@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -40,13 +41,13 @@ static core_machine_fdc_topology core_machine_dma_binding_token_topology(
 
 C_INT main(C_VOID)
 {
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding first_request = {0};
     core_machine_dma_request_binding second_request = {0};
     core_machine_fdc_topology first_topology;
     core_machine_fdc_topology second_topology;
-    core_machine *first = STD_NULL;
-    core_machine *second = STD_NULL;
+    core_machine *first = LIB_NULL;
+    core_machine *second = LIB_NULL;
     C_INT failed = 0;
 
     if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||

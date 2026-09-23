@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_FPU_INTERFACE_H
 #define CORE_MACHINE_FPU_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -35,14 +36,14 @@ typedef struct core_machine_fpu_operation_metadata {
 } core_machine_fpu_operation_metadata;
 
 typedef struct core_machine_fpu_state {
-    type_unsigned_16 control_word;
-    type_unsigned_16 status_word;
-    type_unsigned_8 top;
-    type_unsigned_8 tags[8];
+    lib_u16 control_word;
+    lib_u16 status_word;
+    lib_u8 top;
+    lib_u8 tags[8];
     C_INT pending_unmasked_exception;
 } core_machine_fpu_state;
 
 core_machine_fpu_operation_metadata core_machine_fpu_operation_metadata_get(
-    type_unsigned_8 escape_opcode, type_unsigned_8 modrm);
+    lib_u8 escape_opcode, lib_u8 modrm);
 
 #endif

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -24,9 +25,9 @@ typedef enum iomap_case {
 } iomap_case;
 
 typedef struct iomap_port_state {
-    type_unsigned_32 reads;
-    type_unsigned_32 writes;
-    type_unsigned_32 last_write;
+    lib_u32 reads;
+    lib_u32 writes;
+    lib_u32 last_write;
 } iomap_port_state;
 
 typedef struct iomap_machine {
@@ -38,27 +39,27 @@ static C_VOID iomap_reset(C_VOID *opaque)
 {
     iomap_machine *state = (iomap_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
-static type_status iomap_port_read(C_VOID *opaque, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status iomap_port_read(C_VOID *opaque, lib_u16 port,
+    lib_u32 *out_value)
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
-    if (state == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (state == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = port == 0x00e0u ? 0x7cu : 0x5du;
     return TYPE_STATUS_OK;
 }
 
-static type_status iomap_port_write(C_VOID *opaque, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status iomap_port_write(C_VOID *opaque, lib_u16 port,
+    lib_u32 value)
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
-    if (state == STD_NULL || (port != 0x00e0u && port != 0x00e1u)) {
+    if (state == LIB_NULL || (port != 0x00e0u && port != 0x00e1u)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
@@ -67,15 +68,15 @@ static type_status iomap_port_write(C_VOID *opaque, type_unsigned_16 port,
 }
 
 static const core_machine_execution_provider iomap_execution_provider = {
-    iomap_reset, STD_NULL
+    iomap_reset, LIB_NULL
 };
 
 static const core_machine_port_provider iomap_port_provider = {
     iomap_port_read, iomap_port_write
 };
 
-static C_INT write_bytes(core_machine *machine, type_unsigned_32 address,
-    const type_unsigned_8 *bytes, STD_SIZE_T count)
+static C_INT write_bytes(core_machine *machine, lib_u32 address,
+    const lib_u8 *bytes, lib_size count)
 {
     return core_machine_memory_write(machine, address, bytes, count) ==
         TYPE_STATUS_OK;
@@ -89,15 +90,15 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    if (state == STD_NULL) return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 0;
+    lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
     if (core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e1u,
             &iomap_port_provider, &state->port) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &iomap_execution_provider, state)) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     return 1;
@@ -106,9 +107,9 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
 static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profile,
     iomap_case test_case)
 {
-    static const type_unsigned_8 gdt_pointer[] = { 0x2fu,0,0,3,0,0 };
-    static const type_unsigned_8 idt_pointer[] = { 0x97u,0x01u,0,4,0,0 };
-    type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt_pointer[] = { 0x2fu,0,0,3,0,0 };
+    static const lib_u8 idt_pointer[] = { 0x97u,0x01u,0,4,0,0 };
+    lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0,
@@ -116,7 +117,7 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         0xff,0xff,0,0x50,0,0xf2,0,0,
         0xff,0,0,0x06,0,0x89,0,0
     };
-    static const type_unsigned_8 real_code[] = {
+    static const lib_u8 real_code[] = {
         0x0f,0x01,0x16,0x00,0x01,
         0x0f,0x01,0x1e,0x10,0x01,
         0xb8,0x01,0x00,0x0f,0x01,0xf0,
@@ -124,7 +125,7 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         0xb8,0x10,0x00,0x8e,0xd0,0xbc,0x00,0x80,
         0xea,0x00,0x00,0x08,0x00
     };
-    type_unsigned_8 kernel_entry[] = {
+    lib_u8 kernel_entry[] = {
         0xb8,0x10,0x00,0x8e,0xd8,
         0xb8,0x23,0x00,0x50,
         0xb8,0x00,0xa0,0x50,
@@ -134,24 +135,24 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         0xb8,0x23,0x00,0x8e,0xd8,
         0xcf
     };
-    static const type_unsigned_8 kernel_stop[] = { 0xf4 };
-    static const type_unsigned_8 kernel_fault[] = {
+    static const lib_u8 kernel_stop[] = { 0xf4 };
+    static const lib_u8 kernel_fault[] = {
         0xb8,0x33,0x33,0xa3,0x04,0x00,0xf4
     };
-    static const type_unsigned_8 user_allow[] = {
+    static const lib_u8 user_allow[] = {
         0xe4,0xe0,0xa2,0x00,0x00,0xb0,0x5a,0xe6,0xe0,0xcd,0x31
     };
-    static const type_unsigned_8 user_deny_in[] = { 0xe4,0xe0 };
-    static const type_unsigned_8 user_deny_out[] = { 0xb0,0x5a,0xe6,0xe0 };
-    static const type_unsigned_8 user_truncated_word[] = { 0xe5,0xe1 };
-    type_unsigned_8 idt[0x198u] = {0};
-    type_unsigned_8 iomap_byte = 0u;
-    type_unsigned_16 iomap_base = 0x0080u;
-    type_unsigned_16 ss0 = 0x0010u;
-    type_unsigned_32 esp0 = 0x00009000u;
-    type_unsigned_32 tss_limit = 0x00ffu;
-    const type_unsigned_8 *user_code = user_allow;
-    STD_SIZE_T user_code_bytes = sizeof(user_allow);
+    static const lib_u8 user_deny_in[] = { 0xe4,0xe0 };
+    static const lib_u8 user_deny_out[] = { 0xb0,0x5a,0xe6,0xe0 };
+    static const lib_u8 user_truncated_word[] = { 0xe5,0xe1 };
+    lib_u8 idt[0x198u] = {0};
+    lib_u8 iomap_byte = 0u;
+    lib_u16 iomap_base = 0x0080u;
+    lib_u16 ss0 = 0x0010u;
+    lib_u32 esp0 = 0x00009000u;
+    lib_u32 tss_limit = 0x00ffu;
+    const lib_u8 *user_code = user_allow;
+    lib_size user_code_bytes = sizeof(user_allow);
 
     idt[0x68u] = 0x20u;
     idt[0x69u] = 0x01u;
@@ -188,27 +189,27 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         break;
     }
     if (profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        type_unsigned_16 sp0 = 0x9000u;
+        lib_u16 sp0 = 0x9000u;
 
         gdt[45] = 0x81u;
         if (!write_bytes(state->machine, TSS_BASE + 2u,
-                (const type_unsigned_8 *)&sp0, sizeof(sp0)) ||
+                (const lib_u8 *)&sp0, sizeof(sp0)) ||
             !write_bytes(state->machine, TSS_BASE + 4u,
-                (const type_unsigned_8 *)&ss0, sizeof(ss0))) return 0;
+                (const lib_u8 *)&ss0, sizeof(ss0))) return 0;
     } else if (!write_bytes(state->machine, TSS_BASE + 4u,
-            (const type_unsigned_8 *)&esp0, sizeof(esp0)) ||
+            (const lib_u8 *)&esp0, sizeof(esp0)) ||
         !write_bytes(state->machine, TSS_BASE + 8u,
-            (const type_unsigned_8 *)&ss0, sizeof(ss0))) {
+            (const lib_u8 *)&ss0, sizeof(ss0))) {
         return 0;
     }
-    gdt[40] = (type_unsigned_8)tss_limit;
-    gdt[41] = (type_unsigned_8)(tss_limit >> 8u);
+    gdt[40] = (lib_u8)tss_limit;
+    gdt[41] = (lib_u8)(tss_limit >> 8u);
     return write_bytes(state->machine, GDT_PTR, gdt_pointer, sizeof(gdt_pointer)) &&
         write_bytes(state->machine, IDT_PTR, idt_pointer, sizeof(idt_pointer)) &&
         write_bytes(state->machine, GDT_BASE, gdt, sizeof(gdt)) &&
         write_bytes(state->machine, IDT_BASE, idt, sizeof(idt)) &&
         write_bytes(state->machine, TSS_BASE + 0x66u,
-            (const type_unsigned_8 *)&iomap_base, sizeof(iomap_base)) &&
+            (const lib_u8 *)&iomap_base, sizeof(iomap_base)) &&
         write_bytes(state->machine, TSS_BASE + iomap_base + 0x1cu,
             &iomap_byte, sizeof(iomap_byte)) &&
         write_bytes(state->machine, 0u, real_code, sizeof(real_code)) &&
@@ -225,7 +226,7 @@ static C_INT iomap_run_case(core_machine_cpu_profile profile, iomap_case test_ca
     iomap_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_unsigned_16 marker[3] = {0u, 0u, 0u};
+    lib_u16 marker[3] = {0u, 0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
     C_INT failed = !iomap_prepare(&state, profile);
     C_INT denied = test_case == IOMAP_CASE_DENY_IN ||

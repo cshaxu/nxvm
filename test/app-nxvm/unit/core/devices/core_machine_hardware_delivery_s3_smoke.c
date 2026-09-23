@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -22,13 +23,13 @@ static C_VOID hardware_delivery_s3_real_reset(C_VOID *opaque)
     hardware_delivery_s3_real_machine *state =
         (hardware_delivery_s3_real_machine *)opaque;
 
-    if (state != STD_NULL) {
+    if (state != LIB_NULL) {
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
 static const core_machine_execution_provider hardware_delivery_s3_real_provider = {
-    hardware_delivery_s3_real_reset, STD_NULL
+    hardware_delivery_s3_real_reset, LIB_NULL
 };
 
 static C_INT hardware_delivery_s3_real_priority(C_VOID)
@@ -38,19 +39,19 @@ static C_INT hardware_delivery_s3_real_priority(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    static const type_unsigned_8 program[] = { 0x90u };
-    static const type_unsigned_8 handler[] = { 0xf4u };
-    static const type_unsigned_8 nmi_vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
-    static const type_unsigned_8 irq_vector[] = { 0x20u, 0x01u, 0x00u, 0x00u };
+    static const lib_u8 program[] = { 0x90u };
+    static const lib_u8 handler[] = { 0xf4u };
+    static const lib_u8 nmi_vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
+    static const lib_u8 irq_vector[] = { 0x20u, 0x01u, 0x00u, 0x00u };
     hardware_delivery_s3_real_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
-    type_unsigned_16 frame[3u] = { 0u, 0u, 0u };
+    lib_u16 frame[3u] = { 0u, 0u, 0u };
     type_status status;
     C_INT failed = 0;
 
-    STD_MEMSET(&state, 0, sizeof(state));
-    STD_MEMSET(&irq, 0, sizeof(irq));
+    lib_memory_set(&state, 0, sizeof(state));
+    lib_memory_set(&irq, 0, sizeof(irq));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
             &hardware_delivery_s3_real_provider, &state, &state.machine)) {
         return 0;
@@ -68,7 +69,7 @@ static C_INT hardware_delivery_s3_real_priority(C_VOID)
     if (!failed) {
         state.machine->executor_cpu.data.esp = 0x00008000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+        state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -101,22 +102,22 @@ static C_INT hardware_delivery_s3_protected_priority(C_VOID)
     core_machine_pic_irq_source irq;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    type_unsigned_32 frame[3u] = { 0u, 0u, 0u };
-    static const type_unsigned_8 program[] = { 0x90u };
+    lib_u32 frame[3u] = { 0u, 0u, 0u };
+    static const lib_u8 program[] = { 0x90u };
     C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
         VCPU_DESC_SYS_TYPE_INTGATE_32);
 
-    STD_MEMSET(&irq, 0, sizeof(irq));
+    lib_memory_set(&irq, 0, sizeof(irq));
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+        state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         state.machine->shared_pic_master.data.icw2 = IE_VECTOR;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed |= !ie_install_gate(&state, 0x02u, 0x0008u,
-                (type_unsigned_8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
+                (lib_u8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
             !ie_write(&state, IE_CODE_BASE, program, sizeof(program)) ||
             !ie_run(&state, 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid || after.data.eip != IE_HANDLER_OFFSET + 1u ||
@@ -135,16 +136,16 @@ static C_INT hardware_delivery_s3_protected_priority(C_VOID)
 }
 
 static C_INT hardware_delivery_s3_vm86_install_gate(
-    vm86_delivery_state *state, type_unsigned_8 vector)
+    vm86_delivery_state *state, lib_u8 vector)
 {
-    type_unsigned_8 gate[8u] = { 0u };
+    lib_u8 gate[8u] = { 0u };
 
     gate[0] = 0u;
     gate[1] = 0x01u;
     gate[2] = 0x08u;
     gate[5] = 0x8eu;
     return core_machine_memory_write(state->machine,
-        VM86_IDT_BASE + (type_unsigned_32)vector * 8u, gate,
+        VM86_IDT_BASE + (lib_u32)vector * 8u, gate,
         sizeof(gate)) == TYPE_STATUS_OK;
 }
 
@@ -167,14 +168,14 @@ static C_INT hardware_delivery_s3_vm86_priority(C_INT mask_nmi)
     vm86_delivery_state state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
-    type_unsigned_32 frame[9u] = { 0u };
+    lib_u32 frame[9u] = { 0u };
     type_status status;
     C_INT failed = !vm86_delivery_prepare(&state, mask_nmi ? 0x20u : 0x02u);
 
-    STD_MEMSET(&irq, 0, sizeof(irq));
+    lib_memory_set(&irq, 0, sizeof(irq));
     if (!failed) {
-        state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
-        state.machine->executor_cpu.data.flagMaskNMI = mask_nmi ? TYPE_TRUE : TYPE_FALSE;
+        state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
+        state.machine->executor_cpu.data.flagMaskNMI = mask_nmi ? LIB_TRUE : LIB_FALSE;
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -182,7 +183,7 @@ static C_INT hardware_delivery_s3_vm86_priority(C_INT mask_nmi)
         core_machine_pic_irq_source_deassert(&irq);
         failed |= !hardware_delivery_s3_vm86_install_gate(&state, 0x20u) ||
             core_machine_memory_write(state.machine, 0x2000u,
-                (const type_unsigned_8[]){ 0x90u }, 1u) != TYPE_STATUS_OK;
+                (const lib_u8[]){ 0x90u }, 1u) != TYPE_STATUS_OK;
         status = failed ? TYPE_STATUS_FAULT : core_machine_run(state.machine,
             (core_machine_run_budget){ 8u, 0u }, &result);
         failed |= status != TYPE_STATUS_OK ||

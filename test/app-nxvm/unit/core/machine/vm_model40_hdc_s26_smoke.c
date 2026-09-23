@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/hdc.h"
@@ -9,14 +10,14 @@
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
 
-static C_INT read_first_sector(vm_machine *session, type_unsigned_8 drive_head,
-    type_unsigned_16 expected_word)
+static C_INT read_first_sector(vm_machine *session, lib_u8 drive_head,
+    lib_u16 expected_word)
 {
     core_machine_hdc *hdc;
-    type_unsigned_32 value;
-    type_unsigned_16 index;
+    lib_u32 value;
+    lib_u16 index;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
+    if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
     hdc = &session->core_machine->hdc;
     core_machine_port_write(&session->core_machine->executor_port, 0x01f2u, 1u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f3u, 1u);
@@ -50,14 +51,14 @@ static C_INT read_first_sector(vm_machine *session, type_unsigned_8 drive_head,
 
 C_INT main(C_VOID)
 {
-    type_unsigned_8 *image = (type_unsigned_8 *)STD_CALLOC(1u, MODEL40_HDC_BYTES);
-    vm_machine *session = STD_NULL;
-    C_INT failed = image == STD_NULL;
+    lib_u8 *image = (lib_u8 *)lib_allocate_zero(1u, MODEL40_HDC_BYTES);
+    vm_machine *session = LIB_NULL;
+    C_INT failed = image == LIB_NULL;
 
     if (!failed) {
         image[0u] = 0xa5u;
         image[1u] = 0x5au;
-        failed = vm_model40_fixture_create(&session) != TYPE_STATUS_OK || session == STD_NULL ||
+        failed = vm_model40_fixture_create(&session) != TYPE_STATUS_OK || session == LIB_NULL ||
             vm_machine_hdd_replace_bytes(&session->hdd, image, MODEL40_HDC_BYTES) ||
             vm_machine_hdd_set_geometry(&session->hdd, 925u, 5u, 17u) ||
             !session->hdd.connect.flagDiskExist ||
@@ -70,7 +71,7 @@ C_INT main(C_VOID)
             !read_first_sector(session, 0xa0u, 0x5aa5u);
     }
     vm_machine_destroy(session);
-    STD_FREE(image);
+    lib_release(image);
     if (failed) return 1;
     STD_PRINTF("M5:T386:S26:MODEL40-HDC-MEMORY-MEDIA:OK\n");
     return 0;

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/debug_interface.h"
@@ -14,15 +15,15 @@
 static C_INT vm_no_media_snapshot_has_text(
     const core_machine_display_snapshot *snapshot, const C_CHAR *text)
 {
-    STD_SIZE_T cell;
-    STD_SIZE_T character;
-    STD_SIZE_T length = STD_STRLEN(text);
+    lib_size cell;
+    lib_size character;
+    lib_size length = lib_text_length(text);
 
-    if (snapshot == STD_NULL || text == STD_NULL) return 0;
+    if (snapshot == LIB_NULL || text == LIB_NULL) return 0;
     for (cell = 0u; cell + length <= VM_NO_MEDIA_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (snapshot->characters[cell + character] !=
-                (type_unsigned_8)text[character]) break;
+                (lib_u8)text[character]) break;
         }
         if (character == length) return 1;
     }
@@ -31,23 +32,23 @@ static C_INT vm_no_media_snapshot_has_text(
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
-    type_unsigned_8 opcode[2];
-    type_unsigned_8 functions[256] = {0};
-    type_unsigned_16 cursor;
-    type_unsigned_64 instruction;
+    lib_u8 opcode[2];
+    lib_u8 functions[256] = {0};
+    lib_u16 cursor;
+    lib_u64 instruction;
     C_UINT int10_count = 0u;
     C_UINT f2_count = 0u;
     C_INT key_wait_seen = 0;
     C_INT failed = 0;
     t_cpu cpu;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    if (!session->active || session->core_machine == STD_NULL) goto fail;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (!session->active || session->core_machine == LIB_NULL) goto fail;
     vm_machine_reset(session);
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #define CORE_MACHINE_TRACE_IMPLEMENTATION 1
@@ -5,7 +6,7 @@
 
 
 
-static type_unsigned_32 core_machine_trace_linear_pc(const core_machine *machine)
+static lib_u32 core_machine_trace_linear_pc(const core_machine *machine)
 {
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
@@ -13,9 +14,9 @@ static type_unsigned_32 core_machine_trace_linear_pc(const core_machine *machine
 static C_VOID core_machine_trace_flush(core_machine *machine)
 {
     core_machine_trace_state *trace = &machine->trace;
-    STD_SIZE_T index = 0u;
+    lib_size index = 0u;
 
-    if (trace->provider.callback == STD_NULL || trace->flushing) {
+    if (trace->provider.callback == LIB_NULL || trace->flushing) {
         return;
     }
 
@@ -30,15 +31,15 @@ static C_VOID core_machine_trace_flush(core_machine *machine)
 
 C_VOID core_machine_trace_initialize(core_machine *machine)
 {
-    if (machine != STD_NULL) {
-        STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
+    if (machine != LIB_NULL) {
+        lib_memory_set(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
 C_VOID core_machine_trace_finalize(core_machine *machine)
 {
-    if (machine != STD_NULL) {
-        STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
+    if (machine != LIB_NULL) {
+        lib_memory_set(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
@@ -46,7 +47,7 @@ type_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider)
 {
-    if (machine == STD_NULL) {
+    if (machine == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -54,9 +55,9 @@ type_status core_machine_set_trace_provider(
         return TYPE_STATUS_INVALID_STATE;
     }
 
-    STD_MEMSET(&machine->trace.provider, 0, sizeof(machine->trace.provider));
-    if (provider != STD_NULL) {
-        if (provider->callback == STD_NULL) {
+    lib_memory_set(&machine->trace.provider, 0, sizeof(machine->trace.provider));
+    if (provider != LIB_NULL) {
+        if (provider->callback == LIB_NULL) {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
         machine->trace.provider = *provider;
@@ -69,19 +70,19 @@ type_status core_machine_set_trace_provider(
 C_VOID core_machine_trace_record(
     core_machine *machine,
     core_machine_trace_event_type type,
-    type_unsigned_32 address,
-    type_unsigned_32 value,
-    type_unsigned_32 detail)
+    lib_u32 address,
+    lib_u32 value,
+    lib_u32 detail)
 {
     core_machine_trace_state *trace;
     core_machine_trace_event *event;
 
-    if (machine == STD_NULL) {
+    if (machine == LIB_NULL) {
         return;
     }
 
     trace = &machine->trace;
-    if (trace->provider.callback == STD_NULL) {
+    if (trace->provider.callback == LIB_NULL) {
         return;
     }
 

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -13,13 +14,13 @@ static C_VOID cpu_profile_machine_reset(C_VOID *opaque)
 {
     cpu_profile_machine *state = (cpu_profile_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
 static const core_machine_execution_provider cpu_profile_execution_provider = {
     cpu_profile_machine_reset,
-    STD_NULL
+    LIB_NULL
 };
 
 static C_INT prepare_machine(core_machine_cpu_profile profile,
@@ -30,20 +31,20 @@ static C_INT prepare_machine(core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    if (state == STD_NULL) return 1;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 1;
+    lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 1;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &cpu_profile_execution_provider, state)) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 1;
     }
     return 0;
 }
 
 static C_INT run_case(core_machine_cpu_profile profile, const C_UCHAR *program,
-    STD_SIZE_T program_size, C_INT expect_ud)
+    lib_size program_size, C_INT expect_ud)
 {
     cpu_profile_machine state;
     core_machine_run_budget budget = { 1u, 0u };

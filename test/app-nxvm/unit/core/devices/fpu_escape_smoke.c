@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -13,38 +14,38 @@ static C_VOID fpu_escape_reset(C_VOID *opaque)
 {
     fpu_escape_machine *state = (fpu_escape_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
 static const core_machine_execution_provider fpu_escape_provider = {
-    fpu_escape_reset, STD_NULL
+    fpu_escape_reset, LIB_NULL
 };
 
 static C_INT prepare_machine(core_machine_fpu_profile fpu_profile,
-    type_unsigned_32 cr0, fpu_escape_machine *state)
+    lib_u32 cr0, fpu_escape_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = fpu_profile
     };
-    if (state == STD_NULL) return 1;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 1;
+    lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 1;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &fpu_escape_provider, state)) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 1;
     }
     (C_VOID)test_core_machine_fixture_set_control_zero(state->machine, cr0);
     return 0;
 }
 
-static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
-    core_machine_fpu_profile fpu_profile, type_unsigned_32 cr0, type_unsigned_32 expected_exception,
-    type_unsigned_32 expected_eip)
+static C_INT run_case(const C_UCHAR *program, lib_size program_size,
+    core_machine_fpu_profile fpu_profile, lib_u32 cr0, lib_u32 expected_exception,
+    lib_u32 expected_eip)
 {
     fpu_escape_machine state;
     core_machine_run_budget budget = { 1u, 0u };
@@ -79,19 +80,19 @@ static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
 }
 
 static C_INT run_nm_delivery_case(const C_UCHAR *program,
-    STD_SIZE_T program_size, type_unsigned_32 cr0)
+    lib_size program_size, lib_u32 cr0)
 {
     static const C_UCHAR handler[] = { 0x40u, 0xf4u };
-    const type_unsigned_16 handler_offset = 0x0100u;
-    const type_unsigned_16 handler_segment = 0u;
+    const lib_u16 handler_offset = 0x0100u;
+    const lib_u16 handler_segment = 0u;
     fpu_escape_machine state;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_16 frame[3] = { 0u, 0u, 0u };
-    type_unsigned_32 original_eax = 0u;
+    lib_u16 frame[3] = { 0u, 0u, 0u };
+    lib_u32 original_eax = 0u;
     C_INT failed = prepare_machine(CORE_MACHINE_FPU_PROFILE_NONE, cr0, &state);
 
     if (!failed) {
@@ -116,15 +117,15 @@ static C_INT run_nm_delivery_case(const C_UCHAR *program,
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_NM) || after.data.eip != handler_offset ||
             after.data.esp != ((before.data.esp & 0xffff0000u) |
-                (type_unsigned_16)(before.data.esp - 6u)) ||
+                (lib_u16)(before.data.esp - 6u)) ||
             after.data.ss.selector != before.data.ss.selector ||
             after.data.ss.base != before.data.ss.base ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), sizeof(frame)) != TYPE_STATUS_OK ||
             frame[0] != 0u ||
             frame[1] != before.data.cs.selector || frame[2] !=
-                (type_unsigned_16)before.data.eflags;
+                (lib_u16)before.data.eflags;
     }
     if (!failed) {
         budget.instructions = 2u;

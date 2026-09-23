@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -27,7 +28,7 @@ static C_VOID dump_first_fault(core_machine *machine)
 {
     core_machine_cpu_diagnostic diagnostic;
     const core_machine_cpu_fault_snapshot *fault;
-    STD_SIZE_T index;
+    lib_size index;
 
     if (core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
         TYPE_STATUS_OK || !diagnostic.first_fault.valid) return;
@@ -53,7 +54,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
     turbo = argc == 4;
-    if ((turbo && STD_STRCMP(argv[3], "turbo")) ||
+    if ((turbo && lib_c_strcmp(argv[3], "turbo")) ||
         (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK)) {
         goto fail;
     }
@@ -79,16 +80,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
     return 0;
 
 fail:
-    if (session != STD_NULL) dump_first_fault(session->core_machine);
+    if (session != LIB_NULL) dump_first_fault(session->core_machine);
     integration_ini_session_close(&ini_session);
     return 1;
 }
 static C_INT has_dos_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
+    lib_size cell;
 
-    if (session == STD_NULL) return 0;
+    if (session == LIB_NULL) return 0;
     (C_VOID)test_vm_machine_capture_presentation(session, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = frame.characters[cell];

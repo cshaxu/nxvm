@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/debug_interface.h"
@@ -25,12 +26,12 @@ typedef enum vm_machine_debug_stop_reason {
 
 typedef struct {
     x86_debug_execution_plan_kind kind;
-    type_unsigned_64 remaining;
-    type_unsigned_64 executed;
-    type_unsigned_32 breakpoint_linear;
+    lib_u64 remaining;
+    lib_u64 executed;
+    lib_u32 breakpoint_linear;
     type_bool completion_pending;
     vm_machine_debug_stop_reason completion_reason;
-    type_unsigned_64 completion_executed;
+    lib_u64 completion_executed;
 } t_debug_execution_plan;
 
 typedef struct {
@@ -47,17 +48,17 @@ C_VOID vm_machine_debug_finalize(t_debug *debug);
 type_status vm_machine_debug_set_execution_plan(t_debug *debug,
     const x86_debug_request *request);
 C_VOID vm_machine_debug_clear_execution_plan(t_debug *debug);
-type_unsigned_64 vm_machine_debug_limit_instruction_budget(
-    const t_debug *debug, type_unsigned_64 requested);
+lib_u64 vm_machine_debug_limit_instruction_budget(
+    const t_debug *debug, lib_u64 requested);
 C_INT vm_machine_debug_breakpoint_due(const t_debug *debug);
 C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug);
 C_VOID vm_machine_debug_complete_watchpoint(t_debug *debug);
 C_VOID vm_machine_debug_complete_run(t_debug *debug,
-    type_unsigned_64 executed);
+    lib_u64 executed);
 C_INT vm_machine_debug_completion_pending(const t_debug *debug,
     vm_machine_debug_stop_reason *out_reason);
 C_INT vm_machine_debug_take_completion(t_debug *debug,
-    vm_machine_debug_stop_reason *out_reason, type_unsigned_64 *out_executed);
+    vm_machine_debug_stop_reason *out_reason, lib_u64 *out_executed);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

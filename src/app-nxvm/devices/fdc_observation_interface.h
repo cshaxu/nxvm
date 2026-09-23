@@ -1,13 +1,14 @@
 #ifndef CORE_MACHINE_FDC_OBSERVATION_INTERFACE_H
 #define CORE_MACHINE_FDC_OBSERVATION_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
 typedef struct core_machine_fdc_terminal_observation {
-    type_unsigned_64 sequence;
-    type_unsigned_8 command;
-    type_unsigned_8 drive;
-    type_unsigned_8 result[7];
+    lib_u64 sequence;
+    lib_u8 command;
+    lib_u8 drive;
+    lib_u8 result[7];
     type_bool successful;
 } core_machine_fdc_terminal_observation;
 

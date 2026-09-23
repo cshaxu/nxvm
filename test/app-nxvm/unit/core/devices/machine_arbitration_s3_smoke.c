@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -5,7 +6,7 @@
 
 typedef struct arbitration_trace_probe {
     core_machine_trace_event events[64];
-    type_unsigned_32 count;
+    lib_u32 count;
 } arbitration_trace_probe;
 
 static C_VOID arbitration_trace(C_VOID *opaque,
@@ -13,17 +14,17 @@ static C_VOID arbitration_trace(C_VOID *opaque,
 {
     arbitration_trace_probe *probe = (arbitration_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 64u) {
+    if (probe != LIB_NULL && probe->count < 64u) {
         probe->events[probe->count++] = *event;
     }
 }
 
 static C_INT arbitration_expect_chain(const arbitration_trace_probe *probe)
 {
-    type_unsigned_32 index;
-    type_unsigned_32 selected_tick = 3u;
-    type_unsigned_32 phase = 0u;
-    type_unsigned_32 groups = 0u;
+    lib_u32 index;
+    lib_u32 selected_tick = 3u;
+    lib_u32 phase = 0u;
+    lib_u32 groups = 0u;
 
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
@@ -50,7 +51,7 @@ static C_INT arbitration_expect_chain(const arbitration_trace_probe *probe)
 
 static C_INT arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
     for (index = 0u; index < probe->count; ++index) {
         if (probe->events[index].type == CORE_MACHINE_TRACE_CPU_RETIRE) return 1;
@@ -60,14 +61,14 @@ static C_INT arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation observation;
     arbitration_trace_probe probe = { { { 0 } }, 0u };
     core_machine_trace_provider trace = { arbitration_trace, &probe };
-    const type_unsigned_8 nop = 0x90u;
+    const lib_u8 nop = 0x90u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 3u;

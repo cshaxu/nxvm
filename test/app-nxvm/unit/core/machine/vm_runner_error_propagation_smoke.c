@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/firmware_interface.h"
@@ -23,20 +24,20 @@ static type_status vm_runner_reset_failure(C_VOID *context,
 }
 
 static const core_machine_firmware_provider vm_runner_reset_failure_provider = {
-    STD_NULL,
+    LIB_NULL,
     vm_runner_reset_failure,
-    STD_NULL,
-    STD_NULL
+    LIB_NULL,
+    LIB_NULL
 };
 
 static C_INT vm_runner_reset_failure_reports_error(C_VOID)
 {
-    vm_machine *machine = STD_NULL;
+    vm_machine *machine = LIB_NULL;
     vm_test_common_machine_state_waiter waiter = {0};
     C_INT succeeded = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &machine) !=
-            TYPE_STATUS_OK || machine == STD_NULL ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) !=
+            TYPE_STATUS_OK || machine == LIB_NULL ||
         vm_test_common_machine_bind(machine) != TYPE_STATUS_OK ||
         vm_test_common_machine_state_waiter_initialize(machine, &waiter) !=
             TYPE_STATUS_OK ||
@@ -50,10 +51,10 @@ static C_INT vm_runner_reset_failure_reports_error(C_VOID)
         &vm_runner_reset_failure_provider;
     if (vm_machine_control_reset(&machine->control) != TYPE_STATUS_OK ||
         !vm_runner_error_wait(machine, &waiter)) goto done;
-    succeeded = machine->runner_failed == TYPE_TRUE;
+    succeeded = machine->runner_failed == LIB_TRUE;
 
 done:
-    if (machine != STD_NULL) {
+    if (machine != LIB_NULL) {
         vm_test_common_machine_unbind(machine);
         vm_machine_destroy(machine);
     }
@@ -63,12 +64,12 @@ done:
 
 C_INT main(C_VOID)
 {
-    vm_machine *machine = STD_NULL;
+    vm_machine *machine = LIB_NULL;
     vm_test_common_machine_state_waiter waiter = {0};
     C_INT succeeded = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &machine) !=
-            TYPE_STATUS_OK || machine == STD_NULL ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) !=
+            TYPE_STATUS_OK || machine == LIB_NULL ||
         vm_test_common_machine_bind(machine) != TYPE_STATUS_OK ||
         vm_test_common_machine_state_waiter_initialize(machine, &waiter) !=
             TYPE_STATUS_OK ||
@@ -85,11 +86,11 @@ C_INT main(C_VOID)
     if (vm_machine_resume(machine) != TYPE_STATUS_OK ||
         !vm_runner_error_wait(machine, &waiter))
         goto done;
-    succeeded = machine->runner_failed == TYPE_TRUE &&
+    succeeded = machine->runner_failed == LIB_TRUE &&
         vm_runner_reset_failure_reports_error();
 
 done:
-    if (machine != STD_NULL) {
+    if (machine != LIB_NULL) {
         vm_test_common_machine_unbind(machine);
         vm_machine_destroy(machine);
     }

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -42,39 +43,39 @@ static C_VOID cg_reset(C_VOID *opaque)
 {
     call_gate_privilege_machine *state = (call_gate_privilege_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
 static const core_machine_execution_provider cg_provider = {
-    cg_reset, STD_NULL
+    cg_reset, LIB_NULL
 };
 
-static C_INT cg_write(call_gate_privilege_machine *state, type_unsigned_32 address,
-    const C_VOID *data, STD_SIZE_T bytes)
+static C_INT cg_write(call_gate_privilege_machine *state, lib_u32 address,
+    const C_VOID *data, lib_size bytes)
 {
-    return state != STD_NULL && state->machine != STD_NULL &&
+    return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, data, bytes) ==
             TYPE_STATUS_OK;
 }
 
-static C_INT cg_read(call_gate_privilege_machine *state, type_unsigned_32 address,
-    C_VOID *data, STD_SIZE_T bytes)
+static C_INT cg_read(call_gate_privilege_machine *state, lib_u32 address,
+    C_VOID *data, lib_size bytes)
 {
-    return state != STD_NULL && state->machine != STD_NULL &&
+    return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
             address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
 }
 
-static C_INT cg_prepare(call_gate_privilege_machine *state, type_unsigned_8 gate_access,
-    type_unsigned_8 parameter_count)
+static C_INT cg_prepare(call_gate_privilege_machine *state, lib_u8 gate_access,
+    lib_u8 parameter_count)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    type_unsigned_8 gdt[] = {
+    lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0,
@@ -83,17 +84,17 @@ static C_INT cg_prepare(call_gate_privilege_machine *state, type_unsigned_8 gate
         0x67u,0,0,0x06u,0,0x8bu,0,0,
         0,0x01u,0x08u,0,parameter_count,gate_access,0,0
     };
-    type_unsigned_8 tss[10] = {0};
-    static const type_unsigned_8 call[] = {0x9au,0,0x01u,0,0,0x33u,0};
-    static const type_unsigned_8 handler[] = {0xf4u};
-    type_unsigned_32 esp0 = 0x00009000u;
-    type_unsigned_16 ss0 = 0x0010u;
+    lib_u8 tss[10] = {0};
+    static const lib_u8 call[] = {0x9au,0,0x01u,0,0,0x33u,0};
+    static const lib_u8 handler[] = {0xf4u};
+    lib_u32 esp0 = 0x00009000u;
+    lib_u16 ss0 = 0x0010u;
     t_cpu *cpu;
 
-    if (state == STD_NULL) return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
-    STD_MEMCPY(&tss[4], &esp0, sizeof(esp0));
-    STD_MEMCPY(&tss[8], &ss0, sizeof(ss0));
+    if (state == LIB_NULL) return 0;
+    lib_memory_set(state, 0, sizeof(*state));
+    lib_memory_copy(&tss[4], &esp0, sizeof(esp0));
+    lib_memory_copy(&tss[8], &ss0, sizeof(ss0));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &cg_provider, state) ||
@@ -103,35 +104,35 @@ static C_INT cg_prepare(call_gate_privilege_machine *state, type_unsigned_8 gate
         !cg_write(state, CG_KERNEL_CODE_BASE + CG_HANDLER_OFFSET, handler,
             sizeof(handler))) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     cpu = &state->machine->executor_cpu;
     cpu->data.cr0 = VCPU_CR0_PE;
-    cpu->data.gdtr.flagValid = TYPE_TRUE;
+    cpu->data.gdtr.flagValid = LIB_TRUE;
     cpu->data.gdtr.sregtype = SREG_GDTR;
     cpu->data.gdtr.base = CG_GDT_BASE;
     cpu->data.gdtr.limit = sizeof(gdt) - 1u;
-    cpu->data.cs.flagValid = TYPE_TRUE;
+    cpu->data.cs.flagValid = LIB_TRUE;
     cpu->data.cs.selector = 0x001bu;
     cpu->data.cs.sregtype = SREG_CODE;
     cpu->data.cs.base = CG_USER_CODE_BASE;
     cpu->data.cs.limit = 0xffffu;
     cpu->data.cs.dpl = 3u;
-    cpu->data.cs.seg.executable = TYPE_TRUE;
-    cpu->data.cs.seg.exec.defsize = TYPE_TRUE;
-    cpu->data.cs.seg.exec.conform = TYPE_FALSE;
-    cpu->data.cs.seg.exec.readable = TYPE_TRUE;
-    cpu->data.ss.flagValid = TYPE_TRUE;
+    cpu->data.cs.seg.executable = LIB_TRUE;
+    cpu->data.cs.seg.exec.defsize = LIB_TRUE;
+    cpu->data.cs.seg.exec.conform = LIB_FALSE;
+    cpu->data.cs.seg.exec.readable = LIB_TRUE;
+    cpu->data.ss.flagValid = LIB_TRUE;
     cpu->data.ss.selector = 0x0023u;
     cpu->data.ss.sregtype = SREG_STACK;
     cpu->data.ss.base = 0u;
     cpu->data.ss.limit = 0xffffffffu;
     cpu->data.ss.dpl = 3u;
-    cpu->data.ss.seg.data.big = TYPE_TRUE;
-    cpu->data.ss.seg.data.expdown = TYPE_FALSE;
-    cpu->data.ss.seg.data.writable = TYPE_TRUE;
-    cpu->data.tr.flagValid = TYPE_TRUE;
+    cpu->data.ss.seg.data.big = LIB_TRUE;
+    cpu->data.ss.seg.data.expdown = LIB_FALSE;
+    cpu->data.ss.seg.data.writable = LIB_TRUE;
+    cpu->data.tr.flagValid = LIB_TRUE;
     cpu->data.tr.selector = 0x0028u;
     cpu->data.tr.sregtype = SREG_TR;
     cpu->data.tr.base = CG_TSS_BASE;
@@ -141,7 +142,7 @@ static C_INT cg_prepare(call_gate_privilege_machine *state, type_unsigned_8 gate
     cpu->data.eip = 0u;
     cpu->data.esp = 0x00008800u;
     cpu->data.eflags = 0x00000202u;
-    cpu->data.flagHalt = TYPE_FALSE;
+    cpu->data.flagHalt = LIB_FALSE;
     return 1;
 }
 
@@ -174,7 +175,7 @@ static C_INT cg_run_budget(call_gate_privilege_machine *state, t_cpu *out_cpu,
 }
 
 static C_INT cg_fault_is(const core_machine_cpu_diagnostic *diagnostic,
-    type_unsigned_32 mask, type_unsigned_32 code)
+    lib_u32 mask, lib_u32 code)
 {
     return diagnostic->first_fault.valid && TYPE_GET_BIT(
         diagnostic->first_fault.exception_mask, mask) &&
@@ -186,36 +187,36 @@ static C_INT cg_entry_state_equal(const t_cpu *before, const t_cpu *after)
     return before->data.eip == after->data.eip &&
         before->data.esp == after->data.esp &&
         before->data.eflags == after->data.eflags &&
-        STD_MEMCMP(&before->data.cs, &after->data.cs,
-            sizeof(before->data.cs)) == 0 && STD_MEMCMP(&before->data.ss,
+        lib_memory_compare(&before->data.cs, &after->data.cs,
+            sizeof(before->data.cs)) == 0 && lib_memory_compare(&before->data.ss,
             &after->data.ss, sizeof(before->data.ss)) == 0;
 }
 
 static C_INT cg_install_ts_delivery_gate(call_gate_privilege_machine *state,
-    type_unsigned_8 access)
+    lib_u8 access)
 {
-    type_unsigned_8 gate[8] = {0};
+    lib_u8 gate[8] = {0};
     t_cpu *cpu;
 
-    if (state == STD_NULL || state->machine == STD_NULL) return 0;
+    if (state == LIB_NULL || state->machine == LIB_NULL) return 0;
     gate[0] = CG_HANDLER_OFFSET & 0xffu;
     gate[1] = CG_HANDLER_OFFSET >> 8u;
     gate[2] = 0x1bu;
     gate[5] = access;
     cpu = &state->machine->executor_cpu;
-    cpu->data.idtr.flagValid = TYPE_TRUE;
+    cpu->data.idtr.flagValid = LIB_TRUE;
     cpu->data.idtr.sregtype = SREG_IDTR;
     cpu->data.idtr.base = CG_IDT_BASE;
     cpu->data.idtr.limit = 10u * 8u + 7u;
     return cg_write(state, CG_IDT_BASE + 10u * 8u, gate, sizeof(gate)) &&
         cg_write(state, CG_USER_CODE_BASE + CG_HANDLER_OFFSET,
-            (const type_unsigned_8[]){0xebu,0xfeu}, 2u);
+            (const lib_u8[]){0xebu,0xfeu}, 2u);
 }
 
 static C_INT cg_prepare_ts_delivery(call_gate_privilege_machine *state,
-    type_unsigned_8 gate_access, type_unsigned_8 parameter_count)
+    lib_u8 gate_access, lib_u8 parameter_count)
 {
-    type_unsigned_16 invalid_ss0 = 0x0013u;
+    lib_u16 invalid_ss0 = 0x0013u;
 
     return cg_prepare(state, 0xecu, parameter_count) &&
         cg_write(state, CG_TSS_BASE + 8u, &invalid_ss0, sizeof(invalid_ss0)) &&
@@ -223,18 +224,18 @@ static C_INT cg_prepare_ts_delivery(call_gate_privilege_machine *state,
 }
 
 static C_INT cg_install_outer_error_gate(call_gate_privilege_machine *state,
-    type_unsigned_8 access)
+    lib_u8 access)
 {
-    type_unsigned_8 gate[8] = {0};
+    lib_u8 gate[8] = {0};
     t_cpu *cpu;
 
-    if (state == STD_NULL || state->machine == STD_NULL) return 0;
+    if (state == LIB_NULL || state->machine == LIB_NULL) return 0;
     gate[0] = CG_HANDLER_OFFSET & 0xffu;
     gate[1] = CG_HANDLER_OFFSET >> 8u;
     gate[2] = 0x08u;
     gate[5] = access;
     cpu = &state->machine->executor_cpu;
-    cpu->data.idtr.flagValid = TYPE_TRUE;
+    cpu->data.idtr.flagValid = LIB_TRUE;
     cpu->data.idtr.sregtype = SREG_IDTR;
     cpu->data.idtr.base = CG_IDT_BASE;
     cpu->data.idtr.limit = 13u * 8u + 7u;
@@ -242,11 +243,11 @@ static C_INT cg_install_outer_error_gate(call_gate_privilege_machine *state,
 }
 
 static C_INT cg_install_double_fault_gate(call_gate_privilege_machine *state,
-    type_unsigned_8 access)
+    lib_u8 access)
 {
-    type_unsigned_8 gate[8] = {0};
+    lib_u8 gate[8] = {0};
 
-    if (state == STD_NULL || state->machine == STD_NULL) return 0;
+    if (state == LIB_NULL || state->machine == LIB_NULL) return 0;
     gate[0] = CG_HANDLER_OFFSET & 0xffu;
     gate[1] = CG_HANDLER_OFFSET >> 8u;
     gate[2] = 0x08u;
@@ -254,25 +255,25 @@ static C_INT cg_install_double_fault_gate(call_gate_privilege_machine *state,
     return cg_write(state, CG_IDT_BASE + 8u * 8u, gate, sizeof(gate));
 }
 
-static C_INT cg_test_success(type_unsigned_8 count)
+static C_INT cg_test_success(lib_u8 count)
 {
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    type_unsigned_32 frame[6] = {0u,0u,0u,0u,0u,0u};
-    type_unsigned_32 parameters[2] = {0x11223344u,0x55667788u};
+    lib_u32 frame[6] = {0u,0u,0u,0u,0u,0u};
+    lib_u32 parameters[2] = {0x11223344u,0x55667788u};
     C_INT failed = !cg_prepare(&state, 0xecu, count);
 
     if (!failed && count) failed |= !cg_write(&state, 0x00008800u,
-        parameters, (STD_SIZE_T)count * sizeof(parameters[0]));
+        parameters, (lib_size)count * sizeof(parameters[0]));
     if (!failed) {
         failed |= !cg_run(&state, 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid || after.data.cs.selector != 0x0008u ||
             after.data.cs.dpl != 0u || after.data.eip != CG_HANDLER_OFFSET + 1u ||
             after.data.ss.selector != 0x0010u || after.data.esp !=
-                0x00009000u - (type_unsigned_32)(4u + count) * 4u ||
+                0x00009000u - (lib_u32)(4u + count) * 4u ||
             !cg_read(&state, after.data.esp, frame,
-                (STD_SIZE_T)(4u + count) * sizeof(frame[0])) ||
+                (lib_size)(4u + count) * sizeof(frame[0])) ||
             frame[0] != 7u || frame[1] != 0x0000001bu ||
             frame[2 + count] != 0x00008800u ||
             frame[3 + count] != 0x00000023u ||
@@ -289,8 +290,8 @@ static C_INT cg_test_dpl_failure_atomic(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 cs_before = 0u, cs_after = 0u;
-    type_unsigned_8 ss_before = 0u, ss_after = 0u;
+    lib_u8 cs_before = 0u, cs_after = 0u;
+    lib_u8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (!failed) {
@@ -311,15 +312,15 @@ static C_INT cg_test_dpl_failure_atomic(C_VOID)
     return !failed;
 }
 
-static C_INT cg_test_gate_failure_atomic(type_unsigned_8 gate_access, type_unsigned_32 mask,
-    type_unsigned_32 code)
+static C_INT cg_test_gate_failure_atomic(lib_u8 gate_access, lib_u32 mask,
+    lib_u32 code)
 {
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 cs_before = 0u, cs_after = 0u;
-    type_unsigned_8 ss_before = 0u, ss_after = 0u;
+    lib_u8 cs_before = 0u, cs_after = 0u;
+    lib_u8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !cg_prepare(&state, gate_access, 0u);
 
     if (!failed) {
@@ -346,8 +347,8 @@ static C_INT cg_test_parameter_source_failure_atomic(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 cs_before = 0u, cs_after = 0u;
-    type_unsigned_8 ss_before = 0u, ss_after = 0u;
+    lib_u8 cs_before = 0u, cs_after = 0u;
+    lib_u8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !cg_prepare(&state, 0xecu, 1u);
 
     if (!failed) {
@@ -370,16 +371,16 @@ static C_INT cg_test_parameter_source_failure_atomic(C_VOID)
 }
 
 static C_INT cg_test_target_failure_atomic(call_gate_target_failure failure,
-    type_unsigned_32 mask, type_unsigned_32 code)
+    lib_u32 mask, lib_u32 code)
 {
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 cs_before = 0u, cs_after = 0u;
-    type_unsigned_8 ss_before = 0u, ss_after = 0u;
-    type_unsigned_8 access = 0u;
-    type_unsigned_16 selector = 0u;
+    lib_u8 cs_before = 0u, cs_after = 0u;
+    lib_u8 ss_before = 0u, ss_after = 0u;
+    lib_u8 access = 0u;
+    lib_u16 selector = 0u;
     const core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     type_status status;
@@ -448,7 +449,7 @@ static C_INT cg_test_ts_delivery(C_VOID)
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    type_unsigned_32 frame[4] = {0u,0u,0u,0u};
+    lib_u32 frame[4] = {0u,0u,0u,0u};
     C_INT failed = !cg_prepare_ts_delivery(&state, 0xeeu, 0u);
 
     if (!failed) {
@@ -502,11 +503,11 @@ static C_INT cg_test_ts_delivery_failure(call_gate_ts_delivery_failure failure)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 access_before = 0u;
-    type_unsigned_8 access_after = 0u;
-    type_unsigned_32 stack_before[4] = {0u,0u,0u,0u};
-    type_unsigned_32 stack_after[4] = {0u,0u,0u,0u};
-    type_unsigned_8 gate_access = 0xeeu;
+    lib_u8 access_before = 0u;
+    lib_u8 access_after = 0u;
+    lib_u32 stack_before[4] = {0u,0u,0u,0u};
+    lib_u32 stack_after[4] = {0u,0u,0u,0u};
+    lib_u8 gate_access = 0xeeu;
     C_INT failed;
 
     if (failure == CALL_GATE_TS_DELIVERY_INVALID_GATE) gate_access = 0x80u;
@@ -526,7 +527,7 @@ static C_INT cg_test_ts_delivery_failure(call_gate_ts_delivery_failure failure)
                 sizeof(access_after)) || !cg_read(&state, 0x000087f0u,
                 stack_after, sizeof(stack_after)) ||
             !cg_entry_state_equal(&before, &after) ||
-            access_after != access_before || STD_MEMCMP(stack_before, stack_after,
+            access_after != access_before || lib_memory_compare(stack_before, stack_after,
                 sizeof(stack_before)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -538,14 +539,14 @@ static C_INT cg_test_outer_gp_delivery(C_VOID)
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    type_unsigned_32 frame[6] = {0u,0u,0u,0u,0u,0u};
-    type_unsigned_8 cs_access = 0u;
-    type_unsigned_8 ss_access = 0u;
+    lib_u32 frame[6] = {0u,0u,0u,0u,0u,0u};
+    lib_u8 cs_access = 0u;
+    lib_u8 ss_access = 0u;
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (!failed) {
         failed |= !cg_install_outer_error_gate(&state,
-                (type_unsigned_8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
+                (lib_u8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
             !cg_run(&state, 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
@@ -577,13 +578,13 @@ static C_INT cg_test_outer_gp_delivery_failure(
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 cs_before = 0u;
-    type_unsigned_8 cs_after = 0u;
-    type_unsigned_8 ss_before = 0u;
-    type_unsigned_8 ss_after = 0u;
-    type_unsigned_32 stack_before[6] = {0u,0u,0u,0u,0u,0u};
-    type_unsigned_32 stack_after[6] = {0u,0u,0u,0u,0u,0u};
-    type_unsigned_8 gate_access = (type_unsigned_8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32);
+    lib_u8 cs_before = 0u;
+    lib_u8 cs_after = 0u;
+    lib_u8 ss_before = 0u;
+    lib_u8 ss_after = 0u;
+    lib_u32 stack_before[6] = {0u,0u,0u,0u,0u,0u};
+    lib_u32 stack_after[6] = {0u,0u,0u,0u,0u,0u};
+    lib_u8 gate_access = (lib_u8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32);
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (failure == CALL_GATE_OUTER_DELIVERY_INVALID_GATE) gate_access = 0x80u;
@@ -592,13 +593,13 @@ static C_INT cg_test_outer_gp_delivery_failure(
     if (!failed) {
         failed |= !cg_install_outer_error_gate(&state, gate_access);
         if (!failed && failure == CALL_GATE_OUTER_DELIVERY_TARGET_NOT_PRESENT) {
-            type_unsigned_8 access = 0x1au;
+            lib_u8 access = 0x1au;
             failed |= !cg_write(&state, CG_GDT_BASE + 13u, &access,
                 sizeof(access));
         }
         if (!failed && failure == CALL_GATE_OUTER_DELIVERY_STACK_LIMIT) {
-            type_unsigned_8 limit[] = {0u,0u};
-            type_unsigned_8 granularity = 0x40u;
+            lib_u8 limit[] = {0u,0u};
+            lib_u8 granularity = 0x40u;
             failed |= !cg_write(&state, CG_GDT_BASE + 16u, limit,
                 sizeof(limit)) || !cg_write(&state, CG_GDT_BASE + 22u,
                 &granularity, sizeof(granularity));
@@ -617,7 +618,7 @@ static C_INT cg_test_outer_gp_delivery_failure(
                 CG_GDT_BASE + 21u, &ss_after, sizeof(ss_after)) || !cg_read(&state,
                 0x00008fe8u, stack_after, sizeof(stack_after)) ||
             !cg_entry_state_equal(&before, &after) || cs_after != cs_before ||
-            ss_after != ss_before || STD_MEMCMP(stack_before, stack_after,
+            ss_after != ss_before || lib_memory_compare(stack_before, stack_after,
                 sizeof(stack_before)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -630,19 +631,19 @@ static C_INT cg_test_outer_gp_double_fault(C_INT double_fault_gate_valid)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_32 frame[6] = {0u,0u,0u,0u,0u,0u};
-    type_unsigned_32 frame_before[6] = {0u,0u,0u,0u,0u,0u};
-    type_unsigned_32 frame_after[6] = {0u,0u,0u,0u,0u,0u};
-    type_unsigned_8 cs_before = 0u;
-    type_unsigned_8 cs_after = 0u;
-    type_unsigned_8 ss_before = 0u;
-    type_unsigned_8 ss_after = 0u;
+    lib_u32 frame[6] = {0u,0u,0u,0u,0u,0u};
+    lib_u32 frame_before[6] = {0u,0u,0u,0u,0u,0u};
+    lib_u32 frame_after[6] = {0u,0u,0u,0u,0u,0u};
+    lib_u8 cs_before = 0u;
+    lib_u8 cs_after = 0u;
+    lib_u8 ss_before = 0u;
+    lib_u8 ss_after = 0u;
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (!failed) {
         failed |= !cg_install_outer_error_gate(&state, 0x80u) ||
             !cg_install_double_fault_gate(&state, double_fault_gate_valid ?
-                (type_unsigned_8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32) : 0x80u);
+                (lib_u8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32) : 0x80u);
     }
     if (!failed && double_fault_gate_valid) {
         failed |= !cg_run(&state, 0, &after, &diagnostic) ||
@@ -674,7 +675,7 @@ static C_INT cg_test_outer_gp_double_fault(C_INT double_fault_gate_valid)
                 CG_GDT_BASE + 21u, &ss_after, sizeof(ss_after)) || !cg_read(&state,
                 0x00008fe8u, frame_after, sizeof(frame_after)) ||
             !cg_entry_state_equal(&before, &after) || cs_after != cs_before ||
-            ss_after != ss_before || STD_MEMCMP(frame_before, frame_after,
+            ss_after != ss_before || lib_memory_compare(frame_before, frame_after,
                 sizeof(frame_before)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -687,10 +688,10 @@ static C_INT cg_test_32_same_cpl_without_tss(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_32 frame[3] = {0u, 0u, 0u};
-    const type_unsigned_32 sentinel[3] = {0x11223344u, 0x55667788u,
+    lib_u32 frame[3] = {0u, 0u, 0u};
+    const lib_u32 sentinel[3] = {0x11223344u, 0x55667788u,
         0x99aabbccu};
-    static const type_unsigned_8 call[] = {0x9au,0u,0u,0u,0u,0x33u,0u};
+    static const lib_u8 call[] = {0x9au,0u,0u,0u,0u,0x33u,0u};
     t_cpu *cpu;
     C_INT failed = !cg_prepare(&state, 0xecu, 3u);
 
@@ -701,7 +702,7 @@ static C_INT cg_test_32_same_cpl_without_tss(C_VOID)
         cpu->data.cs.dpl = 0u;
         cpu->data.ss.selector = 0x0010u;
         cpu->data.ss.dpl = 0u;
-        cpu->data.tr.flagValid = TYPE_FALSE;
+        cpu->data.tr.flagValid = LIB_FALSE;
         cpu->data.eip = 0u;
         cpu->data.esp = 0x00008800u;
         failed |= !cg_write(&state, CG_KERNEL_CODE_BASE, call, sizeof(call)) ||

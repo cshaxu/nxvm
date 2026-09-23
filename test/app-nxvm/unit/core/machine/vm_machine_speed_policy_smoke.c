@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -22,8 +23,8 @@ static C_INT verify_wait_speed(vm_machine *session, vm_machine_speed speed)
     const core_machine_run_result waiting = {
         .reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT
     };
-    type_unsigned_64 before;
-    type_unsigned_64 after;
+    lib_u64 before;
+    lib_u64 after;
     core_machine_time_observation observation;
     C_INT advanced = 0;
 
@@ -60,11 +61,11 @@ static C_INT verify_wait_speed(vm_machine *session, vm_machine_speed speed)
 
 int main(void)
 {
-    vm_machine *default_session = STD_NULL;
+    vm_machine *default_session = LIB_NULL;
     vm_machine_speed speed;
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK) {
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != TYPE_STATUS_OK) {
         vm_machine_destroy(default_session);
         return 1;
     }

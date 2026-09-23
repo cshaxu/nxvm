@@ -1,4 +1,5 @@
 #include <windows.h>
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -19,15 +20,15 @@ static DWORD WINAPI vm_t287_fdisk_run(C_VOID *opaque)
 static C_INT vm_t287_fdisk_has_text(const vm_machine *session, const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
-    STD_SIZE_T character;
-    STD_SIZE_T length = STD_STRLEN(text);
+    lib_size cell;
+    lib_size character;
+    lib_size length = lib_text_length(text);
 
-    if (session == STD_NULL || text == STD_NULL || length == 0u ||
+    if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
         test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_FDISK_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
-            if (frame.characters[cell + character] != (type_unsigned_8)text[character]) break;
+            if (frame.characters[cell + character] != (lib_u8)text[character]) break;
         }
         if (character == length) return 1;
     }
@@ -49,12 +50,12 @@ static C_INT vm_t287_fdisk_wait(const vm_machine *session, const C_CHAR *text,
     return 0;
 }
 
-static C_INT vm_t287_fdisk_submit(const vm_machine *session, const type_unsigned_8 *codes,
-    STD_SIZE_T count)
+static C_INT vm_t287_fdisk_submit(const vm_machine *session, const lib_u8 *codes,
+    lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (session == STD_NULL || codes == STD_NULL) return 0;
+    if (session == LIB_NULL || codes == LIB_NULL) return 0;
     for (index = 0u; index < count; ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
                 codes[index]) != TYPE_STATUS_OK) return 0;
@@ -65,20 +66,20 @@ static C_INT vm_t287_fdisk_submit(const vm_machine *session, const type_unsigned
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session;
-    const type_unsigned_8 enter[] = {0x5au};
-    const type_unsigned_8 four_make[] = {0x25u};
-    const type_unsigned_8 four_break[] = {0xf0u, 0x25u};
-    const type_unsigned_8 fdisk[] = {0x2bu, 0xf0u, 0x2bu, 0x23u, 0xf0u, 0x23u,
+    const lib_u8 enter[] = {0x5au};
+    const lib_u8 four_make[] = {0x25u};
+    const lib_u8 four_break[] = {0xf0u, 0x25u};
+    const lib_u8 fdisk[] = {0x2bu, 0xf0u, 0x2bu, 0x23u, 0xf0u, 0x23u,
         0x43u, 0xf0u, 0x43u, 0x1bu, 0xf0u, 0x1bu, 0x42u, 0xf0u, 0x42u, 0x5au};
-    HANDLE thread = STD_NULL;
-    vm_machine *session = STD_NULL;
+    HANDLE thread = LIB_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT passed = 0;
 
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
             &ini_session) != TYPE_STATUS_OK) return 77;
     session = ini_session.session;
-    if ((thread = CreateThread(STD_NULL, 0u,
-            vm_t287_fdisk_run, session, 0u, STD_NULL)) == STD_NULL) goto done;
+    if ((thread = CreateThread(LIB_NULL, 0u,
+            vm_t287_fdisk_run, session, 0u, LIB_NULL)) == LIB_NULL) goto done;
     if (!vm_t287_fdisk_wait(session, "Enter new date", 60000u) ||
         !vm_t287_fdisk_submit(session, enter, sizeof(enter)) ||
         !vm_t287_fdisk_wait(session, "Enter new time", 60000u) ||
@@ -99,8 +100,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     passed = 1;
 
 done:
-    if (session != STD_NULL) vm_machine_stop(session);
-    if (thread != STD_NULL) {
+    if (session != LIB_NULL) vm_machine_stop(session);
+    if (thread != LIB_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
     }

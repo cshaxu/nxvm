@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/machine/machine_private.h"
 
@@ -15,7 +16,7 @@ static C_INT debug_trace_one(integration_ini_session *session)
     x86_debug_response response;
     lib_size response_size = 0u;
 
-    if (session == STD_NULL || session->common_machine == LIB_NULL ||
+    if (session == LIB_NULL || session->common_machine == LIB_NULL ||
         common_machine_debug_acquire(session->common_machine, &lease) != LIB_STATUS_OK ||
         common_machine_debug_execute_with_lease(session->common_machine, &lease,
             &request, sizeof(request), &response, sizeof(response),

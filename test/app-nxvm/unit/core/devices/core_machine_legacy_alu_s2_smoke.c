@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -23,7 +24,7 @@ typedef enum legacy_alu_operation {
     LEGACY_ALU_CMP
 } legacy_alu_operation;
 
-static type_unsigned_32 *legacy_alu_register(t_cpu *cpu, type_unsigned_8 index)
+static lib_u32 *legacy_alu_register(t_cpu *cpu, lib_u8 index)
 {
     switch (index) {
     case 0u: return &cpu->data.eax;
@@ -34,7 +35,7 @@ static type_unsigned_32 *legacy_alu_register(t_cpu *cpu, type_unsigned_8 index)
     case 5u: return &cpu->data.ebp;
     case 6u: return &cpu->data.esi;
     case 7u: return &cpu->data.edi;
-    default: return STD_NULL;
+    default: return LIB_NULL;
     }
 }
 
@@ -42,12 +43,12 @@ static C_VOID legacy_alu_reset(C_VOID *opaque)
 {
     legacy_alu_machine *state = (legacy_alu_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider legacy_alu_provider = {
-    legacy_alu_reset, STD_NULL
+    legacy_alu_reset, LIB_NULL
 };
 
 static C_INT legacy_alu_prepare(core_machine_cpu_profile profile,
@@ -59,27 +60,27 @@ static C_INT legacy_alu_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    if (state == STD_NULL)
+    if (state == LIB_NULL)
         return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
             &legacy_alu_provider, state, &state->machine)) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     return 1;
 }
 
 static C_INT legacy_alu_run(legacy_alu_machine *state,
-    const type_unsigned_8 *code, STD_SIZE_T bytes, C_INT fault, t_cpu *after,
+    const lib_u8 *code, lib_size bytes, C_INT fault, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
     core_machine_run_result result;
     type_status status;
 
-    if (state == STD_NULL || state->machine == STD_NULL || code == STD_NULL ||
-        after == STD_NULL || diagnostic == STD_NULL ||
+    if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
+        after == LIB_NULL || diagnostic == LIB_NULL ||
         !test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
         core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK)
         return 0;
@@ -97,60 +98,60 @@ static C_INT legacy_alu_run(legacy_alu_machine *state,
     return 1;
 }
 
-static type_unsigned_32 legacy_alu_mask(type_unsigned_8 width)
+static lib_u32 legacy_alu_mask(lib_u8 width)
 {
     return width == 8u ? 0xffu : (width == 16u ? 0xffffu : 0xffffffffu);
 }
 
-static type_unsigned_16 legacy_alu_real_flags_image(type_unsigned_32 flags)
+static lib_u16 legacy_alu_real_flags_image(lib_u32 flags)
 {
-    type_unsigned_16 image = TYPE_MASK_UNSIGNED_16((flags &
+    lib_u16 image = TYPE_MASK_UNSIGNED_16((flags &
         ~VCPU_EFLAGS_RESERVED) | 0x02u);
 
     return image;
 }
 
-static type_unsigned_16 legacy_alu_real_flags_known_mask(
+static lib_u16 legacy_alu_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
     return profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0x0fd5u : 0x7fd5u;
 }
 
-static type_unsigned_32 legacy_alu_parity(type_unsigned_32 value)
+static lib_u32 legacy_alu_parity(lib_u32 value)
 {
-    type_unsigned_8 byte = TYPE_MASK_UNSIGNED_8(value);
-    type_unsigned_8 bit;
-    type_unsigned_32 parity = 1u;
+    lib_u8 byte = TYPE_MASK_UNSIGNED_8(value);
+    lib_u8 bit;
+    lib_u32 parity = 1u;
 
     for (bit = 0u; bit != 8u; ++bit)
         parity ^= (byte >> bit) & 1u;
     return parity;
 }
 
-static type_unsigned_32 legacy_alu_flags(legacy_alu_operation operation,
-    type_unsigned_32 left, type_unsigned_32 right, type_unsigned_32 carry,
-    type_unsigned_8 width, type_unsigned_32 result, type_unsigned_32 before)
+static lib_u32 legacy_alu_flags(legacy_alu_operation operation,
+    lib_u32 left, lib_u32 right, lib_u32 carry,
+    lib_u8 width, lib_u32 result, lib_u32 before)
 {
-    const type_unsigned_32 mask = legacy_alu_mask(width);
-    const type_unsigned_32 sign = width == 8u ? 0x80u :
+    const lib_u32 mask = legacy_alu_mask(width);
+    const lib_u32 sign = width == 8u ? 0x80u :
         (width == 16u ? 0x8000u : 0x80000000u);
-    type_unsigned_32 flags = before & ~LEGACY_ALU_FLAGS;
-    type_unsigned_32 cf = 0u;
-    type_unsigned_32 of = 0u;
-    type_unsigned_32 af = 0u;
+    lib_u32 flags = before & ~LEGACY_ALU_FLAGS;
+    lib_u32 cf = 0u;
+    lib_u32 of = 0u;
+    lib_u32 af = 0u;
 
     left &= mask;
     right &= mask;
     result &= mask;
     if (operation == LEGACY_ALU_ADD || operation == LEGACY_ALU_ADC) {
-        const type_unsigned_32 sum = left + right +
+        const lib_u32 sum = left + right +
             (operation == LEGACY_ALU_ADC ? carry : 0u);
         cf = sum > mask;
         of = ((~(left ^ right) & (left ^ result)) & sign) != 0u;
         af = ((left ^ right ^ result) & 0x10u) != 0u;
     } else if (operation == LEGACY_ALU_SUB || operation == LEGACY_ALU_SBB ||
         operation == LEGACY_ALU_CMP) {
-        const type_unsigned_32 subtrahend = right +
+        const lib_u32 subtrahend = right +
             (operation == LEGACY_ALU_SBB ? carry : 0u);
         cf = left < subtrahend;
         of = (((left ^ right) & (left ^ result)) & sign) != 0u;
@@ -170,22 +171,22 @@ static type_unsigned_32 legacy_alu_flags(legacy_alu_operation operation,
 }
 
 static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
-    legacy_alu_operation operation, type_unsigned_8 encoding,
-    type_unsigned_8 width, C_INT memory)
+    legacy_alu_operation operation, lib_u8 encoding,
+    lib_u8 width, C_INT memory)
 {
-    static const type_unsigned_8 base[] = {
+    static const lib_u8 base[] = {
         0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u, 0x38u
     };
-    const type_unsigned_32 left = width == 8u ? 0x7fu :
+    const lib_u32 left = width == 8u ? 0x7fu :
         (width == 16u ? 0x7fffu : 0x7fffffffu);
-    const type_unsigned_32 right = width == 8u ? 0x01u : 0x0001u;
-    const type_unsigned_32 carry = operation == LEGACY_ALU_ADC ||
+    const lib_u32 right = width == 8u ? 0x01u : 0x0001u;
+    const lib_u32 carry = operation == LEGACY_ALU_ADC ||
         operation == LEGACY_ALU_SBB ? 1u : 0u;
-    const type_unsigned_32 mask = legacy_alu_mask(width);
-    type_unsigned_32 expected;
-    type_unsigned_32 observed = 0u;
-    type_unsigned_8 code[6] = { 0u };
-    STD_SIZE_T bytes = 0u;
+    const lib_u32 mask = legacy_alu_mask(width);
+    lib_u32 expected;
+    lib_u32 observed = 0u;
+    lib_u8 code[6] = { 0u };
+    lib_size bytes = 0u;
     legacy_alu_machine state;
     t_cpu after;
     t_cpu before;
@@ -204,7 +205,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
     else
         expected = left ^ right;
     if (width == 32u) code[bytes++] = 0x66u;
-    code[bytes++] = (type_unsigned_8)(base[operation] +
+    code[bytes++] = (lib_u8)(base[operation] +
         (encoding == 0u ? (width == 8u ? 0u : 1u) :
         (width == 8u ? 2u : 3u)));
     if (memory) {
@@ -247,11 +248,11 @@ static C_INT legacy_alu_test_binary_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 operation;
-    type_unsigned_8 encoding;
-    type_unsigned_8 width_index;
-    type_unsigned_8 memory;
+    lib_u8 profile_index;
+    lib_u8 operation;
+    lib_u8 encoding;
+    lib_u8 width_index;
+    lib_u8 memory;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
@@ -278,33 +279,33 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 base[] = {
+    static const lib_u8 base[] = {
         0x04u, 0x0cu, 0x14u, 0x1cu, 0x24u, 0x2cu, 0x34u, 0x3cu
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 operation;
-    type_unsigned_8 width_index;
+    lib_u8 profile_index;
+    lib_u8 operation;
+    lib_u8 width_index;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (operation = 0u; operation != 8u; ++operation)
     for (width_index = 0u; width_index != 3u; ++width_index) {
-        const type_unsigned_8 width = width_index == 0u ? 8u :
+        const lib_u8 width = width_index == 0u ? 8u :
             (width_index == 1u ? 16u : 32u);
-        const type_unsigned_32 left = width == 8u ? 0x7fu :
+        const lib_u32 left = width == 8u ? 0x7fu :
             (width == 16u ? 0x7fffu : 0x7fffffffu);
-        const type_unsigned_32 right = 1u;
-        const type_unsigned_32 carry = operation == LEGACY_ALU_ADC ||
+        const lib_u32 right = 1u;
+        const lib_u32 carry = operation == LEGACY_ALU_ADC ||
             operation == LEGACY_ALU_SBB ? 1u : 0u;
-        const type_unsigned_32 mask = legacy_alu_mask(width);
-        const type_unsigned_32 expected = operation == LEGACY_ALU_ADD ||
+        const lib_u32 mask = legacy_alu_mask(width);
+        const lib_u32 expected = operation == LEGACY_ALU_ADD ||
             operation == LEGACY_ALU_ADC ? (left + right + carry) & mask :
             (operation == LEGACY_ALU_SUB || operation == LEGACY_ALU_SBB ||
             operation == LEGACY_ALU_CMP ? (left - right - carry) & mask :
             (operation == LEGACY_ALU_OR ? left | right :
             (operation == LEGACY_ALU_AND ? left & right : left ^ right)));
-        type_unsigned_8 code[6] = { 0u };
-        STD_SIZE_T bytes = 0u;
+        lib_u8 code[6] = { 0u };
+        lib_size bytes = 0u;
         legacy_alu_machine state;
         t_cpu before;
         t_cpu after;
@@ -314,7 +315,7 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
         if (width == 32u && profiles[profile_index] != CORE_MACHINE_CPU_PROFILE_80386)
             continue;
         if (width == 32u) code[bytes++] = 0x66u;
-        code[bytes++] = (type_unsigned_8)(base[operation] +
+        code[bytes++] = (lib_u8)(base[operation] +
             (width == 8u ? 0u : 1u));
         code[bytes++] = 1u;
         if (width != 8u) {
@@ -346,18 +347,18 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
 }
 
 static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
-    legacy_alu_operation operation, type_unsigned_8 width,
+    legacy_alu_operation operation, lib_u8 width,
     C_INT sign_extended, C_INT memory)
 {
-    const type_unsigned_32 left = width == 8u ? 0x7fu : 0x7fffu;
-    const type_unsigned_32 right = sign_extended ? 0xffffu : 0x0001u;
-    const type_unsigned_32 carry = operation == LEGACY_ALU_ADC ||
+    const lib_u32 left = width == 8u ? 0x7fu : 0x7fffu;
+    const lib_u32 right = sign_extended ? 0xffffu : 0x0001u;
+    const lib_u32 carry = operation == LEGACY_ALU_ADC ||
         operation == LEGACY_ALU_SBB ? 1u : 0u;
-    const type_unsigned_32 mask = legacy_alu_mask(width);
-    type_unsigned_32 expected;
-    type_unsigned_32 observed = 0u;
-    type_unsigned_8 code[6] = { 0u };
-    STD_SIZE_T bytes = 0u;
+    const lib_u32 mask = legacy_alu_mask(width);
+    lib_u32 expected;
+    lib_u32 observed = 0u;
+    lib_u8 code[6] = { 0u };
+    lib_size bytes = 0u;
     legacy_alu_machine state;
     t_cpu after;
     t_cpu before;
@@ -376,7 +377,7 @@ static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
     else
         expected = left ^ right;
     code[bytes++] = width == 8u ? 0x80u : (sign_extended ? 0x83u : 0x81u);
-    code[bytes++] = (type_unsigned_8)(operation << 3u) | (memory ? 0x06u : 0xc0u);
+    code[bytes++] = (lib_u8)(operation << 3u) | (memory ? 0x06u : 0xc0u);
     if (memory) {
         code[bytes++] = TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY);
         code[bytes++] = TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY >> 8u);
@@ -417,11 +418,11 @@ static C_INT legacy_alu_test_group1_forms(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 operation;
-    type_unsigned_8 width_index;
-    type_unsigned_8 sign_extended;
-    type_unsigned_8 memory;
+    lib_u8 profile_index;
+    lib_u8 operation;
+    lib_u8 width_index;
+    lib_u8 sign_extended;
+    lib_u8 memory;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
@@ -437,10 +438,10 @@ static C_INT legacy_alu_test_group1_forms(C_VOID)
     return 1;
 }
 
-static type_unsigned_32 legacy_alu_jcc_flags(type_unsigned_8 condition,
+static lib_u32 legacy_alu_jcc_flags(lib_u8 condition,
     C_INT taken)
 {
-    type_unsigned_32 flags = 0u;
+    lib_u32 flags = 0u;
 
     switch (condition) {
     case 0u: flags = taken ? VCPU_EFLAGS_OF : 0u; break;
@@ -469,15 +470,15 @@ static C_INT legacy_alu_test_condition_forms(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 condition;
+    lib_u8 profile_index;
+    lib_u8 condition;
     C_INT taken;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (condition = 0u; condition != 16u; ++condition)
     for (taken = 0; taken != 2; ++taken) {
-        const type_unsigned_8 code[] = { (type_unsigned_8)(0x70u + condition),
+        const lib_u8 code[] = { (lib_u8)(0x70u + condition),
             0x02u, 0x90u, 0x90u };
         legacy_alu_machine state;
         t_cpu before;
@@ -510,21 +511,21 @@ static C_INT legacy_alu_test_loop_forms(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 operation;
+    lib_u8 profile_index;
+    lib_u8 operation;
     C_INT taken;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (operation = 0u; operation != 4u; ++operation)
     for (taken = 0; taken != 2; ++taken) {
-        const type_unsigned_8 code[] = { (type_unsigned_8)(0xe0u + operation),
+        const lib_u8 code[] = { (lib_u8)(0xe0u + operation),
             0x02u, 0x90u, 0x90u };
-        const type_unsigned_32 flags = (operation == 0u && !taken) ||
+        const lib_u32 flags = (operation == 0u && !taken) ||
             (operation == 1u && taken) ? VCPU_EFLAGS_ZF : 0u;
-        const type_unsigned_32 ecx = operation == 3u ? (taken ? 0u : 1u) :
+        const lib_u32 ecx = operation == 3u ? (taken ? 0u : 1u) :
             (taken ? 2u : 1u);
-        const type_unsigned_32 expected_ecx = operation == 3u ? ecx : ecx - 1u;
+        const lib_u32 expected_ecx = operation == 3u ? ecx : ecx - 1u;
         legacy_alu_machine state;
         t_cpu before;
         t_cpu after;
@@ -555,22 +556,22 @@ static C_INT legacy_alu_test_test_forms(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    static const type_unsigned_8 forms[][4] = {
+    static const lib_u8 forms[][4] = {
         { 0x84u, 0xc8u }, { 0x85u, 0xc8u }, { 0xa8u, 0x0fu },
         { 0xa9u, 0x0fu, 0x00u }, { 0xf6u, 0xc0u, 0x0fu },
         { 0xf7u, 0xc0u, 0x0fu, 0x00u }
     };
-    static const type_unsigned_8 lengths[] = { 2u, 2u, 2u, 3u, 3u, 4u };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 form;
+    static const lib_u8 lengths[] = { 2u, 2u, 2u, 3u, 3u, 4u };
+    lib_u8 profile_index;
+    lib_u8 form;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (form = 0u; form != sizeof(lengths); ++form) {
-        const type_unsigned_8 width = (form == 0u || form == 2u || form == 4u) ?
+        const lib_u8 width = (form == 0u || form == 2u || form == 4u) ?
             8u : 16u;
-        const type_unsigned_32 result = width == 8u ? 0x08u : 0x0008u;
-        const type_unsigned_32 expected_flags = (legacy_alu_parity(result) ?
+        const lib_u32 result = width == 8u ? 0x08u : 0x0008u;
+        const lib_u32 expected_flags = (legacy_alu_parity(result) ?
             VCPU_EFLAGS_PF : 0u) | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
         legacy_alu_machine state;
         t_cpu before;
@@ -605,22 +606,22 @@ static C_INT legacy_alu_test_adjust_and_xlat_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 codes[][2] = {
+    static const lib_u8 codes[][2] = {
         { 0x27u }, { 0x2fu }, { 0x37u }, { 0x3fu }, { 0xd4u, 10u },
         { 0xd5u, 10u }, { 0xd7u }
     };
-    static const type_unsigned_8 lengths[] = { 1u, 1u, 1u, 1u, 2u, 2u, 1u };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 form;
+    static const lib_u8 lengths[] = { 1u, 1u, 1u, 1u, 2u, 2u, 1u };
+    lib_u8 profile_index;
+    lib_u8 form;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (form = 0u; form != sizeof(lengths); ++form) {
-        const type_unsigned_32 initial_eax = form == 0u ? 0x1122009au :
+        const lib_u32 initial_eax = form == 0u ? 0x1122009au :
             (form == 1u ? 0x11220000u : (form == 2u ? 0x1122000au :
             (form == 3u ? 0x1122010au : (form == 4u ? 0x1122002au :
             (form == 5u ? 0x11220402u : 0x11220002u)))));
-        const type_unsigned_32 expected_eax = form == 0u ? 0x11220000u :
+        const lib_u32 expected_eax = form == 0u ? 0x11220000u :
             (form == 1u ? 0x1122009au : (form == 2u ? 0x11220100u :
             (form == 3u ? 0x11220004u : (form == 4u ? 0x11220402u :
             (form == 5u ? 0x1122002au : 0x112200a5u)))));
@@ -628,7 +629,7 @@ static C_INT legacy_alu_test_adjust_and_xlat_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_unsigned_8 table_value = 0xa5u;
+        lib_u8 table_value = 0xa5u;
         C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
@@ -670,17 +671,17 @@ static C_INT legacy_alu_test_group3_forms(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 width_index;
-    type_unsigned_8 extension;
+    lib_u8 profile_index;
+    lib_u8 width_index;
+    lib_u8 extension;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (width_index = 0u; width_index != 2u; ++width_index)
     for (extension = 2u; extension != 8u; ++extension) {
-        const type_unsigned_8 width = width_index == 0u ? 8u : 16u;
-        const type_unsigned_8 code[] = { width == 8u ? 0xf6u : 0xf7u,
-            (type_unsigned_8)(0xc1u | (extension << 3u)) };
+        const lib_u8 width = width_index == 0u ? 8u : 16u;
+        const lib_u8 code[] = { width == 8u ? 0xf6u : 0xf7u,
+            (lib_u8)(0xc1u | (extension << 3u)) };
         legacy_alu_machine state;
         t_cpu before;
         t_cpu after;
@@ -727,23 +728,23 @@ static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 register_index;
-    type_unsigned_8 decrement;
+    lib_u8 profile_index;
+    lib_u8 register_index;
+    lib_u8 decrement;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (register_index = 0u; register_index != 8u; ++register_index)
     for (decrement = 0u; decrement != 2u; ++decrement) {
-        const type_unsigned_8 code[] = { (type_unsigned_8)((decrement ? 0x48u :
+        const lib_u8 code[] = { (lib_u8)((decrement ? 0x48u :
             0x40u) + register_index) };
-        const type_unsigned_32 value = decrement ? 0x55668000u : 0x55667fffu;
-        const type_unsigned_32 expected = decrement ? 0x55667fffu : 0x55668000u;
+        const lib_u32 value = decrement ? 0x55668000u : 0x55667fffu;
+        const lib_u32 expected = decrement ? 0x55667fffu : 0x55668000u;
         legacy_alu_machine state;
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_unsigned_32 *reg;
+        lib_u32 *reg;
         C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
@@ -770,11 +771,11 @@ static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (decrement = 0u; decrement != 2u; ++decrement) {
-        const type_unsigned_8 code[] = { 0xfeu, decrement ? 0x0eu : 0x06u,
+        const lib_u8 code[] = { 0xfeu, decrement ? 0x0eu : 0x06u,
             TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY),
             TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY >> 8u) };
-        type_unsigned_8 value = decrement ? 0x80u : 0x7fu;
-        type_unsigned_8 observed = 0u;
+        lib_u8 value = decrement ? 0x80u : 0x7fu;
+        lib_u8 observed = 0u;
         legacy_alu_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
@@ -797,7 +798,7 @@ static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
             return 0;
     }
     for (decrement = 0u; decrement != 2u; ++decrement) {
-        const type_unsigned_8 code[] = { decrement ? 0xc1u : 0xc0u,
+        const lib_u8 code[] = { decrement ? 0xc1u : 0xc0u,
             decrement ? 0xe0u : 0xc0u, 1u };
         legacy_alu_machine state;
         t_cpu after;
@@ -823,16 +824,16 @@ static C_INT legacy_alu_test_flags_and_sign_forms(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    static const type_unsigned_8 flag_codes[] = { 0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 form;
+    static const lib_u8 flag_codes[] = { 0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu };
+    lib_u8 profile_index;
+    lib_u8 form;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (form = 0u; form != sizeof(flag_codes); ++form) {
-        const type_unsigned_32 initial_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
+        const lib_u32 initial_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
             VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
-        const type_unsigned_32 expected_flags = form == 0u || form == 1u ?
+        const lib_u32 expected_flags = form == 0u || form == 1u ?
             (initial_flags & ~VCPU_EFLAGS_CF) : (form == 2u ?
             initial_flags : (form == 3u ? (initial_flags & ~VCPU_EFLAGS_DF) :
             initial_flags | VCPU_EFLAGS_DF));
@@ -857,7 +858,7 @@ static C_INT legacy_alu_test_flags_and_sign_forms(C_VOID)
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (form = 0u; form != 4u; ++form) {
-        const type_unsigned_8 code = form < 2u ?
+        const lib_u8 code = form < 2u ?
             (form == 0u ? 0x98u : 0x99u) : (form == 2u ? 0x9fu : 0x9eu);
         legacy_alu_machine state;
         t_cpu before;
@@ -901,38 +902,38 @@ static C_INT legacy_alu_test_flags_and_sign_forms(C_VOID)
     return 1;
 }
 
-static type_unsigned_16 legacy_alu_shift_result(type_unsigned_8 extension,
-    type_unsigned_16 value, type_unsigned_8 count, type_unsigned_8 width,
-    type_unsigned_8 *carry)
+static lib_u16 legacy_alu_shift_result(lib_u8 extension,
+    lib_u16 value, lib_u8 count, lib_u8 width,
+    lib_u8 *carry)
 {
-    type_unsigned_8 index;
-    const type_unsigned_16 mask = width == 8u ? 0xffu : 0xffffu;
-    const type_unsigned_8 high = (type_unsigned_8)(width - 1u);
+    lib_u8 index;
+    const lib_u16 mask = width == 8u ? 0xffu : 0xffffu;
+    const lib_u8 high = (lib_u8)(width - 1u);
 
     for (index = 0u; index != count; ++index) {
         if (extension == 0u) {
             *carry = (value >> high) & 1u;
-            value = (type_unsigned_16)(((value << 1u) | *carry) & mask);
+            value = (lib_u16)(((value << 1u) | *carry) & mask);
         } else if (extension == 1u) {
             *carry = value & 1u;
-            value = (type_unsigned_16)((value >> 1u) | (*carry << high));
+            value = (lib_u16)((value >> 1u) | (*carry << high));
         } else if (extension == 2u) {
-            const type_unsigned_8 next = (value >> high) & 1u;
-            value = (type_unsigned_16)(((value << 1u) | *carry) & mask);
+            const lib_u8 next = (value >> high) & 1u;
+            value = (lib_u16)(((value << 1u) | *carry) & mask);
             *carry = next;
         } else if (extension == 3u) {
-            const type_unsigned_8 next = value & 1u;
-            value = (type_unsigned_16)((value >> 1u) | (*carry << high));
+            const lib_u8 next = value & 1u;
+            value = (lib_u16)((value >> 1u) | (*carry << high));
             *carry = next;
         } else if (extension == 4u) {
             *carry = (value >> high) & 1u;
-            value = (type_unsigned_16)((value << 1u) & mask);
+            value = (lib_u16)((value << 1u) & mask);
         } else if (extension == 5u) {
             *carry = value & 1u;
             value >>= 1u;
         } else {
             *carry = value & 1u;
-            value = (type_unsigned_16)((value >> 1u) | (value & (1u << high)));
+            value = (lib_u16)((value >> 1u) | (value & (1u << high)));
         }
     }
     return value;
@@ -943,22 +944,22 @@ static C_INT legacy_alu_test_group2_forms(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 extension;
-    type_unsigned_8 variant;
+    lib_u8 profile_index;
+    lib_u8 extension;
+    lib_u8 variant;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (extension = 0u; extension != 8u; ++extension)
     for (variant = 0u; variant != 4u; ++variant) {
-        const type_unsigned_8 opcode = variant == 0u ? 0xd0u : variant == 1u ?
+        const lib_u8 opcode = variant == 0u ? 0xd0u : variant == 1u ?
             0xd1u : variant == 2u ? 0xd2u : 0xd3u;
-        const type_unsigned_8 width = variant == 0u || variant == 2u ? 8u : 16u;
-        const type_unsigned_8 code[] = { opcode,
-            (type_unsigned_8)(0xc0u | (extension << 3u)) };
-        const type_unsigned_8 count = variant < 2u ? 1u : 2u;
-        type_unsigned_8 carry = 1u;
-        const type_unsigned_16 expected = extension == 6u ?
+        const lib_u8 width = variant == 0u || variant == 2u ? 8u : 16u;
+        const lib_u8 code[] = { opcode,
+            (lib_u8)(0xc0u | (extension << 3u)) };
+        const lib_u8 count = variant < 2u ? 1u : 2u;
+        lib_u8 carry = 1u;
+        const lib_u16 expected = extension == 6u ?
             (width == 8u ? 0x23u : 0x8123u) : legacy_alu_shift_result(extension,
             width == 8u ? 0x23u : 0x8123u, count, width, &carry);
         legacy_alu_machine state;
@@ -994,7 +995,7 @@ static C_INT legacy_alu_test_group2_forms(C_VOID)
             return 0;
     }
     for (variant = 0u; variant != 2u; ++variant) {
-        const type_unsigned_8 code[] = { variant == 0u ? 0xc0u : 0xc1u,
+        const lib_u8 code[] = { variant == 0u ? 0xc0u : 0xc1u,
             0xc0u, 1u };
         legacy_alu_machine state;
         t_cpu after;
@@ -1017,16 +1018,16 @@ static C_INT legacy_alu_test_group2_forms(C_VOID)
 
 static C_INT legacy_alu_test_group2_immediate_extensions(C_VOID)
 {
-    type_unsigned_8 extension;
-    type_unsigned_8 width_index;
+    lib_u8 extension;
+    lib_u8 width_index;
 
     for (width_index = 0u; width_index != 2u; ++width_index)
     for (extension = 0u; extension != 8u; ++extension) {
-        const type_unsigned_8 width = width_index == 0u ? 8u : 16u;
-        const type_unsigned_8 code[] = { width == 8u ? 0xc0u : 0xc1u,
-            (type_unsigned_8)(0xc0u | (extension << 3u)), 2u };
-        type_unsigned_8 carry = 1u;
-        const type_unsigned_16 expected = extension == 6u ?
+        const lib_u8 width = width_index == 0u ? 8u : 16u;
+        const lib_u8 code[] = { width == 8u ? 0xc0u : 0xc1u,
+            (lib_u8)(0xc0u | (extension << 3u)), 2u };
+        lib_u8 carry = 1u;
+        const lib_u16 expected = extension == 6u ?
             (width == 8u ? 0x23u : 0x8123u) : legacy_alu_shift_result(extension,
             width == 8u ? 0x23u : 0x8123u, 2u, width, &carry);
         legacy_alu_machine state;
@@ -1058,7 +1059,7 @@ static C_INT legacy_alu_test_group2_immediate_extensions(C_VOID)
             return 0;
     }
     for (width_index = 0u; width_index != 2u; ++width_index) {
-        const type_unsigned_8 code[] = { width_index == 0u ? 0xc0u : 0xc1u,
+        const lib_u8 code[] = { width_index == 0u ? 0xc0u : 0xc1u,
             0xc0u, 1u };
         legacy_alu_machine state;
         t_cpu after;
@@ -1084,17 +1085,17 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
-    static const type_unsigned_8 reserved[][2] = {
+    static const lib_u8 reserved[][2] = {
         { 0xd6u }, { 0xf1u }, { 0xf6u, 0xc8u }, { 0xf7u, 0xc8u }
     };
-    static const type_unsigned_8 lengths[] = { 1u, 1u, 2u, 2u };
-    static const type_unsigned_8 attributes[][3] = {
+    static const lib_u8 lengths[] = { 1u, 1u, 2u, 2u };
+    static const lib_u8 attributes[][3] = {
         { 0x66u, 0x01u, 0xc8u }, { 0x67u, 0x01u, 0xc8u },
         { 0x66u, 0x67u, 0x01u }
     };
-    static const type_unsigned_8 attribute_lengths[] = { 3u, 3u, 4u };
-    type_unsigned_8 profile_index;
-    type_unsigned_8 form;
+    static const lib_u8 attribute_lengths[] = { 3u, 3u, 4u };
+    lib_u8 profile_index;
+    lib_u8 form;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
@@ -1150,11 +1151,11 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
 
 static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0xf6u, 0xf1u };
-    static const type_unsigned_8 handler[] = { 0xf4u };
-    const type_unsigned_16 code_offset = 0x0200u;
-    const type_unsigned_16 handler_offset = 0x0100u;
-    type_unsigned_8 profile_index;
+    static const lib_u8 code[] = { 0xf6u, 0xf1u };
+    static const lib_u8 handler[] = { 0xf4u };
+    const lib_u16 code_offset = 0x0200u;
+    const lib_u16 handler_offset = 0x0100u;
+    lib_u8 profile_index;
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
@@ -1166,7 +1167,7 @@ static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_unsigned_16 frame[3] = { 0u, 0u, 0u };
+        lib_u16 frame[3] = { 0u, 0u, 0u };
         C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
@@ -1199,9 +1200,9 @@ static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
                 after.data.eflags != (before.data.eflags & ~(VCPU_EFLAGS_IF |
                 VCPU_EFLAGS_TF)) || after.data.esp !=
                 ((before.data.esp & 0xffff0000u) |
-                (type_unsigned_16)(before.data.esp - 6u)) ||
+                (lib_u16)(before.data.esp - 6u)) ||
                 !test_core_machine_fixture_read_linear(state.machine,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] != code_offset ||
                 frame[1] != before.data.cs.selector || (frame[2] &
                 legacy_alu_real_flags_known_mask(profiles[profile_index])) !=

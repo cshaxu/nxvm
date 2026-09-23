@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #define main protected_iret_s2_main
 #include "core_machine_protected_iret_smoke.c"
 #undef main
@@ -8,21 +9,21 @@
 
 static C_INT iret_s51_sregs_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.cs, &after->data.cs,
+    return lib_memory_compare(&before->data.cs, &after->data.cs,
             sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.es, &after->data.es,
+        lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss,
+        lib_memory_compare(&before->data.ss, &after->data.ss,
             sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
+        lib_memory_compare(&before->data.ds, &after->data.ds,
             sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs,
+        lib_memory_compare(&before->data.fs, &after->data.fs,
             sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs,
+        lib_memory_compare(&before->data.gs, &after->data.gs,
             sizeof(before->data.gs)) == 0;
 }
 
-static C_VOID iret_s51_seed(cli_sti_machine *state, type_unsigned_32 flags)
+static C_VOID iret_s51_seed(cli_sti_machine *state, lib_u32 flags)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -37,43 +38,43 @@ static C_VOID iret_s51_seed(cli_sti_machine *state, type_unsigned_32 flags)
     cpu->data.eflags = flags;
 }
 
-static type_unsigned_32 iret_s51_real_flags_load(
-    core_machine_cpu_profile profile, type_unsigned_32 flags)
+static lib_u32 iret_s51_real_flags_load(
+    core_machine_cpu_profile profile, lib_u32 flags)
 {
-    const type_unsigned_16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
+    const lib_u16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
         0x0fd5u : 0x7fd5u;
 
     return (flags & known_mask) | 0x02u;
 }
 
 static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
-    const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes, type_bool wrap_stack)
+    const lib_u8 *prefix, lib_u8 prefix_bytes, type_bool wrap_stack)
 {
-    static const type_unsigned_8 hlt = 0xf4u;
-    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+    static const lib_u8 hlt = 0xf4u;
+    const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
         VCPU_EFLAGS_IF | VCPU_EFLAGS_DF | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_NT |
         0x8002u;
-    const type_unsigned_32 expected_flags = iret_s51_real_flags_load(profile, flags);
+    const lib_u32 expected_flags = iret_s51_real_flags_load(profile, flags);
     const C_INT wide = prefix_bytes != 0u && prefix[0] == 0x66u;
-    const type_unsigned_16 return_ip = wrap_stack ? 0x0200u : 0x0100u;
-    const type_unsigned_32 code_offset = wrap_stack ? 0x0100u : 0u;
+    const lib_u16 return_ip = wrap_stack ? 0x0200u : 0x0100u;
+    const lib_u32 code_offset = wrap_stack ? 0x0100u : 0u;
     cli_sti_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 code[3] = { 0u, 0u, 0u };
-    type_unsigned_16 frame16[] = { return_ip, 0x0000u, (type_unsigned_16)flags };
-    type_unsigned_32 frame32[] = { return_ip, 0x00000000u, flags };
-    type_unsigned_8 unselected_before[12] = {
+    lib_u8 code[3] = { 0u, 0u, 0u };
+    lib_u16 frame16[] = { return_ip, 0x0000u, (lib_u16)flags };
+    lib_u32 frame32[] = { return_ip, 0x00000000u, flags };
+    lib_u8 unselected_before[12] = {
         0xd1u, 0xd2u, 0xd3u, 0xd4u, 0xd5u, 0xd6u,
         0xd7u, 0xd8u, 0xd9u, 0xdau, 0xdbu, 0xdcu
     };
-    type_unsigned_8 unselected_after[12] = { 0u };
+    lib_u8 unselected_after[12] = { 0u };
     C_INT failed = !cli_sti_prepare(profile, &state);
 
     if (!failed) {
-        STD_MEMCPY(code, prefix, prefix_bytes);
+        lib_memory_copy(code, prefix, prefix_bytes);
         code[prefix_bytes] = 0xcfu;
         failed = !test_core_machine_fixture_prepare_real_mode_execution(
             state.machine, code_offset);
@@ -82,7 +83,7 @@ static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
         failed |= core_machine_memory_write(state.machine, return_ip, &hlt,
             sizeof(hlt)) != TYPE_STATUS_OK;
         if (wrap_stack) {
-            const type_unsigned_32 stack_base = state.machine->executor_cpu.data.ss.base;
+            const lib_u32 stack_base = state.machine->executor_cpu.data.ss.base;
 
             failed |= wide || core_machine_memory_write(state.machine,
                 stack_base + 0xfffeu, frame16, sizeof(frame16[0u])) != TYPE_STATUS_OK;
@@ -131,7 +132,7 @@ static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
             &state.machine->executor_memory, 0x18000u,
             (type_virtual_address)unselected_after,
             sizeof(unselected_after)) != TYPE_STATUS_OK;
-        failed |= STD_MEMCMP(unselected_before, unselected_after,
+        failed |= lib_memory_compare(unselected_before, unselected_after,
             sizeof(unselected_before)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -147,30 +148,30 @@ static C_INT iret_s51_test_real(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 prefixes[][2] = {
+    static const lib_u8 prefixes[][2] = {
         { 0x66u, 0u },
         { 0x67u, 0u },
         { 0x66u, 0x67u }
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
-        if (!iret_s51_real_case(profiles[profile], (const type_unsigned_8[]){ 0u },
-                0u, TYPE_FALSE))
+        if (!iret_s51_real_case(profiles[profile], (const lib_u8[]){ 0u },
+                0u, LIB_FALSE))
             return 0;
     }
     for (profile = 0u; profile != 4u; ++profile) {
-        if (!iret_s51_real_case(profiles[profile], (const type_unsigned_8[]){ 0u },
-                0u, TYPE_TRUE))
+        if (!iret_s51_real_case(profiles[profile], (const lib_u8[]){ 0u },
+                0u, LIB_TRUE))
             return 0;
     }
     for (profile = 0u; profile != sizeof(prefixes) / sizeof(prefixes[0]);
         ++profile) {
-        type_unsigned_8 bytes = profile == 2u ? 2u : 1u;
+        lib_u8 bytes = profile == 2u ? 2u : 1u;
 
         if (!iret_s51_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-                prefixes[profile], bytes, TYPE_FALSE))
+                prefixes[profile], bytes, LIB_FALSE))
             return 0;
     }
     return 1;
@@ -178,7 +179,7 @@ static C_INT iret_s51_test_real(C_VOID)
 
 static C_INT iret_s51_test_80286_stack_boundary(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0xcfu };
+    static const lib_u8 code[] = { 0xcfu };
     cli_sti_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -207,22 +208,22 @@ static C_INT iret_s51_test_80286_stack_boundary(C_VOID)
         failed |= !diagnostic.first_fault.valid;
         failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_GP);
-        failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
 static C_INT iret_s51_expect_ud(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes)
+    const lib_u8 *code, lib_u8 bytes)
 {
     cli_sti_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 stack_before[16] = { 0u };
-    type_unsigned_8 stack_after[16] = { 0u };
+    lib_u8 stack_before[16] = { 0u };
+    lib_u8 stack_after[16] = { 0u };
     C_INT failed = !cli_sti_prepare(profile, &state);
 
     if (!failed) {
@@ -247,11 +248,11 @@ static C_INT iret_s51_expect_ud(core_machine_cpu_profile profile,
         failed |= !diagnostic.first_fault.valid;
         failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_UD);
-        failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+        failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             0x7ff8u, (type_virtual_address)stack_after,
             sizeof(stack_after)) != TYPE_STATUS_OK;
-        failed |= STD_MEMCMP(stack_before, stack_after, sizeof(stack_before)) != 0;
+        failed |= lib_memory_compare(stack_before, stack_after, sizeof(stack_before)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -265,26 +266,26 @@ static C_INT iret_s51_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const type_unsigned_8 attributes[][3] = {
+    static const lib_u8 attributes[][3] = {
         { 0x66u, 0xcfu, 0u },
         { 0x67u, 0xcfu, 0u },
         { 0x66u, 0x67u, 0xcfu }
     };
-    static const type_unsigned_8 lock_forms[][4] = {
+    static const lib_u8 lock_forms[][4] = {
         { 0xf0u, 0xcfu, 0u, 0u },
         { 0xf0u, 0x66u, 0xcfu, 0u },
         { 0xf0u, 0x67u, 0xcfu, 0u },
         { 0xf0u, 0x66u, 0x67u, 0xcfu }
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
-        type_unsigned_8 attribute;
+        lib_u8 attribute;
 
         for (attribute = 0u;
             attribute != sizeof(attributes) / sizeof(attributes[0]); ++attribute) {
-            type_unsigned_8 bytes = attribute == 2u ? 3u : 2u;
+            lib_u8 bytes = attribute == 2u ? 3u : 2u;
 
             if (!iret_s51_expect_ud(legacy[profile], attributes[attribute], bytes))
                 return 0;
@@ -292,7 +293,7 @@ static C_INT iret_s51_test_rejections(C_VOID)
     }
     for (profile = 0u; profile != sizeof(lock_forms) / sizeof(lock_forms[0]);
         ++profile) {
-        type_unsigned_8 bytes = profile == 3u ? 4u : profile == 0u ? 2u : 3u;
+        lib_u8 bytes = profile == 3u ? 4u : profile == 0u ? 2u : 3u;
 
         if (!iret_s51_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
                 lock_forms[profile], bytes))
@@ -317,21 +318,21 @@ static C_INT iret_s51_test_protected(C_VOID)
 
 static C_INT iret_s51_test_pic(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0xcfu, 0x90u };
-    static const type_unsigned_8 hlt = 0xf4u;
-    const type_unsigned_16 offset = 0x0100u;
-    const type_unsigned_16 segment = 0u;
-    const type_unsigned_32 vector = 0x20u;
-    type_unsigned_8 restore_if;
+    static const lib_u8 code[] = { 0xcfu, 0x90u };
+    static const lib_u8 hlt = 0xf4u;
+    const lib_u16 offset = 0x0100u;
+    const lib_u16 segment = 0u;
+    const lib_u32 vector = 0x20u;
+    lib_u8 restore_if;
 
     for (restore_if = 0u; restore_if != 2u; ++restore_if) {
         cli_sti_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        type_unsigned_16 frame[] = { 0x0001u, 0x0000u,
-            (type_unsigned_16)(restore_if ? VCPU_EFLAGS_IF : 0u) };
-        type_unsigned_16 frame_ip = 0u;
+        lib_u16 frame[] = { 0x0001u, 0x0000u,
+            (lib_u16)(restore_if ? VCPU_EFLAGS_IF : 0u) };
+        lib_u16 frame_ip = 0u;
         C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -351,8 +352,8 @@ static C_INT iret_s51_test_pic(C_VOID)
         }
         if (!failed) {
             iret_s51_seed(&state, VCPU_EFLAGS_CF);
-            STD_MEMSET(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = (type_unsigned_8)vector;
+            lib_memory_set(&source, 0, sizeof(source));
+            state.machine->shared_pic_master.data.icw2 = (lib_u8)vector;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
@@ -371,7 +372,7 @@ static C_INT iret_s51_test_pic(C_VOID)
                     VPIC_IRR_IRQ(0u));
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory,
-                    after.data.ss.base + (type_unsigned_16)after.data.esp,
+                    after.data.ss.base + (lib_u16)after.data.esp,
                     TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK;
                 failed |= frame_ip != 1u;
             } else {

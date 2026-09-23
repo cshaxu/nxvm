@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "lib/base/sync_interface.h"
@@ -7,18 +8,18 @@
 #include "app-nxvm/machine/waiting.h"
 
 /* Compare positive rational values without cross multiplication overflow. */
-C_INT vm_machine_pacing_ratio_compare(type_unsigned_64 left_numerator,
-    type_unsigned_64 left_denominator, type_unsigned_64 right_numerator,
-    type_unsigned_64 right_denominator)
+C_INT vm_machine_pacing_ratio_compare(lib_u64 left_numerator,
+    lib_u64 left_denominator, lib_u64 right_numerator,
+    lib_u64 right_denominator)
 {
     C_INT inverted = 0;
 
     if (left_denominator == 0u || right_denominator == 0u) return 0;
     for (;;) {
-        type_unsigned_64 left_integer = left_numerator / left_denominator;
-        type_unsigned_64 right_integer = right_numerator / right_denominator;
-        type_unsigned_64 left_remainder;
-        type_unsigned_64 right_remainder;
+        lib_u64 left_integer = left_numerator / left_denominator;
+        lib_u64 right_integer = right_numerator / right_denominator;
+        lib_u64 left_remainder;
+        lib_u64 right_remainder;
         C_INT result;
 
         if (left_integer != right_integer) {
@@ -42,8 +43,8 @@ C_INT vm_machine_pacing_ratio_compare(type_unsigned_64 left_numerator,
 
 C_VOID vm_machine_pacing_reset(vm_machine *session)
 {
-    if (session == STD_NULL) return;
-    session->pacing_origin_valid = TYPE_FALSE;
+    if (session == LIB_NULL) return;
+    session->pacing_origin_valid = LIB_FALSE;
     session->pacing_host_origin_units = 0u;
     session->pacing_host_units_per_second = 0u;
     session->pacing_core_origin_ticks = 0u;
@@ -51,11 +52,11 @@ C_VOID vm_machine_pacing_reset(vm_machine *session)
 
 static C_INT vm_machine_pacing_waits_at_least_millisecond(
     const vm_machine *session, const core_machine_time_observation *observation,
-    type_unsigned_64 target_tick, type_unsigned_64 host_units)
+    lib_u64 target_tick, lib_u64 host_units)
 {
-    type_unsigned_64 host_lead;
+    lib_u64 host_lead;
 
-    if (session == STD_NULL || observation == STD_NULL ||
+    if (session == LIB_NULL || observation == LIB_NULL ||
         session->pacing_host_units_per_second < 1000u) return 0;
     host_lead = session->pacing_host_units_per_second / 1000u;
     if (host_units > UINT64_MAX - host_lead) return 0;
@@ -68,19 +69,19 @@ static C_INT vm_machine_pacing_waits_at_least_millisecond(
 
 static C_INT vm_machine_pacing_target_due(vm_machine *session,
     const core_machine_time_observation *observation,
-    type_unsigned_64 target_tick)
+    lib_u64 target_tick)
 {
-    type_unsigned_64 host_units;
-    type_unsigned_64 host_units_per_second;
+    lib_u64 host_units;
+    lib_u64 host_units_per_second;
 
-    if (session == STD_NULL || observation == STD_NULL ||
+    if (session == LIB_NULL || observation == LIB_NULL ||
         !observation->pacing_time_available ||
         observation->pacing_ticks_per_second == 0u ||
-        session->speed != VM_MACHINE_SPEED_STANDARD) return TYPE_TRUE;
+        session->speed != VM_MACHINE_SPEED_STANDARD) return LIB_TRUE;
     if (base_clock_monotonic_counter(&host_units,
             &host_units_per_second) != LIB_STATUS_OK || host_units_per_second == 0u) {
         vm_machine_pacing_reset(session);
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
     if (!session->pacing_origin_valid ||
         session->pacing_host_units_per_second != host_units_per_second ||
@@ -89,14 +90,14 @@ static C_INT vm_machine_pacing_target_due(vm_machine *session,
         session->pacing_host_origin_units = host_units;
         session->pacing_host_units_per_second = host_units_per_second;
         session->pacing_core_origin_ticks = observation->elapsed_ticks;
-        session->pacing_origin_valid = TYPE_TRUE;
+        session->pacing_origin_valid = LIB_TRUE;
     }
     while (vm_machine_pacing_ratio_compare(target_tick -
             session->pacing_core_origin_ticks,
             observation->pacing_ticks_per_second, host_units -
             session->pacing_host_origin_units,
             session->pacing_host_units_per_second) > 0) {
-        if (!vm_machine_control_is_running(&session->control)) return TYPE_FALSE;
+        if (!vm_machine_control_is_running(&session->control)) return LIB_FALSE;
         /* Keep the final sub-millisecond interval responsive without a
          * fixed 1 ms oversleep. Neither branch advances guest time. */
         if (vm_machine_pacing_waits_at_least_millisecond(session, observation,
@@ -110,17 +111,17 @@ static C_INT vm_machine_pacing_target_due(vm_machine *session,
             host_units_per_second != session->pacing_host_units_per_second ||
             host_units < session->pacing_host_origin_units) {
             vm_machine_pacing_reset(session);
-            return TYPE_TRUE;
+            return LIB_TRUE;
         }
     }
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 type_status vm_machine_pacing_wait(vm_machine *session)
 {
     core_machine_time_observation observation;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL) {
+    if (session == LIB_NULL || session->core_machine == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (core_machine_capture_time_observation(session->core_machine,
@@ -138,8 +139,8 @@ type_status vm_machine_waiting_advance(vm_machine *session,
     type_bool advanced;
     type_status status;
 
-    if (session == STD_NULL || result == STD_NULL || out_advanced == STD_NULL ||
-        session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL || result == LIB_NULL || out_advanced == LIB_NULL ||
+        session->core_machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_advanced = 0;
     if (result->reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         !vm_machine_control_is_running(&session->control)) {

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -5,16 +6,16 @@
 #include "app-nxvm/devices/port.h"
 
 typedef struct xebec_media {
-    type_unsigned_8 bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
+    lib_u8 bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
 } xebec_media;
 
 static core_machine_media_result xebec_media_query(C_VOID *opaque,
     core_machine_media_info *out_info)
 {
     (C_VOID)opaque;
-    if (out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    if (out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     *out_info = (core_machine_media_info) {
-        .present = TYPE_TRUE,
+        .present = LIB_TRUE,
         .capabilities = CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN,
         .geometry = {
             CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
@@ -27,36 +28,36 @@ static core_machine_media_result xebec_media_query(C_VOID *opaque,
 }
 
 static core_machine_media_result xebec_media_read(C_VOID *opaque,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 count)
 {
     xebec_media *media = opaque;
 
-    if (media == STD_NULL || buffer == STD_NULL || offset >
+    if (media == LIB_NULL || buffer == LIB_NULL || offset >
         sizeof(media->bytes) - CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
         count != CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMCPY(buffer, media->bytes + offset, count);
+    lib_memory_copy(buffer, media->bytes + offset, count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result xebec_media_write(C_VOID *opaque,
-    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 count)
+    lib_u64 offset, const C_VOID *buffer, lib_u32 count)
 {
     xebec_media *media = opaque;
 
-    if (media == STD_NULL || buffer == STD_NULL || offset >
+    if (media == LIB_NULL || buffer == LIB_NULL || offset >
         sizeof(media->bytes) - CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
         count != CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMCPY(media->bytes + offset, buffer, count);
+    lib_memory_copy(media->bytes + offset, buffer, count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider xebec_media_provider = {
     xebec_media_query, xebec_media_read, xebec_media_write,
-    STD_NULL, STD_NULL, STD_NULL, STD_NULL
+    LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL
 };
 
-static C_VOID xebec_configure_dma3(t_port *port, type_unsigned_16 address,
-    type_unsigned_16 count, type_unsigned_8 mode)
+static C_VOID xebec_configure_dma3(t_port *port, lib_u16 address,
+    lib_u16 count, lib_u8 mode)
 {
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, 0x0006u, address & 0xffu);
@@ -82,7 +83,7 @@ C_INT main(C_VOID)
         .cascade_channel = 0u
     };
     const core_machine_hdc_topology hdc = {
-        .media_registry = STD_NULL,
+        .media_registry = LIB_NULL,
         .media_id = 1u,
         .slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID,
         .config = {
@@ -105,30 +106,30 @@ C_INT main(C_VOID)
             }
         }
     };
-    core_machine_media_registry *registry = STD_NULL;
+    core_machine_media_registry *registry = LIB_NULL;
     xebec_media media = {{0}};
     core_machine_dma_request_binding fdc_binding = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_hdc_topology topology = hdc;
-    const type_unsigned_8 dcb[] = {0x00u, 0x20u, 0x01u, 0x23u, 0u, 0u};
-    const type_unsigned_8 initialize_dcb[] = {0x0cu, 0u, 0u, 0u, 0u, 0u};
-    const type_unsigned_8 response[] = {0x22u};
-    const type_unsigned_8 sense_dcb[] = {0x03u, 0x20u, 0u, 0u, 0u, 0u};
-    const type_unsigned_8 sense[] = {0x04u, 0u, 0u, 0u};
-    const type_unsigned_8 invalid_dcb[] = {0x02u, 0u, 0u, 0u, 0u, 0u};
-    const type_unsigned_8 read_dcb[] = {0x08u, 0u, 0u, 0u, 2u, 0u};
-    const type_unsigned_8 write_dcb[] = {0x0au, 0u, 0u, 0u, 1u, 0u};
+    const lib_u8 dcb[] = {0x00u, 0x20u, 0x01u, 0x23u, 0u, 0u};
+    const lib_u8 initialize_dcb[] = {0x0cu, 0u, 0u, 0u, 0u, 0u};
+    const lib_u8 response[] = {0x22u};
+    const lib_u8 sense_dcb[] = {0x03u, 0x20u, 0u, 0u, 0u, 0u};
+    const lib_u8 sense[] = {0x04u, 0u, 0u, 0u};
+    const lib_u8 invalid_dcb[] = {0x02u, 0u, 0u, 0u, 0u, 0u};
+    const lib_u8 read_dcb[] = {0x08u, 0u, 0u, 0u, 2u, 0u};
+    const lib_u8 write_dcb[] = {0x0au, 0u, 0u, 0u, 1u, 0u};
     const core_machine_dma_channel_provider *dma_provider;
-    type_unsigned_8 dma_bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
-    type_unsigned_64 due_tick = 0u;
-    STD_SIZE_T index;
+    lib_u8 dma_bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
+    lib_u64 due_tick = 0u;
+    lib_size index;
     C_INT failed = 0;
 
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_media_registry_create(&registry) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
         for (index = 0u; index < sizeof(media.bytes); ++index)
-            media.bytes[index] = (type_unsigned_8)(index < 512u ? index : 0xa5u);
+            media.bytes[index] = (lib_u8)(index < 512u ? index : 0xa5u);
         if (core_machine_media_registry_bind(registry, 1u, &media,
                 &xebec_media_provider) != TYPE_STATUS_OK ||
             core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK) failed |= 0x02;
@@ -180,7 +181,7 @@ C_INT main(C_VOID)
                 for (index = 0u; index < sizeof(read_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, read_dcb[index]);
                 core_machine_hdc_advance(&machine->hdc);
-                if (dma_provider == STD_NULL || dma_provider->read_device == STD_NULL ||
+                if (dma_provider == LIB_NULL || dma_provider->read_device == LIB_NULL ||
                     machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
                     (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) == 0u)
                     failed |= 0x100;
@@ -209,7 +210,7 @@ C_INT main(C_VOID)
             if (!failed) {
                 dma_provider = core_machine_hdc_dma_provider();
                 for (index = 0u; index < sizeof(dma_bytes); ++index)
-                    dma_bytes[index] = (type_unsigned_8)(0xffu - index);
+                    dma_bytes[index] = (lib_u8)(0xffu - index);
                 if (core_machine_memory_write_physical(&machine->executor_memory,
                         0x2400u, (type_virtual_address)dma_bytes,
                         sizeof(dma_bytes)) != TYPE_STATUS_OK) failed |= 0x1000;
@@ -218,7 +219,7 @@ C_INT main(C_VOID)
                 for (index = 0u; index < sizeof(write_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, write_dcb[index]);
                 core_machine_hdc_advance(&machine->hdc);
-                if (dma_provider == STD_NULL || dma_provider->write_device == STD_NULL ||
+                if (dma_provider == LIB_NULL || dma_provider->write_device == LIB_NULL ||
                     machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE ||
                     (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) == 0u)
                     failed |= 0x2000;

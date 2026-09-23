@@ -1,4 +1,5 @@
 /* Copyright 2012-2014 Neko. */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -13,16 +14,16 @@ static type_status vm_profile_external_pc_at_rom_configure(C_VOID *opaque,
 
     type_status status;
 
-    if (context == STD_NULL || context->image == STD_NULL ||
-        (context->video == STD_NULL && context->video_bytes != 0u) ||
-        (context->video != STD_NULL && !vm_profile_byob_option_rom_is_valid(
+    if (context == LIB_NULL || context->image == LIB_NULL ||
+        (context->video == LIB_NULL && context->video_bytes != 0u) ||
+        (context->video != LIB_NULL && !vm_profile_byob_option_rom_is_valid(
             context->video, context->video_bytes,
             VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES))) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_firmware_register_immutable_rom(firmware, 0x000f0000u,
         context->image, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES);
-    if (status != TYPE_STATUS_OK || context->video == STD_NULL) return status;
+    if (status != TYPE_STATUS_OK || context->video == LIB_NULL) return status;
     return core_machine_firmware_register_immutable_rom(firmware, 0x000c0000u,
         context->video, context->video_bytes);
 }
@@ -37,7 +38,7 @@ static type_status vm_profile_external_pc_at_rom_reset(C_VOID *opaque,
 
 static const core_machine_firmware_provider vm_profile_external_pc_at_rom = {
     vm_profile_external_pc_at_rom_configure, vm_profile_external_pc_at_rom_reset,
-    STD_NULL, STD_NULL
+    LIB_NULL, LIB_NULL
 };
 
 const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(C_VOID)

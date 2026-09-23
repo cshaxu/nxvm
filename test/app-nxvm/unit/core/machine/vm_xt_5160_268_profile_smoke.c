@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -11,27 +12,27 @@ static core_machine_media_result vm_xt_5160_268_fdd_query(C_VOID *context,
     core_machine_media_info *out_info)
 {
     (C_VOID)context;
-    if (out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMSET(out_info, TYPE_ZERO_8, sizeof(*out_info));
+    if (out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    lib_memory_set(out_info, TYPE_ZERO_8, sizeof(*out_info));
     out_info->generation = 1u;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
         CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN;
-    out_info->present = TYPE_TRUE;
+    out_info->present = LIB_TRUE;
     out_info->geometry = (core_machine_media_geometry) {
         720u, 512u, 40u, 2u, 9u};
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider vm_xt_5160_268_fdd_provider = {
-    vm_xt_5160_268_fdd_query, STD_NULL, STD_NULL, STD_NULL, STD_NULL,
-    STD_NULL, STD_NULL};
+    vm_xt_5160_268_fdd_query, LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL,
+    LIB_NULL, LIB_NULL};
 
 static C_INT vm_xt_5160_268_contract_is_fixed(C_VOID)
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
 
     if (vm_profile_xt_5160_268_values_create(&profile.values) != TYPE_STATUS_OK ||
-        vm_profile_xt_5160_268_plan_create(&profile, TYPE_FALSE) != TYPE_STATUS_OK ||
+        vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != TYPE_STATUS_OK ||
         profile.values.core.configuration.memory_bytes != 256u * 1024u ||
         profile.values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_8088 ||
@@ -117,21 +118,21 @@ static C_INT vm_xt_5160_268_contract_is_fixed(C_VOID)
 static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
-    core_machine_plan *plan = STD_NULL;
-    core_machine *machine = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_display_snapshot snapshot = {0};
-    const type_unsigned_8 cells[] = { 'X', 0x1fu };
-    type_unsigned_8 open_bus_byte = 0u;
+    const lib_u8 cells[] = { 'X', 0x1fu };
+    lib_u8 open_bus_byte = 0u;
     C_INT failed = 0;
 
-    failed |= vm_profile_xt_5160_268_plan_create(&profile, TYPE_FALSE) != TYPE_STATUS_OK;
+    failed |= vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_plan_create(
         &profile.values.core.configuration, &plan) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_media_registry_create(&media) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_media_registry_bind(media,
-        VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, STD_NULL,
+        VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, LIB_NULL,
         &vm_xt_5160_268_fdd_provider) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_media_registry_freeze(media) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_plan_bind_media_registry(plan, media) !=
@@ -190,9 +191,9 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
 
 static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
 {
-    static type_unsigned_8 system[VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES];
-    static type_unsigned_8 xebec[VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES];
-    static type_unsigned_8 video[512] = {0x55u, 0xaau, 1u};
+    static lib_u8 system[VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES];
+    static lib_u8 xebec[VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES];
+    static lib_u8 video[512] = {0x55u, 0xaau, 1u};
     vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_IBM_5160_MODEL_268,
         .bios_count = 1u
@@ -200,26 +201,26 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
     vm_machine_assets assets = { .bios = {
         { system, sizeof(system) }, { xebec, sizeof(xebec) }
     }, .video = { video, sizeof(video) } };
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     vm_machine_reset_vector vector;
-    type_unsigned_8 observed[2] = {0};
+    lib_u8 observed[2] = {0};
     C_INT failed = 0;
 
-    failed |= STD_STRCMP(vm_profile_name(config.profile_kind),
+    failed |= lib_c_strcmp(vm_profile_name(config.profile_kind),
         "ibm-5160-model-268") != 0;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+        session == LIB_NULL;
     failed |= !failed && vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK;
     failed |= !failed && (core_machine_memory_read(session->core_machine, 0x000c0000u,
         observed, sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x55u ||
         observed[1u] != 0xaau);
     vm_machine_destroy(session);
-    session = STD_NULL;
+    session = LIB_NULL;
     config.bios_count = 2u;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+        session == LIB_NULL;
     vm_machine_destroy(session);
-    session = STD_NULL;
+    session = LIB_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT;

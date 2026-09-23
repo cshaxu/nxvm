@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -7,29 +8,29 @@
 #define TIMING_80186_RESET_PHYSICAL 0x000ffff0u
 
 typedef struct timing_80186_state {
-    type_unsigned_32 reads;
-    type_unsigned_32 writes;
-    type_unsigned_64 advanced_ticks;
+    lib_u32 reads;
+    lib_u32 writes;
+    lib_u64 advanced_ticks;
 } timing_80186_state;
 
-static type_status timing_80186_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status timing_80186_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *out_value)
 {
     timing_80186_state *state = (timing_80186_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u)
+    if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = 0x5au;
     return TYPE_STATUS_OK;
 }
 
-static type_status timing_80186_write(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status timing_80186_write(C_VOID *owner, lib_u16 port,
+    lib_u32 value)
 {
     timing_80186_state *state = (timing_80186_state *)owner;
 
-    if (state == STD_NULL || port != 0x00e0u || value > 0xffffu)
+    if (state == LIB_NULL || port != 0x00e0u || value > 0xffffu)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     return TYPE_STATUS_OK;
@@ -42,13 +43,13 @@ static const core_machine_port_provider timing_80186_ports = {
 static C_VOID timing_80186_reset(C_VOID *opaque)
 {
     timing_80186_state *state = (timing_80186_state *)opaque;
-    if (state != STD_NULL) state->advanced_ticks = 0u;
+    if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID timing_80186_advance(C_VOID *opaque, type_unsigned_64 ticks)
+static C_VOID timing_80186_advance(C_VOID *opaque, lib_u64 ticks)
 {
     timing_80186_state *state = (timing_80186_state *)opaque;
-    if (state != STD_NULL) state->advanced_ticks += ticks;
+    if (state != LIB_NULL) state->advanced_ticks += ticks;
 }
 
 static const core_machine_execution_provider timing_80186_execution = {
@@ -63,9 +64,9 @@ static C_INT timing_80186_prepare(core_machine **out_machine,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || state == STD_NULL ||
+    if (out_machine == LIB_NULL || state == LIB_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80186_RESET_LINEAR, TIMING_80186_RESET_PHYSICAL, 16u) !=
@@ -81,7 +82,7 @@ static C_INT timing_80186_prepare(core_machine **out_machine,
 }
 
 static C_INT timing_80186_load(core_machine *machine,
-    const type_unsigned_8 *program, STD_SIZE_T bytes)
+    const lib_u8 *program, lib_size bytes)
 {
     return core_machine_reset(machine) == TYPE_STATUS_OK &&
         core_machine_memory_write(machine, TIMING_80186_RESET_LINEAR,
@@ -89,7 +90,7 @@ static C_INT timing_80186_load(core_machine *machine,
 }
 
 static C_INT timing_80186_run(core_machine *machine, timing_80186_state *state,
-    type_unsigned_64 instructions, type_unsigned_64 ticks)
+    lib_u64 instructions, lib_u64 ticks)
 {
     const core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
@@ -100,11 +101,11 @@ static C_INT timing_80186_run(core_machine *machine, timing_80186_state *state,
         result.elapsed_ticks == ticks && state->advanced_ticks == ticks;
 }
 
-static C_INT timing_80186_case(const type_unsigned_8 *program, STD_SIZE_T bytes,
-    type_unsigned_64 ticks)
+static C_INT timing_80186_case(const lib_u8 *program, lib_size bytes,
+    lib_u64 ticks)
 {
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state) ||
         !timing_80186_load(machine, program, bytes) ||
         !timing_80186_run(machine, &state, 1u, ticks);
@@ -115,9 +116,9 @@ static C_INT timing_80186_case(const type_unsigned_8 *program, STD_SIZE_T bytes,
 
 static C_INT timing_80186_lea(C_VOID)
 {
-    static const type_unsigned_8 program[] = { 0x8du, 0x1eu, 0x00u, 0x10u };
+    static const lib_u8 program[] = { 0x8du, 0x1eu, 0x00u, 0x10u };
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state) ||
         !timing_80186_load(machine, program, sizeof(program)) ||
         !timing_80186_run(machine, &state, 1u, 6u) ||
@@ -129,11 +130,11 @@ static C_INT timing_80186_lea(C_VOID)
 
 static C_INT timing_80186_pointer_loads(C_VOID)
 {
-    static const type_unsigned_8 lds[] = { 0xc5u, 0x1eu, 0x00u, 0x10u };
-    static const type_unsigned_8 les[] = { 0xc4u, 0x1eu, 0x00u, 0x10u };
-    static const type_unsigned_16 pointer[] = { 0x2000u, 0x0800u };
+    static const lib_u8 lds[] = { 0xc5u, 0x1eu, 0x00u, 0x10u };
+    static const lib_u8 les[] = { 0xc4u, 0x1eu, 0x00u, 0x10u };
+    static const lib_u16 pointer[] = { 0x2000u, 0x0800u };
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, lds, sizeof(lds)) ||
@@ -152,10 +153,10 @@ static C_INT timing_80186_pointer_loads(C_VOID)
 
 static C_INT timing_80186_bound(C_VOID)
 {
-    static const type_unsigned_8 program[] = { 0x62u, 0x06u, 0x00u, 0x10u };
-    static const type_unsigned_16 bounds[] = { 0x1000u, 0x2000u };
+    static const lib_u8 program[] = { 0x62u, 0x06u, 0x00u, 0x10u };
+    static const lib_u16 bounds[] = { 0x1000u, 0x2000u };
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state) ||
         !timing_80186_load(machine, program, sizeof(program)) ||
         core_machine_memory_write(machine, 0x1000u, bounds, sizeof(bounds)) !=
@@ -168,20 +169,20 @@ static C_INT timing_80186_bound(C_VOID)
 
 static C_INT timing_80186_alu_matrix(C_VOID)
 {
-    static const type_unsigned_8 bases[] = {
+    static const lib_u8 bases[] = {
         0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
     };
-    static const type_unsigned_64 ticks[] = { 3u, 10u, 10u, 4u, 16u, 4u };
-    STD_SIZE_T operation;
-    STD_SIZE_T form;
+    static const lib_u64 ticks[] = { 3u, 10u, 10u, 4u, 16u, 4u };
+    lib_size operation;
+    lib_size form;
 
     for (operation = 0u; operation < sizeof(bases) / sizeof(bases[0]); ++operation) {
         for (form = 0u; form < sizeof(ticks) / sizeof(ticks[0]); ++form) {
-            type_unsigned_8 program[5] = { 0 };
-            STD_SIZE_T bytes;
-            const type_unsigned_16 value = 1u;
+            lib_u8 program[5] = { 0 };
+            lib_size bytes;
+            const lib_u16 value = 1u;
             timing_80186_state state = { 0u, 0u, 0u };
-            core_machine *machine = STD_NULL;
+            core_machine *machine = LIB_NULL;
             C_INT failed;
 
             switch (form) {
@@ -192,10 +193,10 @@ static C_INT timing_80186_alu_matrix(C_VOID)
             case 2u: program[0] = bases[operation]; program[1] = 0x0eu;
                 program[2] = 0u; program[3] = 0x10u; bytes = 4u; break;
             case 3u: program[0] = 0x80u; program[1] =
-                (type_unsigned_8)(0xc0u | (operation << 3u)); program[2] = 1u;
+                (lib_u8)(0xc0u | (operation << 3u)); program[2] = 1u;
                 bytes = 3u; break;
             case 4u: program[0] = 0x80u; program[1] =
-                (type_unsigned_8)(0x06u | (operation << 3u)); program[2] = 0u;
+                (lib_u8)(0x06u | (operation << 3u)); program[2] = 0u;
                 program[3] = 0x10u; program[4] = 1u; bytes = 5u; break;
             default: program[0] = bases[operation] + 4u; program[1] = 1u;
                 bytes = 2u; break;
@@ -210,7 +211,7 @@ static C_INT timing_80186_alu_matrix(C_VOID)
             core_machine_destroy(machine);
             if (failed) {
                 STD_PRINTF("I186 ALU timing case failed: operation=%u form=%u\n",
-                    (type_unsigned_32)operation, (type_unsigned_32)form);
+                    (lib_u32)operation, (lib_u32)form);
                 return 1;
             }
         }
@@ -221,9 +222,9 @@ static C_INT timing_80186_alu_matrix(C_VOID)
 static C_INT timing_80186_cmp_test_matrix(C_VOID)
 {
     typedef struct timing_80186_recipe {
-        type_unsigned_8 program[5];
-        STD_SIZE_T bytes;
-        type_unsigned_64 ticks;
+        lib_u8 program[5];
+        lib_size bytes;
+        lib_u64 ticks;
     } timing_80186_recipe;
     static const timing_80186_recipe recipes[] = {
         { { 0x3au,0xc1u }, 2u, 3u }, { { 0x3au,0x06u,0u,0x10u }, 4u, 10u },
@@ -233,12 +234,12 @@ static C_INT timing_80186_cmp_test_matrix(C_VOID)
         { { 0xf6u,0xc0u,1u }, 3u, 4u }, { { 0xf6u,0x06u,0u,0x10u,1u }, 5u, 10u },
         { { 0xa8u,1u }, 2u, 4u }
     };
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
-        const type_unsigned_16 value = 1u;
+        const lib_u16 value = 1u;
         timing_80186_state state = { 0u, 0u, 0u };
-        core_machine *machine = STD_NULL;
+        core_machine *machine = LIB_NULL;
         C_INT failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || core_machine_memory_write(machine,
@@ -250,7 +251,7 @@ static C_INT timing_80186_cmp_test_matrix(C_VOID)
         core_machine_destroy(machine);
         if (failed) {
             STD_PRINTF("I186 CMP/TEST timing case failed: index=%u\n",
-                (type_unsigned_32)index);
+                (lib_u32)index);
             return 1;
         }
     }
@@ -260,9 +261,9 @@ static C_INT timing_80186_cmp_test_matrix(C_VOID)
 static C_INT timing_80186_adjustment_matrix(C_VOID)
 {
     typedef struct timing_80186_adjustment_recipe {
-        type_unsigned_8 program[2];
-        STD_SIZE_T bytes;
-        type_unsigned_64 ticks;
+        lib_u8 program[2];
+        lib_size bytes;
+        lib_u64 ticks;
     } timing_80186_adjustment_recipe;
     static const timing_80186_adjustment_recipe recipes[] = {
         { { 0x37u }, 1u, 8u }, { { 0x3fu }, 1u, 7u },
@@ -270,11 +271,11 @@ static C_INT timing_80186_adjustment_matrix(C_VOID)
         { { 0x98u }, 1u, 2u }, { { 0x99u }, 1u, 4u },
         { { 0x27u }, 1u, 4u }, { { 0x2fu }, 1u, 4u }
     };
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         timing_80186_state state = { 0u, 0u, 0u };
-        core_machine *machine = STD_NULL;
+        core_machine *machine = LIB_NULL;
         C_INT failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || ((machine->executor_cpu.data.ax = 0x0012u),
@@ -289,9 +290,9 @@ static C_INT timing_80186_adjustment_matrix(C_VOID)
 static C_INT timing_80186_unary_matrix(C_VOID)
 {
     typedef struct timing_80186_recipe {
-        type_unsigned_8 program[4];
-        STD_SIZE_T bytes;
-        type_unsigned_64 ticks;
+        lib_u8 program[4];
+        lib_size bytes;
+        lib_u64 ticks;
     } timing_80186_recipe;
     static const timing_80186_recipe recipes[] = {
         { { 0x40u },1u,3u }, { { 0xfeu,0xc0u },2u,3u }, { { 0xffu,0x06u,0u,0x10u },4u,15u },
@@ -300,11 +301,11 @@ static C_INT timing_80186_unary_matrix(C_VOID)
         { { 0xf6u,0xd0u },2u,3u }, { { 0xf6u,0x16u,0u,0x10u },4u,3u },
         { { 0x91u },1u,3u }, { { 0x87u,0xc1u },2u,4u }, { { 0x87u,0x06u,0u,0x10u },4u,17u }
     };
-    STD_SIZE_T index;
+    lib_size index;
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
-        const type_unsigned_16 value = 1u;
+        const lib_u16 value = 1u;
         timing_80186_state state = { 0u,0u,0u };
-        core_machine *machine = STD_NULL;
+        core_machine *machine = LIB_NULL;
         C_INT failed = !timing_80186_prepare(&machine, &state) || !timing_80186_load(machine,
             recipes[index].program, recipes[index].bytes) || core_machine_memory_write(machine,
             0x1000u, &value, sizeof(value)) != TYPE_STATUS_OK || !timing_80186_run(machine,
@@ -318,11 +319,11 @@ static C_INT timing_80186_unary_matrix(C_VOID)
 static C_INT timing_80186_flag_controls(C_VOID)
 {
     typedef struct timing_80186_flag_recipe {
-        type_unsigned_8 opcode;
-        type_unsigned_32 initial_flags;
-        type_unsigned_32 required_set;
-        type_unsigned_32 required_clear;
-        type_unsigned_64 ticks;
+        lib_u8 opcode;
+        lib_u32 initial_flags;
+        lib_u32 required_set;
+        lib_u32 required_clear;
+        lib_u64 ticks;
     } timing_80186_flag_recipe;
     static const timing_80186_flag_recipe recipes[] = {
         { 0xf9u, 0u, VCPU_EFLAGS_CF, 0u, 2u },
@@ -332,12 +333,12 @@ static C_INT timing_80186_flag_controls(C_VOID)
         { 0xfdu, 0u, VCPU_EFLAGS_DF, 0u, 2u },
         { 0x90u, 0u, 0u, 0u, 3u }
     };
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         const timing_80186_flag_recipe *recipe = &recipes[index];
         timing_80186_state state = { 0u,0u,0u };
-        core_machine *machine = STD_NULL;
+        core_machine *machine = LIB_NULL;
         C_INT failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, &recipe->opcode, 1u) ||
             ((machine->executor_cpu.data.eflags = recipe->initial_flags), 0) ||
@@ -354,39 +355,39 @@ static C_INT timing_80186_flag_controls(C_VOID)
 
 static C_INT timing_80186_group2_matrix(C_VOID)
 {
-    static const type_unsigned_8 operations[] = { 0u,1u,2u,3u,4u,5u,7u };
-    static const type_unsigned_64 ticks[] = { 2u,8u,15u,20u,8u,20u };
-    STD_SIZE_T operation;
-    STD_SIZE_T form;
+    static const lib_u8 operations[] = { 0u,1u,2u,3u,4u,5u,7u };
+    static const lib_u64 ticks[] = { 2u,8u,15u,20u,8u,20u };
+    lib_size operation;
+    lib_size form;
 
     for (operation = 0u; operation < sizeof(operations) / sizeof(operations[0]);
             ++operation) {
         for (form = 0u; form < sizeof(ticks) / sizeof(ticks[0]); ++form) {
-            type_unsigned_8 program[5] = { 0 };
-            const type_unsigned_16 value = 1u;
-            STD_SIZE_T bytes;
+            lib_u8 program[5] = { 0 };
+            const lib_u16 value = 1u;
+            lib_size bytes;
             timing_80186_state state = { 0u,0u,0u };
-            core_machine *machine = STD_NULL;
+            core_machine *machine = LIB_NULL;
             C_INT failed;
 
             switch (form) {
             case 0u: program[0] = 0xd0u; program[1] =
-                (type_unsigned_8)(0xc0u | (operations[operation] << 3u));
+                (lib_u8)(0xc0u | (operations[operation] << 3u));
                 bytes = 2u; break;
             case 1u: program[0] = 0xd2u; program[1] =
-                (type_unsigned_8)(0xc0u | (operations[operation] << 3u));
+                (lib_u8)(0xc0u | (operations[operation] << 3u));
                 bytes = 2u; break;
             case 2u: program[0] = 0xd0u; program[1] =
-                (type_unsigned_8)(0x06u | (operations[operation] << 3u));
+                (lib_u8)(0x06u | (operations[operation] << 3u));
                 program[2] = 0u; program[3] = 0x10u; bytes = 4u; break;
             case 3u: program[0] = 0xd2u; program[1] =
-                (type_unsigned_8)(0x06u | (operations[operation] << 3u));
+                (lib_u8)(0x06u | (operations[operation] << 3u));
                 program[2] = 0u; program[3] = 0x10u; bytes = 4u; break;
             case 4u: program[0] = 0xc0u; program[1] =
-                (type_unsigned_8)(0xc0u | (operations[operation] << 3u));
+                (lib_u8)(0xc0u | (operations[operation] << 3u));
                 program[2] = 3u; bytes = 3u; break;
             default: program[0] = 0xc0u; program[1] =
-                (type_unsigned_8)(0x06u | (operations[operation] << 3u));
+                (lib_u8)(0x06u | (operations[operation] << 3u));
                 program[2] = 0u; program[3] = 0x10u; program[4] = 3u;
                 bytes = 5u; break;
             }
@@ -406,9 +407,9 @@ static C_INT timing_80186_group2_matrix(C_VOID)
 static C_INT timing_80186_l2_arithmetic_matrix(C_VOID)
 {
     typedef struct timing_80186_recipe {
-        type_unsigned_8 program[5];
-        STD_SIZE_T bytes;
-        type_unsigned_64 ticks;
+        lib_u8 program[5];
+        lib_size bytes;
+        lib_u64 ticks;
     } timing_80186_recipe;
     static const timing_80186_recipe recipes[] = {
         { { 0xf6u,0xe0u },2u,27u }, { { 0xf7u,0xe0u },2u,36u },
@@ -419,11 +420,11 @@ static C_INT timing_80186_l2_arithmetic_matrix(C_VOID)
         { { 0xf6u,0x3eu,0u,0x10u },4u,54u }, { { 0xf7u,0x3eu,0u,0x10u },4u,63u },
         { { 0x6bu,0xc0u,1u },3u,24u }, { { 0x69u,0xc0u,1u,0u },4u,31u }
     };
-    STD_SIZE_T index;
+    lib_size index;
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
-        const type_unsigned_16 value = 1u;
+        const lib_u16 value = 1u;
         timing_80186_state state = { 0u,0u,0u };
-        core_machine *machine = STD_NULL;
+        core_machine *machine = LIB_NULL;
         C_INT failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || core_machine_memory_write(machine,
@@ -440,19 +441,19 @@ static C_INT timing_80186_l2_arithmetic_matrix(C_VOID)
 static C_INT timing_80186_div_matrix(C_VOID)
 {
     typedef struct timing_80186_recipe {
-        type_unsigned_8 program[4];
-        STD_SIZE_T bytes;
-        type_unsigned_64 ticks;
+        lib_u8 program[4];
+        lib_size bytes;
+        lib_u64 ticks;
     } timing_80186_recipe;
     static const timing_80186_recipe recipes[] = {
         { { 0xf6u,0xf0u },2u,29u }, { { 0xf7u,0xf0u },2u,38u },
         { { 0xf6u,0x36u,0u,0x10u },4u,35u }, { { 0xf7u,0x36u,0u,0x10u },4u,44u }
     };
-    STD_SIZE_T index;
+    lib_size index;
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
-        const type_unsigned_16 value = 1u;
+        const lib_u16 value = 1u;
         timing_80186_state state = { 0u,0u,0u };
-        core_machine *machine = STD_NULL;
+        core_machine *machine = LIB_NULL;
         C_INT failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || core_machine_memory_write(machine,
@@ -468,11 +469,11 @@ static C_INT timing_80186_div_matrix(C_VOID)
 
 static C_INT timing_80186_stack_frame(C_VOID)
 {
-    static const type_unsigned_8 enter[] = { 0xc8u, 0u, 0u, 0u };
-    static const type_unsigned_8 leave[] = { 0xc9u };
-    const type_unsigned_16 prior_bp = 0x1234u;
+    static const lib_u8 enter[] = { 0xc8u, 0u, 0u, 0u };
+    static const lib_u8 leave[] = { 0xc9u };
+    const lib_u16 prior_bp = 0x1234u;
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, enter, sizeof(enter)) ||
@@ -493,24 +494,24 @@ static C_INT timing_80186_stack_frame(C_VOID)
 
 static C_INT timing_80186_memory(C_VOID)
 {
-    static const type_unsigned_8 read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
-    static const type_unsigned_8 write[] = { 0x89u, 0x0eu, 0x00u, 0x10u };
-    static const type_unsigned_8 moffs_read[] = { 0xa1u, 0x01u, 0x10u };
-    static const type_unsigned_8 moffs_write[] = { 0xa3u, 0x01u, 0x10u };
-    static const type_unsigned_8 override[] = { 0x26u, 0x8bu, 0x0eu, 0x00u, 0x10u };
-    static const type_unsigned_8 locked_add[] = {
+    static const lib_u8 read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
+    static const lib_u8 write[] = { 0x89u, 0x0eu, 0x00u, 0x10u };
+    static const lib_u8 moffs_read[] = { 0xa1u, 0x01u, 0x10u };
+    static const lib_u8 moffs_write[] = { 0xa3u, 0x01u, 0x10u };
+    static const lib_u8 override[] = { 0x26u, 0x8bu, 0x0eu, 0x00u, 0x10u };
+    static const lib_u8 locked_add[] = {
         0xf0u, 0x01u, 0x0eu, 0x00u, 0x10u
     };
-    static const type_unsigned_8 move_memory_immediate[] = {
+    static const lib_u8 move_memory_immediate[] = {
         0xc6u, 0x06u, 0x00u, 0x10u, 0x5au
     };
-    static const type_unsigned_8 segment_odd_shift[] = {
+    static const lib_u8 segment_odd_shift[] = {
         0x26u, 0xd1u, 0x26u, 0x01u, 0x10u
     };
-    const type_unsigned_16 value = 0x5aa5u;
-    type_unsigned_8 byte_value = 0u;
+    const lib_u16 value = 0x5aa5u;
+    lib_u8 byte_value = 0u;
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, read, sizeof(read)) ||
@@ -549,18 +550,18 @@ static C_INT timing_80186_memory(C_VOID)
 
 static C_INT timing_80186_control_ports(C_VOID)
 {
-    static const type_unsigned_8 taken[] = { 0x74u, 0x01u, 0x90u, 0x90u };
-    static const type_unsigned_8 not_taken[] = { 0x75u, 0x01u, 0x90u, 0x90u };
-    static const type_unsigned_8 rep[] = { 0xf3u, 0xa4u };
-    static const type_unsigned_8 rep_segment[] = { 0x26u, 0xf3u, 0xa4u };
-    static const type_unsigned_8 rep_odd_word[] = { 0xf3u, 0xa5u };
-    static const type_unsigned_8 source[] = { 1u, 2u, 3u };
-    static const type_unsigned_8 out_imm[] = { 0xe6u, 0xe0u };
-    static const type_unsigned_8 out_dx[] = { 0xeeu };
-    static const type_unsigned_8 in_imm[] = { 0xe4u, 0xe0u };
-    static const type_unsigned_8 in_dx[] = { 0xecu };
+    static const lib_u8 taken[] = { 0x74u, 0x01u, 0x90u, 0x90u };
+    static const lib_u8 not_taken[] = { 0x75u, 0x01u, 0x90u, 0x90u };
+    static const lib_u8 rep[] = { 0xf3u, 0xa4u };
+    static const lib_u8 rep_segment[] = { 0x26u, 0xf3u, 0xa4u };
+    static const lib_u8 rep_odd_word[] = { 0xf3u, 0xa5u };
+    static const lib_u8 source[] = { 1u, 2u, 3u };
+    static const lib_u8 out_imm[] = { 0xe6u, 0xe0u };
+    static const lib_u8 out_dx[] = { 0xeeu };
+    static const lib_u8 in_imm[] = { 0xe4u, 0xe0u };
+    static const lib_u8 in_dx[] = { 0xecu };
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, taken, sizeof(taken)) ||
@@ -605,15 +606,15 @@ static C_INT timing_80186_control_ports(C_VOID)
 
 static C_INT timing_80186_boundaries(C_VOID)
 {
-    static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 rotate[] = { 0xd0u, 0xc0u };
-    static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
-    static const type_unsigned_8 maximum[] = { 0x26u, 0x89u, 0x8bu, 0x00u, 0x10u };
+    static const lib_u8 nop[] = { 0x90u };
+    static const lib_u8 rotate[] = { 0xd0u, 0xc0u };
+    static const lib_u8 fault[] = { 0x66u, 0x90u };
+    static const lib_u8 maximum[] = { 0x26u, 0x89u, 0x8bu, 0x00u, 0x10u };
     const core_machine_run_budget one = { 1u, 0u };
     const core_machine_run_budget insufficient = { 1u, 18u };
     core_machine_run_result result;
     timing_80186_state state = { 0u, 0u, 0u };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, rotate,
@@ -653,8 +654,8 @@ static C_INT timing_80186_boundaries(C_VOID)
 
 static C_INT timing_80186_enter_full_level(C_VOID)
 {
-    static const type_unsigned_8 level33[] = { 0xc8u, 0u, 0u, 0x21u };
-    static const type_unsigned_8 level255[] = { 0xc8u, 0u, 0u, 0xffu };
+    static const lib_u8 level33[] = { 0xc8u, 0u, 0u, 0x21u };
+    static const lib_u8 level255[] = { 0xc8u, 0u, 0u, 0xffu };
 
     return timing_80186_case(level33, sizeof(level33), 534u) ||
         timing_80186_case(level255, sizeof(level255), 4086u);
@@ -662,27 +663,27 @@ static C_INT timing_80186_enter_full_level(C_VOID)
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 clc[] = { 0xf8u };
-    static const type_unsigned_8 immediate[] = { 0xb8u, 0x34u, 0x12u };
-    static const type_unsigned_8 registers[] = { 0x8bu, 0xc1u };
-    static const type_unsigned_8 near_call[] = { 0xe8u, 0u, 0u };
-    static const type_unsigned_8 direct_jump[] = { 0xebu, 0u };
-    static const type_unsigned_8 mul8[] = { 0xf6u, 0xe0u };
-    static const type_unsigned_8 mul16[] = { 0xf7u, 0xe0u };
-    static const type_unsigned_8 imul8[] = { 0xf6u, 0xe8u };
-    static const type_unsigned_8 imul16[] = { 0xf7u, 0xe8u };
-    static const type_unsigned_8 imul_imm8[] = { 0x6bu, 0xc0u, 0x01u };
-    static const type_unsigned_8 imul_imm16[] = {
+    static const lib_u8 nop[] = { 0x90u };
+    static const lib_u8 clc[] = { 0xf8u };
+    static const lib_u8 immediate[] = { 0xb8u, 0x34u, 0x12u };
+    static const lib_u8 registers[] = { 0x8bu, 0xc1u };
+    static const lib_u8 near_call[] = { 0xe8u, 0u, 0u };
+    static const lib_u8 direct_jump[] = { 0xebu, 0u };
+    static const lib_u8 mul8[] = { 0xf6u, 0xe0u };
+    static const lib_u8 mul16[] = { 0xf7u, 0xe0u };
+    static const lib_u8 imul8[] = { 0xf6u, 0xe8u };
+    static const lib_u8 imul16[] = { 0xf7u, 0xe8u };
+    static const lib_u8 imul_imm8[] = { 0x6bu, 0xc0u, 0x01u };
+    static const lib_u8 imul_imm16[] = {
         0x69u, 0xc0u, 0x01u, 0x00u
     };
-    static const type_unsigned_8 rotate_imm[] = { 0xc0u, 0xc0u, 0x03u };
-    static const type_unsigned_8 xlat[] = { 0xd7u };
-    static const type_unsigned_8 sreg_to_register[] = { 0x8cu, 0xc0u };
-    static const type_unsigned_8 sreg_from_register[] = { 0x8eu, 0xc0u };
-    static const type_unsigned_8 cmc[] = { 0xf5u };
-    static const type_unsigned_8 sahf[] = { 0x9eu };
-    static const type_unsigned_8 lahf[] = { 0x9fu };
+    static const lib_u8 rotate_imm[] = { 0xc0u, 0xc0u, 0x03u };
+    static const lib_u8 xlat[] = { 0xd7u };
+    static const lib_u8 sreg_to_register[] = { 0x8cu, 0xc0u };
+    static const lib_u8 sreg_from_register[] = { 0x8eu, 0xc0u };
+    static const lib_u8 cmc[] = { 0xf5u };
+    static const lib_u8 sahf[] = { 0x9eu };
+    static const lib_u8 lahf[] = { 0x9fu };
 
     if (timing_80186_case(nop, sizeof(nop), 3u) ||
         timing_80186_case(clc, sizeof(clc), 2u) ||

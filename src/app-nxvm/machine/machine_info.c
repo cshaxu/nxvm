@@ -1,4 +1,5 @@
 /* Copyright 2012-2014 Neko. */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -14,18 +15,18 @@ type_status vm_machine_get_information(const vm_machine *session,
 {
     core_machine_cpu_profile cpu_profile;
     const vm_machine_fault_outcome *fault;
-    STD_SIZE_T memory_bytes = 0u;
+    lib_size memory_bytes = 0u;
     type_status status;
 
-    if (session == STD_NULL || out_information == STD_NULL) {
+    if (session == LIB_NULL || out_information == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (session->core_machine == LIB_NULL) return TYPE_STATUS_INVALID_STATE;
     status = core_machine_get_memory_bytes(session->core_machine, &memory_bytes);
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_get_cpu_profile(session->core_machine, &cpu_profile);
     if (status != TYPE_STATUS_OK) return status;
-    STD_MEMSET(out_information, 0, sizeof(*out_information));
+    lib_memory_set(out_information, 0, sizeof(*out_information));
     out_information->profile_kind = session->retained_config.profile_kind;
     out_information->cpu_profile = cpu_profile;
     out_information->memory_bytes = memory_bytes;
@@ -36,7 +37,7 @@ type_status vm_machine_get_information(const vm_machine *session,
     out_information->fixed_disk_cylinders = vm_machine_hdd_cylinders(&session->hdd);
     out_information->fixed_disk_image_bytes = vm_machine_hdd_image_size(&session->hdd);
     out_information->fixed_disk_media_connected = vm_machine_hdd_has_media(&session->hdd);
-    out_information->external_firmware = session->profile_plan != STD_NULL;
+    out_information->external_firmware = session->profile_plan != LIB_NULL;
     out_information->active = vm_machine_executor_state_is_active(
         session->control.state);
     fault = &session->fault_outcome;

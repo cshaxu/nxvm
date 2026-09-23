@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_TRACE_INTERFACE_H
 #define CORE_MACHINE_TRACE_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 
 #include "type.h"
@@ -43,13 +44,13 @@ typedef enum core_machine_trace_event_type {
 
 typedef struct core_machine_trace_event {
     core_machine_trace_event_type type;
-    type_unsigned_64 sequence;
-    type_unsigned_64 elapsed_ticks;
-    type_unsigned_64 timeline_ticks;
-    type_unsigned_32 linear_pc;
-    type_unsigned_32 address;
-    type_unsigned_32 value;
-    type_unsigned_32 detail;
+    lib_u64 sequence;
+    lib_u64 elapsed_ticks;
+    lib_u64 timeline_ticks;
+    lib_u32 linear_pc;
+    lib_u32 address;
+    lib_u32 value;
+    lib_u32 detail;
 } core_machine_trace_event;
 
 typedef C_VOID (*core_machine_trace_event_provider)(

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -6,9 +7,9 @@
 #include "app-nxvm/machine/machine_interface.h"
 
 static C_INT vm_model40_rom_read(core_machine *machine,
-    type_unsigned_32 physical, type_unsigned_8 expected)
+    lib_u32 physical, lib_u8 expected)
 {
-    type_unsigned_8 observed = 0u;
+    lib_u8 observed = 0u;
 
     return core_machine_memory_read(machine, physical, &observed,
         sizeof(observed)) == TYPE_STATUS_OK && observed == expected;
@@ -16,15 +17,15 @@ static C_INT vm_model40_rom_read(core_machine *machine,
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_machine_config invalid_config = {
         .profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
     };
     vm_machine_assets missing_assets = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_run_result result;
-    type_unsigned_8 write = 0u;
+    lib_u8 write = 0u;
     C_INT failed = 0;
 
     even[0u] = 0x11u;
@@ -33,9 +34,9 @@ C_INT main(C_VOID)
 
     failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT ||
-        session != STD_NULL;
+        session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        TYPE_STATUS_OK || session == STD_NULL ||
+        TYPE_STATUS_OK || session == LIB_NULL ||
         !vm_model40_rom_read(session->core_machine, 0x000f0000u, 0x11u) ||
         !vm_model40_rom_read(session->core_machine, 0x000f0001u, 0x22u) ||
         !vm_model40_rom_read(session->core_machine, 0x000f8000u, 0x11u) ||

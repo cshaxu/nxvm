@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/clock.h"
@@ -8,7 +9,7 @@ static const core_machine_clock_ratio core_machine_clock_identity = {
 
 C_INT core_machine_clock_ratio_is_valid(const core_machine_clock_ratio *ratio)
 {
-    if (ratio == STD_NULL) return 0;
+    if (ratio == LIB_NULL) return 0;
     if (ratio->numerator == 0u && ratio->denominator == 0u &&
         ratio->reset_phase == 0u) return 1;
     return ratio->numerator != 0u && ratio->denominator != 0u &&
@@ -20,7 +21,7 @@ type_status core_machine_clock_domain_initialize(core_machine_clock_domain *doma
 {
     const core_machine_clock_ratio *resolved = ratio;
 
-    if (domain == STD_NULL || !core_machine_clock_ratio_is_valid(ratio)) {
+    if (domain == LIB_NULL || !core_machine_clock_ratio_is_valid(ratio)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (ratio->numerator == 0u) resolved = &core_machine_clock_identity;
@@ -33,19 +34,19 @@ type_status core_machine_clock_domain_initialize(core_machine_clock_domain *doma
 
 C_VOID core_machine_clock_domain_reset(core_machine_clock_domain *domain)
 {
-    if (domain == STD_NULL) return;
+    if (domain == LIB_NULL) return;
     domain->phase = domain->reset_phase;
     domain->delivered_ticks = 0u;
 }
 
-type_unsigned_64 core_machine_clock_domain_advance(core_machine_clock_domain *domain,
-    type_unsigned_64 elapsed_ticks)
+lib_u64 core_machine_clock_domain_advance(core_machine_clock_domain *domain,
+    lib_u64 elapsed_ticks)
 {
-    type_unsigned_64 ticks;
-    type_unsigned_64 remainder;
-    type_unsigned_64 converted;
+    lib_u64 ticks;
+    lib_u64 remainder;
+    lib_u64 converted;
 
-    if (domain == STD_NULL || domain->denominator == 0u) return 0u;
+    if (domain == LIB_NULL || domain->denominator == 0u) return 0u;
     /* Equal numerator/denominator is an exact identity domain, including a
      * nonzero frozen phase. Avoiding the general division path preserves the
      * same delivered ticks and phase for the overwhelmingly common 1:1
@@ -58,18 +59,18 @@ type_unsigned_64 core_machine_clock_domain_advance(core_machine_clock_domain *do
     remainder = (elapsed_ticks % domain->denominator) * domain->numerator +
         domain->phase;
     converted = ticks + remainder / domain->denominator;
-    domain->phase = (type_unsigned_32)(remainder % domain->denominator);
+    domain->phase = (lib_u32)(remainder % domain->denominator);
     domain->delivered_ticks += converted;
     return converted;
 }
 
 type_status core_machine_clock_domain_source_ticks_until(
-    const core_machine_clock_domain *domain, type_unsigned_64 delivered_ticks,
-    type_unsigned_64 *out_source_ticks)
+    const core_machine_clock_domain *domain, lib_u64 delivered_ticks,
+    lib_u64 *out_source_ticks)
 {
-    type_unsigned_64 required;
+    lib_u64 required;
 
-    if (domain == STD_NULL || out_source_ticks == STD_NULL ||
+    if (domain == LIB_NULL || out_source_ticks == LIB_NULL ||
         delivered_ticks == 0u || domain->numerator == 0u ||
         domain->denominator == 0u ||
         delivered_ticks > UINT64_MAX / domain->denominator) {

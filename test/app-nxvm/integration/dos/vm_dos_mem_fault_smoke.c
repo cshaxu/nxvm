@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -16,22 +17,22 @@
 #define MEM_FAULT_TIMEOUT_MILLISECONDS 2000u
 
 static C_INT vm_dos_mem_fault_submit_key(vm_machine *session,
-    type_unsigned_16 scan_code, type_unsigned_16 virtual_key)
+    lib_u16 scan_code, lib_u16 virtual_key)
 {
     core_machine_guest_input_event event = { 0 };
 
-    if (session == STD_NULL) return 0;
+    if (session == LIB_NULL) return 0;
     event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
-    event.data.key.pressed = TYPE_TRUE;
+    event.data.key.pressed = LIB_TRUE;
     return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
 }
 
 static C_INT vm_dos_mem_fault_has_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
+    lib_size cell;
 
     (C_VOID)test_vm_machine_capture_presentation(session, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
@@ -46,7 +47,7 @@ static C_INT vm_dos_mem_fault_has_prompt(const vm_machine *session)
 static C_VOID vm_dos_mem_fault_print(const core_machine_cpu_diagnostic *diagnostic)
 {
     const core_machine_cpu_fault_snapshot *fault = &diagnostic->first_fault;
-    STD_SIZE_T index;
+    lib_size index;
 
     STD_PRINTF("M5:T152:S1:FAULT CS:IP=%04X:%08X L%08X EX=%08X CODE=%08X BYTES=",
         fault->point.cs, fault->point.eip, fault->point.linear_pc,
@@ -62,14 +63,14 @@ static C_VOID vm_dos_mem_fault_print(const core_machine_cpu_diagnostic *diagnost
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session;
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     DWORD elapsed;
     DWORD result;
     const C_UCHAR scan_codes[] = { 0x32u, 0x12u, 0x32u, 0x1cu };
     const C_UCHAR virtual_keys[] = { 'M', 'E', 'M', VK_RETURN };
     core_machine_cpu_diagnostic diagnostic;
     const C_CHAR *stage = "argument validation";
-    STD_SIZE_T index;
+    lib_size index;
 
     if (argc != 3) goto fail;
     stage = "session creation";
@@ -117,12 +118,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
 fail:
     STD_FPRINTF(STD_STDERR, "M5:T198:S1:DOS-MEM:FAIL stage=%s\n", stage);
-    if (session != STD_NULL &&
+    if (session != LIB_NULL &&
         core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             TYPE_STATUS_OK && diagnostic.first_fault.valid) {
         vm_dos_mem_fault_print(&diagnostic);
     }
-    if (session != STD_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;
 }

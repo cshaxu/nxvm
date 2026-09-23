@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -8,11 +9,11 @@
 
 typedef struct competition_probe {
     core_machine_trace_event events[256];
-    type_unsigned_32 count;
+    lib_u32 count;
 } competition_probe;
 
 typedef struct competition_dma_source {
-    type_unsigned_8 value;
+    lib_u8 value;
 } competition_dma_source;
 
 static C_VOID competition_trace(C_VOID *opaque,
@@ -20,7 +21,7 @@ static C_VOID competition_trace(C_VOID *opaque,
 {
     competition_probe *probe = (competition_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 256u) {
+    if (probe != LIB_NULL && probe->count < 256u) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -29,15 +30,15 @@ static C_VOID competition_dma_read(C_VOID *opaque, t_latch *latch)
 {
     competition_dma_source *source = (competition_dma_source *)opaque;
 
-    if (source != STD_NULL && latch != STD_NULL) latch->data.byte = source->value;
+    if (source != LIB_NULL && latch != LIB_NULL) latch->data.byte = source->value;
 }
 
 static C_INT competition_find_event(const competition_probe *probe,
-    core_machine_trace_event_type type, type_unsigned_32 *out_index)
+    core_machine_trace_event_type type, lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = 0u; index < probe->count; ++index) {
         if (probe->events[index].type == type) {
             *out_index = index;
@@ -48,12 +49,12 @@ static C_INT competition_find_event(const competition_probe *probe,
 }
 
 static C_INT competition_find_event_after(const competition_probe *probe,
-    core_machine_trace_event_type type, type_unsigned_32 start,
-    type_unsigned_32 *out_index)
+    core_machine_trace_event_type type, lib_u32 start,
+    lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = start; index < probe->count; ++index) {
         if (probe->events[index].type == type) {
             *out_index = index;
@@ -65,11 +66,11 @@ static C_INT competition_find_event_after(const competition_probe *probe,
 
 static C_INT competition_find_transaction(const competition_probe *probe,
     core_machine_trace_event_type phase, core_machine_transaction_owner owner,
-    core_machine_transaction_kind kind, type_unsigned_32 *out_index)
+    core_machine_transaction_kind kind, lib_u32 *out_index)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
-    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    if (probe == LIB_NULL || out_index == LIB_NULL) return 0;
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
@@ -97,17 +98,17 @@ static C_VOID competition_program_dma_channel2(t_port *port)
 static C_INT competition_dma_wait_contract(C_VOID)
 {
     static const core_machine_dma_channel_provider provider = {
-        competition_dma_read, STD_NULL, STD_NULL };
+        competition_dma_read, LIB_NULL, LIB_NULL };
     core_machine_config config = {0};
     core_machine_dma_request_binding binding = {0};
     competition_dma_source source = {0xa5u};
-    core_machine *machine = STD_NULL;
-    type_unsigned_8 value = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u8 value = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.dma_cycle_wait_quanta = 1u;
-    config.transaction_contract.dma_cycle_bus_ready_gate_enabled = TYPE_TRUE;
+    config.transaction_contract.dma_cycle_bus_ready_gate_enabled = LIB_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -139,10 +140,10 @@ static C_INT competition_dma_wait_contract(C_VOID)
 C_INT main(C_VOID)
 {
     static const core_machine_dma_channel_provider dma_provider = {
-        competition_dma_read, STD_NULL, STD_NULL
+        competition_dma_read, LIB_NULL, LIB_NULL
     };
-    const type_unsigned_8 nop = 0x90u;
-    core_machine *machine = STD_NULL;
+    const lib_u8 nop = 0x90u;
+    core_machine *machine = LIB_NULL;
     core_machine_config config = {0};
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine_d4_platform_observation d4_observation;
@@ -152,28 +153,28 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     competition_probe probe = {{{0}}, 0u};
     competition_dma_source source = {0xa5u};
-    type_unsigned_8 byte = 0u;
-    type_unsigned_32 cpu_begin = 0u;
-    type_unsigned_32 cpu_commit = 0u;
-    type_unsigned_32 cpu_retire = 0u;
-    type_unsigned_32 dma_begin = 0u;
-    type_unsigned_32 dma_commit = 0u;
-    type_unsigned_32 dma_advance = 0u;
-    type_unsigned_32 pit_advance = 0u;
-    type_unsigned_32 pic_refresh = 0u;
-    type_unsigned_32 fdc_advance = 0u;
-    type_unsigned_32 hdc_advance = 0u;
-    type_unsigned_32 hold_request = 0u;
-    type_unsigned_32 hold_acknowledge = 0u;
-    type_unsigned_32 hold_release = 0u;
-    type_unsigned_32 reset_hold_start;
-    type_unsigned_32 reset_hold_request = 0u;
-    type_unsigned_32 reset_hold_acknowledge = 0u;
-    type_unsigned_32 reset_hold_release = 0u;
+    lib_u8 byte = 0u;
+    lib_u32 cpu_begin = 0u;
+    lib_u32 cpu_commit = 0u;
+    lib_u32 cpu_retire = 0u;
+    lib_u32 dma_begin = 0u;
+    lib_u32 dma_commit = 0u;
+    lib_u32 dma_advance = 0u;
+    lib_u32 pit_advance = 0u;
+    lib_u32 pic_refresh = 0u;
+    lib_u32 fdc_advance = 0u;
+    lib_u32 hdc_advance = 0u;
+    lib_u32 hold_request = 0u;
+    lib_u32 hold_acknowledge = 0u;
+    lib_u32 hold_release = 0u;
+    lib_u32 reset_hold_start;
+    lib_u32 reset_hold_request = 0u;
+    lib_u32 reset_hold_acknowledge = 0u;
+    lib_u32 reset_hold_release = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.auxiliary_pit_present = TYPE_TRUE;
+    config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = competition_trace;
     trace.context = &probe;

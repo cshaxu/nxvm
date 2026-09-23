@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -7,7 +8,7 @@
 static C_INT vm_ibm_5170_direct_plan_is_complete(C_VOID)
 {
     vm_profile_default_pc_at_plan_snapshot profile;
-    core_machine_plan *plan = STD_NULL;
+    core_machine_plan *plan = LIB_NULL;
     type_status status;
 
     if (vm_profile_ibm_5170_plan_create(&profile) != TYPE_STATUS_OK ||

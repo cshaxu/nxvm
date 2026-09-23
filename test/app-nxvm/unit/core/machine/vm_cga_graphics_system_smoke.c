@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/entry_plan_interface.h"
@@ -8,7 +9,7 @@
 
 #define VM_CGA_GRAPHICS_BOOT_BUDGET 500000u
 
-static const type_unsigned_8 vm_cga_graphics_program[] = {
+static const lib_u8 vm_cga_graphics_program[] = {
         0xb8u, 0x00u, 0xb8u,       /* mov ax, b800h */
         0x8eu, 0xc0u,              /* mov es, ax */
         0xbau, 0xd8u, 0x03u,       /* mov dx, 3d8h */
@@ -43,12 +44,12 @@ C_INT main(C_VOID)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
-    vm_machine *session = STD_NULL;
-    type_unsigned_32 instruction;
+    vm_machine *session = LIB_NULL;
+    lib_u32 instruction;
     C_INT passed = 0;
 
     if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || core_machine_apply_entry_plan(session->core_machine,
+        session == LIB_NULL || core_machine_apply_entry_plan(session->core_machine,
             &plan) != TYPE_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_CGA_GRAPHICS_BOOT_BUDGET;
          ++instruction) {

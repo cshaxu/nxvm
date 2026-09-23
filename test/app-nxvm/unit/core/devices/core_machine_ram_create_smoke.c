@@ -1,18 +1,19 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 
-static C_INT ram_create_success(STD_SIZE_T memory_bytes)
+static C_INT ram_create_success(lib_size memory_bytes)
 {
     core_machine_config config = { .memory_bytes = memory_bytes };
     core_machine_memory_test_allocation allocation = {0};
-    core_machine *machine = STD_NULL;
-    STD_SIZE_T installed_bytes = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_size installed_bytes = 0u;
     C_INT failed = 0;
 
     failed |= core_machine_create_with_test_memory_allocation(&config, &machine,
         &allocation) != TYPE_STATUS_OK;
-    failed |= machine == STD_NULL || allocation.attempts != 1u;
+    failed |= machine == LIB_NULL || allocation.attempts != 1u;
     failed |= !failed && core_machine_get_memory_bytes(machine, &installed_bytes) !=
         TYPE_STATUS_OK;
     failed |= !failed && installed_bytes != (memory_bytes == 0u ?
@@ -24,27 +25,27 @@ static C_INT ram_create_success(STD_SIZE_T memory_bytes)
     return failed;
 }
 
-static C_INT ram_create_failure(STD_SIZE_T memory_bytes)
+static C_INT ram_create_failure(lib_size memory_bytes)
 {
     core_machine_config config = { .memory_bytes = memory_bytes };
-    core_machine_memory_test_allocation allocation = { TYPE_TRUE, 0u };
+    core_machine_memory_test_allocation allocation = { LIB_TRUE, 0u };
     core_machine *machine = (core_machine *)(type_virtual_address)1u;
     type_status status = core_machine_create_with_test_memory_allocation(
         &config, &machine, &allocation);
 
-    return status != TYPE_STATUS_NO_MEMORY || machine != STD_NULL ||
+    return status != TYPE_STATUS_NO_MEMORY || machine != LIB_NULL ||
         allocation.attempts != 1u;
 }
 
 static C_INT ram_fixture_retained(C_VOID)
 {
     t_ram ram = {0};
-    type_unsigned_8 value = 0x5au;
-    type_unsigned_8 observed = 0u;
+    lib_u8 value = 0x5au;
+    lib_u8 observed = 0u;
     C_INT failed = 0;
 
     failed |= core_machine_memory_initialize_for(&ram,
-        CORE_MACHINE_DEFAULT_MEMORY_BYTES, STD_NULL) != TYPE_STATUS_OK;
+        CORE_MACHINE_DEFAULT_MEMORY_BYTES, LIB_NULL) != TYPE_STATUS_OK;
     failed |= ram.connect.installed_bytes != CORE_MACHINE_DEFAULT_MEMORY_BYTES;
     failed |= core_machine_memory_allocate_for(&ram,
         CORE_MACHINE_MINIMUM_MEMORY_BYTES) != TYPE_STATUS_OK;

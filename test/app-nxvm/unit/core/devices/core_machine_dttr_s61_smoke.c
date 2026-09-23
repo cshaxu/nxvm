@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -13,11 +14,11 @@ typedef struct dttr_s61_machine { core_machine *machine; } dttr_s61_machine;
 static C_VOID dttr_s61_reset(C_VOID *opaque)
 {
     dttr_s61_machine *state = (dttr_s61_machine *)opaque;
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider dttr_s61_provider = {
-    dttr_s61_reset, STD_NULL
+    dttr_s61_reset, LIB_NULL
 };
 
 static C_INT dttr_s61_prepare(dttr_s61_machine *state, core_machine_cpu_profile profile)
@@ -27,28 +28,28 @@ static C_INT dttr_s61_prepare(dttr_s61_machine *state, core_machine_cpu_profile 
         .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    if (state == STD_NULL) return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 0;
+    lib_memory_set(state, 0, sizeof(*state));
     return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &dttr_s61_provider, state, &state->machine);
 }
 
 static C_INT dttr_s61_boot(dttr_s61_machine *state)
 {
-    static const type_unsigned_8 pointer[] = { 0x27u, 0x00u, 0x00u, 0x03u, 0u, 0u };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = { 0x27u, 0x00u, 0x00u, 0x03u, 0u, 0u };
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0,0,0x92,0,0,
         0x1f,0,0,0x50,0,0x82,0,0,
         0x67,0,0,0x60,0,0x89,0,0
     };
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0x0f,0x01,0x16,0x00,0x01, 0xb8,0x01,0,0x0f,0x01,0xf0,
         0xb8,0x10,0,0x8e,0xd8,0x8e,0xc0,0x8e,0xd0,0xbc,0,0x80,
         0xea,0,0,0x08,0
     };
-    static const type_unsigned_8 halt[] = { 0xf4u };
+    static const lib_u8 halt[] = { 0xf4u };
     core_machine_run_result result;
     return core_machine_memory_write(state->machine, DTTR_S61_GDT_POINTER,
             pointer, sizeof(pointer)) == TYPE_STATUS_OK &&
@@ -60,8 +61,8 @@ static C_INT dttr_s61_boot(dttr_s61_machine *state)
             TYPE_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT dttr_s61_run(dttr_s61_machine *state, const type_unsigned_8 *code,
-    STD_SIZE_T bytes, t_cpu *after)
+static C_INT dttr_s61_run(dttr_s61_machine *state, const lib_u8 *code,
+    lib_size bytes, t_cpu *after)
 {
     core_machine_run_result result;
     if (core_machine_memory_write(state->machine, DTTR_S61_CODE, code, bytes) !=
@@ -73,13 +74,13 @@ static C_INT dttr_s61_run(dttr_s61_machine *state, const type_unsigned_8 *code,
     return 1;
 }
 
-static C_INT dttr_s61_case(core_machine_cpu_profile profile, const type_unsigned_8 *code, STD_SIZE_T bytes, type_unsigned_16 ax,
-    type_unsigned_16 ldtr, type_unsigned_16 tr, type_unsigned_8 busy)
+static C_INT dttr_s61_case(core_machine_cpu_profile profile, const lib_u8 *code, lib_size bytes, lib_u16 ax,
+    lib_u16 ldtr, lib_u16 tr, lib_u8 busy)
 {
     dttr_s61_machine state;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 descriptor_access = 0;
+    lib_u8 descriptor_access = 0;
     C_INT failed = !dttr_s61_prepare(&state, profile);
 
     if (!failed) failed = !dttr_s61_boot(&state);
@@ -87,7 +88,7 @@ static C_INT dttr_s61_case(core_machine_cpu_profile profile, const type_unsigned
         state.machine->executor_cpu.data.eax = 0xa1a10000u | ax;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed = !dttr_s61_run(&state, code, bytes, &after);
-        failed |= (type_unsigned_16)after.data.eax != ax || after.data.eip != bytes ||
+        failed |= (lib_u16)after.data.eax != ax || after.data.eip != bytes ||
             after.data.eflags != before.data.eflags || after.data.ldtr.selector != ldtr ||
             after.data.tr.selector != tr || after.data.ecx != before.data.ecx ||
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
@@ -100,20 +101,20 @@ static C_INT dttr_s61_case(core_machine_cpu_profile profile, const type_unsigned
                     VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
         }
     }
-    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
     return failed;
 }
 
 static C_INT dttr_s61_test_attributes(C_VOID)
 {
-    static const type_unsigned_8 codes[][6] = {
+    static const lib_u8 codes[][6] = {
         { 0x66u,0x0fu,0u,0xd0u,0xf4u },
         { 0x67u,0x0fu,0u,0xd0u,0xf4u },
         { 0x66u,0x67u,0x0fu,0u,0xd0u,0xf4u }
     };
-    static const type_unsigned_8 lengths[] = { 5u, 5u, 6u };
+    static const lib_u8 lengths[] = { 5u, 5u, 6u };
     C_INT failed = 0;
-    STD_SIZE_T i;
+    lib_size i;
 
     for (i = 0u; i < 3u; ++i) {
         dttr_s61_machine state;
@@ -126,12 +127,12 @@ static C_INT dttr_s61_test_attributes(C_VOID)
             local |= after.data.eax != 0xa1a10018u ||
                 after.data.ldtr.selector != 0x18u || after.data.eip != lengths[i];
         }
-        if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+        if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
         failed |= local;
     }
     return failed;
 }static C_INT dttr_s61_expect_fault(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, STD_SIZE_T bytes, C_INT protected)
+    const lib_u8 *code, lib_size bytes, C_INT protected)
 {
     dttr_s61_machine state;
     core_machine_run_result result;
@@ -152,16 +153,16 @@ static C_INT dttr_s61_test_attributes(C_VOID)
         failed |= status != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
             after.data.eip == 0x0100u;
     }
-    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
     return failed;
 }
 
 static C_INT dttr_s61_test_rejections(C_VOID)
 {
-    static const type_unsigned_8 form[] = { 0x0fu,0x00u,0xc0u };
-    static const type_unsigned_8 lock[] = { 0xf0u,0x0fu,0x00u,0xc0u };
-    static const type_unsigned_8 prefix66[] = { 0x66u,0x0fu,0x00u,0xc0u };
-    static const type_unsigned_8 prefix67[] = { 0x67u,0x0fu,0x00u,0xc0u };
+    static const lib_u8 form[] = { 0x0fu,0x00u,0xc0u };
+    static const lib_u8 lock[] = { 0xf0u,0x0fu,0x00u,0xc0u };
+    static const lib_u8 prefix66[] = { 0x66u,0x0fu,0x00u,0xc0u };
+    static const lib_u8 prefix67[] = { 0x67u,0x0fu,0x00u,0xc0u };
     C_INT a = dttr_s61_expect_fault(CORE_MACHINE_CPU_PROFILE_80186, form, sizeof(form), 0);
     C_INT b = dttr_s61_expect_fault(CORE_MACHINE_CPU_PROFILE_80286, form, sizeof(form), 0);
     C_INT c = dttr_s61_expect_fault(CORE_MACHINE_CPU_PROFILE_80386, form, sizeof(form), 0);
@@ -171,7 +172,7 @@ static C_INT dttr_s61_test_rejections(C_VOID)
     return a || b || c || d || e || f;
 }static C_INT dttr_s61_test_null_ldtr(C_VOID)
 {
-    static const type_unsigned_8 code[] = { 0xb8, 0, 0, 0x0f, 0, 0xd0, 0xf4 };
+    static const lib_u8 code[] = { 0xb8, 0, 0, 0x0f, 0, 0xd0, 0xf4 };
     dttr_s61_machine state;
     t_cpu before;
     t_cpu after;
@@ -185,16 +186,16 @@ static C_INT dttr_s61_test_rejections(C_VOID)
             after.data.eip != sizeof(code) || after.data.eflags != before.data.eflags ||
             after.data.tr.selector != before.data.tr.selector;
     }
-    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
     return failed;
 }
 static C_INT dttr_s61_test_memory_forms(C_VOID)
 {
-    static const type_unsigned_8 sldt[] = { 0xb8,0x18,0,0x0f,0,0xd0,0x0f,0,0x06,0,0x40,0xf4 };
-    static const type_unsigned_8 ltr[] = { 0x0f,0,0x1e,0,0x40,0xf4 };
+    static const lib_u8 sldt[] = { 0xb8,0x18,0,0x0f,0,0xd0,0x0f,0,0x06,0,0x40,0xf4 };
+    static const lib_u8 ltr[] = { 0x0f,0,0x1e,0,0x40,0xf4 };
     dttr_s61_machine state;
     t_cpu after;
-    type_unsigned_16 selector = 0;
+    lib_u16 selector = 0;
     C_INT failed = !dttr_s61_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed = !dttr_s61_boot(&state);
@@ -204,7 +205,7 @@ static C_INT dttr_s61_test_memory_forms(C_VOID)
             sizeof(selector)) != TYPE_STATUS_OK || selector != 0x18u ||
             after.data.eip != sizeof(sldt) || after.data.ldtr.selector != 0x18u;
     }
-    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
     failed |= !dttr_s61_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     if (!failed) failed = !dttr_s61_boot(&state);
     if (!failed) {
@@ -215,14 +216,14 @@ static C_INT dttr_s61_test_memory_forms(C_VOID)
         failed |= after.data.tr.selector != 0x20u ||
             after.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     }
-    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
     return failed;
 }int main(void)
 {
-    static const type_unsigned_8 lldt[] = { 0xb8,0x18,0,0x0f,0,0xd0,0xf4 };
-    static const type_unsigned_8 sldt[] = { 0x0f,0,0xc0,0xf4 };
-    static const type_unsigned_8 ltr[] = { 0xb8,0x20,0,0x0f,0,0xd8,0xf4 };
-    static const type_unsigned_8 str[] = { 0x0f,0,0xc8,0xf4 };
+    static const lib_u8 lldt[] = { 0xb8,0x18,0,0x0f,0,0xd0,0xf4 };
+    static const lib_u8 sldt[] = { 0x0f,0,0xc0,0xf4 };
+    static const lib_u8 ltr[] = { 0xb8,0x20,0,0x0f,0,0xd8,0xf4 };
+    static const lib_u8 str[] = { 0x0f,0,0xc8,0xf4 };
     C_INT a = dttr_s61_case(CORE_MACHINE_CPU_PROFILE_80386, lldt, sizeof(lldt), 0x18u, 0x18u, 0u, 0u);
     C_INT b = dttr_s61_case(CORE_MACHINE_CPU_PROFILE_80386, sldt, sizeof(sldt), 0u, 0u, 0u, 0u);
     C_INT c = dttr_s61_case(CORE_MACHINE_CPU_PROFILE_80386, ltr, sizeof(ltr), 0x20u, 0u, 0x20u, 1u);

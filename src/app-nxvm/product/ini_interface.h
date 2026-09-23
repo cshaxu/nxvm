@@ -1,5 +1,6 @@
 #ifndef VM_APP_INI_INTERFACE_H
 #define VM_APP_INI_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/product/request_interface.h"

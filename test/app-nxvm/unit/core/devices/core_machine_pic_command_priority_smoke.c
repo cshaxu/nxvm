@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pic.h"
@@ -10,9 +11,9 @@ typedef struct pic_command_priority_fixture {
 } pic_command_priority_fixture;
 
 static C_VOID pic_command_priority_program(t_port *port,
-    type_unsigned_8 master_icw1, type_unsigned_8 master_icw3,
-    type_unsigned_8 master_icw4, type_unsigned_8 slave_icw1,
-    type_unsigned_8 slave_icw3, type_unsigned_8 slave_icw4)
+    lib_u8 master_icw1, lib_u8 master_icw3,
+    lib_u8 master_icw4, lib_u8 slave_icw1,
+    lib_u8 slave_icw3, lib_u8 slave_icw4)
 {
     core_machine_port_write(port, 0x0020u, master_icw1);
     core_machine_port_write(port, 0x0021u, 0x08u);
@@ -33,7 +34,7 @@ static C_VOID pic_command_priority_program(t_port *port,
 }
 
 static C_VOID pic_command_priority_initialize(pic_command_priority_fixture *fixture,
-    type_unsigned_8 master_icw4, type_unsigned_8 slave_icw4)
+    lib_u8 master_icw4, lib_u8 slave_icw4)
 {
     core_machine_port_initialize(&fixture->port);
     core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
@@ -50,7 +51,7 @@ static C_VOID pic_command_priority_finalize(pic_command_priority_fixture *fixtur
 }
 
 static C_VOID pic_command_priority_raise(pic_command_priority_fixture *fixture,
-    core_machine_pic_irq_source *source, type_unsigned_8 irq)
+    core_machine_pic_irq_source *source, lib_u8 irq)
 {
     core_machine_pic_irq_source_bind(source, &fixture->master, &fixture->slave, irq);
     core_machine_pic_irq_source_assert(source);

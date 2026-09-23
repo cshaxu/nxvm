@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 C_INT main(C_VOID)
@@ -9,22 +10,22 @@ C_INT main(C_VOID)
     C_CHAR append_failed[4] = {'x', 'x', 'x', '\0'};
     C_CHAR *cursor = appended;
     C_CHAR *failed_cursor = append_failed;
-    STD_SIZE_T remaining = sizeof(appended);
+    lib_size remaining = sizeof(appended);
     C_INT result;
 
     result = STD_SNPRINTF(exact, sizeof(exact), "%s", "abcd");
-    if (result != 4 || STD_STRCMP(exact, "abcd") != 0) return 1;
+    if (result != 4 || lib_c_strcmp(exact, "abcd") != 0) return 1;
 
     result = STD_SNPRINTF(truncated, sizeof(truncated), "%s", "abcd");
-    if (result != 4 || STD_STRCMP(truncated, "abc") != 0) return 1;
+    if (result != 4 || lib_c_strcmp(truncated, "abc") != 0) return 1;
 
-    result = STD_SNPRINTF(STD_NULL, 0u, "%s", "abcd");
+    result = STD_SNPRINTF(LIB_NULL, 0u, "%s", "abcd");
     if (result != 4) return 1;
 
-    result = STD_SNPRINTF(failed, sizeof(failed), STD_NULL);
+    result = STD_SNPRINTF(failed, sizeof(failed), LIB_NULL);
     if (result >= 0 || failed[0] != '\0') return 1;
 
-    result = STD_SNPRINTF_APPEND(&failed_cursor, &remaining, STD_NULL);
+    result = STD_SNPRINTF_APPEND(&failed_cursor, &remaining, LIB_NULL);
     if (result >= 0 || append_failed[0] != '\0' || failed_cursor != append_failed ||
         remaining != sizeof(appended)) return 1;
 
@@ -33,7 +34,7 @@ C_INT main(C_VOID)
 
     result = STD_SNPRINTF_APPEND(&cursor, &remaining, "%s", "cde");
     if (result != 3 || cursor != appended + 2 || remaining != 3u ||
-        STD_STRCMP(appended, "abcd") != 0) return 1;
+        lib_c_strcmp(appended, "abcd") != 0) return 1;
 
     puts("M5:T279:S3:FORMAT:OK");
     return 0;

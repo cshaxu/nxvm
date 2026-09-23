@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -8,22 +9,22 @@ int main(C_VOID)
 {
     core_machine_config machine_config = {0};
     core_machine_display_config display_config = {0};
-    core_machine *machine = STD_NULL;
-    type_unsigned_8 pixel = 0x5au;
+    core_machine *machine = LIB_NULL;
+    lib_u8 pixel = 0x5au;
     C_INT failed = 0;
 
     machine_config.memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES;
     display_config.text_timing.active_display_ticks = 48u;
     display_config.text_timing.horizontal_blank_ticks = 8u;
     display_config.text_timing.vertical_retrace_ticks = 8u;
-    display_config.ega_present = TYPE_TRUE;
+    display_config.ega_present = LIB_TRUE;
     display_config.ega_sequencer.aperture_base = CORE_MACHINE_VADP_EGA_APERTURE_BASE;
     display_config.ega_sequencer.aperture_bytes = CORE_MACHINE_VADP_EGA_APERTURE_BYTES;
     display_config.ega_sequencer.reset = 0x03u;
     display_config.ega_sequencer.clocking_mode = 0x00u;
     display_config.ega_sequencer.map_mask = 0x0fu;
     display_config.ega_sequencer.memory_mode = 0x02u;
-    display_config.ega_sequencer.planar_ega = TYPE_TRUE;
+    display_config.ega_sequencer.planar_ega = LIB_TRUE;
     display_config.ports.attribute_first = CORE_MACHINE_VADP_PORT_ATTRIBUTE;
     display_config.ports.attribute_last = CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ;
     display_config.ports.sequencer_first = CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX;

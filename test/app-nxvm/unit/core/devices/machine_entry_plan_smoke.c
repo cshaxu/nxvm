@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -5,16 +6,16 @@
 
 static C_INT prepare_machine(core_machine **out_machine)
 {
-    static const type_unsigned_8 rom[] = { 0xf4u };
+    static const lib_u8 rom[] = { 0xf4u };
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
             TYPE_STATUS_OK || core_machine_register_immutable_rom_mapping(machine,
             0x1000u, rom, sizeof(rom)) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
@@ -26,13 +27,13 @@ static C_INT prepare_machine(core_machine **out_machine)
     return 0;
 }
 
-static core_machine_entry_plan make_plan(type_unsigned_16 cs, type_unsigned_16 ip,
-    type_unsigned_32 physical, core_machine_memory_route route,
-    const core_machine_entry_plan_preload *preloads, STD_SIZE_T preload_count)
+static core_machine_entry_plan make_plan(lib_u16 cs, lib_u16 ip,
+    lib_u32 physical, core_machine_memory_route route,
+    const core_machine_entry_plan_preload *preloads, lib_size preload_count)
 {
     core_machine_entry_plan plan;
 
-    STD_MEMSET(&plan, 0, sizeof(plan));
+    lib_memory_set(&plan, 0, sizeof(plan));
     plan.state.cs = cs;
     plan.state.ds = 0u;
     plan.state.es = 0u;
@@ -49,8 +50,8 @@ static core_machine_entry_plan make_plan(type_unsigned_16 cs, type_unsigned_16 i
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 halt[] = { 0xf4u };
-    core_machine *machine = STD_NULL;
+    static const lib_u8 halt[] = { 0xf4u };
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_state state;
     core_machine_run_result result;
     const core_machine_run_budget budget = { 8u, 0u };
@@ -61,14 +62,14 @@ C_INT main(C_VOID)
         { 0x0200u, halt, sizeof(halt) }, { 0x0200u, halt, sizeof(halt) }
     };
     core_machine_entry_plan plan;
-    type_unsigned_8 observed = 0xffu;
+    lib_u8 observed = 0xffu;
     C_INT failed = prepare_machine(&machine);
 
     if (!failed) {
         failed |= core_machine_get_cpu_state(machine, &state) != TYPE_STATUS_OK ||
             state.cs != 0xf000u || state.eip != 0x0000fff0u;
         plan = make_plan(0u, 0x1000u, 0x1000u,
-            CORE_MACHINE_MEMORY_ROUTE_PROVIDER, STD_NULL, 0u);
+            CORE_MACHINE_MEMORY_ROUTE_PROVIDER, LIB_NULL, 0u);
         failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;

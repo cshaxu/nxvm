@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -20,45 +21,45 @@
 #define BOOT_TRACE_POST_CODES 64u
 
 typedef struct boot_trace_kbc_transaction {
-    type_unsigned_16 port;
-    type_unsigned_8 value;
-    type_unsigned_8 kind;
+    lib_u16 port;
+    lib_u8 value;
+    lib_u8 kind;
 } boot_trace_kbc_transaction;
 
 typedef struct boot_trace_fdc_terminal_record {
     core_machine_fdc_terminal_observation result;
-    type_unsigned_8 command[9];
-    type_unsigned_8 ccr;
+    lib_u8 command[9];
+    lib_u8 ccr;
 } boot_trace_fdc_terminal_record;
 
 typedef struct boot_trace_probe {
-    type_unsigned_64 cpu_retires;
-    type_unsigned_64 external_cycle_commits;
-    type_unsigned_64 port61_reads;
-    type_unsigned_64 port61_refresh_low_reads;
-    type_unsigned_64 port61_refresh_high_reads;
-    type_unsigned_32 pit_writes;
-    type_unsigned_32 kbc_writes;
-    type_unsigned_32 last_pit_address;
-    type_unsigned_32 last_pit_value;
-    type_unsigned_32 last_kbc_address;
-    type_unsigned_32 last_kbc_value;
-    type_unsigned_32 kbc_transaction_count;
+    lib_u64 cpu_retires;
+    lib_u64 external_cycle_commits;
+    lib_u64 port61_reads;
+    lib_u64 port61_refresh_low_reads;
+    lib_u64 port61_refresh_high_reads;
+    lib_u32 pit_writes;
+    lib_u32 kbc_writes;
+    lib_u32 last_pit_address;
+    lib_u32 last_pit_value;
+    lib_u32 last_kbc_address;
+    lib_u32 last_kbc_value;
+    lib_u32 kbc_transaction_count;
     boot_trace_kbc_transaction kbc_transactions[BOOT_TRACE_KBC_TRANSACTIONS];
-    type_unsigned_32 fdc_transaction_count;
+    lib_u32 fdc_transaction_count;
     boot_trace_kbc_transaction fdc_transactions[BOOT_TRACE_FDC_TRANSACTIONS];
-    type_unsigned_32 fdc_read_data_commands;
-    type_unsigned_32 fdc_read_id_commands;
-    type_unsigned_32 fdc_terminal_count;
+    lib_u32 fdc_read_data_commands;
+    lib_u32 fdc_read_id_commands;
+    lib_u32 fdc_terminal_count;
     const core_machine_fdc *fdc;
     boot_trace_fdc_terminal_record fdc_terminals[BOOT_TRACE_FDC_TERMINALS];
-    type_unsigned_32 kbc_data_read_values[256];
-    type_unsigned_32 interrupt_acknowledges;
-    type_unsigned_32 interrupt_vectors[256];
-    type_unsigned_32 post_interrupt_flag_writes;
-    type_unsigned_8 last_post_interrupt_flag;
-    type_unsigned_32 post_code_count;
-    type_unsigned_8 post_codes[BOOT_TRACE_POST_CODES];
+    lib_u32 kbc_data_read_values[256];
+    lib_u32 interrupt_acknowledges;
+    lib_u32 interrupt_vectors[256];
+    lib_u32 post_interrupt_flag_writes;
+    lib_u8 last_post_interrupt_flag;
+    lib_u32 post_code_count;
+    lib_u8 post_codes[BOOT_TRACE_POST_CODES];
 } boot_trace_probe;
 
 static C_VOID boot_trace_fdc_terminal(C_VOID *opaque,
@@ -66,13 +67,13 @@ static C_VOID boot_trace_fdc_terminal(C_VOID *opaque,
 {
     boot_trace_probe *probe = (boot_trace_probe *)opaque;
 
-    if (probe == STD_NULL || observation == STD_NULL) return;
+    if (probe == LIB_NULL || observation == LIB_NULL) return;
     boot_trace_fdc_terminal_record *terminal = &probe->fdc_terminals[
         probe->fdc_terminal_count % BOOT_TRACE_FDC_TERMINALS];
 
     terminal->result = *observation;
-    if (probe->fdc != STD_NULL) {
-        STD_MEMCPY(terminal->command, probe->fdc->data.cmd, sizeof(terminal->command));
+    if (probe->fdc != LIB_NULL) {
+        lib_memory_copy(terminal->command, probe->fdc->data.cmd, sizeof(terminal->command));
         terminal->ccr = probe->fdc->data.ccr;
     }
     ++probe->fdc_terminal_count;
@@ -82,7 +83,7 @@ static C_VOID boot_trace_observe(C_VOID *opaque, const core_machine_trace_event 
 {
     boot_trace_probe *probe = (boot_trace_probe *)opaque;
 
-    if (probe == STD_NULL || event == STD_NULL) return;
+    if (probe == LIB_NULL || event == LIB_NULL) return;
     if (event->type == CORE_MACHINE_TRACE_CPU_RETIRE) {
         ++probe->cpu_retires;
         return;
@@ -95,36 +96,36 @@ static C_VOID boot_trace_observe(C_VOID *opaque, const core_machine_trace_event 
         (event->address == 0x0060u || event->address == 0x0064u)) {
         probe->kbc_transactions[probe->kbc_transaction_count %
             BOOT_TRACE_KBC_TRANSACTIONS] =
-            (boot_trace_kbc_transaction) { (type_unsigned_16)event->address,
-                (type_unsigned_8)event->value, (type_unsigned_8)(event->detail >> 8u) };
+            (boot_trace_kbc_transaction) { (lib_u16)event->address,
+                (lib_u8)event->value, (lib_u8)(event->detail >> 8u) };
         ++probe->kbc_transaction_count;
         if (event->address == 0x0060u &&
             (event->detail >> 8u) == CORE_MACHINE_TRANSACTION_CPU_PORT_READ) {
-            ++probe->kbc_data_read_values[(type_unsigned_8)event->value];
+            ++probe->kbc_data_read_values[(lib_u8)event->value];
         }
     }
     if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
         (event->address == 0x03f5u || event->address == 0x03f7u)) {
         probe->fdc_transactions[probe->fdc_transaction_count %
             BOOT_TRACE_FDC_TRANSACTIONS] =
-            (boot_trace_kbc_transaction) { (type_unsigned_16)event->address,
-                (type_unsigned_8)event->value, (type_unsigned_8)(event->detail >> 8u) };
+            (boot_trace_kbc_transaction) { (lib_u16)event->address,
+                (lib_u8)event->value, (lib_u8)(event->detail >> 8u) };
         ++probe->fdc_transaction_count;
     }
     if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
         (event->detail >> 8u) == CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE) {
         ++probe->interrupt_acknowledges;
-        ++probe->interrupt_vectors[(type_unsigned_8)event->value];
+        ++probe->interrupt_vectors[(lib_u8)event->value];
     }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE && event->address == 0x0000046au) {
         ++probe->post_interrupt_flag_writes;
-        probe->last_post_interrupt_flag = (type_unsigned_8)event->value;
+        probe->last_post_interrupt_flag = (lib_u8)event->value;
     }
     if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
         (event->detail >> 8u) == CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE &&
         event->address == 0x0000046au) {
         ++probe->post_interrupt_flag_writes;
-        probe->last_post_interrupt_flag = (type_unsigned_8)event->value;
+        probe->last_post_interrupt_flag = (lib_u8)event->value;
     }
     if (event->type == CORE_MACHINE_TRACE_PORT_READ && event->address == 0x0061u) {
         ++probe->port61_reads;
@@ -134,7 +135,7 @@ static C_VOID boot_trace_observe(C_VOID *opaque, const core_machine_trace_event 
     }
     if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0080u) {
         probe->post_codes[probe->post_code_count % BOOT_TRACE_POST_CODES] =
-            (type_unsigned_8)event->value;
+            (lib_u8)event->value;
         ++probe->post_code_count;
     }
     if (event->type != CORE_MACHINE_TRACE_PORT_WRITE) return;
@@ -152,12 +153,12 @@ static C_VOID boot_trace_observe(C_VOID *opaque, const core_machine_trace_event 
 
 static C_INT boot_text_has(const core_machine_guest_display_frame *frame, const C_CHAR *text)
 {
-    STD_SIZE_T cell;
-    const STD_SIZE_T length = text == STD_NULL ? 0u : STD_STRLEN(text);
+    lib_size cell;
+    const lib_size length = text == LIB_NULL ? 0u : lib_text_length(text);
 
-    if (frame == STD_NULL || length == 0u || length > TEXT_CELLS) return 0;
+    if (frame == LIB_NULL || length == 0u || length > TEXT_CELLS) return 0;
     for (cell = 0u; cell + length <= TEXT_CELLS; ++cell) {
-        if (STD_MEMCMP(&frame->characters[cell], text, length) == 0) return 1;
+        if (lib_memory_compare(&frame->characters[cell], text, length) == 0) return 1;
     }
     return 0;
 }
@@ -165,9 +166,9 @@ static C_INT boot_text_has(const core_machine_guest_display_frame *frame, const 
 static C_INT boot_terminal(const vm_machine *session, const C_CHAR **out_name)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
+    lib_size cell;
 
-    if (session == STD_NULL || out_name == STD_NULL ||
+    if (session == LIB_NULL || out_name == LIB_NULL ||
         test_vm_machine_capture_presentation(session, &frame) !=
             TYPE_STATUS_OK || frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < TEXT_CELLS; ++cell) {
@@ -190,7 +191,7 @@ static C_INT boot_post_reports_keyboard_failure(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
 
-    return session != STD_NULL &&
+    return session != LIB_NULL &&
         test_vm_machine_capture_presentation(session, &frame) ==
             TYPE_STATUS_OK && frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT &&
         (boot_text_has(&frame, "301-Keyboard") || boot_text_has(&frame, "303-Keyboard"));
@@ -205,17 +206,17 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
     core_machine_observation observation;
     core_machine_time_observation time_observation;
     C_CHAR line[81];
-    type_unsigned_8 equipment[2] = {0};
-    type_unsigned_8 interrupt_flag = 0u;
-    type_unsigned_8 option_signature[2] = {0};
-    type_unsigned_8 keyboard_vector[4] = {0};
-    type_unsigned_8 pc_bytes[8] = {0};
-    type_unsigned_8 boot_bytes[4] = {0};
-    type_unsigned_8 boot_signature[2] = {0};
-    STD_SIZE_T index;
-    STD_SIZE_T row;
+    lib_u8 equipment[2] = {0};
+    lib_u8 interrupt_flag = 0u;
+    lib_u8 option_signature[2] = {0};
+    lib_u8 keyboard_vector[4] = {0};
+    lib_u8 pc_bytes[8] = {0};
+    lib_u8 boot_bytes[4] = {0};
+    lib_u8 boot_signature[2] = {0};
+    lib_size index;
+    lib_size row;
 
-    if (session == STD_NULL || name == STD_NULL) return;
+    if (session == LIB_NULL || name == LIB_NULL) return;
     if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK) {
         (C_VOID)core_machine_capture_observation(session->core_machine, &observation);
         STD_PRINTF("T515:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:elapsed=%llu:lifecycle=%u:FDD=%u:%ux%ux%u:CMOS10=%02X\n",
@@ -324,14 +325,14 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             session->core_machine->shared_kbc.data.fifo_head);
         for (index = 0u; index < session->core_machine->shared_kbc.data.fifo_count;
             ++index) {
-            const type_unsigned_8 queue_index = (type_unsigned_8)((
+            const lib_u8 queue_index = (lib_u8)((
                 session->core_machine->shared_kbc.data.fifo_head + index) %
                 CORE_MACHINE_KBC_FIFO_CAPACITY);
             STD_PRINTF("%02X/%u ", session->core_machine->shared_kbc.data.fifo[queue_index],
                 session->core_machine->shared_kbc.data.fifo_origin[queue_index]);
         }
         STD_PRINTF("\n");
-        if (trace_probe != STD_NULL) {
+        if (trace_probe != LIB_NULL) {
             STD_PRINTF("T516:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
                 name, (unsigned long long)trace_probe->cpu_retires,
                 (unsigned long long)trace_probe->external_cycle_commits,
@@ -348,19 +349,19 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                 trace_probe->post_interrupt_flag_writes,
                 trace_probe->last_post_interrupt_flag);
             STD_PRINTF("T516:INI-BOOT:%s:POST-CODES:", name);
-            const type_unsigned_32 retained_post = trace_probe->post_code_count <
+            const lib_u32 retained_post = trace_probe->post_code_count <
                 BOOT_TRACE_POST_CODES ? trace_probe->post_code_count : BOOT_TRACE_POST_CODES;
-            const type_unsigned_32 first_post = trace_probe->post_code_count - retained_post;
+            const lib_u32 first_post = trace_probe->post_code_count - retained_post;
             for (index = 0u; index < retained_post; ++index) {
                 STD_PRINTF("%02X ", trace_probe->post_codes[(first_post + index) %
                     BOOT_TRACE_POST_CODES]);
             }
             STD_PRINTF("\n");
             STD_PRINTF("T516:INI-BOOT:%s:KBC-CPU:", name);
-            const type_unsigned_32 retained = trace_probe->kbc_transaction_count <
+            const lib_u32 retained = trace_probe->kbc_transaction_count <
                 BOOT_TRACE_KBC_TRANSACTIONS ? trace_probe->kbc_transaction_count :
                 BOOT_TRACE_KBC_TRANSACTIONS;
-            const type_unsigned_32 first = trace_probe->kbc_transaction_count - retained;
+            const lib_u32 first = trace_probe->kbc_transaction_count - retained;
             for (index = 0u; index < retained; ++index) {
                 const boot_trace_kbc_transaction *transaction =
                     &trace_probe->kbc_transactions[(first + index) %
@@ -379,10 +380,10 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
                 trace_probe->kbc_data_read_values[0x83u]);
             STD_PRINTF("T516:INI-BOOT:%s:FDC-CPU:read=%u:id=%u:", name,
                 trace_probe->fdc_read_data_commands, trace_probe->fdc_read_id_commands);
-            const type_unsigned_32 retained_fdc = trace_probe->fdc_transaction_count <
+            const lib_u32 retained_fdc = trace_probe->fdc_transaction_count <
                 BOOT_TRACE_FDC_TRANSACTIONS ? trace_probe->fdc_transaction_count :
                 BOOT_TRACE_FDC_TRANSACTIONS;
-            const type_unsigned_32 first_fdc = trace_probe->fdc_transaction_count -
+            const lib_u32 first_fdc = trace_probe->fdc_transaction_count -
                 retained_fdc;
             for (index = 0u; index < retained_fdc; ++index) {
                 const boot_trace_kbc_transaction *transaction =
@@ -393,10 +394,10 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
             }
             STD_PRINTF("\n");
             STD_PRINTF("T516:INI-BOOT:%s:FDC-TERMINALS:", name);
-            const type_unsigned_32 retained_terminal = trace_probe->fdc_terminal_count <
+            const lib_u32 retained_terminal = trace_probe->fdc_terminal_count <
                 BOOT_TRACE_FDC_TERMINALS ? trace_probe->fdc_terminal_count :
                 BOOT_TRACE_FDC_TERMINALS;
-            const type_unsigned_32 first_terminal = trace_probe->fdc_terminal_count -
+            const lib_u32 first_terminal = trace_probe->fdc_terminal_count -
                 retained_terminal;
             for (index = 0u; index < retained_terminal; ++index) {
                 const boot_trace_fdc_terminal_record *terminal =
@@ -455,12 +456,12 @@ static C_VOID boot_timeout_report(const vm_machine *session, const C_CHAR *name,
 
 static C_INT boot_timeout_parse(const C_CHAR *text, DWORD *out_timeout)
 {
-    type_unsigned_64 value = 0u;
+    lib_u64 value = 0u;
 
-    if (text == STD_NULL || out_timeout == STD_NULL || *text == '\0') return 0;
+    if (text == LIB_NULL || out_timeout == LIB_NULL || *text == '\0') return 0;
     while (*text != '\0') {
         if (*text < '0' || *text > '9' || value > 429496729u) return 0;
-        value = value * 10u + (type_unsigned_64)(*text - '0');
+        value = value * 10u + (lib_u64)(*text - '0');
         if (value > 4294967295u) return 0;
         ++text;
     }
@@ -471,16 +472,16 @@ static C_INT boot_timeout_parse(const C_CHAR *text, DWORD *out_timeout)
 static C_INT boot_cmos_seed_matches(const vm_machine *session)
 {
     t_port *port;
-    type_unsigned_8 index;
+    lib_u8 index;
 
-    if (session == STD_NULL || !session->cmos_seed_present) return 1;
+    if (session == LIB_NULL || !session->cmos_seed_present) return 1;
     port = &session->core_machine->executor_port;
     for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
-        type_unsigned_8 expected = session->cmos_seed[index];
-        type_unsigned_8 actual;
+        lib_u8 expected = session->cmos_seed[index];
+        lib_u8 actual;
 
         core_machine_port_write(port, 0x0070u, index);
-        actual = (type_unsigned_8)core_machine_port_read(port, 0x0071u);
+        actual = (lib_u8)core_machine_port_read(port, 0x0071u);
         if (actual != expected) {
             STD_PRINTF("T515:CMOS:index=%02X:expected=%02X:actual=%02X\n", index,
                 expected, actual);
@@ -494,7 +495,7 @@ int main(int argc, char **argv)
 {
     integration_ini_session ini_session;
     vm_machine *session;
-    const C_CHAR *terminal = STD_NULL;
+    const C_CHAR *terminal = LIB_NULL;
     DWORD timeout = BOOT_TIMEOUT;
     ULONGLONG started;
     boot_trace_probe trace_probe = {0};
@@ -505,20 +506,20 @@ int main(int argc, char **argv)
 
     if ((argc < 3 || argc > 6) ||
         (argc >= 4 && !boot_timeout_parse(argv[3], &timeout)) ||
-        (argc >= 5 && STD_STRCMP(argv[4], "trace") != 0 &&
-            STD_STRCMP(argv[4], "standard") != 0) ||
-        (argc == 6 && (STD_STRCMP(argv[4], "trace") != 0 ||
-            STD_STRCMP(argv[5], "standard") != 0))) {
+        (argc >= 5 && lib_c_strcmp(argv[4], "trace") != 0 &&
+            lib_c_strcmp(argv[4], "standard") != 0) ||
+        (argc == 6 && (lib_c_strcmp(argv[4], "trace") != 0 ||
+            lib_c_strcmp(argv[5], "standard") != 0))) {
         return 1;
     }
-    trace_enabled = argc >= 5 && !STD_STRCMP(argv[4], "trace");
-    standard_speed = (argc == 5 && !STD_STRCMP(argv[4], "standard")) || argc == 6;
+    trace_enabled = argc >= 5 && !lib_c_strcmp(argv[4], "trace");
+    standard_speed = (argc == 5 && !lib_c_strcmp(argv[4], "standard")) || argc == 6;
     if (integration_ini_session_open(argv[1], argv[2], &ini_session) ==
         TYPE_STATUS_UNSUPPORTED) {
         STD_PRINTF("T515:INI-BOOT:%s:UNAVAILABLE\n", argv[2]);
         return ASSET_UNAVAILABLE;
     }
-    if (ini_session.session == STD_NULL) {
+    if (ini_session.session == LIB_NULL) {
         STD_FPRINTF(STD_STDERR, "T515:INI-BOOT:%s:SESSION-OPEN-FAILED\n", argv[2]);
         return 1;
     }
@@ -544,16 +545,16 @@ int main(int argc, char **argv)
         if (boot_terminal(session, &terminal)) break;
         Sleep(BOOT_POLL);
     }
-    if (terminal == STD_NULL || keyboard_post_failure_seen) {
+    if (terminal == LIB_NULL || keyboard_post_failure_seen) {
         if (integration_ini_session_pause(&ini_session, 2000u) == TYPE_STATUS_OK) {
-            boot_timeout_report(session, argv[2], trace_enabled ? &trace_probe : STD_NULL);
+            boot_timeout_report(session, argv[2], trace_enabled ? &trace_probe : LIB_NULL);
         }
     }
-    if (terminal == STD_NULL || keyboard_post_failure_seen) {
+    if (terminal == LIB_NULL || keyboard_post_failure_seen) {
         if (keyboard_post_failure_seen) {
             STD_PRINTF("T515:INI-BOOT:%s:KEYBOARD-POST-FAILURE\n", argv[2]);
         }
-        if (terminal == STD_NULL) {
+        if (terminal == LIB_NULL) {
             STD_PRINTF("T515:INI-BOOT:%s:TERMINAL-TIMEOUT\n", argv[2]);
         }
         goto done;

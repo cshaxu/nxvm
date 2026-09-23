@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_GUEST_DISPLAY_FRAME_H
 #define CORE_MACHINE_GUEST_DISPLAY_FRAME_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -28,26 +29,26 @@ typedef enum core_machine_guest_display_kind {
 
 typedef struct core_machine_guest_display_frame {
     core_machine_guest_display_kind kind;
-    type_unsigned_8 characters[CORE_MACHINE_GUEST_DISPLAY_MAX_CELLS];
-    type_unsigned_8 attributes[CORE_MACHINE_GUEST_DISPLAY_MAX_CELLS];
-    type_unsigned_16 columns;
-    type_unsigned_16 rows;
-    type_unsigned_8 text_cell_height;
-    type_unsigned_8 cursor_top;
-    type_unsigned_8 cursor_bottom;
+    lib_u8 characters[CORE_MACHINE_GUEST_DISPLAY_MAX_CELLS];
+    lib_u8 attributes[CORE_MACHINE_GUEST_DISPLAY_MAX_CELLS];
+    lib_u16 columns;
+    lib_u16 rows;
+    lib_u8 text_cell_height;
+    lib_u8 cursor_top;
+    lib_u8 cursor_bottom;
     /* Copied text coordinates are column then row. */
-    type_unsigned_8 cursor_x;
-    type_unsigned_8 cursor_y;
+    lib_u8 cursor_x;
+    lib_u8 cursor_y;
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
     type_bool text_glyphs_present;
-    type_unsigned_8 text_glyphs[CORE_MACHINE_GUEST_DISPLAY_TEXT_GLYPH_BYTES];
-    type_unsigned_16 pixel_width;
-    type_unsigned_16 pixel_height;
-    type_unsigned_8 pixels[CORE_MACHINE_GUEST_DISPLAY_MAX_PIXELS];
-    type_unsigned_32 palette_rgb[CORE_MACHINE_GUEST_DISPLAY_PALETTE_ENTRIES];
-    type_unsigned_64 generation;
+    lib_u8 text_glyphs[CORE_MACHINE_GUEST_DISPLAY_TEXT_GLYPH_BYTES];
+    lib_u16 pixel_width;
+    lib_u16 pixel_height;
+    lib_u8 pixels[CORE_MACHINE_GUEST_DISPLAY_MAX_PIXELS];
+    lib_u32 palette_rgb[CORE_MACHINE_GUEST_DISPLAY_PALETTE_ENTRIES];
+    lib_u64 generation;
 } core_machine_guest_display_frame;
 
 #endif

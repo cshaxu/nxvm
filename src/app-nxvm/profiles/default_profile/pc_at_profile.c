@@ -1,87 +1,88 @@
+#include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
-static C_INT vm_profile_ibm_5170_memory_is_valid(STD_SIZE_T memory_bytes);
+static C_INT vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);
 
 static const vm_profile_default_pc_at_port_leaf default_pc_at_port_leaves[] = {
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0020u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0021u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x00a0u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x00a1u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0040u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0041u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0042u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0043u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0000u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0001u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0002u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0003u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0004u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0005u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0006u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0007u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0008u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0009u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000au, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000bu, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000cu, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000du, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000eu, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000fu, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0081u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0082u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0083u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0087u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0089u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x008au, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x008bu, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x008fu, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c0u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c2u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c4u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c6u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c8u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00cau, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00ccu, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00ceu, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d0u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d2u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d4u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d6u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d8u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00dau, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00dcu, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00deu, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 0x0060u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 0x0064u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD, 0x0061u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL, 0x0092u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0x03c0u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0x03c1u, TYPE_TRUE, TYPE_FALSE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0x03c4u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0x03c5u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0x03ceu, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0x03cfu, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d4u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d5u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d8u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d9u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03dau, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03c2u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0070u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0071u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f2u, TYPE_FALSE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f4u, TYPE_TRUE, TYPE_FALSE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f5u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f7u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f1u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f2u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f3u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f4u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f5u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f6u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f7u, TYPE_TRUE, TYPE_TRUE },
-    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x03f6u, TYPE_TRUE, TYPE_TRUE }
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0020u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0021u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x00a0u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x00a1u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0040u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0041u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0042u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0043u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0000u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0001u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0002u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0003u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0004u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0005u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0006u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0007u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0008u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0009u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000au, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000bu, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000cu, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000du, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000eu, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x000fu, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0081u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0082u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0083u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0087u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0089u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x008au, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x008bu, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x008fu, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c0u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c2u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c4u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c6u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00c8u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00cau, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00ccu, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00ceu, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d0u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d2u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d4u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d6u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00d8u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00dau, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00dcu, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00deu, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 0x0060u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 0x0064u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD, 0x0061u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL, 0x0092u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0x03c0u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0x03c1u, LIB_TRUE, LIB_FALSE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0x03c4u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0x03c5u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0x03ceu, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0x03cfu, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d4u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d5u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d8u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d9u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03dau, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03c2u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0070u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0071u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f2u, LIB_FALSE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f4u, LIB_TRUE, LIB_FALSE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f5u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f7u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f1u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f2u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f3u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f4u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f5u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f6u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f7u, LIB_TRUE, LIB_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x03f6u, LIB_TRUE, LIB_TRUE }
 };
 
 static const vm_profile_default_pc_at_route default_pc_at_routes[] = {
@@ -148,7 +149,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
-        {{0}}, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
+        {{0}}, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE },
     { { 1u, 1u, 0u }, { 596591u, 4000000u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u } },
@@ -163,31 +164,31 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     0u,
     0u,
     0u,
-    TYPE_FALSE,
+    LIB_FALSE,
     0u,
-    TYPE_FALSE,
+    LIB_FALSE,
     0u,
     50000u,
     { 48u, 8u, 8u },
     { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE },
+        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE },
     { { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
         { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
     16u * 1024u * 1024u,
-    TYPE_TRUE,
+    LIB_TRUE,
     0x9fc0u,
     0x01u,
-    TYPE_TRUE,
-    TYPE_FALSE,
+    LIB_TRUE,
+    LIB_FALSE,
     CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
     0u,
-    TYPE_TRUE,
-    TYPE_FALSE,
-    TYPE_FALSE,
+    LIB_TRUE,
+    LIB_FALSE,
+    LIB_FALSE,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC,
-    TYPE_FALSE,
+    LIB_FALSE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x027fu, 0x40u, 0xf0u, 0x2fu, 0u, 0x80u },
     default_pc_at_port_leaves,
@@ -206,7 +207,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
-            .lba28_supported = TYPE_TRUE }},
+            .lba28_supported = LIB_TRUE }},
     default_pc_at_firmware_services,
     sizeof(default_pc_at_firmware_services) /
         sizeof(default_pc_at_firmware_services[0]),
@@ -221,7 +222,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
-        {{0}}, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
+        {{0}}, 0u, LIB_FALSE, LIB_FALSE, LIB_FALSE },
     /* IBM 6280099, System Board 1-22 and 1-57: 8254 at 1.193182 MHz,
      * RTC at 32.768 kHz. The CGA character rate is the constrained v6.0
      * 86Box IBM-CGA reference rate 157500000/88 Hz. Ratios are to this
@@ -251,26 +252,26 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * output port; leaving the output port at the generic 01h aliases its
      * protected-mode 1 MiB probe over the GDT.  This is immutable board input
      * (PCjs's IBM AT 8042 model corroborates 03h), not a firmware shortcut. */
-    TYPE_TRUE,
+    LIB_TRUE,
     0x03u,
     /* 5170: 512 KiB planar RAM, color primary, no manufacturing loop,
      * keyboard unlocked.  The BIOS obtains these board straps with 8042 C0h. */
-    TYPE_TRUE,
+    LIB_TRUE,
     0xb0u,
     32768u,
     { 48u, 8u, 8u },
     { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE },
+        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE },
     { { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
         { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
     512u * 1024u,
-    TYPE_TRUE,
+    LIB_TRUE,
     0x7000u,
     0x01u,
-    TYPE_TRUE,
-    TYPE_TRUE,
+    LIB_TRUE,
+    LIB_TRUE,
     /* IBM specifies counter 1 as the refresh-request source, but not the
      * readable port-61h waveform.  PCjs's Rev-3 model ties that observation
      * to the 8 MHz cycle axis and documents a 64-cycle half period required
@@ -278,11 +279,11 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * route in Core; this frozen Other-L2 board observation owns only bit 4. */
     CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
     64u,
-    TYPE_FALSE,
-    TYPE_TRUE,
-    TYPE_TRUE,
+    LIB_FALSE,
+    LIB_TRUE,
+    LIB_TRUE,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
-    TYPE_FALSE,
+    LIB_FALSE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x0200u, 0x20u, 0x30u, 0x00u, 0u, 0x80u },
     default_pc_at_port_leaves,
@@ -297,7 +298,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
-            .lba28_supported = TYPE_FALSE, .clock_ticks_per_second = 8000000u }},
+            .lba28_supported = LIB_FALSE, .clock_ticks_per_second = 8000000u }},
     ibm_5170_model_339_firmware_services,
     sizeof(ibm_5170_model_339_firmware_services) /
         sizeof(ibm_5170_model_339_firmware_services[0]),
@@ -309,12 +310,12 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     0x01u, 0x01u, {80u, 0u, 0u, 0u}, 0u, 0x03f1u, 0x50u
 };
 
-static const type_unsigned_32 ibm_5170_contract_ids[] = {1u};
+static const lib_u32 ibm_5170_contract_ids[] = {1u};
 
-static type_unsigned_32 vm_profile_ibm_5170_device_bit(
+static lib_u32 vm_profile_ibm_5170_device_bit(
     vm_profile_default_pc_at_device_role role)
 {
-    return 1u << (type_unsigned_32)role;
+    return 1u << (lib_u32)role;
 }
 
 static vm_profile_default_pc_at_device_role vm_profile_ibm_5170_route_device(
@@ -366,7 +367,7 @@ static C_INT vm_profile_default_pc_at_fpu_profile_is_valid(
 static C_INT vm_profile_default_pc_at_fdc_bounce_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor)
 {
-    const STD_SIZE_T physical = (STD_SIZE_T)descriptor->fdc_bounce_segment << 4u;
+    const lib_size physical = (lib_size)descriptor->fdc_bounce_segment << 4u;
 
     return descriptor->fdc_bounce_segment != 0u && physical <=
         descriptor->default_memory_bytes && 512u <=
@@ -379,7 +380,7 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
     core_machine_fpu_profile requested_fpu,
     vm_profile_default_pc_at_cpu_contract *out_contract)
 {
-    if (descriptor == STD_NULL || out_contract == STD_NULL ||
+    if (descriptor == LIB_NULL || out_contract == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) return 0;
     if (requested_cpu == CORE_MACHINE_CPU_PROFILE_DEFAULT) {
         requested_cpu = descriptor->cpu_profile;
@@ -410,8 +411,8 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
     core_machine_config *out_config,
     core_machine_controller_timing_rules *out_timing_rules)
 {
-    if (descriptor == STD_NULL || contract == STD_NULL || out_config == STD_NULL ||
-        out_timing_rules == STD_NULL ||
+    if (descriptor == LIB_NULL || contract == LIB_NULL || out_config == LIB_NULL ||
+        out_timing_rules == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) return 0;
     *out_config = (core_machine_config) {
         .memory_bytes = descriptor->default_memory_bytes,
@@ -461,9 +462,9 @@ type_status vm_profile_default_pc_at_topology_materialize(
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
     core_machine_plan_topology topology = {0};
-    type_unsigned_32 first_expansion_decode;
+    lib_u32 first_expansion_decode;
 
-    if (descriptor == STD_NULL || timing_rules == STD_NULL || out_topology == STD_NULL ||
+    if (descriptor == LIB_NULL || timing_rules == LIB_NULL || out_topology == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -491,12 +492,12 @@ type_status vm_profile_default_pc_at_topology_materialize(
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
     fdc_route = vm_profile_default_pc_at_route_find(descriptor,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
-    if ((descriptor->ega_present && (attribute_first == STD_NULL ||
-        attribute_last == STD_NULL || sequencer_first == STD_NULL ||
-        sequencer_last == STD_NULL || graphics_first == STD_NULL ||
-        graphics_last == STD_NULL)) || crtc_first == STD_NULL ||
-        crtc_last == STD_NULL || cmos_first == STD_NULL ||
-        cmos_last == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL) {
+    if ((descriptor->ega_present && (attribute_first == LIB_NULL ||
+        attribute_last == LIB_NULL || sequencer_first == LIB_NULL ||
+        sequencer_last == LIB_NULL || graphics_first == LIB_NULL ||
+        graphics_last == LIB_NULL)) || crtc_first == LIB_NULL ||
+        crtc_last == LIB_NULL || cmos_first == LIB_NULL ||
+        cmos_last == LIB_NULL || cmos_route == LIB_NULL || fdc_route == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (descriptor->unpopulated_extended_memory) {
@@ -518,13 +519,13 @@ type_status vm_profile_default_pc_at_topology_materialize(
     /* Every PC/AT descriptor owns system-board Port B. Parity is an optional
      * producer on that one port; generic Default PC/AT retains the port's
      * PIT1/PIT2 visibility without inventing parity memory. */
-    topology.planar_parity_present = TYPE_TRUE;
+    topology.planar_parity_present = LIB_TRUE;
     topology.planar_parity = (core_machine_planar_parity_config) {
         CORE_MACHINE_PC_AT_PORT_B,
         descriptor->planar_parity_present ? descriptor->default_memory_bytes : 0u,
         descriptor->refresh_status_source,
         descriptor->refresh_status_toggle_ticks };
-    topology.display_present = TYPE_TRUE;
+    topology.display_present = LIB_TRUE;
     topology.display = (core_machine_display_config) {
         .text_timing = descriptor->cga_text_timing,
         .cga_vram_present = descriptor->cga_vram_present,
@@ -532,12 +533,12 @@ type_status vm_profile_default_pc_at_topology_materialize(
         .ega_sequencer = descriptor->ega_sequencer,
         .ega_controllers = descriptor->ega_controllers,
         .ports = {
-            .attribute_first = attribute_first == STD_NULL ? 0u : attribute_first->port,
-            .attribute_last = attribute_last == STD_NULL ? 0u : attribute_last->port,
-            .sequencer_first = sequencer_first == STD_NULL ? 0u : sequencer_first->port,
-            .sequencer_last = sequencer_last == STD_NULL ? 0u : sequencer_last->port,
-            .graphics_first = graphics_first == STD_NULL ? 0u : graphics_first->port,
-            .graphics_last = graphics_last == STD_NULL ? 0u : graphics_last->port,
+            .attribute_first = attribute_first == LIB_NULL ? 0u : attribute_first->port,
+            .attribute_last = attribute_last == LIB_NULL ? 0u : attribute_last->port,
+            .sequencer_first = sequencer_first == LIB_NULL ? 0u : sequencer_first->port,
+            .sequencer_last = sequencer_last == LIB_NULL ? 0u : sequencer_last->port,
+            .graphics_first = graphics_first == LIB_NULL ? 0u : graphics_first->port,
+            .graphics_last = graphics_last == LIB_NULL ? 0u : graphics_last->port,
             .crtc_first = crtc_first->port,
             .crtc_last = crtc_last->port
         }
@@ -552,11 +553,11 @@ type_status vm_profile_default_pc_at_topology_materialize(
      * firmware must observe the open bus and decide that no adapter ROM exists. */
     topology.absent_memory[topology.absent_memory_count++] =
         (core_machine_absent_memory_config) { 0x000c0000u, 0x00030000u, 0xffu };
-    topology.dma_present = TYPE_TRUE;
+    topology.dma_present = LIB_TRUE;
     topology.dma = (core_machine_dma_wiring) {
         fdc_route->dma_channel, CORE_MACHINE_DMA_CONTROLLER_COUNT,
         CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    topology.rtc_cmos_present = TYPE_TRUE;
+    topology.rtc_cmos_present = LIB_TRUE;
     topology.rtc_cmos = (core_machine_rtc_cmos_config) {
         .index_port = cmos_first->port,
         .data_port = cmos_last->port,
@@ -579,7 +580,7 @@ type_status vm_profile_default_pc_at_topology_materialize(
                 TYPE_MASK_UNSIGNED_8(descriptor->cmos.base_memory_kib >> 8) }
         },
         .default_count = CORE_MACHINE_RTC_DEFAULT_COUNT,
-        .derive_configuration_checksum = TYPE_TRUE
+        .derive_configuration_checksum = LIB_TRUE
     };
     *out_topology = topology;
     return TYPE_STATUS_OK;
@@ -591,10 +592,10 @@ static type_status vm_profile_default_pc_at_values_create(
     vm_profile_contract_values *out_values)
 {
     vm_profile_default_pc_at_cpu_contract contract;
-    STD_SIZE_T role;
-    STD_SIZE_T route_index;
+    lib_size role;
+    lib_size route_index;
 
-    if (out_values == STD_NULL ||
+    if (out_values == LIB_NULL ||
         !vm_profile_default_pc_at_cpu_contract_select(descriptor,
             cpu_profile, fpu_profile, &contract) ||
         !vm_profile_default_pc_at_core_config_materialize(descriptor, &contract,
@@ -604,13 +605,13 @@ static type_status vm_profile_default_pc_at_values_create(
     }
     out_values->core.id = ibm_5170_contract_ids[0];
     for (role = 0u; role <= VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD; ++role) {
-        STD_SIZE_T ordinal;
+        lib_size ordinal;
 
         for (ordinal = 0u;; ++ordinal) {
             const vm_profile_default_pc_at_port_leaf *leaf =
                 vm_profile_default_pc_at_port_leaf_at(descriptor,
                     (vm_profile_default_pc_at_device_role)role, ordinal);
-            if (leaf == STD_NULL) break;
+            if (leaf == LIB_NULL) break;
             if (out_values->port_leaf_count ==
                 VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY) {
                 return TYPE_STATUS_NO_MEMORY;
@@ -632,7 +633,7 @@ static type_status vm_profile_default_pc_at_values_create(
     }
     for (route_index = 0u; route_index < descriptor->route_count; ++route_index) {
         const vm_profile_default_pc_at_route *route = &descriptor->routes[route_index];
-        const type_unsigned_32 device = vm_profile_ibm_5170_device_bit(
+        const lib_u32 device = vm_profile_ibm_5170_device_bit(
             vm_profile_ibm_5170_route_device(route->source));
 
         if (out_values->irq_route_count == VM_PROFILE_CONTRACT_ROUTE_CAPACITY) {
@@ -655,9 +656,9 @@ static type_status vm_profile_default_pc_at_values_create(
 static type_status vm_profile_default_pc_at_snapshot_copy(
     vm_profile_default_pc_at_plan_snapshot *out_profile,
     const vm_profile_default_pc_at_descriptor *descriptor, const C_CHAR *identity,
-    type_unsigned_8 floppy_cmos_type)
+    lib_u8 floppy_cmos_type)
 {
-    if (out_profile == STD_NULL || descriptor == STD_NULL || identity == STD_NULL ||
+    if (out_profile == LIB_NULL || descriptor == LIB_NULL || identity == LIB_NULL ||
         descriptor->port_leaf_count > VM_PROFILE_DEFAULT_PC_AT_PLAN_PORT_LEAF_CAPACITY ||
         descriptor->route_count > VM_PROFILE_DEFAULT_PC_AT_PLAN_ROUTE_CAPACITY ||
         descriptor->firmware_service_count >
@@ -665,11 +666,11 @@ static type_status vm_profile_default_pc_at_snapshot_copy(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     out_profile->descriptor = *descriptor;
-    STD_MEMCPY(out_profile->port_leaves, descriptor->port_leaves,
+    lib_memory_copy(out_profile->port_leaves, descriptor->port_leaves,
         descriptor->port_leaf_count * sizeof(out_profile->port_leaves[0]));
-    STD_MEMCPY(out_profile->routes, descriptor->routes,
+    lib_memory_copy(out_profile->routes, descriptor->routes,
         descriptor->route_count * sizeof(out_profile->routes[0]));
-    STD_MEMCPY(out_profile->firmware_services, descriptor->firmware_services,
+    lib_memory_copy(out_profile->firmware_services, descriptor->firmware_services,
         descriptor->firmware_service_count * sizeof(out_profile->firmware_services[0]));
     out_profile->descriptor.identity = identity;
     out_profile->descriptor.port_leaves = out_profile->port_leaves;
@@ -687,7 +688,7 @@ static type_status vm_profile_default_pc_at_snapshot_copy(
         &out_profile->topology);
 }
 
-type_status vm_profile_ibm_5170_values_create(STD_SIZE_T memory_bytes,
+type_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
     vm_profile_contract_values *out_values)
 {
     const vm_profile_default_pc_at_descriptor *descriptor =
@@ -696,7 +697,7 @@ type_status vm_profile_ibm_5170_values_create(STD_SIZE_T memory_bytes,
     const vm_profile_contract_catalog catalog = { ibm_5170_contract_ids,
         sizeof(ibm_5170_contract_ids) / sizeof(ibm_5170_contract_ids[0]) };
 
-    if (out_values == STD_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes) ||
+    if (out_values == LIB_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes) ||
         vm_profile_default_pc_at_values_create(descriptor, descriptor->cpu_profile,
             descriptor->fpu_profile, &values) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -715,7 +716,7 @@ type_status vm_profile_ibm_5170_values_create(STD_SIZE_T memory_bytes,
     return TYPE_STATUS_OK;
 }
 
-static C_INT vm_profile_ibm_5170_memory_is_valid(STD_SIZE_T memory_bytes)
+static C_INT vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes)
 {
     if (memory_bytes == 0u || memory_bytes == 512u * 1024u ||
         memory_bytes == 640u * 1024u) return 1;
@@ -723,14 +724,14 @@ static C_INT vm_profile_ibm_5170_memory_is_valid(STD_SIZE_T memory_bytes)
         (memory_bytes - 1024u * 1024u) % (512u * 1024u) == 0u;
 }
 
-type_status vm_profile_ibm_5170_plan_create_memory(STD_SIZE_T memory_bytes,
+type_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
     vm_profile_default_pc_at_plan_snapshot *out_profile)
 {
     const vm_profile_default_pc_at_descriptor *source =
         vm_profile_ibm_5170_model_339_descriptor_get();
     vm_profile_default_pc_at_descriptor descriptor;
 
-    if (out_profile == STD_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes)) {
+    if (out_profile == LIB_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     descriptor = *source;
@@ -739,9 +740,9 @@ type_status vm_profile_ibm_5170_plan_create_memory(STD_SIZE_T memory_bytes,
         descriptor.cmos.base_memory_kib = 0x0280u;
     }
     if (memory_bytes >= 1536u * 1024u) {
-        descriptor.unpopulated_extended_memory = TYPE_FALSE;
+        descriptor.unpopulated_extended_memory = LIB_FALSE;
     }
-    STD_MEMSET(out_profile, 0, sizeof(*out_profile));
+    lib_memory_set(out_profile, 0, sizeof(*out_profile));
     if (vm_profile_ibm_5170_values_create(memory_bytes, &out_profile->values) !=
         TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -759,13 +760,13 @@ type_status vm_profile_ibm_5170_plan_create(
 static type_status vm_profile_default_at_request_select(
     const vm_profile_default_at_request *request,
     core_machine_cpu_profile *out_cpu, core_machine_fpu_profile *out_fpu,
-    STD_SIZE_T *out_memory)
+    lib_size *out_memory)
 {
     const vm_profile_default_pc_at_descriptor *descriptor =
         vm_profile_default_pc_at_descriptor_get();
 
-    if (request == STD_NULL || out_cpu == STD_NULL || out_fpu == STD_NULL ||
-        out_memory == STD_NULL ||
+    if (request == LIB_NULL || out_cpu == LIB_NULL || out_fpu == LIB_NULL ||
+        out_memory == LIB_NULL ||
         (request->requested_options & ~(VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY)) != 0u) {
@@ -796,12 +797,12 @@ static type_status vm_profile_default_at_values_create(
 {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
-    STD_SIZE_T memory_bytes;
+    lib_size memory_bytes;
     vm_profile_contract_values values = {0};
     const vm_profile_contract_catalog catalog = { ibm_5170_contract_ids,
         sizeof(ibm_5170_contract_ids) / sizeof(ibm_5170_contract_ids[0]) };
 
-    if (out_values == STD_NULL ||
+    if (out_values == LIB_NULL ||
         vm_profile_default_at_request_select(request, &cpu_profile, &fpu_profile,
             &memory_bytes) != TYPE_STATUS_OK ||
         vm_profile_default_pc_at_values_create(vm_profile_default_pc_at_descriptor_get(),
@@ -825,10 +826,10 @@ type_status vm_profile_default_at_plan_create(
     const vm_profile_default_at_request *request,
     vm_profile_default_pc_at_plan_snapshot *out_profile)
 {
-    if (out_profile == STD_NULL || request == STD_NULL) {
+    if (out_profile == LIB_NULL || request == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    STD_MEMSET(out_profile, 0, sizeof(*out_profile));
+    lib_memory_set(out_profile, 0, sizeof(*out_profile));
     if (vm_profile_default_at_values_create(request, &out_profile->values) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -842,11 +843,11 @@ type_status vm_profile_default_at_plan_create(
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_profile_default_pc_at_device_role device, type_unsigned_16 port)
+    vm_profile_default_pc_at_device_role device, lib_u16 port)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (descriptor == STD_NULL) return STD_NULL;
+    if (descriptor == LIB_NULL) return LIB_NULL;
     for (index = 0u; index < descriptor->port_leaf_count; ++index) {
         if (descriptor->port_leaves[index].device == device &&
             (device != VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC || descriptor->hdc_present) &&
@@ -858,17 +859,17 @@ vm_profile_default_pc_at_port_leaf_find(
             return &descriptor->port_leaves[index];
         }
     }
-    return STD_NULL;
+    return LIB_NULL;
 }
 
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_at(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_profile_default_pc_at_device_role device, STD_SIZE_T ordinal)
+    vm_profile_default_pc_at_device_role device, lib_size ordinal)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (descriptor == STD_NULL) return STD_NULL;
+    if (descriptor == LIB_NULL) return LIB_NULL;
     for (index = 0u; index < descriptor->port_leaf_count; ++index) {
         if (descriptor->port_leaves[index].device == device &&
             (device != VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC || descriptor->hdc_present) &&
@@ -880,34 +881,34 @@ vm_profile_default_pc_at_port_leaf_at(
             --ordinal;
         }
     }
-    return STD_NULL;
+    return LIB_NULL;
 }
 
 const vm_profile_default_pc_at_route *vm_profile_default_pc_at_route_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
     vm_profile_default_pc_at_route_source source)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (descriptor == STD_NULL) return STD_NULL;
+    if (descriptor == LIB_NULL) return LIB_NULL;
     for (index = 0u; index < descriptor->route_count; ++index) {
         if (descriptor->routes[index].source == source) {
             return &descriptor->routes[index];
         }
     }
-    return STD_NULL;
+    return LIB_NULL;
 }
 
 C_INT vm_profile_default_pc_at_descriptor_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor)
 {
     const vm_profile_default_pc_at_route *expected_routes;
-    STD_SIZE_T expected_route_count;
-    STD_SIZE_T index;
+    lib_size expected_route_count;
+    lib_size index;
 
-    if (descriptor == STD_NULL || !vm_profile_default_pc_at_fdc_bounce_is_valid(descriptor) ||
-        descriptor->port_leaves == STD_NULL ||
-        descriptor->routes == STD_NULL || descriptor->port_leaf_count !=
+    if (descriptor == LIB_NULL || !vm_profile_default_pc_at_fdc_bounce_is_valid(descriptor) ||
+        descriptor->port_leaves == LIB_NULL ||
+        descriptor->routes == LIB_NULL || descriptor->port_leaf_count !=
         sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]) ||
         descriptor->route_count == 0u) return 0;
     expected_routes = descriptor->firmware_slot ==
@@ -919,12 +920,12 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]);
     if (descriptor->route_count != expected_route_count) return 0;
     for (index = 0u; index < descriptor->port_leaf_count; ++index) {
-        if (STD_MEMCMP(&descriptor->port_leaves[index],
+        if (lib_memory_compare(&descriptor->port_leaves[index],
                 &default_pc_at_port_leaves[index],
                 sizeof(default_pc_at_port_leaves[index])) != 0) return 0;
     }
     for (index = 0u; index < descriptor->route_count; ++index) {
-        if (STD_MEMCMP(&descriptor->routes[index], &expected_routes[index],
+        if (lib_memory_compare(&descriptor->routes[index], &expected_routes[index],
                 sizeof(expected_routes[index])) != 0) return 0;
     }
     if (descriptor->firmware_slot ==
@@ -971,11 +972,11 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             descriptor->hdc.bus.task_file.alternate_status_device_control_port == 0x03f6u &&
             descriptor->hdc.irq == 14u && !descriptor->hdc.bus.task_file.lba28_supported &&
             descriptor->hdc.bus.task_file.clock_ticks_per_second == 8000000u &&
-            descriptor->firmware_services != STD_NULL &&
+            descriptor->firmware_services != LIB_NULL &&
             descriptor->firmware_service_count ==
                 sizeof(ibm_5170_model_339_firmware_services) /
                     sizeof(ibm_5170_model_339_firmware_services[0]) &&
-            STD_MEMCMP(descriptor->firmware_services,
+            lib_memory_compare(descriptor->firmware_services,
                 ibm_5170_model_339_firmware_services,
                 sizeof(ibm_5170_model_339_firmware_services)) == 0;
     }

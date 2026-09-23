@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -9,27 +10,27 @@
 C_INT main(C_VOID)
 {
     const C_CHAR *const path = PROJECT_TEST_80186_DECODER_PATH;
-    type_bool opcode_seen[0x100] = { TYPE_FALSE };
-    type_bool modrm_seen[0x100][0x100] = { { TYPE_FALSE } };
-    type_unsigned_16 opcode;
-    type_unsigned_16 modrm;
-    type_unsigned_32 accepted_pairs = 0u;
-    type_unsigned_32 accepted_opcodes = 0u;
+    type_bool opcode_seen[0x100] = { LIB_FALSE };
+    type_bool modrm_seen[0x100][0x100] = { { LIB_FALSE } };
+    lib_u16 opcode;
+    lib_u16 modrm;
+    lib_u32 accepted_pairs = 0u;
+    lib_u32 accepted_opcodes = 0u;
     FILE *file;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
-            const type_unsigned_8 bytes[15] = {
-                (type_unsigned_8)opcode, (type_unsigned_8)modrm
+            const lib_u8 bytes[15] = {
+                (lib_u8)opcode, (lib_u8)modrm
             };
             core_machine_cpu_instruction_lexeme lexeme;
 
             if (!core_machine_cpu_instruction_lexeme_scan(bytes, sizeof(bytes),
-                    CORE_MACHINE_CPU_PROFILE_80186, TYPE_FALSE, &lexeme) ||
+                    CORE_MACHINE_CPU_PROFILE_80186, LIB_FALSE, &lexeme) ||
                 !lexeme.available || lexeme.byte_count == 0u) continue;
             ++accepted_pairs;
-            opcode_seen[opcode] = TYPE_TRUE;
-            modrm_seen[opcode][modrm] = TYPE_TRUE;
+            opcode_seen[opcode] = LIB_TRUE;
+            modrm_seen[opcode][modrm] = LIB_TRUE;
         }
     }
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
@@ -38,13 +39,13 @@ C_INT main(C_VOID)
     if (accepted_pairs != 61530u || accepted_opcodes != 247u) return 1;
 
     file = fopen(path, "wb");
-    if (file == STD_NULL || fprintf(file,
+    if (file == LIB_NULL || fprintf(file,
             "{\n  \"schema\": \"nxvm.80186-decoder-inventory.v1\",\n"
             "  \"lexeme_opcode_modrm_candidates\": %u,\n"
             "  \"lexeme_primary_opcode_count\": %u,\n"
             "  \"lexeme_primary_opcodes\": [",
             accepted_pairs, accepted_opcodes) < 0) {
-        if (file != STD_NULL) fclose(file);
+        if (file != LIB_NULL) fclose(file);
         return 1;
     }
     accepted_opcodes = 0u;
@@ -63,7 +64,7 @@ C_INT main(C_VOID)
     }
     accepted_opcodes = 0u;
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
-        type_unsigned_16 byte;
+        lib_u16 byte;
 
         if (!opcode_seen[opcode]) continue;
         if ((accepted_opcodes != 0u && fprintf(file, ",") < 0) ||
@@ -72,8 +73,8 @@ C_INT main(C_VOID)
             return 1;
         }
         for (byte = 0u; byte < 32u; ++byte) {
-            type_unsigned_8 bits = 0u;
-            type_unsigned_8 bit;
+            lib_u8 bits = 0u;
+            lib_u8 bit;
 
             for (bit = 0u; bit < 8u; ++bit) {
                 if (modrm_seen[opcode][byte * 8u + bit]) bits |= 1u << bit;

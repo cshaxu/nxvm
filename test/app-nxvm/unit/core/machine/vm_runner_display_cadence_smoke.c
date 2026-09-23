@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/machine/control.h"
@@ -9,12 +10,12 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     vm_test_common_machine_state_waiter waiter = {0};
-    common_machine_frame frame;
+    static common_machine_frame frame;
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
         vm_test_common_machine_bind(session) != TYPE_STATUS_OK ||
         vm_test_common_machine_state_waiter_initialize(session, &waiter) !=
             TYPE_STATUS_OK ||
@@ -22,7 +23,7 @@ C_INT main(C_VOID)
         failed = 1;
         goto done;
     }
-    (C_VOID)vm_machine_publish_display(session, TYPE_TRUE);
+    (C_VOID)vm_machine_publish_display(session, LIB_TRUE);
     if (!vm_machine_copy_common_frame(session, &frame) ||
         frame.window.text.base.text_columns != 80u ||
         frame.window.text.base.text_rows != 25u ||

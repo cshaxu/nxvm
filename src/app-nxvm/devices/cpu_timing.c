@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -8,13 +9,13 @@ static const char *const core_machine_cpu_timing_manifest_keys[] = {
 };
 
 static C_INT core_machine_cpu_timing_string_odd_word(
-    const t_cpuins_data *data, type_unsigned_32 opcode_index)
+    const t_cpuins_data *data, lib_u32 opcode_index)
 {
-    type_unsigned_8 opcode;
+    lib_u8 opcode;
     C_INT source_transfer;
     C_INT destination_transfer;
 
-    if (data == STD_NULL || opcode_index >= data->oplen) return 0;
+    if (data == LIB_NULL || opcode_index >= data->oplen) return 0;
     opcode = data->opcodes[opcode_index];
     if (opcode != 0xa5u && opcode != 0xa7u && opcode != 0xabu &&
         opcode != 0xadu && opcode != 0xafu && opcode != 0x6du &&
@@ -31,15 +32,15 @@ _Static_assert(sizeof(core_machine_cpu_timing_manifest_keys) /
     sizeof(core_machine_cpu_timing_manifest_keys[0]) == 4906u,
     "CPU timing canonical manifest count drifted");
 
-static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
+static lib_u32 core_machine_cpu_timing_formula_inputs(
     const core_machine *machine)
 {
     const t_cpuins_data *data;
-    type_unsigned_32 prefix;
-    type_unsigned_32 opcode_index;
-    type_unsigned_32 inputs = 0u;
+    lib_u32 prefix;
+    lib_u32 opcode_index;
+    lib_u32 inputs = 0u;
 
-    if (machine == STD_NULL) return 0u;
+    if (machine == LIB_NULL) return 0u;
     data = &machine->executor_cpu_instructions.data;
     prefix = 0u;
     while (prefix < data->oplen) {
@@ -63,7 +64,7 @@ static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
     }
     opcode_index = 0u;
     while (opcode_index < data->oplen) {
-        type_unsigned_8 byte = data->opcodes[opcode_index];
+        lib_u8 byte = data->opcodes[opcode_index];
 
         if (byte != 0x26u && byte != 0x2eu && byte != 0x36u && byte != 0x3eu &&
             byte != 0x64u && byte != 0x65u && byte != 0x66u && byte != 0x67u &&
@@ -73,7 +74,7 @@ static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
     if (data->flagMem) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
-        if (data->mrm.rsreg != STD_NULL &&
+        if (data->mrm.rsreg != LIB_NULL &&
             ((data->mrm.rsreg->base + data->mrm.offset) & 1u) != 0u) {
             inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
         }
@@ -114,9 +115,9 @@ static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
 
 static C_INT core_machine_cpu_timing_is_wait(const t_cpuins_data *data)
 {
-    type_unsigned_8 index = 0u;
+    lib_u8 index = 0u;
 
-    if (data == STD_NULL) return 0;
+    if (data == LIB_NULL) return 0;
     while (index < data->oplen) {
         switch (data->opcodes[index]) {
         case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
@@ -134,11 +135,11 @@ static C_INT core_machine_cpu_timing_is_wait(const t_cpuins_data *data)
 static C_INT core_machine_cpu_timing_try(core_machine *machine,
     core_machine_cpu_timing_result *result,
     core_machine_retirement_timing_origin origin,
-    C_INT (*evaluate)(core_machine *, type_unsigned_64 *))
+    C_INT (*evaluate)(core_machine *, lib_u64 *))
 {
-    type_unsigned_64 ticks;
+    lib_u64 ticks;
 
-    if (evaluate == STD_NULL || !evaluate(machine, &ticks)) return 0;
+    if (evaluate == LIB_NULL || !evaluate(machine, &ticks)) return 0;
     result->ticks = ticks;
     result->retirement_origin = origin;
     machine->source_timing_origin = origin;
@@ -195,9 +196,9 @@ static C_INT core_machine_cpu_timing_select_80286(core_machine *machine,
 static C_INT core_machine_cpu_timing_has_8086_lock_prefix(
     const t_cpuins_data *data)
 {
-    type_unsigned_32 index = 0u;
+    lib_u32 index = 0u;
 
-    if (data == STD_NULL) return 0;
+    if (data == LIB_NULL) return 0;
     while (index < data->oplen) {
         switch (data->opcodes[index]) {
         case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
@@ -221,7 +222,7 @@ static C_INT core_machine_cpu_timing_apply_8086_lock(core_machine *machine,
 {
     const t_cpuins_data *data;
 
-    if (machine == STD_NULL || result == STD_NULL) return 0;
+    if (machine == LIB_NULL || result == LIB_NULL) return 0;
     if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8088 &&
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 1;
@@ -238,15 +239,15 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
 {
     core_machine_cpu_timing_result result;
 
-    if (machine == STD_NULL || out_result == STD_NULL) return 0;
-    machine->source_timing_unallocated = TYPE_FALSE;
+    if (machine == LIB_NULL || out_result == LIB_NULL) return 0;
+    machine->source_timing_unallocated = LIB_FALSE;
     machine->source_timing_origin =
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
     machine->source_timing_form_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     machine->source_timing_key_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     machine->source_timing_formula_inputs = 0u;
     machine->source_timing_repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
-    STD_MEMSET(&result, 0, sizeof(result));
+    lib_memory_set(&result, 0, sizeof(result));
 
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
         if (!core_machine_cpu_timing_try(machine, &result,

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -5,7 +6,7 @@
 
 typedef struct readiness_trace_probe {
     core_machine_trace_event events[40];
-    type_unsigned_32 count;
+    lib_u32 count;
 } readiness_trace_probe;
 
 static C_VOID readiness_trace(C_VOID *opaque,
@@ -13,7 +14,7 @@ static C_VOID readiness_trace(C_VOID *opaque,
 {
     readiness_trace_probe *probe = (readiness_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count <
+    if (probe != LIB_NULL && probe->count <
         sizeof(probe->events) / sizeof(probe->events[0])) {
         probe->events[probe->count++] = *event;
     }
@@ -21,8 +22,8 @@ static C_VOID readiness_trace(C_VOID *opaque,
 
 static C_INT readiness_expect_rtc(const readiness_trace_probe *probe)
 {
-    type_unsigned_32 index;
-    type_bool found = TYPE_FALSE;
+    lib_u32 index;
+    type_bool found = LIB_FALSE;
 
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
@@ -31,7 +32,7 @@ static C_INT readiness_expect_rtc(const readiness_trace_probe *probe)
             event->type == CORE_MACHINE_TRACE_HDC_ADVANCE) return 1;
         if (event->type == CORE_MACHINE_TRACE_RTC_ADVANCE) {
             if (event->timeline_ticks != 3u) return 1;
-            found = TYPE_TRUE;
+            found = LIB_TRUE;
         }
     }
     return !found;
@@ -40,7 +41,7 @@ static C_INT readiness_expect_rtc(const readiness_trace_probe *probe)
 static C_INT readiness_has_event(const readiness_trace_probe *probe,
     core_machine_trace_event_type type)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
     for (index = 0u; index < probe->count; ++index) {
         if (probe->events[index].type == type) return 1;
@@ -50,7 +51,7 @@ static C_INT readiness_has_event(const readiness_trace_probe *probe,
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
     core_machine_rtc_cmos_config rtc_config = { 0 };
     core_machine_run_budget budget = { 1u, 0u };
@@ -58,7 +59,7 @@ C_INT main(C_VOID)
     core_machine_timeline_observation observation;
     readiness_trace_probe probe = { { { 0 } }, 0u };
     core_machine_trace_provider trace = { readiness_trace, &probe };
-    const type_unsigned_8 nop = 0x90u;
+    const lib_u8 nop = 0x90u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 2u;

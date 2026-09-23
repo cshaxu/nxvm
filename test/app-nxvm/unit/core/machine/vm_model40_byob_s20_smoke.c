@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -10,24 +11,24 @@
 
 C_INT main(C_VOID)
 {
-    type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
-    type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    type_unsigned_8 video[VM_PROFILE_MODEL40_VIDEO_ROM_BYTES] = {0};
-    type_unsigned_8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
+    lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
+    lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    lib_u8 video[VM_PROFILE_MODEL40_VIDEO_ROM_BYTES] = {0};
+    lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
     vm_machine_config config = {0};
     vm_machine_assets assets = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     vm_machine_reset_vector reset_vector = {0};
     core_machine_run_result result = {0};
     core_machine_time_observation time_observation = {0};
-    STD_SIZE_T memory_bytes = 0u;
-    STD_SIZE_T retained_memory_bytes;
-    type_unsigned_8 observed_memory = 0u;
-    type_unsigned_8 video_body_byte = 0u;
-    STD_SIZE_T mapping;
+    lib_size memory_bytes = 0u;
+    lib_size retained_memory_bytes;
+    lib_u8 observed_memory = 0u;
+    lib_u8 video_body_byte = 0u;
+    lib_size mapping;
     C_INT failed = 0;
 
-    STD_MEMSET(odd, 1, sizeof(odd));
+    lib_memory_set(odd, 1, sizeof(odd));
     video[0u] = 0x55u;
     video[1u] = 0xaau;
     video[2u] = 0x20u;
@@ -40,7 +41,7 @@ C_INT main(C_VOID)
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL ||
+        session == LIB_NULL ||
         !vm_profile_machine_plan_is_model40(session->profile_plan) || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
@@ -55,7 +56,7 @@ C_INT main(C_VOID)
         time_observation.physical_ticks_per_second != 0u ||
         session->fdd.data.nsector != 15u || vm_profile_machine_plan_model40_rom_get(session->profile_plan)->even_bytes[0] != 0u ||
         vm_profile_machine_plan_model40_rom_get(session->profile_plan)->odd_bytes[0] != 1u ||
-        vm_profile_machine_plan_model40_rom_get(session->profile_plan)->video_bytes == STD_NULL ||
+        vm_profile_machine_plan_model40_rom_get(session->profile_plan)->video_bytes == LIB_NULL ||
         vm_profile_machine_plan_model40_rom_get(session->profile_plan)->video_bytes[0u] != 0x55u ||
         core_machine_memory_read(session->core_machine,
             VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, &observed_memory,
@@ -95,10 +96,10 @@ C_INT main(C_VOID)
     failed |= !failed && (vm_profile_machine_plan_model40_rom_get(session->profile_plan)->even_bytes[0] != 0u ||
         vm_profile_machine_plan_model40_rom_get(session->profile_plan)->odd_bytes[0] != 1u);
     vm_machine_destroy(session);
-    session = STD_NULL;
+    session = LIB_NULL;
     config.memory_bytes = 2u * 1024u * 1024u;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
-        session != STD_NULL;
+        session != LIB_NULL;
     config.memory_bytes = 0u;
     if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\nM5:T440:S1:MODEL40-IMMUTABLE-CONFIGURATION:OK\n");
     return failed;

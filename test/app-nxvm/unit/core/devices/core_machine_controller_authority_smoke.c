@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -5,9 +6,9 @@
 #include "app-nxvm/devices/port.h"
 
 static C_VOID core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port *port,
-    const type_unsigned_8 *bytes, STD_SIZE_T count)
+    const lib_u8 *bytes, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
@@ -16,13 +17,13 @@ static C_VOID core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port 
 }
 
 static C_INT core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port *port,
-    type_unsigned_8 *result, STD_SIZE_T count)
+    lib_u8 *result, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
     core_machine_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
-        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+        result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) &
         (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
@@ -45,11 +46,11 @@ static C_INT core_machine_controller_hdc_program_chs(core_machine *machine,
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
-    static const type_unsigned_8 read_absent[] = {
+    static const lib_u8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
+    static const lib_u8 read_absent[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 write_absent[] = {
+    static const lib_u8 write_absent[] = {
         0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
     const core_machine_config config = {
@@ -74,12 +75,12 @@ C_INT main(C_VOID)
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
-            .lba28_supported = TYPE_TRUE}
+            .lba28_supported = LIB_TRUE}
     };
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology fdc_topology = {
-        .media_registry = STD_NULL,
+        .media_registry = LIB_NULL,
         .drives = {{1u, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}},
         .config = {
@@ -89,7 +90,7 @@ C_INT main(C_VOID)
         }
     };
     core_machine_hdc_topology hdc_topology = {
-        .media_registry = STD_NULL,
+        .media_registry = LIB_NULL,
         .media_id = 2u,
         .config = {
             .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO, .irq = 14u,
@@ -99,14 +100,14 @@ C_INT main(C_VOID)
                 .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
                 .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
                 .alternate_status_device_control_port = 0x03f6u,
-                .lba28_supported = TYPE_TRUE}
+                .lba28_supported = LIB_TRUE}
         }
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     t_port *port;
-    type_unsigned_8 result[7] = {0};
-    type_unsigned_32 status = 0u;
-    type_unsigned_32 error = 0u;
+    lib_u8 result[7] = {0};
+    lib_u32 status = 0u;
+    lib_u32 error = 0u;
     type_status fdc_before_dma = TYPE_STATUS_OK;
     type_status dma_status = TYPE_STATUS_OK;
     type_status fdc_status = TYPE_STATUS_OK;

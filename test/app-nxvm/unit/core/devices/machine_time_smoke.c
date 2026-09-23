@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -10,20 +11,20 @@ static C_INT machine_time_expect(type_status status)
 }
 
 static C_VOID machine_time_timeline_callback(C_VOID *context,
-    type_unsigned_64 due_tick)
+    lib_u64 due_tick)
 {
     C_UINT *count = (C_UINT *)context;
 
     (C_VOID)due_tick;
-    if (count != STD_NULL) ++*count;
+    if (count != LIB_NULL) ++*count;
 }
 
 static C_INT machine_time_d4_l2_precedes_unrelated_deadline(C_VOID)
 {
     core_machine_config config = {0};
     core_machine_time_observation observation;
-    core_machine *machine = STD_NULL;
-    type_bool advanced = TYPE_FALSE;
+    core_machine *machine = LIB_NULL;
+    type_bool advanced = LIB_FALSE;
     C_UINT timeline_count = 0u;
     core_machine_timeline_token token;
     C_INT failed = 0;
@@ -34,7 +35,7 @@ static C_INT machine_time_d4_l2_precedes_unrelated_deadline(C_VOID)
     failed |= !failed && core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
     if (!failed) {
-        machine->d4_refresh_hold_pending = TYPE_TRUE;
+        machine->d4_refresh_hold_pending = LIB_TRUE;
         failed |= core_machine_timeline_schedule(&machine->timeline, 4u,
             machine_time_timeline_callback, &timeline_count, &token) != TYPE_STATUS_OK;
     }
@@ -59,10 +60,10 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_observation observation;
     core_machine_time_observation time_observation;
-    core_machine *machine = STD_NULL;
-    core_machine *rejected = STD_NULL;
-    const type_unsigned_8 nop = 0x90u;
-    type_unsigned_64 elapsed = 0u;
+    core_machine *machine = LIB_NULL;
+    core_machine *rejected = LIB_NULL;
+    const lib_u8 nop = 0x90u;
+    lib_u64 elapsed = 0u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 3u;
@@ -77,23 +78,23 @@ C_INT main(C_VOID)
 
         invalid.time_axis.ticks_per_second = 0u;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
-            rejected != STD_NULL;
+            rejected != LIB_NULL;
         invalid = config;
         invalid.time_axis.kind = (core_machine_time_axis_kind)3;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
-            rejected != STD_NULL;
+            rejected != LIB_NULL;
         invalid = config;
         invalid.time_axis = (core_machine_time_axis) {
             CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u };
         invalid.retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
-            rejected != STD_NULL;
+            rejected != LIB_NULL;
         invalid = config;
         invalid.time_axis = (core_machine_time_axis) {
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u };
         invalid.retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
-            rejected != STD_NULL;
+            rejected != LIB_NULL;
     }
     failed |= machine_time_expect(core_machine_create(&config, &machine));
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

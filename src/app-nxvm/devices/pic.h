@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/pic_interface.h"
@@ -17,16 +18,16 @@ typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
 
 #define VPIC_MAX_IRQ_COUNT 8
 typedef struct {
-    type_unsigned_8 irr;  /* Interrupt Request Register */
-    type_unsigned_8 imr;  /* Interrupt Mask Register */
-    type_unsigned_8 isr;  /* In Service Register */
-    type_unsigned_8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
+    lib_u8 irr;  /* Interrupt Request Register */
+    lib_u8 imr;  /* Interrupt Mask Register */
+    lib_u8 isr;  /* In Service Register */
+    lib_u8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
     t_pic_init_status status; /* initialization status */
-    type_unsigned_8 irx; /* id of current top potential ir */
-    type_unsigned_8 asserted[VPIC_MAX_IRQ_COUNT]; /* source levels */
-    type_unsigned_8 cascade_irr; /* paired slave's synthesized request */
-    type_unsigned_32 unmask_delivery_ticks[VPIC_MAX_IRQ_COUNT];
-    type_unsigned_64 unmask_remaining_ticks[VPIC_MAX_IRQ_COUNT];
+    lib_u8 irx; /* id of current top potential ir */
+    lib_u8 asserted[VPIC_MAX_IRQ_COUNT]; /* source levels */
+    lib_u8 cascade_irr; /* paired slave's synthesized request */
+    lib_u32 unmask_delivery_ticks[VPIC_MAX_IRQ_COUNT];
+    lib_u64 unmask_remaining_ticks[VPIC_MAX_IRQ_COUNT];
 } t_pic_data;
 
 typedef struct t_pic {
@@ -39,7 +40,7 @@ typedef struct t_pic {
 typedef struct core_machine_pic_irq_source {
     t_pic *master;
     t_pic *slave;
-    type_unsigned_8 irq;
+    lib_u8 irq;
     type_bool asserted;
 } core_machine_pic_irq_source;
 
@@ -118,20 +119,20 @@ C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_set_irq_timing(t_pic *master, t_pic *slave,
     const core_machine_pic_irq_timing *timing);
 C_VOID core_machine_pic_advance(t_pic *master, t_pic *slave,
-    type_unsigned_64 elapsed_ticks);
+    lib_u64 elapsed_ticks);
 type_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic *slave,
-    type_unsigned_64 *out_ticks);
+    lib_u64 *out_ticks);
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
-    t_pic *master, t_pic *slave, type_unsigned_8 irq_id);
+    t_pic *master, t_pic *slave, lib_u8 irq_id);
 C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source);
 C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source);
 C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted);
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
-type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave);
+lib_u8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave);
 /* First logical INTA: select the request, transfer it from IRR to ISR, and
  * return the vector reserved for the CPU's following interrupt entry. */
-type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
+lib_u8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

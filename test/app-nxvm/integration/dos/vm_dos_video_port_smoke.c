@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/debug_interface.h"
@@ -14,9 +15,9 @@
 
 static C_INT vm_dos_video_has_prompt(const core_machine_display_snapshot *snapshot)
 {
-    STD_SIZE_T cell;
+    lib_size cell;
 
-    if (snapshot == STD_NULL) return 0;
+    if (snapshot == LIB_NULL) return 0;
     for (cell = 0u; cell + 3u < VM_DOS_VIDEO_TEXT_CELLS; ++cell) {
         if (STD_ISALPHA(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
@@ -35,9 +36,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
     t_cpu cpu;
-    type_unsigned_8 opcode[2];
-    type_unsigned_8 functions[256] = {0};
-    type_unsigned_64 instruction;
+    lib_u8 opcode[2];
+    lib_u8 functions[256] = {0};
+    lib_u64 instruction;
     C_UINT int10_count = 0u;
     C_UINT f2_count = 0u;
     C_INT prompt_seen = 0;

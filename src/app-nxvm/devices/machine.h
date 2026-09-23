@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_H
 #define CORE_MACHINE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -74,7 +75,7 @@ struct core_machine_plan {
     core_machine_plan_topology topology;
     core_machine_timing_declaration declarations[
         CORE_MACHINE_TIMING_CAPABILITY_COUNT];
-    STD_SIZE_T declaration_count;
+    lib_size declaration_count;
     core_machine_controller_timing_rules controller_timing;
     core_machine_d4_memory_config d4_memory;
     const core_machine_media_registry *media_registry;
@@ -85,26 +86,26 @@ struct core_machine_plan {
 typedef struct core_machine_trace_state {
     core_machine_trace_provider provider;
     core_machine_trace_event events[CORE_MACHINE_TRACE_CAPACITY];
-    type_unsigned_64 next_sequence;
-    STD_SIZE_T count;
+    lib_u64 next_sequence;
+    lib_size count;
     C_INT flushing;
 } core_machine_trace_state;
 
 typedef struct core_machine_cpu_diagnostic_state {
     core_machine_cpu_diagnostic snapshot;
-    STD_SIZE_T next_index;
+    lib_size next_index;
 } core_machine_cpu_diagnostic_state;
 
 typedef struct core_machine_retirement_observation_state {
     core_machine_retirement_observation_provider provider;
     core_machine_retirement_observation pending_observation;
-    type_unsigned_64 next_sequence;
+    lib_u64 next_sequence;
     type_bool pending;
 } core_machine_retirement_observation_state;
 typedef struct core_machine_immutable_rom_mapping {
-    type_unsigned_32 physical_start;
-    STD_SIZE_T bytes;
-    type_unsigned_8 *image;
+    lib_u32 physical_start;
+    lib_size bytes;
+    lib_u8 *image;
     type_bool owns_image;
 } core_machine_immutable_rom_mapping;
 
@@ -124,8 +125,8 @@ struct core_machine_firmware_context {
 struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
-    type_unsigned_32 fault_detail;
-    type_unsigned_64 elapsed_ticks;
+    lib_u32 fault_detail;
+    lib_u64 elapsed_ticks;
     core_machine_timeline timeline;
     core_machine_plan timing_plan;
     type_bool timing_plan_copied;
@@ -133,40 +134,40 @@ struct core_machine {
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
-    type_unsigned_32 external_cycle_page_tag;
-    type_unsigned_64 external_cycle_round_ticks;
-    type_unsigned_64 cpu_retirement_wait_ticks;
-    type_unsigned_64 cpu_retirement_completion_ticks;
-    type_unsigned_64 cpu_retirement_source_ticks;
+    lib_u32 external_cycle_page_tag;
+    lib_u64 external_cycle_round_ticks;
+    lib_u64 cpu_retirement_wait_ticks;
+    lib_u64 cpu_retirement_completion_ticks;
+    lib_u64 cpu_retirement_source_ticks;
     type_bool external_cycle_page_valid;
     type_bool external_cycle_pending_valid;
     core_machine_cpu_external_cycle_space external_cycle_pending_space;
-    type_unsigned_32 external_cycle_pending_physical;
-    type_unsigned_8 external_cycle_pending_bytes;
+    lib_u32 external_cycle_pending_physical;
+    lib_u8 external_cycle_pending_bytes;
     type_bool external_cycle_pending_write;
     core_machine_cpu_memory_access_provenance external_cycle_pending_provenance;
     type_bool external_cycle_overlap_valid;
-    type_unsigned_32 external_cycle_overlap_next_physical;
+    lib_u32 external_cycle_overlap_next_physical;
     type_bool external_cycle_round_overflow;
     type_bool cpu_retirement_wait_pending;
-    type_unsigned_64 maximum_instruction_ticks;
+    lib_u64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;
     type_bool source_timing_unallocated;
     core_machine_retirement_timing_origin source_timing_origin;
-    type_unsigned_32 source_timing_form_id;
-    type_unsigned_32 source_timing_key_id;
-    type_unsigned_32 source_timing_formula_inputs;
+    lib_u32 source_timing_form_id;
+    lib_u32 source_timing_key_id;
+    lib_u32 source_timing_formula_inputs;
     core_machine_retirement_repeat_phase source_timing_repeat_phase;
     core_machine_retirement_eligibility_key retirement_eligibility_key;
     type_bool retirement_eligibility_key_valid;
     core_machine_retirement_eligibility_key retirement_qualification[
         CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY];
-    STD_SIZE_T retirement_qualification_count;
+    lib_size retirement_qualification_count;
     type_bool source_repeat_active;
-    type_unsigned_16 source_repeat_cs;
-    type_unsigned_32 source_repeat_eip;
-    type_unsigned_8 source_repeat_opcode;
-    type_unsigned_8 source_repeat_prefix;
+    lib_u16 source_repeat_cs;
+    lib_u32 source_repeat_eip;
+    lib_u8 source_repeat_opcode;
+    lib_u8 source_repeat_prefix;
     type_bool source_repeat_operand_size;
     type_bool source_repeat_address_size;
     core_machine_clock_domain dma_clock;
@@ -178,13 +179,13 @@ struct core_machine {
     core_machine_clock_domain provider_clock;
     core_machine_time_axis time_axis;
     core_machine_l1_compatibility_policy l1_compatibility_policy;
-    type_unsigned_32 kbc_typematic_initial_ticks;
-    type_unsigned_32 kbc_typematic_repeat_ticks;
-    type_unsigned_32 kbc_command_response_ticks;
-    type_unsigned_8 kbc_command_response_status_polls;
-    type_unsigned_32 kbc_serial_delivery_ticks;
+    lib_u32 kbc_typematic_initial_ticks;
+    lib_u32 kbc_typematic_repeat_ticks;
+    lib_u32 kbc_command_response_ticks;
+    lib_u8 kbc_command_response_status_polls;
+    lib_u32 kbc_serial_delivery_ticks;
     type_bool kbc_input_port_configured;
-    type_unsigned_8 kbc_input_port;
+    lib_u8 kbc_input_port;
     core_machine_keyboard_topology keyboard_topology;
     core_machine_display_port_topology display_ports;
     type_bool display_configured;
@@ -196,7 +197,7 @@ struct core_machine {
     core_machine_rtc_cmos_config rtc_cmos_config;
     type_bool rtc_cmos_configured;
     core_machine_planar_parity_config planar_parity_config;
-    type_unsigned_8 planar_parity_port_b;
+    lib_u8 planar_parity_port_b;
     type_bool planar_parity_configured;
     type_bool planar_parity_latched;
     type_bool planar_parity_nmi_signaled;
@@ -205,7 +206,7 @@ struct core_machine {
     type_bool xt_ppi_speaker_data_enabled;
     type_bool speaker_output;
     core_machine_d4_platform_config d4_platform_config;
-    type_unsigned_8 d4_platform_port_b;
+    lib_u8 d4_platform_port_b;
     type_bool d4_platform_configured;
     type_bool d4_platform_iochk_latched;
     type_bool d4_platform_failsafe_latched;
@@ -220,7 +221,7 @@ struct core_machine {
     core_machine_retirement_observation_state retirement_observation;
     core_machine_immutable_rom_mapping
         immutable_rom_mappings[CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY];
-    STD_SIZE_T immutable_rom_mapping_count;
+    lib_size immutable_rom_mapping_count;
     type_bool entry_plan_applied;
     core_machine_cpu_profile cpu_profile;
     type_bool cpu_80386_cr_mov_ignores_mod;
@@ -254,13 +255,13 @@ struct core_machine {
     C_VOID *execution_provider_context;
     C_INT execution_provider_frozen;
     /* Append-only scheduler state keeps existing internal offsets stable. */
-    type_unsigned_32 dma_cycle_wait_remaining;
+    lib_u32 dma_cycle_wait_remaining;
     type_bool dma_cycle_bus_ready;
     type_bool cpu_cycle_bus_ready;
     /* D4 refresh request state; it is serviced at the shared arbitration point. */
     type_bool d4_refresh_hold_pending;
     type_bool d4_refresh_pulse_active;
-    type_unsigned_8 d4_refresh_address;
+    lib_u8 d4_refresh_address;
 };
 
 type_status core_machine_bus_initialize(core_machine *machine);
@@ -271,9 +272,9 @@ C_VOID core_machine_trace_finalize(core_machine *machine);
 C_VOID core_machine_trace_record(
     core_machine *machine,
     core_machine_trace_event_type type,
-    type_unsigned_32 address,
-    type_unsigned_32 value,
-    type_unsigned_32 detail);
+    lib_u32 address,
+    lib_u32 value,
+    lib_u32 detail);
 #else
 #define core_machine_trace_initialize(machine) ((C_VOID)(machine))
 #define core_machine_trace_finalize(machine) ((C_VOID)(machine))
@@ -295,18 +296,18 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
 C_VOID core_machine_retirement_observation_capture_eligibility_key(
     core_machine *machine);
 C_VOID core_machine_retirement_observation_publish(core_machine *machine,
-    type_unsigned_64 source_ticks);
+    lib_u64 source_ticks);
 C_INT core_machine_configuration_is_open(const core_machine *machine);
 type_status core_machine_register_reset_rom_alias(core_machine *machine);
 C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
-    core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
-    STD_SIZE_T bytes);
+    core_machine *machine, lib_u32 physical_start, const lib_u8 *image,
+    lib_size bytes);
 type_status core_machine_register_immutable_rom_mapping_alias_from_firmware(
-    core_machine *machine, type_unsigned_32 source_start,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes);
+    core_machine *machine, lib_u32 source_start,
+    lib_u32 physical_start, lib_size bytes);
 C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
-    STD_SIZE_T mapping_count);
+    lib_size mapping_count);
 /* Private test-only create seam; the public create contract remains unchanged. */
 type_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
@@ -318,16 +319,16 @@ type_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology);
 type_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology);
-type_unsigned_32 core_machine_linear_pc(const core_machine *machine);
+lib_u32 core_machine_linear_pc(const core_machine *machine);
 C_VOID core_machine_external_cycle_invalidate(core_machine *machine);
 C_VOID core_machine_transaction_trace(C_VOID *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
-    core_machine_transaction_phase phase, type_unsigned_32 address,
-    type_unsigned_32 value, type_unsigned_32 detail);
+    core_machine_transaction_phase phase, lib_u32 address,
+    lib_u32 value, lib_u32 detail);
 C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
     core_machine_cpu_external_cycle_phase phase,
-    core_machine_cpu_external_cycle_space space, type_unsigned_32 address,
-    type_unsigned_8 bytes, type_bool write,
+    core_machine_cpu_external_cycle_space space, lib_u32 address,
+    lib_u8 bytes, type_bool write,
     core_machine_cpu_memory_access_provenance provenance);
 C_VOID core_machine_cpu_diagnostic_capture(const core_machine *machine,
     core_machine_cpu_diagnostic *out_diagnostic);
@@ -354,18 +355,18 @@ typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY
 } core_machine_time_publication_origin;
 type_status core_machine_publish_elapsed_ticks(core_machine *machine,
-    type_unsigned_64 elapsed_ticks, core_machine_time_publication_origin origin);
+    lib_u64 elapsed_ticks, core_machine_time_publication_origin origin);
 /* Deterministic Core-test helper. Product composition advances only through
  * CPU retirement or core_machine_advance_to_next_deadline(). */
 type_status core_machine_advance_time(core_machine *machine,
-    type_unsigned_64 source_ticks);
+    lib_u64 source_ticks);
 C_VOID core_machine_capture_time_observation_private(const core_machine *machine,
     core_machine_time_observation *out_observation);
 type_status core_machine_firmware_invoke(core_machine *machine,
     C_INT configuring, C_INT track_operation_failures,
     type_status (*callback)(C_VOID *, core_machine_firmware_context *));
 type_status core_machine_firmware_handle_software_interrupt(C_VOID *opaque,
-    type_unsigned_8 vector, const core_machine_firmware_interrupt_frame *frame,
+    lib_u8 vector, const core_machine_firmware_interrupt_frame *frame,
     core_machine_firmware_interrupt_result *result, type_bool *out_handled);
 type_status core_machine_plan_validate(const core_machine_plan *plan);
 type_status core_machine_plan_apply_topology(core_machine *machine,

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -13,10 +14,10 @@ type_status core_machine_register_memory_write_observer(core_machine *machine,
         callback, owner);
 }
 type_status core_machine_register_memory_device(core_machine *machine,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    lib_u32 physical_start, lib_size bytes,
     const core_machine_memory_device_callbacks *callbacks, C_VOID *owner)
 {
-    if (callbacks == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (callbacks == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
     return core_machine_memory_register_overlay_device_provider(&machine->executor_memory,
         physical_start, bytes, callbacks->read, callbacks->write, callbacks->query,
@@ -24,10 +25,10 @@ type_status core_machine_register_memory_device(core_machine *machine,
 }
 
 type_status core_machine_register_memory_replacement_device(core_machine *machine,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    lib_u32 physical_start, lib_size bytes,
     const core_machine_memory_device_callbacks *callbacks, C_VOID *owner)
 {
-    if (callbacks == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (callbacks == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
     return core_machine_memory_register_replacement_device_provider(
         &machine->executor_memory, physical_start, bytes, callbacks->read,
@@ -35,11 +36,11 @@ type_status core_machine_register_memory_replacement_device(core_machine *machin
 }
 type_status core_machine_memory_read(
     const core_machine *machine,
-    type_unsigned_32 physical,
+    lib_u32 physical,
     C_VOID *out_data,
-    STD_SIZE_T size)
+    lib_size size)
 {
-    if (machine == STD_NULL || out_data == STD_NULL || size == 0u) {
+    if (machine == LIB_NULL || out_data == LIB_NULL || size == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -57,20 +58,20 @@ type_status core_machine_memory_read(
             (type_virtual_address)out_data, size);
 
         core_machine_trace_record((core_machine *)machine,
-            CORE_MACHINE_TRACE_MEMORY_READ, physical, (type_unsigned_32)size,
-            (type_unsigned_32)status);
+            CORE_MACHINE_TRACE_MEMORY_READ, physical, (lib_u32)size,
+            (lib_u32)status);
         return status;
     }
 }
 
 type_status core_machine_memory_write(
     core_machine *machine,
-    type_unsigned_32 physical,
+    lib_u32 physical,
     const C_VOID *data,
-    STD_SIZE_T size)
+    lib_size size)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        data == STD_NULL || size == 0u) {
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        data == LIB_NULL || size == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -91,19 +92,19 @@ type_status core_machine_memory_write(
                 &machine->executor_cpu_execution);
         }
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_MEMORY_WRITE,
-            physical, (type_unsigned_32)size, (type_unsigned_32)status);
+            physical, (lib_u32)size, (lib_u32)status);
         return status;
     }
 }
 
 type_status core_machine_memory_query(
     const core_machine *machine,
-    type_unsigned_32 physical,
-    STD_SIZE_T size,
+    lib_u32 physical,
+    lib_size size,
     core_machine_memory_access access,
     core_machine_memory_route *out_route)
 {
-    if (machine == STD_NULL || out_route == STD_NULL || size == 0u ||
+    if (machine == LIB_NULL || out_route == LIB_NULL || size == 0u ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
          access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -123,7 +124,7 @@ type_status core_machine_set_a20(
     core_machine *machine,
     C_INT enabled)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 

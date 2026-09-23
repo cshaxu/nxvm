@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/device/floppy.h"
 
 static const core_machine_media_geometry vm_profile_floppy_geometries[] = {
@@ -12,12 +13,12 @@ const core_machine_media_geometry *vm_profile_floppy_geometry_get(
 {
     return kind < sizeof(vm_profile_floppy_geometries) /
         sizeof(vm_profile_floppy_geometries[0]) ?
-        &vm_profile_floppy_geometries[kind] : STD_NULL;
+        &vm_profile_floppy_geometries[kind] : LIB_NULL;
 }
 
-type_unsigned_8 vm_profile_floppy_cmos_type_get(vm_profile_floppy_kind kind)
+lib_u8 vm_profile_floppy_cmos_type_get(vm_profile_floppy_kind kind)
 {
-    static const type_unsigned_8 cmos_types[] = {0x40u, 0x20u, 0x10u, 0x30u};
+    static const lib_u8 cmos_types[] = {0x40u, 0x20u, 0x10u, 0x30u};
 
     return kind < sizeof(cmos_types) / sizeof(cmos_types[0]) ?
         cmos_types[kind] : 0u;

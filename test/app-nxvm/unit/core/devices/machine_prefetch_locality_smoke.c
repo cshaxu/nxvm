@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -6,7 +7,7 @@
 
 static C_VOID external_cycle_begin_and_commit(
     core_machine_cpu_external_cycle_provider provider, C_VOID *context,
-    type_unsigned_32 physical, type_unsigned_8 bytes, type_bool write,
+    lib_u32 physical, lib_u8 bytes, type_bool write,
     core_machine_cpu_memory_access_provenance provenance)
 {
     provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical,
@@ -16,13 +17,13 @@ static C_VOID external_cycle_begin_and_commit(
 }
 
 static C_INT run_halt(const core_machine_external_cycle_timing *timing,
-    type_unsigned_64 *out_ticks)
+    lib_u64 *out_ticks)
 {
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0xebu, 0x01u, 0x90u, 0xb0u, 0x5au, 0xe6u, 0xe0u, 0xf4u
     };
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     C_INT failed = 0;
 
@@ -37,18 +38,18 @@ static C_INT run_halt(const core_machine_external_cycle_timing *timing,
         TYPE_STATUS_OK;
     failed |= core_machine_run(machine, (core_machine_run_budget){5u, 0u},
         &result) != TYPE_STATUS_OK;
-    if (!failed && out_ticks != STD_NULL) *out_ticks = result.ticks;
+    if (!failed && out_ticks != LIB_NULL) *out_ticks = result.ticks;
     core_machine_destroy(machine);
     return !failed;
 }
 
-static C_INT run_halt_with_port_wait(type_unsigned_64 *out_ticks)
+static C_INT run_halt_with_port_wait(lib_u64 *out_ticks)
 {
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0xebu, 0x01u, 0x90u, 0xb0u, 0x5au, 0xe6u, 0xe0u, 0xf4u
     };
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     C_INT failed = 0;
 
@@ -65,20 +66,20 @@ static C_INT run_halt_with_port_wait(type_unsigned_64 *out_ticks)
         TYPE_STATUS_OK;
     failed |= core_machine_run(machine, (core_machine_run_budget){5u, 0u},
         &result) != TYPE_STATUS_OK;
-    if (!failed && out_ticks != STD_NULL) *out_ticks = result.ticks;
+    if (!failed && out_ticks != LIB_NULL) *out_ticks = result.ticks;
     core_machine_destroy(machine);
     return !failed;
 }
 static C_INT run_write(const core_machine_external_cycle_timing *timing,
-    type_unsigned_64 *out_ticks)
+    lib_u64 *out_ticks)
 {
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0xb0u, 0x5au, 0xa2u, 0x10u, 0x00u, 0xf4u
     };
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_result result;
-    type_unsigned_8 value = 0u;
+    lib_u8 value = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
@@ -94,18 +95,18 @@ static C_INT run_write(const core_machine_external_cycle_timing *timing,
         &result) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x10u, &value, 1u) !=
         TYPE_STATUS_OK || value != 0x5au;
-    if (!failed && out_ticks != STD_NULL) *out_ticks = result.ticks;
+    if (!failed && out_ticks != LIB_NULL) *out_ticks = result.ticks;
     core_machine_destroy(machine);
     return !failed;
 }
 
 static C_INT run_read(const core_machine_external_cycle_timing *timing,
-    type_unsigned_64 *out_ticks)
+    lib_u64 *out_ticks)
 {
-    static const type_unsigned_8 code[] = { 0xa0u, 0x10u, 0x00u, 0xf4u };
-    static const type_unsigned_8 data = 0x5au;
+    static const lib_u8 code[] = { 0xa0u, 0x10u, 0x00u, 0xf4u };
+    static const lib_u8 data = 0x5au;
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     C_INT failed = 0;
 
@@ -121,7 +122,7 @@ static C_INT run_read(const core_machine_external_cycle_timing *timing,
     failed |= core_machine_memory_write(machine, 0x10u, &data, 1u) != TYPE_STATUS_OK;
     failed |= core_machine_run(machine, (core_machine_run_budget){2u, 0u},
         &result) != TYPE_STATUS_OK;
-    if (!failed && out_ticks != STD_NULL) *out_ticks = result.ticks;
+    if (!failed && out_ticks != LIB_NULL) *out_ticks = result.ticks;
     core_machine_destroy(machine);
     return !failed;
 }
@@ -131,7 +132,7 @@ static C_INT external_cycle_observer_contract(C_VOID)
     static const core_machine_external_cycle_timing explicit_timing = {2048u,
         2u, 1u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL, 0u, 0u};
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_external_cycle_provider provider;
     C_VOID *context;
     C_INT failed = 0;
@@ -140,41 +141,41 @@ static C_INT external_cycle_observer_contract(C_VOID)
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    provider = machine == STD_NULL ? STD_NULL :
+    provider = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == STD_NULL ? STD_NULL :
+    context = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_context;
-    failed |= provider == STD_NULL;
+    failed |= provider == LIB_NULL;
     if (!failed) {
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0u, 1u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 1u, 1u, TYPE_FALSE,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 1u, 1u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0u, 1u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
-        external_cycle_begin_and_commit(provider, context, 1u, 1u, TYPE_FALSE,
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+        external_cycle_begin_and_commit(provider, context, 1u, 1u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 3u;
         machine->external_cycle_round_ticks = 0u;
-        machine->external_cycle_page_valid = TYPE_FALSE;
+        machine->external_cycle_page_valid = LIB_FALSE;
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x800u, 4u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x800u, 4u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= machine->external_cycle_page_valid ||
             machine->external_cycle_pending_valid ||
             machine->external_cycle_round_ticks != 0u;
-        external_cycle_begin_and_commit(provider, context, 0x800u, 4u, TYPE_FALSE,
+        external_cycle_begin_and_commit(provider, context, 0x800u, 4u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
-        external_cycle_begin_and_commit(provider, context, 0x804u, 4u, TYPE_TRUE,
+        external_cycle_begin_and_commit(provider, context, 0x804u, 4u, LIB_TRUE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 4u;
         machine->external_cycle_round_ticks = 0u;
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x808u, 4u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
         failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
@@ -183,7 +184,7 @@ static C_INT external_cycle_observer_contract(C_VOID)
             machine->external_cycle_pending_valid || machine->external_cycle_overlap_valid;
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
-        external_cycle_begin_and_commit(provider, context, 0x808u, 4u, TYPE_FALSE,
+        external_cycle_begin_and_commit(provider, context, 0x808u, 4u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
@@ -202,26 +203,26 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     core_machine_config config = {0};
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_external_cycle_provider provider;
     C_VOID *context;
     C_INT failed = 0;
 
     config.transaction_contract.external_cycle_timing = timing;
-    config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
-    config.auxiliary_pit_present = TYPE_TRUE;
+    config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
+    config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    provider = machine == STD_NULL ? STD_NULL :
+    provider = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == STD_NULL ? STD_NULL :
+    context = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_context;
-    failed |= provider == STD_NULL;
+    failed |= provider == LIB_NULL;
     if (!failed) {
-        external_cycle_begin_and_commit(provider, context, 0x800u, 4u, TYPE_FALSE,
+        external_cycle_begin_and_commit(provider, context, 0x800u, 4u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
@@ -230,7 +231,7 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
          * 19-count interval therefore reaches its low output on tick 20. */
         failed |= core_machine_advance_time(machine, 20u) != TYPE_STATUS_OK;
         failed |= machine->external_cycle_page_valid || machine->external_cycle_pending_valid;
-        external_cycle_begin_and_commit(provider, context, 0x804u, 4u, TYPE_FALSE,
+        external_cycle_begin_and_commit(provider, context, 0x804u, 4u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
@@ -244,18 +245,18 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
 
 static C_INT retirement_wait_contract(C_VOID)
 {
-    static const type_unsigned_8 code[] = {0xa0u, 0x10u, 0x00u, 0xf4u};
-    static const type_unsigned_8 data = 0x5au;
+    static const lib_u8 code[] = {0xa0u, 0x10u, 0x00u, 0xf4u};
+    static const lib_u8 data = 0x5au;
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 0u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = timing;
-    config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
+    config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -268,7 +269,7 @@ static C_INT retirement_wait_contract(C_VOID)
     failed |= core_machine_run(machine, (core_machine_run_budget){0u, 1u},
         &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
-        result.ticks != 1u || machine->cpu_retirement_wait_pending == TYPE_FALSE ||
+        result.ticks != 1u || machine->cpu_retirement_wait_pending == LIB_FALSE ||
         machine->cpu_retirement_wait_ticks == 0u;
     failed |= core_machine_set_cpu_bus_ready(machine, 0) != TYPE_STATUS_OK;
     failed |= core_machine_run(machine, (core_machine_run_budget){0u, 1u},
@@ -279,9 +280,9 @@ static C_INT retirement_wait_contract(C_VOID)
     failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
         &result) != TYPE_STATUS_OK;
     failed |= result.executed != 1u || result.ticks <= 1u ||
-        machine->cpu_retirement_wait_pending != TYPE_FALSE;
+        machine->cpu_retirement_wait_pending != LIB_FALSE;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
-        machine->cpu_cycle_bus_ready != TYPE_TRUE;
+        machine->cpu_cycle_bus_ready != LIB_TRUE;
     /* A deferred board wait has no physical source disposition until T470 S4.
      * It must therefore stop before publishing a synthetic physical tick. */
     machine->retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
@@ -300,7 +301,7 @@ static C_INT retirement_wait_contract(C_VOID)
 static C_INT cecg_aperture_wait_contract(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_external_cycle_provider provider;
     C_VOID *context;
     C_INT failed = 0;
@@ -312,20 +313,20 @@ static C_INT cecg_aperture_wait_contract(C_VOID)
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    provider = machine == STD_NULL ? STD_NULL :
+    provider = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == STD_NULL ? STD_NULL :
+    context = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_context;
     if (!failed) {
         external_cycle_begin_and_commit(provider, context, 0x000a0000u, 1u,
-            TYPE_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u;
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
             machine->external_cycle_round_ticks != 0u;
@@ -336,7 +337,7 @@ static C_INT cecg_aperture_wait_contract(C_VOID)
 static C_INT d4_cecg_memory_class_contract(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_external_cycle_provider provider;
     C_VOID *context;
     C_INT failed = 0;
@@ -347,17 +348,17 @@ static C_INT d4_cecg_memory_class_contract(C_VOID)
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    provider = machine == STD_NULL ? STD_NULL :
+    provider = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == STD_NULL ? STD_NULL :
+    context = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_context;
     if (!failed) {
         external_cycle_begin_and_commit(provider, context, 0x0009ff00u, 1u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 2u;
         machine->external_cycle_round_ticks = 0u;
         external_cycle_begin_and_commit(provider, context, 0x000a0000u, 1u,
-            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+            LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 0u;
     }
     core_machine_destroy(machine);
@@ -366,7 +367,7 @@ static C_INT d4_cecg_memory_class_contract(C_VOID)
 static C_INT cecg_port_wait_contract(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_external_cycle_provider provider;
     C_VOID *context;
     C_INT failed = 0;
@@ -377,32 +378,32 @@ static C_INT cecg_port_wait_contract(C_VOID)
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    provider = machine == STD_NULL ? STD_NULL :
+    provider = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == STD_NULL ? STD_NULL :
+    context = machine == LIB_NULL ? LIB_NULL :
         machine->executor_cpu_execution.external_cycle_context;
-    failed |= provider == STD_NULL;
+    failed |= provider == LIB_NULL;
     if (!failed) {
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, TYPE_TRUE,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, LIB_TRUE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, TYPE_TRUE,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 1u, LIB_TRUE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u ||
             machine->external_cycle_pending_valid;
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, TYPE_FALSE,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, TYPE_FALSE,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d0u, 1u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u;
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, TYPE_FALSE,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, TYPE_FALSE,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c1u, 1u, LIB_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= machine->external_cycle_round_ticks != 1u ||
             machine->external_cycle_pending_valid;
@@ -418,23 +419,23 @@ static C_INT prefetch_reservation_contract(C_VOID)
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 0u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     core_machine_config config = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_execution_context *cpu;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = timing;
-    config.transaction_contract.cpu_prefetch_reservation_enabled = TYPE_TRUE;
+    config.transaction_contract.cpu_prefetch_reservation_enabled = LIB_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    cpu = machine == STD_NULL ? STD_NULL : &machine->executor_cpu_execution;
+    cpu = machine == LIB_NULL ? LIB_NULL : &machine->executor_cpu_execution;
     if (!failed) {
         cpu->prefetch_linear = 0x10u;
         cpu->prefetch_count = 15u;
-        cpu->prefetch_valid = TYPE_TRUE;
+        cpu->prefetch_valid = LIB_TRUE;
         cpu->prefetch_expected_linear = 0x17u;
-        cpu->prefetch_expected_valid = TYPE_TRUE;
+        cpu->prefetch_expected_valid = LIB_TRUE;
         core_machine_cpu_execution_reserve_prefetch(cpu);
         failed |= !cpu->prefetch_reservation_valid ||
             cpu->prefetch_reservation_linear != 0x17u ||
@@ -451,9 +452,9 @@ static C_INT prefetch_reservation_contract(C_VOID)
             cpu->prefetch_expected_valid;
         cpu->prefetch_linear = 0x10u;
         cpu->prefetch_count = 15u;
-        cpu->prefetch_valid = TYPE_TRUE;
+        cpu->prefetch_valid = LIB_TRUE;
         cpu->prefetch_expected_linear = 0x17u;
-        cpu->prefetch_expected_valid = TYPE_TRUE;
+        cpu->prefetch_expected_valid = LIB_TRUE;
         core_machine_cpu_execution_reserve_prefetch(cpu);
         failed |= core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
@@ -463,7 +464,7 @@ static C_INT prefetch_reservation_contract(C_VOID)
             !cpu->prefetch_reservation_valid;
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
-        machine->d4_refresh_hold_pending = TYPE_TRUE;
+        machine->d4_refresh_hold_pending = LIB_TRUE;
         failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
             !cpu->prefetch_reservation_valid;
         failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
@@ -481,13 +482,13 @@ C_INT main(C_VOID)
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 1u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
-    type_unsigned_64 baseline_ticks = 0u;
-    type_unsigned_64 timing_ticks = 0u;
-    type_unsigned_64 port_wait_ticks = 0u;
-    type_unsigned_64 write_baseline_ticks = 0u;
-    type_unsigned_64 write_timing_ticks = 0u;
-    type_unsigned_64 read_baseline_ticks = 0u;
-    type_unsigned_64 read_timing_ticks = 0u;
+    lib_u64 baseline_ticks = 0u;
+    lib_u64 timing_ticks = 0u;
+    lib_u64 port_wait_ticks = 0u;
+    lib_u64 write_baseline_ticks = 0u;
+    lib_u64 write_timing_ticks = 0u;
+    lib_u64 read_baseline_ticks = 0u;
+    lib_u64 read_timing_ticks = 0u;
     C_INT failed = 0;
 
     failed |= !run_halt(&disabled, &baseline_ticks);

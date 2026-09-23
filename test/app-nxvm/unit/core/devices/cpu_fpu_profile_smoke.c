@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -11,7 +12,7 @@ static C_INT verify_machine_profiles(core_machine_cpu_profile cpu_profile,
         .cpu_profile = cpu_profile,
         .fpu_profile = fpu_profile
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_profile observed_cpu;
     core_machine_fpu_profile observed_fpu;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
@@ -29,7 +30,7 @@ C_INT main(C_VOID)
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
     };
     core_machine_cpu_instruction_metadata metadata;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     C_INT failed = 0;

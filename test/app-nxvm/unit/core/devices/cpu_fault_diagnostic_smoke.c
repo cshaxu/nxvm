@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -12,13 +13,13 @@ C_INT main(C_VOID)
         .memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES
     };
     C_UCHAR program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 2u];
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_budget budget = {
         CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u, 0u
     };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    STD_SIZE_T index;
+    lib_size index;
 
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pic.h"
@@ -11,9 +12,9 @@
 #include "support/rom/session_assets.h"
 
 static C_VOID fdc_command(core_machine_fdc *fdc, t_port *port,
-    const type_unsigned_8 *bytes, STD_SIZE_T count)
+    const lib_u8 *bytes, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
@@ -21,13 +22,13 @@ static C_VOID fdc_command(core_machine_fdc *fdc, t_port *port,
     core_machine_fdc_advance(fdc);
 }
 
-static C_INT fdc_read_result(core_machine_fdc *fdc, t_port *port, type_unsigned_8 *result,
-    STD_SIZE_T count)
+static C_INT fdc_read_result(core_machine_fdc *fdc, t_port *port, lib_u8 *result,
+    lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
     core_machine_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
-        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+        result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
@@ -36,23 +37,23 @@ C_INT main(C_VOID)
 {
     vm_machine *session;
     t_port *port;
-    type_unsigned_8 result[7];
-    static const type_unsigned_8 specify_non_dma[] = { 0x03u, 0xdfu, 0x03u };
-    static const type_unsigned_8 read_sector[] = {
+    lib_u8 result[7];
+    static const lib_u8 specify_non_dma[] = { 0x03u, 0xdfu, 0x03u };
+    static const lib_u8 read_sector[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 write_sector[] = {
+    static const lib_u8 write_sector[] = {
         0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const type_unsigned_8 format_track[] = {
+    static const lib_u8 format_track[] = {
         0x4du, 0x00u, 0x02u, 0x01u, 0x1bu, 0xa5u
     };
-    type_unsigned_8 format_id[] = { 0x00u, 0x00u, 0x01u, 0x02u };
+    lib_u8 format_id[] = { 0x00u, 0x00u, 0x01u, 0x02u };
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || !session->active ||
-        (port = session->core_machine->fdc.connect.port) == STD_NULL) return 1;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL || !session->active ||
+        (port = session->core_machine->fdc.connect.port) == LIB_NULL) return 1;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
@@ -64,8 +65,8 @@ C_INT main(C_VOID)
     vm_machine_fdd_create_for(&session->fdd);
     core_machine_fdc_refresh(&session->core_machine->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u;
-    fdc_command(&session->core_machine->fdc, port, (const type_unsigned_8[]){ 0x0fu, 0x00u, 0x00u }, 3u);
-    fdc_command(&session->core_machine->fdc, port, (const type_unsigned_8[]){ 0x08u }, 1u);
+    fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x0fu, 0x00u, 0x00u }, 3u);
+    fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, 2u);
     core_machine_fdc_refresh(&session->core_machine->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u;
@@ -79,15 +80,15 @@ C_INT main(C_VOID)
         session->core_machine->fdc.connect.irq_source.slave);
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= result[0] != core_machine_fdc_ST0_NORMAL;
-    fdc_command(&session->core_machine->fdc, port, (const type_unsigned_8[]){ 0x08u }, 1u);
+    fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, 2u);
 
-    session->fdd.connect.flagReadOnly = TYPE_TRUE;
+    session->fdd.connect.flagReadOnly = LIB_TRUE;
     fdc_command(&session->core_machine->fdc, port, write_sector, sizeof(write_sector));
     core_machine_port_write(port, 0x03f5u, 0x5au);
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= (result[1] & 0x02u) == 0u;
-    session->fdd.connect.flagReadOnly = TYPE_FALSE;
+    session->fdd.connect.flagReadOnly = LIB_FALSE;
 
     /* 03h is the unsupported 1 Mbps encoding; 01h is the valid 300 kbps
      * 8272A rate used by 360 KB media. */
@@ -102,7 +103,7 @@ C_INT main(C_VOID)
         (VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_NDM)) !=
         (VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_NDM);
     failed |= core_machine_port_read(port, 0x03f5u) != 0xa5u;
-    for (type_unsigned_16 index = 1u; index < 512u; ++index) {
+    for (lib_u16 index = 1u; index < 512u; ++index) {
         (C_VOID)core_machine_port_read(port, 0x03f5u);
     }
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));

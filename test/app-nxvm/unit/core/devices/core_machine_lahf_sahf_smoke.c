@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -16,12 +17,12 @@ static C_VOID lahf_sahf_reset(C_VOID *opaque)
 {
     lahf_sahf_machine *state = (lahf_sahf_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider lahf_sahf_provider = {
-    lahf_sahf_reset, STD_NULL
+    lahf_sahf_reset, LIB_NULL
 };
 
 static C_INT lahf_sahf_prepare(core_machine_cpu_profile profile,
@@ -33,7 +34,7 @@ static C_INT lahf_sahf_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &lahf_sahf_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -77,8 +78,8 @@ static C_INT lahf_sahf_irq_nonstack_gprs_same(const t_cpu *before,
         after->data.edi == before->data.edi;
 }
 
-static C_INT lahf_sahf_run(lahf_sahf_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT lahf_sahf_run(lahf_sahf_machine *state, const lib_u8 *code,
+    lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status, core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
@@ -97,11 +98,11 @@ static C_INT lahf_sahf_test_default(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 lahf = 0x9fu;
-    static const type_unsigned_8 sahf = 0x9eu;
-    static const type_unsigned_32 transfer_values[] = {0u, LAHF_SAHF_MASK};
-    type_unsigned_8 profile;
-    type_unsigned_8 transfer;
+    static const lib_u8 lahf = 0x9fu;
+    static const lib_u8 sahf = 0x9eu;
+    static const lib_u32 transfer_values[] = {0u, LAHF_SAHF_MASK};
+    lib_u8 profile;
+    lib_u8 transfer;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -113,7 +114,7 @@ static C_INT lahf_sahf_test_default(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             core_machine_run_result result;
             type_status status;
-            type_unsigned_32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
+            lib_u32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
                 VCPU_EFLAGS_OF | transfer_values[transfer];
             C_INT failed = !lahf_sahf_prepare(profiles[profile], &state);
 
@@ -163,7 +164,7 @@ static C_INT lahf_sahf_test_default(C_VOID)
 }
 
 static C_INT lahf_sahf_expect_ud(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes)
+    const lib_u8 *code, lib_u8 bytes)
 {
     lahf_sahf_machine state;
     t_cpu before;
@@ -182,7 +183,7 @@ static C_INT lahf_sahf_expect_ud(core_machine_cpu_profile profile,
             &status, &result) || status != TYPE_STATUS_FAULT ||
             !diagnostic.first_fault.valid || !TYPE_GET_BIT(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eip != 0u || STD_MEMCMP(&before.data, &after.data,
+            after.data.eip != 0u || lib_memory_compare(&before.data, &after.data,
             sizeof(before.data)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -191,19 +192,19 @@ static C_INT lahf_sahf_expect_ud(core_machine_cpu_profile profile,
 
 static C_INT lahf_sahf_test_attributes(C_VOID)
 {
-    static const type_unsigned_8 lahf66[] = {0x66u,0x9fu};
-    static const type_unsigned_8 lahf67[] = {0x67u,0x9fu};
-    static const type_unsigned_8 lahf_both[] = {0x66u,0x67u,0x9fu};
-    static const type_unsigned_8 sahf66[] = {0x66u,0x9eu};
-    static const type_unsigned_8 sahf67[] = {0x67u,0x9eu};
-    static const type_unsigned_8 sahf_both[] = {0x66u,0x67u,0x9eu};
-    static const type_unsigned_8 lock_lahf[] = {0xf0u,0x9fu};
-    static const type_unsigned_8 lock_sahf[] = {0xf0u,0x9eu};
+    static const lib_u8 lahf66[] = {0x66u,0x9fu};
+    static const lib_u8 lahf67[] = {0x67u,0x9fu};
+    static const lib_u8 lahf_both[] = {0x66u,0x67u,0x9fu};
+    static const lib_u8 sahf66[] = {0x66u,0x9eu};
+    static const lib_u8 sahf67[] = {0x67u,0x9eu};
+    static const lib_u8 sahf_both[] = {0x66u,0x67u,0x9eu};
+    static const lib_u8 lock_lahf[] = {0xf0u,0x9fu};
+    static const lib_u8 lock_sahf[] = {0xf0u,0x9eu};
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
@@ -224,16 +225,16 @@ static C_INT lahf_sahf_test_attributes(C_VOID)
 
 static C_INT lahf_sahf_test_386_attributes(C_VOID)
 {
-    static const type_unsigned_8 lahf66[] = {0x66u,0x9fu};
-    static const type_unsigned_8 lahf67[] = {0x67u,0x9fu};
-    static const type_unsigned_8 lahf_both[] = {0x66u,0x67u,0x9fu};
-    static const type_unsigned_8 sahf66[] = {0x66u,0x9eu};
-    static const type_unsigned_8 sahf67[] = {0x67u,0x9eu};
-    static const type_unsigned_8 sahf_both[] = {0x66u,0x67u,0x9eu};
-    const type_unsigned_8 *forms[] = {lahf66, lahf67, lahf_both, sahf66, sahf67,
+    static const lib_u8 lahf66[] = {0x66u,0x9fu};
+    static const lib_u8 lahf67[] = {0x67u,0x9fu};
+    static const lib_u8 lahf_both[] = {0x66u,0x67u,0x9fu};
+    static const lib_u8 sahf66[] = {0x66u,0x9eu};
+    static const lib_u8 sahf67[] = {0x67u,0x9eu};
+    static const lib_u8 sahf_both[] = {0x66u,0x67u,0x9eu};
+    const lib_u8 *forms[] = {lahf66, lahf67, lahf_both, sahf66, sahf67,
         sahf_both};
-    const type_unsigned_8 bytes[] = {2u,2u,3u,2u,2u,3u};
-    type_unsigned_8 form;
+    const lib_u8 bytes[] = {2u,2u,3u,2u,2u,3u};
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(bytes); ++form) {
         lahf_sahf_machine state;
@@ -273,17 +274,17 @@ static C_INT lahf_sahf_test_386_attributes(C_VOID)
 
 static C_INT lahf_sahf_boot_protected(lahf_sahf_machine *state)
 {
-    static const type_unsigned_8 pointer[] = {0x1fu,0u,0u,0x03u,0u,0u};
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = {0x1fu,0u,0u,0x03u,0u,0u};
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0,0,0x92u,0,0, 0xffu,0xffu,0,0,0,0x92u,0,0
     };
-    static const type_unsigned_8 boot[] = {
+    static const lib_u8 boot[] = {
         0x0fu,0x01u,0x16u,0,1u, 0xb8u,1u,0,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0,0x8eu,0xd8u,0x8eu,0xc0u, 0xb8u,0x18u,0,0x8eu,
         0xd0u,0xbcu,0,0x80u, 0xeau,0,0,8u,0
     };
-    static const type_unsigned_8 halt = 0xf4u;
+    static const lib_u8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
@@ -298,8 +299,8 @@ static C_INT lahf_sahf_boot_protected(lahf_sahf_machine *state)
 
 static C_INT lahf_sahf_test_protected(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = {0x9fu,0x9eu};
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = {0x9fu,0x9eu};
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lahf_sahf_machine state;
@@ -307,7 +308,7 @@ static C_INT lahf_sahf_test_protected(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        const type_unsigned_32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
+        const lib_u32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
             VCPU_EFLAGS_OF | VCPU_EFLAGS_IOPL | LAHF_SAHF_MASK;
         C_INT failed = !lahf_sahf_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
@@ -348,11 +349,11 @@ static C_INT lahf_sahf_test_protected(C_VOID)
                 after.data.eax != ((before.data.eax & 0xffff00ffu) |
                 ((LAHF_SAHF_MASK | 0x02u) << 8u)) ||
                 after.data.eflags != before.data.eflags) ||
-                STD_MEMCMP(&before.data.cs, &after.data.cs,
-                sizeof(before.data.cs)) != 0 || STD_MEMCMP(&before.data.ds,
+                lib_memory_compare(&before.data.cs, &after.data.cs,
+                sizeof(before.data.cs)) != 0 || lib_memory_compare(&before.data.ds,
                 &after.data.ds, sizeof(before.data.ds)) != 0 ||
-                STD_MEMCMP(&before.data.es, &after.data.es,
-                sizeof(before.data.es)) != 0 || STD_MEMCMP(&before.data.ss,
+                lib_memory_compare(&before.data.es, &after.data.es,
+                sizeof(before.data.es)) != 0 || lib_memory_compare(&before.data.ss,
                 &after.data.ss, sizeof(before.data.ss)) != 0;
         }
         core_machine_destroy(state.machine);
@@ -364,8 +365,8 @@ static C_INT lahf_sahf_test_protected(C_VOID)
 
 static C_INT lahf_sahf_test_vm86(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = {0x9fu,0x9eu};
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = {0x9fu,0x9eu};
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lahf_sahf_machine state;
@@ -373,7 +374,7 @@ static C_INT lahf_sahf_test_vm86(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        const type_unsigned_32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
+        const lib_u32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
             VCPU_EFLAGS_DF | VCPU_EFLAGS_OF | VCPU_EFLAGS_IOPL |
             LAHF_SAHF_MASK;
         C_INT failed = !lahf_sahf_prepare(CORE_MACHINE_CPU_PROFILE_80386,
@@ -387,14 +388,14 @@ static C_INT lahf_sahf_test_vm86(C_VOID)
             state.machine->executor_cpu.data.cs.base = 0u;
             state.machine->executor_cpu.data.cs.limit = 0xffffu;
             state.machine->executor_cpu.data.cs.dpl = 3u;
-            state.machine->executor_cpu.data.cs.flagValid = TYPE_TRUE;
-            state.machine->executor_cpu.data.cs.seg.exec.defsize = TYPE_FALSE;
+            state.machine->executor_cpu.data.cs.flagValid = LIB_TRUE;
+            state.machine->executor_cpu.data.cs.seg.exec.defsize = LIB_FALSE;
             state.machine->executor_cpu.data.ss.selector = 0u;
             state.machine->executor_cpu.data.ss.base = 0u;
             state.machine->executor_cpu.data.ss.limit = 0xffffu;
             state.machine->executor_cpu.data.ss.dpl = 3u;
-            state.machine->executor_cpu.data.ss.flagValid = TYPE_TRUE;
-            state.machine->executor_cpu.data.ss.seg.data.big = TYPE_FALSE;
+            state.machine->executor_cpu.data.ss.flagValid = LIB_TRUE;
+            state.machine->executor_cpu.data.ss.seg.data.big = LIB_FALSE;
             if (opcodes[opcode] == 0x9eu)
                 state.machine->executor_cpu.data.eax = 0xaabb00ddU;
             failed |= core_machine_memory_write(state.machine, 0u,
@@ -426,18 +427,18 @@ static C_INT lahf_sahf_test_vm86(C_VOID)
 
 static C_INT lahf_sahf_irq_case(C_INT sahf)
 {
-    static const type_unsigned_8 lahf[] = {0x9fu,0x90u};
-    static const type_unsigned_8 sahf_code[] = {0x9eu,0x90u};
-    static const type_unsigned_8 hlt = 0xf4u;
+    static const lib_u8 lahf[] = {0x9fu,0x90u};
+    static const lib_u8 sahf_code[] = {0x9eu,0x90u};
+    static const lib_u8 hlt = 0xf4u;
     lahf_sahf_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_unsigned_16 offset = 0x100u;
-    type_unsigned_16 segment = 0u;
-    type_unsigned_16 frame_ip = 0u;
-    const type_unsigned_8 *code = sahf ? sahf_code : lahf;
+    lib_u16 offset = 0x100u;
+    lib_u16 segment = 0u;
+    lib_u16 frame_ip = 0u;
+    const lib_u8 *code = sahf ? sahf_code : lahf;
     C_INT failed = !lahf_sahf_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -454,7 +455,7 @@ static C_INT lahf_sahf_irq_case(C_INT sahf)
             state.machine->executor_cpu.data.eax = 0xaabbffddU;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        STD_MEMSET(&irq, 0, sizeof(irq));
+        lib_memory_set(&irq, 0, sizeof(irq));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -465,7 +466,7 @@ static C_INT lahf_sahf_irq_case(C_INT sahf)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (type_unsigned_16)after.data.esp,
+            after.data.ss.base + (lib_u16)after.data.esp,
             TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != 1u ||
             !lahf_sahf_irq_nonstack_gprs_same(&before, &after) ||
@@ -490,7 +491,7 @@ static C_INT lahf_sahf_test_irq(C_VOID)
  * boundary: RCL changes only CF/OF, and LAHF must expose the resulting CF. */
 static C_INT lahf_sahf_test_386_checksum_sequence(C_VOID)
 {
-    static const type_unsigned_8 code[] = {0x9eu,0x66u,0xd1u,0xd3u,0x9fu};
+    static const lib_u8 code[] = {0x9eu,0x66u,0xd1u,0xd3u,0x9fu};
     lahf_sahf_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;

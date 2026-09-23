@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 
@@ -12,17 +13,17 @@
 
 typedef struct cpu_reset_case {
     core_machine_cpu_profile profile;
-    type_unsigned_32 code_base;
-    type_unsigned_32 first_fetch;
+    lib_u32 code_base;
+    lib_u32 first_fetch;
 } cpu_reset_case;
 
 static C_INT cpu_execution_context_reset_case(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     const cpu_reset_case *test_case)
 {
-    if (context == STD_NULL || cpu == STD_NULL || test_case == STD_NULL) return 1;
+    if (context == LIB_NULL || cpu == LIB_NULL || test_case == LIB_NULL) return 1;
     core_machine_cpu_execution_context_bind_profiles(context, test_case->profile,
-        CORE_MACHINE_FPU_PROFILE_NONE, TYPE_FALSE);
+        CORE_MACHINE_FPU_PROFILE_NONE, LIB_FALSE);
     core_machine_cpu_state_reset(context);
     return cpu->data.cs.selector != 0xf000u || cpu->data.eip != 0x0000fff0u ||
         cpu->data.cs.base != test_case->code_base ||
@@ -79,7 +80,7 @@ C_INT main(C_VOID)
     result |= !core_machine_cpu_execution_consume_stop_request(&first);
     result |= !core_machine_cpu_execution_consume_reset_request(&first);
 
-    for (STD_SIZE_T index = 0u;
+    for (lib_size index = 0u;
          index < sizeof(reset_cases) / sizeof(reset_cases[0]); ++index) {
         result |= cpu_execution_context_reset_case(&first, &first_cpu,
             &reset_cases[index]);

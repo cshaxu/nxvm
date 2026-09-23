@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -10,9 +11,9 @@
 #include "app-nxvm/devices/port.h"
 #include "support/core_machine_cpu_fixture.h"
 
-static type_unsigned_8 core_machine_kbc_read_byte(t_port *port, type_unsigned_16 port_id)
+static lib_u8 core_machine_kbc_read_byte(t_port *port, lib_u16 port_id)
 {
-    return (type_unsigned_8)core_machine_port_read(port, port_id);
+    return (lib_u8)core_machine_port_read(port, port_id);
 }
 
 static C_VOID core_machine_kbc_initialize_pic(t_port *port)
@@ -41,7 +42,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     core_machine_pic_initialize(&pic_master, &pic_slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, &execution, TYPE_TRUE);
+        &memory, &execution, LIB_TRUE);
     core_machine_kbc_initialize_pic(&port);
 
     core_machine_port_write(&port, 0x0064u, 0xd4u);
@@ -100,22 +101,22 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
 
 static C_INT core_machine_kbc_set2_translation(C_VOID)
 {
-    static const type_unsigned_8 function_set2[] = { 0x05u, 0x06u, 0x04u,
+    static const lib_u8 function_set2[] = { 0x05u, 0x06u, 0x04u,
         0x0cu, 0x03u, 0x0bu, 0x83u, 0x0au, 0x01u, 0x09u, 0x78u, 0x07u };
-    static const type_unsigned_8 function_set1[] = { 0x3bu, 0x3cu, 0x3du,
+    static const lib_u8 function_set1[] = { 0x3bu, 0x3cu, 0x3du,
         0x3eu, 0x3fu, 0x40u, 0x41u, 0x42u, 0x43u, 0x44u, 0x57u, 0x58u };
-    static const type_unsigned_8 pause_set2[] = { 0xe1u, 0x14u, 0x77u,
+    static const lib_u8 pause_set2[] = { 0xe1u, 0x14u, 0x77u,
         0xe1u, 0xf0u, 0x14u, 0xf0u, 0x77u };
-    static const type_unsigned_8 pause_set1[] = { 0xe1u, 0x1du, 0x45u,
+    static const lib_u8 pause_set1[] = { 0xe1u, 0x1du, 0x45u,
         0xe1u, 0x9du, 0xc5u };
     t_kbc kbc;
     t_port port;
-    type_unsigned_8 index;
+    lib_u8 index;
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
-    kbc.connect.aux_present = TYPE_FALSE;
+    kbc.connect.aux_present = LIB_FALSE;
     core_machine_kbc_reset(&kbc);
     failed |= (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x05u) != TYPE_STATUS_OK ||
@@ -164,8 +165,8 @@ static C_INT core_machine_kbc_set2_translation(C_VOID)
 
 static C_INT core_machine_kbc_set2_break_cancels_typematic(C_VOID)
 {
-    static const type_unsigned_8 make_b[] = { 0x32u };
-    static const type_unsigned_8 break_b[] = { 0xf0u, 0x32u };
+    static const lib_u8 make_b[] = { 0x32u };
+    static const lib_u8 break_b[] = { 0xf0u, 0x32u };
     t_kbc kbc;
     t_port port;
     C_INT failed = 0;
@@ -310,7 +311,7 @@ static C_INT core_machine_kbc_ibm_5170_post_contract(C_VOID)
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
-    kbc.connect.aux_present = TYPE_FALSE;
+    kbc.connect.aux_present = LIB_FALSE;
     core_machine_kbc_reset(&kbc);
     core_machine_kbc_set_input_port(&kbc, 0xb0u);
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
@@ -357,12 +358,12 @@ static C_VOID core_machine_kbc_cpu_reset(C_VOID *opaque)
 {
     core_machine_kbc_cpu_fixture *fixture = opaque;
 
-    if (fixture != STD_NULL)
+    if (fixture != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(fixture->machine);
 }
 
 static const core_machine_execution_provider core_machine_kbc_cpu_provider = {
-    core_machine_kbc_cpu_reset, STD_NULL
+    core_machine_kbc_cpu_reset, LIB_NULL
 };
 
 /* Keep the POST-relevant path owner-local: a real CPU issues FFh, reads its
@@ -370,10 +371,10 @@ static const core_machine_execution_provider core_machine_kbc_cpu_provider = {
  * architectural interrupt shadow. */
 static C_INT core_machine_kbc_cpu_reset_irq1(C_VOID)
 {
-    static const type_unsigned_8 code[] = {
+    static const lib_u8 code[] = {
         0xb0u, 0xffu, 0xe6u, 0x60u, 0xe4u, 0x60u, 0xfbu, 0x90u
     };
-    static const type_unsigned_8 handler = 0xf4u;
+    static const lib_u8 handler = 0xf4u;
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
@@ -382,8 +383,8 @@ static C_INT core_machine_kbc_cpu_reset_irq1(C_VOID)
     };
     core_machine_kbc_cpu_fixture fixture = {0};
     core_machine_run_result result;
-    type_unsigned_16 offset = 0x0100u;
-    type_unsigned_16 segment = 0u;
+    lib_u16 offset = 0x0100u;
+    lib_u16 segment = 0u;
     C_INT failed = !test_core_machine_fixture_create_bind_freeze_reset(&config,
         &core_machine_kbc_cpu_provider, &fixture, &fixture.machine);
 
@@ -441,13 +442,13 @@ C_INT main(C_VOID)
     C_INT reset_enable_bat_failed;
     C_INT ibm_5170_post_contract_failed;
     C_INT cpu_reset_irq1_failed;
-    type_unsigned_8 index;
+    lib_u8 index;
 
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&pic_master, &pic_slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, &execution, TYPE_TRUE);
+        &memory, &execution, LIB_TRUE);
     core_machine_kbc_initialize_pic(&port);
 
     mixed_failed = core_machine_kbc_mixed_fifo_lifecycle();
@@ -711,7 +712,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x07u);
     {
-        static const type_unsigned_8 enter_break[] = { 0xf0u, 0x1eu };
+        static const lib_u8 enter_break[] = { 0xf0u, 0x1eu };
 
         core_machine_kbc_set_typematic_timing(&kbc, 3u, 2u);
         failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||

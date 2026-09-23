@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -7,18 +8,18 @@
 #include "app-nxvm/devices/port.h"
 
 typedef struct core_machine_fdc_topology_media {
-    type_unsigned_8 byte;
-    type_unsigned_32 read_count;
+    lib_u8 byte;
+    lib_u32 read_count;
 } core_machine_fdc_topology_media;
 
 static core_machine_media_result core_machine_fdc_topology_query(C_VOID *context,
     core_machine_media_info *out_info)
 {
-    if (context == STD_NULL || out_info == STD_NULL) {
+    if (context == LIB_NULL || out_info == LIB_NULL) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
-    STD_MEMSET(out_info, 0, sizeof(*out_info));
-    out_info->present = TYPE_TRUE;
+    lib_memory_set(out_info, 0, sizeof(*out_info));
+    out_info->present = LIB_TRUE;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
         CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN;
     out_info->geometry.cylinders = 1u;
@@ -30,14 +31,14 @@ static core_machine_media_result core_machine_fdc_topology_query(C_VOID *context
 }
 
 static core_machine_media_result core_machine_fdc_topology_read(C_VOID *context,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
 {
     core_machine_fdc_topology_media *media = context;
 
-    if (media == STD_NULL || buffer == STD_NULL || offset >= 512u || byte_count != 1u) {
+    if (media == LIB_NULL || buffer == LIB_NULL || offset >= 512u || byte_count != 1u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
-    *(type_unsigned_8 *)buffer = media->byte;
+    *(lib_u8 *)buffer = media->byte;
     ++media->read_count;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
@@ -45,17 +46,17 @@ static core_machine_media_result core_machine_fdc_topology_read(C_VOID *context,
 static const core_machine_media_provider core_machine_fdc_topology_provider = {
     core_machine_fdc_topology_query,
     core_machine_fdc_topology_read,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL
 };
 
 static C_VOID core_machine_fdc_topology_command(core_machine_fdc *fdc, t_port *port,
-    const type_unsigned_8 *bytes, STD_SIZE_T count)
+    const lib_u8 *bytes, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
@@ -64,22 +65,22 @@ static C_VOID core_machine_fdc_topology_command(core_machine_fdc *fdc, t_port *p
 }
 
 static C_INT core_machine_fdc_topology_result(core_machine_fdc *fdc, t_port *port,
-    type_unsigned_8 *result, STD_SIZE_T count)
+    lib_u8 *result, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
     core_machine_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
-        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+        result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
 static C_INT core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, t_port *port,
-    type_unsigned_8 unit, type_unsigned_8 expected, type_unsigned_8 *result)
+    lib_u8 unit, lib_u8 expected, lib_u8 *result)
 {
-    const type_unsigned_8 command[] = {0xe6u, unit, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
-    type_unsigned_32 index;
+    const lib_u8 command[] = {0xe6u, unit, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
+    lib_u32 index;
 
     core_machine_fdc_topology_command(fdc, port, command, sizeof(command));
     if (core_machine_port_read(port, 0x03f5u) != expected) return 0;
@@ -93,9 +94,9 @@ static C_INT core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, t_port
 
 int main(C_VOID)
 {
-    static const type_unsigned_8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
-    type_unsigned_8 sense_drive[] = {0x04u, 0u};
-    static const type_unsigned_8 read_absent[] = {0xe6u, 2u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
+    static const lib_u8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
+    lib_u8 sense_drive[] = {0x04u, 0u};
+    static const lib_u8 read_absent[] = {0xe6u, 2u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -117,15 +118,15 @@ int main(C_VOID)
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_fdc_topology_media drive0 = {.byte = 0xa1u};
     core_machine_fdc_topology_media drive1 = {.byte = 0xb2u};
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
-    core_machine *machine = STD_NULL;
-    core_machine_fdc *fdc = STD_NULL;
-    type_unsigned_8 diagnostic_phase = 0u;
-    type_unsigned_8 reset_drive;
-    t_port *port = STD_NULL;
-    type_unsigned_8 result[7] = {0};
+    core_machine *machine = LIB_NULL;
+    core_machine_fdc *fdc = LIB_NULL;
+    lib_u8 diagnostic_phase = 0u;
+    lib_u8 reset_drive;
+    t_port *port = LIB_NULL;
+    lib_u8 result[7] = {0};
     C_INT failed = 0;
 
     if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
@@ -133,7 +134,7 @@ int main(C_VOID)
     if (!failed) {
         fdc = &machine->fdc;
         port = &machine->executor_port;
-        if (fdc == STD_NULL || port == STD_NULL ||
+        if (fdc == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 11u, &drive0,
                 &core_machine_fdc_topology_provider) != TYPE_STATUS_OK ||
             core_machine_media_registry_bind(media, 12u, &drive1,
@@ -161,14 +162,14 @@ int main(C_VOID)
                 for (reset_drive = 0u; reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT;
                     ++reset_drive) {
                     core_machine_fdc_topology_command(fdc, port,
-                        (const type_unsigned_8[]){0x08u}, 1u);
+                        (const lib_u8[]){0x08u}, 1u);
                     failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
                         result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || fdc->connect.irq_source.asserted) ? 0x08 : 0;
                 }
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_topology_command(fdc, port,
-                    (const type_unsigned_8[]){0x08u}, 1u);
+                    (const lib_u8[]){0x08u}, 1u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
                     result[0] != 0x80u || result[1] != 0u ||
                     fdc->connect.irq_source.asserted) ? 0x08 : 0;
@@ -191,7 +192,7 @@ int main(C_VOID)
                     drive0.read_count != 512u || drive1.read_count != 512u) ? 0x20 : 0;
 
                 core_machine_fdc_topology_command(fdc, port,
-                    (const type_unsigned_8[]){0xe6u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u);
+                    (const lib_u8[]){0xe6u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
                     drive0.read_count != 512u || drive1.read_count != 512u) ? 0x40 : 0;
@@ -203,19 +204,19 @@ int main(C_VOID)
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x22u) ? 0x80 : 0;
                 core_machine_fdc_topology_command(fdc, port,
-                    (const type_unsigned_8[]){0x07u, 2u}, 2u);
+                    (const lib_u8[]){0x07u, 2u}, 2u);
                 core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[2u]);
                 core_machine_fdc_topology_command(fdc, port,
-                    (const type_unsigned_8[]){0x08u}, 1u);
+                    (const lib_u8[]){0x08u}, 1u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
                     result[0] != (core_machine_fdc_ST0_ABNORMAL |
                         VFDC_ST0_SEEK_END | VFDC_ST0_EQUIPMENT_CHECK | 2u) ||
                     result[1] != 0u) ? 0x100 : 0;
                 core_machine_fdc_topology_command(fdc, port,
-                    (const type_unsigned_8[]){0x0fu, 2u, 1u}, 3u);
+                    (const lib_u8[]){0x0fu, 2u, 1u}, 3u);
                 core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[2u]);
                 core_machine_fdc_topology_command(fdc, port,
-                    (const type_unsigned_8[]){0x08u}, 1u);
+                    (const lib_u8[]){0x08u}, 1u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
                     result[0] != (core_machine_fdc_ST0_NORMAL | 2u) ||
                     result[1] != 1u) ? 0x200 : 0;
@@ -226,7 +227,7 @@ int main(C_VOID)
             }
         }
     }
-    if (fdc != STD_NULL) diagnostic_phase = fdc->data.phase;
+    if (fdc != LIB_NULL) diagnostic_phase = fdc->data.phase;
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {

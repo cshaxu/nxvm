@@ -1,5 +1,6 @@
 #ifndef VM_MACHINE_EVENT_INTERFACE_H
 #define VM_MACHINE_EVENT_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -14,15 +15,15 @@ typedef enum vm_machine_input_kind {
 } vm_machine_input_kind;
 
 typedef struct vm_machine_key_event {
-    type_unsigned_16 scan_code;
-    type_unsigned_16 virtual_key;
+    lib_u16 scan_code;
+    lib_u16 virtual_key;
     C_INT pressed;
 } vm_machine_key_event;
 
 typedef struct vm_machine_mouse_event {
-    type_signed_16 delta_x;
-    type_signed_16 delta_y;
-    type_unsigned_8 buttons;
+    lib_i16 delta_x;
+    lib_i16 delta_y;
+    lib_u8 buttons;
 } vm_machine_mouse_event;
 
 typedef struct vm_machine_input {
@@ -43,25 +44,25 @@ typedef struct vm_machine_input {
 
 typedef struct vm_machine_display_event {
     C_INT graphics;
-    type_unsigned_8 characters[VM_MACHINE_EVENT_TEXT_CELLS];
-    type_unsigned_8 attributes[VM_MACHINE_EVENT_TEXT_CELLS];
-    type_unsigned_16 columns;
-    type_unsigned_16 rows;
-    type_unsigned_8 text_cell_height;
-    type_unsigned_8 cursor_top;
-    type_unsigned_8 cursor_bottom;
-    type_unsigned_8 cursor_x;
-    type_unsigned_8 cursor_y;
+    lib_u8 characters[VM_MACHINE_EVENT_TEXT_CELLS];
+    lib_u8 attributes[VM_MACHINE_EVENT_TEXT_CELLS];
+    lib_u16 columns;
+    lib_u16 rows;
+    lib_u8 text_cell_height;
+    lib_u8 cursor_top;
+    lib_u8 cursor_bottom;
+    lib_u8 cursor_x;
+    lib_u8 cursor_y;
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
     type_bool glyphs_present;
-    type_unsigned_8 glyphs[VM_MACHINE_EVENT_GLYPH_BYTES];
-    type_unsigned_16 pixel_width;
-    type_unsigned_16 pixel_height;
-    type_unsigned_8 pixels[VM_MACHINE_EVENT_MAX_PIXELS];
-    type_unsigned_32 palette_rgb[VM_MACHINE_EVENT_PALETTE_ENTRIES];
-    type_unsigned_64 generation;
+    lib_u8 glyphs[VM_MACHINE_EVENT_GLYPH_BYTES];
+    lib_u16 pixel_width;
+    lib_u16 pixel_height;
+    lib_u8 pixels[VM_MACHINE_EVENT_MAX_PIXELS];
+    lib_u32 palette_rgb[VM_MACHINE_EVENT_PALETTE_ENTRIES];
+    lib_u64 generation;
 } vm_machine_display_event;
 
 /* Removable-media presentation is a VM product fact.  Common's public

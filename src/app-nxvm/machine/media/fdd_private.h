@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -16,14 +17,14 @@ typedef struct t_latch t_latch;
 
 
 typedef struct {
-    type_unsigned_16 cyl;     /* vfdc.C; cylinder id */
-    type_unsigned_16 head;    /* vfdc.H; head id */
-    type_unsigned_16 sector;  /* vfdc.R; sector id */
-    type_unsigned_8  gpl;     /* vfdc.GPL; gap length of sector */
-    type_unsigned_16 ncyl;    /* configured number of cylinders */
-    type_unsigned_16 nhead;   /* configured number of heads */
-    type_unsigned_16 nsector; /* configured sectors per track */
-    type_unsigned_16 nbyte;   /* configured bytes per sector */
+    lib_u16 cyl;     /* vfdc.C; cylinder id */
+    lib_u16 head;    /* vfdc.H; head id */
+    lib_u16 sector;  /* vfdc.R; sector id */
+    lib_u8  gpl;     /* vfdc.GPL; gap length of sector */
+    lib_u16 ncyl;    /* configured number of cylinders */
+    lib_u16 nhead;   /* configured number of heads */
+    lib_u16 nsector; /* configured sectors per track */
+    lib_u16 nbyte;   /* configured bytes per sector */
 } t_fdd_data;
 
 typedef struct {
@@ -32,7 +33,7 @@ typedef struct {
 
     lib_storage_medium *medium;      /* sole owner of file or overlay bytes */
     type_virtual_address pAddressMarks; /* one Deleted-Data flag per logical sector */
-    type_unsigned_32 media_generation; /* advances on every insert/remove/create */
+    lib_u32 media_generation; /* advances on every insert/remove/create */
 } t_fdd_connect;
 
 struct t_fdd {
@@ -41,24 +42,24 @@ struct t_fdd {
     t_fdd_connect connect;
 };
 
-STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd);
-C_INT vm_machine_fdd_chs_valid(const t_fdd *fdd, type_unsigned_16 cylinder,
-    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 bytes);
-C_INT vm_machine_fdd_read_byte(const t_fdd *fdd, type_unsigned_16 cylinder,
-    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 offset,
-    type_unsigned_8 *out_byte);
-C_INT vm_machine_fdd_write_byte(t_fdd *fdd, type_unsigned_16 cylinder,
-    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 offset,
-    type_unsigned_8 value);
-C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
-    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_8 fill_byte);
+lib_size vm_machine_fdd_image_size(const t_fdd *fdd);
+C_INT vm_machine_fdd_chs_valid(const t_fdd *fdd, lib_u16 cylinder,
+    lib_u16 head, lib_u16 sector, lib_u16 bytes);
+C_INT vm_machine_fdd_read_byte(const t_fdd *fdd, lib_u16 cylinder,
+    lib_u16 head, lib_u16 sector, lib_u16 offset,
+    lib_u8 *out_byte);
+C_INT vm_machine_fdd_write_byte(t_fdd *fdd, lib_u16 cylinder,
+    lib_u16 head, lib_u16 sector, lib_u16 offset,
+    lib_u8 value);
+C_INT vm_machine_fdd_format_sector(t_fdd *fdd, lib_u16 cylinder,
+    lib_u16 head, lib_u16 sector, lib_u8 fill_byte);
 C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
     const core_machine_media_geometry *geometry);
 C_VOID vm_machine_fdd_reset(t_fdd *fdd);
 C_VOID vm_machine_fdd_finalize(t_fdd *fdd);
 C_VOID vm_machine_fdd_create_for(t_fdd *fdd);
 C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
-    STD_SIZE_T byte_count);
+    lib_size byte_count);
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name,
     lib_storage_medium_mode mode);
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd);

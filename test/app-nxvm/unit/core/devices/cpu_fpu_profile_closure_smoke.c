@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -15,7 +16,7 @@ static C_INT valid_fpu_profile(core_machine_fpu_profile profile)
 }
 
 static C_INT verify_metadata(core_machine_cpu_instruction_space space,
-    type_unsigned_8 opcode, type_unsigned_8 modrm)
+    lib_u8 opcode, lib_u8 modrm)
 {
     core_machine_cpu_instruction_metadata metadata =
         core_machine_cpu_instruction_metadata_get(space, opcode, modrm);
@@ -26,16 +27,16 @@ static C_INT verify_metadata(core_machine_cpu_instruction_space space,
 
 C_INT main(C_VOID)
 {
-    type_unsigned_32 opcode;
-    type_unsigned_32 modrm;
+    lib_u32 opcode;
+    lib_u32 modrm;
     C_INT failed = 0;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         failed |= verify_metadata(CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
-            (type_unsigned_8)opcode, 0u);
+            (lib_u8)opcode, 0u);
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
             failed |= verify_metadata(CORE_MACHINE_CPU_INSTRUCTION_0F,
-                (type_unsigned_8)opcode, (type_unsigned_8)modrm);
+                (lib_u8)opcode, (lib_u8)modrm);
         }
     }
     for (opcode = 0xd8u; opcode <= 0xdfu; ++opcode) {
@@ -43,7 +44,7 @@ C_INT main(C_VOID)
             core_machine_cpu_instruction_metadata metadata =
                 core_machine_cpu_instruction_metadata_get(
                     CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE,
-                    (type_unsigned_8)opcode, (type_unsigned_8)modrm);
+                    (lib_u8)opcode, (lib_u8)modrm);
             failed |= !metadata.valid ||
                 metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086 ||
                 metadata.minimum_fpu != CORE_MACHINE_FPU_PROFILE_8087;
@@ -52,7 +53,7 @@ C_INT main(C_VOID)
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         core_machine_cpu_instruction_metadata metadata =
             core_machine_cpu_instruction_metadata_get(
-                CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE, (type_unsigned_8)opcode, 0u);
+                CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE, (lib_u8)opcode, 0u);
         if (opcode < 0xd8u || opcode > 0xdfu) failed |= metadata.valid;
     }
     if (failed) return 1;

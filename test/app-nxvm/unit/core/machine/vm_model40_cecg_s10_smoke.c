@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -10,13 +11,13 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_display_snapshot snapshot;
-    static const type_unsigned_8 text[] = { 'O', 0x07u, 'K', 0x07u };
+    static const lib_u8 text[] = { 'O', 0x07u, 'K', 0x07u };
     C_INT failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
-        TYPE_STATUS_OK || session == STD_NULL;
+        TYPE_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         failed |= core_machine_memory_write(session->core_machine,
             CORE_MACHINE_VADP_TEXT_BASE, text, sizeof(text)) != TYPE_STATUS_OK ||

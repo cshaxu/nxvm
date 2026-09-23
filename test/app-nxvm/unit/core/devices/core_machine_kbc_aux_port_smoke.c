@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -6,9 +7,9 @@
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/port.h"
 
-static type_unsigned_8 read_port(t_port *port, type_unsigned_16 id)
+static lib_u8 read_port(t_port *port, lib_u16 id)
 {
-    return (type_unsigned_8)core_machine_port_read(port, id);
+    return (lib_u8)core_machine_port_read(port, id);
 }
 
 static C_VOID initialize_pic(t_port *port)
@@ -24,7 +25,7 @@ static C_VOID initialize_pic(t_port *port)
 }
 
 static C_INT take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
-    type_unsigned_8 expected)
+    lib_u8 expected)
 {
     core_machine_pic_refresh(master, slave);
     if ((read_port(port, 0x0064u) & (VKBC_STATUS_OBF | VKBC_STATUS_AUX)) !=
@@ -36,13 +37,13 @@ static C_INT take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
     return 1;
 }
 
-static C_VOID send_aux_command(t_port *port, type_unsigned_8 command)
+static C_VOID send_aux_command(t_port *port, lib_u8 command)
 {
     core_machine_port_write(port, 0x0064u, 0xd4u);
     core_machine_port_write(port, 0x0060u, command);
 }
 
-static C_VOID send_aux_parameter(t_port *port, type_unsigned_8 value)
+static C_VOID send_aux_parameter(t_port *port, lib_u8 value)
 {
     core_machine_port_write(port, 0x0064u, 0xd4u);
     core_machine_port_write(port, 0x0060u, value);
@@ -58,13 +59,13 @@ C_INT main(C_VOID)
     t_port port;
     C_INT failed = 0;
     C_INT stage = 1;
-    type_unsigned_8 index;
+    lib_u8 index;
 
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&master, &slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &master, &slave, &memory,
-        &execution, TYPE_TRUE);
+        &execution, LIB_TRUE);
     initialize_pic(&port);
 
     core_machine_port_write(&port, 0x0064u, 0x20u);
@@ -235,7 +236,7 @@ C_INT main(C_VOID)
      * complete packet must be rejected atomically. */
     for (index = 0u; index < (CORE_MACHINE_KBC_FIFO_CAPACITY - 3u) / 3u; ++index) {
         failed |= core_machine_kbc_submit_aux_report(&kbc,
-            (type_signed_16)(index + 1u), 0, 0u) != TYPE_STATUS_OK;
+            (lib_i16)(index + 1u), 0, 0u) != TYPE_STATUS_OK;
     }
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 1u) !=
         TYPE_STATUS_INVALID_STATE || kbc.data.fifo_count !=

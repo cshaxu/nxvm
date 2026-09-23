@@ -2,6 +2,7 @@
 #define VM_PROFILE_CONTRACT_INTERFACE_H
 
 #include "app-nxvm/devices/machine_interface.h"
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #define VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY 96u
@@ -19,25 +20,25 @@ typedef enum vm_profile_contract_media_policy {
 } vm_profile_contract_media_policy;
 
 typedef struct vm_profile_contract_window {
-    type_unsigned_32 first;
-    type_unsigned_32 last;
-    type_unsigned_32 device;
+    lib_u32 first;
+    lib_u32 last;
+    lib_u32 device;
 } vm_profile_contract_window;
 
 typedef struct vm_profile_contract_port_leaf {
-    type_unsigned_32 device;
-    type_unsigned_16 port;
+    lib_u32 device;
+    lib_u16 port;
     type_bool read;
     type_bool write;
 } vm_profile_contract_port_leaf;
 
 typedef struct vm_profile_contract_route {
-    type_unsigned_32 device;
-    type_unsigned_8 line;
+    lib_u32 device;
+    lib_u8 line;
 } vm_profile_contract_route;
 
 typedef struct vm_profile_contract_core_input {
-    type_unsigned_32 id;
+    lib_u32 id;
     core_machine_config configuration;
     core_machine_controller_timing_rules controller_timing_rules;
 } vm_profile_contract_core_input;
@@ -46,26 +47,26 @@ typedef struct vm_profile_contract_core_input {
  * parent graph, per-field owner strings, or runtime provenance mirror. */
 typedef struct vm_profile_contract_values {
     vm_profile_contract_core_input core;
-    type_unsigned_32 enabled_devices;
+    lib_u32 enabled_devices;
     vm_profile_contract_port_leaf port_leaves[VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY];
-    STD_SIZE_T port_leaf_count;
+    lib_size port_leaf_count;
     vm_profile_contract_window memory_windows[VM_PROFILE_CONTRACT_MEMORY_WINDOW_CAPACITY];
-    STD_SIZE_T memory_window_count;
+    lib_size memory_window_count;
     vm_profile_contract_route irq_routes[VM_PROFILE_CONTRACT_ROUTE_CAPACITY];
-    STD_SIZE_T irq_route_count;
+    lib_size irq_route_count;
     vm_profile_contract_route drq_routes[VM_PROFILE_CONTRACT_ROUTE_CAPACITY];
-    STD_SIZE_T drq_route_count;
-    type_unsigned_32 firmware_policy;
-    type_unsigned_32 media_policy;
-    type_unsigned_32 allowed_session_options;
+    lib_size drq_route_count;
+    lib_u32 firmware_policy;
+    lib_u32 media_policy;
+    lib_u32 allowed_session_options;
 } vm_profile_contract_values;
 
 typedef struct vm_profile_contract_catalog {
-    const type_unsigned_32 *ids;
-    STD_SIZE_T count;
+    const lib_u32 *ids;
+    lib_size count;
 } vm_profile_contract_catalog;
 
 type_status vm_profile_contract_validate(const vm_profile_contract_values *values,
-    const vm_profile_contract_catalog *catalog, type_unsigned_32 requested_options);
+    const vm_profile_contract_catalog *catalog, lib_u32 requested_options);
 
 #endif

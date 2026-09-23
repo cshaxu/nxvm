@@ -1,5 +1,6 @@
 #ifndef VM_PROFILE_MODEL40_PRIVATE_H
 #define VM_PROFILE_MODEL40_PRIVATE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/firmware_interface.h"
@@ -22,26 +23,26 @@
 #define VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL 0x80c00000u
 
 typedef struct vm_profile_model40_external_rom {
-    const type_unsigned_8 *even_bytes;
-    const type_unsigned_8 *odd_bytes;
-    STD_SIZE_T chip_byte_count;
-    const type_unsigned_8 *video_bytes;
-    STD_SIZE_T video_byte_count;
+    const lib_u8 *even_bytes;
+    const lib_u8 *odd_bytes;
+    lib_size chip_byte_count;
+    const lib_u8 *video_bytes;
+    lib_size video_byte_count;
 } vm_profile_model40_external_rom;
 
 C_INT vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom);
 type_status vm_profile_model40_external_rom_create(
-    const type_unsigned_8 *even, STD_SIZE_T even_bytes,
-    const type_unsigned_8 *odd, STD_SIZE_T odd_bytes,
-    const type_unsigned_8 *video, STD_SIZE_T video_bytes,
+    const lib_u8 *even, lib_size even_bytes,
+    const lib_u8 *odd, lib_size odd_bytes,
+    const lib_u8 *video, lib_size video_bytes,
     vm_profile_model40_external_rom *out_rom);
 C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config);
 type_status vm_profile_model40_values_create(vm_profile_contract_values *out_values);
 type_status vm_profile_model40_byob_manifest_load(
     const vm_profile_model40_byob_manifest *manifest,
-    type_unsigned_8 *even_bytes, type_unsigned_8 *odd_bytes,
-    type_unsigned_8 *video_bytes,
+    lib_u8 *even_bytes, lib_u8 *odd_bytes,
+    lib_u8 *video_bytes,
     vm_profile_model40_external_rom *out_rom);
 const core_machine_firmware_provider *vm_profile_model40_firmware_provider(C_VOID);
 #endif

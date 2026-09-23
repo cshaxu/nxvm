@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,12 +13,12 @@ static C_VOID movs_reset(C_VOID *opaque)
 {
     movs_machine *state = (movs_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider movs_provider = {
-    movs_reset, STD_NULL
+    movs_reset, LIB_NULL
 };
 
 static C_INT movs_prepare(core_machine_cpu_profile profile, movs_machine *state)
@@ -28,7 +29,7 @@ static C_INT movs_prepare(core_machine_cpu_profile profile, movs_machine *state)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &movs_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -59,7 +60,7 @@ static C_VOID movs_seed(movs_machine *state)
     cpu->data.gs.base = 0x50000u;
 }
 
-static C_INT movs_run(movs_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
+static C_INT movs_run(movs_machine *state, const lib_u8 *code, lib_u8 bytes,
     t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -74,8 +75,8 @@ static C_INT movs_run(movs_machine *state, const type_unsigned_8 *code, type_uns
         TYPE_STATUS_OK;
 }
 
-static C_INT movs_run_repeated(movs_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, type_unsigned_32 repetitions, t_cpu *after,
+static C_INT movs_run_repeated(movs_machine *state, const lib_u8 *code,
+    lib_u8 bytes, lib_u32 repetitions, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -115,9 +116,9 @@ static C_INT movs_test_single_defaults(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 codes[] = {0xa4u, 0xa5u};
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    static const lib_u8 codes[] = {0xa4u, 0xa5u};
+    lib_u8 profile;
+    lib_u8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
          ++profile) {
@@ -127,10 +128,10 @@ static C_INT movs_test_single_defaults(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            type_unsigned_32 source = 0x12345678u;
-            type_unsigned_32 source_after = source;
-            type_unsigned_32 destination = 0xa5a5a5a5u;
-            type_unsigned_8 width = form == 0u ? 1u : 2u;
+            lib_u32 source = 0x12345678u;
+            lib_u32 source_after = source;
+            lib_u32 destination = 0xa5a5a5a5u;
+            lib_u8 width = form == 0u ? 1u : 2u;
             C_INT failed = !movs_prepare(profiles[profile], &state);
 
             if (!failed) {
@@ -164,14 +165,14 @@ static C_INT movs_test_single_defaults(C_VOID)
 
 static C_INT movs_test_386_attributes(C_VOID)
 {
-    static const type_unsigned_8 codes[][3] = {
+    static const lib_u8 codes[][3] = {
         {0x66u, 0xa5u, 0u},
         {0x67u, 0xa4u, 0u},
         {0x66u, 0x67u, 0xa5u}
     };
-    static const type_unsigned_8 bytes[] = {2u, 2u, 3u};
-    static const type_unsigned_8 widths[] = {4u, 1u, 4u};
-    type_unsigned_8 form;
+    static const lib_u8 bytes[] = {2u, 2u, 3u};
+    static const lib_u8 widths[] = {4u, 1u, 4u};
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(bytes); ++form) {
         movs_machine state;
@@ -179,11 +180,11 @@ static C_INT movs_test_386_attributes(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_32 source = 0x12345678u;
-        type_unsigned_32 source_after = source;
-        type_unsigned_32 destination = 0xa5a5a5a5u;
-        type_unsigned_32 source_address;
-        type_unsigned_32 destination_address;
+        lib_u32 source = 0x12345678u;
+        lib_u32 source_after = source;
+        lib_u32 destination = 0xa5a5a5a5u;
+        lib_u32 source_address;
+        lib_u32 destination_address;
         C_INT failed = !movs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -221,15 +222,15 @@ static C_INT movs_test_386_attributes(C_VOID)
 
 static C_INT movs_test_source_segments_and_df(C_VOID)
 {
-    static const type_unsigned_8 codes[][2] = {
+    static const lib_u8 codes[][2] = {
         {0x2eu, 0xa4u}, {0x36u, 0xa4u}, {0x64u, 0xa4u}, {0x65u, 0xa4u},
         {0x26u, 0xa4u}, {0xa5u, 0u}
     };
-    static const type_unsigned_32 addresses[] = {
+    static const lib_u32 addresses[] = {
         0x0010u, 0x30010u, 0x40010u, 0x50010u, 0x20010u, 0x10010u
     };
-    static const type_unsigned_8 sizes[] = {2u, 2u, 2u, 2u, 2u, 1u};
-    type_unsigned_8 form;
+    static const lib_u8 sizes[] = {2u, 2u, 2u, 2u, 2u, 1u};
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(sizes); ++form) {
         movs_machine state;
@@ -237,10 +238,10 @@ static C_INT movs_test_source_segments_and_df(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_16 source = (type_unsigned_16)(0x1100u + form);
-        type_unsigned_16 source_after = source;
-        type_unsigned_16 destination = 0xa5a5u;
-        type_unsigned_8 width = form == 5u ? 2u : 1u;
+        lib_u16 source = (lib_u16)(0x1100u + form);
+        lib_u16 source_after = source;
+        lib_u16 destination = 0xa5a5u;
+        lib_u8 width = form == 5u ? 2u : 1u;
         C_INT failed = !movs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -264,7 +265,7 @@ static C_INT movs_test_source_segments_and_df(C_VOID)
                 core_machine_memory_read_physical(&state.machine->executor_memory,
                     0x20020u, TYPE_REFERENCE_OF(destination), width) !=
                     TYPE_STATUS_OK || destination != (width == 1u ?
-                    (type_unsigned_16)(0xa500u | (source & 0x00ffu)) : source);
+                    (lib_u16)(0xa500u | (source & 0x00ffu)) : source);
         }
         core_machine_destroy(state.machine);
         if (failed) return 0;
@@ -272,8 +273,8 @@ static C_INT movs_test_source_segments_and_df(C_VOID)
     return 1;
 }
 
-static type_unsigned_32 movs_replace_low(type_unsigned_32 original, type_unsigned_32 value,
-    type_unsigned_8 width)
+static lib_u32 movs_replace_low(lib_u32 original, lib_u32 value,
+    lib_u8 width)
 {
     if (width == 1u)
         return (original & 0xffffff00u) | (value & 0x000000ffu);
@@ -294,22 +295,22 @@ static C_INT movs_nonindexes_except_count_same(const t_cpu *before,
 }
 
 static C_INT movs_test_rep_case(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width, C_INT address32,
-    type_unsigned_8 count, C_INT decrement)
+    const lib_u8 *code, lib_u8 bytes, lib_u8 width, C_INT address32,
+    lib_u8 count, C_INT decrement)
 {
     movs_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     type_status status;
-    type_unsigned_32 source[3] = {0x11223344u, 0x55667788u, 0x99aabbccu};
-    type_unsigned_32 source_after;
-    type_unsigned_32 destination = 0xa5a5a5a5u;
-    type_unsigned_32 destination_after;
-    type_unsigned_32 source_index = address32 ? 0x00001010u : 0x00000010u;
-    type_unsigned_32 destination_index = address32 ? 0x00001020u : 0x00000020u;
-    type_unsigned_8 slots = count == 0u ? 1u : count;
-    type_unsigned_8 index;
+    lib_u32 source[3] = {0x11223344u, 0x55667788u, 0x99aabbccu};
+    lib_u32 source_after;
+    lib_u32 destination = 0xa5a5a5a5u;
+    lib_u32 destination_after;
+    lib_u32 source_index = address32 ? 0x00001010u : 0x00000010u;
+    lib_u32 destination_index = address32 ? 0x00001020u : 0x00000020u;
+    lib_u8 slots = count == 0u ? 1u : count;
+    lib_u8 index;
     C_INT failed = !movs_prepare(profile, &state);
 
     if (!failed) {
@@ -336,7 +337,7 @@ static C_INT movs_test_rep_case(core_machine_cpu_profile profile,
             state.machine->executor_cpu.data.ecx =
                 (state.machine->executor_cpu.data.ecx & 0xffff0000u) | count;
         for (index = 0u; index != slots; ++index) {
-            type_unsigned_32 step = decrement ? (count - 1u - index) * width :
+            lib_u32 step = decrement ? (count - 1u - index) * width :
                 index * width;
 
             failed |= core_machine_memory_write(state.machine,
@@ -356,22 +357,22 @@ static C_INT movs_test_rep_case(core_machine_cpu_profile profile,
             after.data.ecx != (address32 ? 0u :
             (before.data.ecx & 0xffff0000u)) ||
             after.data.esi != (address32 ? source_index +
-            (decrement ? -(type_signed_32)(count * width) : count * width) :
+            (decrement ? -(lib_i32)(count * width) : count * width) :
             ((before.data.esi & 0xffff0000u) |
-            (type_unsigned_16)(source_index + (decrement ? -(type_signed_32)(count * width) :
+            (lib_u16)(source_index + (decrement ? -(lib_i32)(count * width) :
             count * width)))) ||
             after.data.edi != (address32 ? destination_index +
-            (decrement ? -(type_signed_32)(count * width) : count * width) :
+            (decrement ? -(lib_i32)(count * width) : count * width) :
             ((before.data.edi & 0xffff0000u) |
-            (type_unsigned_16)(destination_index +
-            (decrement ? -(type_signed_32)(count * width) : count * width))));
+            (lib_u16)(destination_index +
+            (decrement ? -(lib_i32)(count * width) : count * width))));
         for (index = 0u; !failed && index != slots; ++index) {
-            type_unsigned_32 step = index * width;
-            type_unsigned_32 source_address = 0x10000u + source_index -
+            lib_u32 step = index * width;
+            lib_u32 source_address = 0x10000u + source_index -
                 (decrement ? (count - 1u) * width : 0u) + step;
-            type_unsigned_32 destination_address = 0x20000u + destination_index -
+            lib_u32 destination_address = 0x20000u + destination_index -
                 (decrement ? (count - 1u) * width : 0u) + step;
-            type_unsigned_8 element = decrement && count != 0u ? count - 1u - index :
+            lib_u8 element = decrement && count != 0u ? count - 1u - index :
                 index;
 
             source_after = source[element];
@@ -397,12 +398,12 @@ static C_INT movs_test_rep(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 rep_movsb[] = {0xf3u, 0xa4u};
-    static const type_unsigned_8 rep_movsw[] = {0xf3u, 0xa5u};
-    static const type_unsigned_8 rep_movsd[] = {0x66u, 0xf3u, 0xa5u};
-    static const type_unsigned_8 rep_addr32_movsb[] = {0xf3u, 0x67u, 0xa4u};
-    static const type_unsigned_8 rep_addr32_movsd[] = {0xf3u, 0x66u, 0x67u, 0xa5u};
-    type_unsigned_8 profile;
+    static const lib_u8 rep_movsb[] = {0xf3u, 0xa4u};
+    static const lib_u8 rep_movsw[] = {0xf3u, 0xa5u};
+    static const lib_u8 rep_movsd[] = {0x66u, 0xf3u, 0xa5u};
+    static const lib_u8 rep_addr32_movsb[] = {0xf3u, 0x67u, 0xa4u};
+    static const lib_u8 rep_addr32_movsd[] = {0xf3u, 0x66u, 0x67u, 0xa5u};
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
          ++profile) {
@@ -426,17 +427,17 @@ static C_INT movs_test_rep(C_VOID)
 
 static C_INT movs_test_rejections(C_VOID)
 {
-    static const type_unsigned_8 prefixes[][3] = {
+    static const lib_u8 prefixes[][3] = {
         {0x66u, 0xa4u, 0u}, {0x67u, 0xa5u, 0u},
         {0x66u, 0x67u, 0xa5u}
     };
-    static const type_unsigned_8 prefix_bytes[] = {2u, 2u, 3u};
-    static const type_unsigned_8 locks[][3] = {
+    static const lib_u8 prefix_bytes[] = {2u, 2u, 3u};
+    static const lib_u8 locks[][3] = {
         {0xf0u, 0xa4u, 0u}, {0xf0u, 0xf3u, 0xa5u}
     };
-    static const type_unsigned_8 lock_bytes[] = {2u, 3u};
-    type_unsigned_8 form;
-    type_unsigned_8 profile;
+    static const lib_u8 lock_bytes[] = {2u, 3u};
+    lib_u8 form;
+    lib_u8 profile;
 
     for (profile = CORE_MACHINE_CPU_PROFILE_8086;
          profile < CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
@@ -446,8 +447,8 @@ static C_INT movs_test_rejections(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            type_unsigned_16 source = 0x3344u;
-            type_unsigned_16 destination = 0xa5a5u;
+            lib_u16 source = 0x3344u;
+            lib_u16 destination = 0xa5a5u;
             C_INT failed = !movs_prepare(profile, &state);
 
             if (!failed) {
@@ -482,8 +483,8 @@ static C_INT movs_test_rejections(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_16 source = 0x3344u;
-        type_unsigned_16 destination = 0xa5a5u;
+        lib_u16 source = 0x3344u;
+        lib_u16 destination = 0xa5a5u;
         C_INT failed = !movs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -516,23 +517,23 @@ static C_INT movs_test_rejections(C_VOID)
 
 static C_INT movs_test_irq_no_shadow(C_VOID)
 {
-    static const type_unsigned_8 codes[][3] = {
+    static const lib_u8 codes[][3] = {
         {0xa4u, 0x90u, 0u}, {0xf3u, 0xa4u, 0x90u}
     };
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 form;
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
         movs_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        type_unsigned_16 offset = 0x0100u;
-        type_unsigned_16 segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
-        type_unsigned_8 image[] = {0x51u, 0x62u, 0x73u};
-        type_unsigned_8 destination[] = {0xa5u, 0xa5u, 0xa5u};
-        type_unsigned_8 count = form == 0u ? 1u : 3u;
+        lib_u16 offset = 0x0100u;
+        lib_u16 segment = 0u;
+        lib_u16 frame_ip = 0u;
+        lib_u8 image[] = {0x51u, 0x62u, 0x73u};
+        lib_u8 destination[] = {0xa5u, 0xa5u, 0xa5u};
+        lib_u8 count = form == 0u ? 1u : 3u;
         C_INT failed = !movs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -553,7 +554,7 @@ static C_INT movs_test_irq_no_shadow(C_VOID)
             state.machine->executor_cpu.data.ecx =
                 (state.machine->executor_cpu.data.ecx & 0xffff0000u) | count;
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave,
@@ -566,7 +567,7 @@ static C_INT movs_test_irq_no_shadow(C_VOID)
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != (form == 0u ? 1u : 0u) ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
@@ -591,18 +592,18 @@ static C_INT movs_test_irq_no_shadow(C_VOID)
 
 static C_INT movs_boot_protected(movs_machine *state)
 {
-    static const type_unsigned_8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0x0fu,0,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const type_unsigned_8 boot[] = {
+    static const lib_u8 boot[] = {
         0x0fu,0x01u,0x16u,0,1u, 0xb8u,1u,0,0x0fu,0x01u,0xf0u,
         0xb8u,0x18u,0,0x8eu,0xd8u, 0xb8u,0x10u,0,0x8eu,0xc0u,
         0xb8u,0x18u,0,0x8eu,0xd0u,0xbcu,0,0x80u,
         0xeau,0,0,8u,0
     };
-    static const type_unsigned_8 halt = 0xf4u;
+    static const lib_u8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
@@ -617,8 +618,8 @@ static C_INT movs_boot_protected(movs_machine *state)
 
 static C_INT movs_test_protected_limits(C_VOID)
 {
-    static const type_unsigned_8 codes[][2] = {{0xa4u, 0u}, {0x66u, 0xa5u}};
-    type_unsigned_8 form;
+    static const lib_u8 codes[][2] = {{0xa4u, 0u}, {0x66u, 0xa5u}};
+    lib_u8 form;
 
     for (form = 0u; form != 2u; ++form) {
         movs_machine state;
@@ -626,12 +627,12 @@ static C_INT movs_test_protected_limits(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        type_unsigned_32 source = 0x11223344u;
-        type_unsigned_32 destination = 0xa5a5a5a5u;
-        type_unsigned_32 source_address = form == 0u ? 0x3010u : 0x4010u;
-        type_unsigned_32 destination_address = form == 0u ? 0x3020u : 0x3010u;
-        type_unsigned_8 bytes = form == 0u ? 1u : 2u;
-        type_unsigned_8 width = form == 0u ? 1u : 4u;
+        lib_u32 source = 0x11223344u;
+        lib_u32 destination = 0xa5a5a5a5u;
+        lib_u32 source_address = form == 0u ? 0x3010u : 0x4010u;
+        lib_u32 destination_address = form == 0u ? 0x3020u : 0x3010u;
+        lib_u8 bytes = form == 0u ? 1u : 2u;
+        lib_u8 width = form == 0u ? 1u : 4u;
         C_INT failed = !movs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) failed |= !movs_boot_protected(&state);
@@ -661,8 +662,8 @@ static C_INT movs_test_protected_limits(C_VOID)
             failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.data.eip != 0u || !movs_gprs_same(&before, &after) ||
-                STD_MEMCMP(&before.data.ds, &after.data.ds,
-                sizeof(before.data.ds)) != 0 || STD_MEMCMP(&before.data.es,
+                lib_memory_compare(&before.data.ds, &after.data.ds,
+                sizeof(before.data.ds)) != 0 || lib_memory_compare(&before.data.es,
                 &after.data.es, sizeof(before.data.es)) != 0 ||
                 core_machine_memory_read_physical(&state.machine->executor_memory,
                 source_address, TYPE_REFERENCE_OF(source), width) != TYPE_STATUS_OK ||

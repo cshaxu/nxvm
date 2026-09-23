@@ -1,41 +1,42 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 
-static type_status overlay_read(C_VOID *opaque, type_unsigned_32 physical,
+static type_status overlay_read(C_VOID *opaque, lib_u32 physical,
     type_virtual_address destination, type_native_unsigned bytes)
 {
-    type_unsigned_8 *value = (type_unsigned_8 *)opaque;
+    lib_u8 *value = (lib_u8 *)opaque;
 
     (C_VOID)physical;
-    if (value == STD_NULL || destination == 0u || bytes != 1u || *value == 0u) {
+    if (value == LIB_NULL || destination == 0u || bytes != 1u || *value == 0u) {
         return TYPE_STATUS_UNSUPPORTED;
     }
-    *(type_unsigned_8 *)destination = *value;
+    *(lib_u8 *)destination = *value;
     return TYPE_STATUS_OK;
 }
 
-static type_status overlay_write(C_VOID *opaque, type_unsigned_32 physical,
+static type_status overlay_write(C_VOID *opaque, lib_u32 physical,
     type_virtual_address source, type_native_unsigned bytes)
 {
-    type_unsigned_8 *value = (type_unsigned_8 *)opaque;
+    lib_u8 *value = (lib_u8 *)opaque;
 
     (C_VOID)physical;
-    if (value == STD_NULL || source == 0u || bytes != 1u || *value == 0u) {
+    if (value == LIB_NULL || source == 0u || bytes != 1u || *value == 0u) {
         return TYPE_STATUS_UNSUPPORTED;
     }
-    *value = *(const type_unsigned_8 *)source;
+    *value = *(const lib_u8 *)source;
     return TYPE_STATUS_OK;
 }
 
-static type_status overlay_query(C_VOID *opaque, type_unsigned_32 physical,
+static type_status overlay_query(C_VOID *opaque, lib_u32 physical,
     type_native_unsigned bytes, core_machine_memory_access access)
 {
-    const type_unsigned_8 *value = (const type_unsigned_8 *)opaque;
+    const lib_u8 *value = (const lib_u8 *)opaque;
 
     (C_VOID)physical;
     (C_VOID)access;
-    return value != STD_NULL && bytes == 1u && *value != 0u ? TYPE_STATUS_OK :
+    return value != LIB_NULL && bytes == 1u && *value != 0u ? TYPE_STATUS_OK :
         TYPE_STATUS_UNSUPPORTED;
 }
 
@@ -49,15 +50,15 @@ C_INT main(C_VOID)
     const core_machine_memory_device_callbacks callbacks = {
         overlay_read, overlay_write, overlay_query
     };
-    const type_unsigned_8 rom = 0x5au;
-    core_machine *machine = STD_NULL;
+    const lib_u8 rom = 0x5au;
+    core_machine *machine = LIB_NULL;
     core_machine_memory_route route;
-    type_unsigned_8 overlay = 0u;
-    type_unsigned_8 observed = 0u;
-    type_unsigned_8 write = 0xa5u;
+    lib_u8 overlay = 0u;
+    lib_u8 observed = 0u;
+    lib_u8 write = 0xa5u;
     C_INT failed = 0;
 
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK || machine == STD_NULL;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK || machine == LIB_NULL;
     if (!failed) failed |= core_machine_register_memory_device(machine, 0x000f0000u,
         1u, &callbacks, &overlay) != TYPE_STATUS_OK ||
         core_machine_register_immutable_rom_mapping(machine, 0x000f0000u, &rom,

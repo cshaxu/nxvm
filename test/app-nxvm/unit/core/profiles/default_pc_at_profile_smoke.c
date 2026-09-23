@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
@@ -16,8 +17,8 @@ C_INT main(C_VOID)
     core_machine_config configuration;
     core_machine_controller_timing_rules timing_rules;
 
-    if (profile == STD_NULL ||
-        STD_STRCMP(profile->identity, "default-pc-at") != 0 ||
+    if (profile == LIB_NULL ||
+        lib_c_strcmp(profile->identity, "default-pc-at") != 0 ||
         profile->rom.linear_start != 0xfffffff0u ||
         profile->rom.physical_start != 0x000ffff0u ||
         profile->rom.bytes != 16u ||
@@ -65,13 +66,13 @@ C_INT main(C_VOID)
             &contract) || contract.cpu_profile != profile->cpu_profile ||
         contract.fpu_profile != profile->fpu_profile ||
         contract.ticks_per_instruction != profile->ticks_per_instruction ||
-        STD_MEMCMP(&contract.instruction_timing, &profile->instruction_timing,
+        lib_memory_compare(&contract.instruction_timing, &profile->instruction_timing,
             sizeof(contract.instruction_timing)) != 0 ||
-        STD_MEMCMP(&contract.transaction_contract, &profile->transaction_contract,
+        lib_memory_compare(&contract.transaction_contract, &profile->transaction_contract,
             sizeof(contract.transaction_contract)) != 0 ||
-        STD_MEMCMP(&contract.clock_plan, &profile->clock_plan,
+        lib_memory_compare(&contract.clock_plan, &profile->clock_plan,
             sizeof(contract.clock_plan)) != 0 ||
-        STD_MEMCMP(&contract.controller_timing_rules,
+        lib_memory_compare(&contract.controller_timing_rules,
             &profile->controller_timing_rules,
             sizeof(contract.controller_timing_rules)) != 0 ||
         !vm_profile_default_pc_at_cpu_contract_select(profile,
@@ -96,13 +97,13 @@ C_INT main(C_VOID)
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
     aux_route = vm_profile_default_pc_at_route_find(profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12);
-    if (cmos_index == STD_NULL || cmos_index->read || !cmos_index->write ||
-        cmos_data == STD_NULL || !cmos_data->read || !cmos_data->write ||
-        fdc_data == STD_NULL || !fdc_data->read || !fdc_data->write ||
-        memory_control == STD_NULL || !memory_control->read ||
+    if (cmos_index == LIB_NULL || cmos_index->read || !cmos_index->write ||
+        cmos_data == LIB_NULL || !cmos_data->read || !cmos_data->write ||
+        fdc_data == LIB_NULL || !fdc_data->read || !fdc_data->write ||
+        memory_control == LIB_NULL || !memory_control->read ||
         !memory_control->write ||
-        fdc_route == STD_NULL || fdc_route->irq != 6u ||
-        fdc_route->dma_channel != 2u || aux_route == STD_NULL ||
+        fdc_route == LIB_NULL || fdc_route->irq != 6u ||
+        fdc_route->dma_channel != 2u || aux_route == LIB_NULL ||
         aux_route->irq != 12u || aux_route->dma_channel !=
         VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL ||
         !vm_profile_default_pc_at_core_config_materialize(profile, &contract,

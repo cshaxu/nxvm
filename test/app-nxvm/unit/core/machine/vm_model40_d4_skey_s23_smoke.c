@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -7,17 +8,17 @@
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     core_machine_run_result result;
-    type_unsigned_8 high_rom_byte = 0u;
-    vm_machine *session = STD_NULL;
+    lib_u8 high_rom_byte = 0u;
+    vm_machine *session = LIB_NULL;
     C_INT failed = 0;
 
     odd[0u] = 0xa5u;
 
     failed |= vm_model40_fixture_create_bytes(even, odd, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+        session == LIB_NULL;
     if (!failed) {
         failed |= core_machine_bus_write(session->core_machine, 0x0064u, 0xd1u) !=
                 TYPE_STATUS_OK ||

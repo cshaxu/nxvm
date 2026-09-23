@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -6,27 +7,27 @@ static C_VOID core_machine_retirement_observation_copy_point(
     core_machine_cpu_execution_point *point, const t_cpu *cpu,
     const t_cpuins *instructions)
 {
-    if (point == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    if (point == LIB_NULL || cpu == LIB_NULL || instructions == LIB_NULL) return;
     point->cs = cpu->data.cs.selector;
     point->cs_base = cpu->data.cs.base;
     point->eip = cpu->data.eip;
     point->linear_pc = instructions->data.linear;
-    point->byte_count = (type_unsigned_8)instructions->data.oplen;
-    STD_MEMCPY(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
+    point->byte_count = (lib_u8)instructions->data.oplen;
+    lib_memory_copy(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
 }
 
 C_VOID core_machine_retirement_observation_initialize(core_machine *machine)
 {
-    if (machine != STD_NULL) {
-        STD_MEMSET(&machine->retirement_observation, 0,
+    if (machine != LIB_NULL) {
+        lib_memory_set(&machine->retirement_observation, 0,
             sizeof(machine->retirement_observation));
     }
 }
 
 C_VOID core_machine_retirement_observation_reset(core_machine *machine)
 {
-    if (machine != STD_NULL) {
-        machine->retirement_observation.pending = TYPE_FALSE;
+    if (machine != LIB_NULL) {
+        machine->retirement_observation.pending = LIB_FALSE;
     }
 }
 
@@ -34,19 +35,19 @@ type_status core_machine_set_retirement_observation_provider(
     core_machine *machine,
     const core_machine_retirement_observation_provider *provider)
 {
-    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED) return TYPE_STATUS_INVALID_STATE;
-    if (provider != STD_NULL && provider->callback == STD_NULL) {
+    if (provider != LIB_NULL && provider->callback == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    STD_MEMSET(&machine->retirement_observation.provider, 0,
+    lib_memory_set(&machine->retirement_observation.provider, 0,
         sizeof(machine->retirement_observation.provider));
-    if (provider != STD_NULL) machine->retirement_observation.provider = *provider;
-    machine->retirement_observation.pending = TYPE_FALSE;
+    if (provider != LIB_NULL) machine->retirement_observation.provider = *provider;
+    machine->retirement_observation.pending = LIB_FALSE;
     core_machine_cpu_execution_context_bind_diagnostic_provider(
         &machine->executor_cpu_execution,
-        (provider != STD_NULL || machine->retirement_time_contract ==
+        (provider != LIB_NULL || machine->retirement_time_contract ==
             CORE_MACHINE_RETIREMENT_TIME_PHYSICAL) ?
             &core_machine_cpu_diagnostic_provider :
             &core_machine_cpu_fault_diagnostic_provider,
@@ -54,12 +55,12 @@ type_status core_machine_set_retirement_observation_provider(
     return TYPE_STATUS_OK;
 }
 
-static type_unsigned_8 core_machine_retirement_observation_prefix_count(
+static lib_u8 core_machine_retirement_observation_prefix_count(
     const t_cpuins_data *data)
 {
-    type_unsigned_8 count = 0u;
+    lib_u8 count = 0u;
 
-    if (data == STD_NULL) return 0u;
+    if (data == LIB_NULL) return 0u;
     while (count < data->oplen) {
         switch (data->opcodes[count]) {
         case 0x26u: case 0x2eu: case 0x36u: case 0x3eu: case 0x64u: case 0x65u:
@@ -74,12 +75,12 @@ static type_unsigned_8 core_machine_retirement_observation_prefix_count(
 }
 
 static C_INT core_machine_retirement_observation_modrm_index(
-    const t_cpuins_data *data, type_unsigned_8 opcode_index,
-    type_unsigned_8 *out_index)
+    const t_cpuins_data *data, lib_u8 opcode_index,
+    lib_u8 *out_index)
 {
-    type_unsigned_8 opcode;
+    lib_u8 opcode;
 
-    if (data == STD_NULL || out_index == STD_NULL || opcode_index >= data->oplen) {
+    if (data == LIB_NULL || out_index == LIB_NULL || opcode_index >= data->oplen) {
         return 0;
     }
     opcode = data->opcodes[opcode_index];
@@ -87,7 +88,7 @@ static C_INT core_machine_retirement_observation_modrm_index(
         if (opcode_index + 2u >= data->oplen) return 0;
         switch (data->opcodes[opcode_index + 1u]) {
         case 0x01u: case 0x20u: case 0x22u:
-            *out_index = (type_unsigned_8)(opcode_index + 2u);
+            *out_index = (lib_u8)(opcode_index + 2u);
             return 1;
         default:
             return 0;
@@ -100,7 +101,7 @@ static C_INT core_machine_retirement_observation_modrm_index(
         (opcode >= 0xd0u && opcode <= 0xd3u) || opcode == 0xf6u ||
         opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu) {
         if (opcode_index + 1u >= data->oplen) return 0;
-        *out_index = (type_unsigned_8)(opcode_index + 1u);
+        *out_index = (lib_u8)(opcode_index + 1u);
         return 1;
     }
     return 0;
@@ -113,12 +114,12 @@ static C_VOID core_machine_retirement_observation_capture_context(
     const t_cpuins_data *data;
     core_machine_cpu_instruction_lexeme instruction_lexeme;
     core_machine_cpu_instruction_lexeme next_lexeme;
-    type_unsigned_8 opcode_index;
-    type_unsigned_8 opcode;
-    type_unsigned_8 modrm_index;
-    type_unsigned_32 fallthrough;
-    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL ||
-        observation == STD_NULL) return;
+    lib_u8 opcode_index;
+    lib_u8 opcode;
+    lib_u8 modrm_index;
+    lib_u32 fallthrough;
+    if (machine == LIB_NULL || cpu == LIB_NULL || instructions == LIB_NULL ||
+        observation == LIB_NULL) return;
     data = &instructions->data;
     observation->modrm_form = CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE;
     observation->modrm_extension = CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
@@ -133,7 +134,7 @@ static C_VOID core_machine_retirement_observation_capture_context(
         observation->modrm_form = (data->opcodes[modrm_index] & 0xc0u) == 0xc0u ?
             CORE_MACHINE_RETIREMENT_MODRM_REGISTER :
             CORE_MACHINE_RETIREMENT_MODRM_MEMORY;
-        observation->modrm_extension = (type_unsigned_8)(
+        observation->modrm_extension = (lib_u8)(
             (data->opcodes[modrm_index] >> 3u) & 7u);
     }
     switch (opcode) {
@@ -142,7 +143,7 @@ static C_VOID core_machine_retirement_observation_capture_context(
     case 0x7cu: case 0x7du: case 0x7eu: case 0x7fu:
     case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u:
         if (core_machine_cpu_instruction_lexeme_scan(data->opcodes + opcode_index,
-                (type_unsigned_8)(sizeof(data->opcodes) - opcode_index), machine->cpu_profile,
+                (lib_u8)(sizeof(data->opcodes) - opcode_index), machine->cpu_profile,
                 data->oldcpu.data.cs.seg.exec.defsize, &instruction_lexeme)) {
             fallthrough = data->oldcpu.data.eip + opcode_index +
                 instruction_lexeme.byte_count;
@@ -169,10 +170,10 @@ static C_VOID core_machine_retirement_observation_capture_io(
     core_machine_retirement_observation *observation, const t_cpu *cpu,
     const t_cpuins_data *data)
 {
-    type_unsigned_8 opcode_index;
-    type_unsigned_8 opcode;
+    lib_u8 opcode_index;
+    lib_u8 opcode;
 
-    if (observation == STD_NULL || cpu == STD_NULL || data == STD_NULL) return;
+    if (observation == LIB_NULL || cpu == LIB_NULL || data == LIB_NULL) return;
     observation->io_direction = CORE_MACHINE_RETIREMENT_IO_NONE;
     observation->io_port = 0u;
     observation->io_bytes = 0u;
@@ -208,13 +209,13 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
 {
     core_machine_retirement_observation *observation;
 
-    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    if (machine == LIB_NULL || cpu == LIB_NULL || instructions == LIB_NULL) return;
     observation = &machine->retirement_observation.pending_observation;
-    STD_MEMSET(observation, 0, sizeof(*observation));
+    lib_memory_set(observation, 0, sizeof(*observation));
     core_machine_retirement_observation_copy_point(&observation->point, cpu,
         instructions);
     observation->cpu_profile = machine->cpu_profile;
-    observation->cpl = (type_unsigned_8)cpu->data.cs.dpl;
+    observation->cpl = (lib_u8)cpu->data.cs.dpl;
     observation->protected_mode = (cpu->data.cr0 & VCPU_CR0_PE) != 0u;
     observation->virtual_8086_mode = (cpu->data.eflags & VCPU_EFLAGS_VM) != 0u;
     observation->operand_size_32 = cpu->data.cs.seg.exec.defsize ^
@@ -222,24 +223,24 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
     observation->address_size_32 = cpu->data.cs.seg.exec.defsize ^
         instructions->data.prefix_addrsize;
     observation->lock_prefix = instructions->data.flagLock;
-    observation->repeat_prefix = (type_unsigned_8)instructions->data.prefix_rep;
+    observation->repeat_prefix = (lib_u8)instructions->data.prefix_rep;
     core_machine_retirement_observation_capture_context(machine, cpu,
         instructions, observation);
     core_machine_retirement_observation_capture_io(observation, cpu,
         &instructions->data);
     machine->retirement_observation.pending =
-        machine->retirement_observation.provider.callback != STD_NULL;
+        machine->retirement_observation.provider.callback != LIB_NULL;
 }
 
 C_VOID core_machine_retirement_observation_capture_eligibility_key(
     core_machine *machine)
 {
     core_machine_retirement_observation *observation;
-    type_unsigned_8 opcode_index;
-    type_unsigned_8 opcode = 0xffu;
-    type_unsigned_8 escape_opcode = 0xffu;
+    lib_u8 opcode_index;
+    lib_u8 opcode = 0xffu;
+    lib_u8 escape_opcode = 0xffu;
 
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     observation = &machine->retirement_observation.pending_observation;
     if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ) {
         observation->io_value = observation->io_bytes == 1u ?
@@ -269,17 +270,17 @@ C_VOID core_machine_retirement_observation_capture_eligibility_key(
         observation->address_size_32, observation->lock_prefix,
         observation->repeat_prefix };
     machine->retirement_eligibility_key = observation->eligibility_key;
-    machine->retirement_eligibility_key_valid = TYPE_TRUE;
+    machine->retirement_eligibility_key_valid = LIB_TRUE;
 }
 C_VOID core_machine_retirement_observation_publish(core_machine *machine,
-    type_unsigned_64 source_ticks)
+    lib_u64 source_ticks)
 {
     core_machine_retirement_observation_state *state;
     core_machine_retirement_observation *observation;
 
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     state = &machine->retirement_observation;
-    if (state->provider.callback == STD_NULL || !state->pending) return;
+    if (state->provider.callback == LIB_NULL || !state->pending) return;
     observation = &state->pending_observation;
     observation->sequence = state->next_sequence++;
     observation->elapsed_ticks = machine->elapsed_ticks;
@@ -296,5 +297,5 @@ C_VOID core_machine_retirement_observation_publish(core_machine *machine,
         &machine->executor_cpu_instructions, observation);
     observation->repeat_phase = machine->source_timing_repeat_phase;
     state->provider.callback(state->provider.context, observation);
-    state->pending = TYPE_FALSE;
+    state->pending = LIB_FALSE;
 }

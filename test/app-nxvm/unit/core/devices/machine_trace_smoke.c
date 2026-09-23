@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 
@@ -21,7 +22,7 @@ static C_VOID trace_callback(C_VOID *context, const core_machine_trace_event *ev
     }
 }
 
-static type_status port_read(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 *out_value)
+static type_status port_read(C_VOID *owner, lib_u16 port, lib_u32 *out_value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
@@ -31,7 +32,7 @@ static type_status port_read(C_VOID *owner, type_unsigned_16 port, type_unsigned
     return TYPE_STATUS_OK;
 }
 
-static type_status port_write(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 value)
+static type_status port_write(C_VOID *owner, lib_u16 port, lib_u32 value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
@@ -47,13 +48,13 @@ static C_INT expect_status(type_status actual, type_status expected)
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_trace_provider sink;
     core_machine_port_provider port_ops = { port_read, port_write };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     trace_fixture fixture = { { { 0 } }, 0u, 0u, TYPE_STATUS_OK };
-    type_unsigned_32 value;
+    lib_u32 value;
     C_INT failed = 0;
 
     sink.callback = trace_callback;
@@ -110,7 +111,7 @@ C_INT main(C_VOID)
     failed |= expect_status(core_machine_bus_read(machine, 0x3ffu, &value),
                             TYPE_STATUS_OK) || fixture.count != 2u ||
               fixture.events[1].detail != TYPE_STATUS_OK;
-    failed |= expect_status(core_machine_set_trace_provider(machine, STD_NULL),
+    failed |= expect_status(core_machine_set_trace_provider(machine, LIB_NULL),
                             TYPE_STATUS_OK);
     failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
     failed |= fixture.count != 2u;

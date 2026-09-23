@@ -1,35 +1,36 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 
-static C_INT read_byte(core_machine *machine, type_unsigned_32 physical,
-    type_unsigned_8 expected)
+static C_INT read_byte(core_machine *machine, lib_u32 physical,
+    lib_u8 expected)
 {
-    type_unsigned_8 observed = 0u;
+    lib_u8 observed = 0u;
 
     return core_machine_memory_read(machine, physical, &observed,
         sizeof(observed)) == TYPE_STATUS_OK && observed == expected;
 }
 
-static C_INT write_byte(core_machine *machine, type_unsigned_32 physical,
-    type_unsigned_8 value, type_status expected)
+static C_INT write_byte(core_machine *machine, lib_u32 physical,
+    lib_u8 value, type_status expected)
 {
     return core_machine_memory_write(machine, physical, &value, sizeof(value)) == expected;
 }
 
-static C_INT write_word(core_machine *machine, type_unsigned_32 physical,
-    type_unsigned_16 value)
+static C_INT write_word(core_machine *machine, lib_u32 physical,
+    lib_u16 value)
 {
     return core_machine_memory_write(machine, physical, &value, sizeof(value)) ==
         TYPE_STATUS_OK;
 }
 
-static C_INT read_word(core_machine *machine, type_unsigned_32 physical,
-    type_unsigned_16 expected)
+static C_INT read_word(core_machine *machine, lib_u32 physical,
+    lib_u16 expected)
 {
-    type_unsigned_16 observed = 0u;
+    lib_u16 observed = 0u;
 
     return core_machine_memory_read(machine, physical, &observed,
         sizeof(observed)) == TYPE_STATUS_OK && observed == expected;
@@ -37,11 +38,11 @@ static C_INT read_word(core_machine *machine, type_unsigned_32 physical,
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_machine *session = STD_NULL;
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    vm_machine *session = LIB_NULL;
     core_machine_d4_platform_observation d4;
-    type_unsigned_32 port_value = 0u;
+    lib_u32 port_value = 0u;
     C_INT failed = 0;
 
     even[0u] = 0x11u;
@@ -52,7 +53,7 @@ C_INT main(C_VOID)
     C_INT step = 0;
 
     CHECK(vm_model40_fixture_create_bytes(even, odd, &session) == TYPE_STATUS_OK &&
-        session != STD_NULL);
+        session != LIB_NULL);
     if (!failed) {
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, 0x11u));
@@ -118,11 +119,11 @@ C_INT main(C_VOID)
         CHECK(write_byte(session->core_machine, 0x00000020u, 0xa5u,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0xa5u));
-        CHECK(core_machine_set_a20(session->core_machine, TYPE_TRUE) == TYPE_STATUS_OK);
+        CHECK(core_machine_set_a20(session->core_machine, LIB_TRUE) == TYPE_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x00100020u, 0x5au,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0x5au));
-        CHECK(core_machine_set_a20(session->core_machine, TYPE_FALSE) == TYPE_STATUS_OK);
+        CHECK(core_machine_set_a20(session->core_machine, LIB_FALSE) == TYPE_STATUS_OK);
 
         /* AT spare DMA page latches are board-visible state, not unknown
          * ports.  DeskPro firmware uses 86h during POST. */
@@ -151,7 +152,7 @@ C_INT main(C_VOID)
             0x4au, TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x4au));
-        CHECK(core_machine_set_a20(session->core_machine, TYPE_TRUE) == TYPE_STATUS_OK);
+        CHECK(core_machine_set_a20(session->core_machine, LIB_TRUE) == TYPE_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x00100020u, 0x96u,
             TYPE_STATUS_OK));
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,

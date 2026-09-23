@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_D4_MEMORY_H
 #define CORE_MACHINE_D4_MEMORY_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/memory_interface.h"
@@ -8,12 +9,12 @@ typedef struct core_machine core_machine;
 typedef struct core_machine_d4_memory_config core_machine_d4_memory_config;
 
 typedef struct core_machine_d4_memory {
-    type_unsigned_8 control;
-    type_unsigned_8 diagnostic_low;
-    type_unsigned_8 diagnostic_high;
-    type_unsigned_16 reset_ram_setup;
-    type_unsigned_16 ram_setup;
-    type_unsigned_8 parity_fault_mask;
+    lib_u8 control;
+    lib_u8 diagnostic_low;
+    lib_u8 diagnostic_high;
+    lib_u16 reset_ram_setup;
+    lib_u16 ram_setup;
+    lib_u8 parity_fault_mask;
     type_bool configured;
 } core_machine_d4_memory;
 

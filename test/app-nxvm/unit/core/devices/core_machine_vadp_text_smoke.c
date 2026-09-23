@@ -1,11 +1,12 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_VOID core_machine_vadp_write_crtc(t_port *port, type_unsigned_8 index,
-    type_unsigned_8 value)
+static C_VOID core_machine_vadp_write_crtc(t_port *port, lib_u8 index,
+    lib_u8 value)
 {
     core_machine_port_write(port, 0x03d4u, index);
     core_machine_port_write(port, 0x03d5u, value);
@@ -17,21 +18,21 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
-    type_unsigned_8 value;
-    C_INT saw_vertical_retrace = TYPE_FALSE;
-    C_INT saw_display_interference = TYPE_FALSE;
-    C_INT saw_buffer_access = TYPE_FALSE;
+    lib_u8 value;
+    C_INT saw_vertical_retrace = LIB_FALSE;
+    C_INT saw_display_interference = LIB_FALSE;
+    C_INT saw_buffer_access = LIB_FALSE;
     core_machine_vadp_text_timing timing = { 3u, 2u, 1u };
     core_machine_vadp_text_glyph_config glyphs = {0};
-    type_unsigned_8 status;
-    STD_SIZE_T refresh;
+    lib_u8 status;
+    lib_size refresh;
     C_INT failed = 0;
 
-    STD_MEMSET(&memory, 0, sizeof(memory));
+    lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
-    glyphs.present = TYPE_TRUE;
+    glyphs.present = LIB_TRUE;
     glyphs.bytes['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] = 0x81u;
     failed |= core_machine_vadp_configure_text_glyphs(&vadp, &glyphs) !=
         TYPE_STATUS_OK;
@@ -48,7 +49,7 @@ C_INT main(C_VOID)
     failed |= core_machine_memory_write_physical(&memory,
         CORE_MACHINE_VADP_TEXT_BASE + 1u, (type_virtual_address)&value,
         sizeof(value)) != TYPE_STATUS_OK;
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.columns != 80u || snapshot.rows != 25u ||
         snapshot.text_cell_height != 1u ||
@@ -84,11 +85,11 @@ C_INT main(C_VOID)
         core_machine_vadp_advance(&vadp, &memory, 1u);
         status = core_machine_port_read(&port, 0x03dau);
         if ((status & 0x08u) != 0u) {
-            saw_vertical_retrace = TYPE_TRUE;
+            saw_vertical_retrace = LIB_TRUE;
         } else if ((status & 0x01u) != 0u) {
-            saw_buffer_access = TYPE_TRUE;
+            saw_buffer_access = LIB_TRUE;
         } else {
-            saw_display_interference = TYPE_TRUE;
+            saw_display_interference = LIB_TRUE;
         }
     }
     failed |= !saw_vertical_retrace || !saw_display_interference ||

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -14,11 +15,11 @@
 #define TEXT_VIDEO_CELLS (80u * 25u)
 
 static C_INT vm_dos_keyboard_submit_key(vm_machine *session,
-    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+    lib_u16 scan_code, lib_u16 virtual_key, C_INT pressed)
 {
     core_machine_guest_input_event event = { 0 };
 
-    if (session == STD_NULL) return 0;
+    if (session == LIB_NULL) return 0;
     event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
@@ -37,9 +38,9 @@ static C_INT vm_dos_keyboard_has_text(const vm_machine *session,
     const C_CHAR *text)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
-    STD_SIZE_T character;
-    STD_SIZE_T length = STD_STRLEN(text);
+    lib_size cell;
+    lib_size character;
+    lib_size length = lib_text_length(text);
 
     (C_VOID)test_vm_machine_capture_presentation(session, &frame);
     for (cell = 0u; cell + length <= TEXT_VIDEO_CELLS; ++cell) {
@@ -54,7 +55,7 @@ static C_INT vm_dos_keyboard_has_text(const vm_machine *session,
 static C_INT vm_dos_keyboard_has_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
-    STD_SIZE_T cell;
+    lib_size cell;
 
     (C_VOID)test_vm_machine_capture_presentation(session, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
@@ -86,11 +87,11 @@ static C_INT vm_dos_keyboard_has_edit_menu(const vm_machine *session)
 static C_INT vm_dos_keyboard_verify_text_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
-    type_unsigned_8 text[TEXT_VIDEO_CELLS * 2u];
-    STD_SIZE_T cell;
-    STD_SIZE_T title_cell = TEXT_VIDEO_CELLS;
+    lib_u8 text[TEXT_VIDEO_CELLS * 2u];
+    lib_size cell;
+    lib_size title_cell = TEXT_VIDEO_CELLS;
 
-    if (session == STD_NULL ||
+    if (session == LIB_NULL ||
         core_machine_debug_read_memory(session->core_machine, TEXT_VIDEO_BASE,
             text, sizeof(text)) != TYPE_STATUS_OK) {
         STD_PRINTF("edit display: text memory unavailable\n");
@@ -113,7 +114,7 @@ static C_INT vm_dos_keyboard_verify_text_frame(const vm_machine *session)
             return 0;
         }
         if (cell + 8u <= TEXT_VIDEO_CELLS &&
-            STD_MEMCMP(&frame.characters[cell], "UNTITLED", 8u) == 0) {
+            lib_memory_compare(&frame.characters[cell], "UNTITLED", 8u) == 0) {
             title_cell = cell;
         }
     }
@@ -128,15 +129,15 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_machine *session,
     const core_machine_cpu_state *state)
 {
     core_machine_guest_display_frame frame;
-    type_unsigned_16 head = 0u;
-    type_unsigned_16 tail = 0u;
-    type_unsigned_8 video_mode = 0u;
-    type_unsigned_8 scan_set = 0u;
-    type_unsigned_8 instructions[8] = { 0u };
-    STD_SIZE_T cell;
-    STD_SIZE_T index;
+    lib_u16 head = 0u;
+    lib_u16 tail = 0u;
+    lib_u8 video_mode = 0u;
+    lib_u8 scan_set = 0u;
+    lib_u8 instructions[8] = { 0u };
+    lib_size cell;
+    lib_size index;
 
-    if (session == STD_NULL || state == STD_NULL) return;
+    if (session == LIB_NULL || state == LIB_NULL) return;
     (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x041au,
         &head, sizeof(head));
     (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x041cu,
@@ -167,11 +168,11 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_machine *session,
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     integration_ini_session ini_session;
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     DWORD elapsed;
     const C_UCHAR scan_codes[] = { 0x12u, 0x20u, 0x17u, 0x14u, 0x1cu };
     const C_UCHAR virtual_keys[] = { 'E', 'D', 'I', 'T', VK_RETURN };
-    STD_SIZE_T index;
+    lib_size index;
     DWORD prompt_timeout = argc == 4 ? 20000u : 3000u;
     DWORD edit_timeout = argc == 4 ? 20000u : 5000u;
     C_INT display_ok = 0;
@@ -270,7 +271,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     return 0;
 
 fail:
-    if (session != STD_NULL) vm_machine_stop(session);
+    if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;
 }

@@ -1,5 +1,6 @@
 #ifndef VM_PROFILE_DEFAULT_KEYBOARD_MAPPER_H
 #define VM_PROFILE_DEFAULT_KEYBOARD_MAPPER_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -9,16 +10,16 @@
 #define VM_PROFILE_DEFAULT_KEYBOARD_SEQUENCE_CAPACITY 8u
 
 typedef struct vm_profile_default_keyboard_sequence {
-    type_unsigned_8 bytes[VM_PROFILE_DEFAULT_KEYBOARD_SEQUENCE_CAPACITY];
-    type_unsigned_8 count;
+    lib_u8 bytes[VM_PROFILE_DEFAULT_KEYBOARD_SEQUENCE_CAPACITY];
+    lib_u8 count;
 } vm_profile_default_keyboard_sequence;
 
-type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_code,
-    type_unsigned_16 host_virtual_key, C_INT pressed,
+type_status vm_profile_default_keyboard_map_host_key(lib_u16 host_scan_code,
+    lib_u16 host_virtual_key, C_INT pressed,
     vm_profile_default_keyboard_sequence *out_sequence);
 type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
-    type_unsigned_16 host_scan_code, type_unsigned_16 host_virtual_key,
-    C_INT pressed, type_unsigned_8 native_scan_set,
+    lib_u16 host_scan_code, lib_u16 host_virtual_key,
+    C_INT pressed, lib_u8 native_scan_set,
     vm_profile_default_keyboard_sequence *out_sequence);
 
 #endif

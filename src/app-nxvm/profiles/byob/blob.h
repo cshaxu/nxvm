@@ -1,5 +1,6 @@
 #ifndef VM_PROFILE_BYOB_BLOB_H
 #define VM_PROFILE_BYOB_BLOB_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -10,13 +11,13 @@
 typedef struct vm_profile_byob_blob {
     const C_CHAR *path;
     const C_CHAR *sha256;
-    STD_SIZE_T bytes;
+    lib_size bytes;
 } vm_profile_byob_blob;
 
 C_INT vm_profile_byob_blob_is_valid(const vm_profile_byob_blob *blob);
 type_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
-    type_unsigned_8 *out_bytes);
-C_INT vm_profile_byob_option_rom_is_valid(const type_unsigned_8 *bytes,
-    STD_SIZE_T byte_count, STD_SIZE_T maximum_bytes);
+    lib_u8 *out_bytes);
+C_INT vm_profile_byob_option_rom_is_valid(const lib_u8 *bytes,
+    lib_size byte_count, lib_size maximum_bytes);
 
 #endif

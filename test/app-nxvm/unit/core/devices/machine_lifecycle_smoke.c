@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 
@@ -25,7 +26,7 @@ static C_INT expect_lifecycle(
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run_result;
     core_machine_cpu_state cpu;

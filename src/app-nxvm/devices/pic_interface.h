@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_PIC_INTERFACE_H
 #define CORE_MACHINE_PIC_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -14,7 +15,7 @@ typedef enum core_machine_pic_topology {
 /* Immutable board timing for already-pending IRQs released by an IMR write.
  * The 8259A remains the sole owner of IRR, IMR and interrupt selection. */
 typedef struct core_machine_pic_irq_timing {
-    type_unsigned_32 unmask_delivery_ticks[16];
+    lib_u32 unmask_delivery_ticks[16];
 } core_machine_pic_irq_timing;
 
 #endif

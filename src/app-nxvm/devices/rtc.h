@@ -2,6 +2,7 @@
 
 #ifndef CORE_MACHINE_RTC_H
 #define CORE_MACHINE_RTC_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -40,31 +41,31 @@
 #define CORE_MACHINE_RTC_REG_D_VRT 0x80u
 
 typedef struct core_machine_rtc_config {
-    type_unsigned_8 irq;
-    type_unsigned_32 ticks_per_second;
+    lib_u8 irq;
+    lib_u32 ticks_per_second;
     core_machine_rtc_timing_plan timing;
 } core_machine_rtc_config;
 
 typedef struct core_machine_rtc_calendar {
-    type_unsigned_8 second;
-    type_unsigned_8 minute;
-    type_unsigned_8 hour;
-    type_unsigned_8 day_week;
-    type_unsigned_8 day_month;
-    type_unsigned_8 month;
-    type_unsigned_8 year;
-    type_unsigned_64 second_ticks;
-    type_unsigned_64 periodic_ticks;
+    lib_u8 second;
+    lib_u8 minute;
+    lib_u8 hour;
+    lib_u8 day_week;
+    lib_u8 day_month;
+    lib_u8 month;
+    lib_u8 year;
+    lib_u64 second_ticks;
+    lib_u64 periodic_ticks;
 } core_machine_rtc_calendar;
 
 typedef struct core_machine_rtc {
-    type_unsigned_8 registers[CORE_MACHINE_RTC_REGISTER_COUNT];
-    type_unsigned_8 selected_register;
+    lib_u8 registers[CORE_MACHINE_RTC_REGISTER_COUNT];
+    lib_u8 selected_register;
     core_machine_rtc_calendar calendar;
     core_machine_pic_irq_source irq_source;
-    type_unsigned_32 ticks_per_second;
-    type_unsigned_32 uip_lead_ticks;
-    type_unsigned_32 update_ticks;
+    lib_u32 ticks_per_second;
+    lib_u32 uip_lead_ticks;
+    lib_u32 update_ticks;
     core_machine_rtc_timing_provenance timing_provenance;
     type_bool square_wave;
 } core_machine_rtc;
@@ -73,14 +74,14 @@ C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
     t_pic *pic_slave, const core_machine_rtc_config *config);
 C_VOID core_machine_rtc_reset(core_machine_rtc *rtc);
 C_VOID core_machine_rtc_finalize(core_machine_rtc *rtc);
-C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, type_unsigned_64 elapsed_ticks);
-C_VOID core_machine_rtc_select_register(core_machine_rtc *rtc, type_unsigned_8 index);
-type_unsigned_8 core_machine_rtc_read_selected(core_machine_rtc *rtc);
-C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, type_unsigned_8 value);
-C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, type_unsigned_8 index,
-    type_unsigned_8 value);
+C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, lib_u64 elapsed_ticks);
+C_VOID core_machine_rtc_select_register(core_machine_rtc *rtc, lib_u8 index);
+lib_u8 core_machine_rtc_read_selected(core_machine_rtc *rtc);
+C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, lib_u8 value);
+C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, lib_u8 index,
+    lib_u8 value);
 type_bool core_machine_rtc_get_square_wave(const core_machine_rtc *rtc);
 type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
-    type_unsigned_64 *out_ticks);
+    lib_u64 *out_ticks);
 
 #endif

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -6,7 +7,7 @@ typedef struct { core_machine_trace_event event; C_INT count; } fixture;
 static C_VOID capture(C_VOID *context, const core_machine_trace_event *event)
 { fixture *state = (fixture *)context; if (event->type == CORE_MACHINE_TRACE_EXTERNAL_TIME) { state->event = *event; ++state->count; } }
 C_INT main(C_VOID)
-{ core_machine *machine = STD_NULL; core_machine_trace_provider trace; fixture state = { { 0 }, 0 }; C_INT failed = 0;
+{ core_machine *machine = LIB_NULL; core_machine_trace_provider trace; fixture state = { { 0 }, 0 }; C_INT failed = 0;
   trace.callback = capture; trace.context = &state;
   if (test_core_machine_create_executor(0u, &machine) != TYPE_STATUS_OK) return 1;
   machine->retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC;

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "test/app-nxvm/integration/support/nxvm_console_process.h"

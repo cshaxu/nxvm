@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/model40/composition_interface.h"
 
 #include "app-nxvm/devices/vadp.h"
@@ -18,7 +19,7 @@ static type_status vm_profile_model40_materialize_controllers(core_machine_plan 
     core_machine_fdc_config fdc = {0};
     core_machine_hdc_config hdc = {0};
 
-    if (plan == STD_NULL) {
+    if (plan == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
@@ -32,7 +33,7 @@ static type_status vm_profile_model40_materialize_controllers(core_machine_plan 
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
-            .drive_address_port = 0x03f7u, .lba28_supported = TYPE_FALSE}};
+            .drive_address_port = 0x03f7u, .lba28_supported = LIB_FALSE}};
     if (core_machine_plan_configure_fdc(plan, &drives, &fdc) != TYPE_STATUS_OK ||
         core_machine_plan_bind_fdc_terminal_observation(plan,
             terminal_observation) != TYPE_STATUS_OK) {
@@ -52,19 +53,19 @@ type_status vm_profile_model40_topology_materialize(
     core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u };
     core_machine_rtc_cmos_config rtc = {0};
     core_machine_plan_topology topology = {0};
-    if (out_topology == STD_NULL) {
+    if (out_topology == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     display.text_timing = (core_machine_vadp_text_timing) {48u, 8u, 8u};
-    display.cga_vram_present = TYPE_FALSE;
-    display.ega_present = TYPE_TRUE;
+    display.cga_vram_present = LIB_FALSE;
+    display.ega_present = LIB_TRUE;
     display.ega_personality = CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
     display.cecg = (core_machine_vadp_cecg_config) {
-        0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE,
-        0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE };
+        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE };
     display.ega_sequencer = (core_machine_vadp_ega_sequencer_config) {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE };
+        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE };
     display.ega_controllers = (core_machine_vadp_ega_controller_config) {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
         { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
@@ -80,7 +81,7 @@ type_status vm_profile_model40_topology_materialize(
     rtc.ticks_per_second = 32768u;
     rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,
         CORE_MACHINE_RTC_TIMING_L3_SOURCE};
-    topology.d4_platform_present = TYPE_TRUE;
+    topology.d4_platform_present = LIB_TRUE;
     topology.d4_platform = d4;
     /* The selected D4 setup has 640 KiB conventional RAM and relocates the
      * remaining 384 KiB of the built-in first MiB to FA0000h--FFFFFFh.
@@ -101,11 +102,11 @@ type_status vm_profile_model40_topology_materialize(
      * continues to win as its own selected physical mapping. */
     topology.absent_memory[2] = (core_machine_absent_memory_config) {
         0x000b0000u, 0x00008000u, 0xffu };
-    topology.display_present = TYPE_TRUE;
+    topology.display_present = LIB_TRUE;
     topology.display = display;
-    topology.dma_present = TYPE_TRUE;
+    topology.dma_present = LIB_TRUE;
     topology.dma = dma;
-    topology.rtc_cmos_present = TYPE_TRUE;
+    topology.rtc_cmos_present = LIB_TRUE;
     topology.rtc_cmos = rtc;
     *out_topology = topology;
     return TYPE_STATUS_OK;
@@ -115,9 +116,9 @@ type_status vm_profile_model40_materialize_plan(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider terminal_observation)
 {
     const core_machine_d4_memory_config d4_memory = {
-        TYPE_TRUE, 0x8fu, 0xfdu, 0xfc42u };
+        LIB_TRUE, 0x8fu, 0xfdu, 0xfc42u };
 
-    if (plan == STD_NULL || core_machine_plan_configure_d4_memory(plan,
+    if (plan == LIB_NULL || core_machine_plan_configure_d4_memory(plan,
             &d4_memory) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }

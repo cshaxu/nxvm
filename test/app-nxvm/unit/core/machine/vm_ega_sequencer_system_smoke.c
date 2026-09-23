@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -10,14 +11,14 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
-    type_unsigned_8 aperture_value = 0x5au;
-    type_unsigned_8 read_value = 0u;
-    type_unsigned_32 port_value = 0u;
+    vm_machine *session = LIB_NULL;
+    lib_u8 aperture_value = 0x5au;
+    lib_u8 read_value = 0u;
+    lib_u32 port_value = 0u;
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || !session->active || session->core_machine == STD_NULL) {
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL || !session->active || session->core_machine == LIB_NULL) {
         return 1;
     }
     vm_machine_reset(session);

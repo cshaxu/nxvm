@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/machine/control.h"
@@ -7,8 +8,8 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) {
+    vm_machine *session = LIB_NULL;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK) {
         vm_machine_destroy(session);
         return 1;
     }

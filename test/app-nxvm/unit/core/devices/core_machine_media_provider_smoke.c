@@ -1,12 +1,13 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/media_interface.h"
 
 typedef struct core_machine_media_fixture {
-    type_unsigned_8 bytes[16];
+    lib_u8 bytes[16];
     core_machine_media_address_mark marks[4];
-    type_unsigned_64 generation;
-    type_unsigned_32 flush_count;
+    lib_u64 generation;
+    lib_u32 flush_count;
     type_bool present;
     type_bool read_only;
     core_machine_media_result forced_read_result;
@@ -17,7 +18,7 @@ static core_machine_media_result core_machine_media_fixture_query(C_VOID *contex
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
-    if (fixture == STD_NULL || out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    if (fixture == LIB_NULL || out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     out_info->generation = fixture->generation;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
         CORE_MACHINE_MEDIA_CAPABILITY_FLUSHABLE |
@@ -36,44 +37,44 @@ static core_machine_media_result core_machine_media_fixture_query(C_VOID *contex
 }
 
 static core_machine_media_result core_machine_media_fixture_read(C_VOID *context,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
-    if (fixture == STD_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (fixture == LIB_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fixture->forced_read_result != CORE_MACHINE_MEDIA_RESULT_OK)
         return fixture->forced_read_result;
     if (offset > sizeof(fixture->bytes) || byte_count > sizeof(fixture->bytes) - offset)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMCPY(buffer, fixture->bytes + offset, byte_count);
+    lib_memory_copy(buffer, fixture->bytes + offset, byte_count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_media_fixture_write(C_VOID *context,
-    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
-    if (fixture == STD_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (fixture == LIB_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fixture->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
     if (offset > sizeof(fixture->bytes) || byte_count > sizeof(fixture->bytes) - offset)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMCPY(fixture->bytes + offset, buffer, byte_count);
+    lib_memory_copy(fixture->bytes + offset, buffer, byte_count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_media_fixture_format(C_VOID *context,
-    type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill)
+    lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
-    type_unsigned_64 offset = logical_sector * 4u;
-    type_unsigned_32 bytes = sector_count * 4u;
+    lib_u64 offset = logical_sector * 4u;
+    lib_u32 bytes = sector_count * 4u;
 
-    if (fixture == STD_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (fixture == LIB_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fixture->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
     if (logical_sector >= 4u || sector_count > 4u - logical_sector)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMSET(fixture->bytes + offset, fill, bytes);
+    lib_memory_set(fixture->bytes + offset, fill, bytes);
     ++fixture->generation;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
@@ -82,31 +83,31 @@ static core_machine_media_result core_machine_media_fixture_flush(C_VOID *contex
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
-    if (fixture == STD_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (fixture == LIB_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     ++fixture->flush_count;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_media_fixture_get_address_mark(
-    C_VOID *context, type_unsigned_64 logical_sector,
+    C_VOID *context, lib_u64 logical_sector,
     core_machine_media_address_mark *out_mark)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
-    if (fixture == STD_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
-    if (out_mark == STD_NULL || logical_sector >= 4u)
+    if (fixture == LIB_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (out_mark == LIB_NULL || logical_sector >= 4u)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     *out_mark = fixture->marks[logical_sector];
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_media_fixture_set_address_mark(
-    C_VOID *context, type_unsigned_64 logical_sector,
+    C_VOID *context, lib_u64 logical_sector,
     core_machine_media_address_mark mark)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
-    if (fixture == STD_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (fixture == LIB_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fixture->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
     if (logical_sector >= 4u || (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
         mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA))
@@ -117,7 +118,7 @@ static core_machine_media_result core_machine_media_fixture_set_address_mark(
 }
 
 static core_machine_media_result core_machine_media_fixture_get_invalid_address_mark(
-    C_VOID *context, type_unsigned_64 logical_sector,
+    C_VOID *context, lib_u64 logical_sector,
     core_machine_media_address_mark *out_mark)
 {
     core_machine_media_result result = core_machine_media_fixture_get_address_mark(
@@ -146,8 +147,8 @@ C_INT main(C_VOID)
         core_machine_media_fixture_write,
         core_machine_media_fixture_format,
         core_machine_media_fixture_flush,
-        STD_NULL,
-        STD_NULL
+        LIB_NULL,
+        LIB_NULL
     };
     static const core_machine_media_provider invalid_provider = {
         core_machine_media_fixture_query,
@@ -158,20 +159,20 @@ C_INT main(C_VOID)
         core_machine_media_fixture_get_invalid_address_mark,
         core_machine_media_fixture_set_address_mark
     };
-    core_machine_media_registry *registry = STD_NULL;
-    core_machine_media_fixture first = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 7u, 0u, TYPE_TRUE, TYPE_FALSE,
+    core_machine_media_registry *registry = LIB_NULL;
+    core_machine_media_fixture first = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 7u, 0u, LIB_TRUE, LIB_FALSE,
         CORE_MACHINE_MEDIA_RESULT_OK};
-    core_machine_media_fixture second = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 3u, 0u, TYPE_FALSE, TYPE_FALSE,
+    core_machine_media_fixture second = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 3u, 0u, LIB_FALSE, LIB_FALSE,
         CORE_MACHINE_MEDIA_RESULT_OK};
-    core_machine_media_fixture unsupported = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 4u, 0u, TYPE_TRUE, TYPE_FALSE,
+    core_machine_media_fixture unsupported = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 4u, 0u, LIB_TRUE, LIB_FALSE,
         CORE_MACHINE_MEDIA_RESULT_OK};
-    core_machine_media_fixture invalid = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 5u, 0u, TYPE_TRUE, TYPE_FALSE,
+    core_machine_media_fixture invalid = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 5u, 0u, LIB_TRUE, LIB_FALSE,
         CORE_MACHINE_MEDIA_RESULT_OK};
     core_machine_media_info info;
     core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     core_machine_media_address_mark mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
-    type_unsigned_8 bytes[4] = {1u, 2u, 3u, 4u};
-    type_unsigned_8 readback[4] = {0};
+    lib_u8 bytes[4] = {1u, 2u, 3u, 4u};
+    lib_u8 readback[4] = {0};
     C_INT failed = 0;
 
     if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
@@ -216,20 +217,20 @@ C_INT main(C_VOID)
             bytes, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         core_machine_media_read_bytes(registry, 1u, 4u, readback, sizeof(readback),
             &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
-        STD_MEMCMP(bytes, readback, sizeof(bytes)) != 0)) failed = 1;
+        lib_memory_compare(bytes, readback, sizeof(bytes)) != 0)) failed = 1;
     if (!failed && (core_machine_media_format_sectors(registry, 1u, 1u, 1u,
             0xa5u, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         first.generation != 9u || first.bytes[4] != 0xa5u ||
         core_machine_media_flush(registry, 1u, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK || first.flush_count != 1u)) failed = 1;
-    first.read_only = TYPE_TRUE;
+    first.read_only = LIB_TRUE;
     if (!failed && (core_machine_media_write_bytes(registry, 1u, 0u, bytes,
             sizeof(bytes), &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_READ_ONLY ||
         core_machine_media_read_sectors(registry, 1u, 4u, 1u, readback,
             &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE)) failed = 1;
-    first.read_only = TYPE_FALSE;
+    first.read_only = LIB_FALSE;
     first.forced_read_result = CORE_MACHINE_MEDIA_RESULT_TRANSIENT;
     if (!failed && (core_machine_media_read_bytes(registry, 1u, 0u, readback,
             sizeof(readback), &result) != TYPE_STATUS_OK ||

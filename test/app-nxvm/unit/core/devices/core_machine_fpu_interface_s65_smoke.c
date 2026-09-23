@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -19,13 +20,13 @@ static C_VOID fpu_interface_s65_reset(C_VOID *opaque)
 {
     fpu_interface_s65_machine *state = (fpu_interface_s65_machine *)opaque;
 
-    if (state != STD_NULL) {
+    if (state != LIB_NULL) {
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
 static const core_machine_execution_provider fpu_interface_s65_provider = {
-    fpu_interface_s65_reset, STD_NULL
+    fpu_interface_s65_reset, LIB_NULL
 };
 
 static C_INT fpu_interface_s65_prepare(core_machine_cpu_profile profile,
@@ -37,10 +38,10 @@ static C_INT fpu_interface_s65_prepare(core_machine_cpu_profile profile,
         .fpu_profile = fpu_profile
     };
 
-    if (state == STD_NULL) {
+    if (state == LIB_NULL) {
         return 0;
     }
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
     return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &fpu_interface_s65_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(
@@ -48,12 +49,12 @@ static C_INT fpu_interface_s65_prepare(core_machine_cpu_profile profile,
 }
 
 static C_INT fpu_interface_s65_run(fpu_interface_s65_machine *state,
-    const type_unsigned_8 *code, STD_SIZE_T size, t_cpu *after,
+    const lib_u8 *code, lib_size size, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
 
-    if (state == STD_NULL || state->machine == STD_NULL || code == STD_NULL ||
+    if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         core_machine_memory_write(state->machine, 0u, code, size) !=
             TYPE_STATUS_OK) {
         return 0;
@@ -67,12 +68,12 @@ static C_INT fpu_interface_s65_run(fpu_interface_s65_machine *state,
 
 static C_INT fpu_interface_s65_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(before, after, sizeof(*before)) == 0;
+    return lib_memory_compare(before, after, sizeof(*before)) == 0;
 }
 
-static C_INT fpu_interface_s65_success(const type_unsigned_8 *code, STD_SIZE_T size,
+static C_INT fpu_interface_s65_success(const lib_u8 *code, lib_size size,
     core_machine_cpu_profile profile, core_machine_fpu_profile fpu_profile,
-    type_unsigned_32 cr0)
+    lib_u32 cr0)
 {
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -96,17 +97,17 @@ static C_INT fpu_interface_s65_success(const type_unsigned_8 *code, STD_SIZE_T s
             after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi ||
             after.data.eflags != before.data.eflags ||
-            STD_MEMCMP(&after.data.es, &before.data.es,
+            lib_memory_compare(&after.data.es, &before.data.es,
                 sizeof(after.data.es)) != 0 ||
-            STD_MEMCMP(&after.data.cs, &before.data.cs,
+            lib_memory_compare(&after.data.cs, &before.data.cs,
                 sizeof(after.data.cs)) != 0 ||
-            STD_MEMCMP(&after.data.ss, &before.data.ss,
+            lib_memory_compare(&after.data.ss, &before.data.ss,
                 sizeof(after.data.ss)) != 0 ||
-            STD_MEMCMP(&after.data.ds, &before.data.ds,
+            lib_memory_compare(&after.data.ds, &before.data.ds,
                 sizeof(after.data.ds)) != 0 ||
-            STD_MEMCMP(&after.data.fs, &before.data.fs,
+            lib_memory_compare(&after.data.fs, &before.data.fs,
                 sizeof(after.data.fs)) != 0 ||
-            STD_MEMCMP(&after.data.gs, &before.data.gs,
+            lib_memory_compare(&after.data.gs, &before.data.gs,
                 sizeof(after.data.gs)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -115,11 +116,11 @@ static C_INT fpu_interface_s65_success(const type_unsigned_8 *code, STD_SIZE_T s
 
 static C_INT fpu_interface_s65_mf(C_VOID)
 {
-    static const type_unsigned_8 wait[] = { 0x9bu };
-    static const type_unsigned_8 handler[] = { 0xf4u };
-    const type_unsigned_16 handler_offset = 0x0100u;
-    const type_unsigned_16 handler_segment = 0u;
-    type_unsigned_16 frame[3] = { 0u, 0u, 0u };
+    static const lib_u8 wait[] = { 0x9bu };
+    static const lib_u8 handler[] = { 0xf4u };
+    const lib_u16 handler_offset = 0x0100u;
+    const lib_u16 handler_segment = 0u;
+    lib_u16 frame[3] = { 0u, 0u, 0u };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
@@ -136,7 +137,7 @@ static C_INT fpu_interface_s65_mf(C_VOID)
                 sizeof(handler_segment)) != TYPE_STATUS_OK ||
             core_machine_memory_write(state.machine, handler_offset, handler,
                 sizeof(handler)) != TYPE_STATUS_OK;
-        state.machine->fpu.pending_unmasked_exception = TYPE_TRUE;
+        state.machine->fpu.pending_unmasked_exception = LIB_TRUE;
         before = state.machine->executor_cpu;
         failed |= !fpu_interface_s65_run(&state, wait, sizeof(wait), &after,
             &diagnostic, &status) || status != TYPE_STATUS_OK ||
@@ -145,26 +146,26 @@ static C_INT fpu_interface_s65_mf(C_VOID)
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_MF) || after.data.eip != handler_offset ||
             after.data.esp != ((before.data.esp & 0xffff0000u) |
-                (type_unsigned_16)(before.data.esp - 6u)) ||
+                (lib_u16)(before.data.esp - 6u)) ||
             !test_core_machine_fixture_read_linear(state.machine,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), sizeof(frame)) ||
             frame[0] != 0u || frame[1] != before.data.cs.selector ||
-            frame[2] != (type_unsigned_16)before.data.eflags ||
+            frame[2] != (lib_u16)before.data.eflags ||
             after.data.eax != before.data.eax || after.data.ebx != before.data.ebx ||
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi ||
-            STD_MEMCMP(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
-            STD_MEMCMP(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
-            STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
-            STD_MEMCMP(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
+            lib_memory_compare(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
+            lib_memory_compare(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
+            lib_memory_compare(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
+            lib_memory_compare(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT fpu_interface_s65_reject(const type_unsigned_8 *code, STD_SIZE_T size,
+static C_INT fpu_interface_s65_reject(const lib_u8 *code, lib_size size,
     core_machine_cpu_profile profile)
 {
     fpu_interface_s65_machine state;
@@ -190,10 +191,10 @@ static C_INT fpu_interface_s65_reject(const type_unsigned_8 *code, STD_SIZE_T si
 }
 
 static C_INT fpu_interface_s65_handoff(core_machine_cpu_profile cpu,
-    core_machine_fpu_profile profile, type_unsigned_32 expected_min,
-    type_unsigned_32 expected_max)
+    core_machine_fpu_profile profile, lib_u32 expected_min,
+    lib_u32 expected_max)
 {
-    static const type_unsigned_8 fadd_wait[] = { 0xd8u, 0xc0u, 0x9bu };
+    static const lib_u8 fadd_wait[] = { 0xd8u, 0xc0u, 0x9bu };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
@@ -231,10 +232,10 @@ static C_INT fpu_interface_s65_handoff(core_machine_cpu_profile cpu,
 static C_INT fpu_interface_s65_deadline(core_machine_cpu_profile cpu,
     core_machine_fpu_profile profile)
 {
-    static const type_unsigned_8 fadd[] = { 0xd8u, 0xc0u };
+    static const lib_u8 fadd[] = { 0xd8u, 0xc0u };
     fpu_interface_s65_machine state;
     core_machine_time_observation observation;
-    type_bool advanced = TYPE_FALSE;
+    type_bool advanced = LIB_FALSE;
     C_INT failed = !fpu_interface_s65_prepare(cpu, profile, &state);
 
     if (!failed) {
@@ -255,7 +256,7 @@ static C_INT fpu_interface_s65_deadline(core_machine_cpu_profile cpu,
 
 static C_INT fpu_interface_s65_incompatible(C_VOID)
 {
-    static const type_unsigned_8 fninit[] = { 0xdbu, 0xe3u };
+    static const lib_u8 fninit[] = { 0xdbu, 0xe3u };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
@@ -277,17 +278,17 @@ static C_INT fpu_interface_s65_incompatible(C_VOID)
     return !failed;
 }
 
-static C_INT fpu_interface_s65_nm_delivery(const type_unsigned_8 *code,
-    STD_SIZE_T code_size, type_unsigned_32 cr0)
+static C_INT fpu_interface_s65_nm_delivery(const lib_u8 *code,
+    lib_size code_size, lib_u32 cr0)
 {
-    static const type_unsigned_8 hlt = 0xf4u;
-    const type_unsigned_16 offset = 0x0100u;
-    const type_unsigned_16 segment = 0u;
+    static const lib_u8 hlt = 0xf4u;
+    const lib_u16 offset = 0x0100u;
+    const lib_u16 segment = 0u;
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     t_cpu after;
-    type_unsigned_16 frame_ip = 0u;
+    lib_u16 frame_ip = 0u;
     C_INT failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         CORE_MACHINE_FPU_PROFILE_NONE, &state);
 
@@ -314,7 +315,7 @@ static C_INT fpu_interface_s65_nm_delivery(const type_unsigned_8 *code,
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_NM) || after.data.eip != offset ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             frame_ip != 0u;
         failed |= core_machine_run(state.machine,
@@ -327,25 +328,25 @@ static C_INT fpu_interface_s65_nm_delivery(const type_unsigned_8 *code,
     return !failed;
 }
 
-static C_INT fpu_interface_s65_irq(const type_unsigned_8 *instruction,
-    STD_SIZE_T instruction_size)
+static C_INT fpu_interface_s65_irq(const lib_u8 *instruction,
+    lib_size instruction_size)
 {
-    static const type_unsigned_8 hlt = 0xf4u;
-    const type_unsigned_16 offset = 0x0100u;
-    const type_unsigned_16 segment = 0u;
+    static const lib_u8 hlt = 0xf4u;
+    const lib_u16 offset = 0x0100u;
+    const lib_u16 segment = 0u;
     fpu_interface_s65_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_unsigned_8 code[8] = { 0u };
-    type_unsigned_16 frame_ip = 0u;
+    lib_u8 code[8] = { 0u };
+    lib_u16 frame_ip = 0u;
     C_INT failed = instruction_size + 1u > sizeof(code) ||
         !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             CORE_MACHINE_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
-        STD_MEMCPY(code, instruction, instruction_size);
+        lib_memory_copy(code, instruction, instruction_size);
         code[instruction_size] = 0x90u;
         failed |= core_machine_memory_write(state.machine, 0u, code,
             instruction_size + 1u) != TYPE_STATUS_OK;
@@ -359,7 +360,7 @@ static C_INT fpu_interface_s65_irq(const type_unsigned_8 *instruction,
     if (!failed) {
         state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         before = state.machine->executor_cpu;
-        STD_MEMSET(&irq, 0, sizeof(irq));
+        lib_memory_set(&irq, 0, sizeof(irq));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -371,7 +372,7 @@ static C_INT fpu_interface_s65_irq(const type_unsigned_8 *instruction,
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != offset + 1u || frame_ip != 0u ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             frame_ip != instruction_size || after.data.eax != before.data.eax ||
             after.data.ebx != before.data.ebx || after.data.ecx != before.data.ecx ||
@@ -387,7 +388,7 @@ static C_INT fpu_interface_s65_irq(const type_unsigned_8 *instruction,
 
 static C_INT fpu_interface_s65_vm86(C_VOID)
 {
-    static const type_unsigned_8 esc[] = { 0xd8u, 0xc0u };
+    static const lib_u8 esc[] = { 0xd8u, 0xc0u };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
@@ -405,17 +406,17 @@ static C_INT fpu_interface_s65_vm86(C_VOID)
         state.machine->executor_cpu.data.cs.base = 0u;
         state.machine->executor_cpu.data.cs.limit = 0xffffu;
         state.machine->executor_cpu.data.cs.dpl = 3u;
-        state.machine->executor_cpu.data.cs.flagValid = TYPE_TRUE;
+        state.machine->executor_cpu.data.cs.flagValid = LIB_TRUE;
         state.machine->executor_cpu.data.ds.selector = 0u;
         state.machine->executor_cpu.data.ds.base = 0u;
         state.machine->executor_cpu.data.ds.limit = 0xffffu;
         state.machine->executor_cpu.data.ds.dpl = 3u;
-        state.machine->executor_cpu.data.ds.flagValid = TYPE_TRUE;
+        state.machine->executor_cpu.data.ds.flagValid = LIB_TRUE;
         state.machine->executor_cpu.data.ss.selector = 0u;
         state.machine->executor_cpu.data.ss.base = 0u;
         state.machine->executor_cpu.data.ss.limit = 0xffffu;
         state.machine->executor_cpu.data.ss.dpl = 3u;
-        state.machine->executor_cpu.data.ss.flagValid = TYPE_TRUE;
+        state.machine->executor_cpu.data.ss.flagValid = LIB_TRUE;
         before = state.machine->executor_cpu;
         failed |= core_machine_memory_write(state.machine, 0u, esc,
             sizeof(esc)) != TYPE_STATUS_OK;
@@ -431,12 +432,12 @@ static C_INT fpu_interface_s65_vm86(C_VOID)
             after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || after.data.eflags != before.data.eflags ||
-            STD_MEMCMP(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
-            STD_MEMCMP(&after.data.cs, &before.data.cs, sizeof(after.data.cs)) != 0 ||
-            STD_MEMCMP(&after.data.ss, &before.data.ss, sizeof(after.data.ss)) != 0 ||
-            STD_MEMCMP(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
-            STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
-            STD_MEMCMP(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
+            lib_memory_compare(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
+            lib_memory_compare(&after.data.cs, &before.data.cs, sizeof(after.data.cs)) != 0 ||
+            lib_memory_compare(&after.data.ss, &before.data.ss, sizeof(after.data.ss)) != 0 ||
+            lib_memory_compare(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
+            lib_memory_compare(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
+            lib_memory_compare(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -444,26 +445,26 @@ static C_INT fpu_interface_s65_vm86(C_VOID)
 
 static C_INT fpu_interface_s65_protected_nm(C_VOID)
 {
-    static const type_unsigned_8 gdt_pointer[] = { 0x1fu,0u,0u,0x03u,0u,0u };
-    static const type_unsigned_8 idt_pointer[] = { 0xffu,0u,0u,0x04u,0u,0u };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt_pointer[] = { 0x1fu,0u,0u,0x03u,0u,0u };
+    static const lib_u8 idt_pointer[] = { 0xffu,0u,0u,0x04u,0u,0u };
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const type_unsigned_8 real_code[] = {
+    static const lib_u8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u, 0x0fu,0x01u,0x1eu,0x10u,0x01u,
         0xb8u,0x01u,0,0x0fu,0x01u,0xf0u, 0xb8u,0x10u,0,0x8eu,0xd8u,
         0xb8u,0x18u,0,0x8eu,0xd0u, 0xeau,0,0,0x08u,0
     };
-    static const type_unsigned_8 esc[] = { 0xd8u,0xc0u };
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 idt[0x100u] = { 0u };
+    static const lib_u8 esc[] = { 0xd8u,0xc0u };
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 idt[0x100u] = { 0u };
     fpu_interface_s65_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_16 frame_ip = 0u;
+    lib_u16 frame_ip = 0u;
     C_INT failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         CORE_MACHINE_FPU_PROFILE_NONE, &state);
 
@@ -499,7 +500,7 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (type_unsigned_16)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
+            after.data.ss.base + (lib_u16)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
             sizeof(frame_ip)) != TYPE_STATUS_OK;
         failed |= !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
             diagnostic.last_delivered_exception.exception_mask,
@@ -509,10 +510,10 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi ||
-            STD_MEMCMP(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
-            STD_MEMCMP(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
-            STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
-            STD_MEMCMP(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
+            lib_memory_compare(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
+            lib_memory_compare(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
+            lib_memory_compare(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
+            lib_memory_compare(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -525,34 +526,34 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 wait[] = { 0x9bu };
-    static const type_unsigned_8 fninit[] = { 0xdbu, 0xe3u };
-    static const type_unsigned_8 escapes[][2] = {
+    static const lib_u8 wait[] = { 0x9bu };
+    static const lib_u8 fninit[] = { 0xdbu, 0xe3u };
+    static const lib_u8 escapes[][2] = {
         { 0xd8u, 0xc0u }, { 0xd9u, 0xc0u }, { 0xdau, 0xc0u },
         { 0xdbu, 0xe3u }, { 0xdcu, 0xc0u }, { 0xddu, 0xc0u },
         { 0xdeu, 0xc0u }, { 0xdfu, 0xc0u }
     };
-    static const type_unsigned_8 attr_wait_66[] = { 0x66u, 0x9bu };
-    static const type_unsigned_8 attr_wait_67[] = { 0x67u, 0x9bu };
-    static const type_unsigned_8 attr_wait[] = { 0x66u, 0x67u, 0x9bu };
-    static const type_unsigned_8 attr_esc_66[] = { 0x66u, 0xdbu, 0xe3u };
-    static const type_unsigned_8 attr_esc_67[] = { 0x67u, 0xdbu, 0xe3u };
-    static const type_unsigned_8 attr_esc[] = { 0x66u, 0x67u, 0xdbu, 0xe3u };
-    static const type_unsigned_8 *const legacy_attributes[] = {
+    static const lib_u8 attr_wait_66[] = { 0x66u, 0x9bu };
+    static const lib_u8 attr_wait_67[] = { 0x67u, 0x9bu };
+    static const lib_u8 attr_wait[] = { 0x66u, 0x67u, 0x9bu };
+    static const lib_u8 attr_esc_66[] = { 0x66u, 0xdbu, 0xe3u };
+    static const lib_u8 attr_esc_67[] = { 0x67u, 0xdbu, 0xe3u };
+    static const lib_u8 attr_esc[] = { 0x66u, 0x67u, 0xdbu, 0xe3u };
+    static const lib_u8 *const legacy_attributes[] = {
         attr_wait_66, attr_wait_67, attr_wait, attr_esc_66, attr_esc_67,
         attr_esc
     };
-    static const type_unsigned_8 legacy_attribute_sizes[] = { 2u, 2u, 3u, 3u, 3u, 4u };
-    static const type_unsigned_8 lock_forms[][5] = {
+    static const lib_u8 legacy_attribute_sizes[] = { 2u, 2u, 3u, 3u, 3u, 4u };
+    static const lib_u8 lock_forms[][5] = {
         { 0xf0u, 0x9bu }, { 0xf0u, 0x66u, 0x9bu },
         { 0xf0u, 0x67u, 0x9bu }, { 0xf0u, 0x66u, 0x67u, 0x9bu },
         { 0xf0u, 0xdbu, 0xe3u }, { 0xf0u, 0x66u, 0xdbu, 0xe3u },
         { 0xf0u, 0x67u, 0xdbu, 0xe3u },
         { 0xf0u, 0x66u, 0x67u, 0xdbu, 0xe3u }
     };
-    static const type_unsigned_8 lock_sizes[] = { 2u, 3u, 3u, 4u, 3u, 4u, 4u, 5u };
+    static const lib_u8 lock_sizes[] = { 2u, 3u, 3u, 4u, 3u, 4u, 4u, 5u };
     core_machine_cpu_profile profile;
-    type_unsigned_8 index;
+    lib_u8 index;
     C_INT failed = 0;
 
     for (profile = CORE_MACHINE_CPU_PROFILE_8086;

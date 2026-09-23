@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -16,20 +17,20 @@ static C_VOID core_machine_dma_rtc_initialize_pic(core_machine *machine)
 }
 
 static C_VOID core_machine_dma_rtc_cmos_write(core_machine *machine,
-    type_unsigned_8 index, type_unsigned_8 value)
+    lib_u8 index, lib_u8 value)
 {
     (C_VOID)core_machine_bus_write(machine, 0x0070u, index);
     (C_VOID)core_machine_bus_write(machine, 0x0071u, value);
 }
 
-static type_unsigned_8 core_machine_dma_rtc_cmos_read(core_machine *machine,
-    type_unsigned_8 index)
+static lib_u8 core_machine_dma_rtc_cmos_read(core_machine *machine,
+    lib_u8 index)
 {
-    type_unsigned_32 value = 0u;
+    lib_u32 value = 0u;
 
     (C_VOID)core_machine_bus_write(machine, 0x0070u, index);
     (C_VOID)core_machine_bus_read(machine, 0x0071u, &value);
-    return (type_unsigned_8)value;
+    return (lib_u8)value;
 }
 
 static C_INT core_machine_dma_refresh_follows_pit_channel_1(C_VOID)
@@ -39,7 +40,7 @@ static C_INT core_machine_dma_refresh_follows_pit_channel_1(C_VOID)
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_dma_request_binding fdc_request = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = 0;
 
     failed |= core_machine_create(&configuration, &machine) != TYPE_STATUS_OK ||
@@ -72,9 +73,9 @@ int main(C_VOID)
     core_machine_dma_request_binding fdc_request = {0};
     core_machine_run_budget budget = {3u, 0u};
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
-    const type_unsigned_8 program[] = { 0x90u, 0xf4u };
-    type_unsigned_8 interrupt_vector = 0u;
+    core_machine *machine = LIB_NULL;
+    const lib_u8 program[] = { 0x90u, 0xf4u };
+    lib_u8 interrupt_vector = 0u;
     C_INT nmi_masked = 0;
     C_INT interrupt_pending = 0;
     C_INT failed = 0;
@@ -163,7 +164,7 @@ int main(C_VOID)
     }
 
 done:
-    if (failed && machine != STD_NULL) {
+    if (failed && machine != LIB_NULL) {
         STD_PRINTF("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d C=%02x IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
             stage, machine->shared_rtc.registers[CORE_MACHINE_RTC_REG_C],
             machine->shared_rtc.irq_source.irq,

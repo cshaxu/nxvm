@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 
@@ -13,9 +14,9 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_observation observation;
     type_status status;
-    core_machine *machine = STD_NULL;
-    const type_unsigned_8 program[] = {0x90u, 0xf4u};
-    const type_unsigned_8 register_or_program[] = {
+    core_machine *machine = LIB_NULL;
+    const lib_u8 program[] = {0x90u, 0xf4u};
+    const lib_u8 register_or_program[] = {
         0xbau, 0x00u, 0x03u, /* mov dx, 0300h */
         0x0au, 0xdfu,       /* or bh, bl */
         0xf4u

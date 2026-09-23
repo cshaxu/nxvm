@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/debug_interface.h"
@@ -40,378 +41,378 @@
 #define VM_BYOB_MODEL40_ES_HISTORY 32u
 
 typedef struct vm_byob_fdc_port_event {
-    type_unsigned_32 linear_pc;
-    type_unsigned_16 port;
-    type_unsigned_8 value;
+    lib_u32 linear_pc;
+    lib_u16 port;
+    lib_u8 value;
     type_bool write;
 } vm_byob_fdc_port_event;
 
 typedef struct vm_byob_boot_trace {
     core_machine *machine;
-    type_unsigned_64 cpu_retires;
-    type_unsigned_64 rom_retires;
-    type_unsigned_64 low_memory_retires;
-    type_unsigned_64 other_retires;
-    type_unsigned_64 reset_events;
-    type_unsigned_64 rom_memory_reads;
-    type_unsigned_64 fdc_port_accesses;
+    lib_u64 cpu_retires;
+    lib_u64 rom_retires;
+    lib_u64 low_memory_retires;
+    lib_u64 other_retires;
+    lib_u64 reset_events;
+    lib_u64 rom_memory_reads;
+    lib_u64 fdc_port_accesses;
     vm_byob_fdc_port_event fdc_port_history[VM_BYOB_FDC_PORT_HISTORY];
-    type_unsigned_64 hdc_port_accesses;
+    lib_u64 hdc_port_accesses;
     vm_byob_fdc_port_event hdc_port_history[VM_BYOB_HDC_PORT_HISTORY];
-    type_unsigned_64 model40_video_port_accesses;
+    lib_u64 model40_video_port_accesses;
     vm_byob_fdc_port_event
         model40_video_port_history[VM_BYOB_MODEL40_VIDEO_PORT_HISTORY];
-    type_unsigned_64 model40_video_special_accesses[5u];
-    type_unsigned_8 model40_video_special_last_values[5u];
-    type_unsigned_64 model40_video_error_writes;
-    type_unsigned_8 model40_video_error_last_value;
-    type_unsigned_32 model40_video_error_last_pc;
+    lib_u64 model40_video_special_accesses[5u];
+    lib_u8 model40_video_special_last_values[5u];
+    lib_u64 model40_video_error_writes;
+    lib_u8 model40_video_error_last_value;
+    lib_u32 model40_video_error_last_pc;
     vm_byob_fdc_port_event
         model40_video_special_history[VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY];
-    type_unsigned_64 model40_video_special_history_count;
-    type_unsigned_8 cmos_index;
-    type_unsigned_64 cmos_reads[VM_MACHINE_CMOS_SEED_BYTES];
-    type_unsigned_64 cmos_writes[VM_MACHINE_CMOS_SEED_BYTES];
-    type_unsigned_8 cmos_last_values[VM_MACHINE_CMOS_SEED_BYTES];
-    type_unsigned_32 cmos_last_write_pc[VM_MACHINE_CMOS_SEED_BYTES];
-    type_unsigned_64 xt_ppi_port_accesses;
-    type_unsigned_64 pic_port_accesses;
-    type_unsigned_64 pit_port_accesses;
-    type_unsigned_64 cga_port_accesses;
-    type_unsigned_64 cga_memory_writes;
-    type_unsigned_64 pit_wait_first_retires;
-    type_unsigned_64 pit_wait_second_retires;
-    type_unsigned_64 irq0_retires;
-    type_unsigned_32 last_linear_pc;
-    type_unsigned_32 int15_linear;
-    type_unsigned_64 int15_calls;
-    type_unsigned_8 last_int15_ah;
-    type_unsigned_32 int15_ah_seen;
-    type_unsigned_64 sgdt_calls;
-    type_unsigned_64 sidt_calls;
-    type_unsigned_64 pushf_calls;
-    type_unsigned_16 last_pushf_high;
-    type_unsigned_8 int6_vector_write_bytes[4];
-    type_unsigned_8 int6_vector_write_mask;
+    lib_u64 model40_video_special_history_count;
+    lib_u8 cmos_index;
+    lib_u64 cmos_reads[VM_MACHINE_CMOS_SEED_BYTES];
+    lib_u64 cmos_writes[VM_MACHINE_CMOS_SEED_BYTES];
+    lib_u8 cmos_last_values[VM_MACHINE_CMOS_SEED_BYTES];
+    lib_u32 cmos_last_write_pc[VM_MACHINE_CMOS_SEED_BYTES];
+    lib_u64 xt_ppi_port_accesses;
+    lib_u64 pic_port_accesses;
+    lib_u64 pit_port_accesses;
+    lib_u64 cga_port_accesses;
+    lib_u64 cga_memory_writes;
+    lib_u64 pit_wait_first_retires;
+    lib_u64 pit_wait_second_retires;
+    lib_u64 irq0_retires;
+    lib_u32 last_linear_pc;
+    lib_u32 int15_linear;
+    lib_u64 int15_calls;
+    lib_u8 last_int15_ah;
+    lib_u32 int15_ah_seen;
+    lib_u64 sgdt_calls;
+    lib_u64 sidt_calls;
+    lib_u64 pushf_calls;
+    lib_u16 last_pushf_high;
+    lib_u8 int6_vector_write_bytes[4];
+    lib_u8 int6_vector_write_mask;
     type_bool int6_pre_fault_snapshot_valid;
-    type_unsigned_16 int6_pre_fault_offset;
-    type_unsigned_16 int6_pre_fault_segment;
+    lib_u16 int6_pre_fault_offset;
+    lib_u16 int6_pre_fault_segment;
     core_machine_cpu_execution_point near_ud_history[VM_BYOB_NEAR_UD_HISTORY];
-    type_unsigned_32 near_ud_eflags[VM_BYOB_NEAR_UD_HISTORY];
-    type_unsigned_32 near_ud_eax[VM_BYOB_NEAR_UD_HISTORY];
-    type_unsigned_32 near_ud_ebx[VM_BYOB_NEAR_UD_HISTORY];
-    type_unsigned_64 near_ud_count;
+    lib_u32 near_ud_eflags[VM_BYOB_NEAR_UD_HISTORY];
+    lib_u32 near_ud_eax[VM_BYOB_NEAR_UD_HISTORY];
+    lib_u32 near_ud_ebx[VM_BYOB_NEAR_UD_HISTORY];
+    lib_u64 near_ud_count;
     type_bool real_286_high_flags_observed;
     core_machine_cpu_execution_point real_286_high_flags_point;
-    type_unsigned_32 real_286_high_flags_value;
+    lib_u32 real_286_high_flags_value;
     type_bool boot_loader_jz_observed;
     core_machine_retirement_control_outcome boot_loader_jz_outcome;
-    type_unsigned_32 boot_loader_previous_pc;
+    lib_u32 boot_loader_previous_pc;
     core_machine_retirement_control_outcome boot_loader_previous_outcome;
     type_bool boot_loader_error_observed;
-    type_unsigned_16 boot_loader_ds;
-    type_unsigned_16 boot_loader_es;
-    type_unsigned_16 boot_loader_si;
-    type_unsigned_16 boot_loader_di;
-    type_unsigned_16 boot_loader_cx;
-    type_unsigned_16 boot_loader_flags;
-    type_unsigned_8 boot_loader_left[11];
-    type_unsigned_8 boot_loader_right[11];
+    lib_u16 boot_loader_ds;
+    lib_u16 boot_loader_es;
+    lib_u16 boot_loader_si;
+    lib_u16 boot_loader_di;
+    lib_u16 boot_loader_cx;
+    lib_u16 boot_loader_flags;
+    lib_u8 boot_loader_left[11];
+    lib_u8 boot_loader_right[11];
     type_bool boot_loader_read_return_observed;
-    type_unsigned_16 boot_loader_read_return_flags;
-    type_unsigned_8 boot_loader_int13_state[5];
-    type_unsigned_64 fdc_terminal_count;
-    type_unsigned_64 fdc_failed_terminal_count;
+    lib_u16 boot_loader_read_return_flags;
+    lib_u8 boot_loader_int13_state[5];
+    lib_u64 fdc_terminal_count;
+    lib_u64 fdc_failed_terminal_count;
     core_machine_fdc_terminal_observation last_fdc_terminal;
-    type_unsigned_64 ibm5170_gdt_writes;
-    type_unsigned_32 ibm5170_gdt_last_address;
-    type_unsigned_8 ibm5170_gdt_last_value;
-    type_unsigned_64 ibm5170_rep_stos_entries;
-    type_unsigned_16 ibm5170_rep_stos_es;
-    type_unsigned_32 ibm5170_rep_stos_es_base;
-    type_unsigned_16 ibm5170_rep_stos_di;
-    type_unsigned_16 ibm5170_rep_stos_cx;
-    type_unsigned_16 ibm5170_rep_stos_ax;
+    lib_u64 ibm5170_gdt_writes;
+    lib_u32 ibm5170_gdt_last_address;
+    lib_u8 ibm5170_gdt_last_value;
+    lib_u64 ibm5170_rep_stos_entries;
+    lib_u16 ibm5170_rep_stos_es;
+    lib_u32 ibm5170_rep_stos_es_base;
+    lib_u16 ibm5170_rep_stos_di;
+    lib_u16 ibm5170_rep_stos_cx;
+    lib_u16 ibm5170_rep_stos_ax;
     type_bool model40_invalid_entry_observed;
     core_machine_cpu_execution_point model40_invalid_entry_source;
-    type_unsigned_16 model40_invalid_entry_ss;
-    type_unsigned_16 model40_invalid_entry_sp;
+    lib_u16 model40_invalid_entry_ss;
+    lib_u16 model40_invalid_entry_sp;
     type_bool model40_int10_vector_write_observed;
-    type_unsigned_64 model40_int10_vector_write_count;
-    type_unsigned_32 model40_int10_vector_write_pc;
-    type_unsigned_16 model40_int10_vector_write_cs;
-    type_unsigned_16 model40_int10_vector_offset;
-    type_unsigned_16 model40_int10_vector_segment;
-    type_unsigned_32 model40_int10_vector_history_pc[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
-    type_unsigned_16 model40_int10_vector_history_cs[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
-    type_unsigned_16 model40_int10_vector_history_offset[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
-    type_unsigned_16 model40_int10_vector_history_segment[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
-    type_unsigned_64 model40_int42_vector_write_count;
-    type_unsigned_32 model40_int42_vector_write_pc[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
-    type_unsigned_16 model40_int42_vector_history_offset[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
-    type_unsigned_16 model40_int42_vector_history_segment[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
-    type_unsigned_64 model40_int10_entry_count;
-    type_unsigned_32 model40_int10_entry_predecessor;
-    type_unsigned_16 model40_int10_entry_ss;
-    type_unsigned_16 model40_int10_entry_sp;
+    lib_u64 model40_int10_vector_write_count;
+    lib_u32 model40_int10_vector_write_pc;
+    lib_u16 model40_int10_vector_write_cs;
+    lib_u16 model40_int10_vector_offset;
+    lib_u16 model40_int10_vector_segment;
+    lib_u32 model40_int10_vector_history_pc[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    lib_u16 model40_int10_vector_history_cs[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    lib_u16 model40_int10_vector_history_offset[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    lib_u16 model40_int10_vector_history_segment[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    lib_u64 model40_int42_vector_write_count;
+    lib_u32 model40_int42_vector_write_pc[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    lib_u16 model40_int42_vector_history_offset[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    lib_u16 model40_int42_vector_history_segment[VM_BYOB_MODEL40_INT10_VECTOR_HISTORY];
+    lib_u64 model40_int10_entry_count;
+    lib_u32 model40_int10_entry_predecessor;
+    lib_u16 model40_int10_entry_ss;
+    lib_u16 model40_int10_entry_sp;
     type_bool model40_int10_iret_frame_observed;
-    type_unsigned_64 model40_int10_iret_frame_count;
-    type_unsigned_32 model40_int10_iret_frame_pc;
-    type_unsigned_16 model40_int10_iret_ss;
-    type_unsigned_16 model40_int10_iret_sp;
-    type_unsigned_32 model40_int10_iret_esp;
-    type_unsigned_32 model40_int10_iret_ss_base;
-    type_unsigned_32 model40_int10_iret_ss_limit;
+    lib_u64 model40_int10_iret_frame_count;
+    lib_u32 model40_int10_iret_frame_pc;
+    lib_u16 model40_int10_iret_ss;
+    lib_u16 model40_int10_iret_sp;
+    lib_u32 model40_int10_iret_esp;
+    lib_u32 model40_int10_iret_ss_base;
+    lib_u32 model40_int10_iret_ss_limit;
     type_bool model40_int10_iret_ss_big;
     type_bool model40_int10_iret_cs_default_32;
-    type_unsigned_16 model40_int10_iret_words[4u];
+    lib_u16 model40_int10_iret_words[4u];
     type_bool model40_bios_iret_frame_observed;
-    type_unsigned_16 model40_bios_iret_ss;
-    type_unsigned_16 model40_bios_iret_sp;
-    type_unsigned_16 model40_bios_iret_words[4u];
-    type_unsigned_64 model40_video_rom_entries;
-    type_unsigned_32 model40_video_rom_first_pc;
-    type_unsigned_64 kbc_port_accesses;
-    type_unsigned_16 kbc_last_port;
-    type_unsigned_8 kbc_last_value;
-    type_unsigned_32 kbc_last_pc;
+    lib_u16 model40_bios_iret_ss;
+    lib_u16 model40_bios_iret_sp;
+    lib_u16 model40_bios_iret_words[4u];
+    lib_u64 model40_video_rom_entries;
+    lib_u32 model40_video_rom_first_pc;
+    lib_u64 kbc_port_accesses;
+    lib_u16 kbc_last_port;
+    lib_u8 kbc_last_value;
+    lib_u32 kbc_last_pc;
     vm_byob_fdc_port_event kbc_port_history[VM_BYOB_KBC_WRITE_HISTORY];
-    type_unsigned_64 kbc_write_count;
+    lib_u64 kbc_write_count;
     vm_byob_fdc_port_event kbc_write_history[VM_BYOB_KBC_WRITE_HISTORY];
-    type_unsigned_8 kbc_after_self_test_fifo;
-    type_unsigned_8 kbc_after_self_test_delayed;
-    type_unsigned_8 kbc_after_self_test_polls;
-    type_unsigned_8 kbc_first_self_test_status;
-    type_unsigned_8 kbc_first_self_test_fifo;
-    type_unsigned_8 kbc_first_self_test_delayed;
-    type_unsigned_16 kbc_self_test_after_input_ax;
-    type_unsigned_32 kbc_self_test_after_input_flags;
-    type_unsigned_16 kbc_self_test_after_compare_ax;
-    type_unsigned_32 kbc_self_test_after_compare_flags;
-    type_unsigned_8 kbc_self_test_input_values[4u];
-    type_unsigned_8 kbc_self_test_input_count;
-    type_unsigned_8 kbc_self_test_jne_outcomes[4u];
-    type_unsigned_8 kbc_self_test_jne_count;
+    lib_u8 kbc_after_self_test_fifo;
+    lib_u8 kbc_after_self_test_delayed;
+    lib_u8 kbc_after_self_test_polls;
+    lib_u8 kbc_first_self_test_status;
+    lib_u8 kbc_first_self_test_fifo;
+    lib_u8 kbc_first_self_test_delayed;
+    lib_u16 kbc_self_test_after_input_ax;
+    lib_u32 kbc_self_test_after_input_flags;
+    lib_u16 kbc_self_test_after_compare_ax;
+    lib_u32 kbc_self_test_after_compare_flags;
+    lib_u8 kbc_self_test_input_values[4u];
+    lib_u8 kbc_self_test_input_count;
+    lib_u8 kbc_self_test_jne_outcomes[4u];
+    lib_u8 kbc_self_test_jne_count;
     type_bool kbc_keyboard_reset_seen;
-    type_unsigned_8 kbc_keyboard_reset_read_count;
+    lib_u8 kbc_keyboard_reset_read_count;
     vm_byob_fdc_port_event kbc_keyboard_reset_reads[4u];
-    type_unsigned_8 kbc_reset_xmit_status_count;
-    type_unsigned_8 kbc_reset_xmit_status_values[4u];
-    type_unsigned_8 kbc_reset_xmit_input_full;
-    type_unsigned_8 kbc_reset_xmit_pending_write;
-    type_unsigned_64 kbc_line_enable_writes;
-    type_unsigned_32 kbc_line_enable_pc;
-    type_unsigned_8 kbc_line_enable_fifo;
-    type_unsigned_8 kbc_line_enable_bat_pending;
-    type_unsigned_8 kbc_line_enable_irq_pending;
-    type_unsigned_16 kbc_reset_loop_cx;
-    type_unsigned_16 kbc_reset_jcxz_cx;
-    type_unsigned_8 kbc_reset_loop_outcome;
-    type_unsigned_8 kbc_reset_jcxz_outcome;
+    lib_u8 kbc_reset_xmit_status_count;
+    lib_u8 kbc_reset_xmit_status_values[4u];
+    lib_u8 kbc_reset_xmit_input_full;
+    lib_u8 kbc_reset_xmit_pending_write;
+    lib_u64 kbc_line_enable_writes;
+    lib_u32 kbc_line_enable_pc;
+    lib_u8 kbc_line_enable_fifo;
+    lib_u8 kbc_line_enable_bat_pending;
+    lib_u8 kbc_line_enable_irq_pending;
+    lib_u16 kbc_reset_loop_cx;
+    lib_u16 kbc_reset_jcxz_cx;
+    lib_u8 kbc_reset_loop_outcome;
+    lib_u8 kbc_reset_jcxz_outcome;
     type_bool kbc_reset_xmit_output_seen;
-    type_unsigned_8 kbc_reset_xmit_output;
-    type_unsigned_8 kbc_reset_xmit_path_count;
-    type_unsigned_32 kbc_reset_xmit_path[8u];
-    type_unsigned_8 kbc_reset_xmit_transaction_count;
+    lib_u8 kbc_reset_xmit_output;
+    lib_u8 kbc_reset_xmit_path_count;
+    lib_u32 kbc_reset_xmit_path[8u];
+    lib_u8 kbc_reset_xmit_transaction_count;
     core_machine_trace_event kbc_reset_xmit_transactions[4u];
-    type_unsigned_64 a20_port_write_count;
-    type_unsigned_8 a20_port_last_value;
-    type_unsigned_32 a20_port_last_pc;
-    type_unsigned_64 model40_resume_entries;
-    type_unsigned_32 model40_resume_predecessor;
-    type_unsigned_16 model40_resume_ax;
-    type_unsigned_64 model40_reset_vector_target_entries;
-    type_unsigned_32 model40_reset_vector_target_predecessor;
+    lib_u64 a20_port_write_count;
+    lib_u8 a20_port_last_value;
+    lib_u32 a20_port_last_pc;
+    lib_u64 model40_resume_entries;
+    lib_u32 model40_resume_predecessor;
+    lib_u16 model40_resume_ax;
+    lib_u64 model40_reset_vector_target_entries;
+    lib_u32 model40_reset_vector_target_predecessor;
     type_bool model40_shutdown_diagnostic_valid;
     core_machine_cpu_diagnostic model40_shutdown_diagnostic;
     type_bool model40_protected_transition_observed;
-    type_unsigned_8 model40_gdt[32];
-    type_unsigned_8 model40_gdtr_pointer[6];
-    type_unsigned_64 model40_post_setup_entries;
-    type_unsigned_32 model40_post_setup_predecessor;
-    type_unsigned_64 model40_video_clear_entries;
-    type_unsigned_64 model40_video_delay_entries;
-    type_unsigned_32 model40_video_delay_predecessor;
-    type_unsigned_64 model40_post_latch_writes;
-    type_unsigned_32 model40_post_latch_last_pc;
-    type_unsigned_8 model40_post_latch_last_value;
-    type_unsigned_64 model40_post_latch_path_entries[VM_BYOB_MODEL40_POST_LATCH_PATHS];
-    type_unsigned_32 model40_post_latch_path_predecessors[VM_BYOB_MODEL40_POST_LATCH_PATHS];
-    type_unsigned_64 model40_resume_prompt_entries;
-    type_unsigned_32 model40_resume_prompt_predecessor;
-    type_unsigned_64 model40_resume_wait_entries;
-    type_unsigned_32 model40_resume_wait_predecessor;
-    type_unsigned_64 model40_post_status_helper_entries;
-    type_unsigned_32 model40_post_status_helper_predecessor;
-    type_unsigned_32 model40_post_status_helper_predecessors[
+    lib_u8 model40_gdt[32];
+    lib_u8 model40_gdtr_pointer[6];
+    lib_u64 model40_post_setup_entries;
+    lib_u32 model40_post_setup_predecessor;
+    lib_u64 model40_video_clear_entries;
+    lib_u64 model40_video_delay_entries;
+    lib_u32 model40_video_delay_predecessor;
+    lib_u64 model40_post_latch_writes;
+    lib_u32 model40_post_latch_last_pc;
+    lib_u8 model40_post_latch_last_value;
+    lib_u64 model40_post_latch_path_entries[VM_BYOB_MODEL40_POST_LATCH_PATHS];
+    lib_u32 model40_post_latch_path_predecessors[VM_BYOB_MODEL40_POST_LATCH_PATHS];
+    lib_u64 model40_resume_prompt_entries;
+    lib_u32 model40_resume_prompt_predecessor;
+    lib_u64 model40_resume_wait_entries;
+    lib_u32 model40_resume_wait_predecessor;
+    lib_u64 model40_post_status_helper_entries;
+    lib_u32 model40_post_status_helper_predecessor;
+    lib_u32 model40_post_status_helper_predecessors[
         VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY];
-    type_unsigned_64 model40_post_status_writer_entries[VM_BYOB_MODEL40_POST_STATUS_WRITERS];
-    type_unsigned_32 model40_post_status_writer_predecessors[VM_BYOB_MODEL40_POST_STATUS_WRITERS];
-    type_unsigned_8 model40_post_status_value;
-    type_unsigned_64 model40_memory_address_error_entries;
-    type_unsigned_32 model40_memory_address_error_predecessor;
-    type_unsigned_16 model40_memory_address_error_ds;
-    type_unsigned_32 model40_memory_address_error_ds_base;
-    type_unsigned_16 model40_memory_address_error_status;
-    type_unsigned_64 model40_memory_address_test_entries;
-    type_unsigned_32 model40_memory_address_test_eflags;
-    type_unsigned_16 model40_memory_address_test_status;
-    type_unsigned_64 model40_memory_compare_failures;
-    type_unsigned_64 model40_memory_compare_branch_taken;
-    type_unsigned_64 model40_memory_scas_entries;
-    type_unsigned_16 model40_memory_scas_ax;
-    type_unsigned_16 model40_memory_scas_di;
-    type_unsigned_16 model40_memory_scas_es;
-    type_unsigned_32 model40_memory_scas_es_base;
-    type_unsigned_32 model40_memory_scas_eflags;
-    type_unsigned_64 model40_memory_mismatch_entries;
-    type_unsigned_16 model40_memory_mismatch_ax;
-    type_unsigned_16 model40_memory_mismatch_di;
-    type_unsigned_16 model40_memory_mismatch_es;
-    type_unsigned_32 model40_memory_mismatch_es_base;
-    type_unsigned_16 model40_memory_mismatch_value;
-    type_unsigned_64 model40_memory_test_return_entries;
-    type_unsigned_16 model40_memory_test_return_ax;
-    type_unsigned_64 model40_memory_test_entries;
-    type_unsigned_16 model40_memory_test_dx;
-    type_unsigned_16 model40_memory_test_ax_entry;
+    lib_u64 model40_post_status_writer_entries[VM_BYOB_MODEL40_POST_STATUS_WRITERS];
+    lib_u32 model40_post_status_writer_predecessors[VM_BYOB_MODEL40_POST_STATUS_WRITERS];
+    lib_u8 model40_post_status_value;
+    lib_u64 model40_memory_address_error_entries;
+    lib_u32 model40_memory_address_error_predecessor;
+    lib_u16 model40_memory_address_error_ds;
+    lib_u32 model40_memory_address_error_ds_base;
+    lib_u16 model40_memory_address_error_status;
+    lib_u64 model40_memory_address_test_entries;
+    lib_u32 model40_memory_address_test_eflags;
+    lib_u16 model40_memory_address_test_status;
+    lib_u64 model40_memory_compare_failures;
+    lib_u64 model40_memory_compare_branch_taken;
+    lib_u64 model40_memory_scas_entries;
+    lib_u16 model40_memory_scas_ax;
+    lib_u16 model40_memory_scas_di;
+    lib_u16 model40_memory_scas_es;
+    lib_u32 model40_memory_scas_es_base;
+    lib_u32 model40_memory_scas_eflags;
+    lib_u64 model40_memory_mismatch_entries;
+    lib_u16 model40_memory_mismatch_ax;
+    lib_u16 model40_memory_mismatch_di;
+    lib_u16 model40_memory_mismatch_es;
+    lib_u32 model40_memory_mismatch_es_base;
+    lib_u16 model40_memory_mismatch_value;
+    lib_u64 model40_memory_test_return_entries;
+    lib_u16 model40_memory_test_return_ax;
+    lib_u64 model40_memory_test_entries;
+    lib_u16 model40_memory_test_dx;
+    lib_u16 model40_memory_test_ax_entry;
     type_bool model40_memory_status_test_active;
-    type_unsigned_16 model40_memory_status_test_ax_entry;
-    type_unsigned_64 model40_memory_status_test_mismatches;
-    type_unsigned_16 model40_memory_status_test_expected;
-    type_unsigned_16 model40_memory_status_test_actual;
-    type_unsigned_16 model40_memory_status_test_offset;
-    type_unsigned_16 model40_memory_status_test_es;
-    type_unsigned_32 model40_memory_status_test_es_base;
-    type_unsigned_32 model40_memory_status_test_gdtr_base;
-    type_unsigned_16 model40_memory_status_test_gdtr_limit;
-    type_unsigned_8 model40_memory_status_test_descriptor[8u];
-    type_unsigned_32 model40_memory_status_test_cr0;
+    lib_u16 model40_memory_status_test_ax_entry;
+    lib_u64 model40_memory_status_test_mismatches;
+    lib_u16 model40_memory_status_test_expected;
+    lib_u16 model40_memory_status_test_actual;
+    lib_u16 model40_memory_status_test_offset;
+    lib_u16 model40_memory_status_test_es;
+    lib_u32 model40_memory_status_test_es_base;
+    lib_u32 model40_memory_status_test_gdtr_base;
+    lib_u16 model40_memory_status_test_gdtr_limit;
+    lib_u8 model40_memory_status_test_descriptor[8u];
+    lib_u32 model40_memory_status_test_cr0;
     type_bool model40_memory_status_test_video_memory_disabled;
-    type_unsigned_8 model40_memory_status_test_graphics_6;
-    type_unsigned_8 model40_memory_status_test_sequencer_0;
-    type_unsigned_8 model40_memory_status_test_high_b_page[
+    lib_u8 model40_memory_status_test_graphics_6;
+    lib_u8 model40_memory_status_test_sequencer_0;
+    lib_u8 model40_memory_status_test_high_b_page[
         VM_BYOB_MODEL40_HIGH_B_PAGE_BYTES];
-    type_unsigned_64 model40_memory_high_b_page_writes;
-    type_unsigned_32 model40_memory_high_b_page_first_pc;
-    type_unsigned_32 model40_memory_high_b_page_last_pc;
+    lib_u64 model40_memory_high_b_page_writes;
+    lib_u32 model40_memory_high_b_page_first_pc;
+    lib_u32 model40_memory_high_b_page_last_pc;
     type_bool model40_memory_pattern_producer_active;
-    type_unsigned_64 model40_memory_pattern_producer_entries;
-    type_unsigned_64 model40_memory_pattern_producer_high_b_writes;
-    type_unsigned_32 model40_memory_high_b_write_pcs[
+    lib_u64 model40_memory_pattern_producer_entries;
+    lib_u64 model40_memory_pattern_producer_high_b_writes;
+    lib_u32 model40_memory_high_b_write_pcs[
         VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY];
-    type_unsigned_8 model40_memory_high_b_write_producer[
+    lib_u8 model40_memory_high_b_write_producer[
         VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY];
-    type_unsigned_8 model40_memory_high_b_write_pages[
+    lib_u8 model40_memory_high_b_write_pages[
         VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY][VM_BYOB_MODEL40_HIGH_B_PAGE_BYTES];
-    type_unsigned_64 model40_post_status_58_writes;
-    type_unsigned_32 model40_post_status_58_last_pc;
-    type_unsigned_16 model40_post_status_58_last_value;
-    type_unsigned_64 model40_post_status_58_observer_writes;
-    type_unsigned_32 model40_post_status_58_observer_last_pc;
-    type_unsigned_8 model40_post_status_58_observer_last_value;
-    type_unsigned_32 model40_post_status_58_observer_pcs[
+    lib_u64 model40_post_status_58_writes;
+    lib_u32 model40_post_status_58_last_pc;
+    lib_u16 model40_post_status_58_last_value;
+    lib_u64 model40_post_status_58_observer_writes;
+    lib_u32 model40_post_status_58_observer_last_pc;
+    lib_u8 model40_post_status_58_observer_last_value;
+    lib_u32 model40_post_status_58_observer_pcs[
         VM_BYOB_MODEL40_POST_STATUS_58_HISTORY];
-    type_unsigned_8 model40_post_status_58_observer_values[
+    lib_u8 model40_post_status_58_observer_values[
         VM_BYOB_MODEL40_POST_STATUS_58_HISTORY];
-    type_unsigned_64 model40_post_private_status_writes;
-    type_unsigned_32 model40_post_private_status_last_pc;
-    type_unsigned_16 model40_post_private_status_last_value;
-    type_unsigned_32 model40_post_private_status_pcs[
+    lib_u64 model40_post_private_status_writes;
+    lib_u32 model40_post_private_status_last_pc;
+    lib_u16 model40_post_private_status_last_value;
+    lib_u32 model40_post_private_status_pcs[
         VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY];
-    type_unsigned_16 model40_post_private_status_values[
+    lib_u16 model40_post_private_status_values[
         VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY];
-    type_unsigned_64 model40_port61_reads;
-    type_unsigned_64 model40_port61_refresh_low_reads;
-    type_unsigned_64 model40_port61_refresh_low_wait_reads;
-    type_unsigned_32 model40_port61_last_pc;
-    type_unsigned_8 model40_port61_last_value;
-    type_unsigned_64 ibm5170_refresh_diagnostic_reads;
-    type_unsigned_64 ibm5170_refresh_diagnostic_low_reads;
-    type_unsigned_64 ibm5170_refresh_diagnostic_in_ticks;
-    type_unsigned_64 ibm5170_refresh_diagnostic_test_ticks;
-    type_unsigned_64 ibm5170_refresh_diagnostic_loop_ticks;
-    type_unsigned_64 ibm5170_refresh_diagnostic_loop_taken;
-    type_unsigned_64 ibm5170_refresh_diagnostic_loop_not_taken;
-    type_unsigned_64 ibm5170_refresh_diagnostic_error_branch_taken;
-    type_unsigned_16 ibm5170_refresh_diagnostic_count;
+    lib_u64 model40_port61_reads;
+    lib_u64 model40_port61_refresh_low_reads;
+    lib_u64 model40_port61_refresh_low_wait_reads;
+    lib_u32 model40_port61_last_pc;
+    lib_u8 model40_port61_last_value;
+    lib_u64 ibm5170_refresh_diagnostic_reads;
+    lib_u64 ibm5170_refresh_diagnostic_low_reads;
+    lib_u64 ibm5170_refresh_diagnostic_in_ticks;
+    lib_u64 ibm5170_refresh_diagnostic_test_ticks;
+    lib_u64 ibm5170_refresh_diagnostic_loop_ticks;
+    lib_u64 ibm5170_refresh_diagnostic_loop_taken;
+    lib_u64 ibm5170_refresh_diagnostic_loop_not_taken;
+    lib_u64 ibm5170_refresh_diagnostic_error_branch_taken;
+    lib_u16 ibm5170_refresh_diagnostic_count;
     C_INT ibm5170_refresh_diagnostic_count_valid;
-    type_unsigned_64 model40_memory_compare_error_branches;
-    type_unsigned_64 model40_memory_parity_error_branches;
-    type_unsigned_64 model40_memory_parity_test_reads;
-    type_unsigned_8 model40_memory_parity_test_last_value;
-    type_unsigned_64 model40_memory_error_exit_entries;
-    type_unsigned_32 model40_memory_error_exit_predecessor;
-    type_unsigned_16 model40_memory_error_es;
-    type_unsigned_16 model40_memory_error_di;
-    type_unsigned_16 model40_memory_error_ax;
-    type_unsigned_32 model40_memory_compare_eax;
-    type_unsigned_32 model40_memory_compare_edi;
-    type_unsigned_32 model40_memory_compare_es_base;
-    type_unsigned_16 model40_memory_compare_es_selector;
-    type_unsigned_64 model40_memory_address_failures;
-    type_unsigned_16 model40_memory_address_failure_ds;
-    type_unsigned_16 model40_memory_address_failure_si;
-    type_unsigned_32 model40_memory_address_failure_eax;
-    type_unsigned_32 model40_memory_address_failure_ebx;
-    type_unsigned_32 model40_memory_address_failure_ebp;
-    type_unsigned_32 model40_memory_address_failure_eflags;
-    type_unsigned_32 model40_memory_compare_cr0;
-    type_unsigned_32 model40_memory_compare_gdtr_base;
-    type_unsigned_32 model40_memory_compare_gdtr_limit;
-    type_unsigned_8 model40_memory_compare_descriptor[8];
-    type_unsigned_16 model40_memory_compare_value;
-    type_unsigned_64 model40_memory_pattern_entries;
-    type_unsigned_64 model40_ram_post_entries;
-    type_unsigned_64 model40_ram_post_returns;
-    type_unsigned_64 model40_ram_post_failures;
-    type_unsigned_32 model40_memory_pattern_es_base;
-    type_unsigned_16 model40_memory_pattern_es_selector;
-    type_unsigned_32 model40_memory_pattern_after_es_base;
-    type_unsigned_16 model40_memory_pattern_after_value;
-    type_unsigned_32 model40_memory_pattern_after_eax;
-    type_unsigned_32 model40_memory_pattern_after_edi;
-    type_unsigned_32 model40_memory_pattern_bases[VM_BYOB_MODEL40_MEMORY_BASE_HISTORY];
-    type_unsigned_32 model40_memory_compare_bases[VM_BYOB_MODEL40_MEMORY_BASE_HISTORY];
-    type_unsigned_64 model40_memory_1e_writes;
-    type_unsigned_32 model40_memory_1e_last_pc;
-    type_unsigned_8 model40_memory_1e_last_value;
-    type_unsigned_64 model40_memory_high_writes;
-    type_unsigned_32 model40_memory_high_first_address;
-    type_unsigned_32 model40_memory_high_last_address;
-    type_unsigned_32 model40_memory_high_last_pc;
-    type_unsigned_8 model40_memory_high_first_value;
-    type_unsigned_8 model40_memory_high_last_value;
-    type_unsigned_64 model40_memory_b_window_writes;
-    type_unsigned_32 model40_memory_b_window_first_pc;
-    type_unsigned_32 model40_memory_b_window_last_pc;
-    type_unsigned_64 model40_memory_b_window_writes_at_mismatch;
-    type_unsigned_32 model40_memory_b_window_last_pc_at_mismatch;
-    type_unsigned_64 model40_memory_b_first_word_writes;
-    type_unsigned_32 model40_memory_b_first_word_last_pc;
-    type_unsigned_16 model40_memory_b_first_word_last_value;
-    type_unsigned_8 model40_memory_b_first_word_graphics_6;
-    type_unsigned_8 model40_memory_b_first_word_sequencer_0;
+    lib_u64 model40_memory_compare_error_branches;
+    lib_u64 model40_memory_parity_error_branches;
+    lib_u64 model40_memory_parity_test_reads;
+    lib_u8 model40_memory_parity_test_last_value;
+    lib_u64 model40_memory_error_exit_entries;
+    lib_u32 model40_memory_error_exit_predecessor;
+    lib_u16 model40_memory_error_es;
+    lib_u16 model40_memory_error_di;
+    lib_u16 model40_memory_error_ax;
+    lib_u32 model40_memory_compare_eax;
+    lib_u32 model40_memory_compare_edi;
+    lib_u32 model40_memory_compare_es_base;
+    lib_u16 model40_memory_compare_es_selector;
+    lib_u64 model40_memory_address_failures;
+    lib_u16 model40_memory_address_failure_ds;
+    lib_u16 model40_memory_address_failure_si;
+    lib_u32 model40_memory_address_failure_eax;
+    lib_u32 model40_memory_address_failure_ebx;
+    lib_u32 model40_memory_address_failure_ebp;
+    lib_u32 model40_memory_address_failure_eflags;
+    lib_u32 model40_memory_compare_cr0;
+    lib_u32 model40_memory_compare_gdtr_base;
+    lib_u32 model40_memory_compare_gdtr_limit;
+    lib_u8 model40_memory_compare_descriptor[8];
+    lib_u16 model40_memory_compare_value;
+    lib_u64 model40_memory_pattern_entries;
+    lib_u64 model40_ram_post_entries;
+    lib_u64 model40_ram_post_returns;
+    lib_u64 model40_ram_post_failures;
+    lib_u32 model40_memory_pattern_es_base;
+    lib_u16 model40_memory_pattern_es_selector;
+    lib_u32 model40_memory_pattern_after_es_base;
+    lib_u16 model40_memory_pattern_after_value;
+    lib_u32 model40_memory_pattern_after_eax;
+    lib_u32 model40_memory_pattern_after_edi;
+    lib_u32 model40_memory_pattern_bases[VM_BYOB_MODEL40_MEMORY_BASE_HISTORY];
+    lib_u32 model40_memory_compare_bases[VM_BYOB_MODEL40_MEMORY_BASE_HISTORY];
+    lib_u64 model40_memory_1e_writes;
+    lib_u32 model40_memory_1e_last_pc;
+    lib_u8 model40_memory_1e_last_value;
+    lib_u64 model40_memory_high_writes;
+    lib_u32 model40_memory_high_first_address;
+    lib_u32 model40_memory_high_last_address;
+    lib_u32 model40_memory_high_last_pc;
+    lib_u8 model40_memory_high_first_value;
+    lib_u8 model40_memory_high_last_value;
+    lib_u64 model40_memory_b_window_writes;
+    lib_u32 model40_memory_b_window_first_pc;
+    lib_u32 model40_memory_b_window_last_pc;
+    lib_u64 model40_memory_b_window_writes_at_mismatch;
+    lib_u32 model40_memory_b_window_last_pc_at_mismatch;
+    lib_u64 model40_memory_b_first_word_writes;
+    lib_u32 model40_memory_b_first_word_last_pc;
+    lib_u16 model40_memory_b_first_word_last_value;
+    lib_u8 model40_memory_b_first_word_graphics_6;
+    lib_u8 model40_memory_b_first_word_sequencer_0;
     type_bool model40_memory_b_first_word_video_memory_disabled;
-    type_unsigned_64 model40_retirements;
-    type_unsigned_16 model40_last_es_selector;
-    type_unsigned_32 model40_last_es_base;
-    type_unsigned_64 model40_es_change_count;
-    type_unsigned_32 model40_es_change_pcs[VM_BYOB_MODEL40_ES_HISTORY];
-    type_unsigned_16 model40_es_change_selectors[VM_BYOB_MODEL40_ES_HISTORY];
-    type_unsigned_32 model40_es_change_bases[VM_BYOB_MODEL40_ES_HISTORY];
-    type_unsigned_32 model40_es_change_cr0[VM_BYOB_MODEL40_ES_HISTORY];
-    type_unsigned_64 model40_memory_b_first_word_retirements;
-    type_unsigned_64 model40_memory_fb_first_word_retirements;
-    type_unsigned_64 model40_memory_fb_page_writes;
-    type_unsigned_32 model40_memory_fb_page_first_pc;
-    type_unsigned_32 model40_memory_fb_page_last_pc;
-    type_unsigned_64 model40_memory_fb_first_word_writes;
-    type_unsigned_32 model40_memory_fb_first_word_last_pc;
-    type_unsigned_16 model40_memory_fb_first_word_last_value;
-    type_unsigned_64 model40_memory_pattern_write_count;
-    type_unsigned_32 model40_memory_pattern_write_first_address;
-    type_unsigned_32 model40_memory_pattern_write_last_address;
+    lib_u64 model40_retirements;
+    lib_u16 model40_last_es_selector;
+    lib_u32 model40_last_es_base;
+    lib_u64 model40_es_change_count;
+    lib_u32 model40_es_change_pcs[VM_BYOB_MODEL40_ES_HISTORY];
+    lib_u16 model40_es_change_selectors[VM_BYOB_MODEL40_ES_HISTORY];
+    lib_u32 model40_es_change_bases[VM_BYOB_MODEL40_ES_HISTORY];
+    lib_u32 model40_es_change_cr0[VM_BYOB_MODEL40_ES_HISTORY];
+    lib_u64 model40_memory_b_first_word_retirements;
+    lib_u64 model40_memory_fb_first_word_retirements;
+    lib_u64 model40_memory_fb_page_writes;
+    lib_u32 model40_memory_fb_page_first_pc;
+    lib_u32 model40_memory_fb_page_last_pc;
+    lib_u64 model40_memory_fb_first_word_writes;
+    lib_u32 model40_memory_fb_first_word_last_pc;
+    lib_u16 model40_memory_fb_first_word_last_value;
+    lib_u64 model40_memory_pattern_write_count;
+    lib_u32 model40_memory_pattern_write_first_address;
+    lib_u32 model40_memory_pattern_write_last_address;
 } vm_byob_boot_trace;
 
 static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text);
@@ -420,14 +421,14 @@ static C_VOID vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
     const core_machine_trace_event *event)
 {
     vm_byob_fdc_port_event *record;
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (trace == STD_NULL || event == STD_NULL) return;
-    index = (STD_SIZE_T)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
+    if (trace == LIB_NULL || event == LIB_NULL) return;
+    index = (lib_size)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
     record = &trace->fdc_port_history[index];
     record->linear_pc = event->linear_pc;
-    record->port = (type_unsigned_16)event->address;
-    record->value = (type_unsigned_8)event->value;
+    record->port = (lib_u16)event->address;
+    record->value = (lib_u8)event->value;
     record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
 }
 
@@ -435,14 +436,14 @@ static C_VOID vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
     const core_machine_trace_event *event)
 {
     vm_byob_fdc_port_event *record;
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (trace == STD_NULL || event == STD_NULL) return;
-    index = (STD_SIZE_T)(trace->hdc_port_accesses % VM_BYOB_HDC_PORT_HISTORY);
+    if (trace == LIB_NULL || event == LIB_NULL) return;
+    index = (lib_size)(trace->hdc_port_accesses % VM_BYOB_HDC_PORT_HISTORY);
     record = &trace->hdc_port_history[index];
     record->linear_pc = event->linear_pc;
-    record->port = (type_unsigned_16)event->address;
-    record->value = (type_unsigned_8)event->value;
+    record->port = (lib_u16)event->address;
+    record->value = (lib_u8)event->value;
     record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
 }
 
@@ -451,21 +452,21 @@ static C_VOID vm_byob_fdc_terminal_observe(C_VOID *context,
 {
     vm_byob_boot_trace *trace = context;
 
-    if (trace == STD_NULL || observation == STD_NULL) return;
+    if (trace == LIB_NULL || observation == LIB_NULL) return;
     ++trace->fdc_terminal_count;
     if (!observation->successful) ++trace->fdc_failed_terminal_count;
     trace->last_fdc_terminal = *observation;
 }
 
 static C_VOID vm_byob_model40_vector_write_observe(C_VOID *context,
-    type_unsigned_32 physical, type_native_unsigned bytes)
+    lib_u32 physical, type_native_unsigned bytes)
 {
     vm_byob_boot_trace *trace = context;
 
-    if (trace == STD_NULL || trace->machine == STD_NULL ||
+    if (trace == LIB_NULL || trace->machine == LIB_NULL ||
         trace->model40_int10_vector_write_observed || physical > 0x0042u ||
         physical + bytes <= 0x0040u) return;
-    trace->model40_int10_vector_write_observed = TYPE_TRUE;
+    trace->model40_int10_vector_write_observed = LIB_TRUE;
     trace->model40_int10_vector_write_pc = trace->machine->executor_cpu.data.cs.base +
         trace->machine->executor_cpu.data.eip;
     trace->model40_int10_vector_write_cs = trace->machine->executor_cpu.data.cs.selector;
@@ -475,17 +476,17 @@ static C_VOID vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
     const core_machine_retirement_observation *observation)
 {
     vm_byob_fdc_port_event *record;
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (trace == STD_NULL || observation == STD_NULL ||
+    if (trace == LIB_NULL || observation == LIB_NULL ||
         observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE ||
         observation->io_port < 0x03f0u || observation->io_port > 0x03f7u ||
         observation->io_port == 0x03f4u) return;
-    index = (STD_SIZE_T)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
+    index = (lib_size)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
     record = &trace->fdc_port_history[index];
     record->linear_pc = observation->point.linear_pc;
     record->port = observation->io_port;
-    record->value = (type_unsigned_8)observation->io_value;
+    record->value = (lib_u8)observation->io_value;
     record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
     ++trace->fdc_port_accesses;
 }
@@ -494,41 +495,41 @@ static C_VOID vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
     const core_machine_retirement_observation *observation)
 {
     vm_byob_fdc_port_event *record;
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (trace == STD_NULL || observation == STD_NULL ||
+    if (trace == LIB_NULL || observation == LIB_NULL ||
         observation->point.linear_pc < 0x000c0000u ||
         observation->point.linear_pc >= 0x000c4000u ||
         observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
     if (observation->io_port == 0x0084u &&
         observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
         ++trace->model40_video_error_writes;
-        trace->model40_video_error_last_value = (type_unsigned_8)observation->io_value;
+        trace->model40_video_error_last_value = (lib_u8)observation->io_value;
         trace->model40_video_error_last_pc = observation->point.linear_pc;
     }
     if (observation->io_port < 0x03b0u || observation->io_port > 0x0fc6u) return;
-    index = (STD_SIZE_T)(trace->model40_video_port_accesses %
+    index = (lib_size)(trace->model40_video_port_accesses %
         VM_BYOB_MODEL40_VIDEO_PORT_HISTORY);
     record = &trace->model40_video_port_history[index];
     record->linear_pc = observation->point.linear_pc;
     record->port = observation->io_port;
-    record->value = (type_unsigned_8)observation->io_value;
+    record->value = (lib_u8)observation->io_value;
     record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
     ++trace->model40_video_port_accesses;
     {
-        const type_unsigned_16 ports[5u] = { 0x03c2u, 0x03c6u, 0x07c6u,
+        const lib_u16 ports[5u] = { 0x03c2u, 0x03c6u, 0x07c6u,
             0x0bc6u, 0x0fc6u };
-        STD_SIZE_T special;
+        lib_size special;
 
         for (special = 0u; special < 5u; ++special) {
             if (observation->io_port == ports[special]) {
-                const STD_SIZE_T special_index = (STD_SIZE_T)(
+                const lib_size special_index = (lib_size)(
                     trace->model40_video_special_history_count %
                     VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY);
 
                 ++trace->model40_video_special_accesses[special];
                 trace->model40_video_special_last_values[special] =
-                    (type_unsigned_8)observation->io_value;
+                    (lib_u8)observation->io_value;
                 trace->model40_video_special_history[special_index] = *record;
                 ++trace->model40_video_special_history_count;
                 break;
@@ -540,18 +541,18 @@ static C_VOID vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
 static C_VOID vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
     const core_machine_retirement_observation *observation)
 {
-    type_unsigned_8 index;
+    lib_u8 index;
 
-    if (trace == STD_NULL || observation == STD_NULL ||
+    if (trace == LIB_NULL || observation == LIB_NULL ||
         observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
     if (observation->io_port == 0x0070u &&
         observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
-        trace->cmos_index = (type_unsigned_8)observation->io_value & 0x7fu;
+        trace->cmos_index = (lib_u8)observation->io_value & 0x7fu;
         return;
     }
     if (observation->io_port != 0x0071u) return;
     index = trace->cmos_index;
-    trace->cmos_last_values[index] = (type_unsigned_8)observation->io_value;
+    trace->cmos_last_values[index] = (lib_u8)observation->io_value;
     if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ)
         ++trace->cmos_reads[index];
     else {
@@ -565,30 +566,30 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
 {
     vm_byob_boot_trace *trace = context;
 
-    if (trace == STD_NULL || observation == STD_NULL) return;
+    if (trace == LIB_NULL || observation == LIB_NULL) return;
     if (observation->point.linear_pc == 0xf0368u) {
         if (trace->kbc_self_test_input_count < sizeof(trace->kbc_self_test_input_values)) {
             trace->kbc_self_test_input_values[trace->kbc_self_test_input_count++] =
-                (type_unsigned_8)observation->io_value;
+                (lib_u8)observation->io_value;
         }
         trace->kbc_self_test_after_input_ax =
-            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+            (lib_u16)trace->machine->executor_cpu.data.eax;
         trace->kbc_self_test_after_input_flags = trace->machine->executor_cpu.data.eflags;
     } else if (observation->point.linear_pc == 0xf036au) {
         trace->kbc_self_test_after_compare_ax =
-            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+            (lib_u16)trace->machine->executor_cpu.data.eax;
         trace->kbc_self_test_after_compare_flags = trace->machine->executor_cpu.data.eflags;
     } else if (observation->point.linear_pc == 0xf0370u &&
         trace->kbc_self_test_jne_count < sizeof(trace->kbc_self_test_jne_outcomes)) {
             trace->kbc_self_test_jne_outcomes[trace->kbc_self_test_jne_count++] =
-                (type_unsigned_8)observation->control_outcome;
+                (lib_u8)observation->control_outcome;
     }
-    if (trace->machine != STD_NULL && observation->point.linear_pc == 0xf1fefu) {
+    if (trace->machine != LIB_NULL && observation->point.linear_pc == 0xf1fefu) {
         trace->kbc_reset_loop_cx = trace->machine->executor_cpu.data.cx;
-        trace->kbc_reset_loop_outcome = (type_unsigned_8)observation->control_outcome;
-    } else if (trace->machine != STD_NULL && observation->point.linear_pc == 0xf1ff1u) {
+        trace->kbc_reset_loop_outcome = (lib_u8)observation->control_outcome;
+    } else if (trace->machine != LIB_NULL && observation->point.linear_pc == 0xf1ff1u) {
         trace->kbc_reset_jcxz_cx = trace->machine->executor_cpu.data.cx;
-        trace->kbc_reset_jcxz_outcome = (type_unsigned_8)observation->control_outcome;
+        trace->kbc_reset_jcxz_outcome = (lib_u8)observation->control_outcome;
     }
     if (observation->point.linear_pc >= 0xf1ff0u && observation->point.linear_pc < 0xf2028u &&
         trace->kbc_reset_xmit_path_count < sizeof(trace->kbc_reset_xmit_path) /
@@ -596,7 +597,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         trace->kbc_reset_xmit_path[trace->kbc_reset_xmit_path_count++] =
             observation->point.linear_pc;
     }
-    if (trace->machine != STD_NULL) {
+    if (trace->machine != LIB_NULL) {
         const t_cpu_data_sreg *es = &trace->machine->executor_cpu.data.es;
 
         ++trace->model40_retirements;
@@ -604,16 +605,16 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             ++trace->ibm5170_rep_stos_entries;
             trace->ibm5170_rep_stos_es = es->selector;
             trace->ibm5170_rep_stos_es_base = es->base;
-            trace->ibm5170_rep_stos_di = (type_unsigned_16)
+            trace->ibm5170_rep_stos_di = (lib_u16)
                 trace->machine->executor_cpu.data.edi;
-            trace->ibm5170_rep_stos_cx = (type_unsigned_16)
+            trace->ibm5170_rep_stos_cx = (lib_u16)
                 trace->machine->executor_cpu.data.ecx;
-            trace->ibm5170_rep_stos_ax = (type_unsigned_16)
+            trace->ibm5170_rep_stos_ax = (lib_u16)
                 trace->machine->executor_cpu.data.eax;
         }
         if (es->selector != trace->model40_last_es_selector ||
             es->base != trace->model40_last_es_base) {
-            const STD_SIZE_T index = (STD_SIZE_T)(trace->model40_es_change_count %
+            const lib_size index = (lib_size)(trace->model40_es_change_count %
                 VM_BYOB_MODEL40_ES_HISTORY);
 
             trace->model40_es_change_pcs[index] = observation->point.linear_pc;
@@ -625,20 +626,20 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             trace->model40_last_es_base = es->base;
         }
     }
-    if (observation->point.linear_pc == 0x000c0cd7u && trace->machine != STD_NULL) {
+    if (observation->point.linear_pc == 0x000c0cd7u && trace->machine != LIB_NULL) {
         ++trace->model40_int10_entry_count;
         trace->model40_int10_entry_predecessor = trace->last_linear_pc;
         trace->model40_int10_entry_ss = trace->machine->executor_cpu.data.ss.selector;
-        trace->model40_int10_entry_sp = (type_unsigned_16)
+        trace->model40_int10_entry_sp = (lib_u16)
             trace->machine->executor_cpu.data.esp;
     }
     if ((observation->point.linear_pc == 0x000c0d2du ||
-         observation->point.linear_pc == 0x000c0d30u) && trace->machine != STD_NULL) {
-        trace->model40_int10_iret_frame_observed = TYPE_TRUE;
+         observation->point.linear_pc == 0x000c0d30u) && trace->machine != LIB_NULL) {
+        trace->model40_int10_iret_frame_observed = LIB_TRUE;
         ++trace->model40_int10_iret_frame_count;
         trace->model40_int10_iret_frame_pc = observation->point.linear_pc;
         trace->model40_int10_iret_ss = trace->machine->executor_cpu.data.ss.selector;
-        trace->model40_int10_iret_sp = (type_unsigned_16)
+        trace->model40_int10_iret_sp = (lib_u16)
             trace->machine->executor_cpu.data.esp;
         trace->model40_int10_iret_esp = trace->machine->executor_cpu.data.esp;
         trace->model40_int10_iret_ss_base = trace->machine->executor_cpu.data.ss.base;
@@ -651,23 +652,23 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             (type_virtual_address)trace->model40_int10_iret_words,
             sizeof(trace->model40_int10_iret_words));
     }
-    if (observation->point.linear_pc == 0x000fd7a6u && trace->machine != STD_NULL) {
-        trace->model40_bios_iret_frame_observed = TYPE_TRUE;
+    if (observation->point.linear_pc == 0x000fd7a6u && trace->machine != LIB_NULL) {
+        trace->model40_bios_iret_frame_observed = LIB_TRUE;
         trace->model40_bios_iret_ss = trace->machine->executor_cpu.data.ss.selector;
-        trace->model40_bios_iret_sp = (type_unsigned_16)trace->machine->executor_cpu.data.esp;
+        trace->model40_bios_iret_sp = (lib_u16)trace->machine->executor_cpu.data.esp;
         (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
             trace->machine->executor_cpu.data.ss.base +
-                (type_unsigned_16)(trace->model40_bios_iret_sp - 6u),
+                (lib_u16)(trace->model40_bios_iret_sp - 6u),
             (type_virtual_address)trace->model40_bios_iret_words,
             sizeof(trace->model40_bios_iret_words));
     }
-    if (!trace->model40_invalid_entry_observed && trace->machine != STD_NULL &&
+    if (!trace->model40_invalid_entry_observed && trace->machine != LIB_NULL &&
         trace->machine->executor_cpu.data.cs.base + trace->machine->executor_cpu.data.eip ==
             0x000e0cd7u) {
-        trace->model40_invalid_entry_observed = TYPE_TRUE;
+        trace->model40_invalid_entry_observed = LIB_TRUE;
         trace->model40_invalid_entry_source = observation->point;
         trace->model40_invalid_entry_ss = trace->machine->executor_cpu.data.ss.selector;
-        trace->model40_invalid_entry_sp = (type_unsigned_16)
+        trace->model40_invalid_entry_sp = (lib_u16)
             trace->machine->executor_cpu.data.esp;
     }
     if (observation->point.linear_pc >= 0x000c0000u &&
@@ -682,7 +683,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
     if (observation->point.byte_count >= 3u &&
         observation->point.bytes[0u] == 0x0fu &&
         observation->point.bytes[1u] == 0x22u &&
-        observation->point.bytes[2u] == 0x00u && trace->machine != STD_NULL) {
+        observation->point.bytes[2u] == 0x00u && trace->machine != LIB_NULL) {
         trace->model40_protected_transition_observed =
             core_machine_memory_read(trace->machine, 0x0009f300u,
                 trace->model40_gdt, sizeof(trace->model40_gdt)) == TYPE_STATUS_OK;
@@ -692,22 +693,22 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
     if ((observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ ||
          observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) &&
         (observation->io_port == 0x0060u || observation->io_port == 0x0064u)) {
-        const STD_SIZE_T index = (STD_SIZE_T)(trace->kbc_port_accesses %
+        const lib_size index = (lib_size)(trace->kbc_port_accesses %
             VM_BYOB_KBC_WRITE_HISTORY);
 
         trace->kbc_port_history[index] = (vm_byob_fdc_port_event) {
             observation->point.linear_pc, observation->io_port,
-            (type_unsigned_8)observation->io_value,
+            (lib_u8)observation->io_value,
             observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE };
         ++trace->kbc_port_accesses;
         trace->kbc_last_port = observation->io_port;
-        trace->kbc_last_value = (type_unsigned_8)observation->io_value;
+        trace->kbc_last_value = (lib_u8)observation->io_value;
         trace->kbc_last_pc = observation->point.linear_pc;
         if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
             observation->point.linear_pc == 0xf1febu && observation->io_port == 0x0064u) {
             if (trace->kbc_reset_xmit_status_count < sizeof(trace->kbc_reset_xmit_status_values)) {
                 trace->kbc_reset_xmit_status_values[trace->kbc_reset_xmit_status_count++] =
-                    (type_unsigned_8)observation->io_value;
+                    (lib_u8)observation->io_value;
             }
             trace->kbc_reset_xmit_input_full = trace->machine->shared_kbc.data.input_buffer_full;
             trace->kbc_reset_xmit_pending_write = trace->machine->shared_kbc.data.pending_write;
@@ -715,8 +716,8 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE &&
             observation->point.linear_pc >= 0xf1fe0u && observation->point.linear_pc < 0xf2028u &&
             observation->io_port == 0x0060u) {
-            trace->kbc_reset_xmit_output_seen = TYPE_TRUE;
-            trace->kbc_reset_xmit_output = (type_unsigned_8)observation->io_value;
+            trace->kbc_reset_xmit_output_seen = LIB_TRUE;
+            trace->kbc_reset_xmit_output = (lib_u8)observation->io_value;
         }
         if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
             trace->kbc_write_history[trace->kbc_write_count %
@@ -731,7 +732,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                     trace->machine->shared_kbc.data.response_status_polls_remaining;
             }
             if (observation->io_port == 0x0060u && observation->io_value == 0xffu) {
-                trace->kbc_keyboard_reset_seen = TYPE_TRUE;
+                trace->kbc_keyboard_reset_seen = LIB_TRUE;
                 trace->kbc_keyboard_reset_read_count = 0u;
             }
             if (observation->io_port == 0x0060u && observation->io_value == 0x4du &&
@@ -742,7 +743,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 trace->kbc_line_enable_bat_pending =
                     trace->machine->shared_kbc.data.keyboard_bat_pending;
                 trace->kbc_line_enable_irq_pending =
-                    TYPE_FALSE;
+                    LIB_FALSE;
             }
         } else if (trace->kbc_keyboard_reset_seen && observation->io_port == 0x0060u &&
             trace->kbc_keyboard_reset_read_count <
@@ -752,7 +753,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 trace->kbc_port_history[index];
         } else if (observation->point.linear_pc == 0xf03a6u &&
             observation->io_port == 0x0064u && trace->kbc_first_self_test_status == 0u) {
-            trace->kbc_first_self_test_status = (type_unsigned_8)observation->io_value;
+            trace->kbc_first_self_test_status = (lib_u8)observation->io_value;
             trace->kbc_first_self_test_fifo = trace->machine->shared_kbc.data.fifo_count;
             trace->kbc_first_self_test_delayed =
                 trace->machine->shared_kbc.data.delayed_response_count;
@@ -768,7 +769,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             }
         }
         trace->model40_port61_last_pc = observation->point.linear_pc;
-        trace->model40_port61_last_value = (type_unsigned_8)observation->io_value;
+        trace->model40_port61_last_value = (lib_u8)observation->io_value;
         if (observation->point.linear_pc == 0x000f05a8u ||
             observation->point.linear_pc == 0x000f05aeu) {
             ++trace->ibm5170_refresh_diagnostic_reads;
@@ -779,7 +780,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         if (observation->point.linear_pc == 0x000fd1b1u) {
             ++trace->model40_memory_parity_test_reads;
             trace->model40_memory_parity_test_last_value =
-                (type_unsigned_8)observation->io_value;
+                (lib_u8)observation->io_value;
         }
     }
     if (observation->point.linear_pc == 0x000f05acu ||
@@ -797,9 +798,9 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
     if (observation->point.linear_pc == 0x000f05c9u &&
         observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN)
         ++trace->ibm5170_refresh_diagnostic_error_branch_taken;
-    if (observation->point.linear_pc == 0x000f05b8u && trace->machine != STD_NULL) {
+    if (observation->point.linear_pc == 0x000f05b8u && trace->machine != LIB_NULL) {
         trace->ibm5170_refresh_diagnostic_count =
-            (type_unsigned_16)trace->machine->executor_cpu.data.ecx;
+            (lib_u16)trace->machine->executor_cpu.data.ecx;
         trace->ibm5170_refresh_diagnostic_count_valid = 1;
     }
     if (observation->point.linear_pc == 0x000fd1abu &&
@@ -810,27 +811,27 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN) {
         ++trace->model40_memory_parity_error_branches;
     }
-    if (observation->point.linear_pc == 0x000fc2d0u && trace->machine != STD_NULL) {
+    if (observation->point.linear_pc == 0x000fc2d0u && trace->machine != LIB_NULL) {
         trace->model40_memory_error_es = trace->machine->executor_cpu.data.es.selector;
-        trace->model40_memory_error_di = (type_unsigned_16)trace->machine->executor_cpu.data.edi;
-        trace->model40_memory_error_ax = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_error_di = (lib_u16)trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_error_ax = (lib_u16)trace->machine->executor_cpu.data.eax;
     }
-    if (observation->point.linear_pc == 0x000fc1a9u && trace->machine != STD_NULL) {
+    if (observation->point.linear_pc == 0x000fc1a9u && trace->machine != LIB_NULL) {
         ++trace->model40_memory_test_entries;
-        trace->model40_memory_test_dx = (type_unsigned_16)trace->machine->executor_cpu.data.edx;
-        trace->model40_memory_test_ax_entry = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_test_dx = (lib_u16)trace->machine->executor_cpu.data.edx;
+        trace->model40_memory_test_ax_entry = (lib_u16)trace->machine->executor_cpu.data.eax;
     }
     if (observation->point.linear_pc == 0x000fc101u) {
         ++trace->model40_memory_pattern_producer_entries;
-        trace->model40_memory_pattern_producer_active = TYPE_TRUE;
+        trace->model40_memory_pattern_producer_active = LIB_TRUE;
     }
     if (observation->point.linear_pc == 0x000fc1c8u) {
-        trace->model40_memory_pattern_producer_active = TYPE_FALSE;
+        trace->model40_memory_pattern_producer_active = LIB_FALSE;
     }
-    if (observation->point.linear_pc == 0x000fbe83u && trace->machine != STD_NULL) {
-        trace->model40_memory_status_test_active = TYPE_TRUE;
+    if (observation->point.linear_pc == 0x000fbe83u && trace->machine != LIB_NULL) {
+        trace->model40_memory_status_test_active = LIB_TRUE;
         trace->model40_memory_status_test_ax_entry =
-            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+            (lib_u16)trace->machine->executor_cpu.data.eax;
         trace->model40_memory_status_test_video_memory_disabled =
             trace->machine->shared_vadp.data.compaq_cpu_video_memory_disabled;
         trace->model40_memory_status_test_graphics_6 =
@@ -851,18 +852,18 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             sizeof(trace->model40_memory_status_test_high_b_page));
     }
     if (observation->point.linear_pc == 0x000fbe86u) {
-        trace->model40_memory_status_test_active = TYPE_FALSE;
+        trace->model40_memory_status_test_active = LIB_FALSE;
     }
     if (observation->point.linear_pc == 0x000fc2d2u) {
         ++trace->model40_memory_error_exit_entries;
         trace->model40_memory_error_exit_predecessor = trace->last_linear_pc;
     }
-    if (observation->point.linear_pc == 0x000fd1eau && trace->machine != STD_NULL) {
+    if (observation->point.linear_pc == 0x000fd1eau && trace->machine != LIB_NULL) {
         const t_cpu *cpu = &trace->machine->executor_cpu;
 
         ++trace->model40_memory_address_failures;
         trace->model40_memory_address_failure_ds = cpu->data.ds.selector;
-        trace->model40_memory_address_failure_si = (type_unsigned_16)cpu->data.esi;
+        trace->model40_memory_address_failure_si = (lib_u16)cpu->data.esi;
         trace->model40_memory_address_failure_eax = cpu->data.eax;
         trace->model40_memory_address_failure_ebx = cpu->data.ebx;
         trace->model40_memory_address_failure_ebp = cpu->data.ebp;
@@ -878,8 +879,8 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
     if (observation->point.linear_pc == 0x000fa660u) {
         ++trace->model40_resume_entries;
         trace->model40_resume_predecessor = trace->last_linear_pc;
-        trace->model40_resume_ax = trace->machine == STD_NULL ? 0u :
-            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+        trace->model40_resume_ax = trace->machine == LIB_NULL ? 0u :
+            (lib_u16)trace->machine->executor_cpu.data.eax;
     } else if (observation->point.linear_pc == 0x000fb8deu) {
         ++trace->model40_post_setup_entries;
         trace->model40_post_setup_predecessor = trace->last_linear_pc;
@@ -890,7 +891,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         trace->model40_video_delay_predecessor = trace->last_linear_pc;
     } else if (observation->point.linear_pc >= 0x000fd41du &&
         observation->point.linear_pc <= 0x000fd49eu) {
-        STD_SIZE_T post_latch_index = VM_BYOB_MODEL40_POST_LATCH_PATHS;
+        lib_size post_latch_index = VM_BYOB_MODEL40_POST_LATCH_PATHS;
 
         switch (observation->point.linear_pc) {
         case 0x000fd41du: post_latch_index = 0u; break;
@@ -912,7 +913,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         trace->model40_resume_wait_predecessor = trace->last_linear_pc;
     }
     if (observation->point.linear_pc == 0x000fc7fbu) {
-        const STD_SIZE_T helper_index = (STD_SIZE_T)(
+        const lib_size helper_index = (lib_size)(
             trace->model40_post_status_helper_entries %
             VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY);
 
@@ -920,14 +921,14 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             trace->last_linear_pc;
         ++trace->model40_post_status_helper_entries;
         trace->model40_post_status_helper_predecessor = trace->last_linear_pc;
-    } else if (observation->point.linear_pc == 0x000fc043u && trace->machine != STD_NULL) {
+    } else if (observation->point.linear_pc == 0x000fc043u && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_test_entries;
         trace->model40_memory_address_test_eflags = trace->machine->executor_cpu.data.eflags;
         (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
             trace->machine->executor_cpu.data.ds.base + 0x58u,
             (type_virtual_address)&trace->model40_memory_address_test_status,
             sizeof(trace->model40_memory_address_test_status));
-    } else if (observation->point.linear_pc == 0x000fc04bu && trace->machine != STD_NULL) {
+    } else if (observation->point.linear_pc == 0x000fc04bu && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_error_entries;
         trace->model40_memory_address_error_predecessor = trace->last_linear_pc;
         trace->model40_memory_address_error_ds = trace->machine->executor_cpu.data.ds.selector;
@@ -936,8 +937,8 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             trace->model40_memory_address_error_ds_base + 0x58u,
             (type_virtual_address)&trace->model40_memory_address_error_status,
             sizeof(trace->model40_memory_address_error_status));
-    } else if (observation->point.linear_pc == 0x000f8720u && trace->machine != STD_NULL) {
-        const STD_SIZE_T history_index = (STD_SIZE_T)(
+    } else if (observation->point.linear_pc == 0x000f8720u && trace->machine != LIB_NULL) {
+        const lib_size history_index = (lib_size)(
             trace->model40_memory_pattern_entries % VM_BYOB_MODEL40_MEMORY_BASE_HISTORY);
 
         trace->model40_memory_pattern_bases[history_index] =
@@ -948,16 +949,16 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 trace->machine->executor_cpu.data.es.selector;
         }
         ++trace->model40_memory_pattern_entries;
-    } else if (observation->point.linear_pc == 0x000f8738u && trace->machine != STD_NULL &&
+    } else if (observation->point.linear_pc == 0x000f8738u && trace->machine != LIB_NULL &&
         trace->model40_memory_pattern_after_edi == 0u) {
         trace->model40_memory_pattern_after_es_base =
             trace->machine->executor_cpu.data.es.base;
         trace->model40_memory_pattern_after_eax = trace->machine->executor_cpu.data.eax;
         trace->model40_memory_pattern_after_edi = trace->machine->executor_cpu.data.edi;
         {
-            const type_unsigned_32 physical =
+            const lib_u32 physical =
                 trace->model40_memory_pattern_after_es_base +
-                (type_unsigned_16)((trace->model40_memory_pattern_after_edi - 4u) & 0xffffu);
+                (lib_u16)((trace->model40_memory_pattern_after_edi - 4u) & 0xffffu);
 
             if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
                 (C_VOID)core_machine_memory_read_physical(
@@ -966,10 +967,10 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                     sizeof(trace->model40_memory_pattern_after_value));
             }
         }
-    } else if (observation->point.linear_pc == 0x000fc1cbu && trace->machine != STD_NULL) {
-        type_unsigned_32 physical = trace->machine->executor_cpu.data.es.base +
-            (type_unsigned_16)((trace->machine->executor_cpu.data.edi - 2u) & 0xffffu);
-        const STD_SIZE_T history_index = (STD_SIZE_T)(
+    } else if (observation->point.linear_pc == 0x000fc1cbu && trace->machine != LIB_NULL) {
+        lib_u32 physical = trace->machine->executor_cpu.data.es.base +
+            (lib_u16)((trace->machine->executor_cpu.data.edi - 2u) & 0xffffu);
+        const lib_size history_index = (lib_size)(
             trace->model40_memory_compare_failures % VM_BYOB_MODEL40_MEMORY_BASE_HISTORY);
 
         trace->model40_memory_compare_bases[history_index] =
@@ -994,14 +995,14 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 sizeof(trace->model40_memory_compare_value));
         }
         ++trace->model40_memory_scas_entries;
-        trace->model40_memory_scas_ax = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
-        trace->model40_memory_scas_di = (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_scas_ax = (lib_u16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_scas_di = (lib_u16)trace->machine->executor_cpu.data.edi;
         trace->model40_memory_scas_es = trace->machine->executor_cpu.data.es.selector;
         trace->model40_memory_scas_es_base = trace->machine->executor_cpu.data.es.base;
         trace->model40_memory_scas_eflags = trace->machine->executor_cpu.data.eflags;
     } else if (observation->point.linear_pc == 0x000fc1ccu &&
         observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
-        trace->machine != STD_NULL) {
+        trace->machine != LIB_NULL) {
         ++trace->model40_memory_compare_branch_taken;
         trace->model40_memory_compare_eax = trace->machine->executor_cpu.data.eax;
         trace->model40_memory_compare_edi = trace->machine->executor_cpu.data.edi;
@@ -1009,8 +1010,8 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             trace->machine->executor_cpu.data.es.selector;
         trace->model40_memory_compare_es_base = trace->machine->executor_cpu.data.es.base;
         {
-            const type_unsigned_32 physical = trace->model40_memory_compare_es_base +
-                (type_unsigned_16)((trace->model40_memory_compare_edi - 2u) & 0xffffu);
+            const lib_u32 physical = trace->model40_memory_compare_es_base +
+                (lib_u16)((trace->model40_memory_compare_edi - 2u) & 0xffffu);
 
             if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
                 (C_VOID)core_machine_memory_read_physical(
@@ -1020,13 +1021,13 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             }
         }
     } else if (observation->point.linear_pc == 0x000fc207u &&
-        trace->machine != STD_NULL) {
-        const type_unsigned_32 physical = trace->machine->executor_cpu.data.es.base +
-            (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+        trace->machine != LIB_NULL) {
+        const lib_u32 physical = trace->machine->executor_cpu.data.es.base +
+            (lib_u16)trace->machine->executor_cpu.data.edi;
 
         ++trace->model40_memory_mismatch_entries;
-        trace->model40_memory_mismatch_ax = (type_unsigned_16)trace->machine->executor_cpu.data.eax;
-        trace->model40_memory_mismatch_di = (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_mismatch_ax = (lib_u16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_mismatch_di = (lib_u16)trace->machine->executor_cpu.data.edi;
         trace->model40_memory_mismatch_es = trace->machine->executor_cpu.data.es.selector;
         trace->model40_memory_mismatch_es_base = trace->machine->executor_cpu.data.es.base;
         trace->model40_memory_b_window_writes_at_mismatch =
@@ -1039,9 +1040,9 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         if (trace->model40_memory_status_test_active) {
             ++trace->model40_memory_status_test_mismatches;
             trace->model40_memory_status_test_expected =
-                (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+                (lib_u16)trace->machine->executor_cpu.data.eax;
             trace->model40_memory_status_test_offset =
-                (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+                (lib_u16)trace->machine->executor_cpu.data.edi;
             trace->model40_memory_status_test_es =
                 trace->machine->executor_cpu.data.es.selector;
             trace->model40_memory_status_test_es_base =
@@ -1056,10 +1057,10 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         }
     } else if ((observation->point.linear_pc == 0x000fbe62u ||
         observation->point.linear_pc == 0x000fbe86u) &&
-        trace->machine != STD_NULL) {
+        trace->machine != LIB_NULL) {
         ++trace->model40_memory_test_return_entries;
         trace->model40_memory_test_return_ax =
-            (type_unsigned_16)trace->machine->executor_cpu.data.eax;
+            (lib_u16)trace->machine->executor_cpu.data.eax;
     } else if ((observation->point.linear_pc == 0x000f85b4u ||
         observation->point.linear_pc == 0x000fbc8au ||
         observation->point.linear_pc == 0x000fbcf3u ||
@@ -1071,14 +1072,14 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         observation->point.linear_pc == 0x000fbe67u ||
         observation->point.linear_pc == 0x000fbe8bu ||
         observation->point.linear_pc == 0x000fc084u ||
-        observation->point.linear_pc == 0x000fc0acu) && trace->machine != STD_NULL) {
+        observation->point.linear_pc == 0x000fc0acu) && trace->machine != LIB_NULL) {
         ++trace->model40_post_status_58_writes;
         trace->model40_post_status_58_last_pc = observation->point.linear_pc;
         (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
             0x00000458u, (type_virtual_address)&trace->model40_post_status_58_last_value,
             sizeof(trace->model40_post_status_58_last_value));
     } else {
-        STD_SIZE_T post_status_index = VM_BYOB_MODEL40_POST_STATUS_WRITERS;
+        lib_size post_status_index = VM_BYOB_MODEL40_POST_STATUS_WRITERS;
 
         switch (observation->point.linear_pc) {
         case 0x000f8324u: post_status_index = 0u; break;
@@ -1104,35 +1105,35 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 &trace->model40_post_status_value, 1u);
         }
     }
-    if (!trace->real_286_high_flags_observed && trace->machine != STD_NULL &&
+    if (!trace->real_286_high_flags_observed && trace->machine != LIB_NULL &&
         trace->machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         (trace->machine->executor_cpu.data.cr0 & VCPU_CR0_PE) == 0u &&
         (trace->machine->executor_cpu.data.eflags & 0xf000u) != 0u) {
-        trace->real_286_high_flags_observed = TYPE_TRUE;
+        trace->real_286_high_flags_observed = LIB_TRUE;
         trace->real_286_high_flags_point = observation->point;
         trace->real_286_high_flags_value = trace->machine->executor_cpu.data.eflags;
     }
-    if (trace->machine != STD_NULL &&
+    if (trace->machine != LIB_NULL &&
         (trace->machine->executor_cpu.data.cs.base +
             trace->machine->executor_cpu.data.eip == 0x0001450fu ||
          trace->machine->executor_cpu.data.cs.base +
             trace->machine->executor_cpu.data.eip == 0x000145efu)) {
-        const type_unsigned_8 index = (type_unsigned_8)(
+        const lib_u8 index = (lib_u8)(
             trace->near_ud_count % VM_BYOB_NEAR_UD_HISTORY);
 
         trace->near_ud_history[index] = observation->point;
-        trace->near_ud_eflags[index] = trace->machine == STD_NULL ? 0u :
+        trace->near_ud_eflags[index] = trace->machine == LIB_NULL ? 0u :
             trace->machine->executor_cpu.data.eflags;
-        trace->near_ud_eax[index] = trace->machine == STD_NULL ? 0u :
+        trace->near_ud_eax[index] = trace->machine == LIB_NULL ? 0u :
             trace->machine->executor_cpu.data.eax;
-        trace->near_ud_ebx[index] = trace->machine == STD_NULL ? 0u :
+        trace->near_ud_ebx[index] = trace->machine == LIB_NULL ? 0u :
             trace->machine->executor_cpu.data.ebx;
         ++trace->near_ud_count;
     }
     if (observation->point.linear_pc == trace->int15_linear &&
-            trace->machine != STD_NULL) {
+            trace->machine != LIB_NULL) {
         ++trace->int15_calls;
-        trace->last_int15_ah = (type_unsigned_8)(
+        trace->last_int15_ah = (lib_u8)(
             trace->machine->executor_cpu.data.eax >> 8u);
         if (trace->last_int15_ah == 0x24u) trace->int15_ah_seen |= 0x01u;
         if (trace->last_int15_ah == 0x87u) trace->int15_ah_seen |= 0x02u;
@@ -1146,42 +1147,42 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         if ((observation->point.bytes[2u] & 0x38u) == 0x08u) ++trace->sidt_calls;
     }
     if (observation->point.byte_count >= 1u &&
-            observation->point.bytes[0u] == 0x9cu && trace->machine != STD_NULL) {
+            observation->point.bytes[0u] == 0x9cu && trace->machine != LIB_NULL) {
         ++trace->pushf_calls;
-        trace->last_pushf_high = (type_unsigned_16)(
+        trace->last_pushf_high = (lib_u16)(
             trace->machine->executor_cpu.data.eflags & 0xf000u);
     }
     if (observation->point.linear_pc == 0x00007cebu) {
-        if (trace->machine != STD_NULL) {
-            const type_unsigned_16 ds = trace->machine->executor_cpu.data.ds.selector;
-            const type_unsigned_16 es = trace->machine->executor_cpu.data.es.selector;
-            const type_unsigned_16 si = (type_unsigned_16)trace->machine->executor_cpu.data.esi;
-            const type_unsigned_16 di = (type_unsigned_16)trace->machine->executor_cpu.data.edi;
+        if (trace->machine != LIB_NULL) {
+            const lib_u16 ds = trace->machine->executor_cpu.data.ds.selector;
+            const lib_u16 es = trace->machine->executor_cpu.data.es.selector;
+            const lib_u16 si = (lib_u16)trace->machine->executor_cpu.data.esi;
+            const lib_u16 di = (lib_u16)trace->machine->executor_cpu.data.edi;
 
             trace->boot_loader_ds = ds;
             trace->boot_loader_es = es;
             trace->boot_loader_si = si;
             trace->boot_loader_di = di;
-            trace->boot_loader_cx = (type_unsigned_16)trace->machine->executor_cpu.data.ecx;
+            trace->boot_loader_cx = (lib_u16)trace->machine->executor_cpu.data.ecx;
             trace->boot_loader_flags =
-                (type_unsigned_16)trace->machine->executor_cpu.data.eflags;
-            (C_VOID)core_machine_memory_read(trace->machine, (type_unsigned_32)ds * 16u + si,
+                (lib_u16)trace->machine->executor_cpu.data.eflags;
+            (C_VOID)core_machine_memory_read(trace->machine, (lib_u32)ds * 16u + si,
                 trace->boot_loader_left, sizeof(trace->boot_loader_left));
-            (C_VOID)core_machine_memory_read(trace->machine, (type_unsigned_32)es * 16u + di,
+            (C_VOID)core_machine_memory_read(trace->machine, (lib_u32)es * 16u + di,
                 trace->boot_loader_right, sizeof(trace->boot_loader_right));
         }
-        trace->boot_loader_jz_observed = TYPE_TRUE;
+        trace->boot_loader_jz_observed = LIB_TRUE;
         trace->boot_loader_jz_outcome = observation->control_outcome;
     }
     if (observation->point.linear_pc == 0x00007cedu) {
-        trace->boot_loader_error_observed = TYPE_TRUE;
+        trace->boot_loader_error_observed = LIB_TRUE;
         trace->boot_loader_previous_pc = trace->last_linear_pc;
         trace->boot_loader_previous_outcome = trace->boot_loader_jz_outcome;
     }
-    if (observation->point.linear_pc == 0x00007d30u && trace->machine != STD_NULL) {
-        trace->boot_loader_read_return_observed = TYPE_TRUE;
+    if (observation->point.linear_pc == 0x00007d30u && trace->machine != LIB_NULL) {
+        trace->boot_loader_read_return_observed = LIB_TRUE;
         trace->boot_loader_read_return_flags =
-            (type_unsigned_16)trace->machine->executor_cpu.data.eflags;
+            (lib_u16)trace->machine->executor_cpu.data.eflags;
         (C_VOID)core_machine_memory_read(trace->machine, 0x003eu,
             trace->boot_loader_int13_state, sizeof(trace->boot_loader_int13_state));
     }
@@ -1192,7 +1193,7 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
 {
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
 
-    if (trace == STD_NULL || event == STD_NULL) return;
+    if (trace == LIB_NULL || event == LIB_NULL) return;
     if ((event->type == CORE_MACHINE_TRACE_PORT_WRITE ||
          event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN ||
          event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT ||
@@ -1208,7 +1209,7 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         return;
     }
     if (event->type == CORE_MACHINE_TRACE_STOP &&
-        event->detail == CORE_MACHINE_STOP_RESET_REQUESTED && trace->machine != STD_NULL) {
+        event->detail == CORE_MACHINE_STOP_RESET_REQUESTED && trace->machine != LIB_NULL) {
         trace->model40_shutdown_diagnostic_valid =
             core_machine_get_cpu_diagnostic(trace->machine,
                 &trace->model40_shutdown_diagnostic) == TYPE_STATUS_OK;
@@ -1218,7 +1219,7 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
     }
     if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0092u) {
         ++trace->a20_port_write_count;
-        trace->a20_port_last_value = (type_unsigned_8)event->value;
+        trace->a20_port_last_value = (lib_u8)event->value;
         trace->a20_port_last_pc = event->linear_pc;
     }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_READ &&
@@ -1235,27 +1236,27 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         event->address == 0x00000412u) {
         ++trace->model40_post_latch_writes;
         trace->model40_post_latch_last_pc = event->linear_pc;
-        trace->model40_post_latch_last_value = (type_unsigned_8)event->value;
+        trace->model40_post_latch_last_value = (lib_u8)event->value;
         return;
     }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x001e0000u && event->address < 0x001e0010u) {
         ++trace->model40_memory_1e_writes;
         trace->model40_memory_1e_last_pc = event->linear_pc;
-        trace->model40_memory_1e_last_value = (type_unsigned_8)event->value;
+        trace->model40_memory_1e_last_value = (lib_u8)event->value;
     }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x0000d8a0u && event->address < 0x0000d930u) {
         ++trace->ibm5170_gdt_writes;
         trace->ibm5170_gdt_last_address = event->address;
-        trace->ibm5170_gdt_last_value = (type_unsigned_8)event->value;
+        trace->ibm5170_gdt_last_value = (lib_u8)event->value;
     }
     if (event->type == CORE_MACHINE_TRACE_MEMORY_WRITE &&
         event->address >= 0x0018u && event->address < 0x001cu) {
-        const type_unsigned_8 index = (type_unsigned_8)(event->address - 0x0018u);
+        const lib_u8 index = (lib_u8)(event->address - 0x0018u);
 
-        trace->int6_vector_write_bytes[index] = (type_unsigned_8)event->value;
-        trace->int6_vector_write_mask |= (type_unsigned_8)(1u << index);
+        trace->int6_vector_write_bytes[index] = (lib_u8)event->value;
+        trace->int6_vector_write_mask |= (lib_u8)(1u << index);
         return;
     }
     if (event->type == CORE_MACHINE_TRACE_CPU_RETIRE) {
@@ -1290,7 +1291,7 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         ((event->detail >> 8u) & 0xffu) ==
             CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE && event->address == 0x0092u) {
         ++trace->a20_port_write_count;
-        trace->a20_port_last_value = (type_unsigned_8)event->value;
+        trace->a20_port_last_value = (lib_u8)event->value;
         trace->a20_port_last_pc = event->linear_pc;
         return;
     }
@@ -1334,7 +1335,7 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         event->type != CORE_MACHINE_TRACE_PORT_WRITE) return;
     if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0084u) {
         ++trace->model40_video_error_writes;
-        trace->model40_video_error_last_value = (type_unsigned_8)event->value;
+        trace->model40_video_error_last_value = (lib_u8)event->value;
         trace->model40_video_error_last_pc = event->linear_pc;
     }
     if (event->address >= 0x03f0u && event->address <= 0x03f7u) {
@@ -1355,20 +1356,20 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
 }
 
 static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
-    type_unsigned_32 physical, type_native_unsigned bytes)
+    lib_u32 physical, type_native_unsigned bytes)
 {
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
-    type_unsigned_32 pc;
+    lib_u32 pc;
 
-    if (trace == STD_NULL) return;
-    pc = trace->machine == STD_NULL ? 0u : trace->machine->executor_cpu.data.cs.base +
+    if (trace == LIB_NULL) return;
+    pc = trace->machine == LIB_NULL ? 0u : trace->machine->executor_cpu.data.cs.base +
         trace->machine->executor_cpu.data.eip;
     if (physical <= 0x00000042u &&
-        (type_unsigned_64)physical + bytes > 0x00000040u) {
-        const STD_SIZE_T index = (STD_SIZE_T)(trace->model40_int10_vector_write_count %
+        (lib_u64)physical + bytes > 0x00000040u) {
+        const lib_size index = (lib_size)(trace->model40_int10_vector_write_count %
             VM_BYOB_MODEL40_INT10_VECTOR_HISTORY);
 
-        trace->model40_int10_vector_write_observed = TYPE_TRUE;
+        trace->model40_int10_vector_write_observed = LIB_TRUE;
         ++trace->model40_int10_vector_write_count;
         trace->model40_int10_vector_write_pc = pc;
         trace->model40_int10_vector_write_cs =
@@ -1390,8 +1391,8 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
             trace->model40_int10_vector_segment;
     }
     if (physical <= 0x0000010au &&
-        (type_unsigned_64)physical + bytes > 0x00000108u) {
-        const STD_SIZE_T index = (STD_SIZE_T)(trace->model40_int42_vector_write_count %
+        (lib_u64)physical + bytes > 0x00000108u) {
+        const lib_size index = (lib_size)(trace->model40_int42_vector_write_count %
             VM_BYOB_MODEL40_INT10_VECTOR_HISTORY);
 
         ++trace->model40_int42_vector_write_count;
@@ -1403,8 +1404,8 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
             0x0000010au, (type_virtual_address)&trace->model40_int42_vector_history_segment[index],
             sizeof(trace->model40_int42_vector_history_segment[index]));
     }
-    if (physical <= 0x00000458u && (type_unsigned_64)physical + bytes > 0x00000458u) {
-        const STD_SIZE_T index = (STD_SIZE_T)(
+    if (physical <= 0x00000458u && (lib_u64)physical + bytes > 0x00000458u) {
+        const lib_size index = (lib_size)(
             trace->model40_post_status_58_observer_writes %
             VM_BYOB_MODEL40_POST_STATUS_58_HISTORY);
 
@@ -1419,8 +1420,8 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
             trace->model40_post_status_58_observer_last_value;
     }
     if (physical <= VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL &&
-        (type_unsigned_64)physical + bytes > VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL) {
-        const STD_SIZE_T index = (STD_SIZE_T)(
+        (lib_u64)physical + bytes > VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL) {
+        const lib_size index = (lib_size)(
             trace->model40_post_private_status_writes %
             VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY);
 
@@ -1440,7 +1441,7 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
         ++trace->model40_memory_b_window_writes;
         trace->model40_memory_b_window_last_pc = pc;
     }
-    if (physical < 0x000b0002u && (type_unsigned_64)physical + bytes > 0x000b0000u) {
+    if (physical < 0x000b0002u && (lib_u64)physical + bytes > 0x000b0000u) {
         ++trace->model40_memory_b_first_word_writes;
         trace->model40_memory_b_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_b_first_word_last_pc = pc;
@@ -1460,8 +1461,8 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
         ++trace->model40_memory_fb_page_writes;
         trace->model40_memory_fb_page_last_pc = pc;
     }
-    if (physical < 0x00fb0010u && (type_unsigned_64)physical + bytes > 0x00fb0000u) {
-        const STD_SIZE_T history = (STD_SIZE_T)(trace->model40_memory_high_b_page_writes %
+    if (physical < 0x00fb0010u && (lib_u64)physical + bytes > 0x00fb0000u) {
+        const lib_size history = (lib_size)(trace->model40_memory_high_b_page_writes %
             VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY);
 
         if (trace->model40_memory_high_b_page_writes == 0u)
@@ -1478,7 +1479,7 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
             (type_virtual_address)trace->model40_memory_high_b_write_pages[history],
             sizeof(trace->model40_memory_high_b_write_pages[history]));
     }
-    if (physical < 0x00fb0002u && (type_unsigned_64)physical + bytes > 0x00fb0000u) {
+    if (physical < 0x00fb0002u && (lib_u64)physical + bytes > 0x00fb0000u) {
         ++trace->model40_memory_fb_first_word_writes;
         trace->model40_memory_fb_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_fb_first_word_last_pc = pc;
@@ -1489,12 +1490,12 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
     if (physical < 0x00fa0000u || physical >= 0x01000000u) return;
     if (trace->model40_memory_high_writes == 0u) {
         trace->model40_memory_high_first_address = physical;
-        trace->model40_memory_high_first_value = (type_unsigned_8)bytes;
+        trace->model40_memory_high_first_value = (lib_u8)bytes;
     }
     ++trace->model40_memory_high_writes;
     trace->model40_memory_high_last_address = physical;
     trace->model40_memory_high_last_pc = pc;
-    trace->model40_memory_high_last_value = (type_unsigned_8)bytes;
+    trace->model40_memory_high_last_value = (lib_u8)bytes;
     if (trace->model40_memory_high_last_pc == 0x000f8738u) {
         if (trace->model40_memory_pattern_write_count == 0u)
             trace->model40_memory_pattern_write_first_address = physical;
@@ -1506,26 +1507,26 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
 static C_INT vm_byob_snapshot_has(const core_machine_display_snapshot *snapshot,
     const C_CHAR *text)
 {
-    STD_SIZE_T cell;
-    STD_SIZE_T length;
+    lib_size cell;
+    lib_size length;
 
-    if (snapshot == STD_NULL || text == STD_NULL ||
+    if (snapshot == LIB_NULL || text == LIB_NULL ||
         snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
-    length = STD_STRLEN(text);
-    for (cell = 0u; cell + length <= (STD_SIZE_T)snapshot->columns * snapshot->rows;
+    length = lib_text_length(text);
+    for (cell = 0u; cell + length <= (lib_size)snapshot->columns * snapshot->rows;
         ++cell) {
-        if (!STD_MEMCMP(snapshot->characters + cell, text, length)) return 1;
+        if (!lib_memory_compare(snapshot->characters + cell, text, length)) return 1;
     }
     return 0;
 }
 
 static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *snapshot)
 {
-    STD_SIZE_T cell;
-    STD_SIZE_T cells;
+    lib_size cell;
+    lib_size cells;
 
-    if (snapshot == STD_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
-    cells = (STD_SIZE_T)snapshot->columns * snapshot->rows;
+    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+    cells = (lib_size)snapshot->columns * snapshot->rows;
     for (cell = 0u; cell + 3u < cells; ++cell) {
         if (STD_ISALPHA(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
@@ -1536,13 +1537,13 @@ static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *sn
 }
 
 static C_INT vm_byob_send_f1(vm_machine *session, C_INT pressed,
-    type_unsigned_8 *out_scan_set)
+    lib_u8 *out_scan_set)
 {
     core_machine_guest_input_event event = {0};
-    type_unsigned_8 scan_set = 0u;
+    lib_u8 scan_set = 0u;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL ||
-        out_scan_set == STD_NULL || core_machine_keyboard_get_native_scan_set(
+    if (session == LIB_NULL || session->core_machine == LIB_NULL ||
+        out_scan_set == LIB_NULL || core_machine_keyboard_get_native_scan_set(
             session->core_machine, &scan_set) !=
             TYPE_STATUS_OK) return 0;
     *out_scan_set = scan_set;
@@ -1555,16 +1556,16 @@ static C_INT vm_byob_send_f1(vm_machine *session, C_INT pressed,
 
 static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
 {
-    type_unsigned_8 bytes[0x4000];
-    STD_SIZE_T offset;
-    STD_SIZE_T length;
+    lib_u8 bytes[0x4000];
+    lib_size offset;
+    lib_size length;
 
-    if (machine == STD_NULL || text == STD_NULL ||
+    if (machine == LIB_NULL || text == LIB_NULL ||
         core_machine_memory_read(machine, 0x000b8000u, bytes, sizeof(bytes)) !=
             TYPE_STATUS_OK) return 0;
-    length = STD_STRLEN(text);
+    length = lib_text_length(text);
     for (offset = 0u; offset + length * 2u <= sizeof(bytes); offset += 2u) {
-        STD_SIZE_T index;
+        lib_size index;
 
         for (index = 0u; index < length && bytes[offset + index * 2u] == text[index];
             ++index) {}
@@ -1575,18 +1576,18 @@ static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
 
 static C_VOID vm_byob_print_text_rows(core_machine *machine)
 {
-    type_unsigned_8 bytes[80u * 25u * 2u];
-    type_unsigned_32 row;
+    lib_u8 bytes[80u * 25u * 2u];
+    lib_u32 row;
 
-    if (machine == STD_NULL || core_machine_memory_read(machine, 0x000b8000u,
+    if (machine == LIB_NULL || core_machine_memory_read(machine, 0x000b8000u,
             bytes, sizeof(bytes)) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         C_CHAR line[81];
-        type_unsigned_32 column;
+        lib_u32 column;
         C_INT nonblank = 0;
 
         for (column = 0u; column < 80u; ++column) {
-            type_unsigned_8 character = bytes[(row * 80u + column) * 2u];
+            lib_u8 character = bytes[(row * 80u + column) * 2u];
 
             line[column] = character >= 0x20u && character < 0x7fu ?
                 (C_CHAR)character : ' ';
@@ -1598,45 +1599,45 @@ static C_VOID vm_byob_print_text_rows(core_machine *machine)
     }
 }
 
-static C_INT vm_byob_memory_has(core_machine *machine, type_unsigned_32 address,
-    STD_SIZE_T byte_count, const C_CHAR *text)
+static C_INT vm_byob_memory_has(core_machine *machine, lib_u32 address,
+    lib_size byte_count, const C_CHAR *text)
 {
-    type_unsigned_8 bytes[1024];
-    STD_SIZE_T offset;
-    STD_SIZE_T length;
+    lib_u8 bytes[1024];
+    lib_size offset;
+    lib_size length;
 
-    if (machine == STD_NULL || text == STD_NULL || byte_count > sizeof(bytes) ||
+    if (machine == LIB_NULL || text == LIB_NULL || byte_count > sizeof(bytes) ||
         core_machine_memory_read(machine, address, bytes, byte_count) != TYPE_STATUS_OK) {
         return 0;
     }
-    length = STD_STRLEN(text);
+    length = lib_text_length(text);
     for (offset = 0u; offset + length <= byte_count; ++offset) {
-        if (!STD_MEMCMP(bytes + offset, text, length)) return 1;
+        if (!lib_memory_compare(bytes + offset, text, length)) return 1;
     }
     return 0;
 }
 
-static C_INT vm_byob_memory_equal(core_machine *machine, type_unsigned_32 left,
-    type_unsigned_32 right, STD_SIZE_T byte_count)
+static C_INT vm_byob_memory_equal(core_machine *machine, lib_u32 left,
+    lib_u32 right, lib_size byte_count)
 {
-    type_unsigned_8 left_bytes[32];
-    type_unsigned_8 right_bytes[32];
+    lib_u8 left_bytes[32];
+    lib_u8 right_bytes[32];
 
-    return machine != STD_NULL && byte_count <= sizeof(left_bytes) &&
+    return machine != LIB_NULL && byte_count <= sizeof(left_bytes) &&
         core_machine_memory_read(machine, left, left_bytes, byte_count) == TYPE_STATUS_OK &&
         core_machine_memory_read(machine, right, right_bytes, byte_count) == TYPE_STATUS_OK &&
-        !STD_MEMCMP(left_bytes, right_bytes, byte_count);
+        !lib_memory_compare(left_bytes, right_bytes, byte_count);
 }
 
-static type_unsigned_32 vm_byob_snapshot_checksum(
+static lib_u32 vm_byob_snapshot_checksum(
     const core_machine_display_snapshot *snapshot)
 {
-    type_unsigned_32 checksum = 0u;
-    STD_SIZE_T cell;
-    STD_SIZE_T cells;
+    lib_u32 checksum = 0u;
+    lib_size cell;
+    lib_size cells;
 
-    if (snapshot == STD_NULL) return 0u;
-    cells = (STD_SIZE_T)snapshot->columns * snapshot->rows;
+    if (snapshot == LIB_NULL) return 0u;
+    cells = (lib_size)snapshot->columns * snapshot->rows;
     for (cell = 0u; cell < cells; ++cell) {
         checksum = checksum * 33u + snapshot->characters[cell];
     }
@@ -1649,7 +1650,7 @@ int main(C_INT argc, C_CHAR **argv)
        guest instruction is stalled behind an unbounded Core wait path. */
     core_machine_run_budget budget = {256u, 256u};
     integration_ini_session ini_session = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
     core_machine_cpu_diagnostic diagnostic;
@@ -1658,31 +1659,31 @@ int main(C_INT argc, C_CHAR **argv)
     ULONGLONG started;
     ULONGLONG progress;
     ULONGLONG next_display_capture;
-    type_unsigned_32 checksum = 0u;
-    type_unsigned_32 linear_pc = 0u;
-    type_unsigned_32 port_61 = 0u;
-    type_unsigned_32 port_87 = 0u;
-    type_unsigned_32 waiting_linear_pc = 0u;
-    type_unsigned_16 post_caller_offset = 0u;
-    type_unsigned_16 int6_offset = 0u;
-    type_unsigned_16 int6_segment = 0u;
-    type_unsigned_8 post_interrupt_flag = 0u;
-    type_unsigned_8 post_manufacturing_error_flag = 0u;
-    type_unsigned_8 last_fdc_command = 0u;
-    type_unsigned_8 last_fdc_bytes[9] = {0};
-    type_unsigned_8 last_fdc_result[3] = {0u, 0u, 0u};
-    type_unsigned_8 last_fdc_phase = 0u;
-    type_unsigned_32 last_fdc_remaining = 0u;
-    type_unsigned_16 last_dma_address = 0u;
-    type_unsigned_16 last_dma_count = 0u;
-    type_unsigned_8 last_dma_mode = 0u;
-    type_unsigned_64 executed_total = 0u;
-    type_unsigned_64 run_count = 0u;
-    type_unsigned_32 last_reason = CORE_MACHINE_STOP_NONE;
-    type_unsigned_32 last_detail = 0u;
+    lib_u32 checksum = 0u;
+    lib_u32 linear_pc = 0u;
+    lib_u32 port_61 = 0u;
+    lib_u32 port_87 = 0u;
+    lib_u32 waiting_linear_pc = 0u;
+    lib_u16 post_caller_offset = 0u;
+    lib_u16 int6_offset = 0u;
+    lib_u16 int6_segment = 0u;
+    lib_u8 post_interrupt_flag = 0u;
+    lib_u8 post_manufacturing_error_flag = 0u;
+    lib_u8 last_fdc_command = 0u;
+    lib_u8 last_fdc_bytes[9] = {0};
+    lib_u8 last_fdc_result[3] = {0u, 0u, 0u};
+    lib_u8 last_fdc_phase = 0u;
+    lib_u32 last_fdc_remaining = 0u;
+    lib_u16 last_dma_address = 0u;
+    lib_u16 last_dma_count = 0u;
+    lib_u8 last_dma_mode = 0u;
+    lib_u64 executed_total = 0u;
+    lib_u64 run_count = 0u;
+    lib_u32 last_reason = CORE_MACHINE_STOP_NONE;
+    lib_u32 last_detail = 0u;
     C_INT last_wait_advanced = 0;
-    type_unsigned_32 wall_limit = VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS;
-    type_unsigned_32 no_progress_limit = VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS;
+    lib_u32 wall_limit = VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS;
+    lib_u32 no_progress_limit = VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS;
     ULONGLONG resume_f1_prompt_at = 0u;
     ULONGLONG resume_f1_make_at = 0u;
     ULONGLONG next_text_memory_scan;
@@ -1715,13 +1716,13 @@ int main(C_INT argc, C_CHAR **argv)
     while (argc > 1) {
         const C_CHAR *option = argv[argc - 1];
 
-        if (!STD_STRCMP(option, "--first-exception")) stop_at_first_exception = 1;
-        else if (!STD_STRCMP(option, "--short")) short_budget = 1;
-        else if (!STD_STRCMP(option, "--trace")) trace_enabled = 1;
-        else if (!STD_STRCMP(option, "--no-retirement-observation"))
+        if (!lib_c_strcmp(option, "--first-exception")) stop_at_first_exception = 1;
+        else if (!lib_c_strcmp(option, "--short")) short_budget = 1;
+        else if (!lib_c_strcmp(option, "--trace")) trace_enabled = 1;
+        else if (!lib_c_strcmp(option, "--no-retirement-observation"))
             no_retirement_observation = 1;
-        else if (!STD_STRCMP(option, "--resume-f1")) press_resume_f1 = 1;
-        else if (!STD_STRCMP(option, "--turbo")) turbo = 1;
+        else if (!lib_c_strcmp(option, "--resume-f1")) press_resume_f1 = 1;
+        else if (!lib_c_strcmp(option, "--turbo")) turbo = 1;
         else break;
         --argc;
     }
@@ -1736,7 +1737,7 @@ int main(C_INT argc, C_CHAR **argv)
     if (integration_ini_session_open(argv[1], argv[2], &ini_session) != TYPE_STATUS_OK)
         return 77;
     session = ini_session.session;
-    if (session == STD_NULL) goto done;
+    if (session == LIB_NULL) goto done;
     /* A diagnostic begins at the same explicit reset boundary as the delivery
        runner, rather than inheriting construction's initial Core reset. */
     if (vm_machine_reset(session) != TYPE_STATUS_OK) {
@@ -1756,11 +1757,11 @@ int main(C_INT argc, C_CHAR **argv)
     }
     if (session->core_machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
         session->core_machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-        type_unsigned_8 reset_bytes[4] = {0u};
-        const type_unsigned_32 reset_physical =
+        lib_u8 reset_bytes[4] = {0u};
+        const lib_u32 reset_physical =
             session->core_machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                 0x00fffff0u : 0xfffffff0u;
-        STD_SIZE_T index;
+        lib_size index;
 
         (C_VOID)core_machine_memory_read_reset_physical(
             &session->core_machine->executor_memory, reset_physical,
@@ -1796,14 +1797,14 @@ int main(C_INT argc, C_CHAR **argv)
             CORE_MACHINE_DEBUG_WATCH_WRITE, 0x00fe0000u);
     }
     {
-        type_unsigned_16 offset = 0u;
-        type_unsigned_16 segment = 0u;
+        lib_u16 offset = 0u;
+        lib_u16 segment = 0u;
 
         if (core_machine_memory_read(session->core_machine, 0x0054u, &offset,
                 sizeof(offset)) == TYPE_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0056u, &segment,
                 sizeof(segment)) == TYPE_STATUS_OK) {
-            trace.int15_linear = (type_unsigned_32)segment * 16u + offset;
+            trace.int15_linear = (lib_u32)segment * 16u + offset;
         }
     }
     if (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK) {
@@ -1848,7 +1849,7 @@ int main(C_INT argc, C_CHAR **argv)
     next_text_memory_scan = started;
     while (GetTickCount64() - started < wall_limit) {
         core_machine_run_budget run_budget = budget;
-        type_unsigned_32 current;
+        lib_u32 current;
         ULONGLONG now;
 
         if (stop_at_first_exception && have_linear_pc &&
@@ -1859,15 +1860,15 @@ int main(C_INT argc, C_CHAR **argv)
             core_machine_memory_read(session->core_machine, 0x001au,
                 &trace.int6_pre_fault_segment,
                 sizeof(trace.int6_pre_fault_segment)) == TYPE_STATUS_OK) {
-            trace.int6_pre_fault_snapshot_valid = TYPE_TRUE;
+            trace.int6_pre_fault_snapshot_valid = LIB_TRUE;
             run_budget.instructions = 1u;
         }
         /* This probe drives Core directly; its host input is delivered by the
          * VM adapter before each Core quantum. */
         if (core_machine_run(session->core_machine, run_budget, &result) != TYPE_STATUS_OK) {
-            type_unsigned_8 fault_bytes[4] = {0u};
-            type_unsigned_8 far_pointer[6] = {0u};
-            type_unsigned_8 descriptor[8] = {0u};
+            lib_u8 fault_bytes[4] = {0u};
+            lib_u8 far_pointer[6] = {0u};
+            lib_u8 descriptor[8] = {0u};
             const t_cpu *fault_cpu = &session->core_machine->executor_cpu;
 
             (C_VOID)core_machine_memory_read_physical(&session->core_machine->executor_memory,
@@ -1911,7 +1912,7 @@ int main(C_INT argc, C_CHAR **argv)
         if (stop_at_first_exception && core_machine_get_cpu_diagnostic(
                 session->core_machine, &diagnostic) == TYPE_STATUS_OK &&
             diagnostic.first_delivered_exception.valid) {
-            STD_SIZE_T index;
+            lib_size index;
 
             STD_PRINTF("BOOT-PROBE=first-exception-pc=%05X\n", (unsigned int)
                 diagnostic.first_delivered_exception.point.linear_pc);
@@ -1934,12 +1935,12 @@ int main(C_INT argc, C_CHAR **argv)
         if (session->core_machine->fdc.data.command_index != 0u ||
             session->core_machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND) {
             last_fdc_command = session->core_machine->fdc.data.cmd[0u];
-            STD_MEMCPY(last_fdc_bytes, session->core_machine->fdc.data.cmd,
+            lib_memory_copy(last_fdc_bytes, session->core_machine->fdc.data.cmd,
                 sizeof(last_fdc_bytes));
             last_fdc_result[0u] = session->core_machine->fdc.data.st0;
             last_fdc_result[1u] = session->core_machine->fdc.data.st1;
             last_fdc_result[2u] = session->core_machine->fdc.data.st2;
-            last_fdc_phase = (type_unsigned_8)session->core_machine->fdc.data.phase;
+            last_fdc_phase = (lib_u8)session->core_machine->fdc.data.phase;
             last_fdc_remaining = session->core_machine->fdc.data.transfer_remaining;
             last_dma_address = session->core_machine->shared_dma_primary.data.currAddr[2u];
             last_dma_count = session->core_machine->shared_dma_primary.data.currCount[2u];
@@ -2039,7 +2040,7 @@ int main(C_INT argc, C_CHAR **argv)
         }
         if (press_resume_f1 && !resume_f1_sent && resume_f1_prompt_at != 0u &&
             now - resume_f1_prompt_at >= 100u) {
-            type_unsigned_8 scan_set = 0u;
+            lib_u8 scan_set = 0u;
 
             if (!vm_byob_send_f1(session, 1, &scan_set)) {
                 STD_PRINTF("BOOT-PROBE=resume-f1-input-failed\n");
@@ -2054,7 +2055,7 @@ int main(C_INT argc, C_CHAR **argv)
         }
         if (resume_f1_sent && resume_f1_make_at != 0u &&
             now - resume_f1_make_at >= 25u) {
-            type_unsigned_8 scan_set = 0u;
+            lib_u8 scan_set = 0u;
 
             if (!vm_byob_send_f1(session, 0, &scan_set)) {
                 STD_PRINTF("BOOT-PROBE=resume-f1-release-failed\n");
@@ -2219,40 +2220,40 @@ int main(C_INT argc, C_CHAR **argv)
     } else STD_PRINTF("BOOT-PROBE=wall-timeout-fdc-and-xt-ppi\n");
     }
 done:
-    if (session != STD_NULL && session->core_machine != STD_NULL) {
-        type_unsigned_16 bda_equipment = 0u;
-        type_unsigned_8 low_memory_12 = 0u;
-        type_unsigned_16 bda_keyboard_head = 0u;
-        type_unsigned_16 bda_keyboard_tail = 0u;
-        type_unsigned_8 bda_wait_state[16] = {0};
-        type_unsigned_16 bda_memory_kib = 0u;
-        type_unsigned_16 stack_words[8] = {0};
-        type_unsigned_8 bda_post_status = 0u;
-        type_unsigned_8 bda_diskette_status = 0u;
-        type_unsigned_8 bda_motor_wait = 0u;
-        type_unsigned_8 bda_motor_status = 0u;
-        type_unsigned_16 int13_offset = 0u;
-        type_unsigned_16 int13_segment = 0u;
-        type_unsigned_16 int1e_offset = 0u;
-        type_unsigned_16 int1e_segment = 0u;
-        type_unsigned_16 irq6_offset = 0u;
-        type_unsigned_16 irq6_segment = 0u;
-        type_unsigned_16 int15_offset = 0u;
-        type_unsigned_16 int15_segment = 0u;
-        type_unsigned_8 int13_state[5] = {0u};
-        type_unsigned_8 next_instruction_bytes[8] = {0u};
+    if (session != LIB_NULL && session->core_machine != LIB_NULL) {
+        lib_u16 bda_equipment = 0u;
+        lib_u8 low_memory_12 = 0u;
+        lib_u16 bda_keyboard_head = 0u;
+        lib_u16 bda_keyboard_tail = 0u;
+        lib_u8 bda_wait_state[16] = {0};
+        lib_u16 bda_memory_kib = 0u;
+        lib_u16 stack_words[8] = {0};
+        lib_u8 bda_post_status = 0u;
+        lib_u8 bda_diskette_status = 0u;
+        lib_u8 bda_motor_wait = 0u;
+        lib_u8 bda_motor_status = 0u;
+        lib_u16 int13_offset = 0u;
+        lib_u16 int13_segment = 0u;
+        lib_u16 int1e_offset = 0u;
+        lib_u16 int1e_segment = 0u;
+        lib_u16 irq6_offset = 0u;
+        lib_u16 irq6_segment = 0u;
+        lib_u16 int15_offset = 0u;
+        lib_u16 int15_segment = 0u;
+        lib_u8 int13_state[5] = {0u};
+        lib_u8 next_instruction_bytes[8] = {0u};
 
-        STD_MEMSET(&diagnostic, 0, sizeof(diagnostic));
+        lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
         core_machine_cpu_diagnostic_capture(session->core_machine, &diagnostic);
         if (diagnostic.first_fault.valid) {
             const core_machine_cpu_execution_point *point =
                 &diagnostic.first_fault.point;
-            type_unsigned_8 descriptor[8] = {0u};
-            type_unsigned_8 idt_descriptor[8] = {0u};
-            const type_unsigned_32 descriptor_linear =
+            lib_u8 descriptor[8] = {0u};
+            lib_u8 idt_descriptor[8] = {0u};
+            const lib_u32 descriptor_linear =
                 session->core_machine->executor_cpu.data.gdtr.base +
                 (diagnostic.first_fault.exception_code & 0xfff8u);
-            const type_unsigned_32 idt_linear =
+            const lib_u32 idt_linear =
                 session->core_machine->executor_cpu.data.idtr.base + 0x68u;
 
             STD_PRINTF("BOOT-PROBE=first-fault-mask=%08X-code=%08X-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
@@ -2320,8 +2321,8 @@ done:
                 (unsigned int)trace.model40_invalid_entry_sp);
         }
         if (trace.model40_int10_vector_write_observed) {
-            type_unsigned_64 entry;
-            const type_unsigned_64 count = trace.model40_int10_vector_write_count <
+            lib_u64 entry;
+            const lib_u64 count = trace.model40_int10_vector_write_count <
                 VM_BYOB_MODEL40_INT10_VECTOR_HISTORY ?
                 trace.model40_int10_vector_write_count :
                 VM_BYOB_MODEL40_INT10_VECTOR_HISTORY;
@@ -2333,7 +2334,7 @@ done:
                 (unsigned int)trace.model40_int10_vector_segment,
                 (unsigned int)trace.model40_int10_vector_offset);
             for (entry = 0u; entry < count; ++entry) {
-                const STD_SIZE_T index = (STD_SIZE_T)(
+                const lib_size index = (lib_size)(
                     (trace.model40_int10_vector_write_count - count + entry) %
                     VM_BYOB_MODEL40_INT10_VECTOR_HISTORY);
 
@@ -2345,9 +2346,9 @@ done:
             }
         }
         {
-            type_unsigned_16 int42_offset = 0u;
-            type_unsigned_16 int42_segment = 0u;
-            type_unsigned_64 entry;
+            lib_u16 int42_offset = 0u;
+            lib_u16 int42_segment = 0u;
+            lib_u64 entry;
 
             (C_VOID)core_machine_memory_read(session->core_machine, 0x0108u,
                 &int42_offset, sizeof(int42_offset));
@@ -2413,14 +2414,14 @@ done:
             (unsigned int)trace.model40_video_error_last_value,
             (unsigned int)trace.model40_video_error_last_pc);
         {
-            type_unsigned_64 entry;
-            const type_unsigned_64 count = trace.model40_video_special_history_count <
+            lib_u64 entry;
+            const lib_u64 count = trace.model40_video_special_history_count <
                 VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY ?
                 trace.model40_video_special_history_count :
                 VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY;
 
             for (entry = 0u; entry < count; ++entry) {
-                const STD_SIZE_T index = (STD_SIZE_T)(
+                const lib_size index = (lib_size)(
                     (trace.model40_video_special_history_count - count + entry) %
                     VM_BYOB_MODEL40_VIDEO_SPECIAL_HISTORY);
                 const vm_byob_fdc_port_event *record =
@@ -2432,13 +2433,13 @@ done:
             }
         }
         if (trace.model40_video_port_accesses != 0u) {
-            type_unsigned_64 entry;
-            const type_unsigned_64 count = trace.model40_video_port_accesses <
+            lib_u64 entry;
+            const lib_u64 count = trace.model40_video_port_accesses <
                 VM_BYOB_MODEL40_VIDEO_PORT_HISTORY ? trace.model40_video_port_accesses :
                 VM_BYOB_MODEL40_VIDEO_PORT_HISTORY;
 
             for (entry = 0u; entry < count; ++entry) {
-                const STD_SIZE_T index = (STD_SIZE_T)((trace.model40_video_port_accesses -
+                const lib_size index = (lib_size)((trace.model40_video_port_accesses -
                     count + entry) % VM_BYOB_MODEL40_VIDEO_PORT_HISTORY);
                 const vm_byob_fdc_port_event *record =
                     &trace.model40_video_port_history[index];
@@ -2471,12 +2472,12 @@ done:
                 (unsigned int)trace.int6_pre_fault_offset);
         }
         if (trace.near_ud_count != 0u) {
-            type_unsigned_64 count = trace.near_ud_count;
-            type_unsigned_64 index;
+            lib_u64 count = trace.near_ud_count;
+            lib_u64 index;
 
             if (count > VM_BYOB_NEAR_UD_HISTORY) count = VM_BYOB_NEAR_UD_HISTORY;
             for (index = 0u; index < count; ++index) {
-                const type_unsigned_8 history_index = (type_unsigned_8)(
+                const lib_u8 history_index = (lib_u8)(
                     (trace.near_ud_count - count + index) % VM_BYOB_NEAR_UD_HISTORY);
                 const core_machine_cpu_execution_point *point =
                     &trace.near_ud_history[history_index];
@@ -2642,7 +2643,7 @@ done:
             (unsigned long long)trace.model40_ram_post_failures);
         if (trace.model40_memory_pattern_entries != 0u ||
             trace.model40_memory_compare_failures != 0u) {
-            STD_SIZE_T index;
+            lib_size index;
 
             STD_PRINTF("BOOT-PROBE=model40-memory-bases=");
             for (index = 0u; index < VM_BYOB_MODEL40_MEMORY_BASE_HISTORY; ++index)
@@ -2686,15 +2687,15 @@ done:
             (unsigned int)trace.model40_memory_fb_first_word_last_value,
             (unsigned long long)trace.model40_memory_fb_first_word_retirements);
         {
-            const STD_SIZE_T count = trace.model40_es_change_count <
+            const lib_size count = trace.model40_es_change_count <
                 VM_BYOB_MODEL40_ES_HISTORY ?
-                (STD_SIZE_T)trace.model40_es_change_count : VM_BYOB_MODEL40_ES_HISTORY;
-            const STD_SIZE_T first = trace.model40_es_change_count > count ?
-                (STD_SIZE_T)(trace.model40_es_change_count % VM_BYOB_MODEL40_ES_HISTORY) : 0u;
-            STD_SIZE_T index;
+                (lib_size)trace.model40_es_change_count : VM_BYOB_MODEL40_ES_HISTORY;
+            const lib_size first = trace.model40_es_change_count > count ?
+                (lib_size)(trace.model40_es_change_count % VM_BYOB_MODEL40_ES_HISTORY) : 0u;
+            lib_size index;
 
             for (index = 0u; index < count; ++index) {
-                const STD_SIZE_T slot = (first + index) % VM_BYOB_MODEL40_ES_HISTORY;
+                const lib_size slot = (first + index) % VM_BYOB_MODEL40_ES_HISTORY;
 
                 STD_PRINTF("BOOT-PROBE=model40-es-change-%u=%05X-%04X/%08X-cr0=%08X\n",
                     (unsigned int)index,
@@ -2802,11 +2803,11 @@ done:
             (unsigned long long)trace.model40_memory_pattern_producer_entries,
             (unsigned long long)trace.model40_memory_pattern_producer_high_b_writes);
         {
-            const STD_SIZE_T count = trace.model40_memory_high_b_page_writes <
+            const lib_size count = trace.model40_memory_high_b_page_writes <
                 VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY ?
-                (STD_SIZE_T)trace.model40_memory_high_b_page_writes :
+                (lib_size)trace.model40_memory_high_b_page_writes :
                 VM_BYOB_MODEL40_HIGH_B_WRITE_HISTORY;
-            STD_SIZE_T index;
+            lib_size index;
 
             for (index = 0u; index < count; ++index) {
                 STD_PRINTF("BOOT-PROBE=model40-high-b-write-%u=%05X-producer=%u-page=%02X,%02X,%02X,%02X\n",
@@ -2832,11 +2833,11 @@ done:
             (unsigned int)trace.model40_post_private_status_last_pc,
             (unsigned int)trace.model40_post_private_status_last_value);
         {
-            const STD_SIZE_T count = trace.model40_post_private_status_writes <
+            const lib_size count = trace.model40_post_private_status_writes <
                 VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY ?
-                (STD_SIZE_T)trace.model40_post_private_status_writes :
+                (lib_size)trace.model40_post_private_status_writes :
                 VM_BYOB_MODEL40_POST_PRIVATE_STATUS_HISTORY;
-            STD_SIZE_T index;
+            lib_size index;
 
             for (index = 0u; index < count; ++index) {
                 STD_PRINTF("BOOT-PROBE=model40-post-private-status-write-%u=%05X/%04X\n",
@@ -2846,11 +2847,11 @@ done:
             }
         }
         {
-            const STD_SIZE_T count = trace.model40_post_status_58_observer_writes <
+            const lib_size count = trace.model40_post_status_58_observer_writes <
                 VM_BYOB_MODEL40_POST_STATUS_58_HISTORY ?
-                (STD_SIZE_T)trace.model40_post_status_58_observer_writes :
+                (lib_size)trace.model40_post_status_58_observer_writes :
                 VM_BYOB_MODEL40_POST_STATUS_58_HISTORY;
-            STD_SIZE_T index;
+            lib_size index;
 
             for (index = 0u; index < count; ++index) {
                 STD_PRINTF("BOOT-PROBE=model40-post-status-58-write-%u=%05X/%02X\n",
@@ -2888,10 +2889,10 @@ done:
             (unsigned int)trace.model40_memory_error_di,
             (unsigned int)trace.model40_memory_error_ax);
         {
-            STD_SIZE_T helper_index;
-            const STD_SIZE_T helper_count = trace.model40_post_status_helper_entries <
+            lib_size helper_index;
+            const lib_size helper_count = trace.model40_post_status_helper_entries <
                 VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY ?
-                (STD_SIZE_T)trace.model40_post_status_helper_entries :
+                (lib_size)trace.model40_post_status_helper_entries :
                 VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY;
 
             for (helper_index = 0u; helper_index < helper_count; ++helper_index) {
@@ -2901,12 +2902,12 @@ done:
             }
         }
         {
-            static const type_unsigned_32 writer_pcs[VM_BYOB_MODEL40_POST_STATUS_WRITERS] = {
+            static const lib_u32 writer_pcs[VM_BYOB_MODEL40_POST_STATUS_WRITERS] = {
                 0x000f8324u, 0x000fbbd1u, 0x000fc801u, 0x000fd30cu,
                 0x000fd323u, 0x000fd41du, 0x000fd434u, 0x000fd44cu,
                 0x000fd461u, 0x000fd49eu, 0x000ff4e2u, 0x000ff54du
             };
-            STD_SIZE_T writer_index;
+            lib_size writer_index;
 
             for (writer_index = 0u;
                     writer_index < VM_BYOB_MODEL40_POST_STATUS_WRITERS;
@@ -2919,7 +2920,7 @@ done:
             }
         }
         if (trace.model40_shutdown_diagnostic_valid) {
-            STD_SIZE_T shutdown_index;
+            lib_size shutdown_index;
 
             STD_PRINTF("BOOT-PROBE=model40-shutdown-exceptions=%llu-first=%u/%u-last=%u/%u\n",
                 (unsigned long long)trace.model40_shutdown_diagnostic.delivered_exception_count,
@@ -2971,8 +2972,8 @@ done:
             (unsigned int)trace.kbc_last_port,
             (unsigned int)trace.kbc_last_value);
         {
-            type_unsigned_64 index;
-            const type_unsigned_64 first = trace.kbc_port_accesses >
+            lib_u64 index;
+            const lib_u64 first = trace.kbc_port_accesses >
                 VM_BYOB_KBC_WRITE_HISTORY ? trace.kbc_port_accesses -
                 VM_BYOB_KBC_WRITE_HISTORY : 0u;
 
@@ -2987,8 +2988,8 @@ done:
             }
         }
         {
-            type_unsigned_64 index;
-            const type_unsigned_64 first = trace.kbc_write_count >
+            lib_u64 index;
+            const lib_u64 first = trace.kbc_write_count >
                 VM_BYOB_KBC_WRITE_HISTORY ? trace.kbc_write_count -
                 VM_BYOB_KBC_WRITE_HISTORY : 0u;
 
@@ -3111,13 +3112,13 @@ done:
             (unsigned int)session->core_machine->hdc.data.cylinder_low,
             (unsigned int)session->core_machine->hdc.data.drive_head);
         if (trace.fdc_port_accesses != 0u) {
-            const type_unsigned_64 history = trace.fdc_port_accesses <
+            const lib_u64 history = trace.fdc_port_accesses <
                 VM_BYOB_FDC_PORT_HISTORY ? trace.fdc_port_accesses :
                 VM_BYOB_FDC_PORT_HISTORY;
-            type_unsigned_64 entry;
+            lib_u64 entry;
 
             for (entry = 0u; entry < history; ++entry) {
-                const STD_SIZE_T index = (STD_SIZE_T)((trace.fdc_port_accesses - history +
+                const lib_size index = (lib_size)((trace.fdc_port_accesses - history +
                     entry) % VM_BYOB_FDC_PORT_HISTORY);
                 const vm_byob_fdc_port_event *record = &trace.fdc_port_history[index];
 
@@ -3128,13 +3129,13 @@ done:
             }
         }
         if (trace.hdc_port_accesses != 0u) {
-            const type_unsigned_64 history = trace.hdc_port_accesses <
+            const lib_u64 history = trace.hdc_port_accesses <
                 VM_BYOB_HDC_PORT_HISTORY ? trace.hdc_port_accesses :
                 VM_BYOB_HDC_PORT_HISTORY;
-            type_unsigned_64 entry;
+            lib_u64 entry;
 
             for (entry = 0u; entry < history; ++entry) {
-                const STD_SIZE_T index = (STD_SIZE_T)((trace.hdc_port_accesses - history +
+                const lib_size index = (lib_size)((trace.hdc_port_accesses - history +
                     entry) % VM_BYOB_HDC_PORT_HISTORY);
                 const vm_byob_fdc_port_event *record = &trace.hdc_port_history[index];
 
@@ -3144,7 +3145,7 @@ done:
             }
         }
         {
-            type_unsigned_8 index;
+            lib_u8 index;
 
             for (index = 0u; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
                 if (trace.cmos_reads[index] != 0u || trace.cmos_writes[index] != 0u) {
@@ -3219,10 +3220,10 @@ done:
                 sizeof(int1e_offset)) == TYPE_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x007au, &int1e_segment,
                 sizeof(int1e_segment)) == TYPE_STATUS_OK) {
-            type_unsigned_8 int1e_bytes[4] = {0u};
+            lib_u8 int1e_bytes[4] = {0u};
 
             (C_VOID)core_machine_memory_read(session->core_machine,
-                (type_unsigned_32)int1e_segment * 16u + int1e_offset,
+                (lib_u32)int1e_segment * 16u + int1e_offset,
                 int1e_bytes, sizeof(int1e_bytes));
             STD_PRINTF("BOOT-PROBE=int1e-vector=%04X:%04X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)int1e_segment, (unsigned int)int1e_offset,
@@ -3379,8 +3380,8 @@ done:
                 (unsigned int)port_61, (unsigned int)port_87);
         }
     }
-    if (session != STD_NULL && session->core_machine != STD_NULL) {
-        (C_VOID)core_machine_set_trace_provider(session->core_machine, STD_NULL);
+    if (session != LIB_NULL && session->core_machine != LIB_NULL) {
+        (C_VOID)core_machine_set_trace_provider(session->core_machine, LIB_NULL);
     }
     integration_ini_session_close(&ini_session);
     return exit_code;

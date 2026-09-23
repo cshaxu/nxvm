@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -8,21 +9,21 @@
 #include "support/rom/session_assets.h"
 
 static C_INT vm_default_pc_at_fdd_format_is_valid(
-    vm_machine_floppy_format format, type_unsigned_16 cylinders,
-    type_unsigned_16 sectors, type_unsigned_8 cmos_type)
+    vm_machine_floppy_format format, lib_u16 cylinders,
+    lib_u16 sectors, lib_u8 cmos_type)
 {
     vm_machine_config config = {0};
-    vm_machine *session = STD_NULL;
-    type_unsigned_32 port_b;
-    type_unsigned_32 next_port_b;
-    type_unsigned_32 tick;
-    type_unsigned_16 checksum = 0u;
-    type_unsigned_8 index;
+    vm_machine *session = LIB_NULL;
+    lib_u32 port_b;
+    lib_u32 next_port_b;
+    lib_u32 tick;
+    lib_u16 checksum = 0u;
+    lib_u8 index;
 
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.floppy_format = format;
     if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL ||
+        session == LIB_NULL ||
         session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != sectors || session->fdd.data.nbyte != 512u ||
         session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY] !=
@@ -35,13 +36,13 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
         return 0;
     }
     for (index = 0x10u; index < 0x2eu; ++index) {
-        checksum = (type_unsigned_16)(checksum +
+        checksum = (lib_u16)(checksum +
             session->core_machine->shared_rtc.registers[index]);
     }
     if (session->core_machine->shared_rtc.registers[0x2eu] !=
-            (type_unsigned_8)(checksum >> 8u) ||
+            (lib_u8)(checksum >> 8u) ||
         session->core_machine->shared_rtc.registers[0x2fu] !=
-            (type_unsigned_8)checksum) {
+            (lib_u8)checksum) {
         vm_machine_destroy(session);
         return 0;
     }
@@ -69,7 +70,7 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
 
 static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb4u, 0x10u, 0xe4u, 0x61u, 0x24u, 0x10u,
         0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
     };
@@ -77,14 +78,14 @@ static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
         .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186
     };
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_run_result result = {0};
-    type_unsigned_32 port_b;
-    type_unsigned_32 tick;
+    lib_u32 port_b;
+    lib_u32 tick;
     C_INT failed = 0;
 
     if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) {
+        session == LIB_NULL) {
         return 0;
     }
     for (tick = 0u; tick < 200u; ++tick) {
@@ -110,7 +111,7 @@ static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
         session->core_machine->executor_cpu.data.ss.base = 0u;
         session->core_machine->executor_cpu.data.eip = 0x0500u;
         session->core_machine->executor_cpu.data.sp = 0xfffeu;
-        session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+        session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
         failed = core_machine_run(session->core_machine,
             (core_machine_run_budget) {1000u, 0u}, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -121,9 +122,9 @@ static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    if (!session->active || session->profile_plan == STD_NULL ||
+    vm_machine *session = LIB_NULL;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (!session->active || session->profile_plan == LIB_NULL ||
         session->core_machine->fdc.connect.config.dor_port != 0x03f2u ||
         session->core_machine->fdc.connect.config.status_port != 0x03f4u ||
         session->core_machine->fdc.connect.config.data_port != 0x03f5u ||

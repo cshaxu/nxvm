@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,14 +10,14 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     t_port *port;
-    C_INT masked = TYPE_FALSE;
+    C_INT masked = LIB_FALSE;
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || !session->active || session->core_machine == STD_NULL ||
-        (port = session->core_machine->fdc.connect.port) == STD_NULL) return 1;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL || !session->active || session->core_machine == LIB_NULL ||
+        (port = session->core_machine->fdc.connect.port) == LIB_NULL) return 1;
     core_machine_port_write(port, 0x0070u, 0x80u);
     if (core_machine_get_nmi_mask(session->core_machine, &masked) != TYPE_STATUS_OK ||
         !masked) {

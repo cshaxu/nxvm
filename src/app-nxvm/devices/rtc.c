@@ -1,53 +1,54 @@
 /* Copyright 2012-2026 Neko. */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
 #include "app-nxvm/devices/rtc.h"
 
-static type_unsigned_8 rtc_encode(const core_machine_rtc *rtc, type_unsigned_8 value)
+static lib_u8 rtc_encode(const core_machine_rtc *rtc, lib_u8 value)
 {
     return (rtc->registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_DM) != 0u ?
-        value : (type_unsigned_8)(((value / 10u) << 4u) | (value % 10u));
+        value : (lib_u8)(((value / 10u) << 4u) | (value % 10u));
 }
 
-static type_unsigned_8 rtc_decode(const core_machine_rtc *rtc, type_unsigned_8 value)
+static lib_u8 rtc_decode(const core_machine_rtc *rtc, lib_u8 value)
 {
     return (rtc->registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_DM) != 0u ?
-        value : (type_unsigned_8)(((value >> 4u) * 10u) + (value & 0x0fu));
+        value : (lib_u8)(((value >> 4u) * 10u) + (value & 0x0fu));
 }
 
-static type_unsigned_8 rtc_hour_encode(const core_machine_rtc *rtc)
+static lib_u8 rtc_hour_encode(const core_machine_rtc *rtc)
 {
-    type_unsigned_8 hour = rtc->calendar.hour;
+    lib_u8 hour = rtc->calendar.hour;
 
     if ((rtc->registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_24H) != 0u) {
         return rtc_encode(rtc, hour);
     }
-    if (hour >= 12u) hour = (type_unsigned_8)(hour - 12u);
+    if (hour >= 12u) hour = (lib_u8)(hour - 12u);
     if (hour == 0u) hour = 12u;
     return rtc_encode(rtc, hour) | (rtc->calendar.hour >= 12u ? 0x80u : 0u);
 }
 
-static type_unsigned_8 rtc_hour_decode(const core_machine_rtc *rtc, type_unsigned_8 value)
+static lib_u8 rtc_hour_decode(const core_machine_rtc *rtc, lib_u8 value)
 {
-    type_unsigned_8 hour;
+    lib_u8 hour;
 
     if ((rtc->registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_24H) != 0u) {
         return rtc_decode(rtc, value);
     }
     hour = rtc_decode(rtc, value & 0x7fu);
     if (hour == 12u) hour = 0u;
-    return (type_unsigned_8)(hour + ((value & 0x80u) != 0u ? 12u : 0u));
+    return (lib_u8)(hour + ((value & 0x80u) != 0u ? 12u : 0u));
 }
 
 static type_bool rtc_divider_running(const core_machine_rtc *rtc)
 {
-    type_unsigned_8 divider = rtc->registers[CORE_MACHINE_RTC_REG_A] & 0x70u;
+    lib_u8 divider = rtc->registers[CORE_MACHINE_RTC_REG_A] & 0x70u;
 
     return divider == 0x20u || divider == 0x50u || divider == 0x60u;
 }
 
-static type_unsigned_32 rtc_divider_hz(const core_machine_rtc *rtc)
+static lib_u32 rtc_divider_hz(const core_machine_rtc *rtc)
 {
     switch (rtc->registers[CORE_MACHINE_RTC_REG_A] & 0x70u) {
     case 0x20u: return 32768u;
@@ -57,10 +58,10 @@ static type_unsigned_32 rtc_divider_hz(const core_machine_rtc *rtc)
     }
 }
 
-static type_unsigned_32 rtc_periodic_hz(const core_machine_rtc *rtc)
+static lib_u32 rtc_periodic_hz(const core_machine_rtc *rtc)
 {
-    type_unsigned_8 rate = rtc->registers[CORE_MACHINE_RTC_REG_A] & 0x0fu;
-    type_unsigned_32 base = rtc_divider_hz(rtc);
+    lib_u8 rate = rtc->registers[CORE_MACHINE_RTC_REG_A] & 0x0fu;
+    lib_u32 base = rtc_divider_hz(rtc);
 
     if (base == 0u || rate == 0u) return 0u;
     if (rate == 1u) return base / 128u;
@@ -70,8 +71,8 @@ static type_unsigned_32 rtc_periodic_hz(const core_machine_rtc *rtc)
 
 static C_VOID rtc_refresh_irq(core_machine_rtc *rtc)
 {
-    type_unsigned_8 flags = rtc->registers[CORE_MACHINE_RTC_REG_C];
-    type_unsigned_8 enable = rtc->registers[CORE_MACHINE_RTC_REG_B];
+    lib_u8 flags = rtc->registers[CORE_MACHINE_RTC_REG_C];
+    lib_u8 enable = rtc->registers[CORE_MACHINE_RTC_REG_B];
 
     if (((flags & CORE_MACHINE_RTC_REG_C_PF) != 0u &&
             (enable & CORE_MACHINE_RTC_REG_B_PIE) != 0u) ||
@@ -83,18 +84,18 @@ static C_VOID rtc_refresh_irq(core_machine_rtc *rtc)
         core_machine_pic_irq_source_assert(&rtc->irq_source);
     } else {
         rtc->registers[CORE_MACHINE_RTC_REG_C] &=
-            (type_unsigned_8)~CORE_MACHINE_RTC_REG_C_IRQF;
+            (lib_u8)~CORE_MACHINE_RTC_REG_C_IRQF;
         core_machine_pic_irq_source_deassert(&rtc->irq_source);
     }
 }
 
-static type_unsigned_8 rtc_days_in_month(const core_machine_rtc *rtc)
+static lib_u8 rtc_days_in_month(const core_machine_rtc *rtc)
 {
-    static const type_unsigned_8 days[] = {31u, 28u, 31u, 30u, 31u, 30u,
+    static const lib_u8 days[] = {31u, 28u, 31u, 30u, 31u, 30u,
         31u, 31u, 30u, 31u, 30u, 31u};
     type_bool leap = (rtc->calendar.year & 3u) == 0u;
 
-    return rtc->calendar.month == 2u ? (type_unsigned_8)(28u + leap) :
+    return rtc->calendar.month == 2u ? (lib_u8)(28u + leap) :
         days[rtc->calendar.month - 1u];
 }
 
@@ -110,7 +111,7 @@ static C_VOID rtc_increment_second(core_machine_rtc *rtc)
     if (rtc->calendar.hour < 24u) return;
     rtc->calendar.hour = 0u;
     rtc->calendar.day_week = rtc->calendar.day_week == 7u ? 1u :
-        (type_unsigned_8)(rtc->calendar.day_week + 1u);
+        (lib_u8)(rtc->calendar.day_week + 1u);
     ++rtc->calendar.day_month;
     if (rtc->calendar.day_month <= rtc_days_in_month(rtc)) return;
     rtc->calendar.day_month = 1u;
@@ -118,14 +119,14 @@ static C_VOID rtc_increment_second(core_machine_rtc *rtc)
     if (rtc->calendar.month <= 12u) return;
     rtc->calendar.month = 1u;
     rtc->calendar.year = rtc->calendar.year == 99u ? 0u :
-        (type_unsigned_8)(rtc->calendar.year + 1u);
+        (lib_u8)(rtc->calendar.year + 1u);
 }
 
 static type_bool rtc_alarm_matches(const core_machine_rtc *rtc)
 {
-    type_unsigned_8 second = rtc->registers[CORE_MACHINE_RTC_SECOND_ALARM];
-    type_unsigned_8 minute = rtc->registers[CORE_MACHINE_RTC_MINUTE_ALARM];
-    type_unsigned_8 hour = rtc->registers[CORE_MACHINE_RTC_HOUR_ALARM];
+    lib_u8 second = rtc->registers[CORE_MACHINE_RTC_SECOND_ALARM];
+    lib_u8 minute = rtc->registers[CORE_MACHINE_RTC_MINUTE_ALARM];
+    lib_u8 hour = rtc->registers[CORE_MACHINE_RTC_HOUR_ALARM];
 
     return ((second & 0xc0u) == 0xc0u || second == rtc_encode(rtc, rtc->calendar.second)) &&
         ((minute & 0xc0u) == 0xc0u || minute == rtc_encode(rtc, rtc->calendar.minute)) &&
@@ -133,13 +134,13 @@ static type_bool rtc_alarm_matches(const core_machine_rtc *rtc)
 }
 
 static type_status rtc_ticks_until_alarm(const core_machine_rtc *rtc,
-    type_unsigned_64 *out_ticks)
+    lib_u64 *out_ticks)
 {
     core_machine_rtc candidate;
-    type_unsigned_64 second;
-    type_unsigned_64 ticks;
+    lib_u64 second;
+    lib_u64 ticks;
 
-    if (rtc == STD_NULL || out_ticks == STD_NULL || rtc->ticks_per_second == 0u ||
+    if (rtc == LIB_NULL || out_ticks == LIB_NULL || rtc->ticks_per_second == 0u ||
         rtc->calendar.second_ticks >= rtc->ticks_per_second) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -159,7 +160,7 @@ static type_status rtc_ticks_until_alarm(const core_machine_rtc *rtc,
 
 static type_bool rtc_uip_active(const core_machine_rtc *rtc)
 {
-    type_unsigned_64 window = (type_unsigned_64)rtc->uip_lead_ticks + rtc->update_ticks;
+    lib_u64 window = (lib_u64)rtc->uip_lead_ticks + rtc->update_ticks;
 
     return rtc_divider_running(rtc) &&
         (rtc->registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_SET) == 0u &&
@@ -167,7 +168,7 @@ static type_bool rtc_uip_active(const core_machine_rtc *rtc)
         rtc->calendar.second_ticks >= rtc->ticks_per_second - window;
 }
 
-static type_unsigned_8 rtc_read_register(core_machine_rtc *rtc, type_unsigned_8 reg)
+static lib_u8 rtc_read_register(core_machine_rtc *rtc, lib_u8 reg)
 {
     switch (reg) {
     case CORE_MACHINE_RTC_SECOND: return rtc_encode(rtc, rtc->calendar.second);
@@ -180,7 +181,7 @@ static type_unsigned_8 rtc_read_register(core_machine_rtc *rtc, type_unsigned_8 
     case CORE_MACHINE_RTC_REG_A: return rtc->registers[reg] |
         (rtc_uip_active(rtc) ? CORE_MACHINE_RTC_REG_A_UIP : 0u);
     case CORE_MACHINE_RTC_REG_C: {
-        type_unsigned_8 value = rtc->registers[reg];
+        lib_u8 value = rtc->registers[reg];
 
         rtc->registers[reg] = 0u;
         core_machine_pic_irq_source_deassert(&rtc->irq_source);
@@ -190,8 +191,8 @@ static type_unsigned_8 rtc_read_register(core_machine_rtc *rtc, type_unsigned_8 
     }
 }
 
-static C_VOID rtc_write_register(core_machine_rtc *rtc, type_unsigned_8 reg,
-    type_unsigned_8 value)
+static C_VOID rtc_write_register(core_machine_rtc *rtc, lib_u8 reg,
+    lib_u8 value)
 {
     type_bool was_running = rtc_divider_running(rtc);
 
@@ -216,21 +217,21 @@ static C_VOID rtc_write_register(core_machine_rtc *rtc, type_unsigned_8 reg,
     }
 }
 
-static type_unsigned_32 rtc_phase_ticks(type_unsigned_32 configured,
-    type_unsigned_32 ticks_per_second, type_unsigned_32 microseconds)
+static lib_u32 rtc_phase_ticks(lib_u32 configured,
+    lib_u32 ticks_per_second, lib_u32 microseconds)
 {
-    type_unsigned_64 converted;
+    lib_u64 converted;
 
     if (configured != 0u) return configured;
-    converted = ((type_unsigned_64)ticks_per_second * microseconds) / 1000000u;
-    return converted == 0u ? 1u : (type_unsigned_32)converted;
+    converted = ((lib_u64)ticks_per_second * microseconds) / 1000000u;
+    return converted == 0u ? 1u : (lib_u32)converted;
 }
 
 C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
     t_pic *pic_slave, const core_machine_rtc_config *config)
 {
-    if (rtc == STD_NULL || config == STD_NULL) return;
-    STD_MEMSET(rtc, TYPE_ZERO_8, sizeof(*rtc));
+    if (rtc == LIB_NULL || config == LIB_NULL) return;
+    lib_memory_set(rtc, TYPE_ZERO_8, sizeof(*rtc));
     rtc->ticks_per_second = config->ticks_per_second == 0u ? 1u : config->ticks_per_second;
     rtc->uip_lead_ticks = rtc_phase_ticks(config->timing.uip_lead_ticks,
         rtc->ticks_per_second, 244u);
@@ -248,27 +249,27 @@ C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
 
 C_VOID core_machine_rtc_reset(core_machine_rtc *rtc)
 {
-    if (rtc == STD_NULL) return;
+    if (rtc == LIB_NULL) return;
     /* RESET clears delivery state but does not stop the clock/calendar phase. */
     rtc->registers[CORE_MACHINE_RTC_REG_B] &= CORE_MACHINE_RTC_REG_B_SET |
         CORE_MACHINE_RTC_REG_B_DM | CORE_MACHINE_RTC_REG_B_24H | 0x01u;
     rtc->registers[CORE_MACHINE_RTC_REG_C] = 0u;
     rtc->registers[CORE_MACHINE_RTC_REG_D] = CORE_MACHINE_RTC_REG_D_VRT;
-    rtc->square_wave = TYPE_FALSE;
+    rtc->square_wave = LIB_FALSE;
     core_machine_pic_irq_source_deassert(&rtc->irq_source);
 }
 
-C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, type_unsigned_64 elapsed_ticks)
+C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, lib_u64 elapsed_ticks)
 {
-    type_unsigned_32 periodic_hz;
+    lib_u32 periodic_hz;
 
-    if (rtc == STD_NULL || !rtc_divider_running(rtc)) return;
+    if (rtc == LIB_NULL || !rtc_divider_running(rtc)) return;
     periodic_hz = rtc_periodic_hz(rtc);
     if (periodic_hz != 0u) {
-        type_unsigned_64 seconds = elapsed_ticks / rtc->ticks_per_second;
-        type_unsigned_64 partial = elapsed_ticks % rtc->ticks_per_second;
-        type_unsigned_64 phase = rtc->calendar.periodic_ticks + partial * periodic_hz;
-        type_unsigned_64 edges = phase / rtc->ticks_per_second;
+        lib_u64 seconds = elapsed_ticks / rtc->ticks_per_second;
+        lib_u64 partial = elapsed_ticks % rtc->ticks_per_second;
+        lib_u64 phase = rtc->calendar.periodic_ticks + partial * periodic_hz;
+        lib_u64 edges = phase / rtc->ticks_per_second;
 
         rtc->calendar.periodic_ticks = phase % rtc->ticks_per_second;
         if (seconds != 0u || edges != 0u) {
@@ -276,7 +277,7 @@ C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, type_unsigned_64 elapsed_
             if ((rtc->registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_SQWE) != 0u) {
                 if (((seconds & 1u) != 0u && (periodic_hz & 1u) != 0u) ^
                     ((edges & 1u) != 0u)) {
-                    rtc->square_wave = rtc->square_wave ? TYPE_FALSE : TYPE_TRUE;
+                    rtc->square_wave = rtc->square_wave ? LIB_FALSE : LIB_TRUE;
                 }
             }
         }
@@ -296,24 +297,24 @@ C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, type_unsigned_64 elapsed_
 
 C_VOID core_machine_rtc_finalize(core_machine_rtc *rtc)
 {
-    if (rtc != STD_NULL) core_machine_pic_irq_source_deassert(&rtc->irq_source);
+    if (rtc != LIB_NULL) core_machine_pic_irq_source_deassert(&rtc->irq_source);
 }
 
 type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
-    type_unsigned_64 *out_ticks)
+    lib_u64 *out_ticks)
 {
-    type_unsigned_32 periodic_hz;
-    type_unsigned_64 ticks = UINT64_MAX;
-    type_unsigned_64 update;
-    type_unsigned_8 enable;
+    lib_u32 periodic_hz;
+    lib_u64 ticks = UINT64_MAX;
+    lib_u64 update;
+    lib_u8 enable;
 
-    if (rtc == STD_NULL || out_ticks == STD_NULL || !rtc_divider_running(rtc)) {
+    if (rtc == LIB_NULL || out_ticks == LIB_NULL || !rtc_divider_running(rtc)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     enable = rtc->registers[CORE_MACHINE_RTC_REG_B];
     periodic_hz = rtc_periodic_hz(rtc);
     if ((enable & CORE_MACHINE_RTC_REG_B_PIE) != 0u && periodic_hz != 0u) {
-        type_unsigned_64 remaining = rtc->ticks_per_second -
+        lib_u64 remaining = rtc->ticks_per_second -
             rtc->calendar.periodic_ticks;
 
         ticks = remaining / periodic_hz;
@@ -335,33 +336,33 @@ type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
     return TYPE_STATUS_OK;
 }
 
-C_VOID core_machine_rtc_select_register(core_machine_rtc *rtc, type_unsigned_8 index)
+C_VOID core_machine_rtc_select_register(core_machine_rtc *rtc, lib_u8 index)
 {
-    if (rtc != STD_NULL) rtc->selected_register = index & 0x3fu;
+    if (rtc != LIB_NULL) rtc->selected_register = index & 0x3fu;
 }
 
-type_unsigned_8 core_machine_rtc_read_selected(core_machine_rtc *rtc)
+lib_u8 core_machine_rtc_read_selected(core_machine_rtc *rtc)
 {
-    return rtc == STD_NULL ? 0u : rtc_read_register(rtc, rtc->selected_register);
+    return rtc == LIB_NULL ? 0u : rtc_read_register(rtc, rtc->selected_register);
 }
 
-C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, type_unsigned_8 value)
+C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, lib_u8 value)
 {
-    if (rtc != STD_NULL) {
+    if (rtc != LIB_NULL) {
         rtc_write_register(rtc, rtc->selected_register, value);
         rtc_refresh_irq(rtc);
     }
 }
 
-C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, type_unsigned_8 index,
-    type_unsigned_8 value)
+C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, lib_u8 index,
+    lib_u8 value)
 {
-    if (rtc == STD_NULL || index >= CORE_MACHINE_RTC_REGISTER_COUNT ||
+    if (rtc == LIB_NULL || index >= CORE_MACHINE_RTC_REGISTER_COUNT ||
         index <= CORE_MACHINE_RTC_REG_D) return;
     rtc->registers[index] = value;
 }
 
 type_bool core_machine_rtc_get_square_wave(const core_machine_rtc *rtc)
 {
-    return rtc == STD_NULL ? TYPE_FALSE : rtc->square_wave;
+    return rtc == LIB_NULL ? LIB_FALSE : rtc->square_wave;
 }

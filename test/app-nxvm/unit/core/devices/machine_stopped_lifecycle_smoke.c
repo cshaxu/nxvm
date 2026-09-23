@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -22,7 +23,7 @@ static C_INT expect_reset_vector(core_machine *machine)
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     C_INT failed = 0;

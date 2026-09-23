@@ -1,18 +1,19 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_VOID ega_write_crtc(t_port *port, type_unsigned_16 index_port,
-    type_unsigned_8 index, type_unsigned_8 value)
+static C_VOID ega_write_crtc(t_port *port, lib_u16 index_port,
+    lib_u8 index, lib_u8 value)
 {
     core_machine_port_write(port, index_port, index);
     core_machine_port_write(port, index_port + 1u, value);
 }
 
-static type_unsigned_8 ega_read_crtc(t_port *port, type_unsigned_16 index_port,
-    type_unsigned_8 index)
+static lib_u8 ega_read_crtc(t_port *port, lib_u16 index_port,
+    lib_u8 index)
 {
     core_machine_port_write(port, index_port, index);
     return core_machine_port_read(port, index_port + 1u);
@@ -22,7 +23,7 @@ C_INT main(C_VOID)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE
+        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
     };
     const core_machine_vadp_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
@@ -35,13 +36,13 @@ C_INT main(C_VOID)
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
     core_machine_display_snapshot_observation observation;
-    const type_unsigned_8 chain4_bytes[] = { 0x10u, 0x11u, 0x12u, 0x13u };
-    type_unsigned_64 vga_generation;
+    const lib_u8 chain4_bytes[] = { 0x10u, 0x11u, 0x12u, 0x13u };
+    lib_u64 vga_generation;
     C_INT failed = 0;
 
-    STD_MEMSET(&memory, 0, sizeof(memory));
+    lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
@@ -106,18 +107,18 @@ C_INT main(C_VOID)
     failed |= core_machine_memory_write_physical(&memory,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, (type_virtual_address)chain4_bytes,
         sizeof(chain4_bytes)) != TYPE_STATUS_OK;
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 0x10u || snapshot.pixels[1] != 0x11u ||
         snapshot.pixels[2] != 0x12u || snapshot.pixels[3] != 0x13u;
-    core_machine_vadp_observe_snapshot(&vadp, TYPE_FALSE, 0u, &observation);
+    core_machine_vadp_observe_snapshot(&vadp, LIB_FALSE, 0u, &observation);
     vga_generation = observation.generation;
-    core_machine_vadp_observe_snapshot(&vadp, TYPE_TRUE, vga_generation, &observation);
+    core_machine_vadp_observe_snapshot(&vadp, LIB_TRUE, vga_generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x1fu);
-    core_machine_vadp_observe_snapshot(&vadp, TYPE_TRUE, vga_generation, &observation);
+    core_machine_vadp_observe_snapshot(&vadp, LIB_TRUE, vga_generation, &observation);
     failed |= !observation.generation_reliable || !observation.capture_required ||
         observation.generation == vga_generation;
 

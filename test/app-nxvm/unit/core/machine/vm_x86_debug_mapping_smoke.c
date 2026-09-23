@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -30,19 +31,19 @@ static C_INT vm_debug_wait_paused(const vm_machine *machine,
 
 C_INT main(C_VOID)
 {
-    vm_machine *machine = STD_NULL;
+    vm_machine *machine = LIB_NULL;
     vm_test_common_machine_state_waiter waiter = {0};
     common_machine_debug_lease lease;
     x86_debug_response result;
-    type_unsigned_32 register_id;
-    type_unsigned_8 byte = 0x5au;
+    lib_u32 register_id;
+    lib_u8 byte = 0x5au;
     vm_machine_debug_stop_reason stop_reason;
-    type_unsigned_64 executed;
+    lib_u64 executed;
     lib_size response_size;
     core_machine *saved_core_machine;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &machine) !=
-            TYPE_STATUS_OK || machine == STD_NULL ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) !=
+            TYPE_STATUS_OK || machine == LIB_NULL ||
         vm_test_common_machine_bind(machine) != TYPE_STATUS_OK ||
         vm_test_common_machine_state_waiter_initialize(machine, &waiter) !=
             TYPE_STATUS_OK) return 1;
@@ -53,7 +54,7 @@ C_INT main(C_VOID)
      * paused Common lease prevents concurrent Core use; restore before any
      * normal request or teardown. */
     saved_core_machine = machine->core_machine;
-    machine->core_machine = STD_NULL;
+    machine->core_machine = LIB_NULL;
     if (core_machine_debug_read_register(machine->core_machine,
             CORE_MACHINE_DEBUG_EAX, &register_id) != TYPE_STATUS_INVALID_ARGUMENT) {
         machine->core_machine = saved_core_machine;
@@ -145,7 +146,7 @@ C_INT main(C_VOID)
             .execution_kind = X86_DEBUG_EXECUTION_BREAK_LINEAR,
             .address = 0x1234u
         }, &result)) goto failed;
-    machine->debug.observation_valid = TYPE_TRUE;
+    machine->debug.observation_valid = LIB_TRUE;
     machine->debug.observation.cs_base = 0x1000u;
     machine->debug.observation.eip = 0x234u;
     vm_machine_debug_complete_run(&machine->debug, 7u);
@@ -158,16 +159,16 @@ C_INT main(C_VOID)
             .operation = X86_DEBUG_CLEAR_EXECUTION_PLAN
         }, &result) || machine->debug.plan.kind !=
             X86_DEBUG_EXECUTION_NONE) goto failed;
-    machine->debug.observation_valid = TYPE_TRUE;
+    machine->debug.observation_valid = LIB_TRUE;
     machine->debug.observation.memory_access_count = 1u;
     machine->debug.observation.memory_accesses[0] =
         (core_machine_debug_memory_access) {
-            .write = TYPE_TRUE,
+            .write = LIB_TRUE,
             .linear = 0x4567u,
             .bytes = 1u,
             .data = 0x5au
         };
-    machine->debug.observation.watch_hit = TYPE_TRUE;
+    machine->debug.observation.watch_hit = LIB_TRUE;
     machine->debug.observation.watch_kind = CORE_MACHINE_DEBUG_WATCH_WRITE;
     machine->debug.observation.watch_address = 0x4567u;
     vm_machine_debug_complete_watchpoint(&machine->debug);

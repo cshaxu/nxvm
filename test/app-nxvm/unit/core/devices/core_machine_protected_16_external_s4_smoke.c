@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/pic.h"
@@ -12,7 +13,7 @@
 
 static C_INT s4_prepare_user_stack(s3_gate_machine *state)
 {
-    static const type_unsigned_8 user_data[] = {
+    static const lib_u8 user_data[] = {
         0xffu,0xffu,0,0,0,0xf2u,0,0
     };
     t_cpu_data_sreg *ss;
@@ -27,16 +28,16 @@ static C_INT s4_prepare_user_stack(s3_gate_machine *state)
 }
 
 static C_INT s4_prepare_outer_entry(s3_gate_machine *state,
-    core_machine_cpu_profile profile, type_unsigned_8 gate_type,
-    type_unsigned_8 gate_dpl)
+    core_machine_cpu_profile profile, lib_u8 gate_type,
+    lib_u8 gate_dpl)
 {
-    type_unsigned_8 tss[8u] = { 0u };
-    type_unsigned_8 descriptor[8u] = { 0u };
+    lib_u8 tss[8u] = { 0u };
+    lib_u8 descriptor[8u] = { 0u };
     t_cpu_data_sreg *tr;
 
-    if (!s3_gate_prepare(state, profile, TYPE_TRUE, gate_type, gate_dpl,
-            TYPE_TRUE) || !s4_prepare_user_stack(state) || !s3_gate_install(
-            state, S3_VECTOR, 0x0008u, gate_type, gate_dpl, TYPE_TRUE)) {
+    if (!s3_gate_prepare(state, profile, LIB_TRUE, gate_type, gate_dpl,
+            LIB_TRUE) || !s4_prepare_user_stack(state) || !s3_gate_install(
+            state, S3_VECTOR, 0x0008u, gate_type, gate_dpl, LIB_TRUE)) {
         return 0;
     }
     tss[2u] = S4_KERNEL_STACK_TOP & 0xffu;
@@ -54,8 +55,8 @@ static C_INT s4_prepare_outer_entry(s3_gate_machine *state,
     }
     state->machine->executor_cpu.data.gdtr.limit = 47u;
     tr = &state->machine->executor_cpu.data.tr;
-    STD_MEMSET(tr, 0, sizeof(*tr));
-    tr->flagValid = TYPE_TRUE;
+    lib_memory_set(tr, 0, sizeof(*tr));
+    tr->flagValid = LIB_TRUE;
     tr->selector = 0x0028u;
     tr->sregtype = SREG_TR;
     tr->base = S4_TSS_BASE;
@@ -66,22 +67,22 @@ static C_INT s4_prepare_outer_entry(s3_gate_machine *state,
 }
 
 static C_INT s4_outer_entry(core_machine_cpu_profile profile,
-    type_unsigned_8 gate_type, type_bool software_origin, type_bool nmi)
+    lib_u8 gate_type, type_bool software_origin, type_bool nmi)
 {
-    static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 software[] = { 0xcdu,S3_VECTOR };
+    static const lib_u8 nop[] = { 0x90u };
+    static const lib_u8 software[] = { 0xcdu,S3_VECTOR };
     s3_gate_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
-    type_unsigned_16 frame[5u] = { 0u,0u,0u,0u,0u };
-    type_unsigned_16 expected_ip = software_origin ? 2u : 1u;
+    lib_u16 frame[5u] = { 0u,0u,0u,0u,0u };
+    lib_u16 expected_ip = software_origin ? 2u : 1u;
     type_bool expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
     type_bool frame_read;
     type_status run_status;
     C_INT failed = !s4_prepare_outer_entry(&state, profile, gate_type,
         software_origin ? 3u : 0u);
 
-    STD_MEMSET(&source, 0, sizeof(source));
+    lib_memory_set(&source, 0, sizeof(source));
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_IF | (software_origin ? VCPU_EFLAGS_TF : 0u);
@@ -90,8 +91,8 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
             software_origin ? sizeof(software) : sizeof(nop));
         if (!failed && nmi) {
             failed |= !s3_gate_install(&state, 0x02u, 0x0008u, gate_type,
-                0u, TYPE_TRUE);
-            state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+                0u, LIB_TRUE);
+            state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         }
         if (!failed && !software_origin && !nmi) {
             state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
@@ -137,11 +138,11 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
 
 static C_INT s4_outer_software_dpl_error(C_VOID)
 {
-    static const type_unsigned_8 software[] = { 0xcdu,S3_VECTOR };
+    static const lib_u8 software[] = { 0xcdu,S3_VECTOR };
     s3_gate_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_unsigned_16 frame[6u] = { 0u,0u,0u,0u,0u,0u };
+    lib_u16 frame[6u] = { 0u,0u,0u,0u,0u,0u };
     C_INT failed = !s4_prepare_outer_entry(&state,
         CORE_MACHINE_CPU_PROFILE_80286, VCPU_DESC_SYS_TYPE_INTGATE_16, 0u);
 
@@ -149,7 +150,7 @@ static C_INT s4_outer_software_dpl_error(C_VOID)
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_IF | VCPU_EFLAGS_TF;
         failed |= !s3_gate_install(&state, 0x0du, 0x0008u,
-            VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, TYPE_TRUE) || !s3_gate_write(
+            VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE) || !s3_gate_write(
             &state, S3_CODE_BASE, software, sizeof(software)) ||
             core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
                 &result) != TYPE_STATUS_OK || result.reason !=
@@ -163,7 +164,7 @@ static C_INT s4_outer_software_dpl_error(C_VOID)
                 0x0010u || state.machine->executor_cpu.data.sp !=
                 S4_KERNEL_STACK_TOP - sizeof(frame) || !s3_gate_read(&state,
                 S4_KERNEL_STACK_TOP - sizeof(frame), frame, sizeof(frame)) ||
-            frame[0u] != (type_unsigned_16)(S3_VECTOR * 8u + 2u) ||
+            frame[0u] != (lib_u16)(S3_VECTOR * 8u + 2u) ||
             frame[1u] != 0u || frame[2u] != 0x001bu || frame[3u] !=
                 (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF) ||
             frame[4u] != S3_STACK_TOP || frame[5u] != 0x0023u;
@@ -179,37 +180,37 @@ static C_INT s4_rejected_cpu_same(const t_cpu *before, const t_cpu *after)
         before->data.ebx == after->data.ebx && before->data.esp == after->data.esp &&
         before->data.ebp == after->data.ebp && before->data.esi == after->data.esi &&
         before->data.edi == after->data.edi && after->data.eip == before->data.eip + 1u &&
-        before->data.eflags == after->data.eflags && STD_MEMCMP(&before->data.es,
-            &after->data.es, sizeof(before->data.es)) == 0 && STD_MEMCMP(
+        before->data.eflags == after->data.eflags && lib_memory_compare(&before->data.es,
+            &after->data.es, sizeof(before->data.es)) == 0 && lib_memory_compare(
             &before->data.cs, &after->data.cs, sizeof(before->data.cs)) == 0 &&
-        STD_MEMCMP(&before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds, sizeof(before->data.ds)) == 0 &&
-        STD_MEMCMP(&before->data.fs, &after->data.fs, sizeof(before->data.fs)) == 0 &&
-        STD_MEMCMP(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
+        lib_memory_compare(&before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
+        lib_memory_compare(&before->data.ds, &after->data.ds, sizeof(before->data.ds)) == 0 &&
+        lib_memory_compare(&before->data.fs, &after->data.fs, sizeof(before->data.fs)) == 0 &&
+        lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
 static C_INT s4_external_event(core_machine_cpu_profile profile,
-    type_unsigned_8 gate_type, type_bool nmi)
+    lib_u8 gate_type, type_bool nmi)
 {
-    static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 loop[] = { 0xebu,0xfeu };
+    static const lib_u8 nop[] = { 0x90u };
+    static const lib_u8 loop[] = { 0xebu,0xfeu };
     s3_gate_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
-    type_unsigned_16 frame[3u] = { 0u,0u,0u };
+    lib_u16 frame[3u] = { 0u,0u,0u };
     type_bool expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
-    C_INT failed = !s3_gate_prepare(&state, profile, TYPE_TRUE, gate_type, 0u,
-        TYPE_TRUE);
+    C_INT failed = !s3_gate_prepare(&state, profile, LIB_TRUE, gate_type, 0u,
+        LIB_TRUE);
 
-    STD_MEMSET(&source, 0, sizeof(source));
+    lib_memory_set(&source, 0, sizeof(source));
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         failed |= !s4_prepare_user_stack(&state) ||
             (nmi && !s3_gate_install(&state, 0x02u, 0x001bu, gate_type, 0u,
-                TYPE_TRUE)) ||
+                LIB_TRUE)) ||
             !s3_gate_write(&state, S3_CODE_BASE, nop, sizeof(nop)) ||
             !s3_gate_write(&state, S3_CODE_BASE + S3_HANDLER, loop, sizeof(loop));
-        if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+        if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         if (!failed && !nmi) {
             state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
             core_machine_pic_irq_source_bind(&source,
@@ -240,22 +241,22 @@ static C_INT s4_external_event(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT s4_rejected_event(type_unsigned_8 gate_type, type_bool present,
+static C_INT s4_rejected_event(lib_u8 gate_type, type_bool present,
     type_bool nmi)
 {
-    static const type_unsigned_8 nop[] = { 0x90u };
+    static const lib_u8 nop[] = { 0x90u };
     s3_gate_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_unsigned_16 stack_before[3u] = { 0x1357u,0x2468u,0x369cu };
-    type_unsigned_16 stack_after[3u] = { 0u,0u,0u };
+    lib_u16 stack_before[3u] = { 0x1357u,0x2468u,0x369cu };
+    lib_u16 stack_after[3u] = { 0u,0u,0u };
     C_INT failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
-        TYPE_TRUE, gate_type, 0u, present);
+        LIB_TRUE, gate_type, 0u, present);
 
-    STD_MEMSET(&source, 0, sizeof(source));
+    lib_memory_set(&source, 0, sizeof(source));
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
         failed |= !s4_prepare_user_stack(&state) ||
@@ -264,7 +265,7 @@ static C_INT s4_rejected_event(type_unsigned_8 gate_type, type_bool present,
             !s3_gate_write(&state, S3_CODE_BASE, nop, sizeof(nop)) ||
             !s3_gate_write(&state, S3_STACK_TOP - sizeof(stack_before),
                 stack_before, sizeof(stack_before));
-        if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+        if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         if (!failed && !nmi) {
             state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
             core_machine_pic_irq_source_bind(&source,
@@ -280,7 +281,7 @@ static C_INT s4_rejected_event(type_unsigned_8 gate_type, type_bool present,
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !s4_rejected_cpu_same(&before, &after) ||
             !s3_gate_read(&state, S3_STACK_TOP - sizeof(stack_after), stack_after,
-                sizeof(stack_after)) || STD_MEMCMP(stack_before, stack_after,
+                sizeof(stack_after)) || lib_memory_compare(stack_before, stack_after,
                 sizeof(stack_before)) != 0;
         if (!failed && nmi) {
             failed |= !state.machine->executor_cpu.data.flagNMI;
@@ -297,23 +298,23 @@ static C_INT s4_rejected_event(type_unsigned_8 gate_type, type_bool present,
 C_INT main(C_VOID)
 {
     C_INT failed = !s4_external_event(CORE_MACHINE_CPU_PROFILE_80286,
-        VCPU_DESC_SYS_TYPE_INTGATE_16, TYPE_FALSE) ||
+        VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_FALSE) ||
         !s4_external_event(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16, TYPE_TRUE) ||
+            VCPU_DESC_SYS_TYPE_TRAPGATE_16, LIB_TRUE) ||
         !s4_external_event(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_INTGATE_16, TYPE_TRUE) ||
+            VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_TRUE) ||
         !s4_external_event(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16, TYPE_FALSE) ||
+            VCPU_DESC_SYS_TYPE_TRAPGATE_16, LIB_FALSE) ||
         !s4_outer_entry(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_INTGATE_16, TYPE_TRUE, TYPE_FALSE) ||
+            VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_TRUE, LIB_FALSE) ||
         !s4_outer_entry(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_INTGATE_16, TYPE_FALSE, TYPE_FALSE) ||
+            VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_FALSE, LIB_FALSE) ||
         !s4_outer_entry(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16, TYPE_FALSE, TYPE_TRUE) ||
+            VCPU_DESC_SYS_TYPE_TRAPGATE_16, LIB_FALSE, LIB_TRUE) ||
         !s4_outer_software_dpl_error() ||
-        !s4_rejected_event(0u, TYPE_TRUE, TYPE_FALSE) ||
-        !s4_rejected_event(VCPU_DESC_SYS_TYPE_INTGATE_16, TYPE_FALSE,
-            TYPE_TRUE);
+        !s4_rejected_event(0u, LIB_TRUE, LIB_FALSE) ||
+        !s4_rejected_event(VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_FALSE,
+            LIB_TRUE);
 
     if (failed) return 1;
     STD_PRINTF("M5:T323:S4:PROTECTED-16-EXTERNAL:OK\n");

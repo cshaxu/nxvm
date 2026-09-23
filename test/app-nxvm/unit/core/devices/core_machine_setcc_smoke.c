@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -12,12 +13,12 @@ static C_VOID setcc_reset(C_VOID *opaque)
 {
     setcc_machine *state = (setcc_machine *)opaque;
 
-    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
 static const core_machine_execution_provider setcc_provider = {
-    setcc_reset, STD_NULL
+    setcc_reset, LIB_NULL
 };
 
 static C_INT setcc_prepare(core_machine_cpu_profile profile,
@@ -29,28 +30,28 @@ static C_INT setcc_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    if (state == STD_NULL) return 0;
-    STD_MEMSET(state, 0, sizeof(*state));
+    if (state == LIB_NULL) return 0;
+    lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &setcc_provider, state)) {
         core_machine_destroy(state->machine);
-        state->machine = STD_NULL;
+        state->machine = LIB_NULL;
         return 0;
     }
     return 1;
 }
 
-static C_INT setcc_run_one(setcc_machine *state, const type_unsigned_8 *code,
-    STD_SIZE_T code_size, t_cpu *out_cpu, core_machine_cpu_diagnostic *out_diagnostic,
+static C_INT setcc_run_one(setcc_machine *state, const lib_u8 *code,
+    lib_size code_size, t_cpu *out_cpu, core_machine_cpu_diagnostic *out_diagnostic,
     C_INT expect_fault)
 {
     const core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     type_status status;
 
-    if (state == STD_NULL || state->machine == STD_NULL || code == STD_NULL ||
-        out_cpu == STD_NULL || out_diagnostic == STD_NULL ||
+    if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
+        out_cpu == LIB_NULL || out_diagnostic == LIB_NULL ||
         !test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
         core_machine_memory_write(state->machine, 0u, code, code_size) !=
             TYPE_STATUS_OK) return 0;
@@ -65,15 +66,15 @@ static C_INT setcc_run_one(setcc_machine *state, const type_unsigned_8 *code,
     return 1;
 }
 
-static type_unsigned_32 setcc_flags(type_unsigned_8 condition, C_INT truth)
+static lib_u32 setcc_flags(lib_u8 condition, C_INT truth)
 {
-    static const type_unsigned_32 true_flags[16] = {
+    static const lib_u32 true_flags[16] = {
         VCPU_EFLAGS_OF, 0u, VCPU_EFLAGS_CF, 0u,
         VCPU_EFLAGS_ZF, 0u, VCPU_EFLAGS_CF, 0u,
         VCPU_EFLAGS_SF, 0u, VCPU_EFLAGS_PF, 0u,
         VCPU_EFLAGS_SF, 0u, VCPU_EFLAGS_ZF, 0u
     };
-    static const type_unsigned_32 false_flags[16] = {
+    static const lib_u32 false_flags[16] = {
         0u, VCPU_EFLAGS_OF, 0u, VCPU_EFLAGS_CF,
         0u, VCPU_EFLAGS_ZF, 0u, VCPU_EFLAGS_CF,
         0u, VCPU_EFLAGS_SF, 0u, VCPU_EFLAGS_PF,
@@ -85,14 +86,14 @@ static type_unsigned_32 setcc_flags(type_unsigned_8 condition, C_INT truth)
 
 static C_INT setcc_test_register_conditions(C_VOID)
 {
-    type_unsigned_8 condition;
+    lib_u8 condition;
     C_INT truth;
     C_INT failed = 0;
 
     for (condition = 0u; condition != 16u; ++condition) {
         for (truth = 0; truth != 2; ++truth) {
-            const type_unsigned_8 code[] = {0x0fu, (type_unsigned_8)(0x90u + condition), 0xc0u};
-            const type_unsigned_32 flags = setcc_flags(condition, truth);
+            const lib_u8 code[] = {0x0fu, (lib_u8)(0x90u + condition), 0xc0u};
+            const lib_u32 flags = setcc_flags(condition, truth);
             setcc_machine state;
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
@@ -102,7 +103,7 @@ static C_INT setcc_test_register_conditions(C_VOID)
             state.machine->executor_cpu.data.eflags = flags;
             if (!setcc_run_one(&state, code, sizeof(code), &after, &diagnostic, 0) ||
                 diagnostic.first_fault.valid || after.data.eax !=
-                    (0x12345600u | (type_unsigned_32)truth) ||
+                    (0x12345600u | (lib_u32)truth) ||
                 after.data.eflags != flags || after.data.eip != sizeof(code)) failed = 1;
             core_machine_destroy(state.machine);
             if (failed) return 0;
@@ -113,17 +114,17 @@ static C_INT setcc_test_register_conditions(C_VOID)
 
 static C_INT setcc_test_memory_conditions(C_VOID)
 {
-    const type_unsigned_16 destination = 0x1200u;
-    type_unsigned_8 condition;
+    const lib_u16 destination = 0x1200u;
+    lib_u8 condition;
     C_INT truth;
 
     for (condition = 0u; condition != 16u; ++condition) {
         for (truth = 0; truth != 2; ++truth) {
-            const type_unsigned_8 code[] = {0x0fu, (type_unsigned_8)(0x90u + condition), 0x06u,
-                (type_unsigned_8)destination, (type_unsigned_8)(destination >> 8u)};
-            const type_unsigned_32 flags = setcc_flags(condition, truth);
-            const type_unsigned_8 initial = 0xa5u;
-            type_unsigned_8 value = 0u;
+            const lib_u8 code[] = {0x0fu, (lib_u8)(0x90u + condition), 0x06u,
+                (lib_u8)destination, (lib_u8)(destination >> 8u)};
+            const lib_u32 flags = setcc_flags(condition, truth);
+            const lib_u8 initial = 0xa5u;
+            lib_u8 value = 0u;
             setcc_machine state;
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
@@ -136,7 +137,7 @@ static C_INT setcc_test_memory_conditions(C_VOID)
                     sizeof(initial)) != TYPE_STATUS_OK || !setcc_run_one(&state, code,
                     sizeof(code), &after, &diagnostic, 0) || diagnostic.first_fault.valid ||
                     core_machine_memory_read(state.machine, destination, &value,
-                    sizeof(value)) != TYPE_STATUS_OK || value != (type_unsigned_8)truth ||
+                    sizeof(value)) != TYPE_STATUS_OK || value != (lib_u8)truth ||
                     after.data.eax != 0x87654321u || after.data.eflags != flags ||
                     after.data.eip != sizeof(code);
             }
@@ -149,12 +150,12 @@ static C_INT setcc_test_memory_conditions(C_VOID)
 
 static C_INT setcc_test_prefix_forms(C_VOID)
 {
-    static const type_unsigned_8 operand_prefix[] = {0x66u, 0x0fu, 0x94u, 0xc0u};
-    static const type_unsigned_8 address_prefix[] = {0x67u, 0x0fu, 0x94u, 0x06u};
-    const type_unsigned_32 flags = VCPU_EFLAGS_ZF | VCPU_EFLAGS_CF;
-    const type_unsigned_32 address = 0x00002345u;
-    const type_unsigned_8 initial = 0xa5u;
-    type_unsigned_8 value = 0u;
+    static const lib_u8 operand_prefix[] = {0x66u, 0x0fu, 0x94u, 0xc0u};
+    static const lib_u8 address_prefix[] = {0x67u, 0x0fu, 0x94u, 0x06u};
+    const lib_u32 flags = VCPU_EFLAGS_ZF | VCPU_EFLAGS_CF;
+    const lib_u32 address = 0x00002345u;
+    const lib_u8 initial = 0xa5u;
+    lib_u8 value = 0u;
     setcc_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
@@ -184,21 +185,21 @@ static C_INT setcc_test_prefix_forms(C_VOID)
 
 static C_INT setcc_prepare_protected_limit(setcc_machine *state)
 {
-    static const type_unsigned_8 gdt_pointer[] = {0x1fu,0,0,0x03u,0,0};
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 gdt_pointer[] = {0x1fu,0,0,0x03u,0,0};
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0x0fu,0,0,0x30u,0,0x92u,0,0,
         0xffu,0xffu,0,0x40u,0,0x92u,0x40u,0
     };
-    static const type_unsigned_8 bootstrap[] = {
+    static const lib_u8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const type_unsigned_8 halt[] = {0xf4u};
+    static const lib_u8 halt[] = {0xf4u};
     const core_machine_run_budget budget = {96u, 0u};
     core_machine_run_result result;
 
@@ -215,14 +216,14 @@ static C_INT setcc_prepare_protected_limit(setcc_machine *state)
 
 static C_INT setcc_test_pre_fault_nonpublication(C_VOID)
 {
-    static const type_unsigned_8 ud_code[] = {0x0fu, 0x94u, 0xc0u};
-    static const type_unsigned_8 limit_code[] = {0x67u, 0x0fu, 0x94u, 0x05u,
+    static const lib_u8 ud_code[] = {0x0fu, 0x94u, 0xc0u};
+    static const lib_u8 limit_code[] = {0x67u, 0x0fu, 0x94u, 0x05u,
         0x10u, 0x00u, 0x00u, 0x00u};
-    const type_unsigned_32 flags = VCPU_EFLAGS_ZF | VCPU_EFLAGS_OF;
-    const type_unsigned_32 out_of_limit = 0x00003010u;
-    const type_unsigned_8 initial = 0xa5u;
+    const lib_u32 flags = VCPU_EFLAGS_ZF | VCPU_EFLAGS_OF;
+    const lib_u32 out_of_limit = 0x00003010u;
+    const lib_u8 initial = 0xa5u;
     const core_machine_run_budget budget = {1u, 0u};
-    type_unsigned_8 value = 0u;
+    lib_u8 value = 0u;
     setcc_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;

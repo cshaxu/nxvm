@@ -3,10 +3,10 @@
 /* The product owns its command words and their meaning.  Common owns the
  * monitor loop, lifecycle dispatch, presentation transitions and all host
  * queues; this file only supplies the injected command provider. */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
-#include <limits.h>
 
 #include "x86/debug/debug_interface.h"
 #include "common/session/session_interface.h"
@@ -22,7 +22,7 @@
 struct vm_app_console_context {
     C_CHAR command_buffer[COMMON_SESSION_TEXT_CAPACITY];
     C_CHAR *arguments[CONSOLE_MAXNARG];
-    STD_SIZE_T argument_count;
+    lib_size argument_count;
     vm_app *session;
     common_session *control;
     x86_debug *debug;
@@ -32,12 +32,12 @@ struct vm_app_console_context {
 
 static vm_machine *vm_app_console_machine(
     const vm_app_console_context *context)
-{ return context == STD_NULL ? STD_NULL : vm_app_machine(context->session); }
+{ return context == LIB_NULL ? LIB_NULL : vm_app_machine(context->session); }
 
 static common_machine *vm_app_console_common_machine(
     const vm_app_console_context *context)
 {
-    return context == STD_NULL ? LIB_NULL : vm_app_common_machine(context->session);
+    return context == LIB_NULL ? LIB_NULL : vm_app_common_machine(context->session);
 }
 
 static C_VOID vm_app_console_clear_result(common_session_command_result *result)
@@ -48,12 +48,12 @@ static C_VOID vm_app_console_clear_result(common_session_command_result *result)
 static C_VOID vm_app_console_append(common_session_command_result *result,
     const C_CHAR *format, ...)
 {
-    STD_SIZE_T used;
+    lib_size used;
     C_INT written;
     STD_VA_LIST arguments;
 
-    if (result == LIB_NULL || format == STD_NULL) return;
-    used = STD_STRLEN(result->text);
+    if (result == LIB_NULL || format == LIB_NULL) return;
+    used = lib_text_length(result->text);
     if (used >= sizeof(result->text)) return;
     va_start(arguments, format);
     written = STD_VSNPRINTF(result->text + used, sizeof(result->text) - used,
@@ -65,7 +65,7 @@ static C_VOID vm_app_console_append(common_session_command_result *result,
 static C_VOID vm_app_console_prompt(common_session_command_result *result,
     const C_CHAR *prompt)
 {
-    if (result == LIB_NULL || prompt == STD_NULL) return;
+    if (result == LIB_NULL || prompt == LIB_NULL) return;
     (C_VOID)STD_SNPRINTF(result->prompt, sizeof(result->prompt), "%s", prompt);
     result->arm_prompt = LIB_TRUE;
 }
@@ -76,11 +76,11 @@ static C_VOID vm_app_console_parse(vm_app_console_context *context,
     C_CHAR *token;
 
     context->argument_count = 0u;
-    token = STD_STRTOK(line, " \t\n\r\f");
-    while (token != STD_NULL && context->argument_count < CONSOLE_MAXNARG) {
+    token = lib_c_strtok(line, " \t\n\r\f");
+    while (token != LIB_NULL && context->argument_count < CONSOLE_MAXNARG) {
         type_string_lower(token);
         context->arguments[context->argument_count++] = token;
-        token = STD_STRTOK(STD_NULL, " \t\n\r\f");
+        token = lib_c_strtok(LIB_NULL, " \t\n\r\f");
     }
 }
 
@@ -107,7 +107,7 @@ static C_VOID vm_app_console_info(const vm_app_console_context *context,
     vm_machine_information information;
     vm_machine *machine = vm_app_console_machine(context);
 
-    if (machine == STD_NULL || vm_machine_get_information(machine, &information) !=
+    if (machine == LIB_NULL || vm_machine_get_information(machine, &information) !=
         TYPE_STATUS_OK) {
         vm_app_console_append(result, "Machine information unavailable.\n");
         return;
@@ -142,7 +142,7 @@ static C_VOID vm_app_console_speed(const vm_app_console_context *context,
     vm_machine_speed speed;
     vm_machine *machine = vm_app_console_machine(context);
 
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     if (context->argument_count == 1u) {
         if (vm_machine_get_speed(machine, &speed) == TYPE_STATUS_OK)
             vm_app_console_append(result, "Speed: %s\n",
@@ -153,8 +153,8 @@ static C_VOID vm_app_console_speed(const vm_app_console_context *context,
         vm_app_console_append(result, "Usage: SPEED [STANDARD|TURBO]\n");
         return;
     }
-    if (!STD_STRCMP(context->arguments[1], "standard")) speed = VM_MACHINE_SPEED_STANDARD;
-    else if (!STD_STRCMP(context->arguments[1], "turbo")) speed = VM_MACHINE_SPEED_TURBO;
+    if (!lib_c_strcmp(context->arguments[1], "standard")) speed = VM_MACHINE_SPEED_STANDARD;
+    else if (!lib_c_strcmp(context->arguments[1], "turbo")) speed = VM_MACHINE_SPEED_TURBO;
     else {
         vm_app_console_append(result, "Usage: SPEED [STANDARD|TURBO]\n");
         return;
@@ -168,17 +168,17 @@ static C_VOID vm_app_console_floppy(const vm_app_console_context *context,
     common_session_machine_state state, common_session_command_result *result)
 {
     vm_machine *machine = vm_app_console_machine(context);
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     if (vm_app_console_is_running(state)) {
         vm_app_console_append(result, "Cannot change floppy media now.\n");
         return;
     }
-    if (context->argument_count == 3u && !STD_STRCMP(context->arguments[1], "insert")) {
+    if (context->argument_count == 3u && !lib_c_strcmp(context->arguments[1], "insert")) {
         vm_app_console_append(result, vm_machine_insert_fdd(machine, context->arguments[2]) ?
             "Cannot read floppy disk.\n" : "Floppy disk inserted.\n");
         return;
     }
-    if (context->argument_count == 2u && !STD_STRCMP(context->arguments[1], "eject")) {
+    if (context->argument_count == 2u && !lib_c_strcmp(context->arguments[1], "eject")) {
         vm_app_console_append(result, vm_machine_eject_fdd(machine) ?
             "Cannot eject floppy disk.\n" : "Floppy disk ejected.\n");
         return;
@@ -210,7 +210,7 @@ static C_VOID vm_app_console_submit_debug(vm_app_console_context *context,
     vm_app_console_debug_result(result, &debug_result);
     if (!debug_result.keep_active) {
         x86_debug_close(context->debug);
-        context->debug_active = TYPE_FALSE;
+        context->debug_active = LIB_FALSE;
     }
 }
 
@@ -221,7 +221,7 @@ static C_VOID vm_app_console_submit_line(C_VOID *opaque,
     vm_app_console_context *context = opaque;
 
     vm_app_console_clear_result(result);
-    if (context == STD_NULL || line == STD_NULL) return;
+    if (context == LIB_NULL || line == LIB_NULL) return;
     if (context->debug_active) {
         vm_app_console_submit_debug(context, line, result);
         return;
@@ -229,25 +229,25 @@ static C_VOID vm_app_console_submit_line(C_VOID *opaque,
     (C_VOID)STD_SNPRINTF(context->command_buffer, sizeof(context->command_buffer), "%s", line);
     vm_app_console_parse(context, context->command_buffer);
     if (context->argument_count == 0u) return;
-    if (!STD_STRCMP(context->arguments[0], "help")) vm_app_console_help(result);
-    else if (!STD_STRCMP(context->arguments[0], "info")) vm_app_console_info(context, result);
-    else if (!STD_STRCMP(context->arguments[0], "speed")) vm_app_console_speed(context, result);
-    else if (!STD_STRCMP(context->arguments[0], "floppy"))
+    if (!lib_c_strcmp(context->arguments[0], "help")) vm_app_console_help(result);
+    else if (!lib_c_strcmp(context->arguments[0], "info")) vm_app_console_info(context, result);
+    else if (!lib_c_strcmp(context->arguments[0], "speed")) vm_app_console_speed(context, result);
+    else if (!lib_c_strcmp(context->arguments[0], "floppy"))
         vm_app_console_floppy(context, state, result);
-    else if (!STD_STRCMP(context->arguments[0], "start")) result->request = COMMON_SESSION_REQUEST_START;
-    else if (!STD_STRCMP(context->arguments[0], "reset")) result->request = COMMON_SESSION_REQUEST_RESET;
-    else if (!STD_STRCMP(context->arguments[0], "stop")) result->request = COMMON_SESSION_REQUEST_STOP;
-    else if (!STD_STRCMP(context->arguments[0], "resume")) result->request = COMMON_SESSION_REQUEST_RESUME;
-    else if (!STD_STRCMP(context->arguments[0], "exit")) result->exit_requested = LIB_TRUE;
-    else if (!STD_STRCMP(context->arguments[0], "debug")) {
+    else if (!lib_c_strcmp(context->arguments[0], "start")) result->request = COMMON_SESSION_REQUEST_START;
+    else if (!lib_c_strcmp(context->arguments[0], "reset")) result->request = COMMON_SESSION_REQUEST_RESET;
+    else if (!lib_c_strcmp(context->arguments[0], "stop")) result->request = COMMON_SESSION_REQUEST_STOP;
+    else if (!lib_c_strcmp(context->arguments[0], "resume")) result->request = COMMON_SESSION_REQUEST_RESUME;
+    else if (!lib_c_strcmp(context->arguments[0], "exit")) result->exit_requested = LIB_TRUE;
+    else if (!lib_c_strcmp(context->arguments[0], "debug")) {
         if (state == COMMON_SESSION_MACHINE_PAUSED) {
             if (x86_debug_open(context->debug, vm_app_console_common_machine(context)) ==
                 LIB_STATUS_OK) {
-                context->debug_active = TYPE_TRUE;
+                context->debug_active = LIB_TRUE;
                 vm_app_console_prompt(result, "- ");
             } else vm_app_console_append(result, "Unable to enter debugger.\n");
         } else if (state == COMMON_SESSION_MACHINE_RUNNING) {
-            context->debug_requested = TYPE_TRUE;
+            context->debug_requested = LIB_TRUE;
             result->request = COMMON_SESSION_REQUEST_PAUSE;
         } else vm_app_console_append(result, "Machine must be paused to enter debugger.\n");
     } else vm_app_console_append(result, "Illegal command '%s'.\n", context->arguments[0]);
@@ -274,7 +274,7 @@ static C_VOID vm_app_console_note_runtime(C_VOID *opaque,
     common_session_command_result *result)
 {
     vm_app_console_context *context = opaque;
-    const C_CHAR *message = STD_NULL;
+    const C_CHAR *message = LIB_NULL;
     (C_VOID)prior;
     vm_app_console_clear_result(result);
     switch (completed) {
@@ -285,13 +285,13 @@ static C_VOID vm_app_console_note_runtime(C_VOID *opaque,
     case COMMON_SESSION_MACHINE_ERROR: message = "Machine faulted.\n"; break;
     default: break;
     }
-    if (message != STD_NULL) vm_app_console_append(result, "%s", message);
-    if (context != STD_NULL && context->debug_requested &&
+    if (message != LIB_NULL) vm_app_console_append(result, "%s", message);
+    if (context != LIB_NULL && context->debug_requested &&
         completed == COMMON_SESSION_MACHINE_PAUSED &&
         x86_debug_open(context->debug, vm_app_console_common_machine(context)) ==
             LIB_STATUS_OK) {
-        context->debug_requested = TYPE_FALSE;
-        context->debug_active = TYPE_TRUE;
+        context->debug_requested = LIB_FALSE;
+        context->debug_active = LIB_TRUE;
         vm_app_console_prompt(result, "- ");
     }
 }
@@ -303,7 +303,7 @@ static C_VOID vm_app_console_note_monitor_current(C_VOID *opaque,
     vm_app_console_clear_result(result);
     if (!current) return;
     vm_app_console_prompt(result,
-        context != STD_NULL && context->debug_active ? "- " : "Console> ");
+        context != LIB_NULL && context->debug_active ? "- " : "Console> ");
 }
 
 static lib_bool vm_app_console_begin_external(C_VOID *opaque,
@@ -320,7 +320,7 @@ static lib_bool vm_app_console_hotkey(C_VOID *opaque,
     common_session_command_result *result)
 {
     vm_app_console_context *context = opaque;
-    if (context == STD_NULL) {
+    if (context == LIB_NULL) {
         vm_app_console_clear_result(result);
         return LIB_FALSE;
     }
@@ -339,7 +339,7 @@ static type_status vm_app_console_compose(vm_app_console_context *context,
     if (status != TYPE_STATUS_OK) return status;
     if (x86_debug_create(&context->debug) != LIB_STATUS_OK)
         return TYPE_STATUS_NO_MEMORY;
-    session_options.display = !STD_STRCMP(request->display, "window") ?
+    session_options.display = !lib_c_strcmp(request->display, "window") ?
         COMMON_SESSION_DISPLAY_WINDOW : COMMON_SESSION_DISPLAY_CONSOLE;
     session_options.console_control = request->console_control ? LIB_TRUE : LIB_FALSE;
     session_options.command.context = context;
@@ -365,19 +365,19 @@ static type_status vm_app_console_compose(vm_app_console_context *context,
 type_status vm_app_console_context_create(vm_app_console_context **out_context)
 {
     vm_app_console_context *context;
-    if (out_context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_context = STD_NULL;
-    context = STD_CALLOC(1u, sizeof(*context));
-    if (context == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (out_context == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_context = LIB_NULL;
+    context = lib_allocate_zero(1u, sizeof(*context));
+    if (context == LIB_NULL) return TYPE_STATUS_NO_MEMORY;
     *out_context = context;
     return TYPE_STATUS_OK;
 }
 
 C_VOID vm_app_console_context_destroy(vm_app_console_context *context)
 {
-    if (context == STD_NULL) return;
+    if (context == LIB_NULL) return;
     x86_debug_destroy(context->debug);
-    STD_FREE(context);
+    lib_release(context);
 }
 
 type_status vm_app_console_main(vm_app_console_context *context,
@@ -386,7 +386,7 @@ type_status vm_app_console_main(vm_app_console_context *context,
     vm_session_request request;
     type_status status;
 
-    if (context == STD_NULL || session == STD_NULL || ini_path == STD_NULL)
+    if (context == LIB_NULL || session == LIB_NULL || ini_path == LIB_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
     context->session = session;
     status = vm_app_ini_load(ini_path, &request);

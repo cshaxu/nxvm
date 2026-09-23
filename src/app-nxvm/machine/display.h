@@ -1,5 +1,6 @@
 #ifndef VM_MACHINE_DISPLAY_BRIDGE_H
 #define VM_MACHINE_DISPLAY_BRIDGE_H
+#include "lib/types/types_interface.h"
 
 
 #include "type.h"

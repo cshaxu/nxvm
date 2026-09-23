@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
@@ -7,7 +8,7 @@
 #define VM_PROFILE_XT_5160_268_CORE_DEVICE 0x00000001u
 #define VM_PROFILE_XT_5160_268_CONTRACT_ID 2u
 
-static const type_unsigned_32 vm_profile_xt_5160_268_contract_ids[] = {
+static const lib_u32 vm_profile_xt_5160_268_contract_ids[] = {
     VM_PROFILE_XT_5160_268_CONTRACT_ID
 };
 
@@ -19,7 +20,7 @@ type_status vm_profile_xt_5160_268_values_create(
         sizeof(vm_profile_xt_5160_268_contract_ids) /
             sizeof(vm_profile_xt_5160_268_contract_ids[0]) };
 
-    if (out_values == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_values == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     values.core.id = VM_PROFILE_XT_5160_268_CONTRACT_ID;
     values.core.configuration.memory_bytes = 256u * 1024u;
     values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8088;
@@ -70,7 +71,7 @@ type_status vm_profile_xt_5160_268_plan_create(
     vm_profile_xt_5160_268_plan_snapshot *out_profile,
     type_bool xebec_rom_present)
 {
-    if (out_profile == STD_NULL) {
+    if (out_profile == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (vm_profile_xt_5160_268_values_create(&out_profile->values) != TYPE_STATUS_OK) {
@@ -95,15 +96,15 @@ type_status vm_profile_xt_5160_268_plan_create(
     /* The selected IBM CGA is one VADP-owned aperture and port grammar.
      * These scheduling quanta are the existing non-physical VADP contract;
      * selected-adapter physical timing remains a later receiver. */
-    out_profile->topology.display_present = TYPE_TRUE;
+    out_profile->topology.display_present = LIB_TRUE;
     out_profile->topology.display = (core_machine_display_config) {
         .text_timing = {48u, 8u, 8u},
-        .cga_vram_present = TYPE_TRUE,
+        .cga_vram_present = LIB_TRUE,
         .ports = {0u, 0u, 0u, 0u, 0u, 0u, 0x03d4u, 0x03dau}
     };
-    out_profile->topology.dma_present = TYPE_TRUE;
+    out_profile->topology.dma_present = LIB_TRUE;
     out_profile->topology.dma = (core_machine_dma_wiring) {2u, 1u, 0u};
-    out_profile->topology.fdc_present = TYPE_TRUE;
+    out_profile->topology.fdc_present = LIB_TRUE;
     out_profile->topology.fdc_drives = (core_machine_fdc_drive_bindings) {{
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
         CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
@@ -111,7 +112,7 @@ type_status vm_profile_xt_5160_268_plan_create(
     out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
         0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC, 0x0fu,
         4772727u, 0u, 0u};
-    out_profile->topology.hdc_present = TYPE_TRUE;
+    out_profile->topology.hdc_present = LIB_TRUE;
     out_profile->topology.hdc_media_id = VM_PROFILE_XT_5160_268_HDD_MEDIA_ID;
     out_profile->topology.hdc_slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID;
     out_profile->topology.hdc = (core_machine_hdc_config) {

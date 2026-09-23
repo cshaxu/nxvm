@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -5,7 +6,7 @@
 
 typedef struct input_display_trace_probe {
     core_machine_trace_event events[40];
-    type_unsigned_32 count;
+    lib_u32 count;
 } input_display_trace_probe;
 
 static C_VOID input_display_trace(C_VOID *opaque,
@@ -13,7 +14,7 @@ static C_VOID input_display_trace(C_VOID *opaque,
 {
     input_display_trace_probe *probe = (input_display_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count <
+    if (probe != LIB_NULL && probe->count <
         sizeof(probe->events) / sizeof(probe->events[0])) {
         probe->events[probe->count++] = *event;
     }
@@ -22,24 +23,24 @@ static C_VOID input_display_trace(C_VOID *opaque,
 static const core_machine_trace_event *input_display_find_event(
     const input_display_trace_probe *probe, core_machine_trace_event_type type)
 {
-    type_unsigned_32 index;
+    lib_u32 index;
 
     for (index = 0u; index < probe->count; ++index) {
         if (probe->events[index].type == type) return &probe->events[index];
     }
-    return STD_NULL;
+    return LIB_NULL;
 }
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation observation;
     input_display_trace_probe probe = { { { 0 } }, 0u };
     core_machine_trace_provider trace = { input_display_trace, &probe };
-    const type_unsigned_8 nop = 0x90u;
+    const lib_u8 nop = 0x90u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 1u;
@@ -75,9 +76,9 @@ C_INT main(C_VOID)
         const core_machine_trace_event *boundary = input_display_find_event(&probe,
             CORE_MACHINE_TRACE_RUN_BOUNDARY);
 
-        failed |= !failed && (retire == STD_NULL || fdc != STD_NULL ||
-            hdc != STD_NULL || kbc == STD_NULL || vadp == STD_NULL ||
-            boundary == STD_NULL || kbc->timeline_ticks != 3u ||
+        failed |= !failed && (retire == LIB_NULL || fdc != LIB_NULL ||
+            hdc != LIB_NULL || kbc == LIB_NULL || vadp == LIB_NULL ||
+            boundary == LIB_NULL || kbc->timeline_ticks != 3u ||
             vadp->timeline_ticks != 3u || retire->sequence >= kbc->sequence ||
             kbc->sequence >= vadp->sequence || vadp->sequence >= boundary->sequence);
     }

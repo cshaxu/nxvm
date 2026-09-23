@@ -1,6 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
 /* Core-owned CGA text-controller state. Host presentation is outside core. */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -68,63 +69,63 @@ static C_INT core_machine_vadp_ega_display_kind(const t_vadp *adapter,
     core_machine_display_kind *out_kind);
 
 static type_status core_machine_vadp_cga_read(C_VOID *owner,
-    type_unsigned_32 physical, type_virtual_address destination,
+    lib_u32 physical, type_virtual_address destination,
     type_native_unsigned bytes)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (adapter == STD_NULL || destination == 0u || physical < CORE_MACHINE_VADP_VIDEO_BASE ||
-        (type_unsigned_64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes >
+    if (adapter == LIB_NULL || destination == 0u || physical < CORE_MACHINE_VADP_VIDEO_BASE ||
+        (lib_u64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes >
         CORE_MACHINE_VADP_VIDEO_BYTES) return TYPE_STATUS_UNSUPPORTED;
-    STD_MEMCPY((C_VOID *)destination, adapter->data.cga_vram +
+    lib_memory_copy((C_VOID *)destination, adapter->data.cga_vram +
         physical - CORE_MACHINE_VADP_VIDEO_BASE, bytes);
     return TYPE_STATUS_OK;
 }
 
 static type_status core_machine_vadp_cga_write(C_VOID *owner,
-    type_unsigned_32 physical, type_virtual_address source,
+    lib_u32 physical, type_virtual_address source,
     type_native_unsigned bytes)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (adapter == STD_NULL || source == 0u || physical < CORE_MACHINE_VADP_VIDEO_BASE ||
-        (type_unsigned_64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes >
+    if (adapter == LIB_NULL || source == 0u || physical < CORE_MACHINE_VADP_VIDEO_BASE ||
+        (lib_u64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes >
         CORE_MACHINE_VADP_VIDEO_BYTES) return TYPE_STATUS_UNSUPPORTED;
-    STD_MEMCPY(adapter->data.cga_vram + physical - CORE_MACHINE_VADP_VIDEO_BASE,
+    lib_memory_copy(adapter->data.cga_vram + physical - CORE_MACHINE_VADP_VIDEO_BASE,
         (const C_VOID *)source, bytes);
     core_machine_vadp_mark_dirty(adapter);
     return TYPE_STATUS_OK;
 }
 
 static type_status core_machine_vadp_cga_query(C_VOID *owner,
-    type_unsigned_32 physical, type_native_unsigned bytes,
+    lib_u32 physical, type_native_unsigned bytes,
     core_machine_memory_access access)
 {
     (C_VOID)owner;
     return (access == CORE_MACHINE_MEMORY_ACCESS_READ ||
         access == CORE_MACHINE_MEMORY_ACCESS_WRITE) &&
         physical >= CORE_MACHINE_VADP_VIDEO_BASE &&
-        (type_unsigned_64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes <=
+        (lib_u64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes <=
         CORE_MACHINE_VADP_VIDEO_BYTES ? TYPE_STATUS_OK : TYPE_STATUS_UNSUPPORTED;
 }
 
 static C_INT core_machine_vadp_is_graphics_mode(const t_vadp *adapter)
 {
-    return adapter != STD_NULL &&
+    return adapter != LIB_NULL &&
         (adapter->data.mode_control & (CORE_MACHINE_VADP_MODE_GRAPHICS |
             CORE_MACHINE_VADP_MODE_HIGH_RES)) == CORE_MACHINE_VADP_MODE_GRAPHICS;
 }
 
 static C_INT core_machine_vadp_is_high_res_graphics_mode(const t_vadp *adapter)
 {
-    return adapter != STD_NULL && (adapter->data.mode_control &
+    return adapter != LIB_NULL && (adapter->data.mode_control &
         (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES)) ==
         (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES);
 }
 
-static type_unsigned_32 core_machine_vadp_rgbi_color(type_unsigned_8 index)
+static lib_u32 core_machine_vadp_rgbi_color(lib_u8 index)
 {
-    static const type_unsigned_32 colors[16] = {
+    static const lib_u32 colors[16] = {
         0x000000u, 0x0000aau, 0x00aa00u, 0x00aaaau,
         0xaa0000u, 0xaa00aau, 0xaa5500u, 0xaaaaaau,
         0x555555u, 0x5555ffu, 0x55ff55u, 0x55ffffu,
@@ -137,24 +138,24 @@ static type_unsigned_32 core_machine_vadp_rgbi_color(type_unsigned_8 index)
 /* The Compaq CECG guide names its six digital palette bits r g b R G B,
  * from bit 5 through bit 0. Snapshot RGB expands each primary/secondary
  * pair to the project 0x00..0xff capture range; it is not a monitor model. */
-static type_unsigned_32 core_machine_vadp_compaq_ega_color(type_unsigned_8 value)
+static lib_u32 core_machine_vadp_compaq_ega_color(lib_u8 value)
 {
-    type_unsigned_8 red = (type_unsigned_8)(((value >> 2u) & 1u) * 2u +
+    lib_u8 red = (lib_u8)(((value >> 2u) & 1u) * 2u +
         ((value >> 5u) & 1u));
-    type_unsigned_8 green = (type_unsigned_8)(((value >> 1u) & 1u) * 2u +
+    lib_u8 green = (lib_u8)(((value >> 1u) & 1u) * 2u +
         ((value >> 4u) & 1u));
-    type_unsigned_8 blue = (type_unsigned_8)(((value >> 0u) & 1u) * 2u +
+    lib_u8 blue = (lib_u8)(((value >> 0u) & 1u) * 2u +
         ((value >> 3u) & 1u));
 
-    return ((type_unsigned_32)red * 0x55u << 16u) |
-        ((type_unsigned_32)green * 0x55u << 8u) |
-        (type_unsigned_32)blue * 0x55u;
+    return ((lib_u32)red * 0x55u << 16u) |
+        ((lib_u32)green * 0x55u << 8u) |
+        (lib_u32)blue * 0x55u;
 }
 
-static type_unsigned_32 core_machine_vadp_ega_palette_color(const t_vadp *adapter,
-    type_unsigned_8 value)
+static lib_u32 core_machine_vadp_ega_palette_color(const t_vadp *adapter,
+    lib_u8 value)
 {
-    if (adapter != STD_NULL && adapter->data.ega_personality ==
+    if (adapter != LIB_NULL && adapter->data.ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         return core_machine_vadp_compaq_ega_color(value & 0x3fu);
     }
@@ -164,12 +165,12 @@ static type_unsigned_32 core_machine_vadp_ega_palette_color(const t_vadp *adapte
 static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter);
 
 static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
-    type_unsigned_32 palette[4])
+    lib_u32 palette[4])
 {
     C_INT alternate;
     C_INT intensified;
 
-    if (adapter == STD_NULL || palette == STD_NULL) return;
+    if (adapter == LIB_NULL || palette == LIB_NULL) return;
     alternate = (adapter->data.color_select &
         CORE_MACHINE_VADP_COLOR_PALETTE_SELECT) != 0u;
     intensified = (adapter->data.color_select & 0x10u) != 0u;
@@ -192,20 +193,20 @@ static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
 }
 
 static C_VOID core_machine_vadp_high_res_palette(const t_vadp *adapter,
-    type_unsigned_32 palette[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES])
+    lib_u32 palette[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES])
 {
-    if (adapter == STD_NULL || palette == STD_NULL) return;
+    if (adapter == LIB_NULL || palette == LIB_NULL) return;
     palette[0] = 0u;
     palette[1] = (adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) != 0u ?
         core_machine_vadp_rgbi_color(adapter->data.color_select & 0x0fu) : 0u;
 }
 
 static C_VOID core_machine_vadp_active_ega_aperture(const t_vadp *adapter,
-    type_unsigned_32 *out_base, type_unsigned_32 *out_bytes);
+    lib_u32 *out_base, lib_u32 *out_bytes);
 
 static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
 {
-    return adapter != STD_NULL && adapter->data.ega_planar_enabled &&
+    return adapter != LIB_NULL && adapter->data.ega_planar_enabled &&
         adapter->data.ega_planar_vram != 0u &&
         adapter->data.ega_sequencer_configured &&
         (adapter->data.sequencer[0] & 0x03u) == 0x03u &&
@@ -221,7 +222,7 @@ static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
  * legitimately reuse the conventional video-hole backing. */
 static C_INT core_machine_vadp_ega_aperture_mapped(const t_vadp *adapter)
 {
-    return adapter != STD_NULL && adapter->data.ega_planar_enabled &&
+    return adapter != LIB_NULL && adapter->data.ega_planar_enabled &&
         adapter->data.ega_planar_vram != 0u && adapter->data.ega_sequencer_configured &&
         (adapter->data.sequencer[0] & 0x03u) == 0x03u &&
         adapter->data.ega_controller_configured;
@@ -262,15 +263,15 @@ static C_INT core_machine_vadp_ega_planar_display_active(const t_vadp *adapter)
         core_machine_vadp_ega_display_kind(adapter, &kind);
 }
 
-static type_unsigned_8 core_machine_vadp_rotate_right(type_unsigned_8 value, type_unsigned_8 count)
+static lib_u8 core_machine_vadp_rotate_right(lib_u8 value, lib_u8 count)
 {
     count &= 7u;
-    return count == 0u ? value : (type_unsigned_8)((value >> count) |
+    return count == 0u ? value : (lib_u8)((value >> count) |
         (value << (8u - count)));
 }
 
-static type_unsigned_8 core_machine_vadp_logical_operation(type_unsigned_8 operation,
-    type_unsigned_8 source, type_unsigned_8 latch)
+static lib_u8 core_machine_vadp_logical_operation(lib_u8 operation,
+    lib_u8 source, lib_u8 latch)
 {
     switch (operation & 0x03u) {
     case 1u: return source & latch;
@@ -280,26 +281,26 @@ static type_unsigned_8 core_machine_vadp_logical_operation(type_unsigned_8 opera
     }
 }
 
-static type_unsigned_8 core_machine_vadp_ega_color_compare(
+static lib_u8 core_machine_vadp_ega_color_compare(
     const t_vadp *adapter)
 {
-    type_unsigned_8 value = 0xffu;
-    type_unsigned_8 plane;
+    lib_u8 value = 0xffu;
+    lib_u8 plane;
 
-    if (adapter == STD_NULL) return 0u;
+    if (adapter == LIB_NULL) return 0u;
     for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
         if ((adapter->data.graphics[7] & (1u << plane)) != 0u) continue;
         value &= (adapter->data.graphics[2] & (1u << plane)) != 0u ?
             adapter->data.ega_latches[plane] :
-            (type_unsigned_8)~adapter->data.ega_latches[plane];
+            (lib_u8)~adapter->data.ega_latches[plane];
     }
     return value;
 }
 
-static type_unsigned_8 core_machine_vadp_ega_write_source(const t_vadp *adapter,
-    type_unsigned_8 input, type_unsigned_8 plane)
+static lib_u8 core_machine_vadp_ega_write_source(const t_vadp *adapter,
+    lib_u8 input, lib_u8 plane)
 {
-    type_unsigned_8 mode = adapter->data.graphics[5] & 0x03u;
+    lib_u8 mode = adapter->data.graphics[5] & 0x03u;
 
     if (mode == 1u) return adapter->data.ega_latches[plane];
     if (mode == 2u) return (input & (1u << plane)) != 0u ? 0xffu : 0u;
@@ -310,7 +311,7 @@ static type_unsigned_8 core_machine_vadp_ega_write_source(const t_vadp *adapter,
 
 static C_INT core_machine_vadp_compaq_odd_even_page_active(const t_vadp *adapter)
 {
-    return adapter != STD_NULL && adapter->data.ega_personality ==
+    return adapter != LIB_NULL && adapter->data.ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
         (adapter->data.sequencer[4] & 0x04u) == 0u &&
         (adapter->data.graphics[6] & 0x02u) != 0u;
@@ -322,23 +323,23 @@ static C_INT core_machine_vadp_compaq_odd_even_page_active(const t_vadp *adapter
  * ordinary system RAM.  Keep it in the one planar store by canonically
  * routing the B0000h compatibility window to the selected B8000h window. */
 static C_INT core_machine_vadp_compaq_b000_compatibility_contains(
-    const t_vadp *adapter, type_unsigned_32 physical, type_native_unsigned bytes)
+    const t_vadp *adapter, lib_u32 physical, type_native_unsigned bytes)
 {
-    type_unsigned_64 request_end = (type_unsigned_64)physical + bytes;
+    lib_u64 request_end = (lib_u64)physical + bytes;
 
-    return adapter != STD_NULL && bytes != 0u && adapter->data.ega_personality ==
+    return adapter != LIB_NULL && bytes != 0u && adapter->data.ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
         core_machine_vadp_ega_cpu_aperture_active(adapter) &&
         ((adapter->data.graphics[6] >> 2u) & 0x03u) == 3u &&
         physical >= 0x000b0000u && request_end <= 0x000b8000u;
 }
 
-static type_unsigned_32 core_machine_vadp_ega_planar_offset(const t_vadp *adapter,
-    type_unsigned_32 physical)
+static lib_u32 core_machine_vadp_ega_planar_offset(const t_vadp *adapter,
+    lib_u32 physical)
 {
-    type_unsigned_32 aperture_base;
-    type_unsigned_32 aperture_bytes;
-    type_unsigned_32 offset;
+    lib_u32 aperture_base;
+    lib_u32 aperture_bytes;
+    lib_u32 offset;
 
     if (core_machine_vadp_compaq_b000_compatibility_contains(adapter, physical, 1u)) {
         physical += 0x00008000u;
@@ -358,7 +359,7 @@ static type_unsigned_32 core_machine_vadp_ega_planar_offset(const t_vadp *adapte
 }
 
 static C_INT core_machine_vadp_ega_cpu_aperture_contains(const t_vadp *adapter,
-    type_unsigned_32 physical, type_native_unsigned bytes)
+    lib_u32 physical, type_native_unsigned bytes)
 {
     return core_machine_vadp_ega_cpu_aperture_active(adapter) &&
         (core_machine_vadp_ega_aperture_contains(adapter, physical, bytes) ||
@@ -366,14 +367,14 @@ static C_INT core_machine_vadp_ega_cpu_aperture_contains(const t_vadp *adapter,
 }
 
 static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
-    type_unsigned_32 physical, type_virtual_address destination,
+    lib_u32 physical, type_virtual_address destination,
     type_native_unsigned bytes)
 {
     t_vadp *adapter = (t_vadp *)owner;
     type_native_unsigned index;
-    type_unsigned_8 *out = (type_unsigned_8 *)destination;
+    lib_u8 *out = (lib_u8 *)destination;
 
-    if (adapter == STD_NULL || destination == 0u ||
+    if (adapter == LIB_NULL || destination == 0u ||
         !core_machine_vadp_ega_aperture_mapped(adapter)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
@@ -381,21 +382,21 @@ static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
         return TYPE_STATUS_UNSUPPORTED;
     }
     for (index = 0u; index < bytes; ++index) {
-        type_unsigned_32 address = physical + (type_unsigned_32)index;
-        type_unsigned_32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
+        lib_u32 address = physical + (lib_u32)index;
+        lib_u32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
             core_machine_vadp_ega_planar_offset(adapter, address) >> 2u :
             core_machine_vadp_ega_planar_offset(adapter, address);
-        type_unsigned_8 plane;
+        lib_u8 plane;
 
         for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
-            adapter->data.ega_latches[plane] = ((type_unsigned_8 *)adapter->data.ega_planar_vram)
-                [(STD_SIZE_T)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES + offset];
+            adapter->data.ega_latches[plane] = ((lib_u8 *)adapter->data.ega_planar_vram)
+                [(lib_size)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES + offset];
         }
         if ((adapter->data.graphics[5] & 0x08u) != 0u) {
             out[index] = core_machine_vadp_ega_color_compare(adapter);
         } else {
-            type_unsigned_8 map = core_machine_vadp_vga_chain4_active(adapter) ?
-                (type_unsigned_8)(address & 3u) : adapter->data.graphics[4];
+            lib_u8 map = core_machine_vadp_vga_chain4_active(adapter) ?
+                (lib_u8)(address & 3u) : adapter->data.graphics[4];
 
             out[index] = map < CORE_MACHINE_VADP_EGA_PLANES ?
                 adapter->data.ega_latches[map] : 0u;
@@ -405,14 +406,14 @@ static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
 }
 
 static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
-    type_unsigned_32 physical, type_virtual_address source,
+    lib_u32 physical, type_virtual_address source,
     type_native_unsigned bytes)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    const type_unsigned_8 *input = (const type_unsigned_8 *)source;
+    const lib_u8 *input = (const lib_u8 *)source;
     type_native_unsigned index;
 
-    if (adapter == STD_NULL || source == 0u ||
+    if (adapter == LIB_NULL || source == 0u ||
         !core_machine_vadp_ega_aperture_mapped(adapter)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
@@ -423,18 +424,18 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
         return TYPE_STATUS_UNSUPPORTED;
     }
     for (index = 0u; index < bytes; ++index) {
-        type_unsigned_32 address = physical + (type_unsigned_32)index;
-        type_unsigned_32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
+        lib_u32 address = physical + (lib_u32)index;
+        lib_u32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
             core_machine_vadp_ega_planar_offset(adapter, address) >> 2u :
             core_machine_vadp_ega_planar_offset(adapter, address);
-        type_unsigned_8 plane;
+        lib_u8 plane;
 
         for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
-            type_unsigned_8 *target = (type_unsigned_8 *)adapter->data.ega_planar_vram +
-                (STD_SIZE_T)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES + offset;
-            type_unsigned_8 source_byte = core_machine_vadp_ega_write_source(adapter,
+            lib_u8 *target = (lib_u8 *)adapter->data.ega_planar_vram +
+                (lib_size)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES + offset;
+            lib_u8 source_byte = core_machine_vadp_ega_write_source(adapter,
                 input[index], plane);
-            type_unsigned_8 merged = core_machine_vadp_logical_operation(
+            lib_u8 merged = core_machine_vadp_logical_operation(
                 adapter->data.graphics[3] >> 3, source_byte,
                 adapter->data.ega_latches[plane]);
 
@@ -443,9 +444,9 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
                 (adapter->data.sequencer[2] & (1u << plane)) != 0u) {
                 *target = (adapter->data.graphics[5] & 0x03u) == 1u ?
                     adapter->data.ega_latches[plane] :
-                    (type_unsigned_8)((merged & adapter->data.graphics[8]) |
+                    (lib_u8)((merged & adapter->data.graphics[8]) |
                     (adapter->data.ega_latches[plane] &
-                    (type_unsigned_8)~adapter->data.graphics[8]));
+                    (lib_u8)~adapter->data.graphics[8]));
             }
         }
     }
@@ -454,12 +455,12 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
 }
 
 static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
-    type_unsigned_32 physical, type_native_unsigned bytes,
+    lib_u32 physical, type_native_unsigned bytes,
     core_machine_memory_access access)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (adapter == STD_NULL ||
+    if (adapter == LIB_NULL ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
          access != CORE_MACHINE_MEMORY_ACCESS_WRITE) ||
         !core_machine_vadp_ega_cpu_aperture_contains(adapter, physical, bytes)) {
@@ -470,31 +471,31 @@ static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
 
 static C_INT core_machine_vadp_cga_logical_raster_active(const t_vadp *adapter)
 {
-    return adapter != STD_NULL && !adapter->data.ega_controller_configured &&
+    return adapter != LIB_NULL && !adapter->data.ega_controller_configured &&
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED] != 0u &&
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED] != 0u;
 }
 
-static type_unsigned_32 core_machine_vadp_cga_scanlines_per_row(const t_vadp *adapter)
+static lib_u32 core_machine_vadp_cga_scanlines_per_row(const t_vadp *adapter)
 {
-    return (type_unsigned_32)adapter->data.crtc[
+    return (lib_u32)adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u;
 }
 
-static type_unsigned_32 core_machine_vadp_cga_logical_raster_period(const t_vadp *adapter)
+static lib_u32 core_machine_vadp_cga_logical_raster_period(const t_vadp *adapter)
 {
-    type_unsigned_32 rows = (type_unsigned_32)adapter->data.crtc[
+    lib_u32 rows = (lib_u32)adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL] + 1u;
-    type_unsigned_32 scanlines = rows * core_machine_vadp_cga_scanlines_per_row(adapter) +
+    lib_u32 scanlines = rows * core_machine_vadp_cga_scanlines_per_row(adapter) +
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL_ADJUST];
 
-    return scanlines * ((type_unsigned_32)adapter->data.crtc[
+    return scanlines * ((lib_u32)adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_HORIZONTAL_TOTAL] + 1u);
 }
 
-static type_unsigned_16 core_machine_vadp_text_columns(const t_vadp *adapter)
+static lib_u16 core_machine_vadp_text_columns(const t_vadp *adapter)
 {
-    type_unsigned_16 columns;
+    lib_u16 columns;
 
     if (!core_machine_vadp_cga_logical_raster_active(adapter)) return adapter->data.columns;
     columns = adapter->data.crtc[CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED];
@@ -502,9 +503,9 @@ static type_unsigned_16 core_machine_vadp_text_columns(const t_vadp *adapter)
         columns;
 }
 
-static type_unsigned_16 core_machine_vadp_text_rows(const t_vadp *adapter)
+static lib_u16 core_machine_vadp_text_rows(const t_vadp *adapter)
 {
-    type_unsigned_16 rows;
+    lib_u16 rows;
 
     if (!core_machine_vadp_cga_logical_raster_active(adapter)) return adapter->data.rows;
     rows = adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED];
@@ -512,17 +513,17 @@ static type_unsigned_16 core_machine_vadp_text_rows(const t_vadp *adapter)
 }
 
 static C_INT core_machine_vadp_supported_crtc_index(const t_vadp *adapter,
-    type_unsigned_8 index)
+    lib_u8 index)
 {
-    if (adapter == STD_NULL || index >= CORE_MACHINE_VADP_CRTC_REGISTER_COUNT) return TYPE_FALSE;
+    if (adapter == LIB_NULL || index >= CORE_MACHINE_VADP_CRTC_REGISTER_COUNT) return LIB_FALSE;
     if (!adapter->data.ega_controller_configured) return index <= 0x11u;
     return index <= CORE_MACHINE_VADP_CRTC_EGA_LAST;
 }
 
 static C_INT core_machine_vadp_crtc_index_readable(const t_vadp *adapter,
-    type_unsigned_8 index)
+    lib_u8 index)
 {
-    if (!core_machine_vadp_supported_crtc_index(adapter, index)) return TYPE_FALSE;
+    if (!core_machine_vadp_supported_crtc_index(adapter, index)) return LIB_FALSE;
     if (!adapter->data.ega_controller_configured) {
         return index >= CORE_MACHINE_VADP_CRTC_CURSOR_HIGH;
     }
@@ -531,17 +532,17 @@ static C_INT core_machine_vadp_crtc_index_readable(const t_vadp *adapter,
 }
 
 static C_INT core_machine_vadp_crtc_index_writable(const t_vadp *adapter,
-    type_unsigned_8 index)
+    lib_u8 index)
 {
-    if (!core_machine_vadp_supported_crtc_index(adapter, index)) return TYPE_FALSE;
+    if (!core_machine_vadp_supported_crtc_index(adapter, index)) return LIB_FALSE;
     return adapter->data.ega_controller_configured ||
         index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW;
 }
 
-static type_unsigned_8 core_machine_vadp_crtc_mask(const t_vadp *adapter,
-    type_unsigned_8 index)
+static lib_u8 core_machine_vadp_crtc_mask(const t_vadp *adapter,
+    lib_u8 index)
 {
-    if (adapter != STD_NULL && adapter->data.ega_controller_configured) {
+    if (adapter != LIB_NULL && adapter->data.ega_controller_configured) {
         switch (index) {
         case 0x03u: return 0x7fu;
         case 0x07u: return 0x3fu;
@@ -576,23 +577,23 @@ static type_unsigned_8 core_machine_vadp_crtc_mask(const t_vadp *adapter,
     }
 }
 
-static type_unsigned_16 core_machine_vadp_crtc_word(const t_vadp *adapter,
-    type_unsigned_8 high_index)
+static lib_u16 core_machine_vadp_crtc_word(const t_vadp *adapter,
+    lib_u8 high_index)
 {
-    type_unsigned_8 low_index = (type_unsigned_8)(high_index + 1u);
+    lib_u8 low_index = (lib_u8)(high_index + 1u);
 
-    if (adapter == STD_NULL || !core_machine_vadp_supported_crtc_index(adapter,
+    if (adapter == LIB_NULL || !core_machine_vadp_supported_crtc_index(adapter,
             high_index) || !core_machine_vadp_supported_crtc_index(adapter, low_index)) {
         return 0u;
     }
-    return (type_unsigned_16)(((type_unsigned_16)adapter->data.crtc[high_index] << 8) |
+    return (lib_u16)(((lib_u16)adapter->data.crtc[high_index] << 8) |
         adapter->data.crtc[low_index]);
 }
 
-static type_unsigned_16 core_machine_vadp_ega_vertical_displayed(
+static lib_u16 core_machine_vadp_ega_vertical_displayed(
     const t_vadp *adapter)
 {
-    return adapter == STD_NULL ? 0u : (type_unsigned_16)(
+    return adapter == LIB_NULL ? 0u : (lib_u16)(
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAY_END] +
         ((adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OVERFLOW] & 0x02u) << 7u) + 1u);
 }
@@ -600,45 +601,45 @@ static type_unsigned_16 core_machine_vadp_ega_vertical_displayed(
 static C_INT core_machine_vadp_ega_display_kind(const t_vadp *adapter,
     core_machine_display_kind *out_kind)
 {
-    type_unsigned_16 horizontal;
-    type_unsigned_16 vertical;
+    lib_u16 horizontal;
+    lib_u16 vertical;
 
-    if (adapter == STD_NULL || out_kind == STD_NULL) return TYPE_FALSE;
-    horizontal = (type_unsigned_16)adapter->data.crtc[
+    if (adapter == LIB_NULL || out_kind == LIB_NULL) return LIB_FALSE;
+    horizontal = (lib_u16)adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED] + 1u;
     vertical = core_machine_vadp_ega_vertical_displayed(adapter);
     if (horizontal == 40u && vertical == 200u &&
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
         CORE_MACHINE_VADP_EGA_320X200_CRTC_OFFSET) {
         *out_kind = CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
     if (horizontal == 80u && vertical == 200u &&
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
         CORE_MACHINE_VADP_EGA_640X200_CRTC_OFFSET) {
         *out_kind = CORE_MACHINE_DISPLAY_KIND_EGA_640X200X16;
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
     if (horizontal == 80u && vertical == 350u &&
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
         CORE_MACHINE_VADP_EGA_640X350_CRTC_OFFSET) {
         *out_kind = CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16;
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
-    return TYPE_FALSE;
+    return LIB_FALSE;
 }
 
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter)
 {
-    if (adapter != STD_NULL) ++adapter->data.dirty_generation;
+    if (adapter != LIB_NULL) ++adapter->data.dirty_generation;
 }
 
-static C_INT core_machine_vadp_sequencer_index_supported(type_unsigned_8 index)
+static C_INT core_machine_vadp_sequencer_index_supported(lib_u8 index)
 {
     return index == 0u || index == 1u || index == 2u || index == 3u || index == 4u;
 }
 
-static type_unsigned_8 core_machine_vadp_sequencer_mask(type_unsigned_8 index)
+static lib_u8 core_machine_vadp_sequencer_mask(lib_u8 index)
 {
     switch (index) {
     case 0u: return 0x03u;
@@ -650,26 +651,26 @@ static type_unsigned_8 core_machine_vadp_sequencer_mask(type_unsigned_8 index)
     }
 }
 
-static C_INT core_machine_vadp_graphics_index_supported(type_unsigned_8 index)
+static C_INT core_machine_vadp_graphics_index_supported(lib_u8 index)
 {
     return index < CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT;
 }
 
-static type_unsigned_8 core_machine_vadp_graphics_mask(type_unsigned_8 index)
+static lib_u8 core_machine_vadp_graphics_mask(lib_u8 index)
 {
-    static const type_unsigned_8 masks[CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT] = {
+    static const lib_u8 masks[CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT] = {
         0x0fu, 0x0fu, 0x0fu, 0x1fu, 0x07u, 0x7fu, 0x0fu, 0x0fu, 0xffu
     };
 
     return core_machine_vadp_graphics_index_supported(index) ? masks[index] : 0u;
 }
 
-static C_INT core_machine_vadp_attribute_index_supported(type_unsigned_8 index)
+static C_INT core_machine_vadp_attribute_index_supported(lib_u8 index)
 {
     return index < 20u;
 }
 
-static type_unsigned_8 core_machine_vadp_attribute_mask(type_unsigned_8 index)
+static lib_u8 core_machine_vadp_attribute_mask(lib_u8 index)
 {
     if (index < 16u) return 0x3fu;
     switch (index) {
@@ -683,11 +684,11 @@ static type_unsigned_8 core_machine_vadp_attribute_mask(type_unsigned_8 index)
 }
 
 static C_VOID core_machine_vadp_active_ega_aperture(const t_vadp *adapter,
-    type_unsigned_32 *out_base, type_unsigned_32 *out_bytes)
+    lib_u32 *out_base, lib_u32 *out_bytes)
 {
-    type_unsigned_8 map_select;
+    lib_u8 map_select;
 
-    if (adapter == STD_NULL || out_base == STD_NULL || out_bytes == STD_NULL) {
+    if (adapter == LIB_NULL || out_base == LIB_NULL || out_bytes == LIB_NULL) {
         return;
     }
     *out_base = adapter->data.ega_sequencer.aperture_base;
@@ -716,7 +717,7 @@ static C_VOID core_machine_vadp_active_ega_aperture(const t_vadp *adapter,
 
 static C_VOID core_machine_vadp_reset_sequencer(t_vadp *adapter)
 {
-    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured) return;
+    if (adapter == LIB_NULL || !adapter->data.ega_sequencer_configured) return;
     adapter->data.sequencer_index = 0u;
     adapter->data.sequencer[0] = adapter->data.ega_sequencer.reset & 0x03u;
     adapter->data.sequencer[1] = adapter->data.ega_sequencer.clocking_mode & 0x3du;
@@ -726,23 +727,23 @@ static C_VOID core_machine_vadp_reset_sequencer(t_vadp *adapter)
 
 static C_VOID core_machine_vadp_reset_ega_controllers(t_vadp *adapter)
 {
-    if (adapter == STD_NULL || !adapter->data.ega_controller_configured) return;
+    if (adapter == LIB_NULL || !adapter->data.ega_controller_configured) return;
     adapter->data.graphics_index = 0u;
-    STD_MEMCPY(adapter->data.graphics, adapter->data.ega_controller.graphics,
+    lib_memory_copy(adapter->data.graphics, adapter->data.ega_controller.graphics,
         sizeof(adapter->data.graphics));
     adapter->data.attribute_index = 0u;
-    STD_MEMCPY(adapter->data.attribute, adapter->data.ega_controller.attribute,
+    lib_memory_copy(adapter->data.attribute, adapter->data.ega_controller.attribute,
         sizeof(adapter->data.attribute));
-    adapter->data.attribute_data_phase = TYPE_FALSE;
-    adapter->data.attribute_display_enabled = TYPE_TRUE;
+    adapter->data.attribute_data_phase = LIB_FALSE;
+    adapter->data.attribute_display_enabled = LIB_TRUE;
 }
 
 static C_VOID core_machine_vadp_normalize_ega_controllers(
     core_machine_vadp_ega_controller_config *config)
 {
-    type_unsigned_8 index;
+    lib_u8 index;
 
-    if (config == STD_NULL) return;
+    if (config == LIB_NULL) return;
     for (index = 0u; index < CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT; ++index) {
         config->graphics[index] &= core_machine_vadp_graphics_mask(index);
     }
@@ -752,39 +753,39 @@ static C_VOID core_machine_vadp_normalize_ega_controllers(
 }
 
 static C_VOID core_machine_vadp_ega_write_observer(C_VOID *owner,
-    type_unsigned_32 physical, type_native_unsigned bytes)
+    lib_u32 physical, type_native_unsigned bytes)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_64 write_end;
-    type_unsigned_64 aperture_end;
+    lib_u64 write_end;
+    lib_u64 aperture_end;
 
     /* This observer owns presentation freshness for both planar EGA and the
      * non-planar memory-backed EGA configuration.  CPU mapping still belongs
      * to the planar provider when present; requiring that provider here made
      * the non-planar path silently miss real writes. */
-    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured ||
+    if (adapter == LIB_NULL || !adapter->data.ega_sequencer_configured ||
         bytes == 0u || !core_machine_vadp_ega_aperture_contains(adapter,
             physical, bytes)) return;
     if (core_machine_vadp_compaq_b000_compatibility_contains(adapter, physical, bytes)) {
         core_machine_vadp_mark_dirty(adapter);
         return;
     }
-    write_end = (type_unsigned_64)physical + bytes;
+    write_end = (lib_u64)physical + bytes;
     {
-        type_unsigned_32 aperture_base;
-        type_unsigned_32 aperture_bytes;
+        lib_u32 aperture_base;
+        lib_u32 aperture_bytes;
 
         core_machine_vadp_active_ega_aperture(adapter, &aperture_base,
             &aperture_bytes);
-        aperture_end = (type_unsigned_64)aperture_base + aperture_bytes;
-        if ((type_unsigned_64)physical < aperture_end &&
-            (type_unsigned_64)aperture_base < write_end) {
+        aperture_end = (lib_u64)aperture_base + aperture_bytes;
+        if ((lib_u64)physical < aperture_end &&
+            (lib_u64)aperture_base < write_end) {
             core_machine_vadp_mark_dirty(adapter);
         }
     }
 }
 
-static type_unsigned_32 core_machine_vadp_raster_period(
+static lib_u32 core_machine_vadp_raster_period(
     const core_machine_vadp_text_timing *timing)
 {
     return timing->active_display_ticks + timing->horizontal_blank_ticks +
@@ -794,11 +795,11 @@ static type_unsigned_32 core_machine_vadp_raster_period(
 static C_INT core_machine_vadp_valid_text_timing(
     const core_machine_vadp_text_timing *timing)
 {
-    type_unsigned_32 period;
+    lib_u32 period;
 
-    if (timing == STD_NULL || timing->active_display_ticks == 0u ||
+    if (timing == LIB_NULL || timing->active_display_ticks == 0u ||
         timing->vertical_retrace_ticks == 0u) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
     period = core_machine_vadp_raster_period(timing);
     return period >= timing->active_display_ticks &&
@@ -806,23 +807,23 @@ static C_INT core_machine_vadp_valid_text_timing(
         period >= timing->vertical_retrace_ticks;
 }
 
-static type_unsigned_8 core_machine_vadp_status(const t_vadp *adapter)
+static lib_u8 core_machine_vadp_status(const t_vadp *adapter)
 {
-    type_unsigned_32 vertical_end;
-    type_unsigned_32 display_end;
-    type_unsigned_8 status = 0u;
+    lib_u32 vertical_end;
+    lib_u32 display_end;
+    lib_u8 status = 0u;
 
-    if (adapter == STD_NULL) return 0u;
+    if (adapter == LIB_NULL) return 0u;
     if (core_machine_vadp_cga_logical_raster_active(adapter)) {
-        type_unsigned_32 horizontal_total = (type_unsigned_32)adapter->data.crtc[
+        lib_u32 horizontal_total = (lib_u32)adapter->data.crtc[
             CORE_MACHINE_VADP_CRTC_HORIZONTAL_TOTAL] + 1u;
-        type_unsigned_32 period = core_machine_vadp_cga_logical_raster_period(adapter);
-        type_unsigned_32 scanline;
-        type_unsigned_32 character;
-        type_unsigned_32 display_scanlines = (type_unsigned_32)adapter->data.crtc[
+        lib_u32 period = core_machine_vadp_cga_logical_raster_period(adapter);
+        lib_u32 scanline;
+        lib_u32 character;
+        lib_u32 display_scanlines = (lib_u32)adapter->data.crtc[
             CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED] *
             core_machine_vadp_cga_scanlines_per_row(adapter);
-        type_unsigned_32 vertical_sync_start = (type_unsigned_32)adapter->data.crtc[
+        lib_u32 vertical_sync_start = (lib_u32)adapter->data.crtc[
             CORE_MACHINE_VADP_CRTC_VERTICAL_SYNC_POSITION] *
             core_machine_vadp_cga_scanlines_per_row(adapter);
 
@@ -860,10 +861,10 @@ static type_unsigned_8 core_machine_vadp_status(const t_vadp *adapter)
 }
 
 static C_INT core_machine_vadp_compaq_io_route_active(const t_vadp *adapter,
-    type_unsigned_16 port_id, type_unsigned_16 monochrome_port,
-    type_unsigned_16 color_port)
+    lib_u16 port_id, lib_u16 monochrome_port,
+    lib_u16 color_port)
 {
-    if (adapter == STD_NULL) return TYPE_FALSE;
+    if (adapter == LIB_NULL) return LIB_FALSE;
     if (adapter->data.ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         return port_id == (adapter->data.compaq_color_io_base ? color_port :
@@ -878,11 +879,11 @@ static C_INT core_machine_vadp_compaq_io_route_active(const t_vadp *adapter,
 }
 
 static C_VOID core_machine_vadp_write_crtc_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (port != STD_NULL && adapter != STD_NULL &&
+    if (port != LIB_NULL && adapter != LIB_NULL &&
         core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX,
         CORE_MACHINE_VADP_PORT_CRTC_INDEX)) {
@@ -891,11 +892,11 @@ static C_VOID core_machine_vadp_write_crtc_index(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_crtc_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     if (!core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_DATA,
         CORE_MACHINE_VADP_PORT_CRTC_DATA)) {
@@ -908,11 +909,11 @@ static C_VOID core_machine_vadp_read_crtc_data(t_port *port,
 }
 
 static C_VOID core_machine_vadp_write_crtc_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (port == STD_NULL || adapter == STD_NULL ||
+    if (port == LIB_NULL || adapter == LIB_NULL ||
         !core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_DATA,
         CORE_MACHINE_VADP_PORT_CRTC_DATA) ||
@@ -920,7 +921,7 @@ static C_VOID core_machine_vadp_write_crtc_data(t_port *port,
         return;
     }
     {
-        type_unsigned_8 value = port->data.ioByte &
+        lib_u8 value = port->data.ioByte &
             core_machine_vadp_crtc_mask(adapter, adapter->data.crtc_index);
 
         if (adapter->data.crtc[adapter->data.crtc_index] == value) return;
@@ -929,23 +930,23 @@ static C_VOID core_machine_vadp_write_crtc_data(t_port *port,
     }
 }
 
-static C_VOID core_machine_vadp_read_mode(t_port *port, type_unsigned_16 port_id,
+static C_VOID core_machine_vadp_read_mode(t_port *port, lib_u16 port_id,
     C_VOID *owner)
 {
     (C_VOID)port_id;
-    if (port != STD_NULL && owner != STD_NULL) {
+    if (port != LIB_NULL && owner != LIB_NULL) {
         port->data.ioByte = ((t_vadp *)owner)->data.mode_control;
     }
 }
 
-static C_VOID core_machine_vadp_write_mode(t_port *port, type_unsigned_16 port_id,
+static C_VOID core_machine_vadp_write_mode(t_port *port, lib_u16 port_id,
     C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_8 value;
+    lib_u8 value;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     value = port->data.ioByte & 0x3fu;
     if (adapter->data.mode_control != value) {
         adapter->data.mode_control = value;
@@ -956,22 +957,22 @@ static C_VOID core_machine_vadp_write_mode(t_port *port, type_unsigned_16 port_i
 }
 
 static C_VOID core_machine_vadp_read_color(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     (C_VOID)port_id;
-    if (port != STD_NULL && owner != STD_NULL) {
+    if (port != LIB_NULL && owner != LIB_NULL) {
         port->data.ioByte = ((t_vadp *)owner)->data.color_select;
     }
 }
 
 static C_VOID core_machine_vadp_write_color(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_8 value;
+    lib_u8 value;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     value = port->data.ioByte & 0x3fu;
 
     if (adapter->data.color_select != value) {
@@ -981,22 +982,22 @@ static C_VOID core_machine_vadp_write_color(t_port *port,
 }
 
 static C_VOID core_machine_vadp_write_cga_lightpen(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port;
-    if (adapter == STD_NULL) return;
+    if (adapter == LIB_NULL) return;
     if (adapter->data.ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         if (port_id == (adapter->data.compaq_color_io_base ?
             CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET :
             CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_RESET)) {
-            adapter->data.compaq_lightpen_latched = TYPE_FALSE;
+            adapter->data.compaq_lightpen_latched = LIB_FALSE;
         } else if (port_id == (adapter->data.compaq_color_io_base ?
             CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET :
             CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_SET)) {
-            adapter->data.compaq_lightpen_latched = TYPE_TRUE;
+            adapter->data.compaq_lightpen_latched = LIB_TRUE;
         }
     } else if (!adapter->data.ega_controller_configured) {
         adapter->data.cga_lightpen_latched =
@@ -1005,11 +1006,11 @@ static C_VOID core_machine_vadp_write_cga_lightpen(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_status(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     if (!core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_STATUS, CORE_MACHINE_VADP_PORT_STATUS)) {
         port->data.ioByte = 0u;
@@ -1037,27 +1038,27 @@ static C_VOID core_machine_vadp_read_status(t_port *port,
         }
     }
     if (adapter->data.ega_controller_configured) {
-        adapter->data.attribute_data_phase = TYPE_FALSE;
+        adapter->data.attribute_data_phase = LIB_FALSE;
     }
 }
 
 static C_VOID core_machine_vadp_read_compaq_control_mode(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     (C_VOID)port_id;
-    if (port != STD_NULL && owner != STD_NULL) {
+    if (port != LIB_NULL && owner != LIB_NULL) {
         port->data.ioByte = ((const t_vadp *)owner)->data.compaq_control_mode;
     }
 }
 
 static C_VOID core_machine_vadp_write_compaq_control_mode(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_8 value;
+    lib_u8 value;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     value = port->data.ioByte;
     if (adapter->data.compaq_control_mode != value) {
         adapter->data.compaq_control_mode = value;
@@ -1066,12 +1067,12 @@ static C_VOID core_machine_vadp_write_compaq_control_mode(t_port *port,
 }
 
 static C_VOID core_machine_vadp_write_compaq_miscellaneous_output(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     /* Compaq EGA miscellaneous-output bit 1 disables the CPU aperture.  The
      * clear state leaves the window decoded by the VADP provider. */
     adapter->data.compaq_cpu_video_memory_disabled =
@@ -1086,13 +1087,13 @@ static C_VOID core_machine_vadp_write_compaq_miscellaneous_output(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_compaq_input_status_0(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
-    type_unsigned_8 selected_switch;
+    lib_u8 selected_switch;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     selected_switch = 4u - adapter->data.compaq_clock_switch_select;
     port->data.ioByte = (adapter->data.cecg.sw1_closed_mask &
         (1u << (selected_switch - 1u))) != 0u ? 0u : 0x10u;
@@ -1105,11 +1106,11 @@ static C_VOID core_machine_vadp_read_compaq_input_status_0(t_port *port,
 }
 
 static C_VOID core_machine_vadp_write_compaq_feature_control(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
-    if (port == STD_NULL || adapter == STD_NULL ||
+    if (port == LIB_NULL || adapter == LIB_NULL ||
         !core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_STATUS,
         CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL)) return;
@@ -1117,23 +1118,23 @@ static C_VOID core_machine_vadp_write_compaq_feature_control(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_ega_input_status_0(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     port->data.ioByte = (core_machine_vadp_status(adapter) &
         CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE) != 0u ? 0x80u : 0u;
 }
 
 static C_VOID core_machine_vadp_write_ega_miscellaneous_output(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     if (adapter->data.ega_miscellaneous_output != port->data.ioByte) {
         adapter->data.ega_miscellaneous_output = port->data.ioByte;
         core_machine_vadp_mark_dirty(adapter);
@@ -1141,21 +1142,21 @@ static C_VOID core_machine_vadp_write_ega_miscellaneous_output(t_port *port,
 }
 
 static C_VOID core_machine_vadp_write_ega_feature_control(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL && adapter != STD_NULL) {
+    if (port != LIB_NULL && adapter != LIB_NULL) {
         adapter->data.ega_feature_control = port->data.ioByte & 0x03u;
     }
 }
 
 static C_VOID core_machine_vadp_read_compaq_environment(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     (C_VOID)port_id;
-    if (port != STD_NULL && owner != STD_NULL) {
+    if (port != LIB_NULL && owner != LIB_NULL) {
         const t_vadp *adapter = (const t_vadp *)owner;
 
         port->data.ioByte = (adapter->data.cecg.environment & 0xfcu) |
@@ -1164,69 +1165,69 @@ static C_VOID core_machine_vadp_read_compaq_environment(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_compaq_display_type(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     (C_VOID)port_id;
-    if (port != STD_NULL && owner != STD_NULL) {
+    if (port != LIB_NULL && owner != LIB_NULL) {
         port->data.ioByte = ((const t_vadp *)owner)->data.cecg.display_type;
     }
 }
 
 static C_VOID core_machine_vadp_read_compaq_initial_mode(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     (C_VOID)port_id;
-    if (port != STD_NULL && owner != STD_NULL) {
+    if (port != LIB_NULL && owner != LIB_NULL) {
         port->data.ioByte = ((const t_vadp *)owner)->data.cecg.initial_mode;
     }
 }
 
 static C_VOID core_machine_vadp_read_graphics_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL && adapter != STD_NULL) {
+    if (port != LIB_NULL && adapter != LIB_NULL) {
         port->data.ioByte = adapter->data.ega_controller_configured ?
             adapter->data.graphics_index : 0xffu;
     }
 }
 
 static C_VOID core_machine_vadp_write_graphics_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL && adapter != STD_NULL &&
+    if (port != LIB_NULL && adapter != LIB_NULL &&
         adapter->data.ega_controller_configured) {
         adapter->data.graphics_index = port->data.ioByte;
     }
 }
 
 static C_VOID core_machine_vadp_read_graphics_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL) {
-        port->data.ioByte = adapter != STD_NULL && adapter->data.ega_controller_configured &&
+    if (port != LIB_NULL) {
+        port->data.ioByte = adapter != LIB_NULL && adapter->data.ega_controller_configured &&
             core_machine_vadp_graphics_index_supported(adapter->data.graphics_index) ?
             adapter->data.graphics[adapter->data.graphics_index] : 0u;
     }
 }
 
 static C_VOID core_machine_vadp_write_graphics_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_8 index;
-    type_unsigned_8 value;
+    lib_u8 index;
+    lib_u8 value;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL ||
+    if (port == LIB_NULL || adapter == LIB_NULL ||
         !adapter->data.ega_controller_configured) return;
     index = adapter->data.graphics_index;
     if (!core_machine_vadp_graphics_index_supported(index)) return;
@@ -1238,26 +1239,26 @@ static C_VOID core_machine_vadp_write_graphics_data(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_attribute_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL) {
-        port->data.ioByte = adapter != STD_NULL && adapter->data.ega_controller_configured &&
+    if (port != LIB_NULL) {
+        port->data.ioByte = adapter != LIB_NULL && adapter->data.ega_controller_configured &&
             core_machine_vadp_attribute_index_supported(adapter->data.attribute_index) ?
             adapter->data.attribute[adapter->data.attribute_index] : 0u;
     }
 }
 
 static C_VOID core_machine_vadp_write_attribute(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_8 value;
+    lib_u8 value;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL ||
+    if (port == LIB_NULL || adapter == LIB_NULL ||
         !adapter->data.ega_controller_configured) return;
     value = port->data.ioByte;
     if (!adapter->data.attribute_data_phase) {
@@ -1266,66 +1267,66 @@ static C_VOID core_machine_vadp_write_attribute(t_port *port,
             adapter->data.attribute_display_enabled = (value & 0x20u) != 0u;
             core_machine_vadp_mark_dirty(adapter);
         }
-        adapter->data.attribute_data_phase = TYPE_TRUE;
+        adapter->data.attribute_data_phase = LIB_TRUE;
         return;
     }
     if (core_machine_vadp_attribute_index_supported(adapter->data.attribute_index)) {
-        type_unsigned_8 index = adapter->data.attribute_index;
-        type_unsigned_8 masked = value & core_machine_vadp_attribute_mask(index);
+        lib_u8 index = adapter->data.attribute_index;
+        lib_u8 masked = value & core_machine_vadp_attribute_mask(index);
 
         if (adapter->data.attribute[index] != masked) {
             adapter->data.attribute[index] = masked;
             core_machine_vadp_mark_dirty(adapter);
         }
     }
-    adapter->data.attribute_data_phase = TYPE_FALSE;
+    adapter->data.attribute_data_phase = LIB_FALSE;
 }
 
 static C_VOID core_machine_vadp_read_sequencer_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL && adapter != STD_NULL) {
+    if (port != LIB_NULL && adapter != LIB_NULL) {
         port->data.ioByte = adapter->data.ega_sequencer_configured ?
             adapter->data.sequencer_index : 0xffu;
     }
 }
 
 static C_VOID core_machine_vadp_write_sequencer_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL && adapter != STD_NULL &&
+    if (port != LIB_NULL && adapter != LIB_NULL &&
         adapter->data.ega_sequencer_configured) {
         adapter->data.sequencer_index = port->data.ioByte;
     }
 }
 
 static C_VOID core_machine_vadp_read_sequencer_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (port == LIB_NULL || adapter == LIB_NULL) return;
     port->data.ioByte = adapter->data.ega_sequencer_configured &&
         core_machine_vadp_sequencer_index_supported(adapter->data.sequencer_index) ?
         adapter->data.sequencer[adapter->data.sequencer_index] : 0xffu;
 }
 
 static C_VOID core_machine_vadp_write_sequencer_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_8 index;
-    type_unsigned_8 value;
+    lib_u8 index;
+    lib_u8 value;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL ||
+    if (port == LIB_NULL || adapter == LIB_NULL ||
         !adapter->data.ega_sequencer_configured) return;
     index = adapter->data.sequencer_index;
     if (!core_machine_vadp_sequencer_index_supported(index)) return;
@@ -1337,24 +1338,24 @@ static C_VOID core_machine_vadp_write_sequencer_data(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_vga_dac_mask(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL) {
-        port->data.ioByte = adapter != STD_NULL && adapter->data.vga_configured ?
+    if (port != LIB_NULL) {
+        port->data.ioByte = adapter != LIB_NULL && adapter->data.vga_configured ?
             adapter->data.vga_dac_mask : 0u;
     }
 }
 
 static C_VOID core_machine_vadp_write_vga_dac_mask(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    if (port == LIB_NULL || adapter == LIB_NULL || !adapter->data.vga_configured) return;
     if (adapter->data.vga_dac_mask != port->data.ioByte) {
         adapter->data.vga_dac_mask = port->data.ioByte;
         core_machine_vadp_mark_dirty(adapter);
@@ -1362,46 +1363,46 @@ static C_VOID core_machine_vadp_write_vga_dac_mask(t_port *port,
 }
 
 static C_VOID core_machine_vadp_read_vga_dac_read_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     const t_vadp *adapter = (const t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port != STD_NULL) {
-        port->data.ioByte = adapter != STD_NULL && adapter->data.vga_configured ?
+    if (port != LIB_NULL) {
+        port->data.ioByte = adapter != LIB_NULL && adapter->data.vga_configured ?
             adapter->data.vga_dac_read_index : 0u;
     }
 }
 
 static C_VOID core_machine_vadp_write_vga_dac_read_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    if (port == LIB_NULL || adapter == LIB_NULL || !adapter->data.vga_configured) return;
     adapter->data.vga_dac_read_index = port->data.ioByte;
     adapter->data.vga_dac_read_component = 0u;
 }
 
 static C_VOID core_machine_vadp_write_vga_dac_write_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    if (port == LIB_NULL || adapter == LIB_NULL || !adapter->data.vga_configured) return;
     adapter->data.vga_dac_write_index = port->data.ioByte;
     adapter->data.vga_dac_write_component = 0u;
 }
 
 static C_VOID core_machine_vadp_read_vga_dac_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    if (port == LIB_NULL || adapter == LIB_NULL || !adapter->data.vga_configured) return;
     port->data.ioByte = adapter->data.vga_dac[adapter->data.vga_dac_read_index]
         [adapter->data.vga_dac_read_component];
     if (++adapter->data.vga_dac_read_component == 3u) {
@@ -1411,13 +1412,13 @@ static C_VOID core_machine_vadp_read_vga_dac_data(t_port *port,
 }
 
 static C_VOID core_machine_vadp_write_vga_dac_data(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
+    lib_u16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
-    type_unsigned_8 value;
+    lib_u8 value;
 
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    if (port == LIB_NULL || adapter == LIB_NULL || !adapter->data.vga_configured) return;
     value = port->data.ioByte & 0x3fu;
     if (adapter->data.vga_dac[adapter->data.vga_dac_write_index]
         [adapter->data.vga_dac_write_component] != value) {
@@ -1453,15 +1454,15 @@ static C_VOID core_machine_vadp_register_cga_ports(t_vadp *adapter, t_port *port
 
 C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port)
 {
-    if (adapter == STD_NULL || port == STD_NULL) return;
-    STD_MEMSET(adapter, TYPE_ZERO_8, sizeof(*adapter));
+    if (adapter == LIB_NULL || port == LIB_NULL) return;
+    lib_memory_set(adapter, TYPE_ZERO_8, sizeof(*adapter));
     core_machine_vadp_register_cga_ports(adapter, port);
     core_machine_vadp_reset(adapter);
 }
 
 C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port)
 {
-    if (adapter == STD_NULL || port == STD_NULL) return;
+    if (adapter == LIB_NULL || port == LIB_NULL) return;
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_MODE,
         core_machine_vadp_read_mode, adapter);
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COLOR,
@@ -1491,7 +1492,7 @@ C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port)
 type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     t_port *port, core_machine_vadp_ega_personality personality)
 {
-    if (adapter == STD_NULL || port == STD_NULL ||
+    if (adapter == LIB_NULL || port == LIB_NULL ||
         adapter->data.ega_personality != CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC ||
         (personality != CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC &&
         personality != CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR)) {
@@ -1520,7 +1521,7 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
         if (core_machine_port_registration_status(port) != TYPE_STATUS_OK) {
             return core_machine_port_registration_status(port);
         }
-        adapter->data.ega_external_configured = TYPE_TRUE;
+        adapter->data.ega_external_configured = LIB_TRUE;
     } else {
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
             core_machine_vadp_read_compaq_input_status_0, adapter);
@@ -1561,8 +1562,8 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     adapter->data.ega_personality = personality;
     if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         adapter->data.cecg = (core_machine_vadp_cecg_config) {
-            0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE,
-            0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE };
+            0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+            0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE };
         adapter->data.compaq_control_mode = adapter->data.cecg.control_mode;
         adapter->data.compaq_cpu_video_memory_disabled =
             adapter->data.cecg.cpu_video_memory_disabled;
@@ -1575,7 +1576,7 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
 
 type_status core_machine_vadp_configure_vga(t_vadp *adapter, t_port *port)
 {
-    if (adapter == STD_NULL || port == STD_NULL || adapter->data.vga_configured ||
+    if (adapter == LIB_NULL || port == LIB_NULL || adapter->data.vga_configured ||
         adapter->data.ega_personality != CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC ||
         !adapter->data.ega_sequencer_configured ||
         !adapter->data.ega_controller_configured) {
@@ -1598,7 +1599,7 @@ type_status core_machine_vadp_configure_vga(t_vadp *adapter, t_port *port)
     if (core_machine_port_registration_status(port) != TYPE_STATUS_OK) {
         return core_machine_port_registration_status(port);
     }
-    adapter->data.vga_configured = TYPE_TRUE;
+    adapter->data.vga_configured = LIB_TRUE;
     adapter->data.vga_dac_mask = 0xffu;
     return TYPE_STATUS_OK;
 }
@@ -1606,7 +1607,7 @@ type_status core_machine_vadp_configure_vga(t_vadp *adapter, t_port *port)
 C_INT core_machine_vadp_cecg_config_is_valid(
     const core_machine_vadp_cecg_config *config)
 {
-    return config != STD_NULL && (config->control_mode & 0xe0u) == 0x40u &&
+    return config != LIB_NULL && (config->control_mode & 0xe0u) == 0x40u &&
         (config->display_type & 0x44u) == 0u && config->initial_mode == 0x01u &&
         (config->sw1_closed_mask & 0xf0u) == 0u && config->clock_switch_select <= 3u;
 }
@@ -1614,7 +1615,7 @@ C_INT core_machine_vadp_cecg_config_is_valid(
 type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
     const core_machine_vadp_cecg_config *config)
 {
-    if (adapter == STD_NULL ||
+    if (adapter == LIB_NULL ||
         adapter->data.ega_personality !=
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
         !core_machine_vadp_cecg_config_is_valid(config)) {
@@ -1638,7 +1639,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     core_machine_vadp_cecg_config cecg;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controller;
-    type_unsigned_8 crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
+    lib_u8 crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
     type_bool crtc_initialized;
     type_bool ega_sequencer_configured;
     type_bool ega_controller_configured;
@@ -1649,7 +1650,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     type_virtual_address ega_planar_vram;
     core_machine_vadp_text_glyph_config text_glyphs;
 
-    if (adapter == STD_NULL) return;
+    if (adapter == LIB_NULL) return;
     timing = adapter->data.text_timing;
     if (!core_machine_vadp_valid_text_timing(&timing)) {
         timing.active_display_ticks = CORE_MACHINE_VADP_DEFAULT_ACTIVE_DISPLAY_TICKS;
@@ -1669,22 +1670,22 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     ega_planar_vram = adapter->data.ega_planar_vram;
     crtc_initialized = adapter->data.crtc_initialized;
     text_glyphs = adapter->data.text_glyphs;
-    STD_MEMCPY(crtc, adapter->data.crtc, sizeof(crtc));
+    lib_memory_copy(crtc, adapter->data.crtc, sizeof(crtc));
     if (ega_planar_vram != 0u) {
-        STD_MEMSET((C_VOID *)ega_planar_vram, 0,
+        lib_memory_set((C_VOID *)ega_planar_vram, 0,
             CORE_MACHINE_VADP_EGA_PLANES * CORE_MACHINE_VADP_EGA_PLANE_BYTES);
     }
-    STD_MEMSET(&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
+    lib_memory_set(&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
     adapter->data.mode_control = 0x05u;
     adapter->data.text_timing = timing;
     adapter->data.text_glyphs = text_glyphs;
     adapter->data.raster_phase = timing.vertical_retrace_ticks;
     adapter->data.columns = 80u;
     adapter->data.rows = 25u;
-    adapter->data.color_enabled = TYPE_TRUE;
-    adapter->data.crtc_initialized = TYPE_TRUE;
+    adapter->data.color_enabled = LIB_TRUE;
+    adapter->data.crtc_initialized = LIB_TRUE;
     if (!ega_controller_configured && crtc_initialized) {
-        STD_MEMCPY(adapter->data.crtc, crtc, sizeof(adapter->data.crtc));
+        lib_memory_copy(adapter->data.crtc, crtc, sizeof(adapter->data.crtc));
     } else {
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] = 6u;
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] = 7u;
@@ -1712,7 +1713,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.ega_planar_vram = ega_planar_vram;
     if (core_machine_vadp_cga_logical_raster_active(adapter)) {
         adapter->data.raster_phase = 0u;
-        adapter->data.cga_logical_raster_started = TYPE_FALSE;
+        adapter->data.cga_logical_raster_started = LIB_FALSE;
     }
     adapter->data.dirty_generation = 1u;
 }
@@ -1720,20 +1721,20 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
 type_status core_machine_vadp_configure_text_glyphs(t_vadp *adapter,
     const core_machine_vadp_text_glyph_config *config)
 {
-    if (adapter == STD_NULL || config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (adapter == LIB_NULL || config == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     adapter->data.text_glyphs = *config;
     return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
-    type_unsigned_64 elapsed_ticks)
+    lib_u64 elapsed_ticks)
 {
-    type_unsigned_32 period;
+    lib_u32 period;
 
     (C_VOID)memory;
-    if (adapter == STD_NULL) return;
+    if (adapter == LIB_NULL) return;
     if (core_machine_vadp_cga_logical_raster_active(adapter)) {
-        type_unsigned_32 phase;
+        lib_u32 phase;
 
         period = core_machine_vadp_cga_logical_raster_period(adapter);
         if (period == 0u) return;
@@ -1741,14 +1742,14 @@ C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
         if (phase >= period) phase %= period;
         if (!adapter->data.cga_logical_raster_started && elapsed_ticks >=
             period - phase) {
-            adapter->data.cga_logical_raster_started = TYPE_TRUE;
+            adapter->data.cga_logical_raster_started = LIB_TRUE;
         }
         if (elapsed_ticks >= period) elapsed_ticks %= period;
-        if ((type_unsigned_32)elapsed_ticks >= period - phase) {
-            adapter->data.raster_phase = (type_unsigned_32)elapsed_ticks -
+        if ((lib_u32)elapsed_ticks >= period - phase) {
+            adapter->data.raster_phase = (lib_u32)elapsed_ticks -
                 (period - phase);
         } else {
-            adapter->data.raster_phase = phase + (type_unsigned_32)elapsed_ticks;
+            adapter->data.raster_phase = phase + (lib_u32)elapsed_ticks;
         }
         return;
     }
@@ -1756,25 +1757,25 @@ C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
     if (period == 0u) return;
     if (adapter->data.raster_phase >= period) adapter->data.raster_phase %= period;
     if (elapsed_ticks >= period) elapsed_ticks %= period;
-    if ((type_unsigned_32)elapsed_ticks >= period - adapter->data.raster_phase) {
-        adapter->data.raster_phase = (type_unsigned_32)elapsed_ticks -
+    if ((lib_u32)elapsed_ticks >= period - adapter->data.raster_phase) {
+        adapter->data.raster_phase = (lib_u32)elapsed_ticks -
             (period - adapter->data.raster_phase);
     } else {
-        adapter->data.raster_phase += (type_unsigned_32)elapsed_ticks;
+        adapter->data.raster_phase += (lib_u32)elapsed_ticks;
     }
 }
 
 C_VOID core_machine_vadp_finalize(t_vadp *adapter)
 {
-    if (adapter == STD_NULL) return;
-    STD_FREE((C_VOID *)adapter->data.ega_planar_vram);
+    if (adapter == LIB_NULL) return;
+    lib_release((C_VOID *)adapter->data.ega_planar_vram);
     adapter->data.ega_planar_vram = 0u;
 }
 
 type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     const core_machine_vadp_text_timing *timing)
 {
-    if (adapter == STD_NULL || !core_machine_vadp_valid_text_timing(timing)) {
+    if (adapter == LIB_NULL || !core_machine_vadp_valid_text_timing(timing)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     adapter->data.text_timing = *timing;
@@ -1786,14 +1787,14 @@ type_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memor
 {
     type_status status;
 
-    if (adapter == STD_NULL || memory == STD_NULL || adapter->data.cga_memory_configured) {
+    if (adapter == LIB_NULL || memory == LIB_NULL || adapter->data.cga_memory_configured) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_memory_register_device_provider(memory,
         CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
         core_machine_vadp_cga_read, core_machine_vadp_cga_write,
         core_machine_vadp_cga_query, adapter);
-    if (status == TYPE_STATUS_OK) adapter->data.cga_memory_configured = TYPE_TRUE;
+    if (status == TYPE_STATUS_OK) adapter->data.cga_memory_configured = LIB_TRUE;
     return status;
 }
 
@@ -1803,7 +1804,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
     type_status status;
     type_virtual_address planar_vram = 0u;
 
-    if (adapter == STD_NULL || memory == STD_NULL || config == STD_NULL ||
+    if (adapter == LIB_NULL || memory == LIB_NULL || config == LIB_NULL ||
         config->aperture_base != CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
         config->aperture_bytes != CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -1820,7 +1821,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
             core_machine_vadp_ega_planar_query, adapter,
             core_machine_vadp_ega_write_observer);
         if (status != TYPE_STATUS_OK) {
-            STD_FREE((C_VOID *)planar_vram);
+            lib_release((C_VOID *)planar_vram);
             return status;
         }
         adapter->data.ega_planar_vram = planar_vram;
@@ -1830,7 +1831,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
         if (status != TYPE_STATUS_OK) return status;
     }
     adapter->data.ega_sequencer = *config;
-    adapter->data.ega_sequencer_configured = TYPE_TRUE;
+    adapter->data.ega_sequencer_configured = LIB_TRUE;
     adapter->data.ega_planar_enabled = config->planar_ega;
     core_machine_vadp_reset_sequencer(adapter);
     return TYPE_STATUS_OK;
@@ -1839,34 +1840,34 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
 type_status core_machine_vadp_configure_ega_controllers(t_vadp *adapter,
     const core_machine_vadp_ega_controller_config *config)
 {
-    if (adapter == STD_NULL || config == STD_NULL ||
+    if (adapter == LIB_NULL || config == LIB_NULL ||
         !adapter->data.ega_sequencer_configured) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (adapter->data.ega_controller_configured) return TYPE_STATUS_INVALID_STATE;
     adapter->data.ega_controller = *config;
     core_machine_vadp_normalize_ega_controllers(&adapter->data.ega_controller);
-    adapter->data.ega_controller_configured = TYPE_TRUE;
+    adapter->data.ega_controller_configured = LIB_TRUE;
     core_machine_vadp_reset_ega_controllers(adapter);
     return TYPE_STATUS_OK;
 }
 
 C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
-    type_unsigned_32 physical, STD_SIZE_T bytes)
+    lib_u32 physical, lib_size bytes)
 {
-    type_unsigned_64 aperture_end;
-    type_unsigned_64 request_end;
+    lib_u64 aperture_end;
+    lib_u64 request_end;
 
-    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured ||
-        bytes == 0u) return TYPE_FALSE;
+    if (adapter == LIB_NULL || !adapter->data.ega_sequencer_configured ||
+        bytes == 0u) return LIB_FALSE;
     {
-        type_unsigned_32 aperture_base;
-        type_unsigned_32 aperture_bytes;
+        lib_u32 aperture_base;
+        lib_u32 aperture_bytes;
 
         core_machine_vadp_active_ega_aperture(adapter, &aperture_base,
             &aperture_bytes);
-        aperture_end = (type_unsigned_64)aperture_base + aperture_bytes;
-        request_end = (type_unsigned_64)physical + bytes;
+        aperture_end = (lib_u64)aperture_base + aperture_bytes;
+        request_end = (lib_u64)physical + bytes;
         return physical >= aperture_base && request_end <= aperture_end;
     }
 }
@@ -1874,32 +1875,32 @@ C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
 C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
-    type_unsigned_16 row;
-    type_unsigned_16 column;
-    type_unsigned_16 start;
-    type_unsigned_16 cursor;
-    type_unsigned_16 relative_cursor;
-    type_unsigned_16 start_byte;
-    type_unsigned_16 columns;
-    type_unsigned_16 rows;
-    STD_SIZE_T visible_bytes;
-    STD_SIZE_T first_bytes;
-    type_unsigned_8 cells[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
+    lib_u16 row;
+    lib_u16 column;
+    lib_u16 start;
+    lib_u16 cursor;
+    lib_u16 relative_cursor;
+    lib_u16 start_byte;
+    lib_u16 columns;
+    lib_u16 rows;
+    lib_size visible_bytes;
+    lib_size first_bytes;
+    lib_u8 cells[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
         CORE_MACHINE_DISPLAY_MAX_ROWS * 2u];
-    C_INT buffer_changed = TYPE_FALSE;
+    C_INT buffer_changed = LIB_FALSE;
     C_INT cursor_changed;
     C_INT cursor_visible;
 
-    if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL) return TYPE_FALSE;
+    if (adapter == LIB_NULL || memory == LIB_NULL || out_snapshot == LIB_NULL) return LIB_FALSE;
     columns = core_machine_vadp_text_columns(adapter);
     rows = core_machine_vadp_text_rows(adapter);
-    if (columns == 0u || rows == 0u) return TYPE_FALSE;
-    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    if (columns == 0u || rows == 0u) return LIB_FALSE;
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_TEXT;
     start = core_machine_vadp_crtc_word(adapter, CORE_MACHINE_VADP_CRTC_START_HIGH);
     cursor = core_machine_vadp_crtc_word(adapter, CORE_MACHINE_VADP_CRTC_CURSOR_HIGH);
-    visible_bytes = (STD_SIZE_T)columns * rows * 2u;
-    start_byte = (type_unsigned_16)((start % (CORE_MACHINE_VADP_TEXT_BYTES / 2u)) * 2u);
+    visible_bytes = (lib_size)columns * rows * 2u;
+    start_byte = (lib_u16)((start % (CORE_MACHINE_VADP_TEXT_BYTES / 2u)) * 2u);
     first_bytes = CORE_MACHINE_VADP_TEXT_BYTES - start_byte;
     if (first_bytes > visible_bytes) first_bytes = visible_bytes;
     if (core_machine_memory_read_physical(memory,
@@ -1908,7 +1909,7 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
         (first_bytes < visible_bytes && core_machine_memory_read_physical(memory,
             CORE_MACHINE_VADP_TEXT_BASE, (type_virtual_address)(cells + first_bytes),
             visible_bytes - first_bytes) != TYPE_STATUS_OK)) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
     if ((adapter->data.ega_controller_configured &&
         !core_machine_vadp_ega_output_active(adapter)) ||
@@ -1921,26 +1922,26 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     }
     out_snapshot->columns = columns;
     out_snapshot->rows = rows;
-    out_snapshot->text_cell_height = (type_unsigned_8)(adapter->data.crtc[
+    out_snapshot->text_cell_height = (lib_u8)(adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u);
     for (column = 0u; column < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES;
         ++column) {
         out_snapshot->palette_rgb[column] = core_machine_vadp_rgbi_color(
-            (type_unsigned_8)column);
+            (lib_u8)column);
     }
     out_snapshot->cursor_top = adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_CURSOR_TOP] & 0x1fu;
     out_snapshot->cursor_bottom = adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] & 0x1fu;
-    relative_cursor = (type_unsigned_16)((cursor - start) %
+    relative_cursor = (lib_u16)((cursor - start) %
         (CORE_MACHINE_VADP_TEXT_BYTES / 2u));
     cursor_visible = (adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] &
         0x20u) == 0u && out_snapshot->cursor_top <= out_snapshot->cursor_bottom &&
         relative_cursor < columns * rows;
     out_snapshot->cursor_visible = cursor_visible;
     if (cursor_visible) {
-        out_snapshot->cursor_x = (type_unsigned_8)(relative_cursor % columns);
-        out_snapshot->cursor_y = (type_unsigned_8)(relative_cursor / columns);
+        out_snapshot->cursor_x = (lib_u8)(relative_cursor % columns);
+        out_snapshot->cursor_y = (lib_u8)(relative_cursor / columns);
     }
     /* Geometry is part of a copied text frame.  Firmware legitimately
      * programs CRTC geometry before it writes a lower row; comparing only the
@@ -1951,24 +1952,24 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
         adapter->data.captured_columns != columns ||
         adapter->data.captured_rows != rows ||
         adapter->data.captured_text_cell_height != out_snapshot->text_cell_height ||
-        STD_MEMCMP(adapter->data.text_cells, cells, visible_bytes) != 0;
+        lib_memory_compare(adapter->data.text_cells, cells, visible_bytes) != 0;
     if (buffer_changed) {
-        STD_MEMCPY(adapter->data.text_cells, cells, visible_bytes);
+        lib_memory_copy(adapter->data.text_cells, cells, visible_bytes);
         for (row = 0u; row < rows; ++row) {
             for (column = 0u; column < columns; ++column) {
-                type_unsigned_16 index = (type_unsigned_16)(row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column);
-                type_unsigned_16 cell = (type_unsigned_16)(row * columns + column);
-                adapter->data.characters[index] = cells[(STD_SIZE_T)cell * 2u];
-                adapter->data.attributes[index] = cells[(STD_SIZE_T)cell * 2u + 1u];
+                lib_u16 index = (lib_u16)(row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column);
+                lib_u16 cell = (lib_u16)(row * columns + column);
+                adapter->data.characters[index] = cells[(lib_size)cell * 2u];
+                adapter->data.attributes[index] = cells[(lib_size)cell * 2u + 1u];
             }
         }
     }
-    STD_MEMCPY(out_snapshot->characters, adapter->data.characters,
+    lib_memory_copy(out_snapshot->characters, adapter->data.characters,
         sizeof(out_snapshot->characters));
-    STD_MEMCPY(out_snapshot->attributes, adapter->data.attributes,
+    lib_memory_copy(out_snapshot->attributes, adapter->data.attributes,
         sizeof(out_snapshot->attributes));
     out_snapshot->text_glyphs_present = adapter->data.text_glyphs.present;
-    STD_MEMCPY(out_snapshot->text_glyphs, adapter->data.text_glyphs.bytes,
+    lib_memory_copy(out_snapshot->text_glyphs, adapter->data.text_glyphs.bytes,
         sizeof(out_snapshot->text_glyphs));
     cursor_changed = !adapter->data.captured ||
         adapter->data.captured_cursor_top != out_snapshot->cursor_top ||
@@ -1987,24 +1988,24 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     adapter->data.captured_rows = rows;
     adapter->data.captured_text_cell_height = out_snapshot->text_cell_height;
     adapter->data.captured_cursor_visible = out_snapshot->cursor_visible;
-    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured = LIB_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_TEXT;
     out_snapshot->buffer_changed = buffer_changed;
     out_snapshot->cursor_changed = cursor_changed;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 C_VOID core_machine_vadp_observe_snapshot(const t_vadp *adapter,
     type_bool acknowledged_generation_valid,
-    type_unsigned_64 acknowledged_generation,
+    lib_u64 acknowledged_generation,
     core_machine_display_snapshot_observation *out_observation)
 {
     C_INT reliable;
 
-    if (out_observation == STD_NULL) return;
-    STD_MEMSET(out_observation, 0, sizeof(*out_observation));
-    if (adapter == STD_NULL) {
-        out_observation->capture_required = TYPE_TRUE;
+    if (out_observation == LIB_NULL) return;
+    lib_memory_set(out_observation, 0, sizeof(*out_observation));
+    if (adapter == LIB_NULL) {
+        out_observation->capture_required = LIB_TRUE;
         return;
     }
     reliable = adapter->data.cga_memory_configured ||
@@ -2013,11 +2014,11 @@ C_VOID core_machine_vadp_observe_snapshot(const t_vadp *adapter,
         core_machine_vadp_vga_mode13_active(adapter) ||
         core_machine_vadp_ega_planar_display_active(adapter);
     if (!reliable) {
-        out_observation->capture_required = TYPE_TRUE;
+        out_observation->capture_required = LIB_TRUE;
         return;
     }
     out_observation->generation = adapter->data.dirty_generation;
-    out_observation->generation_reliable = TYPE_TRUE;
+    out_observation->generation_reliable = LIB_TRUE;
     out_observation->capture_required = !acknowledged_generation_valid ||
         acknowledged_generation != out_observation->generation;
 }
@@ -2025,114 +2026,114 @@ C_VOID core_machine_vadp_observe_snapshot(const t_vadp *adapter,
 static C_INT core_machine_vadp_capture_graphics_snapshot(t_vadp *adapter,
     t_ram *memory, core_machine_display_snapshot *out_snapshot)
 {
-    type_unsigned_8 bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
-    type_unsigned_16 y;
-    type_unsigned_16 x;
+    lib_u8 bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
+    lib_u16 y;
+    lib_u16 x;
     C_INT buffer_changed;
 
-    if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL ||
+    if (adapter == LIB_NULL || memory == LIB_NULL || out_snapshot == LIB_NULL ||
         !core_machine_vadp_is_graphics_mode(adapter)) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
     if (core_machine_memory_read_physical(memory, CORE_MACHINE_VADP_VIDEO_BASE,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
         CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 ||
         adapter->data.captured_mode_control != adapter->data.mode_control ||
-        adapter->data.captured_color_select != adapter->data.color_select || STD_MEMCMP(
+        adapter->data.captured_color_select != adapter->data.color_select || lib_memory_compare(
         adapter->data.graphics_bytes, bytes, sizeof(bytes)) != 0;
     if (buffer_changed) {
-        STD_MEMCPY(adapter->data.graphics_bytes, bytes, sizeof(bytes));
+        lib_memory_copy(adapter->data.graphics_bytes, bytes, sizeof(bytes));
     }
-    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4;
     out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
     out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
     core_machine_vadp_graphics_palette(adapter, out_snapshot->palette_rgb);
     for (y = 0u; y < CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++y) {
-        type_unsigned_32 row_offset = (type_unsigned_32)(y & 1u) *
-            CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET + (type_unsigned_32)(y >> 1) *
+        lib_u32 row_offset = (lib_u32)(y & 1u) *
+            CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET + (lib_u32)(y >> 1) *
             CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW;
         for (x = 0u; x < CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH; ++x) {
-            type_unsigned_8 byte = bytes[row_offset + (x >> 2)];
-            out_snapshot->pixels[(type_unsigned_32)y * CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH + x] =
-                (type_unsigned_8)((byte >> (6u - 2u * (x & 3u))) & 0x03u);
+            lib_u8 byte = bytes[row_offset + (x >> 2)];
+            out_snapshot->pixels[(lib_u32)y * CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH + x] =
+                (lib_u8)((byte >> (6u - 2u * (x & 3u))) & 0x03u);
         }
     }
-    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured = LIB_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4;
     adapter->data.captured_mode_control = adapter->data.mode_control;
     adapter->data.captured_color_select = adapter->data.color_select;
     out_snapshot->buffer_changed = buffer_changed;
-    out_snapshot->cursor_changed = TYPE_FALSE;
-    return TYPE_TRUE;
+    out_snapshot->cursor_changed = LIB_FALSE;
+    return LIB_TRUE;
 }
 
 static C_INT core_machine_vadp_capture_high_res_graphics_snapshot(t_vadp *adapter,
     t_ram *memory, core_machine_display_snapshot *out_snapshot)
 {
-    type_unsigned_8 bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
-    type_unsigned_16 y;
-    type_unsigned_16 x;
+    lib_u8 bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
+    lib_u16 y;
+    lib_u16 x;
     C_INT buffer_changed;
 
-    if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL ||
-        !core_machine_vadp_is_high_res_graphics_mode(adapter)) return TYPE_FALSE;
+    if (adapter == LIB_NULL || memory == LIB_NULL || out_snapshot == LIB_NULL ||
+        !core_machine_vadp_is_high_res_graphics_mode(adapter)) return LIB_FALSE;
     if (core_machine_memory_read_physical(memory, CORE_MACHINE_VADP_VIDEO_BASE,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
         CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
         adapter->data.captured_mode_control != adapter->data.mode_control ||
         adapter->data.captured_color_select != adapter->data.color_select ||
-        STD_MEMCMP(adapter->data.graphics_bytes, bytes, sizeof(bytes)) != 0;
-    if (buffer_changed) STD_MEMCPY(adapter->data.graphics_bytes, bytes, sizeof(bytes));
-    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+        lib_memory_compare(adapter->data.graphics_bytes, bytes, sizeof(bytes)) != 0;
+    if (buffer_changed) lib_memory_copy(adapter->data.graphics_bytes, bytes, sizeof(bytes));
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
     out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH;
     out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
     core_machine_vadp_high_res_palette(adapter, out_snapshot->palette_rgb);
     for (y = 0u; y < CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++y) {
-        type_unsigned_32 row_offset = (type_unsigned_32)(y & 1u) *
-            CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET + (type_unsigned_32)(y >> 1) *
+        lib_u32 row_offset = (lib_u32)(y & 1u) *
+            CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET + (lib_u32)(y >> 1) *
             CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW;
 
         for (x = 0u; x < CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH; ++x) {
-            type_unsigned_8 byte = bytes[row_offset + (x >> 3u)];
+            lib_u8 byte = bytes[row_offset + (x >> 3u)];
 
-            out_snapshot->pixels[(type_unsigned_32)y * CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH + x] =
-                (type_unsigned_8)((byte >> (7u - (x & 7u))) & 0x01u);
+            out_snapshot->pixels[(lib_u32)y * CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH + x] =
+                (lib_u8)((byte >> (7u - (x & 7u))) & 0x01u);
         }
     }
-    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured = LIB_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
     adapter->data.captured_mode_control = adapter->data.mode_control;
     adapter->data.captured_color_select = adapter->data.color_select;
     out_snapshot->buffer_changed = buffer_changed;
-    out_snapshot->cursor_changed = TYPE_FALSE;
-    return TYPE_TRUE;
+    out_snapshot->cursor_changed = LIB_FALSE;
+    return LIB_TRUE;
 }
 
 static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
     core_machine_display_snapshot *out_snapshot)
 {
     core_machine_display_kind kind;
-    type_unsigned_16 width;
-    type_unsigned_16 height;
-    type_unsigned_16 row_bytes;
-    type_unsigned_32 start_byte;
-    type_unsigned_16 y;
-    type_unsigned_16 x;
+    lib_u16 width;
+    lib_u16 height;
+    lib_u16 row_bytes;
+    lib_u32 start_byte;
+    lib_u16 y;
+    lib_u16 x;
     C_INT buffer_changed;
 
-    if (adapter == STD_NULL || out_snapshot == STD_NULL ||
+    if (adapter == LIB_NULL || out_snapshot == LIB_NULL ||
         !core_machine_vadp_ega_planar_active(adapter)) {
-        return TYPE_FALSE;
+        return LIB_FALSE;
     }
-    if (!core_machine_vadp_ega_display_kind(adapter, &kind)) return TYPE_FALSE;
+    if (!core_machine_vadp_ega_display_kind(adapter, &kind)) return LIB_FALSE;
     width = kind == CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ?
         CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH : CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH;
     height = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
@@ -2141,7 +2142,7 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
         CORE_MACHINE_VADP_EGA_320X200_ROW_BYTES :
         CORE_MACHINE_VADP_EGA_640X200_ROW_BYTES;
     /* EGA CRTC start is a word address; 64 KiB plane addressing wraps. */
-    start_byte = ((type_unsigned_32)core_machine_vadp_crtc_word(adapter,
+    start_byte = ((lib_u32)core_machine_vadp_crtc_word(adapter,
         CORE_MACHINE_VADP_CRTC_START_HIGH) * 2u) &
         (CORE_MACHINE_VADP_EGA_PLANE_BYTES - 1u);
     if (core_machine_vadp_compaq_odd_even_page_active(adapter)) {
@@ -2151,73 +2152,73 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
     }
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind != kind ||
         adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
-    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = kind;
     out_snapshot->pixel_width = width;
     out_snapshot->pixel_height = height;
     for (x = 0u; x < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES; ++x) {
-        type_unsigned_8 enabled_index = (type_unsigned_8)(x & adapter->data.attribute[18]);
+        lib_u8 enabled_index = (lib_u8)(x & adapter->data.attribute[18]);
         out_snapshot->palette_rgb[x] = core_machine_vadp_ega_palette_color(adapter,
             adapter->data.attribute[enabled_index]);
     }
     for (y = 0u; y < height; ++y) {
         for (x = 0u; x < width; ++x) {
-            type_unsigned_32 offset = (start_byte + (type_unsigned_32)y * row_bytes +
+            lib_u32 offset = (start_byte + (lib_u32)y * row_bytes +
                 (x >> 3)) & (CORE_MACHINE_VADP_EGA_PLANE_BYTES - 1u);
-            type_unsigned_8 bit = (type_unsigned_8)(0x80u >> (x & 7u));
-            type_unsigned_8 plane;
-            type_unsigned_8 pixel = 0u;
+            lib_u8 bit = (lib_u8)(0x80u >> (x & 7u));
+            lib_u8 plane;
+            lib_u8 pixel = 0u;
 
             for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
-                const type_unsigned_8 *source = (const type_unsigned_8 *)adapter->data.ega_planar_vram +
-                    (STD_SIZE_T)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES;
-                if ((source[offset] & bit) != 0u) pixel |= (type_unsigned_8)(1u << plane);
+                const lib_u8 *source = (const lib_u8 *)adapter->data.ega_planar_vram +
+                    (lib_size)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES;
+                if ((source[offset] & bit) != 0u) pixel |= (lib_u8)(1u << plane);
             }
-            out_snapshot->pixels[(type_unsigned_32)y * width + x] = pixel;
+            out_snapshot->pixels[(lib_u32)y * width + x] = pixel;
         }
     }
-    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured = LIB_TRUE;
     adapter->data.captured_kind = kind;
     adapter->data.captured_ega_dirty_generation = adapter->data.dirty_generation;
     out_snapshot->buffer_changed = buffer_changed;
-    out_snapshot->cursor_changed = TYPE_FALSE;
-    return TYPE_TRUE;
+    out_snapshot->cursor_changed = LIB_FALSE;
+    return LIB_TRUE;
 }
 
 static C_INT core_machine_vadp_capture_vga_mode13_snapshot(t_vadp *adapter,
     core_machine_display_snapshot *out_snapshot)
 {
-    type_unsigned_32 pixel;
-    type_unsigned_16 index;
+    lib_u32 pixel;
+    lib_u16 index;
 
-    if (adapter == STD_NULL || out_snapshot == STD_NULL ||
-        !core_machine_vadp_vga_mode13_active(adapter)) return TYPE_FALSE;
-    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    if (adapter == LIB_NULL || out_snapshot == LIB_NULL ||
+        !core_machine_vadp_vga_mode13_active(adapter)) return LIB_FALSE;
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256;
     out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
     out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
     for (index = 0u; index < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES; ++index) {
-        const type_unsigned_8 *entry = adapter->data.vga_dac[index &
+        const lib_u8 *entry = adapter->data.vga_dac[index &
             adapter->data.vga_dac_mask];
         out_snapshot->palette_rgb[index] =
-            ((type_unsigned_32)((entry[0] << 2u) | (entry[0] >> 4u)) << 16u) |
-            ((type_unsigned_32)((entry[1] << 2u) | (entry[1] >> 4u)) << 8u) |
-            (type_unsigned_32)((entry[2] << 2u) | (entry[2] >> 4u));
+            ((lib_u32)((entry[0] << 2u) | (entry[0] >> 4u)) << 16u) |
+            ((lib_u32)((entry[1] << 2u) | (entry[1] >> 4u)) << 8u) |
+            (lib_u32)((entry[2] << 2u) | (entry[2] >> 4u));
     }
     for (pixel = 0u; pixel < CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH *
         CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++pixel) {
-        const type_unsigned_8 *plane = (const type_unsigned_8 *)adapter->data.ega_planar_vram +
-            (STD_SIZE_T)(pixel & 3u) * CORE_MACHINE_VADP_EGA_PLANE_BYTES;
+        const lib_u8 *plane = (const lib_u8 *)adapter->data.ega_planar_vram +
+            (lib_size)(pixel & 3u) * CORE_MACHINE_VADP_EGA_PLANE_BYTES;
         out_snapshot->pixels[pixel] = plane[pixel >> 2u];
     }
     out_snapshot->buffer_changed = !adapter->data.captured ||
         adapter->data.captured_kind != CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256 ||
         adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
-    out_snapshot->cursor_changed = TYPE_FALSE;
-    adapter->data.captured = TYPE_TRUE;
+    out_snapshot->cursor_changed = LIB_FALSE;
+    adapter->data.captured = LIB_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256;
     adapter->data.captured_ega_dirty_generation = adapter->data.dirty_generation;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 static C_INT core_machine_vadp_capture_blank_ega_snapshot(t_vadp *adapter,
@@ -2225,9 +2226,9 @@ static C_INT core_machine_vadp_capture_blank_ega_snapshot(t_vadp *adapter,
 {
     core_machine_display_kind kind;
 
-    if (adapter == STD_NULL || out_snapshot == STD_NULL ||
-        !core_machine_vadp_ega_display_kind(adapter, &kind)) return TYPE_FALSE;
-    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    if (adapter == LIB_NULL || out_snapshot == LIB_NULL ||
+        !core_machine_vadp_ega_display_kind(adapter, &kind)) return LIB_FALSE;
+    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = kind;
     out_snapshot->pixel_width = kind == CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ?
         CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH : CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH;
@@ -2236,20 +2237,20 @@ static C_INT core_machine_vadp_capture_blank_ega_snapshot(t_vadp *adapter,
     out_snapshot->buffer_changed = !adapter->data.captured ||
         adapter->data.captured_kind != kind ||
         adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
-    out_snapshot->cursor_changed = TYPE_FALSE;
-    adapter->data.captured = TYPE_TRUE;
+    out_snapshot->cursor_changed = LIB_FALSE;
+    adapter->data.captured = LIB_TRUE;
     adapter->data.captured_kind = kind;
     adapter->data.captured_ega_dirty_generation = adapter->data.dirty_generation;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
-    if (adapter != STD_NULL && adapter->data.ega_planar_enabled &&
+    if (adapter != LIB_NULL && adapter->data.ega_planar_enabled &&
         !core_machine_vadp_ega_output_active(adapter) &&
         core_machine_vadp_capture_blank_ega_snapshot(adapter, out_snapshot)) {
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
     if (core_machine_vadp_vga_mode13_active(adapter)) {
         return core_machine_vadp_capture_vga_mode13_snapshot(adapter, out_snapshot);

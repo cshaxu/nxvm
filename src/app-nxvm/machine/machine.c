@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/machine/machine_private.h"
@@ -13,7 +14,7 @@
 #include "app-nxvm/profiles/default_profile/keyboard_mapper.h"
 #include "app-nxvm/profiles/default_profile/mouse_mapper.h"
 
-static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
+static C_INT vm_machine_insert_floppy_at(vm_machine *session, lib_size slot,
     const C_CHAR *path, lib_storage_medium_mode mode);
 static C_INT vm_machine_remove_fdd_direct(vm_machine *session);
 
@@ -22,20 +23,20 @@ static C_VOID vm_machine_capture_fdc_terminal(C_VOID *opaque,
 {
     vm_machine *machine = (vm_machine *)opaque;
 
-    if (machine == STD_NULL || observation == STD_NULL) return;
+    if (machine == LIB_NULL || observation == LIB_NULL) return;
     machine->model40_fdc_terminal_observation = *observation;
-    machine->model40_fdc_terminal_observation_valid = TYPE_TRUE;
+    machine->model40_fdc_terminal_observation_valid = LIB_TRUE;
 }
 
 static type_status vm_machine_deliver_key(vm_machine *session,
-    type_unsigned_16 scan_code, type_unsigned_16 virtual_key, C_INT pressed)
+    lib_u16 scan_code, lib_u16 virtual_key, C_INT pressed)
 {
     type_status status = TYPE_STATUS_OK;
 
-    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL || !session->active) return TYPE_STATUS_INVALID_ARGUMENT;
     {
         vm_profile_default_keyboard_sequence sequence;
-        type_unsigned_8 native_scan_set;
+        lib_u8 native_scan_set;
 
         if (core_machine_keyboard_get_native_scan_set(session->core_machine,
                 &native_scan_set) == TYPE_STATUS_OK &&
@@ -51,9 +52,9 @@ static type_status vm_machine_deliver_key(vm_machine *session,
 }
 
 static type_status vm_machine_deliver_mouse(vm_machine *session,
-    type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons)
+    lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons)
 {
-    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL || !session->active) return TYPE_STATUS_INVALID_ARGUMENT;
     {
         vm_profile_default_mouse_report report;
 
@@ -70,9 +71,9 @@ static type_status vm_machine_deliver_mouse(vm_machine *session,
 type_status vm_machine_deliver_common_input(vm_machine *session,
     const kvm_input_event *event)
 {
-    if (event == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (event == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (event->type == KVM_EVENT_KEY) return vm_machine_deliver_key(session,
-        event->data.key.scan_code, (type_unsigned_16)event->data.key.key,
+        event->data.key.scan_code, (lib_u16)event->data.key.key,
         event->data.key.pressed != 0u);
     if (event->type == KVM_EVENT_MOUSE) return vm_machine_deliver_mouse(session,
         event->data.mouse.delta_x, event->data.mouse.delta_y,
@@ -82,23 +83,23 @@ type_status vm_machine_deliver_common_input(vm_machine *session,
 
 type_bool vm_machine_copy_common_frame(vm_machine *machine, common_machine_frame *frame)
 {
-    if (machine == STD_NULL || frame == STD_NULL) return TYPE_FALSE;
-    (C_VOID)vm_machine_publish_display(machine, TYPE_FALSE);
-    if (!machine->latest_frame_valid) return TYPE_FALSE;
+    if (machine == LIB_NULL || frame == LIB_NULL) return LIB_FALSE;
+    (C_VOID)vm_machine_publish_display(machine, LIB_FALSE);
+    if (!machine->latest_frame_valid) return LIB_FALSE;
     return common_machine_frame_copy(frame, &machine->latest_frame);
 }
 
-static C_INT vm_machine_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
+static C_INT vm_machine_copy_path(C_CHAR *destination, lib_size capacity,
     const C_CHAR *source)
 {
-    STD_SIZE_T length;
+    lib_size length;
 
-    if (destination == STD_NULL || capacity == 0u) return 0;
+    if (destination == LIB_NULL || capacity == 0u) return 0;
     destination[0] = '\0';
-    if (source == STD_NULL) return 1;
-    length = STD_STRLEN(source);
+    if (source == LIB_NULL) return 1;
+    length = lib_text_length(source);
     if (length >= capacity) return 0;
-    STD_MEMCPY(destination, source, length + 1u);
+    lib_memory_copy(destination, source, length + 1u);
     return 1;
 }
 
@@ -107,8 +108,8 @@ type_status vm_machine_submit_host_input(vm_machine *session,
 {
     kvm_input_event input = {0};
 
-    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
-    if (event == STD_NULL || (event->kind != CORE_MACHINE_GUEST_INPUT_KEY &&
+    if (session == LIB_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
+    if (event == LIB_NULL || (event->kind != CORE_MACHINE_GUEST_INPUT_KEY &&
         event->kind != CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -143,7 +144,7 @@ type_status vm_machine_submit_input(vm_machine *session,
 {
     core_machine_guest_input_event event = {0};
 
-    if (input == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (input == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (input->kind == VM_MACHINE_INPUT_KEY_EVENT) {
         event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
         event.data.key.scan_code = input->data.key_event.scan_code;
@@ -159,39 +160,39 @@ type_status vm_machine_submit_input(vm_machine *session,
 }
 
 static const C_CHAR *vm_machine_config_floppy(const vm_machine_config *config,
-    STD_SIZE_T slot)
+    lib_size slot)
 {
-    if (config == STD_NULL || slot >= VM_MACHINE_FLOPPY_SLOT_COUNT) return STD_NULL;
+    if (config == LIB_NULL || slot >= VM_MACHINE_FLOPPY_SLOT_COUNT) return LIB_NULL;
     return config->floppy_image[slot];
 }
 
 static const C_CHAR *vm_machine_config_fixed_disk(const vm_machine_config *config,
-    STD_SIZE_T slot)
+    lib_size slot)
 {
-    if (config == STD_NULL || slot >= VM_MACHINE_FIXED_DISK_SLOT_COUNT) return STD_NULL;
+    if (config == LIB_NULL || slot >= VM_MACHINE_FIXED_DISK_SLOT_COUNT) return LIB_NULL;
     return config->fixed_disk_image[slot];
 }
 
 static lib_storage_medium_mode vm_machine_config_floppy_mode(
-    const vm_machine_config *config, STD_SIZE_T slot)
+    const vm_machine_config *config, lib_size slot)
 {
-    return config != STD_NULL && slot < VM_MACHINE_FLOPPY_SLOT_COUNT ?
+    return config != LIB_NULL && slot < VM_MACHINE_FLOPPY_SLOT_COUNT ?
         config->floppy_mode[slot] : LIB_STORAGE_MEDIUM_OVERLAY;
 }
 
 static lib_storage_medium_mode vm_machine_config_fixed_disk_mode(
-    const vm_machine_config *config, STD_SIZE_T slot)
+    const vm_machine_config *config, lib_size slot)
 {
-    return config != STD_NULL && slot < VM_MACHINE_FIXED_DISK_SLOT_COUNT ?
+    return config != LIB_NULL && slot < VM_MACHINE_FIXED_DISK_SLOT_COUNT ?
         config->fixed_disk_mode[slot] : LIB_STORAGE_MEDIUM_OVERLAY;
 }
 
 type_status vm_machine_apply_cmos_seed(const vm_machine *session,
     core_machine_plan_topology *topology)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (session == STD_NULL || topology == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == LIB_NULL || topology == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (!session->cmos_seed_present) return TYPE_STATUS_OK;
     if (!topology->rtc_cmos_present) return TYPE_STATUS_INVALID_STATE;
     /* A seed is a board configuration image, not a replacement RTC state:
@@ -199,17 +200,17 @@ type_status vm_machine_apply_cmos_seed(const vm_machine *session,
      * owner of board configuration, including the firmware checksum. */
     for (index = 0u; index < CORE_MACHINE_RTC_DEFAULT_CAPACITY; ++index) {
         topology->rtc_cmos.defaults[index] = (core_machine_rtc_default_byte) {
-            (type_unsigned_8)(0x0eu + index), session->cmos_seed[0x0eu + index] };
+            (lib_u8)(0x0eu + index), session->cmos_seed[0x0eu + index] };
     }
     topology->rtc_cmos.default_count = CORE_MACHINE_RTC_DEFAULT_CAPACITY;
-    topology->rtc_cmos.derive_configuration_checksum = TYPE_FALSE;
+    topology->rtc_cmos.derive_configuration_checksum = LIB_FALSE;
     return TYPE_STATUS_OK;
 }
 
 type_status vm_machine_get_speed(const vm_machine *session,
     vm_machine_speed *out_speed)
 {
-    if (session == STD_NULL || !session->active || out_speed == STD_NULL) {
+    if (session == LIB_NULL || !session->active || out_speed == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_speed = session->speed;
@@ -218,7 +219,7 @@ type_status vm_machine_get_speed(const vm_machine *session,
 
 type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed)
 {
-    if (session == STD_NULL || !session->active ||
+    if (session == LIB_NULL || !session->active ||
         (speed != VM_MACHINE_SPEED_STANDARD && speed != VM_MACHINE_SPEED_TURBO)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -227,12 +228,12 @@ type_status vm_machine_set_speed(vm_machine *session, vm_machine_speed speed)
     return TYPE_STATUS_OK;
 }
 
-static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
+static C_INT vm_machine_insert_floppy_at(vm_machine *session, lib_size slot,
     const C_CHAR *path, lib_storage_medium_mode mode)
 {
     C_CHAR candidate[sizeof(session->floppy_image_path[slot])];
 
-    if (session == STD_NULL || session->profile_plan == STD_NULL ||
+    if (session == LIB_NULL || session->profile_plan == LIB_NULL ||
         slot >= vm_profile_machine_plan_floppy_slot_count(session->profile_plan) ||
         vm_machine_control_is_running(&session->control) ||
         mode > LIB_STORAGE_MEDIUM_OVERLAY ||
@@ -248,18 +249,18 @@ static C_INT vm_machine_insert_floppy_at(vm_machine *session, STD_SIZE_T slot,
 
 static C_INT vm_machine_remove_fdd_direct(vm_machine *session)
 {
-    if (session == STD_NULL || vm_machine_control_is_running(&session->control) ||
+    if (session == LIB_NULL || vm_machine_control_is_running(&session->control) ||
         vm_machine_fdd_remove_for(&session->fdd) != 0) return -1;
     session->fdd_image_path[0] = '\0';
-    session->retained_config.floppy_image[0u] = STD_NULL;
+    session->retained_config.floppy_image[0u] = LIB_NULL;
     return 0;
 }
 
 type_status vm_machine_set_common_media(vm_machine *session, const C_CHAR *path,
     lib_storage_medium_mode mode)
 {
-    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
-    if (path != STD_NULL && path[0] != '\0')
+    if (session == LIB_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
+    if (path != LIB_NULL && path[0] != '\0')
         return vm_machine_insert_floppy_at(session, 0u, path, mode) == 0 ?
             TYPE_STATUS_OK : TYPE_STATUS_FAULT;
     return vm_machine_remove_fdd_direct(session) == 0 ?
@@ -267,12 +268,12 @@ type_status vm_machine_set_common_media(vm_machine *session, const C_CHAR *path,
 }
 
 C_INT vm_machine_insert_fdd(vm_machine *session, const C_CHAR *path)
-{ return session != STD_NULL && session->executor != LIB_NULL &&
+{ return session != LIB_NULL && session->executor != LIB_NULL &&
     common_machine_set_removable_media(session->executor, path,
         LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 
 C_INT vm_machine_eject_fdd(vm_machine *session)
-{ return session != STD_NULL && session->executor != LIB_NULL &&
+{ return session != LIB_NULL && session->executor != LIB_NULL &&
     common_machine_set_removable_media(session->executor, LIB_NULL,
         LIB_STORAGE_MEDIUM_OVERLAY) ? 0 : -1; }
 static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
@@ -280,10 +281,10 @@ static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
 {
     C_CHAR candidate[sizeof(session->hdd_image_path)];
 
-    type_unsigned_16 cylinders = 0u;
-    type_unsigned_8 heads = 0u, sectors = 0u;
+    lib_u16 cylinders = 0u;
+    lib_u8 heads = 0u, sectors = 0u;
 
-    if (session == STD_NULL || session->profile_plan == STD_NULL ||
+    if (session == LIB_NULL || session->profile_plan == LIB_NULL ||
         !vm_profile_machine_plan_hdc_present(session->profile_plan) || !vm_machine_copy_path(candidate,
             sizeof(candidate), path) || mode > LIB_STORAGE_MEDIUM_OVERLAY ||
         vm_machine_hdd_insert(&session->hdd, candidate, mode) != 0 ||
@@ -293,9 +294,9 @@ static C_INT vm_machine_insert_hdd_at_startup(vm_machine *session,
     session->retained_config.fixed_disk_mode[0u] = mode;
     if (vm_profile_machine_plan_hdd_geometry_get(session->profile_plan,
             &cylinders, &heads, &sectors)) {
-        const STD_SIZE_T expected_bytes = (STD_SIZE_T)cylinders * heads * sectors * 512u;
+        const lib_size expected_bytes = (lib_size)cylinders * heads * sectors * 512u;
         if (vm_machine_hdd_raw_byte_count(&session->hdd) != expected_bytes ||
-            vm_machine_hdd_set_geometry(&session->hdd, cylinders, heads, sectors) != TYPE_FALSE) {
+            vm_machine_hdd_set_geometry(&session->hdd, cylinders, heads, sectors) != LIB_FALSE) {
             return -1;
         }
     }
@@ -307,10 +308,10 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
     core_machine_plan_topology topology = {0};
     type_status status;
 
-    if (machine == STD_NULL || machine->core_machine != STD_NULL) {
+    if (machine == LIB_NULL || machine->core_machine != LIB_NULL) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (machine->profile_plan == STD_NULL) {
+    if (machine->profile_plan == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_plan_create(&machine->core_machine_config,
@@ -371,15 +372,15 @@ type_status vm_machine_storage_initialize(vm_machine *machine)
 
 C_VOID vm_machine_storage_finalize(vm_machine *machine)
 {
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     core_machine_destroy(machine->core_machine);
-    machine->core_machine = STD_NULL;
+    machine->core_machine = LIB_NULL;
     core_machine_display_provider_slot_destroy(machine->display_provider);
-    machine->display_provider = STD_NULL;
+    machine->display_provider = LIB_NULL;
     core_machine_media_registry_destroy(machine->media_registry);
-    machine->media_registry = STD_NULL;
+    machine->media_registry = LIB_NULL;
     core_machine_plan_destroy(machine->core_machine_plan);
-    machine->core_machine_plan = STD_NULL;
+    machine->core_machine_plan = LIB_NULL;
 }
 
 static type_status vm_machine_create_from_plan(const vm_machine_config *config,
@@ -388,11 +389,11 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
     vm_machine *session;
     type_status status;
 
-    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_session = STD_NULL;
-    if (config == STD_NULL || plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    session = (vm_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == STD_NULL) {
+    if (out_session == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_session = LIB_NULL;
+    if (config == LIB_NULL || plan == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    session = (vm_machine *)lib_allocate_zero(1u, sizeof(*session));
+    if (session == LIB_NULL) {
         vm_profile_machine_plan_destroy(plan);
         return TYPE_STATUS_NO_MEMORY;
     }
@@ -402,7 +403,7 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
     session->floppy_kind = vm_profile_machine_plan_drive_floppy_get(session->profile_plan);
     session->fdd_media_kind = vm_profile_machine_plan_media_floppy_get(session->profile_plan);
     if (!vm_profile_machine_plan_hdc_present(session->profile_plan) &&
-        (vm_machine_config_fixed_disk(config, 0u) != STD_NULL || config->create_hdd_cylinders != 0u)) {
+        (vm_machine_config_fixed_disk(config, 0u) != LIB_NULL || config->create_hdd_cylinders != 0u)) {
         vm_machine_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (vm_profile_machine_plan_copy_cmos_seed(session->profile_plan, session->cmos_seed,
@@ -410,20 +411,20 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
         vm_profile_machine_plan_copy_text_glyphs(session->profile_plan,
             &session->text_glyphs) != TYPE_STATUS_OK) { vm_machine_destroy(session); return TYPE_STATUS_INVALID_ARGUMENT; }
     session->retained_config = *config;
-    session->retained_config.cmos_seed = STD_NULL;
-    session->retained_config.bios_path[0u] = STD_NULL;
-    session->retained_config.bios_path[1u] = STD_NULL;
-    session->retained_config.video_path = STD_NULL;
-    session->retained_config.font_path = STD_NULL;
+    session->retained_config.cmos_seed = LIB_NULL;
+    session->retained_config.bios_path[0u] = LIB_NULL;
+    session->retained_config.bios_path[1u] = LIB_NULL;
+    session->retained_config.video_path = LIB_NULL;
+    session->retained_config.font_path = LIB_NULL;
     status = vm_machine_initialize(session);
     if (status != TYPE_STATUS_OK) { vm_machine_destroy(session); return status; }
-    if ((vm_machine_config_floppy(config, 0u) != STD_NULL &&
+    if ((vm_machine_config_floppy(config, 0u) != LIB_NULL &&
             vm_machine_insert_floppy_at(session, 0u, vm_machine_config_floppy(config, 0u),
                 vm_machine_config_floppy_mode(config, 0u))) ||
-        (vm_machine_config_floppy(config, 1u) != STD_NULL &&
+        (vm_machine_config_floppy(config, 1u) != LIB_NULL &&
             vm_machine_insert_floppy_at(session, 1u, vm_machine_config_floppy(config, 1u),
                 vm_machine_config_floppy_mode(config, 1u))) ||
-        (vm_machine_config_fixed_disk(config, 0u) != STD_NULL &&
+        (vm_machine_config_fixed_disk(config, 0u) != LIB_NULL &&
             vm_machine_insert_hdd_at_startup(session,
                 vm_machine_config_fixed_disk(config, 0u),
                 vm_machine_config_fixed_disk_mode(config, 0u)))) {
@@ -433,7 +434,7 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
     if (config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
     if (vm_profile_machine_plan_hdc_present(session->profile_plan) &&
         config->create_hdd_cylinders != 0u &&
-        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders) != TYPE_FALSE) {
+        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders) != LIB_FALSE) {
         vm_machine_destroy(session);
         return TYPE_STATUS_NO_MEMORY;
     }
@@ -446,11 +447,11 @@ static type_status vm_machine_create_from_plan(const vm_machine_config *config,
 type_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_session)
 {
-    vm_profile_machine_plan *plan = STD_NULL;
+    vm_profile_machine_plan *plan = LIB_NULL;
     type_status status;
 
-    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_session = STD_NULL;
+    if (out_session == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_session = LIB_NULL;
     status = vm_profile_machine_plan_create(config, assets, &plan);
     if (status != TYPE_STATUS_OK) return status;
     return vm_machine_create_from_plan(config, plan, out_session);
@@ -459,23 +460,23 @@ type_status vm_machine_create_from_assets(const vm_machine_config *config,
 type_status vm_machine_create(const vm_machine_config *config,
     vm_machine **out_session)
 {
-    vm_profile_machine_plan *plan = STD_NULL;
+    vm_profile_machine_plan *plan = LIB_NULL;
     type_status status;
 
-    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_session = STD_NULL;
-    if (config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_session == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_session = LIB_NULL;
+    if (config == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     status = vm_profile_machine_plan_create_file_backed(config, &plan);
     if (status != TYPE_STATUS_OK) return status;
     return vm_machine_create_from_plan(config, plan, out_session);
 }
 
 type_status vm_machine_reconfigure_memory(vm_machine *session,
-    STD_SIZE_T memory_bytes)
+    lib_size memory_bytes)
 {
     type_status status;
 
-    if (session == STD_NULL || !vm_profile_machine_plan_memory_reconfigurable(
+    if (session == LIB_NULL || !vm_profile_machine_plan_memory_reconfigurable(
             session->profile_plan) ||
         (session->executor != LIB_NULL && common_machine_state_get(
             session->executor) != COMMON_MACHINE_STOPPED)) {
@@ -492,10 +493,10 @@ type_status vm_machine_reconfigure_memory(vm_machine *session,
 
 C_VOID vm_machine_destroy(vm_machine *session)
 {
-    if (session == STD_NULL) return;
+    if (session == LIB_NULL) return;
     vm_machine_finalize(session);
     vm_profile_machine_plan_destroy(session->profile_plan);
-    STD_FREE(session);
+    lib_release(session);
 }
 
 type_status vm_machine_get_reset_vector(const vm_machine *session,
@@ -504,11 +505,11 @@ type_status vm_machine_get_reset_vector(const vm_machine *session,
     core_machine_observation observation;
     type_status status;
 
-    if (session == STD_NULL || out_vector == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (session == LIB_NULL || out_vector == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session->core_machine == LIB_NULL) return TYPE_STATUS_INVALID_STATE;
     status = core_machine_capture_observation(session->core_machine, &observation);
     if (status != TYPE_STATUS_OK) return status;
     out_vector->cs = observation.cpu.cs;
-    out_vector->ip = (type_unsigned_16)observation.cpu.eip;
+    out_vector->ip = (lib_u16)observation.cpu.eip;
     return TYPE_STATUS_OK;
 }

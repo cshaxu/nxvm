@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/firmware_interface.h"
@@ -14,14 +15,14 @@ typedef struct firmware_probe {
     C_INT after_run_calls;
     C_INT reentry_rejected;
     type_status port_status;
-    type_unsigned_32 port_value;
+    lib_u32 port_value;
 } firmware_probe;
 
-static type_status firmware_probe_port_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status firmware_probe_port_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *out_value)
 { firmware_probe *probe = owner; (C_VOID)port; if (probe->port_status != TYPE_STATUS_OK) return probe->port_status; *out_value = probe->port_value; return TYPE_STATUS_OK; }
-static type_status firmware_probe_port_write(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status firmware_probe_port_write(C_VOID *owner, lib_u16 port,
+    lib_u32 value)
 { firmware_probe *probe = owner; (C_VOID)port; if (probe->port_status != TYPE_STATUS_OK) return probe->port_status; probe->port_value = value; return TYPE_STATUS_OK; }
 
 typedef struct firmware_failed_probe {
@@ -33,11 +34,11 @@ static type_status firmware_probe_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_probe *probe = (firmware_probe *)opaque;
-    const type_unsigned_8 code[] = { 0x90u, 0xf4u, 0x5au, 0xa5u };
-    const type_unsigned_8 reset_code[16u] = { 0x90u };
+    const lib_u8 code[] = { 0x90u, 0xf4u, 0x5au, 0xa5u };
+    const lib_u8 reset_code[16u] = { 0x90u };
     type_status status;
 
-    if (probe == STD_NULL || firmware == STD_NULL) return TYPE_STATUS_FAULT;
+    if (probe == LIB_NULL || firmware == LIB_NULL) return TYPE_STATUS_FAULT;
     ++probe->configure_calls;
     probe->reentry_rejected =
         core_machine_reset(probe->machine) == TYPE_STATUS_INVALID_STATE &&
@@ -61,9 +62,9 @@ static type_status firmware_failed_probe_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_failed_probe *probe = (firmware_failed_probe *)opaque;
-    const type_unsigned_8 code[] = { 0x90u, 0xf4u, 0x5au, 0xa5u };
+    const lib_u8 code[] = { 0x90u, 0xf4u, 0x5au, 0xa5u };
 
-    if (probe == STD_NULL || firmware == STD_NULL ||
+    if (probe == LIB_NULL || firmware == LIB_NULL ||
         core_machine_firmware_register_immutable_rom(firmware, 0xe0000u,
             code, sizeof(code)) != TYPE_STATUS_OK ||
         core_machine_firmware_register_immutable_rom_alias(firmware,
@@ -87,9 +88,9 @@ static type_status firmware_probe_reset(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_probe *probe = (firmware_probe *)opaque;
-    type_unsigned_8 value = 0x5au;
+    lib_u8 value = 0x5au;
 
-    if (probe == STD_NULL) return TYPE_STATUS_FAULT;
+    if (probe == LIB_NULL) return TYPE_STATUS_FAULT;
     ++probe->reset_calls;
     probe->expired = firmware;
     if (core_machine_request_stop(probe->machine) != TYPE_STATUS_INVALID_STATE) {
@@ -106,10 +107,10 @@ static type_status firmware_probe_after_run(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_probe *probe = (firmware_probe *)opaque;
-    type_unsigned_8 value = 0u;
-    type_unsigned_32 port_value = 0xdeadbeefu;
+    lib_u8 value = 0u;
+    lib_u32 port_value = 0xdeadbeefu;
 
-    if (probe == STD_NULL || core_machine_firmware_memory_read(firmware,
+    if (probe == LIB_NULL || core_machine_firmware_memory_read(firmware,
             0x500u, &value, sizeof(value)) != TYPE_STATUS_OK || value != 0x5au) {
         return TYPE_STATUS_FAULT;
     }
@@ -132,27 +133,27 @@ static const core_machine_firmware_provider firmware_probe_provider = {
     firmware_probe_configure,
     firmware_probe_reset,
     firmware_probe_after_run,
-    STD_NULL
+    LIB_NULL
 };
 
 static const core_machine_firmware_provider firmware_failed_probe_provider = {
     firmware_failed_probe_configure,
     firmware_failed_probe_reset,
-    STD_NULL,
-    STD_NULL
+    LIB_NULL,
+    LIB_NULL
 };
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     firmware_probe probe = {0};
     firmware_failed_probe failed_probe = {0};
     core_machine_memory_route route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
-    const type_unsigned_8 prior_rom = 0xebu;
-    type_unsigned_8 value = 0u;
-    type_unsigned_32 port_value = 0u;
+    const lib_u8 prior_rom = 0xebu;
+    lib_u8 value = 0u;
+    lib_u32 port_value = 0u;
     C_INT failed = 0;
     type_status run_status;
     core_machine_lifecycle lifecycle = CORE_MACHINE_INITIALIZED;

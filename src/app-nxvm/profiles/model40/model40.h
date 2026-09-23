@@ -1,5 +1,6 @@
 #ifndef VM_PROFILE_MODEL40_H
 #define VM_PROFILE_MODEL40_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 

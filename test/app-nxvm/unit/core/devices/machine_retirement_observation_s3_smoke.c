@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -7,7 +8,7 @@
 typedef struct retirement_probe {
     core_machine *machine;
     core_machine_retirement_observation records[3];
-    type_unsigned_32 count;
+    lib_u32 count;
     type_status set_while_running;
 } retirement_probe;
 
@@ -16,18 +17,18 @@ static C_VOID retirement_capture(C_VOID *opaque,
 {
     retirement_probe *probe = (retirement_probe *)opaque;
 
-    if (probe == STD_NULL || observation == STD_NULL) return;
+    if (probe == LIB_NULL || observation == LIB_NULL) return;
     if (probe->count < 3u) probe->records[probe->count] = *observation;
     ++probe->count;
     probe->set_while_running = core_machine_set_retirement_observation_provider(
-        probe->machine, STD_NULL);
+        probe->machine, LIB_NULL);
 }
 
 static C_INT retirement_prepare(core_machine **out_machine,
-    const core_machine_config *config, const type_unsigned_8 *code,
-    STD_SIZE_T bytes)
+    const core_machine_config *config, const lib_u8 *code,
+    lib_size bytes)
 {
-    return out_machine != STD_NULL &&
+    return out_machine != LIB_NULL &&
         core_machine_create(config, out_machine) == TYPE_STATUS_OK &&
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0xfffffff0u,
             0x000ffff0u, 16u) == TYPE_STATUS_OK &&
@@ -38,19 +39,19 @@ static C_INT retirement_prepare(core_machine **out_machine,
             TYPE_STATUS_OK;
 }
 
-static C_INT retirement_control_context_case(type_unsigned_8 opcode,
+static C_INT retirement_control_context_case(lib_u8 opcode,
     core_machine_retirement_control_outcome expected_outcome,
-    type_unsigned_8 expected_next_components)
+    lib_u8 expected_next_components)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_8 program[] = { opcode, 0x01u, 0x90u, 0x90u };
+    const lib_u8 program[] = { opcode, 0x01u, 0x90u, 0x90u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &config, program, sizeof(program));
 
     provider.callback = retirement_capture;
@@ -74,11 +75,11 @@ static C_INT retirement_pre_mode_snapshot_case(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_8 program[] = { 0x0fu, 0x01u, 0xf0u };
+    const lib_u8 program[] = { 0x0fu, 0x01u, 0xf0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &config, program, sizeof(program));
 
     provider.callback = retirement_capture;
@@ -99,7 +100,7 @@ static C_INT retirement_pre_mode_snapshot_case(C_VOID)
 }
 static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profile,
     core_machine_retirement_timing_origin expected_origin,
-    const type_unsigned_8 *program, STD_SIZE_T bytes, C_INT expected_repeat)
+    const lib_u8 *program, lib_size bytes, C_INT expected_repeat)
 {
     const core_machine_config physical = {
         .cpu_profile = profile,
@@ -110,8 +111,8 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &physical, program, bytes);
 
     provider.callback = retirement_capture;
@@ -146,14 +147,14 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_8 segment_movsb[] = { 0x26u, 0xa4u };
-    const type_unsigned_8 lock_add[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x10u };
-    const type_unsigned_8 wait[] = { 0x9bu };
-    const type_unsigned_16 value = 0u;
+    const lib_u8 segment_movsb[] = { 0x26u, 0xa4u };
+    const lib_u8 lock_add[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x10u };
+    const lib_u8 wait[] = { 0x9bu };
+    const lib_u16 value = 0u;
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &config, segment_movsb,
         sizeof(segment_movsb));
 
@@ -203,7 +204,7 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
             core_machine_set_a20(machine, 1) != TYPE_STATUS_OK ||
             core_machine_memory_write(machine, 0xfffffff0u, wait,
                 sizeof(wait)) != TYPE_STATUS_OK ||
-            ((machine->fpu.busy = TYPE_TRUE), 0) ||
+            ((machine->fpu.busy = LIB_TRUE), 0) ||
             ((machine->fpu.completion_remaining_ticks = 3u), 0) ||
             core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.executed != 1u || probe.count != 3u ||
@@ -219,19 +220,19 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
     return failed;
 }
 
-static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
-    STD_SIZE_T bytes, type_unsigned_64 expected_ticks,
+static C_INT retirement_8088_primary_case(const lib_u8 *program,
+    lib_size bytes, lib_u64 expected_ticks,
     core_machine_retirement_timing_origin expected_origin)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_16 value = 1u;
+    const lib_u16 value = 1u;
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
@@ -256,9 +257,9 @@ static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
     return failed;
 }
 
-static C_INT retirement_8088_branch_case(const type_unsigned_8 *program,
-    STD_SIZE_T bytes, type_unsigned_16 count, type_unsigned_32 flags,
-    type_unsigned_64 expected_ticks)
+static C_INT retirement_8088_branch_case(const lib_u8 *program,
+    lib_size bytes, lib_u16 count, lib_u32 flags,
+    lib_u64 expected_ticks)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
@@ -266,8 +267,8 @@ static C_INT retirement_8088_branch_case(const type_unsigned_8 *program,
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
@@ -292,18 +293,18 @@ static C_INT retirement_8088_branch_case(const type_unsigned_8 *program,
     return failed;
 }
 
-static C_INT retirement_8088_iret_case(const type_unsigned_8 *program,
-    STD_SIZE_T bytes)
+static C_INT retirement_8088_iret_case(const lib_u8 *program,
+    lib_size bytes)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_16 frame[] = { 0u, 0u, 2u };
+    const lib_u16 frame[] = { 0u, 0u, 2u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
@@ -331,7 +332,7 @@ static C_INT retirement_8088_iret_case(const type_unsigned_8 *program,
 
 static C_INT retirement_8088_jcc_forms_case(C_VOID)
 {
-    static const type_unsigned_32 flags[16][2] = {
+    static const lib_u32 flags[16][2] = {
         { VCPU_EFLAGS_OF, 0u }, { 0u, VCPU_EFLAGS_OF },
         { VCPU_EFLAGS_CF, 0u }, { 0u, VCPU_EFLAGS_CF },
         { VCPU_EFLAGS_ZF, 0u }, { 0u, VCPU_EFLAGS_ZF },
@@ -341,12 +342,12 @@ static C_INT retirement_8088_jcc_forms_case(C_VOID)
         { VCPU_EFLAGS_SF, 0u }, { 0u, VCPU_EFLAGS_SF },
         { VCPU_EFLAGS_ZF, 0u }, { 0u, VCPU_EFLAGS_ZF }
     };
-    type_unsigned_8 opcode;
+    lib_u8 opcode;
     C_INT failed = 0;
 
     for (opcode = 0x70u; opcode <= 0x7fu; ++opcode) {
-        const type_unsigned_8 program[] = { opcode, 0x01u };
-        type_unsigned_8 index = opcode - 0x70u;
+        const lib_u8 program[] = { opcode, 0x01u };
+        lib_u8 index = opcode - 0x70u;
 
         failed |= retirement_8088_branch_case(program, sizeof(program), 0u,
             flags[index][0], 16u) || retirement_8088_branch_case(program,
@@ -355,9 +356,9 @@ static C_INT retirement_8088_jcc_forms_case(C_VOID)
     return failed;
 }
 
-static C_INT retirement_8088_string_case(const type_unsigned_8 *program,
-    STD_SIZE_T bytes, type_unsigned_16 count, type_unsigned_32 executions,
-    type_unsigned_64 first_ticks, type_unsigned_64 next_ticks)
+static C_INT retirement_8088_string_case(const lib_u8 *program,
+    lib_size bytes, lib_u16 count, lib_u32 executions,
+    lib_u64 first_ticks, lib_u64 next_ticks)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
@@ -365,8 +366,8 @@ static C_INT retirement_8088_string_case(const type_unsigned_8 *program,
     const core_machine_run_budget budget = { executions, 0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    core_machine *machine = STD_NULL;
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = LIB_NULL;
     C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
@@ -397,7 +398,7 @@ static C_INT retirement_8088_string_case(const type_unsigned_8 *program,
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_config deterministic = { .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386 };
     core_machine_config physical = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
@@ -408,71 +409,71 @@ C_INT main(C_VOID)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
-    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
-    STD_SIZE_T index;
-    type_unsigned_8 nop = 0x90u;
-    static const type_unsigned_8 scalar_opcodes[] = {
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    lib_size index;
+    lib_u8 nop = 0x90u;
+    static const lib_u8 scalar_opcodes[] = {
         0x90u, 0xf8u, 0xfcu, 0xfau, 0xf5u,
         0xf9u, 0xfdu, 0xfbu, 0x9eu, 0x9fu
     };
-    static const type_unsigned_64 scalar_ticks[] = {
+    static const lib_u64 scalar_ticks[] = {
         3u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 4u, 4u
     };
-    type_unsigned_8 rep_nop[] = { 0xf3u, 0x90u };
-    const type_unsigned_8 add_register[] = { 0x01u, 0xc8u };
-    const type_unsigned_8 add_register_memory[] = { 0x03u, 0x06u, 0x00u, 0x10u };
-    const type_unsigned_8 add_memory_register[] = { 0x01u, 0x06u, 0x00u, 0x10u };
-    const type_unsigned_8 mov_sreg_memory[] = { 0x8cu, 0x06u, 0x00u, 0x10u };
-    const type_unsigned_8 mov_sreg_register[] = { 0x8cu, 0xd8u };
-    const type_unsigned_8 mov_ds_memory[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
-    const type_unsigned_8 lds_memory[] = { 0xc5u, 0x06u, 0x00u, 0x10u };
-    const type_unsigned_8 xlat[] = { 0xd7u };
-    const type_unsigned_8 esc_register[] = { 0xd8u, 0xc0u };
-    const type_unsigned_8 shift_memory[] = { 0xd1u, 0x26u, 0x00u, 0x10u };
-    const type_unsigned_8 push_ds[] = { 0x1eu };
-    const type_unsigned_8 pop_ds[] = { 0x1fu };
-    const type_unsigned_8 pop_cs[] = { 0x0fu };
-    const type_unsigned_8 lock_add_memory[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x10u };
-    const type_unsigned_8 mul_al[] = { 0xf6u, 0xe0u };
-    const type_unsigned_8 wait[] = { 0x9bu };
-    const type_unsigned_8 push_register[] = { 0x50u };
-    const type_unsigned_8 pop_register[] = { 0x58u };
-    const type_unsigned_8 call_near[] = { 0xe8u, 0x00u, 0x00u };
-    const type_unsigned_8 ret_near[] = { 0xc3u };
-    const type_unsigned_8 ret_far[] = { 0xcbu };
-    const type_unsigned_8 call_memory[] = { 0xffu, 0x16u, 0x00u, 0x10u };
-    const type_unsigned_8 push_memory[] = { 0xffu, 0x36u, 0x00u, 0x10u };
-    const type_unsigned_8 pop_memory[] = { 0x8fu, 0x06u, 0x00u, 0x10u };
-    const type_unsigned_8 in_immediate_byte[] = { 0xe4u, 0x00u };
-    const type_unsigned_8 in_immediate_word[] = { 0xe5u, 0x00u };
-    const type_unsigned_8 in_dx_byte[] = { 0xecu };
-    const type_unsigned_8 in_dx_word[] = { 0xedu };
-    const type_unsigned_8 out_immediate_byte[] = { 0xe6u, 0x00u };
-    const type_unsigned_8 out_immediate_word[] = { 0xe7u, 0x00u };
-    const type_unsigned_8 out_dx_byte[] = { 0xeeu };
-    const type_unsigned_8 out_dx_word[] = { 0xefu };
-    const type_unsigned_8 jcxz[] = { 0xe3u, 0x01u };
-    const type_unsigned_8 loop[] = { 0xe2u, 0x01u };
-    const type_unsigned_8 loope[] = { 0xe1u, 0x01u };
-    const type_unsigned_8 loopne[] = { 0xe0u, 0x01u };
-    const type_unsigned_8 int3[] = { 0xccu };
-    const type_unsigned_8 int_type3[] = { 0xcdu, 0x03u };
-    const type_unsigned_8 int_other[] = { 0xcdu, 0x67u };
-    const type_unsigned_8 into[] = { 0xceu };
-    const type_unsigned_8 iret[] = { 0xcfu };
-    const type_unsigned_8 hlt[] = { 0xf4u };
-    const type_unsigned_8 movsb[] = { 0xa4u };
-    const type_unsigned_8 movsw[] = { 0xa5u };
-    const type_unsigned_8 cmpsb[] = { 0xa6u };
-    const type_unsigned_8 cmpsw[] = { 0xa7u };
-    const type_unsigned_8 stosb[] = { 0xaau };
-    const type_unsigned_8 stosw[] = { 0xabu };
-    const type_unsigned_8 lodsb[] = { 0xacu };
-    const type_unsigned_8 lodsw[] = { 0xadu };
-    const type_unsigned_8 scasb[] = { 0xaeu };
-    const type_unsigned_8 scasw[] = { 0xafu };
-    const type_unsigned_8 segment_movsw[] = { 0x26u, 0xa5u };
-    const type_unsigned_8 rep_movsw[] = { 0xf3u, 0xa5u };
+    lib_u8 rep_nop[] = { 0xf3u, 0x90u };
+    const lib_u8 add_register[] = { 0x01u, 0xc8u };
+    const lib_u8 add_register_memory[] = { 0x03u, 0x06u, 0x00u, 0x10u };
+    const lib_u8 add_memory_register[] = { 0x01u, 0x06u, 0x00u, 0x10u };
+    const lib_u8 mov_sreg_memory[] = { 0x8cu, 0x06u, 0x00u, 0x10u };
+    const lib_u8 mov_sreg_register[] = { 0x8cu, 0xd8u };
+    const lib_u8 mov_ds_memory[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
+    const lib_u8 lds_memory[] = { 0xc5u, 0x06u, 0x00u, 0x10u };
+    const lib_u8 xlat[] = { 0xd7u };
+    const lib_u8 esc_register[] = { 0xd8u, 0xc0u };
+    const lib_u8 shift_memory[] = { 0xd1u, 0x26u, 0x00u, 0x10u };
+    const lib_u8 push_ds[] = { 0x1eu };
+    const lib_u8 pop_ds[] = { 0x1fu };
+    const lib_u8 pop_cs[] = { 0x0fu };
+    const lib_u8 lock_add_memory[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x10u };
+    const lib_u8 mul_al[] = { 0xf6u, 0xe0u };
+    const lib_u8 wait[] = { 0x9bu };
+    const lib_u8 push_register[] = { 0x50u };
+    const lib_u8 pop_register[] = { 0x58u };
+    const lib_u8 call_near[] = { 0xe8u, 0x00u, 0x00u };
+    const lib_u8 ret_near[] = { 0xc3u };
+    const lib_u8 ret_far[] = { 0xcbu };
+    const lib_u8 call_memory[] = { 0xffu, 0x16u, 0x00u, 0x10u };
+    const lib_u8 push_memory[] = { 0xffu, 0x36u, 0x00u, 0x10u };
+    const lib_u8 pop_memory[] = { 0x8fu, 0x06u, 0x00u, 0x10u };
+    const lib_u8 in_immediate_byte[] = { 0xe4u, 0x00u };
+    const lib_u8 in_immediate_word[] = { 0xe5u, 0x00u };
+    const lib_u8 in_dx_byte[] = { 0xecu };
+    const lib_u8 in_dx_word[] = { 0xedu };
+    const lib_u8 out_immediate_byte[] = { 0xe6u, 0x00u };
+    const lib_u8 out_immediate_word[] = { 0xe7u, 0x00u };
+    const lib_u8 out_dx_byte[] = { 0xeeu };
+    const lib_u8 out_dx_word[] = { 0xefu };
+    const lib_u8 jcxz[] = { 0xe3u, 0x01u };
+    const lib_u8 loop[] = { 0xe2u, 0x01u };
+    const lib_u8 loope[] = { 0xe1u, 0x01u };
+    const lib_u8 loopne[] = { 0xe0u, 0x01u };
+    const lib_u8 int3[] = { 0xccu };
+    const lib_u8 int_type3[] = { 0xcdu, 0x03u };
+    const lib_u8 int_other[] = { 0xcdu, 0x67u };
+    const lib_u8 into[] = { 0xceu };
+    const lib_u8 iret[] = { 0xcfu };
+    const lib_u8 hlt[] = { 0xf4u };
+    const lib_u8 movsb[] = { 0xa4u };
+    const lib_u8 movsw[] = { 0xa5u };
+    const lib_u8 cmpsb[] = { 0xa6u };
+    const lib_u8 cmpsw[] = { 0xa7u };
+    const lib_u8 stosb[] = { 0xaau };
+    const lib_u8 stosw[] = { 0xabu };
+    const lib_u8 lodsb[] = { 0xacu };
+    const lib_u8 lodsw[] = { 0xadu };
+    const lib_u8 scasb[] = { 0xaeu };
+    const lib_u8 scasw[] = { 0xafu };
+    const lib_u8 segment_movsw[] = { 0x26u, 0xa5u };
+    const lib_u8 rep_movsw[] = { 0xf3u, 0xa5u };
     C_INT failed = 0;
 
     provider.callback = retirement_capture;
@@ -645,7 +646,7 @@ C_INT main(C_VOID)
             34u, 25u) ||
         retirement_8088_string_case(rep_movsw, sizeof(rep_movsw), 0u, 1u,
             9u, 0u);
-    failed |= core_machine_set_retirement_observation_provider(machine, STD_NULL) !=
+    failed |= core_machine_set_retirement_observation_provider(machine, LIB_NULL) !=
         TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_set_a20(machine, 1) != TYPE_STATUS_OK;
@@ -654,9 +655,9 @@ C_INT main(C_VOID)
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || probe.count != 1u;
     core_machine_destroy(machine);
-    machine = STD_NULL;
+    machine = LIB_NULL;
 
-    probe.machine = STD_NULL;
+    probe.machine = LIB_NULL;
     probe.count = 0u;
     probe.set_while_running = TYPE_STATUS_OK;
     failed |= !retirement_prepare(&machine, &physical, rep_nop, sizeof(rep_nop));

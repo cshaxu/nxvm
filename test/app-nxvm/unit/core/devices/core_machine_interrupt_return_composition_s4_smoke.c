@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,7 +10,7 @@
 #undef main
 
 static C_VOID interrupt_return_composition_s4_seed(cli_sti_machine *state,
-    type_unsigned_32 flags)
+    lib_u32 flags)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -26,23 +27,23 @@ static C_VOID interrupt_return_composition_s4_seed(cli_sti_machine *state,
 
 static C_INT interrupt_return_composition_s4_real_irq_after_iret(C_VOID)
 {
-    const type_unsigned_16 int_offset = 0x0100u;
-    const type_unsigned_16 irq_offset = 0x0120u;
-    const type_unsigned_16 segment = 0u;
-    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-    static const type_unsigned_8 program[] = { 0xcdu, 0x31u, 0x90u };
-    static const type_unsigned_8 iret[] = { 0xcfu };
-    static const type_unsigned_8 hlt[] = { 0xf4u };
+    const lib_u16 int_offset = 0x0100u;
+    const lib_u16 irq_offset = 0x0120u;
+    const lib_u16 segment = 0u;
+    const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+    static const lib_u8 program[] = { 0xcdu, 0x31u, 0x90u };
+    static const lib_u8 iret[] = { 0xcfu };
+    static const lib_u8 hlt[] = { 0xf4u };
     cli_sti_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    type_unsigned_16 frame[3u] = { 0u, 0u, 0u };
+    lib_u16 frame[3u] = { 0u, 0u, 0u };
     C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state) ||
         !test_core_machine_fixture_prepare_real_mode_execution(state.machine, 0u);
 
-    STD_MEMSET(&irq, 0, sizeof(irq));
+    lib_memory_set(&irq, 0, sizeof(irq));
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0u, program,
                 sizeof(program)) != TYPE_STATUS_OK ||
@@ -80,7 +81,7 @@ static C_INT interrupt_return_composition_s4_real_irq_after_iret(C_VOID)
                 VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
                 state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
             frame[0] != 2u || frame[1] != 0u || frame[2] !=
                 (flags | 0x02u);

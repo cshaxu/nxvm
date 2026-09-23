@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -10,7 +11,7 @@
 #include "support/rom/model40_session_assets.h"
 
 static C_INT t386_s11_session_route(const vm_machine *session,
-    type_unsigned_32 physical, core_machine_memory_route expected)
+    lib_u32 physical, core_machine_memory_route expected)
 {
     core_machine_memory_route route;
 
@@ -21,11 +22,11 @@ static C_INT t386_s11_session_route(const vm_machine *session,
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
-        TYPE_STATUS_OK || session == STD_NULL;
+        TYPE_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);

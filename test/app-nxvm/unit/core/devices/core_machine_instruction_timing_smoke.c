@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -8,16 +9,16 @@
 #define TIMING_WINDOW_BYTES 16u
 
 typedef struct timing_port_state {
-    type_unsigned_32 reads;
-    type_unsigned_32 writes;
+    lib_u32 reads;
+    lib_u32 writes;
 } timing_port_state;
 
-static type_status timing_port_read(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+static type_status timing_port_read(C_VOID *owner, lib_u16 port,
+    lib_u32 *out_value)
 {
     timing_port_state *state = (timing_port_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u) {
+    if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->reads;
@@ -25,12 +26,12 @@ static type_status timing_port_read(C_VOID *owner, type_unsigned_16 port,
     return TYPE_STATUS_OK;
 }
 
-static type_status timing_port_write(C_VOID *owner, type_unsigned_16 port,
-    type_unsigned_32 value)
+static type_status timing_port_write(C_VOID *owner, lib_u16 port,
+    lib_u32 value)
 {
     timing_port_state *state = (timing_port_state *)owner;
 
-    if (state == STD_NULL || port != 0x00e0u || value > 0xffu) {
+    if (state == LIB_NULL || port != 0x00e0u || value > 0xffu) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
@@ -50,9 +51,9 @@ static C_INT timing_prepare(core_machine **out_machine,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
             TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
@@ -68,13 +69,13 @@ static C_INT timing_prepare(core_machine **out_machine,
     return 1;
 }
 
-static C_INT timing_run(core_machine *machine, const type_unsigned_8 *program,
-    STD_SIZE_T program_bytes, type_unsigned_64 instructions, type_unsigned_64 *out_ticks)
+static C_INT timing_run(core_machine *machine, const lib_u8 *program,
+    lib_size program_bytes, lib_u64 instructions, lib_u64 *out_ticks)
 {
     core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
 
-    if (machine == STD_NULL || program == STD_NULL || out_ticks == STD_NULL ||
+    if (machine == LIB_NULL || program == LIB_NULL || out_ticks == LIB_NULL ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
             program_bytes) != TYPE_STATUS_OK ||
@@ -87,12 +88,12 @@ static C_INT timing_run(core_machine *machine, const type_unsigned_8 *program,
     return 1;
 }
 
-static C_INT timing_case(const type_unsigned_8 *program, STD_SIZE_T program_bytes,
-    type_unsigned_64 instructions, type_unsigned_64 expected_ticks)
+static C_INT timing_case(const lib_u8 *program, lib_size program_bytes,
+    lib_u64 instructions, lib_u64 expected_ticks)
 {
     timing_port_state port_state = { 0u, 0u };
-    core_machine *machine = STD_NULL;
-    type_unsigned_64 ticks = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u64 ticks = 0u;
     C_INT failed = !timing_prepare(&machine, &port_state);
 
     if (!failed) {
@@ -105,16 +106,16 @@ static C_INT timing_case(const type_unsigned_8 *program, STD_SIZE_T program_byte
 
 static C_INT timing_test_quantum_and_reset(C_VOID)
 {
-    static const type_unsigned_8 program[] = { 0x90u, 0x26u, 0x90u, 0xa0u, 0x00u, 0x00u };
+    static const lib_u8 program[] = { 0x90u, 0x26u, 0x90u, 0xa0u, 0x00u, 0x00u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget one = { 1u, 0u };
     core_machine_run_budget all = { 3u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
-    type_unsigned_64 split_ticks = 0u;
-    type_unsigned_64 single_ticks = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u64 split_ticks = 0u;
+    lib_u64 single_ticks = 0u;
     C_INT failed = !timing_prepare(&machine, &port_state);
-    type_unsigned_32 index;
+    lib_u32 index;
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, TIMING_RESET_LINEAR,
@@ -139,11 +140,11 @@ static C_INT timing_test_quantum_and_reset(C_VOID)
 
 static C_INT timing_test_fault(C_VOID)
 {
-    static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
+    static const lib_u8 fault[] = { 0x66u, 0x90u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_prepare(&machine, &port_state);
 
     if (!failed) {
@@ -160,11 +161,11 @@ static C_INT timing_test_fault(C_VOID)
 
 static C_INT timing_test_stop(C_VOID)
 {
-    static const type_unsigned_8 nop[] = { 0x90u };
+    static const lib_u8 nop[] = { 0x90u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !timing_prepare(&machine, &port_state);
 
     if (!failed) {
@@ -189,28 +190,28 @@ static C_VOID timing_qualification_record(C_VOID *context,
 {
     timing_qualification_probe *probe = (timing_qualification_probe *)context;
 
-    if (probe != STD_NULL && observation != STD_NULL) {
+    if (probe != LIB_NULL && observation != LIB_NULL) {
         probe->key = observation->eligibility_key;
-        probe->captured = TYPE_TRUE;
+        probe->captured = LIB_TRUE;
     }
 }
 
-static C_INT timing_capture_qualification(const type_unsigned_8 *program,
-    STD_SIZE_T program_bytes, core_machine_retirement_eligibility_key *out_key)
+static C_INT timing_capture_qualification(const lib_u8 *program,
+    lib_size program_bytes, core_machine_retirement_eligibility_key *out_key)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
     };
-    timing_qualification_probe probe = { { 0 }, TYPE_FALSE };
+    timing_qualification_probe probe = { { 0 }, LIB_FALSE };
     const core_machine_retirement_observation_provider provider = {
         timing_qualification_record, &probe
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
-    C_INT failed = out_key == STD_NULL ||
+    core_machine *machine = LIB_NULL;
+    C_INT failed = out_key == LIB_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
@@ -234,7 +235,7 @@ static C_INT timing_test_invalid_qualification(C_VOID)
 {
     core_machine_retirement_eligibility_key entry = { 0 };
     const core_machine_retirement_qualification_descriptor missing_entries = {
-        STD_NULL, 1u
+        LIB_NULL, 1u
     };
     const core_machine_retirement_qualification_descriptor empty_entries = {
         &entry, 0u
@@ -245,19 +246,19 @@ static C_INT timing_test_invalid_qualification(C_VOID)
     const core_machine_config empty_config = {
         .retirement_qualification = &empty_entries
     };
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
 
     return core_machine_create(&missing_config, &machine) != TYPE_STATUS_INVALID_ARGUMENT ||
-        machine != STD_NULL ||
+        machine != LIB_NULL ||
         core_machine_create(&empty_config, &machine) != TYPE_STATUS_INVALID_ARGUMENT ||
-        machine != STD_NULL;
+        machine != LIB_NULL;
 }
 static C_INT timing_test_physical_contract(C_VOID)
 {
-    static const type_unsigned_8 exact[] = { 0x90u };
-    static const type_unsigned_8 jcc[] = { 0x75u, 0xfeu };
-    static const type_unsigned_8 classified_unqualified[] = { 0xb8u, 0x34u, 0x12u };
-    static const type_unsigned_8 equivalent_prefixed_nop[] = { 0x26u, 0x90u };
+    static const lib_u8 exact[] = { 0x90u };
+    static const lib_u8 jcc[] = { 0x75u, 0xfeu };
+    static const lib_u8 classified_unqualified[] = { 0xb8u, 0x34u, 0x12u };
+    static const lib_u8 equivalent_prefixed_nop[] = { 0x26u, 0x90u };
     core_machine_retirement_eligibility_key entries[2];
     const core_machine_retirement_qualification_descriptor qualification = {
         entries, sizeof(entries) / sizeof(entries[0])
@@ -273,7 +274,7 @@ static C_INT timing_test_physical_contract(C_VOID)
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = timing_capture_qualification(exact, sizeof(exact),
             &entries[0]) ||
         timing_capture_qualification(jcc, sizeof(jcc), &entries[1]) ||
@@ -323,15 +324,15 @@ static C_INT timing_test_physical_contract(C_VOID)
 }
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 register_mov[] = { 0xb8u, 0x34u, 0x12u };
-    static const type_unsigned_8 prefixed_nop[] = { 0x26u, 0x90u };
-    static const type_unsigned_8 memory_mov[] = { 0xa0u, 0x00u, 0x00u };
-    static const type_unsigned_8 out_port[] = { 0xe6u, 0xe0u };
-    static const type_unsigned_8 in_port[] = { 0xe4u, 0xe0u };
-    static const type_unsigned_8 taken_branch[] = { 0x31u, 0xc0u, 0x74u, 0x01u, 0x90u };
-    static const type_unsigned_8 not_taken_branch[] = { 0x31u, 0xc0u, 0x75u, 0x00u };
-    static const type_unsigned_8 rep_movsb[] = { 0xb9u, 0x03u, 0x00u, 0xf3u, 0xa4u };
+    static const lib_u8 nop[] = { 0x90u };
+    static const lib_u8 register_mov[] = { 0xb8u, 0x34u, 0x12u };
+    static const lib_u8 prefixed_nop[] = { 0x26u, 0x90u };
+    static const lib_u8 memory_mov[] = { 0xa0u, 0x00u, 0x00u };
+    static const lib_u8 out_port[] = { 0xe6u, 0xe0u };
+    static const lib_u8 in_port[] = { 0xe4u, 0xe0u };
+    static const lib_u8 taken_branch[] = { 0x31u, 0xc0u, 0x74u, 0x01u, 0x90u };
+    static const lib_u8 not_taken_branch[] = { 0x31u, 0xc0u, 0x75u, 0x00u };
+    static const lib_u8 rep_movsb[] = { 0xb9u, 0x03u, 0x00u, 0xf3u, 0xa4u };
     C_INT failed = 0;
 
     failed |= timing_case(nop, sizeof(nop), 1u, 3u);

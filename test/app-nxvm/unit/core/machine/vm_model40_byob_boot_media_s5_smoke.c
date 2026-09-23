@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/media_interface.h"
@@ -11,18 +12,18 @@
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 image[MODEL40_FDD_BYTES];
-    type_unsigned_8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
+    static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static lib_u8 image[MODEL40_FDD_BYTES];
+    lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
     vm_machine_config config = {0};
     vm_machine_assets assets = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     core_machine_media_info info;
     core_machine_media_result result;
     C_INT failed = 0;
 
-    STD_MEMSET(odd, 1, sizeof(odd));
+    lib_memory_set(odd, 1, sizeof(odd));
     image[0] = 0xebu;
     image[1] = 0x3cu;
     image[510] = 0x55u;
@@ -34,8 +35,8 @@ C_INT main(C_VOID)
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
-            sizeof(image)) != TYPE_FALSE || !session->fdd.connect.flagDiskExist ||
+        session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
+            sizeof(image)) != LIB_FALSE || !session->fdd.connect.flagDiskExist ||
         session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 15u || session->fdd.data.nbyte != 512u ||
         core_machine_media_query(session->media_registry, VM_MACHINE_MEDIA_FDD_ID,

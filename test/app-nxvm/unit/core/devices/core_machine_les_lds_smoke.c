@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,12 +13,12 @@ static C_VOID lld_reset(C_VOID *opaque)
 {
     lld_machine *state = (lld_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider lld_provider = {
-    lld_reset, STD_NULL
+    lld_reset, LIB_NULL
 };
 
 static C_INT lld_prepare(core_machine_cpu_profile profile, lld_machine *state)
@@ -28,13 +29,13 @@ static C_INT lld_prepare(core_machine_cpu_profile profile, lld_machine *state)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &lld_provider, state, &state->machine);
 }
 
-static C_INT lld_run_prepared(lld_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT lld_run_prepared(lld_machine *state, const lib_u8 *code,
+    lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status)
 {
     core_machine_run_result result;
@@ -51,19 +52,19 @@ static C_INT lld_run_prepared(lld_machine *state, const type_unsigned_8 *code,
 
 static C_INT lld_test_real(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
+    static const lib_u8 opcodes[] = { 0xc4u, 0xc5u };
     static const core_machine_cpu_profile legacy_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 pointer16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
-    static const type_unsigned_8 pointer32[] = {
+    static const lib_u8 pointer16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
+    static const lib_u8 pointer32[] = {
         0x44u, 0x33u, 0x22u, 0x11u, 0x34u, 0x12u
     };
-    type_unsigned_8 opcode;
-    type_unsigned_8 profile;
-    type_unsigned_8 operand32;
+    lib_u8 opcode;
+    lib_u8 profile;
+    lib_u8 operand32;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (profile = 0u; profile != sizeof(legacy_profiles) /
@@ -73,10 +74,10 @@ static C_INT lld_test_real(C_VOID)
                 t_cpu after;
                 core_machine_cpu_diagnostic diagnostic;
                 type_status status;
-                type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
-                const type_unsigned_8 *pointer = operand32 ? pointer32 : pointer16;
-                type_unsigned_8 code_bytes = operand32 ? 5u : 4u;
-                type_unsigned_8 pointer_bytes = operand32 ? 6u : 4u;
+                lib_u8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
+                const lib_u8 *pointer = operand32 ? pointer32 : pointer16;
+                lib_u8 code_bytes = operand32 ? 5u : 4u;
+                lib_u8 pointer_bytes = operand32 ? 6u : 4u;
                 C_INT failed = !lld_prepare(legacy_profiles[profile], &state);
 
                 if (operand32 && profile != 2u)
@@ -118,8 +119,8 @@ static C_INT lld_test_real(C_VOID)
 
 static C_INT lld_test_reg_direct_ud(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xc4u, 0xc5u };
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lld_machine state;
@@ -127,7 +128,7 @@ static C_INT lld_test_reg_direct_ud(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        type_unsigned_8 code[] = { opcodes[opcode], 0xc0u };
+        lib_u8 code[] = { opcodes[opcode], 0xc0u };
         C_INT failed = !lld_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -158,13 +159,13 @@ static C_INT lld_test_reg_direct_ud(C_VOID)
 
 static C_INT lld_test_80286_operand32_ud(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
+    static const lib_u8 opcodes[] = { 0xc4u, 0xc5u };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    type_unsigned_8 opcode;
-    type_unsigned_8 profile;
+    lib_u8 opcode;
+    lib_u8 profile;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
@@ -174,7 +175,7 @@ static C_INT lld_test_80286_operand32_ud(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            type_unsigned_8 code[] = { 0x66u, opcodes[opcode], 0x06u, 0x00u, 0x10u };
+            lib_u8 code[] = { 0x66u, opcodes[opcode], 0x06u, 0x00u, 0x10u };
             C_INT failed = !lld_prepare(profiles[profile], &state);
 
             if (!failed) {
@@ -207,19 +208,19 @@ static C_INT lld_test_80286_operand32_ud(C_VOID)
 
 static C_INT lld_prepare_protected(lld_machine *state)
 {
-    static const type_unsigned_8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const lib_u8 gdt[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0xffu, 0xffu, 0, 0x20u, 0, 0x9au, 0, 0,
         0xffu, 0xffu, 0, 0, 0, 0x92u, 0, 0, 0xffu, 0xffu, 0, 0x40u, 0, 0x92u,
         0, 0
     };
-    static const type_unsigned_8 bootstrap[] = {
+    static const lib_u8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u,
         0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u, 0xb8u, 0x18u,
         0x00u, 0x8eu, 0xd0u, 0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u,
         0x00u
     };
-    static const type_unsigned_8 hlt[] = { 0xf4u };
+    static const lib_u8 hlt[] = { 0xf4u };
     core_machine_run_result result;
 
     return lld_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
@@ -238,23 +239,23 @@ static C_INT lld_prepare_protected(lld_machine *state)
 
 static C_INT lld_test_protected(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
-    static const type_unsigned_8 pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
-    static const type_unsigned_8 pointer32[] = {
+    static const lib_u8 opcodes[] = { 0xc4u, 0xc5u };
+    static const lib_u8 pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
+    static const lib_u8 pointer32[] = {
         0x44u, 0x33u, 0x22u, 0x11u, 0x10u, 0x00u
     };
-    type_unsigned_8 opcode;
-    type_unsigned_8 operand32;
+    lib_u8 opcode;
+    lib_u8 operand32;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (operand32 = 0u; operand32 != 2u; ++operand32) {
             lld_machine state;
             core_machine_run_result result;
             t_cpu after;
-            type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
-            const type_unsigned_8 *pointer = operand32 ? pointer32 : pointer16;
-            type_unsigned_8 code_bytes = operand32 ? 5u : 4u;
-            type_unsigned_8 pointer_bytes = operand32 ? 6u : 4u;
+            lib_u8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
+            const lib_u8 *pointer = operand32 ? pointer32 : pointer16;
+            lib_u8 code_bytes = operand32 ? 5u : 4u;
+            lib_u8 pointer_bytes = operand32 ? 6u : 4u;
             C_INT failed = !lld_prepare_protected(&state);
 
             if (operand32) {
@@ -297,8 +298,8 @@ static C_INT lld_test_protected(C_VOID)
 
 static C_INT lld_test_source_fault_atomicity(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xc4u, 0xc5u };
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lld_machine state;
@@ -306,7 +307,7 @@ static C_INT lld_test_source_fault_atomicity(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u };
+        lib_u8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u };
         C_INT failed = !lld_prepare_protected(&state);
 
         if (!failed) {
@@ -344,20 +345,20 @@ static C_INT lld_test_source_fault_atomicity(C_VOID)
 
 static C_INT lld_test_irq_no_shadow(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
-    static const type_unsigned_8 pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xc4u, 0xc5u };
+    static const lib_u8 pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lld_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        type_unsigned_16 vector_offset = 0x0100u;
-        type_unsigned_16 vector_segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
-        type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
+        lib_u16 vector_offset = 0x0100u;
+        lib_u16 vector_segment = 0u;
+        lib_u16 frame_ip = 0u;
+        lib_u8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
         C_INT failed = !lld_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -376,7 +377,7 @@ static C_INT lld_test_irq_no_shadow(C_VOID)
         }
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave,
@@ -389,7 +390,7 @@ static C_INT lld_test_irq_no_shadow(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    after.data.ss.base + (type_unsigned_16)after.data.esp,
+                    after.data.ss.base + (lib_u16)after.data.esp,
                     (type_virtual_address)&frame_ip, sizeof(frame_ip)) !=
                         TYPE_STATUS_OK || after.data.eip != 0x0101u ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,

@@ -1,5 +1,6 @@
 #ifndef CORE_MACHINE_GUEST_INPUT_INTERFACE_H
 #define CORE_MACHINE_GUEST_INPUT_INTERFACE_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -12,14 +13,14 @@ typedef struct core_machine_guest_input_event {
     core_machine_guest_input_kind kind;
     union {
         struct {
-            type_unsigned_16 scan_code;
-            type_unsigned_16 virtual_key;
+            lib_u16 scan_code;
+            lib_u16 virtual_key;
             C_INT pressed;
         } key;
         struct {
-            type_signed_16 delta_x;
-            type_signed_16 delta_y;
-            type_unsigned_8 buttons;
+            lib_i16 delta_x;
+            lib_i16 delta_y;
+            lib_u8 buttons;
         } relative_mouse;
     } data;
 } core_machine_guest_input_event;

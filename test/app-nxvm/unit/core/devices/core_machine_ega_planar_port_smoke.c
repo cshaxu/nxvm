@@ -1,25 +1,26 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_INT core_machine_ega_planar_write(t_ram *memory, type_unsigned_32 physical,
-    type_unsigned_8 value)
+static C_INT core_machine_ega_planar_write(t_ram *memory, lib_u32 physical,
+    lib_u8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
         (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
 }
 
-static C_INT core_machine_ega_planar_read(t_ram *memory, type_unsigned_32 physical,
-    type_unsigned_8 *value)
+static C_INT core_machine_ega_planar_read(t_ram *memory, lib_u32 physical,
+    lib_u8 *value)
 {
     return core_machine_memory_read_physical(memory, physical,
         (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
 }
 
-static C_VOID core_machine_ega_graphics_write(t_port *port, type_unsigned_8 index,
-    type_unsigned_8 value)
+static C_VOID core_machine_ega_graphics_write(t_port *port, lib_u8 index,
+    lib_u8 value)
 {
     core_machine_port_write(port, 0x03ceu, index);
     core_machine_port_write(port, 0x03cfu, value);
@@ -41,7 +42,7 @@ C_INT main(C_VOID)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE
+        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
     };
     const core_machine_vadp_ega_controller_config controllers = {
         { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
@@ -52,20 +53,20 @@ C_INT main(C_VOID)
     t_port port;
     t_ram memory;
     t_vadp vadp;
-    type_unsigned_8 value = 0u;
-    type_unsigned_8 status_first = 0u;
-    type_unsigned_8 status_second = 0u;
+    lib_u8 value = 0u;
+    lib_u8 status_first = 0u;
+    lib_u8 status_second = 0u;
     core_machine_display_snapshot snapshot;
     core_machine_display_kind copied_kind;
-    type_unsigned_8 copied_pixel_zero;
-    type_unsigned_8 copied_pixel_two;
-    type_unsigned_32 copied_palette_fifteen;
+    lib_u8 copied_pixel_zero;
+    lib_u8 copied_pixel_two;
+    lib_u32 copied_palette_fifteen;
     core_machine_memory_route route;
     C_INT failed = 0;
 
-    STD_MEMSET(&memory, 0, sizeof(memory));
+    lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, STD_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
@@ -121,7 +122,7 @@ C_INT main(C_VOID)
     failed |= !core_machine_ega_planar_write(&memory, 0x000a0000u, 0xa5u);
     failed |= !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
         value != 0xa5u;
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
@@ -262,7 +263,7 @@ C_INT main(C_VOID)
         0x00010000u);
     failed |= !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
         value != 0u;
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
         snapshot.pixels[0] != 0u || !snapshot.buffer_changed;

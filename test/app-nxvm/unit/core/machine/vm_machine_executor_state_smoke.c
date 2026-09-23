@@ -1,8 +1,9 @@
+#include "lib/types/types_interface.h"
 #include "app-nxvm/machine/executor_state.h"
 
 int main(void)
 {
-    vm_machine_executor_state *state = STD_NULL;
+    vm_machine_executor_state *state = LIB_NULL;
 
     if (vm_machine_executor_state_create(&state) != TYPE_STATUS_OK ||
         vm_machine_executor_state_is_active(state)) goto failed;

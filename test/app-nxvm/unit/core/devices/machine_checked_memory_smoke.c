@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -11,12 +12,12 @@ typedef struct checked_memory_provider {
     C_UCHAR value;
 } checked_memory_provider;
 
-static type_status checked_memory_read(C_VOID *owner, type_unsigned_32 physical,
+static type_status checked_memory_read(C_VOID *owner, lib_u32 physical,
     type_virtual_address destination, type_native_unsigned bytes)
 {
     checked_memory_provider *provider = (checked_memory_provider *)owner;
 
-    if (provider == STD_NULL || physical != 0x00180000u || bytes != 1u) {
+    if (provider == LIB_NULL || physical != 0x00180000u || bytes != 1u) {
         return TYPE_STATUS_FAULT;
     }
     ++provider->read_count;
@@ -24,12 +25,12 @@ static type_status checked_memory_read(C_VOID *owner, type_unsigned_32 physical,
     return TYPE_STATUS_OK;
 }
 
-static type_status checked_memory_write(C_VOID *owner, type_unsigned_32 physical,
+static type_status checked_memory_write(C_VOID *owner, lib_u32 physical,
     type_virtual_address source, type_native_unsigned bytes)
 {
     checked_memory_provider *provider = (checked_memory_provider *)owner;
 
-    if (provider == STD_NULL || physical != 0x00180000u || bytes != 1u) {
+    if (provider == LIB_NULL || physical != 0x00180000u || bytes != 1u) {
         return TYPE_STATUS_FAULT;
     }
     ++provider->write_count;
@@ -37,12 +38,12 @@ static type_status checked_memory_write(C_VOID *owner, type_unsigned_32 physical
     return TYPE_STATUS_OK;
 }
 
-static type_status checked_memory_query(C_VOID *owner, type_unsigned_32 physical,
+static type_status checked_memory_query(C_VOID *owner, lib_u32 physical,
     type_native_unsigned bytes, core_machine_memory_access access)
 {
     checked_memory_provider *provider = (checked_memory_provider *)owner;
 
-    if (provider == STD_NULL || physical != 0x00180000u || bytes != 1u ||
+    if (provider == LIB_NULL || physical != 0x00180000u || bytes != 1u ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
          access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
         return TYPE_STATUS_UNSUPPORTED;
@@ -58,7 +59,7 @@ static C_INT expect_status(type_status actual, type_status expected)
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     checked_memory_provider provider = { 0u, 0u, 0u, 0x5au };
     core_machine_memory_route route;
     C_UCHAR value = 0u;

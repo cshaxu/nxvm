@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -12,12 +13,12 @@ static C_VOID gpr_push_pop_reset(C_VOID *opaque)
 {
     gpr_push_pop_machine *state = (gpr_push_pop_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider gpr_push_pop_provider = {
-    gpr_push_pop_reset, STD_NULL
+    gpr_push_pop_reset, LIB_NULL
 };
 
 static C_INT gpr_push_pop_prepare(core_machine_cpu_profile profile,
@@ -29,7 +30,7 @@ static C_INT gpr_push_pop_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &gpr_push_pop_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -53,13 +54,13 @@ static C_VOID gpr_push_pop_seed(gpr_push_pop_machine *state)
 
 static C_INT gpr_push_pop_sregs_same(const t_cpu *before, const t_cpu *after)
 {
-    return STD_MEMCMP(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 && STD_MEMCMP(&before->data.cs,
-        &after->data.cs, sizeof(before->data.cs)) == 0 && STD_MEMCMP(
+    return lib_memory_compare(&before->data.es, &after->data.es,
+        sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
+        &after->data.cs, sizeof(before->data.cs)) == 0 && lib_memory_compare(
         &before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        STD_MEMCMP(&before->data.ds, &after->data.ds,
-        sizeof(before->data.ds)) == 0 && STD_MEMCMP(&before->data.fs,
-        &after->data.fs, sizeof(before->data.fs)) == 0 && STD_MEMCMP(
+        lib_memory_compare(&before->data.ds, &after->data.ds,
+        sizeof(before->data.ds)) == 0 && lib_memory_compare(&before->data.fs,
+        &after->data.fs, sizeof(before->data.fs)) == 0 && lib_memory_compare(
         &before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
@@ -79,7 +80,7 @@ static C_INT gpr_push_pop_cpu_same(const t_cpu *before, const t_cpu *after)
 }
 
 static C_INT gpr_push_pop_run(gpr_push_pop_machine *state,
-    const type_unsigned_8 *code, type_unsigned_8 bytes, t_cpu *after,
+    const lib_u8 *code, lib_u8 bytes, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -94,7 +95,7 @@ static C_INT gpr_push_pop_run(gpr_push_pop_machine *state,
         core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
 }
 
-static type_unsigned_32 gpr_push_pop_register(const t_cpu *cpu, type_unsigned_8 index)
+static lib_u32 gpr_push_pop_register(const t_cpu *cpu, lib_u8 index)
 {
     switch (index)
     {
@@ -125,23 +126,23 @@ static C_INT gpr_push_pop_test_push_registers(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
          ++profile)
     {
-        type_unsigned_8 index;
+        lib_u8 index;
 
         for (index = 0u; index != 8u; ++index)
         {
-            const type_unsigned_8 code[] = {(type_unsigned_8)(0x50u + index)};
+            const lib_u8 code[] = {(lib_u8)(0x50u + index)};
             gpr_push_pop_machine state;
             core_machine_cpu_diagnostic diagnostic;
             t_cpu before;
             t_cpu after;
             type_status status;
-            type_unsigned_32 image = 0u;
-            type_unsigned_32 expected;
+            lib_u32 image = 0u;
+            lib_u32 expected;
             C_INT failed = !gpr_push_pop_prepare(profiles[profile], &state);
 
             if (!failed)
@@ -179,14 +180,14 @@ static C_INT gpr_push_pop_test_push_registers(C_VOID)
 
 static C_INT gpr_push_pop_test_pop_esp_address(C_VOID)
 {
-    static const type_unsigned_8 code[] = {0x67u, 0x8fu, 0x44u, 0x24u, 0x04u};
+    static const lib_u8 code[] = {0x67u, 0x8fu, 0x44u, 0x24u, 0x04u};
     gpr_push_pop_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
     type_status status;
-    type_unsigned_16 stack_value = 0xfaceu;
-    type_unsigned_16 old_target = 0xbeefu;
-    type_unsigned_16 observed = 0u;
+    lib_u16 stack_value = 0xfaceu;
+    lib_u16 old_target = 0xbeefu;
+    lib_u16 observed = 0u;
     C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
@@ -214,23 +215,23 @@ static C_INT gpr_push_pop_test_pop_registers(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    type_unsigned_8 profile;
+    lib_u8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
          ++profile)
     {
-        type_unsigned_8 index;
+        lib_u8 index;
 
         for (index = 0u; index != 8u; ++index)
         {
-            const type_unsigned_8 code[] = {(type_unsigned_8)(0x58u + index)};
+            const lib_u8 code[] = {(lib_u8)(0x58u + index)};
             gpr_push_pop_machine state;
             core_machine_cpu_diagnostic diagnostic;
             t_cpu before;
             t_cpu after;
             type_status status;
-            type_unsigned_16 value = (type_unsigned_16)(0x4100u + index);
-            type_unsigned_32 expected;
+            lib_u16 value = (lib_u16)(0x4100u + index);
+            lib_u32 expected;
             C_INT failed = !gpr_push_pop_prepare(profiles[profile], &state);
 
             if (!failed)
@@ -269,25 +270,25 @@ static C_INT gpr_push_pop_test_pop_registers(C_VOID)
 
 static C_INT gpr_push_pop_test_rm_forms(C_VOID)
 {
-    static const type_unsigned_8 push_reg[] = {0xffu, 0xf0u};
-    static const type_unsigned_8 pop_reg[] = {0x8fu, 0xc1u};
-    static const type_unsigned_8 push_ds[] = {0xffu, 0x36u, 0x20u, 0x00u};
-    static const type_unsigned_8 push_ss[] = {0xffu, 0x76u, 0x00u};
-    static const type_unsigned_8 pop_ds[] = {0x8fu, 0x06u, 0x20u, 0x00u};
-    static const type_unsigned_8 pop_ss[] = {0x8fu, 0x46u, 0x00u};
-    static const type_unsigned_8 push_67[] = {0x67u, 0xffu, 0x35u, 0x20u, 0x00u,
+    static const lib_u8 push_reg[] = {0xffu, 0xf0u};
+    static const lib_u8 pop_reg[] = {0x8fu, 0xc1u};
+    static const lib_u8 push_ds[] = {0xffu, 0x36u, 0x20u, 0x00u};
+    static const lib_u8 push_ss[] = {0xffu, 0x76u, 0x00u};
+    static const lib_u8 pop_ds[] = {0x8fu, 0x06u, 0x20u, 0x00u};
+    static const lib_u8 pop_ss[] = {0x8fu, 0x46u, 0x00u};
+    static const lib_u8 push_67[] = {0x67u, 0xffu, 0x35u, 0x20u, 0x00u,
         0x00u, 0x00u};
-    static const type_unsigned_8 pop_67[] = {0x67u, 0x8fu, 0x05u, 0x20u, 0x00u,
+    static const lib_u8 pop_67[] = {0x67u, 0x8fu, 0x05u, 0x20u, 0x00u,
         0x00u, 0x00u};
-    const type_unsigned_8 *codes[] = {push_reg, pop_reg, push_ds, push_ss, pop_ds,
+    const lib_u8 *codes[] = {push_reg, pop_reg, push_ds, push_ss, pop_ds,
         pop_ss, push_67, pop_67};
-    const type_unsigned_8 bytes[] = {2u, 2u, 4u, 3u, 4u, 3u, 7u, 7u};
+    const lib_u8 bytes[] = {2u, 2u, 4u, 3u, 4u, 3u, 7u, 7u};
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    lib_u8 profile;
+    lib_u8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
@@ -298,10 +299,10 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        type_unsigned_32 source = 0xface7788u;
-        type_unsigned_32 image = 0xface7788u;
-        type_unsigned_32 observed = 0u;
-        type_unsigned_32 address = 0x20u;
+        lib_u32 source = 0xface7788u;
+        lib_u32 image = 0xface7788u;
+        lib_u32 observed = 0u;
+        lib_u32 address = 0x20u;
         C_INT push = form == 0u || form == 2u || form == 3u || form == 6u;
         C_INT failed = !gpr_push_pop_prepare(profiles[profile], &state);
 
@@ -360,7 +361,7 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
 }
 
 static C_INT gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes)
+    const lib_u8 *code, lib_u8 bytes)
 {
     gpr_push_pop_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -368,8 +369,8 @@ static C_INT gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
     t_cpu before;
     t_cpu after;
     type_status status;
-    type_unsigned_32 source = 0xface7788u;
-    type_unsigned_32 image = 0u;
+    lib_u32 source = 0xface7788u;
+    lib_u32 image = 0u;
     C_INT failed = !gpr_push_pop_prepare(profile, &state);
 
     if (!failed)
@@ -403,23 +404,23 @@ static C_INT gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
 
 static C_INT gpr_push_pop_test_rejections(C_VOID)
 {
-    static const type_unsigned_8 attrs[][3] = {{0x66u, 0x50u}, {0x67u, 0x50u},
+    static const lib_u8 attrs[][3] = {{0x66u, 0x50u}, {0x67u, 0x50u},
         {0x66u, 0x67u, 0x50u}};
-    static const type_unsigned_8 locks[][4] = {{0xf0u, 0x50u}, {0xf0u, 0x58u},
+    static const lib_u8 locks[][4] = {{0xf0u, 0x50u}, {0xf0u, 0x58u},
         {0xf0u, 0xffu, 0xf0u}, {0xf0u, 0xffu, 0x36u, 0x20u},
         {0xf0u, 0x8fu, 0xc1u}, {0xf0u, 0x8fu, 0x06u, 0x20u}};
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    type_unsigned_8 profile;
-    type_unsigned_8 form;
+    lib_u8 profile;
+    lib_u8 form;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
     {
         for (form = 0u; form != 3u; ++form)
         {
-            type_unsigned_8 bytes = form == 2u ? 3u : 2u;
+            lib_u8 bytes = form == 2u ? 3u : 2u;
 
             if (!gpr_push_pop_expect_ud(legacy[profile], attrs[form], bytes))
                 return 0;
@@ -427,7 +428,7 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
     }
     for (form = 0u; form != sizeof(locks) / sizeof(locks[0]); ++form)
     {
-        type_unsigned_8 bytes = form == 0u || form == 1u ? 2u :
+        lib_u8 bytes = form == 0u || form == 1u ? 2u :
             (form == 3u || form == 5u ? 4u : 3u);
 
         if (!gpr_push_pop_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, locks[form],
@@ -436,7 +437,7 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
     }
     for (form = 1u; form != 8u; ++form)
     {
-        type_unsigned_8 code[] = {0x8fu, (type_unsigned_8)(0xc0u | (form << 3))};
+        lib_u8 code[] = {0x8fu, (lib_u8)(0xc0u | (form << 3))};
 
         if (!gpr_push_pop_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, code,
             sizeof(code)))
@@ -447,20 +448,20 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
 
 static C_INT gpr_push_pop_boot_protected(gpr_push_pop_machine *state)
 {
-    static const type_unsigned_8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    static const lib_u8 gdt[] = {
         0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
         0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x40u, 0u, 0x92u, 0u, 0u
     };
-    static const type_unsigned_8 bootstrap[] = {
+    static const lib_u8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u,
         0x8eu, 0xc0u, 0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u, 0xbcu,
         0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const type_unsigned_8 halt = 0xf4u;
+    static const lib_u8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x0100u, pointer,
@@ -474,8 +475,8 @@ static C_INT gpr_push_pop_boot_protected(gpr_push_pop_machine *state)
         CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT gpr_push_pop_protected_fault(const type_unsigned_8 *code, type_unsigned_8 bytes,
-    type_unsigned_8 limit_segment, type_unsigned_32 limit, C_INT expdown)
+static C_INT gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
+    lib_u8 limit_segment, lib_u32 limit, C_INT expdown)
 {
     gpr_push_pop_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -483,8 +484,8 @@ static C_INT gpr_push_pop_protected_fault(const type_unsigned_8 *code, type_unsi
     t_cpu before;
     t_cpu after;
     type_status fault_status;
-    type_unsigned_32 sentinel = 0xdeadbeefu;
-    type_unsigned_32 observed = 0u;
+    lib_u32 sentinel = 0xdeadbeefu;
+    lib_u32 observed = 0u;
     C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
@@ -539,31 +540,31 @@ static C_INT gpr_push_pop_protected_fault(const type_unsigned_8 *code, type_unsi
 
 static C_INT gpr_push_pop_test_protected_faults(C_VOID)
 {
-    static const type_unsigned_8 push[] = {0x50u};
-    static const type_unsigned_8 pop[] = {0x59u};
-    static const type_unsigned_8 push_source[] = {0xffu, 0x36u, 0x10u, 0x00u};
-    static const type_unsigned_8 pop_dest[] = {0x8fu, 0x06u, 0x10u, 0x00u};
+    static const lib_u8 push[] = {0x50u};
+    static const lib_u8 pop[] = {0x59u};
+    static const lib_u8 push_source[] = {0xffu, 0x36u, 0x10u, 0x00u};
+    static const lib_u8 pop_dest[] = {0x8fu, 0x06u, 0x10u, 0x00u};
 
     if (!gpr_push_pop_protected_fault(push, sizeof(push), 0u, 0xffffu,
-        TYPE_TRUE))
+        LIB_TRUE))
     {
         STD_PRINTF("protected push\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop, sizeof(pop), 0u, 0x7fffu,
-        TYPE_FALSE))
+        LIB_FALSE))
     {
         STD_PRINTF("protected pop\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(push_source, sizeof(push_source), 1u,
-        0x0fu, TYPE_FALSE))
+        0x0fu, LIB_FALSE))
     {
         STD_PRINTF("protected push-source\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop_dest, sizeof(pop_dest), 1u, 0x0fu,
-        TYPE_FALSE))
+        LIB_FALSE))
     {
         STD_PRINTF("protected pop-dest\n");
         return 0;
@@ -573,15 +574,15 @@ static C_INT gpr_push_pop_test_protected_faults(C_VOID)
 
 static C_INT gpr_push_pop_test_386_attributes(C_VOID)
 {
-    static const type_unsigned_8 push32[] = {0x66u, 0x50u};
-    static const type_unsigned_8 pop32[] = {0x66u, 0x59u};
-    static const type_unsigned_8 push67[] = {0x67u, 0xffu, 0x35u, 0x20u, 0x00u,
+    static const lib_u8 push32[] = {0x66u, 0x50u};
+    static const lib_u8 pop32[] = {0x66u, 0x59u};
+    static const lib_u8 push67[] = {0x67u, 0xffu, 0x35u, 0x20u, 0x00u,
         0x00u, 0x00u};
-    static const type_unsigned_8 pop66_67[] = {0x66u, 0x67u, 0x8fu, 0x05u, 0x20u,
+    static const lib_u8 pop66_67[] = {0x66u, 0x67u, 0x8fu, 0x05u, 0x20u,
         0x00u, 0x00u, 0x00u};
-    const type_unsigned_8 *codes[] = {push32, pop32, push67, pop66_67};
-    const type_unsigned_8 bytes[] = {2u, 2u, 7u, 8u};
-    type_unsigned_8 form;
+    const lib_u8 *codes[] = {push32, pop32, push67, pop66_67};
+    const lib_u8 bytes[] = {2u, 2u, 7u, 8u};
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
@@ -590,8 +591,8 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        type_unsigned_32 value = 0xface7788u;
-        type_unsigned_32 observed = 0u;
+        lib_u32 value = 0xface7788u;
+        lib_u32 observed = 0u;
         C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -612,9 +613,9 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
                 !gpr_push_pop_sregs_same(&before, &after);
             if (form == 0u || form == 2u)
             {
-                type_unsigned_32 expected = form == 0u ? before.data.eax : value;
-                type_unsigned_8 width = form == 0u ? 4u : 2u;
-                type_unsigned_32 stack = 0x8000u - width;
+                lib_u32 expected = form == 0u ? before.data.eax : value;
+                lib_u8 width = form == 0u ? 4u : 2u;
+                lib_u32 stack = 0x8000u - width;
 
                 failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
                     stack) ||
@@ -643,14 +644,14 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
 
 static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
 {
-    static const type_unsigned_8 push_reg[] = {0x50u, 0x90u};
-    static const type_unsigned_8 pop_reg[] = {0x59u, 0x90u};
-    static const type_unsigned_8 push_rm[] = {0xffu, 0xf0u, 0x90u};
-    static const type_unsigned_8 pop_rm[] = {0x8fu, 0x06u, 0x20u, 0x00u, 0x90u};
-    static const type_unsigned_8 halt = 0xf4u;
-    const type_unsigned_8 *codes[] = {push_reg, pop_reg, push_rm, pop_rm};
-    const type_unsigned_8 lengths[] = {1u, 1u, 2u, 4u};
-    type_unsigned_8 form;
+    static const lib_u8 push_reg[] = {0x50u, 0x90u};
+    static const lib_u8 pop_reg[] = {0x59u, 0x90u};
+    static const lib_u8 push_rm[] = {0xffu, 0xf0u, 0x90u};
+    static const lib_u8 pop_rm[] = {0x8fu, 0x06u, 0x20u, 0x00u, 0x90u};
+    static const lib_u8 halt = 0xf4u;
+    const lib_u8 *codes[] = {push_reg, pop_reg, push_rm, pop_rm};
+    const lib_u8 lengths[] = {1u, 1u, 2u, 4u};
+    lib_u8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
@@ -659,12 +660,12 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        type_unsigned_16 vector_offset = 0x100u;
-        type_unsigned_16 vector_segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
-        type_unsigned_16 image = 0xfaceu;
-        type_unsigned_16 source_word = 0x7788u;
-        type_unsigned_16 observed = 0u;
+        lib_u16 vector_offset = 0x100u;
+        lib_u16 vector_segment = 0u;
+        lib_u16 frame_ip = 0u;
+        lib_u16 image = 0xfaceu;
+        lib_u16 source_word = 0x7788u;
+        lib_u16 observed = 0u;
         C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -689,7 +690,7 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
         if (!failed)
         {
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave,
@@ -702,7 +703,7 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != lengths[form] ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
@@ -711,8 +712,8 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
                 after.data.eflags != (before.data.eflags & ~VCPU_EFLAGS_IF);
             if (form == 0u || form == 2u)
             {
-                type_unsigned_16 expected = form == 0u ?
-                    (type_unsigned_16)before.data.eax : source_word;
+                lib_u16 expected = form == 0u ?
+                    (lib_u16)before.data.eax : source_word;
 
                 failed |= after.data.esp != 0x12347ff8u ||
                     core_machine_memory_read_physical(&state.machine->executor_memory,

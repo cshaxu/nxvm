@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -10,12 +11,12 @@
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     t_port *port;
     C_INT failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
-        TYPE_STATUS_OK || session == STD_NULL;
+        TYPE_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         port = &session->core_machine->executor_port;
         core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu);

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,12 +13,12 @@ static C_VOID lfg_reset(C_VOID *opaque)
 {
     lfg_machine *state = (lfg_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider lfg_provider = {
-    lfg_reset, STD_NULL
+    lfg_reset, LIB_NULL
 };
 
 static C_INT lfg_prepare(core_machine_cpu_profile profile, lfg_machine *state)
@@ -28,13 +29,13 @@ static C_INT lfg_prepare(core_machine_cpu_profile profile, lfg_machine *state)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &lfg_provider, state, &state->machine);
 }
 
-static C_INT lfg_run_prepared(lfg_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT lfg_run_prepared(lfg_machine *state, const lib_u8 *code,
+    lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status)
 {
     core_machine_run_result result;
@@ -50,9 +51,9 @@ static C_INT lfg_run_prepared(lfg_machine *state, const type_unsigned_8 *code,
 }
 static C_INT lfg_test_real(C_VOID)
 {
-    static const type_unsigned_8 op[] = { 0xb2u, 0xb4u, 0xb5u };
-    type_unsigned_8 i;
-    type_unsigned_8 z;
+    static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
+    lib_u8 i;
+    lib_u8 z;
 
     for (i = 0u; i < 3u; ++i) {
         for (z = 0u; z < 2u; ++z) {
@@ -60,9 +61,9 @@ static C_INT lfg_test_real(C_VOID)
             t_cpu a = {0};
             core_machine_cpu_diagnostic d = {0};
             type_status st = TYPE_STATUS_INVALID_STATE;
-            type_unsigned_8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
-            type_unsigned_8 p16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
-            type_unsigned_8 p32[] = { 0x44u, 0x33u, 0x22u, 0x11u, 0x34u, 0x12u };
+            lib_u8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
+            lib_u8 p16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
+            lib_u8 p32[] = { 0x44u, 0x33u, 0x22u, 0x11u, 0x34u, 0x12u };
             C_INT f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &s);
 
             if (z) {
@@ -108,8 +109,8 @@ static C_INT lfg_test_real(C_VOID)
 }
 static C_INT lfg_test_reg_direct_80386(C_VOID)
 {
-    static const type_unsigned_8 op[] = { 0xb2u, 0xb4u, 0xb5u };
-    type_unsigned_8 i;
+    static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
+    lib_u8 i;
 
     for (i = 0u; i < 3u; ++i) {
         lfg_machine s;
@@ -117,7 +118,7 @@ static C_INT lfg_test_reg_direct_80386(C_VOID)
         t_cpu b;
         core_machine_cpu_diagnostic d;
         type_status st;
-        type_unsigned_8 c[] = { 0x0fu, op[i], 0xc0u };
+        lib_u8 c[] = { 0x0fu, op[i], 0xc0u };
         C_INT f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &s);
 
         if (!f) {
@@ -147,9 +148,9 @@ static C_INT lfg_test_reg_direct_80386(C_VOID)
 
 static C_INT lfg_test_80286_memory(C_VOID)
 {
-    static const type_unsigned_8 op[] = { 0xb2u, 0xb4u, 0xb5u };
-    type_unsigned_8 i;
-    type_unsigned_8 z;
+    static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
+    lib_u8 i;
+    lib_u8 z;
 
     for (i = 0u; i < 3u; ++i) {
         for (z = 0u; z < 2u; ++z) {
@@ -158,7 +159,7 @@ static C_INT lfg_test_80286_memory(C_VOID)
             t_cpu b;
             core_machine_cpu_diagnostic d;
             type_status st;
-            type_unsigned_8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
+            lib_u8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
             C_INT f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80286, &s);
 
             if (z) {
@@ -198,19 +199,19 @@ static C_INT lfg_test_80286_memory(C_VOID)
 }
 static C_INT lfg_prepare_protected(lfg_machine *state)
 {
-    static const type_unsigned_8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const lib_u8 gdt[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0xffu, 0xffu, 0, 0x20u, 0, 0x9au, 0, 0,
         0xffu, 0xffu, 0, 0, 0, 0x92u, 0, 0, 0xffu, 0xffu, 0, 0x40u, 0, 0x92u,
         0, 0
     };
-    static const type_unsigned_8 bootstrap[] = {
+    static const lib_u8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u,
         0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u, 0xb8u, 0x18u,
         0x00u, 0x8eu, 0xd0u, 0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u,
         0x00u
     };
-    static const type_unsigned_8 hlt[] = { 0xf4u };
+    static const lib_u8 hlt[] = { 0xf4u };
     core_machine_run_result result;
 
     return lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
@@ -228,22 +229,22 @@ static C_INT lfg_prepare_protected(lfg_machine *state)
 }
 static C_INT lfg_test_protected(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
-    static const type_unsigned_8 pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
-    static const type_unsigned_8 pointer32[] = { 0x44u, 0x33u, 0x22u, 0x11u, 0x10u, 0x00u };
-    type_unsigned_8 opcode;
-    type_unsigned_8 operand32;
+    static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
+    static const lib_u8 pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
+    static const lib_u8 pointer32[] = { 0x44u, 0x33u, 0x22u, 0x11u, 0x10u, 0x00u };
+    lib_u8 opcode;
+    lib_u8 operand32;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (operand32 = 0u; operand32 != 2u; ++operand32) {
             lfg_machine state;
             core_machine_run_result result;
             t_cpu after;
-            type_unsigned_8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
-            const type_unsigned_8 *pointer = operand32 ? pointer32 : pointer16;
-            type_unsigned_8 code_bytes = operand32 ? 6u : 5u;
-            type_unsigned_8 pointer_bytes = operand32 ? 6u : 4u;
-            type_unsigned_32 expected_offset = operand32 ? 0x11223344u : 0x3344u;
+            lib_u8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
+            const lib_u8 *pointer = operand32 ? pointer32 : pointer16;
+            lib_u8 code_bytes = operand32 ? 6u : 5u;
+            lib_u8 pointer_bytes = operand32 ? 6u : 4u;
+            lib_u32 expected_offset = operand32 ? 0x11223344u : 0x3344u;
             C_INT failed = !lfg_prepare_protected(&state);
 
             if (!failed && operand32) {
@@ -283,8 +284,8 @@ static C_INT lfg_test_protected(C_VOID)
 }
 static C_INT lfg_test_source_fault_atomicity(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lfg_machine state;
@@ -292,7 +293,7 @@ static C_INT lfg_test_source_fault_atomicity(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before = {0};
         t_cpu after = {0};
-        type_unsigned_8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u };
+        lib_u8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u };
         C_INT failed = !lfg_prepare_protected(&state);
 
         if (!failed) {
@@ -333,20 +334,20 @@ static C_INT lfg_test_source_fault_atomicity(C_VOID)
 }
 static C_INT lfg_test_irq_shadow(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
-    static const type_unsigned_8 pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
+    static const lib_u8 pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lfg_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after = {0};
-        type_unsigned_8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
-        type_unsigned_16 vector_offset = 0x0100u;
-        type_unsigned_16 vector_segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
+        lib_u8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
+        lib_u16 vector_offset = 0x0100u;
+        lib_u16 vector_segment = 0u;
+        lib_u16 frame_ip = 0u;
         C_INT failed = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -365,7 +366,7 @@ static C_INT lfg_test_irq_shadow(C_VOID)
         }
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
-            STD_MEMSET(&source, 0, sizeof(source));
+            lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
@@ -377,7 +378,7 @@ static C_INT lfg_test_irq_shadow(C_VOID)
                     CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    after.data.ss.base + (type_unsigned_16)after.data.esp,
+                    after.data.ss.base + (lib_u16)after.data.esp,
                     (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != (opcode == 0u ? 0x0100u : 0x0101u) || !TYPE_GET_BIT(
                     state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||

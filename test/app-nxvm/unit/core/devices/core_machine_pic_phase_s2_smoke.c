@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -8,20 +9,20 @@
 typedef struct pic_phase_s2_state {
     core_machine *machine;
     core_machine_trace_event events[256u];
-    type_unsigned_32 count;
+    lib_u32 count;
 } pic_phase_s2_state;
 
 static C_VOID pic_phase_s2_reset(C_VOID *opaque)
 {
     pic_phase_s2_state *state = (pic_phase_s2_state *)opaque;
 
-    if (state != STD_NULL) {
+    if (state != LIB_NULL) {
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
 static const core_machine_execution_provider pic_phase_s2_provider = {
-    pic_phase_s2_reset, STD_NULL
+    pic_phase_s2_reset, LIB_NULL
 };
 
 static C_VOID pic_phase_s2_trace(C_VOID *opaque,
@@ -29,7 +30,7 @@ static C_VOID pic_phase_s2_trace(C_VOID *opaque,
 {
     pic_phase_s2_state *state = (pic_phase_s2_state *)opaque;
 
-    if (state != STD_NULL && event != STD_NULL && state->count < 256u) {
+    if (state != LIB_NULL && event != LIB_NULL && state->count < 256u) {
         state->events[state->count++] = *event;
     }
 }
@@ -37,10 +38,10 @@ static C_VOID pic_phase_s2_trace(C_VOID *opaque,
 static C_INT pic_phase_s2_has_acknowledgement_before_frame(
     const pic_phase_s2_state *state)
 {
-    type_unsigned_32 index;
-    type_unsigned_32 acknowledgement = 0u;
+    lib_u32 index;
+    lib_u32 acknowledgement = 0u;
 
-    if (state == STD_NULL) return 0;
+    if (state == LIB_NULL) return 0;
     for (index = 0u; index + 1u < state->count; ++index) {
         const core_machine_trace_event *begin = &state->events[index];
         const core_machine_trace_event *commit = &state->events[index + 1u];
@@ -73,17 +74,17 @@ C_INT main(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    static const type_unsigned_8 program[] = { 0x90u };
-    static const type_unsigned_8 handler[] = { 0xf4u };
-    static const type_unsigned_8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
+    static const lib_u8 program[] = { 0x90u };
+    static const lib_u8 handler[] = { 0xf4u };
+    static const lib_u8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
     pic_phase_s2_state state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     const core_machine_trace_provider trace = { pic_phase_s2_trace, &state };
     C_INT failed = 0;
 
-    STD_MEMSET(&state, 0, sizeof(state));
-    STD_MEMSET(&irq, 0, sizeof(irq));
+    lib_memory_set(&state, 0, sizeof(state));
+    lib_memory_set(&irq, 0, sizeof(irq));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
             &pic_phase_s2_provider, &state, &state.machine)) return 1;
     failed |= core_machine_set_trace_provider(state.machine, &trace) !=

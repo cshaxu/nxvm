@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,12 +13,12 @@ static C_VOID les_lds_s41_reset(C_VOID *opaque)
 {
     les_lds_s41_machine *state = (les_lds_s41_machine *)opaque;
 
-    if (state != STD_NULL)
+    if (state != LIB_NULL)
         (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider les_lds_s41_provider = {
-    les_lds_s41_reset, STD_NULL
+    les_lds_s41_reset, LIB_NULL
 };
 
 static C_INT les_lds_s41_prepare(core_machine_cpu_profile profile,
@@ -29,7 +30,7 @@ static C_INT les_lds_s41_prepare(core_machine_cpu_profile profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    STD_MEMSET(state, 0, sizeof(*state));
+    lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &les_lds_s41_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
@@ -75,8 +76,8 @@ static C_INT les_lds_s41_irq_gprs_same_except_eax(const t_cpu *before,
         after->data.edi == before->data.edi;
 }
 
-static C_INT les_lds_s41_run(les_lds_s41_machine *state, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT les_lds_s41_run(les_lds_s41_machine *state, const lib_u8 *code,
+    lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status, core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
@@ -89,34 +90,34 @@ static C_INT les_lds_s41_run(les_lds_s41_machine *state, const type_unsigned_8 *
         TYPE_STATUS_OK;
 }
 
-static C_INT les_lds_s41_read(les_lds_s41_machine *state, type_unsigned_32 physical,
-    void *data, type_unsigned_8 bytes)
+static C_INT les_lds_s41_read(les_lds_s41_machine *state, lib_u32 physical,
+    void *data, lib_u8 bytes)
 {
     return core_machine_memory_read_physical(&state->machine->executor_memory,
         physical, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
 }
 
 static C_INT les_lds_s41_real_case(core_machine_cpu_profile profile,
-    type_unsigned_8 opcode, type_unsigned_8 prefix, type_unsigned_8 segment_prefix)
+    lib_u8 opcode, lib_u8 prefix, lib_u8 segment_prefix)
 {
-    static const type_unsigned_8 pointer16[] = {0x44u,0x33u,0x34u,0x12u};
-    static const type_unsigned_8 pointer32[] = {0x44u,0x33u,0x22u,0x11u,0x34u,0x12u};
+    static const lib_u8 pointer16[] = {0x44u,0x33u,0x34u,0x12u};
+    static const lib_u8 pointer32[] = {0x44u,0x33u,0x22u,0x11u,0x34u,0x12u};
     les_lds_s41_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    type_unsigned_8 code[9] = {0};
-    type_unsigned_8 source[6] = {0};
-    type_unsigned_8 observed[6] = {0};
-    type_unsigned_8 count = 0u;
-    type_unsigned_8 operand32 = prefix == 0x66u || prefix == 0xc6u;
-    type_unsigned_8 address32 = prefix == 0x67u || prefix == 0xc6u;
-    type_unsigned_32 source_base = 0x10000u;
-    type_unsigned_32 physical;
-    type_unsigned_32 expected_eax;
-    type_unsigned_32 expected_eip;
+    lib_u8 code[9] = {0};
+    lib_u8 source[6] = {0};
+    lib_u8 observed[6] = {0};
+    lib_u8 count = 0u;
+    lib_u8 operand32 = prefix == 0x66u || prefix == 0xc6u;
+    lib_u8 address32 = prefix == 0x67u || prefix == 0xc6u;
+    lib_u32 source_base = 0x10000u;
+    lib_u32 physical;
+    lib_u32 expected_eax;
+    lib_u32 expected_eip;
     C_INT failed = !les_lds_s41_prepare(profile, &state);
 
     if (!failed) {
@@ -151,7 +152,7 @@ static C_INT les_lds_s41_real_case(core_machine_cpu_profile profile,
             code[count++] = 0x00u;
             code[count++] = 0x00u;
         }
-        STD_MEMCPY(source, operand32 ? pointer32 : pointer16,
+        lib_memory_copy(source, operand32 ? pointer32 : pointer16,
             operand32 ? sizeof(pointer32) : sizeof(pointer16));
         physical = source_base + 0x1000u;
         failed |= core_machine_memory_write(state.machine, physical, source,
@@ -173,13 +174,13 @@ static C_INT les_lds_s41_real_case(core_machine_cpu_profile profile,
             after.data.ds.flagValid) || (opcode == 0xc4u ? after.data.es.seg.executable :
             after.data.ds.seg.executable) || !(opcode == 0xc4u ?
             after.data.es.seg.data.writable : after.data.ds.seg.data.writable) ||
-            STD_MEMCMP(&before.data.cs, &after.data.cs, sizeof(before.data.cs)) != 0 ||
-            STD_MEMCMP(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
-            STD_MEMCMP(opcode == 0xc4u ? &before.data.ds : &before.data.es,
+            lib_memory_compare(&before.data.cs, &after.data.cs, sizeof(before.data.cs)) != 0 ||
+            lib_memory_compare(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
+            lib_memory_compare(opcode == 0xc4u ? &before.data.ds : &before.data.es,
             opcode == 0xc4u ? &after.data.ds : &after.data.es,
             sizeof(t_cpu_data_sreg)) != 0 || !les_lds_s41_read(&state, physical, observed,
             operand32 ? sizeof(pointer32) : sizeof(pointer16)) ||
-            STD_MEMCMP(source, observed, operand32 ? sizeof(pointer32) :
+            lib_memory_compare(source, observed, operand32 ? sizeof(pointer32) :
             sizeof(pointer16)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -192,11 +193,11 @@ static C_INT les_lds_s41_test_real(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 opcodes[] = {0xc4u,0xc5u};
-    type_unsigned_8 profile;
-    type_unsigned_8 opcode;
-    type_unsigned_8 segment;
-    static const type_unsigned_8 prefixes[] = {0u,0x2eu,0x36u,0x26u,0x64u,0x65u};
+    static const lib_u8 opcodes[] = {0xc4u,0xc5u};
+    lib_u8 profile;
+    lib_u8 opcode;
+    lib_u8 segment;
+    static const lib_u8 prefixes[] = {0u,0x2eu,0x36u,0x26u,0x64u,0x65u};
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -221,7 +222,7 @@ static C_INT les_lds_s41_test_real(C_VOID)
 }
 
 static C_INT les_lds_s41_expect_ud(core_machine_cpu_profile profile,
-    const type_unsigned_8 *code, type_unsigned_8 bytes)
+    const lib_u8 *code, lib_u8 bytes)
 {
     les_lds_s41_machine state;
     t_cpu before;
@@ -240,7 +241,7 @@ static C_INT les_lds_s41_expect_ud(core_machine_cpu_profile profile,
             &status, &result) || status != TYPE_STATUS_FAULT ||
             !diagnostic.first_fault.valid || !TYPE_GET_BIT(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eip != 0u || STD_MEMCMP(&before.data, &after.data,
+            after.data.eip != 0u || lib_memory_compare(&before.data, &after.data,
             sizeof(before.data)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -257,16 +258,16 @@ static C_INT les_lds_s41_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const type_unsigned_8 opcodes[] = {0xc4u,0xc5u};
-    type_unsigned_8 profile;
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = {0xc4u,0xc5u};
+    lib_u8 profile;
+    lib_u8 opcode;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
         for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-            type_unsigned_8 p66[] = {0x66u,opcodes[opcode],0x06u,0,0x10u};
-            type_unsigned_8 p67[] = {0x67u,opcodes[opcode],0x05u,0,0x10u,0,0};
-            type_unsigned_8 both[] = {0x66u,0x67u,opcodes[opcode],0x05u,0,0x10u,0,0};
+            lib_u8 p66[] = {0x66u,opcodes[opcode],0x06u,0,0x10u};
+            lib_u8 p67[] = {0x67u,opcodes[opcode],0x05u,0,0x10u,0,0};
+            lib_u8 both[] = {0x66u,0x67u,opcodes[opcode],0x05u,0,0x10u,0,0};
             if (!les_lds_s41_expect_ud(legacy[profile], p66, sizeof(p66)) ||
                 !les_lds_s41_expect_ud(legacy[profile], p67, sizeof(p67)) ||
                 !les_lds_s41_expect_ud(legacy[profile], both, sizeof(both)))
@@ -276,14 +277,14 @@ static C_INT les_lds_s41_test_rejections(C_VOID)
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
         for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-            type_unsigned_8 reg[] = {opcodes[opcode],0xc0u};
+            lib_u8 reg[] = {opcodes[opcode],0xc0u};
 
             if (!les_lds_s41_expect_ud(profiles[profile], reg, sizeof(reg)))
                 return 0;
         }
     }
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-        type_unsigned_8 lock[] = {0xf0u,opcodes[opcode],0x06u,0,0x10u};
+        lib_u8 lock[] = {0xf0u,opcodes[opcode],0x06u,0,0x10u};
 
         if (!les_lds_s41_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock,
             sizeof(lock)))
@@ -294,19 +295,19 @@ static C_INT les_lds_s41_test_rejections(C_VOID)
 
 static C_INT les_lds_s41_boot_protected(les_lds_s41_machine *state)
 {
-    static const type_unsigned_8 pointer[] = {0x3fu,0u,0u,0x03u,0u,0u};
-    static const type_unsigned_8 gdt[] = {
+    static const lib_u8 pointer[] = {0x3fu,0u,0u,0x03u,0u,0u};
+    static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0,
         0xffu,0xffu,0,0x50u,0,0x12u,0,0, 0xffu,0xffu,0,0x60u,0,0x98u,0,0,
         0xffu,0xffu,0,0x70u,0,0x92u,0,0, 0xffu,0xffu,0,0x80u,0,0x92u,0,0
     };
-    static const type_unsigned_8 boot[] = {
+    static const lib_u8 boot[] = {
         0x0fu,0x01u,0x16u,0,1u, 0xb8u,1u,0,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0,0x8eu,0xd8u, 0xb8u,0x18u,0,0x8eu,0xc0u,
         0xb8u,0x10u,0,0x8eu,0xd0u,0xbcu,0,0x80u, 0xeau,0,0,8u,0
     };
-    static const type_unsigned_8 halt = 0xf4u;
+    static const lib_u8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
@@ -319,7 +320,7 @@ static C_INT les_lds_s41_boot_protected(les_lds_s41_machine *state)
         TYPE_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT les_lds_s41_protected_case(type_unsigned_8 opcode, type_unsigned_16 selector,
+static C_INT les_lds_s41_protected_case(lib_u8 opcode, lib_u16 selector,
     C_INT expect_fault, C_INT null_selector)
 {
     les_lds_s41_machine state;
@@ -327,16 +328,16 @@ static C_INT les_lds_s41_protected_case(type_unsigned_8 opcode, type_unsigned_16
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_unsigned_8 pointer[] = {0x44u,0x33u,0,0};
-    type_unsigned_8 source[4] = {0x44u,0x33u,0,0};
-    type_unsigned_8 observed[4] = {0};
-    type_unsigned_8 program[4] = {opcode,0x06u,0x10u,0u};
-    type_unsigned_8 access = 0u;
+    lib_u8 pointer[] = {0x44u,0x33u,0,0};
+    lib_u8 source[4] = {0x44u,0x33u,0,0};
+    lib_u8 observed[4] = {0};
+    lib_u8 program[4] = {opcode,0x06u,0x10u,0u};
+    lib_u8 access = 0u;
     C_INT failed = !les_lds_s41_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
-    pointer[2] = (type_unsigned_8)selector;
-    pointer[3] = (type_unsigned_8)(selector >> 8u);
+    pointer[2] = (lib_u8)selector;
+    pointer[3] = (lib_u8)(selector >> 8u);
     source[2] = pointer[2];
     source[3] = pointer[3];
     if (!failed)
@@ -363,7 +364,7 @@ static C_INT les_lds_s41_protected_case(type_unsigned_8 opcode, type_unsigned_16
             TYPE_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !les_lds_s41_read(&state, 0x3010u, observed,
-            sizeof(observed)) || STD_MEMCMP(source, observed,
+            sizeof(observed)) || lib_memory_compare(source, observed,
             sizeof(source)) != 0;
         if (expect_fault) {
             failed |= result.reason != CORE_MACHINE_STOP_FAULT ||
@@ -373,12 +374,12 @@ static C_INT les_lds_s41_protected_case(type_unsigned_8 opcode, type_unsigned_16
                 after.data.eax != before.data.eax ||
                 !les_lds_s41_gprs_same_except_eax(&before, &after) ||
                 after.data.eflags != before.data.eflags ||
-                STD_MEMCMP(opcode == 0xc4u ? &before.data.es : &before.data.ds,
+                lib_memory_compare(opcode == 0xc4u ? &before.data.es : &before.data.ds,
                 opcode == 0xc4u ? &after.data.es : &after.data.ds,
-                sizeof(t_cpu_data_sreg)) != 0 || STD_MEMCMP(&before.data.cs,
+                sizeof(t_cpu_data_sreg)) != 0 || lib_memory_compare(&before.data.cs,
                 &after.data.cs, sizeof(before.data.cs)) != 0 ||
-                STD_MEMCMP(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
-                STD_MEMCMP(opcode == 0xc4u ? &before.data.ds : &before.data.es,
+                lib_memory_compare(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
+                lib_memory_compare(opcode == 0xc4u ? &before.data.ds : &before.data.es,
                 opcode == 0xc4u ? &after.data.ds : &after.data.es,
                 sizeof(t_cpu_data_sreg)) != 0;
         } else if (null_selector) {
@@ -389,10 +390,10 @@ static C_INT les_lds_s41_protected_case(type_unsigned_8 opcode, type_unsigned_16
                 after.data.eflags != before.data.eflags ||
                 (opcode == 0xc4u ? after.data.es.selector : after.data.ds.selector) !=
                 0u || (opcode == 0xc4u ? after.data.es.flagValid :
-                after.data.ds.flagValid) || STD_MEMCMP(&before.data.cs,
+                after.data.ds.flagValid) || lib_memory_compare(&before.data.cs,
                 &after.data.cs, sizeof(before.data.cs)) != 0 ||
-                STD_MEMCMP(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
-                STD_MEMCMP(opcode == 0xc4u ? &before.data.ds : &before.data.es,
+                lib_memory_compare(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
+                lib_memory_compare(opcode == 0xc4u ? &before.data.ds : &before.data.es,
                 opcode == 0xc4u ? &after.data.ds : &after.data.es,
                 sizeof(t_cpu_data_sreg)) != 0;
         } else {
@@ -410,9 +411,9 @@ static C_INT les_lds_s41_protected_case(type_unsigned_8 opcode, type_unsigned_16
                 (opcode == 0xc4u ? after.data.es.seg.executable :
                 after.data.ds.seg.executable) || !(opcode == 0xc4u ?
                 after.data.es.seg.data.writable : after.data.ds.seg.data.writable) ||
-                STD_MEMCMP(&before.data.cs, &after.data.cs, sizeof(before.data.cs)) != 0 ||
-                STD_MEMCMP(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
-                STD_MEMCMP(opcode == 0xc4u ? &before.data.ds : &before.data.es,
+                lib_memory_compare(&before.data.cs, &after.data.cs, sizeof(before.data.cs)) != 0 ||
+                lib_memory_compare(&before.data.ss, &after.data.ss, sizeof(before.data.ss)) != 0 ||
+                lib_memory_compare(opcode == 0xc4u ? &before.data.ds : &before.data.es,
                 opcode == 0xc4u ? &after.data.ds : &after.data.es,
                 sizeof(t_cpu_data_sreg)) != 0 || !les_lds_s41_read(&state, 0x31du,
                 &access, sizeof(access)) || access != 0x93u;
@@ -424,8 +425,8 @@ static C_INT les_lds_s41_protected_case(type_unsigned_8 opcode, type_unsigned_16
 
 static C_INT les_lds_s41_test_protected(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = {0xc4u,0xc5u};
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = {0xc4u,0xc5u};
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         if (!les_lds_s41_protected_case(opcodes[opcode], 0x18u, 0, 0) ||
@@ -440,8 +441,8 @@ static C_INT les_lds_s41_test_protected(C_VOID)
 
 static C_INT les_lds_s41_test_limit(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = {0xc4u,0xc5u};
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = {0xc4u,0xc5u};
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         les_lds_s41_machine state;
@@ -449,7 +450,7 @@ static C_INT les_lds_s41_test_limit(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        type_unsigned_8 code[] = {opcodes[opcode],0x06u,0x10u,0u};
+        lib_u8 code[] = {opcodes[opcode],0x06u,0x10u,0u};
         C_INT failed = !les_lds_s41_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -476,7 +477,7 @@ static C_INT les_lds_s41_test_limit(C_VOID)
                 after.data.eax != before.data.eax ||
                 !les_lds_s41_gprs_same_except_eax(&before, &after) ||
                 after.data.eflags != before.data.eflags ||
-                STD_MEMCMP(opcodes[opcode] == 0xc4u ? &before.data.es :
+                lib_memory_compare(opcodes[opcode] == 0xc4u ? &before.data.es :
                 &before.data.ds, opcodes[opcode] == 0xc4u ? &after.data.es :
                 &after.data.ds, sizeof(t_cpu_data_sreg)) != 0;
         }
@@ -489,10 +490,10 @@ static C_INT les_lds_s41_test_limit(C_VOID)
 
 static C_INT les_lds_s41_test_irq(C_VOID)
 {
-    static const type_unsigned_8 opcodes[] = {0xc4u,0xc5u};
-    static const type_unsigned_8 pointer[] = {0x44u,0x33u,0,0};
-    static const type_unsigned_8 hlt = 0xf4u;
-    type_unsigned_8 opcode;
+    static const lib_u8 opcodes[] = {0xc4u,0xc5u};
+    static const lib_u8 pointer[] = {0x44u,0x33u,0,0};
+    static const lib_u8 hlt = 0xf4u;
+    lib_u8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         les_lds_s41_machine state;
@@ -500,10 +501,10 @@ static C_INT les_lds_s41_test_irq(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        type_unsigned_16 offset = 0x100u;
-        type_unsigned_16 segment = 0u;
-        type_unsigned_16 frame_ip = 0u;
-        type_unsigned_8 code[] = {opcodes[opcode],0x06u,0,0x10u,0x90u};
+        lib_u16 offset = 0x100u;
+        lib_u16 segment = 0u;
+        lib_u16 frame_ip = 0u;
+        lib_u8 code[] = {opcodes[opcode],0x06u,0,0x10u,0x90u};
         C_INT failed = !les_lds_s41_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -522,7 +523,7 @@ static C_INT les_lds_s41_test_irq(C_VOID)
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
-            STD_MEMSET(&irq, 0, sizeof(irq));
+            lib_memory_set(&irq, 0, sizeof(irq));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
             core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
@@ -533,7 +534,7 @@ static C_INT les_lds_s41_test_irq(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                after.data.ss.base + (lib_u16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != 4u ||
                 after.data.eax != 0xaabb3344u ||

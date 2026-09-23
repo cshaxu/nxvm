@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/machine/frame.h"
@@ -5,14 +6,14 @@
 type_status vm_machine_frame_from_display(
     const vm_machine_display_event *source, common_machine_frame *destination)
 {
-    static const type_unsigned_16 cp437_controls[33u] = {
+    static const lib_u16 cp437_controls[33u] = {
         0x0020u, 0x263au, 0x263bu, 0x2665u, 0x2666u, 0x2663u, 0x2660u,
         0x2022u, 0x25d8u, 0x25cbu, 0x25d9u, 0x2642u, 0x2640u, 0x266au,
         0x266bu, 0x263cu, 0x25bau, 0x25c4u, 0x2195u, 0x203cu, 0x00b6u,
         0x00a7u, 0x25acu, 0x21a8u, 0x2191u, 0x2193u, 0x2192u, 0x2190u,
         0x221fu, 0x2194u, 0x25b2u, 0x25bcu, 0x2302u
     };
-    static const type_unsigned_16 cp437_extended[128u] = {
+    static const lib_u16 cp437_extended[128u] = {
         0x00c7u, 0x00fcu, 0x00e9u, 0x00e2u, 0x00e4u, 0x00e0u, 0x00e5u,
         0x00e7u, 0x00eau, 0x00ebu, 0x00e8u, 0x00efu, 0x00eeu, 0x00ecu,
         0x00c4u, 0x00c5u, 0x00c9u, 0x00e6u, 0x00c6u, 0x00f4u, 0x00f6u,
@@ -33,28 +34,28 @@ type_status vm_machine_frame_from_display(
         0x2248u, 0x00b0u, 0x2219u, 0x00b7u, 0x221au, 0x207fu, 0x00b2u,
         0x25a0u, 0x00a0u
     };
-    STD_SIZE_T cell;
+    lib_size cell;
 
-    if (source == STD_NULL || destination == STD_NULL)
+    if (source == LIB_NULL || destination == LIB_NULL)
         return TYPE_STATUS_INVALID_ARGUMENT;
     if (source->graphics && (source->pixel_width > KVM_WINDOW_GRAPHICS_MAX_WIDTH ||
         source->pixel_height > KVM_WINDOW_GRAPHICS_MAX_HEIGHT ||
-        (STD_SIZE_T)source->pixel_width * source->pixel_height > sizeof(source->pixels)))
+        (lib_size)source->pixel_width * source->pixel_height > sizeof(source->pixels)))
         return TYPE_STATUS_UNSUPPORTED;
     if (!source->graphics && (source->columns > KVM_TEXT_COLUMNS ||
         source->rows > KVM_TEXT_ROWS || source->text_cell_height == 0u ||
         source->text_cell_height > 32u)) return TYPE_STATUS_UNSUPPORTED;
     *destination = (common_machine_frame){0};
-    destination->window.valid = TYPE_TRUE;
-    destination->sequence = (type_unsigned_32)source->generation;
+    destination->window.valid = LIB_TRUE;
+    destination->sequence = (lib_u32)source->generation;
     destination->window.graphics = source->graphics;
     if (destination->window.graphics) {
         destination->window.image.width = source->pixel_width;
         destination->window.image.height = source->pixel_height;
         destination->window.image.stride = source->pixel_width;
-        STD_MEMCPY(destination->window.image.pixels, source->pixels,
-            (STD_SIZE_T)source->pixel_width * source->pixel_height);
-        STD_MEMCPY(destination->window.image.palette, source->palette_rgb,
+        lib_memory_copy(destination->window.image.pixels, source->pixels,
+            (lib_size)source->pixel_width * source->pixel_height);
+        lib_memory_copy(destination->window.image.palette, source->palette_rgb,
             sizeof(destination->window.image.palette));
         return TYPE_STATUS_OK;
     }
@@ -66,33 +67,33 @@ type_status vm_machine_frame_from_display(
     destination->window.text.base.font_height = 16u;
     destination->window.text.base.cursor_column = source->cursor_x;
     destination->window.text.base.cursor_row = source->cursor_y;
-    destination->window.text.base.cursor_top = (type_unsigned_8)((type_unsigned_32)source->cursor_top *
+    destination->window.text.base.cursor_top = (lib_u8)((lib_u32)source->cursor_top *
         destination->window.text.base.font_height / source->text_cell_height);
-    destination->window.text.base.cursor_bottom = (type_unsigned_8)(
-        (((type_unsigned_32)source->cursor_bottom + 1u) * destination->window.text.base.font_height +
+    destination->window.text.base.cursor_bottom = (lib_u8)(
+        (((lib_u32)source->cursor_bottom + 1u) * destination->window.text.base.font_height +
             source->text_cell_height - 1u) / source->text_cell_height - 1u);
     if (destination->window.text.base.cursor_top >= destination->window.text.base.font_height)
-        destination->window.text.base.cursor_top = (type_unsigned_8)(destination->window.text.base.font_height - 1u);
+        destination->window.text.base.cursor_top = (lib_u8)(destination->window.text.base.font_height - 1u);
     if (destination->window.text.base.cursor_bottom >= destination->window.text.base.font_height)
-        destination->window.text.base.cursor_bottom = (type_unsigned_8)(destination->window.text.base.font_height - 1u);
+        destination->window.text.base.cursor_bottom = (lib_u8)(destination->window.text.base.font_height - 1u);
     destination->window.text.base.cursor_visible = source->cursor_visible;
     destination->window.text.base.cursor_phase = source->cursor_visible;
     for (cell = 0u; cell < VM_MACHINE_EVENT_TEXT_CELLS; ++cell) {
-        type_unsigned_8 attribute = source->attributes[cell];
+        lib_u8 attribute = source->attributes[cell];
         destination->window.text.base.cells[cell] = (kvm_text_cell){
             source->characters[cell], 0u, attribute & 0x0fu, attribute >> 4u };
     }
     for (cell = 0u; cell < 256u; ++cell) {
-        type_unsigned_16 character = cell < 32u ? cp437_controls[cell] :
+        lib_u16 character = cell < 32u ? cp437_controls[cell] :
             cell == 127u ? cp437_controls[32u] :
-            cell < 128u ? (type_unsigned_16)cell : cp437_extended[cell - 128u];
+            cell < 128u ? (lib_u16)cell : cp437_extended[cell - 128u];
         destination->characters.primary[cell] = character;
         destination->characters.secondary[cell] = character;
     }
-    STD_MEMCPY(destination->window.text.base.text_palette, source->palette_rgb,
+    lib_memory_copy(destination->window.text.base.text_palette, source->palette_rgb,
         sizeof(destination->window.text.base.text_palette));
     if (source->glyphs_present) {
-        STD_MEMCPY(destination->window.text.font, source->glyphs,
+        lib_memory_copy(destination->window.text.font, source->glyphs,
             sizeof(destination->window.text.font));
     }
     return TYPE_STATUS_OK;

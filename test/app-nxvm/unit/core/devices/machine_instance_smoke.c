@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 
@@ -7,14 +8,14 @@
 #include "support/core_machine_executor_fixture.h"
 
 typedef struct port_fixture {
-    type_unsigned_16 last_port;
-    type_unsigned_32 value;
+    lib_u16 last_port;
+    lib_u32 value;
 } port_fixture;
 
 static type_status port_read(
     C_VOID *owner,
-    type_unsigned_16 port,
-    type_unsigned_32 *out_value)
+    lib_u16 port,
+    lib_u32 *out_value)
 {
     port_fixture *fixture = (port_fixture *)owner;
 
@@ -25,8 +26,8 @@ static type_status port_read(
 
 static type_status port_write(
     C_VOID *owner,
-    type_unsigned_16 port,
-    type_unsigned_32 value)
+    lib_u16 port,
+    lib_u32 value)
 {
     port_fixture *fixture = (port_fixture *)owner;
 
@@ -42,14 +43,14 @@ static C_INT expect_status(type_status actual, type_status expected)
 
 C_INT main(C_VOID)
 {
-    core_machine *first = STD_NULL;
-    core_machine *second = STD_NULL;
+    core_machine *first = LIB_NULL;
+    core_machine *second = LIB_NULL;
     core_machine_cpu_state cpu;
     core_machine_port_provider ops = { port_read, port_write };
     port_fixture first_port = { 0u, 0u };
     port_fixture second_port = { 0u, 0u };
-    type_unsigned_8 value;
-    type_unsigned_32 port_value;
+    lib_u8 value;
+    lib_u32 port_value;
     C_INT result = 0;
 
     result |= expect_status(test_core_machine_create_executor(

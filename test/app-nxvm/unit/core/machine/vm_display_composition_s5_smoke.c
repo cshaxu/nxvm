@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -9,8 +10,8 @@
 #include "support/rom/session_assets.h"
 #include "app-nxvm/machine/machine_private.h"
 
-static C_VOID vm_display_s5_port_write(vm_machine *session, type_unsigned_16 port,
-    type_unsigned_8 value)
+static C_VOID vm_display_s5_port_write(vm_machine *session, lib_u16 port,
+    lib_u8 value)
 {
     core_machine_port_write(&session->core_machine->executor_port, port, value);
 }
@@ -18,7 +19,7 @@ static C_VOID vm_display_s5_port_write(vm_machine *session, type_unsigned_16 por
 static C_INT vm_display_s5_capture(vm_machine *session,
     core_machine_guest_display_frame *frame, core_machine_display_kind expected_kind)
 {
-    return vm_machine_publish_display(session, TYPE_TRUE) == expected_kind &&
+    return vm_machine_publish_display(session, LIB_TRUE) == expected_kind &&
         test_vm_machine_capture_presentation(session, frame) == TYPE_STATUS_OK;
 }
 
@@ -47,24 +48,24 @@ static C_INT vm_display_s5_enable_planar(vm_machine *session)
 
 C_INT main(C_VOID)
 {
-    vm_machine *session = STD_NULL;
-    core_machine_guest_display_frame frame;
-    core_machine_display_snapshot snapshot;
-    core_machine_display_snapshot_observation observation;
+    vm_machine *session = LIB_NULL;
+    static core_machine_guest_display_frame frame;
+    static core_machine_display_snapshot snapshot;
+    static core_machine_display_snapshot_observation observation;
     core_machine_timeline_observation timeline;
-    type_unsigned_8 cga_even = 0x1bu;
-    type_unsigned_8 cga_odd = 0xe4u;
-    type_unsigned_8 ega_pixel = 0xa5u;
-    type_unsigned_64 text_generation;
-    type_unsigned_64 cga_generation;
-    type_unsigned_64 ega_snapshot_generation;
+    lib_u8 cga_even = 0x1bu;
+    lib_u8 cga_odd = 0xe4u;
+    lib_u8 ega_pixel = 0xa5u;
+    lib_u64 text_generation;
+    lib_u64 cga_generation;
+    lib_u64 ega_snapshot_generation;
     C_INT failed = 0;
 
-    if (vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL) {
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL) {
         return 1;
     }
-    STD_MEMSET(&frame, 0, sizeof(frame));
+    lib_memory_set(&frame, 0, sizeof(frame));
     failed |= !vm_display_s5_capture(session, &frame, CORE_MACHINE_DISPLAY_KIND_TEXT) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.palette_rgb[0u] != 0x000000u ||
@@ -106,12 +107,12 @@ C_INT main(C_VOID)
         frame.generation <= cga_generation;
     ega_snapshot_generation = session->display_snapshot_generation;
     failed |= !session->display_snapshot_generation_valid ||
-        core_machine_observe_display_snapshot(session->core_machine, TYPE_TRUE,
+        core_machine_observe_display_snapshot(session->core_machine, LIB_TRUE,
             ega_snapshot_generation, &observation) != TYPE_STATUS_OK ||
         !observation.generation_reliable || observation.capture_required ||
         observation.generation != ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, TYPE_FALSE) !=
+    failed |= vm_machine_publish_display(session, LIB_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
         test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
         frame.generation <= cga_generation ||
@@ -120,12 +121,12 @@ C_INT main(C_VOID)
     failed |= core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
         sizeof(ega_pixel)) != TYPE_STATUS_OK ||
-        core_machine_observe_display_snapshot(session->core_machine, TYPE_TRUE,
+        core_machine_observe_display_snapshot(session->core_machine, LIB_TRUE,
             ega_snapshot_generation, &observation) != TYPE_STATUS_OK ||
         !observation.generation_reliable || !observation.capture_required ||
         observation.generation == ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
-    failed |= vm_machine_publish_display(session, TYPE_FALSE) !=
+    failed |= vm_machine_publish_display(session, LIB_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
         test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
         frame.generation <= cga_generation ||

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -15,17 +16,17 @@ int main(C_VOID)
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_ibm_5170_model_339_descriptor_get();
     const vm_profile_default_pc_at_route *route;
-    vm_machine *session = STD_NULL;
-    C_INT failed = profile == STD_NULL ||
+    vm_machine *session = LIB_NULL;
+    C_INT failed = profile == LIB_NULL ||
         profile->firmware_slot !=
             VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT ||
         profile->diskette_drive_a_field_upgrade || profile->cmos.floppy_type != 0x20u ||
         vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+        session == LIB_NULL;
 
     route = vm_profile_default_pc_at_route_find(profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
-    if (!failed) failed |= route == STD_NULL || route->irq != 6u ||
+    if (!failed) failed |= route == LIB_NULL || route->irq != 6u ||
         route->dma_channel != 2u ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x03f2u) ||
         !core_machine_port_has_read(&session->core_machine->executor_port, 0x03f4u) ||

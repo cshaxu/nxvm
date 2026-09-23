@@ -1,123 +1,124 @@
 /* Copyright 2012-2014 Neko. */
 
 /* VPIT implements the deterministic elapsed-tick subset of Intel 8254. */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/pit.h"
 
-static type_unsigned_8 core_machine_pit_mode(const t_pit *pit,
-    type_unsigned_8 id)
+static lib_u8 core_machine_pit_mode(const t_pit *pit,
+    lib_u8 id)
 {
-    type_unsigned_8 mode = VPIT_GetCW_M(pit->data.cw[id]);
+    lib_u8 mode = VPIT_GetCW_M(pit->data.cw[id]);
     return mode == 6u ? 2u : mode == 7u ? 3u : mode;
 }
 
-static type_unsigned_32 core_machine_pit_bcd_decode(type_unsigned_16 value)
+static lib_u32 core_machine_pit_bcd_decode(lib_u16 value)
 {
-    return (type_unsigned_32)(value & 0x000fu) +
-        (type_unsigned_32)((value >> 4) & 0x000fu) * 10u +
-        (type_unsigned_32)((value >> 8) & 0x000fu) * 100u +
-        (type_unsigned_32)((value >> 12) & 0x000fu) * 1000u;
+    return (lib_u32)(value & 0x000fu) +
+        (lib_u32)((value >> 4) & 0x000fu) * 10u +
+        (lib_u32)((value >> 8) & 0x000fu) * 100u +
+        (lib_u32)((value >> 12) & 0x000fu) * 1000u;
 }
 
-static type_unsigned_16 core_machine_pit_bcd_encode(type_unsigned_32 value)
+static lib_u16 core_machine_pit_bcd_encode(lib_u32 value)
 {
-    type_unsigned_16 result = 0u;
-    result |= (type_unsigned_16)(value % 10u);
+    lib_u16 result = 0u;
+    result |= (lib_u16)(value % 10u);
     value /= 10u;
-    result |= (type_unsigned_16)((value % 10u) << 4);
+    result |= (lib_u16)((value % 10u) << 4);
     value /= 10u;
-    result |= (type_unsigned_16)((value % 10u) << 8);
+    result |= (lib_u16)((value % 10u) << 8);
     value /= 10u;
-    result |= (type_unsigned_16)((value % 10u) << 12);
+    result |= (lib_u16)((value % 10u) << 12);
     return result;
 }
 
-static type_unsigned_32 core_machine_pit_decode_reload(const t_pit *pit,
-    type_unsigned_8 id)
+static lib_u32 core_machine_pit_decode_reload(const t_pit *pit,
+    lib_u8 id)
 {
     if ((pit->data.cw[id] & VPIT_CW_BCD) != 0u) {
-        type_unsigned_32 result = core_machine_pit_bcd_decode(pit->data.init[id]);
+        lib_u32 result = core_machine_pit_bcd_decode(pit->data.init[id]);
         return result == 0u ? 10000u : result;
     }
     return pit->data.init[id] == 0u ? 65536u : pit->data.init[id];
 }
 
-static type_unsigned_16 core_machine_pit_encode_count(const t_pit *pit,
-    type_unsigned_8 id, type_unsigned_32 count)
+static lib_u16 core_machine_pit_encode_count(const t_pit *pit,
+    lib_u8 id, lib_u32 count)
 {
     if ((pit->data.cw[id] & VPIT_CW_BCD) != 0u) {
         return count == 10000u ? 0u : core_machine_pit_bcd_encode(count);
     }
-    return count == 65536u ? 0u : (type_unsigned_16)count;
+    return count == 65536u ? 0u : (lib_u16)count;
 }
 
-static C_VOID core_machine_pit_sync_count(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_sync_count(t_pit *pit, lib_u8 id)
 {
     pit->data.count[id] = core_machine_pit_encode_count(pit, id,
         pit->data.remaining[id]);
 }
 
 static C_VOID core_machine_pit_set_output_level(t_pit *pit,
-    type_unsigned_8 id, type_bool asserted, type_bool notify_rise)
+    lib_u8 id, type_bool asserted, type_bool notify_rise)
 {
     if (pit->data.flagOutput[id] == asserted) return;
     pit->data.flagOutput[id] = asserted;
-    if (pit->connect.output[id] == STD_NULL) return;
+    if (pit->connect.output[id] == LIB_NULL) return;
     if (!asserted || notify_rise) {
         pit->connect.output[id](pit->connect.output_owner[id], asserted);
     }
 }
 
-static type_unsigned_32 core_machine_pit_mode3_high_length(const t_pit *pit,
-    type_unsigned_8 id)
+static lib_u32 core_machine_pit_mode3_high_length(const t_pit *pit,
+    lib_u8 id)
 {
     return (pit->data.reload[id] + 1u) / 2u;
 }
 
-static type_unsigned_32 core_machine_pit_mode3_low_length(const t_pit *pit,
-    type_unsigned_8 id)
+static lib_u32 core_machine_pit_mode3_low_length(const t_pit *pit,
+    lib_u8 id)
 {
     return pit->data.reload[id] / 2u;
 }
 
-static type_unsigned_32 core_machine_pit_mode3_count(const t_pit *pit,
-    type_unsigned_8 id)
+static lib_u32 core_machine_pit_mode3_count(const t_pit *pit,
+    lib_u8 id)
 {
     return pit->data.reload[id] - (pit->data.reload[id] & 1u);
 }
 
-static C_VOID core_machine_pit_load(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_load(t_pit *pit, lib_u8 id)
 {
-    type_unsigned_8 mode = core_machine_pit_mode(pit, id);
+    lib_u8 mode = core_machine_pit_mode(pit, id);
 
     pit->data.reload[id] = core_machine_pit_decode_reload(pit, id);
     pit->data.remaining[id] = mode == 3u ?
         core_machine_pit_mode3_count(pit, id) : pit->data.reload[id];
     pit->data.phase[id] = mode == 3u ?
         core_machine_pit_mode3_high_length(pit, id) : 0u;
-    pit->data.flagReady[id] = TYPE_TRUE;
-    pit->data.flagLoadPending[id] = TYPE_FALSE;
-    pit->data.flagRestart[id] = TYPE_FALSE;
+    pit->data.flagReady[id] = LIB_TRUE;
+    pit->data.flagLoadPending[id] = LIB_FALSE;
+    pit->data.flagRestart[id] = LIB_FALSE;
     pit->data.flagActive[id] = mode != 1u && mode != 5u;
-    pit->data.flagPulseLow[id] = TYPE_FALSE;
+    pit->data.flagPulseLow[id] = LIB_FALSE;
     core_machine_pit_sync_count(pit, id);
 
 }
 
 static t_pit_data_status_rw core_machine_pit_read_start(const t_pit *pit,
-    type_unsigned_8 id)
+    lib_u8 id)
 {
     return VPIT_GetCW_RW(pit->data.cw[id]) == 0x02 ?
         VPIT_STATUS_RW_MSB : VPIT_STATUS_RW_LSB;
 }
 
-static type_unsigned_8 core_machine_pit_capture_status(const t_pit *pit,
-    type_unsigned_8 id)
+static lib_u8 core_machine_pit_capture_status(const t_pit *pit,
+    lib_u8 id)
 {
-    type_unsigned_8 status = pit->data.cw[id] &
+    lib_u8 status = pit->data.cw[id] &
         (VPIT_SB_BCD | VPIT_SB_M | VPIT_SB_RW);
 
     if (pit->data.flagOutput[id]) status |= VPIT_SB_OUT;
@@ -125,29 +126,29 @@ static type_unsigned_8 core_machine_pit_capture_status(const t_pit *pit,
     return status;
 }
 
-static C_VOID core_machine_pit_latch_count(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_latch_count(t_pit *pit, lib_u8 id)
 {
     if (pit->data.flagLatch[id]) return;
     core_machine_pit_sync_count(pit, id);
     pit->data.latch[id] = pit->data.count[id];
-    pit->data.flagLatch[id] = TYPE_TRUE;
+    pit->data.flagLatch[id] = LIB_TRUE;
     pit->data.flagRead[id] = core_machine_pit_read_start(pit, id);
 }
 
-static C_VOID core_machine_pit_latch_status(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_latch_status(t_pit *pit, lib_u8 id)
 {
     if (pit->data.flagStatusLatch[id]) return;
     pit->data.status_latch[id] = core_machine_pit_capture_status(pit, id);
-    pit->data.flagStatusLatch[id] = TYPE_TRUE;
+    pit->data.flagStatusLatch[id] = LIB_TRUE;
 }
 
 static C_VOID core_machine_pit_read(t_pit *pit, t_port *port,
-    type_unsigned_8 id)
+    lib_u8 id)
 {
-    type_unsigned_16 value;
+    lib_u16 value;
     if (pit->data.flagStatusLatch[id]) {
         port->data.ioByte = pit->data.status_latch[id];
-        pit->data.flagStatusLatch[id] = TYPE_FALSE;
+        pit->data.flagStatusLatch[id] = LIB_FALSE;
         return;
     }
     if (pit->data.flagLatch[id]) {
@@ -160,55 +161,55 @@ static C_VOID core_machine_pit_read(t_pit *pit, t_port *port,
     case 0x01:
         port->data.ioByte = TYPE_MASK_UNSIGNED_8(value);
         pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
-        pit->data.flagLatch[id] = TYPE_FALSE;
+        pit->data.flagLatch[id] = LIB_FALSE;
         break;
     case 0x02:
         port->data.ioByte = TYPE_MASK_UNSIGNED_8(value >> 8);
         pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
-        pit->data.flagLatch[id] = TYPE_FALSE;
+        pit->data.flagLatch[id] = LIB_FALSE;
         break;
     case 0x03:
         if (pit->data.flagRead[id] == VPIT_STATUS_RW_MSB) {
             port->data.ioByte = TYPE_MASK_UNSIGNED_8(value >> 8);
             pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
-            pit->data.flagLatch[id] = TYPE_FALSE;
+            pit->data.flagLatch[id] = LIB_FALSE;
         } else {
             port->data.ioByte = TYPE_MASK_UNSIGNED_8(value);
             pit->data.flagRead[id] = VPIT_STATUS_RW_MSB;
         }
         break;
     default:
-        pit->data.flagLatch[id] = TYPE_FALSE;
+        pit->data.flagLatch[id] = LIB_FALSE;
         break;
     }
 }
 
 static C_VOID core_machine_pit_write(t_pit *pit, t_port *port,
-    type_unsigned_8 id)
+    lib_u8 id)
 {
-    type_bool complete = TYPE_FALSE;
+    type_bool complete = LIB_FALSE;
     switch (VPIT_GetCW_RW(pit->data.cw[id])) {
     case 0x01:
         pit->data.init[id] = TYPE_MASK_UNSIGNED_16(port->data.ioByte);
-        complete = TYPE_TRUE;
+        complete = LIB_TRUE;
         break;
     case 0x02:
         pit->data.init[id] = TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8);
-        complete = TYPE_TRUE;
+        complete = LIB_TRUE;
         break;
     case 0x03:
         if (pit->data.flagWrite[id] == VPIT_STATUS_RW_MSB) {
             pit->data.init[id] = TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8) |
                 TYPE_MASK_UNSIGNED_8(pit->data.init[id]);
-            complete = TYPE_TRUE;
+            complete = LIB_TRUE;
         } else {
             pit->data.init[id] = TYPE_MASK_UNSIGNED_16(port->data.ioByte);
             pit->data.flagWrite[id] = VPIT_STATUS_RW_MSB;
             if (core_machine_pit_mode(pit, id) == 0u) {
-                pit->data.flagReady[id] = TYPE_FALSE;
-                pit->data.flagActive[id] = TYPE_FALSE;
-                pit->data.flagPulseLow[id] = TYPE_FALSE;
-                core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+                pit->data.flagReady[id] = LIB_FALSE;
+                pit->data.flagActive[id] = LIB_FALSE;
+                pit->data.flagPulseLow[id] = LIB_FALSE;
+                core_machine_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
             }
         }
         break;
@@ -217,26 +218,26 @@ static C_VOID core_machine_pit_write(t_pit *pit, t_port *port,
     }
     if (complete) {
         pit->data.flagWrite[id] = VPIT_STATUS_RW_READY;
-        pit->data.flagReady[id] = TYPE_FALSE;
-        pit->data.flagLoadPending[id] = TYPE_TRUE;
+        pit->data.flagReady[id] = LIB_FALSE;
+        pit->data.flagLoadPending[id] = LIB_TRUE;
         /* 8254 mode 0 holds OUT high after terminal count only until a new
          * count is written.  The new count restarts the mode with OUT low;
          * this applies equally to an LSB-only count and to the completed
          * second byte of an LSB/MSB count. */
         if (core_machine_pit_mode(pit, id) == 0u) {
-            pit->data.flagActive[id] = TYPE_FALSE;
-            pit->data.flagPulseLow[id] = TYPE_FALSE;
-            core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+            pit->data.flagActive[id] = LIB_FALSE;
+            pit->data.flagPulseLow[id] = LIB_FALSE;
+            core_machine_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
         }
     }
 }
 
-static C_VOID core_machine_pit_commit_pending(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_commit_pending(t_pit *pit, lib_u8 id)
 {
     core_machine_pit_load(pit, id);
 }
 
-static C_VOID core_machine_pit_tick_mode0(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_tick_mode0(t_pit *pit, lib_u8 id)
 {
     if (pit->data.flagLoadPending[id]) {
         core_machine_pit_commit_pending(pit, id);
@@ -244,13 +245,13 @@ static C_VOID core_machine_pit_tick_mode0(t_pit *pit, type_unsigned_8 id)
     }
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
     if (--pit->data.remaining[id] == 0u) {
-        pit->data.flagActive[id] = TYPE_FALSE;
-        core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_TRUE);
+        pit->data.flagActive[id] = LIB_FALSE;
+        core_machine_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
     }
     core_machine_pit_sync_count(pit, id);
 }
 
-static C_VOID core_machine_pit_tick_mode1(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_tick_mode1(t_pit *pit, lib_u8 id)
 {
     /* Mode 1 loads CE on the clock following a completed count write.  The
      * later gate trigger starts the one-shot; it does not defer that load. */
@@ -259,23 +260,23 @@ static C_VOID core_machine_pit_tick_mode1(t_pit *pit, type_unsigned_8 id)
         return;
     }
     if (pit->data.flagTrigger[id]) {
-        pit->data.flagTrigger[id] = TYPE_FALSE;
+        pit->data.flagTrigger[id] = LIB_FALSE;
         pit->data.remaining[id] = pit->data.reload[id];
-        pit->data.flagPulseLow[id] = TYPE_FALSE;
+        pit->data.flagPulseLow[id] = LIB_FALSE;
         core_machine_pit_sync_count(pit, id);
-        pit->data.flagActive[id] = TYPE_TRUE;
-        core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+        pit->data.flagActive[id] = LIB_TRUE;
+        core_machine_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
         return;
     }
     if (!pit->data.flagActive[id]) return;
     if (--pit->data.remaining[id] == 0u) {
-        pit->data.flagActive[id] = TYPE_FALSE;
-        core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_TRUE);
+        pit->data.flagActive[id] = LIB_FALSE;
+        core_machine_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
     }
     core_machine_pit_sync_count(pit, id);
 }
 
-static C_VOID core_machine_pit_tick_mode2(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_tick_mode2(t_pit *pit, lib_u8 id)
 {
     if (pit->data.flagRestart[id]) {
         core_machine_pit_commit_pending(pit, id);
@@ -287,22 +288,22 @@ static C_VOID core_machine_pit_tick_mode2(t_pit *pit, type_unsigned_8 id)
     }
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
     if (pit->data.flagPulseLow[id]) {
-        pit->data.flagPulseLow[id] = TYPE_FALSE;
+        pit->data.flagPulseLow[id] = LIB_FALSE;
         if (pit->data.flagLoadPending[id]) core_machine_pit_commit_pending(pit, id);
         else pit->data.remaining[id] = pit->data.reload[id];
-        core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_TRUE);
+        core_machine_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
         if (pit->data.remaining[id] > 0u) --pit->data.remaining[id];
     } else if (pit->data.remaining[id] <= 1u) {
         pit->data.remaining[id] = 0u;
-        pit->data.flagPulseLow[id] = TYPE_TRUE;
-        core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+        pit->data.flagPulseLow[id] = LIB_TRUE;
+        core_machine_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
     } else {
         --pit->data.remaining[id];
     }
     core_machine_pit_sync_count(pit, id);
 }
 
-static C_VOID core_machine_pit_tick_mode3(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_tick_mode3(t_pit *pit, lib_u8 id)
 {
     type_bool was_output;
     if (pit->data.flagRestart[id]) {
@@ -325,33 +326,33 @@ static C_VOID core_machine_pit_tick_mode3(t_pit *pit, type_unsigned_8 id)
             if (pit->data.phase[id] == 0u) {
                 pit->data.phase[id] = core_machine_pit_mode3_high_length(pit, id);
             } else {
-                core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+                core_machine_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
             }
         } else {
             pit->data.phase[id] = core_machine_pit_mode3_high_length(pit, id);
-            core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_TRUE);
+            core_machine_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
         }
     }
     core_machine_pit_sync_count(pit, id);
 }
 
 static C_VOID core_machine_pit_tick_mode4_or_5(t_pit *pit,
-    type_unsigned_8 id)
+    lib_u8 id)
 {
     if (core_machine_pit_mode(pit, id) == 4u && pit->data.flagLoadPending[id]) {
         core_machine_pit_commit_pending(pit, id);
         return;
     }
     if (core_machine_pit_mode(pit, id) == 5u && pit->data.flagTrigger[id]) {
-        pit->data.flagTrigger[id] = TYPE_FALSE;
+        pit->data.flagTrigger[id] = LIB_FALSE;
         if (pit->data.flagLoadPending[id]) core_machine_pit_commit_pending(pit, id);
         else {
             pit->data.remaining[id] = pit->data.reload[id];
-            pit->data.flagPulseLow[id] = TYPE_FALSE;
+            pit->data.flagPulseLow[id] = LIB_FALSE;
             core_machine_pit_sync_count(pit, id);
         }
-        pit->data.flagActive[id] = TYPE_TRUE;
-        core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_FALSE);
+        pit->data.flagActive[id] = LIB_TRUE;
+        core_machine_pit_set_output_level(pit, id, LIB_TRUE, LIB_FALSE);
         return;
     }
     if (!pit->data.flagActive[id]) return;
@@ -359,17 +360,17 @@ static C_VOID core_machine_pit_tick_mode4_or_5(t_pit *pit,
         return;
     }
     if (pit->data.flagPulseLow[id]) {
-        pit->data.flagPulseLow[id] = TYPE_FALSE;
-        pit->data.flagActive[id] = TYPE_FALSE;
-        core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_TRUE);
+        pit->data.flagPulseLow[id] = LIB_FALSE;
+        pit->data.flagActive[id] = LIB_FALSE;
+        core_machine_pit_set_output_level(pit, id, LIB_TRUE, LIB_TRUE);
     } else if (--pit->data.remaining[id] == 0u) {
-        pit->data.flagPulseLow[id] = TYPE_TRUE;
-        core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+        pit->data.flagPulseLow[id] = LIB_TRUE;
+        core_machine_pit_set_output_level(pit, id, LIB_FALSE, LIB_TRUE);
     }
     core_machine_pit_sync_count(pit, id);
 }
 
-static C_VOID core_machine_pit_tick(t_pit *pit, type_unsigned_8 id)
+static C_VOID core_machine_pit_tick(t_pit *pit, lib_u8 id)
 {
     /* A completed CR write is intentionally not ready until this CLK commits
      * it into CE; it must nevertheless reach its mode-specific load edge. */
@@ -386,24 +387,24 @@ static C_VOID core_machine_pit_tick(t_pit *pit, type_unsigned_8 id)
     }
 }
 
-static C_VOID io_read_0040(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID io_read_0040(t_port *port, lib_u16 port_id, C_VOID *owner)
 { (C_VOID)port_id; core_machine_pit_read((t_pit *)owner, port, 0u); }
-static C_VOID io_read_0041(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID io_read_0041(t_port *port, lib_u16 port_id, C_VOID *owner)
 { (C_VOID)port_id; core_machine_pit_read((t_pit *)owner, port, 1u); }
-static C_VOID io_read_0042(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID io_read_0042(t_port *port, lib_u16 port_id, C_VOID *owner)
 { (C_VOID)port_id; core_machine_pit_read((t_pit *)owner, port, 2u); }
-static C_VOID io_write_0040(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID io_write_0040(t_port *port, lib_u16 port_id, C_VOID *owner)
 { (C_VOID)port_id; core_machine_pit_write((t_pit *)owner, port, 0u); }
-static C_VOID io_write_0041(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID io_write_0041(t_port *port, lib_u16 port_id, C_VOID *owner)
 { (C_VOID)port_id; core_machine_pit_write((t_pit *)owner, port, 1u); }
-static C_VOID io_write_0042(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID io_write_0042(t_port *port, lib_u16 port_id, C_VOID *owner)
 { (C_VOID)port_id; core_machine_pit_write((t_pit *)owner, port, 2u); }
 
-static C_VOID io_write_0043(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID io_write_0043(t_port *port, lib_u16 port_id, C_VOID *owner)
 {
     t_pit *pit = (t_pit *)owner;
-    type_unsigned_8 id = VPIT_GetCW_SC(port->data.ioByte);
-    type_unsigned_8 selected;
+    lib_u8 id = VPIT_GetCW_SC(port->data.ioByte);
+    lib_u8 selected;
     (C_VOID)port_id;
     if (id == 3u) {
         if (pit->personality != CORE_MACHINE_PIT_PERSONALITY_8254) return;
@@ -422,15 +423,15 @@ static C_VOID io_write_0043(t_port *port, type_unsigned_16 port_id, C_VOID *owne
         core_machine_pit_latch_count(pit, id);
         return;
     }
-    pit->data.flagLatch[id] = TYPE_FALSE;
-    pit->data.flagStatusLatch[id] = TYPE_FALSE;
+    pit->data.flagLatch[id] = LIB_FALSE;
+    pit->data.flagStatusLatch[id] = LIB_FALSE;
     pit->data.cw[id] = port->data.ioByte;
-    pit->data.flagReady[id] = TYPE_FALSE;
-    pit->data.flagLoadPending[id] = TYPE_FALSE;
-    pit->data.flagTrigger[id] = TYPE_FALSE;
-    pit->data.flagRestart[id] = TYPE_FALSE;
-    pit->data.flagActive[id] = TYPE_FALSE;
-    pit->data.flagPulseLow[id] = TYPE_FALSE;
+    pit->data.flagReady[id] = LIB_FALSE;
+    pit->data.flagLoadPending[id] = LIB_FALSE;
+    pit->data.flagTrigger[id] = LIB_FALSE;
+    pit->data.flagRestart[id] = LIB_FALSE;
+    pit->data.flagActive[id] = LIB_FALSE;
+    pit->data.flagPulseLow[id] = LIB_FALSE;
     pit->data.remaining[id] = 0u;
     pit->data.phase[id] = 0u;
     pit->data.count[id] = 0u;
@@ -438,55 +439,55 @@ static C_VOID io_write_0043(t_port *port, type_unsigned_16 port_id, C_VOID *owne
         VPIT_STATUS_RW_MSB : VPIT_STATUS_RW_LSB;
     pit->data.flagWrite[id] = pit->data.flagRead[id];
     core_machine_pit_set_output_level(pit, id,
-        core_machine_pit_mode(pit, id) != 0u, TYPE_FALSE);
+        core_machine_pit_mode(pit, id) != 0u, LIB_FALSE);
 }
 
-C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
+C_VOID core_machine_pit_set_output(t_pit *pit, lib_u8 id,
     core_machine_pit_output_provider provider, C_VOID *owner)
 {
-    if (pit == STD_NULL || id >= 3u) return;
+    if (pit == LIB_NULL || id >= 3u) return;
     pit->connect.output[id] = provider;
     pit->connect.output_owner[id] = owner;
 }
 
-C_VOID core_machine_pit_set_gate(t_pit *pit, type_unsigned_8 id,
+C_VOID core_machine_pit_set_gate(t_pit *pit, lib_u8 id,
     type_bool asserted)
 {
     type_bool was_asserted;
-    type_unsigned_8 mode;
-    if (pit == STD_NULL || id >= 3u) return;
+    lib_u8 mode;
+    if (pit == LIB_NULL || id >= 3u) return;
     was_asserted = pit->connect.flagGate[id];
     if (was_asserted == asserted) return;
     pit->connect.flagGate[id] = asserted;
     mode = core_machine_pit_mode(pit, id);
     if (!asserted) {
         if (mode == 2u || mode == 3u) {
-            pit->data.flagPulseLow[id] = TYPE_FALSE;
-            core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_FALSE);
+            pit->data.flagPulseLow[id] = LIB_FALSE;
+            core_machine_pit_set_output_level(pit, id, LIB_TRUE, LIB_FALSE);
         }
         return;
     }
     if (mode == 1u || mode == 5u) {
         if (!pit->data.flagReady[id] && !pit->data.flagLoadPending[id]) return;
-        pit->data.flagTrigger[id] = TYPE_TRUE;
+        pit->data.flagTrigger[id] = LIB_TRUE;
     } else if (mode == 2u || mode == 3u) {
         if (pit->data.flagReady[id] || pit->data.flagLoadPending[id]) {
-            pit->data.flagRestart[id] = TYPE_TRUE;
+            pit->data.flagRestart[id] = LIB_TRUE;
         }
     }
 }
 
-type_bool core_machine_pit_get_output(const t_pit *pit, type_unsigned_8 id)
+type_bool core_machine_pit_get_output(const t_pit *pit, lib_u8 id)
 {
-    return pit != STD_NULL && id < 3u ? pit->data.flagOutput[id] : TYPE_FALSE;
+    return pit != LIB_NULL && id < 3u ? pit->data.flagOutput[id] : LIB_FALSE;
 }
 
 type_status core_machine_pit_ticks_until_output(const t_pit *pit,
-    type_unsigned_8 id, type_unsigned_64 *out_ticks)
+    lib_u8 id, lib_u64 *out_ticks)
 {
-    type_unsigned_8 mode;
+    lib_u8 mode;
 
-    if (pit == STD_NULL || out_ticks == STD_NULL || id >= 3u) {
+    if (pit == LIB_NULL || out_ticks == LIB_NULL || id >= 3u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (pit->data.flagLoadPending[id] || pit->data.flagRestart[id] ||
@@ -521,21 +522,21 @@ type_status core_machine_pit_ticks_until_output(const t_pit *pit,
 }
 
 C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
-    type_unsigned_16 base_port)
+    lib_u16 base_port)
 {
-    if (pit == STD_NULL || port == STD_NULL || base_port > 0xfffcu) return;
-    STD_MEMSET((C_VOID *)pit, TYPE_ZERO_8, sizeof(*pit));
+    if (pit == LIB_NULL || port == LIB_NULL || base_port > 0xfffcu) return;
+    lib_memory_set((C_VOID *)pit, TYPE_ZERO_8, sizeof(*pit));
     core_machine_port_add_read(port, base_port, io_read_0040, pit);
-    core_machine_port_add_read(port, (type_unsigned_16)(base_port + 1u),
+    core_machine_port_add_read(port, (lib_u16)(base_port + 1u),
         io_read_0041, pit);
-    core_machine_port_add_read(port, (type_unsigned_16)(base_port + 2u),
+    core_machine_port_add_read(port, (lib_u16)(base_port + 2u),
         io_read_0042, pit);
     core_machine_port_add_write(port, base_port, io_write_0040, pit);
-    core_machine_port_add_write(port, (type_unsigned_16)(base_port + 1u),
+    core_machine_port_add_write(port, (lib_u16)(base_port + 1u),
         io_write_0041, pit);
-    core_machine_port_add_write(port, (type_unsigned_16)(base_port + 2u),
+    core_machine_port_add_write(port, (lib_u16)(base_port + 2u),
         io_write_0042, pit);
-    core_machine_port_add_write(port, (type_unsigned_16)(base_port + 3u),
+    core_machine_port_add_write(port, (lib_u16)(base_port + 3u),
         io_write_0043, pit);
 }
 
@@ -545,7 +546,7 @@ C_VOID core_machine_pit_initialize_as(t_pit *pit, t_port *port,
     if (personality != CORE_MACHINE_PIT_PERSONALITY_8254 &&
         personality != CORE_MACHINE_PIT_PERSONALITY_8253) return;
     core_machine_pit_initialize_at(pit, port, 0x0040u);
-    if (pit != STD_NULL && port != STD_NULL) pit->personality = personality;
+    if (pit != LIB_NULL && port != LIB_NULL) pit->personality = personality;
 }
 
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port)
@@ -556,31 +557,31 @@ C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port)
 C_VOID core_machine_pit_reset(t_pit *pit)
 {
     type_native_unsigned id;
-    if (pit == STD_NULL) return;
+    if (pit == LIB_NULL) return;
     /*
      * The PIT owns the output level but not its consumer.  Drop every live
      * output before clearing the local latch so a bound PIC source also
      * releases its asserted state across a machine reset.
      */
     for (id = 0u; id < 3u; ++id) {
-        if (pit->data.flagOutput[id] && pit->connect.output[id] != STD_NULL) {
-            pit->connect.output[id](pit->connect.output_owner[id], TYPE_FALSE);
+        if (pit->data.flagOutput[id] && pit->connect.output[id] != LIB_NULL) {
+            pit->connect.output[id](pit->connect.output_owner[id], LIB_FALSE);
         }
     }
-    STD_MEMSET((C_VOID *)&pit->data, TYPE_ZERO_8, sizeof(pit->data));
+    lib_memory_set((C_VOID *)&pit->data, TYPE_ZERO_8, sizeof(pit->data));
     for (id = 0u; id < 3u; ++id) {
-        pit->data.flagReady[id] = TYPE_TRUE;
+        pit->data.flagReady[id] = LIB_TRUE;
         pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
         pit->data.flagWrite[id] = VPIT_STATUS_RW_READY;
-        pit->connect.flagGate[id] = TYPE_TRUE;
+        pit->connect.flagGate[id] = LIB_TRUE;
     }
 }
 
-C_VOID core_machine_pit_advance(t_pit *pit, type_unsigned_64 elapsed_ticks)
+C_VOID core_machine_pit_advance(t_pit *pit, lib_u64 elapsed_ticks)
 {
-    type_unsigned_64 tick;
-    type_unsigned_8 id;
-    if (pit == STD_NULL) return;
+    lib_u64 tick;
+    lib_u8 id;
+    if (pit == LIB_NULL) return;
     for (tick = 0u; tick < elapsed_ticks; ++tick) {
         for (id = 0u; id < 3u; ++id) core_machine_pit_tick(pit, id);
     }
@@ -589,10 +590,10 @@ C_VOID core_machine_pit_advance(t_pit *pit, type_unsigned_64 elapsed_ticks)
 C_VOID core_machine_pit_finalize(t_pit *pit)
 {
     type_native_unsigned id;
-    if (pit == STD_NULL) return;
+    if (pit == LIB_NULL) return;
     for (id = 0u; id < 3u; ++id) {
-        if (pit->data.flagOutput[id] && pit->connect.output[id] != STD_NULL) {
-            pit->connect.output[id](pit->connect.output_owner[id], TYPE_FALSE);
+        if (pit->data.flagOutput[id] && pit->connect.output[id] != LIB_NULL) {
+            pit->connect.output[id](pit->connect.output_owner[id], LIB_FALSE);
         }
     }
 }

@@ -1,12 +1,13 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/profiles/default_profile/keyboard_mapper.h"
 
-static C_INT vm_keyboard_native_set2_expect(type_unsigned_16 scan, type_unsigned_16 key,
-    C_INT pressed, const type_unsigned_8 *expected, type_unsigned_8 count)
+static C_INT vm_keyboard_native_set2_expect(lib_u16 scan, lib_u16 key,
+    C_INT pressed, const lib_u8 *expected, lib_u8 count)
 {
     vm_profile_default_keyboard_sequence sequence;
-    type_unsigned_8 index;
+    lib_u8 index;
 
     if (vm_profile_default_keyboard_map_host_key(scan, key, pressed,
             &sequence) != TYPE_STATUS_OK || sequence.count != count) {
@@ -20,18 +21,18 @@ static C_INT vm_keyboard_native_set2_expect(type_unsigned_16 scan, type_unsigned
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 function_set1[] = { 0x3bu, 0x3cu, 0x3du,
+    static const lib_u8 function_set1[] = { 0x3bu, 0x3cu, 0x3du,
         0x3eu, 0x3fu, 0x40u, 0x41u, 0x42u, 0x43u, 0x44u, 0x57u, 0x58u };
-    static const type_unsigned_8 function_set2[] = { 0x05u, 0x06u, 0x04u,
+    static const lib_u8 function_set2[] = { 0x05u, 0x06u, 0x04u,
         0x0cu, 0x03u, 0x0bu, 0x83u, 0x0au, 0x01u, 0x09u, 0x78u, 0x07u };
-    static const type_unsigned_8 a_make[] = { 0x1cu };
-    static const type_unsigned_8 a_break[] = { 0xf0u, 0x1cu };
-    static const type_unsigned_8 up_make[] = { 0xe0u, 0x75u };
-    static const type_unsigned_8 up_break[] = { 0xe0u, 0xf0u, 0x75u };
-    static const type_unsigned_8 pause_make[] = {
+    static const lib_u8 a_make[] = { 0x1cu };
+    static const lib_u8 a_break[] = { 0xf0u, 0x1cu };
+    static const lib_u8 up_make[] = { 0xe0u, 0x75u };
+    static const lib_u8 up_break[] = { 0xe0u, 0xf0u, 0x75u };
+    static const lib_u8 pause_make[] = {
         0xe1u, 0x14u, 0x77u, 0xe1u, 0xf0u, 0x14u, 0xf0u, 0x77u
     };
-    type_unsigned_8 index;
+    lib_u8 index;
 
     if (!vm_keyboard_native_set2_expect(0x1eu, 'A', 1, a_make, sizeof(a_make)) ||
         !vm_keyboard_native_set2_expect(0x1eu, 'A', 0, a_break, sizeof(a_break)) ||
@@ -41,7 +42,7 @@ C_INT main(C_VOID)
             sizeof(up_break)) ||
         !vm_keyboard_native_set2_expect(0u, 0x13u, 1, pause_make,
             sizeof(pause_make)) ||
-        !vm_keyboard_native_set2_expect(0u, 0x13u, 0, STD_NULL, 0u)) {
+        !vm_keyboard_native_set2_expect(0u, 0x13u, 0, LIB_NULL, 0u)) {
         return 1;
     }
     for (index = 0u; index < sizeof(function_set1); ++index) {

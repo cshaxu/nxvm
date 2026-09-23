@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -5,10 +6,10 @@
 
 static C_INT core_machine_real_mode_tick_case(
     const C_CHAR *name,
-    const type_unsigned_8 *program, STD_SIZE_T program_bytes,
+    const lib_u8 *program, lib_size program_bytes,
     core_machine_cpu_profile profile, type_status expected_status,
-    core_machine_stop_reason expected_reason, type_unsigned_64 expected_executed,
-    type_unsigned_64 expected_ticks)
+    core_machine_stop_reason expected_reason, lib_u64 expected_executed,
+    lib_u64 expected_ticks)
 {
     const core_machine_config config = {
         .cpu_profile = profile,
@@ -18,7 +19,7 @@ static C_INT core_machine_real_mode_tick_case(
     core_machine_run_result result;
     core_machine_observation observation;
     core_machine_cpu_profile actual_profile;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     type_status status;
     C_INT failed = 0;
 
@@ -54,12 +55,12 @@ static C_INT core_machine_real_mode_tick_case(
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 mov_ax[] = { 0xb8u, 0x34u, 0x12u };
-    static const type_unsigned_8 out_80[] = { 0xe6u, 0x80u };
-    static const type_unsigned_8 int_20[] = { 0xcdu, 0x20u, 0x90u };
-    static const type_unsigned_8 prefixed_nop[] = { 0x26u, 0x90u };
-    static const type_unsigned_8 halt[] = { 0xf4u };
-    static const type_unsigned_8 operand_size_prefix[] = { 0x66u, 0x90u };
+    static const lib_u8 mov_ax[] = { 0xb8u, 0x34u, 0x12u };
+    static const lib_u8 out_80[] = { 0xe6u, 0x80u };
+    static const lib_u8 int_20[] = { 0xcdu, 0x20u, 0x90u };
+    static const lib_u8 prefixed_nop[] = { 0x26u, 0x90u };
+    static const lib_u8 halt[] = { 0xf4u };
+    static const lib_u8 operand_size_prefix[] = { 0x66u, 0x90u };
     C_INT failed = 0;
 
     failed |= core_machine_real_mode_tick_case("mov", mov_ax, sizeof(mov_ax),

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -22,15 +23,15 @@ static C_INT nxvm_console_send_key(HANDLE input, WORD virtual_key,
 
 static C_INT nxvm_console_send_text(HANDLE input, const C_CHAR *text)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (input == INVALID_HANDLE_VALUE || text == STD_NULL) return 0;
+    if (input == INVALID_HANDLE_VALUE || text == LIB_NULL) return 0;
     for (index = 0u; text[index] != '\0'; ++index) {
         CHAR character = text[index];
         WORD virtual_key = character == '\r' ? VK_RETURN : 0u;
 
-        if (!nxvm_console_send_key(input, virtual_key, character, TYPE_TRUE) ||
-            !nxvm_console_send_key(input, virtual_key, 0, TYPE_FALSE)) return 0;
+        if (!nxvm_console_send_key(input, virtual_key, character, LIB_TRUE) ||
+            !nxvm_console_send_key(input, virtual_key, 0, LIB_FALSE)) return 0;
     }
     return 1;
 }
@@ -42,10 +43,10 @@ static C_INT nxvm_console_has_text(HANDLE output, const C_CHAR *text)
     COORD origin = {0};
     DWORD read = 0u;
     DWORD count;
-    STD_SIZE_T index;
-    STD_SIZE_T length;
+    lib_size index;
+    lib_size length;
 
-    if (output == INVALID_HANDLE_VALUE || text == STD_NULL ||
+    if (output == INVALID_HANDLE_VALUE || text == LIB_NULL ||
         !GetConsoleScreenBufferInfo(output, &info)) return 0;
     origin.X = info.srWindow.Left;
     origin.Y = info.srWindow.Top;
@@ -54,9 +55,9 @@ static C_INT nxvm_console_has_text(HANDLE output, const C_CHAR *text)
     if (count >= sizeof(buffer)) count = sizeof(buffer) - 1u;
     if (!ReadConsoleOutputCharacterA(output, buffer, count, origin, &read)) return 0;
     buffer[read] = '\0';
-    length = STD_STRLEN(text);
+    length = lib_text_length(text);
     for (index = 0u; index + length <= read; ++index) {
-        if (STD_MEMCMP(buffer + index, text, length) == 0) return 1;
+        if (lib_memory_compare(buffer + index, text, length) == 0) return 1;
     }
     return 0;
 }
@@ -76,25 +77,25 @@ static C_INT nxvm_console_wait_for_text(HANDLE output, const C_CHAR *text,
 C_INT nxvm_console_process_run(const C_CHAR *executable,
     const C_CHAR *session_directory, const C_CHAR *profile_file,
     const C_CHAR *const *commands, const C_CHAR *const *markers,
-    STD_SIZE_T command_count)
+    lib_size command_count)
 {
     STARTUPINFOA startup = {0};
     PROCESS_INFORMATION process = {0};
     HANDLE input = INVALID_HANDLE_VALUE;
     HANDLE output = INVALID_HANDLE_VALUE;
-    STD_SIZE_T index;
+    lib_size index;
     C_INT result = 0;
     const C_CHAR *stage = "validation";
 
     startup.cb = sizeof(startup);
-    if (executable == STD_NULL || session_directory == STD_NULL ||
-        profile_file == STD_NULL || STD_STRCMP(profile_file, "NXVM.ini") ||
-        (command_count != 0u && (commands == STD_NULL || markers == STD_NULL))) return 0;
+    if (executable == LIB_NULL || session_directory == LIB_NULL ||
+        profile_file == LIB_NULL || lib_c_strcmp(profile_file, "NXVM.ini") ||
+        (command_count != 0u && (commands == LIB_NULL || markers == LIB_NULL))) return 0;
     startup.dwFlags = STARTF_USESHOWWINDOW;
     startup.wShowWindow = SW_HIDE;
     stage = "child creation";
-    if (!CreateProcessA(executable, STD_NULL, STD_NULL, STD_NULL, FALSE,
-            CREATE_NEW_CONSOLE, STD_NULL, session_directory, &startup, &process))
+    if (!CreateProcessA(executable, LIB_NULL, LIB_NULL, LIB_NULL, FALSE,
+            CREATE_NEW_CONSOLE, LIB_NULL, session_directory, &startup, &process))
         return 0;
     (C_VOID)FreeConsole();
     stage = "console attachment";
@@ -103,9 +104,9 @@ C_INT nxvm_console_process_run(const C_CHAR *executable,
         Sleep(20u);
     }
     input = CreateFileA("CONIN$", GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, STD_NULL, OPEN_EXISTING, 0u, STD_NULL);
+        FILE_SHARE_READ | FILE_SHARE_WRITE, LIB_NULL, OPEN_EXISTING, 0u, LIB_NULL);
     output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, STD_NULL, OPEN_EXISTING, 0u, STD_NULL);
+        FILE_SHARE_READ | FILE_SHARE_WRITE, LIB_NULL, OPEN_EXISTING, 0u, LIB_NULL);
     if (input == INVALID_HANDLE_VALUE || output == INVALID_HANDLE_VALUE) {
         stage = "console handles";
         goto done;

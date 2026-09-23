@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -14,25 +15,25 @@
 #define VM_ATA253_MARKER_CELL 1920u
 
 typedef struct vm_ata253_program {
-    type_unsigned_8 bytes[256];
-    type_unsigned_16 length;
+    lib_u8 bytes[256];
+    lib_u16 length;
 } vm_ata253_program;
 
-static C_INT vm_ata253_put(vm_ata253_program *program, type_unsigned_8 value)
+static C_INT vm_ata253_put(vm_ata253_program *program, lib_u8 value)
 {
-    if (program == STD_NULL || program->length >= sizeof(program->bytes)) return 0;
+    if (program == LIB_NULL || program->length >= sizeof(program->bytes)) return 0;
     program->bytes[program->length++] = value;
     return 1;
 }
 
-static C_INT vm_ata253_word(vm_ata253_program *program, type_unsigned_16 value)
+static C_INT vm_ata253_word(vm_ata253_program *program, lib_u16 value)
 {
-    return vm_ata253_put(program, (type_unsigned_8)value) &&
-        vm_ata253_put(program, (type_unsigned_8)(value >> 8u));
+    return vm_ata253_put(program, (lib_u8)value) &&
+        vm_ata253_put(program, (lib_u8)(value >> 8u));
 }
 
 static C_INT vm_ata253_out_task_file(vm_ata253_program *program,
-    type_unsigned_8 command)
+    lib_u8 command)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f2u) &&
         vm_ata253_put(program, 0xb0u) && vm_ata253_put(program, 2u) &&
@@ -48,7 +49,7 @@ static C_INT vm_ata253_out_task_file(vm_ata253_program *program,
         vm_ata253_put(program, command) && vm_ata253_put(program, 0xeeu);
 }
 
-static C_INT vm_ata253_write_sector(vm_ata253_program *program, type_unsigned_16 word)
+static C_INT vm_ata253_write_sector(vm_ata253_program *program, lib_u16 word)
 {
     return vm_ata253_put(program, 0xb9u) && vm_ata253_word(program, 256u) &&
         vm_ata253_put(program, 0xb8u) && vm_ata253_word(program, word) &&
@@ -64,7 +65,7 @@ static C_INT vm_ata253_set_nien(vm_ata253_program *program, C_INT enabled)
         vm_ata253_put(program, 0xeeu);
 }
 
-static C_INT vm_ata253_discard_words(vm_ata253_program *program, type_unsigned_16 count)
+static C_INT vm_ata253_discard_words(vm_ata253_program *program, lib_u16 count)
 {
     return vm_ata253_put(program, 0xb9u) && vm_ata253_word(program, count) &&
         vm_ata253_put(program, 0xedu) && vm_ata253_put(program, 0xe2u) &&
@@ -91,28 +92,28 @@ static C_INT vm_ata253_wait_ready(vm_ata253_program *program)
         vm_ata253_put(program, 0xf7u);
 }
 
-static C_INT vm_ata253_marker(vm_ata253_program *program, type_unsigned_8 character,
-    type_unsigned_8 exit_code)
+static C_INT vm_ata253_marker(vm_ata253_program *program, lib_u8 character,
+    lib_u8 exit_code)
 {
     return vm_ata253_put(program, 0xb8u) && vm_ata253_word(program, 0xb800u) &&
         vm_ata253_put(program, 0x8eu) && vm_ata253_put(program, 0xc0u) &&
         vm_ata253_put(program, 0x26u) && vm_ata253_put(program, 0xc7u) &&
         vm_ata253_put(program, 0x06u) && vm_ata253_word(program, 0x0f00u) &&
-        vm_ata253_word(program, (type_unsigned_16)(0x0700u | character)) &&
+        vm_ata253_word(program, (lib_u16)(0x0700u | character)) &&
         vm_ata253_put(program, 0xb8u) && vm_ata253_word(program,
-            (type_unsigned_16)(0x4c00u | exit_code)) && vm_ata253_put(program, 0xcdu) &&
+            (lib_u16)(0x4c00u | exit_code)) && vm_ata253_put(program, 0xcdu) &&
         vm_ata253_put(program, 0x21u);
 }
 
 static C_INT vm_ata253_build_program(vm_ata253_program *program)
 {
-    type_unsigned_16 first_failure;
-    type_unsigned_16 second_failure;
-    type_unsigned_16 failure;
-    type_signed_16 delta;
+    lib_u16 first_failure;
+    lib_u16 second_failure;
+    lib_u16 failure;
+    lib_i16 delta;
 
-    if (program == STD_NULL) return 0;
-    STD_MEMSET(program, 0, sizeof(*program));
+    if (program == LIB_NULL) return 0;
+    lib_memory_set(program, 0, sizeof(*program));
     if (!vm_ata253_set_nien(program, 1) ||
         !vm_ata253_out_task_file(program, 0x30u) ||
         !vm_ata253_wait_drq(program) ||
@@ -143,97 +144,97 @@ static C_INT vm_ata253_build_program(vm_ata253_program *program)
         !vm_ata253_marker(program, 'O', 0u)) return 0;
     failure = program->length;
     if (!vm_ata253_marker(program, 'X', 1u)) return 0;
-    delta = (type_signed_16)failure - (type_signed_16)(first_failure + 1u);
+    delta = (lib_i16)failure - (lib_i16)(first_failure + 1u);
     if (delta < -128 || delta > 127) return 0;
-    program->bytes[first_failure] = (type_unsigned_8)(type_signed_8)delta;
-    delta = (type_signed_16)failure - (type_signed_16)(second_failure + 1u);
+    program->bytes[first_failure] = (lib_u8)(lib_i8)delta;
+    delta = (lib_i16)failure - (lib_i16)(second_failure + 1u);
     if (delta < -128 || delta > 127) return 0;
-    program->bytes[second_failure] = (type_unsigned_8)(type_signed_8)delta;
+    program->bytes[second_failure] = (lib_u8)(lib_i8)delta;
     return 1;
 }
 
-static type_unsigned_16 vm_ata253_fat12_get(const type_unsigned_8 *fat, type_unsigned_16 cluster)
+static lib_u16 vm_ata253_fat12_get(const lib_u8 *fat, lib_u16 cluster)
 {
-    type_unsigned_32 offset = cluster + cluster / 2u;
-    type_unsigned_16 pair = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8u));
+    lib_u32 offset = cluster + cluster / 2u;
+    lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8u));
 
     return (cluster & 1u) != 0u ? pair >> 4u : pair & 0x0fffu;
 }
 
-static C_VOID vm_ata253_fat12_set(type_unsigned_8 *fat, type_unsigned_16 cluster, type_unsigned_16 value)
+static C_VOID vm_ata253_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
 {
-    type_unsigned_32 offset = cluster + cluster / 2u;
-    type_unsigned_16 pair = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8u));
+    lib_u32 offset = cluster + cluster / 2u;
+    lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8u));
 
-    if ((cluster & 1u) != 0u) pair = (type_unsigned_16)((pair & 0x000fu) | (value << 4u));
-    else pair = (type_unsigned_16)((pair & 0xf000u) | value);
-    fat[offset] = (type_unsigned_8)pair;
-    fat[offset + 1u] = (type_unsigned_8)(pair >> 8u);
+    if ((cluster & 1u) != 0u) pair = (lib_u16)((pair & 0x000fu) | (value << 4u));
+    else pair = (lib_u16)((pair & 0xf000u) | value);
+    fat[offset] = (lib_u8)pair;
+    fat[offset + 1u] = (lib_u8)(pair >> 8u);
 }
 
-static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size);
-static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size);
+static C_INT vm_ata253_zero_image(lib_u8 *image, DWORD image_size);
+static C_INT vm_ata253_install(lib_u8 *image, DWORD image_size);
 
 static type_status vm_ata253_install_on_overlay(
     integration_ini_session *ini_session, C_VOID *opaque)
 {
-    type_unsigned_8 *fdd_image = STD_NULL;
-    type_unsigned_8 *hdd_image = STD_NULL;
-    STD_SIZE_T fdd_size = 0u;
-    STD_SIZE_T hdd_size = 0u;
+    lib_u8 *fdd_image = LIB_NULL;
+    lib_u8 *hdd_image = LIB_NULL;
+    lib_size fdd_size = 0u;
+    lib_size hdd_size = 0u;
     C_INT ok;
 
     (C_VOID)opaque;
-    if (ini_session == STD_NULL || integration_ini_session_overlay_read(ini_session,
+    if (ini_session == LIB_NULL || integration_ini_session_overlay_read(ini_session,
             VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&fdd_image, &fdd_size) != TYPE_STATUS_OK ||
         integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_HDD_ID,
             (C_VOID **)&hdd_image, &hdd_size) != TYPE_STATUS_OK || fdd_size > MAXDWORD ||
         hdd_size > MAXDWORD || !vm_ata253_install(fdd_image, (DWORD)fdd_size) ||
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             fdd_image, fdd_size) != TYPE_STATUS_OK) {
-        STD_FREE(fdd_image);
-        STD_FREE(hdd_image);
+        lib_release(fdd_image);
+        lib_release(hdd_image);
         return TYPE_STATUS_FAULT;
     }
     ok = vm_ata253_zero_image(hdd_image, (DWORD)hdd_size) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_HDD_ID,
             hdd_image, hdd_size) == TYPE_STATUS_OK;
-    STD_FREE(fdd_image);
-    STD_FREE(hdd_image);
+    lib_release(fdd_image);
+    lib_release(hdd_image);
     return ok ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
-static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size)
+static C_INT vm_ata253_zero_image(lib_u8 *image, DWORD image_size)
 {
-    if (image == STD_NULL || image_size == 0u) return 0;
-    STD_MEMSET(image, 0, image_size);
+    if (image == LIB_NULL || image_size == 0u) return 0;
+    lib_memory_set(image, 0, image_size);
     return 1;
 }
 
-static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size)
+static C_INT vm_ata253_install(lib_u8 *image, DWORD image_size)
 {
     vm_ata253_program program;
-    type_unsigned_32 bytes_per_sector;
-    type_unsigned_32 sectors_per_cluster;
-    type_unsigned_32 reserved_sectors;
-    type_unsigned_32 fat_count;
-    type_unsigned_32 root_entries;
-    type_unsigned_32 sectors_per_fat;
-    type_unsigned_32 root_start;
-    type_unsigned_32 root_bytes;
-    type_unsigned_32 data_start;
-    type_unsigned_32 clusters;
-    type_unsigned_32 cluster;
-    type_unsigned_32 root;
-    type_unsigned_8 *entry = STD_NULL;
-    if (!vm_ata253_build_program(&program) || image == STD_NULL ||
+    lib_u32 bytes_per_sector;
+    lib_u32 sectors_per_cluster;
+    lib_u32 reserved_sectors;
+    lib_u32 fat_count;
+    lib_u32 root_entries;
+    lib_u32 sectors_per_fat;
+    lib_u32 root_start;
+    lib_u32 root_bytes;
+    lib_u32 data_start;
+    lib_u32 clusters;
+    lib_u32 cluster;
+    lib_u32 root;
+    lib_u8 *entry = LIB_NULL;
+    if (!vm_ata253_build_program(&program) || image == LIB_NULL ||
         image_size < 512u) return 0;
-    bytes_per_sector = image[11u] | ((type_unsigned_32)image[12u] << 8u);
+    bytes_per_sector = image[11u] | ((lib_u32)image[12u] << 8u);
     sectors_per_cluster = image[13u];
-    reserved_sectors = image[14u] | ((type_unsigned_32)image[15u] << 8u);
+    reserved_sectors = image[14u] | ((lib_u32)image[15u] << 8u);
     fat_count = image[16u];
-    root_entries = image[17u] | ((type_unsigned_32)image[18u] << 8u);
-    sectors_per_fat = image[22u] | ((type_unsigned_32)image[23u] << 8u);
+    root_entries = image[17u] | ((lib_u32)image[18u] << 8u);
+    sectors_per_fat = image[22u] | ((lib_u32)image[23u] << 8u);
     if (bytes_per_sector == 0u || sectors_per_cluster == 0u || fat_count == 0u ||
         sectors_per_fat == 0u) return 0;
     root_start = (reserved_sectors + fat_count * sectors_per_fat) * bytes_per_sector;
@@ -242,7 +243,7 @@ static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size)
         bytes_per_sector) * bytes_per_sector;
     if (data_start >= image_size || root_start + root_bytes > image_size) return 0;
     for (root = 0u; root < root_entries; ++root) {
-        type_unsigned_8 *candidate = image + root_start + root * 32u;
+        lib_u8 *candidate = image + root_start + root * 32u;
 
         if (candidate[0] == 0u || candidate[0] == 0xe5u) {
             entry = candidate;
@@ -252,31 +253,31 @@ static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size)
     clusters = (image_size - data_start) / (bytes_per_sector * sectors_per_cluster);
     for (cluster = 2u; cluster < clusters + 2u; ++cluster) {
         if (vm_ata253_fat12_get(image + reserved_sectors * bytes_per_sector,
-                (type_unsigned_16)cluster) == 0u) break;
+                (lib_u16)cluster) == 0u) break;
     }
-    if (entry == STD_NULL || cluster >= clusters + 2u || program.length >
+    if (entry == LIB_NULL || cluster >= clusters + 2u || program.length >
         bytes_per_sector * sectors_per_cluster) return 0;
-    STD_MEMSET(entry, 0, 32u);
-    STD_MEMCPY(entry, "ATA253  COM", 11u);
+    lib_memory_set(entry, 0, 32u);
+    lib_memory_copy(entry, "ATA253  COM", 11u);
     entry[11u] = 0x20u;
-    entry[26u] = (type_unsigned_8)cluster;
-    entry[27u] = (type_unsigned_8)(cluster >> 8u);
-    entry[28u] = (type_unsigned_8)program.length;
-    entry[29u] = (type_unsigned_8)(program.length >> 8u);
+    entry[26u] = (lib_u8)cluster;
+    entry[27u] = (lib_u8)(cluster >> 8u);
+    entry[28u] = (lib_u8)program.length;
+    entry[29u] = (lib_u8)(program.length >> 8u);
     for (root = 0u; root < fat_count; ++root) {
         vm_ata253_fat12_set(image + (reserved_sectors + root * sectors_per_fat) *
-            bytes_per_sector, (type_unsigned_16)cluster, 0x0fffu);
+            bytes_per_sector, (lib_u16)cluster, 0x0fffu);
     }
-    STD_MEMCPY(image + data_start + (cluster - 2u) * bytes_per_sector *
+    lib_memory_copy(image + data_start + (cluster - 2u) * bytes_per_sector *
         sectors_per_cluster, program.bytes, program.length);
     return 1;
 }
 
 static C_INT vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
 {
-    STD_SIZE_T cell;
+    lib_size cell;
 
-    if (snapshot == STD_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
         if (STD_ISALPHA(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
@@ -286,13 +287,13 @@ static C_INT vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
     return 0;
 }
 
-static C_INT vm_ata253_run_until(vm_machine *session, type_unsigned_32 limit,
-    type_unsigned_8 marker)
+static C_INT vm_ata253_run_until(vm_machine *session, lib_u32 limit,
+    lib_u8 marker)
 {
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
-    type_unsigned_32 executed = 0u;
+    lib_u32 executed = 0u;
 
     while (executed < limit) {
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
@@ -315,19 +316,19 @@ static C_INT vm_ata253_run_until(vm_machine *session, type_unsigned_32 limit,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    static const type_unsigned_8 command[] = { 0x1cu, 0x2cu, 0x1cu, 0x1eu, 0x2eu,
+    static const lib_u8 command[] = { 0x1cu, 0x2cu, 0x1cu, 0x1eu, 0x2eu,
         0x26u, 0x5au };
     integration_ini_session ini_session;
-    vm_machine *session = STD_NULL;
-    STD_SIZE_T index;
+    vm_machine *session = LIB_NULL;
+    lib_size index;
     C_INT passed = 0;
 
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_ata253_install_on_overlay, STD_NULL, &ini_session) != TYPE_STATUS_OK) {
+            vm_ata253_install_on_overlay, LIB_NULL, &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
     session = ini_session.session;
-    if (session == STD_NULL ||
+    if (session == LIB_NULL ||
         !vm_ata253_run_until(session, VM_ATA253_BOOT_BUDGET, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,

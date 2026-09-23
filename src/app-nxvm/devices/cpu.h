@@ -6,6 +6,7 @@
 
 #include "app-nxvm/devices/cpu_interface.h"
 #include "app-nxvm/devices/fpu_interface.h"
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #ifdef __cplusplus
@@ -54,6 +55,7 @@ C_VOID core_machine_cpu_execution_context_bind_profiles(
     core_machine_cpu_profile cpu_profile,
     core_machine_fpu_profile fpu_profile,
     type_bool cpu_80386_cr_mov_ignores_mod);
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -71,11 +73,11 @@ typedef enum {
 
 typedef struct {
     type_bool flagValid;
-    type_unsigned_16 selector;
+    lib_u16 selector;
     /* invisible portion/descriptor part */
     t_cpu_data_sreg_type sregtype;
-    type_unsigned_32 base;
-    type_unsigned_32 limit;
+    lib_u32 base;
+    lib_u32 limit;
     type_unsigned_4  dpl; /* if segment is cs, this is cpl */
     union {
         struct {
@@ -105,70 +107,70 @@ typedef struct {
     union {
         union {
             struct {
-                type_unsigned_8 al,ah;
+                lib_u8 al,ah;
             };
-            type_unsigned_16 ax;
+            lib_u16 ax;
         };
-        type_unsigned_32 eax;
+        lib_u32 eax;
     };
     union {
         union {
             struct {
-                type_unsigned_8 bl,bh;
+                lib_u8 bl,bh;
             };
-            type_unsigned_16 bx;
+            lib_u16 bx;
         };
-        type_unsigned_32 ebx;
+        lib_u32 ebx;
     };
     union {
         union {
             struct {
-                type_unsigned_8 cl,ch;
+                lib_u8 cl,ch;
             };
-            type_unsigned_16 cx;
+            lib_u16 cx;
         };
-        type_unsigned_32 ecx;
+        lib_u32 ecx;
     };
     union {
         union {
             struct {
-                type_unsigned_8 dl,dh;
+                lib_u8 dl,dh;
             };
-            type_unsigned_16 dx;
+            lib_u16 dx;
         };
-        type_unsigned_32 edx;
+        lib_u32 edx;
     };
     union {
-        type_unsigned_16 sp;
-        type_unsigned_32 esp;
+        lib_u16 sp;
+        lib_u32 esp;
     };
     union {
-        type_unsigned_16 bp;
-        type_unsigned_32 ebp;
+        lib_u16 bp;
+        lib_u32 ebp;
     };
     union {
-        type_unsigned_16 si;
-        type_unsigned_32 esi;
+        lib_u16 si;
+        lib_u32 esi;
     };
     union {
-        type_unsigned_16 di;
-        type_unsigned_32 edi;
+        lib_u16 di;
+        lib_u32 edi;
     };
     union {
-        type_unsigned_16 ip;
-        type_unsigned_32 eip;
+        lib_u16 ip;
+        lib_u32 eip;
     };
     union {
-        type_unsigned_16 flags;
-        type_unsigned_32 eflags;
+        lib_u16 flags;
+        lib_u32 eflags;
     };
     /* segment registers */
     t_cpu_data_sreg es, cs, ss, ds, fs, gs;
     t_cpu_data_sreg ldtr, tr, gdtr, idtr;
     /* control registers */
-    type_unsigned_32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
-    type_unsigned_32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
-    type_unsigned_32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
+    lib_u32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
+    lib_u32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
+    lib_u32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
     /* control flags */
     type_bool flagMaskNMI, flagNMI, flagHalt;
 } t_cpu_data;
@@ -440,17 +442,17 @@ typedef struct {
 #define _IsDescCode32(descriptor)            (_IsDescCode(descriptor) && _GetDescCode_D(descriptor))
 
 #define _MakeDescSeg(base, limit, type, s, dpl, p, avl, db, g) \
-    (((type_unsigned_64)((base)  & 0xff000000) << 32) | \
-     ((type_unsigned_64)((g)     & 0x00000001) << 55) | \
-     ((type_unsigned_64)((db)    & 0x00000001) << 54) | \
-     ((type_unsigned_64)((avl)   & 0x00000001) << 52) | \
-     ((type_unsigned_64)((limit) & 0x000f0000) << 32) | \
-     ((type_unsigned_64)((p)     & 0x00000001) << 47) | \
-     ((type_unsigned_64)((dpl)   & 0x00000003) << 45) | \
-     ((type_unsigned_64)((s)     & 0x00000001) << 44) | \
-     ((type_unsigned_64)((type)  & 0x0000000f) << 40) | \
-     ((type_unsigned_64)((base)  & 0x00ffffff) << 16) | \
-     ((type_unsigned_64)((limit) & 0x0000ffff) << 0))
+    (((lib_u64)((base)  & 0xff000000) << 32) | \
+     ((lib_u64)((g)     & 0x00000001) << 55) | \
+     ((lib_u64)((db)    & 0x00000001) << 54) | \
+     ((lib_u64)((avl)   & 0x00000001) << 52) | \
+     ((lib_u64)((limit) & 0x000f0000) << 32) | \
+     ((lib_u64)((p)     & 0x00000001) << 47) | \
+     ((lib_u64)((dpl)   & 0x00000003) << 45) | \
+     ((lib_u64)((s)     & 0x00000001) << 44) | \
+     ((lib_u64)((type)  & 0x0000000f) << 40) | \
+     ((lib_u64)((base)  & 0x00ffffff) << 16) | \
+     ((lib_u64)((limit) & 0x0000ffff) << 0))
 
 /* DESCRIPTOR DEFINITION III: System Part */
 #define VCPU_DESC_GATE_SELECTOR 0x00000000ffff0000
@@ -487,20 +489,20 @@ typedef struct {
 #define _MakeCPL(cpl) (cpu_state.data.cs.dpl = (cpl))
 
 C_INT core_machine_cpu_read_linear(core_machine_cpu_execution_context *context,
-    type_unsigned_32 linear, C_VOID *out_data, type_unsigned_8 size);
+    lib_u32 linear, C_VOID *out_data, lib_u8 size);
 C_INT core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
-    type_unsigned_32 linear, const C_VOID *in_data, type_unsigned_8 size);
+    lib_u32 linear, const C_VOID *in_data, lib_u8 size);
 C_INT core_machine_cpu_get_code_default_size(
     const core_machine_cpu_execution_context *context);
-type_unsigned_32 core_machine_cpu_get_code_base(
+lib_u32 core_machine_cpu_get_code_base(
     const core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind, type_unsigned_32 linear);
+    core_machine_cpu_watchpoint kind, lib_u32 linear);
 C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind);
 C_VOID core_machine_cpu_get_watchpoint(const core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind, type_bool *out_enabled,
-    type_unsigned_32 *out_linear);
+    lib_u32 *out_linear);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

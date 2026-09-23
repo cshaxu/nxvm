@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/entry_plan_interface.h"
@@ -9,19 +10,19 @@
 typedef struct mantle_fixture {
     core_machine_rtc rtc;
     core_machine_media_registry *media;
-    type_unsigned_8 media_byte;
+    lib_u8 media_byte;
 } mantle_fixture;
 
 static C_VOID fixture_reset(C_VOID *context)
 {
     mantle_fixture *fixture = (mantle_fixture *)context;
-    if (fixture != STD_NULL) core_machine_rtc_reset(&fixture->rtc);
+    if (fixture != LIB_NULL) core_machine_rtc_reset(&fixture->rtc);
 }
 
-static C_VOID fixture_advance(C_VOID *context, type_unsigned_64 elapsed_ticks)
+static C_VOID fixture_advance(C_VOID *context, lib_u64 elapsed_ticks)
 {
     mantle_fixture *fixture = (mantle_fixture *)context;
-    if (fixture != STD_NULL) core_machine_rtc_advance(&fixture->rtc, elapsed_ticks);
+    if (fixture != LIB_NULL) core_machine_rtc_advance(&fixture->rtc, elapsed_ticks);
 }
 
 static const core_machine_execution_provider fixture_execution_provider = {
@@ -32,39 +33,39 @@ static const core_machine_execution_provider fixture_execution_provider = {
 static core_machine_media_result fixture_media_query(C_VOID *context,
     core_machine_media_info *out_info)
 {
-    if (context == STD_NULL || out_info == STD_NULL) {
+    if (context == LIB_NULL || out_info == LIB_NULL) {
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     }
-    STD_MEMSET(out_info, 0, sizeof(*out_info));
-    out_info->present = TYPE_TRUE;
+    lib_memory_set(out_info, 0, sizeof(*out_info));
+    out_info->present = LIB_TRUE;
     out_info->geometry.logical_sector_count = 1u;
     out_info->geometry.bytes_per_sector = 1u;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result fixture_media_read(C_VOID *context,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
 {
-    if (context == STD_NULL || buffer == STD_NULL || offset != 0u || byte_count != 1u) {
+    if (context == LIB_NULL || buffer == LIB_NULL || offset != 0u || byte_count != 1u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
-    *(type_unsigned_8 *)buffer = *(type_unsigned_8 *)context;
+    *(lib_u8 *)buffer = *(lib_u8 *)context;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider fixture_media_provider = {
     fixture_media_query,
     fixture_media_read,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL
 };
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 halt[] = { 0xf4u };
+    static const lib_u8 halt[] = { 0xf4u };
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -78,7 +79,7 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_media_info media_info;
     core_machine_media_result media_result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     mantle_fixture fixture = { 0 };
     C_INT failed = 0;
 

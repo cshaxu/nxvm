@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
@@ -12,20 +13,20 @@ static C_VOID pit_divider_output(C_VOID *opaque, type_bool asserted)
 {
     pit_divider_probe *probe = (pit_divider_probe *)opaque;
 
-    if (probe == STD_NULL) return;
+    if (probe == LIB_NULL) return;
     if (asserted) ++probe->high_transitions;
     else ++probe->low_transitions;
 }
 
 C_INT main(C_VOID)
 {
-    const type_unsigned_8 program[8] = { 0x90u, 0x90u, 0x90u, 0x90u,
+    const lib_u8 program[8] = { 0x90u, 0x90u, 0x90u, 0x90u,
         0x90u, 0x90u, 0x90u, 0x90u };
     core_machine_config config = { 0 };
     core_machine_run_budget four_instruction_budget = { 4u, 0u };
     core_machine_run_budget two_instruction_budget = { 2u, 0u };
     core_machine_run_result result;
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     pit_divider_probe probe = { 0u, 0u };
     C_INT failed = 0;
 

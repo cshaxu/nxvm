@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/cpu.h"
@@ -20,10 +21,10 @@ static C_INT real_mode_386_prepare(core_machine **out_machine)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    static const type_unsigned_8 reset_jump[] = {0xeau, 0x00u, 0x00u, 0x00u, 0x00u};
-    core_machine *machine = STD_NULL;
+    static const lib_u8 reset_jump[] = {0xeau, 0x00u, 0x00u, 0x00u, 0x00u};
+    core_machine *machine = LIB_NULL;
 
-    if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
             TYPE_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
             machine, TEST_RESET_LINEAR,
             TEST_RESET_PHYSICAL, TEST_RESET_WINDOW) != TYPE_STATUS_OK ||
@@ -40,7 +41,7 @@ static C_INT real_mode_386_prepare(core_machine **out_machine)
 
 C_INT main(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb8u, 0x00u, 0x00u,
         0x8eu, 0xd8u,
         0x8eu, 0xc0u,
@@ -51,13 +52,13 @@ C_INT main(C_VOID)
         0xf3u, 0x67u, 0x66u, 0xa5u,
         0xf4u
     };
-    static const type_unsigned_8 source[] = {0x41u, 0x42u, 0x43u, 0x44u};
-    type_unsigned_8 destination[sizeof(source)] = {0};
+    static const lib_u8 source[] = {0x41u, 0x42u, 0x43u, 0x44u};
+    lib_u8 destination[sizeof(source)] = {0};
     core_machine_cpu_state state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     const core_machine_run_budget budget = {256u, 0u};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     C_INT failed = !real_mode_386_prepare(&machine);
 
     if (!failed) {
@@ -72,7 +73,7 @@ C_INT main(C_VOID)
             core_machine_debug_read_cpu(machine, &state) != TYPE_STATUS_OK ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
             diagnostic.first_fault.valid ||
-            STD_MEMCMP(destination, source, sizeof(source)) != 0 ||
+            lib_memory_compare(destination, source, sizeof(source)) != 0 ||
             state.eip == 0u;
     }
     core_machine_destroy(machine);

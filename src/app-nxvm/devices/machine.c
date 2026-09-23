@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -9,7 +10,7 @@ _Static_assert(CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
     CORE_MACHINE_TIMING_CAPABILITY_COUNT,
     "timing capability count must match the frozen T433 universe");
 
-type_unsigned_32 core_machine_linear_pc(const core_machine *machine)
+lib_u32 core_machine_linear_pc(const core_machine *machine)
 {
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
@@ -21,9 +22,9 @@ static type_bool core_machine_xt_ppi_request_nmi(C_VOID *owner)
 {
     core_machine *machine = (core_machine *)owner;
 
-    if (machine == STD_NULL || machine->executor_cpu.data.flagMaskNMI) return TYPE_FALSE;
-    machine->executor_cpu.data.flagNMI = TYPE_TRUE;
-    return TYPE_TRUE;
+    if (machine == LIB_NULL || machine->executor_cpu.data.flagMaskNMI) return LIB_FALSE;
+    machine->executor_cpu.data.flagNMI = LIB_TRUE;
+    return LIB_TRUE;
 }
 
 static C_VOID core_machine_xt_ppi_update_speaker(C_VOID *owner,
@@ -38,7 +39,7 @@ static C_VOID core_machine_xt_ppi_update_speaker(C_VOID *owner,
  * already been added by the caller and never enters cpu_timing.c. */
 static C_INT core_machine_publish_successful_retirement(core_machine *machine)
 {
-    if (machine == STD_NULL) return 0;
+    if (machine == LIB_NULL) return 0;
     core_machine_retirement_observation_publish(machine,
         machine->cpu_retirement_source_ticks);
     return machine->retirement_time_contract != CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
@@ -54,14 +55,14 @@ static core_machine_cpu_profile core_machine_resolve_cpu_profile(
         CORE_MACHINE_CPU_PROFILE_80386 : profile;
 }
 
-static type_unsigned_32 core_machine_resolve_ticks_per_instruction(type_unsigned_32 ticks)
+static lib_u32 core_machine_resolve_ticks_per_instruction(lib_u32 ticks)
 {
     return ticks == 0u ? 1u : ticks;
 }
 
 static C_VOID core_machine_resolve_instruction_timing(
     core_machine_instruction_timing *out_timing,
-    const core_machine_instruction_timing *timing, type_unsigned_32 legacy_base)
+    const core_machine_instruction_timing *timing, lib_u32 legacy_base)
 {
     *out_timing = *timing;
     if (out_timing->base_ticks == 0u) {
@@ -73,9 +74,9 @@ static C_VOID core_machine_resolve_instruction_timing(
 static C_INT core_machine_retirement_qualification_contains(
     const core_machine *machine)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (machine == STD_NULL || !machine->retirement_eligibility_key_valid) return 0;
+    if (machine == LIB_NULL || !machine->retirement_eligibility_key_valid) return 0;
     for (index = 0u; index < machine->retirement_qualification_count; ++index) {
         const core_machine_retirement_eligibility_key *candidate =
             &machine->retirement_qualification[index];
@@ -115,7 +116,7 @@ static C_INT core_machine_valid_fpu_profile(core_machine_fpu_profile profile)
         profile <= CORE_MACHINE_FPU_PROFILE_80387;
 }
 
-static type_unsigned_32 core_machine_cpu_reset_rom_alias(
+static lib_u32 core_machine_cpu_reset_rom_alias(
     core_machine_cpu_profile profile)
 {
     switch (profile) {
@@ -134,9 +135,9 @@ static type_unsigned_32 core_machine_cpu_reset_rom_alias(
 
 static C_INT core_machine_cpu_reset_rom_is_present(const core_machine *machine)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (machine == STD_NULL) return 0;
+    if (machine == LIB_NULL) return 0;
     for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
         const core_machine_immutable_rom_mapping *mapping =
             &machine->immutable_rom_mappings[index];
@@ -145,25 +146,25 @@ static C_INT core_machine_cpu_reset_rom_is_present(const core_machine *machine)
          * window comes from F0000h ROM.  A short unrelated F0000h alias must
          * not turn on a high-ROM provider which cannot serve the reset CPU. */
         if (0x000ffff0u >= mapping->physical_start &&
-            (type_unsigned_64)0x000ffff0u - mapping->physical_start + 15u <=
+            (lib_u64)0x000ffff0u - mapping->physical_start + 15u <=
                 mapping->bytes) return 1;
     }
     return 0;
 }
 
 static C_INT core_machine_cpu_reset_rom_alias_is_present(const core_machine *machine,
-    type_unsigned_32 reset_alias)
+    lib_u32 reset_alias)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
-    if (machine == STD_NULL) return 0;
+    if (machine == LIB_NULL) return 0;
     for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
         const core_machine_immutable_rom_mapping *mapping =
             &machine->immutable_rom_mappings[index];
 
         if (reset_alias <= UINT32_MAX - 0xfff0u &&
             reset_alias + 0xfff0u >= mapping->physical_start &&
-            (type_unsigned_64)(reset_alias + 0xfff0u) - mapping->physical_start + 16u <=
+            (lib_u64)(reset_alias + 0xfff0u) - mapping->physical_start + 16u <=
                 mapping->bytes) return 1;
     }
     return 0;
@@ -171,18 +172,18 @@ static C_INT core_machine_cpu_reset_rom_alias_is_present(const core_machine *mac
 
 C_INT core_machine_configuration_is_open(const core_machine *machine)
 {
-    return machine != STD_NULL &&
+    return machine != LIB_NULL &&
         machine->lifecycle == CORE_MACHINE_INITIALIZED &&
         !machine->execution_provider_frozen && !machine->firmware_operation_active;
 }
 
 type_status core_machine_register_reset_rom_alias(core_machine *machine)
 {
-    type_unsigned_32 reset_alias;
-    STD_SIZE_T index;
+    lib_u32 reset_alias;
+    lib_size index;
     C_INT copied = 0;
 
-    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     reset_alias = core_machine_cpu_reset_rom_alias(machine->cpu_profile);
     if (reset_alias == 0u || !core_machine_cpu_reset_rom_is_present(machine)) {
         return TYPE_STATUS_OK;
@@ -193,10 +194,10 @@ type_status core_machine_register_reset_rom_alias(core_machine *machine)
     for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
         const core_machine_immutable_rom_mapping *mapping =
             &machine->immutable_rom_mappings[index];
-        type_unsigned_32 source_start;
-        type_unsigned_64 source_end = (type_unsigned_64)mapping->physical_start +
+        lib_u32 source_start;
+        lib_u64 source_end = (lib_u64)mapping->physical_start +
             mapping->bytes;
-        type_unsigned_64 copy_end;
+        lib_u64 copy_end;
         type_status status;
 
         if (source_end <= 0x000f0000u || mapping->physical_start >= 0x00100000u) {
@@ -207,7 +208,7 @@ type_status core_machine_register_reset_rom_alias(core_machine *machine)
         copy_end = source_end < 0x00100000u ? source_end : 0x00100000u;
         status = core_machine_register_immutable_rom_mapping_reset_alias(machine,
             source_start, reset_alias + (source_start - 0x000f0000u),
-            (STD_SIZE_T)(copy_end - source_start));
+            (lib_size)(copy_end - source_start));
         if (status != TYPE_STATUS_OK) return status;
         copied = 1;
     }
@@ -216,7 +217,7 @@ type_status core_machine_register_reset_rom_alias(core_machine *machine)
 
 C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine)
 {
-    return machine != STD_NULL && !machine->firmware_operation_active;
+    return machine != LIB_NULL && !machine->firmware_operation_active;
 }
 
 type_status core_machine_bind_execution_provider(core_machine *machine,
@@ -225,8 +226,8 @@ type_status core_machine_bind_execution_provider(core_machine *machine,
     if (!core_machine_configuration_is_open(machine)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (provider != STD_NULL && provider->reset == STD_NULL &&
-        provider->advance_time == STD_NULL) {
+    if (provider != LIB_NULL && provider->reset == LIB_NULL &&
+        provider->advance_time == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->execution_provider = provider;
@@ -248,7 +249,7 @@ type_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state)
 {
-    if (machine == STD_NULL || out_state == STD_NULL) {
+    if (machine == LIB_NULL || out_state == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -267,7 +268,7 @@ type_status core_machine_get_cpu_state(
 type_status core_machine_get_cpu_profile(
     const core_machine *machine, core_machine_cpu_profile *out_profile)
 {
-    if (machine == STD_NULL || out_profile == STD_NULL) {
+    if (machine == LIB_NULL || out_profile == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_profile = machine->cpu_profile;
@@ -277,7 +278,7 @@ type_status core_machine_get_cpu_profile(
 type_status core_machine_get_fpu_profile(
     const core_machine *machine, core_machine_fpu_profile *out_profile)
 {
-    if (machine == STD_NULL || out_profile == STD_NULL) {
+    if (machine == LIB_NULL || out_profile == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_profile = machine->fpu.profile;
@@ -287,15 +288,15 @@ type_status core_machine_get_fpu_profile(
 type_status core_machine_get_fpu_state(
     const core_machine *machine, core_machine_fpu_state *out_state)
 {
-    if (machine == STD_NULL || out_state == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL || out_state == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     core_machine_fpu_get_state(&machine->fpu, out_state);
     return TYPE_STATUS_OK;
 }
 
 type_status core_machine_get_memory_bytes(
-    const core_machine *machine, STD_SIZE_T *out_memory_bytes)
+    const core_machine *machine, lib_size *out_memory_bytes)
 {
-    if (machine == STD_NULL || out_memory_bytes == STD_NULL) {
+    if (machine == LIB_NULL || out_memory_bytes == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_memory_bytes = machine->executor_memory.connect.installed_bytes;
@@ -303,9 +304,9 @@ type_status core_machine_get_memory_bytes(
 }
 
 type_status core_machine_get_elapsed_ticks(
-    const core_machine *machine, type_unsigned_64 *out_elapsed_ticks)
+    const core_machine *machine, lib_u64 *out_elapsed_ticks)
 {
-    if (machine == STD_NULL || out_elapsed_ticks == STD_NULL ||
+    if (machine == LIB_NULL || out_elapsed_ticks == LIB_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return TYPE_STATUS_INVALID_STATE;
@@ -317,7 +318,7 @@ type_status core_machine_get_elapsed_ticks(
 type_status core_machine_capture_time_observation(const core_machine *machine,
     core_machine_time_observation *out_observation)
 {
-    if (machine == STD_NULL || out_observation == STD_NULL ||
+    if (machine == LIB_NULL || out_observation == LIB_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return TYPE_STATUS_INVALID_STATE;
@@ -329,7 +330,7 @@ type_status core_machine_capture_time_observation(const core_machine *machine,
 type_status core_machine_get_timeline_observation(const core_machine *machine,
     core_machine_timeline_observation *out_observation)
 {
-    if (machine == STD_NULL || out_observation == STD_NULL) {
+    if (machine == LIB_NULL || out_observation == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     out_observation->now = machine->timeline.now;
@@ -342,7 +343,7 @@ type_status core_machine_get_timeline_observation(const core_machine *machine,
 type_status core_machine_get_cpu_diagnostic(
     const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
 {
-    if (machine == STD_NULL || out_diagnostic == STD_NULL ||
+    if (machine == LIB_NULL || out_diagnostic == LIB_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -354,7 +355,7 @@ type_status core_machine_get_cpu_diagnostic(
 type_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation)
 {
-    if (machine == STD_NULL || out_observation == STD_NULL ||
+    if (machine == LIB_NULL || out_observation == LIB_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return TYPE_STATUS_INVALID_STATE;
@@ -377,11 +378,11 @@ static type_status core_machine_create_internal(
 {
     core_machine *machine;
     core_machine_port_provider_entry *port_checkpoint;
-    STD_SIZE_T memory_bytes;
-    type_unsigned_8 dma_controller_count;
-    if (out_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_machine = STD_NULL;
-    if (config == STD_NULL ||
+    lib_size memory_bytes;
+    lib_u8 dma_controller_count;
+    if (out_machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    if (config == LIB_NULL ||
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
         !core_machine_valid_fpu_profile(config->fpu_profile) ||
@@ -394,8 +395,8 @@ static type_status core_machine_create_internal(
             &config->transaction_contract) ||
         (config->shared_pit_personality != CORE_MACHINE_PIT_PERSONALITY_8254 &&
         config->shared_pit_personality != CORE_MACHINE_PIT_PERSONALITY_8253) ||
-        (config->auxiliary_pit_present != TYPE_FALSE &&
-        config->auxiliary_pit_present != TYPE_TRUE) ||
+        (config->auxiliary_pit_present != LIB_FALSE &&
+        config->auxiliary_pit_present != LIB_TRUE) ||
         (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
         config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE) ||
         (config->dma_controller_count > CORE_MACHINE_DMA_CONTROLLER_COUNT) ||
@@ -426,8 +427,8 @@ static type_status core_machine_create_internal(
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
 
-    machine = (core_machine *)STD_CALLOC(1u, sizeof(*machine));
-    if (machine == STD_NULL) {
+    machine = (core_machine *)lib_allocate_zero(1u, sizeof(*machine));
+    if (machine == LIB_NULL) {
         return TYPE_STATUS_NO_MEMORY;
     }
 
@@ -438,19 +439,19 @@ static type_status core_machine_create_internal(
     machine->transaction_contract = config->transaction_contract;
     machine->time_axis = config->time_axis;
     machine->l1_compatibility_policy = config->l1_compatibility_policy;
-    machine->dma_cycle_bus_ready = TYPE_TRUE;
-    machine->cpu_cycle_bus_ready = TYPE_TRUE;
-    if (config->retirement_qualification != STD_NULL) {
-        if (config->retirement_qualification->entries == STD_NULL ||
+    machine->dma_cycle_bus_ready = LIB_TRUE;
+    machine->cpu_cycle_bus_ready = LIB_TRUE;
+    if (config->retirement_qualification != LIB_NULL) {
+        if (config->retirement_qualification->entries == LIB_NULL ||
             config->retirement_qualification->entry_count == 0u ||
             config->retirement_qualification->entry_count >
                 CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY) {
-            STD_FREE(machine);
+            lib_release(machine);
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
         machine->retirement_qualification_count =
             config->retirement_qualification->entry_count;
-        STD_MEMCPY(machine->retirement_qualification,
+        lib_memory_copy(machine->retirement_qualification,
             config->retirement_qualification->entries,
             machine->retirement_qualification_count *
                 sizeof(machine->retirement_qualification[0]));
@@ -459,11 +460,11 @@ static type_status core_machine_create_internal(
         config->cpu_80386_cr_mov_ignores_mod;
     if (machine->cpu_80386_cr_mov_ignores_mod &&
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) {
-        STD_FREE(machine);
+        lib_release(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (core_machine_timeline_initialize(&machine->timeline) != TYPE_STATUS_OK) {
-        STD_FREE(machine);
+        lib_release(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     core_machine_resolve_instruction_timing(&machine->instruction_timing,
@@ -484,7 +485,7 @@ static type_status core_machine_create_internal(
             &config->clock_plan.kbc) != TYPE_STATUS_OK ||
         core_machine_clock_domain_initialize(&machine->provider_clock,
             &config->clock_plan.provider) != TYPE_STATUS_OK) {
-        STD_FREE(machine);
+        lib_release(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     /* Zero is an explicit profile choice: without a calibrated guest-time
@@ -555,7 +556,7 @@ static type_status core_machine_create_internal(
         core_machine_memory_register_mapping(&machine->executor_memory,
             machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                 0x00ff0000u : 0xffff0000u,
-            0x000f0000u, 0x00010000u, TYPE_FALSE) != TYPE_STATUS_OK) {
+            0x000f0000u, 0x00010000u, LIB_FALSE) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -594,7 +595,7 @@ static type_status core_machine_create_internal(
     if (config->auxiliary_pit_present) {
         core_machine_pit_initialize_at(&machine->auxiliary_pit,
             &machine->executor_port, config->auxiliary_pit_base_port);
-        machine->auxiliary_pit_configured = TYPE_TRUE;
+        machine->auxiliary_pit_configured = LIB_TRUE;
     }
     core_machine_pit_set_output(&machine->shared_pit, 0,
         core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
@@ -628,7 +629,7 @@ static type_status core_machine_create_internal(
         core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
             machine->kbc_serial_delivery_ticks);
     }
-    core_machine_pit_set_output(&machine->shared_pit, 1, STD_NULL, STD_NULL);
+    core_machine_pit_set_output(&machine->shared_pit, 1, LIB_NULL, LIB_NULL);
     {
         type_status status = core_machine_port_registration_status(
             &machine->executor_port);
@@ -649,7 +650,7 @@ static type_status core_machine_create_internal(
 type_status core_machine_create(const core_machine_config *config,
     core_machine **out_machine)
 {
-    return core_machine_create_internal(config, out_machine, STD_NULL, STD_NULL);
+    return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL);
 }
 
 type_status core_machine_create_from_plan(const core_machine_plan *plan,
@@ -657,25 +658,25 @@ type_status core_machine_create_from_plan(const core_machine_plan *plan,
 {
     type_status status;
 
-    if (out_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_machine = STD_NULL;
+    if (out_machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
     if (core_machine_plan_validate(plan) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_create_internal(&plan->configuration, out_machine,
-        STD_NULL, STD_NULL);
+        LIB_NULL, LIB_NULL);
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_plan_apply_topology(*out_machine, plan);
     if (status != TYPE_STATUS_OK) {
         core_machine_destroy(*out_machine);
-        *out_machine = STD_NULL;
+        *out_machine = LIB_NULL;
         return status;
     }
     (*out_machine)->timing_plan = *plan;
     /* Configuration-owned retirement qualification is already copied by
      * create_internal; the plan copy must retain no caller-owned pointer. */
-    (*out_machine)->timing_plan.configuration.retirement_qualification = STD_NULL;
-    (*out_machine)->timing_plan_copied = TYPE_TRUE;
+    (*out_machine)->timing_plan.configuration.retirement_qualification = LIB_NULL;
+    (*out_machine)->timing_plan_copied = LIB_TRUE;
     return TYPE_STATUS_OK;
 }
 
@@ -685,14 +686,14 @@ type_status core_machine_get_timing_disposition(const core_machine *machine,
 {
     const core_machine_timing_declaration *declaration;
 
-    if (machine == STD_NULL || out_disposition == STD_NULL ||
+    if (machine == LIB_NULL || out_disposition == LIB_NULL ||
         !machine->timing_plan_copied ||
         !core_machine_timing_capability_is_valid(capability)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     declaration = core_machine_plan_declaration_find(&machine->timing_plan,
         capability);
-    if (declaration == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (declaration == LIB_NULL) return TYPE_STATUS_INVALID_STATE;
     *out_disposition = declaration->disposition;
     return TYPE_STATUS_OK;
 }
@@ -701,7 +702,7 @@ type_status core_machine_get_timing_declaration(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_declaration *out_declaration)
 {
-    if (machine == STD_NULL || out_declaration == STD_NULL ||
+    if (machine == LIB_NULL || out_declaration == LIB_NULL ||
         !machine->timing_plan_copied ||
         !core_machine_timing_capability_is_valid(capability)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -710,7 +711,7 @@ type_status core_machine_get_timing_declaration(const core_machine *machine,
         const core_machine_timing_declaration *declaration =
             core_machine_plan_declaration_find(&machine->timing_plan, capability);
 
-        if (declaration == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+        if (declaration == LIB_NULL) return TYPE_STATUS_INVALID_STATE;
         *out_declaration = *declaration;
     }
     return TYPE_STATUS_OK;
@@ -721,14 +722,14 @@ type_status core_machine_create_with_test_memory_allocation(
     core_machine_memory_test_allocation *test_allocation)
 {
     return core_machine_create_internal(config, out_machine, test_allocation,
-        STD_NULL);
+        LIB_NULL);
 }
 
 type_status core_machine_create_with_test_port_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_port_test_allocation *test_allocation)
 {
-    return core_machine_create_internal(config, out_machine, STD_NULL,
+    return core_machine_create_internal(config, out_machine, LIB_NULL,
         test_allocation);
 }
 
@@ -764,8 +765,8 @@ static type_status core_machine_cold_reset(core_machine *machine)
         core_machine_pit_reset(&machine->auxiliary_pit);
     }
     core_machine_board_after_pit_reset(machine);
-    machine->d4_refresh_hold_pending = TYPE_FALSE;
-    machine->d4_refresh_pulse_active = TYPE_FALSE;
+    machine->d4_refresh_hold_pending = LIB_FALSE;
+    machine->d4_refresh_pulse_active = LIB_FALSE;
     machine->d4_refresh_address = 0u;
     core_machine_vadp_reset(&machine->shared_vadp);
 
@@ -773,33 +774,33 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
     machine->dma_cycle_wait_remaining = 0u;
-    machine->dma_cycle_bus_ready = TYPE_TRUE;
-    machine->cpu_cycle_bus_ready = TYPE_TRUE;
+    machine->dma_cycle_bus_ready = LIB_TRUE;
+    machine->cpu_cycle_bus_ready = LIB_TRUE;
     machine->external_cycle_page_tag = 0u;
     machine->external_cycle_round_ticks = 0u;
     machine->cpu_retirement_wait_ticks = 0u;
     machine->cpu_retirement_completion_ticks = 0u;
     machine->cpu_retirement_source_ticks = 0u;
-    machine->external_cycle_page_valid = TYPE_FALSE;
-    machine->external_cycle_pending_valid = TYPE_FALSE;
+    machine->external_cycle_page_valid = LIB_FALSE;
+    machine->external_cycle_pending_valid = LIB_FALSE;
     machine->external_cycle_pending_space = CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY;
     machine->external_cycle_pending_physical = 0u;
     machine->external_cycle_pending_bytes = 0u;
-    machine->external_cycle_pending_write = TYPE_FALSE;
+    machine->external_cycle_pending_write = LIB_FALSE;
     machine->external_cycle_pending_provenance =
         CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
-    machine->external_cycle_overlap_valid = TYPE_FALSE;
+    machine->external_cycle_overlap_valid = LIB_FALSE;
     machine->external_cycle_overlap_next_physical = 0u;
-    machine->external_cycle_round_overflow = TYPE_FALSE;
-    machine->cpu_retirement_wait_pending = TYPE_FALSE;
-    machine->retirement_eligibility_key_valid = TYPE_FALSE;
-    machine->source_repeat_active = TYPE_FALSE;
+    machine->external_cycle_round_overflow = LIB_FALSE;
+    machine->cpu_retirement_wait_pending = LIB_FALSE;
+    machine->retirement_eligibility_key_valid = LIB_FALSE;
+    machine->source_repeat_active = LIB_FALSE;
     machine->source_repeat_cs = 0u;
     machine->source_repeat_eip = 0u;
     machine->source_repeat_opcode = 0u;
     machine->source_repeat_prefix = 0u;
-    machine->source_repeat_operand_size = TYPE_FALSE;
-    machine->source_repeat_address_size = TYPE_FALSE;
+    machine->source_repeat_operand_size = LIB_FALSE;
+    machine->source_repeat_address_size = LIB_FALSE;
     core_machine_transaction_reset(&machine->transaction);
     core_machine_timeline_reset(&machine->timeline);
     core_machine_clock_domain_reset(&machine->dma_clock);
@@ -809,14 +810,14 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_clock_domain_reset(&machine->vadp_clock);
     core_machine_clock_domain_reset(&machine->kbc_clock);
     core_machine_clock_domain_reset(&machine->provider_clock);
-    machine->entry_plan_applied = TYPE_FALSE;
+    machine->entry_plan_applied = LIB_FALSE;
     core_machine_cpu_diagnostic_reset(machine);
     core_machine_retirement_observation_reset(machine);
-    if (machine->execution_provider != STD_NULL &&
-        machine->execution_provider->reset != STD_NULL) {
+    if (machine->execution_provider != LIB_NULL &&
+        machine->execution_provider->reset != LIB_NULL) {
         machine->execution_provider->reset(machine->execution_provider_context);
     }
-    if (machine->firmware_provider != STD_NULL) {
+    if (machine->firmware_provider != LIB_NULL) {
         status = core_machine_firmware_invoke(machine, 0, 1,
             machine->firmware_provider->reset);
         if (status != TYPE_STATUS_OK) {
@@ -833,27 +834,27 @@ static type_status core_machine_cold_reset(core_machine *machine)
  * and scheduled device work; discard only incomplete CPU execution state. */
 static C_VOID core_machine_processor_reset(core_machine *machine)
 {
-    if (machine == STD_NULL) return;
+    if (machine == LIB_NULL) return;
     core_machine_cpu_state_reset(&machine->executor_cpu_execution);
-    machine->cpu_retirement_wait_pending = TYPE_FALSE;
+    machine->cpu_retirement_wait_pending = LIB_FALSE;
     machine->cpu_retirement_wait_ticks = 0u;
     machine->cpu_retirement_completion_ticks = 0u;
     machine->cpu_retirement_source_ticks = 0u;
-    machine->external_cycle_page_valid = TYPE_FALSE;
-    machine->external_cycle_pending_valid = TYPE_FALSE;
+    machine->external_cycle_page_valid = LIB_FALSE;
+    machine->external_cycle_pending_valid = LIB_FALSE;
     machine->external_cycle_round_ticks = 0u;
-    machine->external_cycle_round_overflow = TYPE_FALSE;
-    machine->external_cycle_overlap_valid = TYPE_FALSE;
-    machine->retirement_eligibility_key_valid = TYPE_FALSE;
-    machine->source_repeat_active = TYPE_FALSE;
+    machine->external_cycle_round_overflow = LIB_FALSE;
+    machine->external_cycle_overlap_valid = LIB_FALSE;
+    machine->retirement_eligibility_key_valid = LIB_FALSE;
+    machine->source_repeat_active = LIB_FALSE;
 }
 
 type_status core_machine_reconfigure_memory(core_machine *machine,
-    STD_SIZE_T memory_bytes)
+    lib_size memory_bytes)
 {
     type_native_unsigned index;
 
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->execution_provider_frozen ||
         machine->lifecycle != CORE_MACHINE_STOPPED ||
         (machine->planar_parity_configured &&
@@ -880,7 +881,7 @@ type_status core_machine_reconfigure_memory(core_machine *machine,
 
 type_status core_machine_reset(core_machine *machine)
 {
-    if (machine == STD_NULL) {
+    if (machine == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -897,7 +898,7 @@ type_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle)
 {
-    if (machine == STD_NULL || out_lifecycle == STD_NULL) {
+    if (machine == LIB_NULL || out_lifecycle == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -908,8 +909,8 @@ type_status core_machine_get_lifecycle(
 static type_status core_machine_complete_run_boundary(core_machine *machine,
     core_machine_run_result *result)
 {
-    if (machine->firmware_provider != STD_NULL &&
-        machine->firmware_provider->after_run != STD_NULL &&
+    if (machine->firmware_provider != LIB_NULL &&
+        machine->firmware_provider->after_run != LIB_NULL &&
         core_machine_firmware_invoke(machine, 0, 0,
             machine->firmware_provider->after_run) != TYPE_STATUS_OK) {
         (C_VOID)core_machine_report_fault(machine, 0x46575245u);
@@ -921,8 +922,8 @@ static type_status core_machine_complete_run_boundary(core_machine *machine,
         result->reason = CORE_MACHINE_STOP_REQUESTED;
     }
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY,
-        result->linear_pc, (type_unsigned_32)result->executed,
-        (type_unsigned_32)result->reason);
+        result->linear_pc, (lib_u32)result->executed,
+        (lib_u32)result->reason);
     return TYPE_STATUS_OK;
 }
 
@@ -931,7 +932,7 @@ type_status core_machine_run(
     core_machine_run_budget budget,
     core_machine_run_result *result)
 {
-    if (machine == STD_NULL || result == STD_NULL ||
+    if (machine == LIB_NULL || result == LIB_NULL ||
         !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -964,7 +965,7 @@ type_status core_machine_run(
         result->reason = CORE_MACHINE_STOP_REQUESTED;
         result->linear_pc = core_machine_linear_pc(machine);
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u, 0u,
-                               (type_unsigned_32)result->reason);
+                               (lib_u32)result->reason);
         return TYPE_STATUS_OK;
     }
 
@@ -1011,7 +1012,7 @@ type_status core_machine_run(
                 result->reason = CORE_MACHINE_STOP_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u,
-                    0u, (type_unsigned_32)result->reason);
+                    0u, (lib_u32)result->reason);
                 return TYPE_STATUS_OK;
             }
             if (core_machine_cpu_execution_consume_reset_request(
@@ -1096,7 +1097,7 @@ type_status core_machine_run(
                         machine->cpu_retirement_completion_ticks,
                         CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT) !=
                     TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
-                machine->cpu_retirement_wait_pending = TYPE_FALSE;
+                machine->cpu_retirement_wait_pending = LIB_FALSE;
                 machine->cpu_retirement_completion_ticks = 0u;
                 machine->cpu_retirement_source_ticks = 0u;
                 result->elapsed_ticks = machine->elapsed_ticks;
@@ -1151,7 +1152,7 @@ type_status core_machine_run(
             }
             {
                 core_machine_cpu_timing_result timing_result;
-                type_unsigned_64 instruction_ticks;
+                lib_u64 instruction_ticks;
 
                 if (!core_machine_cpu_timing_select(machine, &timing_result) ||
                     machine->external_cycle_round_overflow) {
@@ -1176,7 +1177,7 @@ type_status core_machine_run(
                 }
                 core_machine_retirement_observation_capture_eligibility_key(machine);
                 if (machine->external_cycle_round_ticks != 0u) {
-                    machine->cpu_retirement_wait_pending = TYPE_TRUE;
+                    machine->cpu_retirement_wait_pending = LIB_TRUE;
                     machine->cpu_retirement_wait_ticks = machine->external_cycle_round_ticks;
                     machine->cpu_retirement_completion_ticks = instruction_ticks - machine->external_cycle_round_ticks;
                     machine->cpu_retirement_source_ticks = instruction_ticks;
@@ -1229,9 +1230,9 @@ type_status core_machine_run(
 }
 
 type_status core_machine_advance_time(core_machine *machine,
-    type_unsigned_64 source_ticks)
+    lib_u64 source_ticks)
 {
-    if (machine == STD_NULL || machine->retirement_time_contract ==
+    if (machine == LIB_NULL || machine->retirement_time_contract ==
         CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
         !core_machine_mutable_operation_is_allowed(machine) ||
         (machine->lifecycle != CORE_MACHINE_STOPPED &&
@@ -1248,13 +1249,13 @@ type_status core_machine_advance_to_next_deadline(core_machine *machine,
     core_machine_time_observation observation;
     type_status status;
 
-    if (machine == STD_NULL || out_advanced == STD_NULL ||
+    if (machine == LIB_NULL || out_advanced == LIB_NULL ||
         !core_machine_mutable_operation_is_allowed(machine) ||
         (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    *out_advanced = TYPE_FALSE;
+    *out_advanced = LIB_FALSE;
     core_machine_capture_time_observation_private(machine, &observation);
     if (!observation.next_deadline_valid ||
         observation.next_deadline_tick <= observation.elapsed_ticks) {
@@ -1264,7 +1265,7 @@ type_status core_machine_advance_to_next_deadline(core_machine *machine,
         observation.next_deadline_tick - observation.elapsed_ticks,
         CORE_MACHINE_TIME_PUBLICATION_DEADLINE);
     if (status != TYPE_STATUS_OK) return status;
-    *out_advanced = TYPE_TRUE;
+    *out_advanced = LIB_TRUE;
     return TYPE_STATUS_OK;
 }
 
@@ -1272,15 +1273,15 @@ type_status core_machine_advance_l1_compatibility(core_machine *machine,
     type_bool *out_advanced)
 {
     core_machine_time_observation observation;
-    type_unsigned_8 step;
+    lib_u8 step;
 
-    if (machine == STD_NULL || out_advanced == STD_NULL ||
+    if (machine == LIB_NULL || out_advanced == LIB_NULL ||
         !core_machine_mutable_operation_is_allowed(machine) ||
         (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    *out_advanced = TYPE_FALSE;
+    *out_advanced = LIB_FALSE;
     if (machine->l1_compatibility_policy !=
             CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL) {
@@ -1298,14 +1299,14 @@ type_status core_machine_advance_l1_compatibility(core_machine *machine,
                 CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY) != TYPE_STATUS_OK) {
             return TYPE_STATUS_INVALID_STATE;
         }
-        *out_advanced = TYPE_TRUE;
+        *out_advanced = LIB_TRUE;
     }
     return TYPE_STATUS_OK;
 }
 
 type_status core_machine_request_stop(core_machine *machine)
 {
-    if (machine == STD_NULL) {
+    if (machine == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (!core_machine_mutable_operation_is_allowed(machine)) return TYPE_STATUS_INVALID_STATE;
@@ -1316,10 +1317,10 @@ type_status core_machine_request_stop(core_machine *machine)
 
 type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    machine->executor_cpu.data.flagMaskNMI = masked ? TYPE_TRUE : TYPE_FALSE;
+    machine->executor_cpu.data.flagMaskNMI = masked ? LIB_TRUE : LIB_FALSE;
     if (!masked) {
         core_machine_board_refresh_nmi(machine);
     }
@@ -1329,17 +1330,17 @@ type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked)
 type_status core_machine_get_nmi_mask(const core_machine *machine,
     C_INT *out_masked)
 {
-    if (machine == STD_NULL || out_masked == STD_NULL) {
+    if (machine == LIB_NULL || out_masked == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    *out_masked = machine->executor_cpu.data.flagMaskNMI ? TYPE_TRUE : TYPE_FALSE;
+    *out_masked = machine->executor_cpu.data.flagMaskNMI ? LIB_TRUE : LIB_FALSE;
     return TYPE_STATUS_OK;
 }
 
 type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
-    type_unsigned_8 native_byte)
+    lib_u8 native_byte)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
@@ -1353,9 +1354,9 @@ type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
 }
 
 type_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
-    type_unsigned_8 *out_scan_set)
+    lib_u8 *out_scan_set)
 {
-    if (machine == STD_NULL || out_scan_set == STD_NULL ||
+    if (machine == LIB_NULL || out_scan_set == LIB_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED) {
         return TYPE_STATUS_INVALID_STATE;
     }
@@ -1366,9 +1367,9 @@ type_status core_machine_keyboard_get_native_scan_set(const core_machine *machin
 }
 
 type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
-    const type_unsigned_8 *native_bytes, STD_SIZE_T count)
+    const lib_u8 *native_bytes, lib_size count)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
@@ -1384,7 +1385,7 @@ type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
 type_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
     core_machine_xt_ppi_fault_input input, C_INT asserted)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         machine->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         return TYPE_STATUS_INVALID_STATE;
     }
@@ -1393,9 +1394,9 @@ type_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
 }
 
 type_status core_machine_mouse_receive_relative(core_machine *machine,
-    type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons)
+    lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         (machine->lifecycle != CORE_MACHINE_RUNNING &&
         machine->lifecycle != CORE_MACHINE_PAUSED &&
         machine->lifecycle != CORE_MACHINE_STOPPED)) {
@@ -1408,9 +1409,9 @@ type_status core_machine_mouse_receive_relative(core_machine *machine,
 
 type_status core_machine_report_fault(
     core_machine *machine,
-    type_unsigned_32 detail)
+    lib_u32 detail)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -1428,11 +1429,11 @@ type_status core_machine_report_fault(
 
 C_VOID core_machine_destroy(core_machine *machine)
 {
-    if (machine != STD_NULL) {
+    if (machine != LIB_NULL) {
         machine->firmware_context.active = 0;
-        machine->firmware_context.machine = STD_NULL;
-        machine->firmware_provider = STD_NULL;
-        machine->firmware_provider_context = STD_NULL;
+        machine->firmware_context.machine = LIB_NULL;
+        machine->firmware_provider = LIB_NULL;
+        machine->firmware_provider_context = LIB_NULL;
         core_machine_hdc_finalize(&machine->hdc);
         core_machine_fdc_finalize(&machine->fdc);
         core_machine_dma_finalize(&machine->shared_dma_latch,
@@ -1453,14 +1454,14 @@ C_VOID core_machine_destroy(core_machine *machine)
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
         core_machine_port_finalize(&machine->executor_port);
         core_machine_memory_finalize(&machine->executor_memory);
-        for (STD_SIZE_T index = 0u; index < machine->immutable_rom_mapping_count;
+        for (lib_size index = 0u; index < machine->immutable_rom_mapping_count;
                 ++index) {
             if (machine->immutable_rom_mappings[index].owns_image) {
-                STD_FREE(machine->immutable_rom_mappings[index].image);
+                lib_release(machine->immutable_rom_mappings[index].image);
             }
         }
     }
     core_machine_trace_finalize(machine);
     core_machine_bus_finalize(machine);
-    STD_FREE(machine);
+    lib_release(machine);
 }

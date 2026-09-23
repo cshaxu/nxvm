@@ -1,5 +1,6 @@
 #ifndef VM_APP_CONFIG_H
 #define VM_APP_CONFIG_H
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 

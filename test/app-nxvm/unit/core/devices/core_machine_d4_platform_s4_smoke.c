@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -16,12 +17,12 @@ static C_INT core_machine_port_b_exclusivity(C_VOID)
         .refresh_status_toggle_ticks = 0u
     };
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
     C_INT failed = 0;
 
     config.memory_bytes = 2u * 1024u * 1024u;
-    config.auxiliary_pit_present = TYPE_TRUE;
+    config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_planar_parity(machine, &planar) != TYPE_STATUS_OK ||
@@ -32,7 +33,7 @@ static C_INT core_machine_port_b_exclusivity(C_VOID)
             TYPE_STATUS_OK || (value & 0x0fu) != 0x04u;
     core_machine_destroy(machine);
 
-    machine = STD_NULL;
+    machine = LIB_NULL;
     value = 0u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_OK ||
@@ -51,12 +52,12 @@ C_INT main(C_VOID)
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_d4_platform_observation observation;
     core_machine_speaker_observation speaker;
-    core_machine *machine = STD_NULL;
-    type_unsigned_32 value = 0u;
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
     C_INT failed = 0;
 
     config.memory_bytes = 2u * 1024u * 1024u;
-    config.auxiliary_pit_present = TYPE_TRUE;
+    config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     cmos.index_port = 0x0070u;
     cmos.data_port = 0x0071u;
@@ -151,11 +152,11 @@ C_INT main(C_VOID)
 
     if (!failed) {
         core_machine_run_result result;
-        type_unsigned_64 elapsed_before_shutdown;
+        lib_u64 elapsed_before_shutdown;
 
         elapsed_before_shutdown = machine->elapsed_ticks;
         core_machine_cpu_execution_request_shutdown(&machine->executor_cpu_execution);
-        machine->executor_cpu.data.flagHalt = TYPE_TRUE;
+        machine->executor_cpu.data.flagHalt = LIB_TRUE;
         failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
             &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||

@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/dma.h"
@@ -7,7 +8,7 @@
 #include "app-nxvm/devices/port.h"
 
 typedef struct core_machine_fdc_change_media {
-    type_unsigned_64 generation;
+    lib_u64 generation;
     type_bool present;
 } core_machine_fdc_change_media;
 
@@ -24,10 +25,10 @@ static core_machine_media_result core_machine_fdc_change_query(C_VOID *context,
 {
     core_machine_fdc_change_media *media = context;
 
-    if (media == STD_NULL || out_info == STD_NULL) {
+    if (media == LIB_NULL || out_info == LIB_NULL) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
-    STD_MEMSET(out_info, 0, sizeof(*out_info));
+    lib_memory_set(out_info, 0, sizeof(*out_info));
     out_info->generation = media->generation;
     out_info->present = media->present;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
@@ -42,32 +43,32 @@ static core_machine_media_result core_machine_fdc_change_query(C_VOID *context,
 }
 
 static core_machine_media_result core_machine_fdc_change_read(C_VOID *context,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
+    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
 {
     core_machine_fdc_change_media *media = context;
 
-    if (media == STD_NULL || buffer == STD_NULL || !media->present) {
+    if (media == LIB_NULL || buffer == LIB_NULL || !media->present) {
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     }
     if (offset >= 512u || byte_count != 1u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    *(type_unsigned_8 *)buffer = 0x5au;
+    *(lib_u8 *)buffer = 0x5au;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static const core_machine_media_provider core_machine_fdc_change_provider = {
     core_machine_fdc_change_query,
     core_machine_fdc_change_read,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL,
+    LIB_NULL
 };
 
 static C_VOID core_machine_fdc_change_command(core_machine_fdc *fdc, t_port *port,
-    const type_unsigned_8 *bytes, STD_SIZE_T count)
+    const lib_u8 *bytes, lib_size count)
 {
-    STD_SIZE_T index;
+    lib_size index;
 
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
@@ -77,19 +78,19 @@ static C_VOID core_machine_fdc_change_command(core_machine_fdc *fdc, t_port *por
 
 static C_VOID core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, t_port *port)
 {
-    for (type_unsigned_8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
         if (fdc->data.seek_pending[drive]) {
             core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[drive]);
         }
     }
-    core_machine_fdc_change_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+    core_machine_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
 }
 
 static C_VOID core_machine_fdc_change_drain_reset(core_machine_fdc *fdc, t_port *port)
 {
-    type_unsigned_8 drive;
+    lib_u8 drive;
 
     for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
         core_machine_fdc_change_ack_irq(fdc, port);
@@ -98,11 +99,11 @@ static C_VOID core_machine_fdc_change_drain_reset(core_machine_fdc *fdc, t_port 
 
 int main(C_VOID)
 {
-    static const type_unsigned_8 recalibrate_0[] = {0x07u, 0x00u};
-    static const type_unsigned_8 recalibrate_1[] = {0x07u, 0x01u};
-    static const type_unsigned_8 sense_1[] = {0x04u, 0x01u};
-    static const type_unsigned_8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
-    static const type_unsigned_8 read_0[] = {0xe6u, 0x00u, 0x00u, 0x00u, 0x01u,
+    static const lib_u8 recalibrate_0[] = {0x07u, 0x00u};
+    static const lib_u8 recalibrate_1[] = {0x07u, 0x01u};
+    static const lib_u8 sense_1[] = {0x04u, 0x01u};
+    static const lib_u8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
+    static const lib_u8 read_0[] = {0xe6u, 0x00u, 0x00u, 0x00u, 0x01u,
         0x02u, 0x01u, 0x1bu, 0xffu};
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -122,16 +123,16 @@ int main(C_VOID)
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_fdc_change_media drive0 = {.generation = 10u, .present = TYPE_FALSE};
-    core_machine_fdc_change_media drive1 = {.generation = 30u, .present = TYPE_TRUE};
-    core_machine_media_registry *media = STD_NULL;
+    core_machine_fdc_change_media drive0 = {.generation = 10u, .present = LIB_FALSE};
+    core_machine_fdc_change_media drive1 = {.generation = 30u, .present = LIB_TRUE};
+    core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
-    core_machine *machine = STD_NULL;
+    core_machine *machine = LIB_NULL;
     core_machine_fdc *fdc;
     t_dma *dma;
     t_port *port;
-    type_unsigned_8 status;
+    lib_u8 status;
     C_INT failed = 0;
     C_INT first_failure = 0;
 
@@ -141,7 +142,7 @@ int main(C_VOID)
         fdc = &machine->fdc;
         dma = &machine->shared_dma_primary;
         port = &machine->executor_port;
-        if (fdc == STD_NULL || dma == STD_NULL || port == STD_NULL ||
+        if (fdc == LIB_NULL || dma == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 21u, &drive0,
                 &core_machine_fdc_change_provider) != TYPE_STATUS_OK ||
             core_machine_media_registry_bind(media, 22u, &drive1,
@@ -157,7 +158,7 @@ int main(C_VOID)
             topology.config = fdc_config;
             if (core_machine_configure_fdc(machine, &topology) != TYPE_STATUS_OK ||
                 core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-                (drive0.present = TYPE_TRUE, core_machine_reset(machine)) != TYPE_STATUS_OK) {
+                (drive0.present = LIB_TRUE, core_machine_reset(machine)) != TYPE_STATUS_OK) {
                 failed = 1;
             } else {
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
@@ -174,19 +175,19 @@ int main(C_VOID)
 
                 core_machine_fdc_change_command(fdc, port, specify_dma,
                     sizeof(specify_dma));
-                drive1.present = TYPE_FALSE;
+                drive1.present = LIB_FALSE;
                 (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 2,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted ||
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
-                core_machine_fdc_change_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
-                status = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+                core_machine_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+                status = (lib_u8)core_machine_port_read(port, 0x03f5u);
                 core_machine_fdc_change_require(&failed, &first_failure, 3,
                     status != (core_machine_fdc_ST0_READY_CHANGE |
                     core_machine_fdc_ST0_NOT_READY | 1u) ||
                     core_machine_port_read(port, 0x03f5u) != 0u || fdc->data.flagINTR ||
                     fdc->connect.irq_source.asserted);
-                drive1.present = TYPE_TRUE;
+                drive1.present = LIB_TRUE;
                 (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 4,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
@@ -213,7 +214,7 @@ int main(C_VOID)
                 (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 8,
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
-                drive1.present = TYPE_FALSE;
+                drive1.present = LIB_FALSE;
                 ++drive1.generation;
                 (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 9,
@@ -221,12 +222,12 @@ int main(C_VOID)
                 core_machine_fdc_change_ack_irq(fdc, port);
                 status = 0u;
                 core_machine_fdc_change_command(fdc, port, sense_1, sizeof(sense_1));
-                status = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+                status = (lib_u8)core_machine_port_read(port, 0x03f5u);
                 core_machine_fdc_change_require(&failed, &first_failure, 10,
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u ||
                     status != 0x39u);
 
-                drive1.present = TYPE_TRUE;
+                drive1.present = LIB_TRUE;
                 (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 11,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);

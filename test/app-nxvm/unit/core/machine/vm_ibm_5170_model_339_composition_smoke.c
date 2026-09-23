@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -12,9 +13,9 @@
 static type_status vm_test_create_5170(const vm_machine_config *config,
     vm_machine **out_session)
 {
-    type_unsigned_8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
-    type_unsigned_8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
-    type_unsigned_8 font[VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES] = {0};
+    lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 font[VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES] = {0};
     vm_machine_assets assets;
 
     vm_test_ibm_5170_assets(&assets, even, odd);
@@ -27,7 +28,7 @@ static type_status vm_test_create_5170(const vm_machine_config *config,
 static type_status vm_test_create_default(const vm_machine_config *config,
     vm_machine **out_session)
 {
-    type_unsigned_8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
+    lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
     vm_machine_assets assets;
 
     vm_test_default_pc_at_assets(&assets, rom);
@@ -46,14 +47,14 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     core_machine_planar_parity_observation parity;
     core_machine_speaker_observation speaker;
     core_machine_memory_route memory_route;
-    vm_machine *session = STD_NULL;
-    STD_SIZE_T memory_bytes = 0u;
-    type_unsigned_8 before = 0u;
-    type_unsigned_8 after = 0u;
-    type_unsigned_8 option_rom_probe = 0u;
+    vm_machine *session = LIB_NULL;
+    lib_size memory_bytes = 0u;
+    lib_u8 before = 0u;
+    lib_u8 after = 0u;
+    lib_u8 option_rom_probe = 0u;
     C_INT failed = 0;
 
-    if (profile == STD_NULL || !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
+    if (profile == LIB_NULL || !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
         !profile->hdc_present || !profile->planar_parity_present ||
         !profile->monochrome_aperture_absent || profile->diskette_drive_a_field_upgrade ||
         profile->clock_plan.pit.numerator != 596591u ||
@@ -61,8 +62,8 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         profile->pic_irq_timing.unmask_delivery_ticks[1u] != 120u ||
         profile->cmos.floppy_type != 0x20u || profile->cmos.fixed_disk_type != 0x30u ||
         vm_profile_default_pc_at_port_leaf_find(profile,
-            VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u) == STD_NULL ||
-        vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == STD_NULL) {
+            VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u) == LIB_NULL ||
+        vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
     }
@@ -105,7 +106,7 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     failed |= (core_machine_memory_read(session->core_machine, 0x00100003u, &before,
         sizeof(before)) != TYPE_STATUS_OK || before != 0xffu) ? 0x0200 : 0;
     failed |= (core_machine_memory_write(session->core_machine, 0x00100003u,
-        &(type_unsigned_8){0x5au}, sizeof(type_unsigned_8)) != TYPE_STATUS_OK) ? 0x0400 : 0;
+        &(lib_u8){0x5au}, sizeof(lib_u8)) != TYPE_STATUS_OK) ? 0x0400 : 0;
     failed |= (core_machine_memory_read(session->core_machine, 0x00100003u, &after,
         sizeof(after)) != TYPE_STATUS_OK || after != 0xffu) ? 0x0800 : 0;
     failed |= (core_machine_memory_read(session->core_machine, 0x000c0000u,
@@ -133,23 +134,23 @@ static C_INT vm_model_339_floppy_contract(C_VOID)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u,
         .floppy_format = VM_MACHINE_FLOPPY_FORMAT_720K
     };
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT failed = vm_test_create_5170(&native, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        session == LIB_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 15u;
 
     vm_machine_destroy(session);
-    session = STD_NULL;
+    session = LIB_NULL;
     failed |= vm_test_create_5170(&compatible, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        session == LIB_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
         session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 9u ||
         session->core_machine->fdc.connect.drives.cylinder_count[0u] != 80u;
     vm_machine_destroy(session);
-    session = STD_NULL;
-    failed |= vm_test_create_5170(&rejected, &session) == TYPE_STATUS_OK || session != STD_NULL;
+    session = LIB_NULL;
+    failed |= vm_test_create_5170(&rejected, &session) == TYPE_STATUS_OK || session != LIB_NULL;
     vm_machine_destroy(session);
     return failed;
 }
@@ -160,7 +161,7 @@ static C_INT vm_model_339_floppy_contract(C_VOID)
  * permitted on this profile's physical Core axis. */
 static C_INT vm_model_339_refresh_polling_is_live(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb4u, 0x10u, 0xe4u, 0x61u, 0x24u, 0x10u,
         0x3au, 0xc4u, 0x74u, 0xf8u, 0xf4u
     };
@@ -168,10 +169,10 @@ static C_INT vm_model_339_refresh_polling_is_live(C_VOID)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
     };
     core_machine_run_result result = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT failed = 0;
 
-    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == LIB_NULL ||
         core_machine_memory_write(session->core_machine, 0x0500u, program,
             sizeof(program)) != TYPE_STATUS_OK) {
         vm_machine_destroy(session);
@@ -187,7 +188,7 @@ static C_INT vm_model_339_refresh_polling_is_live(C_VOID)
     session->core_machine->executor_cpu.data.ss.base = 0u;
     session->core_machine->executor_cpu.data.eip = 0x0500u;
     session->core_machine->executor_cpu.data.sp = 0xfffeu;
-    session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+    session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
     failed = core_machine_run(session->core_machine, (core_machine_run_budget) {1000u, 0u},
         &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     vm_machine_destroy(session);
@@ -200,7 +201,7 @@ static C_INT vm_model_339_refresh_polling_is_live(C_VOID)
  * the CPU/PIT ratio that this firmware test actually exercises. */
 static C_INT vm_model_339_refresh_post_loop_is_calibrated(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0x32u, 0xdbu, 0x33u, 0xc9u, 0x90u,
         0xe4u, 0x61u, 0xa8u, 0x10u, 0xe1u, 0xfau,
         0xe4u, 0x61u, 0xa8u, 0x10u, 0xe0u, 0xfau,
@@ -210,10 +211,10 @@ static C_INT vm_model_339_refresh_post_loop_is_calibrated(C_VOID)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
     };
     core_machine_run_result result = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT failed = 0;
 
-    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == LIB_NULL ||
         core_machine_memory_write(session->core_machine, 0x0500u, program,
             sizeof(program)) != TYPE_STATUS_OK) {
         vm_machine_destroy(session);
@@ -229,7 +230,7 @@ static C_INT vm_model_339_refresh_post_loop_is_calibrated(C_VOID)
     session->core_machine->executor_cpu.data.ss.base = 0u;
     session->core_machine->executor_cpu.data.eip = 0x0500u;
     session->core_machine->executor_cpu.data.sp = 0xfffeu;
-    session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+    session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
     failed = core_machine_run(session->core_machine,
         (core_machine_run_budget) {200000u, 0u}, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -246,7 +247,7 @@ static C_INT vm_model_339_refresh_post_loop_is_calibrated(C_VOID)
  * is a CPU-to-Core board path check, not a firmware shortcut. */
 static C_INT vm_model_339_dma_page_word_io_is_converted(C_VOID)
 {
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb8u, 0x55u, 0xaau, 0xe7u, 0x82u,
         0xe4u, 0x82u, 0x86u, 0xc4u, 0xe4u, 0x83u, 0xf4u
     };
@@ -254,10 +255,10 @@ static C_INT vm_model_339_dma_page_word_io_is_converted(C_VOID)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
     };
     core_machine_run_result result = {0};
-    vm_machine *session = STD_NULL;
+    vm_machine *session = LIB_NULL;
     C_INT failed = 0;
 
-    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
+    if (vm_test_create_5170(&config, &session) != TYPE_STATUS_OK || session == LIB_NULL ||
         core_machine_memory_write(session->core_machine, 0x0500u, program,
             sizeof(program)) != TYPE_STATUS_OK) {
         vm_machine_destroy(session);
@@ -266,7 +267,7 @@ static C_INT vm_model_339_dma_page_word_io_is_converted(C_VOID)
     session->core_machine->executor_cpu.data.cs.selector = 0u;
     session->core_machine->executor_cpu.data.cs.base = 0u;
     session->core_machine->executor_cpu.data.eip = 0x0500u;
-    session->core_machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+    session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
     failed = core_machine_run(session->core_machine, (core_machine_run_budget) {64u, 0u},
         &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         session->core_machine->executor_cpu.data.ax != 0x55aau;
@@ -276,15 +277,15 @@ static C_INT vm_model_339_dma_page_word_io_is_converted(C_VOID)
 
 static C_INT vm_model_339_external_rom_route(C_VOID)
 {
-    type_unsigned_8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
-    type_unsigned_8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
-    type_unsigned_8 video[512] = {0x55u, 0xaau, 1u};
+    lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];
+    lib_u8 video[512] = {0x55u, 0xaau, 1u};
     vm_machine_assets assets;
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
     };
-    vm_machine *session = STD_NULL;
-    type_unsigned_8 observed[2] = {0};
+    vm_machine *session = LIB_NULL;
+    lib_u8 observed[2] = {0};
     C_INT failed;
 
     vm_test_ibm_5170_assets(&assets, even, odd);
@@ -292,7 +293,7 @@ static C_INT vm_model_339_external_rom_route(C_VOID)
     odd[0u] = 0x34u;
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     failed = vm_machine_create_from_assets(&config, &assets, &session) !=
-            TYPE_STATUS_OK || session == STD_NULL || !vm_profile_machine_plan_external_firmware(
+            TYPE_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
                 session->profile_plan) ||
         core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
             sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x12u ||
@@ -309,7 +310,7 @@ C_INT main(C_VOID)
     const vm_machine_config default_config = {
         .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT, .bios_count = 1u
     };
-    vm_machine *default_session = STD_NULL;
+    vm_machine *default_session = LIB_NULL;
     const C_INT selected = vm_model_339_selected_contract();
     const C_INT floppy = vm_model_339_floppy_contract();
     const C_INT refresh = vm_model_339_refresh_polling_is_live();
@@ -317,7 +318,7 @@ C_INT main(C_VOID)
     const C_INT dma_word_io = vm_model_339_dma_page_word_io_is_converted();
     const C_INT rom = vm_model_339_external_rom_route();
     const C_INT default_create = vm_test_create_default(&default_config,
-        &default_session) != TYPE_STATUS_OK || default_session == STD_NULL ||
+        &default_session) != TYPE_STATUS_OK || default_session == LIB_NULL ||
         !vm_profile_machine_plan_hdc_present(default_session->profile_plan);
     C_INT failed = selected || floppy || refresh || refresh_post || dma_word_io || rom || default_create;
 

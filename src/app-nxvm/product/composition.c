@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/product/composition.h"
@@ -52,10 +53,10 @@ type_status vm_app_create(vm_app **out_app)
 {
     vm_app *app;
 
-    if (out_app == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_app = STD_NULL;
-    app = STD_CALLOC(1u, sizeof(*app));
-    if (app == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (out_app == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_app = LIB_NULL;
+    app = lib_allocate_zero(1u, sizeof(*app));
+    if (app == LIB_NULL) return TYPE_STATUS_NO_MEMORY;
     *out_app = app;
     return TYPE_STATUS_OK;
 }
@@ -64,7 +65,7 @@ type_status vm_app_destroy(vm_app *app)
 {
     lib_status shutdown_status;
 
-    if (app == STD_NULL) return TYPE_STATUS_OK;
+    if (app == LIB_NULL) return TYPE_STATUS_OK;
     shutdown_status = common_machine_shutdown(app->common_machine);
     if (shutdown_status != LIB_STATUS_OK)
         return vm_app_status_from_lib(shutdown_status);
@@ -75,31 +76,31 @@ type_status vm_app_destroy(vm_app *app)
         return vm_app_status_from_lib(shutdown_status);
     (C_VOID)vm_machine_bind_common_machine(app->machine, LIB_NULL);
     vm_machine_destroy(app->machine);
-    STD_FREE(app);
+    lib_release(app);
     return TYPE_STATUS_OK;
 }
 
 common_session *vm_app_session(const vm_app *app)
-{ return app == STD_NULL ? LIB_NULL : app->session; }
+{ return app == LIB_NULL ? LIB_NULL : app->session; }
 
 vm_machine *vm_app_machine(const vm_app *app)
-{ return app == STD_NULL ? STD_NULL : app->machine; }
+{ return app == LIB_NULL ? LIB_NULL : app->machine; }
 
 common_machine *vm_app_common_machine(const vm_app *app)
-{ return app == STD_NULL ? LIB_NULL : app->common_machine; }
+{ return app == LIB_NULL ? LIB_NULL : app->common_machine; }
 
 common_ui *vm_app_ui(const vm_app *app)
-{ return app == STD_NULL ? LIB_NULL : app->ui; }
+{ return app == LIB_NULL ? LIB_NULL : app->ui; }
 
 type_status vm_app_compose_machine(vm_app *app, const vm_session_request *request)
 {
     vm_machine_config config;
     common_machine_driver driver;
-    vm_machine *machine = STD_NULL;
+    vm_machine *machine = LIB_NULL;
     common_machine *common_machine = LIB_NULL;
     type_status status;
 
-    if (app == STD_NULL || request == STD_NULL || app->machine != STD_NULL)
+    if (app == LIB_NULL || request == LIB_NULL || app->machine != LIB_NULL)
         return TYPE_STATUS_INVALID_STATE;
     status = vm_app_configure_machine(request, &config);
     if (status == TYPE_STATUS_OK) {
@@ -133,7 +134,7 @@ type_status vm_app_compose_control(vm_app *app,
     common_session *session = LIB_NULL;
     lib_status status;
 
-    if (app == STD_NULL || options == LIB_NULL || app->machine == STD_NULL ||
+    if (app == LIB_NULL || options == LIB_NULL || app->machine == LIB_NULL ||
         app->session != LIB_NULL) return TYPE_STATUS_INVALID_STATE;
     resolved = *options;
     resolved.machine = app->common_machine;
@@ -152,7 +153,7 @@ type_status vm_app_compose_ui(vm_app *app, const common_ui_options *options)
     common_ui *ui = LIB_NULL;
     lib_status status;
 
-    if (app == STD_NULL || options == LIB_NULL || app->ui != LIB_NULL)
+    if (app == LIB_NULL || options == LIB_NULL || app->ui != LIB_NULL)
         return TYPE_STATUS_INVALID_STATE;
     status = common_ui_create(&ui, options);
     if (status == LIB_STATUS_OK) status = common_session_bind_ui(app->session, ui);

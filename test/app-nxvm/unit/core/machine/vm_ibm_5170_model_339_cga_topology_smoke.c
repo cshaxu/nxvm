@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include "app-nxvm/devices/machine.h"
@@ -14,10 +15,10 @@ static C_INT vm_model_339_cga_topology(C_VOID)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
     };
     core_machine_display_snapshot snapshot;
-    type_unsigned_8 value = 0x5au;
-    vm_machine *session = STD_NULL;
+    lib_u8 value = 0x5au;
+    vm_machine *session = LIB_NULL;
     C_INT failed = vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+        session == LIB_NULL;
 
     if (!failed) failed |= (core_machine_port_has_read(
         &session->core_machine->executor_port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) << 1) |
@@ -49,9 +50,9 @@ static C_INT vm_model_339_cga_topology(C_VOID)
 
 static C_INT vm_default_ega_topology(C_VOID)
 {
-    vm_machine *session = STD_NULL;
-    C_INT failed = vm_test_default_pc_at_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+    vm_machine *session = LIB_NULL;
+    C_INT failed = vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        session == LIB_NULL;
 
     if (!failed) failed |= (!core_machine_port_has_write(
         &session->core_machine->executor_port, CORE_MACHINE_VADP_PORT_ATTRIBUTE) << 1) |

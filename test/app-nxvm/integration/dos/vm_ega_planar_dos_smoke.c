@@ -1,3 +1,4 @@
+#include "lib/types/types_interface.h"
 #include "type.h"
 
 #include <windows.h>
@@ -10,35 +11,35 @@
 #define VM_EGA_DOS_BOOT_BUDGET 800000u
 #define VM_EGA_DOS_RUN_BUDGET 400000u
 
-static type_unsigned_16 vm_ega_dos_fat12_get(const type_unsigned_8 *fat, type_unsigned_16 cluster)
+static lib_u16 vm_ega_dos_fat12_get(const lib_u8 *fat, lib_u16 cluster)
 {
-    type_unsigned_32 offset = cluster + cluster / 2u;
-    type_unsigned_16 value = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8));
+    lib_u32 offset = cluster + cluster / 2u;
+    lib_u16 value = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8));
 
     return (cluster & 1u) != 0u ? value >> 4 : value & 0x0fffu;
 }
 
-static C_VOID vm_ega_dos_fat12_set(type_unsigned_8 *fat, type_unsigned_16 cluster, type_unsigned_16 value)
+static C_VOID vm_ega_dos_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
 {
-    type_unsigned_32 offset = cluster + cluster / 2u;
-    type_unsigned_16 pair = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8));
+    lib_u32 offset = cluster + cluster / 2u;
+    lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8));
 
-    if ((cluster & 1u) != 0u) pair = (type_unsigned_16)((pair & 0x000fu) | (value << 4));
-    else pair = (type_unsigned_16)((pair & 0xf000u) | value);
-    fat[offset] = (type_unsigned_8)pair;
-    fat[offset + 1u] = (type_unsigned_8)(pair >> 8);
+    if ((cluster & 1u) != 0u) pair = (lib_u16)((pair & 0x000fu) | (value << 4));
+    else pair = (lib_u16)((pair & 0xf000u) | value);
+    fat[offset] = (lib_u8)pair;
+    fat[offset + 1u] = (lib_u8)(pair >> 8);
 }
 
-static C_INT vm_ega_dos_install_program(type_unsigned_8 *image, DWORD image_size)
+static C_INT vm_ega_dos_install_program(lib_u8 *image, DWORD image_size)
 {
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xb8u, 0x0du, 0x00u, 0xcdu, 0x10u,
         0xb8u, 0x00u, 0xa0u, 0x8eu, 0xc0u, 0x31u, 0xffu,
         0xb0u, 0xa5u, 0xaau, 0xb8u, 0x00u, 0x4cu, 0xcdu, 0x21u
     };
 #else
-    static const type_unsigned_8 program[] = {
+    static const lib_u8 program[] = {
         0xbau, 0xc2u, 0x03u, 0xb0u, 0x01u, 0xeeu,
         0xbau, 0xd4u, 0x03u, 0xb0u, 0x01u, 0xeeu, 0x42u, 0xb0u, 0x27u, 0xeeu,
         0x4au, 0xb0u, 0x07u, 0xeeu, 0x42u, 0x30u, 0xc0u, 0xeeu,
@@ -53,26 +54,26 @@ static C_INT vm_ega_dos_install_program(type_unsigned_8 *image, DWORD image_size
         0xb8u, 0x00u, 0x4cu, 0xcdu, 0x21u
     };
 #endif
-    type_unsigned_32 bytes_per_sector;
-    type_unsigned_32 sectors_per_cluster;
-    type_unsigned_32 reserved_sectors;
-    type_unsigned_32 fat_count;
-    type_unsigned_32 root_entries;
-    type_unsigned_32 sectors_per_fat;
-    type_unsigned_32 root_start;
-    type_unsigned_32 root_bytes;
-    type_unsigned_32 data_start;
-    type_unsigned_32 clusters;
-    type_unsigned_32 cluster;
-    type_unsigned_32 root;
-    type_unsigned_8 *entry = STD_NULL;
-    if (image == STD_NULL || image_size < 512u) return 0;
-    bytes_per_sector = image[11u] | ((type_unsigned_32)image[12u] << 8);
+    lib_u32 bytes_per_sector;
+    lib_u32 sectors_per_cluster;
+    lib_u32 reserved_sectors;
+    lib_u32 fat_count;
+    lib_u32 root_entries;
+    lib_u32 sectors_per_fat;
+    lib_u32 root_start;
+    lib_u32 root_bytes;
+    lib_u32 data_start;
+    lib_u32 clusters;
+    lib_u32 cluster;
+    lib_u32 root;
+    lib_u8 *entry = LIB_NULL;
+    if (image == LIB_NULL || image_size < 512u) return 0;
+    bytes_per_sector = image[11u] | ((lib_u32)image[12u] << 8);
     sectors_per_cluster = image[13u];
-    reserved_sectors = image[14u] | ((type_unsigned_32)image[15u] << 8);
+    reserved_sectors = image[14u] | ((lib_u32)image[15u] << 8);
     fat_count = image[16u];
-    root_entries = image[17u] | ((type_unsigned_32)image[18u] << 8);
-    sectors_per_fat = image[22u] | ((type_unsigned_32)image[23u] << 8);
+    root_entries = image[17u] | ((lib_u32)image[18u] << 8);
+    sectors_per_fat = image[22u] | ((lib_u32)image[23u] << 8);
     if (bytes_per_sector == 0u || sectors_per_cluster == 0u || fat_count == 0u ||
         sectors_per_fat == 0u) return 0;
     root_start = (reserved_sectors + fat_count * sectors_per_fat) * bytes_per_sector;
@@ -81,36 +82,36 @@ static C_INT vm_ega_dos_install_program(type_unsigned_8 *image, DWORD image_size
         bytes_per_sector) * bytes_per_sector;
     if (data_start >= image_size || root_start + root_bytes > image_size) return 0;
     for (root = 0u; root < root_entries; ++root) {
-        type_unsigned_8 *candidate = image + root_start + root * 32u;
+        lib_u8 *candidate = image + root_start + root * 32u;
         if (candidate[0] == 0u || candidate[0] == 0xe5u) {
             entry = candidate;
             break;
         }
     }
-    if (entry == STD_NULL) return 0;
+    if (entry == LIB_NULL) return 0;
     clusters = (image_size - data_start) / (bytes_per_sector * sectors_per_cluster);
     for (cluster = 2u; cluster < clusters + 2u; ++cluster) {
         if (vm_ega_dos_fat12_get(image + reserved_sectors * bytes_per_sector,
-                (type_unsigned_16)cluster) == 0u) break;
+                (lib_u16)cluster) == 0u) break;
     }
     if (cluster >= clusters + 2u || sizeof(program) >
         bytes_per_sector * sectors_per_cluster) return 0;
-    STD_MEMSET(entry, 0, 32u);
+    lib_memory_set(entry, 0, 32u);
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
-    STD_MEMCPY(entry, "EGAT239 COM", 11u);
+    lib_memory_copy(entry, "EGAT239 COM", 11u);
 #else
-    STD_MEMCPY(entry, "EGAT238 COM", 11u);
+    lib_memory_copy(entry, "EGAT238 COM", 11u);
 #endif
     entry[11u] = 0x20u;
-    entry[26u] = (type_unsigned_8)cluster;
-    entry[27u] = (type_unsigned_8)(cluster >> 8);
-    entry[28u] = (type_unsigned_8)sizeof(program);
-    entry[29u] = (type_unsigned_8)(sizeof(program) >> 8);
+    entry[26u] = (lib_u8)cluster;
+    entry[27u] = (lib_u8)(cluster >> 8);
+    entry[28u] = (lib_u8)sizeof(program);
+    entry[29u] = (lib_u8)(sizeof(program) >> 8);
     for (root = 0u; root < fat_count; ++root) {
         vm_ega_dos_fat12_set(image + (reserved_sectors + root * sectors_per_fat) *
-            bytes_per_sector, (type_unsigned_16)cluster, 0x0fffu);
+            bytes_per_sector, (lib_u16)cluster, 0x0fffu);
     }
-    STD_MEMCPY(image + data_start + (cluster - 2u) * bytes_per_sector *
+    lib_memory_copy(image + data_start + (cluster - 2u) * bytes_per_sector *
         sectors_per_cluster, program, sizeof(program));
     return 1;
 }
@@ -118,12 +119,12 @@ static C_INT vm_ega_dos_install_program(type_unsigned_8 *image, DWORD image_size
 static type_status vm_ega_dos_install_on_overlay(
     integration_ini_session *ini_session, C_VOID *opaque)
 {
-    type_unsigned_8 *image = STD_NULL;
-    STD_SIZE_T image_size = 0u;
+    lib_u8 *image = LIB_NULL;
+    lib_size image_size = 0u;
     C_INT installed;
 
     (C_VOID)opaque;
-    if (ini_session == STD_NULL || integration_ini_session_overlay_read(ini_session,
+    if (ini_session == LIB_NULL || integration_ini_session_overlay_read(ini_session,
             VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&image, &image_size) != TYPE_STATUS_OK ||
         image_size > MAXDWORD) {
         return TYPE_STATUS_FAULT;
@@ -131,15 +132,15 @@ static type_status vm_ega_dos_install_on_overlay(
     installed = vm_ega_dos_install_program(image, (DWORD)image_size) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
             image, image_size) == TYPE_STATUS_OK;
-    STD_FREE(image);
+    lib_release(image);
     return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }
 
 static C_INT vm_ega_dos_has_prompt(const core_machine_display_snapshot *snapshot)
 {
-    STD_SIZE_T cell;
+    lib_size cell;
 
-    if (snapshot == STD_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) {
+    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) {
         return 0;
     }
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
@@ -151,13 +152,13 @@ static C_INT vm_ega_dos_has_prompt(const core_machine_display_snapshot *snapshot
     return 0;
 }
 
-static C_INT vm_ega_dos_run_until(vm_machine *session, type_unsigned_32 limit,
+static C_INT vm_ega_dos_run_until(vm_machine *session, lib_u32 limit,
     C_INT want_graphics)
 {
     core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
-    type_unsigned_32 executed = 0u;
+    lib_u32 executed = 0u;
 
     while (executed < limit) {
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
@@ -184,19 +185,19 @@ static C_INT vm_ega_dos_run_until(vm_machine *session, type_unsigned_32 limit,
 C_INT main(C_INT argc, C_CHAR **argv)
 {
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
-    static const type_unsigned_8 command[] = { 0x24u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
+    static const lib_u8 command[] = { 0x24u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
         0x26u, 0x46u, 0x5au };
 #else
-    static const type_unsigned_8 command[] = { 0x24u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
+    static const lib_u8 command[] = { 0x24u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
         0x26u, 0x3eu, 0x5au };
 #endif
     integration_ini_session ini_session;
     vm_machine *session;
-    STD_SIZE_T index;
+    lib_size index;
     C_INT passed = 0;
 
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_ega_dos_install_on_overlay, STD_NULL, &ini_session) != TYPE_STATUS_OK) {
+            vm_ega_dos_install_on_overlay, LIB_NULL, &ini_session) != TYPE_STATUS_OK) {
         return 77;
     }
     session = ini_session.session;

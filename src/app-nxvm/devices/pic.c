@@ -4,6 +4,7 @@
  * VPIC implements programmable interrupt controller with
  * two Intel 8259A chips, one master and one slave.
  */
+#include "lib/types/types_interface.h"
 
 #include "type.h"
 
@@ -18,8 +19,8 @@ static C_VOID core_machine_pic_refresh_bound(t_pic *pic);
  * Returns id of highest priority interrupt
  * Returns 0x08 if reg is null
  */
-static type_unsigned_8 GetRegTopId(t_pic *rpic, type_unsigned_8 reg) {
-    type_unsigned_8 id = 0;
+static lib_u8 GetRegTopId(t_pic *rpic, lib_u8 reg) {
+    lib_u8 id = 0;
     if (reg == TYPE_ZERO_8) {
         return 0x08;
     }
@@ -30,83 +31,83 @@ static type_unsigned_8 GetRegTopId(t_pic *rpic, type_unsigned_8 reg) {
     return (id + rpic->data.irx) % VPIC_MAX_IRQ_COUNT;
 }
 /* The rank is relative to the current rotating priority base. */
-static type_unsigned_8 core_machine_pic_priority_rank(const t_pic *pic,
-    type_unsigned_8 id)
+static lib_u8 core_machine_pic_priority_rank(const t_pic *pic,
+    lib_u8 id)
 {
-    return (type_unsigned_8)((id + VPIC_MAX_IRQ_COUNT - pic->data.irx) %
+    return (lib_u8)((id + VPIC_MAX_IRQ_COUNT - pic->data.irx) %
         VPIC_MAX_IRQ_COUNT);
 }
 
 static type_bool core_machine_pic_request_can_interrupt(const t_pic *pic,
-    type_unsigned_8 request)
+    lib_u8 request)
 {
-    type_unsigned_8 service;
-    type_unsigned_8 effective_isr;
-    type_unsigned_8 request_rank;
-    type_unsigned_8 service_rank;
+    lib_u8 service;
+    lib_u8 effective_isr;
+    lib_u8 request_rank;
+    lib_u8 service_rank;
 
     effective_isr = pic->data.isr;
     if (TYPE_GET_BIT(pic->data.ocw3, VPIC_OCW3_SMM)) {
         effective_isr &= ~pic->data.imr;
     }
     service = GetRegTopId((t_pic *)pic, effective_isr);
-    if (service == VPIC_MAX_IRQ_COUNT) return TYPE_TRUE;
+    if (service == VPIC_MAX_IRQ_COUNT) return LIB_TRUE;
     request_rank = core_machine_pic_priority_rank(pic, request);
     service_rank = core_machine_pic_priority_rank(pic, service);
     return request_rank < service_rank;
 }
 
-static type_unsigned_8 core_machine_pic_pending_requests(const t_pic *pic)
+static lib_u8 core_machine_pic_pending_requests(const t_pic *pic)
 {
     return pic->data.irr | pic->data.cascade_irr;
 }
 
 static type_bool core_machine_pic_select_controller(const t_pic *pic,
-    type_unsigned_8 *out_id)
+    lib_u8 *out_id)
 {
-    type_unsigned_8 offset;
-    type_unsigned_8 id;
+    lib_u8 offset;
+    lib_u8 id;
 
-    if (pic == STD_NULL || out_id == STD_NULL) return TYPE_FALSE;
+    if (pic == LIB_NULL || out_id == LIB_NULL) return LIB_FALSE;
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
-        id = (type_unsigned_8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
+        id = (lib_u8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
         if (pic->data.unmask_remaining_ticks[id] == 0u &&
             TYPE_GET_BIT(core_machine_pic_pending_requests(pic) & ~pic->data.imr,
                 VPIC_IRR_IRQ(id)) &&
             core_machine_pic_request_can_interrupt(pic, id)) {
             *out_id = id;
-            return TYPE_TRUE;
+            return LIB_TRUE;
         }
     }
-    return TYPE_FALSE;
+    return LIB_FALSE;
 }
 
 static type_bool core_machine_pic_cascade_line(const t_pic *master,
-    const t_pic *slave, type_unsigned_8 *out_line)
+    const t_pic *slave, lib_u8 *out_line)
 {
-    type_unsigned_8 line;
+    lib_u8 line;
 
-    if (master == STD_NULL || slave == STD_NULL || out_line == STD_NULL ||
+    if (master == LIB_NULL || slave == LIB_NULL || out_line == LIB_NULL ||
         TYPE_GET_BIT(master->data.icw1, VPIC_ICW1_SNGL) ||
-        TYPE_GET_BIT(slave->data.icw1, VPIC_ICW1_SNGL)) return TYPE_FALSE;
+        TYPE_GET_BIT(slave->data.icw1, VPIC_ICW1_SNGL)) return LIB_FALSE;
     line = slave->data.icw3 & 0x07u;
-    if (!TYPE_GET_BIT(master->data.icw3, VPIC_ICW3_S(line))) return TYPE_FALSE;
+    if (!TYPE_GET_BIT(master->data.icw3, VPIC_ICW3_S(line))) return LIB_FALSE;
     *out_line = line;
-    return TYPE_TRUE;
+    return LIB_TRUE;
 }
 
 static type_bool core_machine_pic_master_declares_slave(const t_pic *master,
-    type_unsigned_8 line)
+    lib_u8 line)
 {
     return !TYPE_GET_BIT(master->data.icw1, VPIC_ICW1_SNGL) &&
         TYPE_GET_BIT(master->data.icw3, VPIC_ICW3_S(line));
 }
 
 static type_bool core_machine_pic_sfnm_cascade_can_interrupt(
-    const t_pic *master, type_unsigned_8 master_id, const t_pic *slave)
+    const t_pic *master, lib_u8 master_id, const t_pic *slave)
 {
-    type_unsigned_8 cascade_line;
-    type_unsigned_8 slave_id;
+    lib_u8 cascade_line;
+    lib_u8 slave_id;
 
     return core_machine_pic_cascade_line(master, slave, &cascade_line) &&
         master_id == cascade_line &&
@@ -116,17 +117,17 @@ static type_bool core_machine_pic_sfnm_cascade_can_interrupt(
 }
 
 static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
-    type_unsigned_8 *out_master_id, type_unsigned_8 *out_slave_id)
+    lib_u8 *out_master_id, lib_u8 *out_slave_id)
 {
-    type_unsigned_8 offset;
-    type_unsigned_8 master_id;
-    type_unsigned_8 slave_id;
-    type_unsigned_8 cascade_line;
+    lib_u8 offset;
+    lib_u8 master_id;
+    lib_u8 slave_id;
+    lib_u8 cascade_line;
 
-    if (master == STD_NULL || slave == STD_NULL || out_master_id == STD_NULL ||
-        out_slave_id == STD_NULL) return TYPE_FALSE;
+    if (master == LIB_NULL || slave == LIB_NULL || out_master_id == LIB_NULL ||
+        out_slave_id == LIB_NULL) return LIB_FALSE;
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
-        master_id = (type_unsigned_8)((master->data.irx + offset) %
+        master_id = (lib_u8)((master->data.irx + offset) %
             VPIC_MAX_IRQ_COUNT);
         if (master->data.unmask_remaining_ticks[master_id] != 0u ||
             !TYPE_GET_BIT(core_machine_pic_pending_requests(master) &
@@ -149,15 +150,15 @@ static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
             *out_slave_id = VPIC_MAX_IRQ_COUNT;
         }
         *out_master_id = master_id;
-        return TYPE_TRUE;
+        return LIB_TRUE;
     }
-    return TYPE_FALSE;
+    return LIB_FALSE;
 }
 /*
  * RespondINTR: Internal function
  * Acknowledges the selected request by moving it to ISR.
  */
-static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id,
+static C_VOID RespondINTR(t_pic *rpic, lib_u8 id,
     type_bool cascade_request) {
     TYPE_SET_BIT(rpic->data.isr, VPIC_ISR_IRQ(id)); /* put C_INT into ISR */
     if (cascade_request) {
@@ -176,7 +177,7 @@ static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id,
 }
 
 static C_VOID core_machine_pic_begin_initialization(t_pic *pic,
-    type_unsigned_8 icw1)
+    lib_u8 icw1)
 {
     pic->data.irr = TYPE_ZERO_8;
     pic->data.imr = TYPE_ZERO_8;
@@ -192,9 +193,9 @@ static C_VOID core_machine_pic_begin_initialization(t_pic *pic,
     pic->data.status = ICW2;
 }
 
-static type_unsigned_8 core_machine_pic_eoi_service(const t_pic *pic)
+static lib_u8 core_machine_pic_eoi_service(const t_pic *pic)
 {
-    type_unsigned_8 effective_isr = pic->data.isr;
+    lib_u8 effective_isr = pic->data.isr;
 
     if (TYPE_GET_BIT(pic->data.ocw3, VPIC_OCW3_SMM)) {
         effective_isr &= ~pic->data.imr;
@@ -204,22 +205,22 @@ static type_unsigned_8 core_machine_pic_eoi_service(const t_pic *pic)
 
 static C_INT core_machine_pic_is_level(const t_pic *pic)
 {
-    return pic != STD_NULL && TYPE_GET_BIT(pic->data.icw1, VPIC_ICW1_LTIM);
+    return pic != LIB_NULL && TYPE_GET_BIT(pic->data.icw1, VPIC_ICW1_LTIM);
 }
 
 static t_pic *core_machine_pic_irq_source_controller(
-    core_machine_pic_irq_source *source, type_unsigned_8 *out_line)
+    core_machine_pic_irq_source *source, lib_u8 *out_line)
 {
-    if (source == STD_NULL || out_line == STD_NULL) return STD_NULL;
+    if (source == LIB_NULL || out_line == LIB_NULL) return LIB_NULL;
     if (source->irq < 8u) {
         *out_line = source->irq;
         return source->master;
     }
     if (source->irq < 16u) {
-        *out_line = (type_unsigned_8)(source->irq - 8u);
+        *out_line = (lib_u8)(source->irq - 8u);
         return source->slave;
     }
-    return STD_NULL;
+    return LIB_NULL;
 }
 
 /*
@@ -229,7 +230,7 @@ static t_pic *core_machine_pic_irq_source_controller(
  * Reference: PC.PDF, Page 950
  */
 static C_VOID io_read_00x0(t_pic *rpic, t_port *port) {
-    type_unsigned_8 id;
+    lib_u8 id;
 
     if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_P)) {
         /* P=1 (Poll Command) */
@@ -266,7 +267,7 @@ static C_VOID io_read_00x0(t_pic *rpic, t_port *port) {
  * Reference: PC.PDF, Page 950
  */
 static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
-    type_unsigned_8 id;
+    lib_u8 id;
     if (TYPE_GET_BIT(port->data.ioByte, VPIC_ICW1_I)) {
         /* ICW1 (D4=1) */
         core_machine_pic_begin_initialization(rpic, port->data.ioByte);
@@ -290,8 +291,8 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
         /* OCWs (D4=0) */
         if (TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_I)) {
             /* OCW3 (D3=1) */
-            type_unsigned_8 old_ocw3 = rpic->data.ocw3;
-            type_unsigned_8 ocw3 = port->data.ioByte;
+            lib_u8 old_ocw3 = rpic->data.ocw3;
+            lib_u8 ocw3 = port->data.ioByte;
 
             if (!TYPE_GET_BIT(ocw3, VPIC_OCW3_RR)) {
                 ocw3 = (ocw3 & ~(VPIC_OCW3_RR | VPIC_OCW3_RIS)) |
@@ -393,9 +394,9 @@ static C_VOID io_read_00x1(t_pic *rpic, t_port *port) {
  * PIC get ICW2, ICW3, ICW4, OCW1 after ICW1
  */
 static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
-    type_unsigned_8 previous_imr;
-    type_unsigned_8 released;
-    type_unsigned_8 id;
+    lib_u8 previous_imr;
+    lib_u8 released;
+    lib_u8 id;
 
     switch (rpic->data.status) {
     case ICW2:
@@ -470,20 +471,20 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
 C_VOID core_machine_pic_set_irq_timing(t_pic *master, t_pic *slave,
     const core_machine_pic_irq_timing *timing)
 {
-    type_unsigned_8 id;
+    lib_u8 id;
 
-    if (master == STD_NULL || slave == STD_NULL || timing == STD_NULL) return;
+    if (master == LIB_NULL || slave == LIB_NULL || timing == LIB_NULL) return;
     for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
         master->data.unmask_delivery_ticks[id] = timing->unmask_delivery_ticks[id];
         slave->data.unmask_delivery_ticks[id] = timing->unmask_delivery_ticks[id + 8u];
     }
 }
 
-static C_VOID core_machine_pic_advance_one(t_pic *pic, type_unsigned_64 elapsed_ticks)
+static C_VOID core_machine_pic_advance_one(t_pic *pic, lib_u64 elapsed_ticks)
 {
-    type_unsigned_8 id;
+    lib_u8 id;
 
-    if (pic == STD_NULL || elapsed_ticks == 0u) return;
+    if (pic == LIB_NULL || elapsed_ticks == 0u) return;
     for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
         if (elapsed_ticks >= pic->data.unmask_remaining_ticks[id]) {
             pic->data.unmask_remaining_ticks[id] = 0u;
@@ -494,19 +495,19 @@ static C_VOID core_machine_pic_advance_one(t_pic *pic, type_unsigned_64 elapsed_
 }
 
 C_VOID core_machine_pic_advance(t_pic *master, t_pic *slave,
-    type_unsigned_64 elapsed_ticks)
+    lib_u64 elapsed_ticks)
 {
     core_machine_pic_advance_one(master, elapsed_ticks);
     core_machine_pic_advance_one(slave, elapsed_ticks);
 }
 
 static type_status core_machine_pic_ticks_until_one(const t_pic *pic,
-    type_unsigned_64 *io_ticks)
+    lib_u64 *io_ticks)
 {
-    type_unsigned_8 id;
-    type_unsigned_8 pending;
+    lib_u8 id;
+    lib_u8 pending;
 
-    if (pic == STD_NULL || io_ticks == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (pic == LIB_NULL || io_ticks == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     pending = core_machine_pic_pending_requests(pic) & ~pic->data.imr;
     for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
         if (TYPE_GET_BIT(pending, VPIC_IRR_IRQ(id)) &&
@@ -519,11 +520,11 @@ static type_status core_machine_pic_ticks_until_one(const t_pic *pic,
 }
 
 type_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic *slave,
-    type_unsigned_64 *out_ticks)
+    lib_u64 *out_ticks)
 {
-    type_unsigned_64 ticks = UINT64_MAX;
+    lib_u64 ticks = UINT64_MAX;
 
-    if (master == STD_NULL || slave == STD_NULL || out_ticks == STD_NULL) {
+    if (master == LIB_NULL || slave == LIB_NULL || out_ticks == LIB_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     (C_VOID)core_machine_pic_ticks_until_one(master, &ticks);
@@ -534,35 +535,35 @@ type_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic 
 }
 
 /* The provider owner is the composition-owned PIC selected for this port. */
-static C_VOID io_read_0020(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_0020(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x0((t_pic *)owner, port);
 }
-static C_VOID io_read_0021(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_0021(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x1((t_pic *)owner, port);
 }
-static C_VOID io_read_00A0(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_00A0(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x0((t_pic *)owner, port);
 }
-static C_VOID io_read_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_00A1(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x1((t_pic *)owner, port);
 }
-static C_VOID io_write_0020(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_0020(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x0((t_pic *)owner, port);
 }
-static C_VOID io_write_0021(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_0021(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x1((t_pic *)owner, port);
 }
-static C_VOID io_write_00A0(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_00A0(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x0((t_pic *)owner, port);
 }
-static C_VOID io_write_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_00A1(t_port *port, lib_u16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x1((t_pic *)owner, port);
 }
@@ -573,11 +574,11 @@ static C_VOID io_write_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owne
  * Called by C_INT request sender of devices, e.g. vpitIntTick
  */
 C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
-    t_pic *master, t_pic *slave, type_unsigned_8 irq_id)
+    t_pic *master, t_pic *slave, lib_u8 irq_id)
 {
-    if (source == STD_NULL || master == STD_NULL || slave == STD_NULL ||
+    if (source == LIB_NULL || master == LIB_NULL || slave == LIB_NULL ||
         irq_id >= 16u || irq_id == 2u) return;
-    STD_MEMSET(source, TYPE_ZERO_8, sizeof(*source));
+    lib_memory_set(source, TYPE_ZERO_8, sizeof(*source));
     source->master = master;
     source->slave = slave;
     source->irq = irq_id;
@@ -586,12 +587,12 @@ C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
 C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source)
 {
     t_pic *controller;
-    type_unsigned_8 line;
+    lib_u8 line;
 
-    if (source == STD_NULL || source->asserted) return;
+    if (source == LIB_NULL || source->asserted) return;
     controller = core_machine_pic_irq_source_controller(source, &line);
-    if (controller == STD_NULL) return;
-    source->asserted = TYPE_TRUE;
+    if (controller == LIB_NULL) return;
+    source->asserted = LIB_TRUE;
     if (controller->data.asserted[line] != 0xffu) ++controller->data.asserted[line];
     TYPE_SET_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
     core_machine_pic_refresh_bound(controller);
@@ -600,12 +601,12 @@ C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source)
 C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source)
 {
     t_pic *controller;
-    type_unsigned_8 line;
+    lib_u8 line;
 
-    if (source == STD_NULL || !source->asserted) return;
+    if (source == LIB_NULL || !source->asserted) return;
     controller = core_machine_pic_irq_source_controller(source, &line);
-    source->asserted = TYPE_FALSE;
-    if (controller == STD_NULL || controller->data.asserted[line] == 0u) return;
+    source->asserted = LIB_FALSE;
+    if (controller == LIB_NULL || controller->data.asserted[line] == 0u) return;
     --controller->data.asserted[line];
     if (core_machine_pic_is_level(controller) && controller->data.asserted[line] == 0u) {
         TYPE_CLEAR_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
@@ -622,34 +623,34 @@ C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted) {
 }
 
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
-    type_unsigned_8 master_id;
-    type_unsigned_8 slave_id;
+    lib_u8 master_id;
+    lib_u8 slave_id;
 
     return core_machine_pic_select(master, slave, &master_id, &slave_id);
 }
-type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
-    type_unsigned_8 reqId1;
-    type_unsigned_8 reqId2;
+lib_u8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
+    lib_u8 reqId1;
+    lib_u8 reqId2;
 
     if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) return 0;
     if (reqId2 != VPIC_MAX_IRQ_COUNT) {
-        return (type_unsigned_8)(reqId2 | slave->data.icw2);
+        return (lib_u8)(reqId2 | slave->data.icw2);
     }
-    return (type_unsigned_8)(reqId1 | master->data.icw2);
+    return (lib_u8)(reqId1 | master->data.icw2);
 }
-type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
-    type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
-    type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
+lib_u8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
+    lib_u8 reqId1; /* top requested C_INT id in master pic */
+    lib_u8 reqId2; /* top requested C_INT id in slave pic */
     if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) {
-        if (master != STD_NULL && master->data.status == OCW1) {
-            return (type_unsigned_8)(master->data.icw2 | 7u);
+        if (master != LIB_NULL && master->data.status == OCW1) {
+            return (lib_u8)(master->data.icw2 | 7u);
         }
         return 0;
     }
     RespondINTR(master, reqId1, reqId2 != VPIC_MAX_IRQ_COUNT);
     if (reqId2 != VPIC_MAX_IRQ_COUNT) {
         /* The selected paired slave supplies the vector. */
-        RespondINTR(slave, reqId2, TYPE_FALSE);
+        RespondINTR(slave, reqId2, LIB_FALSE);
         core_machine_pic_refresh(master, slave);
         /* Find the final C_INT id based on the slave ICW2. */
         return (reqId2 | slave->data.icw2);
@@ -662,11 +663,11 @@ type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
 C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
     core_machine_pic_topology topology)
 {
-    if (master == STD_NULL || slave == STD_NULL || port == STD_NULL ||
+    if (master == LIB_NULL || slave == LIB_NULL || port == LIB_NULL ||
         (topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
         topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE)) return;
-    STD_MEMSET((C_VOID *)master, TYPE_ZERO_8, sizeof(*master));
-    STD_MEMSET((C_VOID *)slave, TYPE_ZERO_8, sizeof(*slave));
+    lib_memory_set((C_VOID *)master, TYPE_ZERO_8, sizeof(*master));
+    lib_memory_set((C_VOID *)slave, TYPE_ZERO_8, sizeof(*slave));
     master->cascade_master = master;
     master->cascade_slave = slave;
     slave->cascade_master = master;
@@ -683,27 +684,27 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
     }
 }
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
-    type_unsigned_32 master_timing[VPIC_MAX_IRQ_COUNT];
-    type_unsigned_32 slave_timing[VPIC_MAX_IRQ_COUNT];
+    lib_u32 master_timing[VPIC_MAX_IRQ_COUNT];
+    lib_u32 slave_timing[VPIC_MAX_IRQ_COUNT];
 
-    if (master == STD_NULL || slave == STD_NULL) return;
-    STD_MEMCPY(master_timing, master->data.unmask_delivery_ticks,
+    if (master == LIB_NULL || slave == LIB_NULL) return;
+    lib_memory_copy(master_timing, master->data.unmask_delivery_ticks,
         sizeof(master_timing));
-    STD_MEMCPY(slave_timing, slave->data.unmask_delivery_ticks,
+    lib_memory_copy(slave_timing, slave->data.unmask_delivery_ticks,
         sizeof(slave_timing));
-    STD_MEMSET((C_VOID *)(&master->data), TYPE_ZERO_8, sizeof(t_pic_data));
-    STD_MEMSET((C_VOID *)(&slave->data), TYPE_ZERO_8, sizeof(t_pic_data));
-    STD_MEMCPY(master->data.unmask_delivery_ticks, master_timing,
+    lib_memory_set((C_VOID *)(&master->data), TYPE_ZERO_8, sizeof(t_pic_data));
+    lib_memory_set((C_VOID *)(&slave->data), TYPE_ZERO_8, sizeof(t_pic_data));
+    lib_memory_copy(master->data.unmask_delivery_ticks, master_timing,
         sizeof(master_timing));
-    STD_MEMCPY(slave->data.unmask_delivery_ticks, slave_timing,
+    lib_memory_copy(slave->data.unmask_delivery_ticks, slave_timing,
         sizeof(slave_timing));
     master->data.status = slave->data.status = ICW1;
     master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
 }
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
-    type_unsigned_8 id;
-    type_unsigned_8 cascade_line;
-    if (master == STD_NULL || slave == STD_NULL) return;
+    lib_u8 id;
+    lib_u8 cascade_line;
+    if (master == LIB_NULL || slave == LIB_NULL) return;
     if (core_machine_pic_is_level(master)) {
         for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
             if (master->data.asserted[id] != 0u) {
@@ -726,7 +727,7 @@ C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
 }
 static C_VOID core_machine_pic_refresh_bound(t_pic *pic)
 {
-    if (pic == STD_NULL) return;
+    if (pic == LIB_NULL) return;
     core_machine_pic_refresh(pic->cascade_master, pic->cascade_slave);
 }
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave) {
