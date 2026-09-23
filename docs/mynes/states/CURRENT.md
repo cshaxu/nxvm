@@ -2,33 +2,15 @@
 
 ## Current Work
 
-**Active: M6 T40 S2 MyNES adjacent-INI adoption.**
-
-## M6 T40 S2 Packet
+**No active implementation packet.** M6 T40 closed the shared
+executable-directory adoption.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T40 to add a Shared Lib Base executable-directory capability and correct MyNES/NXVM adjacent-INI loading; Shared S1 is complete in `4913410fb`; SoftPC will adopt the shared revision separately. |
-| Objective | Replace MyNES App's direct Win32 executable-path lookup with the S1 Base contract while preserving adjacent `mynes.ini` behavior. |
-| Non-goals | No Common or SoftPC change, no INI override/fallback policy and no NXVM adoption. This App startup change publishes the required `0_0_0040` MyNES x64/x86 pair. |
-| Reference Baseline | `4913410fb`; Base owns actual executable-directory discovery, while MyNES still calls `GetModuleFileNameA`. |
-| Candidate Proposal | [M6 executable-directory Base capability](../proposals/m6-executable-directory-base.md) |
-| Files And ABI Surface | MyNES: `src/app-mynes/product/config.c`, App CMake, task evidence and the `0_0_0040` x64/x86 executable pair. |
-| Applicable Rules | App depends directly on Base for its host query; no Windows SDK include remains in the App config path; MyNES owns appending its INI filename. |
-| Verification | x64/x86 App config and Base process regressions pass; static sweep finds no MyNES `GetModuleFileName`/`windows.h` startup lookup; both `0_0_0040` artifacts are valid PE executables. |
-| Expected Markers | MyNES constructs `mynes.ini` from the Base directory and rejects insufficient buffer capacity without fallback to the working directory. |
-| Asset Needs | None. |
-| Reporting Requirements | Report MyNES S2 source/test diff, removed direct host dependency, x64/x86 tests, P commit/push and transfer to NXVM S3. |
-| Stop Conditions | The Base directory cannot safely append the fixed INI name within MyNES's declared path capacity. |
-| Exit Criteria | MyNES consumes Base, direct Win32 lookup is removed, focused dual-architecture tests pass, the current dual artifacts are published and the MyNES P is pushed. |
-| Original Owner Request | Lib Base should expose executable location; correct NXVM and MyNES INI loading, with SoftPC later importing the same Lib. |
-| Similar-Issue Sweep | MyNES startup/config source and tests are inspected for direct module-path/working-directory fallback; NXVM remains the named S3 receiver. |
-
-### S2 Brief
-
-MyNES consumes the shared owner. It appends only its own fixed filename and
-retains no direct platform lookup.
+| Most Recent Closure | M6 T40 |
+| Result | Base owns actual executable-directory discovery; MyNES and NXVM compose only their fixed adjacent INI names. Launcher `argv[0]` spelling and current working directory are not configuration authority. |
+| P Boundaries | Shared `4913410fb`; MyNES `246e45a6c`; NXVM `fb461ee21`. SoftPC remains a separately owned future importer. |
+| Evidence | [T40 history](../history/M6-T40-executable-directory-base.md), [MyNES S2](../etc/evidence/m6-t40-s2-mynes-adoption.md), and [NXVM S3](../../nxvm/etc/evidence/t40-s3-adjacent-ini-adoption.md). |
 
 ## M6 T40 Progress
 
@@ -36,6 +18,7 @@ retains no direct platform lookup.
 | --- | --- |
 | S1 | Shared Base contract, Win32/Linux implementations and bounded-buffer regression passed in `4913410fb`. |
 | S2 | MyNES now composes its adjacent INI from Base; x64/x86 focused regressions and valid `0_0_0040` artifact headers passed. [Evidence](../etc/evidence/m6-t40-s2-mynes-adoption.md). |
+| S3 | NXVM now composes adjacent `NXVM.ini` from Base with no `argv[0]`/working-directory fallback; x64/x86 focused regressions and current product links passed in `fb461ee21`. [Evidence](../../nxvm/etc/evidence/t40-s3-adjacent-ini-adoption.md). |
 
 ## M6 T39 Progress
 
@@ -71,6 +54,7 @@ retains no direct platform lookup.
 | T37 | Closed in `7666ddd`: the completed App/Core quality work and the owner-selected source, test and packaged-artifact move were retained together for T38 reconciliation. |
 | T38 | Product-layout automation passed; owner binary review reported the TMNT3 title-flow regression. The layout result remains retained, and the runtime defect is now T39's bounded receiver. |
 | T39 | Closed in `9093f4014` plus this closure record: Core/PPU/MMC3/IRQ repairs, automated controlled-play evidence, task-39 dual artifacts, NXVM-aligned delivery and owner RDP acceptance establish the requested TMNT3 result. |
+| T40 | Closed across Shared `4913410fb`, MyNES `246e45a6c`, and NXVM `fb461ee21`: one Lib Base executable-directory owner now feeds product-owned adjacent INI composition. [History](../history/M6-T40-executable-directory-base.md). |
 | T35 | M5 closed in `d6da730`: six owner-local ROM roles passed both presenters/x64/x86. |
 
 ## Recent Governance

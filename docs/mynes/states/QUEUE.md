@@ -6,7 +6,7 @@
 2. [M6 App/Core quality](../proposals/m6-app-core-quality.md) - closed historical proposal.
 3. [M6 product layout reconciliation](../proposals/m6-product-layout-reconciliation.md) - closed for product-tree reconciliation; owner review exposed a separate runtime receiver now carried by T39.
 4. [M6 TMNT3 Start-path diagnosis and correction](../proposals/m6-tmnt3-start-path.md) - closed: task-39 `0039` artifacts carry the repairs, delivery aligns with NXVM, automated evidence passed and the owner accepted RDP gameplay.
-5. [M6 executable-directory Base capability](../proposals/m6-executable-directory-base.md) - admitted as T40 under owner approval; Shared Base implementation precedes MyNES and NXVM adoption.
+5. [M6 executable-directory Base capability](../proposals/m6-executable-directory-base.md) - closed as T40: Shared Base `4913410fb`, MyNES adjacent-INI adoption/artifact refresh `246e45a6c`, and NXVM adjacent-INI adoption/current-artifact rebuild `fb461ee21` are complete; SoftPC imports separately.
 
 ## M5 Candidates
 
