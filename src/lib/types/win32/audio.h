@@ -3,27 +3,59 @@
 
 #include "lib/types/win32/scalar.h"
 
-#include <mmsystem.h>
+#ifndef COBJMACROS
+#define COBJMACROS
+#endif
+#include <objbase.h>
+#include <mmdeviceapi.h>
+#include <audioclient.h>
 
-typedef HWAVEOUT lib_win32_wave_output;
-typedef MMRESULT lib_win32_mmresult;
+typedef HRESULT lib_win32_hresult;
+typedef UINT32 lib_win32_uint32;
+typedef BYTE lib_win32_byte;
+typedef GUID lib_win32_guid;
 typedef WAVEFORMATEX lib_win32_wave_format;
-typedef WAVEHDR lib_win32_wave_header;
-typedef void (CALLBACK *lib_win32_wave_callback)(lib_win32_wave_output output,
-    lib_win32_uint message, lib_win32_dword_ptr instance,
-    lib_win32_dword_ptr parameter_one, lib_win32_dword_ptr parameter_two);
+typedef IMMDeviceEnumerator lib_win32_audio_device_enumerator;
+typedef IMMDevice lib_win32_audio_device;
+typedef IAudioClient lib_win32_audio_client;
+typedef IAudioRenderClient lib_win32_audio_render_client;
+typedef IAudioCaptureClient lib_win32_audio_capture_client;
 
-#define lib_win32_wave_out_close waveOutClose
-#define lib_win32_wave_out_open waveOutOpen
-#define lib_win32_wave_out_prepare_header waveOutPrepareHeader
-#define lib_win32_wave_out_reset waveOutReset
-#define lib_win32_wave_out_unprepare_header waveOutUnprepareHeader
-#define lib_win32_wave_out_write waveOutWrite
-#define LIB_WIN32_CALLBACK_FUNCTION CALLBACK_FUNCTION
-#define LIB_WIN32_MMSYSERR_NOERROR MMSYSERR_NOERROR
-#define LIB_WIN32_WOM_DONE WOM_DONE
+#define lib_win32_co_initialize_ex CoInitializeEx
+#define lib_win32_co_uninitialize CoUninitialize
+#define lib_win32_co_create_instance CoCreateInstance
+#define lib_win32_co_task_mem_free CoTaskMemFree
+#define lib_win32_audio_device_enumerator_get_default_endpoint IMMDeviceEnumerator_GetDefaultAudioEndpoint
+#define lib_win32_audio_device_enumerator_release IMMDeviceEnumerator_Release
+#define lib_win32_audio_device_activate IMMDevice_Activate
+#define lib_win32_audio_device_release IMMDevice_Release
+#define lib_win32_audio_client_initialize IAudioClient_Initialize
+#define lib_win32_audio_client_get_buffer_size IAudioClient_GetBufferSize
+#define lib_win32_audio_client_get_mix_format IAudioClient_GetMixFormat
+#define lib_win32_audio_client_get_current_padding IAudioClient_GetCurrentPadding
+#define lib_win32_audio_client_start IAudioClient_Start
+#define lib_win32_audio_client_stop IAudioClient_Stop
+#define lib_win32_audio_client_reset IAudioClient_Reset
+#define lib_win32_audio_client_set_event_handle IAudioClient_SetEventHandle
+#define lib_win32_audio_client_get_service IAudioClient_GetService
+#define lib_win32_audio_client_release IAudioClient_Release
+#define lib_win32_audio_render_client_get_buffer IAudioRenderClient_GetBuffer
+#define lib_win32_audio_render_client_release_buffer IAudioRenderClient_ReleaseBuffer
+#define lib_win32_audio_render_client_release IAudioRenderClient_Release
+#define lib_win32_audio_capture_client_get_next_packet_size IAudioCaptureClient_GetNextPacketSize
+#define lib_win32_audio_capture_client_get_buffer IAudioCaptureClient_GetBuffer
+#define lib_win32_audio_capture_client_release_buffer IAudioCaptureClient_ReleaseBuffer
+#define lib_win32_audio_capture_client_release IAudioCaptureClient_Release
+#define LIB_WIN32_CLSCTX_ALL CLSCTX_ALL
+#define LIB_WIN32_COINIT_MULTITHREADED COINIT_MULTITHREADED
+#define LIB_WIN32_E_RENDER eRender
+#define LIB_WIN32_E_CONSOLE eConsole
+#define LIB_WIN32_AUDIO_SHARE_MODE_SHARED AUDCLNT_SHAREMODE_SHARED
+#define LIB_WIN32_AUDIO_STREAM_FLAGS_EVENT_CALLBACK AUDCLNT_STREAMFLAGS_EVENTCALLBACK
+#define LIB_WIN32_AUDIO_STREAM_FLAGS_AUTOCONVERTPCM AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
+#define LIB_WIN32_AUDIO_STREAM_FLAGS_SRC_DEFAULT_QUALITY AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY
+#define LIB_WIN32_AUDIO_STREAM_FLAGS_LOOPBACK AUDCLNT_STREAMFLAGS_LOOPBACK
+#define LIB_WIN32_AUDIO_BUFFER_FLAGS_SILENT AUDCLNT_BUFFERFLAGS_SILENT
 #define LIB_WIN32_WAVE_FORMAT_PCM WAVE_FORMAT_PCM
-#define LIB_WIN32_WAVE_HEADER_DONE WHDR_DONE
-#define LIB_WIN32_WAVE_MAPPER WAVE_MAPPER
 
 #endif

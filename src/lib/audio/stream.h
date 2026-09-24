@@ -37,6 +37,8 @@ struct lib_audio_stream {
 
 lib_status audio_stream_platform_create(const lib_audio_stream_options *options,
     audio_stream_platform **out_platform);
+lib_status audio_stream_platform_worker_attach(audio_stream_platform *platform);
+void audio_stream_platform_worker_detach(audio_stream_platform *platform);
 lib_status audio_stream_platform_enqueue(audio_stream_platform *platform,
     const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted_frames);
 lib_status audio_stream_platform_wait_writable(audio_stream_platform *platform);

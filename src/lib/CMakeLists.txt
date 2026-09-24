@@ -102,7 +102,7 @@ library_root(audio)
 target_link_libraries(audio PUBLIC types base)
 
 if(WIN32)
-    target_link_libraries(audio PRIVATE winmm)
+    target_link_libraries(audio PRIVATE ole32)
     target_link_libraries(kvm-base PRIVATE user32)
     target_link_libraries(kvm-window PRIVATE user32 gdi32)
     target_link_libraries(console-broker PRIVATE user32)

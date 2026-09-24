@@ -101,7 +101,7 @@ if(EXISTS "${LIBRARY_ROOT}/CMakeLists.txt")
                 library_check_edge("${owner}" "${dependency}")
             elseif((dependency STREQUAL "user32" AND owner MATCHES "^(console-broker|kvm-base|kvm-window)$") OR
                    (dependency STREQUAL "gdi32" AND owner STREQUAL "kvm-window") OR
-                   (dependency STREQUAL "winmm" AND owner STREQUAL "audio") OR
+                   (dependency STREQUAL "ole32" AND owner STREQUAL "audio") OR
                    (dependency STREQUAL "threads::threads" AND owner STREQUAL "base"))
                 continue()
             else()

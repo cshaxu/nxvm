@@ -25,12 +25,22 @@ static void audio_stream_copy_head(const lib_audio_stream *stream,
 }
 
 /* The worker is the only live task that calls the platform stream.  It keeps
- * a batch in the producer FIFO until waveOut has accepted the whole batch. */
+ * a batch in the producer FIFO until the native endpoint has accepted it. */
 static void audio_stream_worker(void *context, const base_sync_task *task)
 {
     lib_audio_stream *stream = context;
     lib_i16 batch[AUDIO_STREAM_PLAY_BATCH * 2u];
+    lib_status attach_status;
 
+    attach_status = audio_stream_platform_worker_attach(stream->platform);
+    if (attach_status != LIB_STATUS_OK) {
+        base_sync_mutex_lock(stream->lock);
+        audio_stream_fail_locked(stream, attach_status);
+        base_sync_mutex_unlock(stream->lock);
+        (void)base_sync_event_signal(stream->space);
+        (void)base_sync_event_signal(stream->control_done);
+        return;
+    }
     while (!base_sync_task_cancelled(task)) {
         audio_stream_control control = AUDIO_STREAM_CONTROL_NONE;
         lib_bool have_batch = LIB_FALSE;
@@ -103,6 +113,7 @@ static void audio_stream_worker(void *context, const base_sync_task *task)
         }
         base_sync_mutex_unlock(stream->lock);
     }
+    audio_stream_platform_worker_detach(stream->platform);
 }
 
 lib_status lib_audio_stream_create(const lib_audio_stream_options *options,

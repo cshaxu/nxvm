@@ -17,8 +17,8 @@ static lib_status cancel_status = LIB_STATUS_OK;
 static lib_status clear_status = LIB_STATUS_OK;
 static lib_status destroy_status = LIB_STATUS_OK;
 static lib_u32 accepted_limit = AUDIO_STREAM_PLAY_BATCH;
-static lib_u32 create_calls, enqueue_calls, clear_calls;
-static lib_u32 wait_calls, cancel_calls;
+static unsigned create_calls, enqueue_calls, clear_calls;
+static unsigned wait_calls, cancel_calls;
 static lib_u32 last_enqueued_frames;
 static base_sync_event *native_wait_entered;
 static base_sync_event *native_wait_release;
@@ -32,6 +32,15 @@ lib_status audio_stream_platform_create(const lib_audio_stream_options *options,
     *out_platform = create_status == LIB_STATUS_OK ? &fake_platform : LIB_NULL;
     return create_status;
 }
+
+lib_status audio_stream_platform_worker_attach(audio_stream_platform *platform)
+{
+    assert(platform == &fake_platform);
+    return LIB_STATUS_OK;
+}
+
+void audio_stream_platform_worker_detach(audio_stream_platform *platform)
+{ assert(platform == &fake_platform); }
 
 lib_status audio_stream_platform_enqueue(audio_stream_platform *platform,
     const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted_frames)
@@ -96,7 +105,7 @@ int main(void)
     lib_i16 samples[6] = { -1, 1, -2, 2, -3, 3 };
     lib_i16 submission[LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION * 2u] = { 0 };
     lib_u32 accepted = 99u, queued = 99u, writable = 99u;
-    lib_u32 before_destroy_enqueue_calls;
+    unsigned before_destroy_enqueue_calls;
 
     assert(lib_audio_stream_create(LIB_NULL, &stream) == LIB_STATUS_INVALID_ARGUMENT);
     options.sample_rate = 8000u;

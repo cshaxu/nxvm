@@ -10,6 +10,12 @@ lib_status audio_stream_platform_create(const lib_audio_stream_options *options,
     return LIB_STATUS_UNSUPPORTED;
 }
 
+lib_status audio_stream_platform_worker_attach(audio_stream_platform *platform)
+{ return platform == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT : LIB_STATUS_UNSUPPORTED; }
+
+void audio_stream_platform_worker_detach(audio_stream_platform *platform)
+{ (void)platform; }
+
 lib_status audio_stream_platform_enqueue(audio_stream_platform *platform,
     const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted_frames)
 {
