@@ -2,13 +2,14 @@
 
 ## Current Work
 
-**No active MyNES subtask. M6 T41 S11 repaired all six Shared corpus manifests.**
+No active MyNES task. M6 T42 closed after its Shared configuration and MyNES
+delivery commits.
 
-| Field | Required record |
+## M6 T42 Progress
+
+| S | Result |
 | --- | --- |
-| Most Recent Closure | M6 T41 S11 |
-| Result | Exhaustive validation repaired 28 stale Shared manifest hashes; all six manifests, dependency checks and 56 Shared tests pass without source or ABI change. |
-| Evidence | [S11 Shared manifest repair](../etc/evidence/m6-t41-s11-shared-manifest-repair.md). |
+| S1 | Closed: the owner-cleaned help is regression-covered; the 0042 x64/x86 pair is built and tracked; full dual-architecture suites, documentation governance and diff checks passed. [History](../history/M6-T42-mynes-help-refresh.md), [proposal](../history/M6-T42-mynes-help-refresh-proposal.md), [evidence](../etc/evidence/m6-t42-s1-help-refresh.md). |
 ## M6 T41 Progress
 
 | S | Result |
@@ -43,9 +44,9 @@
 ## Current Technical Baseline
 
 - Product: MyNes; MIT. M0--M5 and M6 T36 are closed.
-- Delivery kind: `product-execution`; T41 S1 publishes `mynes-0-0-0041`; its
-  artifacts are `assets/mynes/mynes_0_0_0041_x64.exe` and
-  `mynes_0_0_0041_x86.exe`. The one editable `mynes.ini` is adjacent; no
+- Delivery kind: `product-execution`; T42 S1 publishes `mynes-0-0-0042`; its
+  artifacts are `assets/mynes/mynes_0_0_0042_x64.exe` and
+  `mynes_0_0_0042_x86.exe`. The one editable `mynes.ini` is adjacent; no
   generated manifest participates in the delivery path.
 - MyNes snapshots are private versioned `MNS1` state images. App owns command/file
   policy and direct writer lifetime; Core owns image state and cartridge identity;

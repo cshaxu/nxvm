@@ -96,11 +96,13 @@ int main(void)
         result.text[lib_text_length(result.text) - 2u] == '\n');
     assert(app_command_contains(result.text, "start               cold-reset"));
     assert(app_command_contains(result.text, "debug               enter the paused-machine debug command group"));
-    assert(app_command_contains(result.text, "save <file>          save a running or paused machine"));
-    assert(app_command_contains(result.text, "load <file>          load a snapshot while stopped"));
+    assert(app_command_contains(result.text, "save <file>         save a running or paused machine"));
+    assert(app_command_contains(result.text, "load <file>         load a snapshot while stopped"));
     assert(!app_command_contains(result.text, "mem <addr> [count]"));
-    assert(app_command_contains(result.text, "exit                close MyNes"));
-    assert(app_command_contains(result.text, "Esc                 pause or resume"));
+    assert(app_command_contains(result.text, "exit                close MyNES"));
+    assert(app_command_contains(result.text, "Enter               Start"));
+    assert(app_command_contains(result.text, "Shift               Select"));
+    assert(app_command_contains(result.text, "Esc                 Pause or Resume"));
     app_command_note_runtime(&context, COMMON_SESSION_MACHINE_INIT,
         COMMON_SESSION_MACHINE_STOPPED, &result);
     assert(result.text[0] == '\0' && !result.arm_prompt);
@@ -123,6 +125,7 @@ int main(void)
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_PAUSED, "load state.mns", &result);
     assert(app_command_output_compare(result.text, "Machine is paused; stop it before load.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "debug", &result);
+    assert(app_command_contains(result.text, "MyNES debug commands"));
     assert(app_command_contains(result.text, "debug regs"));
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "debug regs", &result);
     assert(app_command_output_compare(result.text, "Pause with a cartridge before debugging.\n") == 0);
@@ -153,7 +156,7 @@ int main(void)
     app_command_submit_line(&loaded_context, COMMON_SESSION_MACHINE_STOPPED, "start", &result);
     assert(app_command_output_compare(result.text, "Machine command is still pending.\n") == 0);
     app_command_submit_line(&loaded_context, COMMON_SESSION_MACHINE_STOPPED, "help", &result);
-    assert(app_command_contains(result.text, "MyNes\n====="));
+    assert(app_command_contains(result.text, "MyNES\n====="));
     app_command_note_runtime(&loaded_context, COMMON_SESSION_MACHINE_STOPPED,
         COMMON_SESSION_MACHINE_RESET_COMPLETED, &result);
     assert(result.request == COMMON_SESSION_REQUEST_RESUME && !result.arm_prompt);
