@@ -154,7 +154,7 @@ static lib_i32 common_session_handle_kvm_input(common_session *session,
         if (session->command.handle_hotkey == NULL) return 0;
         common_session_clear_result(&result);
         if (!session->command.handle_hotkey(session->command.context, state,
-                event->data.hotkey.identifier, &result)) return 0;
+                (const char *)event->data.hotkey.identifier, &result)) return 0;
         return common_session_apply_result(session, &result);
     }
     return common_session_dispatch_input(&session->queue, event, state,

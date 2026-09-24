@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**No active NXVM subtask. NXVM M6 T41 S6 shared fixed-width enforcement is closed.**
+**Shared M6 T41 S7 is active.**
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | The owner approved the fixed-width Types program and MyNES T41 S7 continuation on 2026-09-23. The current Shared S6 implementation leaves one direct `lib_u8` hotkey-text to `char *` callback boundary unadapted; this narrow corrective S is necessary to validate the active MyNES task. Commit and push to `master` are permanently authorized. |
+| Objective | Restore the explicit C-string ABI adapters at the three observed Shared hotkey boundaries so the established internal `lib_u8` text representation compiles and preserves callback/test behavior. |
+| Non-goals | No Lib API change, no type representation reversal, no MyNES/NXVM product source change, no UX, asset, INI, artifact or callback-contract change. |
+| Reference Baseline | Shared T41 S6 P2 `948627378`, the S6 fixed-width rule, and the MyNES S7 x64 strict build failure in `common/session/session.c`. |
+| Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md), S6 consumer-audit amendment. |
+| Files And ABI Surface | `src/common/session/session.c`, `test/common/control_reconciler_integration_smoke.c`, `test/lib/win32_presentation_smoke.c`, `test/lib/win32_keyboard_smoke.c`, required manifests/evidence/status only. Existing Common callback signatures retain `const char *`; Lib event storage retains `lib_u8`. |
+| Applicable Rules | Internal KVM event text remains `lib_u8`; a cast occurs only at the direct Common callback or CRT assertion boundary. No change may alter event bytes, lifetime, terminator, callback dispatch or public ABI. |
+| Verification | Scan every `data.hotkey.identifier` consumer; build/run x64/x86 Lib and Common suites, MyNES suite after the shared repair, static/manifests and documentation governance; actual-diff review. |
+| Expected Markers | Every hotkey identifier consumer either uses byte storage directly or contains an explicit C-string adapter at its direct ABI call. No compiler pointer-sign error remains. |
+| Asset Needs | None. Preserve owner-local MyNES and NXVM INIs unchanged and unstaged. |
+| Reporting Requirements | Report the four consumer dispositions, source/test add/remove/net, x64/x86 results, MyNES-unblock outcome, commit/push and the active MyNES S7 handoff. |
+| Stop Conditions | Any candidate requires changing a public callback type, KVM event layout, text encoding or data lifetime; retain the boundary and transfer rather than widen this correction. |
+| Exit Criteria | All identified Shared consumers build with their explicit adapters; complete Shared and unblocked MyNES verification passes; one Shared implementation P and governance P are pushed. |
+| Original Owner Request | Complete MyNES Lib Types cleanup and NXVM Types retirement. The Shared repair is admitted only because the completed Shared fixed-width contract otherwise blocks MyNES verification. |
+| Similar-Issue Sweep | Scan `src`, `test/lib` and `test/common` for every `data.hotkey.identifier` use and classify direct byte use, C callback adapter, CRT test adapter or defect. |
 
 | Field | Required record |
 | --- | --- |

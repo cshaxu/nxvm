@@ -70,7 +70,7 @@ static void assert_registered_raw_chord(lib_u32 trigger, const char *identifier)
         &capture, normalize_and_match, &(kvm_keyboard_record){ KVM_KEYBOARD_TRANSITION,
             (lib_u16)lib_win32_map_virtual_key((UINT)trigger, MAPVK_VK_TO_VSC), (lib_u16)trigger, 0u, 0u, control_alt, 1, 1u }));
     assert(capture.count == 1u && capture.events[0].type == KVM_EVENT_HOTKEY);
-    assert(strcmp(capture.events[0].data.hotkey.identifier, identifier) == 0);
+    assert(strcmp((const char *)capture.events[0].data.hotkey.identifier, identifier) == 0);
     /* Every make and break in the matched raw chord is private to KVM. */
     assert(kvm_keyboard_submit_record(&(kvm_keyboard_normalizer){ 0 }, NULL,
         &capture, normalize_and_match, &(kvm_keyboard_record){ KVM_KEYBOARD_TRANSITION,

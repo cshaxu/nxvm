@@ -86,17 +86,20 @@ int main(void)
        handling. A stale run remains rejected. Guest-producing hotkeys are
        consumed at the control/guest boundary while paused. */
     hotkey.type = KVM_EVENT_HOTKEY;
-    strcpy(hotkey.data.hotkey.identifier, "pause-toggle");
+    lib_memory_copy(hotkey.data.hotkey.identifier, "pause-toggle",
+        sizeof("pause-toggle"));
     assert(common_session_queue_push_kvm_for_run(queue, &hotkey, 7u));
     take(queue, &event);
     assert(common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_PAUSED));
     assert(common_session_queue_push_kvm_for_run(queue, &hotkey, 6u));
     take(queue, &event);
     assert(!common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_PAUSED));
-    strcpy(hotkey.data.hotkey.identifier, "send-ctrl-alt-del");
+    lib_memory_copy(hotkey.data.hotkey.identifier, "send-ctrl-alt-del",
+        sizeof("send-ctrl-alt-del"));
     assert(common_session_dispatch_input(queue, &hotkey,
         COMMON_SESSION_MACHINE_PAUSED, deliver_input, NULL));
-    strcpy(hotkey.data.hotkey.identifier, "send-alt-enter");
+    lib_memory_copy(hotkey.data.hotkey.identifier, "send-alt-enter",
+        sizeof("send-alt-enter"));
     assert(common_session_dispatch_input(queue, &hotkey,
         COMMON_SESSION_MACHINE_PAUSED, deliver_input, NULL));
     assert(delivered_guest_input == 0u);

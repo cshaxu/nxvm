@@ -62,7 +62,7 @@ int main(void)
     assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event,
         &capture, LIB_TRUE));
     assert(capture.count == 1u && capture.events[0].type == KVM_EVENT_HOTKEY);
-    assert(strcmp(capture.events[0].data.hotkey.identifier,
+    assert(strcmp((const char *)capture.events[0].data.hotkey.identifier,
         "pause-toggle") == 0);
     /* Auto-repeat, then a second press while Ctrl/Alt stay held. Neither
        operation may forget the outstanding modifier breaks. */
