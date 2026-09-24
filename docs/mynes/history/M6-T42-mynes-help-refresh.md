@@ -22,3 +22,5 @@ the MyNES 0042 product declaration and delivery pair. The one required root
 preset update is an isolated Shared configuration commit; it changes only the
 MyNES target name. No Shared component, NXVM source, external asset, parser or
 lifecycle behavior changed.
+
+The owner accepted the delivery and closed M6 T42 on 2026-09-24.

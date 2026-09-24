@@ -9,7 +9,7 @@ delivery commits.
 
 | S | Result |
 | --- | --- |
-| S1 | Closed: the owner-cleaned help is regression-covered; the 0042 x64/x86 pair is built and tracked; full dual-architecture suites, documentation governance and diff checks passed. [History](../history/M6-T42-mynes-help-refresh.md), [proposal](../history/M6-T42-mynes-help-refresh-proposal.md), [evidence](../etc/evidence/m6-t42-s1-help-refresh.md). |
+| S1 | Owner accepted and closed: the owner-cleaned help is regression-covered; the 0042 x64/x86 pair is built and tracked; full dual-architecture suites, documentation governance and diff checks passed. [History](../history/M6-T42-mynes-help-refresh.md), [proposal](../history/M6-T42-mynes-help-refresh-proposal.md), [evidence](../etc/evidence/m6-t42-s1-help-refresh.md). |
 ## M6 T41 Progress
 
 | S | Result |
