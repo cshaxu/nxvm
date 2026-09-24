@@ -1,9 +1,11 @@
+#include "lib/types/test.h"
+#include "lib/types/win32/test.h"
+#include "lib/types/file.h"
 #include "lib/audio/stream_interface.h"
 #include "lib/base/sync_interface.h"
 #include "lib/types/win32/audio.h"
 #include "lib/types/win32/sync.h"
 
-#include <assert.h>
 
 static lib_status wait_until_empty(lib_audio_stream *stream, base_sync_event *delay)
 {
@@ -16,7 +18,7 @@ static lib_status wait_until_empty(lib_audio_stream *stream, base_sync_event *de
 
         if (status != LIB_STATUS_OK) return status;
         if (queued == 0u && writable == 4096u) return LIB_STATUS_OK;
-        assert(base_sync_event_wait(delay, 50u) == BASE_SYNC_WAIT_TIMED_OUT);
+        lib_test_assert(base_sync_event_wait(delay, 50u) == BASE_SYNC_WAIT_TIMED_OUT);
     }
     return LIB_STATUS_LIMIT_EXCEEDED;
 }
@@ -168,22 +170,22 @@ int main(void)
         audio_loopback_close(&loopback);
         return 0;
     }
-    assert(status == LIB_STATUS_OK);
+    lib_test_assert(status == LIB_STATUS_OK);
     status = lib_audio_stream_query(stream, &queued, &writable);
     if (status == LIB_STATUS_IO_ERROR) {
-        assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
+        lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
         audio_loopback_close(&loopback);
         return 0;
     }
-    assert(status == LIB_STATUS_OK);
-    assert(queued == 0u && writable == 4096u);
-    assert(lib_audio_stream_wait_writable(stream) == LIB_STATUS_OK);
+    lib_test_assert(status == LIB_STATUS_OK);
+    lib_test_assert(queued == 0u && writable == 4096u);
+    lib_test_assert(lib_audio_stream_wait_writable(stream) == LIB_STATUS_OK);
     for (index = 0u; index < LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION; ++index) {
         tone[index] = phase < 24000u ? 12000 : -12000;
         phase += 439u;
         if (phase >= 48000u) phase -= 48000u;
     }
-    assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET, &delay) == LIB_STATUS_OK);
+    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET, &delay) == LIB_STATUS_OK);
 
     /* Exercise two real endpoint runs.  Each run is four native batches: the
        first tests cold creation, the second tests reuse after completion. */
@@ -191,15 +193,15 @@ int main(void)
         lib_u32 batch;
 
         for (batch = 0u; batch < 4u; ++batch) {
-            assert(lib_audio_stream_enqueue(stream, tone,
+            lib_test_assert(lib_audio_stream_enqueue(stream, tone,
                 LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION, &accepted) == LIB_STATUS_OK);
-            assert(accepted == LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION);
+            lib_test_assert(accepted == LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION);
         }
-        assert(wait_until_empty(stream, delay) == LIB_STATUS_OK);
-        assert(audio_loopback_non_silent(&loopback) != LIB_FALSE);
+        lib_test_assert(wait_until_empty(stream, delay) == LIB_STATUS_OK);
+        lib_test_assert(audio_loopback_non_silent(&loopback) != LIB_FALSE);
     }
-    assert(wait_until_empty(stream, delay) == LIB_STATUS_OK);
-    assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
+    lib_test_assert(wait_until_empty(stream, delay) == LIB_STATUS_OK);
+    lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK && stream == LIB_NULL);
     base_sync_event_destroy(delay);
     audio_loopback_close(&loopback);
     return 0;

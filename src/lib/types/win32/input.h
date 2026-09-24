@@ -73,5 +73,7 @@ typedef SHORT lib_win32_key_state;
 #define LIB_WIN32_KEY_OEM_5 VK_OEM_5
 #define LIB_WIN32_KEY_OEM_6 VK_OEM_6
 #define LIB_WIN32_KEY_OEM_7 VK_OEM_7
+#define LIB_WIN32_KEY_OEM_102 VK_OEM_102
+#define LIB_WIN32_KEY_PACKET VK_PACKET
 
 #endif

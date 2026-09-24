@@ -7,6 +7,7 @@
 typedef RAWINPUT lib_win32_raw_input;
 typedef RAWINPUTHEADER lib_win32_raw_input_header;
 typedef RAWINPUTDEVICE lib_win32_raw_input_device;
+typedef RAWINPUTDEVICE *lib_win32_praw_input_device;
 typedef HRAWINPUT lib_win32_hraw_input;
 #define lib_win32_register_raw_input_devices RegisterRawInputDevices
 #define lib_win32_get_registered_raw_input_devices GetRegisteredRawInputDevices
@@ -29,6 +30,7 @@ typedef HBRUSH lib_win32_hbrush;
 typedef HCURSOR lib_win32_hcursor;
 typedef HDC lib_win32_hdc;
 typedef HGDIOBJ lib_win32_hgdiobj;
+typedef HMENU lib_win32_hmenu;
 typedef HMONITOR lib_win32_hmonitor;
 typedef COLORREF lib_win32_colorref;
 typedef LPARAM lib_win32_lparam;
@@ -38,10 +40,15 @@ typedef RECT lib_win32_rect;
 typedef POINT lib_win32_point;
 typedef MSG lib_win32_msg;
 typedef WNDCLASSW lib_win32_wndclassw;
+typedef WNDPROC lib_win32_wndproc;
 typedef CREATESTRUCTW lib_win32_createstructw;
 typedef PAINTSTRUCT lib_win32_paintstruct;
 typedef MONITORINFO lib_win32_monitorinfo;
 typedef BITMAPINFO lib_win32_bitmapinfo;
+typedef const lib_win32_bitmapinfo *lib_win32_pcbitmapinfo;
+typedef const lib_win32_rect *lib_win32_pcrect;
+typedef lib_win32_rect *lib_win32_prect;
+typedef lib_win32_point *lib_win32_ppoint;
 #define lib_win32_adjust_window_rect_ex AdjustWindowRectEx
 #define lib_win32_begin_paint BeginPaint
 #define lib_win32_client_to_screen ClientToScreen
@@ -58,6 +65,7 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define lib_win32_dispatch_message_w DispatchMessageW
 #define lib_win32_end_paint EndPaint
 #define lib_win32_get_capture GetCapture
+#define lib_win32_get_class_name_w GetClassNameW
 #define lib_win32_get_clip_cursor GetClipCursor
 #define lib_win32_get_client_rect GetClientRect
 #define lib_win32_get_cursor_pos GetCursorPos
@@ -68,12 +76,15 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define lib_win32_get_monitor_info_a GetMonitorInfoA
 #define lib_win32_get_stock_object GetStockObject
 #define lib_win32_get_tick_count GetTickCount
+#define lib_win32_get_window_text_a GetWindowTextA
+#define lib_win32_get_window_thread_process_id GetWindowThreadProcessId
 #define lib_win32_get_window_long_ptr_a GetWindowLongPtrA
 #define lib_win32_get_window_rect GetWindowRect
 #define lib_win32_invalidate_rect InvalidateRect
 #define lib_win32_invert_rect InvertRect
 #define lib_win32_is_iconic IsIconic
 #define lib_win32_is_window IsWindow
+#define lib_win32_is_window_unicode IsWindowUnicode
 #define lib_win32_is_zoomed IsZoomed
 #define lib_win32_load_cursor_a LoadCursorA
 #define lib_win32_monitor_from_point MonitorFromPoint
@@ -81,12 +92,17 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define lib_win32_msg_wait_for_multiple_objects MsgWaitForMultipleObjects
 #define lib_win32_peek_message_w PeekMessageW
 #define lib_win32_post_message_a PostMessageA
+#define lib_win32_post_message_w PostMessageW
+#define lib_win32_post_quit_message PostQuitMessage
 #define lib_win32_register_class_w RegisterClassW
 #define lib_win32_release_capture ReleaseCapture
 #define lib_win32_release_dc ReleaseDC
 #define lib_win32_select_object SelectObject
 #define lib_win32_send_message_a SendMessageA
+#define lib_win32_send_message_w SendMessageW
+#define lib_win32_send_message_timeout_w SendMessageTimeoutW
 #define lib_win32_send_notify_message_w SendNotifyMessageW
+#define lib_win32_make_lparam MAKELPARAM
 #define LIB_WIN32_WM_CANCELMODE WM_CANCELMODE
 #define LIB_WIN32_WM_ACTIVATEAPP WM_ACTIVATEAPP
 #define LIB_WIN32_WAIT_FAILED WAIT_FAILED
@@ -97,6 +113,7 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define lib_win32_set_foreground_window SetForegroundWindow
 #define lib_win32_set_rect SetRect
 #define lib_win32_set_window_long_ptr_a SetWindowLongPtrA
+#define lib_win32_set_window_long_ptr_w SetWindowLongPtrW
 #define lib_win32_set_window_pos SetWindowPos
 #define lib_win32_set_window_text_a SetWindowTextA
 #define lib_win32_show_window ShowWindow
@@ -115,6 +132,7 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define LIB_WIN32_GWL_EXSTYLE GWL_EXSTYLE
 #define LIB_WIN32_GWL_STYLE GWL_STYLE
 #define LIB_WIN32_GWLP_USERDATA GWLP_USERDATA
+#define LIB_WIN32_GWLP_WNDPROC GWLP_WNDPROC
 #define LIB_WIN32_HTCAPTION HTCAPTION
 #define LIB_WIN32_HTCLIENT HTCLIENT
 #define LIB_WIN32_IDC_ARROW IDC_ARROW
@@ -126,6 +144,8 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define LIB_WIN32_SRCCOPY SRCCOPY
 #define LIB_WIN32_SW_RESTORE SW_RESTORE
 #define LIB_WIN32_SW_SHOW SW_SHOW
+#define LIB_WIN32_SW_HIDE SW_HIDE
+#define LIB_WIN32_SMTO_ABORT_IF_HUNG SMTO_ABORTIFHUNG
 #define LIB_WIN32_SWP_NOACTIVATE SWP_NOACTIVATE
 #define LIB_WIN32_SWP_NOMOVE SWP_NOMOVE
 #define LIB_WIN32_SWP_NOZORDER SWP_NOZORDER
@@ -133,6 +153,11 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define LIB_WIN32_WM_CHAR WM_CHAR
 #define LIB_WIN32_WM_SYSCHAR WM_SYSCHAR
 #define LIB_WIN32_WM_TIMER WM_TIMER
+#define LIB_WIN32_WM_NULL WM_NULL
+#define LIB_WIN32_WM_ENTERMENULOOP WM_ENTERMENULOOP
+#define LIB_WIN32_WM_ENTERSIZEMOVE WM_ENTERSIZEMOVE
+#define LIB_WIN32_WM_EXITMENULOOP WM_EXITMENULOOP
+#define LIB_WIN32_WM_EXITSIZEMOVE WM_EXITSIZEMOVE
 #define lib_win32_set_timer SetTimer
 #define lib_win32_kill_timer KillTimer
 #define LIB_WIN32_WM_CLOSE WM_CLOSE

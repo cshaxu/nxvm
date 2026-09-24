@@ -1,3 +1,5 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/base/process_interface.h"
 
 int main(void)

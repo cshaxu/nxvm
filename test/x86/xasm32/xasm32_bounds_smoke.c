@@ -1,13 +1,14 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #if defined(__linux__)
 #define _DEFAULT_SOURCE
 #endif
 #include "x86/xasm32/xasm32_interface.h"
-#include <assert.h>
 #ifdef _WIN32
-#include <windows.h>
+#include "lib/types/win32/test.h"
 #else
-#include <sys/mman.h>
-#include <unistd.h>
+#include "lib/types/linux/test.h"
+#include "lib/types/linux/test.h"
 #endif
 
 static void check_decode(lib_u8 *code, lib_i32 flag32, lib_bool valid)
@@ -19,12 +20,12 @@ static void check_decode(lib_u8 *code, lib_i32 flag32, lib_bool valid)
     lib_status status = x86_xasm32_disassemble(code, 15u, text, sizeof(text),
         &text_bytes, &code_bytes, flag32);
     if (valid) {
-        assert(status == LIB_STATUS_OK && code_bytes == 15u);
-        assert(lib_text_compare(text, "NOP     ") == 0 && text_bytes == 8u);
+        lib_test_assert(status == LIB_STATUS_OK && code_bytes == 15u);
+        lib_test_assert(lib_text_compare(text, "NOP     ") == 0 && text_bytes == 8u);
     } else {
-        assert(status == LIB_STATUS_UNSUPPORTED);
-        assert(text_bytes == 37u && code_bytes == 19u);
-        assert(lib_memory_compare(text, before, sizeof(text)) == 0);
+        lib_test_assert(status == LIB_STATUS_UNSUPPORTED);
+        lib_test_assert(text_bytes == 37u && code_bytes == 19u);
+        lib_test_assert(lib_memory_compare(text, before, sizeof(text)) == 0);
     }
 }
 
@@ -34,21 +35,21 @@ int main(void)
     lib_size page_bytes;
     lib_u8 *pages;
 #ifdef _WIN32
-    SYSTEM_INFO info;
-    DWORD old_protect;
-    GetSystemInfo(&info);
+    lib_win32_system_info info;
+    lib_win32_dword old_protect;
+    lib_win32_get_system_info(&info);
     page_bytes = info.dwPageSize;
-    pages = VirtualAlloc(NULL, page_bytes * 2u, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    assert(pages != NULL);
-    assert(VirtualProtect(pages + page_bytes, page_bytes, PAGE_NOACCESS, &old_protect));
+    pages = lib_win32_virtual_alloc(LIB_NULL, page_bytes * 2u, LIB_WIN32_MEM_RESERVE | LIB_WIN32_MEM_COMMIT, LIB_WIN32_PAGE_READWRITE);
+    lib_test_assert(pages != LIB_NULL);
+    lib_test_assert(lib_win32_virtual_protect(pages + page_bytes, page_bytes, LIB_WIN32_PAGE_NOACCESS, &old_protect));
 #else
-    long page_size = sysconf(_SC_PAGESIZE);
-    assert(page_size > 0);
+    long page_size = lib_linux_sysconf(LIB_LINUX_SC_PAGESIZE);
+    lib_test_assert(page_size > 0);
     page_bytes = (lib_size)page_size;
-    pages = mmap(NULL, page_bytes * 2u, PROT_READ | PROT_WRITE,
-        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    assert(pages != MAP_FAILED);
-    assert(mprotect(pages + page_bytes, page_bytes, PROT_NONE) == 0);
+    pages = lib_linux_mmap(LIB_NULL, page_bytes * 2u, LIB_LINUX_PROT_READ | LIB_LINUX_PROT_WRITE,
+        LIB_LINUX_MAP_PRIVATE | LIB_LINUX_MAP_ANONYMOUS, -1, 0);
+    lib_test_assert(pages != LIB_LINUX_MAP_FAILED);
+    lib_test_assert(lib_linux_mprotect(pages + page_bytes, page_bytes, LIB_LINUX_PROT_NONE) == 0);
 #endif
     lib_u8 *code = pages + page_bytes - 15u;
     static const lib_u8 prefixes[] = {
@@ -69,7 +70,7 @@ int main(void)
         lib_memory_set(code, 0x66, 14u);
         code[14] = 0x90;
         check_decode(code, mode, LIB_TRUE);
-        code[0] = 0xf1; /* No implemented handler: reject, never call NULL. */
+        code[0] = 0xf1; /* No implemented handler: reject, never call LIB_NULL. */
         check_decode(code, mode, LIB_FALSE);
         for (lib_size t = 0; t < sizeof(tails) / sizeof(tails[0]); ++t) {
             lib_size length = tails[t].length;
@@ -91,21 +92,21 @@ int main(void)
                 code[15u - remaining] = (lib_u8)opcode;
                 lib_status status = x86_xasm32_disassemble(code, 15u, text, sizeof(text),
                     &text_bytes, &code_bytes, mode);
-                assert(status == LIB_STATUS_UNSUPPORTED || (status == LIB_STATUS_OK &&
+                lib_test_assert(status == LIB_STATUS_UNSUPPORTED || (status == LIB_STATUS_OK &&
                     code_bytes > 0u && code_bytes <= 15u && text_bytes == lib_text_length(text)));
                 code[15u - remaining] = 0x0f;
                 if (remaining > 1u) code[16u - remaining] = (lib_u8)opcode;
                 status = x86_xasm32_disassemble(code, 15u, text, sizeof(text),
                     &text_bytes, &code_bytes, mode);
-                assert(status == LIB_STATUS_UNSUPPORTED || (status == LIB_STATUS_OK &&
+                lib_test_assert(status == LIB_STATUS_UNSUPPORTED || (status == LIB_STATUS_OK &&
                     code_bytes > 0u && code_bytes <= 15u && text_bytes == lib_text_length(text)));
             }
         }
     }
 #ifdef _WIN32
-    assert(VirtualFree(pages, 0, MEM_RELEASE));
+    lib_test_assert(lib_win32_virtual_free(pages, 0, LIB_WIN32_MEM_RELEASE));
 #else
-    assert(munmap(pages, page_bytes * 2u) == 0);
+    lib_test_assert(lib_linux_munmap(pages, page_bytes * 2u) == 0);
 #endif
     return 0;
 }

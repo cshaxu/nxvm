@@ -1,3 +1,5 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #ifndef TEST_LINUX_WAIT_FAKES_H
 #define TEST_LINUX_WAIT_FAKES_H
 
@@ -6,7 +8,6 @@
 #define LIB_TYPES_LINUX_SYNC_H
 #define LIB_TYPES_LINUX_CLOCK_H
 #include "lib/types/types_interface.h"
-#include <assert.h>
 
 typedef struct { lib_i32 alive, locked; } lib_linux_pthread_mutex_t;
 typedef struct { lib_i32 alive; } lib_linux_pthread_cond_t;
@@ -35,30 +36,30 @@ static lib_i32 init_failed(void) { return ++init_step == fail_init_step; }
 static inline lib_i32 lib_linux_pthread_mutex_init(lib_linux_pthread_mutex_t *m, const void *a)
 { (void)a; if (init_failed()) return 1; m->alive = 1; m->locked = 0; ++live_mutexes; return 0; }
 static inline lib_i32 lib_linux_pthread_mutex_destroy(lib_linux_pthread_mutex_t *m)
-{ assert(m->alive && !m->locked); m->alive = 0; --live_mutexes; return 0; }
+{ lib_test_assert(m->alive && !m->locked); m->alive = 0; --live_mutexes; return 0; }
 static inline lib_i32 lib_linux_pthread_mutex_lock(lib_linux_pthread_mutex_t *m)
-{ assert(m->alive && !m->locked); if(fail_lock) return 1; m->locked = 1; return 0; }
+{ lib_test_assert(m->alive && !m->locked); if(fail_lock) return 1; m->locked = 1; return 0; }
 static inline lib_i32 lib_linux_pthread_mutex_unlock(lib_linux_pthread_mutex_t *m)
-{ assert(m->alive && m->locked); m->locked = 0; return fail_unlock; }
+{ lib_test_assert(m->alive && m->locked); m->locked = 0; return fail_unlock; }
 static inline lib_i32 lib_linux_pthread_condattr_init(lib_linux_pthread_condattr_t *a)
 { if (init_failed()) return 1; a->alive = 1; a->clock = 0; ++live_attributes; return 0; }
 static inline lib_i32 lib_linux_pthread_condattr_setclock(lib_linux_pthread_condattr_t *a, lib_i32 clock)
-{ assert(a->alive && clock == LIB_LINUX_CLOCK_MONOTONIC); if (init_failed()) return 1; a->clock = clock; return 0; }
+{ lib_test_assert(a->alive && clock == LIB_LINUX_CLOCK_MONOTONIC); if (init_failed()) return 1; a->clock = clock; return 0; }
 static inline lib_i32 lib_linux_pthread_condattr_destroy(lib_linux_pthread_condattr_t *a)
-{ assert(a->alive); a->alive = 0; --live_attributes; return 0; }
+{ lib_test_assert(a->alive); a->alive = 0; --live_attributes; return 0; }
 static inline lib_i32 lib_linux_pthread_cond_init(lib_linux_pthread_cond_t *c, const lib_linux_pthread_condattr_t *a)
-{ assert(a && a->alive && a->clock == LIB_LINUX_CLOCK_MONOTONIC); if (init_failed()) return 1; c->alive = 1; ++live_conditions; return 0; }
+{ lib_test_assert(a && a->alive && a->clock == LIB_LINUX_CLOCK_MONOTONIC); if (init_failed()) return 1; c->alive = 1; ++live_conditions; return 0; }
 static inline lib_i32 lib_linux_pthread_cond_destroy(lib_linux_pthread_cond_t *c)
-{ assert(c->alive); c->alive = 0; --live_conditions; return 0; }
+{ lib_test_assert(c->alive); c->alive = 0; --live_conditions; return 0; }
 static inline lib_i32 lib_linux_pthread_cond_signal(lib_linux_pthread_cond_t *c)
-{ assert(c->alive); return fail_signal; }
+{ lib_test_assert(c->alive); return fail_signal; }
 static inline lib_i32 lib_linux_pthread_cond_broadcast(lib_linux_pthread_cond_t *c)
 { return lib_linux_pthread_cond_signal(c); }
 static inline lib_i32 lib_linux_pthread_once(lib_linux_pthread_once_t *once, void (*fn)(void))
 { if (!*once) { *once = 1; fn(); } return 0; }
 static inline lib_i32 lib_linux_pthread_cond_wait(lib_linux_pthread_cond_t *c, lib_linux_pthread_mutex_t *m)
 {
-    assert(c->alive && m->locked && ++wait_calls < 10);
+    lib_test_assert(c->alive && m->locked && ++wait_calls < 10);
     lib_linux_pthread_mutex_unlock(m);
     if (wait_hook) wait_hook();
     lib_linux_pthread_mutex_lock(m);
@@ -67,14 +68,14 @@ static inline lib_i32 lib_linux_pthread_cond_wait(lib_linux_pthread_cond_t *c, l
 static inline lib_i32 lib_linux_pthread_cond_timedwait(lib_linux_pthread_cond_t *c,
     lib_linux_pthread_mutex_t *m, const lib_linux_timespec *deadline)
 {
-    if (wait_calls) assert(deadline->tv_sec == observed_deadline.tv_sec &&
+    if (wait_calls) lib_test_assert(deadline->tv_sec == observed_deadline.tv_sec &&
         deadline->tv_nsec == observed_deadline.tv_nsec);
     observed_deadline = *deadline;
     return lib_linux_pthread_cond_wait(c, m);
 }
 static inline lib_i32 lib_linux_clock_gettime(lib_i32 clock, lib_linux_timespec *value)
 {
-    assert(clock == LIB_LINUX_CLOCK_MONOTONIC);
+    lib_test_assert(clock == LIB_LINUX_CLOCK_MONOTONIC);
     if (clock_failure) return 1;
     *value = (lib_linux_timespec){ 100 + wait_calls, 900000000 };
     return 0;
@@ -86,7 +87,7 @@ static inline lib_i32 lib_linux_nanosleep(const lib_linux_timespec *duration, li
         interrupt_sleep = 0; lib_linux_errno = LIB_LINUX_EINTR;
         *remaining = (lib_linux_timespec){ 0, 1 }; return -1;
     }
-    assert(duration->tv_sec == 0 && duration->tv_nsec == 1);
+    lib_test_assert(duration->tv_sec == 0 && duration->tv_nsec == 1);
     return 0;
 }
 static inline lib_i32 lib_linux_sched_yield(void) { return 0; }
@@ -98,8 +99,8 @@ static inline lib_i32 lib_linux_pthread_create(lib_linux_pthread_t *t, const voi
 }
 static inline lib_i32 lib_linux_pthread_join(lib_linux_pthread_t t, void **result)
 {
-    (void)result; assert(t == 1 && thread_entry); ++thread_joins;
+    (void)result; lib_test_assert(t == 1 && thread_entry); ++thread_joins;
     if (fail_join) return 1;
-    thread_entry(thread_context); thread_entry = NULL; return 0;
+    thread_entry(thread_context); thread_entry = LIB_NULL; return 0;
 }
 #endif

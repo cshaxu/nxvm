@@ -1,3 +1,5 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "x86/xasm32/xasm32_interface.h"
 #include "x86/xasm32/aasm32.c"
 

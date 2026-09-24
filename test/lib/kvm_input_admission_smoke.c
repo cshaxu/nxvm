@@ -1,18 +1,20 @@
+#include "lib/types/test.h"
+#include "lib/types/win32/test.h"
+#include "lib/types/file.h"
 #include "lib/kvm-window/window.h"
 #include "lib/types/win32/window.h"
 /* This matcher fixture has no native Window; timer lifecycle is verified by
  * the capture/retirement/modal fixtures, not by creating thread timers here. */
-static UINT_PTR WINAPI test_set_timer(HWND window, UINT_PTR id, UINT interval,
-    TIMERPROC callback)
+static lib_win32_uint_ptr LIB_WIN32_WINAPI test_set_timer(lib_win32_hwnd window, lib_win32_uint_ptr id, lib_win32_uint interval,
+    lib_win32_timer_proc callback)
 { (void)window; (void)interval; (void)callback; return id; }
-static BOOL WINAPI test_kill_timer(HWND window, UINT_PTR id)
-{ (void)window; (void)id; return TRUE; }
+static lib_win32_bool LIB_WIN32_WINAPI test_kill_timer(lib_win32_hwnd window, lib_win32_uint_ptr id)
+{ (void)window; (void)id; return LIB_WIN32_TRUE; }
 #undef lib_win32_set_timer
 #undef lib_win32_kill_timer
 #define lib_win32_set_timer test_set_timer
 #define lib_win32_kill_timer test_kill_timer
 #include "lib/kvm-window/win32/component.c"
-#include <assert.h>
 
 static kvm_window window;
 static kvm_win32_window_context context;
@@ -23,12 +25,12 @@ static lib_i32 sink(void *opaque, const kvm_input_event *event)
 {
     (void)opaque;
     if (++attempts == reject_at) return 0;
-    assert(count < 32);
+    lib_test_assert(count < 32);
     delivered[count++] = *event;
     return 1;
 }
 static void failure(void *opaque, lib_u64 identity, lib_status status)
-{ (void)opaque; assert(identity && status == LIB_STATUS_IO_ERROR); ++failures; }
+{ (void)opaque; lib_test_assert(identity && status == LIB_STATUS_IO_ERROR); ++failures; }
 static lib_status join(kvm_component *component, lib_u32 timeout_ms)
 { (void)component; (void)timeout_ms; return LIB_STATUS_OK; }
 static void dispose(kvm_component *component)
@@ -37,11 +39,11 @@ static void initialize(void)
 {
     kvm_component_options options = { 0 };
     options.input_sink = sink; options.failure_sink = failure;
-    assert(kvm_hotkey_registry_register(&options.hotkeys, 'P',
+    lib_test_assert(kvm_hotkey_registry_register(&options.hotkeys, 'P',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "toggle") == LIB_STATUS_OK);
-    assert(kvm_component_initialize(&window.base, &options, join, dispose,
+    lib_test_assert(kvm_component_initialize(&window.base, &options, join, dispose,
         &window.pending_frame, sizeof(window.pending_frame)) == LIB_STATUS_OK);
-    assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
+    lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     lib_memory_set(&context, 0, sizeof(context));
     context.component = &window;
@@ -60,9 +62,9 @@ static void set_frozen(lib_bool frozen)
 {
     kvm_component_control control = { .kind = KVM_WINDOW_CONTROL_SET_FROZEN };
     control.payload[0] = frozen;
-    assert(kvm_component_enqueue_control(&window.base, &control) == LIB_STATUS_OK);
-    assert(win32_window_consume_mailboxes(NULL, &context));
-    assert(context.frozen == frozen);
+    lib_test_assert(kvm_component_enqueue_control(&window.base, &control) == LIB_STATUS_OK);
+    lib_test_assert(win32_window_consume_mailboxes(LIB_NULL, &context));
+    lib_test_assert(context.frozen == frozen);
 }
 static void frozen_prefix_replay(void)
 {
@@ -74,73 +76,73 @@ static void frozen_prefix_replay(void)
         text.data.text.scalar = 0x1f600;
         initialize();
         set_frozen(frozen);
-        assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+        lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
         set_frozen(!frozen);
         set_frozen(LIB_FALSE);
-        assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
-        assert(window.base.hotkey_matcher.held_count == 1 && count == 0);
-        if (cause == 0) assert(key('A', 0x1e, 1, 1));
-        else if (cause == 1) assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
-        else assert(win32_window_emit_normalized(&context, &text));
-        assert(count == (frozen ? 1u : 2u));
+        lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+        lib_test_assert(window.base.hotkey_matcher.held_count == 1 && count == 0);
+        if (cause == 0) lib_test_assert(key('A', 0x1e, 1, 1));
+        else if (cause == 1) lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
+        else lib_test_assert(win32_window_emit_normalized(&context, &text));
+        lib_test_assert(count == (frozen ? 1u : 2u));
         if (!frozen)
-            assert(delivered[0].type == KVM_EVENT_KEY &&
+            lib_test_assert(delivered[0].type == KVM_EVENT_KEY &&
                 delivered[0].data.key.key == KVM_KEY_CONTROL &&
                 delivered[0].data.key.pressed);
-        if (cause == 0) assert(delivered[count - 1].data.key.key == 'A');
-        if (cause == 1) assert(!delivered[count - 1].data.key.pressed);
-        if (cause == 2) assert(delivered[count - 1].type == KVM_EVENT_TEXT);
-        assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+        if (cause == 0) lib_test_assert(delivered[count - 1].data.key.key == 'A');
+        if (cause == 1) lib_test_assert(!delivered[count - 1].data.key.pressed);
+        if (cause == 2) lib_test_assert(delivered[count - 1].type == KVM_EVENT_TEXT);
+        lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
     /* Neither freezing direction may disable an otherwise matched hotkey. */
     for (lib_u32 frozen = 0; frozen < 2; ++frozen) {
         initialize();
         set_frozen(frozen);
-        assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+        lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
         set_frozen(!frozen);
-        assert(key(KVM_KEY_ALT, 0x38, 1, 3));
-        assert(key('P', 0x19, 1, 3));
-        assert(count == 1 && delivered[0].type == KVM_EVENT_HOTKEY);
-        assert(key('P', 0x19, 0, 3));
-        assert(key(KVM_KEY_ALT, 0x38, 0, 1));
-        assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
-        assert(count == 1);
-        assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+        lib_test_assert(key(KVM_KEY_ALT, 0x38, 1, 3));
+        lib_test_assert(key('P', 0x19, 1, 3));
+        lib_test_assert(count == 1 && delivered[0].type == KVM_EVENT_HOTKEY);
+        lib_test_assert(key('P', 0x19, 0, 3));
+        lib_test_assert(key(KVM_KEY_ALT, 0x38, 0, 1));
+        lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
+        lib_test_assert(count == 1);
+        lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
     /* Owner explicitly retains per-event filtering, not make/break balancing. */
     for (lib_u32 frozen = 0; frozen < 2; ++frozen) {
         initialize();
         set_frozen(frozen);
-        assert(key('A', 0x1e, 1, 0));
+        lib_test_assert(key('A', 0x1e, 1, 0));
         set_frozen(!frozen);
-        assert(key('A', 0x1e, 0, 0));
-        assert(count == 1 && delivered[0].data.key.key == 'A' &&
+        lib_test_assert(key('A', 0x1e, 0, 0));
+        lib_test_assert(count == 1 && delivered[0].data.key.key == 'A' &&
             delivered[0].data.key.pressed == !frozen);
-        assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+        lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
     initialize();
     set_frozen(LIB_TRUE);
-    assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
     set_frozen(LIB_FALSE);
     reject_at = 1;
-    assert(!key('A', 0x1e, 1, 1));
-    assert(count == 0 && attempts == 1 && window.base.stopping);
-    assert(!key('B', 0x30, 1, 0) && attempts == 1);
-    assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+    lib_test_assert(!key('A', 0x1e, 1, 1));
+    lib_test_assert(count == 0 && attempts == 1 && window.base.stopping);
+    lib_test_assert(!key('B', 0x30, 1, 0) && attempts == 1);
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 }
-static HANDLE start_race;
+static lib_win32_handle start_race;
 static lib_status publish_status;
-static DWORD WINAPI publish(void *unused)
+static lib_win32_dword LIB_WIN32_WINAPI publish(void *unused)
 {
     (void)unused;
-    assert(WaitForSingleObject(start_race, 5000) == WAIT_OBJECT_0);
+    lib_test_assert(lib_win32_wait_for_single_object(start_race, 5000) == LIB_WIN32_WAIT_OBJECT_0);
     publish_status = kvm_window_publish_frame(&window, &frame);
     return 0;
 }
-static DWORD WINAPI enqueue_title(void *unused)
+static lib_win32_dword LIB_WIN32_WINAPI enqueue_title(void *unused)
 {
     (void)unused;
-    assert(kvm_window_set_title(&window, "independent") == LIB_STATUS_OK);
+    lib_test_assert(kvm_window_set_title(&window, "independent") == LIB_STATUS_OK);
     return 0;
 }
 int main(void)
@@ -150,87 +152,87 @@ int main(void)
     frozen_prefix_replay();
     initialize();
     context.frozen = LIB_TRUE;
-    assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
-    assert(win32_window_emit_normalized(&context, &event));
-    assert(count == 1 && delivered[0].type == KVM_EVENT_WINDOW_CLOSE);
-    assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
-    assert(count == 1); /* mismatch replay also uses the frozen filter */
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(win32_window_emit_normalized(&context, &event));
+    lib_test_assert(count == 1 && delivered[0].type == KVM_EVENT_WINDOW_CLOSE);
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
+    lib_test_assert(count == 1); /* mismatch replay also uses the frozen filter */
     win32_window_emit_mouse(&context, 1, 1, 0);
-    assert(count == 1);
-    assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
-    assert(key(KVM_KEY_ALT, 0x38, 1, 3));
-    assert(key('P', 0x19, 1, 3));
-    assert(count == 2 && delivered[1].type == KVM_EVENT_HOTKEY);
-    assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+    lib_test_assert(count == 1);
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(KVM_KEY_ALT, 0x38, 1, 3));
+    lib_test_assert(key('P', 0x19, 1, 3));
+    lib_test_assert(count == 2 && delivered[1].type == KVM_EVENT_HOTKEY);
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 
     initialize();
-    assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
     win32_window_emit_mouse(&context, 1, 1, 0);
-    assert(count == 1 && delivered[0].type == KVM_EVENT_MOUSE);
-    assert(key(KVM_KEY_ALT, 0x38, 1, 3));
-    assert(key('P', 0x19, 1, 3));
-    assert(key('P', 0x19, 0, 3));
-    assert(key(KVM_KEY_ALT, 0x38, 0, 1));
-    assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
-    assert(count == 2 && delivered[1].type == KVM_EVENT_HOTKEY);
-    assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+    lib_test_assert(count == 1 && delivered[0].type == KVM_EVENT_MOUSE);
+    lib_test_assert(key(KVM_KEY_ALT, 0x38, 1, 3));
+    lib_test_assert(key('P', 0x19, 1, 3));
+    lib_test_assert(key('P', 0x19, 0, 3));
+    lib_test_assert(key(KVM_KEY_ALT, 0x38, 0, 1));
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 0, 0));
+    lib_test_assert(count == 2 && delivered[1].type == KVM_EVENT_HOTKEY);
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 
     initialize();
-    assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
-    assert(key(KVM_KEY_ALT, 0x38, 1, 3));
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(key(KVM_KEY_ALT, 0x38, 1, 3));
     reject_at = 2;
-    assert(!key('A', 0x1e, 1, 3));
-    assert(count == 1 && delivered[0].data.key.key == KVM_KEY_CONTROL);
-    assert(window.base.hotkey_matcher.held_count == 0);
-    assert(!key('B', 0x30, 1, 0));
-    assert(attempts == 2 && count == 1);
-    assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(!key('A', 0x1e, 1, 3));
+    lib_test_assert(count == 1 && delivered[0].data.key.key == KVM_KEY_CONTROL);
+    lib_test_assert(window.base.hotkey_matcher.held_count == 0);
+    lib_test_assert(!key('B', 0x30, 1, 0));
+    lib_test_assert(attempts == 2 && count == 1);
+    lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
     kvm_component_retire(&window.base, LIB_STATUS_OK);
-    assert(failures == 1 && count == 2 && delivered[1].type == KVM_EVENT_SOURCE_RETIRED);
-    assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+    lib_test_assert(failures == 1 && count == 2 && delivered[1].type == KVM_EVENT_SOURCE_RETIRED);
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 
     initialize();
-    assert(kvm_window_set_title(&window, "first") == LIB_STATUS_OK);
-    assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_OK);
-    assert(kvm_component_request_stop(&window.base) == LIB_STATUS_OK);
-    assert(kvm_component_request_stop(&window.base) == LIB_STATUS_OK);
-    assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(kvm_window_set_title(&window, "first") == LIB_STATUS_OK);
+    lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_request_stop(&window.base) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_request_stop(&window.base) == LIB_STATUS_OK);
+    lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
     /* Call mailbox API so ordinary rejected control does not add a failure report. */
     kvm_component_control title = { .kind = KVM_WINDOW_CONTROL_SET_TITLE };
-    assert(kvm_component_mailboxes_enqueue_control(&window.base.mailboxes, &title) == LIB_STATUS_INVALID_STATE);
-    assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
-    assert(taken.kind == KVM_WINDOW_CONTROL_SET_TITLE);
-    assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
-    assert(taken.kind == KVM_COMPONENT_CONTROL_STOP);
-    assert(!kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
-    assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_mailboxes_enqueue_control(&window.base.mailboxes, &title) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
+    lib_test_assert(taken.kind == KVM_WINDOW_CONTROL_SET_TITLE);
+    lib_test_assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
+    lib_test_assert(taken.kind == KVM_COMPONENT_CONTROL_STOP);
+    lib_test_assert(!kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     /* A held frame-copy lock must not block control producer/consumer. */
     initialize();
     base_sync_mutex_lock(window.base.mailboxes.frame_lock);
-    HANDLE control_thread = CreateThread(NULL, 0, enqueue_title, NULL, 0, NULL);
-    assert(control_thread);
-    assert(WaitForSingleObject(control_thread, 5000) == WAIT_OBJECT_0);
-    assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
-    assert(taken.kind == KVM_WINDOW_CONTROL_SET_TITLE);
+    lib_win32_handle control_thread = lib_win32_create_thread(LIB_NULL, 0, enqueue_title, LIB_NULL, 0, LIB_NULL);
+    lib_test_assert(control_thread);
+    lib_test_assert(lib_win32_wait_for_single_object(control_thread, 5000) == LIB_WIN32_WAIT_OBJECT_0);
+    lib_test_assert(kvm_component_mailboxes_take_control(&window.base.mailboxes, &taken));
+    lib_test_assert(taken.kind == KVM_WINDOW_CONTROL_SET_TITLE);
     base_sync_mutex_unlock(window.base.mailboxes.frame_lock);
-    CloseHandle(control_thread);
-    assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+    lib_win32_close_handle(control_thread);
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     /* Either producer may win the admission lock, but no publish may commit
-     * after STOP's boundary. Repeat the public concurrent paths without Sleep. */
+     * after STOP's boundary. Repeat the public concurrent paths without lib_win32_sleep. */
     for (lib_u32 i = 0; i != 32; ++i) {
         initialize();
-        start_race = CreateEventA(NULL, TRUE, FALSE, NULL);
-        HANDLE thread = CreateThread(NULL, 0, publish, NULL, 0, NULL);
-        assert(thread && start_race);
-        SetEvent(start_race);
-        assert(kvm_component_request_stop(&window.base) == LIB_STATUS_OK);
+        start_race = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+        lib_win32_handle thread = lib_win32_create_thread(LIB_NULL, 0, publish, LIB_NULL, 0, LIB_NULL);
+        lib_test_assert(thread && start_race);
+        lib_win32_set_event(start_race);
+        lib_test_assert(kvm_component_request_stop(&window.base) == LIB_STATUS_OK);
         lib_u32 stopped_sequence = window.base.mailboxes.frame_generation;
-        assert(WaitForSingleObject(thread, 5000) == WAIT_OBJECT_0);
-        assert(publish_status == LIB_STATUS_OK || publish_status == LIB_STATUS_INVALID_STATE);
-        assert(window.base.mailboxes.frame_generation == stopped_sequence);
-        assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
-        assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
-        CloseHandle(thread); CloseHandle(start_race);
+        lib_test_assert(lib_win32_wait_for_single_object(thread, 5000) == LIB_WIN32_WAIT_OBJECT_0);
+        lib_test_assert(publish_status == LIB_STATUS_OK || publish_status == LIB_STATUS_INVALID_STATE);
+        lib_test_assert(window.base.mailboxes.frame_generation == stopped_sequence);
+        lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
+        lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+        lib_win32_close_handle(thread); lib_win32_close_handle(start_race);
     }
     return 0;
 }

@@ -6,6 +6,7 @@
 
 typedef CRITICAL_SECTION lib_win32_critical_section;
 #define lib_win32_create_event_a CreateEventA
+#define lib_win32_create_semaphore_a CreateSemaphoreA
 #define lib_win32_create_thread CreateThread
 #define lib_win32_wait_for_multiple_objects WaitForMultipleObjects
 #define lib_win32_wait_for_single_object WaitForSingleObject
@@ -13,17 +14,21 @@ typedef CRITICAL_SECTION lib_win32_critical_section;
 #define lib_win32_reset_event ResetEvent
 #define lib_win32_close_handle CloseHandle
 #define lib_win32_sleep Sleep
+#define lib_win32_get_current_thread_id GetCurrentThreadId
+#define lib_win32_try_enter_critical_section TryEnterCriticalSection
 #define lib_win32_initialize_critical_section_and_spin_count InitializeCriticalSectionAndSpinCount
 #define lib_win32_delete_critical_section DeleteCriticalSection
 #define lib_win32_enter_critical_section EnterCriticalSection
 #define lib_win32_leave_critical_section LeaveCriticalSection
 #define lib_win32_interlocked_compare_exchange InterlockedCompareExchange
 #define lib_win32_interlocked_exchange InterlockedExchange
+#define lib_win32_interlocked_increment InterlockedIncrement
 #define LIB_WIN32_WINAPI WINAPI
 #define LIB_WIN32_INFINITE INFINITE
 #define LIB_WIN32_MAXIMUM_WAIT_OBJECTS MAXIMUM_WAIT_OBJECTS
 #define LIB_WIN32_WAIT_OBJECT_0 WAIT_OBJECT_0
 #define LIB_WIN32_WAIT_TIMEOUT WAIT_TIMEOUT
+#define LIB_WIN32_WAIT_FAILED WAIT_FAILED
 #define LIB_WIN32_TRUE TRUE
 #define LIB_WIN32_FALSE FALSE
 

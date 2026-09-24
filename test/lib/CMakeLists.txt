@@ -120,6 +120,9 @@ add_test(NAME library.types-layout
 add_test(NAME library.types-layout-selftest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${LIB_ROOT}" "-DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/types_layout_selftest.cmake")
+add_test(NAME library.test-types-boundary COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_ROOTS=${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_CURRENT_SOURCE_DIR}/../common;${CMAKE_CURRENT_SOURCE_DIR}/../x86"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_types_boundary.cmake")
 add_test(NAME library.test-manifest COMMAND "${CMAKE_COMMAND}"
     "-DLIBRARY_ROOT=${CMAKE_CURRENT_SOURCE_DIR}"
     -P "${LIB_ROOT}/verify_manifest.cmake")

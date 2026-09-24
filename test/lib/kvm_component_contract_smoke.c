@@ -1,6 +1,7 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/kvm-base/worker_interface.h"
 
-#include <assert.h>
 
 typedef struct component_probe {
     lib_u32 input_count;
@@ -38,14 +39,14 @@ static void component_probe_failure(void *opaque, lib_u64 source_identity,
     lib_status status)
 {
     component_probe *probe = (component_probe *)opaque;
-    assert(probe != LIB_NULL);
+    lib_test_assert(probe != LIB_NULL);
     ++probe->failure_count;
     probe->last_identity = source_identity;
     probe->last_failure = status;
 }
 
 static lib_status component_probe_stop(kvm_component *component, lib_u32 timeout_ms)
-{ (void)component; assert(timeout_ms == KVM_COMPONENT_DESTROY_TIMEOUT_MS); return LIB_STATUS_OK; }
+{ (void)component; lib_test_assert(timeout_ms == KVM_COMPONENT_DESTROY_TIMEOUT_MS); return LIB_STATUS_OK; }
 
 static void component_probe_dispose(kvm_component *component)
 { kvm_component_mailboxes_destroy(&component->mailboxes); }
@@ -69,7 +70,7 @@ int main(void)
 
     probe.accept_input = 1;
     kvm_hotkey_registry_initialize(&hotkeys);
-    assert(kvm_hotkey_registry_register(&hotkeys, 'P',
+    lib_test_assert(kvm_hotkey_registry_register(&hotkeys, 'P',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
         "pause-toggle") == LIB_STATUS_OK);
     options.input_context = &probe;
@@ -77,64 +78,64 @@ int main(void)
     options.failure_context = &probe;
     options.failure_sink = component_probe_failure;
     options.hotkeys = hotkeys;
-    assert(kvm_component_initialize(&first, &options, component_probe_stop,
+    lib_test_assert(kvm_component_initialize(&first, &options, component_probe_stop,
         component_probe_dispose, &storage[0], 1u) == LIB_STATUS_OK);
-    assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
+    lib_test_assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
-    assert(kvm_component_initialize(&second, &options, component_probe_stop,
+    lib_test_assert(kvm_component_initialize(&second, &options, component_probe_stop,
         component_probe_dispose, &storage[1], 1u) == LIB_STATUS_OK);
-    assert(kvm_component_mailboxes_select_notify(&second.mailboxes,
+    lib_test_assert(kvm_component_mailboxes_select_notify(&second.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
-    assert(kvm_component_initialize(&third, &options, component_probe_stop,
+    lib_test_assert(kvm_component_initialize(&third, &options, component_probe_stop,
         component_probe_dispose, &storage[2], 1u) == LIB_STATUS_OK);
-    assert(kvm_component_mailboxes_select_notify(&third.mailboxes,
+    lib_test_assert(kvm_component_mailboxes_select_notify(&third.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
-    assert(first.source_identity != 0u);
-    assert(second.source_identity != 0u);
-    assert(first.source_identity != second.source_identity);
+    lib_test_assert(first.source_identity != 0u);
+    lib_test_assert(second.source_identity != 0u);
+    lib_test_assert(first.source_identity != second.source_identity);
 
     /* The transport cannot restrict consumer opcodes or interpret payloads.
        Copy every byte (including embedded zeroes) before the caller mutates it. */
     control.kind = LIB_UINT32_MAX;
     for (index = 0u; index < sizeof(control.payload); ++index)
         control.payload[index] = (lib_u8)index;
-    assert(kvm_component_enqueue_control(&second, &control) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_enqueue_control(&second, &control) == LIB_STATUS_OK);
     lib_memory_set(control.payload, 0xff, sizeof(control.payload));
-    assert(kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
-    assert(taken.kind == LIB_UINT32_MAX);
+    lib_test_assert(kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
+    lib_test_assert(taken.kind == LIB_UINT32_MAX);
     for (index = 0u; index < sizeof(taken.payload); ++index)
-        assert(taken.payload[index] == (lib_u8)index);
+        lib_test_assert(taken.payload[index] == (lib_u8)index);
     control = (kvm_component_control){ 0xabcdef01u, { 0 } };
 
     /* Source identity is a single non-repeating epoch: issuing the final
        representable value permanently exhausts it instead of wrapping. */
     identity_next = LIB_UINT64_MAX - 1u;
-    assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
+    lib_test_assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
         LIB_STATUS_OK && identity == LIB_UINT64_MAX - 1u);
-    assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
+    lib_test_assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
         LIB_STATUS_OK && identity == LIB_UINT64_MAX);
-    assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
+    lib_test_assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
         LIB_STATUS_LIMIT_EXCEEDED);
-    assert(lib_atomic_u64_load_explicit(&identity_next,
+    lib_test_assert(lib_atomic_u64_load_explicit(&identity_next,
         LIB_MEMORY_ORDER_RELAXED) == 0u);
 
     event.type = KVM_EVENT_KEY;
     event.data.key.key = 'A';
     event.data.key.pressed = 1u;
-    assert(kvm_component_emit(&first, &event));
-    assert(probe.input_count == 1u);
-    assert(probe.last_identity == first.source_identity);
+    lib_test_assert(kvm_component_emit(&first, &event));
+    lib_test_assert(probe.input_count == 1u);
+    lib_test_assert(probe.last_identity == first.source_identity);
     probe.accept_input = 0;
-    assert(!kvm_component_emit(&first, &event));
-    assert(probe.failure_count == 1u);
-    assert(!kvm_component_emit(&first, &event));
+    lib_test_assert(!kvm_component_emit(&first, &event));
+    lib_test_assert(probe.failure_count == 1u);
+    lib_test_assert(!kvm_component_emit(&first, &event));
     kvm_component_retire(&first, LIB_STATUS_OK);
-    assert(probe.failure_count == 1u);
-    assert(probe.last_failure == LIB_STATUS_IO_ERROR);
+    lib_test_assert(probe.failure_count == 1u);
+    lib_test_assert(probe.last_failure == LIB_STATUS_IO_ERROR);
     kvm_component_mailboxes_destroy(&first.mailboxes);
-    assert(kvm_component_initialize(&first, &options, component_probe_stop,
+    lib_test_assert(kvm_component_initialize(&first, &options, component_probe_stop,
         component_probe_dispose, &storage[0], 1u) == LIB_STATUS_OK);
-    assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
+    lib_test_assert(kvm_component_mailboxes_select_notify(&first.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
 
     /* A frozen Window's delivery policy must not bypass matching. It silently
@@ -147,69 +148,69 @@ int main(void)
     event.data.key.scan_code = 0x1du;
     event.data.key.pressed = 1u;
     event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
-    assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
+    lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
     event.data.key.key = KVM_HOTKEY_KEY_ALT;
     event.data.key.scan_code = 0x38u;
     event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL |
         KVM_HOTKEY_MODIFIER_ALT;
-    assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
+    lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
     event.data.key.key = 'P';
     event.data.key.scan_code = 0x19u;
-    assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
+    lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
-    assert(probe.input_count == 1u && probe.last_type == KVM_EVENT_HOTKEY);
-    assert(lib_text_compare(probe.last_hotkey, "pause-toggle") == 0);
-    assert(probe.last_identity == first.source_identity);
+    lib_test_assert(probe.input_count == 1u && probe.last_type == KVM_EVENT_HOTKEY);
+    lib_test_assert(lib_text_compare(probe.last_hotkey, "pause-toggle") == 0);
+    lib_test_assert(probe.last_identity == first.source_identity);
     event.data.key.key = 'X';
     event.data.key.scan_code = 0x2du;
     event.data.key.modifiers = 0u;
-    assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
+    lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
-    assert(probe.input_count == 1u);
+    lib_test_assert(probe.input_count == 1u);
 
     for (index = 0u; index < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
-        assert(kvm_component_enqueue_control(&second, &control) ==
+        lib_test_assert(kvm_component_enqueue_control(&second, &control) ==
             LIB_STATUS_OK);
     /* A full ordinary FIFO rejects the next request and retains every
        original record. Rejection is returned; the component remains healthy. */
-    assert(kvm_component_enqueue_control(&second, &control) ==
+    lib_test_assert(kvm_component_enqueue_control(&second, &control) ==
         LIB_STATUS_LIMIT_EXCEEDED);
-    assert(probe.failure_count == 1u);
+    lib_test_assert(probe.failure_count == 1u);
     /* STOP has one reserved FIFO slot.  A full normal queue cannot make
        destroy wait forever for a stop record it could not enqueue. */
-    assert(kvm_component_request_stop(&second) == LIB_STATUS_OK);
-    assert(kvm_component_request_stop(&second) == LIB_STATUS_OK);
-    assert(kvm_component_enqueue_control(&second, &control) == LIB_STATUS_INVALID_STATE);
+    lib_test_assert(kvm_component_request_stop(&second) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_request_stop(&second) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_enqueue_control(&second, &control) == LIB_STATUS_INVALID_STATE);
     for (index = 0u; index < KVM_COMPONENT_CONTROL_CAPACITY; ++index) {
-        assert(kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
-        assert(taken.kind == 0xabcdef01u);
+        lib_test_assert(kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
+        lib_test_assert(taken.kind == 0xabcdef01u);
     }
-    assert(kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
-    assert(taken.kind == KVM_COMPONENT_CONTROL_STOP);
-    assert(!kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
+    lib_test_assert(kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
+    lib_test_assert(taken.kind == KVM_COMPONENT_CONTROL_STOP);
+    lib_test_assert(!kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
 
     /* The last ordinary slot accepts exactly one record; rejection is inert. */
     for (index = 0u; index + 1u < KVM_COMPONENT_CONTROL_CAPACITY; ++index)
-        assert(kvm_component_enqueue_control(&third, &control) ==
+        lib_test_assert(kvm_component_enqueue_control(&third, &control) ==
             LIB_STATUS_OK);
     control.payload[0] = LIB_TRUE;
-    assert(kvm_component_enqueue_control(&third, &control) == LIB_STATUS_OK);
-    assert(kvm_component_enqueue_control(&third, &control) ==
+    lib_test_assert(kvm_component_enqueue_control(&third, &control) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_enqueue_control(&third, &control) ==
         LIB_STATUS_LIMIT_EXCEEDED);
-    assert(probe.failure_count == 1u);
+    lib_test_assert(probe.failure_count == 1u);
     for (index = 0u; index + 1u < KVM_COMPONENT_CONTROL_CAPACITY; ++index) {
-        assert(kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
-        assert(taken.kind == 0xabcdef01u);
-        assert(taken.payload[0] == LIB_FALSE);
+        lib_test_assert(kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
+        lib_test_assert(taken.kind == 0xabcdef01u);
+        lib_test_assert(taken.payload[0] == LIB_FALSE);
     }
-    assert(kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
-    assert(taken.payload[0] == LIB_TRUE);
-    assert(!kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
+    lib_test_assert(kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
+    lib_test_assert(taken.payload[0] == LIB_TRUE);
+    lib_test_assert(!kvm_component_mailboxes_take_control(&third.mailboxes, &taken));
 
-    assert(kvm_component_destroy(&first) == LIB_STATUS_OK);
-    assert(kvm_component_destroy(&second) == LIB_STATUS_OK);
-    assert(kvm_component_destroy(&third) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_destroy(&first) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_destroy(&second) == LIB_STATUS_OK);
+    lib_test_assert(kvm_component_destroy(&third) == LIB_STATUS_OK);
     return 0;
 }

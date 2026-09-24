@@ -1,3 +1,6 @@
+#include "lib/types/test.h"
+#include "lib/types/win32/test.h"
+#include "lib/types/file.h"
 /* Compile the real component bodies against controlled external queries.
  * No KVM interaction, sleeping, or timing-dependent assertion is needed. */
 #include "lib/types/win32/clock.h"
@@ -8,17 +11,17 @@ static lib_i32 counter_ok = 1, frequency_ok = 1;
 static LONGLONG counter_value = 123, frequency_value = 1000;
 static lib_u32 query_count;
 static lib_u32 pressed;
-static SHORT layout_result;
-static SHORT fake_key_scan(WCHAR scalar)
+static lib_win32_short layout_result;
+static lib_win32_short fake_key_scan(lib_win32_wchar scalar)
 { (void)scalar; return layout_result; }
 
-static BOOL fake_counter(lib_win32_counter *out)
+static lib_win32_bool fake_counter(lib_win32_counter *out)
 { ++query_count; out->QuadPart = counter_value; return counter_ok; }
-static BOOL fake_frequency(lib_win32_counter *out)
+static lib_win32_bool fake_frequency(lib_win32_counter *out)
 { ++query_count; out->QuadPart = frequency_value; return frequency_ok; }
 static lib_win32_key_state fake_key_state(lib_i32 key)
 {
-    lib_u32 bit = key == VK_CONTROL ? 1u : key == VK_MENU ? 2u : key == VK_SHIFT ? 4u : 0u;
+    lib_u32 bit = key == LIB_WIN32_KEY_CONTROL ? 1u : key == LIB_WIN32_KEY_ALT ? 2u : key == LIB_WIN32_KEY_SHIFT ? 4u : 0u;
     return (lib_win32_key_state)((pressed & bit) != 0u ? 0x8000u : 0u);
 }
 
@@ -75,7 +78,7 @@ int main(void)
         if ((pressed & 4u) != 0u) expected |= KVM_HOTKEY_MODIFIER_SHIFT;
         CHECK(kvm_window_modifiers_from_key_state() == expected);
     }
-    /* VkKeyScan uses a DIFFERENT mask from GetKeyState/KVM modifiers.
+    /* VkKeyScan uses a DIFFERENT mask from lib_win32_get_key_state/KVM modifiers.
      * Exercise all raw combinations and the actual emitted make/break path. */
     for (lib_u32 raw = 0u; raw != 8u; ++raw) {
         lib_u16 key;
@@ -85,11 +88,11 @@ int main(void)
         if (raw & 1u) { expected |= KVM_INPUT_MODIFIER_SHIFT; ++count; }
         if (raw & 2u) { expected |= KVM_INPUT_MODIFIER_CONTROL; ++count; }
         if (raw & 4u) { expected |= KVM_INPUT_MODIFIER_ALT; ++count; }
-        layout_result = (SHORT)((raw << 8u) | 'A');
+        layout_result = (lib_win32_short)((raw << 8u) | 'A');
         CHECK(kvm_keyboard_platform_map_scalar('a', &key, &modifiers));
         CHECK(key == 'A' && modifiers == expected);
         emitted_count = 0u;
-        CHECK(kvm_keyboard_submit_record(&state, NULL, LIB_NULL, capture,
+        CHECK(kvm_keyboard_submit_record(&state, LIB_NULL, LIB_NULL, capture,
         &(kvm_keyboard_record){ .kind=KVM_KEYBOARD_CHARACTER, .utf16='a', .repeat_count=1u }));
         CHECK(emitted_count == count * 2u + 2u);
         CHECK(emitted[count].data.key.key == 'A');
@@ -107,9 +110,9 @@ int main(void)
     /* Layout success is not proof of a representable neutral physical key. */
     {
         kvm_keyboard_normalizer state = {0};
-        layout_result = VK_OEM_102;
+        layout_result = LIB_WIN32_KEY_OEM_102;
         emitted_count = 0;
-        CHECK(kvm_keyboard_submit_record(&state, NULL, NULL, capture,
+        CHECK(kvm_keyboard_submit_record(&state, LIB_NULL, LIB_NULL, capture,
         &(kvm_keyboard_record){ .kind=KVM_KEYBOARD_CHARACTER, .utf16='<', .repeat_count=3 }));
         CHECK(emitted_count == 3);
         for (lib_u32 i = 0; i < emitted_count; ++i)

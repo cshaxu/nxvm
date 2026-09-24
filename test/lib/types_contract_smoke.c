@@ -1,3 +1,5 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/types/types_interface.h"
 
 _Static_assert(sizeof(lib_i8) == 1u, "lib_i8 must remain one byte");

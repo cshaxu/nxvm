@@ -1,5 +1,6 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/storage/file.h"
-#include <assert.h>
 
 static lib_u32 operation, fail_at;
 static lib_i64 position, length;
@@ -30,12 +31,12 @@ int main(void)
         operation = 0;
         count = -99;
         lib_status status = lib_storage_file_byte_count(&file, &count);
-        assert(status == (fail_at ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK));
-        assert(operation == (fail_at ? fail_at : 4));
-        assert(count == (fail_at ? -99 : length));
-        if (!fail_at) assert(position == 23);
+        lib_test_assert(status == (fail_at ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK));
+        lib_test_assert(operation == (fail_at ? fail_at : 4));
+        lib_test_assert(count == (fail_at ? -99 : length));
+        if (!fail_at) lib_test_assert(position == 23);
     }
-    assert(lib_storage_file_byte_count(NULL, &count) == LIB_STATUS_INVALID_ARGUMENT);
-    assert(lib_storage_file_byte_count(&file, NULL) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_byte_count(LIB_NULL, &count) == LIB_STATUS_INVALID_ARGUMENT);
+    lib_test_assert(lib_storage_file_byte_count(&file, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
     return 0;
 }

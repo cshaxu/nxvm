@@ -1,6 +1,7 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "common/session/session_interface.h"
 #include "common/session/control.h"
-#include <assert.h>
 
 static lib_u32 requests, prompts, notices, callbacks, cancellations, commands;
 static lib_bool completed, fail_cancel, fail_request, exit_on_request;
@@ -13,10 +14,10 @@ static lib_bool fail_wait;
 static lib_i32 take_event(common_session_queue *queue, common_session_event *event,
     lib_u32 timeout_ms)
 {
-    assert(timeout_ms == LIB_UINT32_MAX);
+    lib_test_assert(timeout_ms == LIB_UINT32_MAX);
     ++waits;
     if (fail_wait) {
-        assert(waits == 1u); /* A failed wait must never be retried. */
+        lib_test_assert(waits == 1u); /* A failed wait must never be retried. */
         return 0;
     }
     return common_session_queue_take(queue, event, timeout_ms);
@@ -45,7 +46,7 @@ lib_status common_ui_write_monitor(common_ui *ui, const char *text)
     (void)ui;
     if (collect) {
         if (++writes == fail_write) return LIB_STATUS_IO_ERROR;
-        assert(output_used + lib_text_length(text) < sizeof(output));
+        lib_test_assert(output_used + lib_text_length(text) < sizeof(output));
         lib_memory_copy(output + output_used, text, lib_text_length(text) + 1u);
         output_used += lib_text_length(text);
     }
@@ -59,12 +60,12 @@ lib_status common_ui_request_monitor_line(common_ui *ui)
     if (exit_on_request) {
         lib_console_line line = {0};
         lib_memory_copy(line.text, "exit", 5); line.length = 4;
-        assert(common_session_queue_push_monitor_line(&active->queue, &line, 0));
+        lib_test_assert(common_session_queue_push_monitor_line(&active->queue, &line, 0));
     }
     return fail_request ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 void common_ui_set_run_generation(common_ui *ui, lib_u32 generation)
-{ (void)ui; assert(generation == 1); }
+{ (void)ui; lib_test_assert(generation == 1); }
 lib_status common_ui_apply_action(common_ui *ui, common_ui_action a, common_ui_state s)
 { (void)ui; (void)a; (void)s; return LIB_STATUS_OK; }
 lib_status common_ui_set_state(common_ui *ui, common_ui_state s)
@@ -86,7 +87,7 @@ static void opened(void *p, common_session_command_result *out) { (void)p; (void
 static void rejected(void *p, common_session_command_result *out)
 {
     (void)p;
-    assert(!active->pending_line);
+    lib_test_assert(!active->pending_line);
     lib_memory_copy(out->text, "rejected", 9);
     exit_on_request = LIB_TRUE;
 }
@@ -94,7 +95,7 @@ static void submitted(void *p, common_session_machine_state state, const char *l
     common_session_command_result *out)
 {
     (void)p; (void)state;
-    assert(!active->pending_line && lib_text_compare(line, "exit") == 0);
+    lib_test_assert(!active->pending_line && lib_text_compare(line, "exit") == 0);
     out->exit_requested = LIB_TRUE;
 }
 static void runtime(void *p, common_session_machine_state a,
@@ -116,59 +117,59 @@ int main(void)
     s.command.note_runtime = runtime;
     s.command.open = opened; s.command.reject_line = rejected;
     s.command.submit_line = submitted;
-    assert(common_session_queue_initialize(&s.queue));
+    lib_test_assert(common_session_queue_initialize(&s.queue));
     common_session_state_initialize(&s.state, COMMON_SESSION_DISPLAY_WINDOW, 1);
     common_session_state_note_runtime(&s.state, COMMON_SESSION_MACHINE_RUNNING);
     common_session_state_note_window(&s.state, 1);
-    assert(common_session_arm_if_ready(&s) && requests == 1 && prompts == 1);
-    for (lib_i32 i = 0; i < 10; ++i) assert(common_session_arm_if_ready(&s));
-    assert(requests == 1 && prompts == 1);
+    lib_test_assert(common_session_arm_if_ready(&s) && requests == 1 && prompts == 1);
+    for (lib_i32 i = 0; i < 10; ++i) lib_test_assert(common_session_arm_if_ready(&s));
+    lib_test_assert(requests == 1 && prompts == 1);
     lib_u32 before = callbacks;
     event.kind = COMMON_SESSION_EVENT_FRAME_COMPLETED; event.run_generation = 1;
     for (lib_u32 i = 1; i <= 10; ++i) {
         event.value.frame.sequence = i;
-        assert(common_session_process_completed(&s, &event));
+        lib_test_assert(common_session_process_completed(&s, &event));
     }
-    assert(callbacks == before && requests == 1);
+    lib_test_assert(callbacks == before && requests == 1);
     /* Notification cancels the editing fragment before writing. Provider
      * readiness admits the next prompt without storing a second prompt. */
     lib_memory_copy(notice.text, "notice", 7);
-    assert(common_session_apply_result(&s, &notice));
-    assert(cancellations == 1 && notices == 1 && !s.pending_line);
-    assert(common_session_arm_if_ready(&s) && requests == 2 && prompts == 2);
+    lib_test_assert(common_session_apply_result(&s, &notice));
+    lib_test_assert(cancellations == 1 && notices == 1 && !s.pending_line);
+    lib_test_assert(common_session_arm_if_ready(&s) && requests == 2 && prompts == 2);
     /* Reader completed, but its line is still in the FIFO. Multiple notices
      * and frame events must not start its successor before consumption. */
     completed = LIB_TRUE;
     event.kind = COMMON_SESSION_EVENT_RUNTIME_COMPLETED;
     event.value.runtime_state = COMMON_SESSION_MACHINE_RUNNING;
-    assert(common_session_process_completed(&s, &event));
-    assert(commands == 1 && notices == 2 && s.pending_line && requests == 2);
-    assert(common_session_apply_result(&s, &notice));
-    assert(common_session_arm_if_ready(&s) && requests == 2 && notices == 3);
+    lib_test_assert(common_session_process_completed(&s, &event));
+    lib_test_assert(commands == 1 && notices == 2 && s.pending_line && requests == 2);
+    lib_test_assert(common_session_apply_result(&s, &notice));
+    lib_test_assert(common_session_arm_if_ready(&s) && requests == 2 && notices == 3);
     /* Both rejected and ordinary line events pass through the actual loop. */
-    assert(common_session_queue_push_monitor_line(&s.queue, &line, 1));
-    assert(common_session_run(&s));
-    assert(waits == 2u);
-    assert(requests == 3 && prompts == 3);
+    lib_test_assert(common_session_queue_push_monitor_line(&s.queue, &line, 1));
+    lib_test_assert(common_session_run(&s));
+    lib_test_assert(waits == 2u);
+    lib_test_assert(requests == 3 && prompts == 3);
     exit_on_request = LIB_FALSE;
     /* Demand survives being non-current; only confirmed handoff clears the
      * outstanding turn, not an intention to create/bind another component. */
     s.pending_line = LIB_TRUE;
     s.state.current_console_actual = COMMON_SESSION_CONSOLE_VM;
-    assert(common_session_arm_if_ready(&s) && s.pending_line && requests == 3);
+    lib_test_assert(common_session_arm_if_ready(&s) && s.pending_line && requests == 3);
     event.kind = COMMON_SESSION_EVENT_BROKER_COMPLETED;
     event.value.broker_vm_console_current = LIB_FALSE;
-    assert(common_session_process_completed(&s, &event));
-    assert(s.pending_line && requests == 4);
+    lib_test_assert(common_session_process_completed(&s, &event));
+    lib_test_assert(s.pending_line && requests == 4);
     fail_cancel = LIB_TRUE;
     before = notices;
-    assert(!common_session_apply_result(&s, &notice));
-    assert(s.pending_line && notices == before && requests == 4);
+    lib_test_assert(!common_session_apply_result(&s, &notice));
+    lib_test_assert(s.pending_line && notices == before && requests == 4);
     fail_cancel = LIB_FALSE; completed = LIB_FALSE;
-    assert(common_session_apply_result(&s, &notice));
+    lib_test_assert(common_session_apply_result(&s, &notice));
     fail_request = LIB_TRUE;
-    assert(!common_session_arm_if_ready(&s));
-    assert(!s.pending_line);
+    lib_test_assert(!common_session_arm_if_ready(&s));
+    lib_test_assert(!s.pending_line);
     /* Borrowed long output shares the exact notification/reader transaction.
      * CRLF and lone LF remain correct across the writer's chunk boundaries. */
     {
@@ -186,20 +187,20 @@ int main(void)
         expected[end] = '\0';
         common_session_command_result large = { .detail = text };
         collect = LIB_TRUE;
-        assert(common_session_apply_result(&s, &large));
-        assert(lib_text_compare(output, expected) == 0 && writes > 1u);
-        assert(!s.pending_line);
+        lib_test_assert(common_session_apply_result(&s, &large));
+        lib_test_assert(lib_text_compare(output, expected) == 0 && writes > 1u);
+        lib_test_assert(!s.pending_line);
         output_used = writes = 0u; output[0] = '\0';
         s.pending_line = LIB_TRUE;
         before = cancellations;
-        assert(common_session_apply_result(&s, &large));
-        assert(cancellations == before + 1u && !s.pending_line);
-        assert(lib_text_compare_n(output, "\r\n", 2u) == 0 && lib_text_compare(output + 2, expected) == 0);
+        lib_test_assert(common_session_apply_result(&s, &large));
+        lib_test_assert(cancellations == before + 1u && !s.pending_line);
+        lib_test_assert(lib_text_compare_n(output, "\r\n", 2u) == 0 && lib_text_compare(output + 2, expected) == 0);
         output_used = writes = 0u; output[0] = '\0'; fail_write = 2u;
-        assert(!common_session_apply_result(&s, &large) && writes == 2u);
+        lib_test_assert(!common_session_apply_result(&s, &large) && writes == 2u);
         fail_write = 0u; output_used = writes = 0u;
         s.state.current_console_actual = COMMON_SESSION_CONSOLE_VM;
-        assert(common_session_apply_result(&s, &large) && writes == 0u);
+        lib_test_assert(common_session_apply_result(&s, &large) && writes == 0u);
     }
     /* Run-loop failure propagates without a second wait or new reader. */
     collect = LIB_FALSE;
@@ -208,8 +209,8 @@ int main(void)
     s.pending_line = LIB_TRUE;
     before = requests;
     waits = 0u; fail_wait = LIB_TRUE;
-    assert(!common_session_run(&s));
-    assert(waits == 1u && requests == before);
+    lib_test_assert(!common_session_run(&s));
+    lib_test_assert(waits == 1u && requests == before);
     common_session_queue_dispose(&s.queue);
     return 0;
 }

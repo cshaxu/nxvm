@@ -1,90 +1,90 @@
-#include <windows.h>
-#include <assert.h>
-#include <stdio.h>
+#include "lib/types/test.h"
+#include "lib/types/file.h"
+#include "lib/types/win32/test.h"
 #include "lib/kvm-window/window_interface.h"
 
-static HANDLE entered, exited, retired, done, ticked;
-static WNDPROC original;
-static HWND target;
-static LONG retire_count;
+static lib_win32_handle entered, exited, retired, done, ticked;
+static lib_win32_wndproc original;
+static lib_win32_hwnd target;
+static lib_win32_long retire_count;
 
-static LRESULT CALLBACK observe(HWND w, UINT m, WPARAM a, LPARAM b)
+static lib_win32_lresult LIB_WIN32_CALLBACK observe(lib_win32_hwnd w, lib_win32_uint m, lib_win32_wparam a, lib_win32_lparam b)
 {
-    if (m == WM_ENTERSIZEMOVE || m == WM_ENTERMENULOOP) SetEvent(entered);
-    if (m == WM_EXITSIZEMOVE || m == WM_EXITMENULOOP) SetEvent(exited);
-    if (m == WM_TIMER) SetEvent(ticked);
+    if (m == LIB_WIN32_WM_ENTERSIZEMOVE || m == LIB_WIN32_WM_ENTERMENULOOP) lib_win32_set_event(entered);
+    if (m == LIB_WIN32_WM_EXITSIZEMOVE || m == LIB_WIN32_WM_EXITMENULOOP) lib_win32_set_event(exited);
+    if (m == LIB_WIN32_WM_TIMER) lib_win32_set_event(ticked);
     return CallWindowProcW(original, w, m, a, b);
 }
-static BOOL CALLBACK find_window(HWND w, LPARAM unused)
+static lib_win32_bool LIB_WIN32_CALLBACK find_window(lib_win32_hwnd w, lib_win32_lparam unused)
 {
-    DWORD pid;
+    lib_win32_dword pid;
     wchar_t name[64];
     (void)unused;
-    GetWindowThreadProcessId(w, &pid);
-    GetClassNameW(w, name, 64);
-    if (pid == GetCurrentProcessId() && wcscmp(name, L"LibKvmWindow") == 0)
+    lib_win32_get_window_thread_process_id(w, &pid);
+    lib_win32_get_class_name_w(w, name, 64);
+    if (pid == lib_win32_get_current_process_id() && wcscmp(name, L"LibKvmWindow") == 0)
         target = w;
-    return TRUE;
+    return LIB_WIN32_TRUE;
 }
 static lib_i32 input(void *p, const kvm_input_event *e)
 {
     (void)p;
     if (e->type == KVM_EVENT_SOURCE_RETIRED) {
-        InterlockedIncrement(&retire_count);
-        SetEvent(retired);
+        lib_win32_interlocked_increment(&retire_count);
+        lib_win32_set_event(retired);
     }
     return 1;
 }
 static void failed(void *p, lib_u64 id, lib_status s)
-{ (void)p; (void)id; (void)s; assert(!"unexpected component failure"); }
-static DWORD WINAPI watchdog(void *p)
+{ (void)p; (void)id; (void)s; lib_test_assert(!"unexpected component failure"); }
+static lib_win32_dword LIB_WIN32_WINAPI watchdog(void *p)
 {
     (void)p;
-    if (WaitForSingleObject(done, 15000) != WAIT_OBJECT_0)
-        TerminateProcess(GetCurrentProcess(), 99);
+    if (lib_win32_wait_for_single_object(done, 15000) != LIB_WIN32_WAIT_OBJECT_0)
+        TerminateProcess(lib_win32_get_current_process(), 99);
     return 0;
 }
 int main(void)
 {
-    const WPARAM commands[] = { SC_SIZE | WMSZ_RIGHT, SC_MOVE, SC_KEYMENU };
-    entered = CreateEventA(NULL, TRUE, FALSE, NULL);
-    exited = CreateEventA(NULL, TRUE, FALSE, NULL);
-    retired = CreateEventA(NULL, TRUE, FALSE, NULL);
-    done = CreateEventA(NULL, TRUE, FALSE, NULL);
-    ticked = CreateEventA(NULL, TRUE, FALSE, NULL);
-    HANDLE guard = CreateThread(NULL, 0, watchdog, NULL, 0, NULL);
-    assert(entered && exited && retired && done && ticked && guard);
+    const lib_win32_wparam commands[] = { SC_SIZE | LIB_WIN32_WMSZ_RIGHT, SC_MOVE, SC_KEYMENU };
+    entered = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    exited = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    retired = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    done = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    ticked = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    lib_win32_handle guard = lib_win32_create_thread(LIB_NULL, 0, watchdog, LIB_NULL, 0, LIB_NULL);
+    lib_test_assert(entered && exited && retired && done && ticked && guard);
     for (lib_u32 i = 0; i < sizeof(commands)/sizeof(commands[0]); ++i) {
-        kvm_window *w = NULL;
+        kvm_window *w = LIB_NULL;
         kvm_window_options o = { 0 };
         char title[128];
-        DWORD_PTR result;
-        ResetEvent(entered); ResetEvent(exited); ResetEvent(retired);
-        retire_count = 0; target = NULL;
+        lib_win32_dword_ptr result;
+        lib_win32_reset_event(entered); lib_win32_reset_event(exited); lib_win32_reset_event(retired);
+        retire_count = 0; target = LIB_NULL;
         o.component.input_sink = input; o.component.failure_sink = failed;
         o.initial_title = "modal-before";
-        assert(kvm_window_create(&w, &o) == LIB_STATUS_OK);
-        EnumWindows(find_window, 0); assert(target);
-        original = (WNDPROC)SetWindowLongPtrW(target, GWLP_WNDPROC, (LONG_PTR)observe);
-        printf("modal case %u\n", i); fflush(stdout);
-        assert(PostMessageW(target, WM_SYSCOMMAND, commands[i], i == 2 ? ' ' : 0));
-        assert(WaitForSingleObject(entered, 3000) == WAIT_OBJECT_0);
-        ResetEvent(ticked);
-        assert(WaitForSingleObject(ticked, 3000) == WAIT_OBJECT_0);
-        assert(WaitForSingleObject(exited, 0) == WAIT_TIMEOUT);
-        assert(kvm_window_freeze(w) == LIB_STATUS_OK);
-        assert(kvm_window_set_title(w, "modal-after") == LIB_STATUS_OK);
-        assert(SendMessageTimeoutW(target, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, 3000, &result));
-        GetWindowTextA(target, title, sizeof(title));
-        assert(lib_text_compare(title, "modal-after") == 0);
+        lib_test_assert(kvm_window_create(&w, &o) == LIB_STATUS_OK);
+        EnumWindows(find_window, 0); lib_test_assert(target);
+        original = (lib_win32_wndproc)lib_win32_set_window_long_ptr_w(target, LIB_WIN32_GWLP_WNDPROC, (lib_win32_long_ptr)observe);
+        lib_c_printf("modal case %u\n", i); lib_c_fflush(lib_c_stdout);
+        lib_test_assert(lib_win32_post_message_w(target, LIB_WIN32_WM_SYSCOMMAND, commands[i], i == 2 ? ' ' : 0));
+        lib_test_assert(lib_win32_wait_for_single_object(entered, 3000) == LIB_WIN32_WAIT_OBJECT_0);
+        lib_win32_reset_event(ticked);
+        lib_test_assert(lib_win32_wait_for_single_object(ticked, 3000) == LIB_WIN32_WAIT_OBJECT_0);
+        lib_test_assert(lib_win32_wait_for_single_object(exited, 0) == LIB_WIN32_WAIT_TIMEOUT);
+        lib_test_assert(kvm_window_freeze(w) == LIB_STATUS_OK);
+        lib_test_assert(kvm_window_set_title(w, "modal-after") == LIB_STATUS_OK);
+        lib_test_assert(lib_win32_send_message_timeout_w(target, LIB_WIN32_WM_NULL, 0, 0, LIB_WIN32_SMTO_ABORT_IF_HUNG, 3000, &result));
+        lib_win32_get_window_text_a(target, title, sizeof(title));
+        lib_test_assert(lib_text_compare(title, "modal-after") == 0);
         /* STOP must unwind the nested loop without an external cancel/Enter. */
-        assert(kvm_window_destroy(w)==LIB_STATUS_OK);
-        assert(WaitForSingleObject(exited, 0) == WAIT_OBJECT_0);
-        assert(WaitForSingleObject(retired, 0) == WAIT_OBJECT_0);
-        assert(retire_count == 1 && !IsWindow(target));
+        lib_test_assert(kvm_window_destroy(w)==LIB_STATUS_OK);
+        lib_test_assert(lib_win32_wait_for_single_object(exited, 0) == LIB_WIN32_WAIT_OBJECT_0);
+        lib_test_assert(lib_win32_wait_for_single_object(retired, 0) == LIB_WIN32_WAIT_OBJECT_0);
+        lib_test_assert(retire_count == 1 && !lib_win32_is_window(target));
     }
-    SetEvent(done); assert(WaitForSingleObject(guard, 3000) == WAIT_OBJECT_0);
-    CloseHandle(guard); CloseHandle(entered); CloseHandle(exited);
-    CloseHandle(retired); CloseHandle(done); CloseHandle(ticked);
+    lib_win32_set_event(done); lib_test_assert(lib_win32_wait_for_single_object(guard, 3000) == LIB_WIN32_WAIT_OBJECT_0);
+    lib_win32_close_handle(guard); lib_win32_close_handle(entered); lib_win32_close_handle(exited);
+    lib_win32_close_handle(retired); lib_win32_close_handle(done); lib_win32_close_handle(ticked);
     return 0;
 }

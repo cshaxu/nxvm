@@ -1,28 +1,29 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "lib/console/console_interface.h"
 #include "lib/console/binding_interface.h"
 
-#include <assert.h>
 
 #ifdef _WIN32
-#include <windows.h>
+#include "lib/types/win32/test.h"
 
 typedef struct gate_probe {
     lib_console *console;
-    HANDLE entered;
-    HANDLE release;
-    HANDLE delivered;
-    HANDLE detached;
+    lib_win32_handle entered;
+    lib_win32_handle release;
+    lib_win32_handle delivered;
+    lib_win32_handle detached;
 } gate_probe;
 
 static void gate_sink(void *opaque, const lib_console_event *event)
 {
     gate_probe *probe = (gate_probe *)opaque;
-    assert(probe != NULL && event != NULL);
-    SetEvent(probe->entered);
-    assert(WaitForSingleObject(probe->release, INFINITE) == WAIT_OBJECT_0);
+    lib_test_assert(probe != LIB_NULL && event != LIB_NULL);
+    lib_win32_set_event(probe->entered);
+    lib_test_assert(lib_win32_wait_for_single_object(probe->release, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
 }
 
-static DWORD WINAPI gate_deliver(void *opaque)
+static lib_win32_dword LIB_WIN32_WINAPI gate_deliver(void *opaque)
 {
     gate_probe *probe = (gate_probe *)opaque;
     lib_console_event event = { 0 };
@@ -30,56 +31,56 @@ static DWORD WINAPI gate_deliver(void *opaque)
     event.binding_generation = 1u;
     event.value.raw_key.key = 'A';
     event.value.raw_key.pressed = LIB_TRUE;
-    assert(lib_console_deliver_event(probe->console, &event) == LIB_STATUS_OK);
-    SetEvent(probe->delivered);
+    lib_test_assert(lib_console_deliver_event(probe->console, &event) == LIB_STATUS_OK);
+    lib_win32_set_event(probe->delivered);
     return 0u;
 }
 
-static DWORD WINAPI gate_detach(void *opaque)
+static lib_win32_dword LIB_WIN32_WINAPI gate_detach(void *opaque)
 {
     gate_probe *probe = (gate_probe *)opaque;
-    assert(lib_console_set_event_sink(probe->console, NULL, NULL) == LIB_STATUS_OK);
-    SetEvent(probe->detached);
+    lib_test_assert(lib_console_set_event_sink(probe->console, LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
+    lib_win32_set_event(probe->detached);
     return 0u;
 }
 
 int main(void)
 {
     gate_probe probe = { 0 };
-    HANDLE delivery_thread;
-    HANDLE detach_thread;
+    lib_win32_handle delivery_thread;
+    lib_win32_handle detach_thread;
     lib_console_event event = { 0 };
 
-    assert(lib_console_create(&probe.console) == LIB_STATUS_OK);
-    assert(lib_console_bind_generation(probe.console, 1u) == LIB_STATUS_OK);
-    probe.entered = CreateEventA(NULL, TRUE, FALSE, NULL);
-    probe.release = CreateEventA(NULL, TRUE, FALSE, NULL);
-    probe.delivered = CreateEventA(NULL, TRUE, FALSE, NULL);
-    probe.detached = CreateEventA(NULL, TRUE, FALSE, NULL);
-    assert(probe.entered && probe.release && probe.delivered && probe.detached);
-    assert(lib_console_set_event_sink(probe.console, gate_sink, &probe) ==
+    lib_test_assert(lib_console_create(&probe.console) == LIB_STATUS_OK);
+    lib_test_assert(lib_console_bind_generation(probe.console, 1u) == LIB_STATUS_OK);
+    probe.entered = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    probe.release = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    probe.delivered = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    probe.detached = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
+    lib_test_assert(probe.entered && probe.release && probe.delivered && probe.detached);
+    lib_test_assert(lib_console_set_event_sink(probe.console, gate_sink, &probe) ==
         LIB_STATUS_OK);
-    delivery_thread = CreateThread(NULL, 0u, gate_deliver, &probe, 0u, NULL);
-    assert(delivery_thread != NULL);
-    assert(WaitForSingleObject(probe.entered, INFINITE) == WAIT_OBJECT_0);
-    detach_thread = CreateThread(NULL, 0u, gate_detach, &probe, 0u, NULL);
-    assert(detach_thread != NULL);
+    delivery_thread = lib_win32_create_thread(LIB_NULL, 0u, gate_deliver, &probe, 0u, LIB_NULL);
+    lib_test_assert(delivery_thread != LIB_NULL);
+    lib_test_assert(lib_win32_wait_for_single_object(probe.entered, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
+    detach_thread = lib_win32_create_thread(LIB_NULL, 0u, gate_detach, &probe, 0u, LIB_NULL);
+    lib_test_assert(detach_thread != LIB_NULL);
     /* Detach is a completion barrier, not a best-effort pointer swap. */
-    assert(WaitForSingleObject(probe.detached, 0u) == WAIT_TIMEOUT);
-    SetEvent(probe.release);
-    assert(WaitForSingleObject(probe.delivered, INFINITE) == WAIT_OBJECT_0);
-    assert(WaitForSingleObject(probe.detached, INFINITE) == WAIT_OBJECT_0);
-    assert(WaitForSingleObject(delivery_thread, INFINITE) == WAIT_OBJECT_0);
-    assert(WaitForSingleObject(detach_thread, INFINITE) == WAIT_OBJECT_0);
+    lib_test_assert(lib_win32_wait_for_single_object(probe.detached, 0u) == LIB_WIN32_WAIT_TIMEOUT);
+    lib_win32_set_event(probe.release);
+    lib_test_assert(lib_win32_wait_for_single_object(probe.delivered, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
+    lib_test_assert(lib_win32_wait_for_single_object(probe.detached, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
+    lib_test_assert(lib_win32_wait_for_single_object(delivery_thread, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
+    lib_test_assert(lib_win32_wait_for_single_object(detach_thread, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
     event.kind = LIB_CONSOLE_EVENT_RAW_KEY;
     event.binding_generation = 1u;
-    assert(lib_console_deliver_event(probe.console, &event) == LIB_STATUS_INVALID_STATE);
-    CloseHandle(delivery_thread);
-    CloseHandle(detach_thread);
-    CloseHandle(probe.entered);
-    CloseHandle(probe.release);
-    CloseHandle(probe.delivered);
-    CloseHandle(probe.detached);
+    lib_test_assert(lib_console_deliver_event(probe.console, &event) == LIB_STATUS_INVALID_STATE);
+    lib_win32_close_handle(delivery_thread);
+    lib_win32_close_handle(detach_thread);
+    lib_win32_close_handle(probe.entered);
+    lib_win32_close_handle(probe.release);
+    lib_win32_close_handle(probe.delivered);
+    lib_win32_close_handle(probe.detached);
     lib_console_release(probe.console);
     return 0;
 }

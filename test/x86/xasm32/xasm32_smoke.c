@@ -1,3 +1,5 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "x86/xasm32/xasm32_interface.h"
 
 /* Golden digest captured before the dispatch-table relocation. Hash bytes and

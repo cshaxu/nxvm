@@ -1,0 +1,37 @@
+if(NOT DEFINED TEST_ROOTS)
+    message(FATAL_ERROR "TEST_ROOTS is required")
+endif()
+
+set(raw_types
+    "HANDLE|DWORD|BOOL|LONG|UINT|WORD|SHORT|WCHAR|SIZE_T|LP[A-Z][A-Z0-9_]*|H(WND|ANDLE|DC|BITMAP|CURSOR|MENU)|WPARAM|LPARAM|LRESULT|FILE|size_t")
+set(raw_constants
+    "NULL|TRUE|FALSE|INFINITE|EOF|WAIT_[A-Z0-9_]+|VK_[A-Z0-9_]+|WM_[A-Z0-9_]+|MAPVK_[A-Z0-9_]+|MEM_[A-Z0-9_]+|PAGE_[A-Z0-9_]+|PROT_[A-Z0-9_]+|MAP_[A-Z0-9_]+|_SC_[A-Z0-9_]+")
+set(raw_calls
+    "assert|malloc|calloc|realloc|free|memset|memcpy|memmove|memcmp|memchr|strlen|strcmp|strchr|strstr|strtok|fopen|fclose|fread|fwrite|fflush|fprintf|printf|snprintf|remove|sysconf|mmap|mprotect|munmap|Create[A-Z][A-Za-z0-9_]*|Set[A-Z][A-Za-z0-9_]*|Get[A-Z][A-Za-z0-9_]*|WaitFor[A-Z][A-Za-z0-9_]*|CloseHandle|Sleep|ResetEvent|TryEnterCriticalSection|Interlocked[A-Za-z0-9_]*|Virtual[A-Za-z0-9_]*")
+
+foreach(root IN LISTS TEST_ROOTS)
+    file(GLOB_RECURSE paths RELATIVE "${root}" "${root}/*.c" "${root}/*.h")
+    foreach(path IN LISTS paths)
+        if(path MATCHES "(^|/)fixtures(/|$)")
+            continue()
+        endif()
+        file(READ "${root}/${path}" source)
+        string(REGEX REPLACE "/\\*([^*]|\\*+[^*/])*\\*+/" " " tokens "${source}")
+        string(REGEX REPLACE "//[^\n]*" " " tokens "${tokens}")
+        string(REGEX REPLACE "\"([^\"\\\\]|\\\\.)*\"" " " tokens "${tokens}")
+        if(tokens MATCHES "(^|[^A-Za-z0-9_])(${raw_types}|${raw_constants})([^A-Za-z0-9_]|$)")
+            message(FATAL_ERROR "Test external type/constant bypasses Types: ${root}/${path}: ${CMAKE_MATCH_2}")
+        endif()
+        if(tokens MATCHES "(^|[^A-Za-z0-9_])(${raw_calls})[ \t\r\n]*\\(")
+            message(FATAL_ERROR "Test external function/macro bypasses Types: ${root}/${path}: ${CMAKE_MATCH_2}")
+        endif()
+        file(STRINGS "${root}/${path}" includes REGEX "^[ \t]*#[ \t]*include")
+        foreach(line IN LISTS includes)
+            if(line MATCHES "#[ \t]*include[ \t]*<")
+                message(FATAL_ERROR "Test external header bypasses Types: ${root}/${path}: ${line}")
+            endif()
+        endforeach()
+    endforeach()
+endforeach()
+
+message(STATUS "shared test Types boundary verified")

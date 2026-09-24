@@ -1,6 +1,7 @@
+#include "lib/types/test.h"
+#include "lib/types/file.h"
 #include "common/machine/input_queue.h"
 
-#include <assert.h>
 
 int main(void)
 {
@@ -15,14 +16,14 @@ int main(void)
     first.data.mouse.buttons = KVM_MOUSE_BUTTON_LEFT;
     second = first;
     second.data.mouse.delta_y = 16;
-    assert(common_machine_input_queue_initialize(queue) == LIB_STATUS_OK);
-    assert(common_machine_input_queue_push(queue, &first));
-    assert(common_machine_input_queue_push(queue, &second));
-    assert(common_machine_input_queue_pop(queue, &actual));
-    assert(lib_memory_compare(&actual, &first, sizeof(actual)) == 0);
-    assert(common_machine_input_queue_pop(queue, &actual));
-    assert(lib_memory_compare(&actual, &second, sizeof(actual)) == 0);
-    assert(!common_machine_input_queue_pending(queue));
+    lib_test_assert(common_machine_input_queue_initialize(queue) == LIB_STATUS_OK);
+    lib_test_assert(common_machine_input_queue_push(queue, &first));
+    lib_test_assert(common_machine_input_queue_push(queue, &second));
+    lib_test_assert(common_machine_input_queue_pop(queue, &actual));
+    lib_test_assert(lib_memory_compare(&actual, &first, sizeof(actual)) == 0);
+    lib_test_assert(common_machine_input_queue_pop(queue, &actual));
+    lib_test_assert(lib_memory_compare(&actual, &second, sizeof(actual)) == 0);
+    lib_test_assert(!common_machine_input_queue_pending(queue));
     common_machine_input_queue_dispose(queue);
     return 0;
 }
