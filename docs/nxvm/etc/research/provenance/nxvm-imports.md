@@ -63,3 +63,12 @@ with no independent notice; it excludes every SoftPC App, test outside the two
 listed conformance tests, firmware, media, binary, or product asset. The exact
 parity, platform-boundary, manifest and dual-architecture unit evidence is in
 [T41 S12 canonical audio refresh](../../evidence/m6-t41-s12-canonical-audio-refresh.md).
+
+M6 T41 S13 imports the one-line Raw-CRT negative-fixture correction from clean
+SoftPC commit `2ef228f8`, `test/x86/verify_negative.cmake`: its probe calls raw
+`memcpy` rather than the permitted `lib_memory_copy` facade. The source remains
+project-owned MIT material with no independent notice. The S13 audit treats
+NXVM as the canonical corpus; it does not replace NXVM-only manifest revisions,
+test aggregation, or documentation merely for byte parity. The complete
+six-component comparison and dual-architecture verification are in
+[T41 S13 Raw-CRT reconciliation](../../evidence/m6-t41-s13-softpc-raw-crt-reconciliation.md).
