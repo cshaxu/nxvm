@@ -10,14 +10,14 @@ target_include_directories(mynes-app-composition PUBLIC ${CMAKE_CURRENT_SOURCE_D
 target_link_libraries(mynes-app-composition PUBLIC mynes-app mynes-core-driver common-ui)
 mynes_enable_strict_warnings(mynes-app-composition)
 
-add_executable(mynes-0-0-0042 main.c)
-set_target_properties(mynes-0-0-0042 PROPERTIES OUTPUT_NAME mynes_0_0_0042)
-target_link_libraries(mynes-0-0-0042 PRIVATE mynes-app-composition)
+add_executable(mynes-0-0-0043 main.c)
+set_target_properties(mynes-0-0-0043 PROPERTIES OUTPUT_NAME mynes_0_0_0043)
+target_link_libraries(mynes-0-0-0043 PRIVATE mynes-app-composition)
 if(MINGW)
     set(mynes_post_link_commands
-        COMMAND ${CMAKE_STRIP} --strip-all $<TARGET_FILE:mynes-0-0-0042>)
+        COMMAND ${CMAKE_STRIP} --strip-all $<TARGET_FILE:mynes-0-0-0043>)
 endif()
-mynes_enable_strict_warnings(mynes-0-0-0042)
+mynes_enable_strict_warnings(mynes-0-0-0043)
 # assets/mynes owns the sole editable startup configuration.  Copy it beside
 # a build-tree executable for local runs without creating a second template.
 configure_file(${CMAKE_SOURCE_DIR}/assets/mynes/mynes.ini
@@ -33,13 +33,13 @@ if(WIN32)
     # owner-local, but the paired executable and editable startup template are
     # intentionally retained beneath assets/mynes.
     set(mynes_artifact_directory ${CMAKE_SOURCE_DIR}/assets/mynes)
-    set(mynes_artifact_name mynes_0_0_0042_${mynes_artifact_arch}.exe)
+    set(mynes_artifact_name mynes_0_0_0043_${mynes_artifact_arch}.exe)
     # The executable reads the single editable template already retained beside
     # the versioned deliverable under assets/mynes.
-    add_custom_command(TARGET mynes-0-0-0042 POST_BUILD
+    add_custom_command(TARGET mynes-0-0-0043 POST_BUILD
         ${mynes_post_link_commands}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${mynes_artifact_directory}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:mynes-0-0-0042>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:mynes-0-0-0043>
             ${mynes_artifact_directory}/${mynes_artifact_name}
         VERBATIM)
 endif()
