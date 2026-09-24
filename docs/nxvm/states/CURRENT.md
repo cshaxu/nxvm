@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**No active NXVM subtask. Shared M6 T41 S7 hotkey text adapter is closed.**
+No active NXVM subtask. M6 T41 S8 closed at `bee033f59`; its source/test/CMake deletion proof and x64/x86 336/336 suite results are in [S8 evidence](../etc/evidence/m6-t41-s8-root-types-facade-retirement.md).
 
 ## M6 T41 Progress
 
@@ -10,6 +10,7 @@
 | --- | --- |
 | S6 | Accepted Shared fixed-width enforcement in `948627378` with closure `9341c723d`. |
 | S7 | Accepted: Shared `1d914db89` adapts the Common C-string callback and CRT test boundaries while retaining `lib_u8` event storage. x64/x86 focused Shared regressions and the unblocked MyNES 53/53 suites pass. [Evidence](../etc/evidence/m6-t41-s7-shared-hotkey-text-adapter.md) |
+| S8 | Accepted NXVM root-facade retirement in `bee033f59`: `type.h`, `type.c`, and `type-facade` are deleted; x64/x86 complete suites pass 336/336. [Evidence](../etc/evidence/m6-t41-s8-root-types-facade-retirement.md) |
 ## M6 T41 S4 Shared Closure
 
 Shared S4 closed at `9d7f6ba6c`: Lib now has the approved neutral Types
