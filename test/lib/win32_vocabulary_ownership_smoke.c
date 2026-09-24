@@ -8,7 +8,7 @@
 #include "lib/types/types_interface.h"
 
 static lib_i32 counter_ok = 1, frequency_ok = 1;
-static LONGLONG counter_value = 123, frequency_value = 1000;
+static lib_win32_longlong counter_value = 123, frequency_value = 1000;
 static lib_u32 query_count;
 static lib_u32 pressed;
 static lib_win32_short layout_result;

@@ -11,7 +11,7 @@ static lib_win32_bool LIB_WIN32_WINAPI failed_read(lib_win32_handle input, lib_w
 static lib_win32_input_record records[5];
 static lib_u32 record_count, record_index, raw_count;
 static lib_u32 raw_unicode[16], raw_repeat[16];
-static lib_win32_bool LIB_WIN32_WINAPI read_wide(lib_win32_handle input, PINPUT_RECORD record, lib_win32_dword length, lib_win32_lpdword read)
+static lib_win32_bool LIB_WIN32_WINAPI read_wide(lib_win32_handle input, lib_win32_input_record *record, lib_win32_dword length, lib_win32_lpdword read)
 {
     (void)input; lib_test_assert(length == 1 && record_index < record_count);
     *record = records[record_index++]; *read = 1; return LIB_WIN32_TRUE;

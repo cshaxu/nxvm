@@ -1,16 +1,24 @@
-if(NOT DEFINED TEST_ROOTS)
+if(NOT DEFINED TEST_ROOTS OR TEST_ROOTS STREQUAL "")
     message(FATAL_ERROR "TEST_ROOTS is required")
 endif()
 
 set(raw_types
-    "HANDLE|DWORD|BOOL|LONG|UINT|WORD|SHORT|WCHAR|SIZE_T|LP[A-Z][A-Z0-9_]*|H(WND|ANDLE|DC|BITMAP|CURSOR|MENU)|WPARAM|LPARAM|LRESULT|FILE|size_t")
+    "HANDLE|DWORD|BOOL|LONG|LONGLONG|UINT|WORD|SHORT|WCHAR|SIZE_T|LP[A-Z][A-Z0-9_]*|P(C?RAWINPUTDEVICE|CONSOLE_SCREEN_BUFFER_INFO(EX)?|INPUT_RECORD|UINT|SMALL_RECT)|H(WND|ANDLE|DC|BITMAP|CURSOR|MENU)|WPARAM|LPARAM|LRESULT|FILE|size_t")
 set(raw_constants
-    "NULL|TRUE|FALSE|INFINITE|EOF|WAIT_[A-Z0-9_]+|VK_[A-Z0-9_]+|WM_[A-Z0-9_]+|MAPVK_[A-Z0-9_]+|MEM_[A-Z0-9_]+|PAGE_[A-Z0-9_]+|PROT_[A-Z0-9_]+|MAP_[A-Z0-9_]+|_SC_[A-Z0-9_]+")
+    "NULL|TRUE|FALSE|INFINITE|EOF|WAIT_[A-Z0-9_]+|VK_[A-Z0-9_]+|WM_[A-Z0-9_]+|SC_[A-Z0-9_]+|MAPVK_[A-Z0-9_]+|MEM_[A-Z0-9_]+|PAGE_[A-Z0-9_]+|PROT_[A-Z0-9_]+|MAP_[A-Z0-9_]+|_SC_[A-Z0-9_]+")
 set(raw_calls
     "assert|malloc|calloc|realloc|free|memset|memcpy|memmove|memcmp|memchr|strlen|strcmp|strchr|strstr|strtok|fopen|fclose|fread|fwrite|fflush|fprintf|printf|snprintf|remove|sysconf|mmap|mprotect|munmap|Create[A-Z][A-Za-z0-9_]*|Set[A-Z][A-Za-z0-9_]*|Get[A-Z][A-Za-z0-9_]*|WaitFor[A-Z][A-Za-z0-9_]*|CloseHandle|Sleep|ResetEvent|TryEnterCriticalSection|Interlocked[A-Za-z0-9_]*|Virtual[A-Za-z0-9_]*")
+string(APPEND raw_calls "|AllocConsole|FreeConsole|FillConsoleOutputCharacterW|CallWindowProcW|EnumWindows|InitializeCriticalSection|ReleaseSemaphore|TerminateProcess")
 
 foreach(root IN LISTS TEST_ROOTS)
+    get_filename_component(root "${root}" ABSOLUTE)
+    if(NOT IS_DIRECTORY "${root}")
+        message(FATAL_ERROR "Test root does not exist: ${root}")
+    endif()
     file(GLOB_RECURSE paths RELATIVE "${root}" "${root}/*.c" "${root}/*.h")
+    if(NOT paths)
+        message(FATAL_ERROR "Test root contains no C/H sources: ${root}")
+    endif()
     foreach(path IN LISTS paths)
         if(path MATCHES "(^|/)fixtures(/|$)")
             continue()

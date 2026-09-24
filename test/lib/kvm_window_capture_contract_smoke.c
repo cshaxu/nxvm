@@ -14,7 +14,7 @@ static lib_u32 raw_reads, raw_registrations, raw_removals;
 static lib_i32 raw_read_ok=1, raw_register_ok=1, raw_query_ok=1, raw_remove_ok=1;
 static lib_win32_uint raw_size=sizeof(lib_win32_raw_input);
 static lib_i32 desktop_width=65535, desktop_height=65535;
-static lib_win32_uint LIB_WIN32_WINAPI query_raw(PRAWINPUTDEVICE d,PUINT count,lib_win32_uint size)
+static lib_win32_uint LIB_WIN32_WINAPI query_raw(lib_win32_raw_input_device *d,lib_win32_uint *count,lib_win32_uint size)
 {
     lib_test_assert(size==sizeof(*d));
     if (!raw_query_ok) return (lib_win32_uint)-1;
@@ -24,7 +24,7 @@ static lib_win32_uint LIB_WIN32_WINAPI query_raw(PRAWINPUTDEVICE d,PUINT count,l
     if (needed) *d=raw_binding;
     return needed;
 }
-static lib_win32_bool LIB_WIN32_WINAPI register_raw(PCRAWINPUTDEVICE d,lib_win32_uint count,lib_win32_uint size)
+static lib_win32_bool LIB_WIN32_WINAPI register_raw(const lib_win32_raw_input_device *d,lib_win32_uint count,lib_win32_uint size)
 {
     lib_test_assert(count==1 && size==sizeof(*d) && d->usUsagePage==1 && d->usUsage==2);
     if (d->dwFlags==LIB_WIN32_RIDEV_REMOVE) {
@@ -38,7 +38,7 @@ static lib_win32_bool LIB_WIN32_WINAPI register_raw(PCRAWINPUTDEVICE d,lib_win32
     }
     return LIB_WIN32_TRUE;
 }
-static lib_win32_uint LIB_WIN32_WINAPI read_raw(lib_win32_hraw_input h,lib_win32_uint command,lib_win32_lpvoid data,PUINT size,lib_win32_uint header)
+static lib_win32_uint LIB_WIN32_WINAPI read_raw(lib_win32_hraw_input h,lib_win32_uint command,lib_win32_lpvoid data,lib_win32_uint *size,lib_win32_uint header)
 {
     lib_test_assert(h==(lib_win32_hraw_input)1 && command==LIB_WIN32_RID_INPUT && *size==sizeof(lib_win32_raw_input));
     lib_test_assert(header==sizeof(lib_win32_raw_input_header)); ++raw_reads;

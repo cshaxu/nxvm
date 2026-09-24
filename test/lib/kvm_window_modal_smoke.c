@@ -13,7 +13,7 @@ static lib_win32_lresult LIB_WIN32_CALLBACK observe(lib_win32_hwnd w, lib_win32_
     if (m == LIB_WIN32_WM_ENTERSIZEMOVE || m == LIB_WIN32_WM_ENTERMENULOOP) lib_win32_set_event(entered);
     if (m == LIB_WIN32_WM_EXITSIZEMOVE || m == LIB_WIN32_WM_EXITMENULOOP) lib_win32_set_event(exited);
     if (m == LIB_WIN32_WM_TIMER) lib_win32_set_event(ticked);
-    return CallWindowProcW(original, w, m, a, b);
+    return lib_win32_call_window_proc_w(original, w, m, a, b);
 }
 static lib_win32_bool LIB_WIN32_CALLBACK find_window(lib_win32_hwnd w, lib_win32_lparam unused)
 {
@@ -41,12 +41,12 @@ static lib_win32_dword LIB_WIN32_WINAPI watchdog(void *p)
 {
     (void)p;
     if (lib_win32_wait_for_single_object(done, 15000) != LIB_WIN32_WAIT_OBJECT_0)
-        TerminateProcess(lib_win32_get_current_process(), 99);
+        lib_win32_terminate_process(lib_win32_get_current_process(), 99);
     return 0;
 }
 int main(void)
 {
-    const lib_win32_wparam commands[] = { SC_SIZE | LIB_WIN32_WMSZ_RIGHT, SC_MOVE, SC_KEYMENU };
+    const lib_win32_wparam commands[] = { LIB_WIN32_SC_SIZE | LIB_WIN32_WMSZ_RIGHT, LIB_WIN32_SC_MOVE, LIB_WIN32_SC_KEYMENU };
     entered = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     exited = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
     retired = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
@@ -64,7 +64,7 @@ int main(void)
         o.component.input_sink = input; o.component.failure_sink = failed;
         o.initial_title = "modal-before";
         lib_test_assert(kvm_window_create(&w, &o) == LIB_STATUS_OK);
-        EnumWindows(find_window, 0); lib_test_assert(target);
+        lib_win32_enum_windows(find_window, 0); lib_test_assert(target);
         original = (lib_win32_wndproc)lib_win32_set_window_long_ptr_w(target, LIB_WIN32_GWLP_WNDPROC, (lib_win32_long_ptr)observe);
         lib_c_printf("modal case %u\n", i); lib_c_fflush(lib_c_stdout);
         lib_test_assert(lib_win32_post_message_w(target, LIB_WIN32_WM_SYSCOMMAND, commands[i], i == 2 ? ' ' : 0));

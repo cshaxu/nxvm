@@ -7,6 +7,8 @@
 typedef CRITICAL_SECTION lib_win32_critical_section;
 #define lib_win32_create_event_a CreateEventA
 #define lib_win32_create_semaphore_a CreateSemaphoreA
+#define lib_win32_release_semaphore ReleaseSemaphore
+#define lib_win32_initialize_critical_section InitializeCriticalSection
 #define lib_win32_create_thread CreateThread
 #define lib_win32_wait_for_multiple_objects WaitForMultipleObjects
 #define lib_win32_wait_for_single_object WaitForSingleObject

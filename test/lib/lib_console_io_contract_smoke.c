@@ -31,17 +31,17 @@ static lib_win32_wchar first_cell;
 static lib_win32_word first_attribute;
 static lib_win32_coord buffer_size={80,25};
 static lib_win32_small_rect viewport={0,0,79,24};
-static lib_win32_bool LIB_WIN32_WINAPI screen_info(lib_win32_handle h, PCONSOLE_SCREEN_BUFFER_INFO p)
+static lib_win32_bool LIB_WIN32_WINAPI screen_info(lib_win32_handle h, lib_win32_console_screen_buffer_info *p)
 { (void)h; lib_memory_set(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI set_viewport(lib_win32_handle h,lib_win32_bool absolute,const lib_win32_small_rect *rect)
 { (void)h; lib_test_assert(absolute); viewport=*rect; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI resize_buffer(lib_win32_handle h,lib_win32_coord size)
 { (void)h; buffer_size=size; return LIB_WIN32_TRUE; }
-static lib_win32_bool LIB_WIN32_WINAPI palette_get(lib_win32_handle h, PCONSOLE_SCREEN_BUFFER_INFOEX p)
+static lib_win32_bool LIB_WIN32_WINAPI palette_get(lib_win32_handle h, lib_win32_console_screen_buffer_infoex *p)
 { (void)h; (void)p; ++palette_attempts; return palette_query_ok; }
-static lib_win32_bool LIB_WIN32_WINAPI palette_set(lib_win32_handle h, PCONSOLE_SCREEN_BUFFER_INFOEX p)
+static lib_win32_bool LIB_WIN32_WINAPI palette_set(lib_win32_handle h, lib_win32_console_screen_buffer_infoex *p)
 { (void)h; (void)p; ++palette_sets; if(palette_set_ok) buffer_size.Y=24; return palette_set_ok; }
-static lib_win32_bool LIB_WIN32_WINAPI write_cells(lib_win32_handle h, const lib_win32_char_info *p, lib_win32_coord a, lib_win32_coord b, PSMALL_RECT r)
+static lib_win32_bool LIB_WIN32_WINAPI write_cells(lib_win32_handle h, const lib_win32_char_info *p, lib_win32_coord a, lib_win32_coord b, lib_win32_small_rect *r)
 {
     (void)h; (void)a; (void)b; ++writes; first_cell=p[0].Char.UnicodeChar;
     first_attribute=p[0].Attributes;

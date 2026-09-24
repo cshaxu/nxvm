@@ -15,6 +15,7 @@ typedef LPCSTR lib_win32_lpcstr;
 typedef LPCWSTR lib_win32_lpcwstr;
 typedef LPDWORD lib_win32_lpdword;
 typedef LONG lib_win32_long;
+typedef LONGLONG lib_win32_longlong;
 typedef LONG_PTR lib_win32_long_ptr;
 typedef UINT lib_win32_uint;
 typedef UINT_PTR lib_win32_uint_ptr;

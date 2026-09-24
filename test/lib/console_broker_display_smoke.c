@@ -29,12 +29,12 @@ static lib_win32_bool LIB_WIN32_WINAPI set_viewport(lib_win32_handle output, lib
     if (ignore_viewport) { ignore_viewport = 0; return LIB_WIN32_TRUE; }
     return lib_win32_set_console_window_info(output, absolute, rect);
 }
-static lib_win32_bool LIB_WIN32_WINAPI query_display(lib_win32_handle output, PCONSOLE_SCREEN_BUFFER_INFOEX info)
+static lib_win32_bool LIB_WIN32_WINAPI query_display(lib_win32_handle output, lib_win32_console_screen_buffer_infoex *info)
 {
     if (fail_query) { fail_query = 0; return LIB_WIN32_FALSE; }
     return lib_win32_get_console_screen_buffer_info_ex(output, info);
 }
-static lib_win32_bool LIB_WIN32_WINAPI restore_display(lib_win32_handle output, PCONSOLE_SCREEN_BUFFER_INFOEX info)
+static lib_win32_bool LIB_WIN32_WINAPI restore_display(lib_win32_handle output, lib_win32_console_screen_buffer_infoex *info)
 {
     if (fail_restore) { fail_restore = 0; return LIB_WIN32_FALSE; }
     return lib_win32_set_console_screen_buffer_info_ex(output, info);
@@ -205,8 +205,8 @@ int main(void)
     lib_win32_coord origin = {0, 0};
     lib_win32_console_cursor_info cursor = {25, LIB_WIN32_TRUE};
     /* FreeConsole only detaches this test process, never its parent. */
-    (void)FreeConsole(); /* An attached pseudoconsole need not have an lib_win32_hwnd. */
-    lib_test_assert(AllocConsole());
+    (void)lib_win32_free_console(); /* An attached pseudoconsole need not have an lib_win32_hwnd. */
+    lib_test_assert(lib_win32_alloc_console());
     lib_win32_show_window(lib_win32_get_console_window(), LIB_WIN32_SW_HIDE);
     for (fail_mutex = 1; fail_mutex <= 2; ++fail_mutex) {
         console_broker_backend *failed = LIB_NULL;
@@ -230,7 +230,7 @@ int main(void)
         lib_test_assert(lib_win32_set_console_window_info(broker->backend->output, LIB_WIN32_TRUE, &viewport));
         lib_test_assert(lib_win32_set_console_screen_buffer_size(broker->backend->output, size));
     }
-    lib_test_assert(FillConsoleOutputCharacterW(broker->backend->output, L' ', 80 * 25, origin, &written));
+    lib_test_assert(lib_win32_fill_console_output_character_w(broker->backend->output, L' ', 80 * 25, origin, &written));
     lib_test_assert(written == 80 * 25);
     lib_test_assert(lib_win32_set_console_cursor_position(broker->backend->output, origin));
     lib_test_assert(lib_win32_set_console_cursor_info(broker->backend->output, &cursor));
@@ -319,6 +319,6 @@ int main(void)
     check_frame_extent(80, 13, 0);
     check_frame_extent(120, 13, 0);
     check_frame_extent(120, 60, 1);
-    lib_test_assert(FreeConsole());
+    lib_test_assert(lib_win32_free_console());
     return 0;
 }

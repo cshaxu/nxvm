@@ -12,7 +12,7 @@ static lib_win32_long fail_wake;
 static lib_win32_handle frame_idle;
 static base_sync_wait_result retirement_wait(base_sync_event *wake, lib_u32 timeout)
 {
-    if (frame_idle) lib_test_assert(ReleaseSemaphore(frame_idle, 1, LIB_NULL));
+    if (frame_idle) lib_test_assert(lib_win32_release_semaphore(frame_idle, 1, LIB_NULL));
     base_sync_wait_result result = base_sync_event_wait(wake, timeout);
     return lib_win32_interlocked_compare_exchange(&fail_wake, 0, 0) ?
         BASE_SYNC_WAIT_FAULT : result;

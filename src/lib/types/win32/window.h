@@ -51,6 +51,8 @@ typedef lib_win32_rect *lib_win32_prect;
 typedef lib_win32_point *lib_win32_ppoint;
 #define lib_win32_adjust_window_rect_ex AdjustWindowRectEx
 #define lib_win32_begin_paint BeginPaint
+#define lib_win32_call_window_proc_w CallWindowProcW
+#define lib_win32_enum_windows EnumWindows
 #define lib_win32_client_to_screen ClientToScreen
 #define lib_win32_clip_cursor ClipCursor
 #define lib_win32_create_compatible_dc CreateCompatibleDC
@@ -142,6 +144,9 @@ typedef lib_win32_point *lib_win32_ppoint;
 #define LIB_WIN32_QS_ALLINPUT QS_ALLINPUT
 #define LIB_WIN32_SC_MAXIMIZE SC_MAXIMIZE
 #define LIB_WIN32_SRCCOPY SRCCOPY
+#define LIB_WIN32_SC_SIZE SC_SIZE
+#define LIB_WIN32_SC_MOVE SC_MOVE
+#define LIB_WIN32_SC_KEYMENU SC_KEYMENU
 #define LIB_WIN32_SW_RESTORE SW_RESTORE
 #define LIB_WIN32_SW_SHOW SW_SHOW
 #define LIB_WIN32_SW_HIDE SW_HIDE

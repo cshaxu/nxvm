@@ -5,6 +5,7 @@
 
 #define lib_win32_get_module_file_name_a GetModuleFileNameA
 #define lib_win32_get_current_process GetCurrentProcess
+#define lib_win32_terminate_process TerminateProcess
 #define lib_win32_get_current_process_id GetCurrentProcessId
 #define lib_win32_get_process_handle_count GetProcessHandleCount
 

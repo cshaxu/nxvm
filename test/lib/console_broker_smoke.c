@@ -51,7 +51,7 @@ lib_status console_broker_backend_create(console_broker_backend **out_native)
     native_console.active = LIB_NULL;
     test_backend = &native_console;
 #ifdef _WIN32
-    InitializeCriticalSection(&native_console.transaction);
+    lib_win32_initialize_critical_section(&native_console.transaction);
 #endif
     *out_native = &native_console;
     return LIB_STATUS_OK;

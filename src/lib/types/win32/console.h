@@ -16,6 +16,9 @@ typedef KEY_EVENT_RECORD lib_win32_key_event_record;
 typedef MOUSE_EVENT_RECORD lib_win32_mouse_event_record;
 typedef SMALL_RECT lib_win32_small_rect;
 #define lib_win32_cancel_io_ex CancelIoEx
+#define lib_win32_alloc_console AllocConsole
+#define lib_win32_free_console FreeConsole
+#define lib_win32_fill_console_output_character_w FillConsoleOutputCharacterW
 #define lib_win32_cancel_synchronous_io CancelSynchronousIo
 #define lib_win32_create_console_screen_buffer CreateConsoleScreenBuffer
 #define lib_win32_flush_console_input_buffer FlushConsoleInputBuffer
