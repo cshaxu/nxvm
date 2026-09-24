@@ -14,7 +14,7 @@ static void make_image(lib_u8 *image, lib_bool vertical)
     image[4] = 2u; image[5] = 4u;
     image[6] = (lib_u8)(0x30u | (vertical ? 1u : 0u));
     for (index = 0u; index < 4u; ++index)
-        lib_memory_set(image + 16u + 32768u + index * 8192u, (int)index, 8192u);
+        lib_memory_set(image + 16u + 32768u + index * 8192u, (lib_i32)index, 8192u);
     image[16u + 0u] = 2u;
     image[16u + 0x4000u] = 0u;
     image[16u + 0x4001u] = 1u;

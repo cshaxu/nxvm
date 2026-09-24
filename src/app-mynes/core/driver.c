@@ -584,7 +584,7 @@ lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame
         out_frame->window.text.base.cursor_visible = 0u;
         out_frame->window.text.base.font_height = 16u;
         for (row = 0u; row < 25u; ++row) for (column = 0u; column < 80u; ++column) {
-            static const char glyphs[] = " .:-=+*#%@";
+            static const lib_u8 glyphs[] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@', 0u};
             lib_u32 source_y_begin = row * 240u / 25u;
             lib_u32 source_y_end = (row + 1u) * 240u / 25u;
             lib_u32 source_x_begin;

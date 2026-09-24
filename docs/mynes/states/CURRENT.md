@@ -2,14 +2,33 @@
 
 ## Current Work
 
-**No active implementation packet.** M6 T41 remains open with S1 accepted;
-the next admitted subtask is NXVM-only S2.
+**M6 T41 S7 is active.**
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner admitted MyNES M6 T41 S7 on 2026-09-23, after approving the shared fixed-width consumer rule and S6 cleanup. The owner permanently authorizes commit and push to `master`. |
+| Objective | Complete MyNES's migration to Lib fixed-width and semantic Types: convert internal scalar and text-byte representation in `src/app-mynes` and `test/app-mynes`, while retaining only direct C/Common/Lib/Win32 adapter spellings. |
+| Non-goals | No Lib, Common, x86, NXVM, SoftPC, ROM, asset, INI, UX, command-grammar, snapshot-schema or behavior change. No new shared Types API. |
+| Reference Baseline | [M6 T41 proposal](../proposals/m6-t41-type-vocabulary-convergence.md), [Shared S6 fixed-width enforcement](../../nxvm/etc/evidence/m6-t41-s6-shared-fixed-width-enforcement.md), and MyNES T41 S1 evidence. |
+| Candidate Proposal | [M6 T41 shared type vocabulary convergence](../proposals/m6-t41-type-vocabulary-convergence.md), S7. |
+| Files And ABI Surface | `src/app-mynes`, `test/app-mynes`, their MyNES CMake/manifests only if source ownership requires it, and MyNES proposal/state/evidence. Common Session, Lib file/text and direct Win32 signatures are retained only as explicit adapters. |
+| Applicable Rules | Internal data, fields, parameters, returns and text storage use `lib_u8`/fixed-width or semantic Types. `lib_bool` is for predicates; `lib_status` is for operation outcome; native `char *` appears only at a named direct C/SDK/Shared boundary. `main` retains its required C signature. No ABI, integer-promotion, formatting or text-encoding behavior may change. |
+| Verification | Produce a classified scalar/text sweep over every MyNES C/H source and test; inspect all changed adapters; run MyNES x64/x86 suites, relevant Lib contract/static gates, MyNES manifest checks and documentation governance; perform actual-diff review. |
+| Expected Markers | No unclassified `int`, native-width integer, raw fixed-width typedef, or native text storage remains in MyNES internal logic. All accepted text boundary casts are one-directional local adapters. `lib_c_strstr` has no MyNES production/test receiver. |
+| Asset Needs | None. Preserve owner-local `assets/binary-mynes/mynes.ini` and `assets/binary-nxvm/default-pc-at-80386-1440k-hdd/NXVM.ini` unchanged and unstaged. |
+| Reporting Requirements | Report the before/after scalar-text ledger, source/test add/remove/net excluding documentation/generated files, ownership and behavior effect, x64/x86 verification, commit/push, and remaining S8 NXVM handoff. |
+| Stop Conditions | Stop before any change that alters a Common/Lib/Win32 ABI, C-string compatibility, formatting varargs contract, command text behavior, snapshot bytes, or requires a new shared Types capability; record the receiver instead. |
+| Exit Criteria | Every MyNES production/test scalar/text occurrence is converted or classified as a direct boundary; no MyNES caller uses `lib_c_strstr`; required gates and independent review pass; one implementation P and one closure governance P are pushed. |
+| Original Owner Request | Admit S7 to repair MyNES type definitions after S6 completes Shared Lib/Common/x86 cleanup; all products must use Lib fixed-width Types where applicable. |
+| Similar-Issue Sweep | Scan all MyNES C/H production, unit and integration sources for native scalar declarations/casts/returns, native string storage, direct C runtime/platform headers and `lib_c_strstr`; classify fixed-width conversion, semantic conversion, required C/SDK boundary or defect. |
 
 ## M6 T41 Progress
 
 | S | Result |
 | --- | --- |
 | S1 | Accepted: Shared `343edeb64` and `74a069246` add the required neutral Types vocabulary and declaration ownership; MyNES `3d81d2277` removes its admitted direct vocabulary, passes x64/x86 Lib and 53/53 MyNES suites, and publishes the verified `0_0_0041` pair. [Evidence](../etc/evidence/m6-t41-s1-types-mynes-cleanup.md) |
+| S7 | Active: complete MyNES fixed-width and text-byte migration under the Shared S6 rule. |
 
 ## M6 T40 Progress
 

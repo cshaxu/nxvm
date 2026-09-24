@@ -20,7 +20,7 @@ typedef enum core_opcode_address_mode {
 } core_opcode_address_mode;
 
 typedef struct core_opcode_metadata {
-    char mnemonic[4];
+    lib_u8 mnemonic[4];
     core_opcode_address_mode mode;
     lib_u8 bytes;
 } core_opcode_metadata;

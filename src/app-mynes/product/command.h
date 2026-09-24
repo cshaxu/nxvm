@@ -17,7 +17,7 @@ typedef struct app_command_session {
     lib_bool transition_pending;
     lib_bool prompt_due;
     app_command_snapshot_result pending_snapshot;
-    char pending_monitor_text[APP_COMMAND_TEXT_CAPACITY];
+    lib_u8 pending_monitor_text[APP_COMMAND_TEXT_CAPACITY];
 } app_command_session;
 
 typedef struct app_command_context {

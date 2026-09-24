@@ -4,23 +4,25 @@
 #include "lib/storage/file_interface.h"
 #include "lib/types/types_interface.h"
 
-static lib_bool app_config_space(char value)
+#define APP_CONFIG_TEXT(value) ((const lib_u8 *)(value))
+
+static lib_bool app_config_space(lib_u8 value)
 { return value == ' ' || value == '\t' || value == '\r'; }
 
-static const char *app_config_trim_left(const char *start, const char *end)
+static const lib_u8 *app_config_trim_left(const lib_u8 *start, const lib_u8 *end)
 {
     while (start != end && app_config_space(*start)) ++start;
     return start;
 }
 
-static const char *app_config_trim_right(const char *start, const char *end)
+static const lib_u8 *app_config_trim_right(const lib_u8 *start, const lib_u8 *end)
 {
     while (end != start && app_config_space(end[-1])) --end;
     return end;
 }
 
-static lib_bool app_config_equals(const char *start, const char *end,
-    const char *literal)
+static lib_bool app_config_equals(const lib_u8 *start, const lib_u8 *end,
+    const lib_u8 *literal)
 {
     while (start != end && *literal != '\0') {
         if (*start++ != *literal++) return LIB_FALSE;
@@ -28,8 +30,8 @@ static lib_bool app_config_equals(const char *start, const char *end,
     return start == end && *literal == '\0';
 }
 
-static int app_config_copy(char *target, lib_size target_capacity,
-    const char *start, const char *end)
+static lib_bool app_config_copy(lib_u8 *target, lib_size target_capacity,
+    const lib_u8 *start, const lib_u8 *end)
 {
     lib_size length = (lib_size)(end - start);
     if (length == 0u || length >= target_capacity) return 0;
@@ -38,25 +40,25 @@ static int app_config_copy(char *target, lib_size target_capacity,
     return 1;
 }
 
-int app_config_load_text(const char *text, lib_size text_length,
+lib_bool app_config_load_text(const lib_u8 *text, lib_size text_length,
     app_startup_config *out_config)
 {
-    const char *cursor;
-    const char *limit;
+    const lib_u8 *cursor;
+    const lib_u8 *limit;
     app_startup_config candidate = { 0 };
 
     if (text == LIB_NULL || out_config == LIB_NULL) return 0;
     cursor = text;
     limit = text + text_length;
     while (cursor != limit) {
-        const char *line_end = cursor;
-        const char *key_start;
-        const char *key_end;
-        const char *value_start;
-        const char *value_end;
-        const char *equals;
-        const char *comment;
-        const char *next_line;
+        const lib_u8 *line_end = cursor;
+        const lib_u8 *key_start;
+        const lib_u8 *key_end;
+        const lib_u8 *value_start;
+        const lib_u8 *value_end;
+        const lib_u8 *equals;
+        const lib_u8 *comment;
+        const lib_u8 *next_line;
 
         while (line_end != limit && *line_end != '\n') ++line_end;
         next_line = line_end;
@@ -80,13 +82,13 @@ int app_config_load_text(const char *text, lib_size text_length,
                     ++value_start;
                     --value_end;
                 }
-                if (app_config_equals(key_start, key_end, "rom")) {
+                if (app_config_equals(key_start, key_end, APP_CONFIG_TEXT("rom"))) {
                     if (!app_config_copy(candidate.rom_path,
                             sizeof(candidate.rom_path), value_start, value_end)) return 0;
-                } else if (app_config_equals(key_start, key_end, "display")) {
-                    if (app_config_equals(value_start, value_end, "window"))
+                } else if (app_config_equals(key_start, key_end, APP_CONFIG_TEXT("display"))) {
+                    if (app_config_equals(value_start, value_end, APP_CONFIG_TEXT("window")))
                         candidate.text_output = LIB_FALSE;
-                    else if (app_config_equals(value_start, value_end, "console"))
+                    else if (app_config_equals(value_start, value_end, APP_CONFIG_TEXT("console")))
                         candidate.text_output = LIB_TRUE;
                     else return 0;
                 } else return 0;
@@ -98,32 +100,32 @@ int app_config_load_text(const char *text, lib_size text_length,
     return 1;
 }
 
-static int app_config_path(char *path)
+static lib_bool app_config_path(lib_u8 *path)
 {
     lib_size length;
 
-    if (base_process_executable_directory(path, APP_CONFIG_PATH_CAPACITY) != LIB_STATUS_OK)
+    if (base_process_executable_directory((char *)path, APP_CONFIG_PATH_CAPACITY) != LIB_STATUS_OK)
         return 0;
-    length = lib_text_length(path);
+    for (length = 0u; path[length] != 0u; ++length) { }
     if (length + 1u + sizeof("mynes.ini") > APP_CONFIG_PATH_CAPACITY) return 0;
     path[length] = '\\';
     lib_memory_copy(path + length + 1u, "mynes.ini", sizeof("mynes.ini"));
     return 1;
 }
 
-int app_config_parse(int argc, char **argv, app_startup_config *out_config)
+lib_bool app_config_parse(lib_i32 argc, char **argv, app_startup_config *out_config)
 {
-    char path[APP_CONFIG_PATH_CAPACITY];
+    lib_u8 path[APP_CONFIG_PATH_CAPACITY];
     void *bytes = LIB_NULL;
     lib_size byte_count;
     lib_status status;
 
     if (out_config == LIB_NULL || argc != 1 || argv == LIB_NULL || !app_config_path(path))
         return 0;
-    status = lib_storage_file_read_owned(path, 16384u, &bytes, &byte_count);
+    status = lib_storage_file_read_owned((const char *)path, 16384u, &bytes, &byte_count);
     if (status != LIB_STATUS_OK) return 0;
     {
-        int result = app_config_load_text(bytes, byte_count, out_config);
+        lib_bool result = app_config_load_text((const lib_u8 *)bytes, byte_count, out_config);
         lib_release(bytes);
         return result;
     }

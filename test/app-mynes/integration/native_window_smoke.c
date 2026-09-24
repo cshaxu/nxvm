@@ -17,7 +17,7 @@ typedef struct native_window_fixture {
     common_ui *ui;
     app_command_context command;
     HANDLE session_thread;
-    int session_result;
+    lib_i32 session_result;
 } native_window_fixture;
 
 static void write_fixture(void)

@@ -10,7 +10,7 @@
 /* App owns product terminology and the monitor's discoverable command
  * surface.  Keep this in the same grouped form as SoftPC's cooked monitor:
  * a user can see grammar, state policy and gameplay controls in one `help`. */
-static const char app_command_help[] =
+static const lib_u8 app_command_help[] =
     "MyNes\n"
     "=====\n"
     "  start               cold-reset and run the inserted cartridge\n"
@@ -42,7 +42,7 @@ static lib_bool app_command_set_media(app_command_context *context,
         LIB_STORAGE_MEDIUM_READONLY);
 }
 
-static const char app_command_debug_help[] =
+static const lib_u8 app_command_debug_help[] =
     "MyNes debug commands (paused cartridge required)\n"
     "  debug regs                show RP2A03 registers\n"
     "  debug mem <addr> [count]  display 1..256 bytes\n"
@@ -178,8 +178,8 @@ static lib_bool app_command_parse_path(const char *text, char *out_path,
     if (quoted) ++cursor;
     while (*cursor != '\0' && (quoted ? *cursor != '"' :
             *cursor != ' ' && *cursor != '\t')) {
-        if ((unsigned char)*cursor < 0x20u || (unsigned char)*cursor == 0x7fu ||
-            (unsigned char)*cursor > 0x7fu || length + 1u >= capacity)
+        if ((lib_u8)*cursor < 0x20u || (lib_u8)*cursor == 0x7fu ||
+            (lib_u8)*cursor > 0x7fu || length + 1u >= capacity)
             return LIB_FALSE;
         out_path[length++] = *cursor++;
     }
@@ -290,7 +290,7 @@ static void app_command_message(char *target, lib_size target_capacity,
 static void app_command_outcome(app_command_context *context, const char *text)
 {
     if (context == LIB_NULL) return;
-    app_command_message(context->session.pending_monitor_text,
+    app_command_message((char *)context->session.pending_monitor_text,
         sizeof(context->session.pending_monitor_text), text);
     context->session.prompt_due = LIB_TRUE;
 }
@@ -560,37 +560,37 @@ static lib_size app_command_format_instruction(char *text, lib_size capacity,
             address, bytes[0], bytes[0]);
     if (info.mode == CORE_OPCODE_ADDRESS_IMPLIED)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X       %s\n",
-            address, bytes[0], info.mnemonic);
+            address, bytes[0], (const char *)info.mnemonic);
     if (info.mode == CORE_OPCODE_ADDRESS_ACCUMULATOR)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X       %s A\n",
-            address, bytes[0], info.mnemonic);
+            address, bytes[0], (const char *)info.mnemonic);
     if (info.mode == CORE_OPCODE_ADDRESS_IMMEDIATE)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X    %s #$%02X\n",
-            address, bytes[0], bytes[1], info.mnemonic, bytes[1]);
+            address, bytes[0], bytes[1], (const char *)info.mnemonic, bytes[1]);
     if (info.mode == CORE_OPCODE_ADDRESS_ZERO_PAGE)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X    %s $%02X\n",
-            address, bytes[0], bytes[1], info.mnemonic, bytes[1]);
+            address, bytes[0], bytes[1], (const char *)info.mnemonic, bytes[1]);
     if (info.mode == CORE_OPCODE_ADDRESS_ZERO_PAGE_X ||
         info.mode == CORE_OPCODE_ADDRESS_ZERO_PAGE_Y)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X    %s $%02X,%c\n",
-            address, bytes[0], bytes[1], info.mnemonic, bytes[1],
+            address, bytes[0], bytes[1], (const char *)info.mnemonic, bytes[1],
             info.mode == CORE_OPCODE_ADDRESS_ZERO_PAGE_X ? 'X' : 'Y');
     if (info.mode == CORE_OPCODE_ADDRESS_INDIRECT_X)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X    %s ($%02X,X)\n",
-            address, bytes[0], bytes[1], info.mnemonic, bytes[1]);
+            address, bytes[0], bytes[1], (const char *)info.mnemonic, bytes[1]);
     if (info.mode == CORE_OPCODE_ADDRESS_INDIRECT_Y)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X    %s ($%02X),Y\n",
-            address, bytes[0], bytes[1], info.mnemonic, bytes[1]);
+            address, bytes[0], bytes[1], (const char *)info.mnemonic, bytes[1]);
     if (info.mode == CORE_OPCODE_ADDRESS_RELATIVE)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X    %s $%04X\n",
-            address, bytes[0], bytes[1], info.mnemonic,
+            address, bytes[0], bytes[1], (const char *)info.mnemonic,
             (lib_u16)(address + 2u + (bytes[1] < 0x80u ? bytes[1] :
                 (lib_u16)(0xff00u | bytes[1]))));
     if (info.mode == CORE_OPCODE_ADDRESS_INDIRECT)
         return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X %02X %s ($%04X)\n",
-            address, bytes[0], bytes[1], bytes[2], info.mnemonic, word);
+            address, bytes[0], bytes[1], bytes[2], (const char *)info.mnemonic, word);
     return (lib_size)lib_c_snprintf(text, capacity, "%04X: %02X %02X %02X %s $%04X%s\n",
-        address, bytes[0], bytes[1], bytes[2], info.mnemonic, word,
+        address, bytes[0], bytes[1], bytes[2], (const char *)info.mnemonic, word,
         info.mode == CORE_OPCODE_ADDRESS_ABSOLUTE_X ? ",X" :
         info.mode == CORE_OPCODE_ADDRESS_ABSOLUTE_Y ? ",Y" : "");
 }
@@ -649,7 +649,7 @@ static void app_command_debug_submit(app_command_context *context,
     const char *path;
 
     if (app_command_end(arguments) || app_command_equal(arguments, "help")) {
-        app_command_result(out_result, app_command_debug_help);
+        app_command_result(out_result, (const char *)app_command_debug_help);
     } else if (!app_command_debug_ready(context, state)) {
         app_command_result(out_result, "Pause with a cartridge before debugging.\n");
     } else if (app_command_equal(arguments, "regs")) {
@@ -703,7 +703,7 @@ void app_command_open(void *opaque, common_session_command_result *out_result)
 {
     app_command_context *context = opaque;
     app_command_result(out_result,
-        app_command_help);
+        (const char *)app_command_help);
     if (context != LIB_NULL && context->initial_reset) {
         context->initial_reset = LIB_FALSE;
         context->run_after_reset = LIB_FALSE;
@@ -742,7 +742,7 @@ void app_command_submit_line(void *opaque, common_session_machine_state state,
         return;
     }
     if (app_command_equal(line, "help")) {
-        app_command_result(out_result, app_command_help);
+        app_command_result(out_result, (const char *)app_command_help);
     } else if (app_command_equal(line, "debug")) {
         app_command_debug_submit(context, state, "", out_result);
     } else if ((path = app_command_after(line, "debug ")) != LIB_NULL) {
@@ -955,7 +955,7 @@ void app_command_note_monitor_current(void *opaque, lib_bool current,
     out_result->arm_prompt = context != LIB_NULL && current &&
         context->session.prompt_due;
     if (out_result->arm_prompt) {
-        lib_size length = lib_text_length(context->session.pending_monitor_text);
+        lib_size length = lib_text_length((const char *)context->session.pending_monitor_text);
         if (length >= sizeof(out_result->text)) length = sizeof(out_result->text) - 1u;
         lib_memory_copy(out_result->text, context->session.pending_monitor_text, length);
         out_result->text[length] = '\0';

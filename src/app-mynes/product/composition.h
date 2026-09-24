@@ -3,6 +3,6 @@
 
 #include "product/config.h"
 
-int app_composition_run(const app_startup_config *config);
+lib_i32 app_composition_run(const app_startup_config *config);
 
 #endif

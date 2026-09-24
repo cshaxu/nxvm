@@ -8,7 +8,7 @@
 
 #define FIXTURE_PATH "mynes-app-debug-commands-fixture.nes"
 
-static int app_command_output_compare(const char *actual, const char *expected)
+static lib_i32 app_command_output_compare(const char *actual, const char *expected)
 {
     lib_size length = lib_text_length(expected);
     return lib_memory_compare(actual, expected, length) != 0 || actual[length] != '\n' ||

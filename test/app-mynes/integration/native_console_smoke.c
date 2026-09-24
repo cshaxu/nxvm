@@ -19,7 +19,7 @@ typedef struct native_console_fixture {
     common_ui *ui;
     app_command_context command;
     HANDLE session_thread;
-    int session_result;
+    lib_i32 session_result;
 } native_console_fixture;
 
 typedef struct console_image {
