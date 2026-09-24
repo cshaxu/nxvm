@@ -32,7 +32,7 @@
 | S9 | Completed pending S9 P: all six Shared source/test trees use the enforced Lib vocabulary; the x86 DEBUG facade is deleted, MyNES and all four NXVM profile x64/x86 artifacts are rebuilt, and the retained native test boundaries are individually recorded. [Evidence](../etc/evidence/m6-t41-s9-shared-six-component-type-convergence.md) |
 | S10 | Completed pending commit: versioned artifacts moved to ssets/nxvm and ssets/mynes; live CMake, delivery, documentation and ignore authorities changed with a dedicated root gate. Existing owner worktree changes are included. [Evidence](../etc/evidence/m6-t41-s10-product-artifact-root-rename.md) |
 | S12 | Delivered in Shared `4faf19eb7` and pending NXVM evidence P2: canonical SoftPC `df9d1cf8` WASAPI audio is imported with unchanged public ABI; x64/x86 audio checks, manifests, static ownership sweeps and complete repository-only units pass. [Evidence](../etc/evidence/m6-t41-s12-canonical-audio-refresh.md) |
-| S13 | Delivered in Shared `b94ea4ffe`: the Raw-CRT x86 negative probe now tests raw `memcpy`, the Lib audio ownership description is synchronized, and the six-component reconciliation is complete pending NXVM evidence P2. [Evidence](../etc/evidence/m6-t41-s13-softpc-raw-crt-reconciliation.md) |
+| S13 | Closed in Shared `b94ea4ffe` and NXVM `f3a681422`: the Raw-CRT x86 negative probe now tests raw `memcpy`, the Lib audio ownership description is synchronized, and the six-component reconciliation is complete. [Evidence](../etc/evidence/m6-t41-s13-softpc-raw-crt-reconciliation.md) |
 ## M6 T41 S4 Shared Closure
 
 Shared S4 closed at `9d7f6ba6c`: Lib now has the approved neutral Types
